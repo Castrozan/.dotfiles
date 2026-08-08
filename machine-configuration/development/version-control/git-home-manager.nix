@@ -1,4 +1,9 @@
 { pkgs, ... }:
+let
+  gitMessageEditor = pkgs.writeShellScript "git-message-editor" (
+    builtins.readFile ./scripts/git-message-editor
+  );
+in
 {
   imports = [ ../../../agent-harness/commit-provenance/commit-provenance-home-manager.nix ];
 
@@ -21,6 +26,7 @@
       core = {
         pager = "delta --paging=never --detect-dark-light always";
         hooksPath = "~/.githooks";
+        editor = "${gitMessageEditor}";
       };
       alias.fzf = "!git-fzf";
       interactive.diffFilter = "delta --color-only --paging=never --detect-dark-light always";

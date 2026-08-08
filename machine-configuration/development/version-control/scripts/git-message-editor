@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [ -t 0 ] && [ -t 1 ]; then
+	exec nvim "$@"
+fi
+
+printf 'git message editor refused: no terminal is attached, so nothing here can type a message.\n' >&2
+printf 'Write it non-interactively instead: git commit -m <message>, git commit -F <file>, git commit --amend --no-edit, or git merge --no-edit.\n' >&2
+
+exit 1
