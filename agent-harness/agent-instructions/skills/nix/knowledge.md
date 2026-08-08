@@ -102,7 +102,10 @@ because an uncommitted or half-finished lua edit is already affecting every runn
 The vscode workspace deploys the same way, but `repository/git-hooks` does not, though its symlink looks identical:
 `~/.dotfiles/.githooks` points into the working tree and git never reads that path. Resolve `core.hooksPath` before
 believing a hook edit is live, because it selects a different directory whose entries are store paths built from these
-sources, and a local override in `~/.dotfiles/.git/config` can leave the repo running no hook at all.
+sources, and a local override in `~/.dotfiles/.git/config` can leave the repo running no hook at all. A third mode is
+the quiet one: a policy document or a module's own tests are copied into no closure and symlinked out of none, so they
+reach no machine and a green rebuild after editing one published nothing whatsoever. Establish which of the three a file
+is in before reading a rebuild as evidence about it.
 </the_neovim_config_is_live_from_the_working_tree>
 
 <test_tiers_and_report_publishing>
