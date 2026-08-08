@@ -91,6 +91,12 @@
       libraryPathProviderUnits = [ "home-manager-zanoni.service" ];
     };
 
+    jellyfinSubtitleExtractionWarmer = {
+      enable = true;
+      jellyfinApiKeySecretFile = config.age.secrets."jellyfin-admin-api-key".path;
+      jellyfinDataDirectory = "/home/zanoni/arr-stack/config/jellyfin/data/data";
+    };
+
     jellyseerrAccountPermissionProvisioner = {
       enable = true;
       jellyfinApiKeySecretFile = config.age.secrets."jellyfin-admin-api-key".path;
@@ -155,6 +161,10 @@
     ];
 
     jellyfin-library-access-provisioner.restartTriggers = [
+      ../../../../secrets/credentials/jellyfin-admin-api-key.age
+    ];
+
+    jellyfin-subtitle-extraction-warmer.restartTriggers = [
       ../../../../secrets/credentials/jellyfin-admin-api-key.age
     ];
 
