@@ -147,9 +147,14 @@ Suwayomi acquires and Kavita serves. Suwayomi pulls from scanlation sources thro
 its own extensions rather than from indexers, and the module in
 `machine-configuration/media/manga-streaming/` forces the settings the rest of this
 pipeline depends on: chapters archived as CBZ, written under the data drive's manga
-root, on a bind address that is never the wildcard. They are forced as JVM system
+root, on a bind address that is never the wildcard, and a web interface taken from
+the pinned server build rather than fetched at runtime. They are forced as JVM system
 properties on every start, so changing them in the Suwayomi UI is drift the next
-start overwrites, the same bargain the Jellyfin library allowlist makes. Kavita
+start overwrites, the same bargain the Jellyfin library allowlist makes. Left to
+itself Suwayomi periodically looks for a newer web interface and rewrites the one it
+serves into its mutable data directory, which both nags on open and takes the served
+version out of this repo's hands; pinned to the bundled build, that version moves
+only when the package moves. Kavita
 mounts that tree read-only, which is what stops the reader mutating what the
 downloader owns, and reads the source directory as a publisher with the title
 directory beneath it as a series, a nesting Kavita documents as supported. Loose

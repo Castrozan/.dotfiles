@@ -17,6 +17,8 @@ let
     downloadAsCbz = "true";
     downloadsPath = mangaDownloadRoot;
     systemTrayEnabled = "false";
+    webUIChannel = "bundled";
+    webUIUpdateCheckInterval = "0";
   };
   forcedServerSettingsJvmArguments = lib.concatStringsSep " " (
     lib.mapAttrsToList (

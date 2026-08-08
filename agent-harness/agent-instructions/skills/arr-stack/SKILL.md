@@ -55,8 +55,11 @@ does not reach them.
 </manga_is_a_separate_pipeline>
 
 <manga_traps>
-Suwayomi's download format, download path and bind address are forced as JVM system properties on every start, so a
-change made in its UI silently reverts on restart; edit the manga module in the repo instead. CBZ is forced rather than
+Suwayomi's download format, download path, bind address and web interface source are forced as JVM system properties on
+every start, so a change made in its UI silently reverts on restart; edit the manga module in the repo instead. The web
+interface is pinned to the build inside the packaged server with its update check off, so an offer to update it never
+appears and never should: the version is the package's, and a newer interface arrives by bumping the package rather than
+by letting the server rewrite its own mutable copy. CBZ is forced rather than
 preferred because Kavita ingests archives and skips the loose per-chapter image folders Suwayomi writes by default, so
 a chapter downloaded before that setting took effect stays invisible in Kavita until it is downloaded again. Suwayomi
 ships no login and stays on the tailnet; Kavita has one and is published, so never publish Suwayomi to reach it from

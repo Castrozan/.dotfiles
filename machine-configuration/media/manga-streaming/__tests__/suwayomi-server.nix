@@ -39,6 +39,10 @@ let
     suwayomiUnit.Unit.ConditionPathIsMountPoint == "/home/zanoni/arr-stack/data";
 
   restartRetriesAreNeverRateLimited = suwayomiUnit.Unit.StartLimitIntervalSec == 0;
+
+  webInterfaceComesFromThePinnedServerBuild = lib.hasInfix "${forcedSettingPrefix}webUIChannel=bundled" environmentText;
+
+  webInterfaceNeverUpdatesItself = lib.hasInfix "${forcedSettingPrefix}webUIUpdateCheckInterval=0" environmentText;
 in
 {
   chise-suwayomi-starts-with-the-user-session =
@@ -72,4 +76,13 @@ in
     mkEvalCheck "chise-suwayomi-restart-retries-are-never-rate-limited"
       restartRetriesAreNeverRateLimited
       "the start rate limiter must stay off: the forced tailnet bind fails until tailscaled has the interface up, and systemd's default burst gives up before that on a cold boot";
+
+  chise-suwayomi-web-interface-comes-from-the-pinned-server-build =
+    mkEvalCheck "chise-suwayomi-web-interface-comes-from-the-pinned-server-build"
+      webInterfaceComesFromThePinnedServerBuild
+      "the web interface must come from the bundled build inside the pinned server jar; on any other channel the server downloads a web interface into its mutable data directory, so the version served stops being a function of this repo and a wiped data directory silently comes back on whatever upstream ships that day";
+
+  chise-suwayomi-web-interface-never-updates-itself =
+    mkEvalCheck "chise-suwayomi-web-interface-never-updates-itself" webInterfaceNeverUpdatesItself
+      "the web interface update check must be off, which is what the zero interval means: left at the default it nags about an available update every 23 hours and rewrites the served interface behind the pinned package, and the version belongs to the package rather than to whatever the server fetched last";
 }
