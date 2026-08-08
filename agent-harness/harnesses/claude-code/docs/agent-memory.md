@@ -102,10 +102,10 @@ lesson.
 
 ## Capture
 
-Gate friction at the moment of discovery is fatal, so capture is separated from filing. An agent that learns something
-mid-task appends it to `~/.claude/knowledge-inbox.md`, which is untracked, per-machine, and never loaded into context. The
-`dotfiles-housekeeping` workflow drains it, filing each entry against its owner or discarding it. Only the filed form is
-ever read.
+Capture is not separated from filing. Deferring a fact to an untracked per-machine inbox, for a later sweep to drain,
+rebuilds the exact store this design exists to end: unreviewed, outside version control, invisible to every other
+machine, and growing faster than anything drains it. A fact is filed against its owner in the change that taught it, or
+it is not recorded. The friction at that moment is the repository gate working, not an obstacle to route around.
 
 ## Write contract
 

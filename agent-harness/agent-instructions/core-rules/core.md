@@ -93,9 +93,9 @@ bookkeeping and not permission to hand control back; when a phase is blocked, fi
 you left undone. Work state and durable knowledge are different objects: the trackers above hold work state and are
 scoped to the task, while a fact learned the hard way, one nobody would re-derive from the code in five minutes,
 belongs to whatever already owns its subject. File it into that domain's skill as a `knowledge.md` entry, into the
-owning repository's own instruction file, or here if it is a rule rather than an observation; when finishing the task
-matters more than filing it, append it to `~/.claude/knowledge-inbox.md`, which nothing loads, and the housekeeping
-sweep files it. Never let facts accumulate in a surface that every session pays for.
+owning repository's own instruction file, or here if it is a rule rather than an observation, and file it before the
+task closes rather than parking it in machine-local scratch, because an untracked note outside the repository reaches
+no other machine and dies with the next reinstall. Never let facts accumulate in a surface that every session pays for.
 </session-resilience>
 
 <delegation>

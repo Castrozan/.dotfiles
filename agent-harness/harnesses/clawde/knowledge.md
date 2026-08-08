@@ -23,14 +23,18 @@ codex resume restores the model recorded in the session while ignoring `config.t
 session record and killing the process, which makes the next launch mint a fresh session that reads config.
 </a_rebuilt_change_is_not_a_live_change>
 
-<linux_rebuild_does_not_restart_the_supervisor>
-The systemd unit sets `X-RestartIfChanged = false` on purpose, because restarting it kills the multiplexer server in
-its cgroup, so on NixOS a green rebuild leaves the whole fleet on the previous store paths and you will read a stale
-fleet as a successful rollout. Applying a clawde change there is three steps: rebuild, `systemctl --user restart
-clawde`, then kill the surviving wrappers so the restarted supervisor recreates them. Darwin's launchd agent does
-restart on rebuild, so this asymmetry bites only on linux. Compare wrapper store hashes before claiming a rollout
-landed.
-</linux_rebuild_does_not_restart_the_supervisor>
+<a_supervisor_restart_spares_everything_sharing_its_cgroup>
+The unit sets `X-RestartIfChanged = false`, and a check asserts it, on the belief that a restart kills the multiplexer
+server in its cgroup and destroys every agent window. Both halves are wrong as deployed. The flag does not hold, since
+the unit has been stopped and restarted by activation while it was set, so never assume a rebuild left the fleet on the
+previous store paths. The restart is also cheap, because the unit sets `KillMode = process` and declares no `ExecStop`,
+so systemd kills the supervisor alone and logs `Unit process N remains running after unit stopped` for the multiplexer
+server, every wrapper, every harness under them and the human's own session, all of which survive. Read that journal
+line rather than the assertion's comment before warning anyone off a restart. What a restart does not do is refresh a
+wrapper that survived it, so the rollout is still rebuild, restart, then kill the surviving wrappers for the supervisor
+to recreate; darwin's launchd agent restarts on rebuild by itself. Compare wrapper store hashes before claiming a
+rollout landed, because a green rebuild and a live fleet on new paths are separate facts.
+</a_supervisor_restart_spares_everything_sharing_its_cgroup>
 
 <supervisor_reconciles_by_wrapper_identity>
 Reconciliation enumerates live `wrapper.py --agent-name X --config-file C` processes and matches on that, never on the
