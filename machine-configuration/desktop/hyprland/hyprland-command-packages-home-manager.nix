@@ -1,5 +1,16 @@
 { pkgs, latest, ... }:
 let
+  inherit
+    (import
+      ../../browsers/chrome/broken-hardware-video-decoding/chrome-broken-hardware-video-decoding-workaround.nix
+      {
+        inherit pkgs;
+        chromePackage = latest.google-chrome;
+      }
+    )
+    chromeWithoutBrokenHardwareVideoDecoding
+    ;
+
   hyprlandPythonLibraryPath = ./scripts/windows/lib;
 
   mkHyprlandPythonScript = name: file: mkHyprlandPythonScriptWithDeps name file [ ];
@@ -57,7 +68,7 @@ in
     ])
     (mkHyprlandPythonScriptWithDeps "hypr-summon-chrome-global"
       ./scripts/launchers/summon_chrome_global.py
-      [ latest.google-chrome ]
+      [ chromeWithoutBrokenHardwareVideoDecoding ]
     )
     (mkHyprlandPythonScriptWithDeps "brightness" ./scripts/hardware/brightness.py [
       pkgs.brightnessctl

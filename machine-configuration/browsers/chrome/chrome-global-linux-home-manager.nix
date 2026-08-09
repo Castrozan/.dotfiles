@@ -1,7 +1,15 @@
 { pkgs, latest, ... }:
 let
+  inherit
+    (import ./broken-hardware-video-decoding/chrome-broken-hardware-video-decoding-workaround.nix {
+      inherit pkgs;
+      chromePackage = latest.google-chrome;
+    })
+    chromeWithoutBrokenHardwareVideoDecoding
+    ;
+
   chromeGlobalLauncher = pkgs.writeShellScript "chrome-global-launcher" ''
-    exec ${latest.google-chrome}/bin/google-chrome-stable \
+    exec ${chromeWithoutBrokenHardwareVideoDecoding}/bin/google-chrome-stable \
       --user-data-dir="$HOME/.config/chrome-global" \
       --class=chrome-global \
       --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer \
@@ -32,7 +40,7 @@ let
 in
 {
   home.packages = [
-    latest.google-chrome
+    chromeWithoutBrokenHardwareVideoDecoding
     desktopItem
   ];
 
