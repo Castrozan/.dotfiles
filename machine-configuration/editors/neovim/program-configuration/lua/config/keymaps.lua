@@ -8,6 +8,8 @@ local pickers = require("config.navigation.pickers")
 local ten_line_jumping = require("config.navigation.ten_line_jumping")
 local terminal = require("config.terminal")
 
+lazyvim_defaults.remove_window_resize_keymaps()
+
 map({ "n", "i", "v" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
 map("n", "<C-q>", "<cmd>qa<cr>", { desc = "Quit all" })
 
@@ -24,8 +26,8 @@ map("n", "<C-b>", file_explorer.toggle_visibility, { desc = "Toggle file explore
 map("n", "<C-S-e>", file_explorer.toggle_focus, { desc = "Toggle file explorer focus" })
 map("n", "<C-`>", terminal.toggle, { desc = "Toggle terminal" })
 
-map("n", "<C-S-j>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
-map("n", "<C-S-k>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
+map({ "n", "i" }, "<C-S-j>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
+map({ "n", "i" }, "<C-S-k>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
 
 map("n", "<F2>", vim.lsp.buf.rename, { desc = "Rename symbol" })
 map("n", "<F12>", vim.lsp.buf.definition, { desc = "Go to definition" })
@@ -52,6 +54,13 @@ map("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centered)" })
 map("n", "n", "nzzzv", { desc = "Next search match (centered)" })
 map("n", "N", "Nzzzv", { desc = "Prev search match (centered)" })
 
+map("n", "<C-Up>", "<C-y>", { desc = "Scroll view up one line" })
+map("n", "<C-Down>", "<C-e>", { desc = "Scroll view down one line" })
+map("i", "<C-Up>", "<C-o><C-y>", { desc = "Scroll view up one line" })
+map("i", "<C-Down>", "<C-o><C-e>", { desc = "Scroll view down one line" })
+map("v", "<C-Up>", "<C-y>", { desc = "Scroll view up one line" })
+map("v", "<C-Down>", "<C-e>", { desc = "Scroll view down one line" })
+
 map({ "n", "i", "v" }, "<C-S-Down>", ten_line_jumping.jump_buffer_down, { desc = "Jump 10 lines down" })
 map({ "n", "i", "v" }, "<C-S-Up>", ten_line_jumping.jump_buffer_up, { desc = "Jump 10 lines up" })
 
@@ -62,5 +71,4 @@ map("x", "p", [["_dP]], { desc = "Paste without yanking replaced text" })
 map("i", "<C-c>", "<esc>", { desc = "Escape" })
 
 command_line_abbreviations.install()
-lazyvim_defaults.remove_window_resize_keymaps()
 lazyvim_defaults.rebind_window_navigation_to_bypass_the_buffer_close_chord()
