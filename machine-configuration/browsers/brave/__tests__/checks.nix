@@ -14,8 +14,14 @@ let
   braveDuplicateTabCustomKeybindIsBoundToControlD =
     bravePreferencesOverrides.brave.accelerators."34027" == [ "Control+KeyD" ];
 
-  braveDefaultSearchProviderIsPinnedToGooglePrepopulatedEngineGuid =
-    bravePreferencesOverrides.default_search_provider.guid == "485bf7d3-0215-45af-87dc-538868000001";
+  duckDuckGoPrepopulatedEngineGuid = "485bf7d3-0215-45af-87dc-538868000501";
+
+  braveDefaultSearchProviderIsPinnedToDuckDuckGoPrepopulatedEngineGuid =
+    bravePreferencesOverrides.default_search_provider.guid == duckDuckGoPrepopulatedEngineGuid;
+
+  bravePrivateWindowsSearchWithTheSameEngineAsNormalWindows =
+    bravePreferencesOverrides.brave.default_private_search_provider_guid
+    == duckDuckGoPrepopulatedEngineGuid;
 
   braveSpellcheckIsLockedToEnGb = bravePreferencesOverrides.spellcheck.dictionaries == [ "en-GB" ];
 
@@ -45,10 +51,15 @@ in
       braveDuplicateTabCustomKeybindIsBoundToControlD
       "Brave Duplicate Tab (command id 34027) must be bound to Control+KeyD";
 
-  domain-desktop-brave-default-search-provider-pinned-to-google =
-    mkEvalCheck "domain-desktop-brave-default-search-provider-pinned-to-google"
-      braveDefaultSearchProviderIsPinnedToGooglePrepopulatedEngineGuid
-      "Brave default_search_provider.guid must be Google's prepopulated engine guid (prepopulate id 1)";
+  domain-desktop-brave-default-search-provider-pinned-to-duckduckgo =
+    mkEvalCheck "domain-desktop-brave-default-search-provider-pinned-to-duckduckgo"
+      braveDefaultSearchProviderIsPinnedToDuckDuckGoPrepopulatedEngineGuid
+      "Brave default_search_provider.guid must be DuckDuckGo's prepopulated engine guid (prepopulate id 501)";
+
+  domain-desktop-brave-private-windows-search-with-duckduckgo-too =
+    mkEvalCheck "domain-desktop-brave-private-windows-search-with-duckduckgo-too"
+      bravePrivateWindowsSearchWithTheSameEngineAsNormalWindows
+      "Brave keeps a second default engine for private windows, so pinning only default_search_provider.guid leaves every private window on whatever Brave shipped; this machine launches Brave straight into a private window, which is where the wrong engine would actually be noticed";
 
   domain-desktop-brave-spellcheck-locked-to-en-gb =
     mkEvalCheck "domain-desktop-brave-spellcheck-locked-to-en-gb" braveSpellcheckIsLockedToEnGb

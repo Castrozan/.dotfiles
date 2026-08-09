@@ -11,7 +11,7 @@
     "allowed": false
   },
   "default_search_provider": {
-    "guid": "485bf7d3-0215-45af-87dc-538868000001"
+    "guid": "485bf7d3-0215-45af-87dc-538868000501"
   },
   "spellcheck": {
     "dictionaries": ["en-GB"],
@@ -30,6 +30,7 @@
     }
   },
   "brave": {
+    "default_private_search_provider_guid": "485bf7d3-0215-45af-87dc-538868000501",
     "always_show_bookmark_bar_on_ntp": false,
     "enable_window_closing_confirm": false,
     "show_side_panel_button": false,
