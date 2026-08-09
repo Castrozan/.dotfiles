@@ -42,9 +42,7 @@ let
     skillName: builtins.elem skillName interactiveAgentSkills.allSkillNames
   ) interactiveAgentSkills.defaultInteractiveSkillNames;
 
-  dotfilesRepositoryDiscoveryLinkSourcesAreDeclared =
-    builtins.hasAttr ".dotfiles/.githooks" cfgOnTheEvaluatingSystem.home.file
-    && builtins.hasAttr ".dotfiles/.vscode" cfgOnTheEvaluatingSystem.home.file;
+  dotfilesRepositoryDiscoveryLinkSourcesAreDeclared = builtins.hasAttr ".dotfiles/.githooks" cfgOnTheEvaluatingSystem.home.file;
 in
 {
   default-home-manager-module-deploys-agent-session =
@@ -55,13 +53,10 @@ in
         test "$(readlink ${
           cfgOnTheEvaluatingSystem.home.file.".dotfiles/.githooks".source
         })" = "/home/test/.dotfiles/repository/git-hooks"
-        test "$(readlink ${
-          cfgOnTheEvaluatingSystem.home.file.".dotfiles/.vscode".source
-        })" = "/home/test/.dotfiles/repository/visual-studio-code-workspace"
         touch $out
       ''
     else
-      builtins.throw "CHECK FAILED [default-home-manager-module-deploys-agent-session]: the default exported Home Manager module must install agent-session and declare the repository discovery links consumed by agent and editor tooling";
+      builtins.throw "CHECK FAILED [default-home-manager-module-deploys-agent-session]: the default exported Home Manager module must install agent-session and declare the repository discovery links consumed by agent tooling";
 
   standalone-harness-modules-deploy-agent-session =
     mkEvalCheck "standalone-harness-modules-deploy-agent-session"
