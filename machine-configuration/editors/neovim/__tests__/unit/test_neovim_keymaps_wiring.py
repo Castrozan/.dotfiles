@@ -8,6 +8,7 @@ EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
     "<C-S-k>": "Decrease window width",
     "<C-Up>": "Scroll view up one line",
     "<C-Down>": "Scroll view down one line",
+    "<C-n>": "Create file in current directory",
     "<C-b>": "Toggle file explorer",
     "<C-w>": "Close buffer (focus next or prev)",
     "<C-`>": "Toggle terminal",

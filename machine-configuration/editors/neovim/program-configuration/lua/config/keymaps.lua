@@ -2,6 +2,7 @@ local map = vim.keymap.set
 
 local buffer_closing = require("config.buffer_closing")
 local command_line_abbreviations = require("config.command_line_abbreviations")
+local file_creation = require("config.file_creation")
 local file_explorer = require("config.navigation.file_explorer")
 local lazyvim_defaults = require("config.lazyvim_defaults")
 local pickers = require("config.navigation.pickers")
@@ -22,6 +23,7 @@ map("n", "<C-t>", pickers.workspace_symbols, { desc = "Workspace symbols" })
 map("n", "<C-/>", "gcc", { remap = true, desc = "Toggle comment" })
 map("v", "<C-/>", "gc", { remap = true, desc = "Toggle comment (visual)" })
 
+map("n", "<C-n>", file_creation.create, { desc = "Create file in current directory" })
 map("n", "<C-b>", file_explorer.toggle_visibility, { desc = "Toggle file explorer" })
 map("n", "<C-S-e>", file_explorer.toggle_focus, { desc = "Toggle file explorer focus" })
 map("n", "<C-`>", terminal.toggle, { desc = "Toggle terminal" })

@@ -60,6 +60,15 @@ resize from ever showing through the chord again. The deletion call therefore ru
 `lua/config/keymaps.lua`, before the chord table: run it after the table, the way it first shipped,
 and it deletes the owned scroll along with the default it was meant to strip.
 
+`C-n` creates a file, on the owner's explicit request, which is why it came off the removed list.
+In a buffer it prompts for a name and creates the file next to the file that buffer holds, falling
+back to the working directory for a buffer with no file of its own, then opens it; a name with
+slashes in it creates the directories it needs, and an existing file is warned about rather than
+overwritten. `lua/config/file_creation.lua` carries that. Inside the explorer the same chord runs
+snacks' own `explorer_add`, which creates inside the selected directory or beside the selected
+file, so the plugin spec overrides the picker's `<c-n>` list action the way it already overrides
+`<c-p>`. Normal mode only, so insert-mode keyword completion on `C-n` survives untouched.
+
 ## Canonical references
 
 Find how Neovim itself does a thing before proposing any mapping:
@@ -89,8 +98,8 @@ Find how Neovim itself does a thing before proposing any mapping:
 4. Never shadow a native Vim key. Check `:help <key>` before mapping; keys like `C-w` (window
    commands), `C-t` (tag pop), `C-b`/`C-f` (paging), `C-p`/`C-n` (completion and motion),
    `C-o`/`C-i` (jumplist), `J`/`K`, `Q`, and the `g` family carry native meaning. The baseline
-   deliberately shadows a closed list (`C-w`, `C-p`, `C-t`, `C-b`, `C-<grave>`, `C-/`, and
-   visual-mode `J`/`K`); do not grow it. When a shadowed key is also a prefix or reachable through
+   deliberately shadows a closed list (`C-w`, `C-p`, `C-t`, `C-b`, `C-n` in normal mode,
+   `C-<grave>`, `C-/`, and visual-mode `J`/`K`); do not grow it. When a shadowed key is also a prefix or reachable through
    another mapping's right-hand side, hunt down the defaults that expand into it, the way the
    window navigation rebind does, or the shadow fires where nobody asked for it.
 5. Never re-add a binding from the removed list on your own initiative.
@@ -100,10 +109,10 @@ Find how Neovim itself does a thing before proposing any mapping:
 `leader r` config reload, `C-p` in insert and terminal mode, the LazyVim `C-Up`/`C-Down` window
 height resize,
 `C-Right`/`C-Left` word jumps, `C-PageUp`/`C-PageDown` buffer cycling, `C-S-PageUp`/`C-S-PageDown`
-buffer moving, `C-S-b` explorer show, explorer `C-n` create file, explorer `C-k e` folder toggle,
+buffer moving, `C-S-b` explorer show, explorer `C-k e` folder toggle,
 explorer `y` path yank, picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations,
 the smart close-buffer focus behavior on `leader c`, which `C-w` carries instead, and the F12
 file-path-under-cursor definition jump. Native
 replacements for the common ones: `:w`, `:qa`, `C-y`/`C-e` scrolling, `w`/`b` word motion,
 `:bnext`/`:bprevious` buffer cycling, `gd` plus `grn`/`grr` LSP actions, `:resize` for window
-height, and `"+y` clipboard yank.
+height, `j` for the normal-mode `C-n` motion, and `"+y` clipboard yank.

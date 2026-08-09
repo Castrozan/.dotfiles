@@ -18,6 +18,7 @@ return {
               list = {
                 keys = {
                   ["<c-p>"] = false,
+                  ["<c-n>"] = "explorer_add",
                 },
               },
             },
