@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   assertions = [
     {
@@ -12,6 +12,19 @@
   ];
 
   services.tailscale.enable = true;
+
+  systemd.services.tailnet-route-in-main-table = {
+    description = "Keep the tailnet reachable while a full-tunnel VPN holds the default route — wg-quick installs its rules just above the tailscale rule owning the tailnet table, so 100.64.0.0/10 otherwise vanishes into the VPN tunnel; wg-quick consults the main table first for anything more specific than a default route, so this route survives the capture";
+    after = [ "tailscaled.service" ];
+    wantedBy = [ "tailscaled.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      Restart = "on-failure";
+      RestartSec = 2;
+      ExecStart = "${pkgs.iproute2}/bin/ip route replace 100.64.0.0/10 dev tailscale0";
+    };
+  };
 
   networking.firewall = {
     trustedInterfaces = [
