@@ -41,8 +41,14 @@ Window width resizing moved to `C-S-j` for narrower and `C-S-k` for wider, on th
 which is why those two came off the removed list. It is the LazyVim `vertical resize` pair rather
 than the explorer-only resize that once lived here, so it works in any vertical split and happens
 to be what narrows and widens the file tree. The LazyVim `C-Left` and `C-Right` width defaults are
-deleted in `lua/config/lazyvim_defaults.lua` so the chord moved rather than doubled; `C-Up` and
-`C-Down` keep their LazyVim height resize.
+deleted in `lua/config/lazyvim_defaults.lua` so the chord moved rather than doubled.
+
+The LazyVim `C-Up` and `C-Down` height defaults are deleted in the same place, on the owner's
+request, and get no replacement chord. With one window and the global statusline, `:resize -2`
+has no neighbour to take rows from, so it grows `cmdheight` instead and the statusline walks up
+the screen and stays there until the opposite chord walks it back down. That is one missed shift
+away from the owned `C-S-Up` and `C-S-Down` ten-line jumps, so the chord kept displacing the
+statusline by accident. Resize a window's height with `:resize +2` and `:resize -2`.
 
 ## Canonical references
 
@@ -81,12 +87,13 @@ Find how Neovim itself does a thing before proposing any mapping:
 
 ## Removed bindings (do not restore unprompted)
 
-`leader r` config reload, `C-p` in insert and terminal mode, `C-Up`/`C-Down` viewport scroll,
+`leader r` config reload, `C-p` in insert and terminal mode, `C-Up`/`C-Down` viewport scroll and
+their LazyVim window-height resize,
 `C-Right`/`C-Left` word jumps, `C-PageUp`/`C-PageDown` buffer cycling, `C-S-PageUp`/`C-S-PageDown`
 buffer moving, `C-S-b` explorer show, explorer `C-n` create file, explorer `C-k e` folder toggle,
 explorer `y` path yank, picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations,
 the smart close-buffer focus behavior on `leader c`, which `C-w` carries instead, and the F12
 file-path-under-cursor definition jump. Native
 replacements for the common ones: `:w`, `:qa`, `C-y`/`C-e` scrolling, `w`/`b` word motion,
-`:bnext`/`:bprevious` buffer cycling, `gd` plus `grn`/`grr` LSP actions, and `"+y` clipboard
-yank.
+`:bnext`/`:bprevious` buffer cycling, `gd` plus `grn`/`grr` LSP actions, `:resize` for window
+height, and `"+y` clipboard yank.

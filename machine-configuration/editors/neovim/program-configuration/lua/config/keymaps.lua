@@ -62,5 +62,5 @@ map("x", "p", [["_dP]], { desc = "Paste without yanking replaced text" })
 map("i", "<C-c>", "<esc>", { desc = "Escape" })
 
 command_line_abbreviations.install()
-lazyvim_defaults.remove_replaced_keymaps()
+lazyvim_defaults.remove_window_resize_keymaps()
 lazyvim_defaults.rebind_window_navigation_to_bypass_the_buffer_close_chord()

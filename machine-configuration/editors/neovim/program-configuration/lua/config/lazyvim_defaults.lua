@@ -1,8 +1,10 @@
 local lazyvim_defaults = {}
 
-local keymaps_this_config_replaces = {
+local window_resize_defaults_this_config_deletes = {
   { mode = "n", chord = "<C-Left>" },
   { mode = "n", chord = "<C-Right>" },
+  { mode = "n", chord = "<C-Up>" },
+  { mode = "n", chord = "<C-Down>" },
 }
 
 local window_navigation_defaults_that_expand_the_buffer_close_chord = {
@@ -12,9 +14,9 @@ local window_navigation_defaults_that_expand_the_buffer_close_chord = {
   { chord = "<C-l>", direction = "l", description = "Go to Right Window" },
 }
 
-function lazyvim_defaults.remove_replaced_keymaps()
-  for _, replaced in ipairs(keymaps_this_config_replaces) do
-    pcall(vim.keymap.del, replaced.mode, replaced.chord)
+function lazyvim_defaults.remove_window_resize_keymaps()
+  for _, deleted in ipairs(window_resize_defaults_this_config_deletes) do
+    pcall(vim.keymap.del, deleted.mode, deleted.chord)
   end
 end
 
