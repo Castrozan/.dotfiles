@@ -4,8 +4,8 @@ EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
     "<C-S-e>": "Toggle file explorer focus",
     "<C-S-Down>": "Jump 10 lines down",
     "<C-S-Up>": "Jump 10 lines up",
-    "<C-S-j>": "Decrease window width",
-    "<C-S-k>": "Increase window width",
+    "<C-S-j>": "Increase window width",
+    "<C-S-k>": "Decrease window width",
     "<C-Up>": "Scroll view up one line",
     "<C-Down>": "Scroll view down one line",
     "<C-b>": "Toggle file explorer",
@@ -16,10 +16,15 @@ EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
 }
 
 EXPECTED_INSERT_MODE_DESCRIPTIONS = {
-    "<C-S-j>": "Decrease window width",
-    "<C-S-k>": "Increase window width",
+    "<C-S-j>": "Increase window width",
+    "<C-S-k>": "Decrease window width",
     "<C-Up>": "Scroll view up one line",
     "<C-Down>": "Scroll view down one line",
+}
+
+EXPECTED_WIDTH_RESIZE_COMMANDS = {
+    "<C-S-j>": "vertical resize +2",
+    "<C-S-k>": "vertical resize -2",
 }
 
 
@@ -60,6 +65,16 @@ def test_every_owned_chord_reaches_the_module_that_implements_it(
           assert(
             mapping and mapping.desc ~= nil,
             chord .. " lost its scroll mapping in visual mode"
+          )
+        end
+
+        local expected_resize_commands =
+          vim.fn.json_decode({json.dumps(json.dumps(EXPECTED_WIDTH_RESIZE_COMMANDS))})
+        for chord, expected_command in pairs(expected_resize_commands) do
+          local mapping = vim.fn.maparg(chord, "n", false, true)
+          assert(
+            mapping and mapping.rhs and mapping.rhs:find(expected_command, 1, true) ~= nil,
+            chord .. " runs " .. vim.inspect(mapping and mapping.rhs) .. " instead of " .. expected_command
           )
         end
 

@@ -26,8 +26,8 @@ map("n", "<C-b>", file_explorer.toggle_visibility, { desc = "Toggle file explore
 map("n", "<C-S-e>", file_explorer.toggle_focus, { desc = "Toggle file explorer focus" })
 map("n", "<C-`>", terminal.toggle, { desc = "Toggle terminal" })
 
-map({ "n", "i" }, "<C-S-j>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
-map({ "n", "i" }, "<C-S-k>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
+map({ "n", "i" }, "<C-S-j>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
+map({ "n", "i" }, "<C-S-k>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
 
 map("n", "<F2>", vim.lsp.buf.rename, { desc = "Rename symbol" })
 map("n", "<F12>", vim.lsp.buf.definition, { desc = "Go to definition" })
