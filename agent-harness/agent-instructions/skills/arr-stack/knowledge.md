@@ -48,6 +48,21 @@ extraction warmer module is for, so when the spinner returns read its unit log b
 that deferred to live playback and a genuinely new file are indistinguishable from the client side.
 </fetching_additional_data_is_ffmpeg_lifting_subtitles_out_of_the_container>
 
+<logging_into_a_source_means_driving_the_browser_that_lives_inside_the_server>
+Suwayomi's WebView runs a full Chromium inside the server process and streams it to a canvas in your browser, so cookies
+a login leaves behind land in the jar the source extensions fetch with. That is what makes a members-only source work,
+and what clears a Cloudflare interstitial while FlareSolverr is off. Reach it from the globe icon on a source or manga
+page. Check the source's own settings first: many carry their login there and need no browser at all.
+</logging_into_a_source_means_driving_the_browser_that_lives_inside_the_server>
+
+<the_web_view_chromium_is_downloaded_at_runtime_so_nixos_resolves_none_of_its_libraries>
+The server fetches a prebuilt Chromium into its data directory on first start, so nix never patches it and it links
+against two dozen libraries this machine keeps only in the store. Without a library search path on the unit it dies on
+an UnsatisfiedLinkError for libglib and takes the WebView with it, while the rest of the server stays healthy and
+nothing but one startup stack trace says so. The manga module declares that path; when the WebView goes dark after an
+upstream Chromium bump, `ldd` the downloaded `libcef.so` for newly missing sonames rather than suspecting the server.
+</the_web_view_chromium_is_downloaded_at_runtime_so_nixos_resolves_none_of_its_libraries>
+
 <kavita_is_the_one_stack_app_the_repo_provisions_nothing_for>
 Nothing here declares Kavita's admin account, its libraries or its settings, so that state exists only inside its config
 volume and a wipe loses all of it. Its registration endpoint mints the first administrator on the first call carrying a
