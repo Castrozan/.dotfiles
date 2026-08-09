@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   dotfilesRepoAgentInstructions =
     builtins.readFile ../project-context/dotfiles-agent-instructions.md
