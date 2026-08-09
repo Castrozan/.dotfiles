@@ -189,8 +189,8 @@ their descriptions, including sessions in unrelated repositories. `dotfilesRepoS
 `interactive-agent-skills.nix` is the fourth state: named there, a skill leaves the machine tier, the `all-skills` index
 and the reachability mirror exactly as an uninjected one does, but instead of waiting for an agent to name its path it
 deploys into the dotfiles checkout's own project skill directories, which every harness discovers by walking up from the
-working directory. `agent-harness/agent-instructions/repository-local-deployment/dotfiles-repo-skills-home-manager.nix` writes them, gitignored, the same way
-`agent-harness/agent-instructions/repository-local-deployment/dotfiles-repo-agent-instructions-home-manager.nix` writes `AGENTS.md` and `CLAUDE.md` into the same checkout.
+working directory. `agent-harness/agent-instructions/dotfiles-checkout-agent-surfaces/dotfiles-repo-skills-home-manager.nix` writes them, gitignored, the same way
+`agent-harness/agent-instructions/dotfiles-checkout-agent-surfaces/dotfiles-repo-agent-instructions-home-manager.nix` writes `AGENTS.md` and `CLAUDE.md` into the same checkout.
 
 The tier is deliberately plural, because the project convention is per harness rather than shared: Claude reads
 `.claude/skills`, OpenCode reads `.opencode/skills`, and one list of conventions in the shared module covers both from a

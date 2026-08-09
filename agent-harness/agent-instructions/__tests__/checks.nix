@@ -42,21 +42,18 @@ let
     skillName: builtins.elem skillName interactiveAgentSkills.allSkillNames
   ) interactiveAgentSkills.defaultInteractiveSkillNames;
 
-  dotfilesRepositoryDiscoveryLinkSourcesAreDeclared = builtins.hasAttr ".dotfiles/.githooks" cfgOnTheEvaluatingSystem.home.file;
+  dotfilesCheckoutAgentInstructionFilesAreDeclared =
+    builtins.hasAttr ".dotfiles/AGENTS.md" cfgOnTheEvaluatingSystem.home.file
+    && builtins.hasAttr ".dotfiles/CLAUDE.md" cfgOnTheEvaluatingSystem.home.file
+    &&
+      cfgOnTheEvaluatingSystem.home.file.".dotfiles/AGENTS.md".text
+      == cfgOnTheEvaluatingSystem.home.file.".dotfiles/CLAUDE.md".text;
 in
 {
   default-home-manager-module-deploys-agent-session =
-    if
-      deploysAgentSession cfgOnTheEvaluatingSystem && dotfilesRepositoryDiscoveryLinkSourcesAreDeclared
-    then
-      pkgs.runCommandLocal "check-default-home-manager-module-deploys-agent-session" { } ''
-        test "$(readlink ${
-          cfgOnTheEvaluatingSystem.home.file.".dotfiles/.githooks".source
-        })" = "/home/test/.dotfiles/repository/git-hooks"
-        touch $out
-      ''
-    else
-      builtins.throw "CHECK FAILED [default-home-manager-module-deploys-agent-session]: the default exported Home Manager module must install agent-session and declare the repository discovery links consumed by agent tooling";
+    mkEvalCheck "default-home-manager-module-deploys-agent-session"
+      (deploysAgentSession cfgOnTheEvaluatingSystem && dotfilesCheckoutAgentInstructionFilesAreDeclared)
+      "the default exported Home Manager module must install agent-session and deploy identical AGENTS.md and CLAUDE.md into the dotfiles checkout so every harness reads the same project context";
 
   standalone-harness-modules-deploy-agent-session =
     mkEvalCheck "standalone-harness-modules-deploy-agent-session"
