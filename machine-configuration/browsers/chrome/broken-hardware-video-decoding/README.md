@@ -20,6 +20,15 @@ Wrapping the Chrome package rather than editing a launcher is what makes the fla
 than one entry point here, and each resolves the binary its own way, so a flag added to one launcher silently misses
 the others. The wrapper covers every caller that resolves `google-chrome-stable`.
 
-Delete this directory once Chrome initializes a VA-API frame pool on this hardware, or once a flag suppresses the H.265
-claim without disabling the whole decode path. To retest, remove the wrapper and play an HEVC file in Jellyfin, then
-read `error.message` off the video element.
+Repairing VA-API instead was measured across eleven driver and flag combinations, and none of them work, because the
+conflict is the GPU topology rather than a misconfiguration. PRIME sync routes all rendering through the NVIDIA card
+while the display hangs off the AMD one, and Chrome refuses NVIDIA for VA-API on principle, so decode and presentation
+land on different devices. Forcing the NVIDIA driver anyway still fails the frame pool even with the device skip lifted.
+Forcing the AMD driver clears the frame pool error and reaches a real decoder, and then the GPU process crashes on
+`CreateSharedImage: could not create backing` because the decoded AMD frames cannot be handed to the NVIDIA renderer.
+The machine-wide `LIBVA_DRIVER_NAME` and `GBM_BACKEND` overrides that steer this live with the NVIDIA configuration for
+this host and exist for other consumers, so do not repoint them for Chrome's sake.
+
+Delete this directory once Chrome initializes a VA-API frame pool on this hardware, once a flag suppresses the H.265
+claim without disabling the whole decode path, or once this host stops rendering through PRIME sync. To retest, remove
+the wrapper and play an HEVC file in Jellyfin, then read `error.message` off the video element.
