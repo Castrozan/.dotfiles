@@ -21,6 +21,8 @@ in
     ../../../security/secrets/agenix-nixos.nix
     ../../../development/system-rebuild/nixos-rebuild-guard-nixos.nix
     ../../../network/tailscale/tailscale-nixos.nix
+    ../../../network/vpn/nordvpn/wgnord-dns-priority-over-tailscale-nixos.nix
+    ../../../network/vpn/nordvpn/wgnord-tailnet-route-preservation-nixos.nix
     ../../../operating-system/manual-pages/man-cache-nixos.nix
     ../../../operating-system/power-management/lid-switch-nixos.nix
     ../../../security/privilege-escalation/sudo-nixos.nix
