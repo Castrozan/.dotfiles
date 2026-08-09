@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   latest,
   ...
 }:
@@ -10,6 +11,9 @@ let
   mangaDownloadRoot = "${arrStackDataRoot}/manga";
   chiseTailnetBindAddress = import ./tailnet-bind-address.nix { inherit lib; };
   suwayomiServerPackage = import ./suwayomi-server-release-ahead-of-nixpkgs.nix { inherit latest; };
+  kcefChromiumLibraryPath = import ./runtime-downloaded-kcef-chromium-library-path.nix {
+    inherit pkgs;
+  };
   forcedServerSettings = {
     ip = chiseTailnetBindAddress;
     downloadAsCbz = "true";
@@ -45,6 +49,7 @@ in
       Environment = [
         "HOME=${homeDir}"
         "TACHIDESK_DATA_DIR=${homeDir}/.local/share/Tachidesk"
+        "LD_LIBRARY_PATH=${kcefChromiumLibraryPath}"
         ''"JAVA_TOOL_OPTIONS=${forcedServerSettingsJvmArguments}"''
       ];
     };

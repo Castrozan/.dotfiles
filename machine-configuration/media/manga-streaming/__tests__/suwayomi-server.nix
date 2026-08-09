@@ -11,6 +11,11 @@ let
       home.homeDirectory = "/home/zanoni";
     };
     inherit lib;
+    pkgs = {
+      lib = lib // {
+        makeLibraryPath = _packages: "/nix/store/test-kcef-chromium-libraries/lib";
+      };
+    };
     latest = {
       suwayomi-server.overrideAttrs = _overriddenAttributes: "/nix/store/test-suwayomi-server";
       fetchurl = _fetchArguments: "/nix/store/test-suwayomi-server-jar";
@@ -46,6 +51,10 @@ let
   webInterfaceComesFromThePinnedServerBuild = lib.hasInfix "${forcedSettingPrefix}webUIChannel=bundled" environmentText;
 
   webInterfaceNeverUpdatesItself = lib.hasInfix "${forcedSettingPrefix}webUIUpdateCheckInterval=0" environmentText;
+
+  webViewChromiumCanResolveItsSharedLibraries = builtins.any (
+    entry: lib.hasPrefix "LD_LIBRARY_PATH=" entry && entry != "LD_LIBRARY_PATH="
+  ) environmentEntries;
 
   serverModuleText = builtins.readFile ../suwayomi-server-home-manager.nix;
 
@@ -104,6 +113,11 @@ in
   chise-suwayomi-web-interface-never-updates-itself =
     mkEvalCheck "chise-suwayomi-web-interface-never-updates-itself" webInterfaceNeverUpdatesItself
       "the web interface update check must be off, which is what the zero interval means: left at the default it nags about an available update every 23 hours and rewrites the served interface behind the pinned package, and the version belongs to the package rather than to whatever the server fetched last";
+
+  chise-suwayomi-web-view-chromium-can-resolve-its-shared-libraries =
+    mkEvalCheck "chise-suwayomi-web-view-chromium-can-resolve-its-shared-libraries"
+      webViewChromiumCanResolveItsSharedLibraries
+      "the unit must carry a library search path for the Chromium build the server downloads into its data directory at runtime; that binary is never patched by nix and links against two dozen system libraries this machine keeps only in the store, so without it the WebView dies on a load error at startup and every source that needs a browser login or a Cloudflare challenge stays unreachable while the rest of the server looks healthy";
 
   chise-suwayomi-is-pinned-past-the-extension-index-gate =
     mkEvalCheck "chise-suwayomi-is-pinned-past-the-extension-index-gate"
