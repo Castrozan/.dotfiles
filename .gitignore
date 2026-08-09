@@ -13,7 +13,6 @@ HEARTBEAT.md
 /CLAUDE.md.*
 /AGENTS.md
 /AGENTS.md.*
-/.githooks
 /.opencode/
 .cursor/
 machine-configuration/editors/cursor/cursor-global-user-rules.md
