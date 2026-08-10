@@ -238,11 +238,17 @@ compare at the end, and hold commits while such a phase is in flight.
 
 <which_tree_a_prose_edit_lands_in_decides_whether_it_owes_an_activation>
 A commit touching only prose is not automatically activation-free, because part of the instruction tree is materialized
-into the system closure and part is read from the checkout at runtime. Measured one file per commit: editing
-`agent-harness/harnesses/<harness>/knowledge.md` left the wrapper build resolving to the running system's own toplevel,
-while editing `agent-harness/agent-instructions/skills/<skill>/knowledge.md` produced a different one. Resolve the
-wrapper toplevel and compare it against the running system rather than assuming a docs commit changes nothing; the
-`agent-instructions` tree ships in the closure and owes a switch, the harness tree does not.
+into the system closure and part is read from the checkout at runtime: the skills tree is symlinked in from
+home-manager files and so ships in a closure, while the harness tree is reached by repo-relative path from an
+instruction file that is itself in a closure, so its content is read live. Editing
+`agent-harness/agent-instructions/skills/<skill>/knowledge.md` therefore owes a switch and editing
+`agent-harness/harnesses/<harness>/knowledge.md` does not, confirmed on three machines across two platforms. Resolve
+the wrapper toplevel and compare against the running system rather than assuming a docs commit changes nothing, and do
+not use the toplevel the validation result records: on a host deploying through a wrapper flake that path is the
+revision-pinned bare build, a different derivation from the wrapper's that never equals the running system, so
+comparing the two answers a question about neither. Pin the revision into the deployed flake instead, with `nix eval
+--override-input dotfiles <repo>?rev=<sha>` against the wrapper, which answers for any revision without moving the
+checkout.
 </which_tree_a_prose_edit_lands_in_decides_whether_it_owes_an_activation>
 
 <pushing_to_a_stewarded_repo>
