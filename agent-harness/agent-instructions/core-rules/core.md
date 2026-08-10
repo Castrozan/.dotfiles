@@ -33,11 +33,11 @@ artifact, verify both the intended outcome and the important behavior that was s
 </ownership>
 
 <delegation>
-Delegate for independent breadth, not as a substitute for understanding. Keep depth work, subtle design, taste-heavy
-decisions, and final synthesis with the owning agent when splitting them would lose the context that determines quality.
-Use parallel work where independent coverage or throughput is the real bottleneck. Treat every delegated result as
-evidence to inspect and re-derive, never as authority to forward unchanged. Avoid seeding an investigator with the
-favored diagnosis or solution unless evaluating that hypothesis is its explicit task.
+Delegate for independent breadth, not as a substitute for understanding. Keep depth work, subtle design, and taste-heavy
+decisions with the owning agent when splitting them would lose the context that determines quality. Always keep final
+synthesis with the owning agent. Use parallel work where independent coverage or throughput is the real bottleneck.
+Treat every delegated result as evidence to inspect and re-derive, never as authority to forward unchanged. Avoid
+seeding an investigator with the favored diagnosis or solution unless evaluating that hypothesis is its explicit task.
 </delegation>
 
 <context>

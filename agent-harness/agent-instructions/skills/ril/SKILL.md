@@ -37,10 +37,11 @@ The first link in the capture body is the canonical source. Open that, never a s
 x.com through the twitter skill for thread and quote context, YouTube through the youtube skill for the transcript, an
 ordinary article through `curl -sS`, and anything that serves an empty shell to `curl` because it renders client side or
 sits behind a login, Instagram and LinkedIn among them, through an already logged-in browser. Interactively that is
-chrome-devtools against the user's live browser; unattended it is the browser skill, because chrome-devtools drives the
-user's own session and stalls the run waiting on an approval nobody is there to give. Never WebFetch, whose summarizer
-tampers with the content. Reach for the research skill only after the origin is read, when the idea outgrows the one
-source that captured it. A dead link is a drop with the reason recorded, never a guess reconstructed from the title.
+chrome-devtools against the user's live browser, never the browser skill. Reserve the browser skill for unattended
+runs, because chrome-devtools drives the user's own session and stalls the run waiting on an approval nobody is there
+to give. Never WebFetch, whose summarizer tampers with the content. Reach for the research skill only after the origin
+is read, when the idea outgrows the one source that captured it. A dead link is a drop with the reason recorded, never a
+guess reconstructed from the title.
 </resolve_the_origin>
 
 <fit_to_the_setup>
@@ -53,11 +54,11 @@ one that adds a dependency, and say plainly when we already have the capability.
 <verdict_gate>
 Five outcomes: adopt changes the repo now; trial runs it unpackaged first and decides after; learn creates a study entry
 naming what to practice; reference files it with no action; drop discards it with the reason. Two decision surfaces
-carry them. Interactively, with the user present, show one screen per capture, what it is, what it changes here, the
-cost and a recommended verdict, and let the user pick before anything is written. Unattended, the pull request is the
-decision surface and the watcher decides alone, because a run that stops to ask has no one to ask. Never soften a drop
-into a reference to avoid discarding something, and never open a second pull request to re-litigate a verdict the user
-already rejected.
+carry them. Interactively only the user chooses the verdict: the agent recommends one but never self-approves it. Show
+one screen per capture, what it is, what it changes here, the cost and a recommended verdict, and let the user pick
+before anything is written. Unattended, the pull request is the decision surface and the watcher decides alone, because
+a run that stops to ask has no one to ask. Never soften a drop into a reference to avoid discarding something, and never
+open a second pull request to re-litigate a verdict the user already rejected.
 </verdict_gate>
 
 <applying_an_adopt>
@@ -65,8 +66,9 @@ An adopt is built in an isolated worktree per the coding skill, never on the mai
 it is proposed. Initialize submodules inside the fresh worktree first or the flake fetch dies on an empty
 `private-configuration`. Commit inside the worktree before building, because the build reads git and an untracked file
 never reaches the store, so it would build the old code and report success. Build that worktree by naming its path in
-the flake reference: `rebuild` is pinned to `~/.dotfiles` and would silently build main instead. Exercise the change
-live, and say in the pull request what you actually ran rather than that it should work. On chise never switch a bare
+the flake reference. Never run `rebuild` for the worktree: it is pinned to `~/.dotfiles` and would silently build main
+instead. Exercise the change live, and say in the pull request what you actually ran rather than that it should work.
+On chise never switch a bare
 worktree, since this machine deploys through a private entrypoint the worktree lacks and a bare switch strips it; build
 there and leave activation to the review. Open the pull request from the main checkout with `--head`, one capture per
 pull request so a bad idea reverts alone, and merge it only as the execution of an approving review, never on your own

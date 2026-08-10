@@ -43,7 +43,7 @@ tests:
     description: "A deletion that breaks a downstream consumer is fixed at the consumer, not papered over with a compatibility shim"
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     prompt: |
-      The reviewer found that file C references something I deleted while changing files A and B. C is a downstream consumer that no longer compiles. What should I do?
+      The reviewer found that file C references something I deleted while changing files A and B. C is a downstream consumer that no longer compiles. Should I update C to the current interface or add a compatibility shim for the deleted one?
     model: haiku
     max_turns: 1
     assertions:

@@ -1,11 +1,11 @@
 tests:
   - name: ril_marks_done_only_through_the_cli
     skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
-    prompt: "I finished working a capture. How do I mark it done?"
+    prompt: "I finished working a capture. Should I hand-edit the done marker, or is there a command that owns this?"
     model: haiku
     assertions:
       llm_judge:
-        - "Names the ril record command, which stamps the marker, the verdict, the outcome and the entry link and clears the claim, and rules out hand-editing the capture to mark it done."
+        - "Says not to hand-edit the marker and names ril record as the command that owns marking the capture done."
 
   - name: ril_claim_collision_stops_the_run
     skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
@@ -25,11 +25,11 @@ tests:
 
   - name: ril_resolves_the_capture_origin
     skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
-    prompt: "The capture is an Instagram reel that serves an empty page to curl. How do I read it?"
+    prompt: "In an interactive session, the capture's first link is an Instagram reel that serves an empty page to curl. Which source-resolution route should the agent use?"
     model: haiku
     assertions:
       llm_judge:
-        - "Opens the capture's own first link through the already logged-in browser over chrome-devtools because the page renders client side, and does not fall back to WebFetch or to searching the topic."
+        - "Chooses chrome-devtools against the user's live browser rather than the browser skill, WebFetch, or topic search because curl cannot render the reel."
 
   - name: ril_verdict_belongs_to_the_user
     skill_path: agent-harness/agent-instructions/skills/ril/SKILL.md
@@ -45,4 +45,4 @@ tests:
     model: haiku
     assertions:
       llm_judge:
-        - "Builds in an isolated worktree rather than the main checkout, commits inside the worktree before building, names the worktree path in the flake reference instead of running rebuild, runs the test suite, and opens a pull request it never merges."
+        - "Uses an isolated worktree rather than the main checkout, commits before building, names the worktree path in the flake reference instead of running rebuild, exercises the change, and opens a pull request that it merges only after approval."
