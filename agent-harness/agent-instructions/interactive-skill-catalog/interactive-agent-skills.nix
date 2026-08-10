@@ -87,7 +87,7 @@ let
     let
       indexedSkillNames = indexedSkillNamesFor interactiveSkillNames;
       commaSeparatedIndexedSkillNames = builtins.concatStringsSep ", " indexedSkillNames;
-      description = "This skill compiles all skills not curatedly injected into interactive agent sessions for agent reachability and context management. The skills here are for: ${commaSeparatedIndexedSkillNames}";
+      description = "Route requests for these indexed capabilities to all-skills, then load the nested skill it names: ${commaSeparatedIndexedSkillNames}";
       renderedIndexedSkillEntries = builtins.concatStringsSep "\n\n" (
         map (
           skillName:

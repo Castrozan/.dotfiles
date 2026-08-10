@@ -24,6 +24,9 @@ broken in pure flake evaluation.
 </platform_detection>
 
 <directory_organization>
+New reusable modules belong under the `machine-configuration/<domain>/<capability>/` owner, with the deployment
+mechanism expressed by the file-name suffix. Do not grow a machine entry point or shared core merely because several
+machines import the capability.
 machine-configuration/machines/shared-home-manager-core.nix - shared home-manager core every machine imports
 machine-configuration/machines/shared-darwin-{home-manager,system-nix-darwin}.nix - the layer both macOS hosts share
 machine-configuration/machines/<alias>/home.nix - per-machine home-manager entry point (IMPORTS ONLY)

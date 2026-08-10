@@ -3,11 +3,11 @@ tests:
     skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
     extra_skill_paths:
       - agent-harness/agent-instructions/skills/nix/repo.md
-    prompt: "Where should I put a new home-manager module in this dotfiles repo?"
+    prompt: "Where should I put a new reusable home-manager capability module in this dotfiles repo?"
     model: haiku
     assertions:
       llm_judge:
-        - "Places the module under the shared home module directories, naming the base directory for configuration shared across platforms and the linux or darwin sibling only for platform-specific pieces, as a single file or a directory with a default entry point."
+        - "Places the module under the domain capability that owns it in machine-configuration/<domain>/<capability>, using a -home-manager file-name suffix for the deployment mechanism instead of adding configuration to a machine entry point."
 
   - name: dotfiles_isnixos_detection
     skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md

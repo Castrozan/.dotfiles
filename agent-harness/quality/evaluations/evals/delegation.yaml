@@ -1,7 +1,7 @@
 tests:
   - name: delegation_parallelizes_independent_breadth
     skill_path: agent-harness/agent-instructions/core-rules/core.md
-    prompt: "I need an exhaustive audit of twenty independent modules. Should one agent inspect them serially or should the work be delegated?"
+    prompt: "I need an exhaustive audit of twenty independent modules. Should one agent inspect them serially or should the work be delegated, and who owns the final synthesis?"
     model: haiku
     assertions:
       llm_judge:

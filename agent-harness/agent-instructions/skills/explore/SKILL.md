@@ -1,6 +1,6 @@
 ---
 name: explore
-description: Search a codebase in three widening-then-narrowing cycles, using text, file, history and context search, and return the conclusion rather than the files.
+description: Search current code across text, files, callers, and context in three cycles. Use for repo sweeps, not Git history.
 ---
 
 <three-cycles>
@@ -29,12 +29,10 @@ Globs when you are learning an unfamiliar layout, and `fd` is there for name sea
 that Glob cannot express.
 </file-and-structure-search>
 
-<history-search-finds-what-text-search-cannot>
-No file-content search answers "when did this appear" or "what used to be here". `git log -S<string>` finds the commits
-that changed how many times a string occurs, which is how you locate a deletion. `git log -G<regex>` matches the diff
-text itself. `git log --oneline -- <path>` gives a file's history, and `git grep <pattern> <revision>` searches a past
-state without checking it out. Reach for these whenever the thing you want is missing from the working tree.
-</history-search-finds-what-text-search-cannot>
+<history-belongs-to-coding>
+Questions about when, why, evolution, past states, or deleted code are Git archaeology. Load the coding skill and its
+history guidance instead of treating them as current-tree exploration.
+</history-belongs-to-coding>
 
 <return-the-conclusion>
 Answer the question asked, with `file_path:line_number` citations. Never paste file bodies, search dumps or the log of

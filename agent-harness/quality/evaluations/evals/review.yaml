@@ -63,8 +63,11 @@ tests:
 
       Git diff:
       ```diff
-      -x = calculate_total(items)
-      +total_price_for_all_items_in_cart = calculate_total(items)
+       def calculate_cart(items):
+      -    total = calculate_total(items)
+      -    return total
+      +    cart_total = calculate_total(items)
+      +    return cart_total
       ```
 
       Review this diff.

@@ -6,14 +6,14 @@ layer 1 falls short), layer 3 (scoped deep-dive with git directly once you know 
 </search_strategy>
 
 <search_strategy_layer_1>
-Default starting point covering titles and file paths. Run 'git-history.py dump' then search the file at 'git-history.py
-path'. Contents: commit hash, subject, body, and every changed file path per commit. File paths catch what keywords miss
-because 'home/modules/browser/' finds browser work even if the commit says "fix port conflict".
+Default starting point covering titles and file paths. Run 'git-history dump', then run 'git-history path' and search
+the file it returns. Contents: commit hash, subject, body, and every changed file path per commit. File paths catch what
+keywords miss because 'home/modules/browser/' finds browser work even if the commit says "fix port conflict".
 </search_strategy_layer_1>
 
 <search_strategy_layer_2>
-Full patches showing actual code changes. Run 'git-history.py dump --layer 2' then search 'git-history.py path --layer
-2'. Contents: every line of code ever added or removed; larger file (~20MB for a 3k-commit repo) but grep is still
+Full patches showing actual code changes. Run 'git-history dump --layer 2' then search 'git-history path --layer 2'.
+Contents: every line of code ever added or removed; larger file (~20MB for a 3k-commit repo) but grep is still
 instant (<50ms). Use when layer 1 didn't find enough, or you need to see what the actual code change was.
 </search_strategy_layer_2>
 
@@ -35,7 +35,7 @@ appear in code but never in commit messages.
 
 <cache_behavior>
 Cache files live in '/tmp/gitlog-{reponame}-{hash}-L{1,2}.txt'. Auto-invalidated when HEAD changes or file is older than
-1 hour. Use '--force' to refresh manually. Use 'git-history.py info' to check cache status. Cache is per-repo - works
+1 hour. Use '--force' to refresh manually. Use 'git-history info' to check cache status. Cache is per-repo - works
 across multiple repos simultaneously.
 </cache_behavior>
 
