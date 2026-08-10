@@ -176,14 +176,18 @@ returns before the last-activated write is reached, so nothing is ever stamped. 
 switch succeeds and stays live, the result records a regression, and the record still names the previous revision: a
 successful activation filed as a failure. The two defects are one chain rather than two neighbours, since the health
 trap is what triggers the ledger trap, and what it costs is exactly the evidence a later steward consults to decide what
-is running. Audit by store path and the chain is visible; trust the record and it is invisible. Which machines can even
-show it is a question about the clock, not the code. Where an agent-responsiveness probe carries an applicability gate
-tied to that agent's active hours, the probe skips outside them, and a skipped probe presents no pass-then-fail pair at
-all. So an after-hours activation on such a host produces a clean result whatever the code does, and reading a run of
-clean after-hours activations as the host being unaffected confuses untested with immune. Settle it without activating
-anything, since any validation run inside the gated hours samples those probes in the same just-finished-build window:
-compare that sample against one taken at rest. A host whose probe carries no such gate cannot answer the question for a
-host whose probe does.
+is running. Audit by store path and the chain is visible; trust the record and it is invisible. Whether a given clean
+activation is evidence at all turns on which probes were actually sampled. An agent-responsiveness probe whose
+applicability gate is tied to that agent's active hours skips outside them, and a skipped probe presents no
+pass-then-fail pair, so an after-hours run tells you nothing about a gated probe whatever the code does. It does not
+follow that the host is untested, because gating is per agent rather than per host and one machine routinely carries
+both kinds; an ungated probe sitting green on both sides of the switch is real evidence, and it is evidence from the
+worst possible window. Enumerate the probes that ran before drawing either conclusion, and enumerate them from a full
+probe listing rather than from a status summary, since a summary that reports failures and skips never reports what
+quietly passed and reading one as an inventory is how a live ungated probe goes unnoticed. Measured across three
+machines the load-deterministic failure appears on one agent's probe on one host and on no other, so treat it as a
+property of the agent being probed until some second agent reproduces it, never as a property of the platform or the
+hour.
 </a_post_switch_regression_costs_the_record_even_where_it_cannot_roll_back>
 
 <a_verdict_that_cannot_tell_reports_all_clear>
