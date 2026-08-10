@@ -1,10 +1,10 @@
 tests:
-  - name: commit_skill_knows_conventions
+  - name: commit_skill_matches_repository_conventions
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
       - agent-harness/agent-instructions/skills/coding/git.md
-    prompt: "What are the key rules you follow when creating a commit?"
+    prompt: "What are the key rules you follow when creating a commit in an unfamiliar repository?"
     model: haiku
     assertions:
       llm_judge:
-        - "Names the conventional commit shape of type, optional scope and an imperative lowercase subject, and staging specific files instead of git add -A or git add . so unrelated parallel work is never swept in."
+        - "Says to inspect and match the repository's commit convention, describes `type(scope): subject` with an imperative lowercase subject when Conventional Commits are used, and stages only specific task-owned files."

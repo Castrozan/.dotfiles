@@ -48,6 +48,34 @@ let
     &&
       cfgOnTheEvaluatingSystem.home.file.".dotfiles/AGENTS.md".text
       == cfgOnTheEvaluatingSystem.home.file.".dotfiles/CLAUDE.md".text;
+
+  globalCoreInstructions = builtins.readFile ../core-rules/core.md;
+  normalizedGlobalCoreInstructions = lib.toLower globalCoreInstructions;
+  globalCoreMaximumBytes = 5000;
+  globalCoreForbiddenFragments = [
+    ".dotfiles"
+    "heartbeat.md"
+    "nixos"
+    "`nix"
+    "obsidian"
+    "second brain"
+    "webfetch"
+    "gh run"
+    "git agent-session"
+    "claude-gpt"
+    "claude code"
+    "codex"
+    "opencode"
+    "herdr"
+    "a2a "
+    "/compact"
+    "--resume"
+    "rebuild"
+    "python 3.12"
+  ];
+  globalCoreContainsOnlyUniversalPolicy = builtins.all (
+    fragment: !(lib.hasInfix fragment normalizedGlobalCoreInstructions)
+  ) globalCoreForbiddenFragments;
 in
 {
   default-home-manager-module-deploys-agent-session =
@@ -74,4 +102,12 @@ in
     deploysGitHistory
     (map (module: helpers.homeManagerTestConfiguration [ module ]) exportedHarnessModules)
   ) "every harness module that deploys coding must install its git-history executable";
+
+  global-core-stays-universal =
+    mkEvalCheck "global-core-stays-universal"
+      (
+        builtins.stringLength globalCoreInstructions <= globalCoreMaximumBytes
+        && globalCoreContainsOnlyUniversalPolicy
+      )
+      "core.md must stay below the global context budget and contain only cross-harness, cross-domain policy; move repository, harness, tool, and capability mechanics to their owning surfaces";
 }

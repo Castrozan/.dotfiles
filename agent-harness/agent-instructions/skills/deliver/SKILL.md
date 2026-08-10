@@ -11,57 +11,50 @@ saves. The deliverable is working software with value banked at every step, neve
 big-bang finish.
 </scope>
 
-<understand_before_designing>
-Investigation is its own phase, finished before any design. Read the authoritative material in full, map the system, and
-verify the brief against reality instead of trusting it: re-check each claim or anchor against the actual code and
-record what drifted, because a plan built on a stale brief fixes the wrong thing. Do not propose a single step until you
-understand the system.
-</understand_before_designing>
+<understand-before-designing>
+Investigation earns the right to commit to a build process; it is not a ceremonial phase boundary. Read the
+authoritative material, map the relevant system, and verify the brief against reality instead of trusting it. Form an
+initial design only after enough evidence exists to make it useful, keep that design provisional, and revise it when
+implementation or new evidence materially changes the model. Never force repository discoveries into a stale brief or
+plan merely because it was written first.
+</understand-before-designing>
 
-<design_the_process_from_context>
-Derive the steps from this goal's context; never paste a fixed template. Anchor the design on principles that
-generalize: build the regression safety net first (the tests or gate that make every later change provably
-non-regressing) so nothing regresses silently; decompose into independently-shippable vertical slices ordered by
-dependency and risk; sequence so value banks at every merge and stopping after any slice still leaves the system better;
-name the invariants that must never weaken and treat any change that erodes one as wrong by definition; identify the
-irreversible or owner-only decisions and plan to surface them rather than decide them. Define done-per-increment and
-value-per-milestone up front so completion is objective, not a matter of opinion.
-</design_the_process_from_context>
+<design-the-process-from-context>
+Derive the steps from this goal's context; never paste a fixed template. Build the regression safety net needed for the
+risky paths, decompose into independently shippable vertical slices ordered by dependency and risk, and sequence them so
+stopping after any slice still leaves the system better. Name invariants that must not weaken, identify irreversible or
+owner-only decisions before execution reaches them, and define done-per-increment and value-per-milestone so completion
+is objective.
+</design-the-process-from-context>
 
-<author_the_goal>
-Persist the plan to a durable tracker before executing (a deep-work workspace or PLAN file per the `deep-work` skill) so
-it survives compaction and resumes across sessions; that tracker is the single source of live state and you update it as
-the last step of every increment. Then use the `goal-prompt` skill to write one self-contained launch brief that points
-at the tracker as the live spec instead of restating it, so the brief stays evergreen as state changes.
-</author_the_goal>
+<author-the-goal>
+Persist the plan to a durable tracker before executing, using a deep-work workspace or the repository's equivalent, and
+keep that tracker as the single source of live state. Then use the `goal-prompt` skill to write one self-contained
+launch brief that points at the tracker instead of restating it, so the brief stays valid as the plan evolves.
+</author-the-goal>
 
-<human_gate_before_launch>
+<human-gate-before-launch>
 Launching the autonomous run is a human-only action: `/goal` is reserved for the human and the agent must never invoke
-it, directly or through any tool. Treat it as a hard barrier: do everything up to and including authoring the goal
-prompt and tracker, then stop, hand the human the finished one-line brief, and wait. The human pastes it into `/goal` to
-start the run; the execution phases below resume only after a human has launched it, never on the agent's own
-initiative.
-</human_gate_before_launch>
+it, directly or through any tool. Do everything through the finished goal prompt and tracker, then stop at that hard
+boundary and hand the human the launch brief. Execution resumes only after a human launches it.
+</human-gate-before-launch>
 
-<execute_incrementally>
-Run each slice through one loop: write a failing repro or test first because red-before-green is the only proof the work
-was needed and is done (`coding` skill); build the smallest reversible diff for one concern; verify; ship a small commit
-staged by name; update the tracker. Add a rollout flag only when the change genuinely needs one. Parallelize with the
-Workflow tool when work fans out across many files, perspectives, or candidates, keeping its control flow deterministic;
-route coordinated multi-step work to a Workflow and single read-only queries to a plain Agent subagent, never to Teams,
-per the delegation rules. Flip a required rollout flag default-on only after its slice is green.
-</execute_incrementally>
+<execute-incrementally>
+Run each slice through one evidence loop. For a bug, establish the focused failing reproducer described by the coding
+skill when the behavior can be represented faithfully; for new behavior, establish the smallest testable contract. Build
+the smallest reversible diff for one concern, verify the evidence that distinguished the decision, ship one cohesive
+commit, and update the tracker. Parallelize only independent breadth; do not use parallel agents to manufacture
+confidence in the same favored solution.
+</execute-incrementally>
 
-<prove_it_live>
-Value is real only when it runs, so end every increment with the V-model carried up to a real run: unit, integration,
-then the actual app, UI, or end-to-end path (`coding` skill), not unit tests alone. Never report done from an agent's
-self-report or scraped output; prove it from observed live behavior, and review the artifact an agent produced before
-trusting its claim of success.
-</prove_it_live>
+<prove-it-live>
+Value is real only when it runs, so carry verification as far toward the actual app, UI, integration, or end-to-end path
+as the change and environment require. Never report done from an agent's self-report or a generated summary; inspect the
+artifact and observed behavior, and let contradictory runtime evidence invalidate an earlier test or assumption.
+</prove-it-live>
 
 <discipline>
-Keep every change reversible so a bad slice rolls back by a plain revert; surface owner and irreversible
-decisions and never decide them unilaterally; reuse the goal's shared primitives and never fork a second parallel store
-that drifts from the first; stage commits by name, never with `-A`; and keep the tracker current every increment so an
-interrupted session resumes from disk rather than from re-explanation.
+Keep every increment reversible enough that a bad slice can be backed out cleanly; surface owner-only or irreversible
+decisions before crossing them; reuse the goal's shared primitives rather than forking parallel state; and keep the
+tracker current so interruption resumes from durable evidence rather than reconstructed memory.
 </discipline>

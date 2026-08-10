@@ -15,8 +15,9 @@ Run `rebuild`; it auto-detects platform (NixOS vs standalone home-manager) and u
 <timeout_trap>
 Rebuilds from source (forks, custom packages) can take 10+ minutes. Follow the active-waiting pattern: redirect output
 to a file (`rebuild > /tmp/rebuild.log 2>&1 &`), then set up a `/loop` monitor that tails the log file to check concrete
-progress. Never pipe through `tail` in background; it buffers everything and produces empty output. Never poll with
-timeout > 60000ms: a single long poll eats the entire agent timeout budget and bricks the session.
+progress and defines the process state or log evidence that means success and failure. Never pipe through `tail` in the
+background; it buffers everything and produces empty output. Never poll with timeout > 60000ms: a single long poll eats
+the entire agent timeout budget and bricks the session.
 </timeout_trap>
 
 <dry_run>

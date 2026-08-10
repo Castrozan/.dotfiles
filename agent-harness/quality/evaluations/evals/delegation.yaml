@@ -1,68 +1,68 @@
 tests:
-  - name: delegation_multi_agent_implementation_uses_workflow
+  - name: delegation_parallelizes_independent_breadth
     skill_path: agent-harness/agent-instructions/core-rules/core.md
-    prompt: "I need to refactor the auth module and update tests in parallel using two agents. How should you delegate this work?"
+    prompt: "I need an exhaustive audit of twenty independent modules. Should one agent inspect them serially or should the work be delegated?"
     model: haiku
     assertions:
       llm_judge:
-        - "Recommends the Workflow tool as the mechanism for coordinating the two agents editing in parallel, matching the policy that genuinely parallel edits go through a workflow."
+        - "Recommends delegating independent module reviews in parallel because coverage and throughput are the bottleneck, while keeping final synthesis with the owning agent."
 
-  - name: delegation_coordination_uses_workflow
+  - name: delegation_keeps_subtle_design_with_owner
     skill_path: agent-harness/agent-instructions/core-rules/core.md
-    prompt: "I need several agents to coordinate on a multi-step task and keep track of what each one has completed. According to the delegation rules, what should I use to run and track that?"
+    prompt: "I need one subtle architecture decision whose quality depends on the full conversation context. Should I split the decision among several agents?"
     model: haiku
     no_tools: true
     assertions:
       llm_judge:
-        - "Directs the user to the Workflow tool as the way to coordinate agents and track completed work, and does not recommend a Teams mechanism."
+        - "Keeps the architecture decision with the owning agent because splitting depth work would lose the context that determines quality."
 
-  - name: delegation_bare_subagent_acceptable_for_research
+  - name: delegation_single_lookup_needs_no_fanout
     skill_path: agent-harness/agent-instructions/core-rules/core.md
-    prompt: "I need to quickly look up what pattern the auth module uses. Should you spin up a workflow for this?"
+    prompt: "I need to look up one pattern in one auth module. Should you fan this task out across several agents?"
     model: haiku
     assertions:
       llm_judge:
-        - "Indicates a full workflow is unnecessary for a quick read-only lookup, since such a single read-only task warrants at most a bare Agent subagent or doing it directly."
+        - "Says not to fan out the single lookup because it has no independent breadth or throughput bottleneck and is better handled directly."
 
-  - name: delegation_multiple_steps_use_workflow
+  - name: delegation_parallelizes_independent_coverage
     skill_path: agent-harness/agent-instructions/core-rules/core.md
-    prompt: "Spawn 3 agents to implement frontend components, backend endpoints, and integration tests. What mechanism should you use?"
+    prompt: "Three independent repositories need the same read-only policy audit. Is parallel delegation appropriate, and what must the owning agent do with the results?"
     model: haiku
     assertions:
       llm_judge:
-        - "Names the Workflow tool as the mechanism to fan out the three parallel implementation tasks across agents, matching the policy that fan-out and genuinely parallel edits go through a workflow."
+        - "Says parallel delegation is appropriate because the audits are independent breadth, while the owning agent remains responsible for inspecting, re-deriving, and synthesizing the evidence instead of forwarding reports unchanged."
 
-  - name: delegation_bare_subagent_wrong_for_implementation
+  - name: delegation_does_not_split_depth_work
     skill_path: agent-harness/agent-instructions/core-rules/core.md
-    prompt: "According to the delegation rules, can you use a bare Agent subagent to implement a new feature across multiple files, or should you reach for a workflow?"
+    prompt: "A new feature spans a handful of tightly coupled files and depends on several taste-heavy decisions. Should you hand the implementation to another agent?"
     model: haiku
     assertions:
       llm_judge:
-        - "States a bare Agent subagent is not appropriate for implementing a feature across multiple files, because a plain subagent is reserved for a single read-only task, and points to a workflow or direct work instead."
+        - "Keeps the tightly coupled, taste-heavy implementation with the owning agent because delegation would lose the context needed for quality."
       output_not_contains:
-        - "yes, a bare subagent is fine"
+        - "delegate the whole implementation"
 
-  - name: delegation_progress_tracking_uses_workflow
+  - name: delegation_owner_synthesizes_results
     skill_path: agent-harness/agent-instructions/core-rules/core.md
-    prompt: "I want to track the progress of parallel agents working on different parts of a feature. What does the delegation policy say?"
+    prompt: "Several delegated reviewers returned separate reports. Can I concatenate their reports and send that directly to the user?"
     model: haiku
     assertions:
       llm_judge:
-        - "Identifies the Workflow tool as the delegation policy control plane for running and tracking parallel agents working on different parts of a feature, and does not point to Teams."
+        - "Says the owning agent must inspect, re-derive, and synthesize the reports rather than forwarding or concatenating delegated output unchanged."
 
-  - name: delegation_read_only_query_needs_no_workflow
+  - name: delegation_result_is_evidence_not_authority
     skill_path: agent-harness/agent-instructions/core-rules/core.md
-    prompt: "I just need to search the codebase for all usages of a function. Do I need a workflow for that?"
+    prompt: "A delegated agent says its implementation is complete and all checks passed. Is that claim enough to report success?"
     model: haiku
     assertions:
       llm_judge:
-        - "Says no workflow is needed to search the codebase for a function's usages, since that read-only query is done directly or at most via a single bare Agent subagent."
+        - "Says the claim is not enough and requires inspecting the artifact and verification evidence before reporting success."
 
-  - name: delegation_instruction_changes_require_evals
+  - name: instruction_changes_check_baseline_without_resaving
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "I just added a new rule to AGENTS.md about how agents should handle errors. According to the workflow, what else must I do before the work is done?"
+    prompt: "I edited agent instructions. What should I do with the committed eval baseline before delivery, and should I save a fresh baseline proactively?"
     model: haiku
     no_tools: true
     assertions:
       llm_judge:
-        - "Says the change to the agent-instruction file must be verified by running the test or agent-eval suite before the work is done, since agent-instruction changes are guarded by the eval baseline."
+        - "Says to run `agent-eval --check-baseline`, not to run `agent-eval --save-baseline` proactively, and to save a new baseline only when the check fails for regression or staleness or when deliberately recording a meaningful improvement."

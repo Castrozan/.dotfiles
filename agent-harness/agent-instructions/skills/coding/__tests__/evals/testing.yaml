@@ -7,25 +7,25 @@ tests:
     model: haiku
     assertions:
       llm_judge:
-        - "The response says the first step is to test first before modifying the rebuild script, establishing a baseline of the current behavior by running the existing tests (or reproducing the failure with a test) rather than jumping straight to a fix."
+        - "The response says to establish a focused reproducer that fails for the reported behavior before modifying the rebuild script and, where practical, to make that reproducer traverse the same causal path."
 
-  - name: test_double_test_protocol
+  - name: test_behavioral_evidence_does_not_prove_root_cause
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
       - agent-harness/agent-instructions/skills/coding/testing.md
-    prompt: "I made a code change and the tests passed once. Am I done?"
+    prompt: "My regression test now passes. Does that independently prove my proposed root cause was correct?"
     model: haiku
     assertions:
       llm_judge:
-        - "The response says no, a single passing run is not enough: the relevant test suite must be run a second time so that two consecutive passes confirm the change is stable and not flaky (the double-test protocol)."
+        - "The response says no: a green regression test proves only the behavior it actually exercises and does not independently prove the proposed root cause."
 
-  - name: test_knows_tiers
+  - name: test_verification_scales_to_relevant_evidence
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
       - agent-harness/agent-instructions/skills/coding/testing.md
-    prompt: "What test tiers are available in this project and when should I use each?"
+    prompt: "A focused regression test passes after my change. What verification should follow before delivery?"
     model: haiku
     no_tools: true
     assertions:
       llm_judge:
-        - "The response keeps local verification focused on the changed area, does not use repository/verification/run.sh as a normal delivery gate, and identifies CI as the full-suite gate."
+        - "The response says to follow with the repository's relevant build, static checks, integration tests, runtime probes, or CI gate according to the change, and treats contradictory runtime evidence as stronger than a green test that modeled the wrong behavior."

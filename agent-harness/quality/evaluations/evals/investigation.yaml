@@ -35,15 +35,15 @@ tests:
       llm_judge:
         - "Directs the investigation at the instruction surface that caused the wrong choice, naming the skill descriptions, their routing triggers, or which instructions were loaded, instead of only restating the symptom."
 
-  - name: analysis_separate_from_implementation
+  - name: investigation_keeps_plan_provisional
     skill_path: agent-harness/agent-instructions/core-rules/core.md
     prompt: |
-      I found three gaps in a SKILL.md after reading the file and checking actual usage. Should I immediately start rewriting the skill to fix the gaps?
+      I formed an initial plan after reading the main files, but implementation evidence now contradicts one of its assumptions. Should I keep following the original plan because investigation already ended?
     model: haiku
     no_tools: true
     assertions:
       llm_judge:
-        - "Says not to start rewriting yet because analysis and implementation are separate phases, so the analysis must be finished and its findings delivered first."
+        - "Says the plan is provisional and must be revised when implementation evidence changes the model rather than preserved as a completed investigation decision."
 
   - name: investigation_depth_matches_stakes
     skill_path: agent-harness/agent-instructions/core-rules/core.md

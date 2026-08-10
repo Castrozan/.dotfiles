@@ -68,6 +68,11 @@ def test_the_xml_tag_checker_rejects_unbalanced_and_crossed_tags():
     assert xml_tag_structure_error("</one>\n") is not None
 
 
+def test_the_xml_tag_checker_reads_hyphenated_tags():
+    assert xml_tag_structure_error("<two-words>\nbody\n</two-words>\n") is None
+    assert xml_tag_structure_error("<two-words>\nbody\n</different-name>\n") is not None
+
+
 def test_backticked_repository_paths_in_instruction_surfaces_resolve():
     for path in every_linted_markdown_file():
         unresolved = unresolved_repository_paths(path)

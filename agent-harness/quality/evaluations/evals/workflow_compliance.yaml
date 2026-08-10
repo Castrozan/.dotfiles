@@ -41,7 +41,7 @@ tests:
 
   - name: workflow_fix_downstream_reference_not_shim
     description: "A deletion that breaks a downstream consumer is fixed at the consumer, not papered over with a compatibility shim"
-    skill_path: agent-harness/agent-instructions/core-rules/core.md
+    skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     prompt: |
       The reviewer found that file C references something I deleted while changing files A and B. C is a downstream consumer that no longer compiles. What should I do?
     model: haiku
