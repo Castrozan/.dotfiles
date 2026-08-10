@@ -223,6 +223,28 @@ watcher that catches every run a push produced is therefore complete for that pu
 full workflow set, so enumerate the workflow directory to see the difference rather than inferring it from a run list.
 </the_local_green_proof_is_the_only_gate_on_main>
 
+<a_worker_that_runs_in_the_tree_it_proves_can_void_its_own_proof>
+A validation worker whose cwd is the checkout writes into the tree it is proving, and a redirect fires before the
+command feeding it fails, so a broken command chain still leaves a file behind. The build then succeeds against a dirty
+tree and the proof is worthless while still reading exit 0, so consume the dirty flag alongside the exit code and never
+the code alone. The defence is ordering inside the runner and is two lines: open the worker log at an absolute path
+under the state directory, chdir there, then invoke the build, after which even a careless relative redirect lands
+outside the tree. What hides the litter is that a 0-byte file at the repo root is untracked, so a porcelain status
+passing `--untracked-files=no` calls the tree clean; check untracked explicitly. Ordering protects cwd and not HEAD:
+any phase resolving the flake from the checkout rather than a pinned rev reads HEAD at eval time, so a commit landing
+mid-validation reproves a different revision than the result file is named after. Capture HEAD at worker start and
+compare at the end, and hold commits while such a phase is in flight.
+</a_worker_that_runs_in_the_tree_it_proves_can_void_its_own_proof>
+
+<which_tree_a_prose_edit_lands_in_decides_whether_it_owes_an_activation>
+A commit touching only prose is not automatically activation-free, because part of the instruction tree is materialized
+into the system closure and part is read from the checkout at runtime. Measured one file per commit: editing
+`agent-harness/harnesses/<harness>/knowledge.md` left the wrapper build resolving to the running system's own toplevel,
+while editing `agent-harness/agent-instructions/skills/<skill>/knowledge.md` produced a different one. Resolve the
+wrapper toplevel and compare it against the running system rather than assuming a docs commit changes nothing; the
+`agent-instructions` tree ships in the closure and owes a switch, the harness tree does not.
+</which_tree_a_prose_edit_lands_in_decides_whether_it_owes_an_activation>
+
 <pushing_to_a_stewarded_repo>
 The steward shares the same checkout and continuously rebases and pushes `main`, so local `main` routinely diverges
 mid-session and the submodule is often dirty during a sync. Land a single commit through a detached worktree
