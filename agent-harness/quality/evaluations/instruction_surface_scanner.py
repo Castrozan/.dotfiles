@@ -19,7 +19,7 @@ REPOSITORY_TOP_LEVEL_PREFIXES = (
     "overlays/",
 )
 BACKTICKED_TOKEN = re.compile(r"`([^`\n]+?)`")
-STANDALONE_XML_TAG = re.compile(r"^<(/?)([a-z][a-z0-9_]*)>\s*$", re.M)
+STANDALONE_XML_TAG = re.compile(r"^<(/?)([a-z][a-z0-9_-]*)>\s*$", re.M)
 FRONTMATTER_KEY_VALUE = re.compile(r"^([a-zA-Z][a-zA-Z0-9_-]*):\s*(.*)$")
 SIBLING_CHAPTER_TOKEN = re.compile(r"[A-Za-z0-9._-]+\.md")
 SKILL_RELATIVE_SCRIPT_TOKEN = re.compile(r"scripts/[A-Za-z0-9._/-]+")

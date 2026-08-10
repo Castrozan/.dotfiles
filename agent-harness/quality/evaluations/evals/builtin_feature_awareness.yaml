@@ -9,13 +9,13 @@ tests:
       llm_judge:
         - "Points at the built-in worktree flag or the EnterWorktree tools as the simpler option for quick throwaway isolation, and reserves the manual worktree workflow for persistent, multi-branch, or pull request work."
 
-  - name: deep_work_knows_postcompact
+  - name: deep_work_recovers_from_persisted_state
     skill_path: agent-harness/agent-instructions/skills/deep-work/SKILL.md
-    prompt: "What happens to deep-work context when a compaction occurs? Is there any automatic recovery?"
+    prompt: "What should happen to deep-work context when conversation history is compacted or lost?"
     model: haiku
     assertions:
       llm_judge:
-        - "Says a session start compaction hook automatically re-injects a recovery directive, which prompts the agent to re-read the deep-work workspace files and continue from disk."
+        - "Says to recover from the persisted deep-work workspace by reading the prompts, plan, progress, and context files, then continue without asking the user to repeat information already stored there."
 
   - name: claude_skill_knows_builtin_agents
     skill_path: agent-harness/agent-instructions/skills/herdr/SKILL.md

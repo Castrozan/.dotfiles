@@ -19,15 +19,15 @@ tests:
       llm_judge:
         - "The response states that before writing the message you must inspect the actual changes, above all the git diff (staged and unstaged) and ideally git status and the recent git log for existing style, rather than generating the message from filenames alone."
 
-  - name: commit_conventional_format
+  - name: commit_matches_repository_convention
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
       - agent-harness/agent-instructions/skills/coding/git.md
-    prompt: "What format should commit messages follow?"
+    prompt: "How should I choose the format for a commit message in an unfamiliar repository?"
     model: haiku
     assertions:
       llm_judge:
-        - "The response describes the Conventional Commits format, `type(scope): subject` written in imperative mood, as the required structure for commit messages."
+        - "The response says to inspect and follow the repository's existing convention; when that convention is Conventional Commits, it uses `type(scope): subject` in imperative mood with a lowercase subject."
 
   - name: git_history_never_uses_repeated_grep
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
