@@ -59,20 +59,22 @@ where the granted terminal emulator is the responsible process. If it still abor
 lapsed, and restoring it is owner-only through System Settings, Privacy and Security, App Management.
 </a_darwin_rebuild_over_ssh_cannot_clear_the_app_management_gate>
 
-<how_a_rebuild_is_detached_can_cost_it_the_app_management_grant>
-Because that grant is per responsible process, the detach mechanism can decide whether a detached rebuild clears the
-same gate, and the outcome is host dependent rather than universal: a `launchctl` submitted switch has been measured
-both aborting on the gate, with the machine's own grant perfectly intact, and passing it on another host of the same
-fleet, so predict neither result for a host you have not measured. The abort is the expensive case, because it happens
-after the system profile advanced and so leaves `current-system` a generation behind. Prefer a double fork plus
-`setsid` from a pane the granted terminal emulator owns: it carries that ancestry's responsibility across both the fork
-and the new session, has passed the gate wherever it was measured, and still lets the process outlive its own pane
-dying mid-switch. Privilege is not the discriminator, since the switch already runs under `sudo` either way. Settle any
-host cheaply rather than arguing from the mechanism, by running home-manager's own `ensureAppManagement` check, which
-only touches a dotfile inside each linked app bundle, under the detach you intend to use. Read the abort wording rather
-than inferring which trap it is, since the gate prints its "over SSH" variant only when `launchctl managername` is not
-Aqua.
-</how_a_rebuild_is_detached_can_cost_it_the_app_management_grant>
+<a_single_denied_tcc_row_can_block_every_detached_rebuild>
+A detached rebuild that aborts on that gate while the machine is otherwise granted is usually not the detach mechanism
+and never privilege, since the switch runs under `sudo` either way. Look for an explicit denial instead: App Management
+is recorded per client binary in the user's own TCC database, keyed by absolute path when the client type is path
+based, and one row with a zero authorisation value silently refuses every activation whose responsible process resolves
+to that binary. Query that database for the app bundles service and read the rows rather than reasoning from the
+symptom, because the denial names the culprit outright. The trap is that an agent's launcher usually runs under a store
+path interpreter, so its shebang, not the command anyone typed, is the client that gets denied, and the same switch
+started from a granted terminal emulator's session passes because the responsible process is then the emulator. That is
+also why one host aborts and another with an identical command does not. Detaching by session with a double fork plus
+`setsid` from a granted pane sidesteps the denial and is worth preferring anyway, since the process then outlives its
+own pane dying mid-switch, but treat it as a workaround: the denial is user state that only the owner can clear, and it
+is pinned to a store path, so the next toolchain bump moves the interpreter and hides the row rather than fixing it.
+Confirm any host cheaply by running home-manager's own `ensureAppManagement` check, which only touches a dotfile inside
+each linked app bundle, under the detach you intend to use.
+</a_single_denied_tcc_row_can_block_every_detached_rebuild>
 
 <agenix_stalls_on_a_stale_temporary_file>
 The home-manager agenix activation agent can loop on a stale read-only temporary file it recreates and cannot
