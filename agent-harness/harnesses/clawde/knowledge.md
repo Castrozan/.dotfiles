@@ -150,12 +150,14 @@ failed or rolled-back activation leaves it naming the previous revision: it is w
 it. Audit an activation by store path instead, comparing `/run/current-system` before and after against the closure the
 validating build produced, and read the record as a claim rather than evidence. `/run/current-system` disagreeing with
 `/nix/var/nix/profiles/system` means the switch aborted after the profile advanced. That audit carries an ordering
-constraint worth holding, because losing it costs the evidence rather than the machine. Where a host builds through a
-wrapper flake taking the stewarded repo as a `git+file` input, resolving that wrapper's toplevel answers for whatever
-revision the checkout points at right now, so the one-command check is available only while the checkout still sits on
-the revision in question and returns a different closure the moment you sync. Capture the live closure's identity before
-moving the checkout, never after, or attributing a generation somebody else activated needs an explicit input override
-to reproduce.
+constraint worth holding, because losing it costs the evidence rather than the machine. Every host whose build resolves
+the stewarded repo through a `git+file` reference has it, whether that reference is a wrapper flake taking the checkout
+as an input or the checkout itself, which is the darwin backend's form: resolving the flake's toplevel answers for
+whatever the checkout holds right now, so the one-command check exists only while the checkout still sits on the
+revision in question and returns a different closure the moment you sync. On the direct form it is sharper still, since
+a lockless `git+file` reads tracked working-tree content rather than HEAD, so an uncommitted edit moves the answer
+without any sync at all. Capture the live closure's identity before moving the checkout, never after, or attributing a
+generation somebody else activated needs an explicit input override to reproduce.
 </self_activation_is_written_for_systemd_and_records_only_its_successes>
 
 <a_verdict_that_cannot_tell_reports_all_clear>
@@ -177,10 +179,17 @@ on their branch untouched, which keeps the machine current without ever putting 
 Required status checks are configured on `main`, and the fleet's pushes do not satisfy them, they bypass them: the
 remote answers each push reporting the rule violation as bypassed, so branch protection never blocks a steward and a
 push that skipped its local validation would land unchallenged. The green-before-push proof each machine runs is
-therefore the only thing actually protecting the branch, load-bearing rather than a second belt behind the ruleset.
-Read the ruleset with `gh api repos/<owner>/<repo>/rules/branches/main` instead of inferring it from a push message,
-and expect its required contexts to name JOBS while a run watcher reports WORKFLOWS; a watch on the workflow containing
-those jobs is a superset of the ruleset and implies it, never the reverse.
+therefore the only thing actually protecting the branch, load-bearing rather than a second belt behind the ruleset. Read
+the ruleset with `gh api repos/<owner>/<repo>/rules/branches/main` instead of inferring it from a push message, and
+expect its required contexts to name JOBS while a run watcher reports WORKFLOWS; a watch on the workflow containing
+those jobs is a superset of the ruleset and implies it, never the reverse. A context whose name matches a workflow name
+exactly is a coincidence of that job being named after its workflow, not a counterexample. Reading the push message
+instead invites a second wrong conclusion, since it reports every required check as expected while none has reported
+yet, which is timing rather than a mismatch between contexts and jobs. The bypass is not the whole gap either, because
+part of the check set is never invoked at all: a workflow triggered on `pull_request` alone runs on no direct push, so a
+fleet whose stewards never open one publishes every commit without it, and coverage sits in exactly that state. A run
+watcher that catches every run a push produced is therefore complete for that push and still short of the repository's
+full workflow set, so enumerate the workflow directory to see the difference rather than inferring it from a run list.
 </the_local_green_proof_is_the_only_gate_on_main>
 
 <pushing_to_a_stewarded_repo>
