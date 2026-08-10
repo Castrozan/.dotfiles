@@ -135,6 +135,35 @@ reports the timeout exit as a parse error, which trains it off its own primary t
 shotgun surgery across five code sites plus four instruction tags, so budget for that before proposing one.
 </steward_loop>
 
+<self_activation_is_written_for_systemd_and_records_only_its_successes>
+The activation helper refuses to launch on darwin before doing any work, because its entry point exits when
+`systemd-run` is absent and its worker drives `systemctl --user`, so the self-activation step is dead on every darwin
+machine and only the linux one can use it as shipped. Reach the same code through its detached-worker entry point under
+a detach the platform actually has, a double `fork()` plus `os.setsid()` from a granted pane, which also keeps the
+switch alive when the pane dies mid-activation; the refusal is the launcher being linux-shaped, never the machine being
+ineligible. Two traps sit behind that gate and bite only once a steward really is the activator. Health is sampled
+immediately after the switch with no settle delay and no retry, and any label that passed before and fails after counts
+as a regression, so a service still coming up reads as one and arms the rollback, which is gated on the host being NixOS
+and so is live on exactly one machine, the one where the operator rebuilds by hand within minutes of each commit, which
+is why that rollback has never once executed. And the last-activated record is written on the success path alone, so a
+failed or rolled-back activation leaves it naming the previous revision: it is wrong in precisely the case you consult
+it. Audit an activation by store path instead, comparing `/run/current-system` before and after against the closure the
+validating build produced, and read the record as a claim rather than evidence. `/run/current-system` disagreeing with
+`/nix/var/nix/profiles/system` means the switch aborted after the profile advanced.
+</self_activation_is_written_for_systemd_and_records_only_its_successes>
+
+<a_verdict_that_cannot_tell_reports_all_clear>
+The steward's divergence count comes from asking git for a remote branch name built by concatenating `origin/` with the
+branch it believes it is on, never by resolving the configured upstream, and both failure paths return zero behind and
+zero ahead. A second route reaches the same place: the branch helper returns the literal string `unknown` when
+`rev-parse` fails, and that interpolates into the same name, so a detached HEAD asks for `origin/unknown` and lands on
+the identical zero. Either way "cannot determine" is published as "no divergence", which is worse than an error, because
+a steward reading zero behind stops looking; it recurred four times on one machine before anyone caught it. Guarding the
+concatenation alone leaves the second route armed, so resolve the upstream with `rev-parse --symbolic-full-name @{u}`
+and surface an unresolvable one as an explicit error state. The same silence bounds deployment, since a checkout parked
+on a branch can only ever deploy that branch point rather than main's tip and no verdict says so.
+</a_verdict_that_cannot_tell_reports_all_clear>
+
 <pushing_to_a_stewarded_repo>
 The steward shares the same checkout and continuously rebases and pushes `main`, so local `main` routinely diverges
 mid-session and the submodule is often dirty during a sync. Land a single commit through a detached worktree
