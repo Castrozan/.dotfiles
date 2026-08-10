@@ -59,19 +59,20 @@ where the granted terminal emulator is the responsible process. If it still abor
 lapsed, and restoring it is owner-only through System Settings, Privacy and Security, App Management.
 </a_darwin_rebuild_over_ssh_cannot_clear_the_app_management_gate>
 
-<detaching_a_rebuild_through_launchctl_destroys_the_app_management_grant>
-Because that grant is per responsible process, the detach mechanism alone decides whether a detached rebuild clears the
-same gate. Detaching through `launchctl` reparents the job until launchd is the responsible process, and launchd holds
-no grant, so the switch aborts exactly as an SSH-launched one does while the machine's own grant is perfectly intact,
-and it aborts after the system profile advanced, so `current-system` is left a generation behind. Detaching instead with
-a double fork plus `setsid` from a pane the granted terminal emulator owns carries that ancestry's responsibility across
-both the fork and the new session, so the process outlives its own pane dying mid-switch and still passes the gate. An
-agent that must not die together with the switch it triggers therefore detaches by session, never by `launchctl`. Read
-the abort wording rather than inferring which trap it is, since the gate prints its "over SSH" variant only when
-`launchctl managername` is not Aqua, so the plain permission-denied text from a job nominally inside the Aqua session is
-this trap. Confirm a grant without spending a whole switch by running home-manager's own `ensureAppManagement` probe,
-which only touches a dotfile inside each linked app bundle.
-</detaching_a_rebuild_through_launchctl_destroys_the_app_management_grant>
+<how_a_rebuild_is_detached_can_cost_it_the_app_management_grant>
+Because that grant is per responsible process, the detach mechanism can decide whether a detached rebuild clears the
+same gate, and the outcome is host dependent rather than universal: a `launchctl` submitted switch has been measured
+both aborting on the gate, with the machine's own grant perfectly intact, and passing it on another host of the same
+fleet, so predict neither result for a host you have not measured. The abort is the expensive case, because it happens
+after the system profile advanced and so leaves `current-system` a generation behind. Prefer a double fork plus
+`setsid` from a pane the granted terminal emulator owns: it carries that ancestry's responsibility across both the fork
+and the new session, has passed the gate wherever it was measured, and still lets the process outlive its own pane
+dying mid-switch. Privilege is not the discriminator, since the switch already runs under `sudo` either way. Settle any
+host cheaply rather than arguing from the mechanism, by running home-manager's own `ensureAppManagement` check, which
+only touches a dotfile inside each linked app bundle, under the detach you intend to use. Read the abort wording rather
+than inferring which trap it is, since the gate prints its "over SSH" variant only when `launchctl managername` is not
+Aqua.
+</how_a_rebuild_is_detached_can_cost_it_the_app_management_grant>
 
 <agenix_stalls_on_a_stale_temporary_file>
 The home-manager agenix activation agent can loop on a stale read-only temporary file it recreates and cannot
