@@ -145,7 +145,16 @@ ineligible. Two traps sit behind that gate and bite only once a steward really i
 immediately after the switch with no settle delay and no retry, and any label that passed before and fails after counts
 as a regression, so a service still coming up reads as one and arms the rollback, which is gated on the host being NixOS
 and so is live on exactly one machine, the one where the operator rebuilds by hand within minutes of each commit, which
-is why that rollback has never once executed. And the last-activated record is written on the success path alone, so a
+is why that rollback has never once executed. Do not read that as the transition being unlikely, because where a probe
+measures how fast an agent pane answers, the post-switch sample is taken in the one window guaranteed to be worst: a
+heavy build has just finished and the supervisor has just restarted every pane. Measured on the linux machine, six
+consecutive validations each ended with exactly one failing probe, always the agent-responsiveness one, with the same
+agent's liveness probe green beside it, while every standalone health-check run between them passed with none failing.
+A probe that passes at rest and fails under build load is not flaky, it is load-deterministic, and it produces precisely
+the pass-then-fail pair the rollback keys on, so the spurious rollback is closer to certain on first use than rare.
+Before trusting any post-switch health sample, compare a probe's failure rate under build load against its rate at
+rest, and never call a repeated post-build failure a flake on the strength of it recovering minutes later. And the
+last-activated record is written on the success path alone, so a
 failed or rolled-back activation leaves it naming the previous revision: it is wrong in precisely the case you consult
 it. Audit an activation by store path instead, comparing `/run/current-system` before and after against the closure the
 validating build produced, and read the record as a claim rather than evidence. `/run/current-system` disagreeing with
