@@ -51,7 +51,12 @@ through the `pgrep` pattern its adapter declares. That pattern must not carry th
 script and the pattern matches nothing, so the previous generation's bridge is never culled and two clients hold one bot
 token and answer everything twice. An eval check fails the build on a pattern containing a store path. The same matching
 is why any shell command containing a reconcile pattern is terminated as a duplicate, so a `pgrep` typed to inspect a
-bridge kills itself; assemble the pattern at runtime or run the inspection from a script file.
+bridge kills itself; assemble the pattern at runtime or run the inspection from a script file. The bridge takes no baked
+one-shot command: it reads the agent's launch config, which carries one one-shot turn command per eligible harness, and
+resolves the active harness from the runtime override on every message, so a manual `clawde harness <agent> <harness>`
+or a failover rewires the Discord channel onto the new harness without the bridge restarting. Each turn is recorded in
+the agent's harness-productivity record against that active harness, which is what lets a channel agent with no
+heartbeat driver accrue the three-empty-turn refusal signature and fail over at all.
 </a_channel_bridge_is_a_headless_sidecar_not_a_window>
 
 <taking_an_agent_offline>
@@ -111,8 +116,10 @@ its entries just before it sends and compares at the next send: a refused reques
 else, any real turn adds the prompt and at least one answer, so two is the line and no byte threshold has to be guessed.
 Measuring after the send instead would miss every turn that finishes inside the window, which for a steward with nothing
 to do is most of them. The run of empty ticks lands in `~/clawde/harness-productivity/<agent>.json`; three in a row is
-the signature, and the supervisor and the health probe both read that one record. Failover only reaches warm
-heartbeat agents, because a `launchOnTrigger` agent runs one turn per gate edge and holds no driver to observe.
+the signature, and the supervisor and the health probe both read that one record. Failover reaches warm agents whose
+turns land in a place clawde can count: heartbeat agents through the driver, and bridged channel agents through the
+bridge recording each turn. A `launchOnTrigger` agent is the one class left out, because it runs one turn per gate edge
+and holds no driver to observe.
 </a_parked_agent_passes_every_liveness_probe>
 
 <a_failover_is_a_loan_not_a_move>
