@@ -1,6 +1,6 @@
 ---
 name: coding
-description: Implement and evolve code safely through clean design, focused tests, measured performance, Git discipline, and worktree isolation. Use for coding, fixing, testing, committing, history, or parallel branch work.
+description: Implement and evolve code safely. Use for coding, fixes, tests, commits, Git history and archaeology, or parallel branch work.
 ---
 
 <implementation>

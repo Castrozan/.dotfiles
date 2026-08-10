@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from instruction_surface_scanner import frontmatter_key_values
 
 EVAL_HARNESS_ROOT = Path(__file__).resolve().parents[2]
 SKILLS_ROOT = (
@@ -12,7 +13,10 @@ SKILLS_ROOT = (
     / "skills"
 )
 SKILL_ROUTING_SUITE = EVAL_HARNESS_ROOT / "evals" / "skill_routing.yaml"
-ROUTER_CATALOG_ENTRY = re.compile(r"^([a-z][a-z0-9-]*) - ", re.MULTILINE)
+ROUTER_CATALOG_ENTRY = re.compile(
+    r"^([a-z][a-z0-9-]*) - (.+)$",
+    re.MULTILINE,
+)
 
 ROUTER_CATALOGS = [
     (SKILL_ROUTING_SUITE, "shared_system_prompt", 10),
@@ -26,7 +30,11 @@ def load_skill_routing_config():
 
 
 def router_catalog_skill_names(config, prompt_key):
-    return ROUTER_CATALOG_ENTRY.findall(config[prompt_key])
+    return [name for name, _ in ROUTER_CATALOG_ENTRY.findall(config[prompt_key])]
+
+
+def router_catalog_descriptions(config, prompt_key):
+    return dict(ROUTER_CATALOG_ENTRY.findall(config[prompt_key]))
 
 
 @pytest.mark.parametrize("config_path,prompt_key,minimum", ROUTER_CATALOGS)
@@ -64,6 +72,31 @@ def test_every_expected_routing_answer_is_offered_by_its_catalog(
     assert not unofferable, (
         f"{config_path.name} routing tests expect an answer the router prompt never "
         f"offers: {unofferable}; the test grades the catalog, not the model"
+    )
+
+
+@pytest.mark.parametrize("config_path,prompt_key,minimum", ROUTER_CATALOGS)
+def test_router_catalog_uses_current_skill_descriptions(
+    config_path, prompt_key, minimum
+):
+    config = yaml.safe_load(config_path.read_text())
+    catalog = router_catalog_descriptions(config, prompt_key)
+    assert len(catalog) >= minimum
+    mismatches = {}
+    for name, routed_description in catalog.items():
+        skill_file = SKILLS_ROOT / name / "SKILL.md"
+        if not skill_file.exists():
+            continue
+        actual_description = (frontmatter_key_values(skill_file.read_text()) or {}).get(
+            "description"
+        )
+        if actual_description != routed_description:
+            mismatches[name] = {
+                "catalog": routed_description,
+                "skill": actual_description,
+            }
+    assert not mismatches, (
+        f"the routing catalog carries stale skill descriptions: {mismatches}"
     )
 
 

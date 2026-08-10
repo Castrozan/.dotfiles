@@ -42,6 +42,12 @@ let
     skillName: builtins.elem skillName interactiveAgentSkills.allSkillNames
   ) interactiveAgentSkills.defaultInteractiveSkillNames;
 
+  generatedAllSkillsDescription =
+    (interactiveAgentSkills.renderAllSkillsIndexSkill interactiveAgentSkills.defaultInteractiveSkillNames)
+    .description;
+  skillRoutingEvaluationSurface = builtins.readFile ../../quality/evaluations/evals/skill_routing.yaml;
+  skillRoutingEvaluationUsesGeneratedAllSkillsDescription = lib.hasInfix generatedAllSkillsDescription skillRoutingEvaluationSurface;
+
   dotfilesCheckoutAgentInstructionFilesAreDeclared =
     builtins.hasAttr ".dotfiles/AGENTS.md" cfgOnTheEvaluatingSystem.home.file
     && builtins.hasAttr ".dotfiles/CLAUDE.md" cfgOnTheEvaluatingSystem.home.file
@@ -97,6 +103,11 @@ in
         && everyRepositorySkillDirectoryCarriesTheRepoLocalSkills
       )
       "the interactive skill catalog must resolve every curated skill and deploy every repo-local skill into each harness project skill directory inside the dotfiles checkout";
+
+  skill-routing-evaluation-matches-generated-all-skills-catalog =
+    mkEvalCheck "skill-routing-evaluation-matches-generated-all-skills-catalog"
+      skillRoutingEvaluationUsesGeneratedAllSkillsDescription
+      "the routing evaluation must use the generated all-skills description so indexed capabilities cannot drift from the deployed catalog";
 
   harness-modules-deploy-git-history = mkEvalCheck "harness-modules-deploy-git-history" (builtins.all
     deploysGitHistory
