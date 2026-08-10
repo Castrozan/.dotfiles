@@ -244,11 +244,13 @@ instruction file that is itself in a closure, so its content is read live. Editi
 `agent-harness/agent-instructions/skills/<skill>/knowledge.md` therefore owes a switch and editing
 `agent-harness/harnesses/<harness>/knowledge.md` does not, confirmed on three machines across two platforms. Resolve
 the wrapper toplevel and compare against the running system rather than assuming a docs commit changes nothing, and do
-not use the toplevel the validation result records: on a host deploying through a wrapper flake that path is the
-revision-pinned bare build, a different derivation from the wrapper's that never equals the running system, so
-comparing the two answers a question about neither. Pin the revision into the deployed flake instead, with `nix eval
---override-input dotfiles <repo>?rev=<sha>` against the wrapper, which answers for any revision without moving the
-checkout.
+not use the toplevel the validation result records until you have checked that what it built is what deploys, which no
+result file states: where a wrapper flake sits between repo and deploy that path is the revision-pinned bare build, a
+different derivation that never equals the running system, so comparing the two answers a question about neither. A
+host where the comparison is valid is usually safe by the shape of its backend rather than by anyone having checked,
+which is why the check belongs in the reader and not in the host. Pin the revision into the deployed flake instead,
+with `nix eval --override-input dotfiles <repo>?rev=<sha>` against the wrapper, which answers for any revision without
+moving the checkout.
 </which_tree_a_prose_edit_lands_in_decides_whether_it_owes_an_activation>
 
 <pushing_to_a_stewarded_repo>
