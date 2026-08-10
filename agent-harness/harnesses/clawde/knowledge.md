@@ -149,7 +149,13 @@ is why that rollback has never once executed. And the last-activated record is w
 failed or rolled-back activation leaves it naming the previous revision: it is wrong in precisely the case you consult
 it. Audit an activation by store path instead, comparing `/run/current-system` before and after against the closure the
 validating build produced, and read the record as a claim rather than evidence. `/run/current-system` disagreeing with
-`/nix/var/nix/profiles/system` means the switch aborted after the profile advanced.
+`/nix/var/nix/profiles/system` means the switch aborted after the profile advanced. That audit carries an ordering
+constraint worth holding, because losing it costs the evidence rather than the machine. Where a host builds through a
+wrapper flake taking the stewarded repo as a `git+file` input, resolving that wrapper's toplevel answers for whatever
+revision the checkout points at right now, so the one-command check is available only while the checkout still sits on
+the revision in question and returns a different closure the moment you sync. Capture the live closure's identity before
+moving the checkout, never after, or attributing a generation somebody else activated needs an explicit input override
+to reproduce.
 </self_activation_is_written_for_systemd_and_records_only_its_successes>
 
 <a_verdict_that_cannot_tell_reports_all_clear>
@@ -161,8 +167,21 @@ the identical zero. Either way "cannot determine" is published as "no divergence
 a steward reading zero behind stops looking; it recurred four times on one machine before anyone caught it. Guarding the
 concatenation alone leaves the second route armed, so resolve the upstream with `rev-parse --symbolic-full-name @{u}`
 and surface an unresolvable one as an explicit error state. The same silence bounds deployment, since a checkout parked
-on a branch can only ever deploy that branch point rather than main's tip and no verdict says so.
+on a branch can only ever deploy that branch point rather than main's tip and no verdict says so. Syncing the checkout
+out of that state is not always available, the branch often being the operator's live work with uncommitted files, so
+move the ref rather than the tree: `git fetch origin main:main` fast-forwards local `main` while the working tree stays
+on their branch untouched, which keeps the machine current without ever putting their edits at risk.
 </a_verdict_that_cannot_tell_reports_all_clear>
+
+<the_local_green_proof_is_the_only_gate_on_main>
+Required status checks are configured on `main`, and the fleet's pushes do not satisfy them, they bypass them: the
+remote answers each push reporting the rule violation as bypassed, so branch protection never blocks a steward and a
+push that skipped its local validation would land unchallenged. The green-before-push proof each machine runs is
+therefore the only thing actually protecting the branch, load-bearing rather than a second belt behind the ruleset.
+Read the ruleset with `gh api repos/<owner>/<repo>/rules/branches/main` instead of inferring it from a push message,
+and expect its required contexts to name JOBS while a run watcher reports WORKFLOWS; a watch on the workflow containing
+those jobs is a superset of the ruleset and implies it, never the reverse.
+</the_local_green_proof_is_the_only_gate_on_main>
 
 <pushing_to_a_stewarded_repo>
 The steward shares the same checkout and continuously rebases and pushes `main`, so local `main` routinely diverges
