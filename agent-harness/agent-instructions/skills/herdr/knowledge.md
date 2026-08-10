@@ -20,6 +20,16 @@ not own; the unshifted prefix-plus-digit tab switch is the only safe indexed cho
 binding.
 </shifted_digit_chords_are_destructive>
 
+<a_lingering_ctrl_turns_a_prefix_chord_into_a_dead_key>
+The prefix right-hand side matches on exact modifier equality, with a fallback for a lone shift and none for control,
+so a chord typed before the finger leaves control arrives as control plus the letter and matches the plain-letter
+binding on nothing. An unmatched right-hand side leaves prefix mode silently and never reaches the pane, so the chord
+reads as a dead key rather than a stray character and fails only intermittently. Give such an action both spellings as
+an array. Where the control spelling already carries a binding the fast chord fires that other action instead of
+nothing, and a letter whose control code owns a key of its own is uncoverable, since the host input parser reads 0x09
+as a bare tab.
+</a_lingering_ctrl_turns_a_prefix_chord_into_a_dead_key>
+
 <pane_run_wedges_after_a_full_screen_tui>
 The pane-run verb delivers its command as a bracketed paste. A shell that just came back from a full-screen TUI killed
 without restoring the terminal cannot consume the paste framing: the command lands with a literal paste marker, the
