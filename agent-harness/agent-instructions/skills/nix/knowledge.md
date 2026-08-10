@@ -27,7 +27,9 @@ On the host built through the machine-local entrypoint flake, the rebuild copies
 directory and builds from there with lock writing disabled, and that directory carries no lock at all, so the dotfiles
 input resolves fresh at the branch tip on every rebuild. Landing the commit on the branch is therefore the whole deploy
 step, and the wrapper's own recorded revision can sit arbitrarily far behind without holding anything back. When a
-change fails to appear, do not chase a stale lock there; check whether the commit reached the branch.
+change fails to appear, do not chase a stale lock there; check whether the commit reached the branch. Only the switch
+refreshes that copy, so an entrypoint edit not yet switched leaves the system flake directory on the superseded flake
+and any proof resolved from it silently reports green for the old one; compare the two before trusting such a proof.
 </the_machine_local_wrapper_lock_is_not_in_the_deploy_path>
 
 <a_oneshot_that_runs_long_hangs_every_rebuild_that_restarts_it>
