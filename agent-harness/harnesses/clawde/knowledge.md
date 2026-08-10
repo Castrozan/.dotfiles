@@ -169,6 +169,23 @@ without any sync at all. Capture the live closure's identity before moving the c
 generation somebody else activated needs an explicit input override to reproduce.
 </self_activation_is_written_for_systemd_and_records_only_its_successes>
 
+<a_post_switch_regression_costs_the_record_even_where_it_cannot_roll_back>
+Off NixOS the rollback is not merely gated, it is skipped outright with a null exit code and a line saying automatic
+rollback is unavailable, which reads like the trap being harmless there. It is not, because the regression branch
+returns before the last-activated write is reached, so nothing is ever stamped. The outcome on such a host is that the
+switch succeeds and stays live, the result records a regression, and the record still names the previous revision: a
+successful activation filed as a failure. The two defects are one chain rather than two neighbours, since the health
+trap is what triggers the ledger trap, and what it costs is exactly the evidence a later steward consults to decide what
+is running. Audit by store path and the chain is visible; trust the record and it is invisible. Which machines can even
+show it is a question about the clock, not the code. Where an agent-responsiveness probe carries an applicability gate
+tied to that agent's active hours, the probe skips outside them, and a skipped probe presents no pass-then-fail pair at
+all. So an after-hours activation on such a host produces a clean result whatever the code does, and reading a run of
+clean after-hours activations as the host being unaffected confuses untested with immune. Settle it without activating
+anything, since any validation run inside the gated hours samples those probes in the same just-finished-build window:
+compare that sample against one taken at rest. A host whose probe carries no such gate cannot answer the question for a
+host whose probe does.
+</a_post_switch_regression_costs_the_record_even_where_it_cannot_roll_back>
+
 <a_verdict_that_cannot_tell_reports_all_clear>
 The steward's divergence count comes from asking git for a remote branch name built by concatenating `origin/` with the
 branch it believes it is on, never by resolving the configured upstream, and both failure paths return zero behind and
