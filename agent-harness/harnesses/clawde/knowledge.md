@@ -236,6 +236,24 @@ mid-validation reproves a different revision than the result file is named after
 compare at the end, and hold commits while such a phase is in flight.
 </a_worker_that_runs_in_the_tree_it_proves_can_void_its_own_proof>
 
+<a_process_match_that_can_match_the_matcher>
+Any pattern matched against process command lines must be written so it cannot match the command doing the matching,
+because whether it does depends on how the harness wrapped that command rather than on intent, and the same pattern
+self-matches in one invocation and not the next on one machine. The failure is silent in both directions: on the kill
+side it terminates your own shell instead of the worker, and on the read side it counts your own shell as a live
+worker, so a finished detached job reads as still running. Write the bracket form, `validate-runner[.]py`, which cannot
+match itself and returns the identical result where the naive pattern was already fine. Reading the matched command
+line rather than the pid count is what catches it after the fact.
+</a_process_match_that_can_match_the_matcher>
+
+<a_check_you_have_only_seen_pass_is_untested>
+A verification whose success output does not depend on its measurement is not a verification: an unconditional ok line
+prints beside the violation it was meant to catch, and a checker pointed at a mistyped path reports a silence that
+reads as clean. Make the success branch conditional on finding zero violations, fail loudly on an unreadable target,
+and prove the failure paths by forcing them once, tightening the threshold until it fires and aiming it at a
+nonexistent file, before trusting the passing case.
+</a_check_you_have_only_seen_pass_is_untested>
+
 <which_tree_a_prose_edit_lands_in_decides_whether_it_owes_an_activation>
 A commit touching only prose is not automatically activation-free, because part of the instruction tree is materialized
 into the system closure and part is read from the checkout at runtime: the skills tree is symlinked in from
