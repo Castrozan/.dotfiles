@@ -22,6 +22,8 @@ map("n", "<C-t>", pickers.workspace_symbols, { desc = "Workspace symbols" })
 
 map("n", "<C-/>", "gcc", { remap = true, desc = "Toggle comment" })
 map("v", "<C-/>", "gc", { remap = true, desc = "Toggle comment (visual)" })
+map("n", "<C-;>", "gcc", { remap = true, desc = "Toggle comment" })
+map("v", "<C-;>", "gc", { remap = true, desc = "Toggle comment (visual)" })
 
 map("n", "<C-n>", file_creation.create, { desc = "Create file in current directory" })
 map("n", "<C-S-b>", file_explorer.toggle_visibility, { desc = "Toggle file explorer" })

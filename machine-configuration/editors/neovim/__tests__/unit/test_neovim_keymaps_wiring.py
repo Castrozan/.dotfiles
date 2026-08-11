@@ -16,6 +16,12 @@ EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
     "<S-F12>": "Find references",
     "<C-PageUp>": "Previous open file",
     "<C-PageDown>": "Next open file",
+    "<C-;>": "Toggle comment",
+}
+
+EXPECTED_VISUAL_MODE_DESCRIPTIONS = {
+    "<C-;>": "Toggle comment (visual)",
+    "<C-/>": "Toggle comment (visual)",
 }
 
 EXPECTED_INSERT_MODE_DESCRIPTIONS = {
@@ -75,6 +81,16 @@ def test_every_owned_chord_reaches_the_module_that_implements_it(
           assert(
             mapping and mapping.desc ~= nil,
             chord .. " lost its scroll mapping in visual mode"
+          )
+        end
+
+        local expected_visual_descriptions =
+          vim.fn.json_decode({json.dumps(json.dumps(EXPECTED_VISUAL_MODE_DESCRIPTIONS))})
+        for chord, expected_description in pairs(expected_visual_descriptions) do
+          local mapping = vim.fn.maparg(chord, "v", false, true)
+          assert(
+            mapping and mapping.desc == expected_description,
+            chord .. " is mapped to " .. vim.inspect(mapping and mapping.desc) .. " in visual mode"
           )
         end
 
