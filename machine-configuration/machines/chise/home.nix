@@ -25,7 +25,6 @@ in
     ../../home-automation/home-assistant/home-assistant-home-manager.nix
     ../../desktop/hyprland/hyprland-nixos.nix
     ../../../agent-harness/harnesses/opencode
-    # ../../../agent-harness/harnesses/pi  # not installed: the module stays in the tree, unimported, until pi earns a place next to claude, codex and opencode
     ../../development/testing/testing-home-manager.nix
 
     ../../terminal/shell/bash/bash-home-manager.nix
