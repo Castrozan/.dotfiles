@@ -4,7 +4,7 @@
   ...
 }:
 let
-  suwayomiBindAddress = import ../tailnet-bind-address.nix { inherit lib; };
+  suwayomiBindAddress = import ../../tailnet-bind-address.nix { inherit lib; };
   suwayomiGraphqlUrl = "http://${suwayomiBindAddress}:4567/api/graphql";
   extensionRepositoriesPackageDirectory = ./scripts/suwayomi_extension_repositories;
   declaredRepositoryListFile = "/run/agenix/suwayomi-extension-repositories";

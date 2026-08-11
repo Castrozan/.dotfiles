@@ -9,7 +9,7 @@ let
   homeDir = config.home.homeDirectory;
   arrStackDataRoot = "${homeDir}/arr-stack/data";
   mangaDownloadRoot = "${arrStackDataRoot}/manga";
-  chiseTailnetBindAddress = import ./tailnet-bind-address.nix { inherit lib; };
+  chiseTailnetBindAddress = import ../tailnet-bind-address.nix { inherit lib; };
   suwayomiServerPackage = import ./suwayomi-server-release-ahead-of-nixpkgs.nix { inherit latest; };
   kcefChromiumLibraryPath = import ./runtime-downloaded-kcef-chromium-library-path.nix {
     inherit pkgs;

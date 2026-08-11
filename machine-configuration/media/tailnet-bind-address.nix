@@ -1,6 +1,6 @@
 { lib }:
 let
-  machineIdentityMapPath = ../../../private-configuration/machines.nix;
+  machineIdentityMapPath = ../../private-configuration/machines.nix;
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
 in

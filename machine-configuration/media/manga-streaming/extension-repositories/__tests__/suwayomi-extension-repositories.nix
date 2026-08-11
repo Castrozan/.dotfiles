@@ -53,8 +53,8 @@ let
   theProvisionerShipsWithEveryServer = lib.hasInfix "./extension-repositories/suwayomi-extension-repositories-home-manager.nix" serverModuleText;
 
   theProvisionerReachesTheAddressTheServerBindsTo =
-    lib.hasInfix "import ../tailnet-bind-address.nix" provisionerModuleText
-    && lib.hasInfix "import ./tailnet-bind-address.nix" serverModuleText;
+    lib.hasInfix "import ../../tailnet-bind-address.nix" provisionerModuleText
+    && lib.hasInfix "import ../tailnet-bind-address.nix" serverModuleText;
 
   aHostWithoutTheSecretLeavesSuwayomiAlone =
     lib.hasInfix "if not list_file_path.is_file()" declarationText
