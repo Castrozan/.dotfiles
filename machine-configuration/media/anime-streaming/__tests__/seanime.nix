@@ -53,6 +53,14 @@ in
       )
       "torrent pieces must land under the per-session runtime directory rather than becoming a second persistent anime library";
 
+  chise-seanime-peer-listener-keeps-the-dual-stack-default =
+    mkEvalCheck "chise-seanime-peer-listener-keeps-the-dual-stack-default"
+      (
+        lib.hasInfix ''"torrentClientHost": ""'' provisionerConfigurationSource
+        && lib.hasInfix ''"streamingServerHost": "127.0.0.1"'' provisionerConfigurationSource
+      )
+      "Seanime must choose compatible IPv4 and IPv6 peer listeners itself while keeping its HTTP streaming server on loopback";
+
   chise-seanime-does-not-import-streams =
     mkEvalCheck "chise-seanime-does-not-import-streams"
       (
