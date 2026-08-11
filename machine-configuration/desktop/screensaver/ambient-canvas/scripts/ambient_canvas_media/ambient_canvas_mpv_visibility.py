@@ -1,15 +1,9 @@
 import json
 import subprocess
 import threading
-import time
 
 VISIBILITY_POLL_INTERVAL_SECONDS = 1.0
 HYPRCTL_ACTIVE_WORKSPACE_COMMAND = ["hyprctl", "-j", "activeworkspace"]
-PLAYER_WINDOW_TITLE = "ambient-canvas-gpu-screensaver"
-WINDOW_MAP_WAIT_ATTEMPTS = 40
-WINDOW_MAP_WAIT_INTERVAL_SECONDS = 0.25
-WINDOW_PIN_RETRY_ATTEMPTS = 10
-WINDOW_PIN_RETRY_INTERVAL_SECONDS = 1.0
 
 
 def resolve_active_workspace_id():
@@ -27,74 +21,6 @@ def resolve_active_workspace_id():
         return json.loads(completed.stdout).get("id")
     except (ValueError, AttributeError):
         return None
-
-
-def run_hyprctl_command(dispatch_arguments):
-    try:
-        subprocess.run(
-            ["hyprctl", "dispatch", *dispatch_arguments],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=3,
-        )
-    except (subprocess.TimeoutExpired, OSError):
-        pass
-
-
-def window_is_mapped():
-    try:
-        completed = subprocess.run(
-            ["hyprctl", "-j", "clients"],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=3,
-        )
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
-        return False
-    try:
-        clients = json.loads(completed.stdout)
-    except (ValueError, AttributeError):
-        return False
-    return any(
-        client.get("title") == PLAYER_WINDOW_TITLE and client.get("mapped")
-        for client in clients
-    )
-
-
-def pin_player_window_to_workspace():
-    for _ in range(WINDOW_MAP_WAIT_ATTEMPTS):
-        if window_is_mapped():
-            break
-        time.sleep(WINDOW_MAP_WAIT_INTERVAL_SECONDS)
-    for _ in range(WINDOW_PIN_RETRY_ATTEMPTS):
-        run_hyprctl_command(["focuswindow", f"title:^{PLAYER_WINDOW_TITLE}$"])
-        run_hyprctl_command(["fullscreen"])
-        time.sleep(WINDOW_PIN_RETRY_INTERVAL_SECONDS)
-        if window_is_fullscreen():
-            return
-
-
-def window_is_fullscreen():
-    try:
-        completed = subprocess.run(
-            ["hyprctl", "-j", "clients"],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=3,
-        )
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
-        return False
-    try:
-        clients = json.loads(completed.stdout)
-    except (ValueError, AttributeError):
-        return False
-    return any(
-        client.get("title") == PLAYER_WINDOW_TITLE and client.get("fullscreen")
-        for client in clients
-    )
 
 
 class VisibilityGatedPlaybackController:
