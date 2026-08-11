@@ -10,17 +10,17 @@ let
   };
   opencodeGo = import ./go-provider.nix { inherit (config.home) homeDirectory; };
 
-  version = "1.18.14";
+  version = "1.18.16";
 
   opencodeUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseAssetName = "opencode-linux-x64.tar.gz";
-      sha256 = "sha256-8jmAuirr+/pTlI5V4hPT8qU3QP1zJlU4KOia0n6XBXI=";
+      sha256 = "sha256-KG4HNV3wZzjBkFlVvhW3+8EKexLZMd6TlKb3WXJGdQs=";
       buildInputs = [ ];
     };
     "aarch64-darwin" = {
       releaseAssetName = "opencode-darwin-arm64.zip";
-      sha256 = "sha256-rYElu2SQhuuSEKh7vSesRTpSbiQyrr1NPJhT4tQuMpE=";
+      sha256 = "sha256-HmcMlDQaN0gk3GcAtvOLLLZjS688og5kUITDPOZjkyA=";
       buildInputs = [ ];
     };
   };
