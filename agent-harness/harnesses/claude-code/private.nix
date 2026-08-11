@@ -44,5 +44,5 @@ let
   );
 in
 {
-  home.file = privateAgentSymlinks // machineClaudeSymlinks;
+  home.file = privateAgentSymlinks // machineClaudeHomeFileSymlinks;
 }
