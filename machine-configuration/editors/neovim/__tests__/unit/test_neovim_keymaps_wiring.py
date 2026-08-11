@@ -19,6 +19,8 @@ EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
     "<C-;>": "Toggle comment",
     "<C-Left>": "Jump to previous word in the line",
     "<C-Right>": "Jump to next word in the line",
+    "<C-.>": "Show symbol information",
+    "<C-CR>": "Import the symbol under the cursor",
 }
 
 EXPECTED_VISUAL_MODE_DESCRIPTIONS = {

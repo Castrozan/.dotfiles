@@ -80,6 +80,19 @@ and `buffer_closing.lua` already reads that same order when it picks what to foc
 the native previous and next tab page motions, which `gT` and `gt` still carry unmapped. Only the
 cycling came back: `C-S-PageUp` and `C-S-PageDown`, which reordered the open files, stay removed.
 
+`C-CR` imports the symbol under the cursor and `C-.` shows what that symbol is, both on the owner's
+explicit request. `lua/config/missing_imports.lua` asks the language server for the code actions at
+the cursor and applies the one whose title adds an import, so it works wherever a server offers the
+fix rather than only in Java. Two narrowings earn one press instead of a menu: the request carries
+only the diagnostics whose range covers the cursor, so a line with two unresolved symbols offers
+the one being pointed at, and titles that remove, delete, organize or add all missing imports are
+rejected, so the chord neither strips an import while reaching for one nor stops to ask between the
+single import and the bulk fixes. A genuinely ambiguous symbol still opens the picker, which is the
+only honest answer there. `C-.` carried the generic code action menu before and carries
+`vim.lsp.buf.hover` now, which is the information the owner asked for; the menu it lost still lives
+on LazyVim's `leader c a`, along with the bulk import fixes. Normal mode only, like the other LSP
+chords in the table.
+
 `C-Left` and `C-Right` jump a word without ever leaving the line, on the owner's explicit request,
 which is why they came off the removed list. Native `C-Left` and `C-Right` are `B` and `W`, so from
 the first word of a line they land on the previous line's last WORD rather than at the line's edge,
