@@ -22,29 +22,25 @@ let
     }) privateAgentFiles
   );
 
-  # Files Claude reads straight out of ~/.claude on this machine alone, such as the
-  # employer daily report template a plugin command renders into. The same directory
-  # carries nix modules other harness pieces import, so only non-nix regular files
-  # become home files.
-  machineClaudeDir = ../../../private-configuration/machines + "/${hostname}/claude";
+  machineClaudeHomeFilesDir = ../../../private-configuration/machines + "/${hostname}/claude";
 
-  machineClaudeFiles =
-    if builtins.pathExists machineClaudeDir then
+  machineClaudeHomeFiles =
+    if builtins.pathExists machineClaudeHomeFilesDir then
       builtins.attrNames (
         lib.filterAttrs (fileName: fileType: fileType == "regular" && !lib.hasSuffix ".nix" fileName) (
-          builtins.readDir machineClaudeDir
+          builtins.readDir machineClaudeHomeFilesDir
         )
       )
     else
       [ ];
 
-  machineClaudeSymlinks = builtins.listToAttrs (
+  machineClaudeHomeFileSymlinks = builtins.listToAttrs (
     map (filename: {
       name = ".claude/${filename}";
       value = {
-        source = "${machineClaudeDir}/${filename}";
+        source = "${machineClaudeHomeFilesDir}/${filename}";
       };
-    }) machineClaudeFiles
+    }) machineClaudeHomeFiles
   );
 in
 {

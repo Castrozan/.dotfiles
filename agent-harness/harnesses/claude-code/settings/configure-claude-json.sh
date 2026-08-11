@@ -50,9 +50,6 @@ jq_filter+=' | .themeOnboardingHasBeenSet //= true'
 jq_filter+=' | .announcementImpressions["fable-5-promo-2"] = 9999999'
 jq_filter+=' | .announcementImpressions["fable-5-promo-2-2"] = 9999999'
 jq_filter+=' | .announcementImpressions |= ((. // {}) | with_entries(if (.key | test("^fable")) then .value = 9999999 else . end))'
-# Claude auto-installs the official plugin marketplace once per machine, gated on
-# this flag; the marketplace is not used here, so record the attempt before the
-# first launch to keep it and its plugins from ever landing.
 jq_filter+=' | .officialMarketplaceAutoInstallAttempted = true'
 for path_index in "${!trust_paths[@]}"; do
 	jq_arguments+=(--arg "path_${path_index}" "${trust_paths[$path_index]}")
