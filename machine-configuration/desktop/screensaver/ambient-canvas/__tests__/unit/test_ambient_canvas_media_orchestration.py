@@ -13,7 +13,13 @@ LAPTOP_CAPTURE_TARGET = RecordedLoopCaptureTarget(
 
 
 def _install_orchestration_stubs(
-    monkeypatch, *, fresh, render_result, display_running, loop_exists=True
+    monkeypatch,
+    *,
+    fresh,
+    render_result,
+    display_running,
+    loop_exists=True,
+    record_pass_running=False,
 ):
     observed_calls = []
     monkeypatch.setattr(ensure, "recorded_loop_is_fresh", lambda *ignored: fresh)
@@ -24,6 +30,7 @@ def _install_orchestration_stubs(
         return render_result
 
     monkeypatch.setattr(ensure, "render_recorded_loop", fake_render)
+    monkeypatch.setattr(ensure, "a_record_pass_is_running", lambda: record_pass_running)
     monkeypatch.setattr(
         ensure, "is_display_running_for_loop", lambda *ignored: display_running
     )
@@ -121,6 +128,18 @@ def test_stale_render_failure_falls_back_to_existing_loop(monkeypatch):
     )
     assert result == 0
     assert calls == ["render", "stop", "wait", "launch"]
+
+
+def test_stale_loop_skips_render_while_a_record_pass_is_running(monkeypatch):
+    result, calls = _run_ensure(
+        monkeypatch,
+        fresh=False,
+        render_result=None,
+        display_running=False,
+        record_pass_running=True,
+    )
+    assert result == 0
+    assert calls == []
 
 
 def test_the_running_display_is_matched_by_the_manifest_it_was_launched_with():

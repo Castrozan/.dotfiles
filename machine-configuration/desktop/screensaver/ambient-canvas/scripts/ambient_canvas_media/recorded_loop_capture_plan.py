@@ -1,5 +1,7 @@
 import urllib.parse
 
+import ambient_canvas_browser
+
 DEFAULT_CAPTURE_DURATION_SECONDS = None
 DEFAULT_CAPTURE_FRAMES_PER_SECOND = 30
 CAPTURE_PIXEL_HEIGHT = 1080
@@ -53,6 +55,11 @@ def build_record_browser_arguments(
     browser_executable_path, record_index_url, throwaway_profile_directory, geometry
 ):
     window_width, window_height, window_left, window_top = geometry
+    platform_arguments = (
+        ["--disable-accelerated-video-decode"]
+        if not ambient_canvas_browser.resolve_platform().startswith("darwin")
+        else []
+    )
     return [
         browser_executable_path,
         f"--app={record_index_url}",
@@ -64,6 +71,7 @@ def build_record_browser_arguments(
         "--autoplay-policy=no-user-gesture-required",
         "--disable-translate",
         "--use-gl=angle",
+        *platform_arguments,
         "--disable-background-timer-throttling",
         "--disable-backgrounding-occluded-windows",
         "--disable-renderer-backgrounding",

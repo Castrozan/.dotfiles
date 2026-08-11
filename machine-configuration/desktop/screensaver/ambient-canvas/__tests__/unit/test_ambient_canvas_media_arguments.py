@@ -100,20 +100,40 @@ def test_the_measured_solo_bonsai_composition_clears_the_minimum_recorded_bytes(
     )
 
 
-def test_build_record_browser_arguments_use_throwaway_profile_and_gl():
+def test_build_record_browser_arguments_use_throwaway_profile_and_gl(monkeypatch):
+    monkeypatch.setattr(
+        capture_plan.ambient_canvas_browser, "resolve_platform", lambda: "linux"
+    )
+    arguments = capture_plan.build_record_browser_arguments(
+        "/usr/bin/google-chrome-stable",
+        "file:///store/index.html?record=1",
+        "/tmp/throwaway",
+        (1440, 720, 280, 140),
+    )
+    assert arguments[0].endswith("google-chrome-stable")
+    assert "--app=file:///store/index.html?record=1" in arguments
+    assert "--user-data-dir=/tmp/throwaway" in arguments
+    assert "--window-size=1440,720" in arguments
+    assert "--use-gl=angle" in arguments
+    assert "--disable-accelerated-video-decode" in arguments
+    assert "--disable-background-timer-throttling" in arguments
+    assert "--disable-backgrounding-occluded-windows" in arguments
+
+
+def test_build_record_browser_arguments_on_darwin_keep_hardware_video_decode(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        capture_plan.ambient_canvas_browser, "resolve_platform", lambda: "darwin"
+    )
     arguments = capture_plan.build_record_browser_arguments(
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
         "file:///store/index.html?record=1",
         "/tmp/throwaway",
         (1440, 720, 280, 140),
     )
-    assert arguments[0].endswith("Google Chrome")
-    assert "--app=file:///store/index.html?record=1" in arguments
-    assert "--user-data-dir=/tmp/throwaway" in arguments
-    assert "--window-size=1440,720" in arguments
     assert "--use-gl=angle" in arguments
-    assert "--disable-background-timer-throttling" in arguments
-    assert "--disable-backgrounding-occluded-windows" in arguments
+    assert "--disable-accelerated-video-decode" not in arguments
 
 
 def test_resolve_index_file_path_is_none_without_environment(monkeypatch):

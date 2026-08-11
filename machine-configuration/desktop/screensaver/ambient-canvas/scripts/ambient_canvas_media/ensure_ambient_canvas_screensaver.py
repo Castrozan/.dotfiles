@@ -92,6 +92,10 @@ def wait_for_every_display_to_exit(
         time.sleep(poll_interval_seconds)
 
 
+def a_record_pass_is_running():
+    return a_process_matches(["-f", "ambient-canvas-record-"])
+
+
 def ensure_screensaver(
     index_file_path,
     capture_target,
@@ -103,6 +107,8 @@ def ensure_screensaver(
     loop_directory = capture_target.loop_directory
     recorded_loop_was_replaced = False
     if not recorded_loop_is_fresh(loop_directory, source_identifier):
+        if a_record_pass_is_running():
+            return 0
         rendered_manifest_path = render_recorded_loop(
             index_file_path,
             capture_target,
