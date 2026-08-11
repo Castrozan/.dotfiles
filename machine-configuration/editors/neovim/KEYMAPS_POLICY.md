@@ -76,6 +76,12 @@ and `buffer_closing.lua` already reads that same order when it picks what to foc
 the native previous and next tab page motions, which `gT` and `gt` still carry unmapped. Only the
 cycling came back: `C-S-PageUp` and `C-S-PageDown`, which reordered the open files, stay removed.
 
+Completion accepts on `Tab` rather than on `Enter`, on the owner's explicit request. It is the
+blink.cmp `super-tab` preset selected in `lua/plugins/blink-cmp.lua`, not a hand-written mapping, so
+`Tab` accepts the selected item, falls through to snippet and AI jumps, and still indents when no
+menu is open, while `Enter` goes back to opening a line. `C-y` keeps accepting too, the way LazyVim
+binds it.
+
 ## Canonical references
 
 Find how Neovim itself does a thing before proposing any mapping:
