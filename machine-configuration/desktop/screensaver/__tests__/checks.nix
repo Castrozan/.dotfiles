@@ -18,16 +18,28 @@ let
   darwinInstallsHerdrScreensaver = packageIsInstalled "herdr-screensaver" darwinCfg;
   aliasGuardedByCommandExistence = lib.hasInfix "command -v herdr-screensaver" aliasesContent;
 
+  darwinInstallsAmbientCanvas = packageIsInstalled "ambient-canvas" darwinCfg;
+  linuxInstallsAmbientCanvas = packageIsInstalled "ambient-canvas" linuxCfg;
   darwinInstallsAmbientCanvasLoopRenderer = packageIsInstalled "ambient-canvas-render" darwinCfg;
   linuxInstallsAmbientCanvasLoopRenderer = packageIsInstalled "ambient-canvas-render" linuxCfg;
 
   darwinCompilesAmbientCanvasNativePlayer = darwinCfg.home.activation ? compileAmbientCanvasPlayer;
   linuxCompilesAmbientCanvasNativePlayer = linuxCfg.home.activation ? compileAmbientCanvasPlayer;
+
+  linuxInstallsAmbientCanvasMpvPlayer =
+    linuxCfg.home.file ? "${linuxCfg.home.homeDirectory}/.local/bin/ᓚᘏᗢ";
+  darwinInstallsAmbientCanvasMpvPlayer =
+    darwinCfg.home.file ? "${darwinCfg.home.homeDirectory}/.local/bin/ᓚᘏᗢ";
+
+  linuxWiresAmbientCanvasKeepAlive =
+    (linuxCfg.systemd.user.services ? ambient-canvas)
+    && (linuxCfg.systemd.user.timers ? ambient-canvas);
+  darwinWiresAmbientCanvasKeepAlive = darwinCfg.launchd.agents ? ambient-canvas;
 in
 {
   domain-screensaver-herdr-launcher-installed-on-linux =
     mkEvalCheck "domain-screensaver-herdr-launcher-installed-on-linux" linuxInstallsHerdrScreensaver
-      "the herdr terminal screensaver (herdr-screensaver) must be installed on Linux, whose screensaver is the herdr terminal grid";
+      "the herdr terminal screensaver (herdr-screensaver) must be installed on Linux alongside the ambient-canvas player, which is the primary Linux screensaver";
 
   domain-screensaver-herdr-launcher-gated-out-on-darwin =
     mkEvalCheck "domain-screensaver-herdr-launcher-gated-out-on-darwin"
@@ -44,18 +56,28 @@ in
       (darwinInstallsHerdrScreensaver || aliasGuardedByCommandExistence)
       "aliases.sh defines h for every platform that sources it, but herdr-screensaver installs only on Linux, so on darwin the alias must be guarded by command -v herdr-screensaver or typing h runs a missing binary";
 
-  domain-screensaver-ambient-canvas-is-darwin-only =
-    mkEvalCheck "domain-screensaver-ambient-canvas-is-darwin-only"
-      (packageIsInstalled "ambient-canvas" darwinCfg && !(packageIsInstalled "ambient-canvas" linuxCfg))
-      "the ambient-canvas screensaver must build only on darwin, where its native pre-recorded loop window never touches the wezterm frame budget, and never on Linux, where the herdr grid is used instead";
+  domain-screensaver-ambient-canvas-launcher-installed-on-both =
+    mkEvalCheck "domain-screensaver-ambient-canvas-launcher-installed-on-both"
+      (darwinInstallsAmbientCanvas && linuxInstallsAmbientCanvas)
+      "the ambient-canvas launcher drives the pre-recorded loop on both platforms, so it must be a home package on darwin and on Linux";
 
-  domain-screensaver-ambient-canvas-loop-renderer-is-darwin-only =
-    mkEvalCheck "domain-screensaver-ambient-canvas-loop-renderer-is-darwin-only"
-      (darwinInstallsAmbientCanvasLoopRenderer && !linuxInstallsAmbientCanvasLoopRenderer)
-      "the ambient-canvas-render command regenerates the pre-recorded loop video from the web scenes and must install only on darwin alongside the ambient-canvas launcher, the darwin-only consumer of that media";
+  domain-screensaver-ambient-canvas-loop-renderer-installed-on-both =
+    mkEvalCheck "domain-screensaver-ambient-canvas-loop-renderer-installed-on-both"
+      (darwinInstallsAmbientCanvasLoopRenderer && linuxInstallsAmbientCanvasLoopRenderer)
+      "the ambient-canvas-render command regenerates the pre-recorded loop video from the web scenes and is the shared recording pipeline on both platforms, so it must install on darwin and on Linux";
 
   domain-screensaver-ambient-canvas-native-player-compiled-on-darwin-only =
     mkEvalCheck "domain-screensaver-ambient-canvas-native-player-compiled-on-darwin-only"
       (darwinCompilesAmbientCanvasNativePlayer && !linuxCompilesAmbientCanvasNativePlayer)
-      "the ambient-canvas-player Swift AVPlayer binary is what plays the pre-recorded loop 24/7 in place of a browser, so its compile activation must run only on darwin, where swiftc and AVFoundation exist, and never on Linux";
+      "the ambient-canvas-player Swift AVPlayer binary is the darwin playback backend, so its compile activation must run only on darwin, where swiftc and AVFoundation exist, and never on Linux, whose backend is the mpv driver";
+
+  domain-screensaver-ambient-canvas-mpv-player-installed-on-linux-only =
+    mkEvalCheck "domain-screensaver-ambient-canvas-mpv-player-installed-on-linux-only"
+      (linuxInstallsAmbientCanvasMpvPlayer && !darwinInstallsAmbientCanvasMpvPlayer)
+      "the mpv-based player must be installed as ~/.local/bin/ᓚᘏᗢ only on Linux, where it replaces the Swift AVPlayer as the recorded-loop playback backend";
+
+  domain-screensaver-ambient-canvas-keep-alive-wired-per-platform =
+    mkEvalCheck "domain-screensaver-ambient-canvas-keep-alive-wired-per-platform"
+      (linuxWiresAmbientCanvasKeepAlive && darwinWiresAmbientCanvasKeepAlive)
+      "the ambient-canvas keep-alive must be wired on every platform: a systemd user service on Linux and a launchd agent on darwin, or a died player is never respawned";
 }

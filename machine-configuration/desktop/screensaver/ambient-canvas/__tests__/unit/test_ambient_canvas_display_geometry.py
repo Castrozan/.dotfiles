@@ -67,6 +67,29 @@ def test_reading_screen_dimensions_never_shells_out_to_finder_automation():
     assert browser.DISPLAY_REPORT_TIMEOUT_SECONDS > 0
 
 
+def build_linux_monitor_report(*monitor_entries):
+    return json.dumps(list(monitor_entries))
+
+
+def test_linux_screen_dimensions_come_from_the_focused_monitor():
+    monitor_report = build_linux_monitor_report(
+        {"name": "DP-1", "width": 1920, "height": 1080, "focused": False},
+        {"name": "DP-2", "width": 2560, "height": 1440, "focused": True},
+    )
+    assert browser.parse_linux_monitor_dimensions(monitor_report) == (2560, 1440)
+
+
+def test_linux_screen_dimensions_fall_back_to_the_first_monitor_without_focus():
+    monitor_report = build_linux_monitor_report(
+        {"name": "DP-1", "width": 1920, "height": 1080, "focused": False}
+    )
+    assert browser.parse_linux_monitor_dimensions(monitor_report) == (1920, 1080)
+
+
+def test_linux_screen_dimensions_fall_back_when_no_monitor_is_reported():
+    assert browser.parse_linux_monitor_dimensions(build_linux_monitor_report()) is None
+
+
 def test_centered_geometry_is_fraction_of_screen_and_centered():
     width, height, left, top = browser.resolve_centered_window_geometry(2000, 1000)
     assert width == 1440

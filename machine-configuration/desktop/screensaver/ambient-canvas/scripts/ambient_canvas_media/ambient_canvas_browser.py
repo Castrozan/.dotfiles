@@ -1,9 +1,16 @@
 import json
 import os
 import re
+import shutil
 import subprocess
+import sys
 
 CHROMIUM_BROWSER_CANDIDATES = ["Google Chrome", "Brave Browser"]
+LINUX_CHROMIUM_EXECUTABLE_CANDIDATES = [
+    "google-chrome-stable",
+    "chromium",
+    "brave-browser",
+]
 FALLBACK_SCREEN_WIDTH = 1440
 FALLBACK_SCREEN_HEIGHT = 900
 CENTERED_WINDOW_SCREEN_FRACTION = 0.72
@@ -12,16 +19,29 @@ DISPLAY_REPORT_TIMEOUT_SECONDS = 30
 DISPLAY_POINT_RESOLUTION_KEY = "_spdisplays_resolution"
 MAIN_DISPLAY_FLAG_VALUE = "spdisplays_yes"
 DISPLAY_RESOLUTION_PATTERN = re.compile(r"(\d+)\s*x\s*(\d+)")
+HYPRLAND_MONITORS_COMMAND = ["hyprctl", "monitors", "-j"]
+
+
+def resolve_platform():
+    return sys.platform
 
 
 def resolve_chromium_browser_application():
-    for application_name in CHROMIUM_BROWSER_CANDIDATES:
-        if os.path.isdir(f"/Applications/{application_name}.app"):
-            return application_name
+    if resolve_platform() == "darwin":
+        for application_name in CHROMIUM_BROWSER_CANDIDATES:
+            if os.path.isdir(f"/Applications/{application_name}.app"):
+                return application_name
+        return None
+    for executable_name in LINUX_CHROMIUM_EXECUTABLE_CANDIDATES:
+        executable_path = shutil.which(executable_name)
+        if executable_path:
+            return executable_path
     return None
 
 
 def resolve_browser_executable_path(application_name):
+    if os.path.isabs(application_name):
+        return application_name
     return f"/Applications/{application_name}.app/Contents/MacOS/{application_name}"
 
 
@@ -60,7 +80,26 @@ def parse_screen_dimensions(display_report_json):
     return point_resolution
 
 
-def read_screen_dimensions():
+def parse_linux_monitor_dimensions(monitor_report_json):
+    try:
+        monitors = json.loads(monitor_report_json)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(monitors, list) or not monitors:
+        return None
+    focused_monitors = [monitor for monitor in monitors if monitor.get("focused")]
+    monitors_with_geometry = [
+        monitor
+        for monitor in (focused_monitors or monitors)
+        if monitor.get("width") and monitor.get("height")
+    ]
+    if not monitors_with_geometry:
+        return None
+    selected_monitor = monitors_with_geometry[0]
+    return selected_monitor["width"], selected_monitor["height"]
+
+
+def read_darwin_screen_dimensions():
     try:
         completed = subprocess.run(
             DISPLAY_REPORT_COMMAND,
@@ -72,6 +111,29 @@ def read_screen_dimensions():
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
         return FALLBACK_SCREEN_WIDTH, FALLBACK_SCREEN_HEIGHT
     return parse_screen_dimensions(completed.stdout)
+
+
+def read_linux_screen_dimensions():
+    try:
+        completed = subprocess.run(
+            HYPRLAND_MONITORS_COMMAND,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=DISPLAY_REPORT_TIMEOUT_SECONDS,
+        )
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+        return FALLBACK_SCREEN_WIDTH, FALLBACK_SCREEN_HEIGHT
+    linux_dimensions = parse_linux_monitor_dimensions(completed.stdout)
+    if linux_dimensions is None:
+        return FALLBACK_SCREEN_WIDTH, FALLBACK_SCREEN_HEIGHT
+    return linux_dimensions
+
+
+def read_screen_dimensions():
+    if resolve_platform() == "darwin":
+        return read_darwin_screen_dimensions()
+    return read_linux_screen_dimensions()
 
 
 def resolve_centered_window_geometry(screen_width, screen_height):

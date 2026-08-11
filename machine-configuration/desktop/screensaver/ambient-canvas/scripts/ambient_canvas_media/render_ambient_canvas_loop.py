@@ -44,7 +44,7 @@ def terminate_browser_process(browser_process, throwaway_profile_directory):
         except OSError:
             pass
     subprocess.run(
-        ["/usr/bin/pkill", "-f", throwaway_profile_directory],
+        [shutil.which("pkill") or "/usr/bin/pkill", "-f", throwaway_profile_directory],
         check=False,
         capture_output=True,
     )

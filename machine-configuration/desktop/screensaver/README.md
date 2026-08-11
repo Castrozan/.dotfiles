@@ -1,13 +1,21 @@
 # Screensaver
 
 Ambient eye-candy for an idle desktop. This domain owns both implementations of the
-screensaver concern, one per platform, because each platform has a different renderer
-whose cost profile forced a different choice.
+screensaver concern, one per platform, because each platform has a different player
+whose cost profile forced a different choice. The recording pipeline and the web
+scenes are shared; only the player binary and its keep-alive differ.
 
 | Platform | Implementation                                                   | Renderer                                                     | Trigger                                                                              |
 | -------- | ---------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
 | darwin   | `ambient-canvas/` (WebGL scenes pre-recorded to a looping video) | native Swift `AVPlayer` window, VideoToolbox hardware decode | `com.dotfiles.ambient-canvas` launchd keep-alive, pinned to Hammerspoon workspace 11 |
-| Linux    | herdr terminal grid (`scripts/launch_herdr_screensaver.py`)      | wezterm cell repaint                                         | manual: the `h` alias runs `herdr-screensaver`                                       |
+| Linux    | `ambient-canvas/` (same recorded loop)                           | mpv window, hardware decode via VA-API                       | `ambient-canvas` systemd user timer, pinned to Hyprland workspace 11                 |
+
+The darwin and Linux players are interchangeable behind one contract: both are a
+binary at `~/.local/bin/ᓚᘏᗢ` that takes the segment manifest and the dwell override
+path, both set that process name so the keep-alive can find them, and both are
+respawned by the platform's own service supervisor. On darwin that binary is compiled
+from `swift-sources/`; on Linux it is `play_ambient_canvas_loop_mpv.py`, which drives
+mpv over JSON IPC.
 
 ## Why two implementations
 
@@ -38,16 +46,17 @@ off-screen window is not "occluded" to macOS and wezterm never throttles it:
   resident disk of the segments, which grows linearly with the recorded dwell and the playlist
   length.
 
-The current darwin design pays the generative cost once. The WebGL scenes are recorded to a
-short looping video and the 24/7 window is a native Swift `AVPlayer` (no browser at all), which
-routes the loop through VideoToolbox for hardware decode, so the live per-frame compute
+The current design pays the generative cost once. The WebGL scenes are recorded to a
+short looping video and the 24/7 window is a native player (no browser at all): a Swift
+`AVPlayer` on darwin routing the loop through VideoToolbox, mpv on Linux routing it
+through VA-API, both with hardware decode, so the live per-frame compute
 disappears. The player also pauses playback whenever its window is not actually on screen for the
-viewer: when workspace 11 is not the active Space, when the window is fully covered, or when the
+viewer: when workspace 11 is not the active Space/workspace, when the window is fully covered, or when the
 display sleeps. So it decodes zero frames when nobody is looking at it and resumes seamlessly on
 return. A browser only runs offscreen for the ~30s record step that regenerates the loop. On darwin the isolation still wins over the
-herdr grid, so `ambient-canvas` is the darwin screensaver and the herdr grid is gated to Linux.
+herdr grid, so `ambient-canvas` is the darwin screensaver and the herdr grid stays a manual Linux option.
 
-## ambient-canvas (darwin)
+## ambient-canvas (shared pipeline)
 
 The animation is authored as live WebGL/canvas scenes; those scenes are the source of truth.
 A build step records them once into a looping video, and the 24/7 window plays that video.
@@ -323,17 +332,21 @@ override that shortens every composition to N seconds; it is folded into the fin
 short debug pass never poisons the real segments.
 
 `ambient-canvas/ambient-canvas-home-manager.nix` packages the `ambient-canvas` launcher and the
-`ambient-canvas-render` command and, guarded by `isDarwin`, compiles the native player from
-`swift-sources/` via a `compileAmbientCanvasPlayer` activation and installs the
-`com.dotfiles.ambient-canvas` launchd agent that runs the ensure entry every 300s. That tick is
-supervision, not rendering: a `web/` change already re-triggers the agent on its own, because the
-launcher's store path is embedded in `ProgramArguments`, so the rebuild rewrites the plist and
-`RunAtLoad` fires. What the tick alone catches is a player that died and a display that changed
-shape, both of which cost one `system_profiler` read and one `pgrep` when nothing has moved.
+`ambient-canvas-render` command on both platforms, then branches the keep-alive: guarded by
+`isDarwin` it compiles the native player from `swift-sources/` via a
+`compileAmbientCanvasPlayer` activation and installs the `com.dotfiles.ambient-canvas` launchd
+agent that runs the ensure entry every 300s; guarded by `isLinux` it installs the mpv driver as
+the same `~/.local/bin/ᓚᘏᗢ` player binary and wires a systemd user service and timer that run
+the same ensure entry. The launchd and systemd ticks are supervision, not rendering: a `web/`
+change already re-triggers the agent on its own, because the launcher's store path is embedded
+in `ProgramArguments`/`ExecStart`, so the rebuild rewrites the unit and the RunAtLoad/graphical
+session start fires. What the tick alone catches is a player that died and a display that changed
+shape, both of which cost one screen read and one `pgrep` when nothing has moved.
 
 ## herdr terminal grid (Linux)
 
-`scripts/launch_herdr_screensaver.py` creates a herdr workspace labelled `screensaver` and
+The `h` alias still runs the manual herdr terminal grid alongside the automatic ambient-canvas
+player. `scripts/launch_herdr_screensaver.py` creates a herdr workspace labelled `screensaver` and
 splits it into one pane per available command: `equation-art` (wrapped in `precompute-loop`
 for cheap record-once/replay-forever playback), a companion (`cbonsai` or `cmatrix`), and a
 second `cmatrix`. It composes the general terminal toys (`cbonsai`, `cmatrix`, `bad-apple`)
@@ -348,6 +361,6 @@ replayed cheaply.
 
 `screensaver-home-manager.nix` imports `ambient-canvas/ambient-canvas-home-manager.nix` and packages the herdr launcher and scenes. It is
 imported by `machine-configuration/machines/shared-darwin-home-manager.nix` (for ambient-canvas) and `machine-configuration/machines/chise/home.nix`
-(for the herdr grid); each half is platform-gated internally, so importing the domain on the
+(for the ambient-canvas player and the herdr grid); each half is platform-gated internally, so importing the domain on the
 wrong platform is inert. Tests live in `__tests__/` and are wired into the flake checks via
 `repository/verification/nix-checks/default.nix`.

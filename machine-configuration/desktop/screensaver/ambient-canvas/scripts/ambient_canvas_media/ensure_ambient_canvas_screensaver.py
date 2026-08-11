@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -43,14 +44,16 @@ def resolve_display_process_name(player_binary_path):
 
 
 def resolve_loop_display_process_marker(player_binary_path, loop_directory):
-    return (
-        f"{player_binary_path} {resolve_recorded_segment_manifest_path(loop_directory)}"
-    )
+    return resolve_recorded_segment_manifest_path(loop_directory)
+
+
+def resolve_process_tool(tool_name):
+    return shutil.which(tool_name) or f"/usr/bin/{tool_name}"
 
 
 def a_process_matches(match_arguments):
     completed = subprocess.run(
-        ["/usr/bin/pgrep", *match_arguments],
+        [resolve_process_tool("pgrep"), *match_arguments],
         check=False,
         capture_output=True,
     )
@@ -69,7 +72,11 @@ def is_display_running_for_loop(player_binary_path, loop_directory):
 
 def stop_every_display(player_binary_path):
     subprocess.run(
-        ["/usr/bin/pkill", "-x", resolve_display_process_name(player_binary_path)],
+        [
+            resolve_process_tool("pkill"),
+            "-x",
+            resolve_display_process_name(player_binary_path),
+        ],
         check=False,
         capture_output=True,
     )

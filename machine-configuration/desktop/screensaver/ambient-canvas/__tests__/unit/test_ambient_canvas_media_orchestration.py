@@ -128,7 +128,7 @@ def test_the_running_display_is_matched_by_the_manifest_it_was_launched_with():
         ensure.resolve_loop_display_process_marker(
             PLAYER_BINARY_PATH, "/state/loops/1660x1080"
         )
-        == "/home/user/.local/bin/player /state/loops/1660x1080/loop.segments.json"
+        == "/state/loops/1660x1080/loop.segments.json"
     )
 
 

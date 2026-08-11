@@ -8,6 +8,7 @@ MEASURED_SOLO_BONSAI_DURATION_SECONDS = 30
 
 
 def test_resolve_browser_prefers_chrome_when_both_are_installed(monkeypatch):
+    monkeypatch.setattr(browser, "resolve_platform", lambda: "darwin")
     monkeypatch.setattr(
         browser.os.path,
         "isdir",
@@ -18,6 +19,7 @@ def test_resolve_browser_prefers_chrome_when_both_are_installed(monkeypatch):
 
 
 def test_resolve_browser_falls_back_to_brave_when_chrome_absent(monkeypatch):
+    monkeypatch.setattr(browser, "resolve_platform", lambda: "darwin")
     monkeypatch.setattr(
         browser.os.path,
         "isdir",
@@ -30,6 +32,21 @@ def test_resolve_browser_executable_path_points_inside_the_app_bundle():
     assert (
         browser.resolve_browser_executable_path("Google Chrome")
         == "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    )
+
+
+def test_resolve_browser_on_linux_uses_the_which_result(monkeypatch):
+    monkeypatch.setattr(browser, "resolve_platform", lambda: "linux")
+    monkeypatch.setattr(
+        browser.shutil, "which", lambda name: f"/run/current-system/sw/bin/{name}"
+    )
+    assert (
+        browser.resolve_chromium_browser_application()
+        == "/run/current-system/sw/bin/google-chrome-stable"
+    )
+    assert (
+        browser.resolve_browser_executable_path("/run/current-system/sw/bin/chromium")
+        == "/run/current-system/sw/bin/chromium"
     )
 
 
