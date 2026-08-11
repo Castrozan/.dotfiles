@@ -39,6 +39,7 @@ let
     features = {
       apply_patch_freeform = true;
       child_agents_md = true;
+      code_mode_host = true;
       enable_fanout = true;
       hooks = true;
       multi_agent = true;

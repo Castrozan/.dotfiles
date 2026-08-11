@@ -15,6 +15,7 @@ let
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
       sha256 = "sha256-Akbi53ODTgfw+1JJ7W660S5FkeYI+Me7l91qlpBUTDY=";
+      codeModeHostSha256 = "sha256-AUat+qyDY+yfzbWJX3Yk21suhheig4h5OLf7l6HdQ1Y=";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -24,20 +25,42 @@ let
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
       sha256 = "sha256-dZhLgfkqcbDA9LO1ytgOXFcXfk2Mi0seE9twOyDcQ1g=";
+      codeModeHostSha256 = "sha256-Vs2/YYe/kUEI07f+7qWjT/uhXlwWK+3OaeBi7pLd+14=";
       buildInputs = [ ];
     };
   };
 
   currentHostSystem = codexUpstreamReleaseDescriptorBySystem.${pkgs.stdenv.hostPlatform.system};
 
-  codex-unwrapped = fetchPrebuiltBinary {
+  codexReleaseAssetUrl =
+    assetName:
+    "https://github.com/openai/codex/releases/download/rust-v${version}/${assetName}-${currentHostSystem.releaseTargetTriple}.tar.gz";
+
+  codex-binary = fetchPrebuiltBinary {
     pname = "codex";
     inherit version;
-    url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-${currentHostSystem.releaseTargetTriple}.tar.gz";
+    url = codexReleaseAssetUrl "codex";
     inherit (currentHostSystem) sha256 buildInputs;
     binaryName = "codex";
     archiveBinaryPath = "codex-${currentHostSystem.releaseTargetTriple}";
   };
+
+  codex-code-mode-host = fetchPrebuiltBinary {
+    pname = "codex-code-mode-host";
+    inherit version;
+    url = codexReleaseAssetUrl "codex-code-mode-host";
+    sha256 = currentHostSystem.codeModeHostSha256;
+    inherit (currentHostSystem) buildInputs;
+    binaryName = "codex-code-mode-host";
+    archiveBinaryPath = "codex-code-mode-host-${currentHostSystem.releaseTargetTriple}";
+  };
+
+  codex-unwrapped = pkgs.runCommand "codex-with-code-mode-host-${version}" { } ''
+    mkdir -p $out/bin
+    cp ${codex-binary}/bin/codex $out/bin/codex
+    cp ${codex-code-mode-host}/bin/codex-code-mode-host $out/bin/codex-code-mode-host
+    chmod +x $out/bin/codex $out/bin/codex-code-mode-host
+  '';
 
   interactiveSessionDeveloperInstructionsText = lib.concatStringsSep "\n" [
     (builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md)
