@@ -34,9 +34,6 @@ let
       == testMachinePrivateMarketplacePlugins.extraKnownMarketplaces
       && (deployedSettings.enabledPlugins or { }) == testMachinePrivateMarketplacePlugins.enabledPlugins
     );
-  testMachinePrivateClaudeFilesFixture = ../../../../private-configuration/machines/test/claude;
-  testMachinePrivateClaudeFilesFixtureExists = builtins.pathExists testMachinePrivateClaudeFilesFixture;
-
   darwinCfg = helpers.homeManagerTestConfigurationForDarwin [
     self.homeManagerModules.claude-code
   ];
@@ -88,21 +85,14 @@ in
       privateMarketplacePluginsAreFoldedIntoSettings
       "when a private-configuration/machines/<hostname>/claude-plugins.nix exists, global-settings.nix must fold its extraKnownMarketplaces and enabledPlugins into the deployed settings.json.nix-source; a dropped `// privateMarketplacePlugins` would silently regress the only path that installs the per-machine plugin";
 
-  claude-private-per-machine-files-deploy-into-the-claude-home =
-    mkEvalCheck "claude-private-per-machine-files-deploy-into-the-claude-home"
+  claude-home-carries-no-nix-modules =
+    mkEvalCheck "claude-home-carries-no-nix-modules"
       (
-        !testMachinePrivateClaudeFilesFixtureExists
-        || builtins.hasAttr ".claude/private-machine-claude-file.md" cfg.home.file
+        !(builtins.any (
+          fileName: lib.hasPrefix ".claude/" fileName && lib.hasSuffix ".nix" fileName
+        ) fileNames)
       )
-      "private-configuration/machines/<hostname>/claude holds files Claude reads straight out of ~/.claude, such as the employer daily report template a plugin command renders into; each one must deploy as a home file or that command silently falls back to a default format";
-
-  claude-private-per-machine-nix-modules-are-not-home-files =
-    mkEvalCheck "claude-private-per-machine-nix-modules-are-not-home-files"
-      (
-        !testMachinePrivateClaudeFilesFixtureExists
-        || !(builtins.hasAttr ".claude/private-machine-claude-module.nix" cfg.home.file)
-      )
-      "nix files in that same directory are module inputs the harness imports, so deploying them would publish machine configuration into ~/.claude as if it were Claude data";
+      "private-configuration/machines/<hostname>/claude mixes files Claude reads out of ~/.claude with nix modules the harness imports, so private.nix must keep the modules out; a deployed .nix file would publish machine configuration as if it were Claude data";
 
 }
 // import ./claude-managed-settings-nix-darwin-checks.nix {
