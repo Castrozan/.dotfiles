@@ -20,9 +20,11 @@ let
     pkgs.hyprland
   ];
 
+  ambientCanvasPlayerRuntimePathPrefix = lib.optionalString pkgs.stdenv.hostPlatform.isLinux "${ambientCanvasPlayerRuntimePath}:";
+
   ambientCanvasScreensaverLauncher = pkgs.writeShellScriptBin "ambient-canvas" ''
     export AMBIENT_CANVAS_INDEX="${ambientCanvasIndexFile}"
-    export PATH="${ambientCanvasSceneVideoDownloaderPath}:${ambientCanvasPlayerRuntimePath}:$PATH"
+    export PATH="${ambientCanvasSceneVideoDownloaderPath}:${ambientCanvasPlayerRuntimePathPrefix}$PATH"
     exec ${pkgs.python312}/bin/python3 \
       ${ambientCanvasMediaScriptsDirectory}/ensure_ambient_canvas_screensaver.py \
       --output-directory "${ambientCanvasStateDirectory}" \
