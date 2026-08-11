@@ -16,7 +16,10 @@ let
 
   ambientCanvasSceneVideoDownloaderPath = lib.makeBinPath [ pkgs.yt-dlp ];
   ambientCanvasPlayerRuntimePath = lib.makeBinPath (
-    [ pkgs.mpv ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.hyprland ]
+    lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+      pkgs.mpv
+      pkgs.hyprland
+    ]
   );
 
   ambientCanvasPlayerRuntimePathPrefix = lib.optionalString pkgs.stdenv.hostPlatform.isLinux "${ambientCanvasPlayerRuntimePath}:";
