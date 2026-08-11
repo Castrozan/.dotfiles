@@ -47,6 +47,9 @@ map("n", "<leader>c", "<cmd>bd<cr>", { desc = "Close buffer" })
 map("n", "<C-w>", buffer_closing.close, { desc = "Close buffer (focus next or prev)", nowait = true })
 map("i", "<C-w>", buffer_closing.close_from_insert, { desc = "Close buffer (focus next or prev)", nowait = true })
 
+map({ "n", "i" }, "<C-PageUp>", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous open file" })
+map({ "n", "i" }, "<C-PageDown>", "<cmd>BufferLineCycleNext<cr>", { desc = "Next open file" })
+
 map({ "n", "v" }, "<leader>y", [["+y]], { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", [["+Y]], { desc = "Yank line to system clipboard" })
 map({ "n", "v" }, "<leader>D", [["_d]], { desc = "Delete without yanking" })

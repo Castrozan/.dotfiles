@@ -69,6 +69,13 @@ snacks' own `explorer_add`, which creates inside the selected directory or besid
 file, so the plugin spec overrides the picker's `<c-n>` list action the way it already overrides
 `<c-p>`. Normal mode only, so insert-mode keyword completion on `C-n` survives untouched.
 
+`C-PageUp` and `C-PageDown` were restored on the owner's explicit request and cycle the open files
+in normal and insert mode, which is why they came off the removed list. They walk the bufferline in
+the order it shows on screen rather than in buffer number order, so the chord and the tabs agree,
+and `buffer_closing.lua` already reads that same order when it picks what to focus next. They shadow
+the native previous and next tab page motions, which `gT` and `gt` still carry unmapped. Only the
+cycling came back: `C-S-PageUp` and `C-S-PageDown`, which reordered the open files, stay removed.
+
 ## Canonical references
 
 Find how Neovim itself does a thing before proposing any mapping:
@@ -99,7 +106,8 @@ Find how Neovim itself does a thing before proposing any mapping:
    commands), `C-t` (tag pop), `C-b`/`C-f` (paging), `C-p`/`C-n` (completion and motion),
    `C-o`/`C-i` (jumplist), `J`/`K`, `Q`, and the `g` family carry native meaning. The baseline
    deliberately shadows a closed list (`C-w`, `C-p`, `C-t`, `C-b`, `C-n` in normal mode,
-   `C-<grave>`, `C-/`, and visual-mode `J`/`K`); do not grow it. When a shadowed key is also a prefix or reachable through
+   `C-PageUp` and `C-PageDown` over the tab page motions, `C-<grave>`, `C-/`, and visual-mode
+   `J`/`K`); do not grow it. When a shadowed key is also a prefix or reachable through
    another mapping's right-hand side, hunt down the defaults that expand into it, the way the
    window navigation rebind does, or the shadow fires where nobody asked for it.
 5. Never re-add a binding from the removed list on your own initiative.
@@ -107,12 +115,10 @@ Find how Neovim itself does a thing before proposing any mapping:
 ## Removed bindings (do not restore unprompted)
 
 `leader r` config reload, `C-p` in insert and terminal mode, the LazyVim `C-Up`/`C-Down` window
-height resize,
-`C-Right`/`C-Left` word jumps, `C-PageUp`/`C-PageDown` buffer cycling, `C-S-PageUp`/`C-S-PageDown`
-buffer moving, `C-S-b` explorer show, explorer `C-k e` folder toggle,
-explorer `y` path yank, picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations,
-the smart close-buffer focus behavior on `leader c`, which `C-w` carries instead, and the F12
-file-path-under-cursor definition jump. Native
-replacements for the common ones: `:w`, `:qa`, `C-y`/`C-e` scrolling, `w`/`b` word motion,
-`:bnext`/`:bprevious` buffer cycling, `gd` plus `grn`/`grr` LSP actions, `:resize` for window
-height, `j` for the normal-mode `C-n` motion, and `"+y` clipboard yank.
+height resize, `C-Right`/`C-Left` word jumps, `C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b`
+explorer show, explorer `C-k e` folder toggle, explorer `y` path yank, picker `C-v` clipboard
+paste, the `:q` and `:wq` quit-all abbreviations, the smart close-buffer focus behavior on
+`leader c`, which `C-w` carries instead, and the F12 file-path-under-cursor definition jump. Native
+replacements for the common ones: `:w`, `:qa`, `C-y`/`C-e` scrolling, `w`/`b` word motion, `gd`
+plus `grn`/`grr` LSP actions, `:resize` for window height, `j` for the normal-mode `C-n` motion,
+and `"+y` clipboard yank.

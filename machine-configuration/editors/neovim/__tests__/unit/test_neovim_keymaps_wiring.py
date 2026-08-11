@@ -14,6 +14,8 @@ EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
     "<C-`>": "Toggle terminal",
     "<C-p>": "Find files",
     "<S-F12>": "Find references",
+    "<C-PageUp>": "Previous open file",
+    "<C-PageDown>": "Next open file",
 }
 
 EXPECTED_INSERT_MODE_DESCRIPTIONS = {
@@ -21,6 +23,13 @@ EXPECTED_INSERT_MODE_DESCRIPTIONS = {
     "<C-S-k>": "Decrease window width",
     "<C-Up>": "Scroll view up one line",
     "<C-Down>": "Scroll view down one line",
+    "<C-PageUp>": "Previous open file",
+    "<C-PageDown>": "Next open file",
+}
+
+EXPECTED_OPEN_FILE_CYCLE_COMMANDS = {
+    "<C-PageUp>": "BufferLineCyclePrev",
+    "<C-PageDown>": "BufferLineCycleNext",
 }
 
 EXPECTED_WIDTH_RESIZE_COMMANDS = {
@@ -72,6 +81,16 @@ def test_every_owned_chord_reaches_the_module_that_implements_it(
         local expected_resize_commands =
           vim.fn.json_decode({json.dumps(json.dumps(EXPECTED_WIDTH_RESIZE_COMMANDS))})
         for chord, expected_command in pairs(expected_resize_commands) do
+          local mapping = vim.fn.maparg(chord, "n", false, true)
+          assert(
+            mapping and mapping.rhs and mapping.rhs:find(expected_command, 1, true) ~= nil,
+            chord .. " runs " .. vim.inspect(mapping and mapping.rhs) .. " instead of " .. expected_command
+          )
+        end
+
+        local expected_cycle_commands =
+          vim.fn.json_decode({json.dumps(json.dumps(EXPECTED_OPEN_FILE_CYCLE_COMMANDS))})
+        for chord, expected_command in pairs(expected_cycle_commands) do
           local mapping = vim.fn.maparg(chord, "n", false, true)
           assert(
             mapping and mapping.rhs and mapping.rhs:find(expected_command, 1, true) ~= nil,
