@@ -16,7 +16,11 @@ keeps working inside the explorer window, and that guard is part of the baseline
 
 `C-S-e` was restored on the owner's explicit request and is owned again. It moves focus between
 the editor and the file explorer, and opens the explorer when none is open. It came back without
-the persisted-width and resize machinery it originally shipped with, so `C-S-b` stays removed.
+the persisted-width and resize machinery it originally shipped with.
+
+`C-S-b` shows and hides the file explorer, on the owner's explicit request, which is why it came
+off the removed list. The toggle moved onto it rather than doubling: `C-b` carried it before and is
+native page-back again, so the deliberately shadowed list lost an entry instead of gaining one.
 
 `C-S-Up` and `C-S-Down` were restored on the owner's explicit request and jump ten at a time
 everywhere a cursor moves: ten lines in a buffer in normal, insert, and visual mode, and ten
@@ -111,7 +115,7 @@ Find how Neovim itself does a thing before proposing any mapping:
 4. Never shadow a native Vim key. Check `:help <key>` before mapping; keys like `C-w` (window
    commands), `C-t` (tag pop), `C-b`/`C-f` (paging), `C-p`/`C-n` (completion and motion),
    `C-o`/`C-i` (jumplist), `J`/`K`, `Q`, and the `g` family carry native meaning. The baseline
-   deliberately shadows a closed list (`C-w`, `C-p`, `C-t`, `C-b`, `C-n` in normal mode,
+   deliberately shadows a closed list (`C-w`, `C-p`, `C-t`, `C-n` in normal mode,
    `C-PageUp` and `C-PageDown` over the tab page motions, `C-<grave>`, `C-/`, and visual-mode
    `J`/`K`); do not grow it. When a shadowed key is also a prefix or reachable through
    another mapping's right-hand side, hunt down the defaults that expand into it, the way the
@@ -121,8 +125,8 @@ Find how Neovim itself does a thing before proposing any mapping:
 ## Removed bindings (do not restore unprompted)
 
 `leader r` config reload, `C-p` in insert and terminal mode, the LazyVim `C-Up`/`C-Down` window
-height resize, `C-Right`/`C-Left` word jumps, `C-S-PageUp`/`C-S-PageDown` buffer moving, `C-S-b`
-explorer show, explorer `C-k e` folder toggle, explorer `y` path yank, picker `C-v` clipboard
+height resize, `C-Right`/`C-Left` word jumps, `C-S-PageUp`/`C-S-PageDown` buffer moving,
+explorer `C-k e` folder toggle, explorer `y` path yank, picker `C-v` clipboard
 paste, the `:q` and `:wq` quit-all abbreviations, the smart close-buffer focus behavior on
 `leader c`, which `C-w` carries instead, and the F12 file-path-under-cursor definition jump. Native
 replacements for the common ones: `:w`, `:qa`, `C-y`/`C-e` scrolling, `w`/`b` word motion, `gd`

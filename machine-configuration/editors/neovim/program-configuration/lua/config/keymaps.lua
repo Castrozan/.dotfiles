@@ -24,7 +24,7 @@ map("n", "<C-/>", "gcc", { remap = true, desc = "Toggle comment" })
 map("v", "<C-/>", "gc", { remap = true, desc = "Toggle comment (visual)" })
 
 map("n", "<C-n>", file_creation.create, { desc = "Create file in current directory" })
-map("n", "<C-b>", file_explorer.toggle_visibility, { desc = "Toggle file explorer" })
+map("n", "<C-S-b>", file_explorer.toggle_visibility, { desc = "Toggle file explorer" })
 map("n", "<C-S-e>", file_explorer.toggle_focus, { desc = "Toggle file explorer focus" })
 map("n", "<C-`>", terminal.toggle, { desc = "Toggle terminal" })
 
