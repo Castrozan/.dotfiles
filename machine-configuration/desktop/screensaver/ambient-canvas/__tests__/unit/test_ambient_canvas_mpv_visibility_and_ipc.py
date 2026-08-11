@@ -5,7 +5,9 @@ import pytest
 
 from ambient_canvas_mpv_visibility import (
     VisibilityGatedPlaybackController,
+    pin_player_window_to_workspace,
     resolve_active_workspace_id,
+    window_is_mapped,
 )
 from mpv_ambient_canvas_ipc import MpvIpcClient
 
@@ -26,6 +28,64 @@ def test_resolve_active_workspace_id_returns_none_when_hyprctl_fails(monkeypatch
 
     monkeypatch.setattr("ambient_canvas_mpv_visibility.subprocess.run", fail)
     assert resolve_active_workspace_id() is None
+
+
+def test_window_is_mapped_finds_the_player_window(monkeypatch):
+    clients = [
+        {"title": "bash", "mapped": True},
+        {"title": "ambient-canvas-gpu-screensaver", "mapped": True},
+    ]
+    monkeypatch.setattr(
+        "ambient_canvas_mpv_visibility.subprocess.run",
+        lambda *args, **kwargs: type(
+            "Completed", (), {"stdout": json.dumps(clients), "returncode": 0}
+        )(),
+    )
+    assert window_is_mapped() is True
+
+
+def test_window_is_mapped_rejects_unmapped_windows(monkeypatch):
+    clients = [{"title": "ambient-canvas-gpu-screensaver", "mapped": False}]
+    monkeypatch.setattr(
+        "ambient_canvas_mpv_visibility.subprocess.run",
+        lambda *args, **kwargs: type(
+            "Completed", (), {"stdout": json.dumps(clients), "returncode": 0}
+        )(),
+    )
+    assert window_is_mapped() is False
+
+
+def test_pin_player_window_focuses_then_fullscreens(monkeypatch):
+    dispatched = []
+    monkeypatch.setattr("ambient_canvas_mpv_visibility.window_is_mapped", lambda: True)
+    monkeypatch.setattr(
+        "ambient_canvas_mpv_visibility.window_is_fullscreen", lambda: True
+    )
+    monkeypatch.setattr(
+        "ambient_canvas_mpv_visibility.run_hyprctl_command",
+        lambda arguments: dispatched.append(arguments),
+    )
+    pin_player_window_to_workspace()
+    assert dispatched == [
+        ["focuswindow", "title:^ambient-canvas-gpu-screensaver$"],
+        ["fullscreen"],
+    ]
+
+
+def test_pin_player_window_retries_until_fullscreen(monkeypatch):
+    dispatched = []
+    fullscreen_counts = iter([False, False, True])
+    monkeypatch.setattr("ambient_canvas_mpv_visibility.window_is_mapped", lambda: True)
+    monkeypatch.setattr(
+        "ambient_canvas_mpv_visibility.window_is_fullscreen",
+        lambda: next(fullscreen_counts),
+    )
+    monkeypatch.setattr(
+        "ambient_canvas_mpv_visibility.run_hyprctl_command",
+        lambda arguments: dispatched.append(arguments),
+    )
+    pin_player_window_to_workspace()
+    assert dispatched.count(["fullscreen"]) == 3
 
 
 def test_visibility_controller_pauses_when_target_workspace_is_not_active(monkeypatch):

@@ -1,10 +1,12 @@
 import os
 import subprocess
 import tempfile
+import threading
 import time
 
 from ambient_canvas_mpv_visibility import (
     VisibilityGatedPlaybackController,
+    pin_player_window_to_workspace,
 )
 from ambient_canvas_playback_dwell_override import effective_dwell_seconds
 from ambient_canvas_shuffled_segment_order import ShuffledSegmentOrder
@@ -86,6 +88,10 @@ def run_player(segment_manifest_path, playback_dwell_override_path):
         stderr=subprocess.DEVNULL,
     )
     mpv_client = MpvIpcClient(socket_path).connect()
+    window_pin_thread = threading.Thread(
+        target=pin_player_window_to_workspace, daemon=True
+    )
+    window_pin_thread.start()
 
     visibility_controller = VisibilityGatedPlaybackController(
         mpv_client, TARGET_WORKSPACE_ID
