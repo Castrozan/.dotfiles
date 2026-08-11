@@ -18,7 +18,7 @@ in
 {
   domain-pi-package =
     mkEvalCheck "domain-pi-package" (hasPackageMatching "pi")
-      "the pi coding agent should be installed on every machine this repo configures";
+      "no machine imports this module today, so these checks guard the module in isolation: whoever re-imports it gets a pi on PATH rather than a half-wired harness";
 
   domain-pi-bin-wrapper =
     mkEvalCheck "domain-pi-bin-wrapper" (builtins.hasAttr ".local/bin/pi" cfg.home.file)
