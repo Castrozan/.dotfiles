@@ -22,9 +22,7 @@ def test_torrent_streaming_uses_transient_cache_without_library_import():
         "preferredResolution": "1080",
     }
 
-    desired = seanime_configuration.desired_torrentstream_settings(
-        current, "100.64.0.1"
-    )
+    desired = seanime_configuration.desired_torrentstream_settings(current)
 
     assert desired["id"] == 1
     assert desired["enabled"] is True
@@ -32,7 +30,7 @@ def test_torrent_streaming_uses_transient_cache_without_library_import():
     assert desired["addToLibrary"] is False
     assert desired["includeInLibrary"] is False
     assert desired["preloadNextStream"] is False
-    assert desired["torrentClientHost"] == "100.64.0.1"
+    assert desired["torrentClientHost"] == ""
     assert desired["streamingServerHost"] == "127.0.0.1"
     assert desired["preferredResolution"] == "1080"
 

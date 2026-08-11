@@ -16,13 +16,13 @@ def read_prowlarr_api_key(config_file):
     return api_key
 
 
-def desired_torrentstream_settings(current, tailnet_address):
+def desired_torrentstream_settings(current):
     return current | {
         "enabled": True,
         "autoSelect": True,
         "downloadDir": "",
         "addToLibrary": False,
-        "torrentClientHost": tailnet_address,
+        "torrentClientHost": "",
         "streamingServerHost": "127.0.0.1",
         "includeInLibrary": False,
         "streamUrlAddress": "",

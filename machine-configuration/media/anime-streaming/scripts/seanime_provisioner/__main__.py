@@ -34,7 +34,7 @@ def provision():
     client.request_json(
         "PATCH",
         "/api/v1/torrentstream/settings",
-        {"settings": desired_torrentstream_settings(current_settings, tailnet_address)},
+        {"settings": desired_torrentstream_settings(current_settings)},
     )
     patch_setting(client, "library.torrentProvider", "prowlarr-torrent-provider")
     patch_setting(client, "mediaPlayer.defaultPlayer", "mpv")
