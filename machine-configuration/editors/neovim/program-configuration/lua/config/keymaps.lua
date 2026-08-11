@@ -8,6 +8,7 @@ local lazyvim_defaults = require("config.lazyvim_defaults")
 local pickers = require("config.navigation.pickers")
 local ten_line_jumping = require("config.navigation.ten_line_jumping")
 local terminal = require("config.terminal")
+local word_jumping = require("config.navigation.word_jumping")
 
 lazyvim_defaults.remove_window_resize_keymaps()
 
@@ -67,6 +68,9 @@ map("i", "<C-Up>", "<C-o><C-y>", { desc = "Scroll view up one line" })
 map("i", "<C-Down>", "<C-o><C-e>", { desc = "Scroll view down one line" })
 map("v", "<C-Up>", "<C-y>", { desc = "Scroll view up one line" })
 map("v", "<C-Down>", "<C-e>", { desc = "Scroll view down one line" })
+
+map({ "n", "i", "v" }, "<C-Left>", word_jumping.jump_left, { desc = "Jump to previous word in the line" })
+map({ "n", "i", "v" }, "<C-Right>", word_jumping.jump_right, { desc = "Jump to next word in the line" })
 
 map({ "n", "i", "v" }, "<C-S-Down>", ten_line_jumping.jump_buffer_down, { desc = "Jump 10 lines down" })
 map({ "n", "i", "v" }, "<C-S-Up>", ten_line_jumping.jump_buffer_up, { desc = "Jump 10 lines up" })

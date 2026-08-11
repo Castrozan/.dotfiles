@@ -80,6 +80,17 @@ and `buffer_closing.lua` already reads that same order when it picks what to foc
 the native previous and next tab page motions, which `gT` and `gt` still carry unmapped. Only the
 cycling came back: `C-S-PageUp` and `C-S-PageDown`, which reordered the open files, stay removed.
 
+`C-Left` and `C-Right` jump a word without ever leaving the line, on the owner's explicit request,
+which is why they came off the removed list. Native `C-Left` and `C-Right` are `B` and `W`, so from
+the first word of a line they land on the previous line's last WORD rather than at the line's edge,
+which is the behavior the owner asked to lose. `lua/config/navigation/word_jumping.lua` keeps the
+same whitespace-delimited WORD stops but bounds the search to the current line, falling back to
+column one going left and to the last column going right, one past it in insert mode so typing
+continues at the end. Normal, insert, and visual mode; operator-pending keeps the native motion, so
+`d<C-Left>` still deletes across the line break. The LazyVim width-resize defaults on these two
+chords are deleted in `lua/config/lazyvim_defaults.lua` by the call at the top of
+`lua/config/keymaps.lua`, so that deletion has to keep running before the chord table.
+
 `C-;` toggles the comment on the current line and on the visual selection, on the owner's explicit
 request. It is a second spelling of the owned `C-/` rather than a replacement, because `C-/` still
 reaches the editor and the owner asked only for the new chord; both expand into `gcc` and `gc`, so
@@ -121,8 +132,9 @@ Find how Neovim itself does a thing before proposing any mapping:
    commands), `C-t` (tag pop), `C-b`/`C-f` (paging), `C-p`/`C-n` (completion and motion),
    `C-o`/`C-i` (jumplist), `J`/`K`, `Q`, and the `g` family carry native meaning. The baseline
    deliberately shadows a closed list (`C-w`, `C-p`, `C-t`, `C-n` in normal mode,
-   `C-PageUp` and `C-PageDown` over the tab page motions, `C-<grave>`, `C-/`, and visual-mode
-   `J`/`K`); do not grow it. When a shadowed key is also a prefix or reachable through
+   `C-PageUp` and `C-PageDown` over the tab page motions, `C-Left` and `C-Right` over the WORD
+   motions they narrow to one line, `C-<grave>`, `C-/`, and visual-mode `J`/`K`); do not grow it.
+   When a shadowed key is also a prefix or reachable through
    another mapping's right-hand side, hunt down the defaults that expand into it, the way the
    window navigation rebind does, or the shadow fires where nobody asked for it.
 5. Never re-add a binding from the removed list on your own initiative.
@@ -130,10 +142,9 @@ Find how Neovim itself does a thing before proposing any mapping:
 ## Removed bindings (do not restore unprompted)
 
 `leader r` config reload, `C-p` in insert and terminal mode, the LazyVim `C-Up`/`C-Down` window
-height resize, `C-Right`/`C-Left` word jumps, `C-S-PageUp`/`C-S-PageDown` buffer moving,
-explorer `C-k e` folder toggle, explorer `y` path yank, picker `C-v` clipboard
-paste, the `:q` and `:wq` quit-all abbreviations, the smart close-buffer focus behavior on
-`leader c`, which `C-w` carries instead, and the F12 file-path-under-cursor definition jump. Native
-replacements for the common ones: `:w`, `:qa`, `C-y`/`C-e` scrolling, `w`/`b` word motion, `gd`
-plus `grn`/`grr` LSP actions, `:resize` for window height, `j` for the normal-mode `C-n` motion,
-and `"+y` clipboard yank.
+height resize, `C-S-PageUp`/`C-S-PageDown` buffer moving, explorer `C-k e` folder toggle,
+explorer `y` path yank, picker `C-v` clipboard paste, the `:q` and `:wq` quit-all abbreviations,
+the smart close-buffer focus behavior on `leader c`, which `C-w` carries instead, and the F12
+file-path-under-cursor definition jump. Native replacements for the common ones: `:w`, `:qa`,
+`C-y`/`C-e` scrolling, `w`/`b` word motion across lines, `gd` plus `grn`/`grr` LSP actions,
+`:resize` for window height, `j` for the normal-mode `C-n` motion, and `"+y` clipboard yank.

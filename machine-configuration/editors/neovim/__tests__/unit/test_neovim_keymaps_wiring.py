@@ -17,11 +17,15 @@ EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
     "<C-PageUp>": "Previous open file",
     "<C-PageDown>": "Next open file",
     "<C-;>": "Toggle comment",
+    "<C-Left>": "Jump to previous word in the line",
+    "<C-Right>": "Jump to next word in the line",
 }
 
 EXPECTED_VISUAL_MODE_DESCRIPTIONS = {
     "<C-;>": "Toggle comment (visual)",
     "<C-/>": "Toggle comment (visual)",
+    "<C-Left>": "Jump to previous word in the line",
+    "<C-Right>": "Jump to next word in the line",
 }
 
 EXPECTED_INSERT_MODE_DESCRIPTIONS = {
@@ -31,6 +35,8 @@ EXPECTED_INSERT_MODE_DESCRIPTIONS = {
     "<C-Down>": "Scroll view down one line",
     "<C-PageUp>": "Previous open file",
     "<C-PageDown>": "Next open file",
+    "<C-Left>": "Jump to previous word in the line",
+    "<C-Right>": "Jump to next word in the line",
 }
 
 EXPECTED_OPEN_FILE_CYCLE_COMMANDS = {
