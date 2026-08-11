@@ -15,10 +15,9 @@ let
   ambientCanvasDefaultPlaybackDwellSeconds = 30;
 
   ambientCanvasSceneVideoDownloaderPath = lib.makeBinPath [ pkgs.yt-dlp ];
-  ambientCanvasPlayerRuntimePath = lib.makeBinPath [
-    pkgs.mpv
-    pkgs.hyprland
-  ];
+  ambientCanvasPlayerRuntimePath = lib.makeBinPath (
+    [ pkgs.mpv ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.hyprland ]
+  );
 
   ambientCanvasPlayerRuntimePathPrefix = lib.optionalString pkgs.stdenv.hostPlatform.isLinux "${ambientCanvasPlayerRuntimePath}:";
 
