@@ -5,7 +5,7 @@
   ...
 }:
 let
-  homeDirectory = config.home.homeDirectory;
+  inherit (config.home) homeDirectory;
   seanimePackage = import ./seanime-package.nix { inherit pkgs; };
   seanimeDataDirectory = "${homeDirectory}/.local/share/seanime";
   tailnetBindAddress = import ../tailnet-bind-address.nix { inherit lib; };
@@ -58,60 +58,64 @@ in
 
   home.file.".local/share/seanime/extensions/prowlarr-torrent-provider.json".text = providerManifest;
 
-  systemd.user.services.seanime = {
-    Unit = {
-      Description = "Seanime private anime streaming server";
-      After = [ "network.target" ];
-      StartLimitIntervalSec = 0;
+  systemd.user = {
+    services = {
+      seanime = {
+        Unit = {
+          Description = "Seanime private anime streaming server";
+          After = [ "network.target" ];
+          StartLimitIntervalSec = 0;
+        };
+
+        Service = {
+          ExecStart = "${seanimePackage}/bin/seanime --datadir=${seanimeDataDirectory} --host=${tailnetBindAddress} --port=43211 --disable-password";
+          Restart = "on-failure";
+          RestartSec = "5s";
+          WorkingDirectory = homeDirectory;
+          RuntimeDirectory = "seanime";
+          RuntimeDirectoryMode = "0700";
+          Environment = [
+            "HOME=${homeDirectory}"
+            "TMPDIR=%t/seanime"
+            "PATH=${
+              lib.makeBinPath [
+                pkgs.ffmpeg
+                pkgs.mpv
+              ]
+            }"
+          ];
+        };
+
+        Install.WantedBy = [ "default.target" ];
+      };
+
+      seanime-provisioner = {
+        Unit = {
+          Description = "Reconcile Seanime streaming and Prowlarr settings";
+          After = [ "seanime.service" ];
+          Requires = [ "seanime.service" ];
+          StartLimitIntervalSec = 0;
+        };
+
+        Service = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = "${pkgs.python3}/bin/python3 ${provisionerPackageDirectory}";
+          TimeoutStartSec = "90s";
+          Restart = "on-failure";
+          RestartSec = "10s";
+          Environment = [
+            "SEANIME_URL=${seanimeUrl}"
+            "SEANIME_TAILNET_ADDRESS=${tailnetBindAddress}"
+            "SEANIME_PROWLARR_CONFIG_FILE=${homeDirectory}/arr-stack/config/prowlarr/config.xml"
+            "SEANIME_MPV_PATH=${pkgs.mpv}/bin/mpv"
+          ];
+        };
+
+        Install.WantedBy = [ "default.target" ];
+      };
     };
 
-    Service = {
-      ExecStart = "${seanimePackage}/bin/seanime --datadir=${seanimeDataDirectory} --host=${tailnetBindAddress} --port=43211 --disable-password";
-      Restart = "on-failure";
-      RestartSec = "5s";
-      WorkingDirectory = homeDirectory;
-      RuntimeDirectory = "seanime";
-      RuntimeDirectoryMode = "0700";
-      Environment = [
-        "HOME=${homeDirectory}"
-        "TMPDIR=%t/seanime"
-        "PATH=${
-          lib.makeBinPath [
-            pkgs.ffmpeg
-            pkgs.mpv
-          ]
-        }"
-      ];
-    };
-
-    Install.WantedBy = [ "default.target" ];
+    startServices = "sd-switch";
   };
-
-  systemd.user.services.seanime-provisioner = {
-    Unit = {
-      Description = "Reconcile Seanime streaming and Prowlarr settings";
-      After = [ "seanime.service" ];
-      Requires = [ "seanime.service" ];
-      StartLimitIntervalSec = 0;
-    };
-
-    Service = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "${pkgs.python3}/bin/python3 ${provisionerPackageDirectory}";
-      TimeoutStartSec = "90s";
-      Restart = "on-failure";
-      RestartSec = "10s";
-      Environment = [
-        "SEANIME_URL=${seanimeUrl}"
-        "SEANIME_TAILNET_ADDRESS=${tailnetBindAddress}"
-        "SEANIME_PROWLARR_CONFIG_FILE=${homeDirectory}/arr-stack/config/prowlarr/config.xml"
-        "SEANIME_MPV_PATH=${pkgs.mpv}/bin/mpv"
-      ];
-    };
-
-    Install.WantedBy = [ "default.target" ];
-  };
-
-  systemd.user.startServices = "sd-switch";
 }
