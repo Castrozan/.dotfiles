@@ -7,6 +7,7 @@
     ./tui.nix
     ./skills.nix
     ./subagents.nix
+    ./claude-plugin-port.nix
     ./private.nix
     ../../workspace-profiles
     ../../../agent-harness/hooks/integrations/opencode/opencode-hooks-home-manager.nix

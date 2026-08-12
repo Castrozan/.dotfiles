@@ -2,17 +2,11 @@ import os
 import pathlib
 import shutil
 
-OFFICIAL_MARKETPLACE_SUFFIX = "@claude-plugins-official"
 PORTED_MARKETPLACE_NAME = "claude-code-ports"
 PORTED_MARKETPLACE_DISPLAY_NAME = "Ported Claude Code plugins"
 CODEX_COMMAND_TIMEOUT_SECONDS = 120
 
 home_directory = pathlib.Path.home()
-claude_plugins_directory = home_directory / ".claude" / "plugins"
-installed_plugins_manifest = claude_plugins_directory / "installed_plugins.json"
-claude_settings_nix_source_path = (
-    home_directory / ".claude" / "settings.json.nix-source"
-)
 codex_home_directory = home_directory / ".codex"
 codex_config_path = codex_home_directory / "config.toml"
 ported_marketplace_root = codex_home_directory / "claude-plugin-ports"

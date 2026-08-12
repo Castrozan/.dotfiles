@@ -1,10 +1,13 @@
 import json
 import pathlib
 
-from configuration import (
-    OFFICIAL_MARKETPLACE_SUFFIX,
-    claude_settings_nix_source_path,
-    installed_plugins_manifest,
+OFFICIAL_MARKETPLACE_SUFFIX = "@claude-plugins-official"
+
+home_directory = pathlib.Path.home()
+claude_plugins_directory = home_directory / ".claude" / "plugins"
+installed_plugins_manifest = claude_plugins_directory / "installed_plugins.json"
+claude_settings_nix_source_path = (
+    home_directory / ".claude" / "settings.json.nix-source"
 )
 
 
@@ -86,3 +89,18 @@ def resolve_component_directory(
         if candidate_directory.is_dir() and any(candidate_directory.iterdir()):
             return candidate_directory
     return None
+
+
+def read_skill_directories_of_every_enabled_plugin():
+    plugin_skill_directories = {}
+    enabled_plugin_keys = read_enabled_plugin_keys()
+    for third_party_plugin in read_installed_third_party_plugins(enabled_plugin_keys):
+        install_directory = third_party_plugin["install_directory"]
+        skills_directory = resolve_component_directory(
+            install_directory,
+            read_claude_plugin_manifest(install_directory).get("skills"),
+            ["./skills", "./.claude/skills"],
+        )
+        if skills_directory is not None:
+            plugin_skill_directories[third_party_plugin["name"]] = skills_directory
+    return plugin_skill_directories

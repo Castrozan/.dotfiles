@@ -5,7 +5,11 @@
   ...
 }:
 let
-  claudePluginPortGenerator = ./claude-plugin-port;
+  claudePluginPortGenerator = pkgs.runCommand "codex-claude-plugin-porter" { } ''
+    mkdir -p "$out"
+    cp ${./claude-plugin-port}/*.py "$out"/
+    cp ${../claude-code/plugin-discovery}/*.py "$out"/
+  '';
   codexBinary = "${config.home.homeDirectory}/.local/bin/codex";
 in
 {
