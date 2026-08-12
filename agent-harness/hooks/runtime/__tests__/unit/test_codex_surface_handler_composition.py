@@ -79,6 +79,7 @@ HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
     },
     "SESSION_START_HANDLERS": {
         "compaction_context_recovery_handler",
+        "herdr_agent_session_report_handler",
     },
 }
 
@@ -90,7 +91,6 @@ HANDLERS_THAT_MUST_STAY_OFF_THE_OPENCODE_SURFACE = {
     },
     "SESSION_START_HANDLERS": {
         "session_context_handler",
-        "herdr_agent_session_report_handler",
     },
     "STOP_HANDLERS": {
         "end_of_turn_format_guard_handler",

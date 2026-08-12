@@ -15,7 +15,6 @@ for importable_directory in (
 
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
-    CODEX_SURFACE,
     HookHandler,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
@@ -28,10 +27,7 @@ SESSION_START_HANDLERS = [
         handler_module_name="session_context_handler", surfaces=(CLAUDE_SURFACE,)
     ),
     HookHandler(handler_module_name="compaction_context_recovery_handler"),
-    HookHandler(
-        handler_module_name="herdr_agent_session_report_handler",
-        surfaces=(CLAUDE_SURFACE, CODEX_SURFACE),
-    ),
+    HookHandler(handler_module_name="herdr_agent_session_report_handler"),
 ]
 
 

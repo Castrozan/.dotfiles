@@ -100,17 +100,20 @@ def test_includes_the_transcript_path_when_the_payload_carries_one(
     assert request["params"]["agent_session_path"] == "/tmp/transcript.jsonl"
 
 
-def test_reports_the_codex_agent_on_the_codex_surface(
-    herdr_pane_environment, monkeypatch
+@pytest.mark.parametrize("surface", ["codex", "opencode"])
+def test_reports_the_agent_name_the_surface_carries(
+    herdr_pane_environment, monkeypatch, surface
 ):
-    monkeypatch.setattr(sys, "argv", ["session-start-dispatcher.py", "--surface=codex"])
+    monkeypatch.setattr(
+        sys, "argv", ["session-start-dispatcher.py", f"--surface={surface}"]
+    )
     herdr_agent_session_report_handler.handle(
         {"hook_event_name": "SessionStart", "session_id": "abc-123"}
     )
     herdr_pane_environment.close()
     request = herdr_pane_environment.received_requests[0]
-    assert request["params"]["agent"] == "codex"
-    assert request["params"]["source"] == "herdr:codex"
+    assert request["params"]["agent"] == surface
+    assert request["params"]["source"] == f"herdr:{surface}"
 
 
 def test_reports_the_session_id_at_the_end_of_every_turn(herdr_pane_environment):

@@ -13,7 +13,7 @@ shared_common_hook_modules_directory = os.path.dirname(os.path.realpath(__file__
 if shared_common_hook_modules_directory not in sys.path:
     sys.path.insert(0, shared_common_hook_modules_directory)
 
-from hook_dispatch import CLAUDE_SURFACE, requested_hook_surface  # noqa: E402
+from hook_dispatch import requested_hook_surface  # noqa: E402
 
 HERDR_REPORT_AGENT_SESSION_METHOD = "pane.report_agent_session"
 HERDR_SOCKET_TIMEOUT_SECONDS = 0.5
@@ -34,7 +34,7 @@ def owned_by_the_clawde_supervisor() -> bool:
 
 
 def reported_agent_name() -> str:
-    return "claude" if requested_hook_surface() == CLAUDE_SURFACE else "codex"
+    return requested_hook_surface()
 
 
 def non_empty_string_or_none(value) -> str | None:
