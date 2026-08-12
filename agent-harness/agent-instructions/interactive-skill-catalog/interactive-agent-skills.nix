@@ -21,6 +21,7 @@ let
     "herdr"
     "humanize"
     "instructions"
+    "orchestrate"
     "research"
     "restart"
     "review"

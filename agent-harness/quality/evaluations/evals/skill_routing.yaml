@@ -28,6 +28,8 @@ shared_system_prompt: &shared_system_prompt |
 
   instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
 
+  orchestrate - Orchestrate another agent session toward a goal over a2a, herdr or ssh: dispatch one task, watch the turn, correct, repeat. Use when driving, supervising or delegating to a peer agent, local or remote.
+
   research - Research current external information, comparisons, decisions, or themed digests. Use for latest facts, evaluation, verification, "catch me up", or community pulses; not local repository search.
 
   restart - Restart the current Claude Code, Codex, or OpenCode process and invoke its native resume form in the same pane. Use after a configuration change or to resume work without waiting for input.
