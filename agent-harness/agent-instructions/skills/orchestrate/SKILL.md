@@ -42,13 +42,13 @@ spawned.
 
 <the_drive_loop>
 Run this loop per goal, one turn at a time: 1) fix the goal and the evidence that would settle it before dispatching; 2)
-resolve the peer from the live directory and confirm it is idle; 3) dispatch one self-contained task naming the goal,
-the constraints, where to work, and what to report; 4) watch the turn to its end instead of assuming the first answer is
-final; 5) inspect the artifact the turn produced, never the peer's account of it; 6) answer whatever the peer asks, and
-correct with one instruction naming the specific gap; 7) repeat from step 3 with the next increment, and re-route the
-work when two corrections have not moved it; 8) close out by telling the peer the goal is met and removing the tab,
-pane, or worktree you created. Give the peer the smallest increment that produces inspectable evidence, because a turn
-you cannot check is a turn you cannot correct.
+resolve the peer from the live directory, spawning one through herdr when none fits, and confirm it is idle; 3)
+dispatch one self-contained task naming the goal, the constraints, where to work, and what to report; 4) watch the turn
+to its end instead of assuming the first answer is final; 5) inspect the artifact the turn produced, never the peer's
+account of it; 6) answer whatever the peer asks, and correct with one instruction naming the specific gap; 7) repeat
+from step 3 with the next increment, and re-route the work when two corrections have not moved it; 8) close out by
+telling the peer the goal is met and removing the tab, pane, or worktree you created. Give the peer the smallest
+increment that produces inspectable evidence, because a turn you cannot check is a turn you cannot correct.
 </the_drive_loop>
 
 <dispatch_discipline>
