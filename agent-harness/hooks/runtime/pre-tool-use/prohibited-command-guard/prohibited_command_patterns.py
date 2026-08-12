@@ -154,11 +154,9 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+(?:workspace|tab|pane)\s+close\b",
-        "herdr workspace/tab/pane close is prohibited. Nothing in the command "
-        "proves the target is yours: ids are reassigned as tabs come and go, so "
-        "the id you read a minute ago can name someone else's live session by the "
-        "time you close it, and the close takes every agent in it with no undo. "
-        "Leave what you spawned in place and tell the human which pane to close.",
+        "herdr workspace/tab/pane close is prohibited; no close can prove it owns "
+        "its target and there is no undo. Leave what you spawned for the human to "
+        "close, and read the herdr skill's knowledge for why the id lies.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",

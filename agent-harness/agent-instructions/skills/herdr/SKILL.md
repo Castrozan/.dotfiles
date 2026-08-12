@@ -51,6 +51,11 @@ Headless `claude --print` is blocked by a guard because interactive herdr agents
 genuinely sanctioned one-off, prefix the command with `CLAUDE_HEADLESS_SANCTIONED=1`.
 </oneshot_is_gated>
 
+<closing_is_gated>
+Every `herdr workspace|tab|pane close` is blocked by a guard with no override, because no close proves it owns its
+target and it takes every agent inside with no undo. Leave what you spawned in place and name it for the human to close.
+</closing_is_gated>
+
 <knowledge>
 For traps that cost real debugging: the per-client view fork, why a CLI focus call hijacks the human's view, the
 destructive shifted-digit chords, the pane-run paste wedge, and native agent resume; read `knowledge.md`. Read the
