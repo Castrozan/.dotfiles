@@ -32,13 +32,9 @@ let
     sandbox_mode = "danger-full-access";
     suppress_unstable_features_warning = true;
     features = {
-      apply_patch_freeform = true;
-      child_agents_md = true;
       code_mode_host = true;
-      enable_fanout = true;
       hooks = true;
       multi_agent = true;
-      undo = true;
     };
     tui = {
       animations = false;
