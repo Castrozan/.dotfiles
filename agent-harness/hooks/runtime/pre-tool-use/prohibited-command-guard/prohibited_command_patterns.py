@@ -161,8 +161,8 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
         "claude -p/--print (headless oneshot) is prohibited; drive an interactive "
-        "session instead, through the claude-interactive wrapper or a herdr agent "
-        "as the herdr skill describes. A sanctioned one-off needs the prefix "
+        "session instead, by launching claude plainly or through a herdr agent as "
+        "the herdr skill describes. A sanctioned one-off needs the prefix "
         f"{SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL}.",
         SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL,
     ),

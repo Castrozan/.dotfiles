@@ -51,7 +51,7 @@ class TestBashHeadlessClaudeBlocking:
             "claude --resume",
             "claude --version",
             "claude mcp list",
-            "claude-interactive",
+            "claude-go",
             "claude-update-version",
             "cla",
             "nix build .#thing --print-build-logs",

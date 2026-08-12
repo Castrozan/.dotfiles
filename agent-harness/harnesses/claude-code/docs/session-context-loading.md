@@ -137,7 +137,7 @@ all three now receive the same skills from the machine tier. The named skill set
 never read `~/.claude/skills`.
 
 `launch-claude-workspace-session`, its nine tests, their `conftest.py` and a dead bash predecessor at
-`scripts/claude-workspace` are deleted, 1655 lines in total. `claude-interactive` replaces them: it exports the marker
+`scripts/claude-workspace` are deleted, 1655 lines in total. the interactive `claude` wrapper replaces them: it exports the marker
 and appends the interactive surfaces with `--append-system-prompt-file`, verified end to end against 2.1.220. It passes
 no `--model`, because `settings.json` already pins the same value, and no effort flag, because `binary.nix` already
 exports `CLAUDE_CODE_EFFORT_LEVEL`.

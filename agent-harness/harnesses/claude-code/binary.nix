@@ -45,18 +45,10 @@ let
   '';
 in
 {
-  options.claude.package = lib.mkOption {
+  options.claude.unwrappedPackage = lib.mkOption {
     type = lib.types.package;
     default = claude-code;
     readOnly = true;
-    description = "The claude-code package used across all claude modules";
-  };
-
-  config.home = {
-    packages = [ claude-code ];
-    file.".local/bin/claude" = {
-      source = "${claude-code}/bin/claude";
-      force = true;
-    };
+    description = "claude without the interactive wrapper that appends the human's own reply-shape system prompt and resolves a workspace profile, but still exporting the shared claude environment and pre-approving the workspace trust dialog. An autonomous harness must launch this, because the interactive reply rules apply only while the human drives the keyboard.";
   };
 }

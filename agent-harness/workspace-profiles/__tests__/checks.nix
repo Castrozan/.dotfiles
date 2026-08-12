@@ -67,7 +67,7 @@ let
     (lib.findFirst (package: (package.name or "") == wrapperName) null configuration.home.packages)
     .text;
 
-  claudeWrapperText = wrapperText claudeConfiguration "claude-interactive";
+  claudeWrapperText = wrapperText claudeConfiguration "claude";
   codexWrapperText = wrapperText codexConfiguration "codex";
   opencodeWrapperText = wrapperText opencodeConfiguration "opencode";
 in
@@ -111,8 +111,8 @@ in
       (dispatchFor [ ] == "")
       "every harness wrapper embeds this fragment, so an unconditional resolver call would add a python process to every launch on machines that declare no profile at all";
 
-  claude-interactive-applies-the-resolved-workspace-profile =
-    mkEvalCheck "claude-interactive-applies-the-resolved-workspace-profile"
+  claude-applies-the-resolved-workspace-profile =
+    mkEvalCheck "claude-applies-the-resolved-workspace-profile"
       (
         containsText claudeWrapperText "workspaceProfileArguments"
         && containsText claudeWrapperText "claudeSystemPromptFile"

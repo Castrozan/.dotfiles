@@ -2,7 +2,7 @@
 {
   clawde.harnesses =
     lib.optionalAttrs (config ? claude) {
-      claude.package = config.claude.package;
+      claude.package = config.claude.unwrappedPackage;
     }
     // lib.optionalAttrs (config ? codex) {
       codex.package = config.codex.unwrappedPackage;

@@ -26,17 +26,30 @@ let
     inherit (workspaceProfileActivation) activationShellStatementsForProfile;
   };
 
-  claudeInteractiveScript = pkgs.writeShellScriptBin "claude-interactive" ''
+  claudeInteractiveScript = pkgs.writeShellScriptBin "claude" ''
     claudeSystemPromptFile="${interactiveSessionOnlySystemPromptSurfaces}"
     workspaceProfileArguments=()
     ${workspaceProfileLaunchDispatch}
     export CLAUDE_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
-    exec ${lib.getExe config.claude.package} \
+    exec ${lib.getExe config.claude.unwrappedPackage} \
       --append-system-prompt-file "$claudeSystemPromptFile" \
       "''${workspaceProfileArguments[@]}" \
       "$@"
   '';
 in
 {
-  home.packages = [ claudeInteractiveScript ];
+  options.claude.package = lib.mkOption {
+    type = lib.types.package;
+    default = claudeInteractiveScript;
+    readOnly = true;
+    description = "The claude every keyboard-driven launch resolves, wrapping the unwrapped package with the human's own reply-shape system prompt and the resolved workspace profile. It carries the plain `claude` name so a herdr agent, a script or a launcher gets the same surface the human's shell does.";
+  };
+
+  config.home = {
+    packages = [ claudeInteractiveScript ];
+    file.".local/bin/claude" = {
+      source = "${claudeInteractiveScript}/bin/claude";
+      force = true;
+    };
+  };
 }
