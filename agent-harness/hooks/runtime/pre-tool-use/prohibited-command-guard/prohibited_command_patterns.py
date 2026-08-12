@@ -153,6 +153,14 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
         "--tab and pass --no-focus; the herdr skill carries the recipe.",
     ),
     (
+        rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+(?:workspace|tab|pane)\s+close\b",
+        "herdr workspace/tab/pane close is prohibited. Nothing in the command "
+        "proves the target is yours: ids are reassigned as tabs come and go, so "
+        "the id you read a minute ago can name someone else's live session by the "
+        "time you close it, and the close takes every agent in it with no undo. "
+        "Leave what you spawned in place and tell the human which pane to close.",
+    ),
+    (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
         "claude -p/--print (headless oneshot) is prohibited; drive an interactive "
         "session instead, through the claude-interactive wrapper or a herdr agent "
