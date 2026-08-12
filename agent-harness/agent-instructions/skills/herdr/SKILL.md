@@ -34,8 +34,9 @@ file and send a one-line `read <file> and implement it` so nothing submits early
 <when_to_spawn>
 Spawn a herdr agent when the user must watch or take over the work, when it needs a persistent interactive session, or
 when it must outlive this conversation. For read-only research, exploration, or search, use the builtin Agent tool with
-no herdr. For multi-agent work that edits code, run a Workflow (see the `deliver` skill) with worktree isolation, never
-Teams.
+no herdr. Once a session is up, driving it to a goal, here or on another machine or harness, belongs to the
+`orchestrate` skill. For multi-agent work that edits code, run a Workflow (see the `deliver` skill) with worktree
+isolation, never Teams.
 </when_to_spawn>
 
 <resume_and_liveness>
