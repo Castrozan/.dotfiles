@@ -1,4 +1,19 @@
-{ pkgs }:
+{
+  pkgs,
+  lib,
+  hostname,
+  isDarwin ? false,
+}:
+let
+  hermesHooks = import ../../hooks/integrations/hermes/hermes-hooks.nix {
+    inherit
+      pkgs
+      lib
+      hostname
+      isDarwin
+      ;
+  };
+in
 pkgs.writeText "hermes-config.yaml" ''
   model:
     provider: openai-codex
@@ -9,4 +24,12 @@ pkgs.writeText "hermes-config.yaml" ''
     - hermes-cli
   security:
     allow_lazy_installs: false
+  hooks_auto_accept: true
+  hooks:
+    pre_tool_call:
+      - command: ${hermesHooks.hermesHookCommand}
+        timeout: 10
+    post_tool_call:
+      - command: ${hermesHooks.hermesHookCommand}
+        timeout: 20
 ''

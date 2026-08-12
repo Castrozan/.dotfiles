@@ -1,13 +1,22 @@
 {
   pkgs,
   lib,
+  hostname,
+  isDarwin ? false,
   ...
 }:
 let
   version = "0.19.0";
   packageSpec = "hermes-agent[anthropic,cli]==${version}";
 
-  configTemplate = import ./config.nix { inherit pkgs; };
+  configTemplate = import ./config.nix {
+    inherit
+      pkgs
+      lib
+      hostname
+      isDarwin
+      ;
+  };
   migration = import ./migration.nix { inherit pkgs; };
 
   runtimeDependencies = [
