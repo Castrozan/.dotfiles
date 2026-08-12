@@ -14,9 +14,8 @@ let
   };
 
   hermesHooks = import ../../../hooks/integrations/hermes/hermes-hooks.nix hermesModuleArguments;
-  hermesConfigText = builtins.unsafeDiscardStringContext (
-    (import ../config.nix hermesModuleArguments).text
-  );
+  hermesConfigTemplate = import ../config.nix hermesModuleArguments;
+  hermesConfigText = builtins.unsafeDiscardStringContext hermesConfigTemplate.text;
   hermesHookCommandPath = builtins.unsafeDiscardStringContext "${hermesHooks.hermesHookCommand}";
 
   cfg = helpers.homeManagerTestConfiguration [ ../. ];
