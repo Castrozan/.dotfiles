@@ -18,12 +18,7 @@ let
   trustedProjectParentDirectories = [
     "${homeDir}/repo"
   ];
-  codexMcpServerSecretFileInjections = builtins.toJSON {
-    jira-desenv = {
-      JIRA_USERNAME = "${homeDir}/.secrets/jira-desenv-username";
-      JIRA_PASSWORD = "${homeDir}/.secrets/jira-desenv-password";
-    };
-  };
+  codexMcpServerSecretFileInjections = builtins.toJSON { };
   codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
     approval_policy = "never";
     check_for_update_on_startup = false;
@@ -84,18 +79,6 @@ let
       "chrome-devtools" = {
         command = browserMcp.chromeDevtoolsMcpStdioCommand;
         args = browserMcp.chromeDevtoolsMcpStdioArgs;
-      };
-      "jira-desenv" = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "@betha/jira-mcp"
-        ];
-        env = {
-          JIRA_BASE_URL = "https://desenv.betha.com.br/";
-          NPM_CONFIG_REGISTRY = "http://nexus3.betha.com.br/repository/npm-all/";
-        };
-        startup_timeout_sec = 120;
       };
     };
   };

@@ -17,7 +17,6 @@
     ../../agent-harness/harnesses/codex
     ../../agent-harness/harnesses/hermes
     ../../agent-harness/harnesses/opencode
-    ../../agent-harness/harnesses/opencode/private.nix
     ../development/testing/testing-home-manager.nix
 
     ../terminal/shell/bash/bash-home-manager.nix

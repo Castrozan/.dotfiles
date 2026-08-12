@@ -7,6 +7,24 @@ let
   agentsDirExists = builtins.pathExists agentsDir;
   skillsDirExists = builtins.pathExists skillsDir;
 
+  privateAgentDefinitions =
+    if agentsDirExists then
+      import ./translate-claude-agent-definitions.nix {
+        inherit pkgs;
+        derivationName = "opencode-private-agent-definitions";
+        claudeAgentDefinitionsDirectory = agentsDir;
+      }
+    else
+      null;
+
+  privateAgentFileNames =
+    if agentsDirExists then
+      builtins.filter (fileName: lib.hasSuffix ".md" fileName) (
+        builtins.attrNames (builtins.readDir agentsDir)
+      )
+    else
+      [ ];
+
   privateSkillDirs =
     if skillsDirExists then
       builtins.filter (
@@ -15,16 +33,14 @@ let
     else
       [ ];
 
-  privateAgentEntries = lib.optionalAttrs agentsDirExists {
-    ".config/opencode/agents" = {
-      source = import ./translate-claude-agent-definitions.nix {
-        inherit pkgs;
-        derivationName = "opencode-private-agent-definitions";
-        claudeAgentDefinitionsDirectory = agentsDir;
+  privateAgentEntries = builtins.listToAttrs (
+    map (fileName: {
+      name = ".config/opencode/agent/${fileName}";
+      value = {
+        source = "${privateAgentDefinitions}/${fileName}";
       };
-      recursive = true;
-    };
-  };
+    }) privateAgentFileNames
+  );
 
   privateSkillEntries = builtins.listToAttrs (
     map (dirname: {

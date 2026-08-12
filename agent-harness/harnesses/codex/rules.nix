@@ -22,7 +22,6 @@ in
         'prefix_rule(pattern=["docker", "compose", "up"], decision="allow")'
         'prefix_rule(pattern=["glab", "mr", "view"], decision="allow")'
         'prefix_rule(pattern=["glab", "mr", "note"], decision="allow")'
-        'prefix_rule(pattern=["rm", "-f", "docs/redis-local-testing.md", "devenv.nix"], decision="allow")'
         'prefix_rule(pattern=["bin/rebuild"], decision="allow")'
         'prefix_rule(pattern=["./bin/rebuild"], decision="allow")'
       )
