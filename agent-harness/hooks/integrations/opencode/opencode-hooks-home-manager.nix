@@ -32,10 +32,18 @@ let
     exec ${agentHookScripts}/run-hook.sh "${agentHookScripts}/$1" --surface=opencode
   '';
 
-  opencodeHookBridge = pkgs.replaceVars ./opencode-hook-bridge.js {
+  hookBridgeDispatcherInvocation = pkgs.replaceVars ./hook-bridge/dispatcher-invocation.js {
     inherit opencodeHookDispatcher;
   };
+
+  opencodeHookBridge = pkgs.runCommand "opencode-hook-bridge" { } ''
+    mkdir -p "$out"
+    cp ${./hook-bridge}/*.js "$out"/
+    chmod -R u+w "$out"
+    cp ${hookBridgeDispatcherInvocation} "$out"/dispatcher-invocation.js
+  '';
 in
 {
-  home.file.".config/opencode/plugins/opencode-hook-bridge.js".source = opencodeHookBridge;
+  home.file.".config/opencode/plugins/opencode-hook-bridge.js".source =
+    "${opencodeHookBridge}/opencode-hook-bridge.js";
 }

@@ -5,7 +5,19 @@ import subprocess
 from pathlib import Path
 
 
-HOOK_BRIDGE_SOURCE = Path(__file__).resolve().parents[2] / "opencode-hook-bridge.js"
+HOOK_BRIDGE_SOURCE_DIRECTORY = Path(__file__).resolve().parents[2] / "hook-bridge"
+HOOK_BRIDGE_ENTRY_FILENAME = "opencode-hook-bridge.js"
+
+
+def write_hook_bridge_sources(tmp_path, launcher_path):
+    for source_path in HOOK_BRIDGE_SOURCE_DIRECTORY.glob("*.js"):
+        (tmp_path / source_path.name).write_text(
+            source_path.read_text(encoding="utf-8").replace(
+                "@opencodeHookDispatcher@", str(launcher_path)
+            ),
+            encoding="utf-8",
+        )
+    return tmp_path / HOOK_BRIDGE_ENTRY_FILENAME
 
 
 def write_hook_dispatcher_launcher(tmp_path):
@@ -36,56 +48,42 @@ if response:
     return launcher_path
 
 
-def invoke_hook_bridge(
+def invoke_hook_bridge_sequence(
     tmp_path,
     dispatcher_response,
-    hook_name,
-    hook_input,
-    hook_output,
+    hook_calls,
     dispatcher_responses=None,
 ):
     launcher_path = write_hook_dispatcher_launcher(tmp_path)
     record_path = tmp_path / "hook-dispatcher-record.json"
-    hook_bridge_path = tmp_path / "opencode-hook-bridge.js"
-    hook_bridge_path.write_text(
-        HOOK_BRIDGE_SOURCE.read_text(encoding="utf-8").replace(
-            "@opencodeHookDispatcher@", str(launcher_path)
-        ),
-        encoding="utf-8",
-    )
+    hook_bridge_path = write_hook_bridge_sources(tmp_path, launcher_path)
     invocation_path = tmp_path / "invoke-hook-bridge.mjs"
     invocation_path.write_text(
         """const [hookBridgeSource, scenarioSource] = process.argv.slice(2)
 const scenario = JSON.parse(scenarioSource)
 const { OpenCodeHookBridge } = await import(hookBridgeSource)
 const hooks = await OpenCodeHookBridge({ directory: scenario.directory })
-const originalToolArguments = scenario.hookOutput.args
+const results = []
 
-try {
-  await hooks[scenario.hookName](scenario.hookInput, scenario.hookOutput)
-  process.stdout.write(
-    JSON.stringify({
-      hookOutput: scenario.hookOutput,
-      originalToolArgumentsWereRetained: originalToolArguments === scenario.hookOutput.args,
-    }),
-  )
-} catch (error) {
-  process.stdout.write(
-    JSON.stringify({
-      hookOutput: scenario.hookOutput,
-      originalToolArgumentsWereRetained: originalToolArguments === scenario.hookOutput.args,
-      error: error.message,
-    }),
-  )
+for (const hookCall of scenario.hookCalls) {
+  const originalToolArguments = hookCall.hookOutput.args
+  const result = { hookOutput: hookCall.hookOutput }
+  try {
+    await hooks[hookCall.hookName](hookCall.hookInput, hookCall.hookOutput)
+  } catch (error) {
+    result.error = error.message
+  }
+  result.originalToolArgumentsWereRetained =
+    originalToolArguments === hookCall.hookOutput.args
+  results.push(result)
 }
+process.stdout.write(JSON.stringify(results))
 """,
         encoding="utf-8",
     )
     scenario = {
         "directory": "/workspace/project",
-        "hookName": hook_name,
-        "hookInput": hook_input,
-        "hookOutput": hook_output,
+        "hookCalls": hook_calls,
     }
     result = subprocess.run(
         [
@@ -111,6 +109,29 @@ try {
         else []
     )
     return json.loads(result.stdout), records
+
+
+def invoke_hook_bridge(
+    tmp_path,
+    dispatcher_response,
+    hook_name,
+    hook_input,
+    hook_output,
+    dispatcher_responses=None,
+):
+    results, records = invoke_hook_bridge_sequence(
+        tmp_path,
+        dispatcher_response,
+        [
+            {
+                "hookName": hook_name,
+                "hookInput": hook_input,
+                "hookOutput": hook_output,
+            }
+        ],
+        dispatcher_responses,
+    )
+    return results[0], records
 
 
 def only_dispatcher_record(records):
