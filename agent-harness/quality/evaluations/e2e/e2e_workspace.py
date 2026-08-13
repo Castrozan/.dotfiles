@@ -73,6 +73,13 @@ def setup_e2e_scenario_workspace(
             timeout=10,
         )
         subprocess.run(
+            ["git", "config", "core.hooksPath", "/dev/null"],
+            cwd=workspace_directory,
+            capture_output=True,
+            check=True,
+            timeout=10,
+        )
+        subprocess.run(
             ["git", "add", "."],
             cwd=workspace_directory,
             capture_output=True,

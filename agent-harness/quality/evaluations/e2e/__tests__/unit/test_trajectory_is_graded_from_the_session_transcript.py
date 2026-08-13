@@ -61,6 +61,19 @@ def test_a_bash_call_is_recovered_with_its_full_command(tmp_path, monkeypatch):
     assert calls[0].tool_arguments_text == 'find . -name "*.py" | sort'
 
 
+def test_a_skill_call_is_recovered_with_its_skill_name(tmp_path, monkeypatch):
+    workspace = workspace_with_transcript(
+        tmp_path,
+        monkeypatch,
+        [("Skill", {"skill": "coding"})],
+    )
+
+    calls = tool_calls_from_session_transcript(workspace)
+
+    assert [call.tool_name for call in calls] == ["Skill"]
+    assert calls[0].tool_arguments_text == "coding"
+
+
 def test_a_workspace_with_no_transcript_yields_nothing(tmp_path, monkeypatch):
     monkeypatch.setattr(
         e2e_session_transcript, "SESSION_TRANSCRIPT_ROOT", tmp_path / "projects"

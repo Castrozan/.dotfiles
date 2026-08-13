@@ -23,6 +23,8 @@ def newest_session_transcript_file(workspace: Path) -> Path | None:
 def tool_call_argument_text(tool_name: str, tool_input: dict) -> str:
     if tool_name == "Bash":
         return str(tool_input.get("command", ""))
+    if tool_name == "Skill":
+        return str(tool_input.get("skill", ""))
     return json.dumps(tool_input, sort_keys=True)
 
 

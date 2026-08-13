@@ -1,5 +1,5 @@
 name: skill_discovery_natural_coding_calculator_divide_zero
-description: User reports a bug with no hint about the test-first protocol. Agent should route to coding and write a failing test first.
+description: User reports a bug with no workflow hints. Agent should route to coding, test first, and add no comments.
 
 setup:
   git_init: true
@@ -25,6 +25,9 @@ assertions:
     - coding
   wrong_skill_not_invoked:
     - review
+  workspace_file_no_comments:
+    - calculator.py
+    - test_calculator.py
   file_changed:
     - test_calculator.py
     - calculator.py
