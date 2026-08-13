@@ -92,6 +92,16 @@ def test_falls_back_to_the_working_directory_when_the_harness_wrote_no_title(
     assert herdr_pane_environment.requests_for("tab.rename") == []
 
 
+def test_falls_back_when_herdr_answers_with_an_unexpected_shape(
+    herdr_pane_environment,
+):
+    herdr_pane_environment.answer("agent.explain", {"explain": "not a mapping"})
+    herdr_agent_display_name_handler.handle(TURN_END)
+    herdr_pane_environment.close()
+    reported = herdr_pane_environment.requests_for("pane.report_metadata")[0]["params"]
+    assert reported["title"] == ".dotfiles"
+
+
 def test_drops_the_ellipsis_herdr_truncates_a_long_title_with(herdr_pane_environment):
     herdr_pane_environment.answer(
         "agent.explain", explain_result_carrying("scaffolding | feature/CAFE-694-pr...")

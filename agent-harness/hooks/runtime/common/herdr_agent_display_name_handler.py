@@ -54,12 +54,12 @@ def title_the_harness_wrote() -> str:
     explanation = ask_herdr(
         HERDR_EXPLAIN_AGENT_METHOD, {"target": surrounding_pane_id()}
     )
-    evaluated_rules = ((explanation or {}).get("explain") or {}).get("evaluated_rules")
-    for evaluated_rule in evaluated_rules or []:
-        if evaluated_rule.get("region") != HARNESS_WRITTEN_TITLE_REGION:
-            continue
-        written_title = (evaluated_rule.get("evidence") or {}).get("region_preview")
-        return readable_title(written_title if isinstance(written_title, str) else "")
+    try:
+        for evaluated_rule in (explanation or {})["explain"]["evaluated_rules"]:
+            if evaluated_rule["region"] == HARNESS_WRITTEN_TITLE_REGION:
+                return readable_title(evaluated_rule["evidence"]["region_preview"])
+    except (AttributeError, KeyError, TypeError):
+        return ""
     return ""
 
 
