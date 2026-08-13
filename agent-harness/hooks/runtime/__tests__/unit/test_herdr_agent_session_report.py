@@ -1,53 +1,17 @@
-import json
 import shutil
-import socket
 import sys
 import tempfile
-import threading
 from pathlib import Path
 
 import pytest
-from hook_module_loader import (
-    HOOK_SUBPROCESS_TIMEOUT_SECONDS,
-    import_hyphenated_hook_module,
-)
+from herdr_socket_double import RecordingHerdrSocketServer
+from hook_module_loader import import_hyphenated_hook_module
 
 herdr_agent_session_report_handler = import_hyphenated_hook_module(
     "herdr_agent_session_report_handler"
 )
 
 HERDR_PANE_ID = "wS:p31"
-
-
-class RecordingHerdrSocketServer:
-    def __init__(self, socket_path: Path):
-        self.socket_path = socket_path
-        self.received_requests = []
-        self.listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.listener.bind(str(socket_path))
-        self.listener.listen(1)
-        self.accepting_thread = threading.Thread(
-            target=self.accept_one_request, daemon=True
-        )
-        self.accepting_thread.start()
-
-    def accept_one_request(self):
-        try:
-            connection, _ = self.listener.accept()
-        except OSError:
-            return
-        with connection:
-            received_bytes = connection.recv(65536).decode()
-            if received_bytes.strip():
-                self.received_requests.append(json.loads(received_bytes))
-            try:
-                connection.sendall(b"{}\n")
-            except OSError:
-                pass
-
-    def close(self):
-        self.accepting_thread.join(timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS)
-        self.listener.close()
 
 
 @pytest.fixture
@@ -75,7 +39,6 @@ def test_reports_the_session_id_to_herdr_when_running_inside_a_pane(
     herdr_agent_session_report_handler.handle(
         {"hook_event_name": "SessionStart", "source": "resume", "session_id": "abc-123"}
     )
-    herdr_pane_environment.close()
     request = herdr_pane_environment.received_requests[0]
     assert request["method"] == "pane.report_agent_session"
     assert request["params"]["pane_id"] == HERDR_PANE_ID
@@ -95,7 +58,6 @@ def test_includes_the_transcript_path_when_the_payload_carries_one(
             "transcript_path": "/tmp/transcript.jsonl",
         }
     )
-    herdr_pane_environment.close()
     request = herdr_pane_environment.received_requests[0]
     assert request["params"]["agent_session_path"] == "/tmp/transcript.jsonl"
 
@@ -110,7 +72,6 @@ def test_reports_the_agent_name_the_surface_carries(
     herdr_agent_session_report_handler.handle(
         {"hook_event_name": "SessionStart", "session_id": "abc-123"}
     )
-    herdr_pane_environment.close()
     request = herdr_pane_environment.received_requests[0]
     assert request["params"]["agent"] == surface
     assert request["params"]["source"] == f"herdr:{surface}"
@@ -120,7 +81,6 @@ def test_reports_the_session_id_at_the_end_of_every_turn(herdr_pane_environment)
     herdr_agent_session_report_handler.handle(
         {"hook_event_name": "Stop", "session_id": "abc-123"}
     )
-    herdr_pane_environment.close()
     request = herdr_pane_environment.received_requests[0]
     assert request["params"]["agent_session_id"] == "abc-123"
 
