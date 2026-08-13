@@ -63,7 +63,7 @@ def test_malformed_nix_source_yields_no_plugins(tmp_path, monkeypatch):
     assert read_enabled_plugin_keys() == []
 
 
-def test_refreshes_each_marketplace_once_before_updating_plugins(tmp_path, monkeypatch):
+def test_updates_every_enabled_plugin(tmp_path, monkeypatch):
     write_nix_source(
         tmp_path,
         monkeypatch,
@@ -73,8 +73,6 @@ def test_refreshes_each_marketplace_once_before_updating_plugins(tmp_path, monke
 
     assert main() == 0
     assert recorded_commands == [
-        ["claude", "plugin", "marketplace", "update", "fair"],
-        ["claude", "plugin", "marketplace", "update", "shop"],
         ["claude", "plugin", "update", "alpha@shop"],
         ["claude", "plugin", "update", "beta@shop"],
         ["claude", "plugin", "update", "gamma@fair"],

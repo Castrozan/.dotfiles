@@ -34,18 +34,6 @@ def run_claude_plugin_command(arguments: list[str]) -> tuple[bool, str]:
     return completed_process.returncode == 0, combined_output
 
 
-def refresh_marketplaces(marketplace_names: list[str]) -> None:
-    for marketplace_name in marketplace_names:
-        succeeded, output = run_claude_plugin_command(
-            ["marketplace", "update", marketplace_name]
-        )
-        if not succeeded:
-            print(
-                f"warning: could not refresh marketplace {marketplace_name}: {output}",
-                file=sys.stderr,
-            )
-
-
 def update_plugins(enabled_plugin_keys: list[str]) -> None:
     for plugin_key in enabled_plugin_keys:
         succeeded, output = run_claude_plugin_command(["update", plugin_key])
@@ -62,15 +50,6 @@ def main() -> int:
     enabled_plugin_keys = read_enabled_plugin_keys()
     if not enabled_plugin_keys:
         return 0
-    refresh_marketplaces(
-        sorted(
-            {
-                plugin_key.split("@", 1)[1]
-                for plugin_key in enabled_plugin_keys
-                if "@" in plugin_key
-            }
-        )
-    )
     update_plugins(enabled_plugin_keys)
     return 0
 
