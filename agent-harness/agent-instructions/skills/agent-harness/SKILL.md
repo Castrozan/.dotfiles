@@ -20,6 +20,24 @@ model requires it, and restart a session only after its replacement is available
 restart or exit instead of assuming a Claude-specific command.
 </configuration-ownership>
 
+<place-instructions-by-scope-and-authority>
+Choose a surface by who needs the rule, when it must load, and how much authority it needs. Core owns universal
+cross-harness judgment and routing; a harness surface owns its mechanics; repository context owns local facts and
+policy; a skill owns on-demand domain procedure; path-scoped rules own constraints limited to matching files; command
+hooks own deterministic lifecycle automation; permissions or the operating system own security and integrity
+boundaries. Importance alone never promotes capability policy into core. A short core route can require loading the
+owning skill before action, but keep the full policy in that skill rather than copying it across layers.
+</place-instructions-by-scope-and-authority>
+
+<separate-adherence-evidence-and-enforcement>
+Treat instruction salience, skill routing, behavioral evidence, and enforcement as different controls. Prose can
+improve adherence and an eval can expose regressions, but neither forces behavior. Add a deterministic hook only when
+the forbidden state is mechanically decidable with acceptable false positives and explicit exceptions; otherwise the
+hook becomes a second policy engine that disagrees with the skill. Prefer gating an action until its owning skill is
+loaded, then test the resulting behavior. If violations persist and the predicate can be made precise, validate the
+final artifact at Stop or CI rather than parsing every edit in flight.
+</separate-adherence-evidence-and-enforcement>
+
 <knowledge>
 Read `knowledge.md` for harness-specific traps, including transcript locations, configuration roots, model routing,
 hook protocols, skill discovery, connector gates, and command anchoring.
