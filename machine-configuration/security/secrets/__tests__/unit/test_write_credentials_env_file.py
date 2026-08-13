@@ -52,6 +52,16 @@ def test_preserves_keys_the_caller_does_not_declare(tmp_path, monkeypatch):
     assert output_path.read_text() == "ALPHA=fresh\nKEPT=value\n"
 
 
+def test_leaves_the_file_untouched_when_nothing_changed(tmp_path, monkeypatch):
+    output_path = tmp_path / ".env"
+    run_main(monkeypatch, output_path, literals=["ALPHA=first"])
+    modification_time_before = output_path.stat().st_mtime_ns
+
+    run_main(monkeypatch, output_path, literals=["ALPHA=first"])
+
+    assert output_path.stat().st_mtime_ns == modification_time_before
+
+
 def test_refuses_to_write_when_a_secret_file_is_missing(tmp_path, monkeypatch):
     output_path = tmp_path / ".env"
     output_path.write_text("TOKEN=previously-materialized\n")

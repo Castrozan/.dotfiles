@@ -88,11 +88,17 @@ def main() -> int:
         **secret_backed_credentials,
     }
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        "".join(f"{key}={value}\n" for key, value in sorted(credentials.items())),
-        encoding="utf-8",
+    rendered_credentials = "".join(
+        f"{key}={value}\n" for key, value in sorted(credentials.items())
     )
+    if output_path.exists() and output_path.read_text(encoding="utf-8") == (
+        rendered_credentials
+    ):
+        output_path.chmod(0o600)
+        return 0
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(rendered_credentials, encoding="utf-8")
     output_path.chmod(0o600)
     return 0
 
