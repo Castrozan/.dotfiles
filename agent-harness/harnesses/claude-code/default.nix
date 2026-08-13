@@ -11,6 +11,7 @@
     ../../../agent-harness/hooks/integrations/claude/claude-hooks-home-manager.nix
     ./mcps
     ./opencode-go
+    ./plugin-updates
     ./private.nix
     ./scripts
     ../../workspace-profiles
