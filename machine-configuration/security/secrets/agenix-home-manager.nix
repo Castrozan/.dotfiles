@@ -96,6 +96,7 @@ in
 {
   imports = [
     inputs.agenix.homeManagerModules.default
+    ./credentials-env-file-writer-home-manager.nix
   ]
   ++ lib.optionals privateMachineSecretsModuleExists [
     privateMachineSecretsModulePath
