@@ -56,7 +56,7 @@ def test_skill_names_are_unique_across_the_skill_tree():
 
 
 def test_xml_instruction_tags_are_balanced_and_correctly_nested():
-    for path in instruction_surface_files() + skill_definition_files():
+    for path in every_linted_markdown_file():
         error = xml_tag_structure_error(path.read_text())
         assert error is None, f"{path.relative_to(REPO_ROOT)} has {error}"
 

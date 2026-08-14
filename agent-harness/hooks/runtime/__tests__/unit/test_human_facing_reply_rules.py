@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = HOOKS_ROOT.parents[2]
 REPLY_RULE_MODULE_DIRECTORY = next(HOOKS_ROOT.rglob("reply_rule_catalog.py")).parent
 if str(REPLY_RULE_MODULE_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(REPLY_RULE_MODULE_DIRECTORY))
@@ -20,7 +21,12 @@ from reply_template_limits import (  # noqa: E402
 )
 
 INTERACTIVE_COMMUNICATION_PATH = (
-    REPLY_RULE_MODULE_DIRECTORY / "interactive-communication.md"
+    REPO_ROOT
+    / "agent-harness"
+    / "agent-instructions"
+    / "skills"
+    / "humanize"
+    / "interactive-communication.md"
 )
 
 

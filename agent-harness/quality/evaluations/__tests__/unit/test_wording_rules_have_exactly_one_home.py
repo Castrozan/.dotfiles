@@ -6,9 +6,7 @@ HUMANIZE_SKILL = frozenset(
     {"agent-harness/agent-instructions/skills/humanize/SKILL.md"}
 )
 INTERACTIVE_INSTRUCTIONS = frozenset(
-    {
-        "agent-harness/hooks/runtime/common/human_facing_reply/interactive-communication.md"
-    }
+    {"agent-harness/agent-instructions/skills/humanize/interactive-communication.md"}
 )
 
 SINGLE_HOME_RULE_PHRASES = {

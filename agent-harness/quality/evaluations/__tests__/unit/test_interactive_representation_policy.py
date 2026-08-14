@@ -13,10 +13,9 @@ CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH = (
 INTERACTIVE_COMMUNICATION_POLICY_PATH = (
     REPO_ROOT
     / "agent-harness"
-    / "hooks"
-    / "runtime"
-    / "common"
-    / "human_facing_reply"
+    / "agent-instructions"
+    / "skills"
+    / "humanize"
     / "interactive-communication.md"
 )
 

@@ -4,7 +4,6 @@ from instruction_surface_scanner import REPO_ROOT, frontmatter_key_values
 HOOK_DOMAIN_DIRECTORY = (
     REPO_ROOT / "agent-harness" / "hooks" / "runtime" / "common" / "human_facing_reply"
 )
-INTERACTIVE_POLICY_PATH = HOOK_DOMAIN_DIRECTORY / "interactive-communication.md"
 CORE_COMMUNICATION_DIRECTORY = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "core-rules" / "communication"
 )
@@ -12,6 +11,7 @@ HUMANIZE_DIRECTORY = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "skills" / "humanize"
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
+INTERACTIVE_POLICY_PATH = HUMANIZE_DIRECTORY / "interactive-communication.md"
 REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
 REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
 
@@ -21,18 +21,20 @@ INTERACTIVE_LAUNCHER_EXPECTATIONS = {
     / "harnesses"
     / "claude-code"
     / "skill-injection"
-    / "interactive-sessions.nix": ("interactive-communication.md",),
+    / "interactive-sessions.nix": (
+        "agent-instructions/skills/humanize/interactive-communication.md",
+    ),
     REPO_ROOT / "agent-harness" / "harnesses" / "codex" / "package.nix": (
         "humanize/SKILL.md",
-        "interactive-communication.md",
+        "agent-instructions/skills/humanize/interactive-communication.md",
     ),
     REPO_ROOT / "agent-harness" / "harnesses" / "opencode" / "opencode.nix": (
         "humanize/SKILL.md",
-        "interactive-communication.md",
+        "agent-instructions/skills/humanize/interactive-communication.md",
     ),
     REPO_ROOT / "agent-harness" / "harnesses" / "pi" / "package.nix": (
         "humanize/SKILL.md",
-        "interactive-communication.md",
+        "agent-instructions/skills/humanize/interactive-communication.md",
     ),
 }
 
@@ -44,7 +46,7 @@ REMOVED_GENERATED_SURFACES = (
 )
 
 
-def test_hook_and_skill_own_separate_interactive_and_output_policies():
+def test_humanize_package_owns_interactive_and_output_policies():
     interactive_policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
     humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
 
@@ -78,6 +80,8 @@ def test_hook_and_skill_own_separate_interactive_and_output_policies():
         "binds_every_human_facing_channel",
     ):
         assert f"<{tag}>" in humanize_skill
+
+    assert not (HOOK_DOMAIN_DIRECTORY / "interactive-communication.md").exists()
 
 
 def test_each_harness_composes_the_canonical_units_directly():

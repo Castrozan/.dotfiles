@@ -36,7 +36,7 @@ let
   interactivePreferencesFile = pkgs.writeText "pi-interactive-session-only-reply-rules.md" (
     lib.concatStringsSep "\n" [
       (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/SKILL.md)
-      (builtins.readFile ../../../agent-harness/hooks/runtime/common/human_facing_reply/interactive-communication.md)
+      (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/interactive-communication.md)
     ]
   );
 
