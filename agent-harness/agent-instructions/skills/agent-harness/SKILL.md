@@ -30,12 +30,13 @@ owning skill before action, but keep the full policy in that skill rather than c
 </place-instructions-by-scope-and-authority>
 
 <separate-adherence-evidence-and-enforcement>
-Treat instruction salience, skill routing, behavioral evidence, and enforcement as different controls. Prose can
-improve adherence and an eval can expose regressions, but neither forces behavior. Add a deterministic hook only when
-the forbidden state is mechanically decidable with acceptable false positives and explicit exceptions; otherwise the
-hook becomes a second policy engine that disagrees with the skill. Prefer gating an action until its owning skill is
-loaded, then test the resulting behavior. If violations persist and the predicate can be made precise, validate the
-final artifact at Stop or CI rather than parsing every edit in flight.
+A missed policy is an adherence signal, not by itself a reason to parse every edit with a hook. Treat instruction
+salience, skill routing, behavioral evidence, and enforcement as different controls: prose can improve adherence and an
+eval can expose regressions, but neither forces behavior. A deterministic hook is justified only when the forbidden
+state is mechanically decidable with acceptable false positives and explicit exceptions; otherwise it becomes a second
+policy engine that disagrees with the skill. Prefer gating an action until its owning skill is loaded, then test the
+resulting behavior. If violations persist and the predicate can be made precise, validate the final artifact at Stop or
+CI.
 </separate-adherence-evidence-and-enforcement>
 
 <knowledge>
