@@ -118,6 +118,18 @@ def test_allows_code_block_without_counting_fenced_lines(tmp_path):
     assert result.stdout.strip() == ""
 
 
+def test_allows_compact_visual_between_answer_and_status(tmp_path):
+    reply = (
+        "The session module owns persistence and delegates transport.\n"
+        "```text\nSession\n├── Store\n└── Transport\n```\n"
+        "**Done:** mapped the ownership boundary\n"
+        "**Next:** nothing pending"
+    )
+    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
+    result = invoke_guard(stop_payload(transcript))
+    assert result.stdout.strip() == ""
+
+
 def test_silent_when_stop_hook_already_active(tmp_path):
     transcript = write_transcript_with_final_assistant_reply(
         tmp_path, "You're right, here is a long unstructured wall of slop text."

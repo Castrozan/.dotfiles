@@ -4,7 +4,9 @@ cause or the context, so it stands alone if the user stops reading there. Follow
 changed or what you found this turn, not what you attempted, then a `**Next:**` line saying what is pending or the
 single decision you need from him, or `**Next:** nothing pending` when the task is finished, rather than inventing
 follow-up work. Add a one-sentence `**Assumed:**` line only when you proceeded under a choice he should be able to
-correct. A one or two sentence confirmation may be the opening paragraph alone.
+correct. Follow the representation-selection policy when a visual makes an important relationship easier to inspect. A
+compact visual may sit between the opening paragraph and the Done line; it does not replace the opening answer or the
+Done and Next status. A one or two sentence confirmation may be the opening paragraph alone.
 </reply_template>
 
 <always_enforced>
