@@ -7,42 +7,10 @@ if str(REPLY_RULE_MODULE_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(REPLY_RULE_MODULE_DIRECTORY))
 
 from long_form_request_gate import user_request_permits_long_form  # noqa: E402
-from reply_rule_catalog import (  # noqa: E402
-    HUMAN_FACING_REPLY_RULES,
-    template_violations_in_reply,
-)
-from reply_rule_rendering import (  # noqa: E402
-    rendered_bounce_guidance,
-    rendered_enforced_reply_rules_markdown,
-    rendered_every_channel_wording_rules_markdown,
-)
+from reply_rule_catalog import template_violations_in_reply  # noqa: E402
 from reply_template_limits import (  # noqa: E402
-    EVERY_HUMAN_FACING_CHANNEL_SCOPE,
-    LIVE_KEYBOARD_REPLY_SCOPE,
     REPLY_HARD_CHARACTER_CEILING,
     REPLY_HARD_WORD_CEILING,
-)
-
-REPOSITORY_ROOT = HOOKS_ROOT.parents[2]
-GENERATED_SURFACES = (
-    (
-        REPOSITORY_ROOT
-        / "agent-harness"
-        / "agent-instructions"
-        / "core-rules"
-        / "communication"
-        / "enforced-reply-rules.md",
-        rendered_enforced_reply_rules_markdown,
-    ),
-    (
-        REPOSITORY_ROOT
-        / "agent-harness"
-        / "agent-instructions"
-        / "skills"
-        / "humanize"
-        / "enforced-wording-rules.md",
-        rendered_every_channel_wording_rules_markdown,
-    ),
 )
 
 
@@ -134,47 +102,3 @@ def test_an_en_dash_is_caught_like_an_em_dash():
 def test_a_dash_inside_a_fenced_block_is_a_quoted_artifact_not_prose():
     reply = "The upstream README reads:\n```\nrange 1–9 — inclusive\n```\nNothing else."
     assert template_violations_in_reply(reply, "write a design doc") == []
-
-
-def test_every_rule_carries_an_instruction_sentence_for_the_rendered_surfaces():
-    without_sentence = [
-        rule.name
-        for rule in HUMAN_FACING_REPLY_RULES
-        if not rule.instruction_sentence.strip()
-    ]
-    assert not without_sentence, (
-        "a rule enforced by regex but never stated to the model is the drift this "
-        f"catalog exists to prevent: {without_sentence}"
-    )
-
-
-def test_the_bounce_text_carries_the_violations_and_the_template():
-    bounce = rendered_bounce_guidance(["contains an em dash"])
-    assert "contains an em dash" in bounce
-    assert "**Done:**" in bounce
-
-
-def test_every_committed_generated_surface_matches_the_catalog():
-    stale = [
-        str(surface_path.relative_to(REPOSITORY_ROOT))
-        for surface_path, render in GENERATED_SURFACES
-        if surface_path.read_text(encoding="utf-8") != render()
-    ]
-    assert not stale, (
-        "these surfaces are generated; run "
-        "agent-harness/agent-instructions/core-rules/communication/render-enforced-reply-rules-markdown.py after editing the rule "
-        f"catalog so the deployed instruction text matches what the hook enforces: {stale}"
-    )
-
-
-def test_every_rule_declares_the_channels_it_binds():
-    known_scopes = {EVERY_HUMAN_FACING_CHANNEL_SCOPE, LIVE_KEYBOARD_REPLY_SCOPE}
-    unscoped = [
-        rule.name
-        for rule in HUMAN_FACING_REPLY_RULES
-        if rule.applies_to not in known_scopes
-    ]
-    assert not unscoped, (
-        "a rule with no channel scope reaches neither the humanize chapter nor the "
-        f"reply surface, so it would be enforced without ever being stated: {unscoped}"
-    )

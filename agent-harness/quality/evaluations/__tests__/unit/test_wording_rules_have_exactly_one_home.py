@@ -4,7 +4,8 @@ from instruction_surface_scanner import REPO_ROOT, every_linted_markdown_file
 
 GENERATED_RULE_SURFACES = frozenset(
     {
-        "agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md",
+        "agent-harness/agent-instructions/core-rules/communication/interactive-hook-communication.md",
+        "agent-harness/agent-instructions/core-rules/communication/interactive-human-communication.md",
         "agent-harness/agent-instructions/skills/humanize/enforced-wording-rules.md",
     }
 )

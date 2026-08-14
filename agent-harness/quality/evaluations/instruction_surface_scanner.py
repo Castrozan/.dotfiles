@@ -3,6 +3,15 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILL_TREE = REPO_ROOT / "agent-harness" / "agent-instructions" / "skills"
+CANONICAL_INTERACTIVE_COMMUNICATION_POLICY = (
+    REPO_ROOT
+    / "agent-harness"
+    / "hooks"
+    / "runtime"
+    / "common"
+    / "human_facing_reply"
+    / "interactive-communication.md"
+)
 PRIVATE_MACHINE_SKILL_TREES = sorted(
     (REPO_ROOT / "private-configuration" / "machines").glob("*/skills")
 )
@@ -59,7 +68,10 @@ def subagent_definition_files() -> list[Path]:
 
 def instruction_surface_files() -> list[Path]:
     instruction_root = REPO_ROOT / "agent-harness" / "agent-instructions"
-    surfaces = [instruction_root / "project-context" / "dotfiles-agent-instructions.md"]
+    surfaces = [
+        instruction_root / "project-context" / "dotfiles-agent-instructions.md",
+        CANONICAL_INTERACTIVE_COMMUNICATION_POLICY,
+    ]
     surfaces += sorted((instruction_root / "core-rules").glob("**/*.md"))
     surfaces += sorted((instruction_root / "rebuild-guidance").glob("*.md"))
     surfaces += sorted((instruction_root / "commands").glob("**/*.md"))

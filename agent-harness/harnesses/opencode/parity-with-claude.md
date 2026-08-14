@@ -43,7 +43,7 @@ against the model choice.
   `OPENCODE_CONFIG` deep-merges a file over the global config and its
   `instructions` arrays CONCATENATE rather than replace. The `opencode` wrapper
   exploits that: it points `OPENCODE_CONFIG` at an overlay carrying
-  `interactive-preferences.md` and `enforced-reply-rules.md`, and only for
+  `interactive-human-communication.md`, and only for
   interactive invocations, mirroring how the `codex` wrapper injects
   `developer_instructions`. Every named subcommand (`run`, `serve`, `mcp`, ...)
   skips the overlay, keeping the reply shape out of machine-facing output.

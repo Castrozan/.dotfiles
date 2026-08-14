@@ -56,7 +56,10 @@ HANDLERS_THAT_MUST_STAY_OFF_THE_CODEX_SURFACE = {
         "workspace_directory_injector_handler",
     },
     "STOP_HANDLERS": {"end_of_turn_format_guard_handler"},
-    "SESSION_START_HANDLERS": {"session_context_handler"},
+    "SESSION_START_HANDLERS": {
+        "human_communication_skill_gate_reset_handler",
+        "session_context_handler",
+    },
 }
 
 HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
@@ -90,6 +93,7 @@ HANDLERS_THAT_MUST_STAY_OFF_THE_OPENCODE_SURFACE = {
         "monitor_streaming_pattern_validator_handler",
     },
     "SESSION_START_HANDLERS": {
+        "human_communication_skill_gate_reset_handler",
         "session_context_handler",
     },
     "STOP_HANDLERS": {

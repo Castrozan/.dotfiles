@@ -6,8 +6,7 @@
 }:
 let
   interactiveSessionSystemPromptText = lib.concatStringsSep "\n" [
-    (builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md)
-    (builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md)
+    (builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/communication/interactive-hook-communication.md)
     (builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md)
   ];
 

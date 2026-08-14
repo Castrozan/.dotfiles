@@ -107,7 +107,7 @@ a reviewable diff. The decision file is in `agent-harness/read-it-later/decision
 date and slug. It records the origin as resolved, what the thing actually is, what it touches here by `path:line`
 or plainly that it touches nothing, the verdict and its reasoning, and the drafted vault entry. That log is the
 git-backed audit trail the vault cannot be, since the vault is not a git repository. It is a public repository, so
-redact anything employer-identifying exactly as everywhere else.
+apply the humanize skill's public-repository safeguard before writing it.
 </every_capture_ends_at_a_pull_request>
 
 <the_pull_request_conversation>

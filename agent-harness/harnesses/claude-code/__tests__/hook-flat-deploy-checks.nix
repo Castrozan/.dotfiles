@@ -23,6 +23,11 @@ let
     + lib.concatStringsSep " and " (map (entry: entry.relativePathToHooksRoot) entries);
 in
 {
+  hooks-flat-deploy-carries-the-human-communication-policy =
+    mkEvalCheck "hooks-flat-deploy-carries-the-human-communication-policy"
+      (builtins.hasAttr "interactive-communication.md" sourcePathsByFlatDeploymentFilename)
+      "the human-facing reply hook carries its interactive instructions as a deployed side file, so dropping Markdown from the flat hook runtime would break the portable hook bundle";
+
   hooks-flat-deploy-has-no-basename-collision =
     mkEvalCheck "hooks-flat-deploy-has-no-basename-collision" (collidingFlatDeploymentFilenames == { })
       (

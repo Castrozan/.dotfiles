@@ -25,8 +25,16 @@ from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_session_detection import (  # noqa: E402
     is_keyboard_driven_interactive_session,
 )
+import skill_loaded_marker  # noqa: E402
 from reply_rule_catalog import template_violations_in_reply  # noqa: E402
 from reply_rule_rendering import rendered_bounce_guidance  # noqa: E402
+
+HUMANIZE_SKILL_NAME = "humanize"
+HUMANIZE_SKILL_GATE_REASON = (
+    "Invoke Skill(skill='humanize') before completing this human-facing reply. The "
+    "skill owns semantic clarity, representation, terminology, meaning preservation, "
+    "and human voice; do not infer those requirements from the format hook."
+)
 
 
 def user_prompt_text_from_event(transcript_event: dict) -> str:
@@ -83,6 +91,10 @@ def handle(hook_input: dict):
         return None
     if not is_keyboard_driven_interactive_session():
         return None
+    if not skill_loaded_marker.has_skill_loaded(
+        HUMANIZE_SKILL_NAME, hook_input.get("session_id", "")
+    ):
+        return HandlerResult(decision="block", reason=HUMANIZE_SKILL_GATE_REASON)
     if hook_input.get("stop_hook_active"):
         return None
 

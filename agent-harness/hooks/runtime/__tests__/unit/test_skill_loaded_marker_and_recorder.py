@@ -34,6 +34,17 @@ def test_recorded_marker_is_detected_by_has_skill_loaded(tmp_path, monkeypatch):
     assert not skill_loaded_marker.has_skill_loaded("instructions", "session-a")
 
 
+def test_clear_removes_only_the_selected_skill_marker(tmp_path, monkeypatch):
+    monkeypatch.setenv("AGENT_SKILL_LOADED_MARKER_STATE_DIRECTORY", str(tmp_path))
+    skill_loaded_marker.record_skill_loaded("humanize", "session-a")
+    skill_loaded_marker.record_skill_loaded("docs", "session-a")
+
+    skill_loaded_marker.clear_skill_loaded("humanize", "session-a")
+
+    assert not skill_loaded_marker.has_skill_loaded("humanize", "session-a")
+    assert skill_loaded_marker.has_skill_loaded("docs", "session-a")
+
+
 def test_canonical_skill_name_strips_the_namespace_prefix():
     assert record_skill_invocation_handler.canonical_skill_name("plugin:docs") == "docs"
     assert (

@@ -94,8 +94,8 @@ skill roots.
 
 ## What has no native equivalent
 
-Exactly one thing survives: the interactive-only system prompt of `interactive-preferences.md`, `enforced-reply-rules.md`
-and `adaptive-implementation-delivery-process.md`. `~/.claude/CLAUDE.md` would reach jenny too. There is no settings key
+Exactly one thing survives: the interactive-only system prompt of `interactive-hook-communication.md` and
+`adaptive-implementation-delivery-process.md`. `~/.claude/CLAUDE.md` would reach jenny too. There is no settings key
 for it. A `SessionStart` hook injects context that compaction may drop, and these are rules that must hold as the
 conversation grows long, so the context tier is the wrong tier. A launch flag is required, which means a wrapper
 survives at two lines: export the marker, exec `claude --append-system-prompt-file <store path> "$@"`.

@@ -24,7 +24,7 @@ shared_system_prompt: &shared_system_prompt |
 
   herdr - Drive herdr, the terminal workspace manager, and orchestrate interactive agents in it: spawn, prompt, read, wait on, or take over background work. Also scripts workspaces, tabs, and panes.
 
-  humanize - The single home for how text a human reads is worded: plain-language discipline, AI-writing tells to strip, per-channel phrasing and length (chat, commit, MR, ticket, doc, page), and the wording rules a hook blocks on. Load before drafting any human-facing text.
+  humanize - Human-readable output policy for chat and durable artifacts, covering meaning, representation, terminology, sentence construction, human voice, and channel adaptation. Interactive hooks require it.
 
   instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
 
@@ -255,10 +255,10 @@ tests:
       output_equals:
         - "research"
 
-  - name: routing_to_humanize_compress_output
+  - name: routing_to_humanize_merge_request_description
     no_tools: true
     system_prompt: *shared_system_prompt
-    prompt: "That answer was way too long, give me the short version"
+    prompt: "Rewrite this merge request description so a reviewer can scan it quickly without losing any caveats"
     model: sonnet
     assertions:
       output_equals:

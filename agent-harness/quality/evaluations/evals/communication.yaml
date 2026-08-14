@@ -1,70 +1,130 @@
 tests:
   - name: representation_ownership_uses_tree
     description: "Ownership and nesting are shown as a compact tree"
-    skill_path: agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     prompt: |
-      Explain this module layout so I can quickly see who owns request parsing, session state, and transport:
+      Treat this as a complete hypothetical layout and do not inspect any files. Explain it so I can quickly see who
+      owns request parsing, session state, and transport:
       src/commands/parse.py, src/sessions/store.py, src/transport/client.py.
     model: haiku
     max_turns: 1
+    no_tools: true
     assertions:
       llm_judge:
         - "Uses a compact tree as the main representation because the reader needs to inspect file ownership and nesting, with each file or directory labeled by its responsibility."
 
   - name: representation_ordering_and_failure_uses_sequence
     description: "Runtime ordering and failure are shown as a sequence"
-    skill_path: agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     prompt: |
       Explain the request path from UI to API to database, including that authentication can reject the request before
       the database call and that the UI receives the error.
     model: haiku
     max_turns: 1
+    no_tools: true
     assertions:
       llm_judge:
         - "Uses a compact sequence or flow as the main representation because ordering and the authentication failure path are the relationships the reader must inspect."
 
   - name: representation_choices_use_table
     description: "Exact option comparisons are shown as a table"
-    skill_path: agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     prompt: |
       Compare SQLite, PostgreSQL, and DynamoDB for local setup, concurrent writes, operational burden, and horizontal
       scaling so I can choose one.
     model: haiku
     max_turns: 1
+    no_tools: true
     assertions:
       llm_judge:
         - "Uses a compact comparison table as the main representation, with the options as one dimension and the requested decision criteria as the other."
 
   - name: representation_behavior_uses_state_model
     description: "Event-driven behavior is shown as a state model"
-    skill_path: agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     prompt: |
       Explain a job that moves from queued to running, may retry after a transient failure, and ends in succeeded or
       failed. A completed job cannot return to running.
     model: haiku
     max_turns: 1
+    no_tools: true
     assertions:
       llm_judge:
         - "Uses a compact state model as the main representation, showing events or transitions and making the invalid completed-to-running transition clear."
 
   - name: representation_change_uses_focused_diff
     description: "A change against an existing shape is shown as a focused diff"
-    skill_path: agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     prompt: |
-      Show how the current src/transport.py file changes into src/transport/client.py and src/transport/stream.py while
-      the rest of src stays unchanged.
+      Treat this as a complete hypothetical layout and do not inspect any files. Show how src/transport.py changes into
+      src/transport/client.py and src/transport/stream.py while the rest of src stays unchanged.
     model: haiku
     max_turns: 1
+    no_tools: true
     assertions:
       llm_judge:
         - "Uses a focused diff as the main representation because the reader needs to inspect a change against an existing file layout, and omits unrelated files."
 
   - name: representation_single_answer_stays_prose
     description: "A simple answer does not receive decorative structure"
-    skill_path: agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     prompt: "The service port is 8080. Which port should I connect to?"
     model: haiku
     max_turns: 1
+    no_tools: true
     assertions:
       llm_judge:
         - "Answers 8080 directly in one short prose sentence and does not add a table, tree, diagram, diff, headings, or a list."
+
+  - name: communication_compression_preserves_material_meaning
+    description: "Shortening keeps conditions, scope, numbers, and caveats"
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    prompt: |
+      Shorten this without changing what an operator may do: Retry the migration at most twice, but only when the
+      database reports SQLSTATE 40001. Never retry a permission error. The second retry can increase lock contention.
+    model: haiku
+    max_turns: 1
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Produces a shorter version that preserves the two-retry maximum, the SQLSTATE 40001 condition, the prohibition on retrying permission errors, and the lock-contention caveat."
+
+  - name: communication_uses_one_defined_term_per_referent
+    description: "A domain term is defined once and reused without synonym cycling"
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    prompt: |
+      Explain this to a new maintainer: the code calls the record that grants one worker temporary ownership a lease.
+      The worker must renew the lease every 30 seconds and loses ownership when the lease expires.
+    model: haiku
+    max_turns: 1
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Defines lease at first use, then consistently calls the same record a lease rather than rotating through synonyms, while preserving the 30-second renewal and expiration behavior."
+
+  - name: communication_separates_evidence_inference_and_decision
+    description: "Observed evidence is not presented as a proven diagnosis"
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    prompt: |
+      The logs prove only that latency rose after the cache deploy. I suspect key churn caused it, but we have no key
+      cardinality metric. Tell the incident lead what we know and whether to roll back.
+    model: haiku
+    max_turns: 1
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Clearly distinguishes the observed timing correlation from the unverified key-churn hypothesis, then gives a rollback recommendation with its practical uncertainty instead of presenting the suspicion as fact."
+
+  - name: communication_removes_inflation_without_deleting_the_fact
+    description: "Machine-like importance language is replaced by concrete information"
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    prompt: |
+      Rewrite this for an engineering status report: This pivotal migration marks a transformative milestone in our
+      journey, showcasing the team's unwavering commitment to a robust and seamless developer ecosystem. It reduced
+      median build time from 11 minutes to 7 minutes in the measured CI jobs.
+    model: haiku
+    max_turns: 1
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Removes the inflated milestone, journey, commitment, robust, seamless, and ecosystem framing while preserving the measured reduction from 11 minutes to 7 minutes and identifying it as CI-job evidence."

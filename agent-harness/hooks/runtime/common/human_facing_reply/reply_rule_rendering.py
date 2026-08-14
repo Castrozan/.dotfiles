@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import textwrap
 
 from reply_rule_catalog import rules_applying_to, rules_in_tier
@@ -32,6 +33,17 @@ REQUEST_GATE_CONDITION = (
     "These stand down only when the user explicitly asked for a document or an in-detail write-up, and fenced code "
     "blocks never count toward the line, word, and character counts."
 )
+
+CANONICAL_INTERACTIVE_COMMUNICATION_POLICY_PATH = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "interactive-communication.md"
+)
+
+
+def canonical_interactive_communication_policy_markdown() -> str:
+    with open(
+        CANONICAL_INTERACTIVE_COMMUNICATION_POLICY_PATH, encoding="utf-8"
+    ) as policy_file:
+        return policy_file.read()
 
 
 def joined_rule_sentences(enforcement_tier: str) -> str:
@@ -107,3 +119,23 @@ def rendered_enforced_reply_rules_markdown() -> str:
         ),
     )
     return rendered_markdown_surface(sections)
+
+
+def rendered_interactive_human_communication_markdown(
+    human_readable_output_policy_markdown: str,
+) -> str:
+    return (
+        human_readable_output_policy_markdown.rstrip()
+        + "\n\n"
+        + canonical_interactive_communication_policy_markdown().rstrip()
+        + "\n\n"
+        + rendered_enforced_reply_rules_markdown()
+    )
+
+
+def rendered_interactive_hook_communication_markdown() -> str:
+    return (
+        canonical_interactive_communication_policy_markdown().rstrip()
+        + "\n\n"
+        + rendered_enforced_reply_rules_markdown()
+    )

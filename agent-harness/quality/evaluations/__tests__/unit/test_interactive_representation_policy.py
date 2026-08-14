@@ -2,13 +2,13 @@ import re
 
 from instruction_surface_scanner import REPO_ROOT
 
-INTERACTIVE_PREFERENCES_PATH = (
+CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH = (
     REPO_ROOT
     / "agent-harness"
     / "agent-instructions"
-    / "core-rules"
-    / "communication"
-    / "interactive-preferences.md"
+    / "skills"
+    / "humanize"
+    / "SKILL.md"
 )
 REPLY_RULE_RENDERING_PATH = (
     REPO_ROOT
@@ -22,7 +22,7 @@ REPLY_RULE_RENDERING_PATH = (
 
 
 def representation_selection_policy() -> str:
-    preferences = INTERACTIVE_PREFERENCES_PATH.read_text(encoding="utf-8")
+    preferences = CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8")
     match = re.search(
         r"<representation-selection>(.*?)</representation-selection>",
         preferences,

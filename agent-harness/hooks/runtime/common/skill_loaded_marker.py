@@ -39,3 +39,10 @@ def record_skill_loaded(skill_name, session_id):
 
 def has_skill_loaded(skill_name, session_id):
     return os.path.exists(skill_loaded_marker_path(skill_name, session_id))
+
+
+def clear_skill_loaded(skill_name, session_id):
+    try:
+        os.remove(skill_loaded_marker_path(skill_name, session_id))
+    except FileNotFoundError:
+        pass

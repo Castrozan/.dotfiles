@@ -26,6 +26,10 @@ SESSION_START_HANDLERS = [
     HookHandler(
         handler_module_name="session_context_handler", surfaces=(CLAUDE_SURFACE,)
     ),
+    HookHandler(
+        handler_module_name="human_communication_skill_gate_reset_handler",
+        surfaces=(CLAUDE_SURFACE,),
+    ),
     HookHandler(handler_module_name="compaction_context_recovery_handler"),
     HookHandler(handler_module_name="herdr_agent_session_report_handler"),
 ]

@@ -34,9 +34,7 @@ let
   ];
 
   interactivePreferencesFile = pkgs.writeText "pi-interactive-session-only-reply-rules.md" (
-    builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/interactive-preferences.md
-    + "\n"
-    + builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/enforced-reply-rules.md
+    builtins.readFile ../../../agent-harness/agent-instructions/core-rules/communication/interactive-human-communication.md
   );
 
   pi = pkgs.writeShellScriptBin "pi" ''
