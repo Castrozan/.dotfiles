@@ -33,7 +33,7 @@ def test_prompt_is_delivered_via_stdin_not_as_an_argv_positional(monkeypatch):
 class _ProcessWithStderrChrome:
     def __init__(self):
         self.returncode = 0
-        self.stdout = "google-chat"
+        self.stdout = "research"
         self.stderr = (
             "Managed settings contain invalid entries "
             "(remaining valid policies are still enforced):"
@@ -50,7 +50,7 @@ def test_successful_grade_uses_stdout_and_excludes_stderr_chrome(monkeypatch):
     output, invoked = run_claude_cli("route this", model="haiku", no_tools=True)
 
     assert invoked is True
-    assert output == "google-chat"
+    assert output == "research"
 
 
 class _ProcessThatCrashedWithoutStdout:

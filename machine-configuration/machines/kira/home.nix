@@ -17,7 +17,6 @@ in
 
     ../../../machine-configuration/development/cloud-services/aws-home-manager.nix
     ../../../machine-configuration/development/cloud-services/bitwarden-cli-home-manager.nix
-    ../../../machine-configuration/development/cloud-services/google-workspace-cli/google-workspace-cli-home-manager.nix
     ../../../machine-configuration/development/cloud-services/infisical-home-manager.nix
     ../../../machine-configuration/development/model-context-protocol/mcporter-home-manager.nix
     ../../../machine-configuration/development/database-tools/mongodb-atlas-cli-home-manager.nix

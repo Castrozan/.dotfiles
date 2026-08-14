@@ -70,6 +70,5 @@
     # Third-party — keep own nixpkgs
     voxtype.url = "github:peteonrails/voxtype";
     whisp-away.url = "github:madjinn/whisp-away";
-    google-workspace-cli.url = "github:googleworkspace/cli";
   };
 }
