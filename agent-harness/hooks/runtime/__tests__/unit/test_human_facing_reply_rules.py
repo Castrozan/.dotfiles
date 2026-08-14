@@ -124,7 +124,7 @@ def test_bounce_guidance_names_the_violation_and_points_to_loaded_policy():
     guidance = bounce_guidance(["contains an em dash"])
 
     assert "contains an em dash" in guidance
-    assert "loaded humanize skill" in guidance
+    assert "injected humanize policy" in guidance
     assert "interactive communication instructions" in guidance
 
 

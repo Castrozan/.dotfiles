@@ -19,6 +19,8 @@ for importable_directory in (
 from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     CODEX_SURFACE,
+    OPENCODE_SURFACE,
+    PI_SURFACE,
     HookHandler,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
@@ -31,7 +33,7 @@ STOP_HANDLERS = [
     HookHandler(handler_module_name="nix_rebuild_reminder_handler"),
     HookHandler(
         handler_module_name="end_of_turn_format_guard_handler",
-        surfaces=(CLAUDE_SURFACE,),
+        surfaces=(CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE, PI_SURFACE),
     ),
     HookHandler(
         handler_module_name="herdr_agent_session_report_handler",

@@ -128,7 +128,7 @@ in
   codex-hooks-config-stop-dispatcher =
     mkEvalCheck "codex-hooks-config-stop-dispatcher"
       (codexHookEventRunsScript "Stop" "stop-dispatcher.py")
-      "Codex Stop must run the same stop-dispatcher.py Claude registers; it composes lint-turn-review and herdr_agent_session_report on both surfaces and end-of-turn-format-guard on Claude only. The herdr report runs per turn as well as per session start so an agent that was already running when the hook shipped registers itself for reboot resume on its next turn instead of staying invisible until it restarts";
+      "Codex Stop must run the same stop-dispatcher.py Claude registers; it composes lint-turn-review and end-of-turn-format-guard on both surfaces, plus herdr_agent_session_report. The herdr report runs per turn as well as per session start so an agent that was already running when the hook shipped registers itself for reboot resume on its next turn instead of staying invisible until it restarts";
 
   codex-hooks-every-command-runs-its-canonical-dispatcher =
     mkEvalCheck "codex-hooks-every-command-runs-its-canonical-dispatcher"
@@ -146,7 +146,7 @@ in
         dispatcherCommands != [ ]
         && lib.all (command: lib.hasInfix "--surface=codex" command) dispatcherCommands
       )
-      "every Codex dispatcher registration must pass --surface=codex explicitly; the dispatchers default to the claude surface, so a registration that omits the flag silently runs Claude-only handlers (the reply-shape gate, the background-bash validator, the workspace injector) against a Codex session";
+      "every Codex dispatcher registration must pass --surface=codex explicitly; the dispatchers default to the claude surface, so a registration that omits the flag silently runs Claude-only handlers such as the background-bash validator and workspace injector against a Codex session";
 
   codex-hooks-registration-fails-loud-when-private-configuration-is-missing =
     mkEvalCheck "codex-hooks-registration-fails-loud-when-private-configuration-is-missing"

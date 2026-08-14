@@ -16,7 +16,7 @@ subagent_spawn_budget_state = import_hyphenated_hook_module(
     "subagent_spawn_budget_state"
 )
 
-INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
+INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "AGENT_INTERACTIVE_PREFERENCES_PATH"
 CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_AGENT_NAME"
 
 
@@ -126,7 +126,6 @@ def test_does_not_hold_the_ceiling_outside_an_interactive_session(
 ):
     monkeypatch.delenv(INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE, raising=False)
     monkeypatch.delenv(CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER, raising=False)
-    monkeypatch.delenv("OPENCODE_INTERACTIVE_PREFERENCES_PATH", raising=False)
     monkeypatch.setenv(
         subagent_spawn_budget_state.STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE,
         str(tmp_path),

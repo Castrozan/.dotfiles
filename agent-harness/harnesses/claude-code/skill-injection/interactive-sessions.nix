@@ -6,6 +6,7 @@
 }:
 let
   interactiveSessionSystemPromptText = lib.concatStringsSep "\n" [
+    (builtins.readFile ../../../../agent-harness/agent-instructions/skills/humanize/SKILL.md)
     (builtins.readFile ../../../../agent-harness/agent-instructions/skills/humanize/interactive-communication.md)
     (builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md)
   ];
@@ -29,7 +30,7 @@ let
     claudeSystemPromptFile="${interactiveSessionOnlySystemPromptSurfaces}"
     workspaceProfileArguments=()
     ${workspaceProfileLaunchDispatch}
-    export CLAUDE_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
+    export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
     exec ${lib.getExe config.claude.unwrappedPackage} \
       --append-system-prompt-file "$claudeSystemPromptFile" \
       "''${workspaceProfileArguments[@]}" \

@@ -10,6 +10,7 @@ from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     CODEX_SURFACE,
     OPENCODE_SURFACE,
+    PI_SURFACE,
     HandlerResult,
     HookHandler,
     handler_matches_tool,
@@ -40,6 +41,7 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "line_count_limit_guard_handler",
     },
     "STOP_HANDLERS": {
+        "end_of_turn_format_guard_handler",
         "lint_turn_review_handler",
         "herdr_agent_session_report_handler",
     },
@@ -55,9 +57,7 @@ HANDLERS_THAT_MUST_STAY_OFF_THE_CODEX_SURFACE = {
         "codex_sandbox_downgrade_guard_handler",
         "workspace_directory_injector_handler",
     },
-    "STOP_HANDLERS": {"end_of_turn_format_guard_handler"},
     "SESSION_START_HANDLERS": {
-        "human_communication_skill_gate_reset_handler",
         "session_context_handler",
     },
 }
@@ -93,11 +93,9 @@ HANDLERS_THAT_MUST_STAY_OFF_THE_OPENCODE_SURFACE = {
         "monitor_streaming_pattern_validator_handler",
     },
     "SESSION_START_HANDLERS": {
-        "human_communication_skill_gate_reset_handler",
         "session_context_handler",
     },
     "STOP_HANDLERS": {
-        "end_of_turn_format_guard_handler",
         "herdr_agent_session_report_handler",
     },
 }
@@ -190,3 +188,10 @@ def test_requested_hook_surface_defaults_to_claude(monkeypatch):
     assert requested_hook_surface() == CLAUDE_SURFACE
     monkeypatch.setattr(sys, "argv", ["pre-tool-use-dispatcher.py", "--surface=codex"])
     assert requested_hook_surface() == CODEX_SURFACE
+
+
+def test_all_interactive_surfaces_run_the_same_reply_guard():
+    for surface in (CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE, PI_SURFACE):
+        assert "end_of_turn_format_guard_handler" in handler_module_names_on_surface(
+            "STOP_HANDLERS", surface
+        )

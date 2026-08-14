@@ -26,7 +26,11 @@ piIsAnsweringAHumanAtTheKeyboard() {
 }
 
 if piIsAnsweringAHumanAtTheKeyboard "$@"; then
-	exec "$PI_UNWRAPPED_BINARY" --append-system-prompt "$PI_INTERACTIVE_REPLY_RULES_FILE" "$@"
+	export AGENT_INTERACTIVE_PREFERENCES_PATH="$PI_INTERACTIVE_REPLY_RULES_FILE"
+	exec "$PI_UNWRAPPED_BINARY" \
+		--append-system-prompt "$PI_INTERACTIVE_REPLY_RULES_FILE" \
+		--extension "$PI_HUMAN_REPLY_GUARD_EXTENSION" \
+		"$@"
 fi
 
 exec "$PI_UNWRAPPED_BINARY" "$@"

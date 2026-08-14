@@ -25,29 +25,42 @@ from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_session_detection import (  # noqa: E402
     is_keyboard_driven_interactive_session,
 )
-import skill_loaded_marker  # noqa: E402
 from reply_rule_catalog import template_violations_in_reply  # noqa: E402
 from reply_rule_feedback import bounce_guidance  # noqa: E402
 
-HUMANIZE_SKILL_NAME = "humanize"
-HUMANIZE_SKILL_GATE_REASON = (
-    "Invoke Skill(skill='humanize') before completing this human-facing reply. The "
-    "skill owns semantic clarity, representation, terminology, meaning preservation, "
-    "and human voice; do not infer those requirements from the format hook."
-)
 
-
-def user_prompt_text_from_event(transcript_event: dict) -> str:
-    content = transcript_event.get("message", {}).get("content", "")
+def text_from_content(content, accepted_block_types=("text",)) -> str:
     if isinstance(content, str):
         return content.strip()
     if isinstance(content, list):
         return "".join(
             block.get("text", "")
             for block in content
-            if isinstance(block, dict) and block.get("type") == "text"
+            if isinstance(block, dict) and block.get("type") in accepted_block_types
         ).strip()
     return ""
+
+
+def normalized_transcript_message(transcript_event: dict) -> tuple[str, str]:
+    event_kind = transcript_event.get("type")
+    if event_kind in ("user", "assistant"):
+        message = transcript_event.get("message", {})
+        return event_kind, text_from_content(message.get("content", ""))
+    if event_kind != "response_item":
+        return "", ""
+    message = transcript_event.get("payload", {})
+    if message.get("type") != "message":
+        return "", ""
+    role = message.get("role", "")
+    if role == "user":
+        return role, text_from_content(
+            message.get("content", ""), ("input_text", "text")
+        )
+    if role == "assistant":
+        return role, text_from_content(
+            message.get("content", ""), ("output_text", "text")
+        )
+    return "", ""
 
 
 def read_final_turn_request_and_reply(transcript_path: str) -> tuple[str, str]:
@@ -64,26 +77,30 @@ def read_final_turn_request_and_reply(transcript_path: str) -> tuple[str, str]:
                 transcript_event = json.loads(transcript_line)
             except json.JSONDecodeError:
                 continue
-            event_kind = transcript_event.get("type")
-            if event_kind == "user":
+            role, message_text = normalized_transcript_message(transcript_event)
+            if role == "user":
                 final_reply_text = ""
-                typed_request = user_prompt_text_from_event(transcript_event)
-                if typed_request:
-                    current_turn_user_request = typed_request
+                if message_text:
+                    current_turn_user_request = message_text
                 continue
-            if event_kind != "assistant":
+            if role != "assistant":
                 continue
-            content_blocks = transcript_event.get("message", {}).get("content", [])
-            if not isinstance(content_blocks, list):
-                continue
-            text_of_this_message = "".join(
-                block.get("text", "")
-                for block in content_blocks
-                if isinstance(block, dict) and block.get("type") == "text"
-            ).strip()
-            if text_of_this_message:
-                final_reply_text = text_of_this_message
+            if message_text:
+                final_reply_text = message_text
     return current_turn_user_request, final_reply_text
+
+
+def final_turn_request_and_reply(hook_input: dict) -> tuple[str, str]:
+    transcript_request, transcript_reply = read_final_turn_request_and_reply(
+        hook_input.get("transcript_path", "")
+    )
+    user_request_text = hook_input.get("user_request_text", "") or transcript_request
+    reply_text = (
+        hook_input.get("reply_text", "")
+        or hook_input.get("last_assistant_message", "")
+        or transcript_reply
+    )
+    return user_request_text.strip(), reply_text.strip()
 
 
 def handle(hook_input: dict):
@@ -91,16 +108,10 @@ def handle(hook_input: dict):
         return None
     if not is_keyboard_driven_interactive_session():
         return None
-    if not skill_loaded_marker.has_skill_loaded(
-        HUMANIZE_SKILL_NAME, hook_input.get("session_id", "")
-    ):
-        return HandlerResult(decision="block", reason=HUMANIZE_SKILL_GATE_REASON)
     if hook_input.get("stop_hook_active"):
         return None
 
-    user_request_text, reply_text = read_final_turn_request_and_reply(
-        hook_input.get("transcript_path", "")
-    )
+    user_request_text, reply_text = final_turn_request_and_reply(hook_input)
     if not reply_text:
         return None
 

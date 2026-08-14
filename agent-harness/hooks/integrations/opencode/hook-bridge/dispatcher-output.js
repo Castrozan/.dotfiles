@@ -20,6 +20,10 @@ function dispatcherMessages(dispatcherOutput) {
   return [...new Set(messages)];
 }
 
+export function dispatcherFeedback(dispatcherOutput) {
+  return dispatcherMessages(dispatcherOutput).join("\n\n");
+}
+
 export function appendToolOutputMessage(toolOutput, dispatcherOutput) {
   const messages = dispatcherMessages(dispatcherOutput);
   if (messages.length === 0) {

@@ -37,7 +37,7 @@ def temporary_eval_worktree():
 SUBJECT_ENVIRONMENT_VARIABLES_STRIPPED_FOR_ISOLATION = frozenset(
     {
         "CLAUDECODE",
-        "CLAUDE_INTERACTIVE_PREFERENCES_PATH",
+        "AGENT_INTERACTIVE_PREFERENCES_PATH",
     }
 )
 

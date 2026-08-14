@@ -53,6 +53,7 @@ def invoke_hook_bridge_sequence(
     dispatcher_response,
     hook_calls,
     dispatcher_responses=None,
+    session_messages=None,
 ):
     launcher_path = write_hook_dispatcher_launcher(tmp_path)
     record_path = tmp_path / "hook-dispatcher-record.json"
@@ -61,11 +62,25 @@ def invoke_hook_bridge_sequence(
     invocation_path.write_text(
         """const [hookBridgeSource, scenarioSource] = process.argv.slice(2)
 const scenario = JSON.parse(scenarioSource)
+const promptAsyncCalls = []
+let currentSessionMessages = scenario.sessionMessages ?? []
+const client = {
+  session: {
+    messages: async () => ({ data: currentSessionMessages }),
+    promptAsync: async (options) => {
+      promptAsyncCalls.push(options)
+      return { data: undefined }
+    },
+  },
+}
 const { OpenCodeHookBridge } = await import(hookBridgeSource)
-const hooks = await OpenCodeHookBridge({ directory: scenario.directory })
+const hooks = await OpenCodeHookBridge({ directory: scenario.directory, client })
 const results = []
 
 for (const hookCall of scenario.hookCalls) {
+  if (Array.isArray(hookCall.sessionMessages)) {
+    currentSessionMessages = hookCall.sessionMessages
+  }
   const originalToolArguments = hookCall.hookOutput.args
   const result = { hookOutput: hookCall.hookOutput }
   try {
@@ -75,6 +90,7 @@ for (const hookCall of scenario.hookCalls) {
   }
   result.originalToolArgumentsWereRetained =
     originalToolArguments === hookCall.hookOutput.args
+  result.promptAsyncCalls = [...promptAsyncCalls]
   results.push(result)
 }
 process.stdout.write(JSON.stringify(results))
@@ -84,6 +100,7 @@ process.stdout.write(JSON.stringify(results))
     scenario = {
         "directory": "/workspace/project",
         "hookCalls": hook_calls,
+        "sessionMessages": session_messages or [],
     }
     result = subprocess.run(
         [
@@ -118,6 +135,7 @@ def invoke_hook_bridge(
     hook_input,
     hook_output,
     dispatcher_responses=None,
+    session_messages=None,
 ):
     results, records = invoke_hook_bridge_sequence(
         tmp_path,
@@ -130,6 +148,7 @@ def invoke_hook_bridge(
             }
         ],
         dispatcher_responses,
+        session_messages,
     )
     return results[0], records
 

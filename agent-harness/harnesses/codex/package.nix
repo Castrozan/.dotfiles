@@ -90,6 +90,7 @@ let
     case "''${1:-}" in
       "" | -* | resume | fork)
         ${workspaceProfileLaunchDispatch}
+        export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
         interactivePreferencesArguments=(
           -c "developer_instructions=$(cat "$codexDeveloperInstructionsFile")"
         )

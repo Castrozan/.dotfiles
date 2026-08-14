@@ -79,7 +79,7 @@ let
     applyInteractiveSessionOverlay() {
       ${workspaceProfileLaunchDispatch}
       export OPENCODE_CONFIG="$opencodeConfigOverlayFile"
-      export OPENCODE_INTERACTIVE_PREFERENCES_PATH="${interactivePreferencesFile}"
+      export AGENT_INTERACTIVE_PREFERENCES_PATH="${interactivePreferencesFile}"
     }
 
     case "''${1:-}" in

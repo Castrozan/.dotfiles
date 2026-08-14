@@ -4,13 +4,11 @@ runs, or subagents. Continue to apply universal behavior. The user rebuilds cont
 so make the final reply stand alone and keep the reply template active throughout a long conversation.
 </interactive-session>
 
-<humanize-skill-gate>
-When this instruction surface does not include a `<human-readable-output>` section, load the humanize skill before the
-first human-facing reply and after compaction. It owns the output policy that no deterministic hook can judge. A
-compatible Stop hook blocks completion until this skill load has been recorded, so invoke the skill instead of reverse
-engineering its requirements from a block message. When the section is already present, apply it directly and do not
-load the duplicate skill.
-</humanize-skill-gate>
+<humanize-policy-loading>
+Interactive launchers inject this file together with the humanize skill policy, so apply the existing
+`<human-readable-output>` section directly and do not load a duplicate skill. If a third-party launcher supplies this
+file alone, load the humanize skill before the first human-facing reply and after compaction.
+</humanize-policy-loading>
 
 <peer-communication>
 Treat the user as a senior engineer. Be direct and technical. Skip remedial explanation unless it changes the decision,

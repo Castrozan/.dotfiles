@@ -21,6 +21,8 @@ def run_launcher(tmp_path: Path, *arguments: str) -> list[str]:
     recorder, recorded_argv = build_argv_recorder(tmp_path)
     reply_rules_file = tmp_path / "interactive-reply-rules.md"
     reply_rules_file.write_text("reply rules\n")
+    reply_guard_extension = tmp_path / "human-facing-reply-guard.js"
+    reply_guard_extension.write_text("export default function () {}\n")
 
     completed = subprocess.run(
         ["bash", str(LAUNCHER_SCRIPT_PATH), *arguments],
@@ -28,6 +30,7 @@ def run_launcher(tmp_path: Path, *arguments: str) -> list[str]:
             "PATH": "/usr/bin:/bin",
             "PI_UNWRAPPED_BINARY": str(recorder),
             "PI_INTERACTIVE_REPLY_RULES_FILE": str(reply_rules_file),
+            "PI_HUMAN_REPLY_GUARD_EXTENSION": str(reply_guard_extension),
         },
         capture_output=True,
         text=True,
@@ -40,9 +43,15 @@ def carries_the_reply_rules(argv: list[str]) -> bool:
     return "--append-system-prompt" in argv
 
 
+def carries_the_reply_guard(argv: list[str]) -> bool:
+    return "--extension" in argv
+
+
 class TestSessionsAHumanDrives:
     def test_a_bare_invocation_carries_the_reply_rules(self, tmp_path):
-        assert carries_the_reply_rules(run_launcher(tmp_path))
+        argv = run_launcher(tmp_path)
+        assert carries_the_reply_rules(argv)
+        assert carries_the_reply_guard(argv)
 
     def test_a_prompt_typed_at_the_keyboard_carries_the_reply_rules(self, tmp_path):
         assert carries_the_reply_rules(run_launcher(tmp_path, "fix the failing test"))
@@ -50,18 +59,22 @@ class TestSessionsAHumanDrives:
     def test_the_text_output_mode_carries_the_reply_rules(self, tmp_path):
         assert carries_the_reply_rules(run_launcher(tmp_path, "--mode", "text"))
 
-    def test_the_rules_file_is_passed_as_a_path_ahead_of_the_user_arguments(
+    def test_the_policy_and_guard_are_passed_ahead_of_the_user_arguments(
         self, tmp_path
     ):
         argv = run_launcher(tmp_path, "fix the failing test")
         assert argv[0] == "--append-system-prompt"
         assert argv[1].endswith("interactive-reply-rules.md")
-        assert argv[2] == "fix the failing test"
+        assert argv[2] == "--extension"
+        assert argv[3].endswith("human-facing-reply-guard.js")
+        assert argv[4] == "fix the failing test"
 
 
 class TestRunsNoHumanReads:
     def test_print_mode_is_left_alone(self, tmp_path):
-        assert not carries_the_reply_rules(run_launcher(tmp_path, "-p", "summarize"))
+        argv = run_launcher(tmp_path, "-p", "summarize")
+        assert not carries_the_reply_rules(argv)
+        assert not carries_the_reply_guard(argv)
 
     def test_the_long_print_flag_is_left_alone(self, tmp_path):
         assert not carries_the_reply_rules(

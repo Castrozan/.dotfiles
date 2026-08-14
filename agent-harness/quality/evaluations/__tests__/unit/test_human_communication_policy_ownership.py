@@ -22,6 +22,7 @@ INTERACTIVE_LAUNCHER_EXPECTATIONS = {
     / "claude-code"
     / "skill-injection"
     / "interactive-sessions.nix": (
+        "humanize/SKILL.md",
         "agent-instructions/skills/humanize/interactive-communication.md",
     ),
     REPO_ROOT / "agent-harness" / "harnesses" / "codex" / "package.nix": (
@@ -37,6 +38,15 @@ INTERACTIVE_LAUNCHER_EXPECTATIONS = {
         "agent-instructions/skills/humanize/interactive-communication.md",
     ),
 }
+INTERACTIVE_LAUNCH_SOURCES = (
+    *tuple(INTERACTIVE_LAUNCHER_EXPECTATIONS)[:3],
+    REPO_ROOT
+    / "agent-harness"
+    / "harnesses"
+    / "pi"
+    / "scripts"
+    / "launch-pi-with-the-interactive-reply-rules.sh",
+)
 
 REMOVED_GENERATED_SURFACES = (
     CORE_COMMUNICATION_DIRECTORY / "interactive-human-communication.md",
@@ -52,7 +62,7 @@ def test_humanize_package_owns_interactive_and_output_policies():
 
     for tag in (
         "interactive-session",
-        "humanize-skill-gate",
+        "humanize-policy-loading",
         "peer-communication",
         "work-in-progress-updates",
         "artifact-links",
@@ -91,6 +101,13 @@ def test_each_harness_composes_the_canonical_units_directly():
             assert expected_source in launcher
         assert "interactive-human-communication.md" not in launcher
         assert "interactive-hook-communication.md" not in launcher
+
+
+def test_each_harness_marks_the_same_interactive_session_boundary():
+    for launcher_path in INTERACTIVE_LAUNCH_SOURCES:
+        assert "AGENT_INTERACTIVE_PREFERENCES_PATH" in launcher_path.read_text(
+            encoding="utf-8"
+        )
 
 
 def test_no_generated_policy_surface_sits_between_owners_and_consumers():

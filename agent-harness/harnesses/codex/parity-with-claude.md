@@ -127,10 +127,9 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   a PUBLIC repo. It stays `surfaces = (CLAUDE_SURFACE,)` even though Codex now
   registers the SessionStart dispatcher, and a test asserts it stays off.
 - Claude-only by applicability: `codex-sandbox-downgrade-guard`,
-  `monitor-streaming-pattern-validator`, `workspace-directory-injector`, and the
-  `end_of_turn_format_guard_handler` reply-shape gate
-  are tied to Claude's TUI, its background-bash harness, the clawde launcher, or
-  the `Monitor` tool. `background-bash-anti-pattern-validator` also runs on
+  `monitor-streaming-pattern-validator`, and `workspace-directory-injector` are
+  tied to Claude's TUI, the clawde launcher, or the `Monitor` tool.
+  `background-bash-anti-pattern-validator` also runs on
   OpenCode, which has no background-bash harness but suffers the same
   foreground CI waits and interactive hangs.
 
@@ -179,13 +178,13 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   (upstream https://github.com/openai/codex/issues/17827). `tui.keymap.<context>`
   is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
 - Human-readable reply policy and the Done:/Next: shape are content, not chrome,
-  so they port as one instruction: the `codex` wrapper injects the humanize
-  `SKILL.md` and `interactive-communication.md` directly through `-c developer_instructions=`
-  for interactive invocations only (no subcommand,
-  a flag, `resume`, or `fork`), mirroring how the interactive `claude` wrapper appends it and
-  keeping it out of `codex exec` and the MCP server, whose output is
-  machine-facing. The Stop-hook gate that enforces the shape on Claude is not
-  ported yet.
+  so every interactive wrapper injects the humanize `SKILL.md` and
+  `interactive-communication.md` directly. Codex carries them through
+  `-c developer_instructions=` for interactive invocations only, keeping them
+  out of `codex exec` and the MCP server, whose output is machine-facing. Claude
+  and Codex use their native Stop events to run the same deterministic reply
+  guard. Harnesses without that return protocol call the guard from their own
+  settled-reply adapters.
 - Two validation facts worth keeping: the `[tui]` table is not
   `deny_unknown_fields`, so a typo'd key parses with exit 0 and an unknown
   `theme` name falls back silently, meaning "it parsed" is never evidence; and

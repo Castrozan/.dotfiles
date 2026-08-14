@@ -9,11 +9,8 @@ from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 STOP_DISPATCHER_SCRIPT = next(HOOKS_ROOT.rglob("stop-dispatcher.py"))
 
-INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "CLAUDE_INTERACTIVE_PREFERENCES_PATH"
+INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE = "AGENT_INTERACTIVE_PREFERENCES_PATH"
 CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_AGENT_NAME"
-SKILL_MARKER_STATE_DIRECTORY_ENVIRONMENT_VARIABLE = (
-    "AGENT_SKILL_LOADED_MARKER_STATE_DIRECTORY"
-)
 FORMAT_GUARD_TEST_SESSION_ID = "format-guard-test"
 
 WELL_FORMED_REPLY = (
@@ -102,7 +99,7 @@ def invoke_guard(
     interactive: bool = True,
     clawde_background_agent: bool = False,
     clawde_marker_value: str = "",
-    humanize_skill_loaded: bool = True,
+    surface: str = "claude",
 ) -> subprocess.CompletedProcess:
     environment = {
         key: value
@@ -111,27 +108,16 @@ def invoke_guard(
         not in (
             INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE,
             CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER,
-            "OPENCODE_INTERACTIVE_PREFERENCES_PATH",
         )
     }
     if interactive:
         environment[INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE] = (
             "/some/interactive-communication.md"
         )
-        marker_state_directory = Path(payload["transcript_path"]).parent / "markers"
-        marker_state_directory.mkdir(exist_ok=True)
-        environment[SKILL_MARKER_STATE_DIRECTORY_ENVIRONMENT_VARIABLE] = str(
-            marker_state_directory
-        )
-        if humanize_skill_loaded:
-            (
-                marker_state_directory
-                / f"humanize-skill-loaded-{FORMAT_GUARD_TEST_SESSION_ID}.marker"
-            ).write_text("loaded", encoding="utf-8")
     if clawde_background_agent:
         environment[CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER] = clawde_marker_value
     return subprocess.run(
-        [sys.executable, str(STOP_DISPATCHER_SCRIPT)],
+        [sys.executable, str(STOP_DISPATCHER_SCRIPT), f"--surface={surface}"],
         input=json.dumps(payload),
         capture_output=True,
         text=True,

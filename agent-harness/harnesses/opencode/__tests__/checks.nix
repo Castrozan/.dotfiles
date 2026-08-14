@@ -161,7 +161,7 @@ in
 
   domain-opencode-marks-interactive-sessions =
     mkEvalCheck "domain-opencode-marks-interactive-sessions"
-      (lib.hasInfix "OPENCODE_INTERACTIVE_PREFERENCES_PATH" opencodeWrapperSource)
+      (lib.hasInfix "AGENT_INTERACTIVE_PREFERENCES_PATH" opencodeWrapperSource)
       "the interactive OpenCode wrapper must mark keyboard-driven sessions so shared prompt and subagent hook guards run there while unwrapped autonomous sessions remain excluded";
 
   domain-opencode-tui-matches-the-desktop-theme =

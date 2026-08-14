@@ -3,6 +3,7 @@ let
   fetchPrebuiltBinary = import ../../../repository/nix-library/fetch-prebuilt-binary.nix {
     inherit pkgs;
   };
+  agentHookScripts = import ../../hooks/flat-hook-scripts-directory.nix { inherit pkgs lib; };
 
   version = "0.84.1";
 
@@ -40,12 +41,21 @@ let
     ]
   );
 
+  piHookDispatcher = pkgs.writeShellScript "pi-human-facing-reply-hook-dispatcher" ''
+    exec ${agentHookScripts}/run-hook.sh ${agentHookScripts}/stop-dispatcher.py --surface=pi
+  '';
+
+  piHumanReplyGuardExtension = pkgs.replaceVars ./extensions/human-facing-reply-guard.js {
+    inherit piHookDispatcher;
+  };
+
   pi = pkgs.writeShellScriptBin "pi" ''
     export PATH="${searchToolsThePiFileToolsShellOutTo}:$PATH"
     export PI_SKIP_VERSION_CHECK="''${PI_SKIP_VERSION_CHECK:-1}"
     export PI_TELEMETRY="''${PI_TELEMETRY:-0}"
     export PI_UNWRAPPED_BINARY="${pi-unwrapped}/pi"
     export PI_INTERACTIVE_REPLY_RULES_FILE="${interactivePreferencesFile}"
+    export PI_HUMAN_REPLY_GUARD_EXTENSION="${piHumanReplyGuardExtension}"
     exec ${pkgs.bash}/bin/bash ${./scripts/launch-pi-with-the-interactive-reply-rules.sh} "$@"
   '';
 in
