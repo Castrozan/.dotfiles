@@ -50,6 +50,9 @@ under the narrowest domain that owns it rather than in a universal scratch surfa
 <skills>
 When an available skill matches the task, load it before acting and let it own the domain-specific policy. Do not
 reconstruct a skill from memory, duplicate its rules in generic core instructions, or keep capability-specific mechanics
-globally merely because they are important. Before changing code, load the `coding` skill and follow it through
-verification.
+globally merely because they are important.
 </skills>
+
+<mandatory-skill-routes>
+Before changing an artifact, load the skill that owns that artifact or operation and follow it through verification.
+</mandatory-skill-routes>

@@ -39,6 +39,10 @@ resulting behavior. If violations persist and the predicate can be made precise,
 CI.
 </separate-adherence-evidence-and-enforcement>
 
+<workflow-authoring>
+Before authoring or reviewing a workflow that calls agents or models, read `workflows.md` and budget its control flow.
+</workflow-authoring>
+
 <knowledge>
 Read `knowledge.md` for harness-specific traps, including transcript locations, configuration roots, model routing,
 hook protocols, skill discovery, connector gates, and command anchoring.

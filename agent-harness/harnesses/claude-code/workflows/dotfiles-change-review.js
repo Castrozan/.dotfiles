@@ -1,89 +1,33 @@
 export const meta = {
   name: "dotfiles-change-review",
   description:
-    "Adversarial multi-dimension review of the current dotfiles working diff: one reviewer per dimension, refute every finding, then synthesize a prioritized report tuned to this nix/home-manager repo.",
+    "Two-pass review of the current dotfiles working diff: find actionable defects across every repository risk, then independently refute and synthesize them.",
   whenToUse:
-    "Before committing a substantive change to the dotfiles repo, when you want broader cross-checked coverage than a single-pass review: it cross-checks correctness, nix rebuild safety, code style, instruction-surface quality, test coverage, and public-repo safety.",
+    "Before committing a substantive change to the dotfiles repo. It checks correctness, nix rebuild safety, code style, instruction quality, test coverage, and public-repo safety with at most two model calls.",
   phases: [
-    { title: "Scope", detail: "resolve the working diff and digest it" },
-    { title: "Review", detail: "one reviewer per dimension over the diff" },
-    { title: "Verify", detail: "adversarially refute each finding" },
     {
-      title: "Synthesize",
-      detail: "merge survivors into a prioritized report",
+      title: "Review",
+      detail: "inspect the diff across every repository risk",
+    },
+    {
+      title: "Verify",
+      detail: "independently refute candidates and synthesize the report",
     },
   ],
 };
 
-const reviewTarget = typeof args === "string" ? args : (args && args.ref) || "";
+const reviewScope = typeof args === "string" ? args : (args && args.ref) || "";
+const scopeInstruction = reviewScope
+  ? `Follow this review scope: "${reviewScope}".`
+  : "Review uncommitted changes, including untracked files, plus commits on the current branch that are absent from the steward base. Compare with the merge-base of HEAD and origin/main, falling back to main.";
 
-const DIFF_SCHEMA = {
+const CANDIDATE_SCHEMA = {
   type: "object",
   properties: {
     changedFiles: { type: "array", items: { type: "string" } },
-    digest: { type: "string" },
-  },
-  required: ["changedFiles", "digest"],
-};
-
-phase("Scope");
-const scope = await agent(
-  `Resolve and digest the change under review in the dotfiles repository. ${
-    reviewTarget
-      ? `Review target ref: "${reviewTarget}".`
-      : "No target given: review the uncommitted working changes plus any commits on the current branch that are not yet on the steward base. Diff against the merge-base of HEAD and origin/main, falling back to main."
-  } Include both staged and unstaged changes. Return the changed-file list and a compact digest of the diff: the hunks that matter, not whole files.`,
-  { label: "scope", phase: "Scope", schema: DIFF_SCHEMA, model: "sonnet" },
-);
-
-if (!scope || !(scope.changedFiles && scope.changedFiles.length)) {
-  return { target: reviewTarget, result: "No diff to review." };
-}
-
-const REVIEW_DIMENSIONS = [
-  {
-    key: "correctness",
-    title: "Correctness and behavior",
-    focus:
-      "logic errors, wrong option values, broken references between modules, edge cases, and changes that silently do nothing",
-  },
-  {
-    key: "nix-rebuild-safety",
-    title: "Nix and rebuild safety",
-    focus:
-      "will it evaluate and rebuild on every targeted system; module-option and type mismatches, missing or wrong imports, infinite recursion, platform guards (isNixOS vs isDarwin), agenix secret wiring, submodule gitlink bumps that must be committed to deploy, and any expensive operation (rebuild, cargo, full nix eval, network fetch, slow scan) run per-item in a loop or per-agent in a parallel fan-out where a single run at the boundary would do",
-  },
-  {
-    key: "code-style",
-    title: "Code style this repo enforces",
-    focus:
-      "zero comments anywhere, long descriptive names with no abbreviations, domain nesting rather than many prefixed sibling files, single responsibility, scripts over 10 lines extracted from nix string interpolation, no backward-compatible shims or aliases, and any workaround whose only justification would be an explanatory comment (the no-comment rule makes such code wrong: fix the code, not the comment)",
-  },
-  {
-    key: "instruction-surface",
-    title: "Instruction-surface quality",
-    focus:
-      "only if instruction files changed (core.md, CLAUDE.md, SKILL.md, agent definitions): density, evergreen pointers over copies, no stale references, and consistency with the rest of the agent instruction surface",
-  },
-  {
-    key: "tests",
-    title: "Tests and verification",
-    focus:
-      "new behavior without a test, a bug fix without a regression test, bash scripts without a shellcheck test, and whether repository/verification/run.sh would still pass for the touched tier",
-  },
-  {
-    key: "secrets-and-publicity",
-    title: "Secrets and public-repo safety",
-    focus:
-      "committed secrets or tokens, and employer-identifying names or details, since this repo is public",
-  },
-];
-
-const FINDINGS_SCHEMA = {
-  type: "object",
-  properties: {
     findings: {
       type: "array",
+      maxItems: 6,
       items: {
         type: "object",
         properties: {
@@ -98,65 +42,37 @@ const FINDINGS_SCHEMA = {
       },
     },
   },
-  required: ["findings"],
+  required: ["changedFiles", "findings"],
 };
 
-const VERDICT_SCHEMA = {
-  type: "object",
-  properties: {
-    holds: { type: "boolean" },
-    reason: { type: "string" },
+phase("Review");
+const candidates = await agent(
+  `Review the current change in the dotfiles repository. ${scopeInstruction} Inspect the actual diff, changed files, surrounding callers, tests, and repository rules. Apply every relevant lens in one pass: logic, option values, references, edge cases, and silent no-ops; nix evaluation, imports, recursion, platform guards, secrets, rebuild safety, and expensive work repeated inside loops; no comments, descriptive names, domain nesting, single responsibility, extracted long scripts, and no compatibility shims; instruction density, routing, authority, and stale references; missing regression tests, shell checks, or deployment evidence; and secrets or identifying data in this public repository. Try to refute each concern before returning it. Report at most six actionable findings tied to changed lines, with a concrete location and fix. Skip formatter concerns, preference, and speculation. Keep each detail under 80 words.`,
+  {
+    label: "review",
+    phase: "Review",
+    schema: CANDIDATE_SCHEMA,
+    model: "haiku",
+    maxTurns: 8,
   },
-  required: ["holds", "reason"],
-};
-
-const reviewed = await pipeline(
-  REVIEW_DIMENSIONS,
-  (dimension) =>
-    agent(
-      `Review the dotfiles change under one lens only: ${dimension.title}. Look for ${dimension.focus}. Changed files: ${scope.changedFiles.join(
-        ", ",
-      )}. Diff digest:\n${scope.digest}\nOpen the actual files in the repository as needed. Report only real, actionable findings tied to changed lines with a concrete file and location and a fix suggestion. Skip style a formatter already handles and skip speculation.`,
-      {
-        label: `review:${dimension.key}`,
-        phase: "Review",
-        schema: FINDINGS_SCHEMA,
-        model: "sonnet",
-      },
-    ),
-  (review, dimension) =>
-    parallel(
-      (review?.findings ?? []).map(
-        (finding) => () =>
-          agent(
-            `Adversarially verify this dotfiles review finding by reading the actual code, and try hard to REFUTE it. It holds only if it is a real defect in the changed code; default to holds=false when the path is unreachable, the concern is already handled, the evidence is weak, or it is mere preference. Finding: ${JSON.stringify(
-              finding,
-            )}`,
-            {
-              label: `verify:${dimension.key}:${finding.file}`,
-              phase: "Verify",
-              schema: VERDICT_SCHEMA,
-            },
-          ).then((verdict) => ({
-            ...finding,
-            dimension: dimension.key,
-            verdict,
-          })),
-      ),
-    ),
 );
 
-const confirmedFindings = reviewed
-  .flat()
-  .filter(Boolean)
-  .filter((finding) => finding.verdict && finding.verdict.holds);
+if (
+  !candidates ||
+  !(candidates.changedFiles && candidates.changedFiles.length)
+) {
+  return { target: reviewScope, result: "No diff to review." };
+}
 
-phase("Synthesize");
+phase("Verify");
 const report = await agent(
-  `Synthesize a dotfiles change-review report from these confirmed findings. Group by severity with critical first, deduplicate overlaps, and for each give file and location, the problem, and the suggested fix. End with a short "before you commit" list naming the one to three things most worth fixing first. If there are no confirmed findings, say the diff looks clean and note what was reviewed. Confirmed findings: ${JSON.stringify(
-    confirmedFindings,
-  )}. Files reviewed: ${scope.changedFiles.join(", ")}.`,
-  { label: "synthesize", phase: "Synthesize" },
+  `Independently inspect the actual dotfiles diff under this scope: ${scopeInstruction} Try hard to refute every candidate below. Keep a finding only when the changed code proves a real defect; reject unreachable paths, handled concerns, weak evidence, and preference. Check for a missed critical or high-severity defect across the same six lenses, but add one only with direct evidence. Return a concise markdown report under 350 words with no more than five confirmed findings, ordered by severity. Each finding must name the file and location, defect, evidence, and smallest fix. If none survive, say the diff looks clean and name the files and lenses reviewed. Candidate findings: ${JSON.stringify(candidates.findings)}. Files: ${candidates.changedFiles.join(", ")}.`,
+  {
+    label: "verify",
+    phase: "Verify",
+    model: "sonnet",
+    maxTurns: 8,
+  },
 );
 
 return report;

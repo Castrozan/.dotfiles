@@ -50,6 +50,18 @@ tests:
         - "Rejects copying the full capability policy into core, permits a short core routing instruction, and keeps the full policy in its owning skill."
         - "Distinguishes behavioral evaluation from deterministic enforcement and recommends a hook only when the forbidden state can be detected precisely with acceptable false positives."
 
+  - name: workflow_model_calls_are_budgeted
+    skill_path: agent-harness/agent-instructions/skills/agent-harness/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/agent-harness/workflows.md
+    prompt: "Give me the concrete design now for a mandatory review workflow with six review dimensions and an unknown number of findings. State the total calls and each call's model and maximum turns. Do not ask a follow-up."
+    model: haiku
+    max_turns: 1
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Gives a concrete design that treats workflow calls as budgeted delegation: at most two calls unless the owner explicitly accepts more, one reviewer batching all six dimensions, one independent call batching verification and synthesis for all findings, and every call pins a model and at most eight turns."
+
   - name: python_default_over_bash
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: "I need to write a script that parses JSON data and manages some state. Should I use bash or python?"

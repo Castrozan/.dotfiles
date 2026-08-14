@@ -54,6 +54,27 @@ def pattern_matches_outside_read_only_inspection(pattern: str, candidate_text: s
     return False
 
 
+def pattern_matches_executed_command_group(
+    pattern: str, candidate_text: str, command_group: str
+):
+    from shell_command_segment_scanning import (
+        offset_is_inside_command_substitution,
+        quote_state_by_offset,
+    )
+    from shell_heredoc_body import offset_lies_in_inert_heredoc_body
+
+    quote_states = quote_state_by_offset(candidate_text)
+    for match in re.finditer(pattern, candidate_text, re.IGNORECASE):
+        command_offset = match.start(command_group)
+        if offset_lies_in_inert_heredoc_body(candidate_text, command_offset):
+            continue
+        if not quote_states[command_offset] or offset_is_inside_command_substitution(
+            candidate_text, command_offset
+        ):
+            return True
+    return False
+
+
 def find_first_violation(tool_name: str, inspectable_text: str):
     if not inspectable_text:
         return None
@@ -75,6 +96,7 @@ def find_first_violation(tool_name: str, inspectable_text: str):
     for rule in patterns_for_this_tool:
         pattern, reason = rule[0], rule[1]
         override_sentinel = rule[2] if len(rule) > 2 else None
+        executed_command_group = rule[3] if len(rule) > 3 else None
         matching_texts_most_faithful_first = [
             candidate_text
             for candidate_text in inspection_texts_most_faithful_first
@@ -82,10 +104,16 @@ def find_first_violation(tool_name: str, inspectable_text: str):
         ]
         if not matching_texts_most_faithful_first:
             continue
-        if tool_name == "Bash" and not pattern_matches_outside_read_only_inspection(
-            pattern, matching_texts_most_faithful_first[0]
-        ):
-            continue
+        if tool_name == "Bash":
+            if executed_command_group:
+                if not pattern_matches_executed_command_group(
+                    pattern, inspectable_text, executed_command_group
+                ):
+                    continue
+            elif not pattern_matches_outside_read_only_inspection(
+                pattern, matching_texts_most_faithful_first[0]
+            ):
+                continue
         if override_sentinel and override_sentinel in inspectable_text:
             continue
         return pattern, reason

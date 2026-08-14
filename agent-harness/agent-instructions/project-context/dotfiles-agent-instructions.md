@@ -93,10 +93,10 @@ and headless checks do not replace this manual test.
 
 <workflows>
 For a substantive change to this repo, run the `dotfiles-change-review` workflow over the working diff before
-committing; it fans out one reviewer per dimension (correctness, nix rebuild safety, code style, instruction-surface
-quality, test coverage, public-repo safety) and adversarially verifies each finding. Author further repo workflows as
-`dotfiles-*` under `agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than
-ad-hoc subagent fan-out.
+committing. Treat its model calls as delegation that consumes the task's agent budget, and keep every dotfiles
+workflow at a fixed call ceiling with no per-item model calls. Author further dotfiles workflows as `dotfiles-*` under
+`agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
+fan-out.
 </workflows>
 
 <workflow>
