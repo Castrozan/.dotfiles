@@ -67,6 +67,8 @@
         };
       };
       NSGlobalDomain = {
+        InitialKeyRepeat = 15;
+        KeyRepeat = 2;
         NSAutomaticWindowAnimationsEnabled = false;
         NSWindowResizeTime = 0.001;
         "com.apple.swipescrolldirection" = false;
