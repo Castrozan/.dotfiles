@@ -11,8 +11,8 @@ memory, so it surfaces where he actually looks.</purpose>
 `TODOIST_API_TOKEN`. It works headless on any of Lucas's machines with no in-agent token handling.</auth>
 
 <semantics>A task added with no `--due` is intentionally an undated someday/long-horizon backlog item, not a mistake;
-give it a date only when it becomes time-bound. `todo digest --json` returns `{overdue, today, someday}`, the shape the
-planned 08:00 morning-briefing push consumes.</semantics>
+give it a date only when it becomes time-bound. `todo digest --json` returns `{overdue, today, someday}`, the shape a
+scheduled briefing push consumes.</semantics>
 
 <resume>When the task is a resumable job, work begun this session that Lucas or a later agent will continue, put `claude
 --resume <id>` on the first line of `--description` so he gets a copy-paste one-liner back into this session with its
