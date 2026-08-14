@@ -151,6 +151,6 @@ def test_no_references_to_removed_launch_project_agent_script():
     assert not offenders, (
         "References to launch-project-agent found. That script was removed "
         "when persistent project agents became declarative. Update the "
-        "reference to mention claude-project-agents.nix declaration "
-        "instead.\n" + "\n".join(offenders)
+        "reference to mention the clawde.agents declaration carrying "
+        'type = "project-manager" instead.\n' + "\n".join(offenders)
     )
