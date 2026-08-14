@@ -137,12 +137,12 @@ const SOURCES = [
   },
 ];
 
-const boundedAgentOptions = (label, phaseName, model, schema) => ({
+const boundedAgentOptions = (label, phaseName, model, effort, schema) => ({
   label,
   phase: phaseName,
   schema,
   model,
-  maxTurns: 8,
+  effort,
 });
 
 phase("Fetch");
@@ -152,7 +152,13 @@ const fetched = (
       (s) => () =>
         agent(
           s.prompt,
-          boundedAgentOptions(`fetch:${s.key}`, "Fetch", "haiku", ITEMS_SCHEMA),
+          boundedAgentOptions(
+            `fetch:${s.key}`,
+            "Fetch",
+            "haiku",
+            "low",
+            ITEMS_SCHEMA,
+          ),
         ),
     ),
   )
@@ -177,7 +183,7 @@ if (!allItems.length) {
 phase("Rank");
 const ranked = await agent(
   `Topic: "${topic}".\n\nBelow is a pooled list of items fetched from GitHub, arXiv, Hacker News, Hugging Face, Reddit, Lobste.rs and X. Do three things:\n1. DEDUP: collapse items that are the same underlying thing (e.g. a paper that also appears on HN and X) into one, keeping the most authoritative URL.\n2. SCORE each surviving item 1-10 for relevance to the topic, and assign a theme (Papers | Releases | Discussion | X chatter | Other).\n3. FILTER OUT hype, marketing, and low-signal noise; keep only the top ${maxItems} by score.\n\nReturn the ranked, deduped top ${maxItems}.\n\nITEMS:\n${JSON.stringify(allItems)}`,
-  boundedAgentOptions("rank", "Rank", "sonnet", RANKED_SCHEMA),
+  boundedAgentOptions("rank", "Rank", "sonnet", "medium", RANKED_SCHEMA),
 );
 
 const top = (ranked.items || [])
@@ -188,7 +194,7 @@ log(`Ranked to ${top.length} high-signal items`);
 phase("Synthesize");
 const digest = await agent(
   `Write a tight, skimmable markdown research digest for the topic "${topic}". Audience: a senior AI/dev engineer who wants signal, not fluff.\n\nGroup the items below by their theme (order: Papers, Releases, Discussion, X chatter, Other - skip empty groups). For each item: a bold linked title "[title](url)", then a single "- why:" line on why it matters. No preamble, no padding, no invented facts. Keep it under ~400 words. End with a one-line "Top pick:" calling out the single highest-signal item.\n\nRANKED ITEMS:\n${JSON.stringify(top)}`,
-  boundedAgentOptions("digest", "Synthesize", "sonnet"),
+  boundedAgentOptions("digest", "Synthesize", "sonnet", "medium"),
 );
 
 return { topic, digest, itemCount: top.length, sourcesHit: fetched.length };

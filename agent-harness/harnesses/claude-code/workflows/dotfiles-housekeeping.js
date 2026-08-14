@@ -49,24 +49,24 @@ const FINDINGS_SCHEMA = {
 
 phase("Sweep");
 const candidates = await agent(
-  `Sweep the dotfiles repository for standing rot. ${SWEEP_DIMENSIONS} ${COVERAGE_EXCLUSIONS} Search the actual tree and history as needed. Try to refute each concern before returning it. Report at most eight actionable findings with a concrete file, location, evidence, and fix. Treat a committed secret or silent deployment failure as critical and an isolated stale marker as low. Keep each detail under 80 words.`,
+  `Sweep the dotfiles repository for standing rot. ${SWEEP_DIMENSIONS} ${COVERAGE_EXCLUSIONS} Search the actual tree and history as needed. Try to refute each concern before returning it. Report at most eight actionable findings with a concrete file, location, evidence, and fix. Treat a committed secret or silent deployment failure as critical and an isolated stale marker as low. Keep each detail under 80 words. Batch your searches and spend at most eight tool calls.`,
   {
     label: "sweep",
     phase: "Sweep",
     schema: FINDINGS_SCHEMA,
     model: "haiku",
-    maxTurns: 8,
+    effort: "low",
   },
 );
 
 phase("Verify");
 const report = await agent(
-  `Independently verify this dotfiles housekeeping candidate set by reading the actual tree and history. Try hard to refute every candidate. Keep one only when it is standing rot worth cleaning and no existing formatter, linter, test, diff reviewer, import mechanism, glob, generator, intentional backlog, or steward behavior already owns or explains it. Return a markdown triage report under 400 words with no more than five confirmed findings, critical first. Each finding must name its dimension, file and location, evidence, and smallest cleanup. If none survive, say the tree looks clean and name the six dimensions reviewed. Candidates: ${JSON.stringify(candidates?.findings ?? [])}.`,
+  `Independently verify this dotfiles housekeeping candidate set by reading the actual tree and history. Try hard to refute every candidate. Keep one only when it is standing rot worth cleaning and no existing formatter, linter, test, diff reviewer, import mechanism, glob, generator, intentional backlog, or steward behavior already owns or explains it. Return a markdown triage report under 400 words with no more than five confirmed findings, critical first. Each finding must name its dimension, file and location, evidence, and smallest cleanup. If none survive, say the tree looks clean and name the six dimensions reviewed. Batch your searches and spend at most eight tool calls. Candidates: ${JSON.stringify(candidates?.findings ?? [])}.`,
   {
     label: "verify",
     phase: "Verify",
     model: "sonnet",
-    maxTurns: 8,
+    effort: "medium",
   },
 );
 

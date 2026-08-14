@@ -103,7 +103,7 @@ const draft = await agent(
     phase: "Draft",
     schema: DRAFT_SCHEMA,
     model: "sonnet",
-    maxTurns: 8,
+    effort: "medium",
   },
 );
 
@@ -115,7 +115,7 @@ const finalPage = await agent(
     phase: "Gate",
     schema: FINAL_SCHEMA,
     model: "sonnet",
-    maxTurns: 8,
+    effort: "medium",
   },
 );
 

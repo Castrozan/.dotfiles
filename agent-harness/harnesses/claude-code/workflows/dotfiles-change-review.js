@@ -16,62 +16,109 @@ export const meta = {
   ],
 };
 
-const reviewScope = typeof args === "string" ? args : (args && args.ref) || "";
+const LENSES = [
+  "logic",
+  "nix",
+  "style",
+  "instructions",
+  "coverage",
+  "exposure",
+];
+
+const parseArguments = (value) => {
+  if (!value) return {};
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("{")) return { ref: trimmed };
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return { ref: trimmed };
+  }
+};
+
+const reviewArguments = parseArguments(args);
+const reviewScope = reviewArguments.ref || "";
+const reviewRoot = reviewArguments.root || "";
 const scopeInstruction = reviewScope
   ? `Follow this review scope: "${reviewScope}".`
-  : "Review uncommitted changes, including untracked files, plus commits on the current branch that are absent from the steward base. Compare with the merge-base of HEAD and origin/main, falling back to main.";
+  : "Review uncommitted changes, including untracked files, plus commits on the current branch that are absent from the steward base.";
+const ANCHOR = reviewRoot
+  ? `Start by running \`cd "${reviewRoot}"\`.`
+  : `Start by running \`cd\` to the working directory you were given: the shell can start in a sibling checkout of this repository, and reviewing the wrong one reports a clean tree that proves nothing.`;
+
+const GATHER = `Collect the change in one Bash call, then read it. Run exactly: base=$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main); patch=$(mktemp /tmp/dotfiles-change-review-XXXXXXXX); git --no-pager diff "$base" > "$patch"; git rev-parse --show-toplevel; git --no-pager diff --stat "$base"; git ls-files --others --exclude-standard; echo "$patch". Substitute the base when the scope above names a different one, but keep that shape. Then Read that patch, which holds every tracked change, and Read any untracked file the listing named. Never diff one file at a time: each costs a round trip and the patch already holds them all. Report the repository root that command printed, and the paths its diffstat listed rather than the patch path. Anchor every later command at that root, because this machine holds sibling checkouts of this repository.`;
+
+const LENS_RULES = `Apply all six lenses to the changed lines in one pass and name the lens each finding came from. logic: wrong condition or option value, broken reference, unhandled edge case, silent no-op. nix: evaluation and import errors, infinite recursion, missing platform guard, rebuild breakage, expensive work repeated in a loop. style: comments, vague names, wrong domain nesting, mixed responsibilities, long scripts inlined in nix, compatibility shims. instructions: density, routing, authority, stale references. coverage: behavior changed without a regression test, script without a check, claim without deployment evidence. exposure: secrets or identifying data reaching this public repository.`;
+
+const EVIDENCE = `A suspicion you cannot confirm at a file and line dies unreported. Skip formatter output, preference, and speculation. Spend at most eight tool calls.`;
+
+const anchorRule = (repoRoot) =>
+  `This machine holds sibling checkouts of this repository, so anchor every command at ${repoRoot} with \`git -C\` or an absolute \`cd\`; a command that runs in the wrong one reports a defect that is not in this change.`;
 
 const CANDIDATE_SCHEMA = {
   type: "object",
+  required: ["repoRoot", "changedFiles", "patchPath", "findings"],
   properties: {
-    changedFiles: { type: "array", items: { type: "string" } },
+    repoRoot: {
+      type: "string",
+      description: "absolute path git rev-parse --show-toplevel returned",
+    },
+    changedFiles: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "repository-relative paths the diffstat listed, never the patch path",
+    },
+    patchPath: { type: "string" },
     findings: {
       type: "array",
       maxItems: 6,
       items: {
         type: "object",
+        required: ["file", "lens", "severity", "title", "detail"],
         properties: {
           file: { type: "string" },
           line: { type: "string" },
+          lens: { enum: LENSES },
           severity: { enum: ["critical", "high", "medium", "low"] },
           title: { type: "string" },
           detail: { type: "string" },
           suggestion: { type: "string" },
         },
-        required: ["file", "severity", "title", "detail"],
       },
     },
   },
-  required: ["changedFiles", "findings"],
 };
 
 phase("Review");
 const candidates = await agent(
-  `Review the current change in the dotfiles repository. ${scopeInstruction} Inspect the actual diff, changed files, surrounding callers, tests, and repository rules. Apply every relevant lens in one pass: logic, option values, references, edge cases, and silent no-ops; nix evaluation, imports, recursion, platform guards, secrets, rebuild safety, and expensive work repeated inside loops; no comments, descriptive names, domain nesting, single responsibility, extracted long scripts, and no compatibility shims; instruction density, routing, authority, and stale references; missing regression tests, shell checks, or deployment evidence; and secrets or identifying data in this public repository. Try to refute each concern before returning it. Report at most six actionable findings tied to changed lines, with a concrete location and fix. Skip formatter concerns, preference, and speculation. Keep each detail under 80 words.`,
+  `Review the current change in the dotfiles repository. ${ANCHOR} ${scopeInstruction} ${GATHER} ${LENS_RULES} ${EVIDENCE} Report at most six actionable findings, each with a concrete location and fix, and return the patch path you wrote. Keep each detail under 80 words.`,
   {
     label: "review",
     phase: "Review",
     schema: CANDIDATE_SCHEMA,
     model: "haiku",
-    maxTurns: 8,
+    effort: "low",
   },
 );
 
-if (
-  !candidates ||
-  !(candidates.changedFiles && candidates.changedFiles.length)
-) {
-  return { target: reviewScope, result: "No diff to review." };
+if (!candidates || !candidates.changedFiles?.length) {
+  return {
+    target: reviewScope,
+    repoRoot: candidates?.repoRoot,
+    result: `No diff to review in ${candidates?.repoRoot ?? "the checkout the review pass reached"}. Confirm that is the checkout you changed before reading this as a clean tree.`,
+  };
 }
 
 phase("Verify");
 const report = await agent(
-  `Independently inspect the actual dotfiles diff under this scope: ${scopeInstruction} Try hard to refute every candidate below. Keep a finding only when the changed code proves a real defect; reject unreachable paths, handled concerns, weak evidence, and preference. Check for a missed critical or high-severity defect across the same six lenses, but add one only with direct evidence. Return a concise markdown report under 350 words with no more than five confirmed findings, ordered by severity. Each finding must name the file and location, defect, evidence, and smallest fix. If none survive, say the diff looks clean and name the files and lenses reviewed. Candidate findings: ${JSON.stringify(candidates.findings)}. Files: ${candidates.changedFiles.join(", ")}.`,
+  `Independently inspect the dotfiles change under this scope: ${scopeInstruction} Read the patch at ${candidates.patchPath}, which already holds every tracked change; regenerate it with one whole-diff command for this scope only if that file is missing, and never diff one file at a time. ${anchorRule(candidates.repoRoot)} ${EVIDENCE} Try hard to refute every candidate below: keep a finding only when the changed code proves a real defect, and reject unreachable paths, handled concerns, weak evidence, and preference. Add a missed critical or high-severity defect across the same lenses (${LENSES.join(", ")}) only on direct evidence. Return a markdown report under 350 words with at most five confirmed findings, worst first, each naming file and location, defect, evidence, and smallest fix. If none survive, say the diff looks clean and name the files and lenses reviewed. Candidates: ${JSON.stringify(candidates.findings)}. Files: ${candidates.changedFiles.join(", ")}.`,
   {
     label: "verify",
     phase: "Verify",
     model: "sonnet",
-    maxTurns: 8,
+    effort: "medium",
   },
 );
 

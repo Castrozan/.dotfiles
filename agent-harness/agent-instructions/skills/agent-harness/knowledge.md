@@ -26,6 +26,15 @@ saying so. A user or project subagent with the same name overrides the built-in.
 cheap, and re-read the vendor's current pricing page before quoting any figure, since all of these numbers are dated.
 </claude_model_routing_and_the_split_budget>
 
+<claude_workflow_agent_calls_take_no_turn_ceiling>
+A workflow `agent()` call accepts only label, phase, schema, model, effort, isolation and agent type; it silently
+discards anything else, so the `maxTurns` that reads like a ceiling does nothing and the call runs until the model stops
+on its own. A review pass written with `maxTurns: 8` was measured at 194 assistant turns and 95 tool calls across seven
+minutes, of which twelve seconds was tool execution and the rest was serial round trips. Bound such a call through its
+prompt and its pinned effort, and read the run's own transcript under `subagents/workflows/wf_*` before believing any
+cap.
+</claude_workflow_agent_calls_take_no_turn_ceiling>
+
 <claude_statusline_renders_on_conversation_updates_only>
 Claude Code's statusline command re-runs when a session's conversation state changes and never on a wall-clock timer, so
 an idle pane keeps its last rendered line indefinitely and a wrong number there is almost always a frozen render rather

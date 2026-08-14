@@ -93,8 +93,10 @@ and headless checks do not replace this manual test.
 
 <workflows>
 For a substantive change to this repo, run the `dotfiles-change-review` workflow over the working diff before
-committing. Treat its model calls as delegation that consumes the task's agent budget, and keep every dotfiles
-workflow at a fixed call ceiling with no per-item model calls. Author further dotfiles workflows as `dotfiles-*` under
+committing, passing `{"root": "<absolute checkout path>"}` whenever you work in a worktree, because the shell can start
+in a sibling checkout and a review of the wrong one returns a clean tree that proves nothing. Treat its model calls as
+delegation that consumes the task's agent budget, and keep every dotfiles workflow at a fixed call ceiling with no
+per-item model calls. Author further dotfiles workflows as `dotfiles-*` under
 `agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
 fan-out.
 </workflows>
