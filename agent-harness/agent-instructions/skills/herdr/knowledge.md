@@ -64,11 +64,11 @@ working pane goes with it.
 </a_claude_pane_reads_idle_until_its_osc_title_arrives>
 
 <a_pane_names_itself_from_the_title_its_harness_wrote>
-Never rename your own pane or tab to advertise what you are working on: a turn-end hook already publishes the OSC title
-the harness wrote as the pane title, falling back to the working directory's basename. It names the tab from that title
-once, and only while the tab holds this one pane and still carries its generated number, so a tab a human renamed and a
-tab holding a split keep their labels for good, and workspace labels are never written. A tab that never picked up a
-name means the harness wrote no OSC title, not a rename that failed.
+Never rename your own pane or tab to advertise what you are working on: herdr reads the OSC title the harness already
+writes, strips the leading status glyph, and shows it on the pane border under any hook title or manual label. A tab
+nobody renamed that holds one pane wears that title as its label and hands it back the moment a human types one, so a
+tab still showing its number means the harness wrote no OSC title. `tab.rename` with an empty label clears a custom name
+and returns the tab to that derived label. Workspace labels stay the human's.
 </a_pane_names_itself_from_the_title_its_harness_wrote>
 
 <a_reported_state_loses_to_screen_detection>

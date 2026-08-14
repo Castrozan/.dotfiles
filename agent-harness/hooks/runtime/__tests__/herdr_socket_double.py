@@ -59,33 +59,3 @@ class RecordingHerdrSocketServer:
         self.serving = False
         self.serving_thread.join(timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS)
         self.listener.close()
-
-
-def explain_result_carrying(written_title, pane_agent="claude"):
-    return {
-        "type": "agent_explain",
-        "explain": {
-            "agent": pane_agent,
-            "evaluated_rules": [
-                {
-                    "id": "live_prompt_box",
-                    "region": "prompt_box_body",
-                    "matched": False,
-                    "evidence": {"region_preview": "❯"},
-                },
-                {
-                    "id": "osc_title_working",
-                    "region": "osc_title",
-                    "matched": True,
-                    "evidence": {"region_preview": written_title},
-                },
-            ],
-        },
-    }
-
-
-def tab_result_labelled(tab_id, label, pane_count=1):
-    return {
-        "type": "tab_info",
-        "tab": {"tab_id": tab_id, "label": label, "pane_count": pane_count},
-    }
