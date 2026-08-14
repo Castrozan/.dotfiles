@@ -24,7 +24,7 @@ CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER = "CLAWDE_AGENT_NAME"
 def interactive_session_with_isolated_state(monkeypatch, tmp_path):
     monkeypatch.setenv(
         INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE,
-        "/nix/store/interactive-hook-communication.md",
+        "/nix/store/interactive-communication.md",
     )
     monkeypatch.delenv(CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER, raising=False)
     monkeypatch.setenv(
@@ -110,7 +110,7 @@ def test_ignores_tool_calls_that_are_not_a_subagent_spawn(
 def test_does_not_hold_the_ceiling_for_a_background_clawde_agent(monkeypatch, tmp_path):
     monkeypatch.setenv(
         INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE,
-        "/nix/store/interactive-hook-communication.md",
+        "/nix/store/interactive-communication.md",
     )
     monkeypatch.setenv(CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER, "golden")
     monkeypatch.setenv(

@@ -27,7 +27,7 @@ from interactive_session_detection import (  # noqa: E402
 )
 import skill_loaded_marker  # noqa: E402
 from reply_rule_catalog import template_violations_in_reply  # noqa: E402
-from reply_rule_rendering import rendered_bounce_guidance  # noqa: E402
+from reply_rule_feedback import bounce_guidance  # noqa: E402
 
 HUMANIZE_SKILL_NAME = "humanize"
 HUMANIZE_SKILL_GATE_REASON = (
@@ -108,4 +108,4 @@ def handle(hook_input: dict):
     if not violations:
         return None
 
-    return HandlerResult(decision="block", reason=rendered_bounce_guidance(violations))
+    return HandlerResult(decision="block", reason=bounce_guidance(violations))

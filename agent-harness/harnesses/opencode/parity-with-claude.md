@@ -42,8 +42,8 @@ against the model choice.
   instruction. opencode has no `--append-system-prompt` equivalent, but
   `OPENCODE_CONFIG` deep-merges a file over the global config and its
   `instructions` arrays CONCATENATE rather than replace. The `opencode` wrapper
-  exploits that: it points `OPENCODE_CONFIG` at an overlay carrying
-  `interactive-human-communication.md`, and only for
+  exploits that: it points `OPENCODE_CONFIG` at an overlay carrying the humanize
+  `SKILL.md` and `interactive-communication.md` directly, and only for
   interactive invocations, mirroring how the `codex` wrapper injects
   `developer_instructions`. Every named subcommand (`run`, `serve`, `mcp`, ...)
   skips the overlay, keeping the reply shape out of machine-facing output.

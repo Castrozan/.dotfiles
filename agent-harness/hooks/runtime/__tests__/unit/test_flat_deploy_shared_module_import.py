@@ -47,7 +47,7 @@ def test_stop_dispatcher_imports_shared_modules_after_flat_deploy(
         tmp_path,
         "stop-dispatcher.py",
         payload,
-        {INTERACTIVE_ENV_VAR: "/some/interactive-hook-communication.md"},
+        {INTERACTIVE_ENV_VAR: "/some/interactive-communication.md"},
     )
     assert keyboard.returncode == 0
     assert json.loads(keyboard.stdout)["decision"] == "block"
@@ -57,7 +57,7 @@ def test_stop_dispatcher_imports_shared_modules_after_flat_deploy(
         "stop-dispatcher.py",
         payload,
         {
-            INTERACTIVE_ENV_VAR: "/some/interactive-hook-communication.md",
+            INTERACTIVE_ENV_VAR: "/some/interactive-communication.md",
             CLAWDE_BACKGROUND_AGENT_ENV_MARKER: "",
         },
     )

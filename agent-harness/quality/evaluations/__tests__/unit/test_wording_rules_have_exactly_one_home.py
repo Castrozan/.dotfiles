@@ -2,21 +2,22 @@ import re
 
 from instruction_surface_scanner import REPO_ROOT, every_linted_markdown_file
 
-GENERATED_RULE_SURFACES = frozenset(
+HUMANIZE_SKILL = frozenset(
+    {"agent-harness/agent-instructions/skills/humanize/SKILL.md"}
+)
+INTERACTIVE_INSTRUCTIONS = frozenset(
     {
-        "agent-harness/agent-instructions/core-rules/communication/interactive-hook-communication.md",
-        "agent-harness/agent-instructions/core-rules/communication/interactive-human-communication.md",
-        "agent-harness/agent-instructions/skills/humanize/enforced-wording-rules.md",
+        "agent-harness/hooks/runtime/common/human_facing_reply/interactive-communication.md"
     }
 )
 
 SINGLE_HOME_RULE_PHRASES = {
-    "em dash": GENERATED_RULE_SURFACES,
-    "en dash": GENERATED_RULE_SURFACES,
-    "sycophancy phrase": GENERATED_RULE_SURFACES,
-    "numbered list": GENERATED_RULE_SURFACES,
-    "prose words": GENERATED_RULE_SURFACES,
-    "prose lines": GENERATED_RULE_SURFACES,
+    "em dash": HUMANIZE_SKILL,
+    "en dash": HUMANIZE_SKILL,
+    "sycophancy phrase": HUMANIZE_SKILL,
+    "numbered list": INTERACTIVE_INSTRUCTIONS,
+    "prose words": INTERACTIVE_INSTRUCTIONS,
+    "prose lines": INTERACTIVE_INSTRUCTIONS,
 }
 
 
@@ -37,8 +38,8 @@ def test_no_wording_rule_is_stated_outside_its_single_home():
     }
     assert not trespassers, (
         "a wording rule stated in two surfaces drifts the moment one is edited, which is "
-        "why the rule catalog in agent-harness/hooks/runtime/common/human_facing_reply renders the only "
-        "copies; point at the generated surface instead of restating it "
+        "why the humanize skill and interactive instructions are the only policy homes; "
+        "point at the owning unit instead of restating it "
         f"(phrase -> surfaces that restate it): {trespassers}"
     )
 

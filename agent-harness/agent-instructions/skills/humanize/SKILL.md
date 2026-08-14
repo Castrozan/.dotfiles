@@ -65,7 +65,7 @@ tells combine. Preserve legitimate register, personality, specific detail, mixed
 
 <revision-pass>
 First verify the facts, reasoning, and requested action. Then select the representation and order. Then tighten terms
-and sentences. Finally scan separately for machine-like voice and for the generated wording rules. Rewrite a tell
+and sentences. Finally scan separately for machine-like voice and for the channel wording rules. Rewrite a tell
 instead of deleting the fact it carries. Finish only when the intended reader can recover the conclusion, basis,
 limits, and required action without reconstructing missing context.
 </revision-pass>
@@ -78,9 +78,17 @@ words into bans.
 </provenance>
 </human-readable-output>
 
+<binds_every_human_facing_channel>
+Apply these rules to every text a human reads, including chat replies, commit messages, pull or merge request bodies,
+ticket comments, reports, and published pages. Never use an em dash or an en dash in prose. Recast the sentence with a
+comma, a colon, or two sentences. Never open with a reaction or a sycophancy phrase such as "You are right", "Good
+catch", "Sure", or "Of course". Never open by narrating what you are about to do, such as "Let me" or "I will go
+ahead". Give a direct link for every merge request or pull request you name so the reader can validate it.
+</binds_every_human_facing_channel>
+
 <artifact-adaptation>
 For a durable human-facing artifact, let the artifact's owning skill decide whether it should exist and what it must
-contain. Use the channel rules below to decide how that content reaches its reader. Never put employer-identifying
+contain. Use this skill's channel rules to decide how that content reaches its reader. Never put employer-identifying
 names or details into a public repository. Replace them with the narrow role or system context needed to preserve the
 artifact's meaning.
 </artifact-adaptation>
@@ -106,7 +114,3 @@ Write for readers outside the current session and for the artifact's useful life
 Keep context beside the claim it explains, and use headings only for distinct reader needs. Let the `docs` skill decide
 whether a README, document, or page earns its place and what must remain evergreen.
 </report_document_or_page>
-
-<machine_checked_rules>
-Read `enforced-wording-rules.md` and apply it even where no hook executes. Scan the final text before publishing.
-</machine_checked_rules>

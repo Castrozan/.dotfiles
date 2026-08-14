@@ -116,7 +116,7 @@ def invoke_guard(
     }
     if interactive:
         environment[INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE] = (
-            "/some/interactive-hook-communication.md"
+            "/some/interactive-communication.md"
         )
         marker_state_directory = Path(payload["transcript_path"]).parent / "markers"
         marker_state_directory.mkdir(exist_ok=True)

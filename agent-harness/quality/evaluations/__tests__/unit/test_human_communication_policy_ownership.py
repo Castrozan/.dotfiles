@@ -1,5 +1,3 @@
-import re
-
 from instruction_surface_scanner import REPO_ROOT, frontmatter_key_values
 
 
@@ -10,16 +8,12 @@ INTERACTIVE_POLICY_PATH = HOOK_DOMAIN_DIRECTORY / "interactive-communication.md"
 CORE_COMMUNICATION_DIRECTORY = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "core-rules" / "communication"
 )
-FULL_INTERACTIVE_SURFACE_PATH = (
-    CORE_COMMUNICATION_DIRECTORY / "interactive-human-communication.md"
-)
-HOOK_INTERACTIVE_SURFACE_PATH = (
-    CORE_COMMUNICATION_DIRECTORY / "interactive-hook-communication.md"
-)
 HUMANIZE_DIRECTORY = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "skills" / "humanize"
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
+REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
+REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
 
 INTERACTIVE_LAUNCHER_EXPECTATIONS = {
     REPO_ROOT
@@ -27,29 +21,27 @@ INTERACTIVE_LAUNCHER_EXPECTATIONS = {
     / "harnesses"
     / "claude-code"
     / "skill-injection"
-    / "interactive-sessions.nix": "interactive-hook-communication.md",
-    REPO_ROOT
-    / "agent-harness"
-    / "harnesses"
-    / "codex"
-    / "package.nix": "interactive-human-communication.md",
-    REPO_ROOT
-    / "agent-harness"
-    / "harnesses"
-    / "opencode"
-    / "opencode.nix": "interactive-human-communication.md",
-    REPO_ROOT
-    / "agent-harness"
-    / "harnesses"
-    / "pi"
-    / "package.nix": "interactive-human-communication.md",
+    / "interactive-sessions.nix": ("interactive-communication.md",),
+    REPO_ROOT / "agent-harness" / "harnesses" / "codex" / "package.nix": (
+        "humanize/SKILL.md",
+        "interactive-communication.md",
+    ),
+    REPO_ROOT / "agent-harness" / "harnesses" / "opencode" / "opencode.nix": (
+        "humanize/SKILL.md",
+        "interactive-communication.md",
+    ),
+    REPO_ROOT / "agent-harness" / "harnesses" / "pi" / "package.nix": (
+        "humanize/SKILL.md",
+        "interactive-communication.md",
+    ),
 }
 
-
-def tagged_section(text: str, tag: str) -> str:
-    matched = re.search(rf"<{tag}>.*?</{tag}>", text, re.DOTALL)
-    assert matched, f"missing <{tag}> section"
-    return matched.group(0)
+REMOVED_GENERATED_SURFACES = (
+    CORE_COMMUNICATION_DIRECTORY / "interactive-human-communication.md",
+    CORE_COMMUNICATION_DIRECTORY / "interactive-hook-communication.md",
+    HUMANIZE_DIRECTORY / "enforced-wording-rules.md",
+    CORE_COMMUNICATION_DIRECTORY / "render-human-communication-markdown.py",
+)
 
 
 def test_hook_and_skill_own_separate_interactive_and_output_policies():
@@ -63,6 +55,9 @@ def test_hook_and_skill_own_separate_interactive_and_output_policies():
         "work-in-progress-updates",
         "artifact-links",
         "exhaust-before-returning",
+        "reply_template",
+        "always_enforced",
+        "request_gated",
     ):
         assert f"<{tag}>" in interactive_policy
 
@@ -80,32 +75,32 @@ def test_hook_and_skill_own_separate_interactive_and_output_policies():
         "pull_or_merge_request",
         "ticket_comment",
         "report_document_or_page",
+        "binds_every_human_facing_channel",
     ):
         assert f"<{tag}>" in humanize_skill
 
 
-def test_each_harness_loads_the_surface_supported_by_its_skill_tooling():
-    for launcher_path, expected_surface in INTERACTIVE_LAUNCHER_EXPECTATIONS.items():
+def test_each_harness_composes_the_canonical_units_directly():
+    for launcher_path, expected_sources in INTERACTIVE_LAUNCHER_EXPECTATIONS.items():
         launcher = launcher_path.read_text(encoding="utf-8")
-        assert expected_surface in launcher
-        assert "interactive-preferences.md" not in launcher
-        assert "enforced-reply-rules.md" not in launcher
+        for expected_source in expected_sources:
+            assert expected_source in launcher
+        assert "interactive-human-communication.md" not in launcher
+        assert "interactive-hook-communication.md" not in launcher
 
 
-def test_generated_surfaces_compose_their_authoritative_sources():
-    humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
-    shared_output_policy = tagged_section(humanize_skill, "human-readable-output")
-    interactive_policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8").strip()
-    full_surface = FULL_INTERACTIVE_SURFACE_PATH.read_text(encoding="utf-8")
-    hook_surface = HOOK_INTERACTIVE_SURFACE_PATH.read_text(encoding="utf-8")
+def test_no_generated_policy_surface_sits_between_owners_and_consumers():
+    assert not [path for path in REMOVED_GENERATED_SURFACES if path.exists()]
 
-    assert full_surface.startswith(shared_output_policy)
-    assert interactive_policy in full_surface
-    assert hook_surface.startswith(interactive_policy)
-    for surface in (full_surface, hook_surface):
-        assert "<reply_template>" in surface
-        assert "<always_enforced>" in surface
-        assert "<request_gated>" in surface
+
+def test_hooks_enforce_the_policy_without_rendering_instruction_surfaces():
+    catalog = REPLY_RULE_CATALOG_PATH.read_text(encoding="utf-8")
+    feedback = REPLY_RULE_FEEDBACK_PATH.read_text(encoding="utf-8")
+
+    assert "instruction_sentence" not in catalog
+    assert "applies_to" not in catalog
+    assert "interactive-communication.md" not in feedback
+    assert "rendered_markdown_surface" not in feedback
 
 
 def test_humanize_is_the_output_policy_and_artifact_adapter():
@@ -114,7 +109,7 @@ def test_humanize_is_the_output_policy_and_artifact_adapter():
 
     assert "human-readable output policy" in description.lower()
     assert "interactive hooks require it" in description.lower()
-    assert "enforced-wording-rules.md" in skill_text
+    assert "enforced-wording-rules.md" not in skill_text
     assert "employer-identifying" in skill_text
     assert "human-communication-policy.md" not in skill_text
     assert not (HUMANIZE_DIRECTORY / "human-communication-policy.md").exists()

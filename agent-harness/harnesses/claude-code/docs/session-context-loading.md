@@ -94,11 +94,14 @@ skill roots.
 
 ## What has no native equivalent
 
-Exactly one thing survives: the interactive-only system prompt of `interactive-hook-communication.md` and
+Exactly one thing survives: the interactive-only system prompt of `interactive-communication.md` and
 `adaptive-implementation-delivery-process.md`. `~/.claude/CLAUDE.md` would reach jenny too. There is no settings key
 for it. A `SessionStart` hook injects context that compaction may drop, and these are rules that must hold as the
 conversation grows long, so the context tier is the wrong tier. A launch flag is required, which means a wrapper
 survives at two lines: export the marker, exec `claude --append-system-prompt-file <store path> "$@"`.
+
+The interactive prompt tells Claude to load humanize, and the Stop hook blocks completion until the Skill invocation
+is recorded. The launcher therefore reads the interactive instructions directly without generating a combined prompt.
 
 The marker must ship with the rules. Inverting detection to "interactive unless `CLAWDE_AGENT_NAME` is set" is wrong: a
 bare `claude` would then be format-guarded by the Stop hook without ever having received the format rules it is judged

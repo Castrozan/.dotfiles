@@ -10,14 +10,14 @@ CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH = (
     / "humanize"
     / "SKILL.md"
 )
-REPLY_RULE_RENDERING_PATH = (
+INTERACTIVE_COMMUNICATION_POLICY_PATH = (
     REPO_ROOT
     / "agent-harness"
     / "hooks"
     / "runtime"
     / "common"
     / "human_facing_reply"
-    / "reply_rule_rendering.py"
+    / "interactive-communication.md"
 )
 
 
@@ -55,6 +55,6 @@ def test_representation_policy_maps_reader_needs_to_the_smallest_useful_form():
 
 
 def test_reply_template_explicitly_allows_the_selected_representation():
-    renderer = REPLY_RULE_RENDERING_PATH.read_text(encoding="utf-8").lower()
-    assert "representation-selection" in renderer
-    assert "compact visual" in renderer
+    policy = INTERACTIVE_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8").lower()
+    assert "representation-selection" in policy
+    assert "compact visual" in policy

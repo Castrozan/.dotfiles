@@ -179,9 +179,9 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   (upstream https://github.com/openai/codex/issues/17827). `tui.keymap.<context>`
   is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
 - Human-readable reply policy and the Done:/Next: shape are content, not chrome,
-  so they port as one instruction: the `codex` wrapper injects
-  `agent-harness/agent-instructions/core-rules/communication/interactive-human-communication.md` through
-  `-c developer_instructions=` for interactive invocations only (no subcommand,
+  so they port as one instruction: the `codex` wrapper injects the humanize
+  `SKILL.md` and `interactive-communication.md` directly through `-c developer_instructions=`
+  for interactive invocations only (no subcommand,
   a flag, `resume`, or `fork`), mirroring how the interactive `claude` wrapper appends it and
   keeping it out of `codex exec` and the MCP server, whose output is
   machine-facing. The Stop-hook gate that enforces the shape on Claude is not
