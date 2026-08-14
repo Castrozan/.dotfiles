@@ -2,6 +2,8 @@ tests:
   - name: representation_ownership_uses_tree
     description: "Ownership and nesting are shown as a compact tree"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Treat this as a complete hypothetical layout and do not inspect any files. Explain it so I can quickly see who
       owns request parsing, session state, and transport:
@@ -16,6 +18,8 @@ tests:
   - name: representation_ordering_and_failure_uses_sequence
     description: "Runtime ordering and failure are shown as a sequence"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Explain the request path from UI to API to database, including that authentication can reject the request before
       the database call and that the UI receives the error.
@@ -29,6 +33,8 @@ tests:
   - name: representation_choices_use_table
     description: "Exact option comparisons are shown as a table"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Compare SQLite, PostgreSQL, and DynamoDB for local setup, concurrent writes, operational burden, and horizontal
       scaling so I can choose one.
@@ -42,6 +48,8 @@ tests:
   - name: representation_behavior_uses_state_model
     description: "Event-driven behavior is shown as a state model"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Explain a job that moves from queued to running, may retry after a transient failure, and ends in succeeded or
       failed. A completed job cannot return to running.
@@ -55,6 +63,8 @@ tests:
   - name: representation_change_uses_focused_diff
     description: "A change against an existing shape is shown as a focused diff"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Treat this as a complete hypothetical layout and do not inspect any files. Show how src/transport.py changes into
       src/transport/client.py and src/transport/stream.py while the rest of src stays unchanged.
@@ -68,6 +78,8 @@ tests:
   - name: representation_single_answer_stays_prose
     description: "A simple answer does not receive decorative structure"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: "The service port is 8080. Which port should I connect to?"
     model: haiku
     max_turns: 1
@@ -79,6 +91,8 @@ tests:
   - name: communication_compression_preserves_material_meaning
     description: "Shortening keeps conditions, scope, numbers, and caveats"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Shorten this without changing what an operator may do: Retry the migration at most twice, but only when the
       database reports SQLSTATE 40001. Never retry a permission error. The second retry can increase lock contention.
@@ -92,6 +106,8 @@ tests:
   - name: communication_uses_one_defined_term_per_referent
     description: "A domain term is defined once and reused without synonym cycling"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Explain this to a new maintainer: the code calls the record that grants one worker temporary ownership a lease.
       The worker must renew the lease every 30 seconds and loses ownership when the lease expires.
@@ -105,6 +121,8 @@ tests:
   - name: communication_separates_evidence_inference_and_decision
     description: "Observed evidence is not presented as a proven diagnosis"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       The logs prove only that latency rose after the cache deploy. I suspect key churn caused it, but we have no key
       cardinality metric. Tell the incident lead what we know and whether to roll back.
@@ -118,6 +136,8 @@ tests:
   - name: communication_removes_inflation_without_deleting_the_fact
     description: "Machine-like importance language is replaced by concrete information"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Rewrite this for an engineering status report: This pivotal migration marks a transformative milestone in our
       journey, showcasing the team's unwavering commitment to a robust and seamless developer ecosystem. It reduced
@@ -189,7 +209,7 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Puts the hot-fluid hazard before or beside the action it changes, names the operator, preserves the above-6-bar condition and 90-second duration, and keeps the required stop, wait for zero, then open sequence."
+        - "Puts the hot-fluid hazard before or beside the action it changes, addresses the operator directly or names that actor, preserves the above-6-bar condition and 90-second duration, and keeps the required stop, wait for zero, then open sequence."
 
   - name: community_example_transfers_measured_report
     description: "A status report leads with measured change and exposes missing evidence"

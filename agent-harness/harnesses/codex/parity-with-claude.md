@@ -179,12 +179,12 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
 - Human-readable reply policy and the Done:/Next: shape are content, not chrome,
   so every interactive wrapper injects the humanize `SKILL.md` and
-  `interactive-communication.md` directly. Codex carries them through
-  `-c developer_instructions=` for interactive invocations only, keeping them
-  out of `codex exec` and the MCP server, whose output is machine-facing. Claude
-  and Codex use their native Stop events to run the same deterministic reply
-  guard. Harnesses without that return protocol call the guard from their own
-  settled-reply adapters.
+  its `community-language.md` and `interactive-communication.md` side files
+  directly. Codex carries them through `-c developer_instructions=` for
+  interactive invocations only, keeping them out of `codex exec` and the MCP
+  server, whose output is machine-facing. Claude and Codex use their native Stop
+  events to run the same deterministic reply guard. Harnesses without that
+  return protocol call the guard from their own settled-reply adapters.
 - Two validation facts worth keeping: the `[tui]` table is not
   `deny_unknown_fields`, so a typo'd key parses with exit 0 and an unknown
   `theme` name falls back silently, meaning "it parsed" is never evidence; and

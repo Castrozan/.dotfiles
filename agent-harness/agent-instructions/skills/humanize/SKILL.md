@@ -52,7 +52,10 @@ as a diagnostic threshold, not a mechanical limit. Vary sentence length when the
 Never simplify by deleting a condition, identifier, number, scope qualifier, caveat, causal link, or unresolved
 position. Carry every material fact and relationship from the source into a rewrite. Keep longer wording when
 compression would reduce precision. Resolve ambiguity by naming the actor, object, condition, or time, not by removing
-the difficult part of the claim.
+the difficult part of the claim. Never invent a fact, threshold, symptom, cause, outcome, or certainty to make the
+output concrete. Recommend an action from the supplied evidence, but do not attach a condition or expected observation
+that the source does not support. Mark a missing fact or unresolved decision instead of filling it with a plausible
+detail.
 </meaning-preservation>
 
 <human-voice>

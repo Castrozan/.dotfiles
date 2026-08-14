@@ -1,20 +1,19 @@
 <community-language-calibration>
-Use these examples as evidence for readable choices, not as templates to copy. Select the nearest reader task only after
-the facts, audience, and required action are known. Preserve project vocabulary and the reader's demonstrated register.
-Keep a precise technical term when plain wording would change its meaning, and define it at first use when the reader
-may not know it. If an example conflicts with the Humanize policy or the source facts, the policy and facts win.
+Calibrate choices with these examples; never copy their text or layouts. Select the reader task only after the facts,
+audience, and action are known. Preserve project terms and the reader's register. Define an unfamiliar technical term
+instead of replacing it with an imprecise plain word. The Humanize policy and source facts override every example.
 
 <example-selection>
-Use explain when the reader needs a mechanism; diagnose when evidence must be separated from a cause; decide when
-trade-offs select an option; warn when a condition changes safe action; report when measured state or change matters;
-summarize when the reader needs one conclusion or action. Use only the example family that matches the task. Do not make
-every reply sound casual, copy an example's cadence, or add a visual when prose already carries the relationship.
+Choose explain for a mechanism; diagnose when evidence and cause must stay separate; decide for trade-offs; warn for
+conditional safe action; report for measured state or change; summarize for one conclusion or action. Use only the
+family matching the reader task. Do not make every reply casual or copy an example's cadence. Do not add a visual when
+prose already carries the relationship.
 </example-selection>
 
 <explain-by-contrast>
 Show the same system before and after when the changed mechanism is the point. Put each number beside the step that
 produced it, label the artifact handed across the boundary, and let the prose interpret the contrast without repeating
-the figure.
+the figure. Once a figure carries a measurement, never repeat that measurement in the interpreting prose.
 
 <explain-example-one>
 The whole trick: the review used to rediscover its own diff one file per round trip, and the `maxTurns: 8` that looked
@@ -54,7 +53,9 @@ time limit, and caller action instead of substituting an abstract definition.
 
 <diagnose-from-evidence>
 State what was observed before naming a possible cause. Say what evidence cannot establish, then name the cheapest probe
-or reversible response that changes the decision.
+or reversible response that the source supports. Carry every supplied control observation because it bounds the cause.
+Do not add telemetry, failure modes, expected observations, or follow-up branches from domain familiarity. Stop after
+the next decision-changing action when the source supplies no further probe.
 
 <diagnose-example-one>
 Input: latency rose after a cache deploy, key churn is suspected, and no key-cardinality metric exists. Output: "Latency
@@ -109,12 +110,12 @@ check whether higher lock contention is acceptable." The shorter wording retains
 
 <report-measured-change>
 Lead with the measured result and its scope. Remove claims of importance that the evidence does not establish. Mark a
-missing fact instead of inventing a number to make the report sound concrete.
+missing fact instead of inventing one.
 
 <report-example-one>
 Input: a migration reduced median build time from 11 minutes to 7 minutes in measured CI jobs. Output: "The migration
-reduced median build time from 11 minutes to 7 minutes in the measured CI jobs." No milestone, transformation, or team
-praise improves the result; the measurement and scope carry the report.
+reduced median build time from 11 minutes to 7 minutes in the measured CI jobs." No milestone or team praise improves
+the result. The measurement and scope carry the report.
 </report-example-one>
 
 <report-example-two>
@@ -127,7 +128,8 @@ precision.
 
 <summarize-for-action>
 State the answer or action first. Keep only the cause, condition, or limit needed to use it correctly. A summary may be
-short, but it cannot discard the fact that would make the action unsafe or wrong.
+short, but it cannot discard the fact that would make the action unsafe or wrong. Preserve an unresolved decision as
+unresolved instead of inventing proceed, rollback, or remediation branches.
 
 <summarize-example-one>
 Input: each review pass searched for the same diff, and the fix writes it once for both passes without changing review
@@ -155,7 +157,7 @@ The patterns are synthesized from MIT-licensed sources pinned at
 `forjd/better-writing@4023076319e5a7838dd7587ebf3d5e3588f9544f`,
 `phb123/ste@9ddbe815e1ffe0d994d3dff6e4060df52e26dab3`, and
 `blader/humanizer@523374dee72d67c7b2b5f858ea0094ffda49c3ac`. The first explaining example is repository evidence from
-`6e909243`, selected by the owner after using it in an interactive session. Upstream changes never update this corpus
-automatically. Promote a new pattern only after human review and a transfer evaluation outside its source example.
+`6e909243`, selected by the owner after using it in an interactive session. Upstream changes do not update this corpus.
+Promote a pattern only after human review and a transfer evaluation outside its source example.
 </community-provenance>
 </community-language-calibration>
