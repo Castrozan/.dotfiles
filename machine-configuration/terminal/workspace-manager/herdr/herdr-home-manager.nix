@@ -9,10 +9,13 @@ let
 
   selectedTheme = import ../../../desktop/theming/selected-theme.nix;
 
-  herdrConfigWithThemeAccent = pkgs.writeText "herdr-config.toml" (
-    lib.replaceStrings [ "@herdr_accent@" ] [ selectedTheme.accentHex ] (
-      builtins.readFile ./program-configuration/config.toml
-    )
+  herdrPageKeyRouter = "${pkgs.python3}/bin/python3 ${./scripts/route-page-key.py}";
+
+  renderedHerdrConfig = pkgs.writeText "herdr-config.toml" (
+    lib.replaceStrings
+      [ "@herdr_accent@" "@herdr_page_key_router@" ]
+      [ selectedTheme.accentHex herdrPageKeyRouter ]
+      (builtins.readFile ./program-configuration/config.toml)
   );
 in
 {
@@ -21,7 +24,7 @@ in
   home = {
     packages = [ herdrPackage ];
 
-    file.".config/herdr/config.toml.nix-source".source = herdrConfigWithThemeAccent;
+    file.".config/herdr/config.toml.nix-source".source = renderedHerdrConfig;
 
     activation.reloadHerdrAfterConfigSeed =
       lib.hm.dag.entryAfter

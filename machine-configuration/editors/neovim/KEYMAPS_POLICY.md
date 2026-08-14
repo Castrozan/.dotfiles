@@ -79,6 +79,10 @@ the order it shows on screen rather than in buffer number order, so the chord an
 and `buffer_closing.lua` already reads that same order when it picks what to focus next. They shadow
 the native previous and next tab page motions, which `gT` and `gt` still carry unmapped. Only the
 cycling came back: `C-S-PageUp` and `C-S-PageDown`, which reordered the open files, stay removed.
+Inside herdr the chord is shared: herdr binds it too and hands it to the pane only while nvim runs
+there, so it cycles open files in nvim and switches the herdr tab everywhere else. `prefix+pageup`
+and `prefix+pagedown` switch tabs from inside nvim, and the herdr half of that split lives in this
+repo's herdr module rather than here.
 
 `C-CR` imports the symbol under the cursor and `C-.` shows what that symbol is, both on the owner's
 explicit request. `lua/config/missing_imports.lua` asks the language server for the code actions at

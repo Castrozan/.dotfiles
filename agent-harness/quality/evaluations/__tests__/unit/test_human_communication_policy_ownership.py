@@ -12,8 +12,11 @@ HUMANIZE_DIRECTORY = (
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
 INTERACTIVE_POLICY_PATH = HUMANIZE_DIRECTORY / "interactive-communication.md"
+COMMUNITY_LANGUAGE_PATH = HUMANIZE_DIRECTORY / "community-language.md"
 REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
 REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
+MAXIMUM_COMMUNITY_LANGUAGE_BYTES = 10000
+MAXIMUM_INTERACTIVE_HUMANIZE_PACKAGE_BYTES = 23000
 
 INTERACTIVE_LAUNCHER_EXPECTATIONS = {
     REPO_ROOT
@@ -23,18 +26,22 @@ INTERACTIVE_LAUNCHER_EXPECTATIONS = {
     / "skill-injection"
     / "interactive-sessions.nix": (
         "humanize/SKILL.md",
+        "agent-instructions/skills/humanize/community-language.md",
         "agent-instructions/skills/humanize/interactive-communication.md",
     ),
     REPO_ROOT / "agent-harness" / "harnesses" / "codex" / "package.nix": (
         "humanize/SKILL.md",
+        "agent-instructions/skills/humanize/community-language.md",
         "agent-instructions/skills/humanize/interactive-communication.md",
     ),
     REPO_ROOT / "agent-harness" / "harnesses" / "opencode" / "opencode.nix": (
         "humanize/SKILL.md",
+        "agent-instructions/skills/humanize/community-language.md",
         "agent-instructions/skills/humanize/interactive-communication.md",
     ),
     REPO_ROOT / "agent-harness" / "harnesses" / "pi" / "package.nix": (
         "humanize/SKILL.md",
+        "agent-instructions/skills/humanize/community-language.md",
         "agent-instructions/skills/humanize/interactive-communication.md",
     ),
 }
@@ -59,6 +66,7 @@ REMOVED_GENERATED_SURFACES = (
 def test_humanize_package_owns_interactive_and_output_policies():
     interactive_policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
     humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
+    community_language = COMMUNITY_LANGUAGE_PATH.read_text(encoding="utf-8")
 
     for tag in (
         "interactive-session",
@@ -91,7 +99,51 @@ def test_humanize_package_owns_interactive_and_output_policies():
     ):
         assert f"<{tag}>" in humanize_skill
 
+    for tag in (
+        "community-language-calibration",
+        "example-selection",
+        "explain-by-contrast",
+        "diagnose-from-evidence",
+        "decide-by-tradeoff",
+        "warn-with-condition",
+        "report-measured-change",
+        "summarize-for-action",
+        "meaning-recovery-check",
+        "community-provenance",
+    ):
+        assert f"<{tag}>" in community_language
+
+    for reader_task in (
+        "explain",
+        "diagnose",
+        "decide",
+        "warn",
+        "report",
+        "summarize",
+    ):
+        assert community_language.count(f"<{reader_task}-example-") == 2
+
+    assert "community-language.md" in humanize_skill
+    community_language_bytes = len(community_language.encode("utf-8"))
+    assert community_language_bytes <= MAXIMUM_COMMUNITY_LANGUAGE_BYTES, (
+        "the always-injected example corpus must stay compact; it now costs "
+        f"{community_language_bytes} bytes"
+    )
+
+    package_bytes = sum(
+        len(path.read_bytes())
+        for path in (
+            HUMANIZE_SKILL_PATH,
+            COMMUNITY_LANGUAGE_PATH,
+            INTERACTIVE_POLICY_PATH,
+        )
+    )
+    assert package_bytes <= MAXIMUM_INTERACTIVE_HUMANIZE_PACKAGE_BYTES, (
+        "the interactive Humanize package now exceeds its context budget at "
+        f"{package_bytes} bytes"
+    )
     assert not (HOOK_DOMAIN_DIRECTORY / "interactive-communication.md").exists()
+    assert not (HOOK_DOMAIN_DIRECTORY / "community-language.md").exists()
 
 
 def test_each_harness_composes_the_canonical_units_directly():

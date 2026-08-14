@@ -63,6 +63,12 @@ the fact. Treat a single formal word or polished sentence as weak evidence of ma
 tells combine. Preserve legitimate register, personality, specific detail, mixed positions, and natural asides.
 </human-voice>
 
+<example-calibration>
+Read `community-language.md` before drafting or revising human-facing output. Interactive launchers inject it directly;
+other skill invocations load it from this package. Use its nearest reader-task examples to calibrate language and
+structure. Treat them as evidence of successful choices, never as phrases or layouts to copy mechanically.
+</example-calibration>
+
 <revision-pass>
 First verify the facts, reasoning, and requested action. Then select the representation and order. Then tighten terms
 and sentences. Finally scan separately for machine-like voice and for the channel wording rules. Rewrite a tell

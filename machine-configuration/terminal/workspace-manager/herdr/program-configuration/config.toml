@@ -96,5 +96,17 @@ key = "ctrl+g"
 type = "shell"
 command = "$HERDR_BIN_PATH pane send-keys $HERDR_ACTIVE_PANE_ID ctrl+b"
 
+# nvim keeps ctrl+page while it owns the focused pane; every other pane switches
+# tabs. prefix+pageup and prefix+pagedown switch tabs from inside nvim too.
+[[keys.command]]
+key = "ctrl+pageup"
+type = "shell"
+command = "@herdr_page_key_router@ previous"
+
+[[keys.command]]
+key = "ctrl+pagedown"
+type = "shell"
+command = "@herdr_page_key_router@ next"
+
 [experimental]
 allow_nested = true

@@ -5,9 +5,9 @@ so make the final reply stand alone and keep the reply template active throughou
 </interactive-session>
 
 <humanize-policy-loading>
-Interactive launchers inject this file together with the humanize skill policy, so apply the existing
-`<human-readable-output>` section directly and do not load a duplicate skill. If a third-party launcher supplies this
-file alone, load the humanize skill before the first human-facing reply and after compaction.
+Interactive launchers inject this file together with the humanize skill policy and `community-language.md`, so apply
+their existing sections directly and do not load a duplicate skill. If a third-party launcher supplies this file alone,
+load the humanize skill and its example corpus before the first human-facing reply and after compaction.
 </humanize-policy-loading>
 
 <peer-communication>
