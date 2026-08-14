@@ -18,6 +18,7 @@ local page_and_chrome_groups_to_make_fully_transparent = {
   "NormalFloat",
   "FloatBorder",
   "FloatTitle",
+  "NoiceScrollbar",
   "SnacksNormal",
   "SnacksNormalNC",
   "SnacksPickerBox",
