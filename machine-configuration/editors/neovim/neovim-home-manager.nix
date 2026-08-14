@@ -38,6 +38,12 @@ let
     gcc
   ];
 
+  # jdtls itself runs on jdk21, but a project that pins source and target to 1.8 has to be
+  # compiled against a real java 8 runtime or jdt reads it with java 21 rules: java.lang.Record
+  # collides with the project's own Record, and javax.annotation.Resource, dropped from the jdk
+  # in 11, stops resolving. Neither is a fault in the code being edited.
+  javaEightHome = pkgs.jdk8.home;
+
   brazilianPortugueseSpellFile = pkgs.fetchurl {
     url = "https://ftp.nluug.nl/pub/vim/runtime/spell/pt.utf-8.spl";
     hash = "sha256-Pl/BALaVG3g8+zOGraQ8s5g5VT4E+qQVr1z1vV1qtjs=";
@@ -54,6 +60,8 @@ in
     viAlias = true;
     vimAlias = true;
   };
+
+  home.sessionVariables.JAVA_8_HOME = javaEightHome;
 
   home.packages = lspServersAndTooling;
 }

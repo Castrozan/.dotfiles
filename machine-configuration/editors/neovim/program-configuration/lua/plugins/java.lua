@@ -31,6 +31,17 @@ local directories_the_java_server_must_not_import = {
   "**/result/**",
 }
 
+-- jdtls runs on jdk21 and compiles every project with it unless a matching runtime is
+-- registered, so a project pinned to source and target 1.8 reports errors its own build never
+-- sees. The nix module exports the java 8 home this points at.
+local function java_runtimes()
+  local java_eight_home = vim.env.JAVA_8_HOME
+  if not java_eight_home or java_eight_home == "" then
+    return nil
+  end
+  return { { name = "JavaSE-1.8", path = java_eight_home } }
+end
+
 local function maven_reactor_root(directory_holding_the_file)
   local outermost_directory_holding_a_pom = nil
   local directory = directory_holding_the_file
@@ -62,7 +73,10 @@ return {
           or directory_holding_the_file
       end
       opts.settings = vim.tbl_deep_extend("force", opts.settings or {}, {
-        java = { import = { exclusions = directories_the_java_server_must_not_import } },
+        java = {
+          import = { exclusions = directories_the_java_server_must_not_import },
+          configuration = { runtimes = java_runtimes() },
+        },
       })
       return opts
     end,
