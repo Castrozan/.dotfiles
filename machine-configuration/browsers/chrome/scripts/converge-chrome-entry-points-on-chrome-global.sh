@@ -10,7 +10,22 @@ retiredLinkHandlerApplicationPath="$6"
 
 mkdir -p "$chromeGlobalUserDataDirectory"
 
+# macOS refuses a third-party write to the https handler, the scheme that is the default-browser
+# setting, so asking again once it already points at Chrome only prints permErr on every rebuild.
+currentDefaultHandlerFor() {
+	/usr/bin/defaults read com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers 2>/dev/null |
+		/usr/bin/awk -v urlScheme="$1" '
+			/LSHandlerRoleAll/ { handler = $0; sub(/.*= "?/, "", handler); sub(/"?;$/, "", handler) }
+			$0 ~ "LSHandlerURLScheme = " urlScheme ";" { print handler; exit }
+		'
+}
+
+lowercased() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
+
 for urlScheme in http https; do
+	if [ "$(lowercased "$(currentDefaultHandlerFor "$urlScheme")")" = "$(lowercased "$chromeBundleIdentifier")" ]; then
+		continue
+	fi
 	"$dutiBinary" -s "$chromeBundleIdentifier" "$urlScheme" || echo "WARN: could not set $chromeBundleIdentifier as the default $urlScheme handler." >&2
 done
 
