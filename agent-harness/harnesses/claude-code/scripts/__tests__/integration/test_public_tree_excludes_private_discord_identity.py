@@ -6,7 +6,11 @@ import pytest
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[6]
 PRIVATE_DISCORD_IDENTITY_PATH = (
-    REPOSITORY_ROOT / "private-configuration" / "clawde-discord-identity.nix"
+    REPOSITORY_ROOT
+    / "private-configuration"
+    / "agent-harness"
+    / "clawde"
+    / "discord-identity.nix"
 )
 PRIVATE_SUBMODULE_DIRECTORY_NAME = "private-configuration"
 

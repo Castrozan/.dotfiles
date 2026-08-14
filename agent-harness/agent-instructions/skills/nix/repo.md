@@ -44,7 +44,8 @@ machine-configuration/machines/<alias>/system/ - machine-specific system config;
 nixos-system.nix for per-user-on-the-host bits
 secrets/*.age - agenix encrypted secrets
 secrets/secrets.nix - public key mappings
-private-configuration/ - private git submodule (work agents, company skills, identity docs)
+private-configuration/ - private git submodule holding the private half of these same domains under the same
+capability rule; machines/<alias>/ mirrors the per-machine split above
 agent-harness/agent-instructions/ - instruction surfaces and shared skills deployed to every AI tool
 </directory_organization>
 

@@ -1,20 +1,29 @@
 { hostname }:
 let
   publicSkillsDirectory = ../skills;
-  privateSharedSkillsDirectory = ../../../private-configuration/claude/skills;
+  privateSharedSkillsDirectory = ../../../private-configuration/agent-harness/claude/skills;
   privateMachineSkillsDirectory = ../../../private-configuration/machines + "/${hostname}/skills";
 
-  skillSourceDirectories = builtins.filter builtins.pathExists [
-    publicSkillsDirectory
+  presentDirectories = builtins.filter builtins.pathExists;
+
+  privateSkillSourceDirectories = presentDirectories [
     privateSharedSkillsDirectory
     privateMachineSkillsDirectory
   ];
+
+  skillSourceDirectories =
+    presentDirectories [
+      publicSkillsDirectory
+    ]
+    ++ privateSkillSourceDirectories;
 
   completeSkillNamesIn =
     skillSourceDirectory:
     builtins.filter (skillName: builtins.pathExists (skillSourceDirectory + "/${skillName}/SKILL.md")) (
       builtins.attrNames (builtins.readDir skillSourceDirectory)
     );
+
+  privateSkillNames = builtins.concatMap completeSkillNamesIn privateSkillSourceDirectories;
 
   skillSourceDirectoryByName = builtins.foldl' (
     accumulatedSourceDirectoryByName: skillSourceDirectory:
@@ -43,6 +52,7 @@ in
 {
   inherit
     allSkillNames
+    privateSkillNames
     skillSourceDirectoryByName
     skillDirectorySymlinksAtPrefix
     ;

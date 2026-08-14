@@ -1,6 +1,6 @@
 { lib, hostname, ... }:
 let
-  privateConfigDir = ../../../private-configuration/claude;
+  privateConfigDir = ../../../private-configuration/agent-harness/claude;
   agentsDir = privateConfigDir + "/agents";
 
   agentsDirExists = builtins.pathExists agentsDir;

@@ -25,7 +25,8 @@ DEFAULT_PROHIBITED_WORDS_FILE = os.path.join(
     os.path.expanduser("~"),
     ".dotfiles",
     "private-configuration",
-    "claude",
+    "agent-harness",
+    "prohibited-words-guard",
     "prohibited-words.txt",
 )
 

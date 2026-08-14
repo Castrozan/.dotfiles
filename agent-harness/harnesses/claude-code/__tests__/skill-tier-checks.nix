@@ -110,7 +110,7 @@ in
 
   claude-uninjected-skills-reach-no-global-surface =
     mkEvalCheck "claude-uninjected-skills-reach-no-global-surface" uninjectedSkillsStayOutOfEverySurface
-      "a skill named in uninjectedSkillNames must stay out of the machine tier, out of the all-skills index and out of the reachability mirror; it exists for the one agent that declares it by path, and any of those three surfaces would put it back in every session's budget";
+      "a private skill its machine's indexed-skill-names.nix does not name must stay out of the machine tier, out of the all-skills index and out of the reachability mirror; it exists for the one agent that declares it by path, and any of those three surfaces would put it back in every session's budget";
 
   claude-dotfiles-repo-skills-reach-no-global-surface =
     mkEvalCheck "claude-dotfiles-repo-skills-reach-no-global-surface"

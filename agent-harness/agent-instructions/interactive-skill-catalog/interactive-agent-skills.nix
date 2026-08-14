@@ -4,6 +4,7 @@ let
 
   inherit (skillSetBuilders)
     allSkillNames
+    privateSkillNames
     skillSourceDirectoryByName
     skillDirectorySymlinksAtPrefix
     ;
@@ -33,12 +34,18 @@ let
     "nix"
   ];
 
-  uninjectedSkillNames = [
-    "b3-portal"
-    "daily-report"
-    "google-chat"
-    "morning-briefing"
-  ];
+  privateIndexedSkillNamesFile =
+    ../../../private-configuration/machines + "/${hostname}/indexed-skill-names.nix";
+
+  privateIndexedSkillNames =
+    if builtins.pathExists privateIndexedSkillNamesFile then
+      import privateIndexedSkillNamesFile
+    else
+      [ ];
+
+  uninjectedSkillNames = builtins.filter (
+    skillName: !(builtins.elem skillName privateIndexedSkillNames)
+  ) privateSkillNames;
 
   skillNamesOffTheGlobalSurface = dotfilesRepoSkillNames ++ uninjectedSkillNames;
 
