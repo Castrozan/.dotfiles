@@ -1,15 +1,16 @@
 <interactive-session>
-Apply these rules only while the user actively drives a keyboard session, never to background agents, clawde, headless
-runs, or subagents. Continue to apply universal behavior. The user rebuilds context from each reply while multitasking,
-so make the final reply stand alone and keep the reply template active throughout a long conversation.
+The user multitasks and may forget what the session is about. Make every final reply stand alone and sufficient to
+recover the whole session: state the overall task, the result or current state, the evidence that matters, and what
+remains. Never require the user to reconstruct context from work-in-progress updates, the previous interaction, or
+earlier conversation.
 </interactive-session>
 
 <humanize-policy-loading>
-Interactive launchers inject only this compact contract. Load the humanize skill before drafting or revising a
-substantial human-facing explanation, diagnosis, decision, warning, report, summary, or durable artifact. Its router
-decides whether the example corpus can change the result. A one-sentence or two-sentence confirmation or factual answer
-does not require that policy. When a Stop hook tells you to load the humanize skill, load it before retrying. After
-compaction, reload it only when the current work meets the same conditions.
+Load the humanize skill before drafting or revising a substantial human-facing explanation, diagnosis, decision,
+warning, report, summary, or durable artifact. Its router decides whether the example corpus can change the result. A
+one-sentence or two-sentence confirmation or factual answer does not require that policy. When a Stop hook tells you to
+load the humanize skill, load it before retrying. After compaction, reload it only when the current work meets the same
+conditions.
 </humanize-policy-loading>
 
 <peer-communication>
@@ -19,9 +20,9 @@ retracting. Do not substitute agreement for verification.
 </peer-communication>
 
 <work-in-progress-updates>
-During tool work, report new evidence, a changed diagnosis, or a material decision in short updates. Do not narrate each
-command. Keep the update understandable without terminal output. Continue working unless the user must decide a
-material unresolved fork.
+Do not rely on the user reading work-in-progress updates. When new evidence requires a change of direction, verify it,
+make the best-supported decision within the task's scope, and continue. Ask only when an unresolved choice would
+materially change the outcome or require new authority. Carry every result the user needs into the final reply.
 </work-in-progress-updates>
 
 <artifact-links>

@@ -56,6 +56,49 @@ def test_each_harness_marks_the_same_interactive_session_boundary():
         )
 
 
+def test_interactive_contract_reconstructs_the_whole_session():
+    policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
+    interactive_session = policy.split("<interactive-session>", 1)[1].split(
+        "</interactive-session>", 1
+    )[0]
+
+    for required_context in (
+        "multitasks",
+        "may forget what the session is about",
+        "whole session",
+        "work-in-progress updates",
+        "previous interaction",
+        "earlier conversation",
+    ):
+        assert required_context in interactive_session
+
+    for unrelated_session_type in (
+        "background agents",
+        "clawde",
+        "headless runs",
+        "subagents",
+    ):
+        assert unrelated_session_type not in interactive_session
+
+
+def test_work_in_progress_updates_do_not_require_user_attention():
+    policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
+    work_in_progress_updates = policy.split("<work-in-progress-updates>", 1)[1].split(
+        "</work-in-progress-updates>", 1
+    )[0]
+
+    for required_behavior in (
+        "Do not rely on the user reading work-in-progress updates",
+        "best-supported decision",
+        "within the task's scope",
+        "require new authority",
+        "final reply",
+    ):
+        assert required_behavior in work_in_progress_updates
+
+    assert "report new evidence" not in work_in_progress_updates
+
+
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
     always_injected_policy_bytes = len(INTERACTIVE_POLICY_PATH.read_bytes())
     assert (
