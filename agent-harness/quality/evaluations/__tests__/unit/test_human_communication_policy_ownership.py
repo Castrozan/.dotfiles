@@ -38,10 +38,11 @@ def test_humanize_package_owns_interactive_and_output_policies():
         "artifact-links",
         "exhaust-before-returning",
         "reply_template",
-        "always_enforced",
         "request_gated",
     ):
         assert f"<{tag}>" in interactive_policy
+
+    assert "<always_enforced>" not in interactive_policy
 
     for tag in (
         "human-readable-output",

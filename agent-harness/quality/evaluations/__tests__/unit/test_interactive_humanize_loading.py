@@ -39,6 +39,12 @@ INTERACTIVE_LAUNCH_SOURCES = (
 )
 
 
+def interactive_policy_section(tag: str) -> str:
+    policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
+    section = policy.split(f"<{tag}>", 1)[1].split(f"</{tag}>", 1)[0]
+    return " ".join(section.split())
+
+
 def test_each_harness_injects_only_the_interactive_contract():
     for launcher_path in INTERACTIVE_LAUNCHER_PATHS:
         launcher = launcher_path.read_text(encoding="utf-8")
@@ -57,10 +63,7 @@ def test_each_harness_marks_the_same_interactive_session_boundary():
 
 
 def test_interactive_contract_reconstructs_the_whole_session():
-    policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
-    interactive_session = policy.split("<interactive-session>", 1)[1].split(
-        "</interactive-session>", 1
-    )[0]
+    interactive_session = interactive_policy_section("interactive-session")
 
     for required_context in (
         "multitasks",
@@ -82,10 +85,7 @@ def test_interactive_contract_reconstructs_the_whole_session():
 
 
 def test_work_in_progress_updates_do_not_require_user_attention():
-    policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
-    work_in_progress_updates = policy.split("<work-in-progress-updates>", 1)[1].split(
-        "</work-in-progress-updates>", 1
-    )[0]
+    work_in_progress_updates = interactive_policy_section("work-in-progress-updates")
 
     for required_behavior in (
         "Do not rely on the user reading work-in-progress updates",
@@ -100,10 +100,7 @@ def test_work_in_progress_updates_do_not_require_user_attention():
 
 
 def test_artifact_links_are_remote_and_complete():
-    policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
-    artifact_links = policy.split("<artifact-links>", 1)[1].split(
-        "</artifact-links>", 1
-    )[0]
+    artifact_links = interactive_policy_section("artifact-links")
 
     for required_behavior in (
         "only through remote links",
@@ -117,6 +114,19 @@ def test_artifact_links_are_remote_and_complete():
         assert required_behavior in artifact_links
 
     assert "needs only the SHA" not in artifact_links
+
+
+def test_nothing_pending_means_the_session_can_end():
+    reply_template = interactive_policy_section("reply_template")
+
+    for required_behavior in (
+        "session can be ended",
+        "Write that line exactly",
+        "required by the current task",
+        "unrelated work",
+        "opening or Done line",
+    ):
+        assert required_behavior in reply_template
 
 
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
