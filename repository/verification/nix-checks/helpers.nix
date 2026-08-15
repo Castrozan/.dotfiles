@@ -22,20 +22,36 @@ let
       )
     ) checks;
 
+  # Every test configuration needs `unstable` and `latest` for the system it targets. Instantiating
+  # them inside the builder below re-imported both channels once per call site, so the check suite
+  # paid for hundreds of nixpkgs instantiations. Keyed attribute sets are forced once and reused.
+  testSystems = lib.unique [
+    "x86_64-linux"
+    "aarch64-darwin"
+    pkgs.stdenv.hostPlatform.system
+  ];
+
+  channelPkgsBySystem =
+    channel:
+    lib.genAttrs testSystems (
+      system:
+      import channel {
+        inherit system;
+        config.allowUnfree = true;
+      }
+    );
+
+  unstableTestPkgs = channelPkgsBySystem inputs.nixpkgs-unstable;
+  latestTestPkgs = channelPkgsBySystem inputs.nixpkgs-latest;
+
   homeManagerTestConfigurationForSystemPkgs =
     systemDouble: systemPkgs: hostname: modules:
     (inputs.home-manager.lib.homeManagerConfiguration {
       pkgs = systemPkgs;
       extraSpecialArgs = {
         inherit inputs;
-        unstable = import inputs.nixpkgs-unstable {
-          system = systemDouble;
-          config.allowUnfree = true;
-        };
-        latest = import inputs.nixpkgs-latest {
-          system = systemDouble;
-          config.allowUnfree = true;
-        };
+        unstable = unstableTestPkgs.${systemDouble};
+        latest = latestTestPkgs.${systemDouble};
         isNixOS = false;
         isDarwin = false;
         username = "test";

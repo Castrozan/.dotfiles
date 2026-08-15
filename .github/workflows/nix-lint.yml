@@ -8,6 +8,9 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+  # Every main push still gets its own verdict, because main is the test gate. Superseded pull
+  # request runs are dropped instead of queueing behind the run they already replaced.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -22,7 +25,20 @@ jobs:
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      # Magic Nix Cache is retired: it reaches a GitHub cache endpoint that now answers 400 and
+      # falls back to FlakeHub, which needs a token this repository does not hold, so every run
+      # refetched every flake input from scratch. This caches the store and the fetcher cache
+      # against the resolved lock, and keeps one cache per ref so storage stays bounded.
+      - uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('repository/flake-assembly/dependencies/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          paths: |
+            ~/.cache/nix
+          purge: true
+          purge-prefixes: nix-${{ runner.os }}-
+          purge-created: 0
+          purge-primary-key: never
 
       - name: statix
         if: ${{ !cancelled() }}
@@ -41,12 +57,6 @@ jobs:
       - name: Flake metadata (syntax check)
         if: ${{ !cancelled() }}
         run: nix flake metadata
-
-      - name: Free disk space
-        if: ${{ !cancelled() }}
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
-          df -h /
 
       - name: Nix flake checks
         if: ${{ !cancelled() }}
