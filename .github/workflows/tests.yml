@@ -48,6 +48,17 @@ jobs:
             bash machine-configuration/desktop/hyprland/__tests__/qml/run-qml-tests.sh
           '
 
+      - name: Run QML lint
+        if: ${{ !cancelled() }}
+        run: |
+          nix shell nixpkgs#qt6.qtdeclarative nixpkgs#quickshell --command bash -c '
+            export REPO_DIR="$PWD"
+            export QT_DECLARATIVE_PATH=$(dirname $(dirname $(which qmllint)))
+            export QMLLINT_REQUIRED=1
+            source repository/verification/runner/qml.sh
+            _run_qmllint_checks
+          '
+
       - name: Run Lua unit tests
         if: ${{ !cancelled() }}
         run: |
