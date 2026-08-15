@@ -45,6 +45,7 @@ def test_humanize_package_owns_interactive_and_output_policies():
     for tag in (
         "human-readable-output",
         "reader-outcome",
+        "context-boundaries",
         "epistemic-clarity",
         "representation-selection",
         "term-discipline",
@@ -52,7 +53,6 @@ def test_humanize_package_owns_interactive_and_output_policies():
         "meaning-preservation",
         "human-voice",
         "revision-pass",
-        "ticket_comment",
         "report_document_or_page",
         "binds_every_human_facing_channel",
     ):
