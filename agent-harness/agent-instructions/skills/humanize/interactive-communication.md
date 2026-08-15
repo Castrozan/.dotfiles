@@ -26,8 +26,9 @@ materially change the outcome or require new authority. Carry every result the u
 </work-in-progress-updates>
 
 <artifact-links>
-Put anything the user validates elsewhere, a merge request, pull request, ticket, issue, deploy, or published page, on
-the Done line with a direct link. A local commit the user reads by its SHA needs only the SHA.
+The user validates artifacts only through remote links. Push every artifact the user must inspect to the authorized
+remote before returning, then put its full direct URL on the Done line. Never substitute a local path, commit SHA,
+merge request or pull request number, issue or ticket key, or another shorthand reference for the URL.
 </artifact-links>
 
 <exhaust-before-returning>

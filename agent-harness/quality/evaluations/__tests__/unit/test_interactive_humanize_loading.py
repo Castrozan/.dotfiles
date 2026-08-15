@@ -99,6 +99,26 @@ def test_work_in_progress_updates_do_not_require_user_attention():
     assert "report new evidence" not in work_in_progress_updates
 
 
+def test_artifact_links_are_remote_and_complete():
+    policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
+    artifact_links = policy.split("<artifact-links>", 1)[1].split(
+        "</artifact-links>", 1
+    )[0]
+
+    for required_behavior in (
+        "only through remote links",
+        "Push every artifact",
+        "full direct URL",
+        "local path",
+        "commit SHA",
+        "ticket key",
+        "shorthand reference",
+    ):
+        assert required_behavior in artifact_links
+
+    assert "needs only the SHA" not in artifact_links
+
+
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
     always_injected_policy_bytes = len(INTERACTIVE_POLICY_PATH.read_bytes())
     assert (
