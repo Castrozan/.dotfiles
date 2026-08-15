@@ -25,7 +25,7 @@ from agent_media_workspace import (
 
 GENERATIONS_URL = "https://api.openai.com/v1/images/generations"
 EDITS_URL = "https://api.openai.com/v1/images/edits"
-MODEL = "gpt-image-1-mini"
+MODEL = "gpt-image-2"
 SECRET_NAME = "openai-api-key"
 REFERENCE_CONTENT_TYPES = {
     ".png": "image/png",
@@ -52,7 +52,7 @@ def parse_command_line_arguments(argv):
         default=[],
         help="Path to an image the channel downloaded, to edit instead of drawing from scratch. Repeatable.",
     )
-    parser.add_argument("--quality", choices=QUALITIES, default="low")
+    parser.add_argument("--quality", choices=QUALITIES, default="medium")
     parser.add_argument("--size", choices=SIZES, default="1024x1024")
     return parser.parse_args(argv)
 
