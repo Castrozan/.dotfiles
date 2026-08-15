@@ -1,4 +1,4 @@
-"""The two HTTP shapes the media providers need, on the standard library alone.
+"""The one HTTP shape the media providers need, on the standard library alone.
 
 A provider refusal is not an error to trace out; it is something the agent will
 paraphrase into the channel, so it comes back as one readable sentence.
@@ -7,7 +7,6 @@ paraphrase into the channel, so it comes back as one readable sentence.
 import json
 import urllib.error
 import urllib.request
-import uuid
 
 from agent_media_workspace import MediaRequestRefused
 
@@ -19,34 +18,6 @@ def post_json(url, headers, body):
         url,
         data=json.dumps(body).encode("utf-8"),
         headers={**headers, "content-type": "application/json"},
-    )
-    return read_response(request)
-
-
-def post_multipart(url, headers, fields, files):
-    """files are (field name, path, content type); the provider rejects a generic octet-stream."""
-    boundary = f"----clawde{uuid.uuid4().hex}"
-    parts = []
-    for name, value in fields.items():
-        parts.append(
-            f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'.encode()
-        )
-    for name, file_path, content_type in files:
-        parts.append(
-            f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="{name}"; filename="{file_path.name}"\r\n'
-            f"Content-Type: {content_type}\r\n\r\n".encode()
-        )
-        parts.append(file_path.read_bytes() + b"\r\n")
-    parts.append(f"--{boundary}--\r\n".encode())
-    request = urllib.request.Request(
-        url,
-        data=b"".join(parts),
-        headers={
-            **headers,
-            "content-type": f"multipart/form-data; boundary={boundary}",
-        },
     )
     return read_response(request)
 

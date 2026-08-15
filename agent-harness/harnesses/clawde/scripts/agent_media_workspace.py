@@ -1,9 +1,9 @@
-"""Workspace, secret and budget rules shared by the agent media tools.
+"""Workspace, secret and budget rules for the agent media tools.
 
-Both tools write a file into the calling agent's own workspace and print its
+A media tool writes a file into the calling agent's own workspace and prints its
 absolute path, which is what the channel plugin's reply tool takes as an
-attachment. Everything a guest can influence - the prompt, the reference image,
-how often either runs - is bounded here rather than in the agent's judgement.
+attachment. Everything a guest can influence, the prompt and how often it runs,
+is bounded here rather than in the agent's judgement.
 """
 
 import json
@@ -43,34 +43,6 @@ def resolve_media_directory(working_directory):
             f"only an agent workspace directly under {agents_directory()} owns a media directory"
         )
     return workspace / MEDIA_DIRECTORY_NAME
-
-
-def channel_inbox_directories(media_directory):
-    """Directories a reference image may be read from: what the channel downloaded, and our own output."""
-    configured = os.environ.get("DISCORD_STATE_DIR")
-    if configured:
-        return [media_directory, Path(configured).expanduser() / "inbox"]
-    agent_name = media_directory.parent.name
-    home_inbox = Path.home() / ".claude" / "channels" / "discord" / agent_name / "inbox"
-    return [media_directory, home_inbox]
-
-
-def resolve_reference_file(reference, media_directory):
-    """A reference must be something the channel handed us, never an arbitrary path off this machine."""
-    try:
-        candidate = Path(reference).expanduser().resolve(strict=True)
-    except OSError:
-        raise MediaRequestRefused(f"no such reference image: {reference}") from None
-    for allowed in channel_inbox_directories(media_directory):
-        try:
-            candidate.relative_to(allowed.resolve())
-        except (OSError, ValueError):
-            continue
-        return candidate
-    raise MediaRequestRefused(
-        f"refusing to upload {candidate}: a reference image must come from an attachment "
-        "the channel downloaded, or from a file this tool generated earlier"
-    )
 
 
 def read_api_key(secret_name):

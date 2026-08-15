@@ -13,7 +13,6 @@ from agent_media_workspace import (
     flatten_prompt,
     read_api_key,
     resolve_media_directory,
-    resolve_reference_file,
     write_media_file,
 )
 
@@ -27,41 +26,6 @@ def test_media_lands_in_the_workspace_that_asked_for_it(media_agent_workspace):
 def test_a_directory_outside_the_agent_tree_owns_no_media(tmp_path, media_agent_workspace):
     with pytest.raises(MediaRequestRefused, match="only an agent workspace"):
         resolve_media_directory(tmp_path)
-
-
-def test_a_reference_from_the_channel_inbox_is_accepted(media_agent_workspace, monkeypatch):
-    state_directory = media_agent_workspace.parent.parent / "discord-state"
-    inbox = state_directory / "inbox"
-    inbox.mkdir(parents=True)
-    downloaded = inbox / "meme.png"
-    downloaded.write_bytes(b"png")
-    monkeypatch.setenv("DISCORD_STATE_DIR", str(state_directory))
-
-    resolved = resolve_reference_file(str(downloaded), media_agent_workspace / "media")
-
-    assert resolved == downloaded.resolve()
-
-
-def test_an_earlier_generation_can_be_used_as_a_reference(media_agent_workspace):
-    media_directory = media_agent_workspace / "media"
-    media_directory.mkdir()
-    earlier = media_directory / "image-abc.png"
-    earlier.write_bytes(b"png")
-
-    assert resolve_reference_file(str(earlier), media_directory) == earlier.resolve()
-
-
-def test_a_secret_file_is_never_uploaded_as_a_reference(media_agent_workspace, media_secrets_directory):
-    key_file = media_secrets_directory / "openai-api-key"
-    key_file.write_text("sk-live", encoding="utf-8")
-
-    with pytest.raises(MediaRequestRefused, match="refusing to upload"):
-        resolve_reference_file(str(key_file), media_agent_workspace / "media")
-
-
-def test_a_missing_reference_is_named_rather_than_traced(media_agent_workspace):
-    with pytest.raises(MediaRequestRefused, match="no such reference image"):
-        resolve_reference_file("/nowhere/at/all.png", media_agent_workspace / "media")
 
 
 def test_an_api_key_is_read_from_the_secrets_directory(media_secrets_directory):
