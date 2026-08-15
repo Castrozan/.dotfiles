@@ -12,16 +12,20 @@ and no "no server running" trap to work around.
 </orientation>
 
 <orchestrating_agents>
-Spawn a supported harness with `herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus [--split
-right|down] -- <harness> <arguments>`; everything after `--` is the launched argv. Pin placement to your own
-`$HERDR_TAB_ID` and pass `--no-focus`: an unpinned `agent start` splits the focused pane into whatever window the user
-switched to, and a guard blocks it. Only `--tab` is a real pin; `--workspace <id>` is not, because `agent start` always
-splits a tab and never opens one, so `--workspace` alone just picks whose active tab gets hijacked, even with no
-`--split`. To land elsewhere, open the tab first with `herdr tab create --workspace <id> --no-focus` and pass the
-returned tab id. Synchronize on reported state, not scraped output: `herdr agent wait <target> --status
-idle|working|blocked [--timeout MS]` blocks until the agent reaches that state, so wait for `idle` before the first
-prompt and after every turn instead of polling `agent read`. Read output with `herdr agent read <target> [--source
-visible|recent|recent-unwrapped] [--lines N]`. A target is the agent name, a terminal id, or a pane id.
+Launch a supported harness into the pane a new tab already carries, so the agent is born alone in one pane: `herdr tab
+create --workspace "$HERDR_WORKSPACE_ID" --cwd <dir> --no-focus` answers with that tab and its root pane id, and `herdr
+pane run <root pane id> <harness> <arguments>` starts the harness there. Carry the working directory and any
+environment on the create, because `pane run` takes neither. Pin the workspace and pass `--no-focus` so creation
+neither lands in nor moves the view to whatever the human switched to. Never reach for `herdr agent start`: it always
+splits a tab and never opens one, so even pinned to a fresh tab it strands that tab's root shell beside the agent with
+no close verb able to clear it, and a guard blocks its unpinned form, which splits the tab the human switched to.
+`pane run` starts no named agent, so name it afterwards with `herdr agent rename <pane id> <name>`; until then the pane
+id is the only target that resolves, because `agent list` does not carry the pane the instant `pane run` returns.
+Synchronize on reported state, not scraped output: `herdr agent wait <target> --status idle|working|blocked [--timeout
+MS]` blocks until the agent reaches that state and takes a pane id before detection lands, so wait for `idle` to cover
+the harness boot before the first prompt and after every turn instead of polling `agent read`. Read output with `herdr
+agent read <target> [--source visible|recent|recent-unwrapped] [--lines N]`. A target is the agent name, a terminal id,
+or a pane id.
 </orchestrating_agents>
 
 <prompt_submission_trap>

@@ -31,6 +31,21 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
         assert "herdr" in message.lower()
         assert "--tab" in message.lower() or "--workspace" in message.lower()
 
+    def test_points_at_the_single_pane_recipe(
+        self,
+        invoke_prohibited_command_guard_hook,
+        parse_prohibited_command_guard_system_message,
+    ):
+        result = invoke_prohibited_command_guard_hook(
+            {
+                "tool_name": "Bash",
+                "tool_input": {"command": "herdr agent start demo -- claude"},
+            }
+        )
+        message = parse_prohibited_command_guard_system_message(result.stdout).lower()
+        assert "tab create" in message
+        assert "pane run" in message
+
     @pytest.mark.parametrize(
         "command",
         [
@@ -63,6 +78,9 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
             "herdr agent start demo --cwd /tmp --tab=w1:tA -- claude",
             "herdr agent start demo --cwd /tmp --workspace w1 --tab w1:tA -- claude",
             "herdr tab create --workspace w1 --no-focus",
+            "herdr tab create --workspace w1 --cwd /tmp --no-focus",
+            "herdr pane run w1:pA claude",
+            "herdr agent rename w1:pA demo",
             "herdr tab list --workspace w1",
             "echo 'herdr tab close w1:tA'",
             "herdr agent wait demo --status idle",
