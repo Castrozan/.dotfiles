@@ -24,8 +24,8 @@ settings = "prefix+w"
 new_tab = "prefix+c"
 rename_tab = "prefix+r"
 close_tab = "prefix+&"
-previous_tab = "prefix+pageup"
-next_tab = "prefix+pagedown"
+previous_tab = ["prefix+pageup", "ctrl+pageup"]
+next_tab = ["prefix+pagedown", "ctrl+pagedown"]
 switch_tab = "prefix+1..9"
 new_workspace = "prefix+shift+n"
 rename_workspace = "prefix+shift+w"
@@ -97,16 +97,11 @@ type = "shell"
 command = "$HERDR_BIN_PATH pane send-keys $HERDR_ACTIVE_PANE_ID ctrl+b"
 
 # nvim keeps ctrl+page while it owns the focused pane; every other pane switches
-# tabs. prefix+pageup and prefix+pagedown switch tabs from inside nvim too.
-[[keys.command]]
-key = "ctrl+pageup"
-type = "shell"
-command = "@herdr_page_key_router@ previous"
-
-[[keys.command]]
-key = "ctrl+pagedown"
-type = "shell"
-command = "@herdr_page_key_router@ next"
+# tabs on it. prefix+pageup and prefix+pagedown switch tabs from inside nvim too.
+[[keys.passthrough]]
+key = ["ctrl+pageup", "ctrl+pagedown"]
+processes = ["nvim"]
+description = "let nvim cycle its own buffers"
 
 [experimental]
 allow_nested = true
