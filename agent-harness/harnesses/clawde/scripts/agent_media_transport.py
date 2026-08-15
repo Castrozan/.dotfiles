@@ -11,15 +11,42 @@ import urllib.request
 from agent_media_workspace import MediaRequestRefused
 
 REQUEST_TIMEOUT_SECONDS = 180
+# Klipy answers 403 to the standard library's own user agent, so every request
+# names the caller instead of hiding as a browser.
+USER_AGENT = "clawde-agent-media/1.0"
 
 
 def post_json(url, headers, body):
     request = urllib.request.Request(
         url,
         data=json.dumps(body).encode("utf-8"),
-        headers={**headers, "content-type": "application/json"},
+        headers={
+            **headers,
+            "content-type": "application/json",
+            "user-agent": USER_AGENT,
+        },
     )
     return read_response(request)
+
+
+def get_json(url):
+    return read_response(
+        urllib.request.Request(url, headers={"user-agent": USER_AGENT})
+    )
+
+
+def fetch_bytes(url):
+    """Media the provider hosts, pulled down so the agent can open it locally."""
+    try:
+        with urllib.request.urlopen(
+            urllib.request.Request(url, headers={"user-agent": USER_AGENT}),
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        ) as response:
+            return response.read()
+    except urllib.error.HTTPError as failure:
+        raise MediaRequestRefused(describe_refusal(failure)) from None
+    except OSError as failure:
+        raise MediaRequestRefused(f"that media would not download: {failure}") from None
 
 
 def read_response(request):

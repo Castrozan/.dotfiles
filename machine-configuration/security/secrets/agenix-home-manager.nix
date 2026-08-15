@@ -31,6 +31,7 @@ let
     "api-keys/brave-api-key"
     "api-keys/deepgram-api-key"
     "api-keys/gemini-api-key"
+    "api-keys/klipy-api-key"
     "api-keys/nvidia-api-key"
     "api-keys/opencode-api-key"
     "api-keys/openai-api-key"
@@ -133,6 +134,12 @@ in
   # after a clean exit. Rewrite the plist to a single boolean KeepAlive: false
   # after home-manager's own setupLaunchAgents step writes it, then re-bootstrap
   # the agent so the new policy takes effect immediately.
+  # A mount killed mid-run also leaves its half-written secret behind as a 0400
+  # .tmp file, which age cannot reopen for writing, so every later mount dies on
+  # that same secret and every secret after it silently never appears. The
+  # generation the agenix symlink points at is the live one; anything else under
+  # agenix.d is wreckage from such a run, and with the agent booted out nothing
+  # is writing to it, so it goes before the agent comes back up.
   home.activation.disableAgenixLaunchdRestartLoop = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
     lib.hm.dag.entryAfter [ "setupLaunchAgents" ] ''
       plistPath="$HOME/Library/LaunchAgents/org.nix-community.home.activate-agenix.plist"
@@ -143,6 +150,16 @@ in
         $DRY_RUN_CMD /bin/chmod 0444 "$plistPath"
         launchAgentDomain="gui/$(/usr/bin/id -u)"
         $DRY_RUN_CMD /bin/launchctl bootout "$launchAgentDomain/org.nix-community.home.activate-agenix" 2>/dev/null || true
+
+        temporaryRoot="$(/usr/bin/getconf DARWIN_USER_TEMP_DIR)"
+        liveGeneration="$(basename "$(readlink "$temporaryRoot/agenix" || echo none)")"
+        for generation in "$temporaryRoot/agenix.d"/*; do
+          if [ -d "$generation" ] && [ "$(basename "$generation")" != "$liveGeneration" ]; then
+            $DRY_RUN_CMD /bin/chmod -R u+w "$generation" || true
+            $DRY_RUN_CMD rm -rf "$generation" || true
+          fi
+        done
+
         $DRY_RUN_CMD /bin/launchctl bootstrap "$launchAgentDomain" "$plistPath"
       fi
     ''

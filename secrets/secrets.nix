@@ -31,6 +31,7 @@ in
   "api-keys/brave-api-key.age".publicKeys = all_keys;
   "api-keys/deepgram-api-key.age".publicKeys = all_keys;
   "api-keys/gemini-api-key.age".publicKeys = all_keys;
+  "api-keys/klipy-api-key.age".publicKeys = all_keys;
   "api-keys/nvidia-api-key.age".publicKeys = all_keys;
   "api-keys/opencode-api-key.age".publicKeys = all_keys;
   "api-keys/openai-api-key.age".publicKeys = all_keys;

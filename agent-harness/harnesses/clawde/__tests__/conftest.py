@@ -16,13 +16,15 @@ def media_secrets_directory(tmp_path, monkeypatch):
 
 @pytest.fixture
 def media_agent_workspace(tmp_path, monkeypatch, media_secrets_directory):
-    """An agent workspace with both media keys on hand, as a rebuilt machine has."""
+    """An agent workspace with the media keys on hand, as a rebuilt machine has."""
     agents_directory = tmp_path / "clawde"
     workspace = agents_directory / "monster"
     workspace.mkdir(parents=True)
-    (media_secrets_directory / "openai-api-key").write_text("sk-test", encoding="utf-8")
     (media_secrets_directory / "gemini-api-key").write_text(
         "gemini-test", encoding="utf-8"
+    )
+    (media_secrets_directory / "klipy-api-key").write_text(
+        "klipy-test", encoding="utf-8"
     )
     monkeypatch.setenv("CLAWDE_AGENTS_DIRECTORY", str(agents_directory))
     monkeypatch.delenv("DISCORD_STATE_DIR", raising=False)
