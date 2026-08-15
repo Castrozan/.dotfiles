@@ -1,0 +1,36 @@
+name: Nix setup
+description: Install Nix and restore the store cache for one Nix Lint job.
+
+inputs:
+  cache-key:
+    description: >-
+      Job-scoped segment of the cache key. Each job caches only the store paths it actually touches,
+      so a restore stays smaller than one shared cache covering every job at once.
+    required: true
+  github-token:
+    description: >-
+      Token used when fetching flake inputs, so GitHub API rate limits do not fail a run.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: cachix/install-nix-action@v31
+      with:
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+          access-tokens = github.com=${{ inputs.github-token }}
+
+    # Keeping the cache configuration in one place matters more than the indirection costs: a key
+    # that drifts between jobs turns every restore into a silent miss, which reads as a slow run
+    # rather than as a broken cache.
+    - uses: nix-community/cache-nix-action@v7
+      with:
+        primary-key: nix-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('repository/flake-assembly/dependencies/flake.lock') }}
+        restore-prefixes-first-match: nix-${{ runner.os }}-${{ inputs.cache-key }}-
+        paths: |
+          ~/.cache/nix
+        purge: true
+        purge-prefixes: nix-${{ runner.os }}-${{ inputs.cache-key }}-
+        purge-created: 0
+        purge-primary-key: never
