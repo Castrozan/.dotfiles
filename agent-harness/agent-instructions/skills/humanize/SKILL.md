@@ -1,6 +1,6 @@
 ---
 name: humanize
-description: Human-readable output policy for chat and durable artifacts, covering meaning, representation, terminology, sentence construction, human voice, and channel adaptation. Interactive hooks require it.
+description: Human-readable output policy for chat and durable artifacts, covering meaning, representation, terminology, sentence construction, human voice, and channel adaptation. Interactive hooks route failed replies to it.
 ---
 
 <human-readable-output>
@@ -67,9 +67,10 @@ tells combine. Preserve legitimate register, personality, specific detail, mixed
 </human-voice>
 
 <example-calibration>
-Read `community-language.md` before drafting or revising human-facing output. Interactive launchers inject it directly;
-other skill invocations load it from this package. Use its nearest reader-task examples to calibrate language and
-structure. Treat them as evidence of successful choices, never as phrases or layouts to copy mechanically.
+Read `community-language.md` before drafting or revising a substantial explanation, diagnosis, decision, warning,
+report, or summary, and when an interactive Stop hook routed a failed reply to this skill. Skip it for a one-sentence or
+two-sentence confirmation or factual answer. Use its nearest reader-task examples to calibrate language and structure.
+Treat them as evidence of successful choices, never as phrases or layouts to copy mechanically.
 </example-calibration>
 
 <revision-pass>

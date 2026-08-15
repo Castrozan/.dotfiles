@@ -177,11 +177,12 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   countdown or threshold coloring, both of which need a command hook
   (upstream https://github.com/openai/codex/issues/17827). `tui.keymap.<context>`
   is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
-- Human-readable reply policy and the Done:/Next: shape are content, not chrome,
-  so every interactive wrapper injects the humanize `SKILL.md` and
-  its `community-language.md` and `interactive-communication.md` side files
-  directly. Codex carries them through `-c developer_instructions=` for
-  interactive invocations only, keeping them out of `codex exec` and the MCP
+- Human-readable reply policy and the Done:/Next: shape are content, not chrome.
+  Every interactive wrapper injects only `interactive-communication.md`, the
+  compact contract needed on every turn. The larger humanize `SKILL.md` and its
+  `community-language.md` corpus remain in the skill tier and load selectively.
+  Codex carries the compact contract through `-c developer_instructions=` for
+  interactive invocations only, keeping it out of `codex exec` and the MCP
   server, whose output is machine-facing. Claude and Codex use their native Stop
   events to run the same deterministic reply guard. Harnesses without that
   return protocol call the guard from their own settled-reply adapters.

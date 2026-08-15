@@ -4,8 +4,8 @@ from __future__ import annotations
 
 
 REPLY_RECOVERY_INSTRUCTION = (
-    "Rewrite it using the injected humanize policy and interactive communication "
-    "instructions. Keep the answer and remove only filler."
+    "Load the humanize skill, then rewrite it using that policy and the interactive "
+    "communication instructions. Keep the answer and remove only filler."
 )
 
 

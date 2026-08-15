@@ -5,9 +5,11 @@ so make the final reply stand alone and keep the reply template active throughou
 </interactive-session>
 
 <humanize-policy-loading>
-Interactive launchers inject this file together with the humanize skill policy and `community-language.md`, so apply
-their existing sections directly and do not load a duplicate skill. If a third-party launcher supplies this file alone,
-load the humanize skill and its example corpus before the first human-facing reply and after compaction.
+Interactive launchers inject only this compact contract. Load the humanize skill before drafting or revising a
+substantial human-facing explanation, diagnosis, decision, warning, report, summary, or durable artifact. Its router
+decides whether the example corpus can change the result. A one-sentence or two-sentence confirmation or factual answer
+does not require that policy. When a Stop hook tells you to load the humanize skill, load it before retrying. After
+compaction, reload it only when the current work meets the same conditions.
 </humanize-policy-loading>
 
 <peer-communication>
@@ -46,9 +48,9 @@ or two-sentence confirmation may use only the opening paragraph.
 </reply_template>
 
 <always_enforced>
-Apply the humanize skill's every-channel rules on every interactive turn. A compatible Stop hook blocks violations even
-when the user asked for a document. Never point back to an earlier message or turn. Restate what still matters so the
-reply stands alone.
+Apply this contract on every interactive turn. Apply the humanize skill when the loading rule requires it. A compatible
+Stop hook blocks deterministic violations even when the user asked for a document. Never point back to an earlier
+message or turn. Restate what still matters so the reply stands alone.
 </always_enforced>
 
 <request_gated>

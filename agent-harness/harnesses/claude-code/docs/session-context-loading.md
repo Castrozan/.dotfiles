@@ -94,15 +94,17 @@ skill roots.
 
 ## What has no native equivalent
 
-Exactly one mechanism survives: the interactive-only system prompt composed from the humanize `SKILL.md`, its
-`community-language.md` and `interactive-communication.md` side files, and
-`adaptive-implementation-delivery-process.md`. `~/.claude/CLAUDE.md` would reach jenny too. There is no settings key for
-it. A `SessionStart` hook injects context that compaction may drop, and these are rules that must hold as the conversation
-grows long, so the context tier is the wrong tier. A launch flag is required, which means a wrapper survives at two
-lines: export the marker, exec `claude --append-system-prompt-file <store path> "$@"`.
+Exactly one mechanism survives: the interactive-only system prompt composed from
+`interactive-communication.md` and `adaptive-implementation-delivery-process.md`. The larger humanize policy stays in
+the native skill tier, and its example corpus stays behind that skill's selective router. `~/.claude/CLAUDE.md` would
+reach jenny too. There is no settings key for the interactive contract. A `SessionStart` hook injects context that
+compaction may drop, and these are rules that must hold as the conversation grows long, so the context tier is the wrong
+tier. A launch flag is required, which means a wrapper survives at two lines: export the marker, exec
+`claude --append-system-prompt-file <store path> "$@"`.
 
-The launcher reads each canonical source directly into that prompt. It generates no intermediate policy surface, and
-the Stop hook limits itself to deterministic validation of the injected contract.
+The launcher reads each always-on source directly into that prompt. It generates no intermediate policy surface. The
+Stop hook limits itself to deterministic validation of the injected contract and routes a failed reply to the humanize
+skill instead of carrying that policy itself.
 
 The marker must ship with the rules. Inverting detection to "interactive unless `CLAWDE_AGENT_NAME` is set" is wrong: a
 bare `claude` would then be format-guarded by the Stop hook without ever having received the format rules it is judged

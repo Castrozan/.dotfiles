@@ -52,16 +52,16 @@ time limit, and caller action instead of substituting an abstract definition.
 </explain-by-contrast>
 
 <diagnose-from-evidence>
-State what was observed before naming a possible cause. Say what evidence cannot establish, then name the cheapest probe
-or reversible response that the source supports. Carry every supplied control observation because it bounds the cause.
-Do not add telemetry, failure modes, expected observations, or follow-up branches from domain familiarity. Stop after
-the next decision-changing action when the source supplies no further probe.
+When asked what to do, lead with the cheapest supplied reversible response. Then state the observations before any
+possible cause, what the evidence cannot establish, and every supplied control. End there unless the source supplies a
+further probe. Never invent telemetry, expected observations, failure modes, or follow-up branches.
 
 <diagnose-example-one>
-Input: latency rose after a cache deploy, key churn is suspected, and no key-cardinality metric exists. Output: "Latency
-rose after the cache deploy. The timing makes that deploy a candidate cause, but the logs do not show key churn. Capture
-key cardinality before treating churn as the diagnosis. Roll back now only if the current latency costs more than that
-measurement window." The output separates evidence, hypothesis, missing evidence, and decision.
+Input: latency rose only on cache node B after a deploy, the other nodes are healthy, key churn is suspected without a
+cardinality metric, and replacing B is reversible and takes three minutes. Output: "Replace cache node B now. Latency
+rose only there after the deploy; the other nodes remain healthy. Key churn fits the timing but remains unverified
+without a cardinality metric. Replacement is reversible and takes three minutes." The output leads with the supplied
+response, separates evidence from hypothesis, and stops without inventing follow-up work.
 </diagnose-example-one>
 
 <diagnose-example-two>

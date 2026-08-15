@@ -38,8 +38,6 @@ let
 
   interactivePreferencesFile = pkgs.writeText "opencode-interactive-session-only-instructions.md" (
     lib.concatStringsSep "\n" [
-      (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/SKILL.md)
-      (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/community-language.md)
       (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/interactive-communication.md)
     ]
   );
