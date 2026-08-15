@@ -82,7 +82,7 @@ def neighbor_tab_id(tabs, workspace_id, direction):
 
 
 def send_key_to_pane(pane_id, key):
-    herdr_result(["pane", "send-keys", pane_id, key], "unused")
+    run_herdr(["pane", "send-keys", pane_id, key])
     return 0
 
 
@@ -93,7 +93,7 @@ def focus_neighbor_tab(workspace_id, direction):
     target_tab_id = neighbor_tab_id(tabs, workspace_id, direction)
     if target_tab_id is None:
         return 0
-    herdr_result(["tab", "focus", target_tab_id], "unused")
+    run_herdr(["tab", "focus", target_tab_id])
     return 0
 
 

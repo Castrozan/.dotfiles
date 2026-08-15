@@ -22,6 +22,38 @@ def _tab(tab_id, workspace_id, focused=False):
     return {"tab_id": tab_id, "workspace_id": workspace_id, "focused": focused}
 
 
+def _process_info_response(*process_names):
+    return {
+        "result": {
+            "process_info": {
+                "foreground_processes": [{"name": name} for name in process_names]
+            }
+        }
+    }
+
+
+def _tab_list_response(tabs):
+    return {"result": {"tabs": tabs}}
+
+
+def _record_herdr_calls(monkeypatch, responses):
+    """Replace the herdr CLI with canned responses and record every call made."""
+    calls = []
+
+    def fake_run_herdr(arguments):
+        arguments = list(arguments)
+        calls.append(arguments)
+        for prefix, response in responses:
+            if arguments[: len(prefix)] == list(prefix):
+                return response
+        return None
+
+    monkeypatch.setattr(route_page_key, "run_herdr", fake_run_herdr)
+    monkeypatch.setenv("HERDR_ACTIVE_PANE_ID", "w1:p1")
+    monkeypatch.setenv("HERDR_ACTIVE_WORKSPACE_ID", "w1")
+    return calls
+
+
 def test_foreground_names_are_basenames_without_case():
     process_info = {
         "foreground_processes": [
@@ -89,3 +121,59 @@ def test_a_workspace_without_focus_stays_put():
     tabs = [_tab("w1:t1", "w1"), _tab("w1:t2", "w1")]
 
     assert route_page_key.neighbor_tab_id(tabs, "w1", "next") is None
+
+
+def test_main_gives_the_key_to_a_pane_running_nvim(monkeypatch):
+    calls = _record_herdr_calls(
+        monkeypatch, [(("pane", "process-info"), _process_info_response("nvim"))]
+    )
+
+    assert route_page_key.main(["route-page-key", "next"]) == 0
+    assert ["pane", "send-keys", "w1:p1", "ctrl+pagedown"] in calls
+    assert not any(call[:2] == ["tab", "focus"] for call in calls)
+
+
+def test_main_maps_previous_to_the_page_up_chord(monkeypatch):
+    calls = _record_herdr_calls(
+        monkeypatch, [(("pane", "process-info"), _process_info_response("nvim"))]
+    )
+
+    assert route_page_key.main(["route-page-key", "previous"]) == 0
+    assert ["pane", "send-keys", "w1:p1", "ctrl+pageup"] in calls
+
+
+def test_main_switches_the_tab_when_no_editor_owns_the_pane(monkeypatch):
+    tabs = [_tab("w1:t1", "w1", focused=True), _tab("w1:t2", "w1")]
+    calls = _record_herdr_calls(
+        monkeypatch,
+        [
+            (("pane", "process-info"), _process_info_response("bash", "claude")),
+            (("tab", "list"), _tab_list_response(tabs)),
+        ],
+    )
+
+    assert route_page_key.main(["route-page-key", "next"]) == 0
+    assert ["tab", "focus", "w1:t2"] in calls
+    assert not any(call[:2] == ["pane", "send-keys"] for call in calls)
+
+
+def test_main_keeps_todays_behavior_when_the_probe_fails(monkeypatch):
+    calls = _record_herdr_calls(monkeypatch, [])
+
+    assert route_page_key.main(["route-page-key", "next"]) == 0
+    assert ["pane", "send-keys", "w1:p1", "ctrl+pagedown"] in calls
+
+
+def test_main_stays_quiet_outside_a_herdr_pane(monkeypatch):
+    calls = _record_herdr_calls(monkeypatch, [])
+    monkeypatch.delenv("HERDR_ACTIVE_PANE_ID")
+
+    assert route_page_key.main(["route-page-key", "next"]) == 0
+    assert calls == []
+
+
+def test_main_rejects_an_unknown_direction(monkeypatch):
+    calls = _record_herdr_calls(monkeypatch, [])
+
+    assert route_page_key.main(["route-page-key", "sideways"]) == 2
+    assert calls == []
