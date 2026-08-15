@@ -43,30 +43,30 @@ def test_humanize_package_owns_interactive_and_output_policies():
         assert f"<{tag}>" in interactive_policy
 
     for tag in (
-        "humanize-routing",
         "controlled-language-loading",
         "representation-selection",
-        "report-document-or-page",
-        "binds-every-human-facing-channel",
+        "representation-rendering",
+        "durable-report-rules",
+        "human-facing-channel-rules",
     ):
         assert f"<{tag}>" in humanize_skill
 
     for tag in (
-        "controlled-human-language",
-        "reader-and-purpose",
-        "meaning-and-certainty",
-        "controlled-terms",
-        "noun-groups",
-        "verbs-and-actors",
-        "sentence-construction",
-        "procedures-and-actions",
-        "descriptions-and-explanations",
+        "controlled-language-precedence",
+        "reader-outcome",
+        "meaning-preservation",
+        "epistemic-clarity",
+        "term-consistency",
+        "noun-group-length",
+        "active-voice",
+        "sentence-scope-and-length",
+        "procedural-order",
+        "descriptive-order",
         "warnings-and-limits",
         "context-boundaries",
-        "human-voice",
-        "revision-order",
-        "standard-adaptation",
-        "sources",
+        "human-register",
+        "revision-sequence",
+        "asd-ste100-adaptation",
     ):
         assert f"<{tag}>" in community_language
 

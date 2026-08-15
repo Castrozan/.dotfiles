@@ -1,183 +1,191 @@
-<controlled-human-language>
-This file defines controlled human language, a shared set of writing rules that reduces ambiguity and reading effort.
-It is the normative language policy for substantial text written for a human. Apply the rules as a system: preserve
-meaning first, establish stable terminology, make the grammar explicit, organize the information for the reader's
-task, and then remove machine-like language. Exact facts, identifiers, source text, code, legal wording, and established
-domain terms take precedence over stylistic simplification.
+<controlled-language-precedence>
+Apply these rules as one system. Preserve exact facts, identifiers, source text, code, legal wording, interface text,
+and established domain terms when a style rule conflicts with them.
+</controlled-language-precedence>
 
-<reader-and-purpose>
+<reader-outcome>
 Identify what the reader must understand, decide, or do before drafting. Lead with the answer, result, correction, or
 required action. Follow with only the cause, evidence, conditions, limits, and next action that can change the reader's
-understanding or decision. Match the reader's demonstrated expertise. Explain unfamiliar context before depending on
-it, but do not teach familiar foundations that do not change the conclusion.
+understanding or decision. Match the reader's demonstrated expertise. Define unfamiliar context before relying on it,
+but do not teach familiar foundations that do not change the conclusion.
+</reader-outcome>
 
-Write for the actual reading condition. Assume that readers scan, that many read English as an additional language,
-and that a durable artifact can outlive the conversation that produced it. Put a condition beside the action it limits,
-an exception beside the rule it changes, and evidence beside the claim it supports.
-</reader-and-purpose>
+<reader-context>
+Write for readers who scan, readers who use English as an additional language, and readers who can encounter the text
+after its original conversation. Put a condition beside the action it limits, an exception beside the rule it changes,
+and evidence beside the claim it supports.
+</reader-context>
 
-<meaning-and-certainty>
-Preserve every material fact and relationship from the source. Do not delete a condition, actor, identifier, number,
-scope qualifier, caveat, causal link, invariant, unresolved position, or required sequence to make the text shorter.
-Keep longer wording when compression would reduce precision. Resolve ambiguity by naming the missing actor, object,
-condition, or time.
+<meaning-preservation>
+Preserve every material fact and relationship. Never delete a condition, actor, identifier, number, scope qualifier,
+caveat, causal link, invariant, unresolved position, or required sequence to shorten the text. Keep longer wording when
+compression reduces precision. Resolve ambiguity by naming the actor, object, condition, or time.
+</meaning-preservation>
 
-Keep observation, source evidence, inference, assumption, recommendation, and decision distinct whenever the
-difference changes confidence or action. Name the source when provenance matters. State what missing evidence prevents
-the text from establishing. Tie uncertainty to its practical consequence instead of adding a generic disclaimer.
+<epistemic-clarity>
+Keep observation, source evidence, inference, assumption, recommendation, and decision distinct when the difference
+changes confidence or action. Name the source when provenance matters. State what missing evidence prevents the text
+from establishing. Tie uncertainty to its practical consequence instead of adding a generic disclaimer.
+</epistemic-clarity>
 
-Never invent a fact, threshold, symptom, cause, outcome, test result, or certainty to make the text concrete. Do not add
-a condition or expected observation that the source does not support. Mark a missing fact or unresolved decision rather
-than filling it with a plausible detail.
-</meaning-and-certainty>
+<unsupported-detail>
+Never invent a fact, threshold, symptom, cause, outcome, test result, or certainty to make text concrete. Never add a
+condition or expected observation that the source does not support. Mark a missing fact or unresolved decision instead
+of filling it with a plausible detail.
+</unsupported-detail>
 
-<controlled-terms>
+<term-consistency>
 Use one term for one referent and one meaning for each term within the text. Reuse the same noun for the same component,
-state, action, or artifact. Do not rotate through synonyms for variety. Use a word consistently as the same part of
-speech when changing its grammatical role could obscure the meaning.
+state, action, or artifact. Never rotate through synonyms for variety. Keep a word in the same grammatical role when
+changing its role could obscure its meaning.
+</term-consistency>
 
+<term-selection>
 Prefer the name already used in the product, code, interface, standard, or domain. When no established name exists,
-select the shortest familiar term that keeps the technical meaning. Do not invent project vocabulary in passing. Keep
-a precise technical term when a plain substitute would change the meaning, and define an unfamiliar necessary term at
+select the shortest familiar term that preserves the technical meaning. Never invent project vocabulary in passing.
+Keep a precise technical term when a plain substitute changes its meaning, and define a necessary unfamiliar term at
 first use in the same sentence.
+</term-selection>
 
+<global-language>
 Use familiar concrete words for nontechnical ideas. Avoid slang, regional expressions, idioms, clichés, cultural
-references, fashionable jargon, and Latin abbreviations when a global reader might not understand them. Define an
-abbreviation at first use unless the intended audience treats it as the ordinary name. Never replace an exact command,
-identifier, error, protocol term, or quoted interface label with a friendlier approximation.
+references, fashionable jargon, and Latin abbreviations that a global reader might not understand. Define an
+abbreviation at first use unless the audience treats it as the ordinary name. Never replace an exact command,
+identifier, error, protocol term, or interface label with a friendlier approximation.
+</global-language>
 
-Use inclusive terms. Do not assume a reader's gender, ability, culture, location, or personal circumstances when those
-details do not matter. Avoid a familiar-looking word when global readers commonly understand it with another meaning.
-</controlled-terms>
+<inclusive-language>
+Use inclusive terms. Never assume a reader's gender, ability, culture, location, or personal circumstances when those
+details do not matter. Avoid familiar-looking words that global readers commonly understand with another meaning.
+</inclusive-language>
 
-<noun-groups>
-A noun group is a sequence of words that names one thing. Keep it to three words when practical. Treat this as a
-diagnostic threshold, not permission to shorten an official name or alter a technical term. Long noun stacks hide the
-relationship between words. Unpack them with a preposition, a relative clause, or a sentence that names the
-relationship.
+<noun-group-length>
+Treat a noun group as a sequence of words that names one thing. Keep it to three words when practical, but never shorten
+an official name or alter a technical term to meet that diagnostic threshold. Unpack a long noun stack with a
+preposition, relative clause, or sentence that names the relationship between its words.
+</noun-group-length>
 
-When an established technical name is long, write it in full at first use. Then introduce one clear short form and use
-that form consistently. Avoid chains of possessives. Rewrite them so the owner and the owned item are explicit.
-</noun-groups>
+<long-technical-names>
+Write an established long technical name in full at first use. Then introduce one clear short form and reuse it
+unchanged. Rewrite chains of possessives so the owner and owned item are explicit.
+</long-technical-names>
 
-<verbs-and-actors>
+<active-voice>
 Name the actor and use active voice. Use passive voice only when the actor is unknown, irrelevant, or intentionally
-withheld, and the sentence remains unambiguous. Put the subject close to its verb and the verb close to its object.
+withheld and the sentence remains unambiguous. Put the subject close to its verb and the verb close to its object.
+</active-voice>
 
-Use a verb to name an action. Do not bury the action in a noun such as implementation, configuration, validation, or
-utilization when implement, configure, validate, or use states it directly. Prefer the infinitive, command form, simple
-present, simple past, or simple future when it states the time accurately. Avoid long chains of helping verbs and an
-unnecessary continuous form. Use the command form for an instruction.
+<action-verbs>
+Use a verb to name an action instead of burying the action in a noun. Prefer the infinitive, command form, simple
+present, simple past, or simple future when it states the time accurately. Avoid long chains of helping verbs and
+unnecessary continuous forms. Use the command form for an instruction.
+</action-verbs>
 
-A phrasal verb combines a verb with another short word to create a new meaning. Avoid one when a global reader cannot
-recover that meaning from its words or when a direct verb is clearer. Keep a familiar phrasal verb when replacing it
-would sound less natural without improving precision.
-</verbs-and-actors>
+<phrasal-verbs>
+Treat a phrasal verb as a verb combined with another short word to create a new meaning. Replace it when a global reader
+cannot recover that meaning from its words or when a direct verb is clearer. Keep it when replacement makes the text
+less natural without improving precision.
+</phrasal-verbs>
 
-<sentence-construction>
-Write complete sentences with explicit subjects, verbs, articles, and necessary objects. Do not omit grammatical parts
-merely to shorten a sentence. Natural contractions are permitted when they remain unambiguous and fit the channel.
+<complete-sentences>
+Write complete sentences with explicit subjects, verbs, articles, and necessary objects. Never omit grammatical parts
+only to shorten a sentence. Use natural contractions when they remain unambiguous and fit the channel.
+</complete-sentences>
 
-Give one idea per descriptive sentence and one instruction per procedural sentence. Two actions can share a sentence
-only when they occur at the same time or form one inseparable operation. Split independent ideas instead of joining
-them with punctuation. Treat 20 words for an instruction and 25 words for a description as diagnostic thresholds. If a
-sentence exceeds the threshold, first split its ideas or unpack its noun groups. Never remove meaning only to meet a
-count.
+<sentence-scope-and-length>
+Give one idea per descriptive sentence and one instruction per procedural sentence. Join two actions only when they
+occur at the same time or form one inseparable operation. Treat 20 words for an instruction and 25 words for a
+description as diagnostic thresholds. When a sentence exceeds its threshold, split independent ideas or unpack noun
+groups; never remove meaning only to meet a count.
+</sentence-scope-and-length>
 
-Make logical relationships explicit. Use connecting words to show cause, contrast, condition, sequence, and result.
-Use that when it prevents a clause from attaching to the wrong noun. Make clear which noun each pronoun refers to.
-Follow this, that, these, or those with the noun when the reference could be unclear.
+<explicit-connections>
+Use connecting words to show cause, contrast, condition, sequence, and result. Use `that` when it prevents a clause from
+attaching to the wrong noun. Make clear which noun each pronoun refers to. Follow `this`, `that`, `these`, or `those`
+with the noun when the reference could be unclear.
+</explicit-connections>
 
-Prefer a period when a semicolon or a chain of clauses makes the reader hold several ideas at once. Use parentheses only
-for secondary information that does not control the action. Use a hyphen when it makes directly related words function
-as one modifier. Follow the channel's punctuation constraints for all other marks.
-</sentence-construction>
+<punctuation>
+Prefer a period when a semicolon or chain of clauses makes the reader hold several ideas at once. Use parentheses only
+for secondary information that does not control the action. Use a hyphen when directly related words must function as
+one modifier. Follow the channel's punctuation constraints for all other marks.
+</punctuation>
 
-<procedures-and-actions>
-Write procedural text in the order the reader must act. Use one imperative instruction per step. Start with the action
-unless the reader must know a condition before acting. In that case, state the condition first and place the command
-immediately after it. State prerequisites before the first dependent step.
+<procedural-order>
+Write procedural text in the order the reader must act. Use one command per step. Start with the action unless the
+reader must know a condition before acting; then state the condition first and put the command immediately after it.
+State prerequisites before the first dependent step.
+</procedural-order>
 
-Keep required actions out of notes, explanations, and parenthetical text. A reader who follows only the steps must be
-able to complete the task safely. Use a vertical list when several parallel items, alternatives, prerequisites, or
-results would make a sentence complex. Keep parallel items grammatically parallel and do not mix information with
-instructions in the same list unless their roles are labeled.
-</procedures-and-actions>
+<procedural-notes-and-lists>
+Keep required actions out of notes, explanations, and parenthetical text. Make the task safe and complete for a reader
+who follows only the steps. Use a vertical list when parallel items, alternatives, prerequisites, or results make a
+sentence complex. Keep list items grammatically parallel and label mixed information and instructions by role.
+</procedural-notes-and-lists>
 
-<descriptions-and-explanations>
-Give information gradually. Move from the answer or known context to the new mechanism, then to the consequence. Use
-stable key terms and explicit connecting phrases so the reader can follow the logic without inferring hidden links.
+<descriptive-order>
+Give information gradually. Move from the answer or known context to the new mechanism, then to the consequence. Reuse
+stable key terms and explicit connections so the reader never has to infer a hidden logical link.
+</descriptive-order>
 
-Group related information into paragraphs. Give each paragraph one topic and put its controlling point first. Treat six
-sentences as a diagnostic paragraph limit. Split a longer paragraph when it contains another reader need, not merely to
-change its appearance.
+<paragraph-scope>
+Group related information into paragraphs. Give each paragraph one topic and put its main point first. Treat six
+sentences as a diagnostic limit. Split a longer paragraph only when it contains another reader need.
+</paragraph-scope>
 
-State cause and effect only when the evidence supports both. When explaining a change, identify the changed mechanism,
-the result it caused, and the important behavior that did not change. Use the Humanize skill's representation rule when
-a relationship is easier to inspect as a tree, sequence, table, state model, or focused diff. Do not repeat in prose
-what the selected form already makes clear.
-</descriptions-and-explanations>
+<causal-explanation>
+State cause and effect only when evidence supports both. When explaining a change, name the changed mechanism, the
+result it caused, and the important behavior that did not change. Use the representation selected by `SKILL.md` when a
+relationship is easier to inspect visually. Never repeat in prose what that representation already makes clear.
+</causal-explanation>
 
 <warnings-and-limits>
-Use the established risk label when the domain distinguishes levels such as danger, warning, or caution. Start with the
-command or condition that keeps the reader safe. Then state the specific risk or possible result. Preserve every
-threshold, duration, prohibition, actor, and sequence. Do not weaken a prohibition to sound friendlier, and do not
-invent a hazard or consequence that the evidence does not supply.
+Use the established risk label when the domain distinguishes risk levels. Start with the command or condition that
+keeps the reader safe, then state the specific risk or possible result. Preserve every threshold, duration,
+prohibition, actor, and sequence. Never weaken a prohibition to sound friendlier or invent a hazard or consequence.
 </warnings-and-limits>
 
 <context-boundaries>
-When writing outside the current session, include the goal, material constraints, current state, evidence, and required
-action instead of relying on shared history. When the goals or constraints behind someone else's work are unknown, do
-not invent them or make a definitive context-dependent judgment. Ask when the missing context could change the
-conclusion. Otherwise frame the response as a question, consideration, suggestion, or advice.
+Include the goal, material constraints, current state, evidence, and required action when the reader lacks the current
+session. Never invent the goals or constraints behind someone else's work or make a definitive judgment that depends on
+them. Ask when missing context could change the conclusion; otherwise frame the response as a question, consideration,
+suggestion, or advice.
 </context-boundaries>
 
-<human-voice>
-Write direct, calm human prose. Use a conversational register where the channel permits it, but keep the information
-precise. Address the reader directly when that makes responsibility clear. Preserve legitimate personality, technical
-register, specific detail, mixed positions, and natural asides.
+<human-register>
+Write direct, calm human prose. Use a conversational register when the channel permits it, but preserve precision.
+Address the reader directly when that makes responsibility clear. Preserve legitimate personality, technical register,
+specific detail, mixed positions, and natural asides.
+</human-register>
 
-Remove canned reactions, headings that announce obvious content, praise, unneeded offers of more help, promotional
-language, inflated significance, and claims attributed only to vague authorities. Do not force ideas into groups of
-three, manufacture an opposition with a "not X but Y" frame, invent a range whose endpoints do not form a real scale,
-or end with a slogan. Do not add a conclusion that only restates the opening.
+<machine-language-patterns>
+Remove canned reactions, headings that announce obvious content, praise, unneeded offers of help, promotional language,
+inflated significance, and vague authority. Never force groups of three, manufacture a `not X but Y` opposition, invent
+a range without a real scale, end with a slogan, or add a conclusion that only restates the opening.
+</machine-language-patterns>
 
-Do not call a task easy, simple, obvious, or quick unless that fact changes the reader's action or expectation. Do not
+<claims-of-ease>
+Never call a task easy, simple, obvious, or quick unless that fact changes the reader's action or expectation. Never
 treat one formal word or polished sentence as proof of machine voice. Rewrite only when several signals combine, and
 replace the wording without deleting the fact it carries.
-</human-voice>
+</claims-of-ease>
 
-<revision-order>
-First verify the facts, reasoning, and requested action. Then confirm that the reader can recover the conclusion, actor,
-action, evidence, conditions, limits, and next step. Select the representation and information order. Standardize terms,
-unpack noun groups, and tighten sentences. Finally scan separately for ambiguity, unsupported certainty, machine-like
-voice, and channel constraints.
+<revision-sequence>
+Revise in this order: 1) verify facts, reasoning, and requested action; 2) confirm that the reader can recover the
+conclusion, actor, action, evidence, conditions, limits, and next step; 3) select the representation and information
+order; 4) standardize terms, unpack noun groups, and tighten sentences; 5) scan separately for ambiguity, unsupported
+certainty, machine-like voice, and channel constraints.
+</revision-sequence>
 
-Rewrite the construction when word substitution is not enough. A vocabulary checker, sentence counter, or style linter
-cannot determine whether the text makes sense. Finish only when the intended reader can understand and act without
-reconstructing missing context.
-</revision-order>
+<semantic-check>
+Rewrite sentence construction when word substitution is insufficient. Never treat a vocabulary checker, sentence
+counter, or style linter as evidence that text makes sense. Finish only when the intended reader can understand and act
+without reconstructing missing context.
+</semantic-check>
 
-<standard-adaptation>
-These rules adapt the writing principles in ASD-STE100 Issue 9 rather than claiming ASD-STE100 compliance. They do not
-use its approved-word dictionary or restrict technical vocabulary to its aerospace categories. Established project and
-domain terminology replaces the controlled dictionary. The 20-word instruction limit, 25-word description limit,
-three-word noun-group limit, and six-sentence paragraph limit are diagnostics because conversational and general
-technical writing must sometimes preserve necessary context. Natural contractions and standard punctuation remain
-available when they improve readable human communication.
-
-The policy also incorporates established community guidance to lead with the key point, use familiar words, write for
-a global audience, address the reader directly, support scanning, and avoid jargon, cultural references, and claims
-that a task is easy. These additions resolve cases where strict maintenance-document English would make interactive or
-general technical communication less natural without improving understanding.
-</standard-adaptation>
-
-<sources>
-Primary standard: https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf
-ASD-STE100 scope and dictionary model: https://www.asd-ste100.org/STE_faq.html
-Google developer documentation voice and tone: https://developers.google.com/style/tone
-Google developer documentation sentence structure: https://developers.google.com/style/sentence-structure
-Microsoft writing style: https://learn.microsoft.com/en-us/windows/apps/design/style/writing-style
-United States plain-language principles: https://digital.gov/guides/plain-language/principles
-</sources>
-</controlled-human-language>
+<asd-ste100-adaptation>
+Apply the writing principles from ASD-STE100 Issue 9 without claiming standard compliance. Replace its approved-word
+dictionary and aerospace categories with established project and domain terminology. Treat its 20-word instruction,
+25-word description, three-word noun-group, and six-sentence paragraph limits as diagnostics so necessary context can
+survive. Permit natural contractions and standard punctuation when they improve general or interactive communication.
+</asd-ste100-adaptation>
