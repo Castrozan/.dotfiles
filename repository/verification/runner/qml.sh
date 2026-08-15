@@ -44,7 +44,7 @@ _quickshell_qml_import_root_from_closure() {
 }
 
 _print_qmllint_categories_if_any() {
-	grep -oE '\[[a-z0-9.-]+\]$' "$1" | sort | uniq -c | sort -rn | head -8 | sed 's/^/  /' || true
+	grep -oE '\[[a-z0-9.-]+\]$' "$1" | sort | uniq -c | sort -rn | sed 's/^/  /' || true
 }
 
 _qmllint_baseline_file() {
@@ -94,7 +94,6 @@ _run_qmllint_checks() {
 			-I "$qtDeclarativePath/lib/qt-6/qml" \
 			-I "$quickshellQmlPath" \
 			-I "$qt5compatPath" \
-			--compiler warning \
 			"$qmlFile" 2>&1 | grep "^Warning:" >>"$warningLog" || true
 	done
 
