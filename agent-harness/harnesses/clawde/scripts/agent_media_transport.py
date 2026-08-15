@@ -24,6 +24,7 @@ def post_json(url, headers, body):
 
 
 def post_multipart(url, headers, fields, files):
+    """files are (field name, path, content type); the provider rejects a generic octet-stream."""
     boundary = f"----clawde{uuid.uuid4().hex}"
     parts = []
     for name, value in fields.items():
@@ -31,11 +32,11 @@ def post_multipart(url, headers, fields, files):
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'.encode()
         )
-    for name, file_path in files:
+    for name, file_path, content_type in files:
         parts.append(
             f"--{boundary}\r\n"
             f'Content-Disposition: form-data; name="{name}"; filename="{file_path.name}"\r\n'
-            "Content-Type: application/octet-stream\r\n\r\n".encode()
+            f"Content-Type: {content_type}\r\n\r\n".encode()
         )
         parts.append(file_path.read_bytes() + b"\r\n")
     parts.append(f"--{boundary}--\r\n".encode())

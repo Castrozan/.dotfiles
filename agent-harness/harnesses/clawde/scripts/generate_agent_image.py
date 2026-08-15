@@ -27,6 +27,12 @@ GENERATIONS_URL = "https://api.openai.com/v1/images/generations"
 EDITS_URL = "https://api.openai.com/v1/images/edits"
 MODEL = "gpt-image-1-mini"
 SECRET_NAME = "openai-api-key"
+REFERENCE_CONTENT_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
 QUALITIES = ("low", "medium", "high")
 SIZES = ("1024x1024", "1024x1536", "1536x1024")
 PROMPT_LENGTH_LIMIT = 1200
@@ -65,12 +71,23 @@ def request_drawn_image(api_key, prompt, quality, size):
     )
 
 
-def request_edited_image(api_key, prompt, quality, size, reference_files):
+def upload_of(reference_file):
+    """The provider reads the declared type, so a generic octet-stream is rejected outright."""
+    content_type = REFERENCE_CONTENT_TYPES.get(reference_file.suffix.lower())
+    if content_type is None:
+        raise MediaRequestRefused(
+            f"refusing {reference_file.name}: a reference has to be a "
+            f"{', '.join(sorted(REFERENCE_CONTENT_TYPES))} image"
+        )
+    return ("image[]", reference_file, content_type)
+
+
+def request_edited_image(api_key, prompt, quality, size, reference_uploads):
     return post_multipart(
         EDITS_URL,
         {"authorization": f"Bearer {api_key}"},
         {"model": MODEL, "prompt": prompt, "quality": quality, "size": size, "n": "1"},
-        [("image[]", path) for path in reference_files],
+        reference_uploads,
     )
 
 
@@ -88,15 +105,15 @@ def generate_agent_image(working_directory, arguments, today):
         raise MediaRequestRefused(
             f"refusing more than {MAXIMUM_REFERENCES} reference images"
         )
-    reference_files = [
-        resolve_reference_file(reference, media_directory)
+    reference_uploads = [
+        upload_of(resolve_reference_file(reference, media_directory))
         for reference in arguments.reference
     ]
     api_key = read_api_key(SECRET_NAME)
     claim_daily_allowance(media_directory, "image", DAILY_LIMIT, today)
-    if reference_files:
+    if reference_uploads:
         reported = request_edited_image(
-            api_key, prompt, arguments.quality, arguments.size, reference_files
+            api_key, prompt, arguments.quality, arguments.size, reference_uploads
         )
     else:
         reported = request_drawn_image(

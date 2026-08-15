@@ -48,7 +48,26 @@ def test_a_reference_switches_the_call_to_editing(media_agent_workspace, monkeyp
     )
 
     assert calls[0][0] == generate_agent_image.EDITS_URL
-    assert calls[0][3] == [("image[]", earlier.resolve())]
+    assert calls[0][3] == [("image[]", earlier.resolve(), "image/png")]
+
+
+def test_a_reference_the_provider_cannot_read_is_refused(
+    media_agent_workspace, monkeypatch
+):
+    animated = media_agent_workspace / "media" / "image-earlier.gif"
+    animated.parent.mkdir(parents=True)
+    animated.write_bytes(b"gif")
+    calls = []
+    stub_provider(monkeypatch, calls, attribute="post_multipart")
+
+    with pytest.raises(MediaRequestRefused, match="has to be a"):
+        generate_agent_image.generate_agent_image(
+            media_agent_workspace,
+            image_arguments(**{"--reference": str(animated)}),
+            TODAY,
+        )
+
+    assert calls == []
 
 
 def test_a_reference_off_the_machine_is_refused_before_any_call(
