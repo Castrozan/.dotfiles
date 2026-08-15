@@ -31,7 +31,7 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
         assert "herdr" in message.lower()
         assert "--tab" in message.lower() or "--workspace" in message.lower()
 
-    def test_points_at_the_single_pane_recipe(
+    def test_sends_a_new_agent_to_its_own_pane_rather_than_a_split(
         self,
         invoke_prohibited_command_guard_hook,
         parse_prohibited_command_guard_system_message,
@@ -43,8 +43,8 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
             }
         )
         message = parse_prohibited_command_guard_system_message(result.stdout).lower()
-        assert "tab create" in message
-        assert "pane run" in message
+        assert "alone" in message
+        assert "skill" in message
 
     @pytest.mark.parametrize(
         "command",

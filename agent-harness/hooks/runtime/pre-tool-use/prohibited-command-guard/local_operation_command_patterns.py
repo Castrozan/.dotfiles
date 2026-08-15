@@ -43,11 +43,10 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
-        "herdr agent start without --tab splits an active tab someone is already "
-        "working in, and --workspace alone is not a pin. Start an agent alone in "
-        "its own pane instead: herdr tab create --no-focus, then herdr pane run "
-        "<root pane id> <harness>. Only pin a deliberate split with --tab and "
-        "--no-focus; the herdr skill carries the recipe.",
+        "herdr agent start splits an active tab someone is working in, and "
+        "--workspace alone is not a pin. Spawn a new agent alone in a fresh tab's "
+        "own pane instead, or pin --tab with --no-focus for a deliberate split; "
+        "the herdr skill carries both.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+(?:workspace|tab|pane)\s+close\b",
