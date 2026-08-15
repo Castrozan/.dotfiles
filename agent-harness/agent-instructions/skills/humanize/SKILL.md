@@ -27,7 +27,7 @@ Choose the smallest useful form with this first-match procedure:
 3. For ordering or failure across steps, use a sequence with the material failure branches.
 4. For choices or exact mappings, use a table.
 5. For ownership, hierarchy, or nesting, use a tree with each node's responsibility.
-6. For one answer, one action, or a linear point, use prose.
+6. For one answer or action, or a linear point, use prose.
 
 Put the selected form before its interpretation and make it carry every load-bearing relationship. Render sibling paths
 in an ownership tree under their common parent. In a focused diff, show only removed, added, and necessary parent
