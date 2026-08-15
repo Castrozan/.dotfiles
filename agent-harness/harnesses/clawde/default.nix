@@ -9,5 +9,6 @@
     ./discord-agents-allowed-to-stay-silent.nix
     ./agent-skill-sets.nix
     ./agent-memory-write-tool.nix
+    ./agent-media-tools.nix
   ];
 }
