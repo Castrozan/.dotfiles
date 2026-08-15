@@ -21,10 +21,7 @@ _run_qml_unit_tests() {
 	fi
 }
 
-# A machine without the desktop toolchain still gets a useful quick tier, so a missing tool skips.
-# CI sets QMLLINT_REQUIRED, where a skip would be indistinguishable from a passing lint and would
-# report coverage the run never had.
-_qmllint_unavailable() {
+_skip_qmllint_unless_required() {
 	if [[ -n "${QMLLINT_REQUIRED:-}" ]]; then
 		echo "QML lint required but unavailable: $1" >&2
 		return 1
@@ -34,34 +31,50 @@ _qmllint_unavailable() {
 	return 0
 }
 
+_quickshell_qml_import_root_from_closure() {
+	local storePath
+	while read -r storePath; do
+		if [[ -d "$storePath/lib/qt-6/qml" ]]; then
+			echo "$storePath/lib/qt-6/qml"
+			return 0
+		fi
+	done < <(nix-store -qR "$(command -v quickshell)" 2>/dev/null | grep quickshell)
+
+	return 1
+}
+
+_print_qmllint_categories_if_any() {
+	grep -oE '\[[a-z0-9.-]+\]$' "$1" | sort | uniq -c | sort -rn | head -8 | sed 's/^/  /' || true
+}
+
+_qmllint_baseline_file() {
+	echo "$REPO_DIR/repository/verification/qmllint-baseline.json"
+}
+
+_grandfathered_qmllint_warning_ceiling() {
+	local recordedCeiling
+	recordedCeiling=$(grep -oE '"maxWarnings"[[:space:]]*:[[:space:]]*[0-9]+' "$(_qmllint_baseline_file)" 2>/dev/null | grep -oE '[0-9]+$')
+	echo "${recordedCeiling:-0}"
+}
+
 _run_qmllint_checks() {
 	local qtDeclarativePath
 	qtDeclarativePath="${QT_DECLARATIVE_PATH:-$(nix eval nixpkgs#qt6.qtdeclarative.outPath 2>/dev/null | tr -d '"')}"
 	local qmllintBin="$qtDeclarativePath/bin/qmllint"
 
 	if [[ ! -x "$qmllintBin" ]]; then
-		_qmllint_unavailable "qmllint not found at $qmllintBin"
+		_skip_qmllint_unless_required "qmllint not found at $qmllintBin"
 		return $?
 	fi
 
 	if ! command -v quickshell &>/dev/null; then
-		_qmllint_unavailable "quickshell not installed"
+		_skip_qmllint_unless_required "quickshell not installed"
 		return $?
 	fi
 
-	# The upstream flake ships quickshell wrapped and nixpkgs ships it plain, so resolve the import
-	# root by looking for the module tree itself rather than by matching one packaging's path name.
-	local quickshellQmlPath=""
-	local storePath
-	while read -r storePath; do
-		if [[ -d "$storePath/lib/qt-6/qml" ]]; then
-			quickshellQmlPath="$storePath/lib/qt-6/qml"
-			break
-		fi
-	done < <(nix-store -qR "$(command -v quickshell)" 2>/dev/null | grep quickshell)
-
-	if [[ -z "$quickshellQmlPath" ]]; then
-		_qmllint_unavailable "quickshell QML modules not found in its closure"
+	local quickshellQmlPath
+	if ! quickshellQmlPath="$(_quickshell_qml_import_root_from_closure)"; then
+		_skip_qmllint_unless_required "quickshell QML modules not found in its closure"
 		return $?
 	fi
 
@@ -71,28 +84,41 @@ _run_qmllint_checks() {
 	echo "--- QML Lint ---"
 	local qmlFiles
 	qmlFiles=$(find "$REPO_DIR/machine-configuration/desktop/quickshell" -name "*.qml" -type f | sort)
-	local failCount=0
 
+	local warningLog
+	warningLog="$(mktemp)"
+
+	local qmlFile
 	for qmlFile in $qmlFiles; do
-		local errors
-		errors=$("$qmllintBin" \
+		"$qmllintBin" \
 			-I "$qtDeclarativePath/lib/qt-6/qml" \
 			-I "$quickshellQmlPath" \
 			-I "$qt5compatPath" \
 			--compiler warning \
-			"$qmlFile" 2>&1 | grep -c "^Warning:" || true)
-		if [[ "$errors" -gt 0 ]]; then
-			failCount=$((failCount + errors))
-		fi
+			"$qmlFile" 2>&1 | grep "^Warning:" >>"$warningLog" || true
 	done
 
-	local totalFiles
+	local warningCount totalFiles
+	warningCount=$(wc -l <"$warningLog" | tr -d ' ')
 	totalFiles=$(echo "$qmlFiles" | wc -l)
-	echo "  Checked $totalFiles QML files, $failCount warnings"
+
+	echo "  Checked $totalFiles QML files, $warningCount warnings"
+	echo "  Warnings by category:"
+	_print_qmllint_categories_if_any "$warningLog"
+	rm -f "$warningLog"
 	echo ""
 
-	if [[ "$failCount" -gt 0 ]]; then
-		echo "QML lint: $failCount warning(s) across $totalFiles files" >&2
+	local warningCeiling
+	warningCeiling="$(_grandfathered_qmllint_warning_ceiling)"
+
+	if [[ "$warningCount" -gt "$warningCeiling" ]]; then
+		echo "QML lint: $warningCount warnings across $totalFiles files, above the baseline of $warningCeiling" >&2
+		echo "Fix the new warnings, or raise maxWarnings in $(_qmllint_baseline_file) if the growth is intended." >&2
 		return 1
+	fi
+
+	if [[ "$warningCount" -lt "$warningCeiling" ]]; then
+		echo "  Below the baseline of $warningCeiling: lower maxWarnings to $warningCount to hold the gain"
+		echo ""
 	fi
 }
