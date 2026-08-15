@@ -95,8 +95,8 @@ skill roots.
 ## What has no native equivalent
 
 Exactly one mechanism survives: the interactive-only system prompt composed from
-`interactive-communication.md` and `adaptive-implementation-delivery-process.md`. The larger humanize policy stays in
-the native skill tier, and its controlled-language rulebook stays behind that skill's selective router.
+`interactive-communication.md` and `adaptive-implementation-delivery-process.md`. The complete humanize policy stays
+in its native `SKILL.md` and loads only when substantial human-facing writing requires it.
 `~/.claude/CLAUDE.md` would reach jenny too. There is no settings key for the interactive contract. A `SessionStart`
 hook injects context that compaction may drop. These rules must hold as the conversation grows long, so the context tier
 is the wrong tier. A launch flag is required, which means a wrapper survives at two lines: export the marker, exec

@@ -2,8 +2,6 @@ tests:
   - name: representation_ownership_uses_tree
     description: "Ownership and nesting are shown as a compact tree"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Treat this as a complete hypothetical layout and do not inspect any files. Explain it so I can quickly see who
       owns request parsing, session state, and transport:
@@ -18,8 +16,6 @@ tests:
   - name: representation_ordering_and_failure_uses_sequence
     description: "Runtime ordering and failure are shown as a sequence"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Explain the request path from UI to API to database, including that authentication can reject the request before
       the database call and that the UI receives the error.
@@ -33,8 +29,6 @@ tests:
   - name: representation_choices_use_table
     description: "Exact option comparisons are shown as a table"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Compare SQLite, PostgreSQL, and DynamoDB for local setup, concurrent writes, operational burden, and horizontal
       scaling so I can choose one.
@@ -48,8 +42,6 @@ tests:
   - name: representation_behavior_uses_state_model
     description: "Event-driven behavior is shown as a state model"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Explain a job that moves from queued to running, may retry after a transient failure, and ends in succeeded or
       failed. A completed job cannot return to running.
@@ -63,8 +55,6 @@ tests:
   - name: representation_change_uses_focused_diff
     description: "A change against an existing shape is shown as a focused diff"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Treat this as a complete hypothetical layout and do not inspect any files. Show how src/transport.py changes into
       src/transport/client.py and src/transport/stream.py while the rest of src stays unchanged.
@@ -78,8 +68,6 @@ tests:
   - name: representation_single_answer_stays_prose
     description: "A simple answer does not receive decorative structure"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: "The service port is 8080. Which port should I connect to?"
     model: haiku
     max_turns: 1
@@ -91,8 +79,6 @@ tests:
   - name: communication_compression_preserves_material_meaning
     description: "Shortening keeps conditions, scope, numbers, and caveats"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Shorten this without changing what an operator may do: Retry the migration at most twice, but only when the
       database reports SQLSTATE 40001. Never retry a permission error. The second retry can increase lock contention.
@@ -106,8 +92,6 @@ tests:
   - name: communication_uses_one_defined_term_per_referent
     description: "A domain term is defined once and reused without synonym cycling"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Explain this to a new maintainer: the code calls the record that grants one worker temporary ownership a lease.
       The worker must renew the lease every 30 seconds and loses ownership when the lease expires.
@@ -121,8 +105,6 @@ tests:
   - name: communication_separates_evidence_inference_and_decision
     description: "Observed evidence is not presented as a proven diagnosis"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       The logs prove only that latency rose after the cache deploy. I suspect key churn caused it, but we have no key
       cardinality metric. Tell the incident lead what we know and whether to roll back.
@@ -136,8 +118,6 @@ tests:
   - name: communication_removes_inflation_without_deleting_the_fact
     description: "Machine-like importance language is replaced by concrete information"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Rewrite this for an engineering status report: This pivotal migration marks a transformative milestone in our
       journey, showcasing the team's unwavering commitment to a robust and seamless developer ecosystem. It reduced
@@ -149,11 +129,9 @@ tests:
       llm_judge:
         - "Removes the inflated milestone, journey, commitment, robust, seamless, and ecosystem framing while preserving the measured reduction from 11 minutes to 7 minutes and identifying it as CI-job evidence."
 
-  - name: community_example_transfers_explanation_by_contrast
+  - name: controlled_language_explains_by_contrast
     description: "A new pipeline change is explained through the contrast that caused it"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Explain this change to an engineer who needs to understand why it reduced work. Before the change, three validators
       each fetched the same 18 files, causing 54 reads. After the change, one collector writes a bundle path and all three
@@ -165,11 +143,9 @@ tests:
       llm_judge:
         - "Uses a compact before-and-after contrast as the main representation, places 54 reads and the shared bundle beside the stages that produce or consume them, labels the bundle-path handoff, and states that all three validators and their checks remain unchanged without repeating the whole figure in prose."
 
-  - name: community_example_transfers_diagnosis_from_evidence
+  - name: controlled_language_separates_diagnosis_from_evidence
     description: "A diagnosis keeps observation, hypothesis, missing evidence, and action distinct"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Tell the incident lead what to do. HTTP 503 responses appear only on node C and began after its certificate rotated.
       I suspect a stale TLS session cache, but we have no cache trace. Nodes A and B remain healthy. Replacing node C is
@@ -181,11 +157,9 @@ tests:
       llm_judge:
         - "Leads with the reversible action on node C, identifies the node-specific 503s and certificate timing as evidence, labels the stale TLS cache as an unverified hypothesis because the cache trace is missing, and preserves that nodes A and B are healthy and replacement takes two minutes."
 
-  - name: community_example_transfers_decision_by_tradeoff
+  - name: controlled_language_decides_by_tradeoff
     description: "A recommendation names the constraint that decides between real options"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Choose between an in-memory queue and a durable queue. The worker may restart during processing, losing an in-memory
       item would charge a customer twice, a durable queue adds 20 ms, and the latency budget has 80 ms of headroom.
@@ -196,11 +170,9 @@ tests:
       llm_judge:
         - "Recommends the durable queue because restart loss can double-charge a customer, preserves its 20 ms cost and the 80 ms available headroom, and does not flatten the in-memory option into an irrational choice or add unrelated criteria."
 
-  - name: community_example_transfers_warning_with_condition
+  - name: controlled_language_preserves_warning_conditions
     description: "A safety warning preserves the condition, actor, wait, and sequence"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Rewrite this for an operator: After stopping the pump, pressure can remain above 6 bar for 90 seconds. The operator
       must wait for the gauge to reach zero before opening the valve. Opening it early can eject hot fluid.
@@ -211,11 +183,9 @@ tests:
       llm_judge:
         - "Puts the hot-fluid hazard before or beside the action it changes, addresses the operator directly or names that actor, preserves the above-6-bar condition and 90-second duration, and keeps the required stop, wait for zero, then open sequence."
 
-  - name: community_example_transfers_measured_report
+  - name: controlled_language_reports_measured_change
     description: "A status report leads with measured change and exposes missing evidence"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Rewrite this status: Our groundbreaking cache overhaul transformed performance. In the 12 measured production
       requests, median latency fell from 240 ms to 150 ms. We believe database load also fell, but that metric is missing.
@@ -226,11 +196,9 @@ tests:
       llm_judge:
         - "Leads with the measured median latency change from 240 ms to 150 ms and its 12-request production scope, removes the groundbreaking and transformed claims, and marks lower database load as unverified because its metric is missing."
 
-  - name: community_example_transfers_summary_for_action
+  - name: controlled_language_summarizes_for_action
     description: "A short summary preserves the decision-changing condition and next action"
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
-    extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/community-language.md
     prompt: |
       Give me a TL;DR. The release is deployed to 40 percent of hosts. Error rate is normal there, but memory is 18 percent
       above baseline. The rollout remains paused until a heap sample identifies whether the increase is bounded.

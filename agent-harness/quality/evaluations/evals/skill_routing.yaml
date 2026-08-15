@@ -24,7 +24,7 @@ shared_system_prompt: &shared_system_prompt |
 
   herdr - Drive herdr, the terminal workspace manager, and orchestrate interactive agents in it: spawn, prompt, read, wait on, or take over background work. Also scripts workspaces, tabs, and panes.
 
-  humanize - Human-readable output policy for chat and durable artifacts. It routes substantial writing through a controlled-language rulebook, selects the smallest useful representation, and adapts the result to its human-facing channel. Interactive hooks route failed replies to it.
+  humanize - Human-readable output for chat and durable artifacts. Routes substantial writing through controlled-language rules, selects the smallest useful representation, and adapts it to its channel.
 
   instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
 

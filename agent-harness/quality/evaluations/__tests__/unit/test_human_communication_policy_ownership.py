@@ -12,10 +12,9 @@ HUMANIZE_DIRECTORY = (
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
 INTERACTIVE_POLICY_PATH = HUMANIZE_DIRECTORY / "interactive-communication.md"
-COMMUNITY_LANGUAGE_PATH = HUMANIZE_DIRECTORY / "community-language.md"
 REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
 REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
-MAXIMUM_CONTROLLED_LANGUAGE_BYTES = 13000
+MAXIMUM_HUMANIZE_SKILL_BYTES = 15000
 
 REMOVED_GENERATED_SURFACES = (
     CORE_COMMUNICATION_DIRECTORY / "interactive-human-communication.md",
@@ -28,7 +27,6 @@ REMOVED_GENERATED_SURFACES = (
 def test_humanize_package_owns_interactive_and_output_policies():
     interactive_policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
     humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
-    community_language = COMMUNITY_LANGUAGE_PATH.read_text(encoding="utf-8")
 
     for tag in (
         "interactive-session",
@@ -43,7 +41,7 @@ def test_humanize_package_owns_interactive_and_output_policies():
         assert f"<{tag}>" in interactive_policy
 
     for tag in (
-        "controlled-language-loading",
+        "controlled-language-application",
         "representation-selection",
         "representation-rendering",
         "durable-report-rules",
@@ -52,7 +50,7 @@ def test_humanize_package_owns_interactive_and_output_policies():
         assert f"<{tag}>" in humanize_skill
 
     for tag in (
-        "controlled-language-precedence",
+        "source-fidelity-precedence",
         "reader-outcome",
         "meaning-preservation",
         "epistemic-clarity",
@@ -68,17 +66,15 @@ def test_humanize_package_owns_interactive_and_output_policies():
         "revision-sequence",
         "asd-ste100-adaptation",
     ):
-        assert f"<{tag}>" in community_language
+        assert f"<{tag}>" in humanize_skill
 
-    assert "community-language.md" in humanize_skill
-    community_language_bytes = len(community_language.encode("utf-8"))
-    assert community_language_bytes <= MAXIMUM_CONTROLLED_LANGUAGE_BYTES, (
-        "the on-demand controlled-language rulebook must stay compact; it now costs "
-        f"{community_language_bytes} bytes"
+    humanize_skill_bytes = len(humanize_skill.encode("utf-8"))
+    assert humanize_skill_bytes <= MAXIMUM_HUMANIZE_SKILL_BYTES, (
+        "the on-demand Humanize skill must stay compact; it now costs "
+        f"{humanize_skill_bytes} bytes"
     )
 
     assert not (HOOK_DOMAIN_DIRECTORY / "interactive-communication.md").exists()
-    assert not (HOOK_DOMAIN_DIRECTORY / "community-language.md").exists()
 
 
 def test_no_generated_policy_surface_sits_between_owners_and_consumers():
@@ -99,8 +95,7 @@ def test_humanize_is_the_output_policy_and_artifact_adapter():
     skill_text = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
     description = (frontmatter_key_values(skill_text) or {}).get("description", "")
 
-    assert "human-readable output policy" in description.lower()
-    assert "interactive hooks route failed replies to it" in description.lower()
+    assert "human-readable output" in description.lower()
     assert "enforced-wording-rules.md" not in skill_text
     assert "human-communication-policy.md" not in skill_text
     assert not (HUMANIZE_DIRECTORY / "human-communication-policy.md").exists()

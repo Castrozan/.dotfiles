@@ -179,8 +179,8 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
 - Human-readable reply policy and the Done:/Next: shape are content, not chrome.
   Every interactive wrapper injects only `interactive-communication.md`, the
-  compact contract needed on every turn. The larger humanize `SKILL.md` and its
-  `community-language.md` controlled-language rulebook remain in the skill tier and load selectively.
+  compact contract needed on every turn. The complete humanize policy remains
+  in `SKILL.md` and loads only when substantial human-facing writing requires it.
   Codex carries the compact contract through `-c developer_instructions=` for
   interactive invocations only, keeping it out of `codex exec` and the MCP
   server, whose output is machine-facing. Claude and Codex use their native Stop

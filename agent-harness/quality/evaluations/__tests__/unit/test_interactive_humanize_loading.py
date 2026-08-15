@@ -6,17 +6,13 @@ HUMANIZE_DIRECTORY = (
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
 INTERACTIVE_POLICY_PATH = HUMANIZE_DIRECTORY / "interactive-communication.md"
-COMMUNITY_LANGUAGE_PATH = HUMANIZE_DIRECTORY / "community-language.md"
 MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES = 5000
 MAXIMUM_ON_DEMAND_HUMANIZE_PACKAGE_BYTES = 19000
 
 INTERACTIVE_POLICY_SOURCE = (
     "agent-instructions/skills/humanize/interactive-communication.md"
 )
-ON_DEMAND_HUMANIZE_SOURCES = (
-    "agent-instructions/skills/humanize/SKILL.md",
-    "agent-instructions/skills/humanize/community-language.md",
-)
+ON_DEMAND_HUMANIZE_SOURCES = ("agent-instructions/skills/humanize/SKILL.md",)
 INTERACTIVE_LAUNCHER_PATHS = (
     REPO_ROOT
     / "agent-harness"
@@ -146,8 +142,7 @@ def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
     )
 
     on_demand_package_bytes = sum(
-        len(path.read_bytes())
-        for path in (HUMANIZE_SKILL_PATH, COMMUNITY_LANGUAGE_PATH)
+        len(path.read_bytes()) for path in (HUMANIZE_SKILL_PATH,)
     )
     assert on_demand_package_bytes <= MAXIMUM_ON_DEMAND_HUMANIZE_PACKAGE_BYTES, (
         "the on-demand Humanize package now exceeds its context budget at "
