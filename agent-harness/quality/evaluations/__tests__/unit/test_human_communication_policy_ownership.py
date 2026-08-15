@@ -15,7 +15,7 @@ INTERACTIVE_POLICY_PATH = HUMANIZE_DIRECTORY / "interactive-communication.md"
 COMMUNITY_LANGUAGE_PATH = HUMANIZE_DIRECTORY / "community-language.md"
 REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
 REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
-MAXIMUM_COMMUNITY_LANGUAGE_BYTES = 10000
+MAXIMUM_CONTROLLED_LANGUAGE_BYTES = 13000
 
 REMOVED_GENERATED_SURFACES = (
     CORE_COMMUNICATION_DIRECTORY / "interactive-human-communication.md",
@@ -43,49 +43,37 @@ def test_humanize_package_owns_interactive_and_output_policies():
         assert f"<{tag}>" in interactive_policy
 
     for tag in (
-        "human-readable-output",
-        "reader-outcome",
-        "context-boundaries",
-        "epistemic-clarity",
+        "humanize-routing",
+        "controlled-language-loading",
         "representation-selection",
-        "term-discipline",
-        "sentence-construction",
-        "meaning-preservation",
-        "human-voice",
-        "revision-pass",
-        "report_document_or_page",
-        "binds_every_human_facing_channel",
+        "report-document-or-page",
+        "binds-every-human-facing-channel",
     ):
         assert f"<{tag}>" in humanize_skill
 
     for tag in (
-        "community-language-calibration",
-        "example-selection",
-        "explain-by-contrast",
-        "diagnose-from-evidence",
-        "decide-by-tradeoff",
-        "warn-with-condition",
-        "report-measured-change",
-        "summarize-for-action",
-        "meaning-recovery-check",
-        "community-provenance",
+        "controlled-human-language",
+        "reader-and-purpose",
+        "meaning-and-certainty",
+        "controlled-terms",
+        "noun-groups",
+        "verbs-and-actors",
+        "sentence-construction",
+        "procedures-and-actions",
+        "descriptions-and-explanations",
+        "warnings-and-limits",
+        "context-boundaries",
+        "human-voice",
+        "revision-order",
+        "standard-adaptation",
+        "sources",
     ):
         assert f"<{tag}>" in community_language
 
-    for reader_task in (
-        "explain",
-        "diagnose",
-        "decide",
-        "warn",
-        "report",
-        "summarize",
-    ):
-        assert community_language.count(f"<{reader_task}-example-") == 2
-
     assert "community-language.md" in humanize_skill
     community_language_bytes = len(community_language.encode("utf-8"))
-    assert community_language_bytes <= MAXIMUM_COMMUNITY_LANGUAGE_BYTES, (
-        "the on-demand example corpus must stay compact; it now costs "
+    assert community_language_bytes <= MAXIMUM_CONTROLLED_LANGUAGE_BYTES, (
+        "the on-demand controlled-language rulebook must stay compact; it now costs "
         f"{community_language_bytes} bytes"
     )
 

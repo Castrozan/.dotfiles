@@ -44,8 +44,8 @@ against the model choice.
   `instructions` arrays CONCATENATE rather than replace. The `opencode` wrapper
   exploits that: it points `OPENCODE_CONFIG` at an overlay carrying only the
   compact `interactive-communication.md` contract for interactive invocations.
-  The larger humanize policy and example corpus remain in the skill tier and
-  load selectively. This mirrors how the `codex` wrapper injects
+  The larger humanize policy and controlled-language rulebook remain in the
+  skill tier and load selectively. This mirrors how the `codex` wrapper injects
   `developer_instructions`. Every named subcommand (`run`, `serve`, `mcp`, ...)
   skips the overlay, keeping the reply shape out of machine-facing output.
 - Because the wrapper owns `OPENCODE_CONFIG`, an autonomous harness that needs

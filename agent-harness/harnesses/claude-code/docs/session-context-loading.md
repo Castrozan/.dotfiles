@@ -96,10 +96,10 @@ skill roots.
 
 Exactly one mechanism survives: the interactive-only system prompt composed from
 `interactive-communication.md` and `adaptive-implementation-delivery-process.md`. The larger humanize policy stays in
-the native skill tier, and its example corpus stays behind that skill's selective router. `~/.claude/CLAUDE.md` would
-reach jenny too. There is no settings key for the interactive contract. A `SessionStart` hook injects context that
-compaction may drop, and these are rules that must hold as the conversation grows long, so the context tier is the wrong
-tier. A launch flag is required, which means a wrapper survives at two lines: export the marker, exec
+the native skill tier, and its controlled-language rulebook stays behind that skill's selective router.
+`~/.claude/CLAUDE.md` would reach jenny too. There is no settings key for the interactive contract. A `SessionStart`
+hook injects context that compaction may drop. These rules must hold as the conversation grows long, so the context tier
+is the wrong tier. A launch flag is required, which means a wrapper survives at two lines: export the marker, exec
 `claude --append-system-prompt-file <store path> "$@"`.
 
 The launcher reads each always-on source directly into that prompt. It generates no intermediate policy surface. The

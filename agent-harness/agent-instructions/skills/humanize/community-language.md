@@ -1,163 +1,183 @@
-<community-language-calibration>
-Calibrate choices with these examples; never copy their text or layouts. Select the reader task only after the facts,
-audience, and action are known. Preserve project terms and the reader's register. Define an unfamiliar technical term
-instead of replacing it with an imprecise plain word. The Humanize policy and source facts override every example.
+<controlled-human-language>
+This file defines controlled human language, a shared set of writing rules that reduces ambiguity and reading effort.
+It is the normative language policy for substantial text written for a human. Apply the rules as a system: preserve
+meaning first, establish stable terminology, make the grammar explicit, organize the information for the reader's
+task, and then remove machine-like language. Exact facts, identifiers, source text, code, legal wording, and established
+domain terms take precedence over stylistic simplification.
 
-<example-selection>
-Choose explain for a mechanism; diagnose when evidence and cause must stay separate; decide for trade-offs; warn for
-conditional safe action; report for measured state or change; summarize for one conclusion or action. Use only the
-family matching the reader task. Do not make every reply casual or copy an example's cadence. Do not add a visual when
-prose already carries the relationship.
-</example-selection>
+<reader-and-purpose>
+Identify what the reader must understand, decide, or do before drafting. Lead with the answer, result, correction, or
+required action. Follow with only the cause, evidence, conditions, limits, and next action that can change the reader's
+understanding or decision. Match the reader's demonstrated expertise. Explain unfamiliar context before depending on
+it, but do not teach familiar foundations that do not change the conclusion.
 
-<explain-by-contrast>
-Show the same system before and after when the changed mechanism is the point. Put each number beside the step that
-produced it, label the artifact handed across the boundary, and let the prose interpret the contrast without repeating
-the figure. Once a figure carries a measurement, never repeat that measurement in the interpreting prose.
+Write for the actual reading condition. Assume that readers scan, that many read English as an additional language,
+and that a durable artifact can outlive the conversation that produced it. Put a condition beside the action it limits,
+an exception beside the rule it changes, and evidence beside the claim it supports.
+</reader-and-purpose>
 
-<explain-example-one>
-The whole trick: the review used to rediscover its own diff one file per round trip, and the `maxTurns: 8` that looked
-like a ceiling was never a real option, so nothing stopped it. Now the first pass writes the entire patch in one command
-and hands the second pass that file path, so both passes read the same bytes instead of deriving them again. Model and
-effort are pinned on each call because those are the controls the runner actually honours.
+<meaning-and-certainty>
+Preserve every material fact and relationship from the source. Do not delete a condition, actor, identifier, number,
+scope qualifier, caveat, causal link, invariant, unresolved position, or required sequence to make the text shorter.
+Keep longer wording when compression would reduce precision. Resolve ambiguity by naming the missing actor, object,
+condition, or time.
 
-```
-BEFORE (738 s, hit the 600 s ceiling)      AFTER (~405 s, completes)
+Keep observation, source evidence, inference, assumption, recommendation, and decision distinct whenever the
+difference changes confidence or action. Name the source when provenance matters. State what missing evidence prevents
+the text from establishing. Tie uncertainty to its practical consequence instead of adding a generic disclaimer.
 
-Review  haiku, maxTurns:8 = ignored        Review  haiku, effort low
-  git diff -- fileA   -+                     Bash x1  whole patch -> /tmp/...XXXXXXXX
-  git diff -- fileB    |  39 per-file        Read x1  27 KB patch in context
-  ... x39              |  diffs                   |
-  194 turns / 95 calls -+                         | returns
-                                                  |  { repoRoot, changedFiles, patchPath }
-Verify  sonnet                                    v
-  rediscovers the same diff                Verify  sonnet, effort medium
-  81 turns / 53 calls                        Read x1  the SAME patchPath
-                                             22 turns / 11 calls
+Never invent a fact, threshold, symptom, cause, outcome, test result, or certainty to make the text concrete. Do not add
+a condition or expected observation that the source does not support. Mark a missing fact or unresolved decision rather
+than filling it with a plausible detail.
+</meaning-and-certainty>
 
-275 turns . 148 tool calls                 37 turns . 17 tool calls
-97 % of it waiting on round trips          round trips collapsed to 2
-```
+<controlled-terms>
+Use one term for one referent and one meaning for each term within the text. Reuse the same noun for the same component,
+state, action, or artifact. Do not rotate through synonyms for variety. Use a word consistently as the same part of
+speech when changing its grammatical role could obscure the meaning.
 
-Two passes and two model calls, unchanged: the second still refutes the first independently, it just no longer pays to
-find the diff twice.
-</explain-example-one>
+Prefer the name already used in the product, code, interface, standard, or domain. When no established name exists,
+select the shortest familiar term that keeps the technical meaning. Do not invent project vocabulary in passing. Keep
+a precise technical term when a plain substitute would change the meaning, and define an unfamiliar necessary term at
+first use in the same sentence.
 
-<explain-example-two>
-Input: explain eventual consistency when a successful write reaches replicas within two seconds. Output: "After the API
-accepts a write, a read from another replica can return the previous value for up to two seconds. Retry the read when
-the caller needs the new value immediately." This keeps the technical term available but explains the observed behavior,
-time limit, and caller action instead of substituting an abstract definition.
-</explain-example-two>
-</explain-by-contrast>
+Use familiar concrete words for nontechnical ideas. Avoid slang, regional expressions, idioms, clichés, cultural
+references, fashionable jargon, and Latin abbreviations when a global reader might not understand them. Define an
+abbreviation at first use unless the intended audience treats it as the ordinary name. Never replace an exact command,
+identifier, error, protocol term, or quoted interface label with a friendlier approximation.
 
-<diagnose-from-evidence>
-When asked what to do, lead with the cheapest supplied reversible response. Then state the observations before any
-possible cause, what the evidence cannot establish, and every supplied control. End there unless the source supplies a
-further probe. Never invent telemetry, expected observations, failure modes, or follow-up branches.
+Use inclusive terms. Do not assume a reader's gender, ability, culture, location, or personal circumstances when those
+details do not matter. Avoid a familiar-looking word when global readers commonly understand it with another meaning.
+</controlled-terms>
 
-<diagnose-example-one>
-Input: latency rose only on cache node B after a deploy, the other nodes are healthy, key churn is suspected without a
-cardinality metric, and replacing B is reversible and takes three minutes. Output: "Replace cache node B now. Latency
-rose only there after the deploy; the other nodes remain healthy. Key churn fits the timing but remains unverified
-without a cardinality metric. Replacement is reversible and takes three minutes." The output leads with the supplied
-response, separates evidence from hypothesis, and stops without inventing follow-up work.
-</diagnose-example-one>
+<noun-groups>
+A noun group is a sequence of words that names one thing. Keep it to three words when practical. Treat this as a
+diagnostic threshold, not permission to shorten an official name or alter a technical term. Long noun stacks hide the
+relationship between words. Unpack them with a preposition, a relative clause, or a sentence that names the
+relationship.
 
-<diagnose-example-two>
-Input: a backup failed with permission denied, but the record does not identify whether the scheduler or uploader writes
-the archive. Output: "The archive write was denied. The record does not identify the writer, so it cannot tell us which
-permission is wrong. Trace the process that opens the archive, then inspect that process's effective identity." The
-output exposes the unresolved actor instead of inventing one.
-</diagnose-example-two>
-</diagnose-from-evidence>
+When an established technical name is long, write it in full at first use. Then introduce one clear short form and use
+that form consistently. Avoid chains of possessives. Rewrite them so the owner and the owned item are explicit.
+</noun-groups>
 
-<decide-by-tradeoff>
-Compare only criteria that can change the choice. Give the recommendation after the comparison and tie it to the stated
-constraint, not to a generic ranking.
+<verbs-and-actors>
+Name the actor and use active voice. Use passive voice only when the actor is unknown, irrelevant, or intentionally
+withheld, and the sentence remains unambiguous. Put the subject close to its verb and the verb close to its object.
 
-<decide-example-one>
-Input: choose SQLite or PostgreSQL for one local writer today with concurrent writers expected next quarter. Output:
-"Choose PostgreSQL because concurrent writes are already a dated requirement. SQLite has the smaller local setup, but a
-later database migration would cost more than configuring PostgreSQL now." The recommendation names the deciding
-constraint and keeps the losing option's real advantage.
-</decide-example-one>
+Use a verb to name an action. Do not bury the action in a noun such as implementation, configuration, validation, or
+utilization when implement, configure, validate, or use states it directly. Prefer the infinitive, command form, simple
+present, simple past, or simple future when it states the time accurately. Avoid long chains of helping verbs and an
+unnecessary continuous form. Use the command form for an instruction.
 
-<decide-example-two>
-Input: choose a rolling restart or full restart when five nodes serve traffic and the schema remains compatible. Output:
-"Use a rolling restart. The compatible schema lets old and new nodes overlap, so capacity stays available during the
-change. Use a full restart only if runtime evidence shows mixed versions cannot interoperate." The exception is attached
-to the condition that would reverse the choice.
-</decide-example-two>
-</decide-by-tradeoff>
+A phrasal verb combines a verb with another short word to create a new meaning. Avoid one when a global reader cannot
+recover that meaning from its words or when a direct verb is clearer. Keep a familiar phrasal verb when replacing it
+would sound less natural without improving precision.
+</verbs-and-actors>
 
-<warn-with-condition>
-Put the hazard before the action when it changes what the reader may safely do. Name the actor, threshold, wait, or
-sequence explicitly. Never weaken a prohibition to make the sentence friendlier.
+<sentence-construction>
+Write complete sentences with explicit subjects, verbs, articles, and necessary objects. Do not omit grammatical parts
+merely to shorten a sentence. Natural contractions are permitted when they remain unambiguous and fit the channel.
 
-<warn-example-one>
-Input: a cabinet retains 48 volts for five minutes after disconnection. Output: "Disconnect external power before you
-remove the cover. The cabinet can retain 48 volts for five minutes. Wait until the indicator turns off, then verify zero
-volts before you touch a terminal." The output preserves the voltage, duration, actor, and required sequence.
-</warn-example-one>
+Give one idea per descriptive sentence and one instruction per procedural sentence. Two actions can share a sentence
+only when they occur at the same time or form one inseparable operation. Split independent ideas instead of joining
+them with punctuation. Treat 20 words for an instruction and 25 words for a description as diagnostic thresholds. If a
+sentence exceeds the threshold, first split its ideas or unpack its noun groups. Never remove meaning only to meet a
+count.
 
-<warn-example-two>
-Input: retry SQLSTATE 40001 at most twice, never retry permission errors, and the second retry can increase lock
-contention. Output: "Retry only SQLSTATE 40001, at most twice. Never retry a permission error. Before the second retry,
-check whether higher lock contention is acceptable." The shorter wording retains every operational limit.
-</warn-example-two>
-</warn-with-condition>
+Make logical relationships explicit. Use connecting words to show cause, contrast, condition, sequence, and result.
+Use that when it prevents a clause from attaching to the wrong noun. Make clear which noun each pronoun refers to.
+Follow this, that, these, or those with the noun when the reference could be unclear.
 
-<report-measured-change>
-Lead with the measured result and its scope. Remove claims of importance that the evidence does not establish. Mark a
-missing fact instead of inventing one.
+Prefer a period when a semicolon or a chain of clauses makes the reader hold several ideas at once. Use parentheses only
+for secondary information that does not control the action. Use a hyphen when it makes directly related words function
+as one modifier. Follow the channel's punctuation constraints for all other marks.
+</sentence-construction>
 
-<report-example-one>
-Input: a migration reduced median build time from 11 minutes to 7 minutes in measured CI jobs. Output: "The migration
-reduced median build time from 11 minutes to 7 minutes in the measured CI jobs." No milestone or team praise improves
-the result. The measurement and scope carry the report.
-</report-example-one>
+<procedures-and-actions>
+Write procedural text in the order the reader must act. Use one imperative instruction per step. Start with the action
+unless the reader must know a condition before acting. In that case, state the condition first and place the command
+immediately after it. State prerequisites before the first dependent step.
 
-<report-example-two>
-Input: churn rose for a second quarter, the percentage is absent, and pricing plus onboarding are candidate causes.
-Output: "Churn rose for a second quarter [add the measured change]. The March pricing change and onboarding drop-off are
-candidate causes, not confirmed causes. Test those first." The placeholder exposes missing evidence without fabricating
-precision.
-</report-example-two>
-</report-measured-change>
+Keep required actions out of notes, explanations, and parenthetical text. A reader who follows only the steps must be
+able to complete the task safely. Use a vertical list when several parallel items, alternatives, prerequisites, or
+results would make a sentence complex. Keep parallel items grammatically parallel and do not mix information with
+instructions in the same list unless their roles are labeled.
+</procedures-and-actions>
 
-<summarize-for-action>
-State the answer or action first. Keep only the cause, condition, or limit needed to use it correctly. A summary may be
-short, but it cannot discard the fact that would make the action unsafe or wrong. Preserve an unresolved decision as
-unresolved instead of inventing proceed, rollback, or remediation branches.
+<descriptions-and-explanations>
+Give information gradually. Move from the answer or known context to the new mechanism, then to the consequence. Use
+stable key terms and explicit connecting phrases so the reader can follow the logic without inferring hidden links.
 
-<summarize-example-one>
-Input: each review pass searched for the same diff, and the fix writes it once for both passes without changing review
-logic. Output: "TL;DR: each review pass searched for the same diff again. The workflow now writes it once and gives both
-passes the same file. The two independent reviews did not change." The summary carries mechanism and invariant in plain
-language.
-</summarize-example-one>
+Group related information into paragraphs. Give each paragraph one topic and put its controlling point first. Treat six
+sentences as a diagnostic paragraph limit. Split a longer paragraph when it contains another reader need, not merely to
+change its appearance.
 
-<summarize-example-two>
-Input: two of ten canaries fail health checks, the remaining eight are healthy, and rollout must wait for diagnosis.
-Output: "Pause the rollout. Two of ten canaries fail health checks; the other eight are healthy. Diagnose those two
-before deploying another batch." The action, evidence, scope, and next step remain recoverable.
-</summarize-example-two>
-</summarize-for-action>
+State cause and effect only when the evidence supports both. When explaining a change, identify the changed mechanism,
+the result it caused, and the important behavior that did not change. Use the Humanize skill's representation rule when
+a relationship is easier to inspect as a tree, sequence, table, state model, or focused diff. Do not repeat in prose
+what the selected form already makes clear.
+</descriptions-and-explanations>
 
-<meaning-recovery-check>
-Before delivery, verify that the reader can recover the conclusion, actor, action, conditions, evidence, limits, and
-next step that matter for this task. Revise an ambiguity that changes action. If the reader can already recover those
-parts, do not add background, synonyms, a visual, or another example merely to make the answer look complete.
-</meaning-recovery-check>
+<warnings-and-limits>
+Use the established risk label when the domain distinguishes levels such as danger, warning, or caution. Start with the
+command or condition that keeps the reader safe. Then state the specific risk or possible result. Preserve every
+threshold, duration, prohibition, actor, and sequence. Do not weaken a prohibition to sound friendlier, and do not
+invent a hazard or consequence that the evidence does not supply.
+</warnings-and-limits>
 
-<community-provenance>
-The patterns are synthesized from MIT-licensed sources pinned at
-`humanlayer/skills@3c2629142c5d437428269b1b722b08c0b87f574d`,
-`forjd/better-writing@4023076319e5a7838dd7587ebf3d5e3588f9544f`,
-`phb123/ste@9ddbe815e1ffe0d994d3dff6e4060df52e26dab3`, and
-`blader/humanizer@523374dee72d67c7b2b5f858ea0094ffda49c3ac`. The first explaining example is repository evidence from
-`6e909243`, selected by the owner after using it in an interactive session. Upstream changes do not update this corpus.
-Promote a pattern only after human review and a transfer evaluation outside its source example.
-</community-provenance>
-</community-language-calibration>
+<context-boundaries>
+When writing outside the current session, include the goal, material constraints, current state, evidence, and required
+action instead of relying on shared history. When the goals or constraints behind someone else's work are unknown, do
+not invent them or make a definitive context-dependent judgment. Ask when the missing context could change the
+conclusion. Otherwise frame the response as a question, consideration, suggestion, or advice.
+</context-boundaries>
+
+<human-voice>
+Write direct, calm human prose. Use a conversational register where the channel permits it, but keep the information
+precise. Address the reader directly when that makes responsibility clear. Preserve legitimate personality, technical
+register, specific detail, mixed positions, and natural asides.
+
+Remove canned reactions, headings that announce obvious content, praise, unneeded offers of more help, promotional
+language, inflated significance, and claims attributed only to vague authorities. Do not force ideas into groups of
+three, manufacture an opposition with a "not X but Y" frame, invent a range whose endpoints do not form a real scale,
+or end with a slogan. Do not add a conclusion that only restates the opening.
+
+Do not call a task easy, simple, obvious, or quick unless that fact changes the reader's action or expectation. Do not
+treat one formal word or polished sentence as proof of machine voice. Rewrite only when several signals combine, and
+replace the wording without deleting the fact it carries.
+</human-voice>
+
+<revision-order>
+First verify the facts, reasoning, and requested action. Then confirm that the reader can recover the conclusion, actor,
+action, evidence, conditions, limits, and next step. Select the representation and information order. Standardize terms,
+unpack noun groups, and tighten sentences. Finally scan separately for ambiguity, unsupported certainty, machine-like
+voice, and channel constraints.
+
+Rewrite the construction when word substitution is not enough. A vocabulary checker, sentence counter, or style linter
+cannot determine whether the text makes sense. Finish only when the intended reader can understand and act without
+reconstructing missing context.
+</revision-order>
+
+<standard-adaptation>
+These rules adapt the writing principles in ASD-STE100 Issue 9 rather than claiming ASD-STE100 compliance. They do not
+use its approved-word dictionary or restrict technical vocabulary to its aerospace categories. Established project and
+domain terminology replaces the controlled dictionary. The 20-word instruction limit, 25-word description limit,
+three-word noun-group limit, and six-sentence paragraph limit are diagnostics because conversational and general
+technical writing must sometimes preserve necessary context. Natural contractions and standard punctuation remain
+available when they improve readable human communication.
+
+The policy also incorporates established community guidance to lead with the key point, use familiar words, write for
+a global audience, address the reader directly, support scanning, and avoid jargon, cultural references, and claims
+that a task is easy. These additions resolve cases where strict maintenance-document English would make interactive or
+general technical communication less natural without improving understanding.
+</standard-adaptation>
+
+<sources>
+Primary standard: https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf
+ASD-STE100 scope and dictionary model: https://www.asd-ste100.org/STE_faq.html
+Google developer documentation voice and tone: https://developers.google.com/style/tone
+Google developer documentation sentence structure: https://developers.google.com/style/sentence-structure
+Microsoft writing style: https://learn.microsoft.com/en-us/windows/apps/design/style/writing-style
+United States plain-language principles: https://digital.gov/guides/plain-language/principles
+</sources>
+</controlled-human-language>
