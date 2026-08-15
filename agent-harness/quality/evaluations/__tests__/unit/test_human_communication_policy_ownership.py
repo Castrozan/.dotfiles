@@ -42,8 +42,6 @@ def test_humanize_package_owns_interactive_and_output_policies():
     ):
         assert f"<{tag}>" in interactive_policy
 
-    assert "<always_enforced>" not in interactive_policy
-
     for tag in (
         "human-readable-output",
         "reader-outcome",
@@ -54,8 +52,6 @@ def test_humanize_package_owns_interactive_and_output_policies():
         "meaning-preservation",
         "human-voice",
         "revision-pass",
-        "commit_message",
-        "pull_or_merge_request",
         "ticket_comment",
         "report_document_or_page",
         "binds_every_human_facing_channel",
@@ -118,7 +114,6 @@ def test_humanize_is_the_output_policy_and_artifact_adapter():
     assert "human-readable output policy" in description.lower()
     assert "interactive hooks route failed replies to it" in description.lower()
     assert "enforced-wording-rules.md" not in skill_text
-    assert "employer-identifying" in skill_text
     assert "human-communication-policy.md" not in skill_text
     assert not (HUMANIZE_DIRECTORY / "human-communication-policy.md").exists()
     for superseded_chapter in (

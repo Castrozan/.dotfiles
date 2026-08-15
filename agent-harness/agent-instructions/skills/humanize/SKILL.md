@@ -96,24 +96,6 @@ catch", "Sure", or "Of course". Never open by narrating what you are about to do
 ahead". Give a direct link for every merge request or pull request you name so the reader can validate it.
 </binds_every_human_facing_channel>
 
-<artifact-adaptation>
-For a durable human-facing artifact, let the artifact's owning skill decide whether it should exist and what it must
-contain. Use this skill's channel rules to decide how that content reaches its reader. Never put employer-identifying
-names or details into a public repository. Replace them with the narrow role or system context needed to preserve the
-artifact's meaning.
-</artifact-adaptation>
-
-<commit_message>
-Address the future reader tracing why the change happened. Use an imperative subject that names the change. Add a body
-only when the reason is not obvious. Use one short paragraph instead of a session changelog.
-</commit_message>
-
-<pull_or_merge_request>
-Address the reviewer scanning the diff. Lead with what changed, why it changed, and the evidence that makes it safe to
-merge. Link the ticket and validation artifacts. Do not restate the diff line by line. Keep the body to a few short
-paragraphs unless the risk requires more.
-</pull_or_merge_request>
-
 <ticket_comment>
 Assume the teammate lacks the current session context. State the current condition, the evidence, and the next action in
 one or two paragraphs. Link the artifact they must inspect.
