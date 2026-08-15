@@ -52,7 +52,6 @@ class ReplyUnderReview:
         self.text_without_leading_space = reply_text.lstrip()
         self.prose_lines = prose_lines_outside_code_fences(reply_text)
         self.prose_text = "\n".join(self.prose_lines)
-        self.prose_line_count = len(self.prose_lines)
         self.prose_word_count = sum(len(line.split()) for line in self.prose_lines)
         self.prose_character_count = sum(len(line) for line in self.prose_lines)
         self.paragraph_block_count = prose_paragraph_block_count(reply_text)

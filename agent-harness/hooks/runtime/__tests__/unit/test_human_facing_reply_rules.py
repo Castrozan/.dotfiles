@@ -16,8 +16,7 @@ from reply_template_limits import (  # noqa: E402
     REPLY_HARD_CHARACTER_CEILING,
     REPLY_HARD_WORD_CEILING,
     REPLY_TARGET_PROSE_WORDS,
-    SCANNABLE_MAXIMUM_PROSE_LINES,
-    SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES,
+    SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS,
 )
 
 INTERACTIVE_COMMUNICATION_PATH = (
@@ -151,11 +150,11 @@ def test_interactive_instructions_state_the_hook_limit_values():
     )
 
     expected_limits = (
-        f"longer than {SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES} prose lines",
-        f"within {SCANNABLE_MAXIMUM_PROSE_LINES} prose lines",
+        f"over {SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS} prose words",
         f"about {REPLY_TARGET_PROSE_WORDS} prose words",
         f"never exceed {REPLY_HARD_WORD_CEILING}",
         f"within {REPLY_HARD_CHARACTER_CEILING} prose characters",
         f"no more than {MAXIMUM_PROSE_PARAGRAPH_BLOCKS} prose blocks",
     )
     assert not [limit for limit in expected_limits if limit not in policy]
+    assert "prose lines" not in policy

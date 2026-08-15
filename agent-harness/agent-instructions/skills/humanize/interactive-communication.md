@@ -54,10 +54,9 @@ paragraph.
 
 <request_gated>
 Apply these rules unless the user explicitly asked for a document or an in-detail write-up. A compatible Stop hook
-blocks violations. Fenced code blocks do not count toward the line, word, or character limits. Carry every point in
-prose sentences, with no bullet lists and no numbered lists. Use no section headers beyond Done, Next, and Assumed. Any
-reply longer than 3 prose lines includes both Done and Next. Keep the reply within 14 prose lines. Aim for about 150
-prose words and never exceed 250. A turn with real substance may exceed the target, so cut filler instead of the answer.
-Keep the reply within 1500 prose characters. Use no more than 4 prose blocks: the opening paragraph, Done, Next, and an
-optional Assumed line.
+blocks violations. Fenced code blocks do not count toward the word or character limits. Carry every point in prose
+sentences, with no bullet lists and no numbered lists. Use no section headers beyond Done, Next, and Assumed. Any reply
+over 40 prose words includes both Done and Next. Aim for about 150 prose words and never exceed 250. A turn with real
+substance may exceed the target, so cut filler instead of the answer. Keep the reply within 1500 prose characters. Use
+no more than 4 prose blocks: the opening paragraph, Done, Next, and an optional Assumed line.
 </request_gated>

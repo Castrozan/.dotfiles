@@ -15,7 +15,6 @@ SINGLE_HOME_RULE_PHRASES = {
     "sycophancy phrase": HUMANIZE_SKILL,
     "numbered list": INTERACTIVE_INSTRUCTIONS,
     "prose words": INTERACTIVE_INSTRUCTIONS,
-    "prose lines": INTERACTIVE_INSTRUCTIONS,
 }
 
 

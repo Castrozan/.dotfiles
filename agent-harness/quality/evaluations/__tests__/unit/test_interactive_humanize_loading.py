@@ -129,6 +129,13 @@ def test_nothing_pending_means_the_session_can_end():
         assert required_behavior in reply_template
 
 
+def test_request_gate_uses_word_limits_instead_of_line_limits():
+    request_gate = interactive_policy_section("request_gated")
+
+    assert "over 40 prose words" in request_gate
+    assert "prose lines" not in request_gate
+
+
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
     always_injected_policy_bytes = len(INTERACTIVE_POLICY_PATH.read_bytes())
     assert (

@@ -47,21 +47,13 @@ def test_blocks_em_dash_and_reason_names_the_violation(tmp_path):
 
 
 def test_blocks_long_reply_without_template_labels(tmp_path):
-    long_unstructured = "\n".join(f"finding number {index}" for index in range(8))
+    long_unstructured = "\n".join(
+        f"Finding number {index} explains the current task and its result."
+        for index in range(8)
+    )
     transcript = write_transcript_with_final_assistant_reply(
         tmp_path, long_unstructured
     )
-    result = invoke_guard(stop_payload(transcript))
-    assert json.loads(result.stdout)["decision"] == "block"
-
-
-def test_blocks_long_prose_reply_even_with_template_labels(tmp_path):
-    essay_lines = "\n".join(
-        f"Sentence number {index} explaining yet another detail at length."
-        for index in range(20)
-    )
-    wall = f"State sentence.\n{essay_lines}\n**Done:** x\n**Next:** done"
-    transcript = write_transcript_with_final_assistant_reply(tmp_path, wall)
     result = invoke_guard(stop_payload(transcript))
     assert json.loads(result.stdout)["decision"] == "block"
 

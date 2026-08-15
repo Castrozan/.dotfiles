@@ -8,8 +8,7 @@ from reply_template_limits import (
     MAXIMUM_PROSE_PARAGRAPH_BLOCKS,
     REPLY_HARD_CHARACTER_CEILING,
     REPLY_HARD_WORD_CEILING,
-    SCANNABLE_MAXIMUM_PROSE_LINES,
-    SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES,
+    SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS,
 )
 from reply_text_metrics import ReplyUnderReview
 
@@ -96,19 +95,10 @@ def section_header_violation(reply: ReplyUnderReview) -> str | None:
 
 def missing_done_and_next_labels_violation(reply: ReplyUnderReview) -> str | None:
     if (
-        reply.prose_line_count > SHORT_CONFIRMATION_MAXIMUM_PROSE_LINES
+        reply.prose_word_count > SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS
         and not reply.has_done_and_next_labels
     ):
         return "longer than a confirmation but missing the **Done:**/**Next:** labels"
-    return None
-
-
-def scannable_line_ceiling_violation(reply: ReplyUnderReview) -> str | None:
-    if reply.prose_line_count > SCANNABLE_MAXIMUM_PROSE_LINES:
-        return (
-            f"runs {reply.prose_line_count} prose lines, past the "
-            f"{SCANNABLE_MAXIMUM_PROSE_LINES}-line scannable cap"
-        )
     return None
 
 

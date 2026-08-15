@@ -101,8 +101,8 @@ def test_grant_reads_request_from_list_of_text_blocks(tmp_path):
     assert result.stdout.strip() == ""
 
 
-def test_allows_reply_between_ten_and_fourteen_prose_lines(tmp_path):
-    body = "\n".join(f"line {index} of the report" for index in range(10))
+def test_allows_many_prose_lines_under_the_word_ceiling(tmp_path):
+    body = "\n".join(f"line {index} of the report" for index in range(30))
     reply = f"Opening answer line.\n{body}\n**Done:** x\n**Next:** y"
     transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
     result = invoke_guard(stop_payload(transcript))

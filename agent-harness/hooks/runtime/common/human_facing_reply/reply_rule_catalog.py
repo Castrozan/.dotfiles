@@ -11,7 +11,6 @@ from reply_rule_violations import (
     narration_opener_violation,
     paragraph_block_ceiling_violation,
     reaction_opener_violation,
-    scannable_line_ceiling_violation,
     section_header_violation,
     sentence_dash_violation,
     unlinked_artifact_violation,
@@ -68,11 +67,6 @@ HUMAN_FACING_REPLY_RULES = [
         "done_and_next_labels",
         REQUEST_GATED_TIER,
         missing_done_and_next_labels_violation,
-    ),
-    HumanFacingReplyRule(
-        "scannable_line_ceiling",
-        REQUEST_GATED_TIER,
-        scannable_line_ceiling_violation,
     ),
     HumanFacingReplyRule(
         "word_ceiling",
