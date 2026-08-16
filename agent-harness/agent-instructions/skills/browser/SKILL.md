@@ -30,25 +30,13 @@ If `mcp__chrome-devtools__list_pages` returns "Could not connect to Chrome":
 Once connected:
 1. `mcp__chrome-devtools__list_pages` - verify connection
 2. `mcp__chrome-devtools__new_page` with `background: true` - open work in a fresh tab; never `navigate_page` the
-   currently selected tab, that replaces in place whatever the user has open there. When the account matters, open
-   the tab with the profile launcher below instead
+   currently selected tab, that replaces in place whatever the user has open there. For profile-bound work, pick the
+   account from the profile names in `~/.config/chrome-global/Local State` and use that profile's open window; only
+   when it has none, cold-start it with `summon-chrome-work-profile` or `summon-chrome-personal-profile`
 3. `mcp__chrome-devtools__take_snapshot` - see page elements with uid refs
 4. `mcp__chrome-devtools__click` / `mcp__chrome-devtools__fill` - interact using uid from snapshot
 5. `mcp__chrome-devtools__take_screenshot` - visual verification when needed
 </chrome_devtools_workflow>
-
-<chrome_profile_selection_precedes_devtools_work>
-Chrome Global carries a work profile and a personal profile in one instance, and `list_pages` lists tabs from both
-without naming which profile a tab belongs to, so the right-looking tab can be the wrong account. Settle the account
-before driving the browser: employer and client work runs in the work profile, personal-account tasks run in the
-personal profile. On macOS, open the target URL with the Nix-managed launcher for that profile,
-`summon-chrome-work-profile` or `summon-chrome-personal-profile`, rather than `new_page`, which cannot pick a profile;
-never rebuild that launch by hand from `/usr/bin/open`, a `--user-data-dir`, or a `Profile 1`/`Profile 2` argument,
-which silently lands in the wrong account or forks a stray profile store. Then `list_pages`, identify the tab you just
-opened by its URL and title, and `select_page` onto it before interacting. The launcher opens a fresh tab, so the
-no-clobber rule and the Allow consent gate both still hold; where any other wording conflicts, explicit profile
-selection wins.
-</chrome_profile_selection_precedes_devtools_work>
 
 <pinchtab_workflow>
 CLI only (no MCP), driven from bash against a persistent-profile Chrome, so logins survive across runs (log in once,
