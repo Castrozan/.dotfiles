@@ -7,7 +7,6 @@ in
   imports = [
     ./home/git.nix
     ./home/hyprland.nix
-    ./home/ssh.nix
     ./home/session-vars.nix
     ./home/chrome-default-browser.nix
     ../../../agent-harness/harnesses/clawde/agents/steward.nix
@@ -65,6 +64,8 @@ in
 
     ../../operating-system/system-command-packages-home-manager.nix
     ../../operating-system/nix-store-maintenance/stale-symlink-cleanup-home-manager.nix
+
+    ../../network/ssh/ssh-private-home-manager.nix
 
     ../../voice/hey-bot-home-manager.nix
     ../../voice/hey-bot-test-home-manager.nix
