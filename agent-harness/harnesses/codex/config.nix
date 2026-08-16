@@ -40,17 +40,13 @@ let
       animations = false;
       session_picker_view = "dense";
       show_tooltips = false;
+      # Mirrors the Claude Code statusline segment order, within the closed enum
+      # Codex allows: branch, model, context used, five-hour limit, session id.
       status_line = [
-        "run-state"
         "git-branch"
-        "branch-changes"
         "model-with-reasoning"
         "context-used"
         "five-hour-limit"
-        "weekly-limit"
-        "permissions"
-        "approval-mode"
-        "current-dir"
         "thread-id"
       ];
       status_line_use_colors = true;
