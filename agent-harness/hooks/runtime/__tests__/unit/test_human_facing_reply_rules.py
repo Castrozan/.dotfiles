@@ -1,4 +1,3 @@
-import re
 import sys
 from pathlib import Path
 
@@ -8,16 +7,8 @@ REPLY_RULE_MODULE_DIRECTORY = next(HOOKS_ROOT.rglob("reply_rule_catalog.py")).pa
 if str(REPLY_RULE_MODULE_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(REPLY_RULE_MODULE_DIRECTORY))
 
-from long_form_request_gate import user_request_permits_long_form  # noqa: E402
 from reply_rule_catalog import template_violations_in_reply  # noqa: E402
 from reply_rule_feedback import bounce_guidance  # noqa: E402
-from reply_template_limits import (  # noqa: E402
-    MAXIMUM_PROSE_PARAGRAPH_BLOCKS,
-    REPLY_HARD_CHARACTER_CEILING,
-    REPLY_HARD_WORD_CEILING,
-    REPLY_TARGET_PROSE_WORDS,
-    SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS,
-)
 
 INTERACTIVE_COMMUNICATION_PATH = (
     REPO_ROOT
@@ -29,100 +20,59 @@ INTERACTIVE_COMMUNICATION_PATH = (
 )
 
 
-def test_long_form_granted_for_explicit_document_request():
-    assert user_request_permits_long_form(
-        "write me a design doc for the reports service"
-    )
-    assert user_request_permits_long_form("create a design doc for the reports service")
-    assert user_request_permits_long_form("make me a runbook for the deploy")
-    assert user_request_permits_long_form("write the documentation for the API")
-    assert user_request_permits_long_form("give me a full architecture overview")
-    assert user_request_permits_long_form("explain in detail why the sync failed")
-    assert user_request_permits_long_form("paste the entire file verbatim")
-    assert user_request_permits_long_form("give me the design of the hook stuff")
-    assert user_request_permits_long_form("what is the architecture behind the gate")
-
-
-def test_long_form_not_granted_for_routine_requests():
-    assert not user_request_permits_long_form("is obsidian syncing on chise?")
-    assert not user_request_permits_long_form("fix the rebuild and commit it")
-    assert not user_request_permits_long_form("show me the diff")
-    assert not user_request_permits_long_form("")
-
-
-def test_long_form_not_granted_for_verb_substring_or_compression_leaks():
-    assert not user_request_permits_long_form("what's the sprint plan?")
-    assert not user_request_permits_long_form("fix the footprint report")
-    assert not user_request_permits_long_form(
-        "can you reproduce the deploy plan failure"
-    )
-    assert not user_request_permits_long_form("give me a quick summary of what changed")
-    assert not user_request_permits_long_form("show me the deploy report")
-    assert not user_request_permits_long_form(
-        "why did you show me that? update the deploy plan status"
-    )
-    assert not user_request_permits_long_form("when is the design review meeting?")
-
-
-def test_routine_long_reply_trips_the_hard_ceiling():
-    reply = " ".join(["word"] * (REPLY_HARD_WORD_CEILING + 10))
-    violations = template_violations_in_reply(reply, "is obsidian syncing?")
-    assert any("hard ceiling" in v for v in violations)
-
-
-def test_routine_char_heavy_reply_trips_the_character_ceiling():
-    reply = "x" * (REPLY_HARD_CHARACTER_CEILING + 50)
-    violations = template_violations_in_reply(reply, "is obsidian syncing?")
-    assert any("character hard ceiling" in v for v in violations)
-    assert not any("word hard ceiling" in v for v in violations)
-
-
-def test_long_form_request_skips_length_and_shape_but_keeps_hygiene():
-    long_reply_with_header = "## Overview\n" + " ".join(
-        ["word"] * (REPLY_HARD_WORD_CEILING + 50)
-    )
+def test_named_merge_request_without_a_direct_link_is_blocked():
     violations = template_violations_in_reply(
-        long_reply_with_header, "write a design doc"
+        "MR !41 is ready for review.", "is the change ready?"
     )
-    assert violations == []
 
-    violations_with_em_dash = template_violations_in_reply(
-        long_reply_with_header + " — tail", "write a design doc"
+    assert violations == ["names an MR or PR but gives no link to validate it"]
+
+
+def test_named_pull_request_with_a_direct_link_passes():
+    reply = "PR #17 is ready: https://github.com/example/project/pull/17"
+
+    assert template_violations_in_reply(reply, "is the change ready?") == []
+
+
+def test_generic_merge_and_pull_request_terms_do_not_claim_an_artifact():
+    reply = (
+        "Pull request paths now trigger CI. The guide also explains how to open a "
+        "merge request."
     )
-    assert violations_with_em_dash == ["contains an em dash"]
+
+    assert template_violations_in_reply(reply, "what changed in CI?") == []
 
 
-def test_deferring_to_an_earlier_message_is_flagged_even_under_long_form():
-    defer_message = "defers to an earlier message instead of standing alone"
+def test_reply_shape_and_punctuation_are_not_hook_predicates():
+    reply = """## Decision
 
-    routine = template_violations_in_reply(
-        "As I said above, the rebuild is green.", "is obsidian syncing?"
-    )
-    assert defer_message in routine
+Yes, the migration is safe to continue — the failed host was removed.
 
-    long_form = template_violations_in_reply(
-        "## Overview\nSee my prior message for the full breakdown.",
-        "write a design doc",
-    )
-    assert long_form == [defer_message]
+- The healthy hosts remain available.
+- The replacement is reversible.
 
+As I said earlier, the evidence is now included here so this reply stands alone.
+"""
 
-def test_an_en_dash_is_caught_like_an_em_dash():
-    violations = template_violations_in_reply(
-        "The rebuild is green – CI agrees.", "write a design doc"
-    )
-    assert violations == ["contains an en dash"]
+    assert template_violations_in_reply(reply, "review the migration") == []
 
 
-def test_a_dash_inside_a_fenced_block_is_a_quoted_artifact_not_prose():
-    reply = "The upstream README reads:\n```\nrange 1–9 — inclusive\n```\nNothing else."
-    assert template_violations_in_reply(reply, "write a design doc") == []
+def test_long_explanation_is_not_classified_by_a_regex_gate():
+    reply = " ".join(["evidence"] * 600)
+
+    assert template_violations_in_reply(reply, "explain the architecture") == []
+
+
+def test_a_quoted_unlinked_artifact_inside_a_fence_does_not_block():
+    reply = "The source says:\n```\nMR !41 is pending\n```\nNo artifact is named in my prose."
+
+    assert template_violations_in_reply(reply, "quote the source") == []
 
 
 def test_bounce_guidance_names_the_violation_and_routes_to_humanize():
-    guidance = bounce_guidance(["contains an em dash"])
+    guidance = bounce_guidance(["names an MR or PR but gives no link to validate it"])
 
-    assert "contains an em dash" in guidance
+    assert "names an MR or PR" in guidance
     assert "load the humanize skill" in guidance.lower()
     assert "interactive communication instructions" in guidance
 
@@ -142,19 +92,9 @@ def test_interactive_instructions_route_substantive_output_to_humanize():
         assert reader_task in policy
 
 
-def test_interactive_instructions_state_the_hook_limit_values():
-    policy = re.sub(
-        r"\s+",
-        " ",
-        INTERACTIVE_COMMUNICATION_PATH.read_text(encoding="utf-8"),
-    )
+def test_interactive_contract_treats_explicit_short_requests_as_binding():
+    policy = INTERACTIVE_COMMUNICATION_PATH.read_text(encoding="utf-8").lower()
 
-    expected_limits = (
-        f"over {SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS} prose words",
-        f"about {REPLY_TARGET_PROSE_WORDS} prose words",
-        f"never exceed {REPLY_HARD_WORD_CEILING}",
-        f"within {REPLY_HARD_CHARACTER_CEILING} prose characters",
-        f"no more than {MAXIMUM_PROSE_PARAGRAPH_BLOCKS} prose blocks",
-    )
-    assert not [limit for limit in expected_limits if limit not in policy]
-    assert "prose lines" not in policy
+    assert "tldr" in policy
+    assert "binding" in policy
+    assert "hard ceiling" not in policy

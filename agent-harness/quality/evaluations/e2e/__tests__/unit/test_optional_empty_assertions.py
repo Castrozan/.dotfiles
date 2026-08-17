@@ -1,4 +1,4 @@
-from e2e_assertions_workspace import run_e2e_assertions
+from e2e_assertions import run_e2e_assertions
 from e2e_models import TerminalSessionTrace
 
 

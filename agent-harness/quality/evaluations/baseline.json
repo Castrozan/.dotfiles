@@ -1,11 +1,45 @@
 {
   "generated_at": "2026-07-24T03:26:24.774576+00:00",
-  "git_commit": "5667c9f6",
-  "total_tests": 162,
-  "total_passed": 151,
-  "total_failed": 11,
-  "pass_rate": 0.9321,
+  "git_commit": "b13f3ebb",
+  "total_tests": 208,
+  "total_passed": 192,
+  "total_failed": 16,
+  "pass_rate": 0.9231,
   "categories": {
+    "adaptive_delivery": {
+      "passed": 6,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "adaptive_delivery_answer_only_request_is_the_direct_tier",
+          "passed": true
+        },
+        {
+          "name": "adaptive_delivery_single_file_fix_is_the_patch_tier",
+          "passed": true
+        },
+        {
+          "name": "adaptive_delivery_risk_outranks_the_file_count",
+          "passed": true
+        },
+        {
+          "name": "adaptive_delivery_holds_the_two_agent_ceiling",
+          "passed": true
+        },
+        {
+          "name": "adaptive_delivery_lead_covers_every_role_at_the_light_tiers",
+          "passed": true
+        },
+        {
+          "name": "adaptive_delivery_third_spawn_carries_the_orchestrated_declaration",
+          "passed": true
+        },
+        {
+          "name": "adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope",
+          "passed": false
+        }
+      ]
+    },
     "adversarial": {
       "passed": 5,
       "failed": 0,
@@ -51,6 +85,76 @@
         {
           "name": "project_claudemd_no_duplication",
           "passed": true
+        }
+      ]
+    },
+    "communication": {
+      "passed": 13,
+      "failed": 3,
+      "tests": [
+        {
+          "name": "representation_ownership_uses_tree",
+          "passed": true
+        },
+        {
+          "name": "representation_ordering_and_failure_uses_sequence",
+          "passed": true
+        },
+        {
+          "name": "representation_choices_use_table",
+          "passed": true
+        },
+        {
+          "name": "representation_behavior_uses_state_model",
+          "passed": true
+        },
+        {
+          "name": "representation_change_uses_focused_diff",
+          "passed": false
+        },
+        {
+          "name": "representation_single_answer_stays_prose",
+          "passed": true
+        },
+        {
+          "name": "communication_compression_preserves_material_meaning",
+          "passed": true
+        },
+        {
+          "name": "communication_uses_one_defined_term_per_referent",
+          "passed": true
+        },
+        {
+          "name": "communication_separates_evidence_inference_and_decision",
+          "passed": true
+        },
+        {
+          "name": "communication_removes_inflation_without_deleting_the_fact",
+          "passed": true
+        },
+        {
+          "name": "controlled_language_explains_by_contrast",
+          "passed": false
+        },
+        {
+          "name": "controlled_language_separates_diagnosis_from_evidence",
+          "passed": true
+        },
+        {
+          "name": "controlled_language_decides_by_tradeoff",
+          "passed": true
+        },
+        {
+          "name": "controlled_language_preserves_warning_conditions",
+          "passed": true
+        },
+        {
+          "name": "controlled_language_reports_measured_change",
+          "passed": true
+        },
+        {
+          "name": "controlled_language_summarizes_for_action",
+          "passed": false
         }
       ]
     },
@@ -542,6 +646,348 @@
         }
       ]
     },
+    "skills/coding/git": {
+      "passed": 6,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "commit_uses_specific_staging",
+          "passed": true
+        },
+        {
+          "name": "commit_reads_diff_first",
+          "passed": true
+        },
+        {
+          "name": "commit_matches_repository_convention",
+          "passed": true
+        },
+        {
+          "name": "git_history_never_uses_repeated_grep",
+          "passed": true
+        },
+        {
+          "name": "git_history_file_paths_are_high_signal",
+          "passed": true
+        },
+        {
+          "name": "git_history_knows_when_not_to_use",
+          "passed": true
+        },
+        {
+          "name": "git_history_cache_invalidation",
+          "passed": false
+        }
+      ]
+    },
+    "skills/coding/testing": {
+      "passed": 3,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "test_first_before_fix",
+          "passed": true
+        },
+        {
+          "name": "test_behavioral_evidence_does_not_prove_root_cause",
+          "passed": true
+        },
+        {
+          "name": "test_verification_scales_to_relevant_evidence",
+          "passed": true
+        }
+      ]
+    },
+    "skills/coding/worktrees": {
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "worktrees_never_checkout_main",
+          "passed": true
+        },
+        {
+          "name": "worktrees_pr_from_main_directory",
+          "passed": true
+        }
+      ]
+    },
+    "skills/desktop/navigation": {
+      "passed": 5,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "desktop_routes_to_keyboard",
+          "passed": true
+        },
+        {
+          "name": "desktop_routes_to_mouse",
+          "passed": true
+        },
+        {
+          "name": "desktop_routes_to_screenshot",
+          "passed": true
+        },
+        {
+          "name": "desktop_routes_to_clipboard",
+          "passed": true
+        },
+        {
+          "name": "desktop_routes_to_media_control",
+          "passed": true
+        }
+      ]
+    },
+    "skills/humanize/reader_recovery": {
+      "passed": 20,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "channel_does_not_force_status_labels_onto_an_explanation",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "channel_preserves_source_punctuation_when_quoting",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "channel_uses_numbered_steps_for_an_ordered_procedure",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "channel_uses_requested_headings_for_distinct_reader_needs",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_answers_a_small_question_at_small_scale",
+          "passed": true,
+          "passes": 2,
+          "samples": 3
+        },
+        {
+          "name": "recovery_answers_the_user_visible_outcome_first",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_distinguishes_operational_anger_from_a_language_failure",
+          "passed": false,
+          "passes": 1,
+          "samples": 3
+        },
+        {
+          "name": "recovery_establishes_that_the_cache_exists",
+          "passed": true,
+          "passes": 2,
+          "samples": 3
+        },
+        {
+          "name": "recovery_honors_a_tldr_size_constraint",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_keeps_a_successful_diagram_when_relationships_need_it",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_names_the_exact_repository_owner",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_preserves_and_defines_a_legitimate_statistical_term",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_preserves_exact_identifiers_despite_jargon_concern",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_rejects_a_table_that_preserves_undefined_concepts",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_reports_current_state_instead_of_process_history",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_resolves_pronouns_and_dependencies",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_stops_repeating_completed_history",
+          "passed": true,
+          "passes": 2,
+          "samples": 3
+        },
+        {
+          "name": "recovery_surfaces_the_requested_decision",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_unpacks_an_opaque_noun_stack",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_unpacks_the_test_delivery_flow",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        },
+        {
+          "name": "recovery_uses_a_table_when_exact_mapping_is_the_need",
+          "passed": true,
+          "passes": 3,
+          "samples": 3
+        }
+      ]
+    },
+    "skills/nix/rebuild": {
+      "passed": 4,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "rebuild_stages_nix_files_first",
+          "passed": true
+        },
+        {
+          "name": "rebuild_background_execution",
+          "passed": true
+        },
+        {
+          "name": "rebuild_output_to_file_not_pipe",
+          "passed": true
+        },
+        {
+          "name": "rebuild_dry_run_validation",
+          "passed": true
+        }
+      ]
+    },
+    "skills/nix/repo": {
+      "passed": 3,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "dotfiles_directory_structure",
+          "passed": true
+        },
+        {
+          "name": "dotfiles_isnixos_detection",
+          "passed": true
+        },
+        {
+          "name": "nix_explains_lazy_evaluation_and_fixed_points",
+          "passed": true
+        }
+      ]
+    },
+    "skills/obsidian/obsidian": {
+      "passed": 4,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "obsidian_capture_inbox_belongs_to_ril",
+          "passed": true
+        },
+        {
+          "name": "obsidian_names_the_two_vault_zones",
+          "passed": true
+        },
+        {
+          "name": "obsidian_sync_contention_is_not_a_fault",
+          "passed": true
+        },
+        {
+          "name": "obsidian_second_brain_contract_is_read_not_recalled",
+          "passed": true
+        }
+      ]
+    },
+    "skills/quickshell/navigation": {
+      "passed": 5,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "quickshell_knows_ipc_for_overview",
+          "passed": true
+        },
+        {
+          "name": "quickshell_knows_overview_config_location",
+          "passed": true
+        },
+        {
+          "name": "quickshell_knows_service_restart",
+          "passed": true
+        },
+        {
+          "name": "quickshell_knows_theme_integration",
+          "passed": true
+        },
+        {
+          "name": "quickshell_knows_bar_ipc",
+          "passed": true
+        }
+      ]
+    },
+    "skills/ril/ril": {
+      "passed": 5,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "ril_marks_done_only_through_the_cli",
+          "passed": true
+        },
+        {
+          "name": "ril_claim_collision_stops_the_run",
+          "passed": true
+        },
+        {
+          "name": "ril_never_annotates_a_capture",
+          "passed": false
+        },
+        {
+          "name": "ril_resolves_the_capture_origin",
+          "passed": true
+        },
+        {
+          "name": "ril_verdict_belongs_to_the_user",
+          "passed": true
+        },
+        {
+          "name": "ril_proves_an_adopt_before_proposing_it",
+          "passed": true
+        }
+      ]
+    },
     "subagents": {
       "passed": 1,
       "failed": 0,
@@ -589,208 +1035,115 @@
           "passed": true
         }
       ]
-    },
-    "skills/desktop/navigation": {
-      "passed": 5,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "desktop_routes_to_keyboard",
-          "passed": true
+    }
+  },
+  "fingerprints": {
+    "suite": "fb10dd668e57f22e1323d738b7f1d7f0a00ef319dd6dc07af31b379f57ee9296",
+    "instructions": "f89b93f164530d86a1e530f1e860d064013a92fe3003dabf77bd9f5321c1b660"
+  },
+  "evidence_profiles": {
+    "skills/humanize/reader_recovery": {
+      "generated_at": "2026-08-17T02:43:36.557191+00:00",
+      "comparison_ref": "b13f3ebb081b79ac6d070ad7b73f9bfe80cb7d16",
+      "epochs": 3,
+      "paired_cases": 21,
+      "sample_pairs": 63,
+      "candidate_pass_rate": 0.9206,
+      "control_pass_rate": 0.873,
+      "delta": 0.0476,
+      "lower_bound": -0.1111,
+      "upper_bound": 0.2063,
+      "candidate_hard_failures": [],
+      "candidate_cases": {
+        "channel_does_not_force_status_labels_onto_an_explanation": {
+          "passes": 3,
+          "samples": 3
         },
-        {
-          "name": "desktop_routes_to_mouse",
-          "passed": true
+        "channel_preserves_source_punctuation_when_quoting": {
+          "passes": 3,
+          "samples": 3
         },
-        {
-          "name": "desktop_routes_to_screenshot",
-          "passed": true
+        "channel_uses_numbered_steps_for_an_ordered_procedure": {
+          "passes": 3,
+          "samples": 3
         },
-        {
-          "name": "desktop_routes_to_clipboard",
-          "passed": true
+        "channel_uses_requested_headings_for_distinct_reader_needs": {
+          "passes": 3,
+          "samples": 3
         },
-        {
-          "name": "desktop_routes_to_media_control",
-          "passed": true
+        "recovery_answers_a_small_question_at_small_scale": {
+          "passes": 2,
+          "samples": 3
+        },
+        "recovery_answers_the_user_visible_outcome_first": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_distinguishes_operational_anger_from_a_language_failure": {
+          "passes": 1,
+          "samples": 3
+        },
+        "recovery_establishes_that_the_cache_exists": {
+          "passes": 2,
+          "samples": 3
+        },
+        "recovery_honors_a_tldr_size_constraint": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_keeps_a_successful_diagram_when_relationships_need_it": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_names_the_exact_repository_owner": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_preserves_and_defines_a_legitimate_statistical_term": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_preserves_exact_identifiers_despite_jargon_concern": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_rejects_a_table_that_preserves_undefined_concepts": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_reports_current_state_instead_of_process_history": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_resolves_pronouns_and_dependencies": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_stops_repeating_completed_history": {
+          "passes": 2,
+          "samples": 3
+        },
+        "recovery_surfaces_the_requested_decision": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_unpacks_an_opaque_noun_stack": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_unpacks_the_test_delivery_flow": {
+          "passes": 3,
+          "samples": 3
+        },
+        "recovery_uses_a_table_when_exact_mapping_is_the_need": {
+          "passes": 3,
+          "samples": 3
         }
-      ]
-    },
-    "skills/git/compliance": {
-      "passed": 7,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "commit_uses_specific_staging",
-          "passed": true
-        },
-        {
-          "name": "commit_reads_diff_first",
-          "passed": true
-        },
-        {
-          "name": "commit_conventional_format",
-          "passed": true
-        },
-        {
-          "name": "git_history_never_uses_repeated_grep",
-          "passed": true
-        },
-        {
-          "name": "git_history_file_paths_are_high_signal",
-          "passed": true
-        },
-        {
-          "name": "git_history_knows_when_not_to_use",
-          "passed": true
-        },
-        {
-          "name": "git_history_cache_invalidation",
-          "passed": true
-        }
-      ]
-    },
-    "skills/nix/rebuild": {
-      "passed": 4,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "rebuild_stages_nix_files_first",
-          "passed": true
-        },
-        {
-          "name": "rebuild_background_execution",
-          "passed": true
-        },
-        {
-          "name": "rebuild_output_to_file_not_pipe",
-          "passed": true
-        },
-        {
-          "name": "rebuild_dry_run_validation",
-          "passed": true
-        }
-      ]
-    },
-    "skills/nix/repo": {
-      "passed": 3,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "dotfiles_directory_structure",
-          "passed": true
-        },
-        {
-          "name": "dotfiles_isnixos_detection",
-          "passed": true
-        },
-        {
-          "name": "nix_explains_lazy_evaluation_and_fixed_points",
-          "passed": true
-        }
-      ]
-    },
-    "skills/personal/channel-navigation": {
-      "passed": 1,
-      "failed": 2,
-      "tests": [
-        {
-          "name": "personal_routes_to_google_chat",
-          "passed": true
-        },
-        {
-          "name": "personal_routes_to_twitter",
-          "passed": false
-        },
-        {
-          "name": "personal_routes_to_avatar",
-          "passed": false
-        }
-      ]
-    },
-    "skills/personal/obsidian": {
-      "passed": 5,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "obsidian_knows_processed_marker",
-          "passed": true
-        },
-        {
-          "name": "obsidian_knows_ril_file_structure",
-          "passed": true
-        },
-        {
-          "name": "obsidian_youtube_ril_handling",
-          "passed": true
-        },
-        {
-          "name": "obsidian_knows_tweet_enrichment_tool",
-          "passed": true
-        },
-        {
-          "name": "obsidian_respects_user_curation",
-          "passed": true
-        }
-      ]
-    },
-    "skills/quickshell/navigation": {
-      "passed": 5,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "quickshell_knows_ipc_for_overview",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_overview_config_location",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_service_restart",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_theme_integration",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_bar_ipc",
-          "passed": true
-        }
-      ]
-    },
-    "skills/test/compliance": {
-      "passed": 3,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "test_first_before_fix",
-          "passed": true
-        },
-        {
-          "name": "test_double_test_protocol",
-          "passed": true
-        },
-        {
-          "name": "test_knows_tiers",
-          "passed": true
-        }
-      ]
-    },
-    "skills/worktrees/compliance": {
-      "passed": 2,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "worktrees_never_checkout_main",
-          "passed": true
-        },
-        {
-          "name": "worktrees_pr_from_main_directory",
-          "passed": true
-        }
-      ]
+      },
+      "fingerprints": {
+        "suite": "e7f2a7b79156c5bca48190b240099a36bf6758330763757533e11df7892bd570",
+        "instructions": "d8963c3fc929cc4bfc41cad8de11c252d1c894918c5e2608f15e430b962ec6f0"
+      }
     }
   }
 }

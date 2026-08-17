@@ -2,7 +2,10 @@ import re
 from pathlib import Path
 
 from e2e_models import TerminalSessionTrace, TerminalToolCallEvent
-from e2e_session_transcript import tool_calls_from_session_transcript
+from e2e_session_transcript import (
+    assistant_messages_from_session_transcript,
+    tool_calls_from_session_transcript,
+)
 
 TOOL_CALL_PATTERN = re.compile(r"^[●⬤⏺]\s+(\w+)\((.+)\)\s*$")
 TOOL_CALL_MULTILINE_START_PATTERN = re.compile(r"^[●⬤⏺]\s+(\w+)\((.+)$")
@@ -143,7 +146,11 @@ def build_terminal_session_trace(
     if not tool_calls:
         tool_calls = parse_tool_calls_from_terminal_output(raw_output)
     bash_commands = extract_bash_commands_from_tool_calls(tool_calls)
-    assistant_text = extract_assistant_text_from_terminal_output(raw_output)
+    assistant_text = []
+    if workspace is not None:
+        assistant_text = assistant_messages_from_session_transcript(workspace)
+    if not assistant_text:
+        assistant_text = extract_assistant_text_from_terminal_output(raw_output)
 
     return TerminalSessionTrace(
         raw_terminal_output=raw_output,

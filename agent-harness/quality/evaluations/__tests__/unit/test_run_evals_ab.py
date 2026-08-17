@@ -50,11 +50,17 @@ def test_stripping_removes_instruction_fields_without_mutating_the_original():
 
 def test_outcomes_by_name_maps_pass_state():
     results = [_result("a", True), _result("b", False)]
-    assert outcomes_by_name(results) == {"a": True, "b": False}
+    assert outcomes_by_name(results) == {"other::a": True, "other::b": False}
 
 
 def test_experiment_pairs_instructed_run_against_stripped_control(monkeypatch):
-    def fake_run_tests(config, category=None, max_workers_override=None):
+    def fake_run_tests(
+        config,
+        category=None,
+        max_workers_override=None,
+        instruction_ref=None,
+        dry_run=False,
+    ):
         instructed = any(
             "skill_path" in test for tests in config["tests"].values() for test in tests
         )
@@ -79,3 +85,95 @@ def test_experiment_pairs_instructed_run_against_stripped_control(monkeypatch):
     assert comparison["variant_b_pass_rate"] == 0.5
     assert comparison["a_only_wins"] == 1
     assert comparison["delta"] == 0.5
+
+
+def test_repeated_experiment_alternates_arm_order_and_compares_a_git_ref(monkeypatch):
+    calls = []
+
+    def fake_run_tests(
+        config,
+        category=None,
+        max_workers_override=None,
+        instruction_ref=None,
+        dry_run=False,
+    ):
+        calls.append(instruction_ref or "candidate")
+        passed = instruction_ref is None
+        return [_result("recovery", passed)]
+
+    monkeypatch.setattr(run_evals_ab, "run_tests", fake_run_tests)
+    config = {
+        "tests": {
+            "skills/humanize/reader_recovery": [
+                {"name": "recovery", "prompt": "p", "skill_path": "s"}
+            ]
+        }
+    }
+
+    comparison = run_instruction_loading_experiment(
+        config, epochs=3, comparison_ref="b13f3ebb"
+    )
+
+    assert calls == [
+        "candidate",
+        "b13f3ebb",
+        "b13f3ebb",
+        "candidate",
+        "candidate",
+        "b13f3ebb",
+    ]
+    assert comparison["method"] == "paired_hierarchical_bootstrap"
+    assert comparison["epochs"] == 3
+    assert comparison["variant_a_pass_rate"] == 1.0
+    assert comparison["variant_b_pass_rate"] == 0.0
+
+
+def test_experiment_refuses_to_grade_an_invocation_error(monkeypatch):
+    def fake_run_tests(
+        config,
+        category=None,
+        max_workers_override=None,
+        instruction_ref=None,
+        dry_run=False,
+    ):
+        result = _result("recovery", True)
+        if instruction_ref:
+            result.passed = False
+            result.error = "session limit reached"
+        return [result]
+
+    monkeypatch.setattr(run_evals_ab, "run_tests", fake_run_tests)
+
+    try:
+        run_instruction_loading_experiment(
+            {"tests": {"recovery": [{"name": "recovery", "prompt": "p"}]}},
+            comparison_ref="base",
+        )
+    except RuntimeError as error:
+        assert "control arm has invocation errors" in str(error)
+    else:
+        raise AssertionError("provider errors must not become model outcomes")
+
+
+def test_dry_run_reaches_both_experiment_arms(monkeypatch):
+    dry_run_values = []
+
+    def fake_run_tests(
+        config,
+        category=None,
+        max_workers_override=None,
+        instruction_ref=None,
+        dry_run=False,
+    ):
+        dry_run_values.append(dry_run)
+        return [_result("recovery", True)]
+
+    monkeypatch.setattr(run_evals_ab, "run_tests", fake_run_tests)
+
+    comparison = run_instruction_loading_experiment(
+        {"tests": {"recovery": [{"name": "recovery", "prompt": "p"}]}},
+        dry_run=True,
+    )
+
+    assert comparison["n_paired"] == 1
+    assert dry_run_values == [True, True]

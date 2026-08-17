@@ -28,6 +28,7 @@ def test_prompt_is_delivered_via_stdin_not_as_an_argv_positional(monkeypatch):
     assert captured["input"] == "GRADE THIS RESPONSE"
     assert "GRADE THIS RESPONSE" not in captured["cmd"]
     assert "--tools" in captured["cmd"]
+    assert "--safe-mode" in captured["cmd"]
 
 
 class _ProcessWithStderrChrome:
@@ -72,3 +73,24 @@ def test_failure_surfaces_stderr_when_stdout_is_empty(monkeypatch):
 
     assert invoked is False
     assert "the model backend refused the request" in output
+
+
+def test_session_limit_failure_is_not_retried(monkeypatch):
+    invocations = []
+
+    class SessionLimitProcess:
+        returncode = 1
+        stdout = ""
+        stderr = "You've hit your session limit"
+
+    def fake_run(*args, **kwargs):
+        invocations.append(True)
+        return SessionLimitProcess()
+
+    monkeypatch.setattr(run_evals_claude_cli.subprocess, "run", fake_run)
+
+    output, invoked = run_claude_cli("do a thing", model="haiku")
+
+    assert invoked is False
+    assert "session limit" in output
+    assert len(invocations) == 1

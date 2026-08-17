@@ -112,24 +112,26 @@ def test_artifact_links_are_remote_and_complete():
     assert "needs only the SHA" not in artifact_links
 
 
-def test_nothing_pending_means_the_session_can_end():
-    reply_template = interactive_policy_section("reply_template")
+def test_status_handoff_distinguishes_required_and_unrelated_work():
+    response_shape = interactive_policy_section("response-shape")
 
     for required_behavior in (
-        "session can be ended",
-        "Write that line exactly",
-        "required by the current task",
+        "status",
+        "Done",
+        "Next",
+        "required work",
         "unrelated work",
-        "opening or Done line",
     ):
-        assert required_behavior in reply_template
+        assert required_behavior in response_shape
 
 
-def test_request_gate_uses_word_limits_instead_of_line_limits():
-    request_gate = interactive_policy_section("request_gated")
+def test_concise_request_is_semantic_instead_of_a_global_shape_limit():
+    concise_request = interactive_policy_section("concise-request")
 
-    assert "over 40 prose words" in request_gate
-    assert "prose lines" not in request_gate
+    assert "binding" in concise_request
+    assert "tldr" in concise_request
+    assert "hard ceiling" not in concise_request
+    assert "1500" not in concise_request
 
 
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():

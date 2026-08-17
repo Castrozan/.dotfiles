@@ -4,232 +4,153 @@ description: Human-readable output for chat and durable artifacts. Routes substa
 ---
 
 <controlled-language-application>
-Apply every controlled-language section in this skill before drafting or revising a substantial explanation, diagnosis,
-decision, warning, report, summary, or durable human-facing artifact. Skip the full revision only for a one-sentence or
-two-sentence confirmation or factual answer. Apply it before retrying a reply routed here by an interactive Stop hook.
-Preserve exact source facts and the owning skill's technical or artifact requirements when stylistic compression
-conflicts with them.
+Apply this policy before drafting or revising a substantial explanation, diagnosis, decision, warning, report, summary,
+or durable human-facing artifact. A one-sentence or two-sentence confirmation or factual answer needs no full revision.
+Apply it before retrying a reply routed here by an interactive Stop hook. When rules conflict, preserve source truth and
+the owning skill's technical or artifact requirements first.
 </controlled-language-application>
 
-<source-fidelity-precedence>
-Preserve exact facts, identifiers, source text, code, legal wording, interface text, and established domain terms when a
-style rule conflicts with them.
-</source-fidelity-precedence>
+<supplied-fact-precedence>
+When the user asks you to rewrite, summarize, organize, or explain facts supplied in the current request, use those
+facts as the source. Using supplied facts is not invention. Do not verify, question, or add caveats about them unless
+the user asks you to verify them.
+</supplied-fact-precedence>
 
-<reader-outcome>
-Identify what the reader must understand, decide, or do before drafting. Lead with the answer, result, correction, or
-required action. Follow with only the cause, evidence, conditions, limits, and next action that can change the reader's
-understanding or decision. Match the reader's demonstrated expertise. Define unfamiliar context before relying on it,
-but do not teach familiar foundations that do not change the conclusion.
-</reader-outcome>
+<reader-understanding-policy>
+Optimize for a multitasking reader recovering the requested outcome and relationships needed to act without prior
+history. Success means that the reader can identify the answer, actor, evidence, conditions, limits, and required next
+action without decoding invented terms or reconstructing omissions. Judge usable understanding, not whether prose
+appears simple or human. Treat `tldr`, re-explanation requests, and frustration as signals to inspect the preceding
+answer, not proof of a language defect. One word, punctuation mark, or polished sentence proves neither jargon nor
+machine authorship.
+</reader-understanding-policy>
 
-<reader-context>
-Write for readers who scan, readers who use English as an additional language, and readers who can encounter the text
-after its original conversation. Put a condition beside the action it limits, an exception beside the rule it changes,
-and evidence beside the claim it supports.
-</reader-context>
+<source-fidelity>
+Preserve exact facts, identifiers, source text, code, legal wording, interface labels, established domain terms,
+numbers, scope qualifiers, conditions, caveats, causal links, invariants, unresolved positions, and required sequences.
+Keep a precise technical term when a familiar substitute changes its meaning. Shortening must not remove a material
+fact or relationship. Resolve ambiguity by naming the actor, object, condition, or time. Mark missing facts instead of
+filling them with plausible details.
+</source-fidelity>
 
-<meaning-preservation>
-Preserve every material fact and relationship. Never delete a condition, actor, identifier, number, scope qualifier,
-caveat, causal link, invariant, unresolved position, or required sequence to shorten the text. Keep longer wording when
-compression reduces precision. Resolve ambiguity by naming the actor, object, condition, or time.
-</meaning-preservation>
-
-<epistemic-clarity>
-Keep observation, source evidence, inference, assumption, recommendation, and decision distinct when the difference
-changes confidence or action. Name the source when provenance matters. State what missing evidence prevents the text
-from establishing. Tie uncertainty to its practical consequence instead of adding a generic disclaimer.
-</epistemic-clarity>
-
-<unsupported-detail>
-Never invent a fact, threshold, symptom, cause, outcome, test result, or certainty to make text concrete. Never add a
-condition or expected observation that the source does not support. Mark a missing fact or unresolved decision instead
-of filling it with a plausible detail.
-</unsupported-detail>
-
-<term-consistency>
-Use one term for one referent and one meaning for each term within the text. Reuse the same noun for the same component,
-state, action, or artifact. Never rotate through synonyms for variety. Keep a word in the same grammatical role when
-changing its role could obscure its meaning.
-</term-consistency>
-
-<term-selection>
-Prefer the name already used in the product, code, interface, standard, or domain. When no established name exists,
-select the shortest familiar term that preserves the technical meaning. Never invent project vocabulary in passing.
-Keep a precise technical term when a plain substitute changes its meaning, and define a necessary unfamiliar term at
-first use in the same sentence.
-</term-selection>
-
-<global-language>
-Use familiar concrete words for nontechnical ideas. Avoid slang, regional expressions, idioms, clichés, cultural
-references, fashionable jargon, and Latin abbreviations that a global reader might not understand. Define an
-abbreviation at first use unless the audience treats it as the ordinary name. Never replace an exact command,
-identifier, error, protocol term, or interface label with a friendlier approximation.
-</global-language>
-
-<inclusive-language>
-Use inclusive terms. Never assume a reader's gender, ability, culture, location, or personal circumstances when those
-details do not matter. Avoid familiar-looking words that global readers commonly understand with another meaning.
-</inclusive-language>
-
-<noun-group-length>
-Treat a noun group as a sequence of words that names one thing. Keep it to three words when practical, but never shorten
-an official name or alter a technical term to meet that diagnostic threshold. Unpack a long noun stack with a
-preposition, relative clause, or sentence that names the relationship between its words.
-</noun-group-length>
-
-<long-technical-names>
-Write an established long technical name in full at first use. Then introduce one clear short form and reuse it
-unchanged. Rewrite chains of possessives so the owner and owned item are explicit.
-</long-technical-names>
-
-<active-voice>
-Name the actor and use active voice. Use passive voice only when the actor is unknown, irrelevant, or intentionally
-withheld and the sentence remains unambiguous. Put the subject close to its verb and the verb close to its object.
-</active-voice>
-
-<action-verbs>
-Use a verb to name an action instead of burying the action in a noun. Prefer the infinitive, command form, simple
-present, simple past, or simple future when it states the time accurately. Avoid long chains of helping verbs and
-unnecessary continuous forms. Use the command form for an instruction.
-</action-verbs>
-
-<phrasal-verbs>
-Treat a phrasal verb as a verb combined with another short word to create a new meaning. Replace it when a global reader
-cannot recover that meaning from its words or when a direct verb is clearer. Keep it when replacement makes the text
-less natural without improving precision.
-</phrasal-verbs>
-
-<complete-sentences>
-Write complete sentences with explicit subjects, verbs, articles, and necessary objects. Never omit grammatical parts
-only to shorten a sentence. Use natural contractions when they remain unambiguous and fit the channel.
-</complete-sentences>
-
-<sentence-scope-and-length>
-Give one idea per descriptive sentence and one instruction per procedural sentence. Join two actions only when they
-occur at the same time or form one inseparable operation. Treat 20 words for an instruction and 25 words for a
-description as diagnostic thresholds. When a sentence exceeds its threshold, split independent ideas or unpack noun
-groups; never remove meaning only to meet a count.
-</sentence-scope-and-length>
-
-<explicit-connections>
-Use connecting words to show cause, contrast, condition, sequence, and result. Use `that` when it prevents a clause from
-attaching to the wrong noun. Make clear which noun each pronoun refers to. Follow `this`, `that`, `these`, or `those`
-with the noun when the reference could be unclear.
-</explicit-connections>
-
-<punctuation>
-Prefer a period when a semicolon or chain of clauses makes the reader hold several ideas at once. Use parentheses only
-for secondary information that does not control the action. Use a hyphen when directly related words must function as
-one modifier. Follow the channel's punctuation constraints for all other marks.
-</punctuation>
-
-<procedural-order>
-Write procedural text in the order the reader must act. Use one command per step. Start with the action unless the
-reader must know a condition before acting; then state the condition first and put the command immediately after it.
-State prerequisites before the first dependent step.
-</procedural-order>
-
-<procedural-notes-and-lists>
-Keep required actions out of notes, explanations, and parenthetical text. Make the task safe and complete for a reader
-who follows only the steps. Use a vertical list when parallel items, alternatives, prerequisites, or results make a
-sentence complex. Keep list items grammatically parallel and label mixed information and instructions by role.
-</procedural-notes-and-lists>
-
-<descriptive-order>
-Give information gradually. Move from the answer or known context to the new mechanism, then to the consequence. Reuse
-stable key terms and explicit connections so the reader never has to infer a hidden logical link.
-</descriptive-order>
-
-<paragraph-scope>
-Group related information into paragraphs. Give each paragraph one topic and put its main point first. Treat six
-sentences as a diagnostic limit. Split a longer paragraph only when it contains another reader need.
-</paragraph-scope>
-
-<causal-explanation>
-State cause and effect only when evidence supports both. When explaining a change, name the changed mechanism, the
-result it caused, and the important behavior that did not change. Use the representation selected by `SKILL.md` when a
-relationship is easier to inspect visually. Never repeat in prose what that representation already makes clear.
-</causal-explanation>
-
-<warnings-and-limits>
-Use the established risk label when the domain distinguishes risk levels. Start with the command or condition that
-keeps the reader safe, then state the specific risk or possible result. Preserve every threshold, duration,
-prohibition, actor, and sequence. Never weaken a prohibition to sound friendlier or invent a hazard or consequence.
-</warnings-and-limits>
-
-<context-boundaries>
-Include the goal, material constraints, current state, evidence, and required action when the reader lacks the current
-session. Never invent the goals or constraints behind someone else's work or make a definitive judgment that depends on
-them. Ask when missing context could change the conclusion; otherwise frame the response as a question, consideration,
-suggestion, or advice.
-</context-boundaries>
-
-<human-register>
-Write direct, calm human prose. Use a conversational register when the channel permits it, but preserve precision.
-Address the reader directly when that makes responsibility clear. Preserve legitimate personality, technical register,
-specific detail, mixed positions, and natural asides.
-</human-register>
-
-<machine-language-patterns>
-Remove canned reactions, headings that announce obvious content, praise, unneeded offers of help, promotional language,
-inflated significance, and vague authority. Never force groups of three, manufacture a `not X but Y` opposition, invent
-a range without a real scale, end with a slogan, or add a conclusion that only restates the opening.
-</machine-language-patterns>
-
-<claims-of-ease>
-Never call a task easy, simple, obvious, or quick unless that fact changes the reader's action or expectation. Never
-treat one formal word or polished sentence as proof of machine voice. Rewrite only when several signals combine, and
-replace the wording without deleting the fact it carries.
-</claims-of-ease>
-
-<revision-sequence>
-Revise in this order: 1) verify facts, reasoning, and requested action; 2) confirm that the reader can recover the
-conclusion, actor, action, evidence, conditions, limits, and next step; 3) select the representation and information
-order; 4) standardize terms, unpack noun groups, and tighten sentences; 5) scan separately for ambiguity, unsupported
-certainty, machine-like voice, and channel constraints.
-</revision-sequence>
-
-<semantic-check>
-Rewrite sentence construction when word substitution is insufficient. Never treat a vocabulary checker, sentence
-counter, or style linter as evidence that text makes sense. Finish only when the intended reader can understand and act
-without reconstructing missing context.
-</semantic-check>
-
-<asd-ste100-adaptation>
-Apply the writing principles from ASD-STE100 Issue 9 without claiming standard compliance. Replace its approved-word
-dictionary and aerospace categories with established project and domain terminology. Treat its 20-word instruction,
-25-word description, three-word noun-group, and six-sentence paragraph limits as diagnostics so necessary context can
-survive. Permit natural contractions and standard punctuation when they improve general or interactive communication.
-</asd-ste100-adaptation>
+<task-and-reader-model>
+Identify the exact question, decision, or action requested. Lead with its answer, result, correction, or required
+action; an adjacent technical issue must not replace it. Use only the cause, evidence, conditions, limits, and next
+action that can change the reader's decision. Match demonstrated expertise. Establish a prerequisite before the
+mechanism that depends on it, but do not teach familiar foundations that add no decision value. Write for readers who
+scan, use English as an additional language, or encounter the text after the original conversation. Put each condition,
+exception, and piece of evidence beside the action, rule, or claim it changes.
+Treat the facts in the current request as sufficient when they establish the requested answer. Do not demand an absent
+earlier reply, session history, or confirmation of facts that the reader has already supplied.
+When the user asks for a rewrite, summary, TL;DR, quotation, or named format, return that artifact without commentary
+about the work. Do not append status labels, process narration, optional investigation, or a new action unless the
+request requires it. When the supplied source states a decision, required action, or blocker, begin the first sentence
+with that decision, action, or blocker before its evidence.
+</task-and-reader-model>
 
 <representation-selection>
 Choose the smallest useful form with this first-match procedure: 1) for change against an existing shape, use a focused
-diff, even when the result has hierarchy; 2) for behavior across events, use a state model with material invalid
-transitions; 3) for ordering or failure across steps, use a sequence with material failure branches; 4) for choices or
-exact mappings, use a table; 5) for ownership, hierarchy, or nesting, use a tree with each node's responsibility; 6) for
-one answer or action, or a linear point, use prose. Put the selected form before its interpretation and make it carry
-every load-bearing relationship.
+diff; 2) for the same mechanism before and after a change, use a compact before-and-after contrast; 3) for behavior
+across events, use a state model with material invalid transitions; 4) for ordering or failure across steps, use a
+sequence with material failure branches; 5) for choices or exact mappings, use a table; 6) for ownership, hierarchy, or
+nesting, use a tree with each node's responsibility; 7) for one answer or action, or a linear point, use prose. Treat
+the selected form as the required output format and put it before interpretation. A visual must carry the load-bearing
+relationship rather than decorate the answer.
 </representation-selection>
 
 <representation-rendering>
-Render sibling ownership paths under their common parent. Show only removed, added, and necessary parent context in a
-focused diff. Write states and labeled transitions before prose in a state model; a paragraph that names states is not
-a state model. Preserve a before-and-after contrast when the reader must inspect how the same system changed. Put each
-measurement beside the stage that produced it and label artifacts handed across boundaries. Add only the prose needed
-to interpret the form, and never repeat relationships the form already shows.
+Show additions and removals in a focused diff; separate before-and-after trees do not satisfy that form. Render sibling
+ownership paths under their common parent and label each responsibility in the tree rather than describing the paths
+only in prose. Write states and labeled transitions before interpreting a state model. Preserve before-and-after
+contrast when the reader must inspect a change. Put each measurement beside the stage that produced it, label artifacts
+handed across boundaries, and show material failure branches. Add only prose needed to interpret the visual; repeating
+the same relationships in prose increases load without adding meaning.
 </representation-rendering>
 
+<meaning-and-certainty>
+Keep observation, source evidence, inference, assumption, recommendation, and decision distinct when the difference
+changes confidence or action. State what evidence supports a cause and what missing evidence prevents the diagnosis
+from establishing. Tie uncertainty to its practical consequence. Do not invent a fact, threshold, symptom, cause,
+outcome, test result, or certainty to make prose concrete. State correlation as correlation unless evidence supports
+the causal mechanism. When the source distinguishes evidence, a hypothesis, and missing evidence, preserve all three
+instead of replacing the missing evidence with a plausible test or symptom.
+</meaning-and-certainty>
+
+<confusion-recovery>
+When the reader signals confusion, treat the preceding explanation as failed. Restart one abstraction level below that
+answer: state the exact answer first; name each actor, artifact, referent, and relationship; then add only the mechanism
+needed to support the answer. Vocabulary substitution is not recovery. Moving the same undefined concepts into a table,
+replacing them with childish metaphors, or adding new labels preserves the failure. Ask only when a missing referent
+would materially change the answer; otherwise state the narrow supported interpretation and continue.
+</confusion-recovery>
+
+<terminology-and-jargon>
+Use the name already established by the product, code, interface, standard, or domain. When no name exists, select the
+shortest familiar term that preserves meaning. Define a necessary unfamiliar term beside its concrete referent at first
+use, then show the actor, action, or relationship it names. Use one stable term for each referent and do not rotate
+synonyms for variety. Preserve commands, identifiers, errors, protocol terms, and library types exactly. Replace slang,
+idioms, clichés, fashionable jargon, vague authority, and invented project vocabulary with concrete information. Treat
+a generic clause as suspect when it could describe an unrelated system unchanged; name the actual actor, action,
+evidence, or consequence. A vocabulary blacklist or authorship detector cannot establish whether language is useful.
+</terminology-and-jargon>
+
+<sentence-and-paragraph-construction>
+Use familiar concrete words for nontechnical ideas and inclusive terms that make no irrelevant assumptions about the
+reader. Introduce one stable short form after a long technical name. Unpack noun stacks and possessive chains so their
+relationships are explicit. Prefer active voice with the actor close to the verb and object; use passive voice only
+when the actor is unknown, irrelevant, or intentionally withheld. Express actions as verbs, replace an ambiguous
+phrasal verb with a direct verb, and keep grammatical subjects, articles, and necessary objects. Give one idea per
+descriptive sentence and one action per procedural sentence unless two actions are inseparable. Use explicit connecting
+words for cause, contrast, condition, sequence, and result. Give each paragraph one reader need and put its main point
+first. Split dense sentences and paragraphs; do not delete meaning to meet a count. Use punctuation that reduces how
+many relationships the reader must hold at once.
+</sentence-and-paragraph-construction>
+
+<procedures-explanations-and-warnings>
+Present prerequisites and actions in execution order. Keep required actions out of notes and make a procedure complete
+for a reader who follows only its steps. Use a vertical list for parallel items, alternatives, prerequisites, or ordered
+actions when prose would hide their relationships. For descriptions, move from the answer or known context to the new
+mechanism and consequence. For a change, name the changed mechanism, the result it caused, and the important behavior
+that remained unchanged. State a warning with the condition or action that prevents harm, then preserve every hazard,
+threshold, duration, prohibition, actor, and sequence. Address or name the responsible actor, and put the hazard before
+or beside the action it changes. Do not invent a hazard or weaken a prohibition for tone.
+</procedures-explanations-and-warnings>
+
+<human-register>
+Write direct, calm, natural prose that preserves legitimate personality, technical register, specific detail, mixed
+positions, and useful asides. Address the reader directly when it clarifies responsibility. Remove canned reactions,
+obvious headings, praise, unneeded offers, promotional language, inflated significance, vague authority, slogans, and
+conclusions that only repeat the opening. Do not force groups of three, manufacture a `not X but Y` opposition, or
+invent a range without a scale. Call work easy, simple, obvious, or quick only when that fact changes the reader's
+action or expectation. Rewrite machine-like wording only when several signals combine, and preserve every fact the
+changed wording carried.
+</human-register>
+
+<revision-and-semantic-check>
+Revise in this order: 1) verify facts, reasoning, and the requested task; 2) confirm that the reader can recover the
+answer, actor, action, evidence, conditions, limits, and next step; 3) select the representation and information order;
+4) standardize terms and expose hidden relationships; 5) tighten sentences; 6) scan for ambiguity, unsupported
+certainty, formulaic voice, and channel constraints. Rewrite sentence structure when word substitution cannot restore
+meaning. A vocabulary checker, sentence counter, or style linter is not evidence that the result makes sense. Finish
+only when the intended reader can understand and act without missing context.
+</revision-and-semantic-check>
+
+<controlled-language-adaptation>
+Apply the useful writing principles from ASD-STE100 without claiming standard compliance. Replace its approved-word
+dictionary with established project and domain terminology. Treat sentence, noun-group, and paragraph lengths as
+diagnostics, not limits, so necessary context survives. Permit natural contractions and standard punctuation when they
+improve communication.
+</controlled-language-adaptation>
+
 <human-facing-channel-rules>
-Apply the controlled-language policy to every text a human reads. Let the skill that owns the artifact define its
-required content and structure. Never use an em dash or en dash in prose; use a comma, colon, or two sentences. Never
-open with a reaction or sycophancy phrase such as "You are right", "Good catch", "Sure", or "Of course". Never open by
-narrating the intended action with phrases such as "Let me" or "I will go ahead". Give a direct link for every merge
-request or pull request named in the text.
+Apply this policy to every text a human reads. Let the skill that owns the artifact define required content and
+structure. Give a direct link for every merge request or pull request named in the text.
 </human-facing-channel-rules>
 
 <durable-report-rules>
 Write reports, documents, and pages for readers outside the current session and for the artifact's useful lifetime.
-Lead with the conclusion or task, keep context beside the claim it explains, and use headings only for distinct reader
-needs. Let the `docs` skill decide whether the artifact earns its place and what must remain evergreen.
+Include the goal, material constraints, current state, evidence, limits, and required action when the reader lacks them.
+Do not invent the goals behind another person's work or make a judgment that depends on missing context. Lead with the
+conclusion or task, keep context beside the claim it explains, and use headings only for distinct reader needs. Let the
+`docs` skill decide whether the artifact earns its place and what must remain evergreen.
 </durable-report-rules>

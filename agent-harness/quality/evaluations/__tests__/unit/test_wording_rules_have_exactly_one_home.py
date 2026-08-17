@@ -10,11 +10,7 @@ INTERACTIVE_INSTRUCTIONS = frozenset(
 )
 
 SINGLE_HOME_RULE_PHRASES = {
-    "em dash": HUMANIZE_SKILL,
-    "en dash": HUMANIZE_SKILL,
-    "sycophancy phrase": HUMANIZE_SKILL,
-    "numbered list": INTERACTIVE_INSTRUCTIONS,
-    "prose words": INTERACTIVE_INSTRUCTIONS,
+    "Give a direct link": HUMANIZE_SKILL,
 }
 
 

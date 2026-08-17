@@ -35,13 +35,16 @@ def test_humanize_package_owns_interactive_and_output_policies():
         "work-in-progress-updates",
         "artifact-links",
         "exhaust-before-returning",
-        "reply_template",
-        "request_gated",
+        "response-shape",
+        "concise-request",
     ):
         assert f"<{tag}>" in interactive_policy
 
     for tag in (
         "controlled-language-application",
+        "supplied-fact-precedence",
+        "reader-understanding-policy",
+        "confusion-recovery",
         "representation-selection",
         "representation-rendering",
         "durable-report-rules",
@@ -50,21 +53,15 @@ def test_humanize_package_owns_interactive_and_output_policies():
         assert f"<{tag}>" in humanize_skill
 
     for tag in (
-        "source-fidelity-precedence",
-        "reader-outcome",
-        "meaning-preservation",
-        "epistemic-clarity",
-        "term-consistency",
-        "noun-group-length",
-        "active-voice",
-        "sentence-scope-and-length",
-        "procedural-order",
-        "descriptive-order",
-        "warnings-and-limits",
-        "context-boundaries",
+        "source-fidelity",
+        "task-and-reader-model",
+        "meaning-and-certainty",
+        "terminology-and-jargon",
+        "sentence-and-paragraph-construction",
+        "procedures-explanations-and-warnings",
         "human-register",
-        "revision-sequence",
-        "asd-ste100-adaptation",
+        "revision-and-semantic-check",
+        "controlled-language-adaptation",
     ):
         assert f"<{tag}>" in humanize_skill
 

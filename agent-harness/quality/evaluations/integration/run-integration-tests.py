@@ -10,7 +10,10 @@ from pathlib import Path
 from integration_assertions_output import run_assertions
 from integration_models import ScenarioResult, SessionTrace
 from integration_reporting import print_scenario_results
-from integration_scoring import calculate_experience_score
+from integration_scoring import (
+    calculate_experience_score,
+    check_minimum_experience_score,
+)
 from integration_session import run_claude_session
 from integration_workspace import (
     SCENARIOS_DIR,
@@ -78,17 +81,32 @@ def run_scenario(
                 duration_seconds=trace.duration_seconds,
                 error=f"Session timed out after {timeout}s",
             )
+        if trace.exit_code != 0:
+            return ScenarioResult(
+                scenario_name=scenario_name,
+                passed=False,
+                assertion_results=[],
+                trace=trace,
+                workspace_directory=workspace_directory,
+                duration_seconds=trace.duration_seconds,
+                error=f"Claude session exited with code {trace.exit_code}",
+            )
 
         assertion_results = run_assertions(
             trace,
             scenario.get("assertions", {}),
             workspace_directory=workspace_directory,
         )
+        experience_score = calculate_experience_score(trace, assertion_results)
+        if "minimum_experience_score" in scenario:
+            assertion_results.append(
+                check_minimum_experience_score(
+                    experience_score, scenario["minimum_experience_score"]
+                )
+            )
         all_passed = all(
             assertion_result.passed for assertion_result in assertion_results
         )
-
-        experience_score = calculate_experience_score(trace, assertion_results)
 
         return ScenarioResult(
             scenario_name=scenario_name,

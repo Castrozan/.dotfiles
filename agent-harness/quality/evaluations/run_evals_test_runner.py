@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from run_evals_assertions import check_assertions
 from run_evals_claude_cli import run_claude_cli
 from run_evals_hook_test_runner import evaluate_hook_test
-from run_evals_judge import build_llm_judge
+from run_evals_judge import JudgeInvocationError, build_llm_judge
 from run_evals_config_loader import resolve_system_prompt_for_test
 from run_evals_progress import EvaluationProgressReporter
 
@@ -30,6 +30,7 @@ def run_test(
     settings: dict,
     dry_run: bool = False,
     authored_category: str = "other",
+    instruction_ref: str | None = None,
 ) -> TestResult:
     name = test["name"]
     model = test.get("model", settings.get("default_model", "sonnet"))
@@ -71,7 +72,17 @@ def run_test(
 
     start_time = time.time()
 
-    resolved_system_prompt = resolve_system_prompt_for_test(test)
+    resolved_system_prompt = resolve_system_prompt_for_test(test, instruction_ref)
+    if instruction_ref and test.get("skill_path") and resolved_system_prompt is None:
+        return TestResult(
+            name=name,
+            passed=False,
+            duration=0,
+            output="",
+            assertions_failed=[],
+            error=f"instruction surface not found at Git ref {instruction_ref}",
+            category=authored_category,
+        )
 
     output, success = run_claude_cli(
         prompt=prompt,
@@ -83,7 +94,7 @@ def run_test(
 
     duration = time.time() - start_time
 
-    if not success and "not found" in output.lower():
+    if not success:
         return TestResult(
             name=name,
             passed=False,
@@ -100,7 +111,18 @@ def run_test(
         if "llm_judge" in assertions
         else None
     )
-    failures = check_assertions(output, assertions, judge=judge)
+    try:
+        failures = check_assertions(output, assertions, judge=judge)
+    except JudgeInvocationError as error:
+        return TestResult(
+            name=name,
+            passed=False,
+            duration=duration,
+            output=output[:500],
+            assertions_failed=[],
+            error=str(error),
+            category=authored_category,
+        )
 
     return TestResult(
         name=name,
@@ -119,6 +141,7 @@ def run_tests(
     dry_run: bool = False,
     smoke_only: bool = False,
     max_workers_override: int | None = None,
+    instruction_ref: str | None = None,
 ) -> list[TestResult]:
     settings = config.get("settings", {})
 
@@ -142,7 +165,7 @@ def run_tests(
 
     if dry_run or len(tests_to_run) <= 1:
         return [
-            run_test(test, settings, dry_run, cat_name)
+            run_test(test, settings, dry_run, cat_name, instruction_ref)
             for test, cat_name in tests_to_run
         ]
 
@@ -155,7 +178,9 @@ def run_tests(
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_index = {
-            executor.submit(run_test, test, settings, False, cat_name): index
+            executor.submit(
+                run_test, test, settings, False, cat_name, instruction_ref
+            ): index
             for index, (test, cat_name) in enumerate(tests_to_run)
         }
         for future in as_completed(future_to_index):

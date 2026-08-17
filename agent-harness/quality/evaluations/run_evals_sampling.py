@@ -1,6 +1,13 @@
+import json
 from collections import defaultdict
 
 from run_evals_statistics import pass_at_k, wilson_score_interval
+from run_evals_fingerprint import (
+    evaluation_fingerprints,
+    humanize_recovery_fingerprints,
+)
+from run_evals_baseline_record import BASELINE_PATH
+from run_evals_baseline_policy import preserved_evidence_profiles
 
 
 def aggregate_repeated_runs(results_per_epoch):
@@ -39,6 +46,10 @@ def suite_pass_at_k(per_test, k):
 
 
 def build_epoch_enriched_baseline(per_test, epochs, git_commit, generated_at):
+    fingerprints = evaluation_fingerprints()
+    existing_baseline = (
+        json.loads(BASELINE_PATH.read_text()) if BASELINE_PATH.exists() else {}
+    )
     categories = {}
     total_samples = 0
     total_sample_passes = 0
@@ -71,6 +82,10 @@ def build_epoch_enriched_baseline(per_test, epochs, git_commit, generated_at):
         "total_failed": total_tests - total_passed,
         "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
         "categories": dict(sorted(categories.items())),
+        "fingerprints": fingerprints,
+        "evidence_profiles": preserved_evidence_profiles(
+            existing_baseline, humanize_recovery_fingerprints()
+        ),
         "sampling": {
             "epochs": epochs,
             "total_samples": total_samples,

@@ -1,11 +1,17 @@
 import json
-import subprocess
 from datetime import datetime, timezone
 
 from run_evals_baseline_history import (
     baseline_regression_failure,
     baseline_staleness_failure,
     previous_committed_baseline_pass_rate,
+)
+from run_evals_baseline_policy import (
+    baseline_evidence_failures,
+    compliance_passed_and_total as policy_compliance_passed_and_total,
+)
+from run_evals_baseline_record import (
+    BASELINE_PATH,
 )
 from run_evals_baseline_thresholds import (
     COMPLIANCE_CATEGORIES,
@@ -18,82 +24,15 @@ from run_evals_statistics import (
     format_pass_rate_with_confidence_interval,
     wilson_score_interval,
 )
-from run_evals_test_runner import TestResult
-from run_evals_worktree_and_environment import REPO_ROOT
-
-BASELINE_PATH = (
-    REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "baseline.json"
+from run_evals_fingerprint import (
+    evaluation_category_names,
+    evaluation_fingerprints,
+    humanize_recovery_fingerprints,
 )
 
 
 def compliance_passed_and_total(categories: dict) -> tuple[int, int]:
-    passed = 0
-    total = 0
-    for category_name, bucket in categories.items():
-        if category_name in COMPLIANCE_CATEGORIES:
-            passed += bucket.get("passed", 0)
-            total += bucket.get("passed", 0) + bucket.get("failed", 0)
-    return passed, total
-
-
-def get_current_git_commit() -> str:
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            capture_output=True,
-            text=True,
-            cwd=REPO_ROOT,
-        )
-        return result.stdout.strip()
-    except Exception:
-        return "unknown"
-
-
-def build_baseline_from_results(results: list[TestResult]) -> dict:
-    categories = {}
-    for result in results:
-        category_name = result.category
-        if category_name not in categories:
-            categories[category_name] = {
-                "passed": 0,
-                "failed": 0,
-                "tests": [],
-            }
-        categories[category_name]["tests"].append(
-            {"name": result.name, "passed": result.passed}
-        )
-        if result.passed:
-            categories[category_name]["passed"] += 1
-        else:
-            categories[category_name]["failed"] += 1
-
-    total_passed = sum(1 for r in results if r.passed)
-    total_tests = len(results)
-
-    return {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "git_commit": get_current_git_commit(),
-        "total_tests": total_tests,
-        "total_passed": total_passed,
-        "total_failed": total_tests - total_passed,
-        "pass_rate": (round(total_passed / total_tests, 4) if total_tests > 0 else 0),
-        "categories": categories,
-    }
-
-
-def write_baseline(baseline: dict) -> None:
-    with open(BASELINE_PATH, "w") as f:
-        json.dump(baseline, f, indent=2)
-    print(f"\nBaseline saved to {BASELINE_PATH}")
-    print(f"  Pass rate: {baseline['pass_rate']:.1%}")
-    print(f"  Tests: {baseline['total_passed']}/{baseline['total_tests']}")
-    print(f"  Commit: {baseline['git_commit']}")
-    if baseline.get("sampling"):
-        print(f"  Epochs: {baseline['sampling']['epochs']}")
-
-
-def save_baseline(results: list[TestResult]) -> None:
-    write_baseline(build_baseline_from_results(results))
+    return policy_compliance_passed_and_total(categories, COMPLIANCE_CATEGORIES)
 
 
 def check_baseline_for_regression() -> bool:
@@ -108,6 +47,14 @@ def check_baseline_for_regression() -> bool:
         baseline = json.load(f)
 
     failures = []
+    failures.extend(
+        baseline_evidence_failures(
+            baseline,
+            evaluation_fingerprints(),
+            humanize_recovery_fingerprints(),
+            evaluation_category_names(),
+        )
+    )
 
     generated_at = datetime.fromisoformat(baseline["generated_at"])
     age_days = (datetime.now(timezone.utc) - generated_at).days

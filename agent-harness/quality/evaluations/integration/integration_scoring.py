@@ -30,35 +30,11 @@ def detect_bash_tool_misuse(trace: SessionTrace) -> int:
     return max(penalty, -25)
 
 
-def detect_em_dashes_in_output(
-    trace: SessionTrace,
-) -> int:
-    combined_output = " ".join(trace.assistant_messages)
-    em_dash_count = combined_output.count("—")
-    if em_dash_count > 0:
-        return -5
-    return 0
-
-
-def detect_over_explanation(
-    trace: SessionTrace,
-) -> int:
-    combined_output = " ".join(trace.assistant_messages)
-    word_count = len(combined_output.split())
-    tool_count = len(trace.tool_calls)
-
-    if tool_count == 0 and word_count > 200:
-        return -10
-    if tool_count > 0 and word_count > 500:
-        return -5
-    return 0
-
-
 def calculate_experience_score(
     trace: SessionTrace,
     assertion_results: list[AssertionResult],
 ) -> int:
-    score = 50
+    score = 65
     tool_sequence = extract_tool_name_sequence(trace)
     read_count = tool_sequence.count("Read")
     edit_count = tool_sequence.count("Edit") + tool_sequence.count("Write")
@@ -89,9 +65,6 @@ def calculate_experience_score(
                 score += 10
             elif read_to_edit_ratio >= 1.0:
                 score += 5
-    elif len(tool_sequence) > 0:
-        score -= 10
-
     written_content = collect_written_file_content_from_tool_calls(trace)
     if written_content:
         comment_patterns = (
@@ -113,8 +86,6 @@ def calculate_experience_score(
             score -= 15
 
     score += detect_bash_tool_misuse(trace)
-    score += detect_em_dashes_in_output(trace)
-    score += detect_over_explanation(trace)
 
     if assertion_results:
         passed_count = sum(
@@ -125,3 +96,11 @@ def calculate_experience_score(
         score -= failed_count * 8
 
     return max(0, min(score, 100))
+
+
+def check_minimum_experience_score(score: int, minimum: int) -> AssertionResult:
+    return AssertionResult(
+        name=f"experience score is at least {minimum}",
+        passed=score >= minimum,
+        detail=f"found {score}",
+    )

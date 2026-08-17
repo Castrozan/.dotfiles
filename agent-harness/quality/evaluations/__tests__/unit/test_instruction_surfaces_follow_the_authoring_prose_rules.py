@@ -1,7 +1,6 @@
 from instruction_surface_prose import (
     MAXIMUM_INSTRUCTION_LINE_LENGTH,
     over_length_lines,
-    prose_em_dash_lines,
 )
 from instruction_surface_scanner import (
     REPO_ROOT,
@@ -20,20 +19,6 @@ def test_no_instruction_surface_line_exceeds_the_authoring_wrap():
         f"the instructions skill caps an instruction line at "
         f"{MAXIMUM_INSTRUCTION_LINE_LENGTH} characters, wrapped at a word boundary; "
         f"these files carry longer lines (file -> [(line, length)]): {offenders}"
-    )
-
-
-def test_no_instruction_surface_uses_an_em_dash_in_its_own_prose():
-    offenders = {
-        str(path.relative_to(REPO_ROOT)): prose_em_dash_lines(path)[:3]
-        for path in every_linted_markdown_file()
-        if prose_em_dash_lines(path)
-    }
-    assert not offenders, (
-        "an em dash in instruction prose contradicts the punctuation rule these "
-        "surfaces themselves impose; recast with a colon, a semicolon, or a comma. "
-        "Em dashes inside code fences, inline code, and quoted literals are exempt "
-        f"because they are emitted artifacts, not prose: {offenders}"
     )
 
 

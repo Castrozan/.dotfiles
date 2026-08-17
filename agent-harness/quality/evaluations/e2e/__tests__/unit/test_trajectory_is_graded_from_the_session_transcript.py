@@ -3,6 +3,7 @@ import json
 import e2e_session_transcript
 from e2e_assertions_skills_tools import check_bash_command_not_contains_assertion
 from e2e_session_transcript import (
+    assistant_messages_from_session_transcript,
     claude_project_directory_for_workspace,
     tool_calls_from_session_transcript,
 )
@@ -80,6 +81,35 @@ def test_a_workspace_with_no_transcript_yields_nothing(tmp_path, monkeypatch):
     )
 
     assert tool_calls_from_session_transcript(tmp_path / "never-ran") == []
+
+
+def test_assistant_messages_are_recovered_from_the_session_transcript(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        e2e_session_transcript, "SESSION_TRANSCRIPT_ROOT", tmp_path / "projects"
+    )
+    workspace = tmp_path / "repo" / ".e2e-tests" / "e2e-reader-recovery"
+    workspace.mkdir(parents=True)
+    project_directory = claude_project_directory_for_workspace(workspace)
+    project_directory.mkdir(parents=True)
+    entries = [
+        {
+            "message": {
+                "role": "assistant",
+                "content": [{"type": "text", "text": text}],
+            }
+        }
+        for text in ("first explanation", "final recovered answer")
+    ]
+    (project_directory / "session.jsonl").write_text(
+        "\n".join(json.dumps(entry) for entry in entries) + "\n"
+    )
+
+    assert assistant_messages_from_session_transcript(workspace) == [
+        "first explanation",
+        "final recovered answer",
+    ]
 
 
 def test_the_transcript_beats_a_terminal_scrape_that_missed_the_command(

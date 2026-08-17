@@ -58,3 +58,29 @@ def tool_calls_from_session_transcript(
                 )
             )
     return tool_calls
+
+
+def assistant_messages_from_session_transcript(workspace: Path) -> list[str]:
+    transcript = newest_session_transcript_file(workspace)
+    if transcript is None:
+        return []
+    messages = []
+    for line in transcript.read_text().splitlines():
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        message = entry.get("message") or {}
+        if message.get("role") != "assistant":
+            continue
+        content = message.get("content")
+        if not isinstance(content, list):
+            continue
+        text = "".join(
+            block.get("text", "")
+            for block in content
+            if isinstance(block, dict) and block.get("type") == "text"
+        ).strip()
+        if text:
+            messages.append(text)
+    return messages

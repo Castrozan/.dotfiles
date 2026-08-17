@@ -53,7 +53,8 @@ def test_representation_policy_maps_reader_needs_to_the_smallest_useful_form():
     )
 
 
-def test_reply_template_explicitly_allows_the_selected_representation():
+def test_interactive_contract_explicitly_allows_the_selected_representation():
     policy = INTERACTIVE_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8").lower()
     assert "representation-selection" in policy
-    assert "compact visual" in policy
+    assert "smallest useful form" in policy
+    assert "no bullet" not in policy

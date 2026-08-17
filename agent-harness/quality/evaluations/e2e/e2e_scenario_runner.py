@@ -3,9 +3,12 @@ import tempfile
 import time
 from pathlib import Path
 
-from e2e_assertions_workspace import run_e2e_assertions
+from e2e_assertions import run_e2e_assertions
 from e2e_models import E2eScenarioResult, TerminalSessionTrace
-from e2e_scoring import calculate_e2e_experience_score
+from e2e_scoring import (
+    calculate_e2e_experience_score,
+    check_minimum_e2e_experience_score,
+)
 from e2e_herdr import (
     E2E_TAB_LABEL_PREFIX,
     create_isolated_herdr_tab_for_test,
@@ -167,10 +170,16 @@ def run_e2e_scenario(
             scenario.get("assertions", {}),
             workspace,
         )
-        all_passed = all(a.passed for a in assertion_results)
         experience_score = calculate_e2e_experience_score(
             trace, assertion_results, workspace
         )
+        if "minimum_experience_score" in scenario:
+            assertion_results.append(
+                check_minimum_e2e_experience_score(
+                    experience_score, scenario["minimum_experience_score"]
+                )
+            )
+        all_passed = all(a.passed for a in assertion_results)
 
         return E2eScenarioResult(
             scenario_name=scenario_name,

@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 
 from integration_assertions_tools import (
@@ -10,14 +9,20 @@ from integration_assertions_tools import (
 )
 from integration_models import AssertionResult, SessionTrace
 from integration_session import collect_written_file_content_from_tool_calls
+from integration_assertions_workspace import (
+    check_workspace_file_changed_assertion,
+    check_workspace_file_not_contains_assertion,
+)
 
 
 def check_output_contains_assertion(
     trace: SessionTrace,
     expected_substring: str,
 ) -> AssertionResult:
-    combined_output = " ".join(trace.assistant_messages).lower()
-    found = expected_substring.lower() in combined_output
+    final_output = (
+        trace.assistant_messages[-1].lower() if trace.assistant_messages else ""
+    )
+    found = expected_substring.lower() in final_output
     return AssertionResult(
         name=f"output contains '{expected_substring}'",
         passed=found,
@@ -29,12 +34,27 @@ def check_output_not_contains_assertion(
     trace: SessionTrace,
     forbidden_substring: str,
 ) -> AssertionResult:
-    combined_output = " ".join(trace.assistant_messages).lower()
-    absent = forbidden_substring.lower() not in combined_output
+    final_output = (
+        trace.assistant_messages[-1].lower() if trace.assistant_messages else ""
+    )
+    absent = forbidden_substring.lower() not in final_output
     return AssertionResult(
         name=(f"output does not contain '{forbidden_substring}'"),
         passed=absent,
         detail=("correctly absent" if absent else "found in assistant output"),
+    )
+
+
+def check_output_maximum_words_assertion(
+    trace: SessionTrace,
+    maximum_words: int,
+) -> AssertionResult:
+    final_output = trace.assistant_messages[-1] if trace.assistant_messages else ""
+    word_count = len(final_output.split())
+    return AssertionResult(
+        name=f"final output uses at most {maximum_words} words",
+        passed=word_count <= maximum_words,
+        detail=f"found {word_count} words",
     )
 
 
@@ -61,88 +81,6 @@ def check_written_code_not_contains_assertion(
     )
 
 
-def check_workspace_file_not_contains_assertion(
-    workspace_directory: Path,
-    file_path: str,
-    forbidden_pattern: str,
-) -> AssertionResult:
-    full_path = workspace_directory / file_path
-    if not full_path.exists():
-        return AssertionResult(
-            name=(f"{file_path} does not contain '{forbidden_pattern}'"),
-            passed=False,
-            detail=f"file {file_path} does not exist",
-        )
-    content = full_path.read_text()
-    absent = forbidden_pattern not in content
-    return AssertionResult(
-        name=(f"{file_path} does not contain '{forbidden_pattern}'"),
-        passed=absent,
-        detail=("correctly absent from file" if absent else "found in file content"),
-    )
-
-
-def check_workspace_file_changed_assertion(
-    workspace_directory: Path,
-    file_path: str,
-) -> AssertionResult:
-    full_path = workspace_directory / file_path
-    if not full_path.exists():
-        return AssertionResult(
-            name=f"{file_path} was modified",
-            passed=False,
-            detail=f"file {file_path} does not exist",
-        )
-    try:
-        initial_commit_result = subprocess.run(
-            ["git", "rev-list", "--max-parents=0", "HEAD"],
-            capture_output=True,
-            text=True,
-            cwd=workspace_directory,
-            timeout=5,
-        )
-        initial_commit_sha = initial_commit_result.stdout.strip().split("\n")[0]
-
-        diff_result = subprocess.run(
-            ["git", "diff", "--name-only", initial_commit_sha, "HEAD"],
-            capture_output=True,
-            text=True,
-            cwd=workspace_directory,
-            timeout=5,
-        )
-        committed_changes = diff_result.stdout.strip().split("\n")
-
-        uncommitted_result = subprocess.run(
-            ["git", "diff", "--name-only"],
-            capture_output=True,
-            text=True,
-            cwd=workspace_directory,
-            timeout=5,
-        )
-        uncommitted_changes = uncommitted_result.stdout.strip().split("\n")
-
-        all_changed_files = set(committed_changes + uncommitted_changes)
-        was_changed = file_path in all_changed_files
-        return AssertionResult(
-            name=f"{file_path} was modified",
-            passed=was_changed,
-            detail=(
-                "file was modified"
-                if was_changed
-                else (
-                    f"file unchanged since initial commit. "
-                    f"Changed: {list(all_changed_files)}"
-                )
-            ),
-        )
-    except Exception:
-        return AssertionResult(
-            name=f"{file_path} was modified",
-            passed=False,
-            detail="could not check git status",
-        )
-
-
 def run_assertions(
     trace: SessionTrace,
     assertions: dict,
@@ -164,6 +102,13 @@ def run_assertions(
 
     for forbidden in assertions.get("output_not_contains", []):
         results.append(check_output_not_contains_assertion(trace, forbidden))
+
+    if "output_maximum_words" in assertions:
+        results.append(
+            check_output_maximum_words_assertion(
+                trace, assertions["output_maximum_words"]
+            )
+        )
 
     for forbidden in assertions.get("written_code_not_contains", []):
         results.append(check_written_code_not_contains_assertion(trace, forbidden))

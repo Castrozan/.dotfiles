@@ -40,32 +40,3 @@ def over_length_lines(path: Path) -> list[tuple[int, int]]:
         if len(line) > MAXIMUM_INSTRUCTION_LINE_LENGTH
         and not line_is_exempt_from_the_wrap(line)
     ]
-
-
-def positions_inside_literal_spans(line: str) -> list[bool]:
-    mask = [False] * len(line)
-    inside_code = False
-    inside_quote = False
-    for position, character in enumerate(line):
-        if character == "`":
-            inside_code = not inside_code
-            mask[position] = True
-            continue
-        if character == '"' and not inside_code:
-            inside_quote = not inside_quote
-            mask[position] = True
-            continue
-        mask[position] = inside_code or inside_quote
-    return mask
-
-
-def prose_em_dash_lines(path: Path) -> list[int]:
-    text = path.read_text()
-    return [
-        number
-        for number, line in lines_outside_fenced_blocks(text)
-        if any(
-            character == "—" and not inside
-            for character, inside in zip(line, positions_inside_literal_spans(line))
-        )
-    ]

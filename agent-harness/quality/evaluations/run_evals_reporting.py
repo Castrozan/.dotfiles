@@ -25,6 +25,8 @@ def print_results(results: list[TestResult]) -> bool:
         elif result.assertions_failed:
             for failure in result.assertions_failed:
                 print(f"    - {failure}")
+            if result.output:
+                print(f"    Output: {result.output}")
 
         if result.passed:
             passed += 1
@@ -72,23 +74,27 @@ def print_ab_summary(comparison: dict) -> bool:
     print("=" * 60 + "\n")
 
     print(f"  Paired tests: {comparison['n_paired']}")
-    print(
-        f"  With instructions:    {comparison['variant_a_pass_rate']:.1%} "
-        f"({comparison['both_pass'] + comparison['a_only_wins']}/{comparison['n_paired']})"
-    )
-    print(
-        f"  Without instructions: {comparison['variant_b_pass_rate']:.1%} "
-        f"({comparison['both_pass'] + comparison['b_only_wins']}/{comparison['n_paired']})"
-    )
+    print(f"  Candidate: {comparison['variant_a_pass_rate']:.1%}")
+    print(f"  Control:   {comparison['variant_b_pass_rate']:.1%}")
     print(f"  Delta: {comparison['delta']:+.1%}")
-    print(
-        f"  Discordant: instructions-only won {comparison['a_only_wins']}, "
-        f"control-only won {comparison['b_only_wins']}"
-    )
-    print(
-        f"  McNemar exact p = {comparison['p_value']:.4f} "
-        f"({'significant' if comparison['significant'] else 'not significant'} at 0.05)"
-    )
+    if comparison["method"] == "mcnemar_exact":
+        print(
+            f"  Discordant: instructions-only won {comparison['a_only_wins']}, "
+            f"control-only won {comparison['b_only_wins']}"
+        )
+        print(
+            f"  McNemar exact p = {comparison['p_value']:.4f} "
+            f"({'significant' if comparison['significant'] else 'not significant'} at 0.05)"
+        )
+    else:
+        print(
+            f"  Repeated samples: {comparison['epochs']} generations per case, "
+            f"{comparison['sample_pairs']} paired outputs"
+        )
+        print(
+            f"  Paired hierarchical bootstrap 95% interval: "
+            f"{comparison['lower_bound']:+.1%} to {comparison['upper_bound']:+.1%}"
+        )
     print("-" * 60 + "\n")
 
     return comparison["significant"] and comparison["delta"] > 0
@@ -105,6 +111,19 @@ def print_calibration_summary(agreement: dict) -> bool:
         f"({agreement['accuracy']:.1%})"
     )
     print(f"  Cohen's kappa: {agreement['cohens_kappa']:.3f}")
+    print(f"  Balanced accuracy: {agreement['balanced_accuracy']:.1%}")
+    print(f"  Failed-case recall: {agreement['failed_case_recall']:.1%}")
+    matrix = agreement["confusion_matrix"]
+    print(
+        f"  Confusion: TP {matrix['tp']}, TN {matrix['tn']}, "
+        f"FP {matrix['fp']}, FN {matrix['fn']}"
+    )
+    for family, metrics in agreement["by_family"].items():
+        print(
+            f"  {family}: balanced {metrics['balanced_accuracy']:.1%}, "
+            f"failed recall {metrics['failed_case_recall']:.1%}, "
+            f"kappa {metrics['cohens_kappa']:.3f}"
+        )
     if agreement["disagreements"]:
         print("  Disagreements:")
         for disagreement in agreement["disagreements"]:
@@ -116,7 +135,7 @@ def print_calibration_summary(agreement: dict) -> bool:
             )
     print("-" * 60 + "\n")
 
-    return agreement["accuracy"] >= 0.8
+    return agreement["meets_gate"]
 
 
 def list_categories(config: dict) -> None:

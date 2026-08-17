@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -9,11 +8,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from run_evals_ab import run_instruction_loading_experiment  # noqa: E402
-from run_evals_baseline import (  # noqa: F401, E402
-    BASELINE_PATH,
-    build_baseline_from_results,
-    check_baseline_for_regression,
+from run_evals_ab_record import save_ab_profile  # noqa: E402
+from run_evals_arguments import parse_arguments  # noqa: E402
+from run_evals_baseline import check_baseline_for_regression  # noqa: E402
+from run_evals_baseline_record import (  # noqa: F401, E402
     get_current_git_commit,
+    merge_baseline_snapshot,
     save_baseline,
     write_baseline,
 )
@@ -30,6 +30,7 @@ from run_evals_config_loader import (  # noqa: F401, E402
     load_skill_body_from_path,
     resolve_system_prompt_for_test,
 )
+from run_evals_evidence import raise_for_evaluation_errors  # noqa: E402
 from run_evals_judge import build_llm_judge  # noqa: E402
 from run_evals_judge_calibration import (  # noqa: E402
     judge_agreement,
@@ -47,7 +48,6 @@ from run_evals_sampling import (  # noqa: E402
     build_epoch_enriched_baseline,
 )
 from run_evals_test_runner import (  # noqa: F401, E402
-    DEFAULT_PARALLEL_WORKERS,
     TestResult,
     check_assertions,
     run_test,
@@ -62,52 +62,7 @@ from run_evals_worktree_and_environment import (  # noqa: F401, E402
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Run agent evaluations (Claude Max/CLI)"
-    )
-    parser.add_argument("--smoke", action="store_true", help="Run smoke test only")
-    parser.add_argument("--category", help="Run tests in specific category")
-    parser.add_argument("--test", help="Run specific test by name")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would run")
-    parser.add_argument(
-        "--list",
-        action="store_true",
-        help="List available categories and tests",
-    )
-    parser.add_argument(
-        "--save-baseline",
-        action="store_true",
-        help="Run all tests and save results as baseline",
-    )
-    parser.add_argument(
-        "--check-baseline",
-        action="store_true",
-        help="Check committed baseline for regression (no claude calls)",
-    )
-    parser.add_argument("--config", default=Path(__file__).parent / "evals")
-    parser.add_argument(
-        "--workers",
-        type=int,
-        default=None,
-        help=f"Max parallel workers (default: {DEFAULT_PARALLEL_WORKERS})",
-    )
-    parser.add_argument(
-        "--epochs",
-        type=int,
-        default=1,
-        help="Repeat the suite N times to surface flakiness (pass@k and CIs)",
-    )
-    parser.add_argument(
-        "--ab",
-        action="store_true",
-        help="Paired A/B: same tests with vs without the instruction surface",
-    )
-    parser.add_argument(
-        "--calibrate-judge",
-        action="store_true",
-        help="Run the rubric judge over the labeled calibration set and report agreement",
-    )
-    args = parser.parse_args()
+    args = parse_arguments()
 
     if args.check_baseline:
         passed = check_baseline_for_regression()
@@ -130,8 +85,8 @@ def main():
         judge_model = config.get("settings", {}).get("judge_model", "opus")
         judge = build_llm_judge(judge_model, run_claude_cli)
         agreement = judge_agreement(load_calibration_cases(), judge)
-        print_calibration_summary(agreement)
-        sys.exit(0)
+        passed = print_calibration_summary(agreement)
+        sys.exit(0 if passed else 1)
 
     print("Running agent evaluations (Claude Max - no API cost)...")
     if args.dry_run:
@@ -143,8 +98,13 @@ def main():
                 config,
                 category=args.category,
                 max_workers_override=args.workers,
+                epochs=args.epochs,
+                comparison_ref=args.compare_ref,
+                dry_run=args.dry_run,
             )
         print_ab_summary(comparison)
+        if args.save_ab_profile:
+            save_ab_profile(comparison, args.category, args.compare_ref)
         sys.exit(0)
 
     if args.epochs > 1:
@@ -152,26 +112,27 @@ def main():
             results_per_epoch = []
             for epoch_index in range(args.epochs):
                 print(f"\n--- epoch {epoch_index + 1}/{args.epochs} ---")
-                results_per_epoch.append(
-                    run_tests(
-                        config,
-                        category=args.category,
-                        test_name=args.test,
-                        dry_run=args.dry_run,
-                        smoke_only=args.smoke,
-                        max_workers_override=args.workers,
-                    )
+                epoch_results = run_tests(
+                    config,
+                    category=args.category,
+                    test_name=args.test,
+                    dry_run=args.dry_run,
+                    smoke_only=args.smoke,
+                    max_workers_override=args.workers,
                 )
+                raise_for_evaluation_errors(epoch_results, "repeated evaluation")
+                results_per_epoch.append(epoch_results)
         per_test = aggregate_repeated_runs(results_per_epoch)
         no_hard_failures = print_epoch_summary(per_test, args.epochs)
         if args.save_baseline:
+            baseline = build_epoch_enriched_baseline(
+                per_test,
+                args.epochs,
+                get_current_git_commit(),
+                datetime.now(timezone.utc).isoformat(),
+            )
             write_baseline(
-                build_epoch_enriched_baseline(
-                    per_test,
-                    args.epochs,
-                    get_current_git_commit(),
-                    datetime.now(timezone.utc).isoformat(),
-                )
+                merge_baseline_snapshot(baseline) if args.category else baseline
             )
         sys.exit(0 if no_hard_failures else 1)
 
@@ -188,7 +149,7 @@ def main():
     all_passed = print_results(results)
 
     if args.save_baseline:
-        save_baseline(results)
+        save_baseline(results, merge=args.category is not None)
 
     sys.exit(0 if all_passed else 1)
 

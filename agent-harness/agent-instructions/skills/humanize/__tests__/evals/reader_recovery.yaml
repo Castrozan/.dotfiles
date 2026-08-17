@@ -1,0 +1,313 @@
+tests:
+  - name: recovery_answers_the_user_visible_outcome_first
+    failure_mode: task_outcome
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      Earlier you explained the test system with terms such as composed instruction surface, delivery layer, control
+      arm, McNemar, Wilson interval, and Cohen kappa. I still do not understand the answer. What does the user actually
+      receive? The facts are: the user submits one writing sample, sees a revised version beside the original, and gets
+      three short reasons for the important edits. Answer that question, not the evaluation architecture.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Treats the earlier confusion as a failed explanation, leads with the exact user-visible result of an original and revision shown together plus three edit reasons, and omits evaluation architecture that does not answer the question."
+
+  - name: recovery_surfaces_the_requested_decision
+    failure_mode: task_outcome
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      Your previous answer compared release mechanics for six paragraphs but never chose. I need the decision now.
+      Option A can roll back independently but adds one service. Option B adds no service but can only roll back with
+      the whole application. Independent rollback is mandatory. Which option do we use and why?
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Answers Option A immediately because independent rollback is mandatory, states the one-service cost, and does not restart a broad architecture comparison."
+
+  - name: recovery_reports_current_state_instead_of_process_history
+    failure_mode: task_outcome
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      I asked whether deployment is done, but you narrated every command you tried. Try again. The rebuild passed, the
+      new policy is live in Claude and Codex, OpenCode has not been checked, and nothing else is pending. Give me only
+      the current state and the required next action.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "States that deployment is live and verified in Claude and Codex but not yet verified in OpenCode, then names that single remaining check without recounting command history or adding optional work."
+
+  - name: recovery_names_the_exact_repository_owner
+    failure_mode: missing_context
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      You said another team owns the shared recipe. Which team and which repository? The platform-runtime team owns
+      deployment-recipes in github.com/acme/deployment-recipes. Our payments-api repository only consumes release.yaml.
+      Explain the ownership without app or recipe metaphors.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Names platform-runtime and github.com/acme/deployment-recipes as the owner and repository, distinguishes payments-api as the consumer of release.yaml, and uses no anonymous team, repository, or metaphor in place of those referents."
+
+  - name: recovery_establishes_that_the_cache_exists
+    failure_mode: missing_context
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      You proposed base64 keys, normalized safe paths, and a bounded LRU. Do we have a cache at all? The current
+      renderer stores generated image bytes in the in-memory contentCache map for the process lifetime. It has no size
+      limit. Answer the existence question before any fix.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Answers yes first, identifies contentCache as the renderer's process-lifetime in-memory map, states that it stores generated image bytes and has no size limit, and separates those current facts from any proposed fix."
+
+  - name: recovery_resolves_pronouns_and_dependencies
+    failure_mode: missing_context
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      Your answer said it writes that before they read it. I cannot tell what any pronoun means. The collector writes
+      bundle.json. Validator A and Validator B read bundle.json after the write completes. If the write fails, neither
+      validator runs. Restate the behavior with exact referents.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Names the collector, bundle.json, Validator A, and Validator B directly; preserves write-before-read ordering and the failure branch; and does not rely on ambiguous pronouns for those relationships."
+
+  - name: recovery_unpacks_the_test_delivery_flow
+    failure_mode: concept_density
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      I did not understand your composed instruction surface, delivery layer, control arm, scope overwrite, and complete
+      cycle explanation. Explain only this flow: a test prompt and the Humanize policy go to the model; the model writes
+      an answer; a judge checks that answer against one rubric. I know what a model and a test are. Do not rename them.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Explains the three concrete steps using the established terms test prompt, Humanize policy, model answer, judge, and rubric; makes each input and output relationship explicit; and does not preserve or replace the rejected invented vocabulary."
+
+  - name: recovery_preserves_and_defines_a_legitimate_statistical_term
+    failure_mode: concept_density
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      I understand pass rates but not McNemar's exact test. We compare the same 20 prompts under policy A and policy B,
+      once each. Explain in two sentences what McNemar's exact test contributes. Keep the established statistical name.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Keeps the name McNemar's exact test, explains that it uses paired outcomes that differ between A and B to test whether the policy results differ while respecting the pairing, and stays within two sentences."
+
+  - name: recovery_unpacks_an_opaque_noun_stack
+    failure_mode: concept_density
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      What does "cross-harness reader-state fidelity regression gate" mean here? The gate runs the same reader-recovery
+      tests in Claude, Codex, and OpenCode and fails the release if any harness drops below its accepted score. Explain
+      the relationships directly and do not repeat that noun stack as the explanation.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Explains that the release check runs the same reader-recovery tests in all three named harnesses and blocks release when any harness is below its accepted score, rather than merely repeating or synonymizing the opaque noun stack."
+
+  - name: recovery_honors_a_tldr_size_constraint
+    failure_mode: verbosity
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      TL;DR in one short paragraph. Release remains blocked because two candidate failures omitted a safety threshold.
+      The candidate passed 18 of 20 cases; the old policy passed 11 of 20.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Uses one short paragraph, leads with the blocked release decision, preserves both pass counts and the reason involving two omitted safety thresholds, and adds no evaluation-process background."
+
+  - name: recovery_stops_repeating_completed_history
+    failure_mode: verbosity
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      You have already explained the research and implementation twice. I am multitasking. Tell me only what remains.
+      The only unfinished work is one OpenCode end-to-end run. All code, documentation, unit tests, integration tests,
+      rebuild, push, and CI are complete.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Names only the OpenCode end-to-end run as unfinished work, while giving enough current-state context to show everything else is complete, without replaying research or implementation history."
+
+  - name: recovery_answers_a_small_question_at_small_scale
+    failure_mode: verbosity
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      I asked for the file name and got an architecture review. Try again: the policy is in
+      agent-harness/agent-instructions/skills/humanize/SKILL.md. Which file owns the policy? Answer with one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Answers with the exact Humanize SKILL.md path in one sentence and adds no architecture, rationale, status template, or next-step material."
+
+  - name: recovery_rejects_a_table_that_preserves_undefined_concepts
+    failure_mode: representation
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      I asked for a simpler explanation, but your table still used proposed criterion, complete cycle, and overwrite
+      reach. Do not make another table. The actual distinction is: a unit test checks one function; an integration test
+      checks two components working together; an end-to-end test checks the user's path through the running system.
+      Explain that plainly.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Uses direct prose rather than another table, explains the three test levels through their concrete scope, and does not preserve or replace the rejected abstract labels with new invented terminology."
+
+  - name: recovery_uses_a_table_when_exact_mapping_is_the_need
+    failure_mode: representation
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      I was confused because the previous answer mixed the harnesses together. Use the mapping below as source data;
+      this is a formatting task, not a verification request. Show the exact mapping compactly: Claude loads
+      interactive-communication.md through CLAUDE.md; Codex loads it through developer instructions; OpenCode loads
+      it through AGENTS.md. Then state the one common policy file: Humanize SKILL.md.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Uses a compact table for the exact three-harness mapping, keeps each harness paired with the stated loading surface, and separately identifies Humanize SKILL.md as the common policy file."
+
+  - name: recovery_distinguishes_operational_anger_from_a_language_failure
+    failure_mode: control
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      This is a self-contained example; use the quoted sentence as supplied source text. WTF, the deployment failed
+      again. Your previous answer was clear: "CI failed because test_cache.py expected 3 but received 4; change the
+      fixture or restore the old behavior." Do not rewrite that explanation. State whether the anger is evidence of a
+      language problem and preserve the actual technical finding.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Says the anger alone does not establish a language failure, preserves the exact test_cache.py expected-versus-received finding and two possible actions, and does not invent a prose problem merely because the user swore."
+
+  - name: recovery_preserves_exact_identifiers_despite_jargon_concern
+    failure_mode: control
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      Remove unnecessary jargon but preserve exact identifiers. contentCache is the map in code, normalizeSafePath is
+      the function, and LRUCache is the library type. The proposal replaces contentCache with LRUCache and calls
+      normalizeSafePath before using a path as a key. Give the precise change in two sentences.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Preserves all three exact identifiers with their stated roles, describes the replacement and call ordering precisely in no more than two sentences, and removes no technical name merely because it may look like jargon."
+
+  - name: recovery_keeps_a_successful_diagram_when_relationships_need_it
+    failure_mode: control
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      The earlier prose was confusing because the failure path was buried. Show this as a small flow: UI sends request
+      to API; API authenticates; on failure API returns 401 to UI; on success API queries DB and returns the result.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Uses a compact flow or sequence that makes authentication the branch point, shows both the 401 return to the UI and the successful database path, and does not replace the requested relationship view with a prose-only explanation."
+
+  - name: channel_uses_numbered_steps_for_an_ordered_procedure
+    failure_mode: channel_constraint
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      Give me this recovery procedure as a numbered list because operators must follow the order: stop the worker,
+      capture queue depth, restore snapshot s-18, start the worker, wait for health status ready, then resume intake.
+      The snapshot restore must not begin before the worker stops.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Uses a numbered list with the six actions in the supplied execution order, preserves the stop-before-restore constraint, and does not flatten the procedure into a prose paragraph."
+
+  - name: channel_uses_requested_headings_for_distinct_reader_needs
+    failure_mode: channel_constraint
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      Write a compact incident handoff with the headings Impact, Evidence, and Required action. Impact: checkout failed
+      for 8 percent of requests. Evidence: the failures occurred only on node C after certificate rotation. Required
+      action: replace node C, then confirm the error rate returns below 1 percent. Do not add status-report labels.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Uses exactly the three requested headings as the primary structure, keeps each supplied fact under its correct reader need, and does not replace them with Done, Next, or unstructured prose."
+
+  - name: channel_does_not_force_status_labels_onto_an_explanation
+    failure_mode: channel_constraint
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      In 90 to 130 words, explain why paired tests use the same prompts for policy A and policy B. Cover prompt
+      difficulty, variance, and what a win means. This is an explanation, not a work-status handoff.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Provides a 90-to-130-word explanation covering all three requested ideas and does not add Done, Next, Assumed, implementation status, or pending-work labels."
+
+  - name: channel_preserves_source_punctuation_when_quoting
+    failure_mode: channel_constraint
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      Quote this release-note sentence exactly, including punctuation, then explain it in one plain sentence:
+      "Retries are bounded — the worker stops after attempt three." Do not edit the quote.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Reproduces the supplied quoted sentence verbatim including its em dash, then explains in one plain sentence that there are at most three attempts, without treating punctuation as a defect."

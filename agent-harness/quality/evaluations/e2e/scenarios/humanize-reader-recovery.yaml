@@ -1,0 +1,30 @@
+name: humanize_reader_recovery_after_confusion
+description: A live interactive session recovers from jargon after the reader says they do not understand
+
+setup:
+  git_init: false
+
+prompts:
+  - |
+    Use the Humanize skill. Explain this proposed renderer change: normalize safe paths, encode cache keys as base64,
+    and replace contentCache with a bounded LRU. The current renderer stores generated image bytes in the in-memory
+    contentCache map for the process lifetime, and contentCache has no size limit.
+  - |
+    I do not understand that. Do we have a cache at all? TL;DR. Answer the existence question and current facts before
+    any proposed fix.
+
+timeout: 300
+minimum_experience_score: 85
+
+assertions:
+  autonomous_skill_invocation:
+    - humanize
+  output_contains:
+    - "contentCache"
+    - "in-memory"
+    - "no size limit"
+  output_not_contains:
+    - "**Done:**"
+    - "base64 keys"
+    - "normalized safe paths"
+  output_maximum_words: 60

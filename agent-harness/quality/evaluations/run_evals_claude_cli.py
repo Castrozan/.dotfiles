@@ -6,6 +6,16 @@ from run_evals_worktree_and_environment import build_filtered_environment
 
 TRANSIENT_RETRY_ATTEMPTS = 2
 TRANSIENT_RETRY_BACKOFF_SECONDS = 3
+NON_RETRYABLE_FAILURE_MARKERS = (
+    "session limit",
+    "usage limit",
+    "not logged in",
+)
+
+
+def is_retryable_failure(output: str) -> bool:
+    lowered = output.lower()
+    return not any(marker in lowered for marker in NON_RETRYABLE_FAILURE_MARKERS)
 
 
 def run_claude_cli(
@@ -15,7 +25,14 @@ def run_claude_cli(
     timeout: int = 120,
     no_tools: bool = False,
 ) -> tuple[str, bool]:
-    cmd = ["claude", "-p", "--model", model, "--strict-mcp-config"]
+    cmd = [
+        "claude",
+        "-p",
+        "--model",
+        model,
+        "--safe-mode",
+        "--strict-mcp-config",
+    ]
 
     if no_tools:
         cmd.extend(["--tools", ""])
@@ -41,6 +58,8 @@ def run_claude_cli(
             last_transient_failure = (
                 combined_output or f"empty output (exit {result.returncode})"
             )
+            if not is_retryable_failure(last_transient_failure):
+                return last_transient_failure, False
         except subprocess.TimeoutExpired:
             last_transient_failure = f"Timeout after {timeout}s"
         except FileNotFoundError:

@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 
 import yaml
 
@@ -15,7 +16,28 @@ def load_skill_body_from_path(skill_path: Path) -> str | None:
     return content.strip()
 
 
-def resolve_system_prompt_for_test(test: dict) -> str | None:
+def skill_body_from_content(content: str) -> str:
+    parts = content.split("---", 2)
+    if len(parts) >= 3:
+        return parts[2].strip()
+    return content.strip()
+
+
+def load_skill_body_from_git_ref(skill_path: str, instruction_ref: str) -> str | None:
+    result = subprocess.run(
+        ["git", "show", f"{instruction_ref}:{skill_path}"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return None
+    return skill_body_from_content(result.stdout)
+
+
+def resolve_system_prompt_for_test(
+    test: dict, instruction_ref: str | None = None
+) -> str | None:
     if "system_prompt" in test:
         return test["system_prompt"]
 
@@ -29,16 +51,24 @@ def resolve_system_prompt_for_test(test: dict) -> str | None:
         else:
             return None
 
-    resolved_path = REPO_ROOT / skill_path_value
-    primary_body = load_skill_body_from_path(resolved_path)
+    if instruction_ref:
+        primary_body = load_skill_body_from_git_ref(skill_path_value, instruction_ref)
+    else:
+        resolved_path = REPO_ROOT / skill_path_value
+        primary_body = load_skill_body_from_path(resolved_path)
     if primary_body is None:
         return None
 
     extra_skill_path_values = test.get("extra_skill_paths") or []
     extra_bodies = []
     for extra_skill_path_value in extra_skill_path_values:
-        extra_resolved_path = REPO_ROOT / extra_skill_path_value
-        extra_body = load_skill_body_from_path(extra_resolved_path)
+        if instruction_ref:
+            extra_body = load_skill_body_from_git_ref(
+                extra_skill_path_value, instruction_ref
+            )
+        else:
+            extra_resolved_path = REPO_ROOT / extra_skill_path_value
+            extra_body = load_skill_body_from_path(extra_resolved_path)
         if extra_body:
             extra_bodies.append(extra_body)
 

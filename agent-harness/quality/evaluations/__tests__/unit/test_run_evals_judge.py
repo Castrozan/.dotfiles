@@ -1,8 +1,9 @@
 from pathlib import Path
 
+import pytest
 import yaml
 
-from run_evals_judge import build_llm_judge, parse_judge_verdict
+from run_evals_judge import JudgeInvocationError, build_llm_judge, parse_judge_verdict
 from run_evals_judge_calibration import (
     CALIBRATION_PATH,
     cohens_kappa,
@@ -57,14 +58,13 @@ def test_build_judge_parses_the_cli_verdict():
     assert passed is True
 
 
-def test_build_judge_reports_invocation_failure_as_fail():
+def test_build_judge_reports_invocation_failure_as_infrastructure_error():
     def fake_cli(prompt, model="opus", no_tools=False):
         return "boom", False
 
     judge = build_llm_judge("opus", fake_cli)
-    passed, reason = judge("rubric", "output")
-    assert passed is False
-    assert "failed" in reason
+    with pytest.raises(JudgeInvocationError, match="invocation failed"):
+        judge("rubric", "output")
 
 
 def test_cohens_kappa_is_one_for_perfect_agreement():
@@ -90,11 +90,49 @@ def test_judge_agreement_scores_accuracy_and_lists_disagreements():
     assert [item["name"] for item in result["disagreements"]] == ["b"]
 
 
+def test_judge_agreement_reports_confusion_metrics_and_rubric_families():
+    cases = [
+        {
+            "name": "reader-pass",
+            "rubric_family": "reader_recovery",
+            "rubric": "r",
+            "output": "pass",
+            "human_label": "PASS",
+        },
+        {
+            "name": "reader-fail",
+            "rubric_family": "reader_recovery",
+            "rubric": "r",
+            "output": "fail",
+            "human_label": "FAIL",
+        },
+        {
+            "name": "policy-fail",
+            "rubric_family": "instruction_compliance",
+            "rubric": "r",
+            "output": "missed",
+            "human_label": "FAIL",
+        },
+    ]
+
+    result = judge_agreement(cases, lambda rubric, output: (output == "pass", "graded"))
+
+    assert result["confusion_matrix"] == {"tp": 1, "tn": 2, "fp": 0, "fn": 0}
+    assert result["balanced_accuracy"] == 1.0
+    assert result["failed_case_recall"] == 1.0
+    assert result["meets_gate"] is True
+    assert set(result["by_family"]) == {
+        "reader_recovery",
+        "instruction_compliance",
+    }
+
+
 def test_calibration_corpus_is_well_formed():
     cases = load_calibration_cases()
     assert len(cases) >= 8
     for case in cases:
         assert case["rubric"] and case["output"]
+        assert case["rubric_family"]
         assert case["human_label"].strip().upper() in {"PASS", "FAIL"}
 
 
@@ -119,6 +157,8 @@ def test_recorded_agreement_stays_above_the_kappa_floor_and_matches_the_corpus()
     recorded = corpus["recorded_agreement"]
     assert recorded["cohens_kappa"] >= RECORDED_KAPPA_FLOOR
     assert recorded["cases"] == len(corpus["cases"])
+    assert recorded["balanced_accuracy"] >= 0.8
+    assert recorded["failed_case_recall"] >= 0.8
 
 
 def test_rebuild_mandate_suite_stays_rubric_judged():

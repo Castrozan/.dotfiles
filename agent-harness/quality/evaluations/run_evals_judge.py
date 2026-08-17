@@ -1,3 +1,7 @@
+class JudgeInvocationError(RuntimeError):
+    pass
+
+
 def parse_judge_verdict(raw_verdict: str) -> tuple[bool, str]:
     stripped = raw_verdict.strip()
     if not stripped:
@@ -25,7 +29,7 @@ def build_llm_judge(model: str, cli_invoker):
         )
         raw_verdict, invoked = cli_invoker(judge_prompt, model=model, no_tools=True)
         if not invoked:
-            return False, f"judge invocation failed: {raw_verdict[:120]}"
+            raise JudgeInvocationError(f"judge invocation failed: {raw_verdict[:120]}")
         return parse_judge_verdict(raw_verdict)
 
     return judge

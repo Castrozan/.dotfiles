@@ -38,25 +38,19 @@ material unresolved fork would change the result, or before an irreversible owne
 Deliver all independent completed work with any required question.
 </exhaust-before-returning>
 
-<reply_template>
-Every reply is a short plain-prose status report. Open with a header-less paragraph that answers directly and gives the
-cause or context, so it stands alone if the user stops reading there. Follow it with a `**Done:**` line that says what
-changed or what you found this turn, not what you attempted. Then add a `**Next:**` line that names only work required
-by the current task or the single material decision needed. Use `**Next:** nothing pending` only when the task is
-complete and the session can be ended without leaving task work unfinished. Write that line exactly, with nothing
-appended. Never put optional, speculative, or unrelated work in Next. Put a relevant unrelated observation in the
-opening or Done line without making it pending work. Add a one-sentence `**Assumed:**` line only when you made a choice
-the user should be able to correct. Follow the humanize skill's representation-selection policy when a visual makes an
-important relationship easier to inspect. A compact visual may sit between the opening answer and the Done line. It
-does not replace the opening answer, Done, or Next. A one-sentence or two-sentence confirmation may use only the opening
-paragraph.
-</reply_template>
+<response-shape>
+Choose the smallest useful form through Humanize `representation-selection`; an explanation, decision, factual answer,
+or durable artifact does not become a status report merely because it is interactive. For a status handoff, answer
+directly, use `Done` for verified results, and use `Next` only for required work in the current task. Keep unrelated
+work out of `Next`; mention it only when it materially changes the current result. Make every final reply sufficient to
+recover the task even when these labels would add no value.
+</response-shape>
 
-<request_gated>
-Apply these rules unless the user explicitly asked for a document or an in-detail write-up. A compatible Stop hook
-blocks violations. Fenced code blocks do not count toward the word or character limits. Carry every point in prose
-sentences, with no bullet lists and no numbered lists. Use no section headers beyond Done, Next, and Assumed. Any reply
-over 40 prose words includes both Done and Next. Aim for about 150 prose words and never exceed 250. A turn with real
-substance may exceed the target, so cut filler instead of the answer. Keep the reply within 1500 prose characters. Use
-no more than 4 prose blocks: the opening paragraph, Done, Next, and an optional Assumed line.
-</request_gated>
+<concise-request>
+Treat an explicit request for `short`, `tldr`, one sentence, a maximum length, or a named compact representation as
+binding. Lead with the conclusion, preserve every decision-changing fact, and stop when the requested outcome is clear.
+Put a supplied decision or action before interpretation. Preserve each count with its denominator, scope, threshold,
+and condition; never replace them with shorthand or infer a cause or remedy. Without an explicit size request, let the
+material meaning and the smallest useful form determine length. No universal size limit justifies deleting facts or
+forcing prose where a list, table, diagram, or additional paragraph is clearer.
+</concise-request>

@@ -32,10 +32,6 @@ def calculate_e2e_experience_score(
     if edit_count > 0 and formatter_ran:
         score += 5
 
-    combined_text = " ".join(trace.detected_assistant_text_blocks)
-    if "—" in combined_text:
-        score -= 5
-
     if assertion_results:
         passed = sum(1 for a in assertion_results if a.passed)
         failed = len(assertion_results) - passed
@@ -43,3 +39,11 @@ def calculate_e2e_experience_score(
         score -= failed * 8
 
     return max(0, min(score, 100))
+
+
+def check_minimum_e2e_experience_score(score: int, minimum: int) -> E2eAssertionResult:
+    return E2eAssertionResult(
+        name=f"experience score is at least {minimum}",
+        passed=score >= minimum,
+        detail=f"found {score}",
+    )
