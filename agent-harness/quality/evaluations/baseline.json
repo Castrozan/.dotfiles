@@ -1,10 +1,10 @@
 {
   "generated_at": "2026-07-24T03:26:24.774576+00:00",
-  "git_commit": "b13f3ebb",
+  "git_commit": "ea53cf29",
   "total_tests": 208,
-  "total_passed": 192,
-  "total_failed": 16,
-  "pass_rate": 0.9231,
+  "total_passed": 193,
+  "total_failed": 15,
+  "pass_rate": 0.9279,
   "categories": {
     "adaptive_delivery": {
       "passed": 6,
@@ -739,8 +739,8 @@
       ]
     },
     "skills/humanize/reader_recovery": {
-      "passed": 20,
-      "failed": 1,
+      "passed": 21,
+      "failed": 0,
       "tests": [
         {
           "name": "channel_does_not_force_status_labels_onto_an_explanation",
@@ -780,14 +780,14 @@
         },
         {
           "name": "recovery_distinguishes_operational_anger_from_a_language_failure",
-          "passed": false,
-          "passes": 1,
+          "passed": true,
+          "passes": 3,
           "samples": 3
         },
         {
           "name": "recovery_establishes_that_the_cache_exists",
           "passed": true,
-          "passes": 2,
+          "passes": 3,
           "samples": 3
         },
         {
@@ -841,7 +841,7 @@
         {
           "name": "recovery_stops_repeating_completed_history",
           "passed": true,
-          "passes": 2,
+          "passes": 3,
           "samples": 3
         },
         {
@@ -859,7 +859,7 @@
         {
           "name": "recovery_unpacks_the_test_delivery_flow",
           "passed": true,
-          "passes": 3,
+          "passes": 2,
           "samples": 3
         },
         {
@@ -1038,21 +1038,21 @@
     }
   },
   "fingerprints": {
-    "suite": "fb10dd668e57f22e1323d738b7f1d7f0a00ef319dd6dc07af31b379f57ee9296",
-    "instructions": "f89b93f164530d86a1e530f1e860d064013a92fe3003dabf77bd9f5321c1b660"
+    "suite": "d5881c97bce1de1f23176f3d8afe389fa9f6c99d4238ebe604c907204c99f8fa",
+    "instructions": "8e551541b10f9ebf27533067e87ecd91f16ce9b7e5e9272908872b198d78831b"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
-      "generated_at": "2026-08-17T02:43:36.557191+00:00",
+      "generated_at": "2026-08-17T12:40:11.983917+00:00",
       "comparison_ref": "b13f3ebb081b79ac6d070ad7b73f9bfe80cb7d16",
       "epochs": 3,
       "paired_cases": 21,
       "sample_pairs": 63,
-      "candidate_pass_rate": 0.9206,
-      "control_pass_rate": 0.873,
-      "delta": 0.0476,
-      "lower_bound": -0.1111,
-      "upper_bound": 0.2063,
+      "candidate_pass_rate": 0.9683,
+      "control_pass_rate": 0.8889,
+      "delta": 0.0794,
+      "lower_bound": -0.0317,
+      "upper_bound": 0.2222,
       "candidate_hard_failures": [],
       "candidate_cases": {
         "channel_does_not_force_status_labels_onto_an_explanation": {
@@ -1080,11 +1080,11 @@
           "samples": 3
         },
         "recovery_distinguishes_operational_anger_from_a_language_failure": {
-          "passes": 1,
+          "passes": 3,
           "samples": 3
         },
         "recovery_establishes_that_the_cache_exists": {
-          "passes": 2,
+          "passes": 3,
           "samples": 3
         },
         "recovery_honors_a_tldr_size_constraint": {
@@ -1120,7 +1120,7 @@
           "samples": 3
         },
         "recovery_stops_repeating_completed_history": {
-          "passes": 2,
+          "passes": 3,
           "samples": 3
         },
         "recovery_surfaces_the_requested_decision": {
@@ -1132,7 +1132,7 @@
           "samples": 3
         },
         "recovery_unpacks_the_test_delivery_flow": {
-          "passes": 3,
+          "passes": 2,
           "samples": 3
         },
         "recovery_uses_a_table_when_exact_mapping_is_the_need": {
@@ -1141,8 +1141,8 @@
         }
       },
       "fingerprints": {
-        "suite": "e7f2a7b79156c5bca48190b240099a36bf6758330763757533e11df7892bd570",
-        "instructions": "d8963c3fc929cc4bfc41cad8de11c252d1c894918c5e2608f15e430b962ec6f0"
+        "suite": "7cc63d39dbbd416fec1d574be5b214963b61ec7722da43299d1d1421d21dc8bb",
+        "instructions": "89d23dcd838f1c3404652cdcd8aeb3946f41f4f7d5e86c093c5744c3a569586e"
       }
     }
   }

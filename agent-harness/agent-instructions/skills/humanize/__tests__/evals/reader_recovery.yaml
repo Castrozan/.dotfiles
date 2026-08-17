@@ -161,7 +161,7 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Names only the OpenCode end-to-end run as unfinished work, while giving enough current-state context to show everything else is complete, without replaying research or implementation history."
+        - "Names the OpenCode end-to-end run as the only unfinished work and confirms that everything else is complete, without replaying research or implementation history. Accept a compact form such as 'Next: one OpenCode end-to-end run. Everything else is complete'; it does not need to list completed items."
 
   - name: recovery_answers_a_small_question_at_small_scale
     failure_mode: verbosity

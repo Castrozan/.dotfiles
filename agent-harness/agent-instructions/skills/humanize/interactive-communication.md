@@ -42,8 +42,9 @@ Deliver all independent completed work with any required question.
 Choose the smallest useful form through Humanize `representation-selection`; an explanation, decision, factual answer,
 or durable artifact does not become a status report merely because it is interactive. For a status handoff, answer
 directly, use `Done` for verified results, and use `Next` only for required work in the current task. Keep unrelated
-work out of `Next`; mention it only when it materially changes the current result. Make every final reply sufficient to
-recover the task even when these labels would add no value.
+work out of `Next`; mention it only when it materially changes the current result. When the request supplies both
+completed and pending work, include both labels; `Done` can confirm that everything else is complete without listing
+it. Make every final reply sufficient to recover the task even when these labels would add no value.
 </response-shape>
 
 <concise-request>
