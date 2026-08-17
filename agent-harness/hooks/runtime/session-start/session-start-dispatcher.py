@@ -28,6 +28,7 @@ SESSION_START_HANDLERS = [
     ),
     HookHandler(handler_module_name="compaction_context_recovery_handler"),
     HookHandler(handler_module_name="herdr_agent_session_report_handler"),
+    HookHandler(handler_module_name="servant_identity_handler"),
 ]
 
 

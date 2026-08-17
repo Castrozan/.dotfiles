@@ -203,6 +203,28 @@ _full_json_input() {
 	[[ "$stripped" != *"-12"* ]]
 }
 
+@test "servant segment shows name and class from the identity state file" {
+	local state_dir
+	state_dir=$(mktemp -d)
+	local json_input
+	printf '%s' '{"name":"Nero Claudius","class":"Saber","catchphrase":"Umu","manner":"Radiant"}' >"$state_dir/servant-identity-bb823787-e6ea-467c-b0ce-d90b8b92fc36.json"
+	json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"bb823787-e6ea-467c-b0ce-d90b8b92fc36","context_window":{"used_percentage":10}}'
+	run bash -c "echo '$json_input' | SERVANT_IDENTITY_STATE_DIRECTORY='$state_dir' bash '$SCRIPT_UNDER_TEST'"
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"Nero Claudius (Saber)"* ]]
+	[[ "$stripped" == *"Umu"* ]]
+	rm -rf "$state_dir"
+}
+
+@test "servant segment is hidden when the identity state file is absent" {
+	_run_statusline_with_json "$(_minimal_json_input)"
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" != *"Nero"* ]]
+	[[ "$stripped" != *"Saber"* ]]
+}
+
 @test "segments are separated by the box-drawing pipe" {
 	_run_statusline_with_json "$(_full_json_input)"
 	local stripped
