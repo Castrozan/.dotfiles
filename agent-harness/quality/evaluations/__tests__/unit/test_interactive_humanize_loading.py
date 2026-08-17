@@ -87,6 +87,18 @@ def test_explicit_humanize_request_loads_before_other_actions():
     assert "before any other action" in humanize_loading
 
 
+def test_supplied_facts_end_the_investigation_requirement():
+    exhaust_before_returning = interactive_policy_section("exhaust-before-returning")
+
+    for required_behavior in (
+        "supplies the facts its answer depends on",
+        "supplied-fact-precedence",
+        "instead of searching the workspace",
+        "does not authorize an investigation",
+    ):
+        assert required_behavior in exhaust_before_returning
+
+
 def test_work_in_progress_updates_do_not_require_user_attention():
     work_in_progress_updates = interactive_policy_section("work-in-progress-updates")
 
@@ -137,6 +149,11 @@ def test_concise_request_is_semantic_instead_of_a_global_shape_limit():
 
     assert "binding" in concise_request
     assert "tldr" in concise_request
+    for required_behavior in (
+        "stop when the requested outcome is clear",
+        "offer to cover material the reader deferred",
+    ):
+        assert required_behavior in concise_request
     assert "hard ceiling" not in concise_request
     assert "1500" not in concise_request
 
