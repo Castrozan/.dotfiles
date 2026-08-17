@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-07-24T03:26:24.774576+00:00",
-  "git_commit": "ea53cf29",
+  "git_commit": "0e29c6ae",
   "total_tests": 208,
   "total_passed": 193,
   "total_failed": 15,
@@ -769,7 +769,7 @@
         {
           "name": "recovery_answers_a_small_question_at_small_scale",
           "passed": true,
-          "passes": 2,
+          "passes": 3,
           "samples": 3
         },
         {
@@ -859,7 +859,7 @@
         {
           "name": "recovery_unpacks_the_test_delivery_flow",
           "passed": true,
-          "passes": 2,
+          "passes": 3,
           "samples": 3
         },
         {
@@ -1039,20 +1039,20 @@
   },
   "fingerprints": {
     "suite": "d5881c97bce1de1f23176f3d8afe389fa9f6c99d4238ebe604c907204c99f8fa",
-    "instructions": "8e551541b10f9ebf27533067e87ecd91f16ce9b7e5e9272908872b198d78831b"
+    "instructions": "063c9636fdbbe82f46443d30595291a8236e6471ba963ba87fd0a323adad09d8"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
-      "generated_at": "2026-08-17T12:40:11.983917+00:00",
+      "generated_at": "2026-08-17T13:07:05.202338+00:00",
       "comparison_ref": "b13f3ebb081b79ac6d070ad7b73f9bfe80cb7d16",
       "epochs": 3,
       "paired_cases": 21,
       "sample_pairs": 63,
-      "candidate_pass_rate": 0.9683,
-      "control_pass_rate": 0.8889,
-      "delta": 0.0794,
-      "lower_bound": -0.0317,
-      "upper_bound": 0.2222,
+      "candidate_pass_rate": 1.0,
+      "control_pass_rate": 0.9365,
+      "delta": 0.0635,
+      "lower_bound": 0.0,
+      "upper_bound": 0.1429,
       "candidate_hard_failures": [],
       "candidate_cases": {
         "channel_does_not_force_status_labels_onto_an_explanation": {
@@ -1072,7 +1072,7 @@
           "samples": 3
         },
         "recovery_answers_a_small_question_at_small_scale": {
-          "passes": 2,
+          "passes": 3,
           "samples": 3
         },
         "recovery_answers_the_user_visible_outcome_first": {
@@ -1132,7 +1132,7 @@
           "samples": 3
         },
         "recovery_unpacks_the_test_delivery_flow": {
-          "passes": 2,
+          "passes": 3,
           "samples": 3
         },
         "recovery_uses_a_table_when_exact_mapping_is_the_need": {
@@ -1142,7 +1142,7 @@
       },
       "fingerprints": {
         "suite": "7cc63d39dbbd416fec1d574be5b214963b61ec7722da43299d1d1421d21dc8bb",
-        "instructions": "89d23dcd838f1c3404652cdcd8aeb3946f41f4f7d5e86c093c5744c3a569586e"
+        "instructions": "97f9c1c6216ffabcb31aa121ac2a052ae0674fc44e28674c15e63ce57618bb04"
       }
     }
   }

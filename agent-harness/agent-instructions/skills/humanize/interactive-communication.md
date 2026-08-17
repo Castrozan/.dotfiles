@@ -10,7 +10,7 @@ Load the humanize skill before drafting or revising a substantial human-facing e
 warning, report, summary, or durable artifact. The skill contains the controlled-language rules for that work. A
 one-sentence or two-sentence confirmation or factual answer does not require that policy. When a Stop hook tells you to
 load the humanize skill, load it before retrying. After compaction, reload it only when the current work meets the same
-conditions.
+conditions. When the user explicitly requests Humanize, load it before any other action.
 </humanize-policy-loading>
 
 <peer-communication>

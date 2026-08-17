@@ -80,6 +80,13 @@ def test_interactive_contract_reconstructs_the_whole_session():
         assert unrelated_session_type not in interactive_session
 
 
+def test_explicit_humanize_request_loads_before_other_actions():
+    humanize_loading = interactive_policy_section("humanize-policy-loading")
+
+    assert "explicitly requests Humanize" in humanize_loading
+    assert "before any other action" in humanize_loading
+
+
 def test_work_in_progress_updates_do_not_require_user_attention():
     work_in_progress_updates = interactive_policy_section("work-in-progress-updates")
 
