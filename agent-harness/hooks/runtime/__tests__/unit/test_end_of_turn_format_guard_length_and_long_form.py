@@ -60,14 +60,14 @@ def test_allows_long_prose_answer_when_request_says_in_detail(tmp_path):
     assert result.stdout.strip() == ""
 
 
-def test_still_enforces_length_when_request_is_a_routine_question(tmp_path):
+def test_allows_long_reply_to_a_routine_question(tmp_path):
     paragraph = " ".join(["word"] * 320)
     reply = f"{paragraph}\n**Done:** x\n**Next:** y"
     transcript = write_transcript_with_request_and_reply(
         tmp_path, "is obsidian syncing on chise?", reply
     )
     result = invoke_guard(stop_payload(transcript))
-    assert result.stdout.strip() != ""
+    assert result.stdout.strip() == ""
 
 
 def test_grant_survives_a_tool_result_between_request_and_reply(tmp_path):

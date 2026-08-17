@@ -27,7 +27,7 @@ def test_stop_dispatcher_imports_shared_modules_after_flat_deploy(
                         "content": [
                             {
                                 "type": "text",
-                                "text": "You're right — done.\n**Done:** x\n**Next:** y",
+                                "text": "MR !12 is ready for review.",
                             }
                         ],
                     },

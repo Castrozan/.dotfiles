@@ -15,7 +15,7 @@ def test_all_surfaces_block_from_explicit_text_without_a_transcript(surface):
         "hook_event_name": "Stop",
         "session_id": "direct-text",
         "user_request_text": "summarize the result",
-        "reply_text": "Sure, done. **Done:** x\n**Next:** y",
+        "reply_text": "MR !14 is ready for review.",
     }
 
     result = invoke_guard(payload, surface=surface)
@@ -38,7 +38,7 @@ def test_codex_uses_its_last_assistant_message_and_jsonl_user_request(tmp_path):
         ],
     )
     payload = stop_payload(transcript)
-    payload["last_assistant_message"] = "Sure, done. **Done:** x\n**Next:** y"
+    payload["last_assistant_message"] = "MR !17 is ready for review."
 
     result = invoke_guard(payload, surface="codex")
 
@@ -62,7 +62,9 @@ def test_codex_accepts_generic_text_blocks_in_response_items(tmp_path):
                 "payload": {
                     "type": "message",
                     "role": "assistant",
-                    "content": [{"type": "text", "text": "Sure, here it is."}],
+                    "content": [
+                        {"type": "text", "text": "MR !15 is ready for review."}
+                    ],
                 },
             },
         ],
