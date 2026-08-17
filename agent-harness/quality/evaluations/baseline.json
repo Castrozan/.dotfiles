@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-07-24T03:26:24.774576+00:00",
-  "git_commit": "0e29c6ae",
-  "total_tests": 208,
+  "generated_at": "2026-08-17T17:39:33.137615+00:00",
+  "git_commit": "2cdd7955",
+  "total_tests": 204,
   "total_passed": 193,
-  "total_failed": 15,
-  "pass_rate": 0.9279,
+  "total_failed": 11,
+  "pass_rate": 0.9461,
   "categories": {
     "adaptive_delivery": {
-      "passed": 6,
-      "failed": 1,
+      "passed": 7,
+      "failed": 0,
       "tests": [
         {
           "name": "adaptive_delivery_answer_only_request_is_the_direct_tier",
@@ -36,7 +36,7 @@
         },
         {
           "name": "adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -75,7 +75,7 @@
           "passed": true
         },
         {
-          "name": "deep_work_knows_postcompact",
+          "name": "deep_work_recovers_from_persisted_state",
           "passed": true
         },
         {
@@ -89,8 +89,8 @@
       ]
     },
     "communication": {
-      "passed": 13,
-      "failed": 3,
+      "passed": 12,
+      "failed": 4,
       "tests": [
         {
           "name": "representation_ownership_uses_tree",
@@ -122,7 +122,7 @@
         },
         {
           "name": "communication_uses_one_defined_term_per_referent",
-          "passed": true
+          "passed": false
         },
         {
           "name": "communication_separates_evidence_inference_and_decision",
@@ -138,7 +138,7 @@
         },
         {
           "name": "controlled_language_separates_diagnosis_from_evidence",
-          "passed": true
+          "passed": false
         },
         {
           "name": "controlled_language_decides_by_tradeoff",
@@ -154,35 +154,35 @@
         },
         {
           "name": "controlled_language_summarizes_for_action",
-          "passed": false
+          "passed": true
         }
       ]
     },
     "context_management": {
-      "passed": 4,
-      "failed": 0,
+      "passed": 3,
+      "failed": 1,
       "tests": [
         {
-          "name": "context_budget_knows_1m_window",
+          "name": "context_budget_loads_only_material_information",
           "passed": true
         },
         {
-          "name": "context_budget_no_premature_compact",
+          "name": "context_budget_discards_stale_findings",
           "passed": true
         },
         {
-          "name": "context_budget_offloads_heavy_output_for_resume_safety",
+          "name": "context_budget_uses_bounded_summaries",
           "passed": true
         },
         {
-          "name": "context_budget_exploits_window_over_fragmenting",
-          "passed": true
+          "name": "context_budget_persists_resume_state",
+          "passed": false
         }
       ]
     },
     "core_rules": {
-      "passed": 11,
-      "failed": 1,
+      "passed": 10,
+      "failed": 0,
       "tests": [
         {
           "name": "delegates_to_skill",
@@ -193,7 +193,7 @@
           "passed": true
         },
         {
-          "name": "stops_only_for_irreversible_blocking_fork",
+          "name": "asks_only_for_material_unresolved_fork",
           "passed": true
         },
         {
@@ -203,10 +203,6 @@
         {
           "name": "active_waiting_requires_loop_monitor",
           "passed": true
-        },
-        {
-          "name": "active_waiting_no_passive_waiting",
-          "passed": false
         },
         {
           "name": "active_waiting_defines_conditions",
@@ -225,49 +221,45 @@
           "passed": true
         },
         {
-          "name": "typo_inference_proceeds_without_asking",
-          "passed": true
-        },
-        {
           "name": "local_information_first",
           "passed": true
         }
       ]
     },
     "delegation": {
-      "passed": 5,
-      "failed": 3,
+      "passed": 8,
+      "failed": 0,
       "tests": [
         {
-          "name": "delegation_multi_agent_implementation_uses_workflow",
-          "passed": false
-        },
-        {
-          "name": "delegation_coordination_uses_workflow",
-          "passed": false
-        },
-        {
-          "name": "delegation_bare_subagent_acceptable_for_research",
+          "name": "delegation_parallelizes_independent_breadth",
           "passed": true
         },
         {
-          "name": "delegation_multiple_steps_use_workflow",
+          "name": "delegation_keeps_subtle_design_with_owner",
           "passed": true
         },
         {
-          "name": "delegation_bare_subagent_wrong_for_implementation",
+          "name": "delegation_single_lookup_needs_no_fanout",
           "passed": true
         },
         {
-          "name": "delegation_progress_tracking_uses_workflow",
-          "passed": false
-        },
-        {
-          "name": "delegation_read_only_query_needs_no_workflow",
+          "name": "delegation_parallelizes_independent_coverage",
           "passed": true
         },
         {
-          "name": "delegation_instruction_changes_require_evals",
+          "name": "delegation_does_not_split_depth_work",
+          "passed": true
+        },
+        {
+          "name": "delegation_owner_synthesizes_results",
+          "passed": true
+        },
+        {
+          "name": "delegation_result_is_evidence_not_authority",
+          "passed": true
+        },
+        {
+          "name": "instruction_changes_check_baseline_without_resaving",
           "passed": true
         }
       ]
@@ -277,7 +269,7 @@
       "failed": 0,
       "tests": [
         {
-          "name": "nix_rebuild_trigger_fires_on_nix_edit",
+          "name": "nix_edit_is_recorded_without_interrupting_the_turn",
           "passed": true
         },
         {
@@ -287,8 +279,8 @@
       ]
     },
     "instruction_compliance": {
-      "passed": 8,
-      "failed": 0,
+      "passed": 9,
+      "failed": 1,
       "tests": [
         {
           "name": "hardskill_belongs_in_scripts",
@@ -307,6 +299,14 @@
           "passed": true
         },
         {
+          "name": "instruction_surface_authority",
+          "passed": true
+        },
+        {
+          "name": "workflow_model_calls_are_budgeted",
+          "passed": true
+        },
+        {
           "name": "python_default_over_bash",
           "passed": true
         },
@@ -320,13 +320,13 @@
         },
         {
           "name": "formatting_after_edits",
-          "passed": true
+          "passed": false
         }
       ]
     },
     "investigation": {
-      "passed": 6,
-      "failed": 1,
+      "passed": 7,
+      "failed": 0,
       "tests": [
         {
           "name": "why_question_triggers_investigation",
@@ -345,8 +345,8 @@
           "passed": true
         },
         {
-          "name": "analysis_separate_from_implementation",
-          "passed": false
+          "name": "investigation_keeps_plan_provisional",
+          "passed": true
         },
         {
           "name": "investigation_depth_matches_stakes",
@@ -367,11 +367,11 @@
           "passed": true
         },
         {
-          "name": "rebuild_commit_then_rebuild_then_test",
+          "name": "rebuild_commit_then_rebuild_then_push_then_ci",
           "passed": true
         },
         {
-          "name": "rebuild_and_tests_both_gate_response",
+          "name": "rebuild_and_ci_both_gate_response",
           "passed": true
         },
         {
@@ -381,7 +381,7 @@
       ]
     },
     "review": {
-      "passed": 5,
+      "passed": 6,
       "failed": 1,
       "tests": [
         {
@@ -390,7 +390,7 @@
         },
         {
           "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": false
+          "passed": true
         },
         {
           "name": "review_flags_hardcoded_credentials",
@@ -401,57 +401,29 @@
           "passed": true
         },
         {
-          "name": "review_knows_output_format_no_issues",
+          "name": "review_requires_actionable_evidence",
           "passed": true
         },
         {
-          "name": "review_knows_confidence_threshold",
+          "name": "review_omits_speculation",
           "passed": true
+        },
+        {
+          "name": "review_goal_verification_judges_quality_without_repairing",
+          "passed": false
         }
       ]
     },
     "skill_routing": {
-      "passed": 54,
+      "passed": 49,
       "failed": 1,
       "tests": [
-        {
-          "name": "routing_to_desktop_keyboard_typing",
-          "passed": true
-        },
-        {
-          "name": "routing_to_desktop_screenshot_capture",
-          "passed": true
-        },
-        {
-          "name": "routing_to_desktop_clipboard_access",
-          "passed": true
-        },
-        {
-          "name": "routing_to_desktop_mouse_click",
-          "passed": true
-        },
-        {
-          "name": "routing_to_media_volume_adjustment",
-          "passed": true
-        },
         {
           "name": "routing_to_media_youtube_search",
           "passed": true
         },
         {
-          "name": "routing_to_media_skip_track",
-          "passed": true
-        },
-        {
-          "name": "routing_to_personal_google_chat_message",
-          "passed": true
-        },
-        {
           "name": "routing_to_personal_twitter_post",
-          "passed": true
-        },
-        {
-          "name": "routing_to_personal_vtuber_avatar",
           "passed": true
         },
         {
@@ -463,7 +435,7 @@
           "passed": true
         },
         {
-          "name": "routing_to_worktrees",
+          "name": "routing_to_coding_worktree_isolation",
           "passed": true
         },
         {
@@ -495,7 +467,7 @@
           "passed": true
         },
         {
-          "name": "routing_to_commit_staging",
+          "name": "routing_to_coding_commit_staging",
           "passed": true
         },
         {
@@ -507,35 +479,23 @@
           "passed": true
         },
         {
-          "name": "routing_to_obsidian_daily_note",
+          "name": "routing_to_ril_capture_backlog",
           "passed": true
         },
         {
-          "name": "routing_to_obsidian_todo_tracking",
+          "name": "routing_to_coding_test_verification",
           "passed": true
         },
         {
-          "name": "routing_to_dotfiles_module_addition",
+          "name": "routing_to_instructions_skill_creation",
           "passed": true
         },
         {
-          "name": "routing_to_nix_expert_expression",
+          "name": "routing_to_docs_readme_standards",
           "passed": true
         },
         {
-          "name": "routing_to_rebuild_apply_changes",
-          "passed": true
-        },
-        {
-          "name": "routing_to_test_verification",
-          "passed": true
-        },
-        {
-          "name": "routing_to_review_skill_creation",
-          "passed": true
-        },
-        {
-          "name": "routing_to_review_skill_routing_failure",
+          "name": "routing_to_instructions_skill_routing_failure",
           "passed": true
         },
         {
@@ -551,7 +511,11 @@
           "passed": true
         },
         {
-          "name": "routing_to_review_compress_output",
+          "name": "routing_to_research_digest",
+          "passed": true
+        },
+        {
+          "name": "routing_to_humanize_merge_request_description",
           "passed": true
         },
         {
@@ -567,35 +531,31 @@
           "passed": true
         },
         {
-          "name": "routing_ambiguous_browser_vs_desktop_screenshot",
-          "passed": true
-        },
-        {
           "name": "routing_ambiguous_research_vs_browser",
           "passed": true
         },
         {
-          "name": "routing_ambiguous_commit_vs_worktrees",
+          "name": "routing_to_coding_commit",
           "passed": true
         },
         {
-          "name": "routing_to_review_code_analysis",
+          "name": "routing_to_review_for_an_unbiased_reviewer_pass",
           "passed": true
         },
         {
-          "name": "routing_to_git_history_search_commits",
+          "name": "routing_to_coding_history_search_commits",
           "passed": true
         },
         {
-          "name": "routing_to_git_history_find_when_changed",
+          "name": "routing_to_coding_history_find_when_changed",
           "passed": true
         },
         {
-          "name": "routing_to_git_history_trace_evolution",
+          "name": "routing_to_coding_history_trace_evolution",
           "passed": true
         },
         {
-          "name": "routing_to_git_history_investigate_past",
+          "name": "routing_to_coding_history_investigate_past",
           "passed": true
         },
         {
@@ -603,12 +563,8 @@
           "passed": true
         },
         {
-          "name": "routing_to_obsidian_inbox_processing",
-          "passed": true
-        },
-        {
-          "name": "routing_to_obsidian_saved_tweet",
-          "passed": true
+          "name": "routing_to_ril_inbox_processing",
+          "passed": false
         },
         {
           "name": "routing_to_personal_tweet_media_fetch",
@@ -628,10 +584,38 @@
         },
         {
           "name": "routing_to_personal_xcom_url_with_context",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_personal_xcom_url_what_does_it_say",
+          "passed": true
+        },
+        {
+          "name": "routing_to_review_for_a_diff_before_merge",
+          "passed": true
+        },
+        {
+          "name": "routing_to_review_for_an_instruction_file_audit",
+          "passed": true
+        },
+        {
+          "name": "routing_to_architecture_for_a_boundary_decision",
+          "passed": true
+        },
+        {
+          "name": "routing_to_coding_for_a_function_cleanup",
+          "passed": true
+        },
+        {
+          "name": "routing_to_review_for_the_final_pass",
+          "passed": true
+        },
+        {
+          "name": "routing_to_explore_for_a_repo_sweep",
+          "passed": true
+        },
+        {
+          "name": "routing_to_goal_prompt_for_a_scheduled_agent",
           "passed": true
         }
       ]
@@ -641,14 +625,14 @@
       "failed": 0,
       "tests": [
         {
-          "name": "commit_skill_knows_conventions",
+          "name": "commit_skill_matches_repository_conventions",
           "passed": true
         }
       ]
     },
     "skills/coding/git": {
-      "passed": 6,
-      "failed": 1,
+      "passed": 7,
+      "failed": 0,
       "tests": [
         {
           "name": "commit_uses_specific_staging",
@@ -676,13 +660,13 @@
         },
         {
           "name": "git_history_cache_invalidation",
-          "passed": false
+          "passed": true
         }
       ]
     },
     "skills/coding/testing": {
-      "passed": 3,
-      "failed": 0,
+      "passed": 2,
+      "failed": 1,
       "tests": [
         {
           "name": "test_first_before_fix",
@@ -694,7 +678,7 @@
         },
         {
           "name": "test_verification_scales_to_relevant_evidence",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -769,7 +753,7 @@
         {
           "name": "recovery_answers_a_small_question_at_small_scale",
           "passed": true,
-          "passes": 3,
+          "passes": 2,
           "samples": 3
         },
         {
@@ -999,8 +983,8 @@
       ]
     },
     "workflow_compliance": {
-      "passed": 6,
-      "failed": 2,
+      "passed": 7,
+      "failed": 1,
       "tests": [
         {
           "name": "workflow_knows_full_sequence",
@@ -1008,7 +992,7 @@
         },
         {
           "name": "workflow_rebuild_not_just_nix",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_never_skip_rebuild",
@@ -1016,11 +1000,11 @@
         },
         {
           "name": "workflow_respond_only_after_pass",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_fix_before_responding",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_fix_downstream_reference_not_shim",
@@ -1039,20 +1023,20 @@
   },
   "fingerprints": {
     "suite": "d5881c97bce1de1f23176f3d8afe389fa9f6c99d4238ebe604c907204c99f8fa",
-    "instructions": "063c9636fdbbe82f46443d30595291a8236e6471ba963ba87fd0a323adad09d8"
+    "instructions": "29fe18bbd0da5057e16b25a456f7f3eb6c3dde0b27148b5e5fb05e64067b600f"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
-      "generated_at": "2026-08-17T13:07:05.202338+00:00",
+      "generated_at": "2026-08-17T17:56:04.658778+00:00",
       "comparison_ref": "b13f3ebb081b79ac6d070ad7b73f9bfe80cb7d16",
       "epochs": 3,
       "paired_cases": 21,
       "sample_pairs": 63,
-      "candidate_pass_rate": 1.0,
+      "candidate_pass_rate": 0.9841,
       "control_pass_rate": 0.9365,
-      "delta": 0.0635,
-      "lower_bound": 0.0,
-      "upper_bound": 0.1429,
+      "delta": 0.0476,
+      "lower_bound": -0.0317,
+      "upper_bound": 0.1587,
       "candidate_hard_failures": [],
       "candidate_cases": {
         "channel_does_not_force_status_labels_onto_an_explanation": {
@@ -1072,7 +1056,7 @@
           "samples": 3
         },
         "recovery_answers_a_small_question_at_small_scale": {
-          "passes": 3,
+          "passes": 2,
           "samples": 3
         },
         "recovery_answers_the_user_visible_outcome_first": {
@@ -1142,7 +1126,7 @@
       },
       "fingerprints": {
         "suite": "7cc63d39dbbd416fec1d574be5b214963b61ec7722da43299d1d1421d21dc8bb",
-        "instructions": "97f9c1c6216ffabcb31aa121ac2a052ae0674fc44e28674c15e63ce57618bb04"
+        "instructions": "8ba9e3e31f56b425f7a28bcca61506d65fbcfa9cd4a0a42670172fec53977546"
       }
     }
   }
