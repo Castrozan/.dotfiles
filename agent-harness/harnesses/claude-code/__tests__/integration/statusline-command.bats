@@ -203,7 +203,7 @@ _full_json_input() {
 	[[ "$stripped" != *"-12"* ]]
 }
 
-@test "servant segment shows name and class from the identity state file" {
+@test "servant segment shows the name alone, without class or catchphrase" {
 	local state_dir
 	state_dir=$(mktemp -d)
 	local json_input
@@ -212,8 +212,9 @@ _full_json_input() {
 	run bash -c "echo '$json_input' | SERVANT_IDENTITY_STATE_DIRECTORY='$state_dir' bash '$SCRIPT_UNDER_TEST'"
 	local stripped
 	stripped=$(echo "$output" | _strip_ansi_escape_codes)
-	[[ "$stripped" == *"Nero Claudius (Saber)"* ]]
-	[[ "$stripped" == *"Umu"* ]]
+	[[ "$stripped" == *"Nero Claudius"* ]]
+	[[ "$stripped" != *"(Saber)"* ]]
+	[[ "$stripped" != *"Umu"* ]]
 	rm -rf "$state_dir"
 }
 

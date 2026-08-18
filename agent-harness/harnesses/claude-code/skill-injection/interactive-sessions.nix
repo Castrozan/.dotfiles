@@ -25,8 +25,17 @@ let
     inherit (workspaceProfileActivation) activationShellStatementsForProfile;
   };
 
+  servantSummonerDirectory = ../../../hooks/runtime/session-start;
+
   claudeInteractiveScript = pkgs.writeShellScriptBin "claude" ''
     claudeSystemPromptFile="${interactiveSessionOnlySystemPromptSurfaces}"
+    if [ -z "''${CLAWDE_AGENT_NAME:-}" ]; then
+      eval "$(${pkgs.python3}/bin/python3 ${servantSummonerDirectory}/summon_servant.py "$claudeSystemPromptFile" 2>/dev/null)" || true
+      if [ -n "''${SERVANT_SYSTEM_PROMPT_FILE:-}" ]; then
+        claudeSystemPromptFile="$SERVANT_SYSTEM_PROMPT_FILE"
+        export SERVANT_NAME SERVANT_CLASS SERVANT_MANNER
+      fi
+    fi
     workspaceProfileArguments=()
     ${workspaceProfileLaunchDispatch}
     export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"

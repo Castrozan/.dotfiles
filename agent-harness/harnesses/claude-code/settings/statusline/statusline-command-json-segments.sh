@@ -116,20 +116,8 @@ _build_servant_segment_from_json_input() {
 	local identity_file="$state_directory/servant-identity-$sanitized_session_id.json"
 	[ -f "$identity_file" ] || return 0
 
-	local servant_name servant_class servant_catchphrase
+	local servant_name
 	servant_name=$(jq -r '.name // empty' "$identity_file")
 	[ -z "$servant_name" ] && return 0
-	servant_class=$(jq -r '.class // empty' "$identity_file")
-	servant_catchphrase=$(jq -r '.catchphrase // empty' "$identity_file")
-
-	local servant_label
-	if [ -n "$servant_class" ]; then
-		servant_label="$servant_name ($servant_class)"
-	else
-		servant_label="$servant_name"
-	fi
-	if [ -n "$servant_catchphrase" ]; then
-		servant_label="$servant_label: $servant_catchphrase"
-	fi
-	printf "${COLOR_YELLOW}%s${COLOR_RESET}" "$servant_label"
+	printf "${COLOR_YELLOW}%s${COLOR_RESET}" "$servant_name"
 }

@@ -35,6 +35,26 @@ def select_servant_for_session(session_id: str) -> dict:
     return SERVANT_CATALOG[seed % len(SERVANT_CATALOG)]
 
 
+def servant_temporary_directory() -> Path:
+    return Path(os.environ.get("TMPDIR") or DEFAULT_SERVANT_IDENTITY_STATE_DIRECTORY)
+
+
+def servant_summoned_at_launch() -> dict | None:
+    """The Servant the launch wrapper already chose, read back from the environment.
+
+    The wrapper summons before the session exists, so the hook adopts that choice
+    instead of drawing a second, contradictory one for the same session.
+    """
+    name = os.environ.get("SERVANT_NAME", "").strip()
+    if not name:
+        return None
+    return {
+        "name": name,
+        "class": os.environ.get("SERVANT_CLASS", "").strip(),
+        "manner": os.environ.get("SERVANT_MANNER", "").strip(),
+    }
+
+
 def servant_identity_state_path(session_id: str) -> Path:
     sanitized_session_id = re.sub(r"[^a-zA-Z0-9_-]+", "-", session_id or "unknown")
     state_directory = os.environ.get(
