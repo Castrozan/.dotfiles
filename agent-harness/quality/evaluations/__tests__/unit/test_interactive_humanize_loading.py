@@ -80,6 +80,26 @@ def test_interactive_contract_reconstructs_the_whole_session():
         assert unrelated_session_type not in interactive_session
 
 
+def test_standalone_recovery_does_not_license_restating_the_session():
+    interactive_session = interactive_policy_section("interactive-session")
+
+    for required_behavior in (
+        "not that it retells the whole session",
+        "at the length that answer needs",
+        "only where the reader cannot act without it",
+        "do not close with a status recap",
+    ):
+        assert required_behavior in interactive_session
+
+    assert "state the overall task, the result or current state" not in (
+        interactive_session
+    ), (
+        "a mandatory task, state, evidence, and remaining-work recital turns standalone "
+        "recovery into a per-turn session retelling, which is the pure-verbosity failure "
+        "class the reader-recovery evidence recorded"
+    )
+
+
 def test_explicit_humanize_request_loads_before_other_actions():
     humanize_loading = interactive_policy_section("humanize-policy-loading")
 
