@@ -50,12 +50,31 @@ def compose_system_prompt_file(base_prompt_path: Path, servant: dict) -> Path:
     return composed_path
 
 
-def shell_export_lines(servant: dict, composed_path: Path) -> list[str]:
+def session_display_name(servant: dict, launch_arguments: list[str]) -> str:
+    """The peer-session name, keeping the workspace and adding the Servant.
+
+    Claude Code derives a session name from the working directory, which is what
+    another agent sees when it lists peers. Appending rather than replacing keeps
+    the workspace legible while making the session addressable by Servant. A name
+    the human passed themselves always wins, so this yields an empty string then.
+    """
+    if any(argument in ("-n", "--name") for argument in launch_arguments):
+        return ""
+    workspace_name = Path.cwd().name
+    if not workspace_name:
+        return servant["name"]
+    return f"{workspace_name} ⋅ {servant['name']}"
+
+
+def shell_export_lines(
+    servant: dict, composed_path: Path, display_name: str = ""
+) -> list[str]:
     return [
         f"SERVANT_NAME={shlex.quote(servant['name'])}",
         f"SERVANT_CLASS={shlex.quote(servant['class'])}",
         f"SERVANT_MANNER={shlex.quote(servant['manner'])}",
         f"SERVANT_SYSTEM_PROMPT_FILE={shlex.quote(str(composed_path))}",
+        f"SERVANT_SESSION_NAME={shlex.quote(display_name)}",
     ]
 
 
@@ -63,7 +82,8 @@ def main() -> int:
     base_prompt_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("/dev/null")
     servant = secrets.choice(SERVANT_CATALOG)
     composed_path = compose_system_prompt_file(base_prompt_path, servant)
-    for export_line in shell_export_lines(servant, composed_path):
+    display_name = session_display_name(servant, sys.argv[2:])
+    for export_line in shell_export_lines(servant, composed_path, display_name):
         print(export_line)
     return 0
 
