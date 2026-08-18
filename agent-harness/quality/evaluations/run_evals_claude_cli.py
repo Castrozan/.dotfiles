@@ -2,6 +2,7 @@ import subprocess
 import time
 
 import run_evals_worktree_and_environment
+from run_evals_subject_binary import resolve_subject_claude_binary
 from run_evals_worktree_and_environment import build_filtered_environment
 
 TRANSIENT_RETRY_ATTEMPTS = 2
@@ -26,7 +27,7 @@ def run_claude_cli(
     no_tools: bool = False,
 ) -> tuple[str, bool]:
     cmd = [
-        "claude",
+        resolve_subject_claude_binary(),
         "-p",
         "--model",
         model,

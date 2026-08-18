@@ -1,7 +1,11 @@
 import subprocess
+import sys
 from pathlib import Path
 
-from coached_fixtures import build_coach_prompt
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from coached_fixtures import build_coach_prompt  # noqa: E402
+from run_evals_subject_binary import resolve_subject_claude_binary  # noqa: E402
 
 COMPLIANCE_REVIEW_TIMEOUT_SECONDS = 60
 NPS_PENALTY_PER_COMPLIANCE_FAILURE = 15
@@ -12,7 +16,7 @@ def review_tool_sequence_for_compliance(
 ) -> str:
     completed = subprocess.run(
         [
-            "claude",
+            resolve_subject_claude_binary(),
             "-p",
             "--model",
             "haiku",

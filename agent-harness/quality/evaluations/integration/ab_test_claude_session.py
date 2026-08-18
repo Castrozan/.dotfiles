@@ -1,10 +1,14 @@
 import json
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
-from ab_test_models import SessionTrace, ToolCallEvent
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from ab_test_models import SessionTrace, ToolCallEvent  # noqa: E402
+from run_evals_subject_binary import resolve_subject_claude_binary  # noqa: E402
 
 
 def parse_stream_json_output(
@@ -57,7 +61,7 @@ def run_claude_session_without_system_prompt(
     model: str = "haiku",
 ) -> SessionTrace:
     command = [
-        "claude",
+        resolve_subject_claude_binary(),
         "-p",
         "--verbose",
         "--output-format",
@@ -99,7 +103,7 @@ def run_claude_session_with_system_prompt(
     model: str = "haiku",
 ) -> SessionTrace:
     command = [
-        "claude",
+        resolve_subject_claude_binary(),
         "-p",
         "--verbose",
         "--output-format",

@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
 _run_evals_tier() {
-	if ! command -v claude &>/dev/null; then
-		echo "SKIP: claude CLI not installed, skipping agent evals" >&2
+	if ! command -v agent-eval &>/dev/null; then
+		echo "SKIP: agent-eval not installed, skipping agent evals" >&2
 		return 0
 	fi
 
 	echo "--- Agent Evals (LLM) ---"
-	"$REPO_DIR/agent-harness/quality/evaluations/run-evals.py"
+	# Through the packaged command, never the raw script: agent-eval puts the unwrapped claude ahead of the
+	# interactive wrapper, and a wrapped subject scores the live machine instead of the declared instruction paths.
+	agent-eval
 	echo ""
 }
 

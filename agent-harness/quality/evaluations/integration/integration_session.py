@@ -109,6 +109,9 @@ def run_claude_session(
     timeout_seconds: int = 180,
     model: str = "sonnet",
 ) -> SessionTrace:
+    # Resolve claude from PATH on purpose. Integration scenarios score the deployed session, so the subject must
+    # carry the interactive wrapper and its always-on surface. Suites that score declared instruction paths take
+    # the opposite branch through run_evals_subject_binary.
     command = [
         "claude",
         "-p",

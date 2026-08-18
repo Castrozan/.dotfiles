@@ -1,5 +1,15 @@
+import pytest
+
 import run_evals_claude_cli
 from run_evals_claude_cli import run_claude_cli
+from run_evals_subject_binary import SUBJECT_BINARY_OVERRIDE
+
+
+@pytest.fixture(autouse=True)
+def pinned_subject_binary(monkeypatch):
+    # Without this the resolver inspects the developer's own PATH, where claude is the interactive wrapper, and
+    # every case below fails on the isolation guard instead of on the behaviour it means to check.
+    monkeypatch.setenv(SUBJECT_BINARY_OVERRIDE, "/unwrapped/claude")
 
 
 class _FakeCompletedProcess:

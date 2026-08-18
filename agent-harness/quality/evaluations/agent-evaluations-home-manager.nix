@@ -17,7 +17,11 @@ let
     exec ${pythonEnv}/bin/python3 ~/.dotfiles/agent-harness/quality/evaluations/run-evals.py "$@"
   '';
 
+  # End-to-end scenarios score the deployed session, so PATH keeps the interactive wrapper for the herdr-driven
+  # subject. Only the compliance judge is pinned to the unwrapped binary, because a judge that inherits the
+  # reply-shape surface grades against instructions it was never given.
   agent-e2e = pkgs.writeShellScriptBin "agent-e2e" ''
+    export AGENT_EVAL_CLAUDE_BINARY="${pkgs.lib.getExe config.claude.unwrappedPackage}"
     export PATH="${
       pkgs.lib.makeBinPath [
         pythonEnv
