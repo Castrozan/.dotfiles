@@ -39,9 +39,10 @@ def evaluation_suite_paths(repo_root: Path) -> set[Path]:
 def evaluation_runner_paths(repo_root: Path) -> set[Path]:
     evaluation_root = repo_root / "agent-harness" / "quality" / "evaluations"
     paths = set(evaluation_root.glob("run_evals_*.py"))
-    entrypoint = evaluation_root / "run-evals.py"
-    if entrypoint.is_file():
-        paths.add(entrypoint)
+    for runner_component in ("run-evals.py", "agent-evaluations-home-manager.nix"):
+        component_path = evaluation_root / runner_component
+        if component_path.is_file():
+            paths.add(component_path)
     return paths
 
 
