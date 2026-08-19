@@ -57,3 +57,42 @@ class TestShellExports:
         )
         assert "SERVANT_NAME='Nero Claudius'" in exports
         assert any(line.startswith("SERVANT_SYSTEM_PROMPT_FILE=") for line in exports)
+
+
+class TestResumeShapeDetection:
+    def test_continue_and_resume_flags_are_resume_shaped(self):
+        for flag in ("-c", "--continue", "-r", "--resume"):
+            assert summon_servant.is_resume_shaped_launch([flag])
+
+    def test_a_fresh_launch_is_not_resume_shaped(self):
+        assert not summon_servant.is_resume_shaped_launch([])
+        assert not summon_servant.is_resume_shaped_launch(["-n", "my-session"])
+
+
+class TestExplicitResumeSessionId:
+    def test_an_id_shaped_value_after_resume_is_read_as_the_target(self):
+        session_id = "2295054f-355a-4182-9d8d-140f9714e062"
+        assert (
+            summon_servant.explicit_resume_session_id(["--resume", session_id])
+            == session_id
+        )
+        assert (
+            summon_servant.explicit_resume_session_id(["-r", session_id]) == session_id
+        )
+
+    def test_a_bare_resume_with_no_value_yields_no_id(self):
+        assert summon_servant.explicit_resume_session_id(["--resume"]) is None
+
+    def test_continue_never_carries_an_explicit_id(self):
+        assert summon_servant.explicit_resume_session_id(["-c"]) is None
+
+    def test_a_search_term_that_is_not_id_shaped_yields_no_id(self):
+        assert (
+            summon_servant.explicit_resume_session_id(["--resume", "fix the bug"])
+            is None
+        )
+
+    def test_a_following_flag_is_not_mistaken_for_the_id(self):
+        assert (
+            summon_servant.explicit_resume_session_id(["--resume", "--verbose"]) is None
+        )
