@@ -46,14 +46,13 @@ _render_statusline_from_json_input() {
 	local current_working_directory
 	current_working_directory=$(echo "$json_input" | jq -r '.cwd')
 
-	local git_segment model_segment context_window_segment rate_limit_segment session_id_segment servant_segment
+	local git_segment model_segment context_window_segment rate_limit_segment session_id_segment
 
 	git_segment=$(_build_git_segment_from_repo_directory "$current_working_directory")
 	model_segment=$(_build_model_segment_from_json_input "$json_input")
 	context_window_segment=$(_build_context_window_segment_from_json_input "$json_input")
 	rate_limit_segment=$(_build_rate_limit_five_hour_segment_from_json_input "$json_input")
 	session_id_segment=$(_build_session_id_segment_from_json_input "$json_input")
-	servant_segment=$(_build_servant_segment_from_json_input "$json_input")
 
 	local statusline=""
 	statusline=$(_append_segment_to_output "$statusline" "$git_segment")
@@ -61,7 +60,6 @@ _render_statusline_from_json_input() {
 	statusline=$(_append_segment_to_output "$statusline" "$context_window_segment")
 	statusline=$(_append_segment_to_output "$statusline" "$rate_limit_segment")
 	statusline=$(_append_segment_to_output "$statusline" "$session_id_segment")
-	statusline=$(_append_segment_to_output "$statusline" "$servant_segment")
 
 	printf "%b" "$statusline"
 }

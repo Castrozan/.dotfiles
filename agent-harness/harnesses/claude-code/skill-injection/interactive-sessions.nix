@@ -29,7 +29,9 @@ let
 
   claudeInteractiveScript = pkgs.writeShellScriptBin "claude" ''
     claudeSystemPromptFile="${interactiveSessionOnlySystemPromptSurfaces}"
-    servantSessionNameArguments=()
+    workspaceProfileArguments=()
+    ${workspaceProfileLaunchDispatch}
+    servantArguments=()
     if [ -z "''${CLAWDE_AGENT_NAME:-}" ]; then
       eval "$(${pkgs.python3}/bin/python3 ${servantSummonerDirectory}/summon_servant.py "$claudeSystemPromptFile" "$@" 2>/dev/null)" || true
       if [ -n "''${SERVANT_SYSTEM_PROMPT_FILE:-}" ]; then
@@ -37,15 +39,16 @@ let
         export SERVANT_NAME SERVANT_CLASS SERVANT_MANNER
       fi
       if [ -n "''${SERVANT_SESSION_NAME:-}" ]; then
-        servantSessionNameArguments=(--name "$SERVANT_SESSION_NAME")
+        servantArguments+=(--name "$SERVANT_SESSION_NAME")
+      fi
+      if [ -n "''${SERVANT_SESSION_ID:-}" ]; then
+        servantArguments+=(--session-id "$SERVANT_SESSION_ID")
       fi
     fi
-    workspaceProfileArguments=()
-    ${workspaceProfileLaunchDispatch}
     export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
     exec ${lib.getExe config.claude.unwrappedPackage} \
       --append-system-prompt-file "$claudeSystemPromptFile" \
-      "''${servantSessionNameArguments[@]}" \
+      "''${servantArguments[@]}" \
       "''${workspaceProfileArguments[@]}" \
       "$@"
   '';

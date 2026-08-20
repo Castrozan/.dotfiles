@@ -103,21 +103,3 @@ _build_session_id_segment_from_json_input() {
 	[ -z "$session_id" ] && return 0
 	printf "${COLOR_DIM}%s${COLOR_RESET}" "$session_id"
 }
-
-_build_servant_segment_from_json_input() {
-	local json_input="$1"
-	local session_id
-	session_id=$(echo "$json_input" | jq -r '.session_id // empty')
-	[ -z "$session_id" ] && return 0
-
-	local sanitized_session_id
-	sanitized_session_id=$(printf '%s' "$session_id" | sed 's/[^a-zA-Z0-9_-]/-/g')
-	local state_directory="${SERVANT_IDENTITY_STATE_DIRECTORY:-/tmp}"
-	local identity_file="$state_directory/servant-identity-$sanitized_session_id.json"
-	[ -f "$identity_file" ] || return 0
-
-	local servant_name
-	servant_name=$(jq -r '.name // empty' "$identity_file")
-	[ -z "$servant_name" ] && return 0
-	printf "${COLOR_YELLOW}%s${COLOR_RESET}" "$servant_name"
-}
