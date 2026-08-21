@@ -1,4 +1,5 @@
 import hashlib
+import re
 from pathlib import Path
 
 import yaml
@@ -13,6 +14,9 @@ JUDGE_CALIBRATION_PATH = Path(
 )
 
 
+MARKDOWN_EMPHASIS_PATTERN = re.compile(r"[*_`]+")
+
+
 def digest_paths(repo_root: Path, paths: set[Path]) -> str:
     digest = hashlib.sha256()
     for path in sorted(paths):
@@ -20,6 +24,31 @@ def digest_paths(repo_root: Path, paths: set[Path]) -> str:
         digest.update(str(relative_path).encode())
         digest.update(b"\0")
         digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def instruction_wording(text: str) -> str:
+    """Reduce instruction prose to the wording a measurement actually depends on.
+
+    Line wrapping, letter case, and markdown emphasis carry no behavioral
+    meaning in an instruction surface, and this repository rewraps those files
+    to a fixed column constantly. Hashing them raw made a reflow or a capital
+    letter as invalidating as a rewritten rule, which forced a full A/B run to
+    re-authorize evidence that no model output could have differed on.
+    """
+    return " ".join(MARKDOWN_EMPHASIS_PATTERN.sub("", text).lower().split())
+
+
+def digest_instruction_paths(repo_root: Path, paths: set[Path]) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(paths):
+        relative_path = path.relative_to(repo_root)
+        digest.update(str(relative_path).encode())
+        digest.update(b"\0")
+        digest.update(
+            instruction_wording(path.read_text(encoding="utf-8")).encode("utf-8")
+        )
         digest.update(b"\0")
     return digest.hexdigest()
 
@@ -85,7 +114,7 @@ def evaluation_fingerprints(repo_root: Path = REPO_ROOT) -> dict[str, str]:
         "suite": digest_paths(
             repo_root, suite_paths | evaluation_runner_paths(repo_root)
         ),
-        "instructions": digest_paths(repo_root, instruction_paths),
+        "instructions": digest_instruction_paths(repo_root, instruction_paths),
     }
 
 
@@ -101,5 +130,5 @@ def humanize_recovery_fingerprints(
         "suite": digest_paths(
             repo_root, suite_paths | evaluation_runner_paths(repo_root)
         ),
-        "instructions": digest_paths(repo_root, instruction_paths),
+        "instructions": digest_instruction_paths(repo_root, instruction_paths),
     }
