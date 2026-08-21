@@ -66,8 +66,9 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
             {"tool_name": "Bash", "tool_input": {"command": command}}
         )
         assert result.returncode == 0
-        message = parse_prohibited_command_guard_system_message(result.stdout)
-        assert "close is prohibited" in message.lower()
+        message = parse_prohibited_command_guard_system_message(result.stdout).lower()
+        assert "only the human runs" in message
+        assert "hand that exact command to the human" in message
 
     @pytest.mark.parametrize(
         "command",
