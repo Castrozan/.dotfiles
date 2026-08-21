@@ -32,7 +32,7 @@ from servant_session_id import resolve_session_id  # noqa: E402
 
 def servant_system_prompt_line(servant: dict) -> str:
     return (
-        f"<servant>You are {servant['name']}. {servant['manner']} "
+        f"<servant>You are {servant['name']}. {servant['personality']} "
         "Carry that manner as a light flavour of voice only, in at most a phrase "
         "per reply. It never changes your technical accuracy, your reasoning, the "
         "output shape a request asks for, or any other instruction you hold."
@@ -79,8 +79,6 @@ def shell_export_lines(
 ) -> list[str]:
     return [
         f"SERVANT_NAME={shlex.quote(servant['name'])}",
-        f"SERVANT_CLASS={shlex.quote(servant['class'])}",
-        f"SERVANT_MANNER={shlex.quote(servant['manner'])}",
         f"SERVANT_SYSTEM_PROMPT_FILE={shlex.quote(str(composed_path))}",
         f"SERVANT_SESSION_NAME={shlex.quote(display_name)}",
         f"SERVANT_SESSION_ID={shlex.quote(session_id_to_pass)}",

@@ -4,7 +4,7 @@ import summon_servant
 class TestServantSystemPromptLine:
     def test_the_prompt_line_names_the_servant_and_bounds_the_flavour(self):
         line = summon_servant.servant_system_prompt_line(
-            {"name": "Iskandar", "manner": "King of Conquerors, boisterous."}
+            {"name": "Iskandar", "personality": "King of Conquerors, boisterous."}
         )
         assert line.startswith("<servant>")
         assert line.endswith("</servant>")
@@ -20,7 +20,7 @@ class TestServantSystemPromptLine:
         base_prompt_path.write_text("<interactive>base rules</interactive>\n")
 
         composed_path = summon_servant.compose_system_prompt_file(
-            base_prompt_path, {"name": "Medea", "manner": "Witch of Betrayal."}
+            base_prompt_path, {"name": "Medea", "personality": "Witch of Betrayal."}
         )
         composed_text = composed_path.read_text()
         assert composed_path.parent == tmp_path
@@ -52,15 +52,21 @@ class TestSessionDisplayName:
 class TestShellExports:
     def test_shell_exports_quote_a_servant_name_with_spaces(self, tmp_path):
         exports = summon_servant.shell_export_lines(
-            {"name": "Nero Claudius", "class": "Saber", "manner": "Umu."},
+            {"name": "Nero Claudius", "personality": "Umu."},
             tmp_path / "composed.md",
         )
         assert "SERVANT_NAME='Nero Claudius'" in exports
         assert any(line.startswith("SERVANT_SYSTEM_PROMPT_FILE=") for line in exports)
 
+    def test_the_personality_is_never_exported_to_the_environment(self, tmp_path):
+        exports = summon_servant.shell_export_lines(
+            {"name": "Medea", "personality": "Wary."}, tmp_path / "composed.md"
+        )
+        assert not any("Wary." in export_line for export_line in exports)
+
     def test_a_minted_session_id_is_exported_for_the_wrapper_to_pass_on(self, tmp_path):
         exports = summon_servant.shell_export_lines(
-            {"name": "Medea", "class": "Caster", "manner": "Wary."},
+            {"name": "Medea", "personality": "Wary."},
             tmp_path / "composed.md",
             "",
             "2295054f-355a-4182-9d8d-140f9714e062",
@@ -69,7 +75,6 @@ class TestShellExports:
 
     def test_an_unminted_launch_exports_an_empty_session_id(self, tmp_path):
         exports = summon_servant.shell_export_lines(
-            {"name": "Medea", "class": "Caster", "manner": "Wary."},
-            tmp_path / "composed.md",
+            {"name": "Medea", "personality": "Wary."}, tmp_path / "composed.md"
         )
         assert "SERVANT_SESSION_ID=''" in exports

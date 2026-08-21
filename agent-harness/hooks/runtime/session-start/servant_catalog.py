@@ -6,21 +6,30 @@ import hashlib
 import os
 from pathlib import Path
 
-from servant_roster_caster import (  # noqa: E402
-    CASTER_CLASS_SERVANT_CATALOG,
-)
-from servant_roster_warrior import (  # noqa: E402
-    WARRIOR_CLASS_SERVANT_CATALOG,
-)
+from servant_roster import SERVANT_ROSTER  # noqa: E402
 
 DEFAULT_SERVANT_TEMPORARY_DIRECTORY = Path("/tmp")
 
-SERVANT_CATALOG = WARRIOR_CLASS_SERVANT_CATALOG + CASTER_CLASS_SERVANT_CATALOG
 
-_UNIQUE_SERVANT_KEYS = {(entry["name"], entry["class"]) for entry in SERVANT_CATALOG}
-assert len(_UNIQUE_SERVANT_KEYS) == len(SERVANT_CATALOG), (
-    "every servant entry needs a unique (name, class) key, because Artoria Saber "
-    "and Artoria Lancer are different servants"
+def _servants_from_roster(roster_text: str) -> list[dict]:
+    servants = []
+    for roster_line in roster_text.strip().splitlines():
+        if not roster_line.strip():
+            continue
+        name, _, personality = roster_line.partition("|")
+        servants.append({"name": name.strip(), "personality": personality.strip()})
+    return servants
+
+
+SERVANT_CATALOG = _servants_from_roster(SERVANT_ROSTER)
+
+assert len({entry["name"] for entry in SERVANT_CATALOG}) == len(SERVANT_CATALOG), (
+    "every servant needs a unique name, because the name is the whole identity "
+    "other agents address the session by"
+)
+assert all(entry["personality"] for entry in SERVANT_CATALOG), (
+    "every servant needs a personality after the |, because it is the only part "
+    "the session itself ever sees"
 )
 
 
