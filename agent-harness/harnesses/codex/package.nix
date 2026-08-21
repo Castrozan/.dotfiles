@@ -64,6 +64,7 @@ let
 
   interactiveSessionDeveloperInstructionsText = lib.concatStringsSep "\n" [
     (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/interactive-communication.md)
+    (builtins.readFile ../../../agent-harness/agent-instructions/core-rules/servant-identity.md)
   ];
 
   interactivePreferencesFile = pkgs.writeText "codex-interactive-session-only-developer-instructions.md" interactiveSessionDeveloperInstructionsText;

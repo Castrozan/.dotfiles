@@ -8,6 +8,7 @@ let
   interactiveSessionSystemPromptText = lib.concatStringsSep "\n" [
     (builtins.readFile ../../../../agent-harness/agent-instructions/skills/humanize/interactive-communication.md)
     (builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md)
+    (builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/servant-identity.md)
   ];
 
   interactiveSessionOnlySystemPromptSurfaces = pkgs.writeText "claude-interactive-session-only-system-prompt-surfaces.md" interactiveSessionSystemPromptText;
@@ -25,30 +26,16 @@ let
     inherit (workspaceProfileActivation) activationShellStatementsForProfile;
   };
 
-  servantsDomainDirectory = ../../../servants;
-
+  # No servant wiring here on purpose. The Servant is derived at SessionStart from
+  # the id Claude Code mints for itself, so this wrapper neither knows nor needs to
+  # know which one a launch draws, and a resume lands on the same one for free.
   claudeInteractiveScript = pkgs.writeShellScriptBin "claude" ''
     claudeSystemPromptFile="${interactiveSessionOnlySystemPromptSurfaces}"
     workspaceProfileArguments=()
     ${workspaceProfileLaunchDispatch}
-    servantArguments=()
-    if [ -z "''${CLAWDE_AGENT_NAME:-}" ]; then
-      eval "$(${pkgs.python3}/bin/python3 ${servantsDomainDirectory}/summon.py "$claudeSystemPromptFile" "$@" 2>/dev/null)" || true
-      if [ -n "''${SERVANT_SYSTEM_PROMPT_FILE:-}" ]; then
-        claudeSystemPromptFile="$SERVANT_SYSTEM_PROMPT_FILE"
-        export SERVANT_NAME
-      fi
-      if [ -n "''${SERVANT_SESSION_NAME:-}" ]; then
-        servantArguments+=(--name "$SERVANT_SESSION_NAME")
-      fi
-      if [ -n "''${SERVANT_SESSION_ID:-}" ]; then
-        servantArguments+=(--session-id "$SERVANT_SESSION_ID")
-      fi
-    fi
     export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
     exec ${lib.getExe config.claude.unwrappedPackage} \
       --append-system-prompt-file "$claudeSystemPromptFile" \
-      "''${servantArguments[@]}" \
       "''${workspaceProfileArguments[@]}" \
       "$@"
   '';

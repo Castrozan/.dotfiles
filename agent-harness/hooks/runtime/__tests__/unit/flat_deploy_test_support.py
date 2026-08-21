@@ -14,6 +14,9 @@ DIRECTORIES_EXCLUDED_FROM_DEPLOY = ("__pycache__", "__tests__")
 INTERACTIVE_ENV_VAR = "AGENT_INTERACTIVE_PREFERENCES_PATH"
 CLAWDE_BACKGROUND_AGENT_ENV_MARKER = "CLAWDE_AGENT_NAME"
 
+SERVANTS_DOMAIN_PLACEHOLDER = "@servantsDomainDirectory@"
+SERVANTS_DOMAIN_DIRECTORY = HOOKS_ROOT.parents[1] / "servants"
+
 
 def every_deployed_hook_script():
     return [
@@ -28,10 +31,27 @@ def every_deployed_hook_script():
 
 
 def flatten_into_single_runtime_directory(directory, source_files=None):
+    """Flatten the hook tree, then apply the substitutions the nix builder applies.
+
+    flat-hook-scripts-directory.nix rewrites @servantsDomainDirectory@ to the store
+    path holding the servants domain. A flatten that skipped it would deploy a
+    handler that can never import its catalog, and the dispatcher swallows a failed
+    handler, so the test would read that silence as a pass.
+    """
     for source_file in (
         source_files if source_files is not None else every_deployed_hook_script()
     ):
-        shutil.copy(source_file, directory / source_file.name)
+        deployed_file = directory / source_file.name
+        shutil.copy(source_file, deployed_file)
+        deployed_text = deployed_file.read_text(encoding="utf-8", errors="replace")
+        if SERVANTS_DOMAIN_PLACEHOLDER not in deployed_text:
+            continue
+        deployed_file.write_text(
+            deployed_text.replace(
+                SERVANTS_DOMAIN_PLACEHOLDER, str(SERVANTS_DOMAIN_DIRECTORY)
+            ),
+            encoding="utf-8",
+        )
 
 
 def run_flattened_hook(
