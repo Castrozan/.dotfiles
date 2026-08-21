@@ -17,8 +17,8 @@ create --workspace "$HERDR_WORKSPACE_ID" --cwd <dir> --no-focus` answers with th
 pane run <root pane id> <harness> <arguments>` starts the harness there. Carry the working directory and any
 environment on the create, because `pane run` takes neither. Pin the workspace and pass `--no-focus` so creation
 neither lands in nor moves the view to whatever the human switched to. Never reach for `herdr agent start`: it always
-splits a tab and never opens one, so even pinned to a fresh tab it strands that tab's root shell beside the agent with
-no close verb able to clear it, and a guard blocks its unpinned form, which splits the tab the human switched to.
+splits a tab and never opens one, so even pinned to a fresh tab it strands that tab's root shell beside the agent for
+you to close by pane id afterwards, and a guard blocks its unpinned form, which splits the tab the human switched to.
 `pane run` starts no named agent, so name it afterwards with `herdr agent rename <pane id> <name>`; until then the pane
 id is the only target that resolves, because `agent list` does not carry the pane the instant `pane run` returns.
 Synchronize on reported state, not scraped output: `herdr agent wait <target> --status idle|working|blocked [--timeout
