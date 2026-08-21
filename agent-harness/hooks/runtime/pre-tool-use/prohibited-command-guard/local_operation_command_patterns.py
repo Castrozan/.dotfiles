@@ -53,10 +53,8 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+(?:workspace|tab|pane)\s+close\b"
         rf"(?!\s+{HERDR_TARGET_ID_PATTERN}{COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD})",
-        "A herdr workspace/tab/pane close needs a literal target id like w2F:t3. "
-        "A close is unrecoverable and takes every agent inside, so a target the "
-        "guard cannot read is not one you can aim. Re-list, match your label, then "
-        "close by id; the herdr skill has the rest.",
+        "A herdr workspace/tab/pane close needs a literal target id like w2F:t3 "
+        "to avoid blind work drop. Read the herdr skill for more information.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
