@@ -17,6 +17,7 @@ from hook_dispatch import (  # noqa: E402
     CLAUDE_SURFACE,
     CODEX_SURFACE,
     HookHandler,
+    OPENCODE_SURFACE,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
     run_handlers,
@@ -33,7 +34,7 @@ SESSION_START_HANDLERS = [
     # because the name this injects is inert without the rule that claims it.
     HookHandler(
         handler_module_name="servant_identity_handler",
-        surfaces=(CLAUDE_SURFACE, CODEX_SURFACE),
+        surfaces=(CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE),
     ),
 ]
 
