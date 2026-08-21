@@ -86,17 +86,16 @@ def test_standalone_recovery_does_not_license_restating_the_session():
     for required_behavior in (
         "not that it retells the whole session",
         "at the length that answer needs",
-        "only where the reader cannot act without it",
-        "do not close with a status recap",
     ):
         assert required_behavior in interactive_session
 
     assert "state the overall task, the result or current state" not in (
         interactive_session
     ), (
-        "a mandatory task, state, evidence, and remaining-work recital turns standalone "
+        "an unbounded task, state, evidence, and remaining-work recital turns standalone "
         "recovery into a per-turn session retelling, which is the pure-verbosity failure "
-        "class the reader-recovery evidence recorded"
+        "class the reader-recovery evidence recorded; the bounded brief/done/next format "
+        "in response-shape carries that recovery instead"
     )
 
 
@@ -151,17 +150,35 @@ def test_artifact_links_are_remote_and_complete():
     assert "needs only the SHA" not in artifact_links
 
 
-def test_status_handoff_distinguishes_required_and_unrelated_work():
+def test_every_substantive_reply_carries_the_three_labels():
     response_shape = interactive_policy_section("response-shape")
 
+    for required_label in ("`brief:`", "`done:`", "`next:`"):
+        assert required_label in response_shape
+
     for required_behavior in (
-        "status",
-        "Done",
-        "Next",
-        "required work",
+        "40 prose words or fewer is a confirmation",
+        "stay true next week",
+        "No recency bias",
+        "required remaining work on this same task",
         "unrelated work",
     ):
         assert required_behavior in response_shape
+
+
+def test_the_reply_budgets_exempt_visuals_and_never_drop_a_fact():
+    response_shape = interactive_policy_section("response-shape")
+
+    for required_budget in (
+        "under 100 words",
+        "under 120 prose words",
+        "within 5 lines and 20 words per line",
+        "Visual lines never count",
+    ):
+        assert required_budget in response_shape
+
+    concise_request = interactive_policy_section("concise-request")
+    assert "No budget justifies deleting a fact" in concise_request
 
 
 def test_concise_request_is_semantic_instead_of_a_global_shape_limit():
