@@ -33,7 +33,7 @@ class TestBashGitAddInvocationPositions:
         assert result.returncode == 0
         message = parse_prohibited_command_guard_system_message(result.stdout)
         assert "git add" in message
-        assert "prohibited" in message.lower()
+        assert "specific file paths" in message.lower()
 
     @pytest.mark.parametrize(
         "command",

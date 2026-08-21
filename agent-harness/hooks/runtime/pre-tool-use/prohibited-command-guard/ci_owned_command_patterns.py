@@ -20,8 +20,8 @@ TEST_RUNNER_TEMPLATE_PATH_PATTERN = (
 )
 TEST_RUNNER_AFTER_DIRECTORY_CHANGE_PATTERN = rf"\bcd\s+{TEST_RUNNER_DIRECTORY_PATTERN}\s*(?:&&|;)\s*\./[^;\n]*(?:\brun\.sh\b|`|\$\()"
 TEST_RUNNER_DENIAL_REASON = (
-    "repository/verification/run.sh is prohibited locally; CI runs it after push. Run the affected "
-    "test file or small named set directly."
+    "repository/verification/run.sh belongs to CI after push. Run the affected "
+    "test file directly instead."
 )
 PYTEST_INVOCATION_PREFIX = r"(?:python3? -m )?pytest\b"
 PYTEST_WHOLE_TIER_PATH_TERMINATOR = r"(?:/[*?[]|[\s;&|]|$)"
@@ -46,22 +46,20 @@ PYTEST_AGENTS_TREE_PATTERN = (
     rf"(?:\s+-\S+(?:\s+\S+)?)*\s*(?:[;&|]|$)"
 )
 PYTEST_CI_OWNED_TIER_DENIAL_REASON = (
-    "pytest over a whole CI-owned tier directory is prohibited; CI runs the unit "
-    "and integration tiers after push. Run a specific test file, for example "
-    "'pytest agent-harness/hooks/runtime/__tests__/unit/test_specific_thing.py'."
+    "pytest over a whole CI-owned tier belongs to CI after push. Name a specific "
+    "test file instead."
 )
 PYTEST_WHOLE_COLLECTION_DENIAL_REASON = (
-    "Bare pytest or a whole tests-tree run collects CI-owned tiers; CI runs them "
-    "after push. Run a specific test file, for example "
-    "'pytest agent-harness/hooks/runtime/__tests__/unit/test_specific_thing.py'."
+    "Bare pytest collects the CI-owned tiers that CI runs after push. Name a "
+    "specific test file instead."
 )
 NIX_FLAKE_CHECK_PATTERN = (
     rf"{COMMAND_INVOCATION_POSITION_PREFIX}nix\s+flake\s+check"
     rf"(?!\s+--?(?:help|version)\b)(?:\s|$|[;&|])"
 )
 NIX_FLAKE_CHECK_DENIAL_REASON = (
-    "nix flake check runs in CI after push; the local verification for a nix "
-    "change is 'rebuild'."
+    "nix flake check runs in CI after push. Use 'rebuild' as the local check. "
+    "Read the nix skill for more information."
 )
 
 CI_OWNED_BASH_COMMAND_PATTERNS = [

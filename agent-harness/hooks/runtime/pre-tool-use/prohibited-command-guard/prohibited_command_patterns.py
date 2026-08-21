@@ -31,7 +31,7 @@ PROHIBITED_BASH_COMMAND_PATTERNS = [
 PROHIBITED_FILE_PATH_PATTERNS = [
     (
         r"(?:^|[\s/])castrozan/\.?dotfiles(?:/|$)",
-        "Writing under castrozan/.dotfiles is prohibited; repo must not live on disk.",
+        "castrozan/.dotfiles must not live on disk; write outside it.",
     ),
 ]
 

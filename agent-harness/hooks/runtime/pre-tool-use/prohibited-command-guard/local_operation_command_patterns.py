@@ -19,8 +19,8 @@ DATE_INPUT_WITH_IANA_TIMEZONE_PATTERN = (
     rf"[^\s;&|]*{IANA_TIMEZONE_PATTERN}[^\s;&|]*)"
 )
 DATE_INPUT_WITH_IANA_TIMEZONE_DENIAL_REASON = (
-    "GNU date does not parse a bare IANA timezone inside -d/--date input. "
-    "Prefix the command with TZ=Area/Location instead."
+    "date needs the timezone as a TZ=Area/Location prefix, not inside -d/--date, "
+    "to avoid a silently wrong time."
 )
 
 LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
@@ -33,22 +33,24 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}git\s+add\s+"
         rf"(?:-A|--all|\.){COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}",
-        "git add -A/--all/. is prohibited; stage specific files (parallel work risk).",
+        "git add needs specific file paths, not -A/--all/., to avoid staging "
+        "another agent's parallel work. Read the coding skill for more information.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}(?:git|gh\s+repo)\s+clone\s+\S*castrozan[/-]?\.?dotfiles",
-        "Cloning castrozan/.dotfiles is prohibited; use 'gh api' for remote access.",
+        "castrozan/.dotfiles must not live on disk. Use 'gh api' for remote "
+        "access instead.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}direnv\s+(allow|hook|exec|reload|status|edit|deny|block|prune|version)\b",
-        "direnv is prohibited; use 'devenv shell' or 'devenv shell -- command'.",
+        "Use 'devenv shell' or 'devenv shell -- command' instead of direnv. Read "
+        "the devenv skill for more information.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
-        "herdr agent start splits an active tab someone is working in, and "
-        "--workspace alone is not a pin. Spawn a new agent alone in a fresh tab's "
-        "own pane instead, or pin --tab with --no-focus for a deliberate split; "
-        "the herdr skill carries both.",
+        "herdr agent start splits an active tab. Open a fresh tab so the agent is "
+        "alone in its own pane, or pin --tab with --no-focus for a deliberate "
+        "split. Read the herdr skill for more information.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+(?:workspace|tab|pane)\s+close\b"
@@ -58,10 +60,10 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
-        "claude -p/--print (headless oneshot) is prohibited; drive an interactive "
-        "session instead, by launching claude plainly or through a herdr agent as "
-        "the herdr skill describes. A sanctioned one-off needs the prefix "
-        f"{SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL}.",
+        "claude -p/--print needs the prefix "
+        f"{SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL} for a sanctioned one-off; "
+        "otherwise drive an interactive session. Read the herdr skill for more "
+        "information.",
         SANCTIONED_HEADLESS_CLAUDE_OVERRIDE_SENTINEL,
     ),
 ]
