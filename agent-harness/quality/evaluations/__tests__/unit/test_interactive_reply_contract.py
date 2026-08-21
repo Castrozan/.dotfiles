@@ -79,7 +79,7 @@ def test_artifact_links_are_remote_and_complete():
 def test_every_substantive_reply_carries_the_three_labels():
     response_shape = interactive_policy_section("response-shape")
 
-    for required_label in ("**brief:**", "**done:**", "**next:**"):
+    for required_label in ("**Brief:**", "**Done:**", "**Next:**"):
         assert required_label in response_shape
 
     assert "Bold each label and leave a blank line between the three blocks" in (

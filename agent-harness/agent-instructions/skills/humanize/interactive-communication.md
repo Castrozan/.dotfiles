@@ -47,11 +47,11 @@ whether it explains, decides, answers a question, or hands off status:
 Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship,
 chosen through Humanize `representation-selection`. Visual lines never count against the budgets below.
 
-**brief:** the standing purpose of this work, written to stay true next week. No recency bias, no progress report.
+**Brief:** the standing purpose of this work, written to stay true next week. No recency bias, no progress report.
 
-**done:** what this round established or changed.
+**Done:** what this round established or changed.
 
-**next:** the required remaining work on this same task. Keep unrelated work out; name it only when it changes this
+**Next:** the required remaining work on this same task. Keep unrelated work out; name it only when it changes this
 result.
 
 Bold each label and leave a blank line between the three blocks. Together they stay under 100 words and the whole
