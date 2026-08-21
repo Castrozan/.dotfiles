@@ -7,6 +7,7 @@ in
 {
   imports = [
     ../agent-to-agent-communication/client/a2a-client-home-manager.nix
+    ../servants/servants-home-manager.nix
     ../session-control/agent-session-control-home-manager.nix
     ./dotfiles-checkout-agent-surfaces/dotfiles-repo-agent-instructions-home-manager.nix
     ./dotfiles-checkout-agent-surfaces/dotfiles-repo-skills-home-manager.nix

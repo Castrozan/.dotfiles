@@ -169,14 +169,21 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
 - Codex's `[tui]` table is the analogue of several surfaces once believed
   Claude-only, established by probing the 0.144.4 binary and validating each key
   against a scratch `CODEX_HOME`. `tui.status_line` is a real status line, but a
-  closed ordered enum of segment ids rather than Claude's arbitrary command hook:
-  `git-branch`, `branch-changes`, `model-with-reasoning`, `context-used`,
-  `weekly-limit`, `five-hour-limit`, `permissions`, `approval-mode`,
-  `current-dir`, `thread-id` and more, colored per segment by
-  `tui.status_line_use_colors`. It cannot express Claude's rate-limit reset
-  countdown or threshold coloring, both of which need a command hook
+  closed ordered enum of segment ids rather than Claude's arbitrary command hook.
+  Through 0.148.0 that enum is `project-name`, `current-dir`, `run-state`,
+  `thread-title`, `git-branch`, `context-remaining`, `context-used`,
+  `five-hour-limit`, `weekly-limit`, `thread-credits`, `estimated-thread-cost`,
+  `codex-version`, `used-tokens`, `total-input-tokens`, `total-output-tokens`,
+  `thread-id`, `fast-mode`, `model-with-reasoning` and `task-progress`, colored per
+  segment by `tui.status_line_use_colors`. Not one of them renders text the config
+  supplies, and an unknown id is dropped in silence: `codex doctor` reports unknown
+  `terminal_title` items and has no check for status line ones at all. So a value
+  only this repo knows - the session's Servant name is the standing example - has no
+  route onto that line, and neither do Claude's rate-limit reset countdown and
+  threshold coloring. All three want the same missing command hook
   (upstream https://github.com/openai/codex/issues/17827). `tui.keymap.<context>`
-  is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
+  is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0 from
+  its own closed item enum, so it is no way in either.
 - Human-readable reply policy and the Brief:/Done:/Next: shape are content, not
   chrome.
   Every interactive wrapper injects only `interactive-communication.md`, the

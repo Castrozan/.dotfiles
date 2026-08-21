@@ -22,6 +22,23 @@ _run_statusline_with_json_without_auto_compact_env() {
 	run bash -c "echo '$json_input' | env -u CLAUDE_CODE_AUTO_COMPACT_WINDOW -u CLAUDE_AUTOCOMPACT_PCT_OVERRIDE bash '$SCRIPT_UNDER_TEST'"
 }
 
+_run_statusline_with_servant_name_command() {
+	local json_input="$1" servant_name_command_body="$2"
+	local stub_bin_directory
+	stub_bin_directory=$(mktemp -d)
+	{
+		echo '#!/usr/bin/env bash'
+		echo "$servant_name_command_body"
+	} >"$stub_bin_directory/servant-name"
+	chmod +x "$stub_bin_directory/servant-name"
+	run bash -c "echo '$json_input' | PATH='$stub_bin_directory:$PATH' bash '$SCRIPT_UNDER_TEST'"
+	rm -rf "$stub_bin_directory"
+}
+
+_count_segment_separators() {
+	printf "%s" "$1" | grep -o '│' | wc -l | tr -d ' '
+}
+
 _run_statusline_in_repository_directory() {
 	local repository_directory="$1"
 	_run_statusline_with_json '{"model":{"display_name":"Opus 4.7"},"cwd":"'"$repository_directory"'","session_id":"abc","context_window":{"used_percentage":5}}'
@@ -123,6 +140,38 @@ _full_json_input() {
 	local stripped
 	stripped=$(echo "$output" | _strip_ansi_escape_codes)
 	[[ "$stripped" == *"bb823787-e6ea-467c-b0ce-d90b8b92fc36"* ]]
+}
+
+@test "servant name appears next to the session id" {
+	_run_statusline_with_servant_name_command "$(_minimal_json_input)" 'printf "%s\n" "Zhuge Liang"'
+	[ "$status" -eq 0 ]
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"Zhuge Liang │ bb823787-e6ea-467c-b0ce-d90b8b92fc36"* ]]
+}
+
+@test "servant name is resolved from this session's own id" {
+	_run_statusline_with_servant_name_command "$(_minimal_json_input)" 'printf "drawn-for-%s\n" "$1"'
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == *"drawn-for-bb823787-e6ea-467c-b0ce-d90b8b92fc36"* ]]
+}
+
+@test "servant segment hidden when the name cannot be resolved" {
+	_run_statusline_with_servant_name_command "$(_minimal_json_input)" 'exit 1'
+	[ "$status" -eq 0 ]
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[ "$(_count_segment_separators "$stripped")" -eq 2 ]
+	[[ "$stripped" == *"bb823787-e6ea-467c-b0ce-d90b8b92fc36"* ]]
+}
+
+@test "servant segment hidden when the command names nobody" {
+	_run_statusline_with_servant_name_command "$(_minimal_json_input)" 'exit 0'
+	[ "$status" -eq 0 ]
+	local stripped
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[ "$(_count_segment_separators "$stripped")" -eq 2 ]
 }
 
 @test "context window shows ctx label and rounded percentage" {

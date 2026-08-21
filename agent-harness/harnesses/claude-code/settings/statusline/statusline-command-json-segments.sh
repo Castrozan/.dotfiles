@@ -96,6 +96,22 @@ _build_rate_limit_five_hour_segment_from_json_input() {
 	printf "${COLOR_DIM}lim ${limit_color}%s%%${COLOR_DIM}%s${COLOR_RESET}" "$rounded_percentage" "$reset_remaining"
 }
 
+_build_servant_segment_from_json_input() {
+	local json_input="$1"
+	local session_id
+	session_id=$(echo "$json_input" | jq -r '.session_id // empty')
+	[ -z "$session_id" ] && return 0
+
+	# Re-derived from the id rather than read from wherever the SessionStart hook put
+	# it, so the name on screen is the same draw the session itself was handed. A
+	# missing or failing command leaves the segment out instead of the statusline.
+	local servant_name
+	servant_name=$(servant-name "$session_id" 2>/dev/null) || return 0
+	[ -z "$servant_name" ] && return 0
+
+	printf "${COLOR_BLUE}%s${COLOR_RESET}" "$servant_name"
+}
+
 _build_session_id_segment_from_json_input() {
 	local json_input="$1"
 	local session_id
