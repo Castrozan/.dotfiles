@@ -284,7 +284,7 @@ tests:
       llm_judge:
         - "Uses exactly the three requested headings for the supplied facts, keeps each fact under its correct reader need, and does not flatten them into unstructured prose."
 
-  - name: channel_labels_an_explanation_within_the_reply_budget
+  - name: channel_explains_without_padding_the_reply
     failure_mode: channel_constraint
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
@@ -296,7 +296,7 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Explains prompt difficulty, variance, and what a win means, carries the brief, done and next labels because the reply runs past a 40-word confirmation, and keeps those three labels under 100 words together with the whole reply under 120 words of prose."
+        - "Explains prompt difficulty, variance, and what a win means in at most 120 words of prose, and adds no evaluation-process background, no invented threshold, and no restatement of the question."
 
   - name: channel_preserves_source_punctuation_when_quoting
     failure_mode: channel_constraint
