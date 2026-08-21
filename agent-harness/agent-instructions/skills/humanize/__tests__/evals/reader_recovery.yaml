@@ -296,7 +296,7 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Explains prompt difficulty, variance, and what a win means in at most 120 words of prose, and adds no evaluation-process background, no invented threshold, and no restatement of the question."
+        - "Explains prompt difficulty, variance, and what a win means, and adds no evaluation-process background, no invented threshold, and no restatement of the question."
 
   - name: channel_preserves_source_punctuation_when_quoting
     failure_mode: channel_constraint
