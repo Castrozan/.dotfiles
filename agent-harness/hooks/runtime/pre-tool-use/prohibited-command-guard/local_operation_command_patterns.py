@@ -33,7 +33,7 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}git\s+add\s+"
         rf"(?:-A|--all|\.){COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}",
-        "git add needs specific file paths, not -A/--all/., to avoid staging "
+        "git add needs specific files by name, not -A/--all/., to avoid staging "
         "another agent's parallel work. Read the coding skill for more information.",
     ),
     (
