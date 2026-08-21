@@ -22,6 +22,11 @@
   BASH_MAX_OUTPUT_LENGTH = "16000";
 
   MAX_MCP_OUTPUT_TOKENS = "10000";
+  # An MCP server that cold-starts over npx or uvx can take far longer to answer
+  # initialize than the default window allows: measured 35s and 12s on this machine.
+  # A server that misses the window is dropped silently, leaving the session with no
+  # tools from it and no error, so the window is generous on purpose.
+  MCP_TIMEOUT = "120000";
 
   CLAUDE_CODE_ENABLE_TELEMETRY = "1";
   OTEL_METRICS_EXPORTER = "otlp";
