@@ -19,6 +19,7 @@ let
     "docs"
     "explore"
     "goal-prompt"
+    "grilling"
     "herdr"
     "humanize"
     "instructions"
