@@ -5,7 +5,7 @@
 The Servant is a pure function of the session id the launch resolves, so the
 same conversation always draws the same one with nothing persisted between runs.
 
-The session-start hook cannot carry the manner: everything a hook injects
+A SessionStart hook cannot carry the personality: everything a hook injects
 arrives as ambient context the harness tells the session not to act on. The
 launch wrapper appends this composed file with --append-system-prompt-file, so
 the Servant line lands in the session's own instruction surface instead.
@@ -16,18 +16,15 @@ from __future__ import annotations
 import secrets
 import shlex
 import sys
+import tempfile
 from pathlib import Path
 
 module_directory = Path(__file__).resolve().parent
 if str(module_directory) not in sys.path:
     sys.path.insert(0, str(module_directory))
 
-from servant_catalog import (  # noqa: E402
-    SERVANT_CATALOG,
-    select_servant_for_session,
-    servant_temporary_directory,
-)
-from servant_session_id import resolve_session_id  # noqa: E402
+from catalog import SERVANT_CATALOG, select_servant_for_session  # noqa: E402
+from session_resolution import resolve_session_id  # noqa: E402
 
 
 def servant_system_prompt_line(servant: dict) -> str:
@@ -42,7 +39,7 @@ def servant_system_prompt_line(servant: dict) -> str:
 
 def compose_system_prompt_file(base_prompt_path: Path, servant: dict) -> Path:
     composed_path = (
-        servant_temporary_directory()
+        Path(tempfile.gettempdir())
         / f"claude-servant-system-prompt-{secrets.token_hex(6)}.md"
     )
     base_prompt_text = ""

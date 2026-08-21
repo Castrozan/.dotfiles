@@ -3,12 +3,8 @@
 from __future__ import annotations
 
 import hashlib
-import os
-from pathlib import Path
 
-from servant_roster import SERVANT_ROSTER  # noqa: E402
-
-DEFAULT_SERVANT_TEMPORARY_DIRECTORY = Path("/tmp")
+from roster import SERVANT_ROSTER  # noqa: E402
 
 
 def _servants_from_roster(roster_text: str) -> list[dict]:
@@ -53,7 +49,3 @@ def select_servant_for_session(
     return max(
         servants, key=lambda servant: _pairing_score(session_id, servant["name"])
     )
-
-
-def servant_temporary_directory() -> Path:
-    return Path(os.environ.get("TMPDIR") or DEFAULT_SERVANT_TEMPORARY_DIRECTORY)

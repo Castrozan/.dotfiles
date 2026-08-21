@@ -3,47 +3,47 @@ import os
 import uuid
 from pathlib import Path
 
-import servant_catalog
-import servant_session_id
+import catalog
+import session_resolution
 
 
 class TestResumeShapeDetection:
     def test_continue_and_resume_flags_are_resume_shaped(self):
         for flag in ("-c", "--continue", "-r", "--resume"):
-            assert servant_session_id.is_resume_shaped_launch([flag])
+            assert session_resolution.is_resume_shaped_launch([flag])
 
     def test_a_fresh_launch_is_not_resume_shaped(self):
-        assert not servant_session_id.is_resume_shaped_launch([])
-        assert not servant_session_id.is_resume_shaped_launch(["-n", "my-session"])
+        assert not session_resolution.is_resume_shaped_launch([])
+        assert not session_resolution.is_resume_shaped_launch(["-n", "my-session"])
 
 
 class TestExplicitResumeSessionId:
     def test_an_id_shaped_value_after_resume_is_read_as_the_target(self):
         session_id = "2295054f-355a-4182-9d8d-140f9714e062"
         assert (
-            servant_session_id.explicit_resume_session_id(["--resume", session_id])
+            session_resolution.explicit_resume_session_id(["--resume", session_id])
             == session_id
         )
         assert (
-            servant_session_id.explicit_resume_session_id(["-r", session_id])
+            session_resolution.explicit_resume_session_id(["-r", session_id])
             == session_id
         )
 
     def test_a_bare_resume_with_no_value_yields_no_id(self):
-        assert servant_session_id.explicit_resume_session_id(["--resume"]) is None
+        assert session_resolution.explicit_resume_session_id(["--resume"]) is None
 
     def test_continue_never_carries_an_explicit_id(self):
-        assert servant_session_id.explicit_resume_session_id(["-c"]) is None
+        assert session_resolution.explicit_resume_session_id(["-c"]) is None
 
     def test_a_search_term_that_is_not_id_shaped_yields_no_id(self):
         assert (
-            servant_session_id.explicit_resume_session_id(["--resume", "fix the bug"])
+            session_resolution.explicit_resume_session_id(["--resume", "fix the bug"])
             is None
         )
 
     def test_a_following_flag_is_not_mistaken_for_the_id(self):
         assert (
-            servant_session_id.explicit_resume_session_id(["--resume", "--verbose"])
+            session_resolution.explicit_resume_session_id(["--resume", "--verbose"])
             is None
         )
 
@@ -74,7 +74,7 @@ class TestTranscriptCwdMatch:
         self._write_transcript(
             projects_root, "repo", "newer-session", target_cwd, mtime=2000
         )
-        resolved = servant_session_id.most_recent_transcript_session_id_for_cwd(
+        resolved = session_resolution.most_recent_transcript_session_id_for_cwd(
             Path(target_cwd), projects_root=projects_root
         )
         assert resolved == "newer-session"
@@ -84,13 +84,13 @@ class TestTranscriptCwdMatch:
         self._write_transcript(
             projects_root, "other-repo", "unrelated", "/Users/x/other", mtime=9999
         )
-        resolved = servant_session_id.most_recent_transcript_session_id_for_cwd(
+        resolved = session_resolution.most_recent_transcript_session_id_for_cwd(
             Path("/Users/lucas.zanoni/work/repo"), projects_root=projects_root
         )
         assert resolved is None
 
     def test_no_projects_directory_yields_no_match(self, tmp_path):
-        resolved = servant_session_id.most_recent_transcript_session_id_for_cwd(
+        resolved = session_resolution.most_recent_transcript_session_id_for_cwd(
             Path("/Users/lucas.zanoni/work/repo"),
             projects_root=tmp_path / "does-not-exist",
         )
@@ -99,7 +99,7 @@ class TestTranscriptCwdMatch:
 
 class TestResolveSessionId:
     def test_a_fresh_launch_mints_a_uuid_the_wrapper_must_pass_on(self, tmp_path):
-        session_id, minted_here = servant_session_id.resolve_session_id(
+        session_id, minted_here = session_resolution.resolve_session_id(
             [], Path("/x"), projects_root=tmp_path
         )
         assert minted_here
@@ -107,13 +107,13 @@ class TestResolveSessionId:
 
     def test_a_session_id_the_human_passed_is_adopted_not_replaced(self, tmp_path):
         supplied = "2295054f-355a-4182-9d8d-140f9714e062"
-        assert servant_session_id.resolve_session_id(
+        assert session_resolution.resolve_session_id(
             ["--session-id", supplied], Path("/x"), projects_root=tmp_path
         ) == (supplied, False)
 
     def test_resuming_an_explicit_id_never_mints(self, tmp_path):
         resumed = "2295054f-355a-4182-9d8d-140f9714e062"
-        assert servant_session_id.resolve_session_id(
+        assert session_resolution.resolve_session_id(
             ["--resume", resumed], Path("/x"), projects_root=tmp_path
         ) == (resumed, False)
 
@@ -124,18 +124,18 @@ class TestResolveSessionId:
         relaunch, because the wrapper picked before any session id existed. Minting
         the id at launch makes the Servant a pure function of it, so the resume
         lands on the same one with nothing persisted in between."""
-        launched_id, minted_here = servant_session_id.resolve_session_id(
+        launched_id, minted_here = session_resolution.resolve_session_id(
             [], Path("/x"), projects_root=tmp_path
         )
         assert minted_here
-        resumed_id, _ = servant_session_id.resolve_session_id(
+        resumed_id, _ = session_resolution.resolve_session_id(
             ["--resume", launched_id], Path("/x"), projects_root=tmp_path
         )
-        assert servant_catalog.select_servant_for_session(
+        assert catalog.select_servant_for_session(
             resumed_id
-        ) == servant_catalog.select_servant_for_session(launched_id)
+        ) == catalog.select_servant_for_session(launched_id)
 
     def test_a_continue_with_nothing_to_match_yields_no_id_and_no_mint(self, tmp_path):
-        assert servant_session_id.resolve_session_id(
+        assert session_resolution.resolve_session_id(
             ["-c"], Path("/x"), projects_root=tmp_path / "empty"
         ) == (None, False)
