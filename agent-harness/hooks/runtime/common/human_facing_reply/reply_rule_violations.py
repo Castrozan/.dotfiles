@@ -67,7 +67,7 @@ def unlinked_artifact_violation(reply: ReplyUnderReview) -> str | None:
 
 
 def missing_required_labels_violation(reply: ReplyUnderReview) -> str | None:
-    if reply.prose_word_count <= SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS:
+    if reply_is_a_short_confirmation(reply):
         return None
     missing_labels = [
         label for label in REQUIRED_REPLY_LABELS if label not in reply.labels_present
@@ -123,7 +123,13 @@ def list_line_word_violation(reply: ReplyUnderReview) -> str | None:
     return None
 
 
+def reply_is_a_short_confirmation(reply: ReplyUnderReview) -> bool:
+    return reply.prose_word_count <= SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS
+
+
 def unemphasized_label_violation(reply: ReplyUnderReview) -> str | None:
+    if reply_is_a_short_confirmation(reply):
+        return None
     for label_line in reply.label_lines:
         if not label_line.is_emphasized:
             return f"writes the {label_line.label}: label without bold emphasis"
@@ -131,6 +137,8 @@ def unemphasized_label_violation(reply: ReplyUnderReview) -> str | None:
 
 
 def unseparated_label_violation(reply: ReplyUnderReview) -> str | None:
+    if reply_is_a_short_confirmation(reply):
+        return None
     for label_line in reply.label_lines:
         if not label_line.preceded_by_blank_line:
             return (

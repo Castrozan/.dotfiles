@@ -40,12 +40,13 @@ def test_allows_clawde_background_agent_reply_with_empty_marker_value(tmp_path):
     assert result.stdout.strip() == ""
 
 
-def test_allows_prose_with_done_next_and_assumed(tmp_path):
+def test_allows_an_extra_label_after_the_required_three(tmp_path):
     reply = (
-        "Wired the guard and verified the whole suite passes after the rebuild.\n"
-        "**Done:** rewrote the template into prose, added the guard hook, and registered it on "
-        "the Stop event so it runs at the end of every interactive turn.\n"
-        "**Next:** restart claude to pick up the change, then tune the caps later if they bite.\n"
+        "Wired the guard and verified the whole suite passes after the rebuild.\n\n"
+        "**brief:** keep the interactive reply inside the reader's word budget.\n\n"
+        "**done:** rewrote the template into prose, added the guard hook, and "
+        "registered it on the Stop event.\n\n"
+        "**next:** restart claude to pick up the change.\n\n"
         "**Assumed:** single-bounce enforcement because you asked to inforce it."
     )
     transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
