@@ -51,10 +51,9 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+(?:workspace|tab|pane)\s+close\b",
         "Only the human runs a herdr workspace/tab/pane close. The command itself "
-        "is fine; ids are reassigned as tabs come and go, so a close can land on "
-        "whichever tab inherited the id, and it takes every agent inside with no "
-        "undo. Hand that exact command to the human to run, and name what is in "
-        "the target; the herdr skill's knowledge covers why the id moves.",
+        "is fine; a close is unrecoverable and the id may no longer name your "
+        "tab. Hand that exact command to the human to run, naming what is in the "
+        "target; the herdr skill has the rest.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}claude(?![\w-])[^;&|`)\n]*?\s(?:-p|--print)(?:[=\s'\"]|$)",
