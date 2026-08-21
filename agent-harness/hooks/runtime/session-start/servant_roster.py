@@ -10,6 +10,8 @@ To add one, write a line. Blank lines are ignored, and the name must be unique
 because it is what other agents address the session by.
 """
 
+from __future__ import annotations
+
 SERVANT_ROSTER = """
 Abigail Williams | Innocent horror; sweet words, depths beyond.
 Achilles | Swift and cocky, a hero to the marrow.
