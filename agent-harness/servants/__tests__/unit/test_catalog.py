@@ -106,3 +106,24 @@ class TestSelectionSurvivesRosterEdits:
 @pytest.mark.parametrize("banned_key", ["class", "catchphrase", "manner"])
 def test_the_removed_fields_are_gone(banned_key):
     assert banned_key not in catalog.SERVANT_CATALOG[0]
+
+
+ACCENTED_SERVANT_NAMES = [
+    "Elizabeth Báthory",
+    "Hijikata Toshizō",
+    "Ibaraki-dōji",
+    "Ibuki-dōji",
+    "Ryōgi Shiki",
+    "Sakamoto Ryōma",
+    "Scáthach",
+    "Shuten-dōji",
+]
+
+
+@pytest.mark.parametrize("accented_name", ACCENTED_SERVANT_NAMES)
+def test_an_accented_name_is_never_flattened_to_ascii(accented_name):
+    """Selection is keyed on the exact name, so dropping a diacritic silently
+    re-draws every live session holding that Servant. A bulk rewrite of the
+    personalities is exactly where that slips through."""
+    names = {entry["name"] for entry in catalog.SERVANT_CATALOG}
+    assert accented_name in names
