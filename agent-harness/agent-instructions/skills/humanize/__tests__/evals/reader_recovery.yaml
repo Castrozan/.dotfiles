@@ -277,26 +277,26 @@ tests:
     prompt: |
       Write a compact incident handoff with the headings Impact, Evidence, and Required action. Impact: checkout failed
       for 8 percent of requests. Evidence: the failures occurred only on node C after certificate rotation. Required
-      action: replace node C, then confirm the error rate returns below 1 percent. Do not add status-report labels.
+      action: replace node C, then confirm the error rate returns below 1 percent.
     model: haiku
     no_tools: true
     assertions:
       llm_judge:
-        - "Uses exactly the three requested headings as the primary structure, keeps each supplied fact under its correct reader need, and does not replace them with Done, Next, or unstructured prose."
+        - "Uses exactly the three requested headings for the supplied facts, keeps each fact under its correct reader need, and does not flatten them into unstructured prose."
 
-  - name: channel_does_not_force_status_labels_onto_an_explanation
+  - name: channel_labels_an_explanation_within_the_reply_budget
     failure_mode: channel_constraint
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
       - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
     prompt: |
-      In 90 to 130 words, explain why paired tests use the same prompts for policy A and policy B. Cover prompt
-      difficulty, variance, and what a win means. This is an explanation, not a work-status handoff.
+      Explain why paired tests use the same prompts for policy A and policy B. Cover prompt difficulty, variance, and
+      what a win means.
     model: haiku
     no_tools: true
     assertions:
       llm_judge:
-        - "Provides a 90-to-130-word explanation covering all three requested ideas and does not add Done, Next, Assumed, implementation status, or pending-work labels."
+        - "Explains prompt difficulty, variance, and what a win means, carries the brief, done and next labels because the reply runs past a 40-word confirmation, and keeps those three labels under 100 words together with the whole reply under 120 words of prose."
 
   - name: channel_preserves_source_punctuation_when_quoting
     failure_mode: channel_constraint

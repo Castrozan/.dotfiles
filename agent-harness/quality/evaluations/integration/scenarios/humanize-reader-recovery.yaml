@@ -18,7 +18,6 @@ assertions:
     - "in-memory"
     - "no size limit"
   output_not_contains:
-    - "**Done:**"
     - "base64 keys"
     - "normalized safe paths"
   output_maximum_words: 60

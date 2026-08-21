@@ -177,7 +177,8 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
   countdown or threshold coloring, both of which need a command hook
   (upstream https://github.com/openai/codex/issues/17827). `tui.keymap.<context>`
   is a genuine `keybindings.json` analogue. `tui.terminal_title` drives OSC-0.
-- Human-readable reply policy and the Done:/Next: shape are content, not chrome.
+- Human-readable reply policy and the brief:/done:/next: shape are content, not
+  chrome.
   Every interactive wrapper injects only `interactive-communication.md`, the
   compact contract needed on every turn. The complete humanize policy remains
   in `SKILL.md` and loads only when substantial human-facing writing requires it.
