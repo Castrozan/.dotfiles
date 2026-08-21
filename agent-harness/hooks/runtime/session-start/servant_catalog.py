@@ -33,10 +33,26 @@ assert all(entry["personality"] for entry in SERVANT_CATALOG), (
 )
 
 
-def select_servant_for_session(session_id: str) -> dict:
-    seed_digest = hashlib.sha256((session_id or "unknown").encode("utf-8")).digest()
-    seed = int.from_bytes(seed_digest[:8], "big")
-    return SERVANT_CATALOG[seed % len(SERVANT_CATALOG)]
+def _pairing_score(session_id: str, servant_name: str) -> bytes:
+    pair = f"{session_id or 'unknown'}\x00{servant_name}".encode("utf-8")
+    return hashlib.sha256(pair).digest()
+
+
+def select_servant_for_session(
+    session_id: str, catalog: list[dict] | None = None
+) -> dict:
+    """The Servant this session is, scored per name rather than by list position.
+
+    Indexing by `hash % len(catalog)` would tie every session to how many
+    Servants exist, so adding one name re-drew every session on the fleet. Here
+    each Servant scores itself against the session id and the highest wins, so
+    the roster's length and order stop mattering: adding a name only moves the
+    sessions that name now wins, and reordering the file moves nobody.
+    """
+    servants = SERVANT_CATALOG if catalog is None else catalog
+    return max(
+        servants, key=lambda servant: _pairing_score(session_id, servant["name"])
+    )
 
 
 def servant_temporary_directory() -> Path:
