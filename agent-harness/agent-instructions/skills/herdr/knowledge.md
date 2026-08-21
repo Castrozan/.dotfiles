@@ -24,8 +24,8 @@ binding.
 Tab and pane ids are reassigned as tabs come and go, so an id a create call returned minutes ago can name a different
 tab now, and a placement pinned to a stale id lands in whichever live session inherited it. Re-list and match on your
 own label immediately before every placement, and read a placement error as proof the id moved rather than as licence to
-grab whichever id the fresh listing shows. That is why a guard refuses every close verb outright: the same stale id in a
-close takes every agent in the target with no undo, and nothing in the command proves the target is yours.
+grab whichever id the fresh listing shows. A guard refuses any close whose target it cannot read, but it cannot tell a
+fresh id from a stale one, so re-list before a close too: the same stale id takes every agent inside with no undo.
 </a_tab_id_you_read_is_not_the_tab_you_created>
 
 <a_lingering_ctrl_turns_a_prefix_chord_into_a_dead_key>

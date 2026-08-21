@@ -56,9 +56,10 @@ genuinely sanctioned one-off, prefix the command with `CLAUDE_HEADLESS_SANCTIONE
 </oneshot_is_gated>
 
 <closing_is_gated>
-Every `herdr workspace|tab|pane close` is blocked by a guard with no override, however exact the target, because ids
-are reassigned as tabs come and go and a close takes every agent inside with no undo. Leave what you spawned in place
-and hand the human the exact close command for it, naming what is inside.
+A close carries a literal target id or a guard blocks it: `herdr workspace|tab|pane close <id>` is yours to run, a bare
+verb or a `$VAR` the guard cannot resolve is not. Ids are reassigned as tabs come and go and a close takes every agent
+inside with no undo, so re-list and match your own label immediately before closing rather than trusting an id you read
+earlier.
 </closing_is_gated>
 
 <knowledge>

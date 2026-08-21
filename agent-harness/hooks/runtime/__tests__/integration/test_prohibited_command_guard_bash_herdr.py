@@ -49,14 +49,17 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
     @pytest.mark.parametrize(
         "command",
         [
-            "herdr tab close w1:tA",
-            "herdr pane close w1:pA",
-            "herdr workspace close w1",
-            "cd /tmp && herdr tab close w1:tA",
-            "true; herdr pane close w1:pA",
+            "herdr tab close",
+            "herdr pane close",
+            "herdr workspace close",
+            'herdr tab close "$HERDR_TAB_ID"',
+            "herdr tab close $(herdr tab list --workspace w1)",
+            "herdr tab close --all",
+            "herdr tab close w2F:",
+            "cd /tmp && herdr workspace close",
         ],
     )
-    def test_blocks_every_herdr_close(
+    def test_blocks_a_close_whose_target_it_cannot_read(
         self,
         command,
         invoke_prohibited_command_guard_hook,
@@ -67,8 +70,7 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
         )
         assert result.returncode == 0
         message = parse_prohibited_command_guard_system_message(result.stdout).lower()
-        assert "only the human runs" in message
-        assert "hand that exact command to the human" in message
+        assert "literal target id" in message
 
     @pytest.mark.parametrize(
         "command",
@@ -83,6 +85,12 @@ class TestBashHerdrUnpinnedAgentStartBlocking:
             "herdr pane run w1:pA claude",
             "herdr agent rename w1:pA demo",
             "herdr tab list --workspace w1",
+            "herdr tab close w2F:t3",
+            "herdr pane close w2C:pV",
+            "herdr workspace close w2F",
+            "cd /tmp && herdr tab close w1:tA",
+            "true; herdr pane close w1:pA",
+            "echo 'herdr tab close'",
             "echo 'herdr tab close w1:tA'",
             "herdr agent wait demo --status idle",
             "herdr agent read demo --source recent",
