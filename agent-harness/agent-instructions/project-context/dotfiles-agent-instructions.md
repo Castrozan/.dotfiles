@@ -35,7 +35,9 @@ the human.
 Every configuration change lives in this repo and applies declaratively through its capabilities - nix modules,
 home-manager, agenix, overlays, packaged scripts - never by mutating a machine by hand outside the repo. Fold new config
 into the existing module structure rather than adding one-off files. Make it work on every system type this repo targets
-(NixOS and darwin) when the feature allows, guarding platform-specific pieces behind `isNixOS`/`isDarwin`.
+(NixOS and darwin) when the feature allows, guarding platform-specific pieces behind `isNixOS`/`isDarwin`. The same
+holds across the harnesses this repo drives: reach Claude Code, Codex and OpenCode together, then Pi and Hermes
+where each one supports the capability.
 </configuration>
 
 <nvim-keymaps>
