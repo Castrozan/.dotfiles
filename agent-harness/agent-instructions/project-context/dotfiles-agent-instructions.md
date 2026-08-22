@@ -91,12 +91,22 @@ or use `rebuild` as the local nix verification. Test every Neovim change live in
 and headless checks do not replace this manual test.
 </testing>
 
+<change-review-scope>
+Run the `dotfiles-change-review` workflow over the working diff before committing a substantive change, passing
+`{"root": "<absolute checkout path>"}` whenever you work in a worktree, because the shell can start in a sibling
+checkout and a review of the wrong one returns a clean tree that proves nothing. A change is substantive when a wrong
+edit would survive formatting and still change machine or agent behavior, a build, a deployment, a dependency, an
+interface, a test, security, a secret, what this public repository exposes, or an operational instruction, or when
+correctness depends on several files changing together. Skip the review only when every hunk is demonstrably
+non-semantic, meaning a formatting or prose correction that alters no command, path, identifier, factual claim, policy
+or behavior; review the whole diff when substantive and non-substantive hunks are mixed or the classification stays
+uncertain. Changed line and file counts never decide this, and skipping the review never excuses the rebuild or the
+tests.
+</change-review-scope>
+
 <workflows>
-For a substantive change to this repo, run the `dotfiles-change-review` workflow over the working diff before
-committing, passing `{"root": "<absolute checkout path>"}` whenever you work in a worktree, because the shell can start
-in a sibling checkout and a review of the wrong one returns a clean tree that proves nothing. Treat its model calls as
-delegation that consumes the task's agent budget, and keep every dotfiles workflow at a fixed call ceiling with no
-per-item model calls. Author further dotfiles workflows as `dotfiles-*` under
+Treat a workflow's model calls as delegation that consumes the task's agent budget, and keep every dotfiles workflow at
+a fixed call ceiling with no per-item model calls. Author further dotfiles workflows as `dotfiles-*` under
 `agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
 fan-out.
 </workflows>

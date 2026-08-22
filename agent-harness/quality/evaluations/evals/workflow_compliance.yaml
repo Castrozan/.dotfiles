@@ -50,17 +50,20 @@ tests:
       llm_judge:
         - "Says to fix the downstream reference in file C to use the new interface rather than adding a backward-compatible shim, wrapper, or re-export to preserve the deleted one, per the fix-downstream-references rule."
 
-  - name: workflow_change_review_runs_before_commit
-    description: "A substantive dotfiles change runs the dotfiles-change-review workflow over the diff before committing"
+  - name: workflow_change_review_classifies_semantic_risk
+    description: "The pre-commit review is required by a diff's semantic risk rather than by how small it looks"
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: |
-      I've made a substantive change to the dotfiles repo and I'm about to commit it. Is there a review step I should run first, and if so which one?
+      I am about to commit in the dotfiles repo. For each of these working diffs, tell me whether I must run the dotfiles-change-review workflow first, and over what: (a) the formatter rewrapped comments across three nix files and changed nothing else; (b) one line changes a systemd service option value; (c) CLAUDE.md changes the rebuild command it tells agents to run; (d) one diff mixes a formatter-only rewrite of a script with a package source bump. For any diff you say skips the review, say whether it still needs the rebuild.
     model: haiku
     max_turns: 1
     no_tools: true
     assertions:
       llm_judge:
-        - "Says to run the dotfiles-change-review workflow over the working diff before committing a substantive change to the repo, per the repo's pre-commit review rule."
+        - "Says diff (a) does not require the dotfiles-change-review workflow because every hunk is non-semantic, while still requiring the repo's rebuild for it."
+        - "Says diff (b) requires the review because it changes machine behavior, and does not excuse it as a one-line or small change."
+        - "Says diff (c) requires the review because the changed rebuild command is an operational instruction to agents."
+        - "Says diff (d) requires the review over the whole diff rather than only over the package source bump."
 
   - name: workflow_review_input_is_unbiased
     skill_path: agent-harness/agent-instructions/skills/review/SKILL.md

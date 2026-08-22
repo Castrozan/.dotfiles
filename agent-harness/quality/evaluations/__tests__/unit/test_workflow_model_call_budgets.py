@@ -171,6 +171,29 @@ def test_the_change_review_names_the_checkout_it_found_clean():
     )
 
 
+def test_the_change_review_never_calls_an_untracked_only_change_a_clean_tree():
+    source = CHANGE_REVIEW_WORKFLOW_PATH.read_text()
+    assert '"untrackedFiles"' in source, (
+        "the review pass must return the untracked paths beside the diffstat ones, "
+        "or nothing downstream can tell an untracked-only change from an empty tree"
+    )
+    empty_branch = source.split("No diff to review", 1)[0].rsplit("if (", 1)[1]
+    assert "untrackedFiles" in empty_branch, (
+        "a change made only of files git does not track yet reaches the clean-tree "
+        "branch whenever the guard reads the diffstat alone, so the workflow reports "
+        "a clean tree for a change it never reviewed"
+    )
+
+
+def test_the_change_review_hands_its_verify_pass_the_files_no_patch_holds():
+    source = CHANGE_REVIEW_WORKFLOW_PATH.read_text()
+    verify_prompt = source.split('phase("Verify")', 1)[1]
+    assert "untrackedFiles" in verify_prompt, (
+        "git diff never contains a file git is not tracking, so a verify pass handed "
+        "the patch alone refutes every finding in a new file for lack of evidence"
+    )
+
+
 def test_the_explicit_research_fanout_pins_every_call_to_a_bounded_model():
     source = RESEARCH_PULSE_WORKFLOW_PATH.read_text()
     pinned_call_count = len(
