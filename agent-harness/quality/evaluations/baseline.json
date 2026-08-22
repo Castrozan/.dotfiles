@@ -1,10 +1,10 @@
 {
   "generated_at": "2026-08-17T17:39:33.137615+00:00",
-  "git_commit": "cf37cfa0",
+  "git_commit": "8b710828",
   "total_tests": 204,
-  "total_passed": 196,
-  "total_failed": 8,
-  "pass_rate": 0.9608,
+  "total_passed": 194,
+  "total_failed": 10,
+  "pass_rate": 0.951,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -983,12 +983,12 @@
       ]
     },
     "workflow_compliance": {
-      "passed": 8,
-      "failed": 0,
+      "passed": 6,
+      "failed": 2,
       "tests": [
         {
           "name": "workflow_knows_full_sequence",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_rebuild_not_just_nix",
@@ -1012,7 +1012,7 @@
         },
         {
           "name": "workflow_change_review_classifies_semantic_risk",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_input_is_unbiased",
@@ -1022,112 +1022,8 @@
     }
   },
   "fingerprints": {
-    "suite": "25d44fd66ae8d346c85d9f1d4a4d3451218f4c4a37b1809951ea49f48f3ff4fa",
-    "instructions": "969db682a5679aa8058bbee3245ba0dbbfa9646a241f253d58256bca868e2b9e"
+    "suite": "60bad39b9a995e9ed3d62ba1b512604d890d0a5c9312550c18d62b378297a24e",
+    "instructions": "2aeba0e013f20160607dcd9d8570228a0129fb90494ef1f25480fc4c2e431dc0"
   },
-  "evidence_profiles": {
-    "skills/humanize/reader_recovery": {
-      "generated_at": "2026-08-21T17:53:13.783986+00:00",
-      "comparison_ref": "b13f3ebb081b79ac6d070ad7b73f9bfe80cb7d16",
-      "epochs": 3,
-      "paired_cases": 21,
-      "sample_pairs": 63,
-      "candidate_pass_rate": 0.9841,
-      "control_pass_rate": 0.8889,
-      "delta": 0.0952,
-      "lower_bound": 0.0159,
-      "upper_bound": 0.1905,
-      "candidate_hard_failures": [],
-      "candidate_cases": {
-        "channel_explains_without_padding_the_reply": {
-          "passes": 3,
-          "samples": 3
-        },
-        "channel_preserves_source_punctuation_when_quoting": {
-          "passes": 3,
-          "samples": 3
-        },
-        "channel_uses_numbered_steps_for_an_ordered_procedure": {
-          "passes": 3,
-          "samples": 3
-        },
-        "channel_uses_requested_headings_for_distinct_reader_needs": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_answers_a_small_question_at_small_scale": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_answers_the_user_visible_outcome_first": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_distinguishes_operational_anger_from_a_language_failure": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_establishes_that_the_cache_exists": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_honors_a_tldr_size_constraint": {
-          "passes": 2,
-          "samples": 3
-        },
-        "recovery_keeps_a_successful_diagram_when_relationships_need_it": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_names_the_exact_repository_owner": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_preserves_and_defines_a_legitimate_statistical_term": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_preserves_exact_identifiers_despite_jargon_concern": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_rejects_a_table_that_preserves_undefined_concepts": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_reports_current_state_instead_of_process_history": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_resolves_pronouns_and_dependencies": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_stops_repeating_completed_history": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_surfaces_the_requested_decision": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_unpacks_an_opaque_noun_stack": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_unpacks_the_test_delivery_flow": {
-          "passes": 3,
-          "samples": 3
-        },
-        "recovery_uses_a_table_when_exact_mapping_is_the_need": {
-          "passes": 3,
-          "samples": 3
-        }
-      },
-      "fingerprints": {
-        "suite": "7680eb17219f8525cedb6d77c999f02f72ade6397776bd1a639a8370d87c5772",
-        "instructions": "3c8d3342ac75e3ae1d9aac9ebee4f3e281a39cc953b8512196bcc1f63aa00b16"
-      }
-    }
-  }
+  "evidence_profiles": {}
 }
