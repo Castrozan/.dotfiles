@@ -93,3 +93,11 @@ the probe reads as if the variable were not the gate. Probe such a gate by runni
 the wrapper with that export filtered out, and confirm the variable's absence in the running process rather than in the
 shell that started it.
 </probe_an_environment_gate_past_the_packaged_wrapper>
+
+<opencode_ignores_a_prompt_handed_to_a_resumed_session>
+Claude Code and codex both take a prompt argument beside the session they resume, and both submit it on startup, which
+would spare a restart from typing into a live interface at all. opencode accepts the same shape and drops it: neither
+`--session <id> --prompt` nor `--continue --prompt` submits anything, and the session opens with an empty composer. A
+restart that must cover all three harnesses therefore types the prompt into the resumed interface, and adding the prompt
+to the resume command is not the simplification it looks like.
+</opencode_ignores_a_prompt_handed_to_a_resumed_session>

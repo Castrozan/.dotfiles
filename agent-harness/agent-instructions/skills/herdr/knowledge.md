@@ -88,3 +88,13 @@ its input rather than an environment fault: Claude Code reads a clipboard image 
 `remote_image_paste`, which is hard-gated on the remote-client environment variable and yields no key on a local client,
 leaving a `config.toml` binding inert.
 </panes_inherit_a_display_less_environment>
+
+<a_resumed_harness_drops_what_you_type_before_its_first_frame>
+A harness relaunched into a pane throws away input typed before it paints, and no agent report can time that moment.
+herdr names the agent from the process the instant it starts, leaves the dead agent's last status on a pane whose agent
+it has already released, and detects codex as idle for that harness's whole life, so a wait on agent or status is
+satisfied while the pane is still a shell and spills the text into the shell instead. The pane's own output is the one
+readiness signal every harness gives: the resume command taking the terminal off the shell, then the screen repainting
+at least once and going quiet. Measure that quiet window from the first repaint rather than from the resume command,
+because the gap before a harness's first frame is silent and reads as a drawn interface.
+</a_resumed_harness_drops_what_you_type_before_its_first_frame>
