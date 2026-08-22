@@ -99,32 +99,25 @@ def read_secret_file(secret_file_path: str) -> str:
         return ""
 
 
-def inject_mcp_server_secret_files(config_data: dict) -> None:
-    raw_injections = os.environ.get("CODEX_MCP_SERVER_SECRET_FILE_INJECTIONS", "")
-    if not raw_injections:
+def inject_mcp_server_bearer_token_files(config_data: dict) -> None:
+    raw_token_files = os.environ.get("CODEX_MCP_SERVER_BEARER_TOKEN_FILES", "")
+    if not raw_token_files:
         return
-    server_name_to_environment_secret_files = json.loads(raw_injections)
+    server_name_to_token_file = json.loads(raw_token_files)
     mcp_servers = config_data.get("mcp_servers")
     if not isinstance(mcp_servers, dict):
         return
-    for (
-        server_name,
-        environment_secret_files,
-    ) in server_name_to_environment_secret_files.items():
+    for server_name, token_file in server_name_to_token_file.items():
         server_definition = mcp_servers.get(server_name)
         if not isinstance(server_definition, dict):
             continue
-        resolved_secret_environment = {}
-        for environment_key, secret_file_path in environment_secret_files.items():
-            secret_value = read_secret_file(secret_file_path)
-            if not secret_value:
-                resolved_secret_environment = None
-                break
-            resolved_secret_environment[environment_key] = secret_value
-        if resolved_secret_environment is None:
+        token = read_secret_file(token_file)
+        if not token:
             mcp_servers.pop(server_name, None)
             continue
-        server_definition.setdefault("env", {}).update(resolved_secret_environment)
+        server_definition.setdefault("http_headers", {})["Authorization"] = (
+            f"Bearer {token}"
+        )
 
 
 def build_seeded_config_content() -> bytes | None:
@@ -136,7 +129,7 @@ def build_seeded_config_content() -> bytes | None:
     add_trusted_project_directories(
         merged_config, declarative_project_paths(nix_source)
     )
-    inject_mcp_server_secret_files(merged_config)
+    inject_mcp_server_bearer_token_files(merged_config)
     return tomli_w.dumps(merged_config).encode()
 
 

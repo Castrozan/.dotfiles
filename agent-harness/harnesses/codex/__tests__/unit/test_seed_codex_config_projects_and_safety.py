@@ -1,3 +1,5 @@
+import json
+
 from seed_codex_config_test_support import read_live_config, run_seed
 
 
@@ -92,3 +94,31 @@ def test_seed_leaves_invalid_live_config_untouched_without_failing(tmp_path):
     assert result.returncode == 0, result.stderr
     assert "leaving it untouched" in result.stderr
     assert live_config_path.read_text(encoding="utf-8") == invalid_live_config
+
+
+def test_seed_injects_http_bearer_token_from_secret_file(tmp_path):
+    codex_directory = tmp_path / ".codex"
+    codex_directory.mkdir()
+    (codex_directory / "config.toml.nix-source").write_text(
+        """
+[mcp_servers.sourcebot]
+url = "https://sourcebot.example/api/mcp"
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    secret_path = tmp_path / "sourcebot-token"
+    secret_path.write_text("secret-token\n", encoding="utf-8")
+
+    result = run_seed(
+        tmp_path,
+        {
+            "CODEX_MCP_SERVER_BEARER_TOKEN_FILES": json.dumps(
+                {"sourcebot": str(secret_path)}
+            )
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    sourcebot = read_live_config(tmp_path)["mcp_servers"]["sourcebot"]
+    assert sourcebot["http_headers"] == {"Authorization": "Bearer secret-token"}
