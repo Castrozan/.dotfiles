@@ -15,6 +15,36 @@ def test_builds_herdr_relaunch_commands_without_bracketed_paste():
     ]
 
 
+def test_lets_typed_text_settle_before_pressing_enter(monkeypatch):
+    events = []
+    monkeypatch.setattr(
+        relaunch_transport.subprocess,
+        "run",
+        lambda command, **_keywords: events.append(("run", command)),
+    )
+    monkeypatch.setattr(
+        relaunch_transport.time,
+        "sleep",
+        lambda seconds: events.append(("sleep", seconds)),
+    )
+
+    relaunch_transport.run_text_submission_commands(
+        [
+            ["herdr", "agent", "send", "pane-123", "codex resume --last"],
+            ["herdr", "pane", "send-keys", "pane-123", "Enter"],
+        ]
+    )
+
+    assert events == [
+        ("run", ["herdr", "agent", "send", "pane-123", "codex resume --last"]),
+        (
+            "sleep",
+            relaunch_transport.DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS,
+        ),
+        ("run", ["herdr", "pane", "send-keys", "pane-123", "Enter"]),
+    ]
+
+
 def test_relaunch_refuses_a_lock_path_that_does_not_belong_to_the_agent_session(
     monkeypatch, tmp_path
 ):

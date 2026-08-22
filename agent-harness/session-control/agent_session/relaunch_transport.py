@@ -9,6 +9,7 @@ RESTART_CONTINUATION_PROMPT = (
     "This session was restarted. Continue from where you left off."
 )
 RESTART_CONTINUATION_WAIT_TIMEOUT_MILLISECONDS = 60_000
+DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS = 0.25
 
 
 def relaunch_commands_for(
@@ -25,6 +26,13 @@ def herdr_agent_send_commands(pane_identifier: str, text: str) -> list[list[str]
         ["herdr", "agent", "send", pane_identifier, text],
         ["herdr", "pane", "send-keys", pane_identifier, "Enter"],
     ]
+
+
+def run_text_submission_commands(submission_commands: list[list[str]]) -> None:
+    typing_command, enter_command = submission_commands
+    subprocess.run(typing_command, check=True)
+    time.sleep(DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS)
+    subprocess.run(enter_command, check=True)
 
 
 def relaunch_target_check_command_for(
@@ -51,10 +59,9 @@ def relaunch_target_is_ready(multiplexer_name: str, pane_identifier: str) -> boo
 def run_relaunch_commands(
     multiplexer_name: str, pane_identifier: str, resume_command: list[str]
 ) -> None:
-    for command in relaunch_commands_for(
-        multiplexer_name, pane_identifier, resume_command
-    ):
-        subprocess.run(command, check=True)
+    run_text_submission_commands(
+        relaunch_commands_for(multiplexer_name, pane_identifier, resume_command)
+    )
 
 
 def wait_for_resumed_agent_to_be_idle(pane_identifier: str) -> bool:
@@ -77,10 +84,9 @@ def wait_for_resumed_agent_to_be_idle(pane_identifier: str) -> bool:
 
 
 def continue_resumed_session(pane_identifier: str) -> None:
-    for command in herdr_agent_send_commands(
-        pane_identifier, RESTART_CONTINUATION_PROMPT
-    ):
-        subprocess.run(command, check=True)
+    run_text_submission_commands(
+        herdr_agent_send_commands(pane_identifier, RESTART_CONTINUATION_PROMPT)
+    )
 
 
 def resume_and_continue_session(

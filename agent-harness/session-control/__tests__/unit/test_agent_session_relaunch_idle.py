@@ -27,38 +27,55 @@ def test_reads_the_herdr_foreground_process_identifiers(monkeypatch):
 
 
 def test_resumes_and_continues_a_session_after_herdr_reports_it_idle(monkeypatch):
-    commands = []
+    events = []
     monkeypatch.setattr(
         relaunch_transport.subprocess,
         "run",
-        lambda command, **_keywords: commands.append(command)
+        lambda command, **_keywords: events.append(("run", command))
         or SimpleNamespace(returncode=0),
+    )
+    monkeypatch.setattr(
+        relaunch_transport.time,
+        "sleep",
+        lambda seconds: events.append(("sleep", seconds)),
+    )
+    settle = (
+        "sleep",
+        relaunch_transport.DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS,
     )
 
     assert relaunch_transport.resume_and_continue_session(
         "pane-123", ["codex", "resume", "session-123"]
     )
-    assert commands == [
-        ["herdr", "agent", "send", "pane-123", "codex resume session-123"],
-        ["herdr", "pane", "send-keys", "pane-123", "Enter"],
-        [
-            "herdr",
-            "agent",
-            "wait",
-            "pane-123",
-            "--status",
-            "idle",
-            "--timeout",
-            "60000",
-        ],
-        [
-            "herdr",
-            "agent",
-            "send",
-            "pane-123",
-            relaunch_transport.RESTART_CONTINUATION_PROMPT,
-        ],
-        ["herdr", "pane", "send-keys", "pane-123", "Enter"],
+    assert events == [
+        ("run", ["herdr", "agent", "send", "pane-123", "codex resume session-123"]),
+        settle,
+        ("run", ["herdr", "pane", "send-keys", "pane-123", "Enter"]),
+        (
+            "run",
+            [
+                "herdr",
+                "agent",
+                "wait",
+                "pane-123",
+                "--status",
+                "idle",
+                "--timeout",
+                "60000",
+            ],
+        ),
+        (
+            "run",
+            [
+                "herdr",
+                "agent",
+                "send",
+                "pane-123",
+                relaunch_transport.RESTART_CONTINUATION_PROMPT,
+            ],
+        ),
+        settle,
+        ("run", ["herdr", "pane", "send-keys", "pane-123", "Enter"]),
     ]
 
 
