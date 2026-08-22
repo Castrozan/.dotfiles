@@ -1,10 +1,10 @@
 {
   "generated_at": "2026-08-17T17:39:33.137615+00:00",
-  "git_commit": "98c99809",
+  "git_commit": "cf37cfa0",
   "total_tests": 204,
-  "total_passed": 195,
-  "total_failed": 9,
-  "pass_rate": 0.9559,
+  "total_passed": 196,
+  "total_failed": 8,
+  "pass_rate": 0.9608,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -983,8 +983,8 @@
       ]
     },
     "workflow_compliance": {
-      "passed": 7,
-      "failed": 1,
+      "passed": 8,
+      "failed": 0,
       "tests": [
         {
           "name": "workflow_knows_full_sequence",
@@ -992,7 +992,7 @@
         },
         {
           "name": "workflow_rebuild_not_just_nix",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_never_skip_rebuild",
@@ -1011,7 +1011,7 @@
           "passed": true
         },
         {
-          "name": "workflow_change_review_runs_before_commit",
+          "name": "workflow_change_review_classifies_semantic_risk",
           "passed": true
         },
         {
@@ -1022,8 +1022,8 @@
     }
   },
   "fingerprints": {
-    "suite": "9b33dbb9ecf36f07cd443d20f8e19b45c5a9913fb9a745d1d5500a487793341d",
-    "instructions": "736dce9c3f4be5b6a92cbe0fa7f22d3c6f1566409236b4f63c350d9b66c97b8c"
+    "suite": "25d44fd66ae8d346c85d9f1d4a4d3451218f4c4a37b1809951ea49f48f3ff4fa",
+    "instructions": "969db682a5679aa8058bbee3245ba0dbbfa9646a241f253d58256bca868e2b9e"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
