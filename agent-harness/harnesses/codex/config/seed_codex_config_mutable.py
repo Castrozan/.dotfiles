@@ -2,6 +2,7 @@ import json
 import os
 import pathlib
 import sys
+import time
 import tomllib
 
 import tomli_w
@@ -9,6 +10,8 @@ import tomli_w
 
 legacy_profile_names = ("fast", "deep", "web")
 runtime_preserved_section_names = ("projects", "marketplaces", "plugins")
+secret_file_wait_seconds = 10
+secret_file_retry_seconds = 0.1
 codex_config_path = pathlib.Path(
     os.environ.get("CODEX_CONFIG", "~/.codex/config.toml")
 ).expanduser()
@@ -93,10 +96,19 @@ def add_trusted_project_directories(
 
 
 def read_secret_file(secret_file_path: str) -> str:
-    try:
-        return pathlib.Path(secret_file_path).expanduser().read_text("utf-8").strip()
-    except OSError:
-        return ""
+    deadline = time.monotonic() + secret_file_wait_seconds
+    secret_path = pathlib.Path(secret_file_path).expanduser()
+    while True:
+        try:
+            secret_value = secret_path.read_text("utf-8").strip()
+            if secret_value:
+                return secret_value
+        except OSError:
+            pass
+        remaining_seconds = deadline - time.monotonic()
+        if remaining_seconds <= 0:
+            return ""
+        time.sleep(min(secret_file_retry_seconds, remaining_seconds))
 
 
 def inject_mcp_server_bearer_token_files(config_data: dict) -> None:

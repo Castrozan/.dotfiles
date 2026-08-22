@@ -1,4 +1,5 @@
 import json
+import threading
 
 from seed_codex_config_test_support import read_live_config, run_seed
 
@@ -108,7 +109,13 @@ url = "https://sourcebot.example/api/mcp"
         encoding="utf-8",
     )
     secret_path = tmp_path / "sourcebot-token"
-    secret_path.write_text("secret-token\n", encoding="utf-8")
+    secret_writer = threading.Timer(
+        0.2,
+        secret_path.write_text,
+        args=("secret-token\n",),
+        kwargs={"encoding": "utf-8"},
+    )
+    secret_writer.start()
 
     result = run_seed(
         tmp_path,
@@ -118,6 +125,7 @@ url = "https://sourcebot.example/api/mcp"
             )
         },
     )
+    secret_writer.join()
 
     assert result.returncode == 0, result.stderr
     sourcebot = read_live_config(tmp_path)["mcp_servers"]["sourcebot"]
