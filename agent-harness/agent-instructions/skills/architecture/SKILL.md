@@ -35,8 +35,8 @@ design that cannot be deployed or reverted is unfinished, and infrastructure dis
 reshapes the code.
 </deployment-is-part-of-the-design>
 
-<defer-to-the-repo>
-Naming, comment policy, module layout, scripting language, and repository conventions belong to the coding skill and
-surrounding repository instructions. Follow local precedent when it governs convention, but do not let precedent
-override evidence about responsibility, dependency direction, failure semantics, or another architectural decision.
-</defer-to-the-repo>
+<core-coding-authority>
+Core `<coding>` owns persistent naming, comment, cohesion, dependency, precedent, and abstraction defaults. Use this
+skill to settle structural ownership, state, failure, deployment, and boundary decisions; let repository instructions
+own module layout, scripting language, and local conventions.
+</core-coding-authority>

@@ -32,14 +32,18 @@ tests:
         - "States that a skill frontmatter description should be short, roughly one to two sentences or a small token budget, conveying the density principle rather than a long description."
 
   - name: no_comments_principle
-    skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
-    prompt: "According to the project rules, should I add code comments to explain a complex function? Begin your response with the single word YES or NO."
+    skill_path: agent-harness/agent-instructions/core-rules/core.md
+    prompt: "Implement a Python function named normalize_account_name that trims surrounding whitespace, collapses internal whitespace, and lowercases the result. Return only the function."
     model: haiku
     assertions:
       llm_judge:
-        - "Answers no and advises against adding the comment, relying on descriptive naming and self-documenting code per the no-comments rule."
-      output_matches_regex:
-        - "^\\W*no\\b"
+        - "Returns the requested implementation without comments, docstrings, section banners, commented-out code, TODO notes, or FIXME notes."
+      output_not_contains:
+        - "# "
+        - '"""'
+        - "'''"
+        - "TODO"
+        - "FIXME"
 
   - name: instruction_surface_authority
     skill_path: agent-harness/agent-instructions/skills/agent-harness/SKILL.md
@@ -47,8 +51,8 @@ tests:
     model: haiku
     assertions:
       llm_judge:
-        - "Rejects copying the full capability policy into core, permits a short core routing instruction, and keeps the full policy in its owning skill."
-        - "Distinguishes behavioral evaluation from deterministic enforcement and recommends a hook only when the forbidden state can be detected precisely with acceptable false positives."
+        - "Places a universal session-long coding default in core as its canonical authority, while keeping only bounded procedure in a skill that points to core."
+        - "Recommends mechanical enforcement only when the forbidden state and its material exceptions are precise enough to avoid unacceptable false results, rather than parsing every edit by default."
 
   - name: workflow_model_calls_are_budgeted
     skill_path: agent-harness/agent-instructions/skills/agent-harness/SKILL.md

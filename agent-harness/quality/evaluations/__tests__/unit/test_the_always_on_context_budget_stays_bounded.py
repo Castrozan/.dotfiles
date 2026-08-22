@@ -38,8 +38,9 @@ def test_the_always_on_instruction_surface_stays_within_its_budget():
     assert total <= MAXIMUM_ALWAYS_ON_INSTRUCTION_BYTES, (
         f"core rules plus project-context instructions now cost {total} bytes of every "
         f"session's context, past the {MAXIMUM_ALWAYS_ON_INSTRUCTION_BYTES} byte "
-        f"budget. Move the new material into the skill that owns its domain, where it "
-        f"loads on demand, rather than raising this ceiling."
+        f"budget. Remove duplication or narrow material by scope and horizon: keep "
+        f"universal session-long defaults in core, local policy local, bounded procedures "
+        f"in skills, and precise predicates in enforcement rather than raising this ceiling."
     )
 
 

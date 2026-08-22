@@ -17,26 +17,22 @@ calling a documented behavior a defect.
 <configuration-ownership>
 Keep durable settings and instruction surfaces declarative. Preserve harness-owned mutable state where the deployment
 model requires it, and restart a session only after its replacement is available. Use `agent-session` for a generic
-restart or exit instead of assuming a Claude-specific command.
+restart or exit instead of assuming a harness-specific command.
 </configuration-ownership>
 
 <place-instructions-by-scope-and-authority>
-Choose a surface by who needs the rule, when it must load, and how much authority it needs. Core owns universal
-cross-harness judgment and routing; a harness surface owns its mechanics; repository context owns local facts and
-policy; a skill owns on-demand domain procedure; path-scoped rules own constraints limited to matching files; command
-hooks own deterministic lifecycle automation; permissions or the operating system own security and integrity
-boundaries. Importance alone never promotes capability policy into core. A short core route can require loading the
-owning skill before action, but keep the full policy in that skill rather than copying it across layers.
+Place a rule by who needs it and how long it must remain available. Core, including `<coding>`, owns universal
+session-long defaults even when they activate only for one kind of work; repository context owns local facts and policy;
+path-scoped rules own matching-file constraints; harness surfaces own harness mechanics; skills own bounded procedures.
+Make every complementary source point to the canonical authority instead of restating it. Never leave behavior expected
+across turns or compaction solely inside an on-demand skill, because it disappears outside that skill's loading window.
 </place-instructions-by-scope-and-authority>
 
 <separate-adherence-evidence-and-enforcement>
-A missed policy is an adherence signal, not by itself a reason to parse every edit with a hook. Treat instruction
-salience, skill routing, behavioral evidence, and enforcement as different controls: prose can improve adherence and an
-eval can expose regressions, but neither forces behavior. A deterministic hook is justified only when the forbidden
-state is mechanically decidable with acceptable false positives and explicit exceptions; otherwise it becomes a second
-policy engine that disagrees with the skill. Prefer gating an action until its owning skill is loaded, then test the
-resulting behavior. If violations persist and the predicate can be made precise, validate the final artifact at Stop or
-CI.
+Treat instruction salience, behavioral evidence, and enforcement as separate controls. Put persistent behavioral
+authority at its proper scope. Enforce it mechanically only when the forbidden state and material exceptions are precise
+enough to avoid unacceptable false results; otherwise an edit-parsing hook becomes a conflicting policy engine. Use
+evaluations to expose adherence regressions, not as proof that prose forces behavior.
 </separate-adherence-evidence-and-enforcement>
 
 <workflow-authoring>

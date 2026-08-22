@@ -78,9 +78,32 @@ let
     "rebuild"
     "python 3.12"
   ];
+  globalCoreRequiredSections = [
+    "<evidence>"
+    "<autonomy>"
+    "<completion>"
+    "<delegation>"
+    "<context>"
+    "<coding>"
+    "<instruction-placement>"
+  ];
+  globalCoreRetiredAuthorityFragments = [
+    "<judgment>"
+    "<ownership>"
+    "<skills>"
+    "<mandatory-skill-routes>"
+    "let it own the domain-specific policy"
+    "keep the full policy in that skill"
+  ];
   globalCoreContainsOnlyUniversalPolicy = builtins.all (
     fragment: !(lib.hasInfix fragment normalizedGlobalCoreInstructions)
   ) globalCoreForbiddenFragments;
+  globalCoreContainsEveryRequiredSection = builtins.all (
+    section: lib.hasInfix section globalCoreInstructions
+  ) globalCoreRequiredSections;
+  globalCoreContainsNoRetiredAuthority = builtins.all (
+    fragment: !(lib.hasInfix fragment normalizedGlobalCoreInstructions)
+  ) globalCoreRetiredAuthorityFragments;
 in
 {
   default-home-manager-module-deploys-agent-session =
@@ -118,6 +141,8 @@ in
       (
         builtins.stringLength globalCoreInstructions <= globalCoreMaximumBytes
         && globalCoreContainsOnlyUniversalPolicy
+        && globalCoreContainsEveryRequiredSection
+        && globalCoreContainsNoRetiredAuthority
       )
-      "core.md must stay below the global context budget and contain only cross-harness, cross-domain policy; move repository, harness, tool, and capability mechanics to their owning surfaces";
+      "core.md must stay below the global context budget and contain the required universal session-long policy, including conditionally triggered coding behavior; keep repository, harness, tool, and bounded procedure mechanics in their owning surfaces";
 }
