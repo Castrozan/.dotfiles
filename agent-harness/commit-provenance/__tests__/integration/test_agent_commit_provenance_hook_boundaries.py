@@ -52,7 +52,7 @@ def test_an_empty_message_stays_empty_so_git_still_aborts(repository, tmp_path):
         env=agent_session_environment(),
         check=False,
     )
-    assert "Agent-Session" not in message_file_path.read_text(encoding="utf-8")
+    assert "Agent-Resume" not in message_file_path.read_text(encoding="utf-8")
 
 
 def test_a_broken_provenance_import_never_blocks_a_commit(repository, tmp_path):

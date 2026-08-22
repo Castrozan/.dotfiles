@@ -6,11 +6,9 @@ import sys
 from pathlib import Path
 
 from agent_commit_provenance.commit_trailers import (
-    AGENT_HARNESS_TRAILER_KEY,
     AGENT_MACHINE_TRAILER_KEY,
     AGENT_NAME_TRAILER_KEY,
     AGENT_RESUME_TRAILER_KEY,
-    AGENT_SESSION_TRAILER_KEY,
     parse_agent_provenance_trailers,
 )
 from agent_commit_provenance.session_identity import machine_name_from_environment
@@ -18,6 +16,7 @@ from agent_commit_provenance.transcript_locations import (
     transcript_path_for_session,
     user_prompts_in_transcript,
 )
+from agent_session.harness import harness_and_session_from_resume_command
 
 PROMPT_PREVIEW_CHARACTER_LIMIT = 400
 
@@ -40,8 +39,10 @@ def commit_subject_and_message(commit_reference: str) -> tuple[str, str]:
 def provenance_report(commit_reference: str) -> dict[str, object]:
     header, message = commit_subject_and_message(commit_reference)
     recorded_trailers = parse_agent_provenance_trailers(message)
-    harness_name = recorded_trailers.get(AGENT_HARNESS_TRAILER_KEY)
-    session_identifier = recorded_trailers.get(AGENT_SESSION_TRAILER_KEY)
+    resume_command = recorded_trailers.get(AGENT_RESUME_TRAILER_KEY)
+    harness_name, session_identifier = harness_and_session_from_resume_command(
+        resume_command
+    )
     transcript_path = (
         transcript_path_for_session(harness_name, session_identifier)
         if harness_name and session_identifier
@@ -53,7 +54,7 @@ def provenance_report(commit_reference: str) -> dict[str, object]:
         "machine": recorded_trailers.get(AGENT_MACHINE_TRAILER_KEY),
         "agent": recorded_trailers.get(AGENT_NAME_TRAILER_KEY),
         "session": session_identifier,
-        "resume": recorded_trailers.get(AGENT_RESUME_TRAILER_KEY),
+        "resume": resume_command,
         "transcript": str(transcript_path) if transcript_path else None,
     }
 

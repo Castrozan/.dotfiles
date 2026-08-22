@@ -3,30 +3,21 @@ from pathlib import Path
 
 from .session_identity import AgentSessionIdentity
 
-AGENT_HARNESS_TRAILER_KEY = "Agent-Harness"
 AGENT_MACHINE_TRAILER_KEY = "Agent-Machine"
 AGENT_NAME_TRAILER_KEY = "Agent-Name"
-AGENT_SESSION_TRAILER_KEY = "Agent-Session"
 AGENT_RESUME_TRAILER_KEY = "Agent-Resume"
 
 AGENT_PROVENANCE_TRAILER_KEYS = (
-    AGENT_HARNESS_TRAILER_KEY,
     AGENT_MACHINE_TRAILER_KEY,
     AGENT_NAME_TRAILER_KEY,
-    AGENT_SESSION_TRAILER_KEY,
     AGENT_RESUME_TRAILER_KEY,
 )
 
 
 def trailers_for_identity(identity: AgentSessionIdentity) -> list[str]:
-    trailers = [
-        f"{AGENT_HARNESS_TRAILER_KEY}: {identity.harness_name}",
-        f"{AGENT_MACHINE_TRAILER_KEY}: {identity.machine_name}",
-    ]
+    trailers = [f"{AGENT_MACHINE_TRAILER_KEY}: {identity.machine_name}"]
     if identity.agent_name is not None:
         trailers.append(f"{AGENT_NAME_TRAILER_KEY}: {identity.agent_name}")
-    if identity.session_identifier is not None:
-        trailers.append(f"{AGENT_SESSION_TRAILER_KEY}: {identity.session_identifier}")
     resume_command = identity.resume_command()
     if resume_command is not None:
         trailers.append(f"{AGENT_RESUME_TRAILER_KEY}: {resume_command}")

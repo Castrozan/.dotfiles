@@ -21,9 +21,7 @@ def test_a_commit_made_inside_an_agent_session_carries_its_resume_command(reposi
     assert latest_commit_message(repository) == (
         "feat: first\n"
         "\n"
-        "Agent-Harness: claude\n"
         "Agent-Machine: testmachine\n"
-        f"Agent-Session: {RECORDED_SESSION_IDENTIFIER}\n"
         f"Agent-Resume: claude --resume {RECORDED_SESSION_IDENTIFIER}"
     )
 
@@ -49,9 +47,10 @@ def test_amending_replaces_the_trailers_instead_of_stacking_them(repository):
         environment=agent_session_environment(AMENDED_SESSION_IDENTIFIER),
     )
     assert (
-        latest_trailer_value(repository, "Agent-Session") == AMENDED_SESSION_IDENTIFIER
+        latest_trailer_value(repository, "Agent-Resume")
+        == f"claude --resume {AMENDED_SESSION_IDENTIFIER}"
     )
-    assert latest_commit_message(repository).count("Agent-Session:") == 1
+    assert latest_commit_message(repository).count("Agent-Resume:") == 1
 
 
 def test_a_repository_can_opt_out(repository):

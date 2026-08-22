@@ -6,12 +6,10 @@ from agent_commit_provenance.session_identity import AgentSessionIdentity
 
 
 class TestTrailersForIdentity:
-    def test_an_interactive_claude_session_records_four_trailers(self):
+    def test_an_interactive_claude_session_records_where_and_how_to_resume(self):
         identity = AgentSessionIdentity("claude", "rin", "abc-123", None)
         assert trailers_for_identity(identity) == [
-            "Agent-Harness: claude",
             "Agent-Machine: rin",
-            "Agent-Session: abc-123",
             "Agent-Resume: claude --resume abc-123",
         ]
 
@@ -21,10 +19,7 @@ class TestTrailersForIdentity:
 
     def test_a_session_without_an_identifier_records_no_resume_command(self):
         identity = AgentSessionIdentity("opencode", "kira", None, None)
-        assert trailers_for_identity(identity) == [
-            "Agent-Harness: opencode",
-            "Agent-Machine: kira",
-        ]
+        assert trailers_for_identity(identity) == ["Agent-Machine: kira"]
 
 
 class TestParseAgentProvenanceTrailers:
@@ -33,19 +28,15 @@ class TestParseAgentProvenanceTrailers:
             [
                 "feat(dev): track which agent session made a commit",
                 "",
-                "Body line that mentions Agent-Session: not-a-trailer inline",
+                "Body line that mentions Agent-Resume: not-a-trailer inline",
                 "",
                 "Signed-off-by: Someone <someone@example.com>",
-                "Agent-Harness: claude",
                 "Agent-Machine: rin",
-                "Agent-Session: abc-123",
                 "Agent-Resume: claude --resume abc-123",
             ]
         )
         assert parse_agent_provenance_trailers(commit_message) == {
-            "Agent-Harness": "claude",
             "Agent-Machine": "rin",
-            "Agent-Session": "abc-123",
             "Agent-Resume": "claude --resume abc-123",
         }
 
