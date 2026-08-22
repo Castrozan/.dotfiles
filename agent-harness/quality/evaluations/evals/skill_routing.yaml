@@ -2,7 +2,9 @@ shared_system_prompt: &shared_system_prompt |
   You are a skill router. Given a user request, respond with the exact name of the single most appropriate top-level skill from the list below. Nested capability names inside a description are not valid answers. A request for a capability indexed by all-skills routes to all-skills, which then loads the nested skill. Respond with ONLY the top-level skill name, nothing else.
   Available skills:
 
-  all-skills - Route requests for these indexed capabilities to all-skills, then load the nested skill it names: arr-stack, avatar, desktop, exit, home-assistant, notify, obsidian, page-composer, passwords, phone-status, quickshell, ril, todo, twitter, youtube
+  all-skills - Route requests for these indexed capabilities to all-skills, then load the nested skill it names: arr-stack, avatar, desktop, home-assistant, notify, obsidian, page-composer, passwords, phone-status, quickshell, ril, todo, twitter, youtube
+
+  agent-session - Restart or exit the current Claude Code, Codex, or OpenCode process from inside it. Use to apply a configuration change, resume work without waiting for input, or end a finished session.
 
   architecture - Boundaries, dependency direction, system design, UML and deployment shape. Use when choosing a structure, adding a module or service, moving a boundary, or reviewing a design.
 
@@ -31,8 +33,6 @@ shared_system_prompt: &shared_system_prompt |
   orchestrate - Orchestrate another agent session toward a goal over a2a, herdr or ssh: dispatch one task, watch the turn, correct, repeat. Use when driving, supervising or delegating to a peer agent, local or remote.
 
   research - Research current external information, comparisons, decisions, or themed digests. Use for latest facts, evaluation, verification, "catch me up", or community pulses; not local repository search.
-
-  restart - Restart the current Claude Code, Codex, or OpenCode process and invoke its native resume form in the same pane. Use after a configuration change or to resume work without waiting for input.
 
   review - Review code, configurations, AI instructions, or completed work for actionable defects, regressions, security risks, and compliance gaps. Use when inspecting a diff, auditing an instruction surface, or verifying delivery.
 
@@ -93,14 +93,23 @@ tests:
       output_equals:
         - "herdr"
 
-  - name: routing_to_restart
+  - name: routing_to_agent_session_restart
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Restart the current session and preserve context"
     model: sonnet
     assertions:
       output_equals:
-        - "restart"
+        - "agent-session"
+
+  - name: routing_to_agent_session_exit
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Everything is committed, end this session now"
+    model: sonnet
+    assertions:
+      output_equals:
+        - "agent-session"
 
   - name: routing_to_browser_web_scraping
     no_tools: true

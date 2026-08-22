@@ -10,6 +10,7 @@ let
     ;
 
   defaultInteractiveSkillNames = [
+    "agent-session"
     "architecture"
     "browser"
     "coding"
@@ -24,7 +25,6 @@ let
     "instructions"
     "orchestrate"
     "research"
-    "restart"
     "review"
     "workspace"
   ];

@@ -116,7 +116,7 @@ in
       (builtins.all deploysAgentSession (
         map (module: helpers.homeManagerTestConfiguration [ module ]) exportedHarnessModules
       ))
-      "every standalone harness module must install agent-session because the restart skill and the exit path both invoke it";
+      "every standalone harness module must install agent-session because the agent-session skill drives both restart and exit through it";
 
   dotfiles-repo-skills-deploy-into-every-project-skill-directory =
     mkEvalCheck "dotfiles-repo-skills-deploy-into-every-project-skill-directory"

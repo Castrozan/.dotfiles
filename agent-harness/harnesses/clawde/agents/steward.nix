@@ -65,7 +65,7 @@ in
     "deep-work"
     "workspace"
     "herdr"
-    "exit"
+    "agent-session"
     "notify"
     "review"
   ];
