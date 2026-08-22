@@ -13,7 +13,7 @@ export const meta = {
   ],
 };
 
-const COVERAGE_EXCLUSIONS = `Report only standing rot that no existing check catches. Skip nix idiom, dead bindings, and nix formatting owned by statix, deadnix, and nixfmt. Skip line-count violations, code formatting, hardcoded home paths, identifying names, broken evaluation symlinks, instruction structure, prohibited blanket staging, and anything scoped to the commits awaiting push because repository checks or dotfiles-change-review own them. Skip pure preference.`;
+const COVERAGE_EXCLUSIONS = `Report only standing rot that no existing check catches. Skip nix idiom, dead bindings, and nix formatting owned by statix, deadnix, and nixfmt. Skip line-count violations, code formatting, hardcoded home paths, identifying names, broken evaluation symlinks, instruction structure, prohibited blanket staging, and anything a repository check or dotfiles-change-review already owns. Skip pure preference.`;
 
 const SWEEP_DIMENSIONS = `Apply all six dimensions in one pass:
 1. TODO, FIXME, WIP, XXX, or HACK markers and commented-out code, excluding shebangs, load-bearing expressions, and intentional backlog;

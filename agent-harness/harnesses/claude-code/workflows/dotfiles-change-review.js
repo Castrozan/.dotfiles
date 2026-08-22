@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Two-pass review of the dotfiles commits awaiting push: find actionable defects across every repository risk, then independently refute and synthesize them.",
   whenToUse:
-    "Before pushing a change the dotfiles repo counts as substantive, which its change-review-scope rule defines by semantic risk rather than by diff size. It reads the commits this branch adds rather than a working tree other agents share, and checks correctness, nix rebuild safety, code style, instruction quality, test coverage, and public-repo safety with at most two model calls.",
+    "Before pushing a dotfiles change this repository's change-review-scope rule counts as substantive. It reviews the commits this branch adds rather than the working tree its agents share, and spends at most two model calls.",
   phases: [
     {
       title: "Review",
@@ -42,7 +42,7 @@ const reviewScope = reviewArguments.ref || "";
 const reviewRoot = reviewArguments.root || "";
 const scopeInstruction = reviewScope
   ? `Follow this review scope: "${reviewScope}".`
-  : "Review the commits on this branch that the steward base does not have. Leave the working tree out of it: this checkout is shared, so its uncommitted state belongs to other agents.";
+  : "Review the commits on this branch that the steward base does not have, never the shared working tree.";
 const ANCHOR = reviewRoot
   ? `Start by running \`cd "${reviewRoot}"\`.`
   : `Start by running \`cd\` to the working directory you were given: the shell can start in a sibling checkout of this repository, and reviewing the wrong one reports a clean tree that proves nothing.`;

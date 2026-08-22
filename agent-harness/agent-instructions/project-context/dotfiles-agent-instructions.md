@@ -79,30 +79,26 @@ interpolation rules destroys quoting. When in doubt, extract.
 
 <testing>
 Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary
-verification. Do all the work locally first: edit, format, stage, and commit the change, rebuild it, run the manual
-tests the change calls for, and only then push. Pushing is what starts CI: it runs the script tiers and `nix flake
-check` on every push, and CI is the test gate, so a local full-suite pass is not what proves a change. Once pushed, the
-run proceeds in the background always; never stay stuck waiting on it. Parallelize: while the run is in flight,
-continue with the next independent piece of the task, and check the verdict only when other work is exhausted and a
-response to the user is due. Reach for `repository/verification/run.sh` only to reproduce a job CI turned red, or to
-iterate on a test you are writing. The same goes for a whole pytest tier directory (`*/__tests__/unit`,
-`*/__tests__/integration`), bare `pytest`, `pytest agents`, `pytest .`, and `nix flake check`: run a specific test file,
-or use `rebuild` as the local nix verification. Test every Neovim change live in a newly created Herdr pane; automated
-and headless checks do not replace this manual test.
+verification. Do the local work first, through the rebuild and the manual tests the change calls for, and only then
+push (see <workflow>). Pushing is what starts CI: it runs the script tiers and `nix flake check` on every push, and CI
+is the test gate, so a local full-suite pass is not what proves a change. Reach for `repository/verification/run.sh`
+only to reproduce a job CI turned red, or to iterate on a test you are writing. The same goes for a whole pytest tier
+directory (`*/__tests__/unit`, `*/__tests__/integration`), bare `pytest`, `pytest agents`, `pytest .`, and `nix flake
+check`: run a specific test file, or use `rebuild` as the local nix verification. Test every Neovim change live in a
+newly created Herdr pane; automated and headless checks do not replace this manual test.
 </testing>
 
 <change-review-scope>
 Run the `dotfiles-change-review` workflow over your own commits before pushing a substantive change, passing
 `{"root": "<absolute checkout path>"}` whenever you work in a worktree, because the shell can start in a sibling
-checkout and a review of the wrong one returns a clean tree that proves nothing. Commit first and review the range the
-steward base does not have: this checkout is shared, so reviewing the working tree instead reads whatever every other
-agent left uncommitted, and a confirmed finding belongs in a follow-up commit rather than an amend a peer may already
-have built on. A change is substantive when a wrong
-edit would survive formatting and still change machine or agent behavior, a build, a deployment, a dependency, an
+checkout and a review of the wrong one returns a clean tree that proves nothing. Commit first: this checkout is
+shared, so a review of the working tree reads whatever peers left uncommitted, and a confirmed finding belongs in a
+follow-up commit rather than an amend a peer may already have built on. A change is substantive when a wrong edit
+would survive formatting and still change machine or agent behavior, a build, a deployment, a dependency, an
 interface, a test, security, a secret, what this public repository exposes, or an operational instruction, or when
 correctness depends on several files changing together. Skip the review only when every hunk is demonstrably
 non-semantic, meaning a formatting or prose correction that alters no command, path, identifier, factual claim, policy
-or behavior; review the whole range when substantive and non-substantive hunks are mixed or the classification stays
+or behavior; review the whole change when substantive and non-substantive hunks are mixed or the classification stays
 uncertain. Changed line and file counts never decide this, and skipping the review never excuses the rebuild or the
 tests.
 </change-review-scope>
@@ -117,10 +113,9 @@ fan-out.
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
 files; 2) stage each file with git add specific-file, never -A; 3) commit; 4) review the commits you just added when
-they are substantive (see <change-review-scope>), fixing every confirmed finding in a follow-up commit; 5) rebuild for
-any file change in this repo, running it yourself and never deferring to the user (see <rebuild>); 6) push, which
-starts the run in the background; 7) do not block on the run: continue with the next independent piece of the task
-while CI works, and check the verdict only when other work is exhausted and a response to the user is due - `gh run
+they are substantive (see <change-review-scope>); 5) rebuild for any file change in this repo (see <rebuild>); 6) push,
+which starts the run in the background; 7) do not block on the run: continue with the next independent piece of the
+task while CI works, and check the verdict only when other work is exhausted and a response to the user is due - `gh run
 list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids, then `gh run watch <id>
 --exit-status` blocks on each until it finishes and exits non-zero when it ends red; a short sha matches no run and a
 just-pushed commit has none for a few seconds, so pass the full sha and retry an empty list rather than reading it as
