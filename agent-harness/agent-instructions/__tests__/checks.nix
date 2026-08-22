@@ -67,7 +67,7 @@ let
     "second brain"
     "webfetch"
     "gh run"
-    "claude-gpt"
+    "claudex"
     "claude code"
     "codex"
     "opencode"

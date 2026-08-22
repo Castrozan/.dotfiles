@@ -6,12 +6,12 @@
   ...
 }:
 let
-  hostsWithClaudeGptProxy = [
+  hostsWithClaudex = [
     "chise"
     "kira"
     "rin"
   ];
-  claudeGptProxyEnabledOnThisHost = lib.elem hostname hostsWithClaudeGptProxy;
+  claudexEnabledOnThisHost = lib.elem hostname hostsWithClaudex;
 
   cliProxyApiPackage = import ../cli-proxy-api/package.nix { inherit pkgs lib; };
   cliProxyApiIpv4Gateway = import ../cli-proxy-api/ipv4-gateway { inherit pkgs; };
@@ -82,11 +82,11 @@ let
         ];
       };
 
-  gptModelForOpusTier = "gpt-5.6-sol(high)";
+  gptModelForOpusTier = "gpt-5.6-sol(max)[1m]";
   gptModelForSonnetTier = "gpt-5.6-sol(medium)";
   gptModelForHaikuTier = "gpt-5.6-sol(low)";
 
-  claudeGptLauncher = pkgs.writeShellScriptBin "claude-gpt" ''
+  claudexLauncher = pkgs.writeShellScriptBin "claudex" ''
     unset ANTHROPIC_API_KEY
     export ANTHROPIC_BASE_URL="http://${proxyListenAddress}:${toString proxyListenPort}"
     export ANTHROPIC_AUTH_TOKEN="cli-proxy-api-local-loopback"
@@ -95,13 +95,13 @@ let
     export ANTHROPIC_DEFAULT_HAIKU_MODEL="${gptModelForHaikuTier}"
     if ! (exec 3<>/dev/tcp/${proxyListenAddress}/${toString proxyListenPort}) 2>/dev/null; then
       echo "cli-proxy-api is not listening on ${proxyListenAddress}:${toString proxyListenPort}." >&2
-      echo "If you have never authenticated your ChatGPT subscription, run: claude-gpt-login" >&2
+      echo "If you have never authenticated your ChatGPT subscription, run: claudex-login" >&2
       echo "Otherwise inspect the service: ${proxyServiceInspectionCommand}" >&2
     fi
     exec ${config.claude.package}/bin/claude --model "${gptModelForOpusTier}" "$@"
   '';
 
-  claudeGptLoginLauncher = pkgs.writeShellScriptBin "claude-gpt-login" ''
+  claudexLoginLauncher = pkgs.writeShellScriptBin "claudex-login" ''
     echo "Authenticating your ChatGPT/Codex subscription for cli-proxy-api."
     echo "A browser window opens for OAuth; the callback listens on ${proxyListenAddress}:1455."
     if ! ${lib.escapeShellArgs ipv4GatewayCliProxyApiLoginProgramArguments} "$@"; then
@@ -110,7 +110,7 @@ let
     fi
     echo "Credentials stored under ${proxyAuthenticationDirectory}."
     ${reloadProxyServiceCommand}
-    echo "Proxy reloaded. Run claude-gpt to start Claude Code on your ChatGPT subscription."
+    echo "Proxy reloaded. Run claudex to start Claude Code on your ChatGPT subscription."
   '';
 
   ensureCliProxyApiStateDirectoriesScript = pkgs.writeShellScript "cli-proxy-api-ensure-state-directories" ''
@@ -119,13 +119,13 @@ let
   '';
 in
 {
-  config = lib.mkIf claudeGptProxyEnabledOnThisHost (
+  config = lib.mkIf claudexEnabledOnThisHost (
     lib.mkMerge [
       {
         home.packages = [
           cliProxyApiPackage
-          claudeGptLauncher
-          claudeGptLoginLauncher
+          claudexLauncher
+          claudexLoginLauncher
         ];
 
         home.activation.ensureCliProxyApiStateDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

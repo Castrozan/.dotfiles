@@ -24,6 +24,8 @@ let
         "rin"
       ];
 
+  allConfigurations = [ linuxConfiguration ] ++ darwinConfigurations;
+
   hasPackage =
     configuration: packageName:
     builtins.any (package: lib.getName package == packageName) configuration.home.packages;
@@ -33,13 +35,14 @@ let
   );
 in
 {
-  claude-gpt-linux-packages = mkEvalCheck "claude-gpt-linux-packages" (
-    hasPackage linuxConfiguration "claude-gpt"
-    && hasPackage linuxConfiguration "claude-gpt-login"
-    && hasPackage linuxConfiguration "cli-proxy-api"
-  ) "Chise must install the claude-gpt launchers and cli-proxy-api package";
+  claudex-packages = mkEvalCheck "claudex-packages" (builtins.all (
+    configuration:
+    hasPackage configuration "claudex"
+    && hasPackage configuration "claudex-login"
+    && hasPackage configuration "cli-proxy-api"
+  ) allConfigurations) "Supported hosts must install the claudex launchers and cli-proxy-api package";
 
-  claude-gpt-linux-systemd-service = mkEvalCheck "claude-gpt-linux-systemd-service" (
+  claudex-linux-systemd-service = mkEvalCheck "claudex-linux-systemd-service" (
     linuxConfiguration.systemd.user.services ? cli-proxy-api
     && lib.hasInfix "cli-proxy-api-ipv4-gateway.py" (
       lib.concatStringsSep " " (
@@ -48,24 +51,14 @@ in
     )
   ) "Chise must run cli-proxy-api as a systemd user service";
 
-  claude-gpt-darwin-packages = mkEvalCheck "claude-gpt-darwin-packages" (builtins.all
-    (
-      configuration:
-      hasPackage configuration "claude-gpt"
-      && hasPackage configuration "claude-gpt-login"
-      && hasPackage configuration "cli-proxy-api"
-    )
-    darwinConfigurations
-  ) "Rin and Kira must install the claude-gpt launchers and cli-proxy-api package";
-
-  claude-gpt-darwin-launchd-agent = mkEvalCheck "claude-gpt-darwin-launchd-agent" (builtins.all (
+  claudex-darwin-launchd-agent = mkEvalCheck "claudex-darwin-launchd-agent" (builtins.all (
     configuration:
     configuration.launchd.agents ? cli-proxy-api
     && builtins.any (lib.hasSuffix "cli-proxy-api-ipv4-gateway.py") configuration.launchd.agents.cli-proxy-api.config.ProgramArguments
   ) darwinConfigurations) "Rin and Kira must run cli-proxy-api through the IPv4 gateway";
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-  claude-gpt-linux-proxy-binary = pkgs.runCommandLocal "check-claude-gpt-linux-proxy-binary" { } ''
+  claudex-linux-proxy-binary = pkgs.runCommandLocal "check-claudex-linux-proxy-binary" { } ''
     test -x ${linuxCliProxyApiPackage}/bin/cli-proxy-api
     touch $out
   '';

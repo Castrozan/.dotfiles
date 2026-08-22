@@ -34,5 +34,5 @@ def test_both_the_service_and_the_login_run_through_the_gateway():
 def test_the_login_gateway_listens_on_its_own_port():
     assert "proxyIpv4GatewayLoginPort = 8319;" in module_source(), (
         "the login runs while the service is already listening, so sharing one "
-        "gateway port makes claude-gpt-login fail to bind"
+        "gateway port makes claudex-login fail to bind"
     )
