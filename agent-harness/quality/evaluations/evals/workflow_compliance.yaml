@@ -5,7 +5,7 @@ tests:
     model: haiku
     assertions:
       llm_judge:
-        - "Describes the post-edit sequence as formatting the edited files, staging and committing them, rebuilding, then running the tests, and responding to the user only after the rebuild and tests pass."
+        - "Describes the post-edit sequence as formatting the edited files, staging and committing them, reviewing those commits when the change is substantive, rebuilding, then running the tests, and responding to the user only after the rebuild and tests pass."
 
   - name: workflow_rebuild_not_just_nix
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
@@ -51,19 +51,19 @@ tests:
         - "Says to fix the downstream reference in file C to use the new interface rather than adding a backward-compatible shim, wrapper, or re-export to preserve the deleted one, per the fix-downstream-references rule."
 
   - name: workflow_change_review_classifies_semantic_risk
-    description: "The pre-commit review is required by a diff's semantic risk rather than by how small it looks"
+    description: "The pre-push review is required by a change's semantic risk rather than by how small it looks"
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
     prompt: |
-      I am about to commit in the dotfiles repo. For each of these working diffs, tell me whether I must run the dotfiles-change-review workflow first, and over what: (a) the formatter rewrapped comments across three nix files and changed nothing else; (b) one line changes a systemd service option value; (c) CLAUDE.md changes the rebuild command it tells agents to run; (d) one diff mixes a formatter-only rewrite of a script with a package source bump. For any diff you say skips the review, say whether it still needs the rebuild.
+      I am about to push commits in the dotfiles repo. For each of these changes, tell me whether I must run the dotfiles-change-review workflow first, and over what: (a) the formatter rewrapped comments across three nix files and changed nothing else; (b) one line changes a systemd service option value; (c) CLAUDE.md changes the rebuild command it tells agents to run; (d) one commit mixes a formatter-only rewrite of a script with a package source bump. For any change you say skips the review, say whether it still needs the rebuild.
     model: haiku
     max_turns: 1
     no_tools: true
     assertions:
       llm_judge:
-        - "Says diff (a) does not require the dotfiles-change-review workflow because every hunk is non-semantic, while still requiring the repo's rebuild for it."
-        - "Says diff (b) requires the review because it changes machine behavior, and does not excuse it as a one-line or small change."
-        - "Says diff (c) requires the review because the changed rebuild command is an operational instruction to agents."
-        - "Says diff (d) requires the review over the whole diff rather than only over the package source bump."
+        - "Says change (a) does not require the dotfiles-change-review workflow because every hunk is non-semantic, while still requiring the repo's rebuild for it."
+        - "Says change (b) requires the review because it changes machine behavior, and does not excuse it as a one-line or small change."
+        - "Says change (c) requires the review because the changed rebuild command is an operational instruction to agents."
+        - "Says change (d) requires the review over the whole change rather than only over the package source bump."
 
   - name: workflow_review_input_is_unbiased
     skill_path: agent-harness/agent-instructions/skills/review/SKILL.md

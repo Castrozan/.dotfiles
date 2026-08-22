@@ -71,6 +71,19 @@ def test_the_documented_change_review_arguments_parse_as_json():
     )
 
 
+def test_the_change_review_reads_the_commits_rather_than_the_shared_working_tree():
+    source = CHANGE_REVIEW_WORKFLOW_PATH.read_text()
+    assert 'diff "$base..HEAD"' in source, (
+        "several agents commit into this one checkout, so diffing the base against the "
+        "working tree hands the review whatever a peer left uncommitted and reports "
+        "defects that belong to somebody else's change"
+    )
+    assert 'diff --stat "$base..HEAD"' in source, (
+        "the diffstat names the files the review reports, so it must cover the same "
+        "range as the patch or the two disagree about what was reviewed"
+    )
+
+
 def test_the_change_review_names_the_checkout_it_found_clean():
     source = CHANGE_REVIEW_WORKFLOW_PATH.read_text()
     empty_branch = source.split("No diff to review", 1)[0].rsplit("if (", 1)[1]

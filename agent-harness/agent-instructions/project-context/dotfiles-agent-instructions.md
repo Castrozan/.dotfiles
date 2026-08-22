@@ -92,14 +92,17 @@ and headless checks do not replace this manual test.
 </testing>
 
 <change-review-scope>
-Run the `dotfiles-change-review` workflow over the working diff before committing a substantive change, passing
+Run the `dotfiles-change-review` workflow over your own commits before pushing a substantive change, passing
 `{"root": "<absolute checkout path>"}` whenever you work in a worktree, because the shell can start in a sibling
-checkout and a review of the wrong one returns a clean tree that proves nothing. A change is substantive when a wrong
+checkout and a review of the wrong one returns a clean tree that proves nothing. Commit first and review the range the
+steward base does not have: this checkout is shared, so reviewing the working tree instead reads whatever every other
+agent left uncommitted, and a confirmed finding belongs in a follow-up commit rather than an amend a peer may already
+have built on. A change is substantive when a wrong
 edit would survive formatting and still change machine or agent behavior, a build, a deployment, a dependency, an
 interface, a test, security, a secret, what this public repository exposes, or an operational instruction, or when
 correctness depends on several files changing together. Skip the review only when every hunk is demonstrably
 non-semantic, meaning a formatting or prose correction that alters no command, path, identifier, factual claim, policy
-or behavior; review the whole diff when substantive and non-substantive hunks are mixed or the classification stays
+or behavior; review the whole range when substantive and non-substantive hunks are mixed or the classification stays
 uncertain. Changed line and file counts never decide this, and skipping the review never excuses the rebuild or the
 tests.
 </change-review-scope>
@@ -113,14 +116,16 @@ fan-out.
 
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
-files; 2) stage each file with git add specific-file, never -A; 3) commit; 4) rebuild for any file change in this repo,
-running it yourself and never deferring to the user (see <rebuild>); 5) push, which starts the run in the background;
-6) do not block on the run: continue with the next independent piece of the task while CI works, and check the verdict
-only when other work is exhausted and a response to the user is due - `gh run list --commit $(git rev-parse HEAD)
---json databaseId,name,conclusion` gives the run ids, then `gh run watch <id> --exit-status` blocks on each until it
-finishes and exits non-zero when it ends red; a short sha matches no run and a just-pushed commit has none for a few
-seconds, so pass the full sha and retry an empty list rather than reading it as a verdict; 7) if the rebuild or CI
-fails: fix and repeat from 1; 8) only after a green rebuild and green CI: respond to user. Every CI job reports all of
+files; 2) stage each file with git add specific-file, never -A; 3) commit; 4) review the commits you just added when
+they are substantive (see <change-review-scope>), fixing every confirmed finding in a follow-up commit; 5) rebuild for
+any file change in this repo, running it yourself and never deferring to the user (see <rebuild>); 6) push, which
+starts the run in the background; 7) do not block on the run: continue with the next independent piece of the task
+while CI works, and check the verdict only when other work is exhausted and a response to the user is due - `gh run
+list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids, then `gh run watch <id>
+--exit-status` blocks on each until it finishes and exits non-zero when it ends red; a short sha matches no run and a
+just-pushed commit has none for a few seconds, so pass the full sha and retry an empty list rather than reading it as
+a verdict; 8) if the rebuild or CI fails: fix and repeat from 1; 9) only after a green rebuild and green CI: respond
+to user. Every CI job reports all of
 its failures rather than dying on the first, so read the whole run and fix the batch in one pass instead of pushing
 once per error.
 </workflow>
