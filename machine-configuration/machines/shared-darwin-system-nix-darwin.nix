@@ -146,6 +146,15 @@
     pmset -a disablesleep 1
   '';
 
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    configuredPrimaryUserShell=/run/current-system/sw/bin/bash
+    currentPrimaryUserShell=$(${pkgs.coreutils}/bin/timeout 5 /usr/bin/dscl . -read ${lib.escapeShellArg "/Users/${username}"} UserShell | /usr/bin/awk '{print $2}')
+    if [ "$currentPrimaryUserShell" != "$configuredPrimaryUserShell" ]; then
+      echo "setting primary user shell to $configuredPrimaryUserShell..." >&2
+      ${pkgs.coreutils}/bin/timeout 5 /usr/bin/dscl . -create ${lib.escapeShellArg "/Users/${username}"} UserShell "$configuredPrimaryUserShell"
+    fi
+  '';
+
   system.defaults.screensaver = {
     askForPassword = false;
     askForPasswordDelay = 0;
