@@ -10,7 +10,6 @@ hooks_root_directory = os.path.dirname(hook_script_directory)
 for importable_directory in (
     hook_script_directory,
     os.path.join(hooks_root_directory, "common"),
-    os.path.join(hooks_root_directory, "lint"),
     os.path.join(hooks_root_directory, "nix-rebuild"),
     os.path.join(hook_script_directory, "line-count"),
     os.path.join(hook_script_directory, "skill-invocation-marker"),
@@ -35,10 +34,6 @@ POST_TOOL_USE_HANDLERS = [
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
     HookHandler(handler_module_name="auto_format_handler", tool_matcher="Edit|Write"),
-    HookHandler(
-        handler_module_name="record_edited_source_file_handler",
-        tool_matcher="Edit|Write",
-    ),
     HookHandler(
         handler_module_name="record_changed_nix_file_handler", tool_matcher="Edit|Write"
     ),

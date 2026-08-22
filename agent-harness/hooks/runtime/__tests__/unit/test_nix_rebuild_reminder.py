@@ -6,10 +6,10 @@ produced five doubled copies. It fired at the one moment the demanded action
 cannot be taken, and it never checked whether the obligation was outstanding,
 so it also fired at an agent that had already committed and rebuilt.
 
-This unit follows agent-harness/hooks/runtime/lint/: a silent recorder appends to a
-per-session ledger, and a Stop handler reads the ledger once and speaks only
-if the work is genuinely unfinished, meaning the files are still uncommitted
-or no system activation has happened since they were edited.
+A silent recorder appends to a per-session ledger, and a Stop handler reads the
+ledger once and speaks only if the work is genuinely unfinished, meaning the
+files are still uncommitted or no system activation has happened since they
+were edited.
 """
 
 import os

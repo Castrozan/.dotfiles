@@ -118,7 +118,7 @@ in
   codex-hooks-config-post-tool-use-dispatcher =
     mkEvalCheck "codex-hooks-config-post-tool-use-dispatcher"
       (codexHookEventRunsScript "PostToolUse" "post-tool-use-dispatcher.py")
-      "Codex PostToolUse must run the same post-tool-use-dispatcher.py Claude registers; it composes auto-format, record-edited-source-file and record-changed-nix-file, and test_codex_surface_handler_composition guards that those three stay on the codex surface";
+      "Codex PostToolUse must run the same post-tool-use-dispatcher.py Claude registers; it composes auto-format, record-changed-nix-file and line-count-limit-guard, and test_codex_surface_handler_composition guards that those three stay on the codex surface";
 
   codex-hooks-config-pre-tool-use-dispatcher =
     mkEvalCheck "codex-hooks-config-pre-tool-use-dispatcher"
@@ -128,7 +128,7 @@ in
   codex-hooks-config-stop-dispatcher =
     mkEvalCheck "codex-hooks-config-stop-dispatcher"
       (codexHookEventRunsScript "Stop" "stop-dispatcher.py")
-      "Codex Stop must run the same stop-dispatcher.py Claude registers; it composes lint-turn-review and end-of-turn-format-guard on both surfaces, plus herdr_agent_session_report. The herdr report runs per turn as well as per session start so an agent that was already running when the hook shipped registers itself for reboot resume on its next turn instead of staying invisible until it restarts";
+      "Codex Stop must run the same stop-dispatcher.py Claude registers; it composes end-of-turn-format-guard, nix-rebuild-reminder and herdr_agent_session_report. The herdr report runs per turn as well as per session start so an agent that was already running when the hook shipped registers itself for reboot resume on its next turn instead of staying invisible until it restarts";
 
   codex-hooks-every-command-runs-its-canonical-dispatcher =
     mkEvalCheck "codex-hooks-every-command-runs-its-canonical-dispatcher"

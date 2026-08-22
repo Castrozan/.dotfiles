@@ -12,13 +12,6 @@ HOOK_SCRIPT_PATH = next(
 )
 
 
-@pytest.fixture(autouse=True)
-def isolate_lint_ledger_in_throwaway_temporary_directory(tmp_path, monkeypatch):
-    lint_ledger_directory = tmp_path / "isolated-lint-ledger"
-    lint_ledger_directory.mkdir()
-    monkeypatch.setenv("TMPDIR", str(lint_ledger_directory))
-
-
 def invoke_hook_with_payload(payload: dict) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, str(HOOK_SCRIPT_PATH)],

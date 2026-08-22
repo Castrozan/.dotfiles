@@ -66,8 +66,9 @@ Two enforcement facts, also established live, drove the design:
 - Codex honors a PreToolUse block ONLY as
   `{"hookSpecificOutput":{"permissionDecision":"deny",...}}` with exit 0. A nonzero
   exit (Claude's `continue:false` + exit-2 convention) is logged "PreToolUse
-  Failed" and the tool runs anyway. So the guards emit the `permissionDecision:
-  deny` schema through a shared `common/pre_tool_use_block.py`; Claude honors the
+  Failed" and the tool runs anyway. So the guards emit the
+  `permissionDecision: deny` schema through a shared
+  `common/pre_tool_use_block.py`; Claude honors the
   same schema (its `pre-tool-use-dispatcher.py` emits it via
   `common/hook_dispatch.py`), so one guard blocks on both CLIs.
 - Codex requires review and persisted trust for user hooks. Project trust does
@@ -104,14 +105,12 @@ matcher purposes, so a single `Edit|Write` matcher fires on both CLIs.
     `agent_instruction_file_authoring_router_handler`. The guards block via the
     deny schema; the words guard also scans `apply_patch` bodies and file names,
     closing the Codex write-path content-scan gap.
-  - `PostToolUse`: `auto_format_handler`, `record_edited_source_file_handler`
-    (feeds the lint ledger), `record_changed_nix_file_handler` (feeds the nix
-    rebuild ledger) and `line_count_limit_guard_handler`, all reading changed
-    paths from the `apply_patch` payload through `common/changed_file_paths.py`.
-  - `Stop`: `lint_turn_review_handler` reads the lint ledger and surfaces a
-    repo-native lint advisory for the files touched this turn, and
-    `nix_rebuild_reminder_handler` reads the nix ledger and blocks once if the
-    turn's nix files are still uncommitted or still unactivated.
+  - `PostToolUse`: `auto_format_handler`, `record_changed_nix_file_handler`
+    (feeds the nix rebuild ledger) and `line_count_limit_guard_handler`, all
+    reading changed paths from the `apply_patch` payload through
+    `common/changed_file_paths.py`.
+  - `Stop`: `nix_rebuild_reminder_handler` reads the nix ledger and blocks once
+    if the turn's nix files are still uncommitted or still unactivated.
 - Live-confirmed via an isolated `CODEX_HOME` exec run: the command guard refuses
   `git add -A` ("PreToolUse Blocked"), the words guard refuses an `apply_patch`
   adding a prohibited word, and a captured `SessionStart` payload carries

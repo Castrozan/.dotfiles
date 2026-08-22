@@ -22,27 +22,25 @@ def ordered_handler_module_names():
     ]
 
 
-def test_skill_matched_handler_records_skill_invocations():
+def test_post_tool_use_dispatcher_composes_only_active_handlers():
     handlers = handlers_by_module_name()
+    assert set(handlers) == {
+        "record_skill_invocation_handler",
+        "auto_format_handler",
+        "record_changed_nix_file_handler",
+        "line_count_limit_guard_handler",
+    }
     assert handlers["record_skill_invocation_handler"].tool_matcher == "Skill"
-
-
-def test_edit_or_write_matched_handlers_carry_the_edit_write_matcher():
-    handlers = handlers_by_module_name()
     for edit_or_write_handler_module_name in (
         "auto_format_handler",
-        "record_edited_source_file_handler",
         "record_changed_nix_file_handler",
         "line_count_limit_guard_handler",
     ):
         assert handlers[edit_or_write_handler_module_name].tool_matcher == "Edit|Write"
 
 
-def test_auto_format_runs_before_record_edited_and_line_count():
+def test_auto_format_runs_before_line_count():
     ordered = ordered_handler_module_names()
-    assert ordered.index("auto_format_handler") < ordered.index(
-        "record_edited_source_file_handler"
-    )
     assert ordered.index("auto_format_handler") < ordered.index(
         "line_count_limit_guard_handler"
     )

@@ -10,7 +10,6 @@ hooks_root_directory = os.path.dirname(hook_script_directory)
 for importable_directory in (
     hook_script_directory,
     os.path.join(hooks_root_directory, "common"),
-    os.path.join(hooks_root_directory, "lint"),
     os.path.join(hooks_root_directory, "nix-rebuild"),
 ):
     if os.path.isdir(importable_directory) and importable_directory not in sys.path:
@@ -29,7 +28,6 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_stop_decision  # noqa: E402
 
 STOP_HANDLERS = [
-    HookHandler(handler_module_name="lint_turn_review_handler"),
     HookHandler(handler_module_name="nix_rebuild_reminder_handler"),
     HookHandler(
         handler_module_name="end_of_turn_format_guard_handler",

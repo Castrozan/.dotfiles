@@ -37,12 +37,10 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
     "POST_TOOL_USE_HANDLERS": {
         "auto_format_handler",
         "record_changed_nix_file_handler",
-        "record_edited_source_file_handler",
         "line_count_limit_guard_handler",
     },
     "STOP_HANDLERS": {
         "end_of_turn_format_guard_handler",
-        "lint_turn_review_handler",
         "herdr_agent_session_report_handler",
     },
     "SESSION_START_HANDLERS": {
@@ -76,7 +74,6 @@ HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
     "POST_TOOL_USE_HANDLERS": {
         "auto_format_handler",
         "record_changed_nix_file_handler",
-        "record_edited_source_file_handler",
         "record_skill_invocation_handler",
         "line_count_limit_guard_handler",
     },

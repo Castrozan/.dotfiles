@@ -42,13 +42,13 @@ def test_emit_stop_decision_emits_system_message_without_block(capsys):
 def test_emit_stop_decision_unions_system_message_and_block(capsys):
     outcome = run_handlers(
         {},
-        [system_message_handler("lint advisory"), decision_handler("block", "shape")],
+        [system_message_handler("human advisory"), decision_handler("block", "shape")],
     )
     emit_stop_decision(outcome)
     payload = json.loads(capsys.readouterr().out)
     assert payload == {
         "continue": True,
-        "systemMessage": "lint advisory",
+        "systemMessage": "human advisory",
         "decision": "block",
         "reason": "shape",
     }
