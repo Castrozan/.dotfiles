@@ -84,7 +84,7 @@ in
       codex = "gpt-5.6-terra";
       opencode = "opencode-go/deepseek-v4-flash";
     };
-    reasoningEffort = "minimal";
+    reasoningEffort = "none";
     personality = effectivePersonality;
     launchOnTrigger = false;
     mcpServers = { };
