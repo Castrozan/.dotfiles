@@ -37,7 +37,7 @@ def test_a_quoted_unlinked_artifact_inside_a_fence_does_not_block():
 
 def test_an_em_dash_in_prose_is_blocked():
     reply = (
-        "**brief:** the gate.\n\n"
+        "**what is this session about?:** the gate.\n\n"
         "**done:** the host was removed — the migration is safe.\n\n"
         "**next:** push."
     )
@@ -49,7 +49,7 @@ def test_an_em_dash_in_prose_is_blocked():
 
 def test_an_em_dash_inside_a_quotation_is_preserved():
     reply = (
-        "**brief:** the release note.\n\n"
+        "**what is this session about?:** the release note.\n\n"
         '**done:** quoted exactly, "Retries are bounded — the worker stops after '
         'attempt three."\n\n'
         "**next:** publish it."
@@ -79,7 +79,7 @@ def test_the_request_text_no_longer_gates_any_rule():
     for request in ("explain the architecture", "quick question", "write a full audit"):
         assert template_violations_in_reply(reply, request) == [
             "runs 60 prose words, past the 40-word confirmation, but omits the "
-            "brief:/done:/next: label"
+            "What is this session about?:/done:/next: label"
         ]
 
 

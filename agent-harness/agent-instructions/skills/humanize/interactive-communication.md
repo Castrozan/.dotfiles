@@ -47,7 +47,8 @@ whether it explains, decides, answers a question, or hands off status:
 Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship,
 chosen through Humanize `representation-selection`. Visual lines never count against the budgets below.
 
-**Brief:** the standing purpose of this work, written to stay true next week. No recency bias, no progress report.
+**What is this session about?:** the standing purpose of this work, written to stay true next week. No recency bias,
+no progress report.
 
 **Done:** what this round established or changed.
 

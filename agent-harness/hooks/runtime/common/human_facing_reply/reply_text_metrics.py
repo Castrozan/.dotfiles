@@ -18,7 +18,7 @@ QUOTED_SPAN_PATTERN = re.compile(r"[\"“][^\"”]*[\"”]")
 
 
 def reply_label_pattern(label: str) -> re.Pattern[str]:
-    return re.compile(rf"^\s*\*{{0,2}}{label}\*{{0,2}}\s*:", re.IGNORECASE)
+    return re.compile(rf"^\s*\*{{0,2}}{re.escape(label)}\*{{0,2}}\s*:", re.IGNORECASE)
 
 
 REPLY_LABEL_PATTERNS = {

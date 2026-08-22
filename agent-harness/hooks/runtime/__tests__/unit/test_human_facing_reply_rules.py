@@ -18,17 +18,18 @@ def test_a_reply_past_the_confirmation_names_the_labels_it_omits():
 
     assert violations == [
         "runs 60 prose words, past the 40-word confirmation, but omits the "
-        "brief:/done:/next: label"
+        "What is this session about?:/done:/next: label"
     ]
 
 
 def test_a_partially_labeled_reply_names_only_the_missing_label():
-    reply = f"**brief:** the release gate.\n\n**done:** {' '.join(['evidence'] * 50)}"
+    body = " ".join(["evidence"] * 50)
+    reply = f"**what is this session about?:** the release gate.\n\n**done:** {body}"
 
     violations = template_violations_in_reply(reply, "where does it stand?")
 
     assert violations == [
-        "runs 55 prose words, past the 40-word confirmation, but omits the next: label"
+        "runs 59 prose words, past the 40-word confirmation, but omits the next: label"
     ]
 
 
@@ -89,7 +90,8 @@ def test_five_short_list_lines_pass():
 
 def test_a_label_without_bold_emphasis_is_blocked():
     reply = (
-        "brief: the release gate that decides whether the candidate policy ships.\n\n"
+        "what is this session about?: the release gate that decides whether the "
+        "candidate policy ships.\n\n"
         "done: measured the candidate against the control across three epochs and "
         "recorded the paired interval.\n\n"
         "next: commit the refreshed baseline, then let the steward reconcile the "
@@ -97,13 +99,14 @@ def test_a_label_without_bold_emphasis_is_blocked():
     )
 
     assert template_violations_in_reply(reply, "status?") == [
-        "writes the brief: label without bold emphasis"
+        "writes the What is this session about?: label without bold emphasis"
     ]
 
 
 def test_labels_crammed_into_one_block_are_blocked():
     reply = (
-        "**brief:** the release gate that decides whether the candidate policy ships.\n"
+        "**what is this session about?:** the release gate that decides whether the "
+        "candidate policy ships.\n"
         "**done:** measured the candidate against the control across three epochs and "
         "recorded the paired interval.\n"
         "**next:** commit the refreshed baseline, then let the steward reconcile the "

@@ -20,7 +20,7 @@ INTERACTIVE_COMMUNICATION_PATH = (
 )
 
 LABELED_REPLY = (
-    "**brief:** the release gate.\n\n"
+    "**what is this session about?:** the release gate.\n\n"
     "**done:** measured the candidate.\n\n"
     "**next:** push."
 )
@@ -28,4 +28,7 @@ LABELED_REPLY = (
 
 def labeled_reply_of(prose_words: int) -> str:
     body = " ".join(["evidence"] * prose_words)
-    return f"**brief:** the release gate.\n\n**done:** {body}\n\n**next:** push."
+    return (
+        "**what is this session about?:** the release gate.\n\n"
+        f"**done:** {body}\n\n**next:** push."
+    )

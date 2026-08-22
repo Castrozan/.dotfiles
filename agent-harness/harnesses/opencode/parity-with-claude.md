@@ -38,7 +38,7 @@ against the model choice.
 - opencode also merges project `AGENTS.md` from the repo root down to the cwd,
   so the deployed `~/.dotfiles/AGENTS.md` reaches it the way Claude's project
   `CLAUDE.md` does.
-- The Brief:/Done:/Next: reply shape is content, not chrome, so it ports as an
+- The three-block reply shape is content, not chrome, so it ports as an
   instruction. opencode has no `--append-system-prompt` equivalent, but
   `OPENCODE_CONFIG` deep-merges a file over the global config and its
   `instructions` arrays CONCATENATE rather than replace. The `opencode` wrapper

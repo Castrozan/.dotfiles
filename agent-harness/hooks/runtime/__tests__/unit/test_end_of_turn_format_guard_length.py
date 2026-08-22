@@ -6,7 +6,7 @@ from end_of_turn_format_guard_test_support import (
 )
 
 REQUIRED_LABELS = (
-    "\n\n**brief:** the reply budget."
+    "\n\n**what is this session about?:** the reply budget."
     "\n\n**done:** measured it."
     "\n\n**next:** push the result."
 )

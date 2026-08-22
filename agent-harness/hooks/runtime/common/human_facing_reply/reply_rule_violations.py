@@ -85,8 +85,8 @@ def missing_required_labels_violation(reply: ReplyUnderReview) -> str | None:
 def labeled_section_ceiling_violation(reply: ReplyUnderReview) -> str | None:
     if reply.labeled_section_word_count > LABELED_SECTION_WORD_CEILING:
         return (
-            f"spends {reply.labeled_section_word_count} words under brief, done and "
-            f"next, past their {LABELED_SECTION_WORD_CEILING}-word budget"
+            f"spends {reply.labeled_section_word_count} words under the labeled "
+            f"blocks, past their {LABELED_SECTION_WORD_CEILING}-word budget"
         )
     return None
 

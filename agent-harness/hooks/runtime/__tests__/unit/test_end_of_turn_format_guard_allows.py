@@ -43,7 +43,8 @@ def test_allows_clawde_background_agent_reply_with_empty_marker_value(tmp_path):
 def test_allows_an_extra_label_after_the_required_three(tmp_path):
     reply = (
         "Wired the guard and verified the whole suite passes after the rebuild.\n\n"
-        "**brief:** keep the interactive reply inside the reader's word budget.\n\n"
+        "**what is this session about?:** keep the interactive reply inside the "
+        "reader's word budget.\n\n"
         "**done:** rewrote the template into prose, added the guard hook, and "
         "registered it on the Stop event.\n\n"
         "**next:** restart claude to pick up the change.\n\n"

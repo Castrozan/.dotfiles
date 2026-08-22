@@ -39,7 +39,7 @@ def test_standalone_recovery_does_not_license_restating_the_session():
     ), (
         "an unbounded task, state, evidence, and remaining-work recital turns standalone "
         "recovery into a per-turn session retelling, which is the pure-verbosity failure "
-        "class the reader-recovery evidence recorded; the bounded brief/done/next format "
+        "class the reader-recovery evidence recorded; the bounded three-label format "
         "in response-shape carries that recovery instead"
     )
 
@@ -79,7 +79,11 @@ def test_artifact_links_are_remote_and_complete():
 def test_every_substantive_reply_carries_the_three_labels():
     response_shape = interactive_policy_section("response-shape")
 
-    for required_label in ("**Brief:**", "**Done:**", "**Next:**"):
+    for required_label in (
+        "**What is this session about?:**",
+        "**Done:**",
+        "**Next:**",
+    ):
         assert required_label in response_shape
 
     assert "Bold each label and leave a blank line between the three blocks" in (
