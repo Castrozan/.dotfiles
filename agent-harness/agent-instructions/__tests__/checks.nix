@@ -67,7 +67,6 @@ let
     "second brain"
     "webfetch"
     "gh run"
-    "git agent-session"
     "claude-gpt"
     "claude code"
     "codex"

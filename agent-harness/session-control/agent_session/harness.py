@@ -147,14 +147,3 @@ def resume_command_for(harness_name: str, session_identifier: str | None) -> lis
             return ["opencode", "--session", session_identifier]
         return ["opencode", "--continue"]
     raise ValueError(f"unsupported harness: {harness_name}")
-
-
-def harness_and_session_from_resume_command(
-    resume_command: str | None,
-) -> tuple[str | None, str | None]:
-    if resume_command is None:
-        return None, None
-    harness_name = harness_name_for_command(resume_command)
-    if harness_name is None:
-        return None, None
-    return harness_name, session_identifier_from_command(harness_name, resume_command)

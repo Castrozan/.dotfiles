@@ -1,5 +1,3 @@
-import shlex
-
 import pytest
 
 from agent_session import harness
@@ -81,32 +79,4 @@ def test_extracts_a_live_session_identifier_when_the_harness_exposes_one(
     assert (
         harness.session_identifier_from_command(harness_name, command_line)
         == expected_session_identifier
-    )
-
-
-@pytest.mark.parametrize(
-    ("harness_name", "session_identifier"),
-    [
-        ("claude", "session-123"),
-        ("codex", "session-123"),
-        ("opencode", "session-123"),
-    ],
-)
-def test_reads_the_harness_and_session_back_out_of_a_resume_command(
-    harness_name, session_identifier
-):
-    resume_command = shlex.join(
-        harness.resume_command_for(harness_name, session_identifier)
-    )
-    assert harness.harness_and_session_from_resume_command(resume_command) == (
-        harness_name,
-        session_identifier,
-    )
-
-
-@pytest.mark.parametrize("resume_command", [None, "git commit --amend"])
-def test_a_message_without_a_usable_resume_command_names_no_session(resume_command):
-    assert harness.harness_and_session_from_resume_command(resume_command) == (
-        None,
-        None,
     )
