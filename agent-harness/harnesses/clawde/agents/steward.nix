@@ -56,7 +56,7 @@ let
   effectivePersonality =
     personalityWithMachineIdentity + machineLocalWrapperDirective + repoCiToolingDirective;
 
-  stewardHarnessForMachine = if hostname == "kira" then "claude" else "opencode";
+  stewardHarnessForMachine = if hostname == "kira" then "claude" else "codex";
 in
 {
   clawdeAgentSkillSets.steward = [
@@ -84,6 +84,7 @@ in
       codex = "gpt-5.6-terra";
       opencode = "opencode-go/deepseek-v4-flash";
     };
+    reasoningEffort = "minimal";
     personality = effectivePersonality;
     launchOnTrigger = false;
     mcpServers = { };
