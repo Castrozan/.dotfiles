@@ -47,8 +47,9 @@ whether it explains, decides, answers a question, or hands off status:
 Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship,
 chosen through Humanize `representation-selection`. Visual lines never count against the budgets below.
 
-**What is this session about?:** name what this session is building or changing and what it is for, so a reader
-with no prior context can pick the work up. Written to stay true next week. No recency bias, no progress report.
+**What is this session about?:** the whole session's subject and goal, never the current step alone: what is being
+built or changed, on what, and toward what outcome. Enough that someone who never saw this session can start
+working. No progress report.
 
 **Done:** what this round established or changed.
 

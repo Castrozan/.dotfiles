@@ -92,10 +92,10 @@ def test_every_substantive_reply_carries_the_three_labels():
 
     for required_behavior in (
         "40 prose words or fewer is a confirmation",
-        "name what this session is building or changing",
-        "no prior context can pick the work up",
-        "stay true next week",
-        "No recency bias",
+        "the whole session's subject and goal",
+        "never the current step alone",
+        "someone who never saw this session can start working",
+        "No progress report",
         "required remaining work on this same task",
         "unrelated work",
     ):
