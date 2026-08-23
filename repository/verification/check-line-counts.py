@@ -1,18 +1,4 @@
 #!/usr/bin/env python3
-"""Hold every tracked code file at or under its recorded line-count ceiling.
-
-repository/verification/line-count-baseline.json must list exactly the tracked
-files currently over the hard limit, each at its exact current count. The check
-fails when an unlisted file exceeds the limit, when a listed file grows past its
-ceiling, and when a listed entry no longer matches because the file was deleted,
-split back under the limit, or merely shrank - so an improvement lowers the
-ceiling instead of reserving the old one. --update-baseline refreezes the
-current state as the new ceiling set.
-
-The threshold, the code-extension list and the recorded ceilings are shared with
-the Write/Edit hook through
-agent-harness/hooks/runtime/post-tool-use/line-count/.
-"""
 
 from __future__ import annotations
 
