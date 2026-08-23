@@ -25,5 +25,7 @@ timeout: 300
 assertions:
   workspace_file_no_comments:
     - src/account_names.py
+  workspace_file_descriptive_names:
+    - src/account_names.py
   file_changed:
     - src/account_names.py

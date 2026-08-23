@@ -142,3 +142,5 @@ def test_every_compaction_scenario_compacts_before_an_unprompted_coding_request(
         final_request = steps[-1].lower()
         assert "comment" not in final_request, scenario["name"]
         assert "docstring" not in final_request, scenario["name"]
+        assert "descriptive" not in final_request, scenario["name"]
+        assert "abbrevia" not in final_request, scenario["name"]

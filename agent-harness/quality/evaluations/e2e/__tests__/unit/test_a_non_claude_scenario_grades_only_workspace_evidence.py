@@ -3,6 +3,7 @@ from e2e_workspace import SCENARIOS_DIR, discover_scenario_files, load_scenario
 
 WORKSPACE_DERIVED_ASSERTION_KEYS = {
     "workspace_file_no_comments",
+    "workspace_file_descriptive_names",
     "file_changed",
     "workspace_formatted",
 }
