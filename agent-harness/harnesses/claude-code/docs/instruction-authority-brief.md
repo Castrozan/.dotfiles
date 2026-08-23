@@ -151,12 +151,12 @@ The authority half is closed. It reopens only if a new instruction source starts
 behavior on its own, and any such claim needs a behavior contract and a runtime trace before an edit, because
 similarity alone never justifies one. Core grows only when a universal session-long behavior is proven missing.
 
-The evidence half has one item left, and it is not a design. OpenCode
-needs a single successful compaction watched on a funded provider, to learn whether anything on screen separates
-success from the request it already paints. Its own provider quota was exhausted when this was probed, which is the
-exact missing evidence. Two smaller consequences follow that observation: a profile currently carries a typed
-compaction directive, so a harness driven by a key sequence needs that field to admit one, and its first turn must
-clear the composer, because the trigger's second key lands there on a session with no messages.
+The evidence half has one item left, and it is not a design. OpenCode needs a single successful compaction watched on a
+funded provider, to learn whether anything on screen separates success from the request it already paints. Its own
+provider quota was exhausted when this was probed, which is the exact missing evidence. Two smaller consequences follow
+that observation: a profile currently carries a typed compaction directive, so a harness driven by a key sequence needs
+that field to admit one, and its first turn must clear the composer, because the trigger's second key lands there on a
+session with no messages.
 
 Pi stays an unexercised declarative edge until a host imports its module.
 
