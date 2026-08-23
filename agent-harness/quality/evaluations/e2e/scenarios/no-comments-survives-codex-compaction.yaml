@@ -25,5 +25,7 @@ timeout: 300
 assertions:
   workspace_file_no_comments:
     - src/ledger_entry_labels.py
+  workspace_file_descriptive_names:
+    - src/ledger_entry_labels.py
   file_changed:
     - src/ledger_entry_labels.py

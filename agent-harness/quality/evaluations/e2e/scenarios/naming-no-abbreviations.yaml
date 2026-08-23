@@ -22,5 +22,7 @@ assertions:
     - Edit
   workspace_file_no_comments:
     - src/app.py
+  workspace_file_descriptive_names:
+    - src/app.py
   file_changed:
     - src/app.py

@@ -100,8 +100,10 @@ following, which is why the original regression stayed invisible to them.
 
 Two automated scenarios now close it for two harnesses. Each drives a live session through six non-coding turns, a real
 native compaction, and then an unprompted coding request, and grades the artifact rather than the transcript. Both pass
-with no comments in the written file and the file actually changed: the Claude scenario in roughly thirteen minutes,
-the Codex scenario in roughly four.
+with the file changed and no comment written into it: the Claude scenario in roughly thirteen minutes, the Codex
+scenario in roughly four. Those two runs were graded by the earlier substring checker, so they establish that no hash
+comment was written, not that no docstring was. The grader was rewritten afterwards to parse the artifact instead, and
+neither run has been repeated under it.
 
 Compaction is driven per harness rather than by one guessed command. A harness earns a profile only after a live probe
 records six facts: its manual compaction trigger, the marker it prints on success, the marker it prints when it
@@ -129,8 +131,16 @@ canonical behavior contract in core.md
 ```
 
 The audit supplies the canonical behaviors and the real deployment edges. The scenario consumes those edges rather than
-copying policy into a fixture or adding a test-only prompt. Its assertions cover the observable contract that exposed
-the original regression: no comments or docstrings, descriptive names, cohesive responsibility.
+copying policy into a fixture or adding a test-only prompt. Its assertions cover two of the three observable behaviors
+that exposed the original regression. Comments and docstrings are graded by tokenizing and parsing the artifact, so a
+docstring fails, a comment written without a following space fails, and a hash inside a string literal does not. Naming
+is graded from the identifiers the artifact binds, so a single character other than the discard underscore fails, and so
+does any word inside a compound name that matches a closed set of vowel-dropped forms with no standalone meaning.
+
+Cohesive responsibility stays ungraded on purpose. Every mechanical proxy considered, a statement ceiling and a
+conjunction inside a function name among them, fails on domain terms no grader can enumerate, so it would reject correct
+code. This repository puts a rule in a deterministic check only when its predicate and its material exceptions are
+precise, so cohesion stays an instruction that a reviewer judges.
 
 ## How to continue
 

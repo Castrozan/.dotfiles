@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from e2e_assertions_naming import check_workspace_file_descriptive_names_assertion
 from e2e_assertions_output import (
     check_output_contains_assertion,
     check_output_maximum_words_assertion,
@@ -53,6 +54,12 @@ def run_e2e_assertions(
         for file_path in assertions.get("workspace_file_no_comments", []):
             results.append(
                 check_workspace_file_no_comments_assertion(
+                    workspace_directory, file_path
+                )
+            )
+        for file_path in assertions.get("workspace_file_descriptive_names", []):
+            results.append(
+                check_workspace_file_descriptive_names_assertion(
                     workspace_directory, file_path
                 )
             )
