@@ -212,8 +212,8 @@
       },
       "original": {
         "owner": "Castrozan",
+        "ref": "v0.12.3",
         "repo": "clawde",
-        "rev": "1a5f50a201c7cb119dbc78cbab4b7a3351ab0e74",
         "type": "github"
       }
     },
