@@ -51,8 +51,12 @@ def print_coached_results(results: list[CoachedSessionResult]) -> None:
 
         print()
 
-    initial_avg = sum(r.initial_nps for r in results) / len(results) if results else 0
-    coached_avg = sum(r.coached_nps for r in results) / len(results) if results else 0
+    initial_avg = (
+        sum(result.initial_nps for result in results) / len(results) if results else 0
+    )
+    coached_avg = (
+        sum(result.coached_nps for result in results) / len(results) if results else 0
+    )
     improvement_avg = coached_avg - initial_avg
 
     print(f"{'=' * 70}")

@@ -111,12 +111,15 @@ def setup_e2e_scenario_workspace(
 
 
 def load_scenario(scenario_path: Path) -> dict:
-    with open(scenario_path) as f:
-        return yaml.safe_load(f)
+    with open(scenario_path) as scenario_file:
+        return yaml.safe_load(scenario_file)
 
 
 def sanitize_name_for_session(name: str) -> str:
-    return "".join(c if c.isalnum() or c in "-_" else "-" for c in name)[:40]
+    return "".join(
+        character if character.isalnum() or character in "-_" else "-"
+        for character in name
+    )[:40]
 
 
 def discover_scenario_files(

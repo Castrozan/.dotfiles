@@ -25,9 +25,9 @@ def main():
 
     if args.list:
         print("Available scenarios:")
-        for sf in scenario_files:
-            s = yaml.safe_load(sf.read_text())
-            print(f"  {s['name']}: {s.get('description', '')}")
+        for scenario_file in scenario_files:
+            scenario = yaml.safe_load(scenario_file.read_text())
+            print(f"  {scenario['name']}: {scenario.get('description', '')}")
         sys.exit(0)
 
     if args.scenario:

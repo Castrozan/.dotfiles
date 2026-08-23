@@ -33,7 +33,7 @@ def calculate_e2e_experience_score(
         score += 5
 
     if assertion_results:
-        passed = sum(1 for a in assertion_results if a.passed)
+        passed = sum(1 for assertion in assertion_results if assertion.passed)
         failed = len(assertion_results) - passed
         score += passed * 3
         score -= failed * 8

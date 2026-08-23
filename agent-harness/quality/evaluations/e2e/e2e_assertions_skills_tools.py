@@ -70,11 +70,19 @@ def check_terminal_tool_ordering_assertion(
     tool_names = extract_tool_name_sequence(trace)
 
     first_index = next(
-        (i for i, n in enumerate(tool_names) if n == first_tool),
+        (
+            position
+            for position, tool_name in enumerate(tool_names)
+            if tool_name == first_tool
+        ),
         None,
     )
     second_index = next(
-        (i for i, n in enumerate(tool_names) if n == second_tool),
+        (
+            position
+            for position, tool_name in enumerate(tool_names)
+            if tool_name == second_tool
+        ),
         None,
     )
 

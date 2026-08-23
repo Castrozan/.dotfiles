@@ -84,14 +84,16 @@ def main():
 
     if args.list:
         print("Available E2E scenarios:")
-        for sf in scenario_files:
-            s = load_scenario(sf)
-            print(f"  {s['name']}: {s.get('description', '')}")
+        for scenario_file in scenario_files:
+            scenario = load_scenario(scenario_file)
+            print(f"  {scenario['name']}: {scenario.get('description', '')}")
         sys.exit(0)
 
     if args.scenario:
         scenario_files = [
-            sf for sf in scenario_files if load_scenario(sf)["name"] == args.scenario
+            scenario_file
+            for scenario_file in scenario_files
+            if load_scenario(scenario_file)["name"] == args.scenario
         ]
         if not scenario_files:
             print(f"Scenario '{args.scenario}' not found")
@@ -135,7 +137,7 @@ def main():
     if args.runs > 1:
         print_multi_run_pass_rate_summary(results, args.runs)
         total_runs = len(results)
-        total_passed = sum(1 for r in results if r.passed)
+        total_passed = sum(1 for result in results if result.passed)
         sys.exit(0 if total_passed == total_runs else 1)
 
     sys.exit(0 if all_passed else 1)

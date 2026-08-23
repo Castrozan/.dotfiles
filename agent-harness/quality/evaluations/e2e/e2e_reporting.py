@@ -34,21 +34,26 @@ def print_e2e_results(
         if result.error:
             print(f"    Error: {result.error}")
 
-        for a in result.assertion_results:
-            a_sym = "✓" if a.passed else "✗"
-            a_col = "\033[32m" if a.passed else "\033[31m"
-            print(f"    {a_col}{a_sym}{reset} {a.name}: {a.detail}")
+        for assertion in result.assertion_results:
+            assertion_symbol = "✓" if assertion.passed else "✗"
+            assertion_color = "\033[32m" if assertion.passed else "\033[31m"
+            print(
+                f"    {assertion_color}{assertion_symbol}{reset} "
+                f"{assertion.name}: {assertion.detail}"
+            )
 
         if not result.passed:
             all_passed = False
-            tool_seq = extract_tool_name_sequence(result.trace)
-            if tool_seq:
-                print(f"    Tools: {' -> '.join(tool_seq)}")
+            tool_sequence = extract_tool_name_sequence(result.trace)
+            if tool_sequence:
+                print(f"    Tools: {' -> '.join(tool_sequence)}")
 
-    scored = [r for r in results if r.experience_score > 0]
-    avg_score = sum(r.experience_score for r in scored) / len(scored) if scored else 0
-    passed_count = sum(1 for r in results if r.passed)
-    total_time = sum(r.duration_seconds for r in results)
+    scored = [result for result in results if result.experience_score > 0]
+    avg_score = (
+        sum(result.experience_score for result in scored) / len(scored) if scored else 0
+    )
+    passed_count = sum(1 for result in results if result.passed)
+    total_time = sum(result.duration_seconds for result in results)
 
     print(f"\n{'=' * 60}")
     print(f"Passed: {passed_count}/{len(results)}")
@@ -72,17 +77,17 @@ def print_multi_run_pass_rate_summary(
     print(f"{'=' * 60}\n")
 
     for scenario_name, scenario_runs in grouped_results_by_scenario.items():
-        passed_runs = sum(1 for r in scenario_runs if r.passed)
+        passed_runs = sum(1 for run in scenario_runs if run.passed)
         total_runs = len(scenario_runs)
-        scored_runs = [r for r in scenario_runs if r.experience_score > 0]
+        scored_runs = [run for run in scenario_runs if run.experience_score > 0]
         avg_nps = (
-            sum(r.experience_score for r in scored_runs) / len(scored_runs)
+            sum(run.experience_score for run in scored_runs) / len(scored_runs)
             if scored_runs
             else 0
         )
         print(f"  {scenario_name}: {passed_runs}/{total_runs} (NPS avg {avg_nps:.0f})")
 
     total_runs = len(results)
-    total_passed = sum(1 for r in results if r.passed)
+    total_passed = sum(1 for result in results if result.passed)
     print(f"\n  overall: {total_passed}/{total_runs}")
     print(f"{'=' * 60}\n")

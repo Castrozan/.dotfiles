@@ -50,10 +50,19 @@ def calculate_nps_from_tool_sequence_and_workspace(
             score -= 20
         else:
             first_read = next(
-                (i for i, n in enumerate(tool_sequence) if n == "Read"), 999
+                (
+                    position
+                    for position, tool_name in enumerate(tool_sequence)
+                    if tool_name == "Read"
+                ),
+                999,
             )
             first_edit = next(
-                (i for i, n in enumerate(tool_sequence) if n in ("Edit", "Write")),
+                (
+                    position
+                    for position, tool_name in enumerate(tool_sequence)
+                    if tool_name in ("Edit", "Write")
+                ),
                 999,
             )
             if first_read < first_edit:
@@ -72,12 +81,15 @@ def calculate_nps_from_tool_sequence_and_workspace(
         file_path = workspace / file_def["path"]
         if file_path.exists():
             content = file_path.read_text()
-            if any(p in content for p in ("# ", "// ", "/* ")):
+            if any(pattern in content for pattern in ("# ", "// ", "/* ")):
                 if not (content.startswith("#!") and content.count("# ") == 1):
                     score -= 10
                     break
 
-    setup_files = [f["path"] for f in scenario.get("setup", {}).get("files", [])]
+    setup_files = [
+        file_definition["path"]
+        for file_definition in scenario.get("setup", {}).get("files", [])
+    ]
     try:
         initial_sha_result = subprocess.run(
             ["git", "rev-list", "--max-parents=0", "HEAD"],
@@ -105,7 +117,9 @@ def calculate_nps_from_tool_sequence_and_workspace(
             diff_result.stdout.strip().split("\n")
             + uncommitted_result.stdout.strip().split("\n")
         )
-        changed_count = sum(1 for f in setup_files if f in all_changed)
+        changed_count = sum(
+            1 for setup_file in setup_files if setup_file in all_changed
+        )
         expected_count = len(setup_files)
         if expected_count > 0:
             change_ratio = changed_count / expected_count

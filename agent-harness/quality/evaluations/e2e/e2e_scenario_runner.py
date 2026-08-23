@@ -166,7 +166,7 @@ def run_e2e_scenario(
                     experience_score, scenario["minimum_experience_score"]
                 )
             )
-        all_passed = all(a.passed for a in assertion_results)
+        all_passed = all(assertion.passed for assertion in assertion_results)
 
         return E2eScenarioResult(
             scenario_name=scenario_name,
