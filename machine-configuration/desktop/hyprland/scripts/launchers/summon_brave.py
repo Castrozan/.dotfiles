@@ -1,7 +1,11 @@
 import os
 import subprocess
 
-from hyprland_ipc import get_all_clients, run_hyprctl, run_hyprctl_json
+from hyprland_ipc import (
+    get_active_workspace_id_via_activeworkspace,
+    get_all_clients,
+    run_hyprctl,
+)
 
 BRAVE_WINDOW_CLASS = "brave-browser"
 
@@ -11,13 +15,6 @@ def find_first_client_by_class(window_class: str) -> dict | None:
         if client.get("class") == window_class:
             return client
     return None
-
-
-def get_active_workspace_id_via_activeworkspace() -> int | None:
-    workspace = run_hyprctl_json("activeworkspace")
-    if not workspace:
-        return None
-    return workspace.get("id")
 
 
 def summon_or_launch_brave() -> None:

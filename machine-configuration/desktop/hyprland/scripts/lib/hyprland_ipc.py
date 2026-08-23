@@ -36,6 +36,13 @@ def get_active_workspace_id() -> int | None:
     return window.get("workspace", {}).get("id")
 
 
+def get_active_workspace_id_via_activeworkspace() -> int | None:
+    workspace = run_hyprctl_json("activeworkspace")
+    if not workspace:
+        return None
+    return workspace.get("id")
+
+
 def get_all_clients() -> list[dict]:
     return run_hyprctl_json("clients") or []
 

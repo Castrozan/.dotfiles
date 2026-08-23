@@ -11,7 +11,7 @@ let
     chromeWithoutBrokenHardwareVideoDecoding
     ;
 
-  hyprlandPythonLibraryPath = ./scripts/windows/lib;
+  hyprlandPythonLibraryPath = ./scripts/lib;
 
   mkHyprlandPythonScript = name: file: mkHyprlandPythonScriptWithDeps name file [ ];
 
