@@ -49,7 +49,8 @@ harness's file format no longer contaminates the cross-harness policy source.
 ## Built: authority beyond core
 
 The core rewrite was the first repaired instance, not the whole defect. The active instruction paths were audited and
-complementary sources were linked to the core sections they had been deciding independently.
+each complementary source was linked to the core section that owns its behavior. Only some of them had been deciding
+that behavior independently; the rest were already bounded complements that simply lacked an explicit pointer to core.
 
 `skills/agent-harness/instruction-authority.md` is the reusable procedure that came out of it. It is a routed chapter,
 not another always-on policy source, and it runs in six stages: state the behavior contract before comparing text;
