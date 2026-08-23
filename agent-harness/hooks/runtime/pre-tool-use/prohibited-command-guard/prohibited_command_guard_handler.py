@@ -19,6 +19,9 @@ for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
     ):
         sys.path.insert(0, _shared_module_candidate_directory)
 
+from destructive_command_restriction import (  # noqa: E402
+    destructive_patterns_for_this_session,
+)
 from hook_dispatch import HandlerResult  # noqa: E402
 from prohibited_command_patterns import PROHIBITED_PATTERNS_BY_TOOL  # noqa: E402
 
@@ -75,11 +78,10 @@ def pattern_matches_executed_command_group(
     return False
 
 
-def find_first_violation(tool_name: str, inspectable_text: str):
+def find_first_violation(tool_name: str, inspectable_text: str, patterns_for_this_tool):
     if not inspectable_text:
         return None
 
-    patterns_for_this_tool = PROHIBITED_PATTERNS_BY_TOOL.get(tool_name, [])
     inspection_texts_most_faithful_first = (inspectable_text,)
     if tool_name == "Bash":
         shell_quote_normalized_text = (
@@ -125,7 +127,12 @@ def handle(hook_input):
     tool_input = hook_input.get("tool_input", {}) or {}
 
     inspectable_text = extract_inspectable_text(tool_name, tool_input)
-    violation = find_first_violation(tool_name, inspectable_text)
+    patterns_for_this_tool = destructive_patterns_for_this_session(
+        tool_name
+    ) + PROHIBITED_PATTERNS_BY_TOOL.get(tool_name, [])
+    violation = find_first_violation(
+        tool_name, inspectable_text, patterns_for_this_tool
+    )
 
     if violation is None:
         return None
