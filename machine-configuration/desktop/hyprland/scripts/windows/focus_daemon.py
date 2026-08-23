@@ -1,4 +1,3 @@
-import os
 import socket
 import time
 from dataclasses import dataclass
@@ -9,6 +8,7 @@ from hyprland_ipc import (
     get_all_clients,
     run_hyprctl,
 )
+from hyprland_runtime import build_event_socket_path
 
 RECONNECT_INITIAL_DELAY_SECONDS = 1
 RECONNECT_MAX_DELAY_SECONDS = 30
@@ -105,12 +105,6 @@ def read_and_dispatch_hyprland_events(
                     handler(state, data)
     finally:
         sock.close()
-
-
-def build_event_socket_path() -> str:
-    hyprland_instance_signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", "")
-    xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR", "/tmp")
-    return f"{xdg_runtime_dir}/hypr/{hyprland_instance_signature}/.socket2.sock"
 
 
 def connect_and_process_events_with_reconnect() -> None:

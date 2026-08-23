@@ -1,6 +1,3 @@
-import time
-from pathlib import Path
-
 from hyprland_ipc import (
     get_all_monitors,
     migrate_workspaces_from_disabled_monitors,
@@ -9,10 +6,8 @@ from hyprland_ipc import (
 from monitor_configuration import (
     find_enabled_config_line_for_monitor,
     send_monitor_notification,
+    write_override_and_reload,
 )
-
-OVERRIDE_FILE = Path.home() / ".cache" / "hypr-monitors-override.conf"
-TOGGLE_LOCK_FILE = Path.home() / ".cache" / "hypr-monitors-toggle.lock"
 
 
 def find_internal_monitor_name(monitor_names: list[str]) -> str | None:
@@ -35,16 +30,6 @@ def build_override_content_for_builtin_only(
         override_lines.append(f"monitor = {external_monitor}, disable")
     override_lines.append("monitor = , disable")
     return "\n".join(override_lines) + "\n"
-
-
-def write_toggle_lock() -> None:
-    TOGGLE_LOCK_FILE.write_text(str(time.time()))
-
-
-def write_override_and_reload(content: str) -> None:
-    write_toggle_lock()
-    OVERRIDE_FILE.write_text(content)
-    run_hyprctl("reload")
 
 
 def recenter_cursor_on_internal_monitor() -> None:

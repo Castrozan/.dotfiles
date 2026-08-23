@@ -1,20 +1,17 @@
 import re
-import time
 from pathlib import Path
 
 from hyprland_ipc import (
     get_all_monitors,
     migrate_workspaces_from_disabled_monitors,
-    run_hyprctl,
 )
 from monitor_configuration import (
     MONITORS_CONF,
     find_enabled_config_line_for_monitor,
     send_monitor_notification,
+    write_override_and_reload,
 )
 
-OVERRIDE_FILE = Path.home() / ".cache" / "hypr-monitors-override.conf"
-TOGGLE_LOCK_FILE = Path.home() / ".cache" / "hypr-monitors-toggle.lock"
 LID_STATE_FILE = Path("/proc/acpi/button/lid/LID0/state")
 
 
@@ -74,16 +71,6 @@ def build_override_content_for_mode(
         return f"monitor = {config}"
     config = find_enabled_config_line_for_monitor(internal_monitor)
     return f"monitor = {config}\nmonitor = {external_monitor}, disable"
-
-
-def write_toggle_lock() -> None:
-    TOGGLE_LOCK_FILE.write_text(str(time.time()))
-
-
-def write_override_and_reload(content: str) -> None:
-    write_toggle_lock()
-    OVERRIDE_FILE.write_text(content)
-    run_hyprctl("reload")
 
 
 def find_internal_monitor(all_monitor_names: list[str]) -> str | None:
