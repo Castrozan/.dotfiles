@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-08-17T17:39:33.137615+00:00",
-  "git_commit": "425e10b5",
+  "generated_at": "2026-08-23T15:36:58.892051+00:00",
+  "git_commit": "fc3122d7",
   "total_tests": 205,
   "total_passed": 193,
   "total_failed": 12,
   "pass_rate": 0.9415,
   "categories": {
     "adaptive_delivery": {
-      "passed": 7,
-      "failed": 0,
+      "passed": 6,
+      "failed": 1,
       "tests": [
         {
           "name": "adaptive_delivery_answer_only_request_is_the_direct_tier",
@@ -36,7 +36,7 @@
         },
         {
           "name": "adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -110,7 +110,7 @@
         },
         {
           "name": "representation_change_uses_focused_diff",
-          "passed": false
+          "passed": true
         },
         {
           "name": "representation_single_answer_stays_prose",
@@ -138,7 +138,7 @@
         },
         {
           "name": "controlled_language_separates_diagnosis_from_evidence",
-          "passed": true
+          "passed": false
         },
         {
           "name": "controlled_language_decides_by_tradeoff",
@@ -381,8 +381,8 @@
       ]
     },
     "review": {
-      "passed": 6,
-      "failed": 1,
+      "passed": 5,
+      "failed": 2,
       "tests": [
         {
           "name": "review_flags_obvious_null_dereference",
@@ -390,7 +390,7 @@
         },
         {
           "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": true
+          "passed": false
         },
         {
           "name": "review_flags_hardcoded_credentials",
@@ -415,8 +415,8 @@
       ]
     },
     "skill_routing": {
-      "passed": 48,
-      "failed": 3,
+      "passed": 51,
+      "failed": 0,
       "tests": [
         {
           "name": "routing_to_media_youtube_search",
@@ -484,7 +484,7 @@
         },
         {
           "name": "routing_to_ril_capture_backlog",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_coding_test_verification",
@@ -500,7 +500,7 @@
         },
         {
           "name": "routing_to_instructions_skill_routing_failure",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -544,7 +544,7 @@
         },
         {
           "name": "routing_to_review_for_an_unbiased_reviewer_pass",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_coding_history_search_commits",
@@ -635,8 +635,8 @@
       ]
     },
     "skills/coding/git": {
-      "passed": 7,
-      "failed": 0,
+      "passed": 6,
+      "failed": 1,
       "tests": [
         {
           "name": "commit_uses_specific_staging",
@@ -648,7 +648,7 @@
         },
         {
           "name": "commit_matches_repository_convention",
-          "passed": true
+          "passed": false
         },
         {
           "name": "git_history_never_uses_repeated_grep",
@@ -669,8 +669,8 @@
       ]
     },
     "skills/coding/testing": {
-      "passed": 2,
-      "failed": 1,
+      "passed": 3,
+      "failed": 0,
       "tests": [
         {
           "name": "test_first_before_fix",
@@ -682,7 +682,7 @@
         },
         {
           "name": "test_verification_scales_to_relevant_evidence",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -733,7 +733,7 @@
         {
           "name": "channel_explains_without_padding_the_reply",
           "passed": true,
-          "passes": 3,
+          "passes": 2,
           "samples": 3
         },
         {
@@ -899,8 +899,8 @@
       ]
     },
     "skills/obsidian/obsidian": {
-      "passed": 4,
-      "failed": 0,
+      "passed": 3,
+      "failed": 1,
       "tests": [
         {
           "name": "obsidian_capture_inbox_belongs_to_ril",
@@ -916,7 +916,7 @@
         },
         {
           "name": "obsidian_second_brain_contract_is_read_not_recalled",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -992,7 +992,7 @@
       "tests": [
         {
           "name": "workflow_knows_full_sequence",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_rebuild_not_just_nix",
@@ -1000,7 +1000,7 @@
         },
         {
           "name": "workflow_never_skip_rebuild",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_respond_only_after_pass",
@@ -1012,11 +1012,11 @@
         },
         {
           "name": "workflow_fix_downstream_reference_not_shim",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_change_review_classifies_semantic_risk",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_review_input_is_unbiased",
@@ -1027,24 +1027,24 @@
   },
   "fingerprints": {
     "suite": "08caeea050adb4618cd3fdd3fe0b5acabd86ec18434159db4a9082826ba39b18",
-    "instructions": "153fe7b3fd96b18528423083b85c59ce6cf922b82fa237d4e9de1ec548c4c071"
+    "instructions": "e7dc37f34541e6809f334d93a74d27b5fe0434a894486f9835cbc7d4978b4555"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
-      "generated_at": "2026-08-22T22:36:52.922174+00:00",
-      "comparison_ref": "f154e932",
+      "generated_at": "2026-08-23T16:15:45.494713+00:00",
+      "comparison_ref": "c8fe7500463b6261b93c4902c53b69aaa250ac3f",
       "epochs": 3,
       "paired_cases": 21,
       "sample_pairs": 63,
-      "candidate_pass_rate": 1.0,
+      "candidate_pass_rate": 0.9841,
       "control_pass_rate": 0.9524,
-      "delta": 0.0476,
+      "delta": 0.0317,
       "lower_bound": 0.0,
-      "upper_bound": 0.1429,
+      "upper_bound": 0.1111,
       "candidate_hard_failures": [],
       "candidate_cases": {
         "channel_explains_without_padding_the_reply": {
-          "passes": 3,
+          "passes": 2,
           "samples": 3
         },
         "channel_preserves_source_punctuation_when_quoting": {
@@ -1130,7 +1130,7 @@
       },
       "fingerprints": {
         "suite": "7680eb17219f8525cedb6d77c999f02f72ade6397776bd1a639a8370d87c5772",
-        "instructions": "bedd73b4ab878f3ea99962657cbab97927115918a7bd45f3364b84f6ed4321e5"
+        "instructions": "82e6e9d608ccd99b0d1e219e0e7d7aa2c8fa19bd6d5b686a040ab59c0f654f98"
       }
     }
   }
