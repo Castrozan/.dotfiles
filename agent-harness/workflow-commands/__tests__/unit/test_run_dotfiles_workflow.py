@@ -119,6 +119,15 @@ def test_unparseable_output_surfaces_the_raw_failure():
     assert "not logged in" in str(failure.value)
 
 
+def test_missing_claude_asks_for_the_rebuild(monkeypatch):
+    monkeypatch.setattr(run_dotfiles_workflow.shutil, "which", lambda _: None)
+
+    with pytest.raises(SystemExit) as failure:
+        run_dotfiles_workflow.resolve_claude_binary()
+
+    assert "claude is not on PATH" in str(failure.value)
+
+
 def test_workflow_runs_anchored_at_the_repository_root(monkeypatch):
     recorded_invocation = {}
 
