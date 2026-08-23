@@ -98,29 +98,20 @@ let
     inherit (workspaceProfileActivation) activationShellStatementsForProfile;
   };
 
-  codex = pkgs.writeShellScriptBin "codex" ''
-    export NPM_CONFIG_PREFIX="/nonexistent"
-    codexDeveloperInstructionsFile="${interactivePreferencesFile}"
-    workspaceProfileArguments=()
-    interactivePreferencesArguments=()
-    case "''${1:-}" in
-      "" | -* | resume | fork)
-        ${workspaceProfileLaunchDispatch}
-        export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
-        interactivePreferencesArguments=(
-          -c "developer_instructions=$(cat "$codexDeveloperInstructionsFile")"
-        )
-        ;;
-    esac
-    exec ${codex-binary}/bin/codex \
-      --model "gpt-5.6-sol" \
-      --sandbox "danger-full-access" \
-      --ask-for-approval "never" \
-      --no-alt-screen \
-      "''${interactivePreferencesArguments[@]}" \
-      "''${workspaceProfileArguments[@]}" \
-      "$@"
-  '';
+  workspaceProfileLaunchDispatchFile = pkgs.writeText "codex-workspace-profile-launch-dispatch" workspaceProfileLaunchDispatch;
+
+  codex = pkgs.writeShellApplication {
+    name = "codex";
+    bashOptions = [ ];
+    excludeShellChecks = [ "SC1090" ];
+    runtimeEnv = {
+      NPM_CONFIG_PREFIX = "/nonexistent";
+      CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE = "${interactivePreferencesFile}";
+      CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
+      CODEX_LAUNCHER_BINARY = "${codex-binary}/bin/codex";
+    };
+    text = builtins.readFile ./scripts/codex;
+  };
 in
 {
   options.codex.unwrappedPackage = lib.mkOption {

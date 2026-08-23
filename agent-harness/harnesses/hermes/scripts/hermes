@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+exec "$HERMES_AGENT_BASH" "$HERMES_AGENT_LAUNCH_SCRIPT" "$@"

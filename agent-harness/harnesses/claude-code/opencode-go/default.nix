@@ -30,7 +30,7 @@ let
 
   translationProxyInspectionCommand =
     if pkgs.stdenv.hostPlatform.isDarwin then
-      "launchctl print gui/$(id -u)/${translationProxyLaunchdAgentLabel}"
+      "launchctl print gui/@CURRENT_USER_ID@/${translationProxyLaunchdAgentLabel}"
     else
       "systemctl --user status ${translationProxySystemdServiceName}";
 
@@ -74,20 +74,23 @@ let
     ];
   };
 
-  claudeGoLauncher = pkgs.writeShellScriptBin "claude-go" ''
-    unset ANTHROPIC_API_KEY
-    export ANTHROPIC_BASE_URL="http://${translationProxyListenAddress}:${toString translationProxyListenPort}"
-    export ANTHROPIC_AUTH_TOKEN="claude-go-local-loopback"
-    export ANTHROPIC_DEFAULT_OPUS_MODEL="${opencodeGo.models.opus}"
-    export ANTHROPIC_DEFAULT_SONNET_MODEL="${opencodeGo.models.sonnet}"
-    export ANTHROPIC_DEFAULT_HAIKU_MODEL="${opencodeGo.models.haiku}"
-    if ! (exec 3<>/dev/tcp/${translationProxyListenAddress}/${toString translationProxyListenPort}) 2>/dev/null; then
-      echo "claude-go: the Console Go translation proxy is not listening on ${translationProxyListenAddress}:${toString translationProxyListenPort}." >&2
-      echo "Console Go's own Anthropic endpoint drops tool names, so Claude Code cannot reach these models without it." >&2
-      echo "Inspect the service: ${translationProxyInspectionCommand}" >&2
-    fi
-    exec ${config.claude.package}/bin/claude --model "${opencodeGo.models.sonnet}" "$@"
-  '';
+  claudeGoLauncher = pkgs.writeShellApplication {
+    name = "claude-go";
+    bashOptions = [ ];
+    runtimeEnv = {
+      ANTHROPIC_BASE_URL = "http://${translationProxyListenAddress}:${toString translationProxyListenPort}";
+      ANTHROPIC_AUTH_TOKEN = "claude-go-local-loopback";
+      ANTHROPIC_DEFAULT_OPUS_MODEL = opencodeGo.models.opus;
+      ANTHROPIC_DEFAULT_SONNET_MODEL = opencodeGo.models.sonnet;
+      ANTHROPIC_DEFAULT_HAIKU_MODEL = opencodeGo.models.haiku;
+      CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS = translationProxyListenAddress;
+      CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT = toString translationProxyListenPort;
+      CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND = translationProxyInspectionCommand;
+      CLAUDE_GO_LAUNCHER_CLAUDE_BINARY = "${config.claude.package}/bin/claude";
+      CLAUDE_GO_LAUNCHER_MODEL = opencodeGo.models.sonnet;
+    };
+    text = builtins.readFile ./scripts/claude-go;
+  };
 
   ensureTranslationProxyStateDirectoriesScript = pkgs.writeShellScript "claude-go-proxy-ensure-state-directories" ''
     mkdir -p ${lib.escapeShellArg translationProxyAuthenticationDirectory}

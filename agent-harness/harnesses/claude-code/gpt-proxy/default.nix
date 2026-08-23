@@ -28,7 +28,7 @@ let
 
   proxyServiceInspectionCommand =
     if pkgs.stdenv.hostPlatform.isDarwin then
-      "launchctl print gui/$(id -u)/${proxyLaunchdAgentLabel}"
+      "launchctl print gui/@CURRENT_USER_ID@/${proxyLaunchdAgentLabel}"
     else
       "systemctl --user status ${proxySystemdServiceName}";
 
@@ -86,20 +86,23 @@ let
   gptModelForSonnetTier = "gpt-5.6-sol(medium)";
   gptModelForHaikuTier = "gpt-5.6-sol(low)";
 
-  claudexLauncher = pkgs.writeShellScriptBin "claudex" ''
-    unset ANTHROPIC_API_KEY
-    export ANTHROPIC_BASE_URL="http://${proxyListenAddress}:${toString proxyListenPort}"
-    export ANTHROPIC_AUTH_TOKEN="cli-proxy-api-local-loopback"
-    export ANTHROPIC_DEFAULT_OPUS_MODEL="${gptModelForOpusTier}"
-    export ANTHROPIC_DEFAULT_SONNET_MODEL="${gptModelForSonnetTier}"
-    export ANTHROPIC_DEFAULT_HAIKU_MODEL="${gptModelForHaikuTier}"
-    if ! (exec 3<>/dev/tcp/${proxyListenAddress}/${toString proxyListenPort}) 2>/dev/null; then
-      echo "cli-proxy-api is not listening on ${proxyListenAddress}:${toString proxyListenPort}." >&2
-      echo "If you have never authenticated your ChatGPT subscription, run: claudex-login" >&2
-      echo "Otherwise inspect the service: ${proxyServiceInspectionCommand}" >&2
-    fi
-    exec ${config.claude.package}/bin/claude --model "${gptModelForOpusTier}" "$@"
-  '';
+  claudexLauncher = pkgs.writeShellApplication {
+    name = "claudex";
+    bashOptions = [ ];
+    runtimeEnv = {
+      ANTHROPIC_BASE_URL = "http://${proxyListenAddress}:${toString proxyListenPort}";
+      ANTHROPIC_AUTH_TOKEN = "cli-proxy-api-local-loopback";
+      ANTHROPIC_DEFAULT_OPUS_MODEL = gptModelForOpusTier;
+      ANTHROPIC_DEFAULT_SONNET_MODEL = gptModelForSonnetTier;
+      ANTHROPIC_DEFAULT_HAIKU_MODEL = gptModelForHaikuTier;
+      CLAUDEX_LAUNCHER_PROXY_LISTEN_ADDRESS = proxyListenAddress;
+      CLAUDEX_LAUNCHER_PROXY_LISTEN_PORT = toString proxyListenPort;
+      CLAUDEX_LAUNCHER_PROXY_SERVICE_INSPECTION_COMMAND = proxyServiceInspectionCommand;
+      CLAUDEX_LAUNCHER_CLAUDE_BINARY = "${config.claude.package}/bin/claude";
+      CLAUDEX_LAUNCHER_MODEL = gptModelForOpusTier;
+    };
+    text = builtins.readFile ./scripts/claudex;
+  };
 
   claudexLoginLauncher = pkgs.writeShellScriptBin "claudex-login" ''
     echo "Authenticating your ChatGPT/Codex subscription for cli-proxy-api."
