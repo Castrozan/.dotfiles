@@ -112,12 +112,15 @@ declines, the marker it shows while a turn is in flight, whether it blocks on a 
 how to launch past it, and whether Enter submits typed text or selects a highlighted dialog or palette entry. Every one
 of those facts came from a failure that a guess would have hidden.
 
-OpenCode 1.18.18 is still uncovered and is recorded as a rejection rather than a silence, though the reason moved
-once it was probed properly. It does compact on demand, through a keybind rather than typed text, and that entry
-appears only once the session holds a message, which is why an earlier probe on a fresh session reported none. What
-blocks it now is the confirmation fact: the title it paints marks a compaction request, and that same title survived a
-failed compaction and an interrupt, so nothing observed so far distinguishes a finished compaction from an attempted
-one.
+OpenCode 1.18.18 was recorded as failing the confirmation fact, and that verdict was wrong. The probe behind it spelled
+the chord in tmux style, which the multiplexer rejects outright, so the keystroke never reached the application and the
+harness was judged on a compaction it never performed. Driven with the spelling the multiplexer accepts, it compacts and
+says so twice over: it prints a completion line carrying the model and an elapsed time, which cannot exist before the
+work finishes, and its status bar drops from the pre-compaction context size to almost nothing before the summary is
+written back. It has no refusal marker, so a request that never starts looks like one still running, and the absent
+completion line after a timeout is what has to carry that case. On a session holding no message the trigger is inert and
+its second key lands in the composer, so the first turn must clear it. The remaining work is the profile itself, not a
+missing fact.
 
 ## How the halves meet
 

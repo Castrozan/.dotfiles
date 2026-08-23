@@ -11,13 +11,15 @@ UNPROFILED_HARNESS_ADMISSION_CRITERIA = (
     "text or selects a highlighted entry in a dialog or command palette. A harness "
     "that answers a modal with Enter silently swallows the first scenario prompt, and "
     "one whose busy indicator can hold still is graded as finished mid-turn. "
-    "opencode 1.18.18 fails the confirmation fact. It does compact on demand, through "
-    "the ctrl+x c keybind rather than typed text, and that entry appears only once the "
-    "session holds a message, which is why a fresh-session probe reported none. What "
-    "it prints is a Compaction rule painted when compaction is requested; that title "
-    "survived both a failed compaction and an interrupt, so it proves a request rather "
-    "than a result. It also has no refusal marker, and on an empty session the second "
-    "key leaks into the prompt composer."
+    "opencode 1.18.18 was recorded as failing the confirmation fact and that verdict "
+    "was wrong: the probe spelled the chord C-x, which herdr rejects outright, so the "
+    "keystroke never reached the application. Driven as ctrl+x c, or through ctrl+p "
+    "then the typed word compact, it compacts and confirms twice: it prints a "
+    "Compaction line carrying the model and an elapsed time, which cannot precede the "
+    "work, and its status bar drops from the held context size to almost nothing "
+    "before the summary is written back. It still has no refusal marker, so a request "
+    "that never starts reads as one still running, and on a session holding no message "
+    "the trigger is inert and its second key lands in the composer."
 )
 
 
