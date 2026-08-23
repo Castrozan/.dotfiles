@@ -18,11 +18,12 @@ in
       wrong for a character who decides when to speak: each deliberate silence
       comes back out as a filler message in the channel, so a bot that should be
       quiet posts a placeholder after every line anyone writes. Naming an agent
-      here writes disableAllHooks into its own workspace settings, switching off
-      every hook that reaches it, the adapter's reply enforcement and the
-      machine-tier developer hooks alike, none of which a conversational agent has
-      any use for. Its tool restrictions are untouched, since those are
-      permissions.deny entries the harness enforces itself rather than hooks.
+      here empties that one Stop hook in its own workspace settings and leaves
+      every other hook in place, because the pre-tool-use prohibited-command guard
+      that denies an agent destructive commands is a hook too and a character
+      reachable by strangers is exactly the agent that must keep it. Its tool
+      restrictions are untouched as well, since those are permissions.deny entries
+      the harness enforces itself rather than hooks.
     '';
   };
 
@@ -30,7 +31,7 @@ in
     clawde.channelAdapters.discord.workspaceSettingsFor =
       { name, ... }:
       lib.optionalAttrs (builtins.elem name agentsAllowedToStaySilent) {
-        disableAllHooks = true;
+        hooks.Stop = lib.mkForce [ ];
       };
   };
 }

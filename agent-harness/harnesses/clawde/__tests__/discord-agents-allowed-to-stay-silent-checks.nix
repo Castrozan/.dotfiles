@@ -34,17 +34,19 @@ let
       cfgWithASilentDiscordAgent.home.file."clawde/${agentName}/.claude/settings.json".text;
 in
 {
-  clawde-a-discord-agent-allowed-to-stay-silent-runs-with-hooks-off =
-    mkEvalCheck "clawde-a-discord-agent-allowed-to-stay-silent-runs-with-hooks-off"
-      ((workspaceSettingsOfAgent "quiet-agent").disableAllHooks or false)
-      "the discord channel adapter blocks any turn that ends without a call to the reply tool, so an agent whose whole design is choosing when to speak answers every message it meant to ignore with a placeholder; disableAllHooks in its own workspace settings is what lets the turn end silently";
+  clawde-a-discord-agent-allowed-to-stay-silent-loses-its-reply-enforcement =
+    mkEvalCheck "clawde-a-discord-agent-allowed-to-stay-silent-loses-its-reply-enforcement"
+      ((workspaceSettingsOfAgent "quiet-agent").hooks.Stop or null == [ ])
+      "the discord channel adapter blocks any turn that ends without a call to the reply tool, so an agent whose whole design is choosing when to speak answers every message it meant to ignore with a placeholder; emptying that Stop hook is what lets the turn end silently, and it must stay narrower than disableAllHooks because the pre-tool-use guard that denies an agent destructive commands is a hook too";
+
+  clawde-a-discord-agent-allowed-to-stay-silent-keeps-every-other-hook =
+    mkEvalCheck "clawde-a-discord-agent-allowed-to-stay-silent-keeps-every-other-hook"
+      (!((workspaceSettingsOfAgent "quiet-agent") ? disableAllHooks))
+      "silence is one hook fewer, not enforcement off: disableAllHooks would also switch off the pre-tool-use prohibited-command guard, which is the only thing standing between a Discord-reachable character and sudo, so an agent named in clawdeAgentsDeniedDestructiveCommands would run unguarded the moment it landed on a harness with an embedded transport";
 
   clawde-a-discord-agent-not-listed-keeps-its-reply-enforcement =
     mkEvalCheck "clawde-a-discord-agent-not-listed-keeps-its-reply-enforcement"
-      (
-        !((workspaceSettingsOfAgent "answering-agent") ? disableAllHooks)
-        && (workspaceSettingsOfAgent "answering-agent") ? hooks
-      )
+      ((workspaceSettingsOfAgent "answering-agent").hooks.Stop or [ ] != [ ])
       "silence is opt-in per agent: an assistant agent that answers its owner still needs the Stop hook that catches an answer left in the terminal, so this must never widen from the listed agents to every discord agent on the fleet";
 
   clawde-a-silent-discord-agent-keeps-the-channel-plugin-enabled =
