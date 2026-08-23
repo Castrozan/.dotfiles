@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+unset ANTHROPIC_API_KEY
+if ! (exec 3<>"/dev/tcp/$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS/$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT") 2>/dev/null; then
+	echo "claude-go: the Console Go translation proxy is not listening on $CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS:$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT." >&2
+	echo "Console Go's own Anthropic endpoint drops tool names, so Claude Code cannot reach these models without it." >&2
+	echo "Inspect the service: ${CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND//@CURRENT_USER_ID@/$(id -u)}" >&2
+fi
+exec "$CLAUDE_GO_LAUNCHER_CLAUDE_BINARY" --model "$CLAUDE_GO_LAUNCHER_MODEL" "$@"

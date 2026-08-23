@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+unset ANTHROPIC_API_KEY
+if ! (exec 3<>"/dev/tcp/$CLAUDEX_LAUNCHER_PROXY_LISTEN_ADDRESS/$CLAUDEX_LAUNCHER_PROXY_LISTEN_PORT") 2>/dev/null; then
+	echo "cli-proxy-api is not listening on $CLAUDEX_LAUNCHER_PROXY_LISTEN_ADDRESS:$CLAUDEX_LAUNCHER_PROXY_LISTEN_PORT." >&2
+	echo "If you have never authenticated your ChatGPT subscription, run: claudex-login" >&2
+	echo "Otherwise inspect the service: ${CLAUDEX_LAUNCHER_PROXY_SERVICE_INSPECTION_COMMAND//@CURRENT_USER_ID@/$(id -u)}" >&2
+fi
+exec "$CLAUDEX_LAUNCHER_CLAUDE_BINARY" --model "$CLAUDEX_LAUNCHER_MODEL" "$@"

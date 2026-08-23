@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 OPENCODE_GO_MODULE = Path(__file__).resolve().parents[2] / "default.nix"
+OPENCODE_GO_LAUNCHER_SCRIPT = OPENCODE_GO_MODULE.parent / "scripts" / "claude-go"
 OPENCODE_GO_PROVIDER = OPENCODE_GO_MODULE.parents[2] / "opencode" / "go-provider.nix"
 TRANSLATION_PROXY_CONFIGURATION = (
     OPENCODE_GO_MODULE.parent / "translation-proxy-configuration.nix"
@@ -14,11 +15,17 @@ CONSOLE_GO_MODELS = {
     "haiku": "kimi-k3",
 }
 API_KEY_PLACEHOLDER = "@OPENCODE_GO_API_KEY@"
-LAUNCHER_EXEC_LINE = re.compile(r"^\s*exec \S+/bin/claude .*$", re.M)
+LAUNCHER_EXEC_LINE = re.compile(
+    r'^\s*exec "\$CLAUDE_GO_LAUNCHER_CLAUDE_BINARY" .*$', re.M
+)
 
 
 def module_source() -> str:
     return OPENCODE_GO_MODULE.read_text()
+
+
+def launcher_source() -> str:
+    return OPENCODE_GO_LAUNCHER_SCRIPT.read_text()
 
 
 def provider_source() -> str:
@@ -34,13 +41,19 @@ def model_definitions(section: str) -> dict[str, str]:
 
 
 def launcher_exec_line() -> str:
-    matched = LAUNCHER_EXEC_LINE.search(module_source())
+    matched = LAUNCHER_EXEC_LINE.search(launcher_source())
     return matched.group(0) if matched else ""
 
 
 def test_the_opencode_go_module_still_defines_a_claude_launcher():
     assert OPENCODE_GO_MODULE.is_file(), (
         f"{OPENCODE_GO_MODULE} is gone, so this guard checks nothing"
+    )
+    assert OPENCODE_GO_LAUNCHER_SCRIPT.is_file(), (
+        f"{OPENCODE_GO_LAUNCHER_SCRIPT} is gone, so this guard checks nothing"
+    )
+    assert "builtins.readFile ./scripts/claude-go" in module_source(), (
+        "the module must still deploy the extracted launcher script as the claude-go body"
     )
     assert launcher_exec_line(), (
         "the claude-go launcher no longer execs claude, so the contract guards below are vacuous"
@@ -49,7 +62,7 @@ def test_the_opencode_go_module_still_defines_a_claude_launcher():
 
 def test_the_launcher_targets_the_loopback_translation_proxy():
     source = module_source()
-    assert 'ANTHROPIC_BASE_URL="http://${translationProxyListenAddress}' in source, (
+    assert 'ANTHROPIC_BASE_URL = "http://${translationProxyListenAddress}' in source, (
         "claude-go must reach Console Go through the local proxy; the endpoint's own Anthropic translation drops tool names and 400s on the first message"
     )
     assert 'translationProxyListenAddress = "127.0.0.1"' in source, (
@@ -75,7 +88,7 @@ def test_the_api_key_never_reaches_the_nix_store():
         "the store-readable config template must carry a placeholder, never the key itself"
     )
     assert "builtins.readFile ./scripts/" in source, (
-        "only the renderer script may be read at evaluation time"
+        "only the renderer script and the launcher body may be read at evaluation time"
     )
     assert "opencodeGo.apiKeyFile" in source, (
         "the service must take the key from the agenix-deployed file at runtime"
@@ -86,7 +99,7 @@ def test_the_api_key_never_reaches_the_nix_store():
 
 
 def test_the_launcher_carries_no_credential_of_its_own():
-    source = module_source()
+    source = launcher_source()
     assert "unset ANTHROPIC_API_KEY" in source, (
         "the proxy authenticates upstream, so Claude Code must not carry the plan key in its environment"
     )
@@ -101,7 +114,7 @@ def test_the_model_tiers_come_from_the_shared_provider():
     )
     for alias in CONSOLE_GO_MODELS:
         assert (
-            f'ANTHROPIC_DEFAULT_{alias.upper()}_MODEL="${{opencodeGo.models.{alias}}}"'
+            f"ANTHROPIC_DEFAULT_{alias.upper()}_MODEL = opencodeGo.models.{alias};"
             in module_source()
         ), (
             f"the {alias} alias must resolve through the shared provider, not a local literal"
@@ -119,26 +132,29 @@ def test_every_advertised_model_is_translated_by_the_proxy():
 
 
 def test_the_launch_default_and_the_exec_line_share_one_model_binding():
-    assert '--model "${opencodeGo.models.sonnet}"' in launcher_exec_line(), (
+    assert '--model "$CLAUDE_GO_LAUNCHER_MODEL"' in launcher_exec_line(), (
+        "the launcher must pass the model the wrapper supplied, not a literal of its own"
+    )
+    assert "CLAUDE_GO_LAUNCHER_MODEL = opencodeGo.models.sonnet;" in module_source(), (
         "the launch default must use the shared provider's sonnet model"
     )
 
 
 def test_the_default_model_flag_precedes_caller_arguments():
-    assert '--model "${opencodeGo.models.sonnet}" "$@"' in launcher_exec_line(), (
+    assert '--model "$CLAUDE_GO_LAUNCHER_MODEL" "$@"' in launcher_exec_line(), (
         "the default must precede caller arguments so a later --model still wins"
     )
 
 
 def test_the_launcher_reports_a_proxy_that_is_not_listening():
-    source = module_source()
-    probe = "exec 3<>/dev/tcp/${translationProxyListenAddress}"
+    source = launcher_source()
+    probe = 'exec 3<>"/dev/tcp/$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS'
     assert probe in source, (
         "claude-go must probe the proxy before starting, because without it every tool-carrying request 400s"
     )
-    assert "Inspect the service: ${translationProxyInspectionCommand}" in source, (
-        "the failure must name the service inspection command for the running platform"
-    )
-    assert source.index(probe) < source.index("exec ${config.claude.package}"), (
-        "the proxy probe must run before claude is started"
-    )
+    assert (
+        "Inspect the service: ${CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND" in source
+    ), "the failure must name the service inspection command for the running platform"
+    assert source.index(probe) < source.index(
+        'exec "$CLAUDE_GO_LAUNCHER_CLAUDE_BINARY"'
+    ), "the proxy probe must run before claude is started"
