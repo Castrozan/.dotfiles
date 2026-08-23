@@ -41,6 +41,8 @@ ABBREVIATIONS_WITH_NO_STANDALONE_MEANING = {
 
 IGNORED_BOUND_IDENTIFIERS = {"self", "cls"}
 
+SHORTEST_LANGUAGE_MANDATED_DUNDER_BODY = 2
+
 LOWERCASE_TO_UPPERCASE_BOUNDARY_PATTERN = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
 UPPERCASE_RUN_TO_CAPITALIZED_WORD_BOUNDARY_PATTERN = re.compile(
     r"(?<=[A-Z])(?=[A-Z][a-z])"
@@ -48,7 +50,9 @@ UPPERCASE_RUN_TO_CAPITALIZED_WORD_BOUNDARY_PATTERN = re.compile(
 
 
 def identifier_is_language_mandated_dunder(identifier: str) -> bool:
-    return identifier.startswith("__") and identifier.endswith("__")
+    if not (identifier.startswith("__") and identifier.endswith("__")):
+        return False
+    return len(identifier.strip("_")) >= SHORTEST_LANGUAGE_MANDATED_DUNDER_BODY
 
 
 def bound_identifiers_in_module(parsed_module: ast.Module) -> set[str]:
