@@ -186,3 +186,8 @@ def test_hermes_declares_managed_core_and_removes_memory_authority():
         "Git:",
     ):
         assert retired_memory_authority not in managed_memory_source
+
+    assert "keeps its own OAuth session in ~/.hermes/auth.json" in (
+        managed_memory_source
+    )
+    assert "seeds access" not in managed_memory_source
