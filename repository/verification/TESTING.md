@@ -8,7 +8,8 @@ anywhere in the repo may carry a `__tests__/` directory, split into `unit/`,
 
 - `unit/` — fast, mocked, no system state. The `--quick` (default) gate.
 - `integration/` — needs docker, real services, or multi-step subprocess flows.
-- `e2e/` — runs against a live system (runtime checks, headless browser, perf).
+- `e2e/` — runs against a live system (runtime checks, live desktop and terminal
+  behavior, perf thresholds).
 - `evals/` — LLM eval yamls the `agent-eval` engine loads: the central corpus at
   `agent-harness/quality/evaluations/evals/` plus the per-skill suites it auto-discovers.
 
@@ -45,44 +46,76 @@ them via `repository/verification/nix-checks/default.nix` and they run under `--
 evals are driven by the `agent-eval` engine, not the shell collectors.
 
 `repository/verification/run.sh --map` prints the whole suite as a tree (module × tier ×
-counts: bats `@test` blocks, pytest functions, lua/qml suites, eval yamls, nix
-eval-checks) so the structure is self-describing.
+counts: bats `@test` blocks, pytest functions, lua and qml suites, eval yamls, and a
+`checks.nix: registered` marker per module) so the structure is self-describing.
+
+The nix check inventory in that map is not counted out of the source.
+`repository/verification/map-test-suite.py` evaluates the flake's `checks` attribute
+set for the current system and counts the attribute names it gets back, so the total
+is the set `--nix` would build rather than a guess at how many `checks.nix` files
+declare. When that evaluation cannot run — nix absent, a non-zero exit, a timeout, or
+output it cannot parse — the total prints as `unavailable` with the reason instead of a
+number, because a wrong count reads exactly like a right one.
 
 ## Tiers
 
 | Tier | Content | Flag |
 |---|---|---|
 | Map | prints the discovered suite tree, runs nothing | `--map` |
-| Quick | line counts + `unit/` bats + `unit/` pytest + qml + lua | `--quick` (default) |
-| Nix | quick + domain nix checks (`*/__tests__/checks.nix`) | `--nix` |
+| Quick | line counts + `unit/` bats + `unit/` pytest + qml + qmllint + lua | `--quick` (default) |
+| Nix | quick + every flake check attribute, built (`*/__tests__/checks.nix`) | `--nix` |
 | Integration (scripts) | `integration/` bats + `integration/` pytest | `--integration-scripts` (alias `--docker`) |
 | Runtime / e2e (scripts) | `e2e/` bats + `e2e/` pytest | `--runtime` |
-| Perf | desktop + shell benchmarks, baseline checks, threshold tests | `--perf` |
+| CI | line counts + `unit/` bats + `integration/` bats + flake checks + both baseline checks | `--ci` |
+| Perf | desktop + shell benchmarks, both baseline checks with the age gate, `perf-runtime.bats` thresholds | `--perf` |
 | Agent evals | `agent-harness/quality/evaluations/` single-turn / sessions / herdr | `--evals` / `--integration` / `--e2e` |
 
 Additional modes: `--all` runs quick + nix + integration-scripts. `--coverage`
-runs `unit/` bats through kcov. `--ci` runs quick with CI-appropriate skips.
+runs the `machine-configuration` `unit/` bats through kcov.
+
+`--ci` is its own tier list, not the quick tier with skips. It drops pytest, qml,
+qmllint and lua, and adds `integration/` bats, the flake checks, and the rebuild and
+desktop baseline checks. Nothing it drops goes unrun: `.github/workflows/tests.yml`
+runs pytest, the qml suites, qmllint (with `QMLLINT_REQUIRED` set, so the lint is
+mandatory there) and lua in a second job.
 
 ## Run
 
 ```bash
-repository/verification/run.sh                       # quick tier (default): unit/ only
+repository/verification/run.sh                       # quick tier (default)
 repository/verification/run.sh --map                 # print the suite tree (module x tier x counts)
 repository/verification/run.sh --nix                 # quick + nix eval tests
 repository/verification/run.sh --integration-scripts # integration/ bats + pytest (alias: --docker)
 repository/verification/run.sh --runtime             # e2e/ script tests (live system)
 repository/verification/run.sh --all                 # quick + nix + integration-scripts
-repository/verification/run.sh --coverage            # unit/ bats with kcov coverage
-repository/verification/run.sh --perf                # performance benchmarks + threshold tests
-bats machine-configuration/operating-system/power-management/__tests__/unit/foo.bats  # single test file
+repository/verification/run.sh --coverage            # machine-configuration unit/ bats with kcov
+repository/verification/run.sh --ci                  # the tier continuous integration runs
+repository/verification/run.sh --perf                # benchmarks + fresh-baseline gate + thresholds
 ```
+
+While editing, run the exact file instead of a tier — the loop is faster and the
+failure stays local to what you changed:
+
+```bash
+bats machine-configuration/operating-system/power-management/__tests__/unit/setup-lid-switch-ignore.bats
+pytest machine-configuration/development/testing/__tests__/unit/test_dotfiles_perf.py
+```
+
+Missing tools do not all fail the same way. Absent bats, nix, kcov or python3 make
+their check print a warning and skip. Absent pytest is a failure whenever python test
+files were collected: the runner refuses to skip silently and hand back a green run
+that inspected nothing. Absent qmllint or quickshell skip too, unless
+`QMLLINT_REQUIRED` is set. Docker is not detected by the runner at all — the
+docker-backed tests skip themselves through
+`repository/verification/helpers/docker-container-assertions.bash`.
 
 ### Performance testing
 
 ```bash
 dotfiles-perf run               # benchmark all desktop components
 dotfiles-perf run 10 tmux       # benchmark tmux only, 10 iterations
-dotfiles-perf check             # compare latest run against baseline
+dotfiles-perf check             # compare the latest run against the baseline
+dotfiles-perf validate          # validate the tracked desktop baseline
 dotfiles-perf test              # pass/fail threshold tests (bats)
 dotfiles-perf all               # full suite: benchmark + check + threshold tests
 dotfiles-perf baseline          # measure and save new baseline
@@ -91,7 +124,50 @@ dotfiles-perf shell             # shell startup benchmark
 dotfiles-perf rebuild           # nix rebuild benchmark
 ```
 
-Each tier auto-detects tool availability (bats, nix, docker, kcov) and skips gracefully with a message when tools are missing.
+Validating a baseline and retaking one are different acts, and the runner separates
+them. The baseline check validates the tracked file itself: that it parses as a JSON
+object, that it records `git_commit`, `host` and `config`, that `threshold_percent` is
+a number above zero, and that every measurement carries a value and a ceiling that are
+numbers above zero. That runs everywhere, `--ci` included, because reading a committed
+file needs no hardware and a malformed baseline should turn a push red wherever it is
+noticed.
+
+Baseline age is gated only by `--perf`. It is the one caller that adds
+`--require-fresh`, which is what turns a stale or timestamp-less `generated_at` into a
+failure, and it applies it to both `benchmark-desktop --check-baseline` and
+`benchmark-rebuild --check-baseline`. The gate belongs there because nothing else can
+clear it: clearing it means retaking the measurement, and the nix packaging injects
+`DOTFILES_BENCHMARK_HOST` from the machine the flake builds the command for, so
+`dotfiles-perf baseline` measures the owning host and no other. Continuous integration
+therefore never benchmarks — a shared runner's numbers describe no machine this
+repository configures.
+
+`benchmark-desktop` is packaged on Linux only, so on darwin the `dotfiles-perf`
+subcommands that delegate to it report the command as unavailable rather than
+producing numbers; `benchmark-rebuild` and `benchmark-shell` are packaged on both.
+
+## What Each Check Proves
+
+These are not interchangeable, and no one of them stands in for another.
+
+- `--ci` proves what a shared Linux runner can prove about a pushed commit: the
+  line-count policy, `unit/` and `integration/` bats, every flake check, and that both
+  tracked baselines are well formed.
+- A named file run directly — `bats <file>`, `pytest <file>` — proves that one file
+  with no tier around it. It is the editing loop, and the only form that keeps a
+  failure local to the thing you touched.
+- `rebuild` proves the Nix modules evaluate and the machine activates. It switches the
+  host to the flake in `~/.dotfiles`, and on darwin aborts when `/run/current-system`
+  did not move, so an activation that died mid-script cannot pass as success. It
+  deploys the main checkout, not a worktree, so what it proves is what is already in
+  `~/.dotfiles`.
+- Live tests prove behavior on a running machine: a real window server, a real daemon,
+  real windows. No automated tier replaces them.
+  `machine-configuration/terminal/__tests__/e2e/README.md` says so directly about its
+  own stress run, which cannot go in CI at any tier.
+- `--perf` measures. A measurement is not a pass/fail claim about a commit; it is a
+  number one machine produced under one load. That is why only the owning host
+  produces it, and why continuous integration deliberately never runs it.
 
 ## Test Categories
 
@@ -134,9 +210,9 @@ including a bare `pytest` at the root:
 
 ## Co-located Domain Tests
 
-Tests live alongside their modules in `<module>/__tests__/`: `home/<domain>`,
-`agent-harness/<capability>`, and `machine-configuration/<domain>/<capability>`,
-all treated alike, split into `unit/`,
+Tests live alongside their modules in `<module>/__tests__/`:
+`agent-harness/<capability>` and `machine-configuration/<domain>/<capability>`,
+both treated alike, split into `unit/`,
 `integration/`, and `e2e/` subdirectories. The runner
 discovers them by directory (`*/__tests__/<tier>/*.bats` and `*/__tests__/<tier>/test_*.py`)
 — the subdirectory **is** the tier. There is no filename-suffix routing.
@@ -152,7 +228,7 @@ applies to all three subdirectories.
 
 Test filename must match script name: a `scripts/foo` under a capability is covered by `<capability>/__tests__/unit/foo.bats` (or `integration/` / `e2e/` for the heavier tiers).
 
-The shared helper at `repository/verification/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename.
+The shared helper at `repository/verification/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename, searching the `scripts/` directories under `machine-configuration/` and then under `agent-harness/agent-instructions/skills/`.
 
 ### Minimal template
 
@@ -193,6 +269,7 @@ load '../../../../../repository/verification/helpers/bash-script-assertions'
 | Assertion | Usage |
 |---|---|
 | `assert_script_source_matches "regex"` | Script source matches regex |
+| `assert_script_source_does_not_match "regex"` | Script source does not match regex |
 | `assert_script_source_matches_all "a" "b" "c"` | Script source matches all regexes |
 | `assert_pattern_appears_before "first" "second"` | First pattern appears before second |
 | `assert_installs_apt_packages pkg1 pkg2` | `apt-get install` lines for each package |
@@ -256,12 +333,12 @@ teardown() {
 
 ## Policies
 
-1. **Every `bin/` script gets a test file.** At minimum: `assert_is_executable` + `assert_passes_shellcheck`.
-2. **Test filename = script name, category = directory.** `bin/foo` → `home/{base,linux,darwin}/<domain>/__tests__/unit/foo.bats`. The helper auto-resolves the script path from the filename regardless of which tier directory the test lives in.
+1. **Every capability script gets a test file.** At minimum: `assert_is_executable` + `assert_passes_shellcheck`.
+2. **Test filename = script name, category = directory.** `<capability>/scripts/foo` → `<capability>/__tests__/unit/foo.bats`. The helper auto-resolves the script path from the filename regardless of which tier directory the test lives in.
 3. **Static over execution for setup scripts.** Scripts requiring sudo/root are tested via content analysis, not execution. Verify configs, packages, and service activation are declared correctly.
 4. **Behavioral tests for CLI scripts.** Scripts that take user input should test error paths (missing args, bad input) and success paths.
-5. **Containerized integration tests go in `integration/`.** Place docker-backed tests under `<domain>/__tests__/integration/`; they run via `--integration-scripts` (alias `--docker`) and stay out of the quick gate by directory, not by filename. Run `docker run --rm --privileged dotfiles-test bash -c 'bin/setup-foo'` to verify setup scripts install and configure correctly on Ubuntu.
+5. **Containerized integration tests go in `integration/`.** Place docker-backed tests under `<domain>/__tests__/integration/`; they run via `--integration-scripts` (alias `--docker`) and stay out of the quick gate by directory, not by filename. Build and drive the container through `repository/verification/helpers/docker-container-assertions.bash`, which builds `repository/verification/Dockerfile` (Ubuntu with nix) and skips the test when no docker daemon is reachable, rather than shelling out to `docker` by hand.
 6. **No external test libraries.** `repository/verification/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
 7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
 8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how. Follow `agent-harness/agent-instructions/core-rules/core.md` naming and script conventions.
-9. **Canonical script pattern.** All shell scripts under `__tests__/` follow the same pattern as `home/{base,linux,darwin}/system/scripts/rebuild`: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments.
+9. **Canonical script pattern.** All shell scripts under `__tests__/` follow the repository's script conventions: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments. `machine-configuration/development/system-rebuild/scripts/rebuild/rebuild` and `repository/verification/run.sh` are the worked examples.
