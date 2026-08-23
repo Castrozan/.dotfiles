@@ -91,9 +91,10 @@ newly created Herdr pane; automated and headless checks do not replace this manu
 </testing>
 
 <change-review-scope>
-Run the `dotfiles-change-review` workflow over your own commits before pushing a substantive change, passing
-`{"root": "<absolute checkout path>"}` whenever you work in a worktree, because the shell can start in a sibling
-checkout and a review of the wrong one returns a clean tree that proves nothing. Commit first: this checkout is
+Run the packaged `dotfiles-change-review` command over your own commits before pushing a substantive change; every
+harness runs it the same way, so never hand-roll a headless `claude -p` review. It anchors at the checkout your shell
+sits in, so pass `--root <absolute checkout path>` whenever you work in a worktree, because the shell can start in a
+sibling checkout and a review of the wrong one returns a clean tree that proves nothing. Commit first: this checkout is
 shared, so a review of the working tree reads whatever peers left uncommitted, and a confirmed finding belongs in a
 follow-up commit rather than an amend a peer may already have built on. A change is substantive when a wrong edit
 would survive formatting and still change machine or agent behavior, a build, a deployment, a dependency, an
@@ -109,7 +110,8 @@ tests.
 Treat a workflow's model calls as delegation that consumes the task's agent budget, and keep every dotfiles workflow at
 a fixed call ceiling with no per-item model calls. Author further dotfiles workflows as `dotfiles-*` under
 `agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
-fan-out.
+fan-out. Give each one a matching `dotfiles-*` command in `agent-harness/workflow-commands/`, because that command is
+how every harness other than Claude Code reaches the workflow at all.
 </workflows>
 
 <workflow>
