@@ -68,6 +68,8 @@ def bound_identifiers_in_module(parsed_module: ast.Module) -> set[str]:
             bound_identifiers.add(node.attr)
         elif isinstance(node, ast.ExceptHandler) and node.name is not None:
             bound_identifiers.add(node.name)
+        elif isinstance(node, ast.alias) and node.asname is not None:
+            bound_identifiers.add(node.asname)
     return {
         identifier
         for identifier in bound_identifiers
