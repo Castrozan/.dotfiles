@@ -12,43 +12,18 @@ let
   twitterScriptsDirectory = ../scripts;
 
   twikitCli = pkgs.writeShellScriptBin "twikit-cli" ''
-    set -euo pipefail
-
-    VENV="${twikitVirtualenvPath}"
-
-    INSTALLED_TWIKIT_VERSION=$("$VENV/bin/pip" show twikit 2>/dev/null | grep -oP 'Version: \K.*' || echo "none")
-    if [ ! -f "$VENV/bin/python" ] || [ "$INSTALLED_TWIKIT_VERSION" != "${twikitVersion}" ]; then
-      echo "[nix] Installing twikit ${twikitVersion}..." >&2
-      ${python}/bin/python -m venv "$VENV" 2>/dev/null || true
-      "$VENV/bin/pip" install --quiet --upgrade "twikit==${twikitVersion}" pycryptodome secretstorage >&2
-      TWIKIT_CLIENT="$VENV/lib/python3.12/site-packages/twikit/client/client.py"
-      if [ -f "$TWIKIT_CLIENT" ]; then
-        ${pkgs.gnused}/bin/sed -i "s/\['itemContent'\]\['value'\]/['value']/g" "$TWIKIT_CLIENT"
-      fi
-      TWIKIT_USER="$VENV/lib/python3.12/site-packages/twikit/user.py"
-      if [ -f "$TWIKIT_USER" ]; then
-        ${pkgs.gnused}/bin/sed -i "s/\['description'\]\['urls'\]/['description'].get('urls', [])/g; s/legacy\['pinned_tweet_ids_str'\]/legacy.get('pinned_tweet_ids_str', [])/g; s/legacy\['withheld_in_countries'\]/legacy.get('withheld_in_countries', [])/g" "$TWIKIT_USER"
-      fi
-      ${python}/bin/python "${twitterScriptsDirectory}/patch-twikit-transaction.py" "$VENV"
-    fi
-
+    export PATH="${
+      pkgs.lib.makeBinPath [
+        python
+        pkgs.gnused
+      ]
+    }:$PATH"
+    export TWIKIT_VERSION="${twikitVersion}"
+    export TWIKIT_VIRTUALENV_PATH="${twikitVirtualenvPath}"
     export TWIKIT_COOKIES_PATH="${twikitCookiesPath}"
-
-    if [ ! -f "${twikitCookiesPath}" ] && [ -f "${secretsDirectory}/x-cookies" ]; then
-      mkdir -p "$(dirname "${twikitCookiesPath}")"
-      cp "${secretsDirectory}/x-cookies" "${twikitCookiesPath}"
-      chmod 600 "${twikitCookiesPath}"
-      echo "[nix] Seeded cookies from agenix secret" >&2
-    fi
-    export TWIKIT_USERNAME_FILE="${secretsDirectory}/x-username"
-    export TWIKIT_EMAIL_FILE="${secretsDirectory}/x-email"
-    export TWIKIT_PASSWORD_FILE="${secretsDirectory}/x-password"
-
-    if [ "''${1:-}" = "extract-cookies" ]; then
-      exec "$VENV/bin/python" "${twitterScriptsDirectory}/extract-x-cookies.py"
-    fi
-
-    exec "$VENV/bin/python" "${twitterScriptsDirectory}/twikit-cli.py" "$@"
+    export TWIKIT_SECRETS_DIRECTORY="${secretsDirectory}"
+    export TWIKIT_SCRIPTS_DIRECTORY="${twitterScriptsDirectory}"
+    exec ${pkgs.bash}/bin/bash "${twitterScriptsDirectory}/twikit-cli-entrypoint.sh" "$@"
   '';
 in
 {

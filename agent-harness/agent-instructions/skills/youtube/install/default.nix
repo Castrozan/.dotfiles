@@ -9,25 +9,21 @@ let
     builtins.readFile ../scripts/youtube-cli-setup.sh
   );
 
+  youtubeCliEntrypointSource = pkgs.writeText "youtube-cli-entrypoint.sh" (
+    builtins.readFile ../scripts/youtube-cli-entrypoint.sh
+  );
+
   youtubeCli = pkgs.writeShellScriptBin "youtube-cli" ''
-    set -euo pipefail
-
-    if [ "''${1:-}" = "setup" ]; then
-      exec ${pkgs.bash}/bin/bash "${youtubeCliSetupSource}"
-    fi
-
-    VENV="${virtualenvPath}"
-
-    if [ ! -f "$VENV/bin/python" ] || ! "$VENV/bin/pip" show google-api-python-client &>/dev/null; then
-      echo "[nix] Installing youtube-cli dependencies..." >&2
-      ${python}/bin/python -m venv "$VENV" 2>/dev/null || true
-      "$VENV/bin/pip" install --quiet --upgrade \
-        google-api-python-client \
-        google-auth-oauthlib \
-        google-auth-httplib2 >&2
-    fi
-
-    exec "$VENV/bin/python" "${youtubeCliSource}" "$@"
+    export PATH="${
+      pkgs.lib.makeBinPath [
+        python
+        pkgs.bash
+      ]
+    }:$PATH"
+    export YOUTUBE_CLI_VIRTUALENV_PATH="${virtualenvPath}"
+    export YOUTUBE_CLI_SCRIPT="${youtubeCliSource}"
+    export YOUTUBE_CLI_SETUP_SCRIPT="${youtubeCliSetupSource}"
+    exec ${pkgs.bash}/bin/bash "${youtubeCliEntrypointSource}" "$@"
   '';
 in
 {
