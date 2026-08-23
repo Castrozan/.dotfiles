@@ -5,8 +5,6 @@ let
   # coverage helper is omitted entirely.
   kcovPackages = lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.kcov;
 
-  pytestWithScriptDependencies = import ./python-test-environment.nix { inherit pkgs; };
-
   testSuiteEnvironment = import ./test-suite-environment.nix { inherit pkgs; };
 
   dotfiles-test = pkgs.writeShellScriptBin "dotfiles-test" ''
@@ -128,7 +126,6 @@ in
     pkgs.deadnix
     pkgs.statix
     pkgs.nixfmt
-    (pkgs.writeShellScriptBin "pytest" ''exec ${pytestWithScriptDependencies}/bin/pytest "$@"'')
   ]
   ++ kcovPackages;
 }

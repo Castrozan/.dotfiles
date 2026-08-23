@@ -15,6 +15,7 @@ in
     ../../../media/arr-stack/chise/chise-arr-stack-nixos.nix
     ./pkgs.nix
     ../../../development/virtualization/virtualization-nixos.nix
+    ../../../development/testing/python-interpreter-nixos.nix
     ../../../desktop/fonts/fonts-nixos.nix
     ../../../gaming/steam/steam-nixos.nix
     # ../../../media/media-streaming/media-streaming-nixos.nix # Removed: requires insecure qtwebengine-5.15.19

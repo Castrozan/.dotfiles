@@ -66,7 +66,6 @@
       poetry
       postman
       pulsemixer
-      python312
       scrcpy
       shellcheck
       shfmt

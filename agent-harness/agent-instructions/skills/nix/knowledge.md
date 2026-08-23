@@ -133,3 +133,14 @@ runner is absent, so a skip is a real signal. The quick and nix tiers run only t
 and end-to-end tests slip past them; CI is the gate that runs everything. Reports are published to a single bucket
 prefix by exactly one workflow, and adding a second publisher to that prefix clobbers the others' output.
 </test_tiers_and_report_publishing>
+
+<a_home_manager_package_loses_to_usr_bin_on_darwin>
+On darwin the user's session path prepends `/run/current-system/sw/bin`, the default nix profile, `/usr/bin` and `/bin`
+in that order, all ahead of the home-manager profile at `/etc/profiles/per-user/<user>/bin`. Every home-manager package
+whose command name also exists in macOS therefore never wins: git, curl, tar, jq, vim and python3 all resolve to
+Apple's copy while the declared one sits unreachable further down the path, and nothing about that is visible in the
+module that declared it. The ordering is load-bearing rather than accidental, because the same home profile carries a
+gcc wrapper as `cc`, cctools as `ld` and `as` and llvm as `ar`; hoisting it above `/usr/bin` would hand every native
+build on the machine a different toolchain. A command that has to beat a macOS binary belongs in
+`environment.systemPackages`, whose profile is already first on that path, not in `home.packages`.
+</a_home_manager_package_loses_to_usr_bin_on_darwin>

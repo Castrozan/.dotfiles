@@ -19,6 +19,7 @@
     ../desktop/apple-background-agents/disable-unused-apple-background-agents-nix-darwin.nix
     ../desktop/workspace-window-switcher/workspace-window-switcher-nix-darwin.nix
     ../development/system-rebuild/rebuild-nix-darwin.nix
+    ../development/testing/python-interpreter-nix-darwin.nix
     ../desktop/karabiner/karabiner-nix-darwin.nix
   ];
 
