@@ -2,6 +2,7 @@ name: no_comments_survives_opencode_compaction
 description: The core no-comments default still governs an unprompted coding request after an OpenCode session has been natively compacted
 
 harness: opencode
+model: openai/gpt-5.4-mini
 
 setup:
   git_init: true
