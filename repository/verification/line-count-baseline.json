@@ -61,7 +61,5 @@
   "machine-configuration/media/speed-reading/__tests__/unit/test_speed_read.py": 244,
   "machine-configuration/media/speed-reading/scripts/speed_read.py": 319,
   "machine-configuration/operating-system/nix-store-maintenance/__tests__/unit/test_nix_gc.py": 372,
-  "machine-configuration/operating-system/nix-store-maintenance/scripts/nix_gc.py": 267,
-  "machine-configuration/voice/hey-bot-home-manager.nix": 546,
-  "machine-configuration/voice/hey-bot-test-home-manager.nix": 244
+  "machine-configuration/operating-system/nix-store-maintenance/scripts/nix_gc.py": 267
 }

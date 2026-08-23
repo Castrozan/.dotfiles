@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+GATEWAY_URL="$HEY_BOT_GATEWAY_URL"
+GATEWAY_TOKEN_FILE="$HEY_BOT_GATEWAY_TOKEN_FILE"
+AGENT_ID="$HEY_BOT_AGENT_ID"
+TTS_VOICE="$HEY_BOT_TTS_VOICE"
+MODEL="$HEY_BOT_MODEL"
+
+whisp-away stop --clipboard true 2>/dev/null
+
+TRANSCRIPTION="$(wl-paste 2>/dev/null || true)"
+
+if [[ -z "$TRANSCRIPTION" ]]; then
+	notify-send "Hey Bot" "No speech detected" 2>/dev/null || true
+	exit 0
+fi
+
+notify-send "Hey Bot" "$TRANSCRIPTION" 2>/dev/null || true
+
+GATEWAY_TOKEN=""
+if [[ -f "$GATEWAY_TOKEN_FILE" ]]; then
+	GATEWAY_TOKEN=$(cat "$GATEWAY_TOKEN_FILE")
+fi
+
+RESPONSE_TEXT=$(curl -s --max-time 120 "$GATEWAY_URL/v1/chat/completions" \
+	-H "Content-Type: application/json" \
+	-H "Authorization: Bearer $GATEWAY_TOKEN" \
+	-H "x-clawdbot-agent-id: $AGENT_ID" \
+	-d "$(jq -n --arg text "$TRANSCRIPTION" --arg model "$MODEL" --arg agent "$AGENT_ID" '{
+    model: $model,
+    user: ("voice-" + $agent),
+    messages: [{
+      role: "user",
+      content: ("[Voice input — respond concisely for TTS playback. Match spoken language (English or Portuguese).]\n\n" + $text)
+    }]
+  }')" | jq -r '.choices[0].message.content // "Sorry, I could not process that."')
+
+TTS_FILE=$(mktemp /tmp/hey-bot-ptt-XXXXXX.mp3)
+trap 'rm -f "$TTS_FILE"' EXIT
+
+if edge-tts --text "$RESPONSE_TEXT" --voice "$TTS_VOICE" --write-media "$TTS_FILE" 2>/dev/null; then
+	wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 2>/dev/null || true
+	mpv --no-video --ao=pulse "$TTS_FILE" 2>/dev/null || true
+fi
