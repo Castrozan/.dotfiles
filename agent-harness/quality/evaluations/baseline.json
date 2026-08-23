@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-08-17T17:39:33.137615+00:00",
-  "git_commit": "385ffcb0",
+  "git_commit": "4fa96ac6",
   "total_tests": 205,
   "total_passed": 194,
   "total_failed": 11,
@@ -1026,7 +1026,7 @@
     }
   },
   "fingerprints": {
-    "suite": "765834e47114f37b3c3c045e54a96f4cdc0a0d6e8c132a1be406cb92d5ec6d27",
+    "suite": "dc986f7cba96e0a6613682aa91ce4b3635900ebcc48d15433968a29f22465692",
     "instructions": "5e0433f2148d64169754e5cb28444f3bc7a4f6b7430f88d4fc627bfd6bad0204"
   },
   "evidence_profiles": {
