@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Block files from newly exceeding the line-count hard limit.
+"""Hold every tracked code file at or under its recorded line-count ceiling.
 
-Existing over-limit files are grandfathered in repository/verification/line-count-baseline.json,
-which maps each one to its allowed line count. The check fails when a file that
-is not grandfathered exceeds the blocking threshold, or when a grandfathered
-file grows beyond its recorded count. Shrinking always passes. Run with
---update-baseline to refreeze the current state after deliberately splitting or
-accepting files.
+repository/verification/line-count-baseline.json must list exactly the tracked
+files currently over the hard limit, each at its exact current count. The check
+fails when an unlisted file exceeds the limit, when a listed file grows past its
+ceiling, and when a listed entry no longer matches because the file was deleted,
+split back under the limit, or merely shrank - so an improvement lowers the
+ceiling instead of reserving the old one. --update-baseline refreezes the
+current state as the new ceiling set.
 
-Thresholds and the code-extension list are shared with the Write/Edit hook via
-agent-harness/hooks/runtime/post-tool-use/line-count/line_count_policy.py.
+The threshold, the code-extension list and the recorded ceilings are shared with
+the Write/Edit hook through
+agent-harness/hooks/runtime/post-tool-use/line-count/.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -32,10 +35,18 @@ BASELINE_FILE_PATH = Path(__file__).resolve().parent / "line-count-baseline.json
 
 sys.path.insert(0, str(SHARED_POLICY_DIRECTORY))
 
+from line_count_baseline import grandfathered_line_counts  # noqa: E402
 from line_count_policy import (  # noqa: E402
     LINE_COUNT_BLOCKING_THRESHOLD,
-    line_count_when_code_file_exceeds_blocking_threshold,
+    line_count_violation,
 )
+
+
+@dataclass(frozen=True)
+class BaselineDrift:
+    file_path: str
+    current_line_count: int | None
+    recorded_line_count: int | None
 
 
 def list_tracked_file_paths() -> list[Path]:
@@ -59,20 +70,14 @@ def list_tracked_file_paths() -> list[Path]:
 def line_count_per_over_limit_file() -> dict[str, int]:
     over_limit_files = {}
     for absolute_path in list_tracked_file_paths():
-        line_count = line_count_when_code_file_exceeds_blocking_threshold(
-            str(absolute_path)
+        violation = line_count_violation(
+            str(absolute_path), LINE_COUNT_BLOCKING_THRESHOLD
         )
-        if line_count is None:
+        if violation is None:
             continue
         relative_path = str(absolute_path.relative_to(REPOSITORY_ROOT))
-        over_limit_files[relative_path] = line_count
+        over_limit_files[relative_path] = violation.line_count
     return over_limit_files
-
-
-def load_grandfathered_line_counts() -> dict[str, int]:
-    if not BASELINE_FILE_PATH.is_file():
-        return {}
-    return json.loads(BASELINE_FILE_PATH.read_text())
 
 
 def write_grandfathered_line_counts(over_limit_files: dict[str, int]) -> None:
@@ -80,65 +85,83 @@ def write_grandfathered_line_counts(over_limit_files: dict[str, int]) -> None:
     BASELINE_FILE_PATH.write_text(serialized + "\n")
 
 
-def find_new_or_worsened_offenders(
+def drift_from_baseline(
     current_over_limit_files: dict[str, int],
-    grandfathered_line_counts: dict[str, int],
-) -> list[tuple[str, int, int]]:
-    regressions = []
-    for relative_path, line_count in sorted(current_over_limit_files.items()):
-        allowed_line_count = grandfathered_line_counts.get(
-            relative_path, LINE_COUNT_BLOCKING_THRESHOLD
+    grandfathered_ceilings: dict[str, int],
+) -> list[BaselineDrift]:
+    return [
+        BaselineDrift(
+            relative_path,
+            current_over_limit_files.get(relative_path),
+            grandfathered_ceilings.get(relative_path),
         )
-        if line_count > allowed_line_count:
-            regressions.append((relative_path, line_count, allowed_line_count))
-    return regressions
+        for relative_path in sorted(
+            set(current_over_limit_files) | set(grandfathered_ceilings)
+        )
+        if current_over_limit_files.get(relative_path)
+        != grandfathered_ceilings.get(relative_path)
+    ]
 
 
-def print_regression_failure(regressions: list[tuple[str, int, int]]) -> None:
+def describe_drift(drift: BaselineDrift) -> str:
+    if drift.recorded_line_count is None:
+        return (
+            f"new offender at {drift.current_line_count} lines, over the "
+            f"{LINE_COUNT_BLOCKING_THRESHOLD}-line hard limit"
+        )
+    if drift.current_line_count is None:
+        return (
+            f"grandfathered at {drift.recorded_line_count}, no longer a tracked "
+            f"file over the limit; drop the entry"
+        )
+    if drift.current_line_count > drift.recorded_line_count:
+        return (
+            f"grew from {drift.recorded_line_count} to {drift.current_line_count} lines"
+        )
+    return (
+        f"shrank from {drift.recorded_line_count} to {drift.current_line_count} "
+        f"lines; record the smaller ceiling"
+    )
+
+
+def print_drift_failure(drifts: list[BaselineDrift]) -> None:
     print(
-        f"FAILED: {len(regressions)} file(s) newly exceed the "
-        f"{LINE_COUNT_BLOCKING_THRESHOLD}-line hard limit:",
+        f"FAILED: {len(drifts)} file(s) no longer match the line-count baseline:",
         file=sys.stderr,
     )
-    for relative_path, line_count, allowed_line_count in regressions:
-        if allowed_line_count == LINE_COUNT_BLOCKING_THRESHOLD:
-            ceiling_description = "new offender"
-        else:
-            ceiling_description = f"grandfathered at {allowed_line_count}"
-        print(
-            f"  {line_count:>5} {relative_path}  ({ceiling_description})",
-            file=sys.stderr,
-        )
+    for drift in drifts:
+        print(f"  {drift.file_path}  ({describe_drift(drift)})", file=sys.stderr)
     print(
         "\nSplit the file into smaller single-responsibility modules, or run "
-        "repository/verification/check-line-counts.py --update-baseline if the growth is intended.",
+        "repository/verification/check-line-counts.py --update-baseline if the new "
+        "state is intended.",
         file=sys.stderr,
     )
 
 
 def main() -> int:
+    current_over_limit_files = line_count_per_over_limit_file()
+
     if "--update-baseline" in sys.argv[1:]:
-        over_limit_files = line_count_per_over_limit_file()
-        write_grandfathered_line_counts(over_limit_files)
+        write_grandfathered_line_counts(current_over_limit_files)
         print(
-            f"line-count baseline updated: {len(over_limit_files)} grandfathered files"
+            "line-count baseline updated: "
+            f"{len(current_over_limit_files)} grandfathered files"
         )
         return 0
 
-    current_over_limit_files = line_count_per_over_limit_file()
-    grandfathered_line_counts = load_grandfathered_line_counts()
-    regressions = find_new_or_worsened_offenders(
-        current_over_limit_files, grandfathered_line_counts
+    drifts = drift_from_baseline(
+        current_over_limit_files,
+        grandfathered_line_counts(str(BASELINE_FILE_PATH)),
     )
-
-    if not regressions:
+    if not drifts:
         print(
-            f"line-count check: OK ({len(grandfathered_line_counts)} "
+            f"line-count check: OK ({len(current_over_limit_files)} "
             "grandfathered files)"
         )
         return 0
 
-    print_regression_failure(regressions)
+    print_drift_failure(drifts)
     return 1
 
 
