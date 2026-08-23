@@ -35,7 +35,7 @@ setup() {
 	export WHISPER_CALL_LOG="$BATS_TEST_TMPDIR/whisper-calls.log"
 	export AMPLITUDE_VALUE="0.500000"
 	export RECORDED_CHUNK_LOG="$BATS_TEST_TMPDIR/recorded-chunks.log"
-	export MKTEMP_PATH_LOG="$BATS_TEST_TMPDIR/mktemp-paths.log"
+	export MKTEMP_PATH_LOG="$BATS_RUN_TMPDIR/hey-bot-mktemp-paths.log"
 	export NOTIFY_CALL_LOG="$BATS_TEST_TMPDIR/notify-calls.log"
 	export GATEWAY_REQUEST_LOG="$BATS_TEST_TMPDIR/gateway-requests.log"
 	export GATEWAY_RESPONSE_FILE="$BATS_TEST_TMPDIR/gateway-response.json"
@@ -152,12 +152,21 @@ teardown() {
 	stop_daemon
 	if [ -f "$MKTEMP_PATH_LOG" ]; then
 		while read -r temporaryPath; do rm -f "$temporaryPath"; done <"$MKTEMP_PATH_LOG"
+		: >"$MKTEMP_PATH_LOG"
 	fi
 	if [ -n "${DAEMON_PID:-}" ]; then
 		rm -f "/tmp/hey-bot-followup-$DAEMON_PID" "/tmp/hey-bot-wait-context-$DAEMON_PID"
 	fi
 	if [ -n "${KEYWORDS_DISABLED_FLAG_OWNED:-}" ]; then
 		rm -f "$KEYWORDS_DISABLED_FLAG_FILE"
+	fi
+}
+
+teardown_file() {
+	local temporaryPathLog="$BATS_RUN_TMPDIR/hey-bot-mktemp-paths.log"
+	if [ -f "$temporaryPathLog" ]; then
+		/bin/sleep 0.3
+		while read -r temporaryPath; do rm -f "$temporaryPath"; done <"$temporaryPathLog"
 	fi
 }
 
