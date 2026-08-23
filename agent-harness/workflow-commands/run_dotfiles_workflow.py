@@ -7,6 +7,9 @@ import sys
 from pathlib import Path
 
 WORKFLOW_NAME_VARIABLE = "DOTFILES_WORKFLOW_NAME"
+INTERACTIVE_SESSION_VARIABLES = frozenset(
+    {"AGENT_INTERACTIVE_PREFERENCES_PATH", "CLAUDECODE"}
+)
 WORKFLOW_TIMEOUT_SECONDS = 1800
 VERBATIM_RELAY_INSTRUCTION = (
     "Return the workflow's report as your entire final message, verbatim. "
@@ -82,6 +85,14 @@ def resolve_claude_binary() -> str:
     return claude_binary
 
 
+def build_non_interactive_environment() -> dict[str, str]:
+    return {
+        name: value
+        for name, value in os.environ.items()
+        if name not in INTERACTIVE_SESSION_VARIABLES
+    }
+
+
 def run_workflow(
     claude_binary: str, slash_command: str, repository_root: Path
 ) -> subprocess.CompletedProcess:
@@ -97,6 +108,7 @@ def run_workflow(
             VERBATIM_RELAY_INSTRUCTION,
         ],
         cwd=repository_root,
+        env=build_non_interactive_environment(),
         capture_output=True,
         text=True,
         timeout=WORKFLOW_TIMEOUT_SECONDS,

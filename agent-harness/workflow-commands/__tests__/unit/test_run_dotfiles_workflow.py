@@ -119,6 +119,18 @@ def test_unparseable_output_surfaces_the_raw_failure():
     assert "not logged in" in str(failure.value)
 
 
+def test_the_workflow_session_is_never_treated_as_interactive(monkeypatch):
+    monkeypatch.setenv("AGENT_INTERACTIVE_PREFERENCES_PATH", "/preferences.md")
+    monkeypatch.setenv("CLAUDECODE", "1")
+    monkeypatch.setenv("PATH", "/usr/bin")
+
+    environment = run_dotfiles_workflow.build_non_interactive_environment()
+
+    assert "AGENT_INTERACTIVE_PREFERENCES_PATH" not in environment
+    assert "CLAUDECODE" not in environment
+    assert environment["PATH"] == "/usr/bin"
+
+
 def test_missing_claude_asks_for_the_rebuild(monkeypatch):
     monkeypatch.setattr(run_dotfiles_workflow.shutil, "which", lambda _: None)
 
