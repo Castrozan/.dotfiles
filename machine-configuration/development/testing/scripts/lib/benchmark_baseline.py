@@ -34,8 +34,27 @@ def validate_tracked_baseline(
 
     age_days = _baseline_age_days(document)
     failures = _freshness_failures(age_days, save_baseline_command)
+    failures.extend(_metadata_failures(document))
     failures.extend(_measurement_failures(document, value_key, ceiling_key))
     return BaselineValidation(document, age_days, failures)
+
+
+def _metadata_failures(document: dict) -> list[str]:
+    failures: list[str] = []
+
+    git_commit = document.get("git_commit")
+    if not isinstance(git_commit, str) or not git_commit.strip():
+        failures.append("Baseline has no recorded git_commit.")
+
+    threshold_percent = document.get("threshold_percent")
+    if isinstance(threshold_percent, bool) or not isinstance(
+        threshold_percent, (int, float)
+    ):
+        failures.append("Baseline threshold_percent is not a number.")
+    elif threshold_percent <= 0:
+        failures.append("Baseline threshold_percent must be greater than zero.")
+
+    return failures
 
 
 def _read_baseline_document(
