@@ -12,7 +12,7 @@ setup:
 prompt: |
   Add a function to src/app.py that takes a list of user dictionaries
   (each with name, email, age) and returns only users older than 18
-  with valid email addresses (containing @).
+  whose email address contains an at sign.
 
 timeout: 300
 
