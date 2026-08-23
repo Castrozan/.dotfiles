@@ -17,6 +17,7 @@ from benchmark_core import (
     ensure_results_file_exists,
     get_current_git_short_commit,
     measure_command,
+    required_benchmark_target,
     unmeasurable_command,
     utc_baseline_timestamp,
 )
@@ -380,15 +381,19 @@ def save_baseline(results: list[dict]) -> bool:
         print("\nBaseline not saved: every measured component failed.")
         return False
 
+    target = required_benchmark_target()
     baseline = {
         "generated_at": utc_baseline_timestamp(),
         "git_commit": get_current_git_short_commit(),
+        "host": target.host,
+        "config": target.configuration,
         "threshold_percent": REGRESSION_THRESHOLD_PERCENT,
         "measurements": measurements,
     }
     write_baseline(BASELINE_PATH, baseline)
 
     print(f"\nBaseline saved to {BASELINE_PATH}")
+    print(f"  Host: {baseline['host']}/{baseline['config']}")
     print(f"  Commit: {baseline['git_commit']}")
     print(f"  Threshold: {REGRESSION_THRESHOLD_PERCENT}%")
     for name, data in measurements.items():
@@ -438,7 +443,7 @@ def compare_latest_results_to_baseline(
     return BaselineComparison(regression_messages, missing_component_names)
 
 
-def check_baseline() -> bool:
+def validated_tracked_baseline(title: str) -> dict | None:
     validation = validate_tracked_baseline(
         BASELINE_PATH,
         "avg_ms",
@@ -450,10 +455,13 @@ def check_baseline() -> bool:
     age_text = "unknown" if validation.age_days is None else f"{validation.age_days}"
 
     print("=" * 60)
-    print("DESKTOP PERFORMANCE BASELINE CHECK")
+    print(title)
     print("=" * 60)
     print(f"  Baseline: {generated_at} (age: {age_text} days)")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
+    print(
+        f"  Host: {baseline.get('host', 'unknown')}/{baseline.get('config', 'unknown')}"
+    )
     print(f"  Threshold: {baseline.get('threshold_percent', '?')}%")
     print()
 
@@ -461,6 +469,13 @@ def check_baseline() -> bool:
         print(f"FAILED ({len(validation.failures)} issues):")
         for failure in validation.failures:
             print(f"  - {failure}")
+        return None
+    return baseline
+
+
+def check_baseline() -> bool:
+    baseline = validated_tracked_baseline("DESKTOP PERFORMANCE BASELINE CHECK")
+    if baseline is None:
         return False
 
     print(f"  {'Component':<22} {'Baseline':>10} {'Max':>10}")
@@ -473,6 +488,39 @@ def check_baseline() -> bool:
         )
 
     print("\nPASSED: Baseline is valid.")
+    return True
+
+
+def compare_latest_to_baseline(results_file: Path) -> bool:
+    baseline = validated_tracked_baseline("DESKTOP PERFORMANCE REGRESSION CHECK")
+    if baseline is None:
+        return False
+
+    if not results_file.exists():
+        print(
+            f"FAILED: no measured results at {results_file}. "
+            "Run 'benchmark-desktop' on this machine before comparing."
+        )
+        return False
+
+    comparison = compare_latest_results_to_baseline(
+        baseline,
+        get_latest_results_by_component(results_file),
+    )
+
+    for name in comparison.missing_component_names:
+        print(f"  MISSING  {name}: the latest run measured nothing")
+    for message in comparison.regression_messages:
+        print(f"  SLOWER   {message}")
+
+    if comparison.missing_component_names or comparison.regression_messages:
+        print(
+            f"\nFAILED: {len(comparison.regression_messages)} regressions, "
+            f"{len(comparison.missing_component_names)} unmeasured components."
+        )
+        return False
+
+    print("PASSED: every tracked component is within its ceiling.")
     return True
 
 
@@ -535,6 +583,8 @@ def parse_arguments(argv: list[str]) -> tuple[str, int, str | None]:
         return "save-baseline", DEFAULT_ITERATIONS, None
     if "--check-baseline" in argv:
         return "check-baseline", 0, None
+    if "--compare-latest" in argv:
+        return "compare-latest", 0, None
 
     command = "run"
     iterations = DEFAULT_ITERATIONS
@@ -571,6 +621,7 @@ def print_usage() -> None:
     print("Flags:")
     print("  --save-baseline    - Measure and save baseline")
     print("  --check-baseline   - Validate committed baseline")
+    print("  --compare-latest   - Compare the latest measured run to the baseline")
     print()
     print("Components (partial match):")
     print("  hyprctl, workspace, switcher, launcher, dashboard,")
@@ -591,6 +642,11 @@ def main() -> None:
         raise SystemExit(0 if passed else 1)
 
     results_file = get_results_file_path()
+
+    if command == "compare-latest":
+        passed = compare_latest_to_baseline(results_file)
+        raise SystemExit(0 if passed else 1)
+
     ensure_results_file_exists(results_file, CSV_HEADER)
 
     if command == "report":

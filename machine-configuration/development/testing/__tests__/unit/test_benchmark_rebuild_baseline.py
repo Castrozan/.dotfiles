@@ -10,7 +10,8 @@ def _valid_baseline() -> dict:
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "git_commit": "abc1234",
-        "config": "home",
+        "host": "kira",
+        "config": "darwin",
         "threshold_percent": 150,
         "measurements": {"eval": {"duration_seconds": 2.0, "max_allowed_seconds": 3.0}},
     }
@@ -39,6 +40,7 @@ class TestCheckBaselineReporting:
 
         report = capsys.readouterr().out
         assert "Commit: abc1234" in report
+        assert "Host: kira/darwin" in report
         assert "Threshold: 150%" in report
         assert "eval: 2.0s (max 3.0s)" in report
         assert "PASSED" in report

@@ -4,6 +4,11 @@ from unittest.mock import patch
 import pytest
 
 import benchmark_desktop
+from benchmark_core import BenchmarkTarget
+
+CHISE = BenchmarkTarget(
+    "chise", "nixos", "nixosConfigurations.chise.config.system.build.toplevel"
+)
 
 
 def _result(name, average_ms, errored):
@@ -25,6 +30,10 @@ class TestSaveBaseline:
                 "benchmark_desktop.get_current_git_short_commit",
                 return_value="abc",
             ),
+            patch(
+                "benchmark_desktop.required_benchmark_target",
+                return_value=CHISE,
+            ),
         ):
             return benchmark_desktop.save_baseline(results)
 
@@ -35,6 +44,24 @@ class TestSaveBaseline:
         data = json.loads(baseline_file.read_text())
         assert data["measurements"]["test"]["avg_ms"] == 50.0
         assert data["measurements"]["test"]["max_allowed_ms"] == 100.0
+
+    def test_records_the_measuring_host_and_configuration(self, tmp_path):
+        baseline_file = tmp_path / "baseline.json"
+        assert self._save(baseline_file, [_result("test", 50.0, False)]) is True
+
+        data = json.loads(baseline_file.read_text())
+        assert data["host"] == "chise"
+        assert data["config"] == "nixos"
+
+    def test_never_asks_for_a_host_when_every_measurement_failed(self, tmp_path):
+        baseline_file = tmp_path / "baseline.json"
+
+        with (
+            patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file),
+            patch("benchmark_desktop.required_benchmark_target") as resolve_host,
+        ):
+            assert benchmark_desktop.save_baseline([_result("a", 0, True)]) is False
+            resolve_host.assert_not_called()
 
     def test_saves_only_the_successful_measurements(self, tmp_path):
         baseline_file = tmp_path / "baseline.json"

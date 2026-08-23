@@ -6,11 +6,13 @@ from benchmark_core import (
     DOTFILES_DIRECTORY,
     RESULTS_DIRECTORY,
     TRACKED_BASELINE_DIRECTORY,
+    BenchmarkTarget,
     CommandMeasurement,
     append_result_row,
     ensure_results_file_exists,
     get_current_git_short_commit,
     measure_shell_command,
+    required_benchmark_target,
     utc_baseline_timestamp,
 )
 
@@ -26,29 +28,16 @@ def get_results_file_path() -> Path:
     return RESULTS_DIRECTORY / RESULTS_FILE_NAME
 
 
-def detect_configuration_type() -> str:
-    if Path("/etc/nixos").is_dir():
-        return "nixos"
-    return "darwin"
+def configuration_label(target: BenchmarkTarget) -> str:
+    return f"{target.host}/{target.configuration}"
 
 
-def get_flake_output_for_configuration(
-    configuration_type: str,
-) -> str:
-    if configuration_type == "nixos":
-        return "nixosConfigurations.chise.config.system.build.toplevel"
-    return "darwinConfigurations.kira.system"
-
-
-def get_benchmark_commands(
-    configuration_type: str,
-) -> dict[str, str]:
-    flake_output = get_flake_output_for_configuration(configuration_type)
+def get_benchmark_commands(target: BenchmarkTarget) -> dict[str, str]:
     dotfiles = str(DOTFILES_DIRECTORY)
     return {
         "eval": f"nix flake check {dotfiles} --no-build",
-        "dry-run": (f"nix build {dotfiles}#{flake_output} --dry-run"),
-        "build": f"nix build {dotfiles}#{flake_output}",
+        "dry-run": (f"nix build {dotfiles}#{target.flake_output} --dry-run"),
+        "build": f"nix build {dotfiles}#{target.flake_output}",
         "rebuild": "rebuild",
     }
 
@@ -56,7 +45,7 @@ def get_benchmark_commands(
 def record_benchmark_result(
     results_file: Path,
     benchmark_type: str,
-    configuration_type: str,
+    configuration: str,
     duration_seconds: float,
     commit_hash: str,
 ) -> None:
@@ -64,7 +53,7 @@ def record_benchmark_result(
         results_file,
         [
             benchmark_type,
-            configuration_type,
+            configuration,
             f"{duration_seconds:.3f}",
             commit_hash,
         ],
@@ -74,10 +63,10 @@ def record_benchmark_result(
 def run_and_record_benchmark(
     benchmark_type: str,
     command: str,
-    configuration_type: str,
+    configuration: str,
     results_file: Path,
 ) -> CommandMeasurement:
-    print(f"Benchmarking: {benchmark_type} ({configuration_type})")
+    print(f"Benchmarking: {benchmark_type} ({configuration})")
     measurement = measure_shell_command(command)
 
     if not measurement.succeeded:
@@ -90,7 +79,7 @@ def run_and_record_benchmark(
     record_benchmark_result(
         results_file,
         benchmark_type,
-        configuration_type,
+        configuration,
         measurement.elapsed_seconds,
         get_current_git_short_commit(),
     )
@@ -100,12 +89,13 @@ def run_and_record_benchmark(
 
 def build_baseline_from_measurements(
     measurements: dict[str, float],
-    configuration_type: str,
+    target: BenchmarkTarget,
 ) -> dict:
     return {
         "generated_at": utc_baseline_timestamp(),
         "git_commit": get_current_git_short_commit(),
-        "config": configuration_type,
+        "host": target.host,
+        "config": target.configuration,
         "threshold_percent": REGRESSION_THRESHOLD_PERCENT,
         "measurements": {
             benchmark_type: {
@@ -122,7 +112,7 @@ def build_baseline_from_measurements(
 
 def save_baseline(
     benchmark_commands: dict[str, str],
-    configuration_type: str,
+    target: BenchmarkTarget,
     results_file: Path,
 ) -> bool:
     measurements: dict[str, float] = {}
@@ -130,7 +120,7 @@ def save_baseline(
         measurement = run_and_record_benchmark(
             benchmark_type,
             benchmark_commands[benchmark_type],
-            configuration_type,
+            configuration_label(target),
             results_file,
         )
         if not measurement.succeeded:
@@ -138,10 +128,11 @@ def save_baseline(
             return False
         measurements[benchmark_type] = measurement.elapsed_seconds
 
-    baseline = build_baseline_from_measurements(measurements, configuration_type)
+    baseline = build_baseline_from_measurements(measurements, target)
     write_baseline(BASELINE_PATH, baseline)
 
     print(f"\nBaseline saved to {BASELINE_PATH}")
+    print(f"  Host: {baseline['host']}/{baseline['config']}")
     print(f"  Commit: {baseline['git_commit']}")
     print(f"  Threshold: {REGRESSION_THRESHOLD_PERCENT}% of measured values")
     for name, data in baseline["measurements"].items():
@@ -167,6 +158,9 @@ def check_baseline() -> bool:
     print(f"  Generated: {baseline.get('generated_at', 'unknown')}")
     print(f"  Age: {_describe_age(validation.age_days)}")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
+    print(
+        f"  Host: {baseline.get('host', 'unknown')}/{baseline.get('config', 'unknown')}"
+    )
     print(f"  Threshold: {baseline.get('threshold_percent', '?')}%")
 
     if validation.failures:
@@ -248,7 +242,7 @@ def print_averages_by_type(
 
 
 def print_usage() -> None:
-    print("Usage: benchmark-rebuild <command> [config]")
+    print("Usage: benchmark-rebuild <command>")
     print()
     print("Commands:")
     print("  eval           - Benchmark flake evaluation")
@@ -262,62 +256,44 @@ def print_usage() -> None:
     print("  --save-baseline  - Measure and save baseline")
     print("  --check-baseline - Validate committed baseline")
     print()
-    print("Configs:")
-    print("  darwin - macOS nix-darwin")
-    print("  nixos  - NixOS configuration")
-    print("  auto   - Auto-detect (default)")
+    print("The configuration host comes from the nix packaging of this command.")
 
 
 def main() -> None:
-    if "--save-baseline" in sys.argv:
-        configuration_type = "auto"
-        for arg in sys.argv[1:]:
-            if arg != "--save-baseline":
-                configuration_type = arg
-                break
-        if configuration_type == "auto":
-            configuration_type = detect_configuration_type()
-        results_file = get_results_file_path()
-        ensure_results_file_exists(results_file, CSV_HEADER)
-        benchmark_commands = get_benchmark_commands(configuration_type)
-        if not save_baseline(
-            benchmark_commands,
-            configuration_type,
-            results_file,
-        ):
-            raise SystemExit(1)
-        return
-
     if "--check-baseline" in sys.argv:
         passed = check_baseline()
         raise SystemExit(0 if passed else 1)
 
-    command = sys.argv[1] if len(sys.argv) > 1 else "all"
-    configuration_type = sys.argv[2] if len(sys.argv) > 2 else "auto"
-
-    if configuration_type == "auto":
-        configuration_type = detect_configuration_type()
-
     results_file = get_results_file_path()
     ensure_results_file_exists(results_file, CSV_HEADER)
 
-    benchmark_commands = get_benchmark_commands(configuration_type)
-
-    if command == "report":
+    if sys.argv[1:2] == ["report"]:
         print_recent_results(results_file)
-    elif command == "all":
+        return
+
+    target = required_benchmark_target()
+    benchmark_commands = get_benchmark_commands(target)
+
+    if "--save-baseline" in sys.argv:
+        if not save_baseline(benchmark_commands, target, results_file):
+            raise SystemExit(1)
+        return
+
+    command = sys.argv[1] if len(sys.argv) > 1 else "all"
+
+    if command == "all":
         for benchmark_type in ("eval", "dry-run"):
             run_and_record_benchmark(
                 benchmark_type,
                 benchmark_commands[benchmark_type],
-                configuration_type,
+                configuration_label(target),
                 results_file,
             )
     elif command in benchmark_commands:
         run_and_record_benchmark(
             command,
             benchmark_commands[command],
-            configuration_type,
+            configuration_label(target),
             results_file,
         )
     else:

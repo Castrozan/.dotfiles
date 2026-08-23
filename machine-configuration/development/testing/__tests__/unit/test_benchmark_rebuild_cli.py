@@ -3,6 +3,16 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 import benchmark_rebuild
+from benchmark_core import BenchmarkTarget
+
+KIRA = BenchmarkTarget("kira", "darwin", "darwinConfigurations.kira.system")
+
+
+def _running_on_a_configured_host():
+    return patch(
+        "benchmark_rebuild.required_benchmark_target",
+        return_value=KIRA,
+    )
 
 
 class TestMain:
@@ -19,6 +29,21 @@ class TestMain:
         ):
             benchmark_rebuild.main()
 
+    def test_report_needs_no_configured_host(self, tmp_path):
+        results_file = tmp_path / "results.csv"
+        results_file.write_text("timestamp,type,config,duration_seconds,commit\n")
+
+        with (
+            patch("benchmark_rebuild.sys.argv", ["cmd", "report"]),
+            patch(
+                "benchmark_rebuild.get_results_file_path",
+                return_value=results_file,
+            ),
+            patch("benchmark_rebuild.required_benchmark_target") as resolve_host,
+        ):
+            benchmark_rebuild.main()
+            resolve_host.assert_not_called()
+
     def test_unknown_command_exits(self):
         with (
             patch("benchmark_rebuild.sys.argv", ["cmd", "bogus"]),
@@ -27,6 +52,7 @@ class TestMain:
                 return_value=MagicMock(),
             ),
             patch("benchmark_rebuild.ensure_results_file_exists"),
+            _running_on_a_configured_host(),
         ):
             with pytest.raises(SystemExit) as exit_info:
                 benchmark_rebuild.main()
@@ -40,11 +66,40 @@ class TestMain:
                 return_value=MagicMock(),
             ),
             patch("benchmark_rebuild.ensure_results_file_exists"),
+            _running_on_a_configured_host(),
             patch("benchmark_rebuild.run_and_record_benchmark") as mock_bench,
         ):
             benchmark_rebuild.main()
             mock_bench.assert_called_once()
             assert mock_bench.call_args[0][0] == "eval"
+
+    def test_records_the_measuring_host_and_configuration(self):
+        with (
+            patch("benchmark_rebuild.sys.argv", ["cmd", "eval"]),
+            patch(
+                "benchmark_rebuild.get_results_file_path",
+                return_value=MagicMock(),
+            ),
+            patch("benchmark_rebuild.ensure_results_file_exists"),
+            _running_on_a_configured_host(),
+            patch("benchmark_rebuild.run_and_record_benchmark") as mock_bench,
+        ):
+            benchmark_rebuild.main()
+            assert mock_bench.call_args[0][2] == "kira/darwin"
+
+    def test_benchmarks_the_flake_output_of_the_configured_host(self):
+        with (
+            patch("benchmark_rebuild.sys.argv", ["cmd", "build"]),
+            patch(
+                "benchmark_rebuild.get_results_file_path",
+                return_value=MagicMock(),
+            ),
+            patch("benchmark_rebuild.ensure_results_file_exists"),
+            _running_on_a_configured_host(),
+            patch("benchmark_rebuild.run_and_record_benchmark") as mock_bench,
+        ):
+            benchmark_rebuild.main()
+            assert "darwinConfigurations.kira.system" in mock_bench.call_args[0][1]
 
     def test_all_command_runs_eval_and_dryrun(self):
         with (
@@ -54,6 +109,7 @@ class TestMain:
                 return_value=MagicMock(),
             ),
             patch("benchmark_rebuild.ensure_results_file_exists"),
+            _running_on_a_configured_host(),
             patch("benchmark_rebuild.run_and_record_benchmark") as mock_bench,
         ):
             benchmark_rebuild.main()
@@ -90,6 +146,16 @@ class TestMain:
                 benchmark_rebuild.main()
             mock_ensure.assert_not_called()
 
+    def test_check_baseline_needs_no_configured_host(self):
+        with (
+            patch("benchmark_rebuild.sys.argv", ["cmd", "--check-baseline"]),
+            patch("benchmark_rebuild.check_baseline", return_value=True),
+            patch("benchmark_rebuild.required_benchmark_target") as resolve_host,
+        ):
+            with pytest.raises(SystemExit):
+                benchmark_rebuild.main()
+            resolve_host.assert_not_called()
+
     def test_save_baseline_calls_save(self):
         with (
             patch("benchmark_rebuild.sys.argv", ["cmd", "--save-baseline"]),
@@ -98,10 +164,12 @@ class TestMain:
                 return_value=MagicMock(),
             ),
             patch("benchmark_rebuild.ensure_results_file_exists"),
+            _running_on_a_configured_host(),
             patch("benchmark_rebuild.save_baseline") as mock_save,
         ):
             benchmark_rebuild.main()
             mock_save.assert_called_once()
+            assert mock_save.call_args[0][1] == KIRA
 
     def test_refused_save_baseline_exits_one(self):
         with (
@@ -111,6 +179,7 @@ class TestMain:
                 return_value=MagicMock(),
             ),
             patch("benchmark_rebuild.ensure_results_file_exists"),
+            _running_on_a_configured_host(),
             patch("benchmark_rebuild.save_baseline", return_value=False),
         ):
             with pytest.raises(SystemExit) as exit_info:

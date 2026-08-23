@@ -1,27 +1,26 @@
 #!/usr/bin/env bash
 
-_run_rebuild_baseline_check() {
-	if ! command -v benchmark-rebuild &>/dev/null; then
-		echo "SKIP: benchmark-rebuild not installed" >&2
-		return 0
-	fi
+_validate_tracked_baseline_from_source() {
+	local benchmarkSource="$1"
+	local capabilityDirectory="$REPO_DIR/machine-configuration/development/testing"
 
+	PYTHONPATH="$capabilityDirectory/scripts/lib${PYTHONPATH:+:$PYTHONPATH}" \
+		DOTFILES_BENCHMARK_CHECKOUT="$REPO_DIR" \
+		python3 "$capabilityDirectory/scripts/$benchmarkSource" --check-baseline
+}
+
+_run_rebuild_baseline_check() {
 	echo "--- Rebuild Performance Baseline Check ---"
 	local baselineExitCode=0
-	benchmark-rebuild --check-baseline || baselineExitCode=$?
+	_validate_tracked_baseline_from_source benchmark_rebuild.py || baselineExitCode=$?
 	echo ""
 	return "$baselineExitCode"
 }
 
 _run_desktop_baseline_check() {
-	if ! command -v benchmark-desktop &>/dev/null; then
-		echo "SKIP: benchmark-desktop not installed" >&2
-		return 0
-	fi
-
 	echo "--- Desktop Performance Baseline Check ---"
 	local baselineExitCode=0
-	benchmark-desktop --check-baseline || baselineExitCode=$?
+	_validate_tracked_baseline_from_source benchmark_desktop.py || baselineExitCode=$?
 	echo ""
 	return "$baselineExitCode"
 }

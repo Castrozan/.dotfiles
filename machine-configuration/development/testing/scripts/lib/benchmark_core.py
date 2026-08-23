@@ -1,10 +1,16 @@
+import os
 import subprocess
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
+BENCHMARK_CHECKOUT_VARIABLE = "DOTFILES_BENCHMARK_CHECKOUT"
+BENCHMARK_HOST_VARIABLE = "DOTFILES_BENCHMARK_HOST"
+
+DOTFILES_DIRECTORY = Path(
+    os.environ.get(BENCHMARK_CHECKOUT_VARIABLE) or Path.home() / ".dotfiles"
+)
 TRACKED_BASELINE_DIRECTORY = (
     DOTFILES_DIRECTORY / "machine-configuration" / "development" / "testing"
 )
@@ -15,6 +21,46 @@ RESULTS_DIRECTORY = Path.home() / ".local" / "share" / "dotfiles-benchmarks"
 class CommandMeasurement:
     succeeded: bool
     elapsed_seconds: float
+
+
+@dataclass(frozen=True)
+class BenchmarkTarget:
+    host: str
+    configuration: str
+    flake_output: str
+
+
+BENCHMARK_TARGETS = {
+    "kira": BenchmarkTarget("kira", "darwin", "darwinConfigurations.kira.system"),
+    "rin": BenchmarkTarget("rin", "darwin", "darwinConfigurations.rin.system"),
+    "chise": BenchmarkTarget(
+        "chise",
+        "nixos",
+        "nixosConfigurations.chise.config.system.build.toplevel",
+    ),
+}
+
+
+def configured_benchmark_host() -> str:
+    return os.environ.get(BENCHMARK_HOST_VARIABLE, "").strip()
+
+
+def configured_benchmark_target() -> BenchmarkTarget | None:
+    return BENCHMARK_TARGETS.get(configured_benchmark_host())
+
+
+def required_benchmark_target() -> BenchmarkTarget:
+    target = configured_benchmark_target()
+    if target is not None:
+        return target
+    known_hosts = ", ".join(sorted(BENCHMARK_TARGETS))
+    print(
+        f"{BENCHMARK_HOST_VARIABLE} is "
+        f"'{configured_benchmark_host()}', which names no configured host. "
+        f"Expected one of {known_hosts}. The nix packaging of this command "
+        "injects it from the host alias the flake builds."
+    )
+    raise SystemExit(1)
 
 
 def unmeasurable_command() -> CommandMeasurement:

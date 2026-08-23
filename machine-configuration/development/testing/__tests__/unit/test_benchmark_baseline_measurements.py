@@ -10,6 +10,8 @@ def _document(**overrides) -> dict:
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "git_commit": "abc1234",
+        "host": "kira",
+        "config": "darwin",
         "threshold_percent": 150,
         **overrides,
     }

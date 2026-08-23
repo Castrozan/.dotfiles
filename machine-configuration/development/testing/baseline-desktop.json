@@ -1,6 +1,8 @@
 {
   "generated_at": "2026-04-06T00:08:31+00:00",
   "git_commit": "74c8bdad",
+  "host": "chise",
+  "config": "nixos",
   "threshold_percent": 200,
   "measurements": {
     "hyprctl-ipc": {

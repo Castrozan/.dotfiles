@@ -5,6 +5,8 @@ from pathlib import Path
 
 MAXIMUM_BASELINE_AGE_DAYS = 30
 
+REQUIRED_PROVENANCE_FIELDS = ("git_commit", "host", "config")
+
 
 @dataclass(frozen=True)
 class BaselineValidation:
@@ -40,11 +42,11 @@ def validate_tracked_baseline(
 
 
 def _metadata_failures(document: dict) -> list[str]:
-    failures: list[str] = []
-
-    git_commit = document.get("git_commit")
-    if not isinstance(git_commit, str) or not git_commit.strip():
-        failures.append("Baseline has no recorded git_commit.")
+    failures = [
+        f"Baseline has no recorded {field}."
+        for field in REQUIRED_PROVENANCE_FIELDS
+        if not _is_recorded_text(document.get(field))
+    ]
 
     threshold_percent = document.get("threshold_percent")
     if isinstance(threshold_percent, bool) or not isinstance(
@@ -55,6 +57,10 @@ def _metadata_failures(document: dict) -> list[str]:
         failures.append("Baseline threshold_percent must be greater than zero.")
 
     return failures
+
+
+def _is_recorded_text(value) -> bool:
+    return isinstance(value, str) and bool(value.strip())
 
 
 def _read_baseline_document(

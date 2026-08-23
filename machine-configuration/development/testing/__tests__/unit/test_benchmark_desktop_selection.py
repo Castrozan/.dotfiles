@@ -18,6 +18,10 @@ class TestParseArguments:
         command, _, _ = benchmark_desktop.parse_arguments(["--check-baseline"])
         assert command == "check-baseline"
 
+    def test_compare_latest(self):
+        command, _, _ = benchmark_desktop.parse_arguments(["--compare-latest"])
+        assert command == "compare-latest"
+
     def test_report(self):
         command, _, _ = benchmark_desktop.parse_arguments(["report"])
         assert command == "report"

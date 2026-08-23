@@ -34,6 +34,8 @@ def _document(generated_at=None) -> dict:
         if generated_at is not None
         else _fresh_timestamp(),
         "git_commit": "abc1234",
+        "host": "kira",
+        "config": "darwin",
         "threshold_percent": 150,
         "measurements": {"eval": {"duration_seconds": 2.0, "max_allowed_seconds": 3.0}},
     }
@@ -130,6 +132,36 @@ class TestMetadataValidation:
         document = _with_field(_document(), "git_commit", git_commit)
         validation = _validate(_write(tmp_path, document))
         assert validation.failures == ["Baseline has no recorded git_commit."]
+
+    @pytest.mark.parametrize(
+        "host",
+        [MISSING, None, "", "   ", 1234, ["kira"]],
+        ids=["missing", "null", "empty", "blank", "number", "list"],
+    )
+    def test_rejects_a_baseline_that_names_no_measuring_host(self, tmp_path, host):
+        document = _with_field(_document(), "host", host)
+        validation = _validate(_write(tmp_path, document))
+        assert validation.failures == ["Baseline has no recorded host."]
+
+    @pytest.mark.parametrize(
+        "config",
+        [MISSING, None, "", "   ", 1234, ["darwin"]],
+        ids=["missing", "null", "empty", "blank", "number", "list"],
+    )
+    def test_rejects_a_baseline_that_names_no_configuration(self, tmp_path, config):
+        document = _with_field(_document(), "config", config)
+        validation = _validate(_write(tmp_path, document))
+        assert validation.failures == ["Baseline has no recorded config."]
+
+    def test_reports_every_missing_provenance_field_at_once(self, tmp_path):
+        document = _document()
+        del document["host"]
+        del document["config"]
+        validation = _validate(_write(tmp_path, document))
+        assert validation.failures == [
+            "Baseline has no recorded host.",
+            "Baseline has no recorded config.",
+        ]
 
     @pytest.mark.parametrize(
         ("threshold_percent", "expected_failure"),

@@ -1,7 +1,8 @@
 {
   "generated_at": "2026-05-30T20:46:21+00:00",
   "git_commit": "aa688a86",
-  "config": "home",
+  "host": "kira",
+  "config": "darwin",
   "threshold_percent": 150,
   "measurements": {
     "eval": {
