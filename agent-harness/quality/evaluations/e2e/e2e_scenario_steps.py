@@ -1,7 +1,8 @@
 from e2e_harness_profiles import HarnessProfile
 from e2e_herdr_io import (
-    capture_full_terminal_output,
+    capture_visible_screen,
     compact_agent_session,
+    pane_hosts_a_live_agent,
     send_prompt_to_agent_session,
     wait_for_response_completion,
 )
@@ -23,25 +24,37 @@ def step_requests_compaction(scenario_step: str | dict) -> bool:
     )
 
 
+def compaction_failure_reason(profile: HarnessProfile) -> str:
+    outcome = (
+        "was refused or never confirmed"
+        if profile.compaction_refusal_marker
+        else "was never confirmed"
+    )
+    return (
+        f"{profile.name} session compaction {outcome} with "
+        f"'{profile.compaction_confirmation_marker}'"
+    )
+
+
 def run_scenario_step(
     pane_id: str,
     scenario_step: str | dict,
     profile: HarnessProfile,
     timeout_seconds: float,
 ) -> str | None:
+    if not pane_hosts_a_live_agent(pane_id):
+        return f"the {profile.name} session is no longer running in the herdr pane"
     if step_requests_compaction(scenario_step):
         if compact_agent_session(pane_id, profile, timeout_seconds=timeout_seconds):
             return None
-        return (
-            f"{profile.name} session compaction was refused or never confirmed with "
-            f"'{profile.compaction_confirmation_marker}'"
-        )
+        return compaction_failure_reason(profile)
     if not send_prompt_to_agent_session(pane_id, scenario_step):
         return "prompt could not be delivered to the herdr pane"
     if wait_for_response_completion(
         pane_id,
-        capture_full_terminal_output(pane_id),
+        capture_visible_screen(pane_id),
         timeout_seconds=timeout_seconds,
+        busy_marker=profile.busy_marker,
     ):
         return None
     return f"Timed out after {timeout_seconds}s"

@@ -95,9 +95,9 @@ def run_e2e_scenario(
             )
         pane_id = tab_handle["pane_id"]
 
-        launch_agent_in_herdr_pane(pane_id, profile, model)
+        launch_agent_in_herdr_pane(pane_id, profile, model, workspace)
 
-        if not wait_for_agent_to_become_ready(pane_id):
+        if not wait_for_agent_to_become_ready(pane_id, profile):
             return E2eScenarioResult(
                 scenario_name=scenario_name,
                 passed=False,
@@ -105,7 +105,7 @@ def run_e2e_scenario(
                 trace=TerminalSessionTrace(),
                 workspace_directory=workspace,
                 duration_seconds=0,
-                error=f"{profile.name} failed to start (never reported idle)",
+                error=f"{profile.name} never became ready to accept a prompt",
             )
 
         start_time = time.time()

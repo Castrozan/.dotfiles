@@ -65,9 +65,10 @@ def create_isolated_herdr_tab_for_test(
 
 
 def launch_agent_in_herdr_pane(
-    pane_id: str, profile: HarnessProfile, model: str
+    pane_id: str, profile: HarnessProfile, model: str, workspace_directory: Path
 ) -> None:
-    run_herdr_command(["pane", "run", pane_id, profile.launch_command(model)])
+    launch_command = profile.launch_command(model, workspace_directory)
+    run_herdr_command(["pane", "run", pane_id, launch_command])
 
 
 def destroy_test_tab(tab_id: str) -> None:

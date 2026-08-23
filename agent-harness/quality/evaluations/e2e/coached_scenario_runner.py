@@ -30,6 +30,7 @@ from e2e_herdr import (
 )
 from e2e_herdr_io import (
     capture_full_terminal_output,
+    capture_visible_screen,
     send_prompt_to_agent_session,
     wait_for_agent_to_become_ready,
     wait_for_response_completion,
@@ -47,7 +48,7 @@ def deliver_prompt_and_wait(pane_id: str, prompt_text: str, timeout: float) -> b
     if not send_prompt_to_agent_session(pane_id, prompt_text):
         return False
     return wait_for_response_completion(
-        pane_id, capture_full_terminal_output(pane_id), timeout
+        pane_id, capture_visible_screen(pane_id), timeout
     )
 
 
@@ -82,9 +83,9 @@ def run_coached_scenario(
         if not worker_handle:
             raise RuntimeError("herdr tab could not be created")
         worker_pane_id = worker_handle["pane_id"]
-        launch_agent_in_herdr_pane(worker_pane_id, CLAUDE_PROFILE, model)
+        launch_agent_in_herdr_pane(worker_pane_id, CLAUDE_PROFILE, model, workspace)
 
-        if not wait_for_agent_to_become_ready(worker_pane_id):
+        if not wait_for_agent_to_become_ready(worker_pane_id, CLAUDE_PROFILE):
             return failed_coached_session(
                 scenario_name, time.time() - start_time, "Worker failed to start"
             )
