@@ -1,36 +1,8 @@
-import importlib.util
-import pathlib
-
-SCRIPT_PATH = (
-    pathlib.Path(__file__).resolve().parents[2]
-    / "scripts"
-    / "launch_herdr_screensaver.py"
-)
-
-
-def _load_launcher_module():
-    module_spec = importlib.util.spec_from_file_location(
-        "launch_herdr_screensaver", SCRIPT_PATH
-    )
-    module = importlib.util.module_from_spec(module_spec)
-    module_spec.loader.exec_module(module)
-    return module
-
-
-launcher = _load_launcher_module()
-
-
-def _which_returning(available_executables):
-    available = set(available_executables)
-
-    def fake_which(executable):
-        return f"/usr/bin/{executable}" if executable in available else None
-
-    return fake_which
+from launch_herdr_screensaver_test_support import launcher, which_returning
 
 
 def test_start_screensaver_routes_pane_commands_through_precompute_loop(monkeypatch):
-    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"precompute-loop"}))
+    monkeypatch.setattr(launcher.shutil, "which", which_returning({"precompute-loop"}))
     monkeypatch.setattr(
         launcher, "resolve_available_screensaver_commands", lambda: ["equation-art"]
     )
