@@ -2,10 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from ab_test_scenarios import (
-    load_core_instructions_body,
-    load_core_instructions_with_frontmatter,
-)
+from ab_test_scenarios import load_core_instructions
 
 
 def initialize_git_repository(
@@ -47,7 +44,7 @@ def setup_workspace_with_reference_claude_md(
     files: dict[str, str],
 ) -> None:
     agents_md_path = workspace_directory / "AGENTS.md"
-    agents_md_path.write_text(load_core_instructions_with_frontmatter())
+    agents_md_path.write_text(load_core_instructions())
 
     claude_md_path = workspace_directory / "CLAUDE.md"
     claude_md_path.write_text("@AGENTS.md\n")
@@ -64,7 +61,7 @@ def setup_workspace_with_inline_claude_md(
     workspace_directory: Path,
     files: dict[str, str],
 ) -> None:
-    full_instructions = load_core_instructions_body()
+    full_instructions = load_core_instructions().rstrip()
 
     claude_md_path = workspace_directory / "CLAUDE.md"
     claude_md_path.write_text(full_instructions + "\n")

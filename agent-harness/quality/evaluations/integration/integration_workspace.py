@@ -11,7 +11,7 @@ CORE_INSTRUCTIONS_PATH = (
 )
 
 
-def load_core_instructions_with_frontmatter() -> str:
+def load_core_instructions() -> str:
     return CORE_INSTRUCTIONS_PATH.read_text()
 
 
@@ -27,7 +27,7 @@ def validate_file_path_is_relative(file_path: str) -> bool:
 def place_claude_md_and_agents_md_in_workspace(
     workspace_directory: Path,
 ) -> None:
-    agents_md_content = load_core_instructions_with_frontmatter()
+    agents_md_content = load_core_instructions()
     agents_md_path = workspace_directory / "AGENTS.md"
     agents_md_path.write_text(agents_md_content)
 

@@ -7,15 +7,7 @@ CORE_INSTRUCTIONS_PATH = (
 )
 
 
-def load_core_instructions_body() -> str:
-    content = CORE_INSTRUCTIONS_PATH.read_text()
-    parts = content.split("---", 2)
-    if len(parts) >= 3:
-        return parts[2].strip()
-    return content.strip()
-
-
-def load_core_instructions_with_frontmatter() -> str:
+def load_core_instructions() -> str:
     return CORE_INSTRUCTIONS_PATH.read_text()
 
 

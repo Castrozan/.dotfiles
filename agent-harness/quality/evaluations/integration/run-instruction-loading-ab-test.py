@@ -14,7 +14,7 @@ from ab_test_claude_session import (
 from ab_test_metrics import measure_instruction_following
 from ab_test_models import AbTestResult
 from ab_test_reporting import print_ab_test_results
-from ab_test_scenarios import UNPROMPTED_SCENARIOS, load_core_instructions_body
+from ab_test_scenarios import UNPROMPTED_SCENARIOS, load_core_instructions
 from ab_test_workspace_setup import CONFIGURATION_SETUP_FUNCTIONS
 
 
@@ -38,7 +38,7 @@ def run_ab_test_for_scenario(
                 trace = run_claude_session_with_system_prompt(
                     prompt=scenario["prompt"],
                     workspace_directory=workspace_directory,
-                    system_prompt=load_core_instructions_body(),
+                    system_prompt=load_core_instructions().strip(),
                     model=model,
                 )
             else:

@@ -26,16 +26,8 @@ def load_compliance_skill_body() -> str:
     return content.strip()
 
 
-def load_core_instructions_body() -> str:
-    content = CORE_INSTRUCTIONS_PATH.read_text()
-    parts = content.split("---", 2)
-    if len(parts) >= 3:
-        return parts[2].strip()
-    return content.strip()
-
-
 def setup_workspace(scenario: dict, workspace: Path) -> None:
-    instructions = load_core_instructions_body()
+    instructions = CORE_INSTRUCTIONS_PATH.read_text().strip()
     (workspace / "CLAUDE.md").write_text(instructions + "\n")
 
     for file_def in scenario.get("setup", {}).get("files", []):

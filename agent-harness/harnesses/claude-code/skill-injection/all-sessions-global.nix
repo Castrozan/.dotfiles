@@ -13,17 +13,6 @@ let
 
   globalClaudeSkillDirectorySymlinks = interactiveAgentSkills.skillDirectorySymlinksAtPrefix ".claude/skills" claudeInteractiveSkillNames;
 
-  readInstructionsBodyWithoutFrontmatter =
-    instructionsFile:
-    let
-      rawInstructionsContent = builtins.readFile instructionsFile;
-      startsWithFrontmatterDelimiter = builtins.substring 0 4 rawInstructionsContent == "---\n";
-    in
-    if startsWithFrontmatterDelimiter then
-      builtins.elemAt (builtins.split "---\n" rawInstructionsContent) 4
-    else
-      rawInstructionsContent;
-
   makeGlobalSkillFromInstructionsFile =
     {
       skillName,
@@ -37,7 +26,7 @@ let
         description: ${skillDescription}
         ---
 
-        ${readInstructionsBodyWithoutFrontmatter instructionsFile}
+        ${builtins.readFile instructionsFile}
       '';
     };
 

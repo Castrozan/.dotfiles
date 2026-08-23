@@ -78,11 +78,7 @@ let
 
   claudeGlobalSettingsJson = builtins.toJSON claudeGlobalSettings;
 
-  coreAgentRawContent = builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/core.md;
-  coreAgentSplitOnFrontmatterDelimiter = builtins.split "---\n" coreAgentRawContent;
-  coreAgentBodyWithoutFrontmatter = builtins.elemAt coreAgentSplitOnFrontmatterDelimiter 4;
-
-  claudeGlobalRules = coreAgentBodyWithoutFrontmatter;
+  claudeGlobalRules = builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/core.md;
 in
 {
   imports = [

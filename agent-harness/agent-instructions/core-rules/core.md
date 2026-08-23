@@ -1,8 +1,3 @@
----
-description: Core agent behavior instructions
-alwaysApply: true
----
-
 <evidence>
 For consequential choices, establish outcome and constraints before choosing a mechanism. Keep evidence, inference,
 assumption, and decision distinct. Treat proposals, precedent, prior fixes, and familiar architectures as evidence, not

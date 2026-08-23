@@ -98,7 +98,7 @@ in
   domain-opencode-global-rules-match-the-codex-surface =
     mkEvalCheck "domain-opencode-global-rules-match-the-codex-surface"
       (deployedGlobalRules == codexGlobalInstructions)
-      "opencode's AGENTS.md must carry the same frontmatter-stripped core rules Claude and Codex deploy";
+      "opencode's AGENTS.md must carry the same canonical plain core rules Claude and Codex deploy";
 
   domain-opencode-loads-the-global-rules =
     mkEvalCheck "domain-opencode-loads-the-global-rules"

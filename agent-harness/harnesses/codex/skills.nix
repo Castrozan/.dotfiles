@@ -15,7 +15,7 @@ let
 
   codexSkillsPath = "${config.home.homeDirectory}/.codex/skills";
 
-  coreAgentBodyWithoutFrontmatter = import ../../../agent-harness/agent-instructions/core-rules/core-agent-rules-without-frontmatter.nix;
+  coreAgentRules = builtins.readFile ../../../agent-harness/agent-instructions/core-rules/core.md;
 
   codexSkillLinks = interactiveAgentSkills.skillDirectorySymlinksAtPrefix ".codex/skills" codexInteractiveSkillNames;
 
@@ -25,7 +25,7 @@ let
     description: Display core agent behavior instructions. Use when user wants to see, review, or reference the core rules, or when injecting core instructions as context into subagents, oneshot sessions, or external tools.
     ---
 
-    ${coreAgentBodyWithoutFrontmatter}
+    ${coreAgentRules}
   '';
 
   coreSkillFromAgentInstructions = {

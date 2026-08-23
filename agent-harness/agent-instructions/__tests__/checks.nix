@@ -57,6 +57,7 @@ let
 
   globalCoreInstructions = builtins.readFile ../core-rules/core.md;
   normalizedGlobalCoreInstructions = lib.toLower globalCoreInstructions;
+  globalCoreIsPlainPolicy = lib.hasPrefix "<evidence>\n" globalCoreInstructions;
   globalCoreMaximumBytes = 5000;
   globalCoreForbiddenFragments = [
     ".dotfiles"
@@ -140,9 +141,10 @@ in
     mkEvalCheck "global-core-stays-universal"
       (
         builtins.stringLength globalCoreInstructions <= globalCoreMaximumBytes
+        && globalCoreIsPlainPolicy
         && globalCoreContainsOnlyUniversalPolicy
         && globalCoreContainsEveryRequiredSection
         && globalCoreContainsNoRetiredAuthority
       )
-      "core.md must stay below the global context budget and contain the required universal session-long policy, including conditionally triggered coding behavior; keep repository, harness, tool, and bounded procedure mechanics in their owning surfaces";
+      "core.md must contain only plain universal session-long policy below the global context budget, including conditionally triggered coding behavior; keep metadata, repository, harness, tool, and bounded procedure mechanics in their owning surfaces";
 }

@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-08-17T17:39:33.137615+00:00",
-  "git_commit": "b0bcf090",
+  "git_commit": "425e10b5",
   "total_tests": 205,
   "total_passed": 193,
   "total_failed": 12,
@@ -159,8 +159,8 @@
       ]
     },
     "context_management": {
-      "passed": 3,
-      "failed": 1,
+      "passed": 4,
+      "failed": 0,
       "tests": [
         {
           "name": "context_budget_loads_only_material_information",
@@ -176,7 +176,7 @@
         },
         {
           "name": "context_budget_persists_resume_state",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -227,8 +227,8 @@
       ]
     },
     "delegation": {
-      "passed": 8,
-      "failed": 0,
+      "passed": 7,
+      "failed": 1,
       "tests": [
         {
           "name": "delegation_parallelizes_independent_breadth",
@@ -252,7 +252,7 @@
         },
         {
           "name": "delegation_owner_synthesizes_results",
-          "passed": true
+          "passed": false
         },
         {
           "name": "delegation_result_is_evidence_not_authority",
@@ -300,7 +300,7 @@
         },
         {
           "name": "instruction_surface_authority",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_model_calls_are_budgeted",
@@ -320,7 +320,7 @@
         },
         {
           "name": "formatting_after_edits",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -1027,7 +1027,7 @@
   },
   "fingerprints": {
     "suite": "08caeea050adb4618cd3fdd3fe0b5acabd86ec18434159db4a9082826ba39b18",
-    "instructions": "5e0433f2148d64169754e5cb28444f3bc7a4f6b7430f88d4fc627bfd6bad0204"
+    "instructions": "153fe7b3fd96b18528423083b85c59ce6cf922b82fa237d4e9de1ec548c4c071"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {

@@ -13,7 +13,7 @@ CORE_INSTRUCTIONS_PATH = (
 E2E_WORKSPACE_PARENT = Path.home() / "repo" / ".e2e-tests"
 
 
-def load_core_instructions_with_frontmatter() -> str:
+def load_core_instructions() -> str:
     return CORE_INSTRUCTIONS_PATH.read_text()
 
 
@@ -21,17 +21,15 @@ def place_claude_md_in_workspace(
     workspace_directory: Path,
     claude_ab_mode: str = "inline",
 ) -> None:
-    instructions_with_frontmatter = load_core_instructions_with_frontmatter()
-    instructions_body_only = instructions_with_frontmatter
-    parts = instructions_with_frontmatter.split("---", 2)
-    if len(parts) >= 3:
-        instructions_body_only = parts[2].strip()
+    core_instructions = load_core_instructions()
 
     if claude_ab_mode == "reference":
-        (workspace_directory / "AGENTS.md").write_text(instructions_with_frontmatter)
+        (workspace_directory / "AGENTS.md").write_text(core_instructions)
         (workspace_directory / "CLAUDE.md").write_text("@AGENTS.md\n")
     elif claude_ab_mode == "inline":
-        (workspace_directory / "CLAUDE.md").write_text(instructions_body_only + "\n")
+        (workspace_directory / "CLAUDE.md").write_text(
+            core_instructions.rstrip() + "\n"
+        )
     elif claude_ab_mode == "global-only":
         pass
 
