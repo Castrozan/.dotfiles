@@ -5,14 +5,34 @@ import subprocess
 import sys
 from pathlib import Path
 
+from e2e_harness_profiles import scenario_harness_profile
 from e2e_reporting import print_e2e_results, print_multi_run_pass_rate_summary
 from e2e_scenario_runner import run_e2e_scenario
 from e2e_workspace import SCENARIOS_DIR, discover_scenario_files, load_scenario
 
 
+def executable_is_installed(executable_name: str) -> bool:
+    return (
+        subprocess.run(["which", executable_name], capture_output=True).returncode == 0
+    )
+
+
+def scenario_files_with_an_installed_harness(scenario_files: list[Path]) -> list[Path]:
+    runnable_scenario_files = []
+    for scenario_file in scenario_files:
+        executable_name = scenario_harness_profile(
+            load_scenario(scenario_file)
+        ).executable_name
+        if executable_is_installed(executable_name):
+            runnable_scenario_files.append(scenario_file)
+        else:
+            print(f"SKIP: {scenario_file.stem} needs {executable_name}, not installed")
+    return runnable_scenario_files
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description=("E2E herdr-based Claude Code integration tests")
+        description=("E2E herdr-based agent harness integration tests")
     )
     parser.add_argument("--scenario", help="Run specific scenario by name")
     parser.add_argument("--model", default="sonnet", help="Model (default: sonnet)")
@@ -24,7 +44,7 @@ def main():
         help="Save raw terminal output for parser calibration",
     )
     parser.add_argument(
-        "--claude-ab-mode",
+        "--instruction-placement-mode",
         default="inline",
         choices=["reference", "inline", "global-only"],
         help="Instructions loading: inline, reference, or global-only",
@@ -78,10 +98,13 @@ def main():
             sys.exit(1)
 
     if not args.dry_run:
-        for tool in ["claude", "herdr"]:
-            if subprocess.run(["which", tool], capture_output=True).returncode != 0:
-                print(f"Error: {tool} not found")
-                sys.exit(1)
+        if not executable_is_installed("herdr"):
+            print("Error: herdr not found")
+            sys.exit(1)
+        scenario_files = scenario_files_with_an_installed_harness(scenario_files)
+        if not scenario_files:
+            print("Error: no selected scenario has its harness installed")
+            sys.exit(1)
 
     def run_one_scenario_file(scenario_file):
         scenario = load_scenario(scenario_file)
@@ -91,7 +114,7 @@ def main():
             model=args.model,
             dry_run=args.dry_run,
             debug_capture=args.debug_capture,
-            claude_ab_mode=args.claude_ab_mode,
+            instruction_placement_mode=args.instruction_placement_mode,
         )
 
     execution_units = list(scenario_files) * args.runs

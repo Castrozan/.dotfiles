@@ -1,7 +1,8 @@
+from e2e_harness_profiles import HarnessProfile
 from e2e_herdr_io import (
     capture_full_terminal_output,
-    compact_claude_session,
-    send_prompt_to_claude_session,
+    compact_agent_session,
+    send_prompt_to_agent_session,
     wait_for_response_completion,
 )
 
@@ -23,13 +24,19 @@ def step_requests_compaction(scenario_step: str | dict) -> bool:
 
 
 def run_scenario_step(
-    pane_id: str, scenario_step: str | dict, timeout_seconds: float
+    pane_id: str,
+    scenario_step: str | dict,
+    profile: HarnessProfile,
+    timeout_seconds: float,
 ) -> str | None:
     if step_requests_compaction(scenario_step):
-        if compact_claude_session(pane_id, timeout_seconds=timeout_seconds):
+        if compact_agent_session(pane_id, profile, timeout_seconds=timeout_seconds):
             return None
-        return "session compaction was refused or never confirmed"
-    if not send_prompt_to_claude_session(pane_id, scenario_step):
+        return (
+            f"{profile.name} session compaction was refused or never confirmed with "
+            f"'{profile.compaction_confirmation_marker}'"
+        )
+    if not send_prompt_to_agent_session(pane_id, scenario_step):
         return "prompt could not be delivered to the herdr pane"
     if wait_for_response_completion(
         pane_id,

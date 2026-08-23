@@ -5,47 +5,63 @@ from pathlib import Path
 
 import yaml
 
+from e2e_harness_profiles import CLAUDE_PROFILE, HarnessProfile
+
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SCENARIOS_DIR = Path(__file__).resolve().parent / "scenarios"
 CORE_INSTRUCTIONS_PATH = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "core-rules" / "core.md"
 )
 E2E_WORKSPACE_PARENT = Path.home() / "repo" / ".e2e-tests"
+IMPORTED_INSTRUCTION_FILENAME = "AGENTS.md"
 
 
 def load_core_instructions() -> str:
     return CORE_INSTRUCTIONS_PATH.read_text()
 
 
-def place_claude_md_in_workspace(
+def place_core_instructions_in_workspace(
     workspace_directory: Path,
-    claude_ab_mode: str = "inline",
+    profile: HarnessProfile = CLAUDE_PROFILE,
+    instruction_placement_mode: str = "inline",
 ) -> None:
-    core_instructions = load_core_instructions()
+    if instruction_placement_mode == "global-only":
+        return
 
-    if claude_ab_mode == "reference":
-        (workspace_directory / "AGENTS.md").write_text(core_instructions)
-        (workspace_directory / "CLAUDE.md").write_text("@AGENTS.md\n")
-    elif claude_ab_mode == "inline":
-        (workspace_directory / "CLAUDE.md").write_text(
-            core_instructions.rstrip() + "\n"
+    core_instructions = load_core_instructions()
+    project_instruction_path = (
+        workspace_directory / profile.project_instruction_filename
+    )
+
+    if instruction_placement_mode == "reference" and (
+        profile.supports_instruction_reference_import
+    ):
+        (workspace_directory / IMPORTED_INSTRUCTION_FILENAME).write_text(
+            core_instructions
         )
-    elif claude_ab_mode == "global-only":
-        pass
+        project_instruction_path.write_text(f"@{IMPORTED_INSTRUCTION_FILENAME}\n")
+        return
+
+    project_instruction_path.write_text(core_instructions.rstrip() + "\n")
 
 
 def setup_e2e_scenario_workspace(
     scenario: dict,
     workspace_directory: Path,
-    claude_ab_mode: str = "inline",
+    profile: HarnessProfile = CLAUDE_PROFILE,
+    instruction_placement_mode: str = "inline",
 ) -> None:
     setup = scenario.get("setup", {})
 
-    project_claude_md_content = setup.get("project_claude_md")
-    if project_claude_md_content:
-        (workspace_directory / "CLAUDE.md").write_text(project_claude_md_content)
+    project_instructions = setup.get("project_instructions")
+    if project_instructions:
+        (workspace_directory / profile.project_instruction_filename).write_text(
+            project_instructions
+        )
     else:
-        place_claude_md_in_workspace(workspace_directory, claude_ab_mode)
+        place_core_instructions_in_workspace(
+            workspace_directory, profile, instruction_placement_mode
+        )
 
     for file_def in setup.get("files", []):
         relative_path = file_def["path"]

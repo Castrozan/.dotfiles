@@ -1,14 +1,12 @@
 import time
 
+from e2e_harness_profiles import HarnessProfile
 from e2e_herdr import run_herdr_command
 
 INPUT_SETTLE_SECONDS = 2
 FULL_SCROLLBACK_LINE_BUDGET = 5000
 RESPONSE_POLL_INTERVAL_SECONDS = 1.0
 RESPONSE_QUIESCENCE_SAMPLES = 4
-CLAUDE_COMPACTION_DIRECTIVE = "/compact"
-CLAUDE_COMPACTION_CONFIRMATION_MARKER = "Compacted"
-CLAUDE_COMPACTION_REFUSAL_MARKER = "Not enough messages to compact"
 
 
 def wait_for_agent_status(
@@ -29,14 +27,14 @@ def wait_for_agent_status(
     return completed.returncode == 0
 
 
-def wait_for_claude_to_become_ready(pane_id: str, timeout_seconds: float = 90) -> bool:
+def wait_for_agent_to_become_ready(pane_id: str, timeout_seconds: float = 90) -> bool:
     if not wait_for_agent_status(pane_id, "idle", timeout_seconds):
         return False
     time.sleep(INPUT_SETTLE_SECONDS)
     return True
 
 
-def send_prompt_to_claude_session(pane_id: str, prompt_text: str) -> bool:
+def send_prompt_to_agent_session(pane_id: str, prompt_text: str) -> bool:
     collapsed_prompt = " ".join(prompt_text.strip().split())
     typed = run_herdr_command(["pane", "send-text", pane_id, collapsed_prompt])
     if typed.returncode != 0:
@@ -81,15 +79,20 @@ def capture_full_terminal_output(pane_id: str) -> str:
     return completed.stdout
 
 
-def compact_claude_session(pane_id: str, timeout_seconds: float = 300) -> bool:
+def compact_agent_session(
+    pane_id: str, profile: HarnessProfile, timeout_seconds: float = 300
+) -> bool:
     output_before_compaction = capture_full_terminal_output(pane_id)
-    if not send_prompt_to_claude_session(pane_id, CLAUDE_COMPACTION_DIRECTIVE):
+    if not send_prompt_to_agent_session(pane_id, profile.compaction_directive):
         return False
     if not wait_for_response_completion(
         pane_id, output_before_compaction, timeout_seconds=timeout_seconds
     ):
         return False
     output_after_compaction = capture_full_terminal_output(pane_id)
-    if CLAUDE_COMPACTION_REFUSAL_MARKER in output_after_compaction:
+    if (
+        profile.compaction_refusal_marker
+        and profile.compaction_refusal_marker in output_after_compaction
+    ):
         return False
-    return CLAUDE_COMPACTION_CONFIRMATION_MARKER in output_after_compaction
+    return profile.compaction_confirmation_marker in output_after_compaction

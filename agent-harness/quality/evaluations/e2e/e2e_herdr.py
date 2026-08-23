@@ -3,6 +3,8 @@ import json
 import subprocess
 from pathlib import Path
 
+from e2e_harness_profiles import HarnessProfile
+
 E2E_TAB_LABEL_PREFIX = "e2e-test-"
 HERDR_COMMAND_TIMEOUT_SECONDS = 15
 
@@ -62,15 +64,10 @@ def create_isolated_herdr_tab_for_test(
     return {"tab_id": tab_id, "pane_id": pane_id}
 
 
-def launch_claude_in_herdr_pane(pane_id: str, model: str) -> None:
-    run_herdr_command(
-        [
-            "pane",
-            "run",
-            pane_id,
-            f"claude --model {model} --dangerously-skip-permissions",
-        ]
-    )
+def launch_agent_in_herdr_pane(
+    pane_id: str, profile: HarnessProfile, model: str
+) -> None:
+    run_herdr_command(["pane", "run", pane_id, profile.launch_command(model)])
 
 
 def destroy_test_tab(tab_id: str) -> None:

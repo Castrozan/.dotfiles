@@ -21,16 +21,17 @@ from coached_scoring import (
     calculate_nps_from_tool_sequence_and_workspace,
     parse_tool_sequence,
 )
+from e2e_harness_profiles import CLAUDE_PROFILE
 from e2e_herdr import (
     create_isolated_herdr_tab_for_test,
     destroy_test_tab,
     herdr_server_is_reachable,
-    launch_claude_in_herdr_pane,
+    launch_agent_in_herdr_pane,
 )
 from e2e_herdr_io import (
     capture_full_terminal_output,
-    send_prompt_to_claude_session,
-    wait_for_claude_to_become_ready,
+    send_prompt_to_agent_session,
+    wait_for_agent_to_become_ready,
     wait_for_response_completion,
 )
 
@@ -43,7 +44,7 @@ CORRECTION_PROMPT_TEMPLATE = (
 
 
 def deliver_prompt_and_wait(pane_id: str, prompt_text: str, timeout: float) -> bool:
-    if not send_prompt_to_claude_session(pane_id, prompt_text):
+    if not send_prompt_to_agent_session(pane_id, prompt_text):
         return False
     return wait_for_response_completion(
         pane_id, capture_full_terminal_output(pane_id), timeout
@@ -81,9 +82,9 @@ def run_coached_scenario(
         if not worker_handle:
             raise RuntimeError("herdr tab could not be created")
         worker_pane_id = worker_handle["pane_id"]
-        launch_claude_in_herdr_pane(worker_pane_id, model)
+        launch_agent_in_herdr_pane(worker_pane_id, CLAUDE_PROFILE, model)
 
-        if not wait_for_claude_to_become_ready(worker_pane_id):
+        if not wait_for_agent_to_become_ready(worker_pane_id):
             return failed_coached_session(
                 scenario_name, time.time() - start_time, "Worker failed to start"
             )

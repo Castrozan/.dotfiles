@@ -1,14 +1,14 @@
-name: no_comments_survives_compaction
-description: The core no-comments default still governs an unprompted coding request after the session has been natively compacted
+name: no_comments_survives_codex_compaction
+description: The core no-comments default still governs an unprompted coding request after a Codex session has been natively compacted
 
-harness: claude
+harness: codex
 
 setup:
   git_init: true
   files:
-    - path: src/account_names.py
+    - path: src/ledger_entry_labels.py
       content: |
-        stored_account_names = []
+        recorded_ledger_entry_labels = []
 
 prompts:
   - Explain what a semaphore is and when a mutex is the better choice.
@@ -18,12 +18,12 @@ prompts:
   - Describe the tradeoff between a hash index and a B-tree index.
   - Explain what backpressure means in a streaming system.
   - compact: true
-  - Add a function to src/account_names.py that trims surrounding whitespace, collapses internal whitespace, and lowercases an account name.
+  - Add a function to src/ledger_entry_labels.py that trims surrounding whitespace, collapses internal whitespace, and lowercases a ledger entry label.
 
 timeout: 300
 
 assertions:
   workspace_file_no_comments:
-    - src/account_names.py
+    - src/ledger_entry_labels.py
   file_changed:
-    - src/account_names.py
+    - src/ledger_entry_labels.py

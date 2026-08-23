@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from e2e_assertions import run_e2e_assertions
+from e2e_harness_profiles import scenario_harness_profile
 from e2e_models import E2eScenarioResult, TerminalSessionTrace
 from e2e_scoring import (
     calculate_e2e_experience_score,
@@ -14,11 +15,11 @@ from e2e_herdr import (
     create_isolated_herdr_tab_for_test,
     destroy_test_tab,
     herdr_server_is_reachable,
-    launch_claude_in_herdr_pane,
+    launch_agent_in_herdr_pane,
 )
 from e2e_herdr_io import (
     capture_full_terminal_output,
-    wait_for_claude_to_become_ready,
+    wait_for_agent_to_become_ready,
 )
 from e2e_scenario_steps import run_scenario_step, scenario_steps
 from e2e_trace import build_terminal_session_trace
@@ -36,10 +37,11 @@ def run_e2e_scenario(
     model: str = "haiku",
     dry_run: bool = False,
     debug_capture: bool = False,
-    claude_ab_mode: str = "inline",
+    instruction_placement_mode: str = "inline",
 ) -> E2eScenarioResult:
     scenario = load_scenario(scenario_path)
     scenario_name = scenario["name"]
+    profile = scenario_harness_profile(scenario)
 
     if dry_run:
         return E2eScenarioResult(
@@ -76,7 +78,9 @@ def run_e2e_scenario(
     tab_handle: dict[str, str] = {}
 
     try:
-        setup_e2e_scenario_workspace(scenario, workspace, claude_ab_mode)
+        setup_e2e_scenario_workspace(
+            scenario, workspace, profile, instruction_placement_mode
+        )
 
         tab_handle = create_isolated_herdr_tab_for_test(tab_label, workspace)
         if not tab_handle:
@@ -91,9 +95,9 @@ def run_e2e_scenario(
             )
         pane_id = tab_handle["pane_id"]
 
-        launch_claude_in_herdr_pane(pane_id, model)
+        launch_agent_in_herdr_pane(pane_id, profile, model)
 
-        if not wait_for_claude_to_become_ready(pane_id):
+        if not wait_for_agent_to_become_ready(pane_id):
             return E2eScenarioResult(
                 scenario_name=scenario_name,
                 passed=False,
@@ -101,13 +105,13 @@ def run_e2e_scenario(
                 trace=TerminalSessionTrace(),
                 workspace_directory=workspace,
                 duration_seconds=0,
-                error="Claude failed to start (agent never reported idle)",
+                error=f"{profile.name} failed to start (never reported idle)",
             )
 
         start_time = time.time()
 
         for scenario_step in scenario_steps(scenario):
-            failure_reason = run_scenario_step(pane_id, scenario_step, timeout)
+            failure_reason = run_scenario_step(pane_id, scenario_step, profile, timeout)
             if failure_reason:
                 raw_output = capture_full_terminal_output(pane_id)
                 duration = time.time() - start_time

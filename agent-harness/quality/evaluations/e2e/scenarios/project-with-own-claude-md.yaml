@@ -3,7 +3,7 @@ description: Project has its own CLAUDE.md - global core rules must still apply 
 
 setup:
   git_init: true
-  project_claude_md: |
+  project_instructions: |
     This is a Python REST API project.
     Use FastAPI patterns. All endpoints return JSON.
     Test with pytest and httpx.
