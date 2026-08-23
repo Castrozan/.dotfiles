@@ -173,3 +173,17 @@ def test_a_conventional_two_letter_alias_passes(tmp_path):
         tmp_path, "conventional.py"
     )
     assert outcome.passed is True
+
+
+def test_a_fixture_name_the_test_runner_supplies_is_not_judged(tmp_path):
+    source_path = tmp_path / "fixture_user.py"
+    source_path.write_text(
+        "def test_a_report_is_written(tmp_path):\n"
+        "    written_report = tmp_path / 'report.txt'\n"
+        "    written_report.write_text('done')\n"
+        "    assert written_report.exists()\n"
+    )
+    outcome = check_workspace_file_descriptive_names_assertion(
+        tmp_path, "fixture_user.py"
+    )
+    assert outcome.passed is True

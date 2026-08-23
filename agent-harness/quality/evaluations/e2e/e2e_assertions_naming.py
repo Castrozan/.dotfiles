@@ -39,7 +39,7 @@ ABBREVIATIONS_WITH_NO_STANDALONE_MEANING = {
     "usr",
 }
 
-IGNORED_BOUND_IDENTIFIERS = {"self", "cls"}
+IDENTIFIERS_THE_AUTHOR_CANNOT_CHOOSE = {"self", "cls", "tmp_path"}
 
 SHORTEST_LANGUAGE_MANDATED_DUNDER_BODY = 2
 
@@ -73,7 +73,7 @@ def bound_identifiers_in_module(parsed_module: ast.Module) -> set[str]:
     return {
         identifier
         for identifier in bound_identifiers
-        if identifier not in IGNORED_BOUND_IDENTIFIERS
+        if identifier not in IDENTIFIERS_THE_AUTHOR_CANNOT_CHOOSE
         and not identifier_is_language_mandated_dunder(identifier)
     }
 
