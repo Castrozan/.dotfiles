@@ -7,13 +7,11 @@ import home_assistant_air_conditioner_toggle
 
 
 @pytest.fixture
-def mock_toggle_token(tmp_path, monkeypatch):
-    token_file = tmp_path / "home-assistant-token"
-    token_file.write_text("fake-ha-token-for-testing")
+def mock_toggle_token(monkeypatch):
     monkeypatch.setattr(
         home_assistant_air_conditioner_toggle,
-        "HOME_ASSISTANT_TOKEN_PATH",
-        token_file,
+        "read_home_assistant_token",
+        lambda: "fake-ha-token-for-testing",
     )
     return "fake-ha-token-for-testing"
 

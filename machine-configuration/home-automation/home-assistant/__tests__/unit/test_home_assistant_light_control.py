@@ -3,30 +3,6 @@ import pytest
 import home_assistant_light_control
 
 
-class TestReadHomeAssistantToken:
-    def test_reads_token_from_file(self, tmp_path, monkeypatch):
-        token_file = tmp_path / "token"
-        token_file.write_text("my-secret-token\n")
-        monkeypatch.setattr(
-            home_assistant_light_control,
-            "HOME_ASSISTANT_TOKEN_PATH",
-            token_file,
-        )
-        assert (
-            home_assistant_light_control.read_home_assistant_token()
-            == "my-secret-token"
-        )
-
-    def test_exits_when_token_file_missing(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(
-            home_assistant_light_control,
-            "HOME_ASSISTANT_TOKEN_PATH",
-            tmp_path / "nonexistent",
-        )
-        with pytest.raises(SystemExit):
-            home_assistant_light_control.read_home_assistant_token()
-
-
 class TestResolveTargetEntityIds:
     def test_resolves_all_to_every_light(self):
         result = home_assistant_light_control.resolve_target_entity_ids("all")

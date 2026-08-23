@@ -3,20 +3,20 @@ from pathlib import Path
 import pytest
 
 SCRIPTS_DIR = Path(__file__).parent.parent / "scripts"
+LIB_DIR = SCRIPTS_DIR / "lib"
 
+sys.path.insert(0, str(LIB_DIR))
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 
 @pytest.fixture
-def mock_home_assistant_token(tmp_path, monkeypatch):
+def mock_home_assistant_token(monkeypatch):
     import home_assistant_light_control
 
-    token_file = tmp_path / "home-assistant-token"
-    token_file.write_text("fake-ha-token-for-testing")
     monkeypatch.setattr(
         home_assistant_light_control,
-        "HOME_ASSISTANT_TOKEN_PATH",
-        token_file,
+        "read_home_assistant_token",
+        lambda: "fake-ha-token-for-testing",
     )
     return "fake-ha-token-for-testing"
 
