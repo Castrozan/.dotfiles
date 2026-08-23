@@ -1,6 +1,9 @@
 from pathlib import Path
 
 import yaml
+from evaluation_assertion_policy.negative_regex import (
+    bare_token_expressions_in_regex,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 EVAL_SUITE_DIRECTORY = REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "evals"
@@ -62,6 +65,23 @@ def test_every_negative_substring_assertion_pins_a_specific_wrong_answer():
     assert not loose, (
         "a bare single-word negative fires on any incidental use of the word, so a "
         f"negative must quote the specific wrong answer it forbids: {loose}"
+    )
+
+
+def test_every_negative_regex_assertion_pins_structure_not_keywords():
+    loose = [
+        (
+            f"{suite_path.relative_to(REPO_ROOT)}:{test['name']}",
+            pattern,
+            bare_token_expression,
+        )
+        for suite_path, test in every_authored_test()
+        for pattern in test.get("assertions", {}).get("output_not_matches_regex", [])
+        for bare_token_expression in bare_token_expressions_in_regex(pattern)
+    ]
+    assert not loose, (
+        "a negative regex may pin output structure, but bare-token alternatives "
+        f"still grade vocabulary instead of substance: {loose}"
     )
 
 

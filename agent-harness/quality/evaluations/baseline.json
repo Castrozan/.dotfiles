@@ -1,10 +1,10 @@
 {
   "generated_at": "2026-08-17T17:39:33.137615+00:00",
-  "git_commit": "4fa96ac6",
+  "git_commit": "b0bcf090",
   "total_tests": 205,
-  "total_passed": 194,
-  "total_failed": 11,
-  "pass_rate": 0.9463,
+  "total_passed": 193,
+  "total_failed": 12,
+  "pass_rate": 0.9415,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -279,8 +279,8 @@
       ]
     },
     "instruction_compliance": {
-      "passed": 10,
-      "failed": 0,
+      "passed": 9,
+      "failed": 1,
       "tests": [
         {
           "name": "hardskill_belongs_in_scripts",
@@ -320,7 +320,7 @@
         },
         {
           "name": "formatting_after_edits",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -1026,7 +1026,7 @@
     }
   },
   "fingerprints": {
-    "suite": "dc986f7cba96e0a6613682aa91ce4b3635900ebcc48d15433968a29f22465692",
+    "suite": "08caeea050adb4618cd3fdd3fe0b5acabd86ec18434159db4a9082826ba39b18",
     "instructions": "5e0433f2148d64169754e5cb28444f3bc7a4f6b7430f88d4fc627bfd6bad0204"
   },
   "evidence_profiles": {
