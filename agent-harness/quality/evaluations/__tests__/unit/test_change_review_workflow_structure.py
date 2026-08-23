@@ -1,4 +1,3 @@
-import json
 import re
 
 from instruction_surface_scanner import REPO_ROOT
@@ -53,7 +52,7 @@ def test_the_change_review_writes_a_patch_path_no_sibling_checkout_can_collide_w
     )
 
 
-def test_the_documented_change_review_arguments_parse_as_json():
+def test_the_documented_change_review_invocation_anchors_the_checkout():
     documentation = (
         REPO_ROOT
         / "agent-harness"
@@ -61,13 +60,14 @@ def test_the_documented_change_review_arguments_parse_as_json():
         / "project-context"
         / "dotfiles-agent-instructions.md"
     ).read_text()
-    example = re.search(r"`(\{[^`]*\})`", documentation)
-    assert example, "the mandated invocation must show how to pass the checkout root"
-    parsed = json.loads(example.group(1).replace("<absolute checkout path>", "/x"))
-    assert "root" in parsed, (
-        "the documented example must carry the root key the workflow reads; the "
-        "workflow parses a string argument with JSON.parse and silently drops the "
-        "anchor when the example is not valid JSON"
+    assert "`dotfiles-change-review`" in documentation, (
+        "the mandated invocation must name the packaged command, because every "
+        "harness other than Claude Code reaches the workflow through it alone"
+    )
+    assert "`--root <absolute checkout path>`" in documentation, (
+        "the mandated invocation must show how to anchor the review at an explicit "
+        "checkout; an agent working in a worktree otherwise reviews whichever "
+        "sibling checkout its shell started in and reports a clean tree"
     )
 
 

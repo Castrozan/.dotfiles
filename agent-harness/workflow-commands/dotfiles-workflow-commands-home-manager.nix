@@ -7,10 +7,9 @@
 let
   workflowCommandDirectory = ./.;
 
-  unwrappedClaudeRuntimePath = lib.makeBinPath [
-    config.claude.unwrappedPackage
-    pkgs.git
-  ];
+  unwrappedClaudeRuntimePath = lib.makeBinPath (
+    lib.optional (config ? claude) config.claude.unwrappedPackage ++ [ pkgs.git ]
+  );
 
   mkWorkflowCommand =
     workflowName:
@@ -21,8 +20,6 @@ let
     '';
 in
 {
-  imports = [ ../harnesses/claude-code/binary.nix ];
-
   home.packages = map mkWorkflowCommand [
     "dotfiles-change-review"
     "dotfiles-housekeeping"
