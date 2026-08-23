@@ -23,6 +23,7 @@ def test_an_unprofiled_harness_names_the_probe_that_would_admit_it():
     assert "startup dialog" in rejection_text
     assert "compaction" in rejection_text
     assert "opencode 1.18.18" in rejection_text
+    assert "proves a request rather than a result" in rejection_text
 
 
 def test_every_profile_carries_a_directive_and_a_confirmation_marker():

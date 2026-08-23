@@ -11,10 +11,13 @@ UNPROFILED_HARNESS_ADMISSION_CRITERIA = (
     "text or selects a highlighted entry in a dialog or command palette. A harness "
     "that answers a modal with Enter silently swallows the first scenario prompt, and "
     "one whose busy indicator can hold still is graded as finished mid-turn. "
-    "opencode 1.18.18 fails the first fact: its palette "
-    "exposes no compaction command, it compacts only when its own context threshold is "
-    "reached, and a typed slash directive there submits the highlighted palette entry "
-    "rather than the typed text."
+    "opencode 1.18.18 fails the confirmation fact. It does compact on demand, through "
+    "the ctrl+x c keybind rather than typed text, and that entry appears only once the "
+    "session holds a message, which is why a fresh-session probe reported none. What "
+    "it prints is a Compaction rule painted when compaction is requested; that title "
+    "survived both a failed compaction and an interrupt, so it proves a request rather "
+    "than a result. It also has no refusal marker, and on an empty session the second "
+    "key leaks into the prompt composer."
 )
 
 

@@ -109,9 +109,12 @@ declines, the marker it shows while a turn is in flight, whether it blocks on a 
 how to launch past it, and whether Enter submits typed text or selects a highlighted dialog or palette entry. Every one
 of those facts came from a failure that a guess would have hidden.
 
-OpenCode 1.18.18 is still uncovered and is recorded as a rejection rather than a silence. Its palette exposes no
-compaction command and it compacts only on its own context threshold, so covering it needs a scenario that drives
-context to that threshold, not another typed directive.
+OpenCode 1.18.18 is still uncovered and is recorded as a rejection rather than a silence, though the reason moved
+once it was probed properly. It does compact on demand, through a keybind rather than typed text, and that entry
+appears only once the session holds a message, which is why an earlier probe on a fresh session reported none. What
+blocks it now is the confirmation fact: the title it paints marks a compaction request, and that same title survived a
+failed compaction and an interrupt, so nothing observed so far distinguishes a finished compaction from an attempted
+one.
 
 ## How the halves meet
 
@@ -135,9 +138,14 @@ The authority half is closed. It reopens only if a new instruction source starts
 behavior on its own, and any such claim needs a behavior contract and a runtime trace before an edit, because
 similarity alone never justifies one. Core grows only when a universal session-long behavior is proven missing.
 
-The evidence half has one harness left. OpenCode needs a scenario that reaches its automatic compaction threshold
-through ordinary turns, plus the confirmation marker it prints when it compacts, both established live rather than
-assumed. Pi stays an unexercised declarative edge until a host imports its module.
+The evidence half has one harness left, and its remaining work is one observation rather than a design. OpenCode
+needs a single successful compaction watched on a funded provider, to learn whether anything on screen separates
+success from the request it already paints. Its own provider quota was exhausted when this was probed, which is the
+exact missing evidence. Two smaller consequences follow that observation: a profile currently carries a typed
+compaction directive, so a harness driven by a key sequence needs that field to admit one, and its first turn must
+clear the composer, because the trigger's second key lands there on a session with no messages.
+
+Pi stays an unexercised declarative edge until a host imports its module.
 
 Completion is the intersection. Nothing competes with core for authority, every confirmed complement points to it,
 deployment parity holds, and the same canonical behavior is shown to survive compaction in each live harness.
