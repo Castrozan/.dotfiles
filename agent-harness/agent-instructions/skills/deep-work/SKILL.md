@@ -3,6 +3,11 @@ name: deep-work
 description: Persist task context to disk so big or compaction-prone work survives across sessions. Use for work over ~5 steps, spanning sessions, or when explicitly asked to preserve context; not for quick fixes.
 ---
 
+<core-context-authority>
+Core `<context>` owns what must survive likely context loss. This skill owns the bounded workspace layout, activation,
+update, recovery, heartbeat, and cleanup procedure for work that needs durable continuity.
+</core-context-authority>
+
 <activation>
 Activate when any condition is met: user says "big work" or similar, task has more than 5 discrete steps, work will
 clearly span multiple sessions, or user explicitly asks to preserve context. Do not activate for quick fixes,

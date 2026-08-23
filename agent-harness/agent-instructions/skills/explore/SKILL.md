@@ -3,6 +3,11 @@ name: explore
 description: Search current code across text, files, callers, and context in three cycles. Use for repo sweeps, not Git history.
 ---
 
+<core-evidence-authority>
+Core `<evidence>` owns conclusions and absence claims. This skill owns the bounded three-cycle search procedure used to
+collect current-tree evidence before drawing either.
+</core-evidence-authority>
+
 <three-cycles>
 Cycle one casts wide and reads nothing: fire several independently worded searches at once and collect paths only.
 Cycle two reads the survivors and follows their edges: imports, callers, and the names those files reveal. Cycle three

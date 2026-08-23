@@ -3,6 +3,11 @@ name: review
 description: Review code, configurations, AI instructions, or completed work for actionable defects, regressions, security risks, and compliance gaps. Use when inspecting a diff, auditing an instruction surface, or verifying delivery.
 ---
 
+<core-authority>
+Core `<evidence>`, `<completion>`, and `<coding>` own persistent judgment, verification, and code-quality defaults. This
+skill owns the bounded read-only review method, finding contract, severity, and requested-goal verdict.
+</core-authority>
+
 <scope>
 Start with the requested artifact and its intended behavior. Review is read-only unless the user explicitly asks for a
 fix. Report only evidence-backed findings in changed code or behavior the change directly affects, not pre-existing

@@ -4,6 +4,11 @@ definition, it lives only for the lifetime of that single tool call. It must be 
 inherits no memory of the parent conversation.
 </purpose>
 
+<core-delegation-authority>
+Core `<delegation>` owns what the parent must understand, judge, verify, and synthesize. This chapter only shapes the
+self-contained brief used for one bounded delegation call.
+</core-delegation-authority>
+
 <colleague_who_walked_in>
 Write briefs for a smart colleague who just walked into the room. They have no context for what you tried, what you
 ruled out, or why this matters. Include: what you are trying to accomplish, what you already learned, the constraints,
@@ -18,10 +23,9 @@ the premise turns out wrong. Pick the right mode before writing the brief, and d
 </lookup_vs_investigation>
 
 <never_delegate_understanding>
-Phrases like "based on your findings, fix the bug" or "based on the research, implement it" push synthesis onto the
-agent instead of doing it yourself. Write briefs that prove you understood the problem: include file paths, line
-numbers, what specifically to change, what the test should assert. If you cannot, you are not ready to delegate; finish
-the analysis first.
+Apply core `<delegation>` before writing the handoff. Phrases like "based on your findings, fix the bug" push synthesis
+onto the delegate. Include the relevant paths, settled mechanism, concrete change, and evidence the result must produce.
+If you cannot state them, finish the analysis before delegating implementation.
 </never_delegate_understanding>
 
 <scope_the_deliverable>

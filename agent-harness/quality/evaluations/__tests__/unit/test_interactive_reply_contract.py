@@ -46,17 +46,29 @@ def test_standalone_recovery_does_not_license_restating_the_session():
 
 def test_work_in_progress_updates_do_not_require_user_attention():
     work_in_progress_updates = interactive_policy_section("work-in-progress-updates")
+    normalized_updates = work_in_progress_updates.lower()
 
     for required_behavior in (
         "Do not rely on the user reading work-in-progress updates",
-        "best-supported decision",
-        "within the task's scope",
-        "require new authority",
+        "core `<evidence>`, `<autonomy>`, and `<completion>`",
+        "do not create a second decision or stopping threshold",
         "final reply",
     ):
-        assert required_behavior in work_in_progress_updates
+        assert required_behavior.lower() in normalized_updates
 
     assert "report new evidence" not in work_in_progress_updates
+
+
+def test_interactive_policy_routes_general_judgment_and_completion_to_core():
+    peer_communication = interactive_policy_section("peer-communication")
+    exhaust_before_returning = interactive_policy_section("exhaust-before-returning")
+
+    assert "core `<evidence>`" in peer_communication.lower()
+    for authority in ("core `<autonomy>`", "core `<completion>`"):
+        assert authority in exhaust_before_returning.lower()
+
+    assert "before defending or retracting" not in peer_communication
+    assert "Return only when the task is done" not in exhaust_before_returning
 
 
 def test_artifact_links_are_remote_and_complete():

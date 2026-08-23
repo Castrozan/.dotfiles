@@ -13,6 +13,10 @@ let
       isDarwin
       ;
   };
+  interactiveCommunication = builtins.readFile ../../agent-instructions/skills/humanize/interactive-communication.md;
+  indentedInteractiveCommunication =
+    lib.replaceStrings [ "\n" ] [ "\n      " ]
+      interactiveCommunication;
 in
 pkgs.writeText "hermes-config.yaml" ''
   model:
@@ -20,6 +24,8 @@ pkgs.writeText "hermes-config.yaml" ''
     model: gpt-5.5
   agent:
     reasoning_effort: xhigh
+    system_prompt: |
+      ${indentedInteractiveCommunication}
   toolsets:
     - hermes-cli
   security:

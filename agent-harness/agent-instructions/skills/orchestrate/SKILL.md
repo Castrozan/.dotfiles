@@ -3,6 +3,11 @@ name: orchestrate
 description: Orchestrate another agent session toward a goal over a2a, herdr or ssh: dispatch one task, watch the turn, correct, repeat. Use when driving, supervising or delegating to a peer agent, local or remote.
 ---
 
+<core-delegation-authority>
+Core `<delegation>` owns what the driving agent retains and core `<completion>` owns final verification. This skill owns
+the bounded peer-transport, dispatch, observation, correction, and settling procedure.
+</core-delegation-authority>
+
 <orientation>
 A peer is an interactive agent session sitting in a pane, whatever harness runs it and whatever machine it runs on. It
 shares none of your context, holds one task at a time, and answers through scraped terminal text, so orchestration is a

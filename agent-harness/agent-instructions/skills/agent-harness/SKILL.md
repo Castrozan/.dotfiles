@@ -9,9 +9,9 @@ subagent, model, transcript, session, or tool target behaves differently from th
 </scope>
 
 <live-state-over-files>
-Read the declared source, then inspect the running harness, process, and session. A deployed file does not prove a
-harness loaded it, and a resumed session can retain state from before a rebuild. Compare versions and live state before
-calling a documented behavior a defect.
+Apply core `<evidence>` and `<completion>` while reading the declared source, running harness, process, and session. A
+deployed file does not prove a harness loaded it, and a resumed session can retain state from before a rebuild. Compare
+versions and live state before calling a documented behavior a defect.
 </live-state-over-files>
 
 <configuration-ownership>
@@ -34,6 +34,11 @@ authority at its proper scope. Enforce it mechanically only when the forbidden s
 enough to avoid unacceptable false results; otherwise an edit-parsing hook becomes a conflicting policy engine. Use
 evaluations to expose adherence regressions, not as proof that prose forces behavior.
 </separate-adherence-evidence-and-enforcement>
+
+<instruction-authority-diagnosis>
+Before diagnosing or migrating duplicated, missing, stale, or wrong-horizon behavior, read
+`instruction-authority.md` and trace the rule through live delivery before selecting its owner.
+</instruction-authority-diagnosis>
 
 <workflow-authoring>
 Before authoring or reviewing a workflow that calls agents or models, read `workflows.md` and budget its control flow.

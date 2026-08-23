@@ -17,6 +17,7 @@ let
       isDarwin
       ;
   };
+  soul = import ./soul.nix { inherit pkgs; };
   migration = import ./migration.nix { inherit pkgs; };
 
   runtimeDependencies = [
@@ -32,8 +33,15 @@ let
     export HERMES_AGENT_UV="${pkgs.uv}/bin/uv"
     export HERMES_AGENT_PYTHON="${pkgs.python311}/bin/python3.11"
     export HERMES_AGENT_CONFIG_TEMPLATE="${configTemplate}"
+    export HERMES_AGENT_SOUL="${soul}"
+    export HERMES_AGENT_HUMANIZE_SKILL="${../../agent-instructions/skills/humanize/SKILL.md}"
+    export HERMES_AGENT_DOCS_SKILL="${../../agent-instructions/skills/docs/SKILL.md}"
     export HERMES_AGENT_USER_MEMORY="${migration.userMemory}"
     export HERMES_AGENT_AGENT_MEMORY="${migration.agentMemory}"
+    export HERMES_AGENT_RETIRED_USER_MEMORY_ENTRY_PREFIXES="${migration.retiredUserMemoryEntryPrefixes}"
+    export HERMES_AGENT_RETIRED_AGENT_MEMORY_ENTRY_PREFIXES="${migration.retiredAgentMemoryEntryPrefixes}"
+    export HERMES_AGENT_MEMORY_SYNCHRONIZER="${./scripts/synchronize-hermes-memory.py}"
+    export HERMES_AGENT_MEMORY_SYNCHRONIZER_PYTHON="${pkgs.python312}/bin/python3.12"
     export HERMES_AGENT_RUNTIME_PATH="${lib.makeBinPath runtimeDependencies}"
     exec ${pkgs.bash}/bin/bash ${./scripts/hermes-launch} "$@"
   '';

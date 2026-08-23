@@ -22,14 +22,23 @@ fi
 if [ -z "${HERMES_AGENT_LAUNCH_SEEDED:-}" ]; then
 	export HERMES_AGENT_LAUNCH_SEEDED=1
 	install -m 0644 "$HERMES_AGENT_CONFIG_TEMPLATE" "$hermes_home/config.yaml"
+	install -m 0644 "$HERMES_AGENT_SOUL" "$hermes_home/SOUL.md"
+	managed_humanize_skill_dir="$hermes_home/skills/humanize"
+	mkdir -p "$managed_humanize_skill_dir"
+	install -m 0644 "$HERMES_AGENT_HUMANIZE_SKILL" "$managed_humanize_skill_dir/SKILL.md"
+	managed_docs_skill_dir="$hermes_home/skills/docs"
+	mkdir -p "$managed_docs_skill_dir"
+	install -m 0644 "$HERMES_AGENT_DOCS_SKILL" "$managed_docs_skill_dir/SKILL.md"
 	memories_dir="$hermes_home/memories"
 	mkdir -p "$memories_dir"
-	if [ ! -f "$memories_dir/USER.md" ]; then
-		install -m 0644 "$HERMES_AGENT_USER_MEMORY" "$memories_dir/USER.md"
-	fi
-	if [ ! -f "$memories_dir/MEMORY.md" ]; then
-		install -m 0644 "$HERMES_AGENT_AGENT_MEMORY" "$memories_dir/MEMORY.md"
-	fi
+	"$HERMES_AGENT_MEMORY_SYNCHRONIZER_PYTHON" "$HERMES_AGENT_MEMORY_SYNCHRONIZER" \
+		--target "$memories_dir/USER.md" \
+		--source "$HERMES_AGENT_USER_MEMORY" \
+		--retired-entry-prefixes "$HERMES_AGENT_RETIRED_USER_MEMORY_ENTRY_PREFIXES"
+	"$HERMES_AGENT_MEMORY_SYNCHRONIZER_PYTHON" "$HERMES_AGENT_MEMORY_SYNCHRONIZER" \
+		--target "$memories_dir/MEMORY.md" \
+		--source "$HERMES_AGENT_AGENT_MEMORY" \
+		--retired-entry-prefixes "$HERMES_AGENT_RETIRED_AGENT_MEMORY_ENTRY_PREFIXES"
 fi
 
 exec "$venv_dir/bin/hermes" "$@"

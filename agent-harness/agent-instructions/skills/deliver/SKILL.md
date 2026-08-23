@@ -3,6 +3,11 @@ name: deliver
 description: Drive a large software goal end-to-end - investigate context, design the build process, author a goal prompt, then execute with workflows and subagents until it works live. For big objectives needing a process, not one-off tasks.
 ---
 
+<core-authority>
+Core `<evidence>`, `<autonomy>`, `<completion>`, `<delegation>`, `<context>`, and `<coding>` own the persistent defaults
+used here. This skill composes them into the bounded process for delivering one large software goal.
+</core-authority>
+
 <scope>
 Use this when the goal is large and multi-step enough that the right first move is to design a build process rather than
 start coding: a feature program, a migration, remediating many findings, anything spanning several increments or
