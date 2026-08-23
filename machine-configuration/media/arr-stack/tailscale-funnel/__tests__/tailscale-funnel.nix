@@ -57,6 +57,13 @@ in
       (arrMediaTailscaleFunnelUnit.serviceConfig.Type == "oneshot")
       "an enabled arr-stack media funnel must assert the funnels through a oneshot unit that re-applies the persistent serve config on boot";
 
+  chise-arr-media-tailscale-funnel-clears-previous-state-first =
+    mkEvalCheck "chise-arr-media-tailscale-funnel-clears-previous-state-first"
+      (lib.hasInfix "tailscale funnel reset" (
+        builtins.head arrMediaTailscaleFunnelUnit.serviceConfig.ExecStart
+      ))
+      "the authoritative funnel unit must clear previous node Funnel state before applying the desired routes, so removing a declared route retires its public endpoint instead of leaving stale mutable Tailscale state behind";
+
   chise-arr-media-tailscale-funnel-publishes-jellyfin-loopback =
     mkEvalCheck "chise-arr-media-tailscale-funnel-publishes-jellyfin-loopback"
       (lib.hasInfix "tailscale funnel --https=443 --bg http://127.0.0.1:8096" execStartCommands)

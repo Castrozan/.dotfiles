@@ -41,20 +41,7 @@
 
     arrMediaTailscaleFunnel = {
       enable = true;
-      funnels = [
-        {
-          publicHttpsPort = 443;
-          loopbackUrl = "http://127.0.0.1:9443";
-        }
-        {
-          publicHttpsPort = 8443;
-          loopbackUrl = "http://127.0.0.1:9444";
-        }
-        {
-          publicHttpsPort = 10000;
-          loopbackUrl = "http://127.0.0.1:9445";
-        }
-      ];
+      funnels = [ ];
     };
 
     arrStackOnDemandSupervisor = {
@@ -153,11 +140,6 @@
 
   systemd.services = {
     docker.unitConfig.RequiresMountsFor = [ "/home/zanoni/arr-stack/data" ];
-
-    arr-media-tailscale-funnel = {
-      after = [ "nginx.service" ];
-      requires = [ "nginx.service" ];
-    };
 
     jellyseerr-email-notifications.restartTriggers = [
       ../../../../secrets/credentials/jellyseerr-smtp-app-password.age

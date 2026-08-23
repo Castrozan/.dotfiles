@@ -125,27 +125,17 @@ in
       )
       "the chise disk guard must send its low-space alert through the agenix Gmail app password and a real recipient, reusing the Jellyseerr email secret so a critical disk pauses downloads and actually tells Lucas rather than failing silently";
 
-  chise-arr-media-funnel-targets-ratelimit-proxy-not-container =
-    mkEvalCheck "chise-arr-media-funnel-targets-ratelimit-proxy-not-container"
+  chise-arr-media-funnel-is-retired =
+    mkEvalCheck "chise-arr-media-funnel-is-retired"
       (
-        lib.hasInfix "http://127.0.0.1:9443" arrMediaFunnelExecStart
-        && lib.hasInfix "http://127.0.0.1:9444" arrMediaFunnelExecStart
-        && !(lib.hasInfix "http://127.0.0.1:8096" arrMediaFunnelExecStart)
-        && !(lib.hasInfix "http://127.0.0.1:5055" arrMediaFunnelExecStart)
+        lib.hasInfix "tailscale funnel reset" arrMediaFunnelExecStart
+        && !(lib.hasInfix "--https=" arrMediaFunnelExecStart)
       )
-      "the public funnel must target the loopback rate-limit proxy ports (9443/9444), never the container ports (8096/5055) directly, so no public request can reach the loginless media origins without passing the per-IP login limiter first";
+      "chise must clear its obsolete media Funnel configuration without asserting replacement Funnel routes, so Jellyfin, Jellyseerr, and Kavita are public only through their owner-only Cloudflare Access hostnames";
 
   chise-arr-media-ratelimit-nginx-enabled-on-chise =
     mkEvalCheck "chise-arr-media-ratelimit-nginx-enabled-on-chise" nixosCfg.services.nginx.enable
-      "chise must actually run the rate-limiting nginx the funnel now depends on, or the public media endpoints would 502 behind a funnel pointing at a dead port";
-
-  chise-arr-media-funnel-requires-nginx-before-repoint =
-    mkEvalCheck "chise-arr-media-funnel-requires-nginx-before-repoint"
-      (
-        builtins.elem "nginx.service" nixosCfg.systemd.services.arr-media-tailscale-funnel.after
-        && builtins.elem "nginx.service" nixosCfg.systemd.services.arr-media-tailscale-funnel.requires
-      )
-      "the funnel unit must order after and require nginx so a rebuild only repoints the public funnel onto the proxy once nginx has actually started; if nginx fails its config test the funnel unit never starts and the previous container target stays live (up but unthrottled) instead of the funnel 502-ing onto a dead proxy";
+      "chise must run the rate-limiting nginx that fronts each Cloudflare Tunnel media origin, or the public media endpoints would reach the connector but fail behind dead local proxy ports";
 
   chise-arr-drive-guard-restores-front-ends-on-reconnect =
     mkEvalCheck "chise-arr-drive-guard-restores-front-ends-on-reconnect"

@@ -33,12 +33,12 @@ let
 in
 {
   options.custom.arrMediaTailscaleFunnel = {
-    enable = lib.mkEnableOption "publishing selected arr-stack media services to the public internet over Tailscale Funnel so approved friends reach them on the funnel hostname without joining the tailnet, while every other arr-stack service stays reachable only across the tailnet";
+    enable = lib.mkEnableOption "authoritatively managing the node's Tailscale Funnel configuration for selected arr-stack media services";
 
     funnels = lib.mkOption {
       type = lib.types.listOf funnelSubmodule;
       default = [ ];
-      description = "The arr-stack services published over Tailscale Funnel, each pinning a distinct public HTTPS port to a loopback proxy target.";
+      description = "The arr-stack services published over Tailscale Funnel after clearing the node's previous Funnel configuration, each pinning a distinct public HTTPS port to a loopback proxy target. An empty list keeps Funnel disabled across rebuilds and boots.";
     };
   };
 
@@ -58,7 +58,10 @@ in
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStartPre = "${waitForTailscaleBackendRunning}/bin/arr-media-tailscale-funnel-wait-for-tailscale-backend-running";
-        ExecStart = map (
+        ExecStart = [
+          "${pkgs.tailscale}/bin/tailscale funnel reset"
+        ]
+        ++ map (
           funnel:
           "${pkgs.tailscale}/bin/tailscale funnel --https=${toString funnel.publicHttpsPort} --bg ${funnel.loopbackUrl}"
         ) arrMediaTailscaleFunnelConfig.funnels;
