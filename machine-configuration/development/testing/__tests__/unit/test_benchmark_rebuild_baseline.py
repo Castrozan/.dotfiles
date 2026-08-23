@@ -1,26 +1,14 @@
-import datetime
 import json
-from pathlib import Path
+from datetime import datetime, timezone
 from unittest.mock import patch
 
-import pytest
-
 import benchmark_rebuild
-
-
-def _isoformat_recent_baseline_timestamp_within_freshness_window() -> str:
-    return datetime.datetime.now(datetime.timezone.utc).isoformat()
-
-
-def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[5]
+from benchmark_baseline import BaselineValidation
 
 
 def _valid_baseline() -> dict:
     return {
-        "generated_at": (
-            _isoformat_recent_baseline_timestamp_within_freshness_window()
-        ),
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "git_commit": "abc1234",
         "config": "home",
         "threshold_percent": 150,
@@ -29,69 +17,19 @@ def _valid_baseline() -> dict:
 
 
 class TestTrackedBaselinePath:
-    def test_resolves_a_baseline_that_exists_in_the_checkout(self):
+    def test_resolves_a_baseline_that_exists_in_the_checkout(self, repository_root):
         relative_path = benchmark_rebuild.BASELINE_PATH.relative_to(
             benchmark_rebuild.DOTFILES_DIRECTORY
         )
-        assert (_repository_root() / relative_path).is_file()
+        assert (repository_root / relative_path).is_file()
 
 
-class TestCheckBaseline:
-    def _write_baseline(self, tmp_path, baseline) -> Path:
+class TestCheckBaselineReporting:
+    def test_reports_tracked_measurements_without_any_local_results_csv(
+        self, tmp_path, capsys
+    ):
         baseline_file = tmp_path / "baseline.json"
-        baseline_file.write_text(json.dumps(baseline))
-        return baseline_file
-
-    def test_fails_when_no_baseline_file(self, tmp_path):
-        with patch(
-            "benchmark_rebuild.BASELINE_PATH",
-            tmp_path / "nonexistent.json",
-        ):
-            assert benchmark_rebuild.check_baseline() is False
-
-    def test_fails_without_raising_on_malformed_json(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-        baseline_file.write_text("{ not json")
-
-        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
-            assert benchmark_rebuild.check_baseline() is False
-
-    def test_fails_without_raising_on_a_measurement_missing_its_value(self, tmp_path):
-        baseline_file = self._write_baseline(
-            tmp_path,
-            {
-                "generated_at": (
-                    _isoformat_recent_baseline_timestamp_within_freshness_window()
-                ),
-                "measurements": {"eval": {"max_allowed_seconds": 3.0}},
-            },
-        )
-
-        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
-            assert benchmark_rebuild.check_baseline() is False
-
-    def test_passes_without_any_local_results_csv(self, tmp_path):
-        baseline_file = self._write_baseline(
-            tmp_path,
-            {
-                "generated_at": (
-                    _isoformat_recent_baseline_timestamp_within_freshness_window()
-                ),
-                "git_commit": "abc1234",
-                "config": "home",
-                "threshold_percent": 150,
-                "measurements": {
-                    "eval": {
-                        "duration_seconds": 2.0,
-                        "max_allowed_seconds": 3.0,
-                    },
-                    "rebuild": {
-                        "duration_seconds": 12.0,
-                        "max_allowed_seconds": 18.0,
-                    },
-                },
-            },
-        )
+        baseline_file.write_text(json.dumps(_valid_baseline()))
 
         with (
             patch("benchmark_rebuild.BASELINE_PATH", baseline_file),
@@ -99,91 +37,38 @@ class TestCheckBaseline:
         ):
             assert benchmark_rebuild.check_baseline() is True
 
-    def test_fails_when_baseline_too_old(self, tmp_path):
-        baseline_file = self._write_baseline(
-            tmp_path,
-            {
-                "generated_at": "2025-01-01T00:00:00+00:00",
-                "git_commit": "abc1234",
-                "config": "home",
-                "threshold_percent": 150,
-                "measurements": {
-                    "eval": {
-                        "duration_seconds": 2.0,
-                        "max_allowed_seconds": 3.0,
-                    },
-                },
-            },
-        )
+        report = capsys.readouterr().out
+        assert "Commit: abc1234" in report
+        assert "Threshold: 150%" in report
+        assert "eval: 2.0s (max 3.0s)" in report
+        assert "PASSED" in report
 
-        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
-            assert benchmark_rebuild.check_baseline() is False
 
-    def test_fails_when_no_measurements(self, tmp_path):
-        baseline_file = self._write_baseline(
-            tmp_path,
-            {
-                "generated_at": (
-                    _isoformat_recent_baseline_timestamp_within_freshness_window()
-                ),
-                "git_commit": "abc1234",
-                "config": "home",
-                "threshold_percent": 150,
-                "measurements": {},
-            },
-        )
+class TestCheckBaselineDelegatesValidation:
+    def test_fails_and_prints_every_failure_the_validator_reports(self, capsys):
+        validation = BaselineValidation({}, None, ["first problem", "second problem"])
 
-        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
-            assert benchmark_rebuild.check_baseline() is False
-
-    @pytest.mark.parametrize(
-        ("field", "value"),
-        [
-            ("git_commit", None),
-            ("git_commit", "   "),
-            ("git_commit", 1234),
-            ("threshold_percent", None),
-            ("threshold_percent", True),
-            ("threshold_percent", 0),
-        ],
-        ids=[
-            "null-commit",
-            "blank-commit",
-            "numeric-commit",
-            "null-threshold",
-            "boolean-threshold",
-            "zero-threshold",
-        ],
-    )
-    def test_fails_when_persisted_metadata_is_unusable(self, tmp_path, field, value):
-        baseline = _valid_baseline()
-        baseline[field] = value
-        baseline_file = self._write_baseline(tmp_path, baseline)
-
-        with (
-            patch("benchmark_rebuild.BASELINE_PATH", baseline_file),
-            patch("benchmark_rebuild.RESULTS_DIRECTORY", tmp_path / "absent"),
+        with patch(
+            "benchmark_rebuild.validate_tracked_baseline", return_value=validation
         ):
             assert benchmark_rebuild.check_baseline() is False
 
-    def test_fails_when_a_ceiling_is_not_positive(self, tmp_path):
-        baseline_file = self._write_baseline(
-            tmp_path,
-            {
-                "generated_at": (
-                    _isoformat_recent_baseline_timestamp_within_freshness_window()
-                ),
-                "git_commit": "abc1234",
-                "config": "home",
-                "threshold_percent": 150,
-                "measurements": {
-                    "eval": {
-                        "duration_seconds": 2.0,
-                        "max_allowed_seconds": 0,
-                    },
-                },
-            },
-        )
+        report = capsys.readouterr().out
+        assert "FAILED (2 issues)" in report
+        assert "- first problem" in report
+        assert "- second problem" in report
 
-        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
-            assert benchmark_rebuild.check_baseline() is False
+    def test_asks_the_validator_for_the_tracked_path_and_rebuild_keys(self):
+        validation = BaselineValidation({}, None, ["stubbed"])
+
+        with patch(
+            "benchmark_rebuild.validate_tracked_baseline", return_value=validation
+        ) as validate:
+            benchmark_rebuild.check_baseline()
+
+        validate.assert_called_once_with(
+            benchmark_rebuild.BASELINE_PATH,
+            "duration_seconds",
+            "max_allowed_seconds",
+            benchmark_rebuild.SAVE_BASELINE_COMMAND,
+        )

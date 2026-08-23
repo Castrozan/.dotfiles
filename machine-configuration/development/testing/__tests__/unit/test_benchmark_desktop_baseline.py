@@ -1,25 +1,79 @@
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 from unittest.mock import patch
 
 import benchmark_desktop
+from benchmark_baseline import BaselineValidation
 
 
-def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[5]
-
-
-def _fresh_timestamp() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+def _valid_baseline() -> dict:
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "git_commit": "abc123",
+        "threshold_percent": 200,
+        "measurements": {"wezterm": {"avg_ms": 50, "max_allowed_ms": 100}},
+    }
 
 
 class TestTrackedBaselinePath:
-    def test_resolves_a_baseline_that_exists_in_the_checkout(self):
+    def test_resolves_a_baseline_that_exists_in_the_checkout(self, repository_root):
         relative_path = benchmark_desktop.BASELINE_PATH.relative_to(
             benchmark_desktop.DOTFILES_DIRECTORY
         )
-        assert (_repository_root() / relative_path).is_file()
+        assert (repository_root / relative_path).is_file()
+
+
+class TestCheckBaselineReporting:
+    def test_reports_tracked_measurements_without_a_csv_or_desktop_session(
+        self, tmp_path, capsys
+    ):
+        baseline_file = tmp_path / "baseline.json"
+        baseline_file.write_text(json.dumps(_valid_baseline()))
+
+        with (
+            patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file),
+            patch.object(benchmark_desktop, "RESULTS_DIRECTORY", tmp_path / "absent"),
+            patch.dict("os.environ", {}, clear=True),
+        ):
+            assert benchmark_desktop.check_baseline() is True
+
+        report = capsys.readouterr().out
+        assert "Commit: abc123" in report
+        assert "Threshold: 200%" in report
+        assert "wezterm" in report
+        assert "50ms" in report
+        assert "100ms" in report
+        assert "PASSED" in report
+
+
+class TestCheckBaselineDelegatesValidation:
+    def test_fails_and_prints_every_failure_the_validator_reports(self, capsys):
+        validation = BaselineValidation({}, None, ["first problem", "second problem"])
+
+        with patch.object(
+            benchmark_desktop, "validate_tracked_baseline", return_value=validation
+        ):
+            assert benchmark_desktop.check_baseline() is False
+
+        report = capsys.readouterr().out
+        assert "FAILED (2 issues)" in report
+        assert "- first problem" in report
+        assert "- second problem" in report
+
+    def test_asks_the_validator_for_the_tracked_path_and_desktop_keys(self):
+        validation = BaselineValidation({}, None, ["stubbed"])
+
+        with patch.object(
+            benchmark_desktop, "validate_tracked_baseline", return_value=validation
+        ) as validate:
+            benchmark_desktop.check_baseline()
+
+        validate.assert_called_once_with(
+            benchmark_desktop.BASELINE_PATH,
+            "avg_ms",
+            "max_allowed_ms",
+            benchmark_desktop.SAVE_BASELINE_COMMAND,
+        )
 
 
 class TestGetLatestResultsByComponent:
@@ -40,67 +94,6 @@ class TestGetLatestResultsByComponent:
         result = benchmark_desktop.get_latest_results_by_component(results_file)
         assert result["wezterm"] == 320.0
         assert result["tmux"] == 20.0
-
-
-class TestCheckBaseline:
-    def _make_baseline(self, tmp_path, measurements=None, generated_at=None):
-        baseline_file = tmp_path / "baseline.json"
-        baseline_file.write_text(
-            json.dumps(
-                {
-                    "generated_at": generated_at or _fresh_timestamp(),
-                    "git_commit": "abc123",
-                    "threshold_percent": 200,
-                    "measurements": measurements
-                    if measurements is not None
-                    else {"test": {"avg_ms": 50, "max_allowed_ms": 100}},
-                }
-            )
-        )
-        return baseline_file
-
-    def test_fails_when_no_file(self, tmp_path):
-        with patch.object(benchmark_desktop, "BASELINE_PATH", tmp_path / "nope.json"):
-            assert benchmark_desktop.check_baseline() is False
-
-    def test_fails_without_raising_on_malformed_json(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-        baseline_file.write_text("{ not json")
-
-        with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
-            assert benchmark_desktop.check_baseline() is False
-
-    def test_passes_without_any_results_csv_or_desktop_session(self, tmp_path):
-        baseline_file = self._make_baseline(tmp_path)
-
-        with (
-            patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file),
-            patch.object(benchmark_desktop, "RESULTS_DIRECTORY", tmp_path / "absent"),
-            patch.dict("os.environ", {}, clear=True),
-        ):
-            assert benchmark_desktop.check_baseline() is True
-
-    def test_fails_when_the_baseline_is_stale(self, tmp_path):
-        baseline_file = self._make_baseline(
-            tmp_path, generated_at="2025-01-01T00:00:00+00:00"
-        )
-
-        with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
-            assert benchmark_desktop.check_baseline() is False
-
-    def test_fails_when_a_ceiling_is_not_positive(self, tmp_path):
-        baseline_file = self._make_baseline(
-            tmp_path, {"comp": {"avg_ms": 5, "max_allowed_ms": 0}}
-        )
-
-        with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
-            assert benchmark_desktop.check_baseline() is False
-
-    def test_fails_when_no_measurements(self, tmp_path):
-        baseline_file = self._make_baseline(tmp_path, {})
-
-        with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
-            assert benchmark_desktop.check_baseline() is False
 
 
 class TestCompareLatestResultsToBaseline:
