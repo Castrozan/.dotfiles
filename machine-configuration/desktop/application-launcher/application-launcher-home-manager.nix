@@ -9,19 +9,15 @@ let
   applicationLauncherDaemonBinaryPath = "${config.home.homeDirectory}/.local/bin/application-launcher-daemon";
   applicationLauncherDaemonLaunchdLabel = "com.dotfiles.application-launcher-daemon";
   applicationLauncherDaemonSocketPath = "/tmp/application-launcher.sock";
+
+  applicationLauncherClientSource = pkgs.writeText "application-launcher-client-source.py" (
+    builtins.readFile ./scripts/application_launcher_client.py
+  );
 in
 {
   home.packages = [
     (pkgs.writeShellScriptBin "application-launcher" ''
-      exec ${pkgs.python312}/bin/python3 -c '
-      import socket, sys
-      client_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-      try:
-          client_socket.sendto(b"show", "${applicationLauncherDaemonSocketPath}")
-      except OSError as exception:
-          print(f"application-launcher: {exception}", file=sys.stderr)
-          sys.exit(1)
-      '
+      exec ${pkgs.python312}/bin/python3 ${applicationLauncherClientSource} ${lib.escapeShellArg applicationLauncherDaemonSocketPath}
     '')
   ];
 
