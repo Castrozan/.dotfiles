@@ -1,6 +1,17 @@
-{ config, ... }:
+{ config, lib, ... }:
 {
   custom = {
+    cloudflareTunnelConnector.ingress = lib.mkAfter [
+      {
+        hostname = "watch.lucaszanoni.com";
+        localServiceUrl = "http://127.0.0.1:9443";
+      }
+      {
+        hostname = "request.lucaszanoni.com";
+        localServiceUrl = "http://127.0.0.1:9444";
+      }
+    ];
+
     arrMediaLoginRateLimitProxy = {
       enable = true;
       origins = [

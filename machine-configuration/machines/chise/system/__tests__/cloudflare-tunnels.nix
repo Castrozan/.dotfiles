@@ -31,7 +31,20 @@ let
   cloudflareTunnelConnectorEnabled = evalCloudflareTunnelConnector {
     enable = true;
     tunnelId = cloudflareTunnelConnectorTunnelId;
-    ingressHostname = "jarvis-session-origin.lucaszanoni.com";
+    ingress = [
+      {
+        hostname = "jarvis-session-origin.lucaszanoni.com";
+        localServiceUrl = "http://127.0.0.1:8787";
+      }
+      {
+        hostname = "watch.lucaszanoni.com";
+        localServiceUrl = "http://127.0.0.1:9443";
+      }
+      {
+        hostname = "request.lucaszanoni.com";
+        localServiceUrl = "http://127.0.0.1:9444";
+      }
+    ];
     credentialsFile = "/run/agenix/jarvis-session-connector-credentials";
   };
 
@@ -54,13 +67,16 @@ in
       (builtins.hasAttr cloudflareTunnelConnectorTunnelId cloudflareTunnelConnectorEnabled.services.cloudflared.tunnels)
       "the connector must register the named tunnel under its configured tunnelId so cloudflared runs the provisioned tunnel rather than an empty default";
 
-  chise-cloudflare-tunnel-connector-ingress-routes-origin-to-loopback =
-    mkEvalCheck "chise-cloudflare-tunnel-connector-ingress-routes-origin-to-loopback"
+  chise-cloudflare-tunnel-connector-ingress-routes-declared-origins-to-loopback =
+    mkEvalCheck "chise-cloudflare-tunnel-connector-ingress-routes-declared-origins-to-loopback"
       (
         cloudflareTunnelConnectorEnabledTunnel.ingress."jarvis-session-origin.lucaszanoni.com"
         == "http://127.0.0.1:8787"
+        && cloudflareTunnelConnectorEnabledTunnel.ingress."watch.lucaszanoni.com" == "http://127.0.0.1:9443"
+        &&
+          cloudflareTunnelConnectorEnabledTunnel.ingress."request.lucaszanoni.com" == "http://127.0.0.1:9444"
       )
-      "the connector must route only the single Jarvis origin hostname to the loopback bridge so it exposes nothing else from the host";
+      "the connector must route each declared Jarvis and private media origin hostname to its loopback service so it exposes no undeclared host service";
 
   chise-cloudflare-tunnel-connector-credentials-from-agenix =
     mkEvalCheck "chise-cloudflare-tunnel-connector-credentials-from-agenix"

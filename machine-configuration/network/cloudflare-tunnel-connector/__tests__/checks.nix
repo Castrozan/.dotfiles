@@ -24,8 +24,17 @@ let
     }).config;
 
   cloudflareTunnelConnectorTunnelId = "00000000-0000-0000-0000-000000000000";
-  cloudflareTunnelConnectorIngressHostname = "kira-session-origin.lucaszanoni.com";
   cloudflareTunnelConnectorCredentialsFile = "/Users/test/.secrets/kira-session-connector-credentials";
+  cloudflareTunnelConnectorIngress = [
+    {
+      hostname = "kira-session-origin.lucaszanoni.com";
+      localServiceUrl = "http://127.0.0.1:8787";
+    }
+    {
+      hostname = "watch.lucaszanoni.com";
+      localServiceUrl = "http://127.0.0.1:9443";
+    }
+  ];
 
   cloudflareTunnelConnectorDisabled = evalCloudflareTunnelConnector {
     enable = false;
@@ -34,7 +43,7 @@ let
   cloudflareTunnelConnectorEnabled = evalCloudflareTunnelConnector {
     enable = true;
     tunnelId = cloudflareTunnelConnectorTunnelId;
-    ingressHostname = cloudflareTunnelConnectorIngressHostname;
+    ingress = cloudflareTunnelConnectorIngress;
     credentialsFile = cloudflareTunnelConnectorCredentialsFile;
   };
 
@@ -45,13 +54,12 @@ let
     builtins.toJSON {
       tunnel = cloudflareTunnelConnectorTunnelId;
       "credentials-file" = cloudflareTunnelConnectorCredentialsFile;
-      ingress = [
-        {
-          hostname = cloudflareTunnelConnectorIngressHostname;
-          service = "http://127.0.0.1:8787";
-        }
-        { service = "http_status:404"; }
-      ];
+      ingress =
+        map (route: {
+          inherit (route) hostname;
+          service = route.localServiceUrl;
+        }) cloudflareTunnelConnectorIngress
+        ++ [ { service = "http_status:404"; } ];
     }
   );
 in
@@ -69,9 +77,9 @@ in
       )
       "an enabled darwin connector must run cloudflared under a launchd agent so the owner-only cockpit terminal reaches the loopback bridge over the named tunnel";
 
-  domain-darwin-cloudflare-tunnel-connector-config-routes-single-origin-to-loopback-with-agenix-credentials =
+  domain-darwin-cloudflare-tunnel-connector-config-routes-declared-origins-to-loopback-with-agenix-credentials =
     mkEvalCheck
-      "domain-darwin-cloudflare-tunnel-connector-config-routes-single-origin-to-loopback-with-agenix-credentials"
+      "domain-darwin-cloudflare-tunnel-connector-config-routes-declared-origins-to-loopback-with-agenix-credentials"
       (lib.elem "--config=${expectedCloudflaredIngressConfiguration}" cloudflareTunnelConnectorEnabledProgramArguments)
-      "the connector must run cloudflared with a config that registers the configured tunnelId, routes only the single ingress hostname to the loopback bridge, answers every other hostname with a 404, and reads its credentials from the agenix-provisioned path, so it exposes nothing else and keeps the account tag and tunnel secret out of the Nix store";
+      "the connector must run cloudflared with a config that registers the configured tunnelId, routes every declared ingress hostname to its loopback service, answers every other hostname with a 404, and reads its credentials from the agenix-provisioned path, so it exposes nothing else and keeps the account tag and tunnel secret out of the Nix store";
 }
