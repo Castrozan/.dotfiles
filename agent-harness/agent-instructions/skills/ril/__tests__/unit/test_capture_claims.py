@@ -7,18 +7,13 @@ from claims import claim_capture, record_capture_verdict, release_capture
 FIXED_NOW = datetime(2026, 7, 25, 21, 0, 0)
 
 
-def write_capture(capture_inbox_directory: Path, name: str, body: str) -> Path:
-    capture_inbox_directory.mkdir(parents=True, exist_ok=True)
-    capture_path = capture_inbox_directory / name
-    capture_path.write_text(body, encoding="utf-8")
-    return capture_path
-
-
 def state_of(capture_path: Path, now: datetime = FIXED_NOW) -> str:
     return captures.capture_state(captures.read_capture_body(capture_path), 60, now)
 
 
-def test_claiming_a_free_capture_stamps_the_owner_and_the_claim_time(tmp_path):
+def test_claiming_a_free_capture_stamps_the_owner_and_the_claim_time(
+    tmp_path, write_capture
+):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
 
     claim_outcome = claim_capture(capture_path, "chise", 60, FIXED_NOW)
@@ -31,7 +26,7 @@ def test_claiming_a_free_capture_stamps_the_owner_and_the_claim_time(tmp_path):
     assert state_of(capture_path) == "working"
 
 
-def test_a_live_claim_refuses_a_second_claimant(tmp_path):
+def test_a_live_claim_refuses_a_second_claimant(tmp_path, write_capture):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
     claim_capture(capture_path, "chise", 60, FIXED_NOW)
 
@@ -43,7 +38,7 @@ def test_a_live_claim_refuses_a_second_claimant(tmp_path):
     assert "claimed_by:: chise" in capture_path.read_text(encoding="utf-8")
 
 
-def test_a_live_claim_yields_to_an_explicit_takeover(tmp_path):
+def test_a_live_claim_yields_to_an_explicit_takeover(tmp_path, write_capture):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
     claim_capture(capture_path, "chise", 60, FIXED_NOW)
 
@@ -55,7 +50,9 @@ def test_a_live_claim_yields_to_an_explicit_takeover(tmp_path):
     assert "claimed_by:: kira" in capture_path.read_text(encoding="utf-8")
 
 
-def test_an_expired_claim_is_reclaimable_without_a_takeover_flag(tmp_path):
+def test_an_expired_claim_is_reclaimable_without_a_takeover_flag(
+    tmp_path, write_capture
+):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
     claim_capture(capture_path, "chise", 60, FIXED_NOW)
 
@@ -69,7 +66,7 @@ def test_an_expired_claim_is_reclaimable_without_a_takeover_flag(tmp_path):
     assert "claimed_by:: kira" in capture_body
 
 
-def test_a_done_capture_cannot_be_claimed(tmp_path):
+def test_a_done_capture_cannot_be_claimed(tmp_path, write_capture):
     capture_path = write_capture(
         tmp_path, "Article 2026-07-01 10-00-00.md", "body\n\n#agent-work-done\n"
     )
@@ -77,7 +74,7 @@ def test_a_done_capture_cannot_be_claimed(tmp_path):
     assert claim_capture(capture_path, "chise", 60, FIXED_NOW) == "already-done"
 
 
-def test_releasing_a_claim_returns_the_capture_unworked(tmp_path):
+def test_releasing_a_claim_returns_the_capture_unworked(tmp_path, write_capture):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
     claim_capture(capture_path, "chise", 60, FIXED_NOW)
 
@@ -88,7 +85,7 @@ def test_releasing_a_claim_returns_the_capture_unworked(tmp_path):
     assert state_of(capture_path) == "unworked"
 
 
-def test_releasing_an_unclaimed_capture_changes_nothing(tmp_path):
+def test_releasing_an_unclaimed_capture_changes_nothing(tmp_path, write_capture):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body\n")
 
     release_outcome = release_capture(capture_path, 60, FIXED_NOW)
@@ -97,7 +94,9 @@ def test_releasing_an_unclaimed_capture_changes_nothing(tmp_path):
     assert capture_path.read_text(encoding="utf-8") == "body\n"
 
 
-def test_recording_a_verdict_clears_the_claim_and_closes_the_capture(tmp_path):
+def test_recording_a_verdict_clears_the_claim_and_closes_the_capture(
+    tmp_path, write_capture
+):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
     claim_capture(capture_path, "chise", 60, FIXED_NOW)
 
@@ -116,7 +115,9 @@ def test_recording_a_verdict_clears_the_claim_and_closes_the_capture(tmp_path):
     assert state_of(capture_path) == "done"
 
 
-def test_recording_a_verdict_twice_leaves_the_first_one_standing(tmp_path):
+def test_recording_a_verdict_twice_leaves_the_first_one_standing(
+    tmp_path, write_capture
+):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
     record_capture_verdict(capture_path, "adopt", "first outcome", None)
 
@@ -130,7 +131,9 @@ def test_recording_a_verdict_twice_leaves_the_first_one_standing(tmp_path):
     assert "second outcome" not in capture_body
 
 
-def test_an_entry_link_already_wrapped_in_brackets_is_not_double_wrapped(tmp_path):
+def test_an_entry_link_already_wrapped_in_brackets_is_not_double_wrapped(
+    tmp_path, write_capture
+):
     capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
 
     record_capture_verdict(capture_path, "learn", "read it", "[[Exit nodes]]")

@@ -1,21 +1,7 @@
-import importlib.util
 import json
-import pathlib
 import subprocess
 
 import pytest
-
-VERIFICATION_ROOT = pathlib.Path(__file__).resolve().parents[2]
-SUITE_MAP_SCRIPT = VERIFICATION_ROOT / "map-test-suite.py"
-
-
-def load_suite_map():
-    specification = importlib.util.spec_from_file_location(
-        "suite_map", SUITE_MAP_SCRIPT
-    )
-    suite_map = importlib.util.module_from_spec(specification)
-    specification.loader.exec_module(suite_map)
-    return suite_map
 
 
 def evaluation_completing_with(return_code, standard_output):
@@ -32,7 +18,9 @@ def evaluation_raising(error):
     return run_evaluation
 
 
-def test_a_successful_evaluation_reports_the_registered_check_attributes():
+def test_a_successful_evaluation_reports_the_registered_check_attributes(
+    load_suite_map,
+):
     suite_map = load_suite_map()
     check_names = ["seanime-listens-on-loopback", "voice-model-is-pinned"]
 
@@ -54,7 +42,9 @@ def test_a_successful_evaluation_reports_the_registered_check_attributes():
     )
 
 
-def test_the_evaluation_asks_the_flake_for_the_current_systems_check_names():
+def test_the_evaluation_asks_the_flake_for_the_current_systems_check_names(
+    load_suite_map,
+):
     suite_map = load_suite_map()
     recorded_invocations = []
 
@@ -88,7 +78,9 @@ def test_the_evaluation_asks_the_flake_for_the_current_systems_check_names():
     ), "an unbounded evaluation would hang the map forever on a stuck nix daemon"
 
 
-def test_a_wrapper_that_only_imports_its_cases_is_still_registered(tmp_path):
+def test_a_wrapper_that_only_imports_its_cases_is_still_registered(
+    tmp_path, load_suite_map
+):
     suite_map = load_suite_map()
     tests_directory = tmp_path / "__tests__"
     tests_directory.mkdir()
@@ -127,7 +119,7 @@ def test_a_wrapper_that_only_imports_its_cases_is_still_registered(tmp_path):
     ],
 )
 def test_an_unusable_evaluation_never_reports_zero_checks(
-    failing_evaluation, expected_reason
+    failing_evaluation, expected_reason, load_suite_map
 ):
     suite_map = load_suite_map()
 
@@ -149,7 +141,7 @@ def test_an_unusable_evaluation_never_reports_zero_checks(
 
 
 def test_the_map_separates_registered_modules_from_the_evaluated_total(
-    tmp_path, capsys
+    tmp_path, capsys, load_suite_map
 ):
     suite_map = load_suite_map()
     wrapper_tests_directory = tmp_path / "voice" / "__tests__"

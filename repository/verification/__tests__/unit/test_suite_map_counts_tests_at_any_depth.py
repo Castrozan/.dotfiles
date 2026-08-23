@@ -1,20 +1,4 @@
-import importlib.util
-import pathlib
-
-VERIFICATION_ROOT = pathlib.Path(__file__).resolve().parents[2]
-SUITE_MAP_SCRIPT = VERIFICATION_ROOT / "map-test-suite.py"
-
-
-def load_suite_map():
-    specification = importlib.util.spec_from_file_location(
-        "suite_map", SUITE_MAP_SCRIPT
-    )
-    suite_map = importlib.util.module_from_spec(specification)
-    specification.loader.exec_module(suite_map)
-    return suite_map
-
-
-def test_a_tier_counts_the_tests_grouped_into_a_subdirectory(tmp_path):
+def test_a_tier_counts_the_tests_grouped_into_a_subdirectory(tmp_path, load_suite_map):
     suite_map = load_suite_map()
     grouped = tmp_path / "__tests__" / "unit" / "mount_guard"
     grouped.mkdir(parents=True)
@@ -29,7 +13,7 @@ def test_a_tier_counts_the_tests_grouped_into_a_subdirectory(tmp_path):
     )
 
 
-def test_lua_suites_are_counted_at_any_depth(tmp_path):
+def test_lua_suites_are_counted_at_any_depth(tmp_path, load_suite_map):
     suite_map = load_suite_map()
     grouped = tmp_path / "__tests__" / "workspace"
     grouped.mkdir(parents=True)

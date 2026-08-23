@@ -1,12 +1,6 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import brightness
-
-
-def make_brightnessctl_machine_output(percent: int) -> MagicMock:
-    mock_result = MagicMock()
-    mock_result.stdout = f"amdgpu_bl2,backlight,{percent * 1000},{percent}%,100000"
-    return mock_result
 
 
 class TestMain:
@@ -42,7 +36,9 @@ class TestMain:
             brightness.main()
             mock_decrease.assert_called_once_with(brightness.BRIGHTNESS_STEP_PRECISE)
 
-    def test_get_brightness_prints_hardware_value(self, capsys):
+    def test_get_brightness_prints_hardware_value(
+        self, capsys, make_brightnessctl_machine_output
+    ):
         with (
             patch(
                 "brightness.subprocess.run",
@@ -54,7 +50,7 @@ class TestMain:
 
         assert capsys.readouterr().out.strip() == "75"
 
-    def test_default_action_is_get(self, capsys):
+    def test_default_action_is_get(self, capsys, make_brightnessctl_machine_output):
         with (
             patch(
                 "brightness.subprocess.run",

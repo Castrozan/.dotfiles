@@ -145,3 +145,13 @@ def sample_hyprland_workspaces():
 def temporary_history_file(tmp_path):
     history_file = tmp_path / "hypr-closed-windows-history"
     return history_file
+
+
+@pytest.fixture
+def make_brightnessctl_machine_output():
+    def make_output(percent: int) -> MagicMock:
+        mock_result = MagicMock()
+        mock_result.stdout = f"amdgpu_bl2,backlight,{percent * 1000},{percent}%,100000"
+        return mock_result
+
+    return make_output
