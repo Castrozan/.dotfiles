@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import benchmark_desktop
@@ -79,62 +79,17 @@ class TestCheckBaselineDelegatesValidation:
         )
 
 
-class TestGetLatestResultsByComponent:
-    def test_returns_empty_when_no_file(self, tmp_path):
-        result = benchmark_desktop.get_latest_results_by_component(
-            tmp_path / "nope.csv"
-        )
-        assert result == {}
+class TestCheckBaselineIgnoresAge:
+    def test_passes_on_a_structurally_valid_but_stale_baseline(self, tmp_path, capsys):
+        stale = datetime.now(timezone.utc) - timedelta(days=200)
+        document = _valid_baseline()
+        document["generated_at"] = stale.isoformat(timespec="seconds")
+        baseline_file = tmp_path / "baseline.json"
+        baseline_file.write_text(json.dumps(document))
 
-    def test_parses_latest_per_component(self, tmp_path):
-        results_file = tmp_path / "results.csv"
-        results_file.write_text(
-            "timestamp,component,avg_ms,min_ms,max_ms,iterations\n"
-            "2026-01-01,wezterm,300.0,250.0,350.0,5\n"
-            "2026-01-02,wezterm,320.0,280.0,360.0,5\n"
-            "2026-01-01,tmux,20.0,15.0,25.0,5\n"
-        )
-        result = benchmark_desktop.get_latest_results_by_component(results_file)
-        assert result["wezterm"] == 320.0
-        assert result["tmux"] == 20.0
+        with patch.object(benchmark_desktop, "BASELINE_PATH", baseline_file):
+            assert benchmark_desktop.check_baseline() is True
 
-
-class TestCompareLatestResultsToBaseline:
-    def _baseline(self, measurements):
-        return {"measurements": measurements}
-
-    def test_reports_no_regression_within_the_ceiling(self):
-        comparison = benchmark_desktop.compare_latest_results_to_baseline(
-            self._baseline({"comp": {"avg_ms": 50, "max_allowed_ms": 100}}),
-            {"comp": 80.0},
-        )
-        assert comparison.regression_messages == []
-        assert comparison.missing_component_names == []
-
-    def test_reports_a_component_over_its_ceiling(self):
-        comparison = benchmark_desktop.compare_latest_results_to_baseline(
-            self._baseline({"comp": {"avg_ms": 50, "max_allowed_ms": 100}}),
-            {"comp": 150.0},
-        )
-        assert len(comparison.regression_messages) == 1
-        assert "exceeds max" in comparison.regression_messages[0]
-
-    def test_names_components_that_were_never_measured(self):
-        comparison = benchmark_desktop.compare_latest_results_to_baseline(
-            self._baseline(
-                {
-                    "comp-a": {"avg_ms": 50, "max_allowed_ms": 100},
-                    "comp-b": {"avg_ms": 50, "max_allowed_ms": 100},
-                }
-            ),
-            {"comp-a": 80.0},
-        )
-        assert comparison.regression_messages == []
-        assert comparison.missing_component_names == ["comp-b"]
-
-    def test_reports_every_component_missing_when_no_results_exist(self):
-        comparison = benchmark_desktop.compare_latest_results_to_baseline(
-            self._baseline({"comp": {"avg_ms": 50, "max_allowed_ms": 100}}),
-            {},
-        )
-        assert comparison.missing_component_names == ["comp"]
+        report = capsys.readouterr().out
+        assert "Age: 200 days" in report
+        assert "PASSED" in report

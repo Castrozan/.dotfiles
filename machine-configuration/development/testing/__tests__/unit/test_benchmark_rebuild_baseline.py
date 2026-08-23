@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import benchmark_rebuild
@@ -43,6 +43,22 @@ class TestCheckBaselineReporting:
         assert "Host: kira/darwin" in report
         assert "Threshold: 150%" in report
         assert "eval: 2.0s (max 3.0s)" in report
+        assert "PASSED" in report
+
+
+class TestCheckBaselineIgnoresAge:
+    def test_passes_on_a_structurally_valid_but_stale_baseline(self, tmp_path, capsys):
+        stale = datetime.now(timezone.utc) - timedelta(days=200)
+        document = _valid_baseline()
+        document["generated_at"] = stale.isoformat(timespec="seconds")
+        baseline_file = tmp_path / "baseline.json"
+        baseline_file.write_text(json.dumps(document))
+
+        with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
+            assert benchmark_rebuild.check_baseline() is True
+
+        report = capsys.readouterr().out
+        assert "Age: 200 days" in report
         assert "PASSED" in report
 
 

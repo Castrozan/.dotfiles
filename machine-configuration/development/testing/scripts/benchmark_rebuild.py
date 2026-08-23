@@ -1,17 +1,23 @@
 import sys
 from pathlib import Path
 
-from benchmark_baseline import validate_tracked_baseline, write_baseline
+from benchmark_baseline import (
+    baseline_report_lines,
+    validate_tracked_baseline,
+    write_baseline,
+)
 from benchmark_core import (
     DOTFILES_DIRECTORY,
     RESULTS_DIRECTORY,
     TRACKED_BASELINE_DIRECTORY,
     BenchmarkTarget,
     CommandMeasurement,
+    aggregate_values_by_key,
     append_result_row,
     ensure_results_file_exists,
     get_current_git_short_commit,
     measure_shell_command,
+    recent_result_table_lines,
     required_benchmark_target,
     utc_baseline_timestamp,
 )
@@ -22,6 +28,7 @@ CSV_HEADER = "timestamp,type,config,duration_seconds,commit"
 SAVE_BASELINE_COMMAND = "benchmark-rebuild --save-baseline"
 
 REGRESSION_THRESHOLD_PERCENT = 150
+RECENT_RESULT_ROW_LIMIT = 20
 
 
 def get_results_file_path() -> Path:
@@ -150,26 +157,13 @@ def check_baseline() -> bool:
         "max_allowed_seconds",
         SAVE_BASELINE_COMMAND,
     )
-    baseline = validation.document
-
-    print("=" * 60)
-    print("REBUILD PERFORMANCE BASELINE CHECK")
-    print("=" * 60)
-    print(f"  Generated: {baseline.get('generated_at', 'unknown')}")
-    print(f"  Age: {_describe_age(validation.age_days)}")
-    print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
-    print(
-        f"  Host: {baseline.get('host', 'unknown')}/{baseline.get('config', 'unknown')}"
-    )
-    print(f"  Threshold: {baseline.get('threshold_percent', '?')}%")
+    for line in baseline_report_lines("REBUILD PERFORMANCE BASELINE CHECK", validation):
+        print(line)
 
     if validation.failures:
-        print(f"\nFAILED ({len(validation.failures)} issues):")
-        for failure in validation.failures:
-            print(f"  - {failure}")
         return False
 
-    for name, data in baseline["measurements"].items():
+    for name, data in validation.document["measurements"].items():
         print(
             f"  {name}: {data['duration_seconds']:.1f}s "
             f"(max {data['max_allowed_seconds']:.1f}s)"
@@ -179,66 +173,26 @@ def check_baseline() -> bool:
     return True
 
 
-def _describe_age(age_days: int | None) -> str:
-    if age_days is None:
-        return "unknown"
-    return f"{age_days} days"
-
-
 def print_recent_results(results_file: Path) -> None:
-    if not results_file.exists():
-        print("No benchmark results found.")
-        return
-
-    lines = results_file.read_text().splitlines()
+    lines = results_file.read_text().splitlines() if results_file.exists() else []
     if len(lines) <= 1:
         print("No benchmark results found.")
         return
 
     print("=== Recent Benchmark Results ===")
-    header = lines[0].split(",")
-    recent_lines = lines[-20:] if len(lines) > 21 else lines[1:]
-
-    column_widths = [len(column) for column in header]
-    parsed_rows = []
-    for line in recent_lines:
-        fields = line.split(",")
-        parsed_rows.append(fields)
-        for i, field in enumerate(fields):
-            if i < len(column_widths):
-                column_widths[i] = max(column_widths[i], len(field))
-
-    format_string = "  ".join(f"{{:<{width}}}" for width in column_widths)
-    print(format_string.format(*header))
-    for row in parsed_rows:
-        print(format_string.format(*row))
+    for row in recent_result_table_lines(lines, RECENT_RESULT_ROW_LIMIT):
+        print(row)
 
     print()
     print_averages_by_type(lines[1:])
 
 
-def print_averages_by_type(
-    data_lines: list[str],
-) -> None:
+def print_averages_by_type(data_lines: list[str]) -> None:
     print("=== Averages by Type ===")
-    totals: dict[str, float] = {}
-    counts: dict[str, int] = {}
-
-    for line in data_lines:
-        fields = line.split(",")
-        if len(fields) < 4:
-            continue
-        key = f"{fields[1]},{fields[2]}"
-        try:
-            duration = float(fields[3])
-        except ValueError:
-            continue
-        totals[key] = totals.get(key, 0.0) + duration
-        counts[key] = counts.get(key, 0) + 1
-
-    for key in sorted(totals):
-        average = totals[key] / counts[key]
-        print(f"  {key}: {average:.2f}s avg ({counts[key]} runs)")
+    averages = aggregate_values_by_key(data_lines, (1, 2), 3)
+    for key, aggregate in sorted(averages.items()):
+        average = aggregate.total / aggregate.count
+        print(f"  {key}: {average:.2f}s avg ({aggregate.count} runs)")
 
 
 def print_usage() -> None:

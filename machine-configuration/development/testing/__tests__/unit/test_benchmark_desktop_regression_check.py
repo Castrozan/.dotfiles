@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
@@ -105,6 +105,20 @@ class TestCompareLatestToBaseline:
         assert passed is False
         report = capsys.readouterr().out
         assert "Baseline has no recorded host." in report
+
+    def test_fails_on_a_stale_baseline_that_check_baseline_would_accept(
+        self, tmp_path, capsys
+    ):
+        baseline = _tracked_baseline(tmux=(20.0, 40.0))
+        stale = datetime.now(timezone.utc) - timedelta(days=200)
+        baseline["generated_at"] = stale.isoformat(timespec="seconds")
+
+        passed = _compare(tmp_path, baseline, "2026-01-01,tmux,30.0,25.0,35.0,5\n")
+
+        assert passed is False
+        report = capsys.readouterr().out
+        assert "200 days old" in report
+        assert benchmark_desktop.SAVE_BASELINE_COMMAND in report
 
 
 class TestCompareLatestExitStatus:

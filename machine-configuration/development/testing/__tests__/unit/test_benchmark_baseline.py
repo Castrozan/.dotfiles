@@ -86,32 +86,31 @@ class TestUnreadableBaseline:
         assert validation.document == {}
 
 
-class TestGeneratedAtValidation:
-    def test_reports_a_missing_timestamp_without_raising(self, tmp_path):
+class TestGeneratedAtAge:
+    def test_reports_no_age_for_a_missing_timestamp(self, tmp_path):
         document = _document()
         del document["generated_at"]
         validation = _validate(_write(tmp_path, document))
         assert validation.age_days is None
-        assert any("generated_at" in failure for failure in validation.failures)
+        assert validation.failures == []
 
-    def test_reports_an_unparseable_timestamp_without_raising(self, tmp_path):
+    def test_reports_no_age_for_an_unparseable_timestamp(self, tmp_path):
         validation = _validate(
             _write(tmp_path, _document(generated_at="not-a-timestamp"))
         )
         assert validation.age_days is None
-        assert any("generated_at" in failure for failure in validation.failures)
+        assert validation.failures == []
 
-    def test_reports_a_non_string_timestamp_without_raising(self, tmp_path):
+    def test_reports_no_age_for_a_non_string_timestamp(self, tmp_path):
         validation = _validate(_write(tmp_path, _document(generated_at=17)))
         assert validation.age_days is None
-        assert any("generated_at" in failure for failure in validation.failures)
+        assert validation.failures == []
 
-    def test_reports_a_stale_baseline(self, tmp_path):
+    def test_measures_a_stale_baseline_without_failing_it(self, tmp_path):
         stale = (datetime.now(timezone.utc) - timedelta(days=45)).isoformat()
         validation = _validate(_write(tmp_path, _document(generated_at=stale)))
         assert validation.age_days == 45
-        assert "45 days old" in validation.failures[0]
-        assert SAVE_COMMAND in validation.failures[0]
+        assert validation.failures == []
 
 
 def _with_field(document: dict, field: str, value) -> dict:

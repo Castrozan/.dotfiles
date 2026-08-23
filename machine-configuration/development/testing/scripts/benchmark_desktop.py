@@ -4,19 +4,29 @@ import shutil
 import subprocess
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import replace
 from pathlib import Path
 
-from benchmark_baseline import validate_tracked_baseline, write_baseline
+from benchmark_baseline import (
+    BaselineValidation,
+    baseline_report_lines,
+    compare_measured_values,
+    freshness_failures,
+    validate_tracked_baseline,
+    write_baseline,
+)
 from benchmark_core import (
     DOTFILES_DIRECTORY,
     RESULTS_DIRECTORY,
     TRACKED_BASELINE_DIRECTORY,
     CommandMeasurement,
+    aggregate_values_by_key,
     append_result_row,
     ensure_results_file_exists,
     get_current_git_short_commit,
+    latest_value_by_key,
     measure_command,
+    recent_result_table_lines,
     required_benchmark_target,
     unmeasurable_command,
     utc_baseline_timestamp,
@@ -30,6 +40,7 @@ SAVE_BASELINE_COMMAND = "benchmark-desktop --save-baseline"
 
 DEFAULT_ITERATIONS = 5
 REGRESSION_THRESHOLD_PERCENT = 200
+RECENT_RESULT_ROW_LIMIT = 30
 
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 10.0
 QUICKSHELL_TIMEOUT_SECONDS = 5.0
@@ -37,12 +48,6 @@ QUICKSHELL_SETTLE_SECONDS = 0.15
 WINDOW_SWITCHER_SETTLE_SECONDS = 0.1
 
 QS_BAR_PATH = str(DOTFILES_DIRECTORY / ".config" / "quickshell" / "bar")
-
-
-@dataclass(frozen=True)
-class BaselineComparison:
-    regression_messages: list[str]
-    missing_component_names: list[str]
 
 
 def is_hyprland_running() -> bool:
@@ -404,83 +409,26 @@ def save_baseline(results: list[dict]) -> bool:
     return True
 
 
-def get_latest_results_by_component(results_file: Path) -> dict[str, float]:
-    if not results_file.exists():
-        return {}
-
-    lines = results_file.read_text().splitlines()
-    latest: dict[str, float] = {}
-    for line in lines[1:]:
-        fields = line.split(",")
-        if len(fields) < 3:
-            continue
-        try:
-            latest[fields[1]] = float(fields[2])
-        except ValueError:
-            continue
-    return latest
-
-
-def compare_latest_results_to_baseline(
-    baseline: dict,
-    latest_results: dict[str, float],
-) -> BaselineComparison:
-    regression_messages: list[str] = []
-    missing_component_names: list[str] = []
-
-    for name, data in baseline.get("measurements", {}).items():
-        actual_ms = latest_results.get(name)
-        if actual_ms is None:
-            missing_component_names.append(name)
-            continue
-        max_allowed_ms = data["max_allowed_ms"]
-        if actual_ms > max_allowed_ms:
-            regression_messages.append(
-                f"{name}: {format_ms(actual_ms)} exceeds "
-                f"max {format_ms(max_allowed_ms)}"
-            )
-
-    return BaselineComparison(regression_messages, missing_component_names)
-
-
-def validated_tracked_baseline(title: str) -> dict | None:
-    validation = validate_tracked_baseline(
+def tracked_baseline_validation() -> BaselineValidation:
+    return validate_tracked_baseline(
         BASELINE_PATH,
         "avg_ms",
         "max_allowed_ms",
         SAVE_BASELINE_COMMAND,
     )
-    baseline = validation.document
-    generated_at = baseline.get("generated_at", "unknown")
-    age_text = "unknown" if validation.age_days is None else f"{validation.age_days}"
-
-    print("=" * 60)
-    print(title)
-    print("=" * 60)
-    print(f"  Baseline: {generated_at} (age: {age_text} days)")
-    print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
-    print(
-        f"  Host: {baseline.get('host', 'unknown')}/{baseline.get('config', 'unknown')}"
-    )
-    print(f"  Threshold: {baseline.get('threshold_percent', '?')}%")
-    print()
-
-    if validation.failures:
-        print(f"FAILED ({len(validation.failures)} issues):")
-        for failure in validation.failures:
-            print(f"  - {failure}")
-        return None
-    return baseline
 
 
 def check_baseline() -> bool:
-    baseline = validated_tracked_baseline("DESKTOP PERFORMANCE BASELINE CHECK")
-    if baseline is None:
+    validation = tracked_baseline_validation()
+    for line in baseline_report_lines("DESKTOP PERFORMANCE BASELINE CHECK", validation):
+        print(line)
+    if validation.failures:
         return False
 
+    print()
     print(f"  {'Component':<22} {'Baseline':>10} {'Max':>10}")
     print(f"  {'-' * 44}")
-    for name, data in baseline["measurements"].items():
+    for name, data in validation.document["measurements"].items():
         print(
             f"  {name:<22} "
             f"{format_ms(data['avg_ms']):>10} "
@@ -492,10 +440,18 @@ def check_baseline() -> bool:
 
 
 def compare_latest_to_baseline(results_file: Path) -> bool:
-    baseline = validated_tracked_baseline("DESKTOP PERFORMANCE REGRESSION CHECK")
-    if baseline is None:
+    validation = tracked_baseline_validation()
+    gated = replace(
+        validation,
+        failures=validation.failures
+        + freshness_failures(validation.age_days, SAVE_BASELINE_COMMAND),
+    )
+    for line in baseline_report_lines("DESKTOP PERFORMANCE REGRESSION CHECK", gated):
+        print(line)
+    if gated.failures:
         return False
 
+    print()
     if not results_file.exists():
         print(
             f"FAILED: no measured results at {results_file}. "
@@ -503,20 +459,26 @@ def compare_latest_to_baseline(results_file: Path) -> bool:
         )
         return False
 
-    comparison = compare_latest_results_to_baseline(
-        baseline,
-        get_latest_results_by_component(results_file),
+    measured_values = latest_value_by_key(
+        results_file.read_text().splitlines()[1:], (1,), 2
+    )
+    comparison = compare_measured_values(
+        gated.document, measured_values, "max_allowed_ms"
     )
 
-    for name in comparison.missing_component_names:
+    for name in comparison.missing_names:
         print(f"  MISSING  {name}: the latest run measured nothing")
-    for message in comparison.regression_messages:
-        print(f"  SLOWER   {message}")
-
-    if comparison.missing_component_names or comparison.regression_messages:
+    for name in comparison.exceeded_names:
+        ceiling_ms = gated.document["measurements"][name]["max_allowed_ms"]
         print(
-            f"\nFAILED: {len(comparison.regression_messages)} regressions, "
-            f"{len(comparison.missing_component_names)} unmeasured components."
+            f"  SLOWER   {name}: {format_ms(measured_values[name])} exceeds "
+            f"max {format_ms(ceiling_ms)}"
+        )
+
+    if comparison.exceeded_names or comparison.missing_names:
+        print(
+            f"\nFAILED: {len(comparison.exceeded_names)} regressions, "
+            f"{len(comparison.missing_names)} unmeasured components."
         )
         return False
 
@@ -525,32 +487,14 @@ def compare_latest_to_baseline(results_file: Path) -> bool:
 
 
 def print_report(results_file: Path) -> None:
-    if not results_file.exists():
-        print("No benchmark results found.")
-        return
-
-    lines = results_file.read_text().splitlines()
+    lines = results_file.read_text().splitlines() if results_file.exists() else []
     if len(lines) <= 1:
         print("No benchmark results found.")
         return
 
     print("=== Recent Desktop Benchmark Results ===")
-    header = lines[0].split(",")
-    recent = lines[-30:] if len(lines) > 31 else lines[1:]
-
-    widths = [len(c) for c in header]
-    rows = []
-    for line in recent:
-        fields = line.split(",")
-        rows.append(fields)
-        for i, field in enumerate(fields):
-            if i < len(widths):
-                widths[i] = max(widths[i], len(field))
-
-    fmt = "  ".join(f"{{:<{w}}}" for w in widths)
-    print(fmt.format(*header))
-    for row in rows:
-        print(fmt.format(*row))
+    for row in recent_result_table_lines(lines, RECENT_RESULT_ROW_LIMIT):
+        print(row)
 
     print()
     _print_averages(lines[1:])
@@ -558,24 +502,12 @@ def print_report(results_file: Path) -> None:
 
 def _print_averages(data_lines: list[str]) -> None:
     print("=== Averages by Component ===")
-    totals: dict[str, float] = {}
-    counts: dict[str, int] = {}
-
-    for line in data_lines:
-        fields = line.split(",")
-        if len(fields) < 3:
-            continue
-        name = fields[1]
-        try:
-            avg = float(fields[2])
-        except ValueError:
-            continue
-        totals[name] = totals.get(name, 0.0) + avg
-        counts[name] = counts.get(name, 0) + 1
-
-    for name in sorted(totals):
-        avg = totals[name] / counts[name]
-        print(f"  {name}: {format_ms(avg)} avg ({counts[name]} runs)")
+    averages = aggregate_values_by_key(data_lines, (1,), 2)
+    for name, aggregate in sorted(averages.items()):
+        print(
+            f"  {name}: {format_ms(aggregate.total / aggregate.count)} avg "
+            f"({aggregate.count} runs)"
+        )
 
 
 def parse_arguments(argv: list[str]) -> tuple[str, int, str | None]:

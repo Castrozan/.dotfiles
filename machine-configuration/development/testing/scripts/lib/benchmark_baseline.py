@@ -15,6 +15,12 @@ class BaselineValidation:
     failures: list[str]
 
 
+@dataclass(frozen=True)
+class BaselineComparison:
+    exceeded_names: list[str]
+    missing_names: list[str]
+
+
 def write_baseline(baseline_path: Path, baseline: dict) -> None:
     with open(baseline_path, "w") as file_handle:
         json.dump(baseline, file_handle, indent=2)
@@ -35,10 +41,66 @@ def validate_tracked_baseline(
         return BaselineValidation({}, None, [unreadable])
 
     age_days = _baseline_age_days(document)
-    failures = _freshness_failures(age_days, save_baseline_command)
-    failures.extend(_metadata_failures(document))
+    failures = _metadata_failures(document)
     failures.extend(_measurement_failures(document, value_key, ceiling_key))
     return BaselineValidation(document, age_days, failures)
+
+
+def baseline_report_lines(title: str, validation: BaselineValidation) -> list[str]:
+    document = validation.document
+    separator = "=" * 60
+    age = "unknown" if validation.age_days is None else f"{validation.age_days} days"
+    host = document.get("host", "unknown")
+    configuration = document.get("config", "unknown")
+    lines = [
+        separator,
+        title,
+        separator,
+        f"  Generated: {document.get('generated_at', 'unknown')}",
+        f"  Age: {age}",
+        f"  Commit: {document.get('git_commit', 'unknown')}",
+        f"  Host: {host}/{configuration}",
+        f"  Threshold: {document.get('threshold_percent', '?')}%",
+    ]
+    if validation.failures:
+        lines.append("")
+        lines.append(f"FAILED ({len(validation.failures)} issues):")
+        lines.extend(f"  - {failure}" for failure in validation.failures)
+    return lines
+
+
+def freshness_failures(
+    age_days: int | None,
+    save_baseline_command: str,
+) -> list[str]:
+    if age_days is None:
+        return [
+            "Baseline has no usable generated_at timestamp. "
+            f"Re-run '{save_baseline_command}'."
+        ]
+    if age_days > MAXIMUM_BASELINE_AGE_DAYS:
+        return [
+            f"Baseline is {age_days} days old "
+            f"(max {MAXIMUM_BASELINE_AGE_DAYS}). "
+            f"Re-run '{save_baseline_command}'."
+        ]
+    return []
+
+
+def compare_measured_values(
+    document: dict,
+    measured_values: dict[str, float],
+    ceiling_key: str,
+) -> BaselineComparison:
+    exceeded_names: list[str] = []
+    missing_names: list[str] = []
+    for name, data in document.get("measurements", {}).items():
+        measured_value = measured_values.get(name)
+        if measured_value is None:
+            missing_names.append(name)
+        elif measured_value > data[ceiling_key]:
+            exceeded_names.append(name)
+    return BaselineComparison(exceeded_names, missing_names)
 
 
 def _metadata_failures(document: dict) -> list[str]:
@@ -98,24 +160,6 @@ def _baseline_age_days(document: dict) -> int | None:
     if generated.tzinfo is None:
         generated = generated.replace(tzinfo=timezone.utc)
     return (datetime.now(timezone.utc) - generated).days
-
-
-def _freshness_failures(
-    age_days: int | None,
-    save_baseline_command: str,
-) -> list[str]:
-    if age_days is None:
-        return [
-            "Baseline has no usable generated_at timestamp. "
-            f"Re-run '{save_baseline_command}'."
-        ]
-    if age_days > MAXIMUM_BASELINE_AGE_DAYS:
-        return [
-            f"Baseline is {age_days} days old "
-            f"(max {MAXIMUM_BASELINE_AGE_DAYS}). "
-            f"Re-run '{save_baseline_command}'."
-        ]
-    return []
 
 
 def _measurement_failures(
