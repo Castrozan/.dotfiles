@@ -129,6 +129,7 @@ def test_every_compaction_scenario_compacts_before_an_unprompted_coding_request(
     assert {scenario.get("harness", "claude") for scenario in scenarios} == {
         "claude",
         "codex",
+        "opencode",
     }
     for scenario in scenarios:
         steps = scenario_steps(scenario)

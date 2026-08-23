@@ -11,15 +11,10 @@ UNPROFILED_HARNESS_ADMISSION_CRITERIA = (
     "text or selects a highlighted entry in a dialog or command palette. A harness "
     "that answers a modal with Enter silently swallows the first scenario prompt, and "
     "one whose busy indicator can hold still is graded as finished mid-turn. "
-    "opencode 1.18.18 was recorded as failing the confirmation fact and that verdict "
-    "was wrong: the probe spelled the chord C-x, which herdr rejects outright, so the "
-    "keystroke never reached the application. Driven as ctrl+x c, or through ctrl+p "
-    "then the typed word compact, it compacts and confirms twice: it prints a "
-    "Compaction line carrying the model and an elapsed time, which cannot precede the "
-    "work, and its status bar drops from the held context size to almost nothing "
-    "before the summary is written back. It still has no refusal marker, so a request "
-    "that never starts reads as one still running, and on a session holding no message "
-    "the trigger is inert and its second key lands in the composer."
+    "Verify the keystroke reached the application before recording any fact as "
+    "missing: opencode was once rejected on a confirmation marker it does print, "
+    "because the probe spelled the chord C-x, which herdr rejects with a non-zero "
+    "exit, so the harness was judged on a compaction it never performed."
 )
 
 
@@ -34,6 +29,7 @@ class HarnessProfile:
     compaction_directive: str
     compaction_confirmation_marker: str
     compaction_refusal_marker: str
+    compaction_prelude_keys: tuple[str, ...] = ()
 
     def launch_command(self, model: str, workspace_directory: Path) -> str:
         arguments = Template(self.launch_arguments_template).substitute(
@@ -68,8 +64,22 @@ CODEX_PROFILE = HarnessProfile(
     compaction_refusal_marker="",
 )
 
+OPENCODE_PROFILE = HarnessProfile(
+    name="opencode",
+    executable_name="opencode",
+    launch_arguments_template="",
+    project_instruction_filename="AGENTS.md",
+    busy_marker="esc interrupt",
+    supports_instruction_reference_import=False,
+    compaction_directive="compact",
+    compaction_confirmation_marker="Compaction",
+    compaction_refusal_marker="",
+    compaction_prelude_keys=("ctrl+p",),
+)
+
 HARNESS_PROFILES = {
-    profile.name: profile for profile in (CLAUDE_PROFILE, CODEX_PROFILE)
+    profile.name: profile
+    for profile in (CLAUDE_PROFILE, CODEX_PROFILE, OPENCODE_PROFILE)
 }
 
 DEFAULT_HARNESS_NAME = CLAUDE_PROFILE.name

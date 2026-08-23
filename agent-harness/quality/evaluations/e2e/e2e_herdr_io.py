@@ -5,6 +5,7 @@ from e2e_herdr import herdr_result_payload, run_herdr_command
 
 INPUT_SETTLE_SECONDS = 2
 TYPED_INPUT_SETTLE_SECONDS = 0.25
+COMPACTION_ENTRY_POINT_SETTLE_SECONDS = 2.0
 FULL_SCROLLBACK_LINE_BUDGET = 5000
 RESPONSE_POLL_INTERVAL_SECONDS = 1.0
 RESPONSE_QUIESCENCE_SAMPLES = 4
@@ -143,10 +144,20 @@ def capture_screen_and_scrollback(pane_id: str) -> str:
     return capture_visible_screen(pane_id) + capture_full_terminal_output(pane_id)
 
 
+def open_compaction_entry_point(pane_id: str, profile: HarnessProfile) -> bool:
+    for key in profile.compaction_prelude_keys:
+        if run_herdr_command(["pane", "send-keys", pane_id, key]).returncode != 0:
+            return False
+        time.sleep(COMPACTION_ENTRY_POINT_SETTLE_SECONDS)
+    return True
+
+
 def compact_agent_session(
     pane_id: str, profile: HarnessProfile, timeout_seconds: float = 300
 ) -> bool:
     output_before_compaction = capture_visible_screen(pane_id)
+    if not open_compaction_entry_point(pane_id, profile):
+        return False
     if not send_prompt_to_agent_session(pane_id, profile.compaction_directive):
         return False
     if not wait_for_response_completion(

@@ -17,14 +17,12 @@ def test_a_scenario_without_a_harness_key_runs_on_claude():
 
 def test_an_unprofiled_harness_names_the_probe_that_would_admit_it():
     with pytest.raises(ValueError) as rejection:
-        harness_profile("opencode")
+        harness_profile("hermes")
     rejection_text = str(rejection.value)
     assert "command palette" in rejection_text
     assert "startup dialog" in rejection_text
     assert "compaction" in rejection_text
-    assert "opencode 1.18.18" in rejection_text
-    assert "herdr rejects outright" in rejection_text
-    assert "still has no refusal marker" in rejection_text
+    assert "opencode" in rejection_text
 
 
 def test_every_profile_carries_a_directive_and_a_confirmation_marker():
