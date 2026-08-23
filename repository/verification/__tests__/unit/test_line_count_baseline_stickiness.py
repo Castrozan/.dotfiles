@@ -1,12 +1,3 @@
-"""The line-count baseline has to stay an exact record of what is over the limit.
-
-A grandfathered file that shrank used to keep its old count as a future ceiling,
-so giving up lines reserved them for later, and an entry whose file was deleted
-or split back under the limit stayed in the baseline forever. The checker now
-fails on any difference between the recorded ceilings and the files currently
-over the limit, and --update-baseline is the one operation that refreezes them.
-"""
-
 import json
 import shutil
 import subprocess

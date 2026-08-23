@@ -1,5 +1,3 @@
-"""Grandfathered line-count ceilings recorded by the repository owning a file."""
-
 from __future__ import annotations
 
 import json
