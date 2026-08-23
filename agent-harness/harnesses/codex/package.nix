@@ -62,6 +62,9 @@ let
       env = (previousAttributes.env or { }) // {
         CODEX_SERVANT_ROSTER_PATH = "${servantsDomain}/roster.txt";
       };
+      postFixup = (previousAttributes.postFixup or "") + ''
+        ln -s ${codex-code-mode-host}/bin/codex-code-mode-host "$out/bin/codex-code-mode-host"
+      '';
     }
   );
 
@@ -74,13 +77,6 @@ let
     binaryName = "codex-code-mode-host";
     archiveBinaryPath = "codex-code-mode-host-${currentHostSystem.releaseTargetTriple}";
   };
-
-  codex-unwrapped = pkgs.runCommand "codex-with-code-mode-host-${version}" { } ''
-    mkdir -p $out/bin
-    cp ${codex-binary}/bin/codex $out/bin/codex
-    cp ${codex-code-mode-host}/bin/codex-code-mode-host $out/bin/codex-code-mode-host
-    chmod +x $out/bin/codex $out/bin/codex-code-mode-host
-  '';
 
   interactiveSessionDeveloperInstructionsText = lib.concatStringsSep "\n" [
     (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/interactive-communication.md)
@@ -116,7 +112,7 @@ let
         )
         ;;
     esac
-    exec ${codex-unwrapped}/bin/codex \
+    exec ${codex-binary}/bin/codex \
       --model "gpt-5.6-sol" \
       --sandbox "danger-full-access" \
       --ask-for-approval "never" \
@@ -129,7 +125,7 @@ in
 {
   options.codex.unwrappedPackage = lib.mkOption {
     type = lib.types.package;
-    default = codex-unwrapped;
+    default = codex-binary;
     readOnly = true;
     description = "The bare upstream codex binary, without the interactive wrapper that injects a model, sandbox mode, approval policy and the human's own developer_instructions. An autonomous harness builds its own full argv and must launch this, because re-passing a flag the wrapper already injected makes codex exit 2.";
   };
