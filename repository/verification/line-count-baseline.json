@@ -44,7 +44,7 @@
   "machine-configuration/desktop/quickshell/bar/program-configuration/panels/SidebarContent.qml": 311,
   "machine-configuration/desktop/quickshell/bar/program-configuration/panels/UtilitiesContent.qml": 334,
   "machine-configuration/desktop/quickshell/bar/program-configuration/popouts/StatusIconsPopout.qml": 335,
-  "machine-configuration/desktop/quickshell/overview/program-configuration/common/Appearance.qml": 441,
+  "machine-configuration/desktop/quickshell/overview/program-configuration/common/Appearance.qml": 388,
   "machine-configuration/desktop/quickshell/overview/program-configuration/modules/overview/Overview.qml": 219,
   "machine-configuration/desktop/quickshell/overview/program-configuration/modules/overview/OverviewWidget.qml": 448,
   "machine-configuration/desktop/quickshell/overview/program-configuration/modules/overview/OverviewWindow.qml": 204,
