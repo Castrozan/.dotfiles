@@ -1,0 +1,10 @@
+module dashboard.tabs.performance
+PerformanceCardHeader 1.0 PerformanceCardHeader.qml
+PerformanceProgressBar 1.0 PerformanceProgressBar.qml
+PerformanceGaugeArc 1.0 PerformanceGaugeArc.qml
+PerformanceHeroCard 1.0 PerformanceHeroCard.qml
+PerformanceGaugeCard 1.0 PerformanceGaugeCard.qml
+PerformanceStorageGaugeCard 1.0 PerformanceStorageGaugeCard.qml
+PerformanceNetworkSparkline 1.0 PerformanceNetworkSparkline.qml
+PerformanceNetworkCard 1.0 PerformanceNetworkCard.qml
+PerformanceBatteryTank 1.0 PerformanceBatteryTank.qml
