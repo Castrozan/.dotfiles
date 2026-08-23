@@ -118,3 +118,24 @@ def test_a_word_that_legitimately_ends_in_s_is_not_a_false_positive(tmp_path):
     result = check_workspace_file_descriptive_names_assertion(tmp_path, "registry.py")
     assert result.passed
     assert result.detail == "all bound names are descriptive"
+
+
+def test_a_single_character_padded_with_underscores_is_not_exempt_as_a_dunder(tmp_path):
+    source_path = tmp_path / "padded.py"
+    source_path.write_text("__n__ = 1\n")
+    outcome = check_workspace_file_descriptive_names_assertion(tmp_path, "padded.py")
+    assert outcome.passed is False
+    assert "__n__" in outcome.detail
+
+
+def test_the_shortest_real_dunder_names_stay_exempt(tmp_path):
+    source_path = tmp_path / "operators.py"
+    source_path.write_text(
+        "class Money:\n"
+        "    def __eq__(self, other):\n"
+        "        return True\n\n"
+        "    def __or__(self, other):\n"
+        "        return self\n"
+    )
+    outcome = check_workspace_file_descriptive_names_assertion(tmp_path, "operators.py")
+    assert outcome.passed is True
