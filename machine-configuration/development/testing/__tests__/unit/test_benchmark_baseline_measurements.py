@@ -6,18 +6,18 @@ import benchmark_baseline
 SAVE_COMMAND = "benchmark-rebuild --save-baseline"
 
 
+def _document(**overrides) -> dict:
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "git_commit": "abc1234",
+        "threshold_percent": 150,
+        **overrides,
+    }
+
+
 def _failures(tmp_path, measurements) -> list[str]:
     baseline_path = tmp_path / "baseline.json"
-    baseline_path.write_text(
-        json.dumps(
-            {
-                "generated_at": datetime.now(timezone.utc).isoformat(
-                    timespec="seconds"
-                ),
-                "measurements": measurements,
-            }
-        )
-    )
+    baseline_path.write_text(json.dumps(_document(measurements=measurements)))
     return benchmark_baseline.validate_tracked_baseline(
         baseline_path, "duration_seconds", "max_allowed_seconds", SAVE_COMMAND
     ).failures
@@ -31,7 +31,7 @@ class TestMeasurementsField:
 
     def test_reports_a_missing_measurements_field(self, tmp_path):
         baseline_path = tmp_path / "baseline.json"
-        baseline_path.write_text(json.dumps({"generated_at": "2026-08-23T00:00:00Z"}))
+        baseline_path.write_text(json.dumps(_document()))
         failures = benchmark_baseline.validate_tracked_baseline(
             baseline_path, "duration_seconds", "max_allowed_seconds", SAVE_COMMAND
         ).failures
@@ -107,12 +107,7 @@ class TestDesktopMeasurementKeys:
         baseline_path = tmp_path / "baseline-desktop.json"
         baseline_path.write_text(
             json.dumps(
-                {
-                    "generated_at": datetime.now(timezone.utc).isoformat(
-                        timespec="seconds"
-                    ),
-                    "measurements": {"comp": {"avg_ms": 0, "max_allowed_ms": 100}},
-                }
+                _document(measurements={"comp": {"avg_ms": 0, "max_allowed_ms": 100}})
             )
         )
         failures = benchmark_baseline.validate_tracked_baseline(

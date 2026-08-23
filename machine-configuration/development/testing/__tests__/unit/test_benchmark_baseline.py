@@ -1,9 +1,12 @@
 import json
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 import benchmark_baseline
 
 SAVE_COMMAND = "benchmark-rebuild --save-baseline"
+MISSING = object()
 
 
 def _fresh_timestamp() -> str:
@@ -107,3 +110,46 @@ class TestGeneratedAtValidation:
         assert validation.age_days == 45
         assert "45 days old" in validation.failures[0]
         assert SAVE_COMMAND in validation.failures[0]
+
+
+def _with_field(document: dict, field: str, value) -> dict:
+    if value is MISSING:
+        del document[field]
+    else:
+        document[field] = value
+    return document
+
+
+class TestMetadataValidation:
+    @pytest.mark.parametrize(
+        "git_commit",
+        [MISSING, None, "", "   ", 1234, ["abc1234"]],
+        ids=["missing", "null", "empty", "blank", "number", "list"],
+    )
+    def test_rejects_an_unusable_git_commit(self, tmp_path, git_commit):
+        document = _with_field(_document(), "git_commit", git_commit)
+        validation = _validate(_write(tmp_path, document))
+        assert validation.failures == ["Baseline has no recorded git_commit."]
+
+    @pytest.mark.parametrize(
+        ("threshold_percent", "expected_failure"),
+        [
+            (MISSING, "Baseline threshold_percent is not a number."),
+            (None, "Baseline threshold_percent is not a number."),
+            (True, "Baseline threshold_percent is not a number."),
+            ("150", "Baseline threshold_percent is not a number."),
+            (0, "Baseline threshold_percent must be greater than zero."),
+            (-10, "Baseline threshold_percent must be greater than zero."),
+        ],
+        ids=["missing", "null", "boolean", "string", "zero", "negative"],
+    )
+    def test_rejects_an_unusable_threshold_percent(
+        self, tmp_path, threshold_percent, expected_failure
+    ):
+        document = _with_field(_document(), "threshold_percent", threshold_percent)
+        validation = _validate(_write(tmp_path, document))
+        assert validation.failures == [expected_failure]
+
+    def test_accepts_recorded_metadata(self, tmp_path):
+        validation = _validate(_write(tmp_path, _document()))
+        assert validation.failures == []

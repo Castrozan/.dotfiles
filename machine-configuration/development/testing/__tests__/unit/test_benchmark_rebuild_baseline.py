@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 import benchmark_rebuild
 
 
@@ -12,6 +14,18 @@ def _isoformat_recent_baseline_timestamp_within_freshness_window() -> str:
 
 def _repository_root() -> Path:
     return Path(__file__).resolve().parents[5]
+
+
+def _valid_baseline() -> dict:
+    return {
+        "generated_at": (
+            _isoformat_recent_baseline_timestamp_within_freshness_window()
+        ),
+        "git_commit": "abc1234",
+        "config": "home",
+        "threshold_percent": 150,
+        "measurements": {"eval": {"duration_seconds": 2.0, "max_allowed_seconds": 3.0}},
+    }
 
 
 class TestTrackedBaselinePath:
@@ -120,6 +134,36 @@ class TestCheckBaseline:
         )
 
         with patch("benchmark_rebuild.BASELINE_PATH", baseline_file):
+            assert benchmark_rebuild.check_baseline() is False
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("git_commit", None),
+            ("git_commit", "   "),
+            ("git_commit", 1234),
+            ("threshold_percent", None),
+            ("threshold_percent", True),
+            ("threshold_percent", 0),
+        ],
+        ids=[
+            "null-commit",
+            "blank-commit",
+            "numeric-commit",
+            "null-threshold",
+            "boolean-threshold",
+            "zero-threshold",
+        ],
+    )
+    def test_fails_when_persisted_metadata_is_unusable(self, tmp_path, field, value):
+        baseline = _valid_baseline()
+        baseline[field] = value
+        baseline_file = self._write_baseline(tmp_path, baseline)
+
+        with (
+            patch("benchmark_rebuild.BASELINE_PATH", baseline_file),
+            patch("benchmark_rebuild.RESULTS_DIRECTORY", tmp_path / "absent"),
+        ):
             assert benchmark_rebuild.check_baseline() is False
 
     def test_fails_when_a_ceiling_is_not_positive(self, tmp_path):
