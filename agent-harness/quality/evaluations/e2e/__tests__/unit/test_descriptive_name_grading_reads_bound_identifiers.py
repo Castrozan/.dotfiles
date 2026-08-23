@@ -139,3 +139,37 @@ def test_the_shortest_real_dunder_names_stay_exempt(tmp_path):
     )
     outcome = check_workspace_file_descriptive_names_assertion(tmp_path, "operators.py")
     assert outcome.passed is True
+
+
+def test_a_single_character_import_alias_is_judged(tmp_path):
+    source_path = tmp_path / "aliased.py"
+    source_path.write_text("import statistics as s\n\n\ntotal = s\n")
+    outcome = check_workspace_file_descriptive_names_assertion(tmp_path, "aliased.py")
+    assert outcome.passed is False
+    assert "'s'" in outcome.detail
+
+
+def test_an_abbreviated_import_alias_is_judged(tmp_path):
+    source_path = tmp_path / "abbreviated.py"
+    source_path.write_text("import configuration as cfg\n\n\nloaded = cfg\n")
+    outcome = check_workspace_file_descriptive_names_assertion(
+        tmp_path, "abbreviated.py"
+    )
+    assert outcome.passed is False
+    assert "cfg" in outcome.detail
+
+
+def test_a_name_the_imported_module_chose_is_not_judged(tmp_path):
+    source_path = tmp_path / "imported.py"
+    source_path.write_text("from statistics import mean as arithmetic_mean\n")
+    outcome = check_workspace_file_descriptive_names_assertion(tmp_path, "imported.py")
+    assert outcome.passed is True
+
+
+def test_a_conventional_two_letter_alias_passes(tmp_path):
+    source_path = tmp_path / "conventional.py"
+    source_path.write_text("import datetime as dt\n\n\nstamp = dt\n")
+    outcome = check_workspace_file_descriptive_names_assertion(
+        tmp_path, "conventional.py"
+    )
+    assert outcome.passed is True
