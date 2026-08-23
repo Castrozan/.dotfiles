@@ -4,7 +4,11 @@ import subprocess
 import time
 from pathlib import Path
 
-from hyprland_ipc import get_all_clients, run_hyprctl, run_hyprctl_json
+from hyprland_ipc import (
+    get_active_workspace_id_via_activeworkspace,
+    get_all_clients,
+    run_hyprctl,
+)
 
 CHROME_GLOBAL_CLASS = "chrome-global"
 CHROME_GLOBAL_DATA_DIR = Path.home() / ".config" / "chrome-global"
@@ -112,13 +116,6 @@ def find_chrome_global_main_window() -> dict | None:
         return client
 
     return None
-
-
-def get_active_workspace_id_via_activeworkspace() -> int | None:
-    workspace = run_hyprctl_json("activeworkspace")
-    if not workspace:
-        return None
-    return workspace.get("id")
 
 
 def chrome_global_has_never_been_launched() -> bool:

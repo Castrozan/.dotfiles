@@ -1,6 +1,4 @@
-import os
 import re
-import subprocess
 import time
 from pathlib import Path
 
@@ -9,12 +7,12 @@ from hyprland_ipc import (
     migrate_workspaces_from_disabled_monitors,
     run_hyprctl,
 )
-
-MONITORS_CONF = (
-    Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-    / "hypr-host"
-    / "monitors.conf"
+from monitor_configuration import (
+    MONITORS_CONF,
+    find_enabled_config_line_for_monitor,
+    send_monitor_notification,
 )
+
 OVERRIDE_FILE = Path.home() / ".cache" / "hypr-monitors-override.conf"
 TOGGLE_LOCK_FILE = Path.home() / ".cache" / "hypr-monitors-toggle.lock"
 LID_STATE_FILE = Path("/proc/acpi/button/lid/LID0/state")
@@ -29,16 +27,6 @@ def extract_monitor_names_from_config() -> list[str]:
         if match:
             names.add(match.group(1).strip())
     return sorted(names)
-
-
-def find_enabled_config_line_for_monitor(monitor_name: str) -> str:
-    if not MONITORS_CONF.exists():
-        return f"{monitor_name}, preferred, auto, 1"
-    for line in MONITORS_CONF.read_text().splitlines():
-        if re.match(rf"\s*monitor\s*=\s*{re.escape(monitor_name)}\s*,", line):
-            if "disable" not in line:
-                return re.sub(r"^\s*monitor\s*=\s*", "", line).strip()
-    return f"{monitor_name}, preferred, auto, 1"
 
 
 def laptop_lid_is_closed() -> bool:
@@ -98,13 +86,6 @@ def write_override_and_reload(content: str) -> None:
     run_hyprctl("reload")
 
 
-def send_notification(message: str) -> None:
-    subprocess.run(
-        ["notify-send", "-t", "2000", "Monitor", message],
-        capture_output=True,
-    )
-
-
 def find_internal_monitor(all_monitor_names: list[str]) -> str | None:
     for name in all_monitor_names:
         if name.startswith("eDP"):
@@ -136,7 +117,7 @@ def main() -> None:
     external_monitor = find_external_monitor(all_names)
 
     if not internal_monitor:
-        send_notification("No internal monitor found")
+        send_monitor_notification("No internal monitor found")
         return
 
     if not external_monitor:
@@ -144,9 +125,9 @@ def main() -> None:
             write_override_and_reload(
                 f"monitor = {internal_monitor}, preferred, auto, 1"
             )
-            send_notification("Built-in only")
+            send_monitor_notification("Built-in only")
         else:
-            send_notification("No external monitor connected")
+            send_monitor_notification("No external monitor connected")
         return
 
     current_mode = detect_current_mode(active_names, internal_monitor, external_monitor)
@@ -161,7 +142,7 @@ def main() -> None:
     )
     write_override_and_reload(override_content)
     migrate_workspaces_from_disabled_monitors()
-    send_notification(label)
+    send_monitor_notification(label)
 
 
 if __name__ == "__main__":

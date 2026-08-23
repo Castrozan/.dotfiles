@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  hyprlandPythonLibraryPath = ./scripts/windows/lib;
+  hyprlandPythonLibraryPath = ./scripts/lib;
 
   daemonPackage =
     let

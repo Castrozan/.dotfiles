@@ -1,6 +1,3 @@
-import os
-import re
-import subprocess
 import time
 from pathlib import Path
 
@@ -9,24 +6,13 @@ from hyprland_ipc import (
     migrate_workspaces_from_disabled_monitors,
     run_hyprctl,
 )
-
-MONITORS_CONF = (
-    Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-    / "hypr-host"
-    / "monitors.conf"
+from monitor_configuration import (
+    find_enabled_config_line_for_monitor,
+    send_monitor_notification,
 )
+
 OVERRIDE_FILE = Path.home() / ".cache" / "hypr-monitors-override.conf"
 TOGGLE_LOCK_FILE = Path.home() / ".cache" / "hypr-monitors-toggle.lock"
-
-
-def find_enabled_config_line_for_monitor(monitor_name: str) -> str:
-    if not MONITORS_CONF.exists():
-        return f"{monitor_name}, preferred, auto, 1"
-    for line in MONITORS_CONF.read_text().splitlines():
-        if re.match(rf"\s*monitor\s*=\s*{re.escape(monitor_name)}\s*,", line):
-            if "disable" not in line:
-                return re.sub(r"^\s*monitor\s*=\s*", "", line).strip()
-    return f"{monitor_name}, preferred, auto, 1"
 
 
 def find_internal_monitor_name(monitor_names: list[str]) -> str | None:
@@ -78,20 +64,13 @@ def recenter_cursor_on_internal_monitor() -> None:
             return
 
 
-def send_notification(message: str) -> None:
-    subprocess.run(
-        ["notify-send", "-t", "2000", "Monitor", message],
-        capture_output=True,
-    )
-
-
 def main() -> None:
     all_monitors = get_all_monitors(include_disabled=True)
     all_monitor_names = [monitor.get("name", "") for monitor in all_monitors]
 
     internal_monitor = find_internal_monitor_name(all_monitor_names)
     if not internal_monitor:
-        send_notification("No internal monitor found")
+        send_monitor_notification("No internal monitor found")
         return
 
     external_monitors = find_external_monitor_names(all_monitor_names)
@@ -101,7 +80,7 @@ def main() -> None:
     write_override_and_reload(override_content)
     migrate_workspaces_from_disabled_monitors()
     recenter_cursor_on_internal_monitor()
-    send_notification("Built-in only")
+    send_monitor_notification("Built-in only")
 
 
 if __name__ == "__main__":
