@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  latest,
   ...
 }:
 let
@@ -10,6 +11,7 @@ let
   };
 
   version = "0.148.0";
+  servantsDomain = ../../servants;
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
@@ -36,14 +38,34 @@ let
     assetName:
     "https://github.com/openai/codex/releases/download/rust-v${version}/${assetName}-${currentHostSystem.releaseTargetTriple}.tar.gz";
 
-  codex-binary = fetchPrebuiltBinary {
-    pname = "codex";
-    inherit version;
-    url = codexReleaseAssetUrl "codex";
-    inherit (currentHostSystem) sha256 buildInputs;
-    binaryName = "codex";
-    archiveBinaryPath = "codex-${currentHostSystem.releaseTargetTriple}";
-  };
+  codex-binary = latest.codex.overrideAttrs (
+    finalAttributes: previousAttributes: {
+      inherit version;
+      src = pkgs.fetchFromGitHub {
+        owner = "openai";
+        repo = "codex";
+        tag = "rust-v${version}";
+        hash = "sha256-Au61OzWJgYoQFHjV6LHCXTVfwN5AF3+MjdN5FLYhLYI=";
+      };
+      cargoHash = "sha256-MswemCvyG7uju6QrGKsZoD4S1GUhB8fP38o0R0mPa2M=";
+      cargoDeps = latest.rustPlatform.fetchCargoVendor {
+        name = "codex-${version}-vendor";
+        inherit (finalAttributes) src;
+        sourceRoot = "${finalAttributes.src.name}/codex-rs";
+        hash = finalAttributes.cargoHash;
+      };
+      patches = (previousAttributes.patches or [ ]) ++ [ ./patches/servant-statusline.patch ];
+      postPatch = ''
+        substituteInPlace Cargo.toml \
+          --replace-fail 'lto = "thin"' "" \
+            --replace-fail 'codegen-units = 4' ""
+          cp ${./patches/servant-name.rs} tui/src/servant_name.rs
+      '';
+      env = (previousAttributes.env or { }) // {
+        CODEX_SERVANT_ROSTER_PATH = "${servantsDomain}/roster.txt";
+      };
+    }
+  );
 
   codex-code-mode-host = fetchPrebuiltBinary {
     pname = "codex-code-mode-host";

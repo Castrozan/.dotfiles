@@ -98,6 +98,7 @@ let
         "model-with-reasoning"
         "context-used"
         "weekly-limit"
+        "servant-name"
         "thread-id"
       ];
       status_line_use_colors = true;

@@ -1,0 +1,68 @@
+diff --git a/tui/src/bottom_pane/status_line_setup.rs b/tui/src/bottom_pane/status_line_setup.rs
+index 0092d17..e443e28 100644
+--- a/tui/src/bottom_pane/status_line_setup.rs
++++ b/tui/src/bottom_pane/status_line_setup.rs
+@@ -136,0 +137,2 @@ pub(crate) enum StatusLineItem {
++    ServantName,
++
+@@ -197,0 +200 @@ impl StatusLineItem {
++            StatusLineItem::ServantName => "Current session Servant (omitted until thread starts)",
+@@ -236,0 +240 @@ impl StatusLineItem {
++            StatusLineItem::ServantName => StatusSurfacePreviewItem::ServantName,
+diff --git a/tui/src/bottom_pane/status_line_style.rs b/tui/src/bottom_pane/status_line_style.rs
+index 29e82b8..bdb2c25 100644
+--- a/tui/src/bottom_pane/status_line_style.rs
++++ b/tui/src/bottom_pane/status_line_style.rs
+@@ -50,0 +51 @@ impl StatusLineAccent {
++            StatusLineItem::ServantName => Self::Thread,
+diff --git a/tui/src/bottom_pane/status_surface_preview.rs b/tui/src/bottom_pane/status_surface_preview.rs
+index ffa9ae9..69cf9a3 100644
+--- a/tui/src/bottom_pane/status_surface_preview.rs
++++ b/tui/src/bottom_pane/status_surface_preview.rs
+@@ -32,0 +33 @@ pub(crate) enum StatusSurfacePreviewItem {
++    ServantName,
+@@ -67,0 +69 @@ impl StatusSurfacePreviewItem {
++            StatusSurfacePreviewItem::ServantName => "EMIYA",
+@@ -102,0 +105 @@ impl StatusSurfacePreviewItem {
++            Self::ServantName,
+diff --git a/tui/src/chatwidget.rs b/tui/src/chatwidget.rs
+index 2e31278..b00976a 100644
+--- a/tui/src/chatwidget.rs
++++ b/tui/src/chatwidget.rs
+@@ -743,0 +744 @@ pub(crate) struct ChatWidget {
++    status_line_servant_name_cache: Option<(ThreadId, String)>,
+diff --git a/tui/src/chatwidget/constructor.rs b/tui/src/chatwidget/constructor.rs
+index 5198cc1..02164ba 100644
+--- a/tui/src/chatwidget/constructor.rs
++++ b/tui/src/chatwidget/constructor.rs
+@@ -235,0 +236 @@ impl ChatWidget {
++            status_line_servant_name_cache: None,
+diff --git a/tui/src/chatwidget/status_surfaces.rs b/tui/src/chatwidget/status_surfaces.rs
+index 04b876a..4f88827 100644
+--- a/tui/src/chatwidget/status_surfaces.rs
++++ b/tui/src/chatwidget/status_surfaces.rs
+@@ -667,0 +668,14 @@ impl ChatWidget {
++    fn status_line_servant_name(&mut self) -> Option<String> {
++        let thread_id = self.thread_id?;
++        if let Some((cached_thread_id, cached_name)) = &self.status_line_servant_name_cache
++            && *cached_thread_id == thread_id
++        {
++            return Some(cached_name.clone());
++        }
++
++        let servant_name =
++            crate::servant_name::select_servant_name(&thread_id.to_string())?.to_string();
++        self.status_line_servant_name_cache = Some((thread_id, servant_name.clone()));
++        Some(servant_name)
++    }
++
+@@ -760,0 +775 @@ impl ChatWidget {
++            StatusLineItem::ServantName => self.status_line_servant_name(),
+@@ -820,0 +836 @@ impl ChatWidget {
++            StatusSurfacePreviewItem::ServantName => StatusLineItem::ServantName,
+diff --git a/tui/src/lib.rs b/tui/src/lib.rs
+index f8a9734..ce5b1c6 100644
+--- a/tui/src/lib.rs
++++ b/tui/src/lib.rs
+@@ -172,0 +173 @@ mod session_state;
++mod servant_name;
