@@ -14,9 +14,9 @@ from e2e_assertions_skills_tools import (
     check_terminal_tool_presence_assertion,
     check_wrong_skill_not_invoked_assertion,
 )
+from e2e_assertions_comments import check_workspace_file_no_comments_assertion
 from e2e_assertions_workspace import (
     check_workspace_file_changed_assertion,
-    check_workspace_file_no_comments_assertion,
     check_workspace_formatted_correctly_assertion,
 )
 from e2e_models import E2eAssertionResult, TerminalSessionTrace

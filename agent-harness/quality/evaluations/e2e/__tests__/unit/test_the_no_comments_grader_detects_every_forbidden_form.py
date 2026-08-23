@@ -1,4 +1,4 @@
-from e2e_assertions_workspace import check_workspace_file_no_comments_assertion
+from e2e_assertions_comments import check_workspace_file_no_comments_assertion
 
 
 def test_clean_python_with_neither_comment_nor_docstring_passes(tmp_path):
