@@ -1,3 +1,10 @@
+singleton OverviewWorkspaceMath 1.0 OverviewWorkspaceMath.qml
 Overview 1.0 Overview.qml
+OverviewCreateSpecialWorkspaceTile 1.0 OverviewCreateSpecialWorkspaceTile.qml
+OverviewSpecialWindow 1.0 OverviewSpecialWindow.qml
+OverviewSpecialWorkspaceModel 1.0 OverviewSpecialWorkspaceModel.qml
+OverviewSpecialWorkspaceStrip 1.0 OverviewSpecialWorkspaceStrip.qml
+OverviewSpecialWorkspaceTile 1.0 OverviewSpecialWorkspaceTile.qml
 OverviewWidget 1.0 OverviewWidget.qml
 OverviewWindow 1.0 OverviewWindow.qml
+OverviewWorkspaceGrid 1.0 OverviewWorkspaceGrid.qml
