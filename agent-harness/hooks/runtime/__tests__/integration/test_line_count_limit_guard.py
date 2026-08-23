@@ -176,3 +176,20 @@ class TestToolMatcherRoutingThroughDispatcher:
         )
         assert result.returncode == 0
         assert result.stdout == ""
+
+
+class TestGrandfatheredCeilings:
+    @pytest.mark.parametrize("line_count,expects_block", [(400, False), (401, True)])
+    def test_the_recorded_ceiling_replaces_the_default_limit(
+        self, tmp_path, line_count, expects_block
+    ):
+        baseline = tmp_path / "repository" / "verification" / "line-count-baseline.json"
+        baseline.parent.mkdir(parents=True)
+        baseline.write_text(json.dumps({"legacy.py": 400}))
+        file_path = write_python_file_with_line_count(tmp_path, "legacy.py", line_count)
+        result = invoke_hook_with_payload(
+            {"tool_name": "Edit", "tool_input": {"file_path": str(file_path)}}
+        )
+        assert result.returncode == 0
+        blocked = result.stdout != ""
+        assert blocked == expects_block

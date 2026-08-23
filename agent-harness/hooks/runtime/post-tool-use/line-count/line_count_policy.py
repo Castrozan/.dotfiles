@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 
 LINE_COUNT_BLOCKING_THRESHOLD = 200
 
@@ -72,6 +73,13 @@ CODE_FILE_EXTENSIONS = frozenset(
 )
 
 
+@dataclass(frozen=True)
+class LineCountViolation:
+    file_path: str
+    line_count: int
+    allowed_line_count: int
+
+
 def file_path_has_code_extension(file_path: str) -> bool:
     _root, extension = os.path.splitext(file_path)
     return extension.lower() in CODE_FILE_EXTENSIONS
@@ -88,15 +96,21 @@ def count_lines_in_file(file_path: str) -> int:
     return line_count
 
 
-def line_count_when_code_file_exceeds_blocking_threshold(file_path: str) -> int | None:
+def code_file_line_count(file_path: str) -> int | None:
     if not file_path_has_code_extension(file_path):
         return None
     if not os.path.isfile(file_path):
         return None
     try:
-        line_count = count_lines_in_file(file_path)
+        return count_lines_in_file(file_path)
     except OSError:
         return None
-    if line_count <= LINE_COUNT_BLOCKING_THRESHOLD:
+
+
+def line_count_violation(
+    file_path: str, allowed_line_count: int
+) -> LineCountViolation | None:
+    line_count = code_file_line_count(file_path)
+    if line_count is None or line_count <= allowed_line_count:
         return None
-    return line_count
+    return LineCountViolation(file_path, line_count, allowed_line_count)

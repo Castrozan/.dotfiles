@@ -16,9 +16,11 @@ for _shared_module_candidate_directory in (
 
 from changed_file_paths import collect_changed_file_paths  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
+from line_count_baseline import allowed_line_count_for_file  # noqa: E402
 from line_count_policy import (  # noqa: E402
     LINE_COUNT_BLOCKING_THRESHOLD,
-    line_count_when_code_file_exceeds_blocking_threshold,
+    LineCountViolation,
+    line_count_violation,
 )
 
 APPLICABLE_TOOL_NAMES = frozenset(
@@ -28,16 +30,22 @@ APPLICABLE_TOOL_NAMES = frozenset(
 BLOCK_MESSAGE_REFERENCE_FILE_PATH = "~/.claude/hooks/line-count-block-message.md"
 
 
-def blocking_result(target_file_path: str, line_count: int):
+def blocking_result(violation: LineCountViolation):
+    if violation.allowed_line_count == LINE_COUNT_BLOCKING_THRESHOLD:
+        ceiling_description = f"the {LINE_COUNT_BLOCKING_THRESHOLD}-line hard limit"
+    else:
+        ceiling_description = (
+            f"its {violation.allowed_line_count}-line grandfathered ceiling"
+        )
     reason = (
-        f"File '{target_file_path}' is {line_count} lines, over the "
-        f"{LINE_COUNT_BLOCKING_THRESHOLD}-line hard limit. Split it into modules "
-        f"with single responsibilities, then read "
-        f"{BLOCK_MESSAGE_REFERENCE_FILE_PATH} for where the pieces belong."
+        f"File '{violation.file_path}' is {violation.line_count} lines, over "
+        f"{ceiling_description}. Split it into modules with single "
+        f"responsibilities, then read {BLOCK_MESSAGE_REFERENCE_FILE_PATH} for "
+        f"where the pieces belong."
     )
     system_message = (
-        f"BLOCKED: {target_file_path} has {line_count} lines "
-        f"(> {LINE_COUNT_BLOCKING_THRESHOLD})."
+        f"BLOCKED: {violation.file_path} has {violation.line_count} lines "
+        f"(> {violation.allowed_line_count})."
     )
     return HandlerResult(decision="block", reason=reason, system_message=system_message)
 
@@ -48,9 +56,9 @@ def handle(hook_input: dict):
         return None
 
     for target_file_path in collect_changed_file_paths(hook_input):
-        line_count = line_count_when_code_file_exceeds_blocking_threshold(
-            target_file_path
+        violation = line_count_violation(
+            target_file_path, allowed_line_count_for_file(target_file_path)
         )
-        if line_count is not None:
-            return blocking_result(target_file_path, line_count)
+        if violation is not None:
+            return blocking_result(violation)
     return None
