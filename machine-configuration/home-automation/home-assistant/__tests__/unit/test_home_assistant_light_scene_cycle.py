@@ -4,13 +4,11 @@ import home_assistant_light_scene_cycle
 
 
 @pytest.fixture
-def mock_scene_token(tmp_path, monkeypatch):
-    token_file = tmp_path / "home-assistant-token"
-    token_file.write_text("fake-ha-token-for-testing")
+def mock_scene_token(monkeypatch):
     monkeypatch.setattr(
         home_assistant_light_scene_cycle,
-        "HOME_ASSISTANT_TOKEN_PATH",
-        token_file,
+        "read_home_assistant_token",
+        lambda: "fake-ha-token-for-testing",
     )
     return "fake-ha-token-for-testing"
 
@@ -98,9 +96,9 @@ class TestMainCyclesBehavior:
         first_step = home_assistant_light_scene_cycle.LIGHT_SCENE_CYCLE_STEPS[0]
         assert [call["endpoint"] for call in mock_scene_api_request] == [
             "/api/services/light/turn_on"
-        ] * len(home_assistant_light_scene_cycle.CYCLED_LIGHT_ENTITY_IDS)
+        ] * len(home_assistant_light_scene_cycle.ALL_LIGHT_ENTITY_IDS)
         assert [call["payload"]["entity_id"] for call in mock_scene_api_request] == (
-            home_assistant_light_scene_cycle.CYCLED_LIGHT_ENTITY_IDS
+            home_assistant_light_scene_cycle.ALL_LIGHT_ENTITY_IDS
         )
         for call in mock_scene_api_request:
             assert call["payload"]["brightness"] == first_step["brightness"]

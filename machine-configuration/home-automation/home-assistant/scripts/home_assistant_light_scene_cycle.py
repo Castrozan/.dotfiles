@@ -1,18 +1,12 @@
-import json
-import sys
-import urllib.request
 from pathlib import Path
 
-HOME_ASSISTANT_BASE_URL = "http://localhost:8123"
-HOME_ASSISTANT_TOKEN_PATH = Path.home() / ".secrets" / "home-assistant-token"
-SCENE_CYCLE_STATE_FILE = Path("/tmp/ha-light-scene-cycle-index")
+from home_assistant_client import (
+    make_home_assistant_api_request,
+    read_home_assistant_token,
+)
+from home_assistant_entities import ALL_LIGHT_ENTITY_IDS
 
-CYCLED_LIGHT_ENTITY_IDS = [
-    "light.bedroom",
-    "light.kitchen",
-    "light.livingroom",
-    "light.bathroom",
-]
+SCENE_CYCLE_STATE_FILE = Path("/tmp/ha-light-scene-cycle-index")
 
 MINIMUM_COLOR_TEMPERATURE_KELVIN = 2000
 MAXIMUM_COLOR_TEMPERATURE_KELVIN = 6500
@@ -30,38 +24,6 @@ LIGHT_SCENE_CYCLE_STEPS = [
 ]
 
 
-def read_home_assistant_token() -> str:
-    token_file = HOME_ASSISTANT_TOKEN_PATH
-    if not token_file.is_file():
-        print(
-            f"Home Assistant token not found at {token_file}",
-            file=sys.stderr,
-        )
-        raise SystemExit(1)
-    return token_file.read_text().strip()
-
-
-def make_home_assistant_api_request(
-    token: str, endpoint: str, payload: dict | None = None
-) -> dict | list | None:
-    url = f"{HOME_ASSISTANT_BASE_URL}{endpoint}"
-    data = json.dumps(payload).encode() if payload else None
-    request = urllib.request.Request(
-        url,
-        data=data,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
-        method="POST" if payload is not None else "GET",
-    )
-    response = urllib.request.urlopen(request)
-    body = response.read().decode()
-    if body:
-        return json.loads(body)
-    return None
-
-
 def read_current_scene_cycle_index() -> int:
     if SCENE_CYCLE_STATE_FILE.is_file():
         try:
@@ -76,7 +38,7 @@ def write_scene_cycle_index(index: int) -> None:
 
 
 def apply_light_scene_cycle_step(token: str, step: dict) -> None:
-    for entity_id in CYCLED_LIGHT_ENTITY_IDS:
+    for entity_id in ALL_LIGHT_ENTITY_IDS:
         make_home_assistant_api_request(
             token,
             "/api/services/light/turn_on",

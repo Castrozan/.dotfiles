@@ -7,13 +7,11 @@ import home_assistant_air_conditioner_recover_ip as recover_ip_module
 
 
 @pytest.fixture
-def mock_recover_token(tmp_path, monkeypatch):
-    token_file = tmp_path / "home-assistant-token"
-    token_file.write_text("fake-ha-token-for-testing")
+def mock_recover_token(monkeypatch):
     monkeypatch.setattr(
         recover_ip_module,
-        "HOME_ASSISTANT_TOKEN_PATH",
-        token_file,
+        "read_home_assistant_token",
+        lambda: "fake-ha-token-for-testing",
     )
     return "fake-ha-token-for-testing"
 
