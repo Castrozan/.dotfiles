@@ -1,10 +1,10 @@
 {
   "generated_at": "2026-08-17T17:39:33.137615+00:00",
-  "git_commit": "91801af7",
-  "total_tests": 204,
+  "git_commit": "385ffcb0",
+  "total_tests": 205,
   "total_passed": 194,
-  "total_failed": 10,
-  "pass_rate": 0.951,
+  "total_failed": 11,
+  "pass_rate": 0.9463,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -279,8 +279,8 @@
       ]
     },
     "instruction_compliance": {
-      "passed": 9,
-      "failed": 1,
+      "passed": 10,
+      "failed": 0,
       "tests": [
         {
           "name": "hardskill_belongs_in_scripts",
@@ -320,7 +320,7 @@
         },
         {
           "name": "formatting_after_edits",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -415,8 +415,8 @@
       ]
     },
     "skill_routing": {
-      "passed": 49,
-      "failed": 1,
+      "passed": 48,
+      "failed": 3,
       "tests": [
         {
           "name": "routing_to_media_youtube_search",
@@ -443,7 +443,11 @@
           "passed": true
         },
         {
-          "name": "routing_to_restart",
+          "name": "routing_to_agent_session_restart",
+          "passed": true
+        },
+        {
+          "name": "routing_to_agent_session_exit",
           "passed": true
         },
         {
@@ -480,7 +484,7 @@
         },
         {
           "name": "routing_to_ril_capture_backlog",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_coding_test_verification",
@@ -496,7 +500,7 @@
         },
         {
           "name": "routing_to_instructions_skill_routing_failure",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_notify_task_completion",
@@ -540,7 +544,7 @@
         },
         {
           "name": "routing_to_review_for_an_unbiased_reviewer_pass",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_coding_history_search_commits",
@@ -564,7 +568,7 @@
         },
         {
           "name": "routing_to_ril_inbox_processing",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_personal_tweet_media_fetch",
@@ -1022,8 +1026,8 @@
     }
   },
   "fingerprints": {
-    "suite": "60bad39b9a995e9ed3d62ba1b512604d890d0a5c9312550c18d62b378297a24e",
-    "instructions": "7c21b0f54d7b1dc7e54134161d232804f179d6b508ebee505ee30ad3044c3bf2"
+    "suite": "765834e47114f37b3c3c045e54a96f4cdc0a0d6e8c132a1be406cb92d5ec6d27",
+    "instructions": "5e0433f2148d64169754e5cb28444f3bc7a4f6b7430f88d4fc627bfd6bad0204"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {

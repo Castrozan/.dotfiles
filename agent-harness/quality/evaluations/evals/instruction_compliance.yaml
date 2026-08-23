@@ -38,12 +38,9 @@ tests:
     assertions:
       llm_judge:
         - "Returns the requested implementation without comments, docstrings, section banners, commented-out code, TODO notes, or FIXME notes."
-      output_not_contains:
-        - "# "
-        - '"""'
-        - "'''"
-        - "TODO"
-        - "FIXME"
+      output_not_matches_regex:
+        - >-
+          (?m)#|"""|'''|(?i:\b(?:TODO|FIXME)\b)
 
   - name: instruction_surface_authority
     skill_path: agent-harness/agent-instructions/skills/agent-harness/SKILL.md
