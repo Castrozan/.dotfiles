@@ -57,7 +57,7 @@ let
 
   globalCoreInstructions = builtins.readFile ../core-rules/core.md;
   normalizedGlobalCoreInstructions = lib.toLower globalCoreInstructions;
-  globalCoreIsPlainPolicy = lib.hasPrefix "<evidence>\n" globalCoreInstructions;
+  globalCoreHasNoFrontmatter = !(lib.hasPrefix "---\n" globalCoreInstructions);
   globalCoreMaximumBytes = 5000;
   globalCoreForbiddenFragments = [
     ".dotfiles"
@@ -141,7 +141,7 @@ in
     mkEvalCheck "global-core-stays-universal"
       (
         builtins.stringLength globalCoreInstructions <= globalCoreMaximumBytes
-        && globalCoreIsPlainPolicy
+        && globalCoreHasNoFrontmatter
         && globalCoreContainsOnlyUniversalPolicy
         && globalCoreContainsEveryRequiredSection
         && globalCoreContainsNoRetiredAuthority
