@@ -62,6 +62,17 @@ class TestSessionsThatGetNoServant:
         monkeypatch.setenv("CLAWDE_AGENT_NAME", "steward")
         assert _handle("clawde-probe") is None
 
+    def test_an_agent_workspace_keeps_it_when_the_launcher_marks_nothing(
+        self, tmp_path, monkeypatch
+    ):
+        agent_workspaces_directory = tmp_path / "clawde"
+        agent_workspace = agent_workspaces_directory / "monster"
+        agent_workspace.mkdir(parents=True)
+        monkeypatch.setenv("CLAWDE_AGENTS_DIRECTORY", str(agent_workspaces_directory))
+        monkeypatch.chdir(agent_workspace)
+
+        assert _handle("channel-turn-probe") is None
+
     def test_a_payload_with_no_id_stays_silent(self):
         assert (
             servant_identity_handler.handle({"hook_event_name": "SessionStart"}) is None

@@ -8,7 +8,9 @@ from flat_deploy_test_support import (
 )
 
 
-def _injected_context(tmp_path, session_id, extra_environment=None):
+def _injected_context(
+    tmp_path, session_id, extra_environment=None, working_directory=None
+):
     runtime_directory = tmp_path / "hooks"
     runtime_directory.mkdir(parents=True, exist_ok=True)
     flatten_into_single_runtime_directory(runtime_directory)
@@ -27,6 +29,7 @@ def _injected_context(tmp_path, session_id, extra_environment=None):
             INTERACTIVE_ENV_VAR: "/nix/store/preferences.md",
             **(extra_environment or {}),
         },
+        working_directory=working_directory,
     )
     assert injected.returncode == 0, injected.stderr
     payload = json.loads(injected.stdout)
@@ -67,5 +70,19 @@ def test_session_start_dispatcher_stays_silent_for_clawde_agent_after_flat_deplo
         tmp_path,
         "servant-flat-clawde-probe",
         {CLAWDE_BACKGROUND_AGENT_ENV_MARKER: "steward"},
+    )
+    assert "Servant: " not in injected_context
+
+
+def test_session_start_dispatcher_stays_silent_for_an_unmarked_agent_workspace(
+    tmp_path,
+):
+    agent_workspace = tmp_path / "clawde" / "monster"
+    agent_workspace.mkdir(parents=True)
+
+    injected_context = _injected_context(
+        tmp_path,
+        "servant-flat-workspace-probe",
+        working_directory=agent_workspace,
     )
     assert "Servant: " not in injected_context

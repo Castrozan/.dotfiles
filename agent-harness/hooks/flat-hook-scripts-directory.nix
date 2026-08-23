@@ -20,6 +20,8 @@ let
   # beside it: `catalog.py` and `roster.py` are names generic enough to collide in
   # a directory this flat, and the domain is not a hooks concern.
   servantsDomainDirectory = ../servants;
+
+  clawdeWorkspaceDomainDirectory = ../harnesses/clawde/scripts;
 in
 pkgs.runCommandLocal "agent-hook-scripts" { } ''
   mkdir -p "$out"
@@ -28,4 +30,6 @@ pkgs.runCommandLocal "agent-hook-scripts" { } ''
     --replace-fail "@hookPythonInterpreter@" "${hookPythonInterpreter}"
   substituteInPlace "$out/servant_identity_handler.py" \
     --replace-fail "@servantsDomainDirectory@" "${servantsDomainDirectory}"
+  substituteInPlace "$out/interactive_session_detection.py" \
+    --replace-fail "@clawdeWorkspaceDomainDirectory@" "${clawdeWorkspaceDomainDirectory}"
 ''
