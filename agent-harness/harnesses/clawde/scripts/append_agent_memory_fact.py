@@ -1,9 +1,10 @@
 import argparse
-import os
 import re
 import sys
 from datetime import date
 from pathlib import Path
+
+from clawde_workspace_paths import agents_directory
 
 MEMORY_DIRECTORY_NAME = "memory"
 INDEX_FILE_NAME = "MEMORY.md"
@@ -36,13 +37,6 @@ def parse_command_line_arguments(argv):
     parser.add_argument("--fact", dest="fact", required=True)
     parser.add_argument("--author", dest="author", required=True)
     return parser.parse_args(argv)
-
-
-def agents_directory():
-    configured = os.environ.get("CLAWDE_AGENTS_DIRECTORY")
-    if configured:
-        return Path(configured).expanduser().resolve()
-    return (Path.home() / "clawde").resolve()
 
 
 def resolve_memory_directory(working_directory):

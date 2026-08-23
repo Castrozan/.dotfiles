@@ -12,6 +12,8 @@ import time
 import uuid
 from pathlib import Path
 
+from clawde_workspace_paths import agents_directory
+
 MEDIA_DIRECTORY_NAME = "media"
 USAGE_FILE_NAME = "usage.json"
 RETENTION_DAYS = 7
@@ -19,13 +21,6 @@ RETENTION_DAYS = 7
 
 class MediaRequestRefused(Exception):
     pass
-
-
-def agents_directory():
-    configured = os.environ.get("CLAWDE_AGENTS_DIRECTORY")
-    if configured:
-        return Path(configured).expanduser().resolve()
-    return (Path.home() / "clawde").resolve()
 
 
 def secrets_directory():
