@@ -4,7 +4,6 @@ import pathlib
 import re
 import subprocess
 from dataclasses import dataclass
-from typing import Optional, Tuple
 
 REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parents[2]
 TESTS_DIRECTORY_NAME = "__tests__"
@@ -36,8 +35,8 @@ NIX_CHECK_INVENTORY_TIMEOUT_SECONDS = 300
 
 @dataclass(frozen=True)
 class NixCheckInventory:
-    check_names: Optional[Tuple[str, ...]]
-    unavailable_reason: Optional[str]
+    check_names: tuple[str, ...] | None
+    unavailable_reason: str | None
 
 
 def evaluate_nix_check_inventory():
