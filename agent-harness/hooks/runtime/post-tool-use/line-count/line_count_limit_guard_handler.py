@@ -16,7 +16,6 @@ for _shared_module_candidate_directory in (
 
 from changed_file_paths import collect_changed_file_paths  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
-from line_count_baseline import allowed_line_count_for_file  # noqa: E402
 from line_count_policy import (  # noqa: E402
     LINE_COUNT_BLOCKING_THRESHOLD,
     LineCountViolation,
@@ -50,15 +49,26 @@ def blocking_result(violation: LineCountViolation):
     return HandlerResult(decision="block", reason=reason, system_message=system_message)
 
 
+def violation_beyond_the_recorded_ceiling(target_file_path: str):
+    from line_count_baseline import allowed_line_count_for_file
+
+    return line_count_violation(
+        target_file_path, allowed_line_count_for_file(target_file_path)
+    )
+
+
 def handle(hook_input: dict):
     tool_name = hook_input.get("tool_name", "")
     if tool_name not in APPLICABLE_TOOL_NAMES:
         return None
 
     for target_file_path in collect_changed_file_paths(hook_input):
-        violation = line_count_violation(
-            target_file_path, allowed_line_count_for_file(target_file_path)
+        over_the_hard_limit = line_count_violation(
+            target_file_path, LINE_COUNT_BLOCKING_THRESHOLD
         )
+        if over_the_hard_limit is None:
+            continue
+        violation = violation_beyond_the_recorded_ceiling(target_file_path)
         if violation is not None:
             return blocking_result(violation)
     return None

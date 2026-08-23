@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
 
 LINE_COUNT_BLOCKING_THRESHOLD = 200
 
@@ -73,11 +72,11 @@ CODE_FILE_EXTENSIONS = frozenset(
 )
 
 
-@dataclass(frozen=True)
 class LineCountViolation:
-    file_path: str
-    line_count: int
-    allowed_line_count: int
+    def __init__(self, file_path: str, line_count: int, allowed_line_count: int):
+        self.file_path = file_path
+        self.line_count = line_count
+        self.allowed_line_count = allowed_line_count
 
 
 def file_path_has_code_extension(file_path: str) -> bool:
