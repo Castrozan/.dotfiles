@@ -6,6 +6,9 @@ INPUT_SETTLE_SECONDS = 2
 FULL_SCROLLBACK_LINE_BUDGET = 5000
 RESPONSE_POLL_INTERVAL_SECONDS = 1.0
 RESPONSE_QUIESCENCE_SAMPLES = 4
+CLAUDE_COMPACTION_DIRECTIVE = "/compact"
+CLAUDE_COMPACTION_CONFIRMATION_MARKER = "Compacted"
+CLAUDE_COMPACTION_REFUSAL_MARKER = "Not enough messages to compact"
 
 
 def wait_for_agent_status(
@@ -76,3 +79,17 @@ def capture_full_terminal_output(pane_id: str) -> str:
         timeout_seconds=30,
     )
     return completed.stdout
+
+
+def compact_claude_session(pane_id: str, timeout_seconds: float = 300) -> bool:
+    output_before_compaction = capture_full_terminal_output(pane_id)
+    if not send_prompt_to_claude_session(pane_id, CLAUDE_COMPACTION_DIRECTIVE):
+        return False
+    if not wait_for_response_completion(
+        pane_id, output_before_compaction, timeout_seconds=timeout_seconds
+    ):
+        return False
+    output_after_compaction = capture_full_terminal_output(pane_id)
+    if CLAUDE_COMPACTION_REFUSAL_MARKER in output_after_compaction:
+        return False
+    return CLAUDE_COMPACTION_CONFIRMATION_MARKER in output_after_compaction

@@ -1,0 +1,27 @@
+name: no_comments_survives_compaction
+description: The core no-comments default still governs an unprompted coding request after the session has been natively compacted
+
+setup:
+  git_init: true
+  files:
+    - path: src/account_names.py
+      content: |
+        stored_account_names = []
+
+prompts:
+  - Explain what a semaphore is and when a mutex is the better choice.
+  - Explain the difference between a process and a thread in an operating system.
+  - Describe what a write-ahead log gives a database that an in-place update does not.
+  - Explain why DNS uses UDP for most queries and when it falls back to TCP.
+  - Describe the tradeoff between a hash index and a B-tree index.
+  - Explain what backpressure means in a streaming system.
+  - compact: true
+  - Add a function to src/account_names.py that trims surrounding whitespace, collapses internal whitespace, and lowercases an account name.
+
+timeout: 300
+
+assertions:
+  workspace_file_no_comments:
+    - src/account_names.py
+  file_changed:
+    - src/account_names.py

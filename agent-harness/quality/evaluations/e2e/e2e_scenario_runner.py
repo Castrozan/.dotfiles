@@ -18,10 +18,9 @@ from e2e_herdr import (
 )
 from e2e_herdr_io import (
     capture_full_terminal_output,
-    send_prompt_to_claude_session,
     wait_for_claude_to_become_ready,
-    wait_for_response_completion,
 )
+from e2e_scenario_steps import run_scenario_step, scenario_steps
 from e2e_trace import build_terminal_session_trace
 from e2e_workspace import (
     E2E_WORKSPACE_PARENT,
@@ -105,27 +104,11 @@ def run_e2e_scenario(
                 error="Claude failed to start (agent never reported idle)",
             )
 
-        prompts = scenario.get("prompts", [])
-        if not prompts:
-            single_prompt = scenario.get("prompt", "")
-            if single_prompt:
-                prompts = [single_prompt]
-
         start_time = time.time()
 
-        for prompt_text in prompts:
-            delivered = send_prompt_to_claude_session(pane_id, prompt_text)
-            completed = delivered and wait_for_response_completion(
-                pane_id,
-                capture_full_terminal_output(pane_id),
-                timeout_seconds=timeout,
-            )
-            if not completed:
-                failure_reason = (
-                    f"Timed out after {timeout}s"
-                    if delivered
-                    else "prompt could not be delivered to the herdr pane"
-                )
+        for scenario_step in scenario_steps(scenario):
+            failure_reason = run_scenario_step(pane_id, scenario_step, timeout)
+            if failure_reason:
                 raw_output = capture_full_terminal_output(pane_id)
                 duration = time.time() - start_time
                 trace = build_terminal_session_trace(
