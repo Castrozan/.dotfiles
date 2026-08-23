@@ -1,6 +1,15 @@
 singleton Appearance 1.0 Appearance.qml
 singleton Config 1.0 Config.qml
 singleton ColorUtils 1.0 functions/ColorUtils.qml
+ConfigOptions 1.0 ConfigOptions.qml
+MaterialColorScheme 1.0 MaterialColorScheme.qml
+AppearanceColors 1.0 AppearanceColors.qml
+AppearanceRounding 1.0 AppearanceRounding.qml
+AppearanceFont 1.0 AppearanceFont.qml
+AppearanceSizes 1.0 AppearanceSizes.qml
+AppearanceAnimationCurves 1.0 AppearanceAnimationCurves.qml
+AppearanceMoveAnimation 1.0 AppearanceMoveAnimation.qml
+AppearanceAnimation 1.0 AppearanceAnimation.qml
 StyledText 1.0 widgets/StyledText.qml
 StyledRectangularShadow 1.0 widgets/StyledRectangularShadow.qml
 StyledToolTip 1.0 widgets/StyledToolTip.qml

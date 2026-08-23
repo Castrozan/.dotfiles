@@ -21,12 +21,12 @@ Singleton {
             return hyprThemeColors;
         return defaultColors;
     }
-    property QtObject animation
-    property QtObject animationCurves
-    property QtObject colors
-    property QtObject rounding
-    property QtObject font
-    property QtObject sizes
+    property AppearanceAnimation animation
+    property AppearanceAnimationCurves animationCurves
+    property AppearanceColors colors
+    property AppearanceRounding rounding
+    property AppearanceFont font
+    property AppearanceSizes sizes
     property bool caelestiaPaletteLoaded: false
     property bool hyprThemeLoaded: false
 
@@ -91,85 +91,85 @@ Singleton {
         }
     }
 
-    property QtObject hyprThemeColors: QtObject {
-        property bool darkmode: true
-        property color m3primary: defaultColors.m3primary
-        property color m3onPrimary: defaultColors.m3onPrimary
-        property color m3primaryContainer: defaultColors.m3primaryContainer
-        property color m3onPrimaryContainer: defaultColors.m3onPrimaryContainer
-        property color m3secondary: defaultColors.m3secondary
-        property color m3onSecondary: defaultColors.m3onSecondary
-        property color m3secondaryContainer: defaultColors.m3secondaryContainer
-        property color m3onSecondaryContainer: defaultColors.m3onSecondaryContainer
-        property color m3background: defaultColors.m3background
-        property color m3onBackground: defaultColors.m3onBackground
-        property color m3surface: defaultColors.m3surface
-        property color m3surfaceContainerLow: defaultColors.m3surfaceContainerLow
-        property color m3surfaceContainer: defaultColors.m3surfaceContainer
-        property color m3surfaceContainerHigh: defaultColors.m3surfaceContainerHigh
-        property color m3surfaceContainerHighest: defaultColors.m3surfaceContainerHighest
-        property color m3onSurface: defaultColors.m3onSurface
-        property color m3surfaceVariant: defaultColors.m3surfaceVariant
-        property color m3onSurfaceVariant: defaultColors.m3onSurfaceVariant
-        property color m3inverseSurface: defaultColors.m3inverseSurface
-        property color m3inverseOnSurface: defaultColors.m3inverseOnSurface
-        property color m3outline: defaultColors.m3outline
-        property color m3outlineVariant: defaultColors.m3outlineVariant
-        property color m3shadow: defaultColors.m3shadow
+    property MaterialColorScheme hyprThemeColors: MaterialColorScheme {
+        darkmode: true
+        m3primary: root.defaultColors.m3primary
+        m3onPrimary: root.defaultColors.m3onPrimary
+        m3primaryContainer: root.defaultColors.m3primaryContainer
+        m3onPrimaryContainer: root.defaultColors.m3onPrimaryContainer
+        m3secondary: root.defaultColors.m3secondary
+        m3onSecondary: root.defaultColors.m3onSecondary
+        m3secondaryContainer: root.defaultColors.m3secondaryContainer
+        m3onSecondaryContainer: root.defaultColors.m3onSecondaryContainer
+        m3background: root.defaultColors.m3background
+        m3onBackground: root.defaultColors.m3onBackground
+        m3surface: root.defaultColors.m3surface
+        m3surfaceContainerLow: root.defaultColors.m3surfaceContainerLow
+        m3surfaceContainer: root.defaultColors.m3surfaceContainer
+        m3surfaceContainerHigh: root.defaultColors.m3surfaceContainerHigh
+        m3surfaceContainerHighest: root.defaultColors.m3surfaceContainerHighest
+        m3onSurface: root.defaultColors.m3onSurface
+        m3surfaceVariant: root.defaultColors.m3surfaceVariant
+        m3onSurfaceVariant: root.defaultColors.m3onSurfaceVariant
+        m3inverseSurface: root.defaultColors.m3inverseSurface
+        m3inverseOnSurface: root.defaultColors.m3inverseOnSurface
+        m3outline: root.defaultColors.m3outline
+        m3outlineVariant: root.defaultColors.m3outlineVariant
+        m3shadow: root.defaultColors.m3shadow
     }
 
-    property QtObject defaultColors: QtObject {
-        property bool darkmode: true
-        property color m3primary: "#E5B6F2"
-        property color m3onPrimary: "#452152"
-        property color m3primaryContainer: "#5D386A"
-        property color m3onPrimaryContainer: "#F9D8FF"
-        property color m3secondary: "#D5C0D7"
-        property color m3onSecondary: "#392C3D"
-        property color m3secondaryContainer: "#534457"
-        property color m3onSecondaryContainer: "#F2DCF3"
-        property color m3background: "#161217"
-        property color m3onBackground: "#EAE0E7"
-        property color m3surface: "#161217"
-        property color m3surfaceContainerLow: "#1F1A1F"
-        property color m3surfaceContainer: "#231E23"
-        property color m3surfaceContainerHigh: "#2D282E"
-        property color m3surfaceContainerHighest: "#383339"
-        property color m3onSurface: "#EAE0E7"
-        property color m3surfaceVariant: "#4C444D"
-        property color m3onSurfaceVariant: "#CFC3CD"
-        property color m3inverseSurface: "#EAE0E7"
-        property color m3inverseOnSurface: "#342F34"
-        property color m3outline: "#988E97"
-        property color m3outlineVariant: "#4C444D"
-        property color m3shadow: "#000000"
+    property MaterialColorScheme defaultColors: MaterialColorScheme {
+        darkmode: true
+        m3primary: "#E5B6F2"
+        m3onPrimary: "#452152"
+        m3primaryContainer: "#5D386A"
+        m3onPrimaryContainer: "#F9D8FF"
+        m3secondary: "#D5C0D7"
+        m3onSecondary: "#392C3D"
+        m3secondaryContainer: "#534457"
+        m3onSecondaryContainer: "#F2DCF3"
+        m3background: "#161217"
+        m3onBackground: "#EAE0E7"
+        m3surface: "#161217"
+        m3surfaceContainerLow: "#1F1A1F"
+        m3surfaceContainer: "#231E23"
+        m3surfaceContainerHigh: "#2D282E"
+        m3surfaceContainerHighest: "#383339"
+        m3onSurface: "#EAE0E7"
+        m3surfaceVariant: "#4C444D"
+        m3onSurfaceVariant: "#CFC3CD"
+        m3inverseSurface: "#EAE0E7"
+        m3inverseOnSurface: "#342F34"
+        m3outline: "#988E97"
+        m3outlineVariant: "#4C444D"
+        m3shadow: "#000000"
     }
 
-    property QtObject caelestiaColors: QtObject {
-        property bool darkmode: defaultColors.darkmode
-        property color m3primary: defaultColors.m3primary
-        property color m3onPrimary: defaultColors.m3onPrimary
-        property color m3primaryContainer: defaultColors.m3primaryContainer
-        property color m3onPrimaryContainer: defaultColors.m3onPrimaryContainer
-        property color m3secondary: defaultColors.m3secondary
-        property color m3onSecondary: defaultColors.m3onSecondary
-        property color m3secondaryContainer: defaultColors.m3secondaryContainer
-        property color m3onSecondaryContainer: defaultColors.m3onSecondaryContainer
-        property color m3background: defaultColors.m3background
-        property color m3onBackground: defaultColors.m3onBackground
-        property color m3surface: defaultColors.m3surface
-        property color m3surfaceContainerLow: defaultColors.m3surfaceContainerLow
-        property color m3surfaceContainer: defaultColors.m3surfaceContainer
-        property color m3surfaceContainerHigh: defaultColors.m3surfaceContainerHigh
-        property color m3surfaceContainerHighest: defaultColors.m3surfaceContainerHighest
-        property color m3onSurface: defaultColors.m3onSurface
-        property color m3surfaceVariant: defaultColors.m3surfaceVariant
-        property color m3onSurfaceVariant: defaultColors.m3onSurfaceVariant
-        property color m3inverseSurface: defaultColors.m3inverseSurface
-        property color m3inverseOnSurface: defaultColors.m3inverseOnSurface
-        property color m3outline: defaultColors.m3outline
-        property color m3outlineVariant: defaultColors.m3outlineVariant
-        property color m3shadow: defaultColors.m3shadow
+    property MaterialColorScheme caelestiaColors: MaterialColorScheme {
+        darkmode: root.defaultColors.darkmode
+        m3primary: root.defaultColors.m3primary
+        m3onPrimary: root.defaultColors.m3onPrimary
+        m3primaryContainer: root.defaultColors.m3primaryContainer
+        m3onPrimaryContainer: root.defaultColors.m3onPrimaryContainer
+        m3secondary: root.defaultColors.m3secondary
+        m3onSecondary: root.defaultColors.m3onSecondary
+        m3secondaryContainer: root.defaultColors.m3secondaryContainer
+        m3onSecondaryContainer: root.defaultColors.m3onSecondaryContainer
+        m3background: root.defaultColors.m3background
+        m3onBackground: root.defaultColors.m3onBackground
+        m3surface: root.defaultColors.m3surface
+        m3surfaceContainerLow: root.defaultColors.m3surfaceContainerLow
+        m3surfaceContainer: root.defaultColors.m3surfaceContainer
+        m3surfaceContainerHigh: root.defaultColors.m3surfaceContainerHigh
+        m3surfaceContainerHighest: root.defaultColors.m3surfaceContainerHighest
+        m3onSurface: root.defaultColors.m3onSurface
+        m3surfaceVariant: root.defaultColors.m3surfaceVariant
+        m3onSurfaceVariant: root.defaultColors.m3onSurfaceVariant
+        m3inverseSurface: root.defaultColors.m3inverseSurface
+        m3inverseOnSurface: root.defaultColors.m3inverseOnSurface
+        m3outline: root.defaultColors.m3outline
+        m3outlineVariant: root.defaultColors.m3outlineVariant
+        m3shadow: root.defaultColors.m3shadow
     }
 
     function loadCaelestiaPalette() {
@@ -335,107 +335,54 @@ Singleton {
             loadCaelestiaPalette();
     }
 
-    colors: QtObject {
-        property color colSubtext: m3colors.m3outline
-        property color colLayer0: m3colors.m3background
-        property color colOnLayer0: m3colors.m3onBackground
-        property color colLayer0Border: ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
-        property color colLayer1: m3colors.m3surfaceContainerLow
-        property color colOnLayer1: m3colors.m3onSurfaceVariant
-        property color colOnLayer1Inactive: ColorUtils.mix(colOnLayer1, colLayer1, 0.45)
-        property color colLayer1Hover: ColorUtils.mix(colLayer1, colOnLayer1, 0.92)
-        property color colLayer1Active: ColorUtils.mix(colLayer1, colOnLayer1, 0.85)
-        property color colLayer2: m3colors.m3surfaceContainer
-        property color colOnLayer2: m3colors.m3onSurface
-        property color colLayer2Hover: ColorUtils.mix(colLayer2, colOnLayer2, 0.90)
-        property color colLayer2Active: ColorUtils.mix(colLayer2, colOnLayer2, 0.80)
-        property color colPrimary: m3colors.m3primary
-        property color colOnPrimary: m3colors.m3onPrimary
-        property color colSecondary: m3colors.m3secondary
-        property color colSecondaryContainer: m3colors.m3secondaryContainer
-        property color colOnSecondaryContainer: m3colors.m3onSecondaryContainer
-        property color colTooltip: m3colors.m3inverseSurface
-        property color colOnTooltip: m3colors.m3inverseOnSurface
-        property color colShadow: ColorUtils.transparentize(m3colors.m3shadow, 0.7)
-        property color colOutline: m3colors.m3outline
+    colors: AppearanceColors {
+        id: appearanceColors
+        colSubtext: root.m3colors.m3outline
+        colLayer0: root.m3colors.m3background
+        colOnLayer0: root.m3colors.m3onBackground
+        colLayer0Border: ColorUtils.mix(root.m3colors.m3outlineVariant, appearanceColors.colLayer0, 0.4)
+        colLayer1: root.m3colors.m3surfaceContainerLow
+        colOnLayer1: root.m3colors.m3onSurfaceVariant
+        colOnLayer1Inactive: ColorUtils.mix(appearanceColors.colOnLayer1, appearanceColors.colLayer1, 0.45)
+        colLayer1Hover: ColorUtils.mix(appearanceColors.colLayer1, appearanceColors.colOnLayer1, 0.92)
+        colLayer1Active: ColorUtils.mix(appearanceColors.colLayer1, appearanceColors.colOnLayer1, 0.85)
+        colLayer2: root.m3colors.m3surfaceContainer
+        colOnLayer2: root.m3colors.m3onSurface
+        colLayer2Hover: ColorUtils.mix(appearanceColors.colLayer2, appearanceColors.colOnLayer2, 0.90)
+        colLayer2Active: ColorUtils.mix(appearanceColors.colLayer2, appearanceColors.colOnLayer2, 0.80)
+        colPrimary: root.m3colors.m3primary
+        colOnPrimary: root.m3colors.m3onPrimary
+        colSecondary: root.m3colors.m3secondary
+        colSecondaryContainer: root.m3colors.m3secondaryContainer
+        colOnSecondaryContainer: root.m3colors.m3onSecondaryContainer
+        colTooltip: root.m3colors.m3inverseSurface
+        colOnTooltip: root.m3colors.m3inverseOnSurface
+        colShadow: ColorUtils.transparentize(root.m3colors.m3shadow, 0.7)
+        colOutline: root.m3colors.m3outline
     }
 
-    rounding: QtObject {
-        property int unsharpen: Common.Config.options.appearance.rounding.unsharpen
-        property int verysmall: Common.Config.options.appearance.rounding.verysmall
-        property int small: Common.Config.options.appearance.rounding.small
-        property int normal: Common.Config.options.appearance.rounding.normal
-        property int large: Common.Config.options.appearance.rounding.large
-        property int full: Common.Config.options.appearance.rounding.full
-        property int screenRounding: Common.Config.options.appearance.rounding.screenRounding
-        property int windowRounding: Common.Config.options.appearance.rounding.windowRounding
-    }
+    rounding: AppearanceRounding {}
 
-    font: QtObject {
-        property QtObject family: QtObject {
-            property string main: Common.Config.options.appearance.font.family.main
-            property string title: Common.Config.options.appearance.font.family.title
-            property string expressive: Common.Config.options.appearance.font.family.expressive
+    font: AppearanceFont {}
+
+    animationCurves: AppearanceAnimationCurves {}
+
+    animation: AppearanceAnimation {
+        elementMove: AppearanceMoveAnimation {
+            duration: root.animationCurves.expressiveDefaultSpatialDuration
+            bezierCurve: root.animationCurves.expressiveDefaultSpatial
         }
-        property QtObject pixelSize: QtObject {
-            property int smaller: Common.Config.options.appearance.font.pixelSize.smaller
-            property int small: Common.Config.options.appearance.font.pixelSize.small
-            property int normal: Common.Config.options.appearance.font.pixelSize.normal
-            property int larger: Common.Config.options.appearance.font.pixelSize.larger
-            property int huge: Common.Config.options.appearance.font.pixelSize.huge
+
+        elementMoveEnter: AppearanceMoveAnimation {
+            duration: Common.Config.options.appearance.animation.duration.elementMoveEnter
+            bezierCurve: root.animationCurves.emphasizedDecel
+        }
+
+        elementMoveFast: AppearanceMoveAnimation {
+            duration: root.animationCurves.expressiveEffectsDuration
+            bezierCurve: root.animationCurves.expressiveEffects
         }
     }
 
-    animationCurves: QtObject {
-        readonly property list<real> expressiveDefaultSpatial: [0.38, 1.21, 0.22, 1.00, 1, 1]
-        readonly property list<real> expressiveEffects: [0.34, 0.80, 0.34, 1.00, 1, 1]
-        readonly property list<real> emphasizedDecel: [0.05, 0.7, 0.1, 1, 1, 1]
-        readonly property real expressiveDefaultSpatialDuration: Common.Config.options.appearance.animation.duration.elementMove
-        readonly property real expressiveEffectsDuration: Common.Config.options.appearance.animation.duration.elementMoveFast
-    }
-
-    animation: QtObject {
-        property QtObject elementMove: QtObject {
-            property int duration: animationCurves.expressiveDefaultSpatialDuration
-            property int type: Easing.BezierSpline
-            property list<real> bezierCurve: animationCurves.expressiveDefaultSpatial
-            property Component numberAnimation: Component {
-                NumberAnimation {
-                    duration: root.animation.elementMove.duration
-                    easing.type: root.animation.elementMove.type
-                    easing.bezierCurve: root.animation.elementMove.bezierCurve
-                }
-            }
-        }
-
-        property QtObject elementMoveEnter: QtObject {
-            property int duration: Common.Config.options.appearance.animation.duration.elementMoveEnter
-            property int type: Easing.BezierSpline
-            property list<real> bezierCurve: animationCurves.emphasizedDecel
-            property Component numberAnimation: Component {
-                NumberAnimation {
-                    duration: root.animation.elementMoveEnter.duration
-                    easing.type: root.animation.elementMoveEnter.type
-                    easing.bezierCurve: root.animation.elementMoveEnter.bezierCurve
-                }
-            }
-        }
-
-        property QtObject elementMoveFast: QtObject {
-            property int duration: animationCurves.expressiveEffectsDuration
-            property int type: Easing.BezierSpline
-            property list<real> bezierCurve: animationCurves.expressiveEffects
-            property Component numberAnimation: Component {
-                NumberAnimation {
-                    duration: root.animation.elementMoveFast.duration
-                    easing.type: root.animation.elementMoveFast.type
-                    easing.bezierCurve: root.animation.elementMoveFast.bezierCurve
-                }
-            }
-        }
-    }
-
-    sizes: QtObject {
-        property real elevationMargin: Common.Config.options.appearance.sizes.elevationMargin
-    }
+    sizes: AppearanceSizes {}
 }
