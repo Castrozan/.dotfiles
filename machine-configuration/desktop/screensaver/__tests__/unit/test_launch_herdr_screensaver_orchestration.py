@@ -1,33 +1,6 @@
-import importlib.util
-import pathlib
 import subprocess
 
-SCRIPT_PATH = (
-    pathlib.Path(__file__).resolve().parents[2]
-    / "scripts"
-    / "launch_herdr_screensaver.py"
-)
-
-
-def _load_launcher_module():
-    module_spec = importlib.util.spec_from_file_location(
-        "launch_herdr_screensaver", SCRIPT_PATH
-    )
-    module = importlib.util.module_from_spec(module_spec)
-    module_spec.loader.exec_module(module)
-    return module
-
-
-launcher = _load_launcher_module()
-
-
-def _which_returning(available_executables):
-    available = set(available_executables)
-
-    def fake_which(executable):
-        return f"/usr/bin/{executable}" if executable in available else None
-
-    return fake_which
+from launch_herdr_screensaver_test_support import launcher, which_returning
 
 
 def test_find_workspace_returns_matching_screensaver_label(monkeypatch):
@@ -104,7 +77,7 @@ def test_workspace_not_running_when_all_panes_idle(monkeypatch):
 
 
 def test_main_focuses_existing_running_screensaver(monkeypatch):
-    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"herdr"}))
+    monkeypatch.setattr(launcher.shutil, "which", which_returning({"herdr"}))
     monkeypatch.setattr(launcher, "find_screensaver_workspace_id", lambda: "w7")
     monkeypatch.setattr(
         launcher, "workspace_has_running_screensaver", lambda workspace: True
@@ -121,7 +94,7 @@ def test_main_focuses_existing_running_screensaver(monkeypatch):
 
 
 def test_main_rebuilds_dead_screensaver_workspace(monkeypatch):
-    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"herdr"}))
+    monkeypatch.setattr(launcher.shutil, "which", which_returning({"herdr"}))
     monkeypatch.setattr(launcher, "find_screensaver_workspace_id", lambda: "w7")
     monkeypatch.setattr(
         launcher, "workspace_has_running_screensaver", lambda workspace: False
@@ -139,7 +112,7 @@ def test_main_rebuilds_dead_screensaver_workspace(monkeypatch):
 
 
 def test_main_starts_fresh_when_no_existing_workspace(monkeypatch):
-    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"herdr"}))
+    monkeypatch.setattr(launcher.shutil, "which", which_returning({"herdr"}))
     monkeypatch.setattr(launcher, "find_screensaver_workspace_id", lambda: None)
     started = []
     monkeypatch.setattr(launcher, "run_herdr", lambda *arguments: None)
@@ -149,7 +122,7 @@ def test_main_starts_fresh_when_no_existing_workspace(monkeypatch):
 
 
 def test_main_is_a_noop_when_herdr_is_absent(monkeypatch):
-    monkeypatch.setattr(launcher.shutil, "which", _which_returning(set()))
+    monkeypatch.setattr(launcher.shutil, "which", which_returning(set()))
     started = []
     monkeypatch.setattr(launcher, "start_screensaver", lambda: started.append(True))
     assert launcher.main() == 0
@@ -157,7 +130,7 @@ def test_main_is_a_noop_when_herdr_is_absent(monkeypatch):
 
 
 def test_main_reports_captured_stderr_and_returns_1_on_failure(monkeypatch, capsys):
-    monkeypatch.setattr(launcher.shutil, "which", _which_returning({"herdr"}))
+    monkeypatch.setattr(launcher.shutil, "which", which_returning({"herdr"}))
 
     def failing_lookup():
         raise subprocess.CalledProcessError(
