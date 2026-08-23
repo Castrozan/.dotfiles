@@ -17,9 +17,9 @@ Rules:
 4. Named failure modes: every "do not" or "never" line names the specific failure it prevents. Generic caution ("be
    careful", "be thoughtful") fails this rule because the model cannot derive behavior from it.
 5. No frontmatter duplication: the body does not restate what the YAML description already said.
-6. Surface fit: content lives on the right surface. Workflow-specific guidance that loads on demand belongs in a skill,
-   not CLAUDE.md. Policy that must apply every session belongs in CLAUDE.md, not buried in a skill sub-file.
-   Reference-card content that a script's --help already exposes belongs in the script, not the skill.
+6. Surface fit: apply core `<instruction-placement>`. Universal session-long defaults belong in core; repository or
+   path policy belongs in the nearest CLAUDE.md or AGENTS.md; harness mechanics belong at that boundary; bounded
+   procedures belong in skills. Reference-card content exposed by a script's --help belongs in the script.
 7. Staleness vector: each specific factual claim (file path, command flag, validator threshold, tool name) is a future
    liability. Justify each one or replace with a pattern. A file that needs editing every time an unrelated
    implementation changes is the failure shape this rule catches.

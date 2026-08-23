@@ -18,6 +18,7 @@ MIGRATED_CODING_SURFACES = frozenset(
         "agent-harness/agent-instructions/skills/coding/SKILL.md",
         "agent-harness/agent-instructions/skills/coding/testing.md",
         "agent-harness/agent-instructions/skills/docs/SKILL.md",
+        "agent-harness/agent-instructions/skills/nix/expert.md",
     }
 )
 NO_COMMENTS_RULE_PHRASE = (
@@ -31,6 +32,10 @@ NO_COMMENTS_RULE_ITEMS = (
     "commented-out code",
     "todo notes",
     "fixme notes",
+)
+NO_COMMENTS_RULE_RESTATEMENTS = (
+    "add no comments",
+    "never code comments",
 )
 
 SINGLE_HOME_RULE_PHRASES = {
@@ -100,4 +105,23 @@ def test_the_full_no_comments_rule_does_not_return_to_migrated_skills():
     assert not duplicate_authorities, (
         "the full no-comments rule belongs only in core <coding>; migrated skills must "
         f"point to it instead of recreating a second authority: {duplicate_authorities}"
+    )
+
+
+def test_migrated_skills_do_not_restate_the_no_comments_default():
+    duplicate_authorities = {
+        path: [
+            phrase
+            for phrase in NO_COMMENTS_RULE_RESTATEMENTS
+            if phrase in normalized_text(path).lower()
+        ]
+        for path in MIGRATED_CODING_SURFACES
+        if any(
+            phrase in normalized_text(path).lower()
+            for phrase in NO_COMMENTS_RULE_RESTATEMENTS
+        )
+    }
+    assert not duplicate_authorities, (
+        "core <coding> owns the no-comments default; migrated skills must point to it "
+        f"instead of paraphrasing it: {duplicate_authorities}"
     )

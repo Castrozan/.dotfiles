@@ -4,6 +4,12 @@ directory. They load unconditionally into the agent's initial context, so every 
 long as the file exists.
 </purpose>
 
+<scope-and-authority>
+Apply core `<instruction-placement>` before choosing this surface. A CLAUDE.md owns repository or directory policy that
+every session in that scope needs. Keep universal session-long defaults in core, harness mechanics at their harness
+boundary, bounded procedures in skills, and exact controls in code, hooks, permissions, or CI.
+</scope-and-authority>
+
 <policy_not_documentation>
 CLAUDE.md states what must be true and why without prescribing implementations. A good policy survives complete
 reimplementation of the system it governs.
@@ -14,9 +20,9 @@ Should follow the format of the instructions SKILL.md.
 </structure>
 
 <what_belongs>
-Constraints the agent would otherwise violate, workflow sequences that must run in order, general domain boundaries, and
-identity facts. Everything else either belongs in a skill (workflow-specific guidance that loads on demand) or in code
-(project structure, naming conventions enforced by linters and code review).
+Put repository or directory constraints, ordered local workflows, domain boundaries, and local identity facts here
+when every session in that scope needs them. Put discoverable structure and exact predicates in their mechanical owner,
+and route operation-specific guidance to its skill.
 </what_belongs>
 
 <authoring_review>
