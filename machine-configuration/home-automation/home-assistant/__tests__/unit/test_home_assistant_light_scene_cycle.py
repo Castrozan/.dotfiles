@@ -2,15 +2,7 @@ import pytest
 
 import home_assistant_light_scene_cycle
 
-
-@pytest.fixture
-def mock_scene_token(monkeypatch):
-    monkeypatch.setattr(
-        home_assistant_light_scene_cycle,
-        "read_home_assistant_token",
-        lambda: "fake-ha-token-for-testing",
-    )
-    return "fake-ha-token-for-testing"
+HOME_ASSISTANT_COMMAND_MODULE = home_assistant_light_scene_cycle
 
 
 @pytest.fixture
@@ -86,7 +78,7 @@ class TestCycleStepDefinitions:
 class TestMainCyclesBehavior:
     def test_first_call_drives_every_light_with_the_first_step(
         self,
-        mock_scene_token,
+        access_token,
         mock_scene_api_request,
         mock_scene_state_file,
         capsys,
@@ -110,7 +102,7 @@ class TestMainCyclesBehavior:
 
     def test_never_calls_the_dead_scene_service(
         self,
-        mock_scene_token,
+        access_token,
         mock_scene_api_request,
         mock_scene_state_file,
     ):
@@ -122,7 +114,7 @@ class TestMainCyclesBehavior:
 
     def test_cycles_to_next_step(
         self,
-        mock_scene_token,
+        access_token,
         mock_scene_api_request,
         mock_scene_state_file,
         capsys,
@@ -140,7 +132,7 @@ class TestMainCyclesBehavior:
 
     def test_wraps_around_to_first_step(
         self,
-        mock_scene_token,
+        access_token,
         mock_scene_api_request,
         mock_scene_state_file,
         capsys,

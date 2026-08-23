@@ -2,6 +2,8 @@ import pytest
 
 import home_assistant_light_control
 
+HOME_ASSISTANT_COMMAND_MODULE = home_assistant_light_control
+
 
 class TestResolveTargetEntityIds:
     def test_resolves_all_to_every_light(self):
@@ -102,10 +104,10 @@ class TestParseOptionalAttributesFromArguments:
 
 class TestTurnOnLights:
     def test_sends_turn_on_request_for_each_entity(
-        self, mock_home_assistant_token, mock_home_assistant_api_request
+        self, access_token, mock_home_assistant_api_request
     ):
         home_assistant_light_control.turn_on_lights(
-            mock_home_assistant_token,
+            access_token,
             ["light.bedroom", "light.kitchen"],
             {},
         )
@@ -122,10 +124,10 @@ class TestTurnOnLights:
         }
 
     def test_includes_extra_attributes_in_payload(
-        self, mock_home_assistant_token, mock_home_assistant_api_request
+        self, access_token, mock_home_assistant_api_request
     ):
         home_assistant_light_control.turn_on_lights(
-            mock_home_assistant_token,
+            access_token,
             ["light.bedroom"],
             {"brightness": 200, "color_temp_kelvin": 3500},
         )
@@ -139,10 +141,10 @@ class TestTurnOnLights:
 
 class TestTurnOffLights:
     def test_sends_turn_off_request_for_each_entity(
-        self, mock_home_assistant_token, mock_home_assistant_api_request
+        self, access_token, mock_home_assistant_api_request
     ):
         home_assistant_light_control.turn_off_lights(
-            mock_home_assistant_token,
+            access_token,
             ["light.bedroom", "light.kitchen"],
         )
         assert len(mock_home_assistant_api_request) == 2
@@ -158,10 +160,10 @@ class TestTurnOffLights:
 
 class TestGetLightStates:
     def test_queries_state_for_each_entity(
-        self, mock_home_assistant_token, mock_home_assistant_api_request, capsys
+        self, access_token, mock_home_assistant_api_request, capsys
     ):
         home_assistant_light_control.get_light_states(
-            mock_home_assistant_token,
+            access_token,
             ["light.bedroom"],
         )
         assert len(mock_home_assistant_api_request) == 1
@@ -176,10 +178,10 @@ class TestGetLightStates:
 
 class TestActivateScene:
     def test_sends_scene_turn_on_request(
-        self, mock_home_assistant_token, mock_home_assistant_api_request
+        self, access_token, mock_home_assistant_api_request
     ):
         home_assistant_light_control.activate_scene(
-            mock_home_assistant_token,
+            access_token,
             "high_warm",
         )
         assert len(mock_home_assistant_api_request) == 1
@@ -198,7 +200,7 @@ class TestMainEntryPoint:
         with pytest.raises(SystemExit):
             home_assistant_light_control.main()
 
-    def test_exits_with_unknown_command(self, monkeypatch, mock_home_assistant_token):
+    def test_exits_with_unknown_command(self, monkeypatch, access_token):
         monkeypatch.setattr("sys.argv", ["ha-light", "dance"])
         with pytest.raises(SystemExit):
             home_assistant_light_control.main()
@@ -206,7 +208,7 @@ class TestMainEntryPoint:
     def test_on_command_calls_turn_on(
         self,
         monkeypatch,
-        mock_home_assistant_token,
+        access_token,
         mock_home_assistant_api_request,
     ):
         monkeypatch.setattr("sys.argv", ["ha-light", "on", "bedroom"])
@@ -220,7 +222,7 @@ class TestMainEntryPoint:
     def test_off_command_calls_turn_off(
         self,
         monkeypatch,
-        mock_home_assistant_token,
+        access_token,
         mock_home_assistant_api_request,
     ):
         monkeypatch.setattr("sys.argv", ["ha-light", "off", "all"])
@@ -230,7 +232,7 @@ class TestMainEntryPoint:
     def test_set_command_with_brightness(
         self,
         monkeypatch,
-        mock_home_assistant_token,
+        access_token,
         mock_home_assistant_api_request,
     ):
         monkeypatch.setattr(
@@ -239,9 +241,7 @@ class TestMainEntryPoint:
         home_assistant_light_control.main()
         assert mock_home_assistant_api_request[0]["payload"]["brightness"] == 200
 
-    def test_set_command_exits_without_attributes(
-        self, monkeypatch, mock_home_assistant_token
-    ):
+    def test_set_command_exits_without_attributes(self, monkeypatch, access_token):
         monkeypatch.setattr("sys.argv", ["ha-light", "set", "bedroom"])
         with pytest.raises(SystemExit):
             home_assistant_light_control.main()
@@ -249,7 +249,7 @@ class TestMainEntryPoint:
     def test_status_command_defaults_to_all(
         self,
         monkeypatch,
-        mock_home_assistant_token,
+        access_token,
         mock_home_assistant_api_request,
     ):
         monkeypatch.setattr("sys.argv", ["ha-light", "status"])
@@ -259,7 +259,7 @@ class TestMainEntryPoint:
     def test_scene_command_activates_scene(
         self,
         monkeypatch,
-        mock_home_assistant_token,
+        access_token,
         mock_home_assistant_api_request,
     ):
         monkeypatch.setattr("sys.argv", ["ha-light", "scene", "high_warm"])
@@ -272,7 +272,7 @@ class TestMainEntryPoint:
     def test_on_command_with_brightness_and_temp(
         self,
         monkeypatch,
-        mock_home_assistant_token,
+        access_token,
         mock_home_assistant_api_request,
     ):
         monkeypatch.setattr(

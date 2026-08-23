@@ -5,15 +5,7 @@ import pytest
 
 import home_assistant_air_conditioner_recover_ip as recover_ip_module
 
-
-@pytest.fixture
-def mock_recover_token(monkeypatch):
-    monkeypatch.setattr(
-        recover_ip_module,
-        "read_home_assistant_token",
-        lambda: "fake-ha-token-for-testing",
-    )
-    return "fake-ha-token-for-testing"
+HOME_ASSISTANT_COMMAND_MODULE = recover_ip_module
 
 
 @pytest.fixture
@@ -252,7 +244,7 @@ class TestUpdateMideaConfigEntryIpAddress:
 
 
 class TestReloadMideaIntegration:
-    def test_calls_reload_endpoint(self, mock_recover_token, mock_recover_api_request):
+    def test_calls_reload_endpoint(self, access_token, mock_recover_api_request):
         result = recover_ip_module.reload_midea_integration(
             "fake-token", "test-entry-id"
         )
@@ -282,7 +274,7 @@ class TestMainRecoveryFlow:
     def test_no_recovery_needed_when_port_open(
         self,
         mock_config_entries,
-        mock_recover_token,
+        access_token,
         mock_recover_api_request,
         monkeypatch,
         capsys,
@@ -298,7 +290,7 @@ class TestMainRecoveryFlow:
     def test_recovers_via_multi_subnet_scan_when_ip_changed(
         self,
         mock_config_entries,
-        mock_recover_token,
+        access_token,
         mock_recover_api_request,
         monkeypatch,
         capsys,
@@ -342,7 +334,7 @@ class TestMainRecoveryFlow:
     def test_exits_when_no_local_networks_available(
         self,
         mock_config_entries,
-        mock_recover_token,
+        access_token,
         monkeypatch,
     ):
         monkeypatch.setattr(
@@ -361,7 +353,7 @@ class TestMainRecoveryFlow:
     def test_exits_when_device_not_found_on_any_subnet(
         self,
         mock_config_entries,
-        mock_recover_token,
+        access_token,
         monkeypatch,
         capsys,
     ):

@@ -5,15 +5,7 @@ import pytest
 
 import home_assistant_air_conditioner_toggle
 
-
-@pytest.fixture
-def mock_toggle_token(monkeypatch):
-    monkeypatch.setattr(
-        home_assistant_air_conditioner_toggle,
-        "read_home_assistant_token",
-        lambda: "fake-ha-token-for-testing",
-    )
-    return "fake-ha-token-for-testing"
+HOME_ASSISTANT_COMMAND_MODULE = home_assistant_air_conditioner_toggle
 
 
 @pytest.fixture
@@ -38,33 +30,29 @@ def mock_toggle_api_request(monkeypatch):
 
 
 class TestGetCurrentAirConditionerState:
-    def test_returns_off_when_off(self, mock_toggle_token, mock_toggle_api_request):
+    def test_returns_off_when_off(self, access_token, mock_toggle_api_request):
         _, ac_state = mock_toggle_api_request
         ac_state["state"] = "off"
         result = (
             home_assistant_air_conditioner_toggle.get_current_air_conditioner_state(
-                mock_toggle_token
+                access_token
             )
         )
         assert result == "off"
 
-    def test_returns_cool_when_cooling(
-        self, mock_toggle_token, mock_toggle_api_request
-    ):
+    def test_returns_cool_when_cooling(self, access_token, mock_toggle_api_request):
         _, ac_state = mock_toggle_api_request
         ac_state["state"] = "cool"
         result = (
             home_assistant_air_conditioner_toggle.get_current_air_conditioner_state(
-                mock_toggle_token
+                access_token
             )
         )
         assert result == "cool"
 
 
 class TestMainToggleBehavior:
-    def test_turns_on_when_off(
-        self, mock_toggle_token, mock_toggle_api_request, capsys
-    ):
+    def test_turns_on_when_off(self, access_token, mock_toggle_api_request, capsys):
         calls, ac_state = mock_toggle_api_request
         ac_state["state"] = "off"
         home_assistant_air_conditioner_toggle.main()
@@ -73,7 +61,7 @@ class TestMainToggleBehavior:
         assert "on" in capsys.readouterr().out
 
     def test_turns_off_when_cooling(
-        self, mock_toggle_token, mock_toggle_api_request, capsys
+        self, access_token, mock_toggle_api_request, capsys
     ):
         calls, ac_state = mock_toggle_api_request
         ac_state["state"] = "cool"
@@ -83,7 +71,7 @@ class TestMainToggleBehavior:
         assert "off" in capsys.readouterr().out
 
     def test_turns_off_when_heating(
-        self, mock_toggle_token, mock_toggle_api_request, capsys
+        self, access_token, mock_toggle_api_request, capsys
     ):
         calls, ac_state = mock_toggle_api_request
         ac_state["state"] = "heat"
@@ -91,9 +79,7 @@ class TestMainToggleBehavior:
         turn_off_call = calls[1]
         assert turn_off_call["endpoint"] == "/api/services/climate/turn_off"
 
-    def test_turns_off_when_auto(
-        self, mock_toggle_token, mock_toggle_api_request, capsys
-    ):
+    def test_turns_off_when_auto(self, access_token, mock_toggle_api_request, capsys):
         calls, ac_state = mock_toggle_api_request
         ac_state["state"] = "auto"
         home_assistant_air_conditioner_toggle.main()
@@ -103,7 +89,7 @@ class TestMainToggleBehavior:
 
 class TestUnavailableStateRecovery:
     def test_calls_recovery_when_unavailable(
-        self, mock_toggle_token, mock_toggle_api_request, monkeypatch
+        self, access_token, mock_toggle_api_request, monkeypatch
     ):
         calls, ac_state = mock_toggle_api_request
         call_count = {"n": 0}
@@ -144,7 +130,7 @@ class TestUnavailableStateRecovery:
         assert len(turn_on_call) == 1
 
     def test_exits_when_recovery_fails(
-        self, mock_toggle_token, mock_toggle_api_request, monkeypatch
+        self, access_token, mock_toggle_api_request, monkeypatch
     ):
         _, ac_state = mock_toggle_api_request
         ac_state["state"] = "unavailable"
@@ -161,7 +147,7 @@ class TestUnavailableStateRecovery:
             home_assistant_air_conditioner_toggle.main()
 
     def test_exits_when_still_unavailable_after_recovery(
-        self, mock_toggle_token, mock_toggle_api_request, monkeypatch
+        self, access_token, mock_toggle_api_request, monkeypatch
     ):
         _, ac_state = mock_toggle_api_request
         ac_state["state"] = "unavailable"

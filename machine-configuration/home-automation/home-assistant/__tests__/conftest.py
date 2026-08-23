@@ -10,11 +10,9 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 
 @pytest.fixture
-def mock_home_assistant_token(monkeypatch):
-    import home_assistant_light_control
-
+def access_token(request, monkeypatch):
     monkeypatch.setattr(
-        home_assistant_light_control,
+        request.module.HOME_ASSISTANT_COMMAND_MODULE,
         "read_home_assistant_token",
         lambda: "fake-ha-token-for-testing",
     )
