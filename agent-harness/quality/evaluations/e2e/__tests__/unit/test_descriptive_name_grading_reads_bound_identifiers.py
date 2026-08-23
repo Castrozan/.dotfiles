@@ -187,3 +187,24 @@ def test_a_fixture_name_the_test_runner_supplies_is_not_judged(tmp_path):
         tmp_path, "fixture_user.py"
     )
     assert outcome.passed is True
+
+
+def test_a_second_discard_written_only_in_underscores_passes(tmp_path):
+    source_path = tmp_path / "discards.py"
+    source_path.write_text(
+        "def count_pairs(pairs):\n"
+        "    total = 0\n"
+        "    for _, __ in pairs:\n"
+        "        total += 1\n"
+        "    return total\n"
+    )
+    outcome = check_workspace_file_descriptive_names_assertion(tmp_path, "discards.py")
+    assert outcome.passed is True
+
+
+def test_a_single_letter_hidden_behind_a_leading_underscore_still_fails(tmp_path):
+    source_path = tmp_path / "hidden.py"
+    source_path.write_text("def total(values):\n    _x = sum(values)\n    return _x\n")
+    outcome = check_workspace_file_descriptive_names_assertion(tmp_path, "hidden.py")
+    assert outcome.passed is False
+    assert "_x" in outcome.detail

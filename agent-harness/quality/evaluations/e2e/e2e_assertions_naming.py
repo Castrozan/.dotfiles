@@ -49,6 +49,10 @@ UPPERCASE_RUN_TO_CAPITALIZED_WORD_BOUNDARY_PATTERN = re.compile(
 )
 
 
+def identifier_is_a_discard(identifier: str) -> bool:
+    return identifier.strip("_") == ""
+
+
 def identifier_is_language_mandated_dunder(identifier: str) -> bool:
     if not (identifier.startswith("__") and identifier.endswith("__")):
         return False
@@ -74,6 +78,7 @@ def bound_identifiers_in_module(parsed_module: ast.Module) -> set[str]:
         identifier
         for identifier in bound_identifiers
         if identifier not in IDENTIFIERS_THE_AUTHOR_CANNOT_CHOOSE
+        and not identifier_is_a_discard(identifier)
         and not identifier_is_language_mandated_dunder(identifier)
     }
 

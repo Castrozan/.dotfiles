@@ -136,8 +136,10 @@ The audit supplies the canonical behaviors and the real deployment edges. The sc
 copying policy into a fixture or adding a test-only prompt. Its assertions cover two of the three observable behaviors
 that exposed the original regression. Comments and docstrings are graded by tokenizing and parsing the artifact, so a
 docstring fails, a comment written without a following space fails, and a hash inside a string literal does not. Naming
-is graded from the identifiers the artifact binds, so a single character other than the discard underscore fails, and so
-does any word inside a compound name that matches a closed set of vowel-dropped forms with no standalone meaning.
+is graded from the identifiers the artifact binds, so a single character fails, and so does any word inside a compound
+name that matches a closed set of vowel-dropped forms with no standalone meaning. A name written only in underscores is
+a discard and names nothing, and a name the runtime supplies by spelling, such as a test fixture, was never the author's
+to pick, so neither is judged.
 
 Cohesive responsibility stays ungraded on purpose. Every mechanical proxy considered, a statement ceiling and a
 conjunction inside a function name among them, fails on domain terms no grader can enumerate, so it would reject correct
