@@ -6,6 +6,10 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(
+    0,
+    str(Path(__file__).resolve().parents[3] / "harnesses" / "clawde" / "scripts"),
+)
 
 HOOKS_ROOT = Path(__file__).resolve().parent.parent
 DIRECTORIES_EXCLUDED_FROM_DEPLOY = ("__pycache__", "__tests__")
