@@ -102,8 +102,10 @@ Two automated scenarios now close it for two harnesses. Each drives a live sessi
 native compaction, and then an unprompted coding request, and grades the artifact rather than the transcript. Both pass
 with the file changed and no comment written into it: the Claude scenario in roughly thirteen minutes, the Codex
 scenario in roughly four. Those two runs were graded by the earlier substring checker, so they establish that no hash
-comment was written, not that no docstring was. The grader was rewritten afterwards to parse the artifact instead, and
-neither run has been repeated under it.
+comment was written, not that no docstring was. The grader was rewritten afterwards to parse the artifact instead. The
+Claude scenario has since been re-run under it and passes in roughly ten minutes, on a trace carrying a real native
+compaction marker and an artifact with no comment, no docstring, and descriptive names. The Codex scenario has not been
+re-run, because that account's weekly limit was under a tenth when this was written.
 
 Compaction is driven per harness rather than by one guessed command. A harness earns a profile only after a live probe
 records six facts: its manual compaction trigger, the marker it prints on success, the marker it prints when it
@@ -148,7 +150,8 @@ The authority half is closed. It reopens only if a new instruction source starts
 behavior on its own, and any such claim needs a behavior contract and a runtime trace before an edit, because
 similarity alone never justifies one. Core grows only when a universal session-long behavior is proven missing.
 
-The evidence half has one harness left, and its remaining work is one observation rather than a design. OpenCode
+The evidence half has two items left, and neither is a design. The Codex scenario must be re-run under the current
+grader before its green means anything about docstrings or naming, which costs only quota. OpenCode
 needs a single successful compaction watched on a funded provider, to learn whether anything on screen separates
 success from the request it already paints. Its own provider quota was exhausted when this was probed, which is the
 exact missing evidence. Two smaller consequences follow that observation: a profile currently carries a typed
@@ -158,4 +161,5 @@ clear the composer, because the trigger's second key lands there on a session wi
 Pi stays an unexercised declarative edge until a host imports its module.
 
 Completion is the intersection. Nothing competes with core for authority, every confirmed complement points to it,
-deployment parity holds, and the same canonical behavior is shown to survive compaction in each live harness.
+deployment parity holds, and the canonical behavior is shown to survive compaction in Claude under the current grader,
+and in Codex against hash comments alone until that scenario is re-run.
