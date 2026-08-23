@@ -16,13 +16,15 @@ def scenario_steps(scenario: dict) -> list:
     return [single_prompt] if single_prompt else []
 
 
-def step_requests_compaction(scenario_step) -> bool:
+def step_requests_compaction(scenario_step: str | dict) -> bool:
     return isinstance(scenario_step, dict) and bool(
         scenario_step.get(COMPACTION_STEP_KEY)
     )
 
 
-def run_scenario_step(pane_id: str, scenario_step, timeout_seconds: float):
+def run_scenario_step(
+    pane_id: str, scenario_step: str | dict, timeout_seconds: float
+) -> str | None:
     if step_requests_compaction(scenario_step):
         if compact_claude_session(pane_id, timeout_seconds=timeout_seconds):
             return None
