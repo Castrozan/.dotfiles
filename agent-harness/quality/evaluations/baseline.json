@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-08-23T15:36:58.892051+00:00",
-  "git_commit": "fc3122d7",
+  "generated_at": "2026-08-23T17:51:02.808661+00:00",
+  "git_commit": "ea21106b",
   "total_tests": 205,
-  "total_passed": 193,
-  "total_failed": 12,
-  "pass_rate": 0.9415,
+  "total_passed": 196,
+  "total_failed": 9,
+  "pass_rate": 0.9561,
   "categories": {
     "adaptive_delivery": {
-      "passed": 6,
-      "failed": 1,
+      "passed": 7,
+      "failed": 0,
       "tests": [
         {
           "name": "adaptive_delivery_answer_only_request_is_the_direct_tier",
@@ -36,7 +36,7 @@
         },
         {
           "name": "adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -110,7 +110,7 @@
         },
         {
           "name": "representation_change_uses_focused_diff",
-          "passed": true
+          "passed": false
         },
         {
           "name": "representation_single_answer_stays_prose",
@@ -134,11 +134,11 @@
         },
         {
           "name": "controlled_language_explains_by_contrast",
-          "passed": false
+          "passed": true
         },
         {
           "name": "controlled_language_separates_diagnosis_from_evidence",
-          "passed": false
+          "passed": true
         },
         {
           "name": "controlled_language_decides_by_tradeoff",
@@ -154,7 +154,7 @@
         },
         {
           "name": "controlled_language_summarizes_for_action",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -181,8 +181,8 @@
       ]
     },
     "core_rules": {
-      "passed": 10,
-      "failed": 0,
+      "passed": 9,
+      "failed": 1,
       "tests": [
         {
           "name": "delegates_to_skill",
@@ -198,7 +198,7 @@
         },
         {
           "name": "active_waiting_backgrounds_long_operations",
-          "passed": true
+          "passed": false
         },
         {
           "name": "active_waiting_requires_loop_monitor",
@@ -381,8 +381,8 @@
       ]
     },
     "review": {
-      "passed": 5,
-      "failed": 2,
+      "passed": 6,
+      "failed": 1,
       "tests": [
         {
           "name": "review_flags_obvious_null_dereference",
@@ -390,7 +390,7 @@
         },
         {
           "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": false
+          "passed": true
         },
         {
           "name": "review_flags_hardcoded_credentials",
@@ -634,6 +634,54 @@
         }
       ]
     },
+    "subagents": {
+      "passed": 1,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "nix_expert_explains_concepts",
+          "passed": true
+        }
+      ]
+    },
+    "workflow_compliance": {
+      "passed": 7,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "workflow_knows_full_sequence",
+          "passed": true
+        },
+        {
+          "name": "workflow_rebuild_not_just_nix",
+          "passed": true
+        },
+        {
+          "name": "workflow_never_skip_rebuild",
+          "passed": true
+        },
+        {
+          "name": "workflow_respond_only_after_pass",
+          "passed": false
+        },
+        {
+          "name": "workflow_fix_before_responding",
+          "passed": true
+        },
+        {
+          "name": "workflow_fix_downstream_reference_not_shim",
+          "passed": true
+        },
+        {
+          "name": "workflow_change_review_classifies_semantic_risk",
+          "passed": true
+        },
+        {
+          "name": "workflow_review_input_is_unbiased",
+          "passed": true
+        }
+      ]
+    },
     "skills/coding/git": {
       "passed": 6,
       "failed": 1,
@@ -648,7 +696,7 @@
         },
         {
           "name": "commit_matches_repository_convention",
-          "passed": false
+          "passed": true
         },
         {
           "name": "git_history_never_uses_repeated_grep",
@@ -664,7 +712,7 @@
         },
         {
           "name": "git_history_cache_invalidation",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -731,130 +779,88 @@
       "failed": 0,
       "tests": [
         {
-          "name": "channel_explains_without_padding_the_reply",
-          "passed": true,
-          "passes": 2,
-          "samples": 3
-        },
-        {
-          "name": "channel_preserves_source_punctuation_when_quoting",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "channel_uses_numbered_steps_for_an_ordered_procedure",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "channel_uses_requested_headings_for_distinct_reader_needs",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_answers_a_small_question_at_small_scale",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
           "name": "recovery_answers_the_user_visible_outcome_first",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_distinguishes_operational_anger_from_a_language_failure",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_establishes_that_the_cache_exists",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_honors_a_tldr_size_constraint",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_keeps_a_successful_diagram_when_relationships_need_it",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_names_the_exact_repository_owner",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_preserves_and_defines_a_legitimate_statistical_term",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_preserves_exact_identifiers_despite_jargon_concern",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_rejects_a_table_that_preserves_undefined_concepts",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_reports_current_state_instead_of_process_history",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_resolves_pronouns_and_dependencies",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
-        },
-        {
-          "name": "recovery_stops_repeating_completed_history",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
+          "passed": true
         },
         {
           "name": "recovery_surfaces_the_requested_decision",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
+          "passed": true
         },
         {
-          "name": "recovery_unpacks_an_opaque_noun_stack",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
+          "name": "recovery_reports_current_state_instead_of_process_history",
+          "passed": true
+        },
+        {
+          "name": "recovery_names_the_exact_repository_owner",
+          "passed": true
+        },
+        {
+          "name": "recovery_establishes_that_the_cache_exists",
+          "passed": true
+        },
+        {
+          "name": "recovery_resolves_pronouns_and_dependencies",
+          "passed": true
         },
         {
           "name": "recovery_unpacks_the_test_delivery_flow",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
+          "passed": true
+        },
+        {
+          "name": "recovery_preserves_and_defines_a_legitimate_statistical_term",
+          "passed": true
+        },
+        {
+          "name": "recovery_unpacks_an_opaque_noun_stack",
+          "passed": true
+        },
+        {
+          "name": "recovery_honors_a_tldr_size_constraint",
+          "passed": true
+        },
+        {
+          "name": "recovery_stops_repeating_completed_history",
+          "passed": true
+        },
+        {
+          "name": "recovery_answers_a_small_question_at_small_scale",
+          "passed": true
+        },
+        {
+          "name": "recovery_rejects_a_table_that_preserves_undefined_concepts",
+          "passed": true
         },
         {
           "name": "recovery_uses_a_table_when_exact_mapping_is_the_need",
-          "passed": true,
-          "passes": 3,
-          "samples": 3
+          "passed": true
+        },
+        {
+          "name": "recovery_distinguishes_operational_anger_from_a_language_failure",
+          "passed": true
+        },
+        {
+          "name": "recovery_preserves_exact_identifiers_despite_jargon_concern",
+          "passed": true
+        },
+        {
+          "name": "recovery_keeps_a_successful_diagram_when_relationships_need_it",
+          "passed": true
+        },
+        {
+          "name": "channel_uses_numbered_steps_for_an_ordered_procedure",
+          "passed": true
+        },
+        {
+          "name": "channel_uses_requested_headings_for_distinct_reader_needs",
+          "passed": true
+        },
+        {
+          "name": "channel_explains_without_padding_the_reply",
+          "passed": true
+        },
+        {
+          "name": "channel_preserves_source_punctuation_when_quoting",
+          "passed": true
         }
       ]
     },
@@ -947,8 +953,8 @@
       ]
     },
     "skills/ril/ril": {
-      "passed": 5,
-      "failed": 1,
+      "passed": 6,
+      "failed": 0,
       "tests": [
         {
           "name": "ril_marks_done_only_through_the_cli",
@@ -960,7 +966,7 @@
         },
         {
           "name": "ril_never_annotates_a_capture",
-          "passed": false
+          "passed": true
         },
         {
           "name": "ril_resolves_the_capture_origin",
@@ -975,59 +981,11 @@
           "passed": true
         }
       ]
-    },
-    "subagents": {
-      "passed": 1,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "nix_expert_explains_concepts",
-          "passed": true
-        }
-      ]
-    },
-    "workflow_compliance": {
-      "passed": 6,
-      "failed": 2,
-      "tests": [
-        {
-          "name": "workflow_knows_full_sequence",
-          "passed": true
-        },
-        {
-          "name": "workflow_rebuild_not_just_nix",
-          "passed": true
-        },
-        {
-          "name": "workflow_never_skip_rebuild",
-          "passed": false
-        },
-        {
-          "name": "workflow_respond_only_after_pass",
-          "passed": true
-        },
-        {
-          "name": "workflow_fix_before_responding",
-          "passed": true
-        },
-        {
-          "name": "workflow_fix_downstream_reference_not_shim",
-          "passed": false
-        },
-        {
-          "name": "workflow_change_review_classifies_semantic_risk",
-          "passed": true
-        },
-        {
-          "name": "workflow_review_input_is_unbiased",
-          "passed": true
-        }
-      ]
     }
   },
   "fingerprints": {
     "suite": "08caeea050adb4618cd3fdd3fe0b5acabd86ec18434159db4a9082826ba39b18",
-    "instructions": "e7dc37f34541e6809f334d93a74d27b5fe0434a894486f9835cbc7d4978b4555"
+    "instructions": "003aa57c19af4c881252cca38e02c5eab276dd87f11dabdc55855500534469bb"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
