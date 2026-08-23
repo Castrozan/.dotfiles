@@ -78,24 +78,40 @@ structural patterns.
 ## Verified
 
 Core sits at 4,661 bytes against a 5,000-byte guard with no line over 120 characters. The Nix check for core
-universality passes. Thirty-seven focused unit tests pass across instruction structure, authoring prose, evaluation
-path resolution, context budget, single-home wording, the keyword-bag guard, negative-regex policy, and baseline
-freshness. The evaluation baseline gate passes. A rebuild is green. The deployed core is byte-identical across Claude,
-Codex, and OpenCode, and the generated core skills differ only by one appended newline from the generator. Hermes
-receives canonical core through its managed soul file.
+universality passes. The focused unit suites pass across instruction structure, authoring prose, evaluation path
+resolution, context budget, single-home wording, the keyword-bag guard, negative-regex policy, and baseline freshness.
+The evaluation baseline gate passes. A rebuild is green. The deployed core is byte-identical across Claude, Codex, and
+OpenCode, and the generated core skills differ only by one appended newline from the generator. Hermes receives
+canonical core through its managed soul file.
+
+The post-migration audit that closed the authority half found nothing left to migrate. Every surviving related source
+is a generated copy, scoped repository policy, harness mechanics, or a bounded complement that names the core section
+owning its behavior. The complete no-comments contract occurs in one file.
 
 Pi reads core declaratively, but no host imports its module, so its deployment path is unexercised rather than
 passing. It must not be counted as live evidence.
 
-## The gap
+## The gap, and what closed it
 
-No durable scenario proves that a core rule survives compaction. Every end-to-end scenario in the tree is a
-single-session probe, and none references compaction at all. The only evidence of the required shape was one manual
-run: a fresh session, several non-coding turns, a real native compaction, then an unprompted coding request whose
-artifact came back comment-free with descriptive names and one responsibility. One run, one harness, never automated.
+The gap was that no durable scenario proved a core rule survives compaction. Every end-to-end scenario was a
+single-session probe, and none referenced compaction. The only evidence of the required shape was one manual run, never
+automated. The evaluation and integration suites cannot close this, because they establish short-term instruction
+following, which is why the original regression stayed invisible to them.
 
-The evaluation and integration suites cannot close this. They establish short-term instruction following, which is why
-the original regression stayed invisible to them.
+Two automated scenarios now close it for two harnesses. Each drives a live session through six non-coding turns, a real
+native compaction, and then an unprompted coding request, and grades the artifact rather than the transcript. Both pass
+with no comments in the written file and the file actually changed: the Claude scenario in roughly thirteen minutes,
+the Codex scenario in roughly four.
+
+Compaction is driven per harness rather than by one guessed command. A harness earns a profile only after a live probe
+records six facts: its manual compaction trigger, the marker it prints on success, the marker it prints when it
+declines, the marker it shows while a turn is in flight, whether it blocks on a startup dialog in a fresh workspace and
+how to launch past it, and whether Enter submits typed text or selects a highlighted dialog or palette entry. Every one
+of those facts came from a failure that a guess would have hidden.
+
+OpenCode 1.18.18 is still uncovered and is recorded as a rejection rather than a silence. Its palette exposes no
+compaction command and it compacts only on its own context threshold, so covering it needs a scenario that drives
+context to that threshold, not another typed directive.
 
 ## How the halves meet
 
@@ -115,17 +131,13 @@ the original regression: no comments or docstrings, descriptive names, cohesive 
 
 ## How to continue
 
-The authority half runs the post-migration audit across the core-rule documents, the skills and the chapters they route
-to, the project-context policy files, and the four harness injection paths. Similarity alone never justifies a change;
-each candidate gets a behavior contract and a runtime trace first. The guard and evidence files change only when the
-audit confirms a migration, because they are guards, not the policy owner. Core grows only if the audit proves a
-universal session-long behavior is missing.
+The authority half is closed. It reopens only if a new instruction source starts deciding universal session-long
+behavior on its own, and any such claim needs a behavior contract and a runtime trace before an edit, because
+similarity alone never justifies one. Core grows only when a universal session-long behavior is proven missing.
 
-The evidence half builds the durable post-compaction scenario. The scenario runner already accepts a list of prompts,
-so the missing pieces are a compaction step between turns, enough prior non-coding turns for compaction to have
-something to compact, and coverage through the real session mechanism of each supported harness rather than Claude
-alone.
+The evidence half has one harness left. OpenCode needs a scenario that reaches its automatic compaction threshold
+through ordinary turns, plus the confirmation marker it prints when it compacts, both established live rather than
+assumed. Pi stays an unexercised declarative edge until a host imports its module.
 
-Completion is the intersection. The audit finds no competing or wrong-horizon authority, every confirmed complement
-points to core, deployment parity holds, and the scenario demonstrates that the same canonical behavior survives
-compaction in each live harness.
+Completion is the intersection. Nothing competes with core for authority, every confirmed complement points to it,
+deployment parity holds, and the same canonical behavior is shown to survive compaction in each live harness.
