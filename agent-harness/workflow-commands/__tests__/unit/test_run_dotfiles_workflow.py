@@ -13,6 +13,30 @@ def completed_workflow(stdout: str, stderr: str = "") -> subprocess.CompletedPro
     )
 
 
+def test_workflow_name_comes_from_the_packaged_command(monkeypatch):
+    monkeypatch.setenv(
+        run_dotfiles_workflow.WORKFLOW_NAME_VARIABLE, "dotfiles-housekeeping"
+    )
+
+    assert run_dotfiles_workflow.resolve_workflow_name() == "dotfiles-housekeeping"
+
+
+def test_running_the_script_directly_names_the_packaged_command(monkeypatch):
+    monkeypatch.delenv(run_dotfiles_workflow.WORKFLOW_NAME_VARIABLE, raising=False)
+
+    with pytest.raises(SystemExit) as failure:
+        run_dotfiles_workflow.resolve_workflow_name()
+
+    assert "dotfiles-*" in str(failure.value)
+
+
+def test_help_is_titled_with_the_packaged_command(capsys):
+    with pytest.raises(SystemExit):
+        run_dotfiles_workflow.parse_command_line("dotfiles-change-review", ["--help"])
+
+    assert "usage: dotfiles-change-review" in capsys.readouterr().out
+
+
 def test_slash_command_carries_the_resolved_root():
     slash_command = run_dotfiles_workflow.build_slash_command(
         "dotfiles-change-review", Path("/checkouts/dotfiles"), ""

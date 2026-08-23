@@ -16,7 +16,8 @@ let
     workflowName:
     pkgs.writeShellScriptBin workflowName ''
       export PATH="${unwrappedClaudeRuntimePath}:$PATH"
-      exec ${pkgs.python312}/bin/python3 ${workflowCommandDirectory}/run_dotfiles_workflow.py ${workflowName} "$@"
+      export DOTFILES_WORKFLOW_NAME="${workflowName}"
+      exec ${pkgs.python312}/bin/python3 ${workflowCommandDirectory}/run_dotfiles_workflow.py "$@"
     '';
 in
 {

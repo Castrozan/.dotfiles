@@ -1,10 +1,12 @@
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
+WORKFLOW_NAME_VARIABLE = "DOTFILES_WORKFLOW_NAME"
 WORKFLOW_TIMEOUT_SECONDS = 1800
 VERBATIM_RELAY_INSTRUCTION = (
     "Return the workflow's report as your entire final message, verbatim. "
@@ -12,13 +14,25 @@ VERBATIM_RELAY_INSTRUCTION = (
 )
 
 
-def parse_command_line(command_line_arguments: list[str]) -> argparse.Namespace:
+def resolve_workflow_name() -> str:
+    workflow_name = os.environ.get(WORKFLOW_NAME_VARIABLE, "")
+    if not workflow_name:
+        raise SystemExit(
+            f"{WORKFLOW_NAME_VARIABLE} is unset: run the packaged dotfiles-* command "
+            "rather than this script"
+        )
+    return workflow_name
+
+
+def parse_command_line(
+    workflow_name: str, command_line_arguments: list[str]
+) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
+        prog=workflow_name,
         description=(
             "Run a dotfiles workflow from any agent harness and print its report."
-        )
+        ),
     )
-    parser.add_argument("workflow_name")
     parser.add_argument(
         "--root",
         default="",
@@ -108,11 +122,10 @@ def extract_report(completed_workflow: subprocess.CompletedProcess) -> str:
 
 
 def main() -> int:
-    arguments = parse_command_line(sys.argv[1:])
+    workflow_name = resolve_workflow_name()
+    arguments = parse_command_line(workflow_name, sys.argv[1:])
     repository_root = resolve_repository_root(arguments.root)
-    slash_command = build_slash_command(
-        arguments.workflow_name, repository_root, arguments.ref
-    )
+    slash_command = build_slash_command(workflow_name, repository_root, arguments.ref)
     claude_binary = resolve_claude_binary()
     try:
         completed_workflow = run_workflow(claude_binary, slash_command, repository_root)
