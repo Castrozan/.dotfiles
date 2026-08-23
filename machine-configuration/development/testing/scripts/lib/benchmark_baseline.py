@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -46,30 +46,18 @@ def validate_tracked_baseline(
     return BaselineValidation(document, age_days, failures)
 
 
-def baseline_report_lines(title: str, validation: BaselineValidation) -> list[str]:
-    document = validation.document
-    separator = "=" * 60
-    age = "unknown" if validation.age_days is None else f"{validation.age_days} days"
-    host = document.get("host", "unknown")
-    configuration = document.get("config", "unknown")
-    lines = [
-        separator,
-        title,
-        separator,
-        f"  Generated: {document.get('generated_at', 'unknown')}",
-        f"  Age: {age}",
-        f"  Commit: {document.get('git_commit', 'unknown')}",
-        f"  Host: {host}/{configuration}",
-        f"  Threshold: {document.get('threshold_percent', '?')}%",
-    ]
-    if validation.failures:
-        lines.append("")
-        lines.append(f"FAILED ({len(validation.failures)} issues):")
-        lines.extend(f"  - {failure}" for failure in validation.failures)
-    return lines
+def with_freshness_required(
+    validation: BaselineValidation,
+    save_baseline_command: str,
+) -> BaselineValidation:
+    return replace(
+        validation,
+        failures=validation.failures
+        + _freshness_failures(validation.age_days, save_baseline_command),
+    )
 
 
-def freshness_failures(
+def _freshness_failures(
     age_days: int | None,
     save_baseline_command: str,
 ) -> list[str]:

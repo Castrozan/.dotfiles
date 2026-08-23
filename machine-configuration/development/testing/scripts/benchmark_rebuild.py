@@ -2,10 +2,11 @@ import sys
 from pathlib import Path
 
 from benchmark_baseline import (
-    baseline_report_lines,
     validate_tracked_baseline,
+    with_freshness_required,
     write_baseline,
 )
+from benchmark_report import baseline_report_lines
 from benchmark_core import (
     DOTFILES_DIRECTORY,
     RESULTS_DIRECTORY,
@@ -150,13 +151,15 @@ def save_baseline(
     return True
 
 
-def check_baseline() -> bool:
+def check_baseline(require_fresh: bool) -> bool:
     validation = validate_tracked_baseline(
         BASELINE_PATH,
         "duration_seconds",
         "max_allowed_seconds",
         SAVE_BASELINE_COMMAND,
     )
+    if require_fresh:
+        validation = with_freshness_required(validation, SAVE_BASELINE_COMMAND)
     for line in baseline_report_lines("REBUILD PERFORMANCE BASELINE CHECK", validation):
         print(line)
 
@@ -215,7 +218,7 @@ def print_usage() -> None:
 
 def main() -> None:
     if "--check-baseline" in sys.argv:
-        passed = check_baseline()
+        passed = check_baseline("--require-fresh" in sys.argv)
         raise SystemExit(0 if passed else 1)
 
     results_file = get_results_file_path()

@@ -4,17 +4,16 @@ import shutil
 import subprocess
 import sys
 import time
-from dataclasses import replace
 from pathlib import Path
 
 from benchmark_baseline import (
     BaselineValidation,
-    baseline_report_lines,
     compare_measured_values,
-    freshness_failures,
     validate_tracked_baseline,
+    with_freshness_required,
     write_baseline,
 )
+from benchmark_report import baseline_report_lines
 from benchmark_core import (
     DOTFILES_DIRECTORY,
     RESULTS_DIRECTORY,
@@ -418,8 +417,10 @@ def tracked_baseline_validation() -> BaselineValidation:
     )
 
 
-def check_baseline() -> bool:
+def check_baseline(require_fresh: bool) -> bool:
     validation = tracked_baseline_validation()
+    if require_fresh:
+        validation = with_freshness_required(validation, SAVE_BASELINE_COMMAND)
     for line in baseline_report_lines("DESKTOP PERFORMANCE BASELINE CHECK", validation):
         print(line)
     if validation.failures:
@@ -440,11 +441,9 @@ def check_baseline() -> bool:
 
 
 def compare_latest_to_baseline(results_file: Path) -> bool:
-    validation = tracked_baseline_validation()
-    gated = replace(
-        validation,
-        failures=validation.failures
-        + freshness_failures(validation.age_days, SAVE_BASELINE_COMMAND),
+    gated = with_freshness_required(
+        tracked_baseline_validation(),
+        SAVE_BASELINE_COMMAND,
     )
     for line in baseline_report_lines("DESKTOP PERFORMANCE REGRESSION CHECK", gated):
         print(line)
@@ -514,6 +513,8 @@ def parse_arguments(argv: list[str]) -> tuple[str, int, str | None]:
     if "--save-baseline" in argv:
         return "save-baseline", DEFAULT_ITERATIONS, None
     if "--check-baseline" in argv:
+        if "--require-fresh" in argv:
+            return "check-baseline-fresh", 0, None
         return "check-baseline", 0, None
     if "--compare-latest" in argv:
         return "compare-latest", 0, None
@@ -569,8 +570,8 @@ def print_usage() -> None:
 def main() -> None:
     command, iterations, component = parse_arguments(sys.argv[1:])
 
-    if command == "check-baseline":
-        passed = check_baseline()
+    if command in ("check-baseline", "check-baseline-fresh"):
+        passed = check_baseline(command == "check-baseline-fresh")
         raise SystemExit(0 if passed else 1)
 
     results_file = get_results_file_path()

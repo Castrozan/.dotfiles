@@ -2,17 +2,18 @@
 
 _validate_tracked_baseline_from_source() {
 	local benchmarkSource="$1"
+	shift
 	local capabilityDirectory="$REPO_DIR/machine-configuration/development/testing"
 
 	PYTHONPATH="$capabilityDirectory/scripts/lib${PYTHONPATH:+:$PYTHONPATH}" \
 		DOTFILES_BENCHMARK_CHECKOUT="$REPO_DIR" \
-		python3 "$capabilityDirectory/scripts/$benchmarkSource" --check-baseline
+		python3 "$capabilityDirectory/scripts/$benchmarkSource" --check-baseline "$@"
 }
 
 _run_rebuild_baseline_check() {
 	echo "--- Rebuild Performance Baseline Check ---"
 	local baselineExitCode=0
-	_validate_tracked_baseline_from_source benchmark_rebuild.py || baselineExitCode=$?
+	_validate_tracked_baseline_from_source benchmark_rebuild.py "$@" || baselineExitCode=$?
 	echo ""
 	return "$baselineExitCode"
 }
@@ -20,7 +21,7 @@ _run_rebuild_baseline_check() {
 _run_desktop_baseline_check() {
 	echo "--- Desktop Performance Baseline Check ---"
 	local baselineExitCode=0
-	_validate_tracked_baseline_from_source benchmark_desktop.py || baselineExitCode=$?
+	_validate_tracked_baseline_from_source benchmark_desktop.py "$@" || baselineExitCode=$?
 	echo ""
 	return "$baselineExitCode"
 }
@@ -34,8 +35,8 @@ _run_perf_tier() {
 	fi
 	echo ""
 
-	_run_desktop_baseline_check
-	_run_rebuild_baseline_check
+	_run_desktop_baseline_check --require-fresh
+	_run_rebuild_baseline_check --require-fresh
 
 	echo "--- Shell Benchmarks ---"
 	if command -v benchmark-shell &>/dev/null; then

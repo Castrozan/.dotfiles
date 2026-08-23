@@ -6,10 +6,10 @@ import benchmark_desktop
 import benchmark_rebuild
 from benchmark_baseline import (
     BaselineValidation,
-    baseline_report_lines,
     compare_measured_values,
-    freshness_failures,
+    with_freshness_required,
 )
+from benchmark_report import baseline_report_lines
 
 SAVE_COMMAND = "benchmark-desktop --save-baseline"
 GENERATED_AT = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -33,23 +33,29 @@ def _header_lines(module, document: dict, tmp_path, capsys) -> list[str]:
     baseline_file = tmp_path / f"{module.__name__}.json"
     baseline_file.write_text(json.dumps(document))
     with patch.object(module, "BASELINE_PATH", baseline_file):
-        module.check_baseline()
+        module.check_baseline(False)
     return capsys.readouterr().out.splitlines()[:8]
 
 
-class TestFreshnessFailures:
+class TestFreshnessRequirement:
     def test_accepts_an_age_inside_the_window(self):
-        assert freshness_failures(0, SAVE_COMMAND) == []
+        gated = with_freshness_required(_validation([], age_days=0), SAVE_COMMAND)
+        assert gated.failures == []
 
     def test_rejects_an_age_past_the_window(self):
-        failures = freshness_failures(45, SAVE_COMMAND)
-        assert "45 days old" in failures[0]
-        assert SAVE_COMMAND in failures[0]
+        gated = with_freshness_required(_validation([], age_days=45), SAVE_COMMAND)
+        assert "45 days old" in gated.failures[0]
+        assert SAVE_COMMAND in gated.failures[0]
 
     def test_rejects_an_unusable_timestamp(self):
-        failures = freshness_failures(None, SAVE_COMMAND)
-        assert "generated_at" in failures[0]
-        assert SAVE_COMMAND in failures[0]
+        gated = with_freshness_required(_validation([], age_days=None), SAVE_COMMAND)
+        assert "generated_at" in gated.failures[0]
+        assert SAVE_COMMAND in gated.failures[0]
+
+    def test_keeps_the_failures_the_validation_already_carried(self):
+        gated = with_freshness_required(_validation(["structural"], 45), SAVE_COMMAND)
+        assert gated.failures[0] == "structural"
+        assert len(gated.failures) == 2
 
 
 class TestBaselineReportLines:

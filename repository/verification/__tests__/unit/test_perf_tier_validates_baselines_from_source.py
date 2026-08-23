@@ -25,6 +25,8 @@ BASELINE_FILE_NAME_PER_TIER_FUNCTION = {
     "_run_desktop_baseline_check": "baseline-desktop.json",
 }
 
+STALE_GENERATED_AT = "2024-01-01T00:00:00+00:00"
+
 MEASUREMENT_PER_BASELINE_FILE_NAME = {
     "baseline.json": {"eval": {"duration_seconds": 2.0, "max_allowed_seconds": 3.0}},
     "baseline-desktop.json": {"tmux": {"avg_ms": 20.0, "max_allowed_ms": 40.0}},
@@ -82,13 +84,16 @@ def _checkout_with_baseline(
 
 
 def _run_tier_function(
-    tier_function: str, checkout_root: pathlib.Path, bin_directory: pathlib.Path
+    tier_function: str,
+    checkout_root: pathlib.Path,
+    bin_directory: pathlib.Path,
+    tier_arguments: str = "",
 ):
     return subprocess.run(
         [
             _resolve_modern_bash_absolute_path(),
             "-c",
-            f"source {PERF_TIER_LIBRARY}\n{tier_function}\n",
+            f"source {PERF_TIER_LIBRARY}\n{tier_function} {tier_arguments}\n",
         ],
         env={
             "PATH": str(bin_directory),
@@ -152,4 +157,39 @@ def test_the_check_propagates_an_invalid_source_baseline_as_a_failure(
     assert "Baseline has no recorded host." in completed.stdout, (
         "the failure must name what is wrong with the tracked baseline.\n"
         f"stdout: {completed.stdout}\nstderr: {completed.stderr}"
+    )
+
+
+@pytest.mark.parametrize(
+    ("tier_function", "baseline_file_name"),
+    sorted(BASELINE_FILE_NAME_PER_TIER_FUNCTION.items()),
+)
+def test_a_stale_baseline_fails_only_where_it_can_be_recaptured(
+    tmp_path, tier_function, baseline_file_name
+):
+    bin_directory = _command_poor_bin_directory(tmp_path)
+    checkout_root = _checkout_with_baseline(
+        tmp_path,
+        baseline_file_name,
+        _tracked_baseline(baseline_file_name, generated_at=STALE_GENERATED_AT),
+    )
+
+    integration = _run_tier_function(tier_function, checkout_root, bin_directory)
+    owning_host = _run_tier_function(
+        tier_function, checkout_root, bin_directory, "--require-fresh"
+    )
+
+    assert integration.returncode == 0, (
+        "continuous integration can never recapture a host measurement, so a stale "
+        "tracked baseline must not turn the repository red on a calendar.\n"
+        f"stdout: {integration.stdout}\nstderr: {integration.stderr}"
+    )
+    assert owning_host.returncode != 0, (
+        "the performance tier runs on the owning host, the one place that can "
+        "recapture the measurement, so staleness must fail there.\n"
+        f"stdout: {owning_host.stdout}\nstderr: {owning_host.stderr}"
+    )
+    assert "days old" in owning_host.stdout, (
+        "the failure must name the age that made the tracked baseline unusable.\n"
+        f"stdout: {owning_host.stdout}\nstderr: {owning_host.stderr}"
     )
