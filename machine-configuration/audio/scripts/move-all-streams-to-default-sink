@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+default_sink_index=$(pactl list sinks short | awk -v name="$(pactl get-default-sink)" '$2 == name { print $1 }')
+[ -z "$default_sink_index" ] && exit 0
+pactl list sink-inputs short | awk '{ print $1 }' | while read -r stream_index; do
+	pactl move-sink-input "$stream_index" "$default_sink_index" 2>/dev/null || true
+done

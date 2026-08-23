@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+pactl subscribe | while read -r line; do
+	if echo "$line" | grep -q "'new' on sink"; then
+		sink_index=$(echo "$line" | grep -oP '#\K\d+')
+		sink_name=$(pactl list sinks short | awk -v idx="$sink_index" '$1 == idx { print $2 }')
+		if [[ "$sink_name" == bluez_output.* ]]; then
+			pactl set-default-sink "$sink_name"
+			sleep 0.5
+			move-all-streams-to-default-sink
+		fi
+	elif echo "$line" | grep -q "'remove' on sink"; then
+		sleep 0.5
+		move-all-streams-to-default-sink
+	fi
+done

@@ -6,6 +6,22 @@
 }:
 let
   btPolicy = import ./bluetooth-policy.nix;
+
+  moveAllStreamsToDefaultSink = pkgs.writeShellScriptBin "move-all-streams-to-default-sink" (
+    builtins.readFile ./scripts/move-all-streams-to-default-sink
+  );
+
+  bluetoothAudioAutoswitch = pkgs.writeShellScriptBin "bluetooth-audio-autoswitch" (
+    builtins.readFile ./scripts/bluetooth-audio-autoswitch
+  );
+
+  bluetoothAudioAutoswitchToolPath = lib.makeBinPath [
+    pkgs.pulseaudio
+    pkgs.gawk
+    pkgs.gnugrep
+    pkgs.coreutils
+    moveAllStreamsToDefaultSink
+  ];
 in
 {
   imports = [ ./audio-scripts-home-manager.nix ];
@@ -38,34 +54,8 @@ in
       After = [ "pipewire-pulse.service" ];
     };
     Service = {
-      ExecStart =
-        let
-          moveAllStreamsToDefaultSink = pkgs.writeShellScript "move-all-streams-to-default-sink" ''
-            default_sink_index=$(${pkgs.pulseaudio}/bin/pactl list sinks short | ${pkgs.gawk}/bin/awk -v name="$(${pkgs.pulseaudio}/bin/pactl get-default-sink)" '$2 == name { print $1 }')
-            [ -z "$default_sink_index" ] && exit 0
-            ${pkgs.pulseaudio}/bin/pactl list sink-inputs short | ${pkgs.gawk}/bin/awk '{ print $1 }' | while read -r stream_index; do
-              ${pkgs.pulseaudio}/bin/pactl move-sink-input "$stream_index" "$default_sink_index" 2>/dev/null || true
-            done
-          '';
-
-          script = pkgs.writeShellScript "bluetooth-audio-autoswitch" ''
-            ${pkgs.pulseaudio}/bin/pactl subscribe | while read -r line; do
-              if echo "$line" | ${pkgs.gnugrep}/bin/grep -q "'new' on sink"; then
-                sink_index=$(echo "$line" | ${pkgs.gnugrep}/bin/grep -oP '#\K\d+')
-                sink_name=$(${pkgs.pulseaudio}/bin/pactl list sinks short | ${pkgs.gawk}/bin/awk -v idx="$sink_index" '$1 == idx { print $2 }')
-                if [[ "$sink_name" == bluez_output.* ]]; then
-                  ${pkgs.pulseaudio}/bin/pactl set-default-sink "$sink_name"
-                  sleep 0.5
-                  ${moveAllStreamsToDefaultSink}
-                fi
-              elif echo "$line" | ${pkgs.gnugrep}/bin/grep -q "'remove' on sink"; then
-                sleep 0.5
-                ${moveAllStreamsToDefaultSink}
-              fi
-            done
-          '';
-        in
-        "${script}";
+      Environment = "PATH=${bluetoothAudioAutoswitchToolPath}";
+      ExecStart = "${bluetoothAudioAutoswitch}/bin/bluetooth-audio-autoswitch";
       Restart = "always";
       RestartSec = 5;
     };
