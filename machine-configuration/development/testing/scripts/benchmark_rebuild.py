@@ -1,31 +1,29 @@
-import json
-import subprocess
 import sys
-import time
-from datetime import datetime, timezone
 from pathlib import Path
 
-DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
-BASELINE_PATH = DOTFILES_DIRECTORY / "home" / "base" / "testing" / "baseline.json"
-RESULTS_DIRECTORY = Path.home() / ".local" / "share" / "dotfiles-benchmarks"
+from benchmark_baseline import validate_tracked_baseline, write_baseline
+from benchmark_core import (
+    DOTFILES_DIRECTORY,
+    RESULTS_DIRECTORY,
+    TRACKED_BASELINE_DIRECTORY,
+    CommandMeasurement,
+    append_result_row,
+    ensure_results_file_exists,
+    get_current_git_short_commit,
+    measure_shell_command,
+    utc_baseline_timestamp,
+)
+
+BASELINE_PATH = TRACKED_BASELINE_DIRECTORY / "baseline.json"
 RESULTS_FILE_NAME = "rebuild-times.csv"
 CSV_HEADER = "timestamp,type,config,duration_seconds,commit"
+SAVE_BASELINE_COMMAND = "benchmark-rebuild --save-baseline"
 
-MAXIMUM_BASELINE_AGE_DAYS = 30
 REGRESSION_THRESHOLD_PERCENT = 150
-
-
-def ensure_results_directory_exists() -> None:
-    RESULTS_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 
 def get_results_file_path() -> Path:
     return RESULTS_DIRECTORY / RESULTS_FILE_NAME
-
-
-def initialize_csv_if_needed(results_file: Path) -> None:
-    if not results_file.exists():
-        results_file.write_text(CSV_HEADER + "\n")
 
 
 def detect_configuration_type() -> str:
@@ -42,24 +40,6 @@ def get_flake_output_for_configuration(
     return "darwinConfigurations.kira.system"
 
 
-def get_current_git_short_commit() -> str:
-    result = subprocess.run(
-        [
-            "git",
-            "-C",
-            str(DOTFILES_DIRECTORY),
-            "rev-parse",
-            "--short",
-            "HEAD",
-        ],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode == 0:
-        return result.stdout.strip()
-    return "unknown"
-
-
 def get_benchmark_commands(
     configuration_type: str,
 ) -> dict[str, str]:
@@ -73,18 +53,6 @@ def get_benchmark_commands(
     }
 
 
-def run_benchmark_command(command: str) -> float:
-    start_time = time.monotonic()
-    subprocess.run(
-        command,
-        shell=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    end_time = time.monotonic()
-    return end_time - start_time
-
-
 def record_benchmark_result(
     results_file: Path,
     benchmark_type: str,
@@ -92,13 +60,15 @@ def record_benchmark_result(
     duration_seconds: float,
     commit_hash: str,
 ) -> None:
-    timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
-    line = (
-        f"{timestamp},{benchmark_type},{configuration_type},"
-        f"{duration_seconds:.3f},{commit_hash}\n"
+    append_result_row(
+        results_file,
+        [
+            benchmark_type,
+            configuration_type,
+            f"{duration_seconds:.3f}",
+            commit_hash,
+        ],
     )
-    with open(results_file, "a") as file_handle:
-        file_handle.write(line)
 
 
 def run_and_record_benchmark(
@@ -106,29 +76,35 @@ def run_and_record_benchmark(
     command: str,
     configuration_type: str,
     results_file: Path,
-) -> float:
-    commit_hash = get_current_git_short_commit()
+) -> CommandMeasurement:
     print(f"Benchmarking: {benchmark_type} ({configuration_type})")
-    duration = run_benchmark_command(command)
+    measurement = measure_shell_command(command)
+
+    if not measurement.succeeded:
+        print(
+            f"  Command failed after {measurement.elapsed_seconds:.2f}s; "
+            "no result recorded"
+        )
+        return measurement
+
     record_benchmark_result(
         results_file,
         benchmark_type,
         configuration_type,
-        duration,
-        commit_hash,
+        measurement.elapsed_seconds,
+        get_current_git_short_commit(),
     )
-    print(f"  Duration: {duration:.2f}s")
-    return duration
+    print(f"  Duration: {measurement.elapsed_seconds:.2f}s")
+    return measurement
 
 
 def build_baseline_from_measurements(
     measurements: dict[str, float],
     configuration_type: str,
 ) -> dict:
-    commit_hash = get_current_git_short_commit()
     return {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": commit_hash,
+        "generated_at": utc_baseline_timestamp(),
+        "git_commit": get_current_git_short_commit(),
         "config": configuration_type,
         "threshold_percent": REGRESSION_THRESHOLD_PERCENT,
         "measurements": {
@@ -148,21 +124,22 @@ def save_baseline(
     benchmark_commands: dict[str, str],
     configuration_type: str,
     results_file: Path,
-) -> None:
+) -> bool:
     measurements: dict[str, float] = {}
     for benchmark_type in ("eval", "rebuild"):
-        duration = run_and_record_benchmark(
+        measurement = run_and_record_benchmark(
             benchmark_type,
             benchmark_commands[benchmark_type],
             configuration_type,
             results_file,
         )
-        measurements[benchmark_type] = duration
+        if not measurement.succeeded:
+            print(f"\nBaseline not saved: the {benchmark_type} command failed.")
+            return False
+        measurements[benchmark_type] = measurement.elapsed_seconds
 
     baseline = build_baseline_from_measurements(measurements, configuration_type)
-    with open(BASELINE_PATH, "w") as f:
-        json.dump(baseline, f, indent=2)
-        f.write("\n")
+    write_baseline(BASELINE_PATH, baseline)
 
     print(f"\nBaseline saved to {BASELINE_PATH}")
     print(f"  Commit: {baseline['git_commit']}")
@@ -172,61 +149,46 @@ def save_baseline(
             f"  {name}: {data['duration_seconds']:.1f}s "
             f"(max {data['max_allowed_seconds']:.1f}s)"
         )
+    return True
 
 
 def check_baseline() -> bool:
-    if not BASELINE_PATH.exists():
-        print(
-            "FAIL: No baseline file found at "
-            f"{BASELINE_PATH.relative_to(DOTFILES_DIRECTORY)}"
-        )
-        print("  Run 'benchmark-rebuild --save-baseline' locally to generate it.")
-        return False
-
-    with open(BASELINE_PATH) as f:
-        baseline = json.load(f)
-
-    failures: list[str] = []
-
-    generated_at = datetime.fromisoformat(baseline["generated_at"])
-    age_days = (datetime.now(timezone.utc) - generated_at).days
-    if age_days > MAXIMUM_BASELINE_AGE_DAYS:
-        failures.append(
-            f"Baseline is {age_days} days old "
-            f"(max {MAXIMUM_BASELINE_AGE_DAYS}). "
-            f"Re-run 'benchmark-rebuild --save-baseline'."
-        )
-
-    measurements = baseline.get("measurements", {})
-    if not measurements:
-        failures.append("Baseline has no measurements.")
-
-    for name, data in measurements.items():
-        max_allowed = data.get("max_allowed_seconds", 0)
-        if max_allowed <= 0:
-            failures.append(f"{name}: invalid max_allowed_seconds")
+    validation = validate_tracked_baseline(
+        BASELINE_PATH,
+        "duration_seconds",
+        "max_allowed_seconds",
+        SAVE_BASELINE_COMMAND,
+    )
+    baseline = validation.document
 
     print("=" * 60)
     print("REBUILD PERFORMANCE BASELINE CHECK")
     print("=" * 60)
-    print(f"  Generated: {baseline['generated_at']}")
-    print(f"  Age: {age_days} days")
+    print(f"  Generated: {baseline.get('generated_at', 'unknown')}")
+    print(f"  Age: {_describe_age(validation.age_days)}")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
     print(f"  Threshold: {baseline.get('threshold_percent', '?')}%")
-    for name, data in measurements.items():
+
+    if validation.failures:
+        print(f"\nFAILED ({len(validation.failures)} issues):")
+        for failure in validation.failures:
+            print(f"  - {failure}")
+        return False
+
+    for name, data in baseline["measurements"].items():
         print(
             f"  {name}: {data['duration_seconds']:.1f}s "
             f"(max {data['max_allowed_seconds']:.1f}s)"
         )
 
-    if failures:
-        print(f"\nFAILED ({len(failures)} issues):")
-        for failure in failures:
-            print(f"  - {failure}")
-        return False
-
-    print("\nPASSED: Baseline meets all thresholds.")
+    print("\nPASSED: Baseline is valid.")
     return True
+
+
+def _describe_age(age_days: int | None) -> str:
+    if age_days is None:
+        return "unknown"
+    return f"{age_days} days"
 
 
 def print_recent_results(results_file: Path) -> None:
@@ -316,14 +278,14 @@ def main() -> None:
         if configuration_type == "auto":
             configuration_type = detect_configuration_type()
         results_file = get_results_file_path()
-        ensure_results_directory_exists()
-        initialize_csv_if_needed(results_file)
+        ensure_results_file_exists(results_file, CSV_HEADER)
         benchmark_commands = get_benchmark_commands(configuration_type)
-        save_baseline(
+        if not save_baseline(
             benchmark_commands,
             configuration_type,
             results_file,
-        )
+        ):
+            raise SystemExit(1)
         return
 
     if "--check-baseline" in sys.argv:
@@ -337,8 +299,7 @@ def main() -> None:
         configuration_type = detect_configuration_type()
 
     results_file = get_results_file_path()
-    ensure_results_directory_exists()
-    initialize_csv_if_needed(results_file)
+    ensure_results_file_exists(results_file, CSV_HEADER)
 
     benchmark_commands = get_benchmark_commands(configuration_type)
 

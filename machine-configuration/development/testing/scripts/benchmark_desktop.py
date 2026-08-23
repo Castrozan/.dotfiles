@@ -4,63 +4,61 @@ import shutil
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from dataclasses import dataclass
 from pathlib import Path
 
-DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
-RESULTS_DIRECTORY = Path.home() / ".local" / "share" / "dotfiles-benchmarks"
+from benchmark_baseline import validate_tracked_baseline, write_baseline
+from benchmark_core import (
+    DOTFILES_DIRECTORY,
+    RESULTS_DIRECTORY,
+    TRACKED_BASELINE_DIRECTORY,
+    CommandMeasurement,
+    append_result_row,
+    ensure_results_file_exists,
+    get_current_git_short_commit,
+    measure_command,
+    unmeasurable_command,
+    utc_baseline_timestamp,
+)
+
 RESULTS_FILE_NAME = "desktop-times.csv"
 CSV_HEADER = "timestamp,component,avg_ms,min_ms,max_ms,iterations"
 
-BASELINE_PATH = (
-    DOTFILES_DIRECTORY / "home" / "base" / "testing" / "baseline-desktop.json"
-)
+BASELINE_PATH = TRACKED_BASELINE_DIRECTORY / "baseline-desktop.json"
+SAVE_BASELINE_COMMAND = "benchmark-desktop --save-baseline"
 
 DEFAULT_ITERATIONS = 5
 REGRESSION_THRESHOLD_PERCENT = 200
-MAXIMUM_BASELINE_AGE_DAYS = 30
+
+DEFAULT_COMMAND_TIMEOUT_SECONDS = 10.0
+QUICKSHELL_TIMEOUT_SECONDS = 5.0
+QUICKSHELL_SETTLE_SECONDS = 0.15
+WINDOW_SWITCHER_SETTLE_SECONDS = 0.1
 
 QS_BAR_PATH = str(DOTFILES_DIRECTORY / ".config" / "quickshell" / "bar")
+
+
+@dataclass(frozen=True)
+class BaselineComparison:
+    regression_messages: list[str]
+    missing_component_names: list[str]
 
 
 def is_hyprland_running() -> bool:
     return bool(os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"))
 
 
-def ensure_results_directory_exists() -> None:
-    RESULTS_DIRECTORY.mkdir(parents=True, exist_ok=True)
-
-
 def get_results_file_path() -> Path:
     return RESULTS_DIRECTORY / RESULTS_FILE_NAME
 
 
-def initialize_csv_if_needed(results_file: Path) -> None:
-    if not results_file.exists():
-        results_file.write_text(CSV_HEADER + "\n")
-
-
-def run_timed(args: list[str], timeout: float = 10.0) -> float:
-    start = time.perf_counter()
+def run_cleanup_command(arguments: list[str], timeout_seconds: float | None) -> None:
     subprocess.run(
-        args,
+        arguments,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
-        timeout=timeout,
+        timeout=timeout_seconds,
     )
-    return (time.perf_counter() - start) * 1000
-
-
-def run_timed_shell(command: str, timeout: float = 10.0) -> float:
-    start = time.perf_counter()
-    subprocess.run(
-        command,
-        shell=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=timeout,
-    )
-    return (time.perf_counter() - start) * 1000
 
 
 def measure_iterations(
@@ -71,10 +69,11 @@ def measure_iterations(
     times: list[float] = []
     for _ in range(iterations):
         try:
-            elapsed = measure_fn()
-            times.append(elapsed)
+            measurement = measure_fn()
         except (subprocess.TimeoutExpired, subprocess.CalledProcessError, OSError):
-            pass
+            measurement = unmeasurable_command()
+        if measurement.succeeded:
+            times.append(measurement.elapsed_seconds * 1000)
         print(".", end="", flush=True)
     print()
 
@@ -91,208 +90,177 @@ def measure_iterations(
     }
 
 
-def bench_hyprctl_ipc() -> float:
-    return run_timed(["hyprctl", "version"])
+def quickshell_bar_call(target: str, action: str) -> list[str]:
+    return ["qs", "-p", QS_BAR_PATH, "ipc", "call", target, action]
 
 
-def bench_hyprctl_clients() -> float:
-    return run_timed(["hyprctl", "clients", "-j"])
+def quickshell_config_call(
+    configuration: str,
+    target: str,
+    action: str,
+) -> list[str]:
+    return ["qs", "-c", configuration, "ipc", "call", target, action]
 
 
-def bench_workspace_switch() -> float:
-    current = json.loads(
-        subprocess.run(
-            ["hyprctl", "activeworkspace", "-j"],
-            capture_output=True,
-            text=True,
-        ).stdout
-    )["id"]
+def measure_quickshell_toggle(
+    open_arguments: list[str],
+    close_arguments: list[str],
+    settle_seconds: float,
+) -> CommandMeasurement:
+    measurement = measure_command(
+        open_arguments,
+        timeout_seconds=QUICKSHELL_TIMEOUT_SECONDS,
+    )
+    time.sleep(settle_seconds)
+    run_cleanup_command(close_arguments, QUICKSHELL_TIMEOUT_SECONDS)
+    return measurement
+
+
+def measure_process_launch(
+    arguments: list[str],
+    settle_seconds: float,
+    terminate_timeout_seconds: float,
+) -> CommandMeasurement:
+    start_time = time.perf_counter()
+    process = subprocess.Popen(
+        arguments,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    time.sleep(settle_seconds)
+    elapsed_seconds = time.perf_counter() - start_time
+    early_exit_status = process.poll()
+    process.terminate()
+    process.wait(timeout=terminate_timeout_seconds)
+    return CommandMeasurement(
+        succeeded=early_exit_status in (None, 0),
+        elapsed_seconds=elapsed_seconds,
+    )
+
+
+def bench_hyprctl_ipc() -> CommandMeasurement:
+    return measure_command(
+        ["hyprctl", "version"],
+        timeout_seconds=DEFAULT_COMMAND_TIMEOUT_SECONDS,
+    )
+
+
+def bench_hyprctl_clients() -> CommandMeasurement:
+    return measure_command(
+        ["hyprctl", "clients", "-j"],
+        timeout_seconds=DEFAULT_COMMAND_TIMEOUT_SECONDS,
+    )
+
+
+def bench_workspace_switch() -> CommandMeasurement:
+    active_workspace = subprocess.run(
+        ["hyprctl", "activeworkspace", "-j"],
+        capture_output=True,
+        text=True,
+    )
+    if active_workspace.returncode != 0:
+        return unmeasurable_command()
+
+    current = json.loads(active_workspace.stdout)["id"]
     target = current + 1 if current < 10 else current - 1
-    elapsed = run_timed(["hyprctl", "dispatch", "workspace", str(target)])
-    subprocess.run(
-        ["hyprctl", "dispatch", "workspace", str(current)],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+    measurement = measure_command(
+        ["hyprctl", "dispatch", "workspace", str(target)],
+        timeout_seconds=DEFAULT_COMMAND_TIMEOUT_SECONDS,
     )
-    return elapsed
+    run_cleanup_command(["hyprctl", "dispatch", "workspace", str(current)], None)
+    return measurement
 
 
-def bench_window_switcher() -> float:
-    start = time.perf_counter()
-    subprocess.run(
-        ["qs", "-c", "switcher", "ipc", "call", "switcher", "open"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+def bench_window_switcher() -> CommandMeasurement:
+    return measure_quickshell_toggle(
+        quickshell_config_call("switcher", "switcher", "open"),
+        quickshell_config_call("switcher", "switcher", "cancel"),
+        WINDOW_SWITCHER_SETTLE_SECONDS,
     )
-    elapsed = (time.perf_counter() - start) * 1000
-    time.sleep(0.1)
-    subprocess.run(
-        ["qs", "-c", "switcher", "ipc", "call", "switcher", "cancel"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+
+
+def bench_launcher_qs() -> CommandMeasurement:
+    return measure_quickshell_toggle(
+        quickshell_bar_call("launcher", "toggle"),
+        quickshell_bar_call("launcher", "toggle"),
+        QUICKSHELL_SETTLE_SECONDS,
     )
-    return elapsed
 
 
-def bench_launcher_qs() -> float:
-    start = time.perf_counter()
-    subprocess.run(
-        ["qs", "-p", QS_BAR_PATH, "ipc", "call", "launcher", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+def bench_dashboard() -> CommandMeasurement:
+    return measure_quickshell_toggle(
+        quickshell_bar_call("dashboard", "toggle"),
+        quickshell_bar_call("dashboard", "toggle"),
+        QUICKSHELL_SETTLE_SECONDS,
     )
-    elapsed = (time.perf_counter() - start) * 1000
-    time.sleep(0.15)
-    subprocess.run(
-        ["qs", "-p", QS_BAR_PATH, "ipc", "call", "launcher", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+
+
+def bench_sidebar() -> CommandMeasurement:
+    return measure_quickshell_toggle(
+        quickshell_bar_call("sidebar", "toggle"),
+        quickshell_bar_call("sidebar", "toggle"),
+        QUICKSHELL_SETTLE_SECONDS,
     )
-    return elapsed
 
 
-def bench_dashboard() -> float:
-    start = time.perf_counter()
-    subprocess.run(
-        ["qs", "-p", QS_BAR_PATH, "ipc", "call", "dashboard", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+def bench_workspace_overview() -> CommandMeasurement:
+    return measure_quickshell_toggle(
+        quickshell_config_call("overview", "overview", "toggle"),
+        quickshell_config_call("overview", "overview", "toggle"),
+        QUICKSHELL_SETTLE_SECONDS,
     )
-    elapsed = (time.perf_counter() - start) * 1000
-    time.sleep(0.15)
-    subprocess.run(
-        ["qs", "-p", QS_BAR_PATH, "ipc", "call", "dashboard", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+
+
+def bench_volume_control() -> CommandMeasurement:
+    measurement = measure_command(
+        ["volume", "--inc"],
+        timeout_seconds=DEFAULT_COMMAND_TIMEOUT_SECONDS,
     )
-    return elapsed
+    run_cleanup_command(["volume", "--dec"], None)
+    return measurement
 
 
-def bench_sidebar() -> float:
-    start = time.perf_counter()
-    subprocess.run(
-        ["qs", "-p", QS_BAR_PATH, "ipc", "call", "sidebar", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
-    )
-    elapsed = (time.perf_counter() - start) * 1000
-    time.sleep(0.15)
-    subprocess.run(
-        ["qs", "-p", QS_BAR_PATH, "ipc", "call", "sidebar", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
-    )
-    return elapsed
-
-
-def bench_workspace_overview() -> float:
-    start = time.perf_counter()
-    subprocess.run(
-        ["qs", "-c", "overview", "ipc", "call", "overview", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
-    )
-    elapsed = (time.perf_counter() - start) * 1000
-    time.sleep(0.15)
-    subprocess.run(
-        ["qs", "-c", "overview", "ipc", "call", "overview", "toggle"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
-    )
-    return elapsed
-
-
-def bench_volume_control() -> float:
-    elapsed = run_timed(["volume", "--inc"])
-    subprocess.run(
-        ["volume", "--dec"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    return elapsed
-
-
-def bench_fuzzel_launch() -> float:
+def bench_fuzzel_launch() -> CommandMeasurement:
     if not shutil.which("fuzzel"):
-        return -1
-    start = time.perf_counter()
-    proc = subprocess.Popen(
-        ["fuzzel"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    time.sleep(0.3)
-    elapsed = (time.perf_counter() - start) * 1000
-    proc.terminate()
-    proc.wait(timeout=3)
-    return elapsed
+        return unmeasurable_command()
+    return measure_process_launch(["fuzzel"], 0.3, 3)
 
 
-def bench_wezterm_launch() -> float:
-    start = time.perf_counter()
-    proc = subprocess.Popen(
+def bench_wezterm_launch() -> CommandMeasurement:
+    measurement = measure_process_launch(
         ["wezterm", "start", "--", "sleep", "0.5"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        1.5,
+        5,
     )
-    time.sleep(1.5)
-    elapsed = (time.perf_counter() - start) * 1000
-    proc.terminate()
-    proc.wait(timeout=5)
     time.sleep(0.3)
-    return elapsed
+    return measurement
 
 
-def bench_tmux_new_session() -> float:
+def bench_tmux_new_session() -> CommandMeasurement:
     session_name = "_bench_perf_test"
-    start = time.perf_counter()
-    subprocess.run(
+    measurement = measure_command(
         ["tmux", "new-session", "-d", "-s", session_name],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+        timeout_seconds=QUICKSHELL_TIMEOUT_SECONDS,
     )
-    elapsed = (time.perf_counter() - start) * 1000
-    subprocess.run(
-        ["tmux", "kill-session", "-t", session_name],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    return elapsed
+    run_cleanup_command(["tmux", "kill-session", "-t", session_name], None)
+    return measurement
 
 
-def bench_tmux_split() -> float:
+def bench_tmux_split() -> CommandMeasurement:
     session_name = "_bench_perf_split"
-    subprocess.run(
+    started = measure_command(
         ["tmux", "new-session", "-d", "-s", session_name],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+        timeout_seconds=QUICKSHELL_TIMEOUT_SECONDS,
     )
-    start = time.perf_counter()
-    subprocess.run(
+    if not started.succeeded:
+        return unmeasurable_command()
+
+    measurement = measure_command(
         ["tmux", "split-window", "-t", session_name],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        timeout=5,
+        timeout_seconds=QUICKSHELL_TIMEOUT_SECONDS,
     )
-    elapsed = (time.perf_counter() - start) * 1000
-    subprocess.run(
-        ["tmux", "kill-session", "-t", session_name],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    return elapsed
+    run_cleanup_command(["tmux", "kill-session", "-t", session_name], None)
+    return measurement
 
 
 BENCHMARKS_HYPRLAND = [
@@ -331,15 +299,19 @@ def record_result(
     max_ms: float,
     iterations: int,
 ) -> None:
-    timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
-    line = f"{timestamp},{name},{avg_ms:.1f},{min_ms:.1f},{max_ms:.1f},{iterations}\n"
-    with open(results_file, "a") as fh:
-        fh.write(line)
+    append_result_row(
+        results_file,
+        [
+            name,
+            f"{avg_ms:.1f}",
+            f"{min_ms:.1f}",
+            f"{max_ms:.1f}",
+            str(iterations),
+        ],
+    )
 
 
 def format_ms(ms: float) -> str:
-    if ms < 0:
-        return "N/A"
     if ms < 1000:
         return f"{ms:.0f}ms"
     return f"{ms / 1000:.2f}s"
@@ -394,7 +366,7 @@ def print_summary(results: list[dict]) -> None:
     print("=" * 62)
 
 
-def save_baseline(results: list[dict]) -> None:
+def save_baseline(results: list[dict]) -> bool:
     measurements = {}
     for r in results:
         if r["error"]:
@@ -404,15 +376,17 @@ def save_baseline(results: list[dict]) -> None:
             "max_allowed_ms": round(r["avg"] * REGRESSION_THRESHOLD_PERCENT / 100, 1),
         }
 
+    if not measurements:
+        print("\nBaseline not saved: every measured component failed.")
+        return False
+
     baseline = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": _get_git_commit(),
+        "generated_at": utc_baseline_timestamp(),
+        "git_commit": get_current_git_short_commit(),
         "threshold_percent": REGRESSION_THRESHOLD_PERCENT,
         "measurements": measurements,
     }
-    with open(BASELINE_PATH, "w") as f:
-        json.dump(baseline, f, indent=2)
-        f.write("\n")
+    write_baseline(BASELINE_PATH, baseline)
 
     print(f"\nBaseline saved to {BASELINE_PATH}")
     print(f"  Commit: {baseline['git_commit']}")
@@ -422,6 +396,7 @@ def save_baseline(results: list[dict]) -> None:
             f"  {name}: {format_ms(data['avg_ms'])} "
             f"(max {format_ms(data['max_allowed_ms'])})"
         )
+    return True
 
 
 def get_latest_results_by_component(results_file: Path) -> dict[str, float]:
@@ -441,79 +416,63 @@ def get_latest_results_by_component(results_file: Path) -> dict[str, float]:
     return latest
 
 
+def compare_latest_results_to_baseline(
+    baseline: dict,
+    latest_results: dict[str, float],
+) -> BaselineComparison:
+    regression_messages: list[str] = []
+    missing_component_names: list[str] = []
+
+    for name, data in baseline.get("measurements", {}).items():
+        actual_ms = latest_results.get(name)
+        if actual_ms is None:
+            missing_component_names.append(name)
+            continue
+        max_allowed_ms = data["max_allowed_ms"]
+        if actual_ms > max_allowed_ms:
+            regression_messages.append(
+                f"{name}: {format_ms(actual_ms)} exceeds "
+                f"max {format_ms(max_allowed_ms)}"
+            )
+
+    return BaselineComparison(regression_messages, missing_component_names)
+
+
 def check_baseline() -> bool:
-    if not BASELINE_PATH.exists():
-        print(f"FAIL: No baseline at {BASELINE_PATH.relative_to(DOTFILES_DIRECTORY)}")
-        print("  Run 'benchmark-desktop --save-baseline' to generate it.")
-        return False
-
-    with open(BASELINE_PATH) as f:
-        baseline = json.load(f)
-
-    failures: list[str] = []
-
-    generated_at = datetime.fromisoformat(baseline["generated_at"])
-    age_days = (datetime.now(timezone.utc) - generated_at).days
-    if age_days > MAXIMUM_BASELINE_AGE_DAYS:
-        failures.append(
-            f"Baseline is {age_days} days old (max {MAXIMUM_BASELINE_AGE_DAYS}). "
-            "Re-run 'benchmark-desktop --save-baseline'."
-        )
-
-    measurements = baseline.get("measurements", {})
-    if not measurements:
-        failures.append("Baseline has no measurements.")
-
-    results_file = get_results_file_path()
-    latest = get_latest_results_by_component(results_file)
+    validation = validate_tracked_baseline(
+        BASELINE_PATH,
+        "avg_ms",
+        "max_allowed_ms",
+        SAVE_BASELINE_COMMAND,
+    )
+    baseline = validation.document
+    generated_at = baseline.get("generated_at", "unknown")
+    age_text = "unknown" if validation.age_days is None else f"{validation.age_days}"
 
     print("=" * 60)
     print("DESKTOP PERFORMANCE BASELINE CHECK")
     print("=" * 60)
-    print(f"  Baseline: {baseline['generated_at']} (age: {age_days} days)")
+    print(f"  Baseline: {generated_at} (age: {age_text} days)")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
     print(f"  Threshold: {baseline.get('threshold_percent', '?')}%")
     print()
 
-    if not latest:
-        failures.append("No run data found. Run 'benchmark-desktop' first.")
-    else:
-        print(
-            f"  {'Component':<22} {'Baseline':>10} {'Actual':>10} {'Max':>10} {'Status':>8}"
-        )
-        print(f"  {'-' * 62}")
-        for name, data in measurements.items():
-            baseline_ms = data["avg_ms"]
-            max_ms = data["max_allowed_ms"]
-            actual_ms = latest.get(name)
-
-            if actual_ms is None:
-                print(
-                    f"  {name:<22} {format_ms(baseline_ms):>10} {'—':>10} {format_ms(max_ms):>10} {'SKIP':>8}"
-                )
-                continue
-
-            passed = actual_ms <= max_ms
-            status = "OK" if passed else "FAIL"
-            print(
-                f"  {name:<22} "
-                f"{format_ms(baseline_ms):>10} "
-                f"{format_ms(actual_ms):>10} "
-                f"{format_ms(max_ms):>10} "
-                f"{'  ' + status:>8}"
-            )
-            if not passed:
-                failures.append(
-                    f"{name}: {format_ms(actual_ms)} exceeds max {format_ms(max_ms)}"
-                )
-
-    if failures:
-        print(f"\nFAILED ({len(failures)} issues):")
-        for failure in failures:
+    if validation.failures:
+        print(f"FAILED ({len(validation.failures)} issues):")
+        for failure in validation.failures:
             print(f"  - {failure}")
         return False
 
-    print("\nPASSED: All components within thresholds.")
+    print(f"  {'Component':<22} {'Baseline':>10} {'Max':>10}")
+    print(f"  {'-' * 44}")
+    for name, data in baseline["measurements"].items():
+        print(
+            f"  {name:<22} "
+            f"{format_ms(data['avg_ms']):>10} "
+            f"{format_ms(data['max_allowed_ms']):>10}"
+        )
+
+    print("\nPASSED: Baseline is valid.")
     return True
 
 
@@ -569,15 +528,6 @@ def _print_averages(data_lines: list[str]) -> None:
     for name in sorted(totals):
         avg = totals[name] / counts[name]
         print(f"  {name}: {format_ms(avg)} avg ({counts[name]} runs)")
-
-
-def _get_git_commit() -> str:
-    result = subprocess.run(
-        ["git", "-C", str(DOTFILES_DIRECTORY), "rev-parse", "--short", "HEAD"],
-        capture_output=True,
-        text=True,
-    )
-    return result.stdout.strip() if result.returncode == 0 else "unknown"
 
 
 def parse_arguments(argv: list[str]) -> tuple[str, int, str | None]:
@@ -641,8 +591,7 @@ def main() -> None:
         raise SystemExit(0 if passed else 1)
 
     results_file = get_results_file_path()
-    ensure_results_directory_exists()
-    initialize_csv_if_needed(results_file)
+    ensure_results_file_exists(results_file, CSV_HEADER)
 
     if command == "report":
         print_report(results_file)
@@ -670,7 +619,8 @@ def main() -> None:
     print_summary(results)
 
     if command == "save-baseline":
-        save_baseline(results)
+        if not save_baseline(results):
+            raise SystemExit(1)
     else:
         print(f"\nResults saved to {results_file}")
 

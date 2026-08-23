@@ -1,48 +1,25 @@
-from unittest.mock import patch, MagicMock
+import subprocess
+from unittest.mock import MagicMock, patch
 
 import benchmark_rebuild
+from benchmark_core import CommandMeasurement
 
 
-class TestGetCurrentGitShortCommit:
-    def test_returns_commit_hash(self):
-        mock_result = MagicMock()
-        mock_result.returncode = 0
-        mock_result.stdout = "abc1234\n"
-        with patch(
-            "benchmark_rebuild.subprocess.run",
-            return_value=mock_result,
-        ):
-            assert benchmark_rebuild.get_current_git_short_commit() == "abc1234"
-
-    def test_returns_unknown_on_failure(self):
-        mock_result = MagicMock()
-        mock_result.returncode = 1
-        with patch(
-            "benchmark_rebuild.subprocess.run",
-            return_value=mock_result,
-        ):
-            assert benchmark_rebuild.get_current_git_short_commit() == "unknown"
-
-
-class TestRunBenchmarkCommand:
-    def test_returns_elapsed_time(self):
-        with patch("benchmark_rebuild.subprocess.run"):
-            duration = benchmark_rebuild.run_benchmark_command("echo test")
-            assert isinstance(duration, float)
-            assert duration >= 0
+def _empty_results_file(tmp_path):
+    results_file = tmp_path / "results.csv"
+    results_file.write_text(benchmark_rebuild.CSV_HEADER + "\n")
+    return results_file
 
 
 class TestRecordBenchmarkResult:
     def test_appends_csv_line(self, tmp_path):
-        results_file = tmp_path / "results.csv"
-        results_file.write_text("timestamp,type,config,duration_seconds,commit\n")
+        results_file = _empty_results_file(tmp_path)
 
         benchmark_rebuild.record_benchmark_result(
             results_file, "eval", "home", 1.234, "abc1234"
         )
 
-        content = results_file.read_text()
-        lines = content.strip().split("\n")
+        lines = results_file.read_text().strip().split("\n")
         assert len(lines) == 2
         assert "eval" in lines[1]
         assert "home" in lines[1]
@@ -50,15 +27,67 @@ class TestRecordBenchmarkResult:
         assert "abc1234" in lines[1]
 
 
-class TestInitializeCsvIfNeeded:
-    def test_creates_file_with_header(self, tmp_path):
-        results_file = tmp_path / "results.csv"
-        benchmark_rebuild.initialize_csv_if_needed(results_file)
-        content = results_file.read_text()
-        assert content.startswith("timestamp,type,config")
+class TestRunAndRecordBenchmark:
+    def test_records_a_successful_command(self, tmp_path):
+        results_file = _empty_results_file(tmp_path)
 
-    def test_does_not_overwrite_existing(self, tmp_path):
-        results_file = tmp_path / "results.csv"
-        results_file.write_text("existing data\n")
-        benchmark_rebuild.initialize_csv_if_needed(results_file)
-        assert results_file.read_text() == "existing data\n"
+        with (
+            patch(
+                "benchmark_rebuild.measure_shell_command",
+                return_value=CommandMeasurement(True, 2.5),
+            ),
+            patch(
+                "benchmark_rebuild.get_current_git_short_commit",
+                return_value="abc1234",
+            ),
+        ):
+            measurement = benchmark_rebuild.run_and_record_benchmark(
+                "eval", "true", "darwin", results_file
+            )
+
+        assert measurement.succeeded is True
+        lines = results_file.read_text().strip().split("\n")
+        assert len(lines) == 2
+        assert "2.500" in lines[1]
+
+    def test_records_nothing_for_a_non_zero_command(self, tmp_path):
+        results_file = _empty_results_file(tmp_path)
+
+        with patch(
+            "benchmark_core.subprocess.run",
+            return_value=MagicMock(returncode=1),
+        ):
+            measurement = benchmark_rebuild.run_and_record_benchmark(
+                "eval", "false", "darwin", results_file
+            )
+
+        assert measurement.succeeded is False
+        assert results_file.read_text() == benchmark_rebuild.CSV_HEADER + "\n"
+
+    def test_records_nothing_when_the_command_times_out(self, tmp_path):
+        results_file = _empty_results_file(tmp_path)
+
+        with patch(
+            "benchmark_core.subprocess.run",
+            side_effect=subprocess.TimeoutExpired("nix", 1),
+        ):
+            measurement = benchmark_rebuild.run_and_record_benchmark(
+                "eval", "sleep 100", "darwin", results_file
+            )
+
+        assert measurement.succeeded is False
+        assert results_file.read_text() == benchmark_rebuild.CSV_HEADER + "\n"
+
+    def test_records_nothing_when_the_command_cannot_start(self, tmp_path):
+        results_file = _empty_results_file(tmp_path)
+
+        with patch(
+            "benchmark_core.subprocess.run",
+            side_effect=OSError("no such binary"),
+        ):
+            measurement = benchmark_rebuild.run_and_record_benchmark(
+                "eval", "absent-binary", "darwin", results_file
+            )
+
+        assert measurement.succeeded is False
+        assert results_file.read_text() == benchmark_rebuild.CSV_HEADER + "\n"
