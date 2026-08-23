@@ -19,9 +19,6 @@ for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
     ):
         sys.path.insert(0, _shared_module_candidate_directory)
 
-from destructive_command_restriction import (  # noqa: E402
-    destructive_patterns_for_this_session,
-)
 from hook_dispatch import HandlerResult  # noqa: E402
 from prohibited_command_patterns import PROHIBITED_PATTERNS_BY_TOOL  # noqa: E402
 
@@ -122,14 +119,11 @@ def find_first_violation(tool_name: str, inspectable_text: str, patterns_for_thi
     return None
 
 
-def handle(hook_input):
+def denial_for_first_violation(hook_input, patterns_for_this_tool):
     tool_name = hook_input.get("tool_name", "")
     tool_input = hook_input.get("tool_input", {}) or {}
 
     inspectable_text = extract_inspectable_text(tool_name, tool_input)
-    patterns_for_this_tool = destructive_patterns_for_this_session(
-        tool_name
-    ) + PROHIBITED_PATTERNS_BY_TOOL.get(tool_name, [])
     violation = find_first_violation(
         tool_name, inspectable_text, patterns_for_this_tool
     )
@@ -143,4 +137,11 @@ def handle(hook_input):
     )
     return HandlerResult(
         decision="deny", reason=block_message, system_message=block_message
+    )
+
+
+def handle(hook_input):
+    tool_name = hook_input.get("tool_name", "")
+    return denial_for_first_violation(
+        hook_input, PROHIBITED_PATTERNS_BY_TOOL.get(tool_name, [])
     )

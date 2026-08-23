@@ -34,6 +34,9 @@ PRE_TOOL_USE_HANDLERS = [
         handler_module_name="prohibited_command_guard_handler", tool_matcher=None
     ),
     HookHandler(
+        handler_module_name="destructive_command_guard_handler", tool_matcher="Bash"
+    ),
+    HookHandler(
         handler_module_name="prohibited_words_guard_handler", tool_matcher=None
     ),
     HookHandler(
