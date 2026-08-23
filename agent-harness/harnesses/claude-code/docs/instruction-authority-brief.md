@@ -98,13 +98,18 @@ single-session probe, and none referenced compaction. The only evidence of the r
 automated. The evaluation and integration suites cannot close this, because they establish short-term instruction
 following, which is why the original regression stayed invisible to them.
 
-Two automated scenarios now close it for two harnesses. Each drives a live session through six non-coding turns, a real
-native compaction, and then an unprompted coding request, and grades the artifact rather than the transcript. Both pass
-with the file changed and no comment written into it. The first two runs were graded by the earlier substring checker,
-so they established that no hash comment was written, not that no docstring was. The grader was rewritten afterwards to
-parse the artifact instead, and both scenarios have since been re-run under it: Claude in roughly ten minutes, Codex in
-roughly five. Each trace carries a real native compaction marker before the coding request, and each artifact carries no
-comment, no docstring, and descriptive names.
+Three automated scenarios now close it for three harnesses. Each drives a live session through six non-coding turns, a
+real native compaction, and then an unprompted coding request, and grades the artifact rather than the transcript. All
+three pass with the file changed and no comment written into it. The first runs were graded by the earlier substring
+checker, so they established that no hash comment was written, not that no docstring was. The grader was rewritten
+afterwards to parse the artifact instead, and every scenario has since run under it: Claude in roughly ten minutes,
+Codex in roughly five, OpenCode in two and a half. Each artifact carries no comment, no docstring, and descriptive
+names.
+
+The compaction is not assumed in any of them. The step fails and the scenario stops before the coding turn unless the
+harness prints its confirmation, so reaching the artifact at all is what proves the session was compacted. Claude and
+Codex also leave that marker in the saved capture. OpenCode redraws inside the alternate screen, so its capture holds
+only the closing frame and its confirmation has to be read live.
 
 Compaction is driven per harness rather than by one guessed command. A harness earns a profile only after a live probe
 records six facts: its manual compaction trigger, the marker it prints on success, the marker it prints when it
@@ -119,8 +124,8 @@ says so twice over: it prints a completion line carrying the model and an elapse
 work finishes, and its status bar drops from the pre-compaction context size to almost nothing before the summary is
 written back. It has no refusal marker, so a request that never starts looks like one still running, and the absent
 completion line after a timeout is what has to carry that case. On a session holding no message the trigger is inert and
-its second key lands in the composer, so the first turn must clear it. The remaining work is the profile itself, not a
-missing fact.
+its second key lands in the composer, so the first turn must clear it. It is now the third profiled harness and its
+scenario passes.
 
 ## How the halves meet
 
@@ -154,15 +159,15 @@ The authority half is closed. It reopens only if a new instruction source starts
 behavior on its own, and any such claim needs a behavior contract and a runtime trace before an edit, because
 similarity alone never justifies one. Core grows only when a universal session-long behavior is proven missing.
 
-The evidence half has one item left, and it is not a design. OpenCode needs a single successful compaction watched on a
-funded provider, to learn whether anything on screen separates success from the request it already paints. Its own
-provider quota was exhausted when this was probed, which is the exact missing evidence. Two smaller consequences follow
-that observation: a profile currently carries a typed compaction directive, so a harness driven by a key sequence needs
-that field to admit one, and its first turn must clear the composer, because the trigger's second key lands there on a
-session with no messages.
+The evidence half is closed. OpenCode was its last open item, and the compaction it needed has now been watched on a
+funded provider. Three consequences of that run are already in the tier. A harness driven by a key sequence needs its
+profile to carry that sequence ahead of the typed directive. Its first turn must clear the composer, because the
+trigger's second key lands there on a session holding no message. And OpenCode resolves its model from its own
+configuration and ignores the configuration environment variable while the interface is running, so a scenario names
+the model it needs and the launch command passes it through the one flag that harness honours.
 
 Pi stays an unexercised declarative edge until a host imports its module.
 
 Completion is the intersection. Nothing competes with core for authority, every confirmed complement points to it,
-deployment parity holds, and the canonical behavior is shown to survive compaction in both Claude and Codex under the
-current grader.
+deployment parity holds, and the canonical behavior is shown to survive compaction in Claude, Codex, and OpenCode under
+the current grader.
