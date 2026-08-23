@@ -30,16 +30,24 @@ if not servants_domain_directory.is_dir():
     # nix-built flat hooks directory, and the domain sits beside the hooks root.
     servants_domain_directory = hook_script_directory.parents[2] / "servants"
 
+clawde_workspace_domain_directory = Path("@clawdeWorkspaceDomainDirectory@")
+if not clawde_workspace_domain_directory.is_dir():
+    clawde_workspace_domain_directory = (
+        hook_script_directory.parents[2] / "harnesses" / "clawde" / "scripts"
+    )
+
 for importable_directory in (
     hook_script_directory,
     shared_common_hook_modules_directory,
     servants_domain_directory,
+    clawde_workspace_domain_directory,
 ):
     importable_directory_string = str(importable_directory)
     if importable_directory.is_dir() and importable_directory_string not in sys.path:
         sys.path.insert(0, importable_directory_string)
 
 from catalog import select_servant_for_session  # noqa: E402
+from clawde_workspace_paths import agents_directory  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_session_detection import (  # noqa: E402
     is_clawde_background_agent_session,
@@ -62,14 +70,23 @@ def servant_context_line(servant: dict) -> str:
     return f"Servant: {servant['name']} - {servant['personality']}"
 
 
+def session_runs_inside_a_clawde_agent_workspace() -> bool:
+    return agents_directory() in Path.cwd().resolve().parents
+
+
 def handle(hook_input: dict):
     """The Servant line for this session, or nothing when it has no identity to draw.
 
     A clawde agent already carries a name and a personality of its own, so it is
-    left alone. A payload with no id would make every such session draw the same
-    Servant, which is worse than staying silent and letting the rule find none.
+    left alone. Its wrapper marks the environment, but the channel bridge that
+    carries a one-shot turn does not, so the workspace it runs in is what names an
+    agent on every harness. A payload with no id would make every such session draw
+    the same Servant, which is worse than staying silent and letting the rule find
+    none.
     """
     if is_clawde_background_agent_session():
+        return None
+    if session_runs_inside_a_clawde_agent_workspace():
         return None
     session_id = session_id_of(hook_input)
     if not session_id:

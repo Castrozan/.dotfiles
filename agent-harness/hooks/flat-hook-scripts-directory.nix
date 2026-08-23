@@ -29,7 +29,6 @@ pkgs.runCommandLocal "agent-hook-scripts" { } ''
   substituteInPlace "$out/run-hook.sh" \
     --replace-fail "@hookPythonInterpreter@" "${hookPythonInterpreter}"
   substituteInPlace "$out/servant_identity_handler.py" \
-    --replace-fail "@servantsDomainDirectory@" "${servantsDomainDirectory}"
-  substituteInPlace "$out/interactive_session_detection.py" \
+    --replace-fail "@servantsDomainDirectory@" "${servantsDomainDirectory}" \
     --replace-fail "@clawdeWorkspaceDomainDirectory@" "${clawdeWorkspaceDomainDirectory}"
 ''
