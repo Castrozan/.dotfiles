@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
+import json
 import pathlib
 import re
+import subprocess
+from dataclasses import dataclass
+from typing import Optional, Tuple
 
 REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parents[2]
 TESTS_DIRECTORY_NAME = "__tests__"
@@ -18,7 +22,52 @@ EXCLUDED_PATH_SEGMENTS = {
 
 BATS_TEST_BLOCK_PATTERN = re.compile(r"^\s*@test\b")
 PYTEST_TEST_FUNCTION_PATTERN = re.compile(r"^\s*def test_")
-NIX_EVAL_CHECK_PATTERN = re.compile(r"\bmkEvalCheck\b")
+NIX_CHECK_INVENTORY_COMMAND = [
+    "nix",
+    "eval",
+    "--json",
+    "--impure",
+    "--expr",
+    "builtins.attrNames "
+    "(builtins.getFlake (toString ./.)).checks.${builtins.currentSystem}",
+]
+NIX_CHECK_INVENTORY_TIMEOUT_SECONDS = 300
+
+
+@dataclass(frozen=True)
+class NixCheckInventory:
+    check_names: Optional[Tuple[str, ...]]
+    unavailable_reason: Optional[str]
+
+
+def evaluate_nix_check_inventory():
+    try:
+        completed_process = subprocess.run(
+            NIX_CHECK_INVENTORY_COMMAND,
+            cwd=REPOSITORY_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=NIX_CHECK_INVENTORY_TIMEOUT_SECONDS,
+        )
+    except FileNotFoundError:
+        return NixCheckInventory(None, "nix is not installed")
+    except subprocess.TimeoutExpired:
+        return NixCheckInventory(None, "evaluation timed out")
+    if completed_process.returncode != 0:
+        return NixCheckInventory(None, f"exit status {completed_process.returncode}")
+    try:
+        evaluated_attribute_names = json.loads(completed_process.stdout)
+    except json.JSONDecodeError:
+        return NixCheckInventory(None, "invalid JSON output")
+    if not isinstance(evaluated_attribute_names, list):
+        return NixCheckInventory(None, "non-list evaluation result")
+    return NixCheckInventory(tuple(evaluated_attribute_names), None)
+
+
+def format_nix_check_total(inventory):
+    if inventory.check_names is None:
+        return f"unavailable ({inventory.unavailable_reason})"
+    return str(len(inventory.check_names))
 
 
 def path_is_excluded(path):
@@ -40,14 +89,6 @@ def count_matching_lines(file_path, pattern):
     except (OSError, UnicodeDecodeError):
         return 0
     return sum(1 for line in text.splitlines() if pattern.search(line))
-
-
-def count_pattern_occurrences(file_path, pattern):
-    try:
-        text = file_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return 0
-    return len(pattern.findall(text))
 
 
 def summarize_tier(tests_directory, tier_directory_name):
@@ -74,22 +115,12 @@ def summarize_tests_directory(tests_directory):
         if tier_summary is not None:
             tiers[tier_directory_name] = tier_summary
 
-    lua_test_files = list(tests_directory.rglob("*_test.lua"))
-    qml_runner = tests_directory / "qml" / "run-qml-tests.sh"
-    eval_yaml_files = list((tests_directory / "evals").glob("*.yaml"))
-    checks_nix_file = tests_directory / "checks.nix"
-
     return {
         "tiers": tiers,
-        "lua_test_file_count": len(lua_test_files),
-        "has_qml_runner": qml_runner.is_file(),
-        "eval_yaml_count": len(eval_yaml_files),
-        "eval_check_count": (
-            count_pattern_occurrences(checks_nix_file, NIX_EVAL_CHECK_PATTERN)
-            if checks_nix_file.is_file()
-            else 0
-        ),
-        "has_checks_nix": checks_nix_file.is_file(),
+        "lua_test_file_count": len(list(tests_directory.rglob("*_test.lua"))),
+        "has_qml_runner": (tests_directory / "qml" / "run-qml-tests.sh").is_file(),
+        "eval_yaml_count": len(list((tests_directory / "evals").glob("*.yaml"))),
+        "has_checks_nix": (tests_directory / "checks.nix").is_file(),
     }
 
 
@@ -117,12 +148,13 @@ def format_summary_lines(summary):
     if summary["eval_yaml_count"]:
         lines.append(f"    evals: {summary['eval_yaml_count']} yaml")
     if summary["has_checks_nix"]:
-        lines.append(f"    checks.nix: {summary['eval_check_count']} eval-check")
+        lines.append("    checks.nix: registered")
     return lines
 
 
 def main():
     tests_directories = discover_tests_directories()
+    nix_check_inventory = evaluate_nix_check_inventory()
     totals = {
         "modules": 0,
         "bats_blocks": 0,
@@ -130,7 +162,6 @@ def main():
         "lua_suites": 0,
         "qml_suites": 0,
         "eval_yamls": 0,
-        "eval_checks": 0,
     }
 
     print(f"=== Test Suite Map ({len(tests_directories)} __tests__ directories) ===\n")
@@ -146,7 +177,6 @@ def main():
         totals["lua_suites"] += summary["lua_test_file_count"]
         totals["qml_suites"] += 1 if summary["has_qml_runner"] else 0
         totals["eval_yamls"] += summary["eval_yaml_count"]
-        totals["eval_checks"] += summary["eval_check_count"]
 
         print(owning_module_label(tests_directory))
         for line in summary_lines:
@@ -160,7 +190,7 @@ def main():
         f"  lua suites:         {totals['lua_suites']}\n"
         f"  qml suites:         {totals['qml_suites']}\n"
         f"  eval yamls:         {totals['eval_yamls']}\n"
-        f"  nix eval-checks:    {totals['eval_checks']}"
+        f"  nix checks:         {format_nix_check_total(nix_check_inventory)}"
     )
 
 
