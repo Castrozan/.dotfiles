@@ -1,3 +1,5 @@
+import time
+from pathlib import Path
 from unittest.mock import call, patch
 
 import monitor_configuration
@@ -47,6 +49,45 @@ class TestFindEnabledConfigLineForMonitor:
                 monitor_configuration.find_enabled_config_line_for_monitor("eDP-1")
                 == "eDP-1, preferred, auto, 1"
             )
+
+
+class TestMonitorOverridePaths:
+    def test_the_override_and_toggle_lock_live_in_the_user_cache(self):
+        assert (
+            monitor_configuration.OVERRIDE_FILE
+            == Path.home() / ".cache" / "hypr-monitors-override.conf"
+        )
+        assert (
+            monitor_configuration.TOGGLE_LOCK_FILE
+            == Path.home() / ".cache" / "hypr-monitors-toggle.lock"
+        )
+
+
+class TestWriteToggleLock:
+    def test_stamps_the_lock_file_with_the_current_time(self, tmp_path):
+        lock_file = tmp_path / "toggle.lock"
+
+        with patch.object(monitor_configuration, "TOGGLE_LOCK_FILE", lock_file):
+            monitor_configuration.write_toggle_lock()
+
+        assert abs(float(lock_file.read_text()) - time.time()) < 5
+
+
+class TestWriteOverrideAndReload:
+    def test_takes_the_toggle_lock_then_writes_the_override_and_reloads(self, tmp_path):
+        override_file = tmp_path / "override.conf"
+        lock_file = tmp_path / "toggle.lock"
+
+        with patch.object(monitor_configuration, "OVERRIDE_FILE", override_file):
+            with patch.object(monitor_configuration, "TOGGLE_LOCK_FILE", lock_file):
+                with patch("monitor_configuration.run_hyprctl") as mock_run_hyprctl:
+                    monitor_configuration.write_override_and_reload(
+                        "monitor = eDP-1, disable"
+                    )
+
+        assert override_file.read_text() == "monitor = eDP-1, disable"
+        assert lock_file.exists()
+        assert mock_run_hyprctl.call_args_list == [call("reload")]
 
 
 class TestSendMonitorNotification:

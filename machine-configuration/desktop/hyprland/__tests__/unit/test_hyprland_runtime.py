@@ -9,6 +9,44 @@ def completed_process(returncode: int) -> MagicMock:
     return result
 
 
+class TestBuildEventSocketPath:
+    def test_builds_the_socket_path_from_the_instance_signature(self):
+        with patch.dict(
+            hyprland_runtime.os.environ,
+            {
+                "HYPRLAND_INSTANCE_SIGNATURE": "abc123",
+                "XDG_RUNTIME_DIR": "/run/user/1000",
+            },
+            clear=True,
+        ):
+            assert (
+                hyprland_runtime.build_event_socket_path()
+                == "/run/user/1000/hypr/abc123/.socket2.sock"
+            )
+
+    def test_falls_back_to_tmp_when_the_runtime_directory_is_unset(self):
+        with patch.dict(
+            hyprland_runtime.os.environ,
+            {"HYPRLAND_INSTANCE_SIGNATURE": "abc123"},
+            clear=True,
+        ):
+            assert (
+                hyprland_runtime.build_event_socket_path()
+                == "/tmp/hypr/abc123/.socket2.sock"
+            )
+
+    def test_uses_an_empty_signature_when_hyprland_exported_none(self):
+        with patch.dict(
+            hyprland_runtime.os.environ,
+            {"XDG_RUNTIME_DIR": "/run/user/1000"},
+            clear=True,
+        ):
+            assert (
+                hyprland_runtime.build_event_socket_path()
+                == "/run/user/1000/hypr//.socket2.sock"
+            )
+
+
 class TestIsHyprctlConnected:
     def test_returns_true_when_hyprctl_succeeds(self):
         with patch(
