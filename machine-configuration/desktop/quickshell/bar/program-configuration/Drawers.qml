@@ -46,23 +46,7 @@ Scope {
             readonly property int barContentWidth: 48
             readonly property int barTotalWidth: barContentWidth
 
-            property string popoutCurrentName: ""
-            property real popoutCenterY: 0
-            property bool popoutHovered: false
-            property bool dashboardVisible: false
-            property bool dashboardHovered: false
-            property bool launcherVisible: false
-            property bool launcherHovered: false
-            property bool sessionVisible: false
-            property bool sessionHovered: false
-            property bool utilitiesVisible: false
-            property bool utilitiesHovered: false
-            property bool osdVisible: false
-            property bool sidebarVisible: false
-            property bool sidebarHovered: false
-
             property bool activeWorkspaceHasFullscreenWindow: false
-            readonly property bool hasActivePopout: popoutCurrentName !== ""
 
             Process {
                 id: activeWorkspaceFullscreenQueryProcess
@@ -98,140 +82,47 @@ Scope {
             }
             readonly property int shapeJunctionRadius: 36
 
-            property real animatedExtensionWidth: hasActivePopout ? popoutWrapper.popoutWidth : 0
+            property real animatedExtensionWidth: screenDrawerState.hasActivePopout ? popoutWrapper.popoutWidth : 0
             Behavior on animatedExtensionWidth {
                 NumberAnimation { duration: 350; easing.type: Easing.OutCubic }
             }
 
-            function showPopout(name: string, centerY: real): void {
-                popoutHideTimer.stop();
-                popoutCurrentName = name;
-                popoutCenterY = centerY;
-            }
+            QtObject {
+                id: popoutIconAnchors
 
-            function hidePopout(): void {
-                if (!popoutHovered && !barWrapper.barItem.hasHoveredPopoutIcon) {
-                    popoutHideTimer.restart();
+                function centerYForPopout(name: string): real {
+                    let iconPosition = barWrapper.barItem.statusIconPositions[name];
+                    if (!iconPosition)
+                        return drawersWindow.height / 2;
+                    let sceneTop = barWrapper.barItem.mapToItem(null, 0, iconPosition.top).y;
+                    let sceneBottom = barWrapper.barItem.mapToItem(null, 0, iconPosition.bottom).y;
+                    return (sceneTop + sceneBottom) / 2;
                 }
             }
 
-            function toggleDashboard(): void {
-                dashboardVisible = !dashboardVisible;
+            DrawerState {
+                id: screenDrawerState
+
+                popoutAnchorResolver: popoutIconAnchors
+                popoutIconHovered: barWrapper.barItem.hasHoveredPopoutIcon
             }
 
-            function toggleLauncher(): void {
-                launcherVisible = !launcherVisible;
+            DrawerHoverController {
+                id: screenHoverController
+
+                drawerState: screenDrawerState
+                pointerOverBar: interactions.isOverBar
             }
 
-
-            function toggleSession(): void {
-                sessionVisible = !sessionVisible;
-            }
-
-            function toggleUtilities(): void {
-                utilitiesVisible = !utilitiesVisible;
-            }
-
-            function toggleSidebar(): void {
-                sidebarVisible = !sidebarVisible;
-            }
-
-            function showPopoutByName(name: string): void {
-                let positions = barWrapper.barItem.statusIconPositions;
-                let iconPos = positions[name];
-                let centerY;
-                if (iconPos) {
-                    let barItem = barWrapper.barItem;
-                    let sceneTop = barItem.mapToItem(null, 0, iconPos.top).y;
-                    let sceneBottom = barItem.mapToItem(null, 0, iconPos.bottom).y;
-                    centerY = (sceneTop + sceneBottom) / 2;
-                } else {
-                    centerY = drawersWindow.height / 2;
-                }
-                showPopout(name, centerY);
-            }
-
-            function togglePopout(name: string): void {
-                if (popoutCurrentName === name) {
-                    popoutCurrentName = "";
-                    return;
-                }
-                showPopoutByName(name);
-            }
-
-            IpcHandler {
-                target: "dashboard"
-
-                function toggle(): void {
-                    screenScope.toggleDashboard();
-                }
-            }
-
-            IpcHandler {
-                target: "launcher"
-
-                function toggle(): void {
-                    screenScope.toggleLauncher();
-                }
-            }
-
-            IpcHandler {
-                target: "session"
-
-                function toggle(): void {
-                    screenScope.toggleSession();
-                }
-            }
-
-            IpcHandler {
-                target: "utilities"
-
-                function toggle(): void {
-                    screenScope.toggleUtilities();
-                }
-            }
-
-            IpcHandler {
-                target: "sidebar"
-
-                function toggle(): void {
-                    screenScope.toggleSidebar();
-                }
-            }
-
-            IpcHandler {
-                target: "osd"
-
-                function show(): void {
-                    screenScope.osdVisible = true;
-                    osdAutoHideTimer.restart();
-                }
-
-                function hide(): void {
-                    screenScope.osdVisible = false;
-                }
+            DrawerIpcAdapter {
+                drawerState: screenDrawerState
+                drawerHoverController: screenHoverController
             }
 
             Connections {
                 target: drawersRoot
                 function onOsdSocketMessageReceived(message: string): void {
                     osdWrapper.handleOsdMessage(message);
-                }
-            }
-
-            IpcHandler {
-                target: "popout"
-
-                function toggle(name: string): void {
-                    screenScope.togglePopout(name);
-                }
-
-                function show(name: string): void {
-                    screenScope.showPopoutByName(name);
-                }
-
-                function hide(): void {
-                    screenScope.popoutCurrentName = "";
                 }
             }
 
@@ -250,7 +141,7 @@ Scope {
                 exclusionMode: ExclusionMode.Ignore
                 WlrLayershell.layer: screenScope.activeWorkspaceHasFullscreenWindow ? WlrLayer.Background : WlrLayer.Top
                 WlrLayershell.namespace: "quickshell-bar"
-                WlrLayershell.keyboardFocus: (screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible || screenScope.sidebarVisible) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+                WlrLayershell.keyboardFocus: screenDrawerState.hasAnyPanelVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
                 color: "transparent"
                 surfaceFormat.opaque: false
@@ -422,11 +313,7 @@ Scope {
                     barWidth: barTotalWidth
                     barComponent: barWrapper.barItem
 
-                    onPopoutAreaLeft: {
-                        if (!popoutHovered && !barWrapper.barItem.hasHoveredPopoutIcon) {
-                            popoutHideTimer.restart();
-                        }
-                    }
+                    onPopoutAreaLeft: screenDrawerState.hidePopout()
                 }
 
                 BarWrapper {
@@ -436,7 +323,7 @@ Scope {
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
 
-                    screenScope: screenScope
+                    screenScope: screenDrawerState
                 }
 
                 MouseArea {
@@ -454,16 +341,7 @@ Scope {
                     hoverEnabled: true
                     acceptedButtons: Qt.NoButton
 
-                    onContainsMouseChanged: {
-                        if (containsMouse) {
-                            dashboardHideTimer.stop();
-                            dashboardShowDelayTimer.restart();
-                        } else {
-                            dashboardShowDelayTimer.stop();
-                            if (!screenScope.dashboardHovered)
-                                dashboardHideTimer.restart();
-                        }
-                    }
+                    onContainsMouseChanged: containsMouse ? screenHoverController.dashboard.triggerEntered() : screenHoverController.dashboard.triggerLeft()
                 }
 
                 DashboardWrapper {
@@ -473,23 +351,16 @@ Scope {
                     y: barTotalWidth / 3
                     z: 2
 
-                    dashboardVisible: screenScope.dashboardVisible
+                    dashboardVisible: screenDrawerState.dashboardVisible
 
-                    onCloseRequested: screenScope.dashboardVisible = false
+                    onCloseRequested: screenDrawerState.closeDashboard()
 
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.NoButton
 
-                        onContainsMouseChanged: {
-                            screenScope.dashboardHovered = containsMouse;
-                            if (containsMouse) {
-                                dashboardHideTimer.stop();
-                            } else if (!topStripDashboardHoverTrigger.containsMouse) {
-                                dashboardHideTimer.restart();
-                            }
-                        }
+                        onContainsMouseChanged: containsMouse ? screenHoverController.dashboard.contentEntered() : screenHoverController.dashboard.contentLeft()
                     }
                 }
 
@@ -509,14 +380,7 @@ Scope {
                     hoverEnabled: true
                     acceptedButtons: Qt.NoButton
 
-                    onContainsMouseChanged: {
-                        if (containsMouse) {
-                            launcherHideTimer.stop();
-                            screenScope.launcherVisible = true;
-                        } else if (!screenScope.launcherHovered) {
-                            launcherHideTimer.restart();
-                        }
-                    }
+                    onContainsMouseChanged: containsMouse ? screenHoverController.launcher.triggerEntered() : screenHoverController.launcher.triggerLeft()
                 }
 
                 LauncherWrapper {
@@ -526,24 +390,17 @@ Scope {
                     y: drawersWindow.height - barTotalWidth / 3 - height
                     z: 2
 
-                    launcherVisible: screenScope.launcherVisible
+                    launcherVisible: screenDrawerState.launcherVisible
 
-                    onLauncherCloseRequested: screenScope.launcherVisible = false
-                    Keys.onEscapePressed: screenScope.launcherVisible = false
+                    onLauncherCloseRequested: screenDrawerState.closeLauncher()
+                    Keys.onEscapePressed: screenDrawerState.closeLauncher()
 
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.NoButton
 
-                        onContainsMouseChanged: {
-                            screenScope.launcherHovered = containsMouse;
-                            if (containsMouse) {
-                                launcherHideTimer.stop();
-                            } else if (!bottomStripLauncherHoverTrigger.containsMouse) {
-                                launcherHideTimer.restart();
-                            }
-                        }
+                        onContainsMouseChanged: containsMouse ? screenHoverController.launcher.contentEntered() : screenHoverController.launcher.contentLeft()
                     }
                 }
 
@@ -554,21 +411,14 @@ Scope {
                     y: (drawersWindow.height - height) / 2
                     z: 2
 
-                    sessionVisible: screenScope.sessionVisible
+                    sessionVisible: screenDrawerState.sessionVisible
 
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.NoButton
 
-                        onContainsMouseChanged: {
-                            screenScope.sessionHovered = containsMouse;
-                            if (containsMouse) {
-                                sessionHideTimer.stop();
-                            } else if (!rightStripSessionHoverTrigger.containsMouse) {
-                                sessionHideTimer.restart();
-                            }
-                        }
+                        onContainsMouseChanged: containsMouse ? screenHoverController.session.contentEntered() : screenHoverController.session.contentLeft()
                     }
                 }
 
@@ -589,16 +439,7 @@ Scope {
                     hoverEnabled: true
                     acceptedButtons: Qt.NoButton
 
-                    onContainsMouseChanged: {
-                        if (containsMouse) {
-                            sidebarHideTimer.stop();
-                            sidebarShowDelayTimer.restart();
-                        } else {
-                            sidebarShowDelayTimer.stop();
-                            if (!screenScope.sidebarHovered)
-                                sidebarHideTimer.restart();
-                        }
-                    }
+                    onContainsMouseChanged: containsMouse ? screenHoverController.sidebar.triggerEntered() : screenHoverController.sidebar.triggerLeft()
                 }
 
                 MouseArea {
@@ -613,18 +454,7 @@ Scope {
                     hoverEnabled: true
                     acceptedButtons: Qt.NoButton
 
-                    property bool osdHovered: false
-
-                    onContainsMouseChanged: {
-                        if (containsMouse) {
-                            osdHideTimer.stop();
-                            osdShowDelayTimer.restart();
-                        } else {
-                            osdShowDelayTimer.stop();
-                            if (!osdHovered)
-                                osdHideTimer.restart();
-                        }
-                    }
+                    onContainsMouseChanged: containsMouse ? screenHoverController.osd.triggerEntered() : screenHoverController.osd.triggerLeft()
                 }
 
                 MouseArea {
@@ -639,16 +469,7 @@ Scope {
                     hoverEnabled: true
                     acceptedButtons: Qt.NoButton
 
-                    onContainsMouseChanged: {
-                        if (containsMouse) {
-                            sessionHideTimer.stop();
-                            sessionShowDelayTimer.restart();
-                        } else {
-                            sessionShowDelayTimer.stop();
-                            if (!screenScope.sessionHovered)
-                                sessionHideTimer.restart();
-                        }
-                    }
+                    onContainsMouseChanged: containsMouse ? screenHoverController.session.triggerEntered() : screenHoverController.session.triggerLeft()
                 }
 
                 UtilitiesWrapper {
@@ -658,21 +479,14 @@ Scope {
                     y: drawersWindow.height - barTotalWidth / 3 - height
                     z: 3
 
-                    utilitiesVisible: screenScope.utilitiesVisible
+                    utilitiesVisible: screenDrawerState.utilitiesVisible
 
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.NoButton
 
-                        onContainsMouseChanged: {
-                            screenScope.utilitiesHovered = containsMouse;
-                            if (containsMouse) {
-                                utilitiesHideTimer.stop();
-                            } else {
-                                utilitiesHideTimer.restart();
-                            }
-                        }
+                        onContainsMouseChanged: containsMouse ? screenHoverController.utilities.contentEntered() : screenHoverController.utilities.contentLeft()
                     }
                 }
 
@@ -687,24 +501,17 @@ Scope {
                     z: 2
                     height: sidebarBottomEdge - sidebarTopEdge
 
-                    sidebarVisible: screenScope.sidebarVisible
+                    sidebarVisible: screenDrawerState.sidebarVisible
                     contentAvailableHeight: sidebarBottomEdge - sidebarTopEdge - utilitiesWrapper.height
 
-                    onCloseRequested: screenScope.sidebarVisible = false
+                    onCloseRequested: screenDrawerState.closeSidebar()
 
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.NoButton
 
-                        onContainsMouseChanged: {
-                            screenScope.sidebarHovered = containsMouse;
-                            if (containsMouse) {
-                                sidebarHideTimer.stop();
-                            } else if (!rightStripSidebarHoverTrigger.containsMouse) {
-                                sidebarHideTimer.restart();
-                            }
-                        }
+                        onContainsMouseChanged: containsMouse ? screenHoverController.sidebar.contentEntered() : screenHoverController.sidebar.contentLeft()
                     }
                 }
 
@@ -715,183 +522,41 @@ Scope {
                     y: (drawersWindow.height - height) / 2
                     z: 2
 
-                    osdVisible: screenScope.osdVisible
+                    osdVisible: screenDrawerState.osdVisible
 
-                    onOsdMessageReceived: {
-                        screenScope.osdVisible = true;
-                        osdAutoHideTimer.restart();
-                    }
+                    onOsdMessageReceived: screenHoverController.showOsdTemporarily()
 
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.NoButton
 
-                        onContainsMouseChanged: {
-                            rightStripOsdHoverTrigger.osdHovered = containsMouse;
-                            if (containsMouse) {
-                                osdHideTimer.stop();
-                                osdAutoHideTimer.stop();
-                            } else if (!rightStripOsdHoverTrigger.containsMouse) {
-                                osdHideTimer.restart();
-                            }
-                        }
+                        onContainsMouseChanged: containsMouse ? screenHoverController.osd.contentEntered() : screenHoverController.osd.contentLeft()
                     }
                 }
 
                 PopoutWrapper {
                     id: popoutWrapper
                     x: barTotalWidth
-                    currentName: screenScope.popoutCurrentName
-                    currentCenterY: screenScope.popoutCenterY
+                    currentName: screenDrawerState.popoutCurrentName
+                    currentCenterY: screenDrawerState.popoutCenterY
                     screenHeight: drawersWindow.height
                     barWidth: barTotalWidth
 
-                    onContainsMouseChanged: {
-                        screenScope.popoutHovered = containsMouse;
-                        if (!containsMouse) {
-                            popoutHideTimer.restart();
-                        } else {
-                            popoutHideTimer.stop();
-                        }
-                    }
+                    onContainsMouseChanged: containsMouse ? screenHoverController.popoutContentEntered() : screenHoverController.popoutContentLeft()
                 }
 
                 MouseArea {
                     id: drawersDismissArea
 
                     anchors.fill: parent
-                    visible: screenScope.dashboardVisible || screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible || screenScope.sidebarVisible
+                    visible: screenDrawerState.hasAnyPanelVisible
                     z: 1
 
-                    onClicked: {
-                        screenScope.dashboardVisible = false;
-                        screenScope.launcherVisible = false;
-                        screenScope.sessionVisible = false;
-                        screenScope.utilitiesVisible = false;
-                        screenScope.sidebarVisible = false;
-                    }
+                    onClicked: screenDrawerState.closeAllPanels()
 
-                    Keys.onEscapePressed: {
-                        screenScope.dashboardVisible = false;
-                        screenScope.launcherVisible = false;
-                        screenScope.sessionVisible = false;
-                        screenScope.utilitiesVisible = false;
-                        screenScope.sidebarVisible = false;
-                    }
-                    focus: (screenScope.launcherVisible || screenScope.sessionVisible || screenScope.utilitiesVisible) && !screenScope.sidebarVisible && !screenScope.dashboardVisible
-                }
-
-                Timer {
-                    id: popoutHideTimer
-                    interval: 450
-                    onTriggered: {
-                        if (!screenScope.popoutHovered && !interactions.isOverBar && !barWrapper.barItem.hasHoveredPopoutIcon) {
-                            screenScope.popoutCurrentName = "";
-                        }
-                    }
-                }
-
-                Timer {
-                    id: dashboardShowDelayTimer
-                    interval: 200
-                    onTriggered: {
-                        if (topStripDashboardHoverTrigger.containsMouse)
-                            screenScope.dashboardVisible = true;
-                    }
-                }
-
-                Timer {
-                    id: dashboardHideTimer
-                    interval: 450
-                    onTriggered: {
-                        if (!screenScope.dashboardHovered && !topStripDashboardHoverTrigger.containsMouse) {
-                            screenScope.dashboardVisible = false;
-                        }
-                    }
-                }
-
-                Timer {
-                    id: launcherHideTimer
-                    interval: 450
-                    onTriggered: {
-                        if (!screenScope.launcherHovered && !bottomStripLauncherHoverTrigger.containsMouse) {
-                            screenScope.launcherVisible = false;
-                        }
-                    }
-                }
-
-                Timer {
-                    id: sessionShowDelayTimer
-                    interval: 200
-                    onTriggered: {
-                        if (rightStripSessionHoverTrigger.containsMouse)
-                            screenScope.sessionVisible = true;
-                    }
-                }
-
-                Timer {
-                    id: sessionHideTimer
-                    interval: 450
-                    onTriggered: {
-                        if (!screenScope.sessionHovered && !rightStripSessionHoverTrigger.containsMouse) {
-                            screenScope.sessionVisible = false;
-                        }
-                    }
-                }
-
-                Timer {
-                    id: utilitiesHideTimer
-                    interval: 450
-                    onTriggered: {
-                        if (!screenScope.utilitiesHovered) {
-                            screenScope.utilitiesVisible = false;
-                        }
-                    }
-                }
-
-                Timer {
-                    id: sidebarShowDelayTimer
-                    interval: 200
-                    onTriggered: {
-                        if (rightStripSidebarHoverTrigger.containsMouse)
-                            screenScope.sidebarVisible = true;
-                    }
-                }
-
-                Timer {
-                    id: sidebarHideTimer
-                    interval: 450
-                    onTriggered: {
-                        if (!screenScope.sidebarHovered && !rightStripSidebarHoverTrigger.containsMouse) {
-                            screenScope.sidebarVisible = false;
-                        }
-                    }
-                }
-
-                Timer {
-                    id: osdShowDelayTimer
-                    interval: 200
-                    onTriggered: {
-                        if (rightStripOsdHoverTrigger.containsMouse)
-                            screenScope.osdVisible = true;
-                    }
-                }
-
-                Timer {
-                    id: osdHideTimer
-                    interval: 450
-                    onTriggered: {
-                        if (!rightStripOsdHoverTrigger.osdHovered && !rightStripOsdHoverTrigger.containsMouse) {
-                            screenScope.osdVisible = false;
-                        }
-                    }
-                }
-
-                Timer {
-                    id: osdAutoHideTimer
-                    interval: 2000
-                    onTriggered: screenScope.osdVisible = false
+                    Keys.onEscapePressed: screenDrawerState.closeAllPanels()
+                    focus: (screenDrawerState.launcherVisible || screenDrawerState.sessionVisible || screenDrawerState.utilitiesVisible) && !screenDrawerState.sidebarVisible && !screenDrawerState.dashboardVisible
                 }
             }
 
