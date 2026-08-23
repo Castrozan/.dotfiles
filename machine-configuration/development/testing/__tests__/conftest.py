@@ -1,4 +1,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+SCRIPTS_DIRECTORY = Path(__file__).resolve().parent.parent / "scripts"
+
+sys.path.insert(0, str(SCRIPTS_DIRECTORY))
+sys.path.insert(0, str(SCRIPTS_DIRECTORY / "lib"))
