@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-23T17:51:02.808661+00:00",
-  "git_commit": "ea21106b",
+  "generated_at": "2026-08-24T02:16:01.436017+00:00",
+  "git_commit": "3103af53",
   "total_tests": 205,
   "total_passed": 196,
   "total_failed": 9,
@@ -146,7 +146,7 @@
         },
         {
           "name": "controlled_language_preserves_warning_conditions",
-          "passed": true
+          "passed": false
         },
         {
           "name": "controlled_language_reports_measured_change",
@@ -154,7 +154,7 @@
         },
         {
           "name": "controlled_language_summarizes_for_action",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -181,8 +181,8 @@
       ]
     },
     "core_rules": {
-      "passed": 9,
-      "failed": 1,
+      "passed": 10,
+      "failed": 0,
       "tests": [
         {
           "name": "delegates_to_skill",
@@ -198,7 +198,7 @@
         },
         {
           "name": "active_waiting_backgrounds_long_operations",
-          "passed": false
+          "passed": true
         },
         {
           "name": "active_waiting_requires_loop_monitor",
@@ -227,8 +227,8 @@
       ]
     },
     "delegation": {
-      "passed": 7,
-      "failed": 1,
+      "passed": 8,
+      "failed": 0,
       "tests": [
         {
           "name": "delegation_parallelizes_independent_breadth",
@@ -252,7 +252,7 @@
         },
         {
           "name": "delegation_owner_synthesizes_results",
-          "passed": false
+          "passed": true
         },
         {
           "name": "delegation_result_is_evidence_not_authority",
@@ -279,8 +279,8 @@
       ]
     },
     "instruction_compliance": {
-      "passed": 9,
-      "failed": 1,
+      "passed": 10,
+      "failed": 0,
       "tests": [
         {
           "name": "hardskill_belongs_in_scripts",
@@ -300,7 +300,7 @@
         },
         {
           "name": "instruction_surface_authority",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_model_calls_are_budgeted",
@@ -381,8 +381,8 @@
       ]
     },
     "review": {
-      "passed": 6,
-      "failed": 1,
+      "passed": 5,
+      "failed": 2,
       "tests": [
         {
           "name": "review_flags_obvious_null_dereference",
@@ -390,7 +390,7 @@
         },
         {
           "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": true
+          "passed": false
         },
         {
           "name": "review_flags_hardcoded_credentials",
@@ -645,8 +645,8 @@
       ]
     },
     "workflow_compliance": {
-      "passed": 7,
-      "failed": 1,
+      "passed": 6,
+      "failed": 2,
       "tests": [
         {
           "name": "workflow_knows_full_sequence",
@@ -662,7 +662,7 @@
         },
         {
           "name": "workflow_respond_only_after_pass",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_fix_before_responding",
@@ -670,11 +670,11 @@
         },
         {
           "name": "workflow_fix_downstream_reference_not_shim",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_change_review_classifies_semantic_risk",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_review_input_is_unbiased",
@@ -688,7 +688,7 @@
       "tests": [
         {
           "name": "commit_uses_specific_staging",
-          "passed": true
+          "passed": false
         },
         {
           "name": "commit_reads_diff_first",
@@ -712,7 +712,7 @@
         },
         {
           "name": "git_history_cache_invalidation",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -905,8 +905,8 @@
       ]
     },
     "skills/obsidian/obsidian": {
-      "passed": 3,
-      "failed": 1,
+      "passed": 4,
+      "failed": 0,
       "tests": [
         {
           "name": "obsidian_capture_inbox_belongs_to_ril",
@@ -922,7 +922,7 @@
         },
         {
           "name": "obsidian_second_brain_contract_is_read_not_recalled",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -953,8 +953,8 @@
       ]
     },
     "skills/ril/ril": {
-      "passed": 6,
-      "failed": 0,
+      "passed": 4,
+      "failed": 2,
       "tests": [
         {
           "name": "ril_marks_done_only_through_the_cli",
@@ -966,7 +966,7 @@
         },
         {
           "name": "ril_never_annotates_a_capture",
-          "passed": true
+          "passed": false
         },
         {
           "name": "ril_resolves_the_capture_origin",
@@ -978,14 +978,14 @@
         },
         {
           "name": "ril_proves_an_adopt_before_proposing_it",
-          "passed": true
+          "passed": false
         }
       ]
     }
   },
   "fingerprints": {
     "suite": "08caeea050adb4618cd3fdd3fe0b5acabd86ec18434159db4a9082826ba39b18",
-    "instructions": "003aa57c19af4c881252cca38e02c5eab276dd87f11dabdc55855500534469bb"
+    "instructions": "3cff3e8d5fadb714f2900a1326883b5237310141d98b078e7d5cc7a0cd7c5228"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
