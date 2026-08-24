@@ -39,9 +39,9 @@ home, a rewrite that changes what a downstream file points at, and an addition w
 </let_the_user_drive_by_index>
 
 <ground_every_decision_before_you_apply_it>
-A drop is never free. Before editing, search for whatever asserts, references or duplicates each sentence: a test
-matching its wording, a size or required-section guard, another instruction file naming it as the owner, and any
-evaluation whose prompt depends on it. Report what you found beside the decision, because a drop that breaks a guard or
+No drop, rewrite or move is free. Before editing, search for whatever asserts, references or duplicates each sentence:
+a test matching its wording, a size or required-section guard, another instruction file naming it as the owner, and any
+evaluation whose prompt depends on it. Report what you found beside the decision, because an edit that breaks a guard or
 orphans a pointer is a different decision than the user believed they were making. Repair the orphaned pointer inside
 the same change instead of leaving a file that claims an owner no longer stating the rule.
 </ground_every_decision_before_you_apply_it>
