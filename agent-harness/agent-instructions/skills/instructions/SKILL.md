@@ -52,3 +52,7 @@ For definitions of CLAUDE.md files per context and workspace, read `claude-md.md
 <subagent_briefs>
 For one-off prompts passed to other agents, read `subagent-briefs.md`.
 </subagent_briefs>
+
+<refining_an_existing_file>
+To break an existing instruction file down sentence by sentence and refine it with the user, read `refine.md`.
+</refining_an_existing_file>
