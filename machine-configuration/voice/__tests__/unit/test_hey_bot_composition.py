@@ -1,8 +1,16 @@
 import tempfile
 
+import daemon_main
 import pytest
 from daemon_main import build_daemon
 from daemon_runtime import HeyBotDaemon
+from hey_bot_boundary_fakes import (
+    FakeGateway,
+    RecordingNotifier,
+    RecordingSynthesizer,
+    content_reply,
+)
+from hey_bot_daemon_fakes import FakeCapture, ScriptedTranscriber
 from push_to_talk_main import build_session
 from push_to_talk_session import PushToTalkSession
 from transcription_log_main import main as read_transcription_log
@@ -40,6 +48,38 @@ def test_the_push_to_talk_program_wires_itself_from_its_environment(
     deployed_environment,
 ):
     assert isinstance(build_session(), PushToTalkSession)
+
+
+def test_a_dispatched_command_travels_from_the_wired_daemon_to_the_speech(
+    deployed_environment, monkeypatch
+):
+    chunk_directory = deployed_environment / "chunks"
+    chunk_directory.mkdir()
+    spoken_replies = RecordingSynthesizer()
+    monkeypatch.setattr(
+        daemon_main, "AudioCapture", lambda: FakeCapture(chunk_directory)
+    )
+    monkeypatch.setattr(
+        daemon_main,
+        "SpeechTranscriber",
+        lambda _model: ScriptedTranscriber(
+            ["hey clever what is the weather", "in florianopolis today"]
+        ),
+    )
+    monkeypatch.setattr(daemon_main, "DesktopNotifier", RecordingNotifier)
+    monkeypatch.setattr(daemon_main, "SpeechSynthesizer", lambda _voice: spoken_replies)
+    monkeypatch.setattr(
+        daemon_main,
+        "AssistantGateway",
+        lambda _settings: FakeGateway(content_reply("The weather is fine.")),
+    )
+    daemon = build_daemon()
+
+    for _chunk in range(5):
+        daemon.process_chunk(chunk_directory / "chunk.wav")
+    daemon.shut_down()
+
+    assert spoken_replies.spoken == ["The weather is fine."]
 
 
 def test_the_log_program_reports_a_transcription_directory_with_no_logs(
