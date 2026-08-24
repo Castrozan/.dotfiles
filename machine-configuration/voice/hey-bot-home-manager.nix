@@ -9,39 +9,56 @@ let
 
   keywordsPattern = builtins.concatStringsSep "|" cfg.keywords;
 
-  heyBotDaemon = pkgs.writeShellApplication {
+  heyBotPackageDirectory = ./scripts/hey_bot;
+
+  gatewayEnvironment = {
+    HEY_BOT_GATEWAY_URL = cfg.gatewayUrl;
+    HEY_BOT_GATEWAY_TOKEN_FILE = cfg.gatewayTokenFile;
+    HEY_BOT_AGENT_ID = cfg.agentId;
+    HEY_BOT_TTS_VOICE = cfg.ttsVoice;
+    HEY_BOT_MODEL = cfg.model;
+  };
+
+  mkHeyBotProgram =
+    {
+      name,
+      entryModule,
+      runtimeInputs,
+      runtimeEnv,
+    }:
+    pkgs.writeShellApplication {
+      inherit name runtimeInputs runtimeEnv;
+      text = ''
+        exec ${pkgs.python312}/bin/python3 ${heyBotPackageDirectory}/${entryModule} "$@"
+      '';
+    };
+
+  heyBotDaemon = mkHeyBotProgram {
     name = "hey-bot";
+    entryModule = "daemon_main.py";
     runtimeInputs = with pkgs; [
       sox
       whisper-cpp
       python3Packages.edge-tts
       mpv
-      curl
-      jq
       libnotify
       wireplumber
-      perl
     ];
-    runtimeEnv = {
+    runtimeEnv = gatewayEnvironment // {
       HEY_BOT_WHISPER_MODEL = cfg.whisperModel;
       HEY_BOT_KEYWORDS_PATTERN = keywordsPattern;
-      HEY_BOT_GATEWAY_URL = cfg.gatewayUrl;
-      HEY_BOT_GATEWAY_TOKEN_FILE = cfg.gatewayTokenFile;
-      HEY_BOT_AGENT_ID = cfg.agentId;
-      HEY_BOT_TTS_VOICE = cfg.ttsVoice;
-      HEY_BOT_MODEL = cfg.model;
       HEY_BOT_TRANSCRIPTION_DIR = cfg.transcriptionDir;
       HEY_BOT_MAX_LOG_SIZE = toString cfg.maxLogFileSize;
     };
-    text = builtins.readFile ./scripts/hey-bot;
   };
 
-  heyBotLog = pkgs.writeShellApplication {
+  heyBotLog = mkHeyBotProgram {
     name = "hey-bot-log";
+    entryModule = "transcription_log_main.py";
+    runtimeInputs = [ pkgs.coreutils ];
     runtimeEnv = {
       HEY_BOT_TRANSCRIPTION_DIR = cfg.transcriptionDir;
     };
-    text = builtins.readFile ./scripts/hey-bot-log;
   };
 
   heyBotToggle = pkgs.writeShellApplication {
@@ -65,25 +82,17 @@ let
     '';
   };
 
-  heyBotPushToTalk = pkgs.writeShellApplication {
+  heyBotPushToTalk = mkHeyBotProgram {
     name = "hey-bot-ptt";
+    entryModule = "push_to_talk_main.py";
     runtimeInputs = with pkgs; [
       python3Packages.edge-tts
       mpv
-      curl
-      jq
       libnotify
       wireplumber
       wl-clipboard
     ];
-    runtimeEnv = {
-      HEY_BOT_GATEWAY_URL = cfg.gatewayUrl;
-      HEY_BOT_GATEWAY_TOKEN_FILE = cfg.gatewayTokenFile;
-      HEY_BOT_AGENT_ID = cfg.agentId;
-      HEY_BOT_TTS_VOICE = cfg.ttsVoice;
-      HEY_BOT_MODEL = cfg.model;
-    };
-    text = builtins.readFile ./scripts/hey-bot-ptt;
+    runtimeEnv = gatewayEnvironment;
   };
 in
 {
