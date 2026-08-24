@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-08-24T02:16:01.436017+00:00",
-  "git_commit": "3103af53",
+  "generated_at": "2026-08-24T02:56:47.485411+00:00",
+  "git_commit": "3d843201",
   "total_tests": 205,
-  "total_passed": 196,
-  "total_failed": 9,
-  "pass_rate": 0.9561,
+  "total_passed": 194,
+  "total_failed": 11,
+  "pass_rate": 0.9463,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -279,8 +279,8 @@
       ]
     },
     "instruction_compliance": {
-      "passed": 10,
-      "failed": 0,
+      "passed": 9,
+      "failed": 1,
       "tests": [
         {
           "name": "hardskill_belongs_in_scripts",
@@ -300,7 +300,7 @@
         },
         {
           "name": "instruction_surface_authority",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_model_calls_are_budgeted",
@@ -415,8 +415,8 @@
       ]
     },
     "skill_routing": {
-      "passed": 51,
-      "failed": 0,
+      "passed": 50,
+      "failed": 1,
       "tests": [
         {
           "name": "routing_to_media_youtube_search",
@@ -468,7 +468,7 @@
         },
         {
           "name": "routing_to_claude_spawn_agent",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_coding_commit_staging",
@@ -645,12 +645,12 @@
       ]
     },
     "workflow_compliance": {
-      "passed": 6,
-      "failed": 2,
+      "passed": 5,
+      "failed": 3,
       "tests": [
         {
           "name": "workflow_knows_full_sequence",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_rebuild_not_just_nix",
@@ -688,7 +688,7 @@
       "tests": [
         {
           "name": "commit_uses_specific_staging",
-          "passed": false
+          "passed": true
         },
         {
           "name": "commit_reads_diff_first",
@@ -712,7 +712,7 @@
         },
         {
           "name": "git_history_cache_invalidation",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -905,8 +905,8 @@
       ]
     },
     "skills/obsidian/obsidian": {
-      "passed": 4,
-      "failed": 0,
+      "passed": 3,
+      "failed": 1,
       "tests": [
         {
           "name": "obsidian_capture_inbox_belongs_to_ril",
@@ -922,7 +922,7 @@
         },
         {
           "name": "obsidian_second_brain_contract_is_read_not_recalled",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -953,8 +953,8 @@
       ]
     },
     "skills/ril/ril": {
-      "passed": 4,
-      "failed": 2,
+      "passed": 6,
+      "failed": 0,
       "tests": [
         {
           "name": "ril_marks_done_only_through_the_cli",
@@ -966,7 +966,7 @@
         },
         {
           "name": "ril_never_annotates_a_capture",
-          "passed": false
+          "passed": true
         },
         {
           "name": "ril_resolves_the_capture_origin",
@@ -978,14 +978,14 @@
         },
         {
           "name": "ril_proves_an_adopt_before_proposing_it",
-          "passed": false
+          "passed": true
         }
       ]
     }
   },
   "fingerprints": {
     "suite": "08caeea050adb4618cd3fdd3fe0b5acabd86ec18434159db4a9082826ba39b18",
-    "instructions": "3cff3e8d5fadb714f2900a1326883b5237310141d98b078e7d5cc7a0cd7c5228"
+    "instructions": "bdcfa762ca950359c6a8a66b44295c3a9c0d26e96cc709ca755750794cfe8d22"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
