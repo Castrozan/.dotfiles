@@ -19,6 +19,8 @@ in
     ../../../machine-configuration/development/cloud-services/bitwarden-cli-home-manager.nix
     ../../../machine-configuration/development/cloud-services/infisical-home-manager.nix
     ../../../machine-configuration/development/model-context-protocol/mcporter-home-manager.nix
+    ../../../machine-configuration/development/kubernetes/k9s-home-manager.nix
+    ../../../machine-configuration/development/kubernetes/kubeconfig-private-home-manager.nix
     ../../../machine-configuration/development/database-tools/mongodb-atlas-cli-home-manager.nix
     ../../../machine-configuration/development/development-environments/ralph-tui-home-manager.nix
     ../../../machine-configuration/development/development-environments/temporal-home-manager.nix

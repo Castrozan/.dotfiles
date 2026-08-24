@@ -1,30 +1,75 @@
-{ pkgs, ... }:
-let
-  fetchPrebuiltBinary = import ../../../repository/nix-library/fetch-prebuilt-binary.nix {
-    inherit pkgs;
-  };
-
-  k9s = fetchPrebuiltBinary {
-    pname = "k9s";
-    version = "0.50.9";
-    url = "https://github.com/derailed/k9s/releases/download/v0.50.9/k9s_linux_amd64.deb";
-    sha256 = "048g8bh3likyj03gcqca7wwnj0xmpqh2axrqislipfpr56fqqdyw";
-    binaryName = "k9s";
-    meta = with pkgs.lib; {
-      description = "Kubernetes CLI To Manage Your Clusters In Style!";
-      homepage = "https://k9scli.io/";
-      license = licenses.asl20;
-      platforms = platforms.linux;
-    };
-  };
-in
+{ config, ... }:
 {
-  home = {
-    file = {
-      ".config/k9s/config.yaml".source = ./program-configuration/k9s/config.yaml;
-      ".config/k9s/aliases.yaml".source = ./program-configuration/k9s/aliases.yaml;
+  programs.k9s = {
+    enable = true;
+
+    settings.k9s = {
+      liveViewAutoRefresh = false;
+      gpuVendors = { };
+      screenDumpDir = "${config.xdg.stateHome}/k9s/screen-dumps";
+      refreshRate = 2;
+      apiServerTimeout = "15s";
+      maxConnRetry = 5;
+      readOnly = false;
+      noExitOnCtrlC = false;
+      portForwardAddress = "localhost";
+      ui = {
+        enableMouse = false;
+        headless = false;
+        logoless = false;
+        crumbsless = false;
+        reactive = false;
+        noIcons = false;
+        defaultsToFullScreen = false;
+        useFullGVRTitle = false;
+      };
+      skipLatestRevCheck = false;
+      disablePodCounting = false;
+      shellPod = {
+        image = "busybox:1.35.0";
+        namespace = "default";
+        limits = {
+          cpu = "100m";
+          memory = "100Mi";
+        };
+      };
+      imageScans = {
+        enable = false;
+        exclusions = {
+          namespaces = [ ];
+          labels = { };
+        };
+      };
+      logger = {
+        tail = 5000;
+        buffer = 5000;
+        sinceSeconds = 300;
+        textWrap = false;
+        disableAutoscroll = false;
+        showTime = false;
+      };
+      thresholds = {
+        cpu = {
+          critical = 90;
+          warn = 70;
+        };
+        memory = {
+          critical = 90;
+          warn = 70;
+        };
+      };
+      defaultView = "";
     };
 
-    packages = [ k9s ];
+    aliases.aliases = {
+      dp = "deployments";
+      sec = "v1/secrets";
+      jo = "jobs";
+      cr = "clusterroles";
+      crb = "clusterrolebindings";
+      ro = "roles";
+      rb = "rolebindings";
+      np = "networkpolicies";
+    };
   };
 }
