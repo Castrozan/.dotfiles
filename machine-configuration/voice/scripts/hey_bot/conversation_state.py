@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 
-from conversation_actions import ConversationAction
+from hey_bot.conversation_actions import ConversationAction
 
 COMMAND_MAX_CHUNKS = 15
 COMMAND_SILENCE_END = 3

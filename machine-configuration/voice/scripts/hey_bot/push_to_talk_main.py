@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from assistant_gateway import AssistantGateway
-from desktop_notifier import DesktopNotifier
-from gateway_reply_speech import (
+from hey_bot.assistant_gateway import AssistantGateway
+from hey_bot.desktop_notifier import DesktopNotifier
+from hey_bot.gateway_reply_speech import (
     UNPARSABLE_REPLY_SPEECH,
     UNREACHABLE_GATEWAY_SPEECH,
     FailureSpeech,
 )
-from push_to_talk_capture import PushToTalkCapture
-from push_to_talk_session import PushToTalkSession
-from runtime_environment import gateway_settings, speech_voice
-from speech_synthesizer import SpeechSynthesizer
+from hey_bot.push_to_talk_capture import PushToTalkCapture
+from hey_bot.push_to_talk_session import PushToTalkSession
+from hey_bot.runtime_environment import gateway_settings, speech_voice
+from hey_bot.speech_synthesizer import SpeechSynthesizer
 
 
 def build_session() -> PushToTalkSession:

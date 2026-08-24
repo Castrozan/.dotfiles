@@ -2,7 +2,7 @@ import io
 import json
 import urllib.error
 
-from assistant_gateway import AssistantGateway, GatewayReplyKind, GatewaySettings
+from hey_bot.assistant_gateway import AssistantGateway, GatewayReplyKind, GatewaySettings
 
 SETTINGS = GatewaySettings(
     url="http://gateway.invalid",

@@ -1,7 +1,7 @@
 import os
 
 from hey_bot_boundary_fakes import RecordingConsole
-from transcription_log_reader import TranscriptionLogReader
+from hey_bot.transcription_log_reader import TranscriptionLogReader
 
 
 def write_log_file(directory, name, contents, modified_at):

@@ -1,4 +1,4 @@
-from assistant_gateway import GatewayReply, GatewayReplyKind
+from hey_bot.assistant_gateway import GatewayReply, GatewayReplyKind
 
 
 class RecordingConsole:

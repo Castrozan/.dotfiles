@@ -1,4 +1,4 @@
-from transcription_log import TranscriptionLog
+from hey_bot.transcription_log import TranscriptionLog
 
 TIMESTAMPS = {
     "%Y-%m-%d %H:%M:%S": "2026-08-23 19:00:00",

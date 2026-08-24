@@ -4,8 +4,8 @@ import os
 from collections.abc import Callable
 from pathlib import Path
 
-from console_output import ConsoleOutput
-from transcription_log import latest_log_file
+from hey_bot.console_output import ConsoleOutput
+from hey_bot.transcription_log import latest_log_file
 
 MISSING_LOGS_EXIT_CODE = 1
 

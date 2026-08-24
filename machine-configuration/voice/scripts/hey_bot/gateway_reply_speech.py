@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from assistant_gateway import GatewayReply, GatewayReplyKind
+from hey_bot.assistant_gateway import GatewayReply, GatewayReplyKind
 
 UNREACHABLE_GATEWAY_SPEECH = "Sorry, I could not reach the gateway."
 UNPARSABLE_REPLY_SPEECH = "Sorry, I could not process that."

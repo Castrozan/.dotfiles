@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 
-from console_output import ConsoleOutput
-from conversation_actions import (
+from hey_bot.console_output import ConsoleOutput
+from hey_bot.conversation_actions import (
     AnnounceAction,
     ClearWaitContextAction,
     ConversationAction,
@@ -14,10 +14,10 @@ from conversation_actions import (
     SaveWaitContextAction,
     SpeakAction,
 )
-from desktop_notifier import DesktopNotifier
-from signal_files import SignalFiles
-from speech_synthesizer import SpeechSynthesizer
-from transcription_log import TranscriptionLog
+from hey_bot.desktop_notifier import DesktopNotifier
+from hey_bot.signal_files import SignalFiles
+from hey_bot.speech_synthesizer import SpeechSynthesizer
+from hey_bot.transcription_log import TranscriptionLog
 
 
 class DaemonActions:

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from conversation_state import MachineSettings
-from daemon_runtime import HeyBotDaemon
+from hey_bot.conversation_state import MachineSettings
+from hey_bot.daemon_runtime import HeyBotDaemon
 from hey_bot_boundary_fakes import RecordingConsole
-from signal_files import SignalFilePaths, SignalFiles
+from hey_bot.signal_files import SignalFilePaths, SignalFiles
 
 
 class FakeRecording:

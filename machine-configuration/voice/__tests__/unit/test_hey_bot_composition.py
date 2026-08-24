@@ -1,9 +1,9 @@
 import tempfile
 
-import daemon_main
 import pytest
-from daemon_main import build_daemon
-from daemon_runtime import HeyBotDaemon
+from hey_bot import daemon_main
+from hey_bot.daemon_main import build_daemon
+from hey_bot.daemon_runtime import HeyBotDaemon
 from hey_bot_boundary_fakes import (
     FakeGateway,
     RecordingNotifier,
@@ -11,9 +11,9 @@ from hey_bot_boundary_fakes import (
     content_reply,
 )
 from hey_bot_daemon_fakes import FakeCapture, ScriptedTranscriber
-from push_to_talk_main import build_session
-from push_to_talk_session import PushToTalkSession
-from transcription_log_main import main as read_transcription_log
+from hey_bot.push_to_talk_main import build_session
+from hey_bot.push_to_talk_session import PushToTalkSession
+from hey_bot.transcription_log_main import main as read_transcription_log
 
 ENVIRONMENT = {
     "HEY_BOT_WHISPER_MODEL": "/models/ggml-base.bin",

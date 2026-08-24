@@ -2,10 +2,10 @@ import os
 import tempfile
 
 import pytest
-from audio_capture import AudioCapture
-from process_execution import CommandResult
-from signal_files import default_signal_file_paths
-from speech_synthesizer import SpeechSynthesizer
+from hey_bot.audio_capture import AudioCapture
+from hey_bot.process_execution import CommandResult
+from hey_bot.signal_files import default_signal_file_paths
+from hey_bot.speech_synthesizer import SpeechSynthesizer
 
 
 @pytest.fixture

@@ -9,7 +9,12 @@ let
 
   keywordsPattern = builtins.concatStringsSep "|" cfg.keywords;
 
-  heyBotPackageDirectory = ./scripts/hey_bot;
+  heyBotPythonPath = pkgs.linkFarm "hey-bot-python-path" [
+    {
+      name = "hey_bot";
+      path = ./scripts/hey_bot;
+    }
+  ];
 
   gatewayEnvironment = {
     HEY_BOT_GATEWAY_URL = cfg.gatewayUrl;
@@ -29,13 +34,14 @@ let
     pkgs.writeShellApplication {
       inherit name runtimeInputs runtimeEnv;
       text = ''
-        exec ${pkgs.python312}/bin/python3 ${heyBotPackageDirectory}/${entryModule} "$@"
+        export PYTHONPATH=${heyBotPythonPath}
+        exec ${pkgs.python312}/bin/python3 -m hey_bot.${entryModule} "$@"
       '';
     };
 
   heyBotDaemon = mkHeyBotProgram {
     name = "hey-bot";
-    entryModule = "daemon_main.py";
+    entryModule = "daemon_main";
     runtimeInputs = with pkgs; [
       sox
       whisper-cpp
@@ -54,7 +60,7 @@ let
 
   heyBotLog = mkHeyBotProgram {
     name = "hey-bot-log";
-    entryModule = "transcription_log_main.py";
+    entryModule = "transcription_log_main";
     runtimeInputs = [ pkgs.coreutils ];
     runtimeEnv = {
       HEY_BOT_TRANSCRIPTION_DIR = cfg.transcriptionDir;
@@ -84,7 +90,7 @@ let
 
   heyBotPushToTalk = mkHeyBotProgram {
     name = "hey-bot-ptt";
-    entryModule = "push_to_talk_main.py";
+    entryModule = "push_to_talk_main";
     runtimeInputs = with pkgs; [
       python3Packages.edge-tts
       mpv

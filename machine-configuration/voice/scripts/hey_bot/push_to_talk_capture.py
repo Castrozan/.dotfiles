@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from process_execution import CommandResult, run_command
+from hey_bot.process_execution import CommandResult, run_command
 
 
 class PushToTalkCapture:

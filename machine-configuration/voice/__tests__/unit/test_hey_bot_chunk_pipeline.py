@@ -1,9 +1,9 @@
 from pathlib import Path
 
 import pytest
-from audio_capture import CHUNK_DURATION_SECONDS, ENERGY_THRESHOLD, AudioCapture
-from process_execution import CommandResult
-from speech_transcriber import SpeechTranscriber
+from hey_bot.audio_capture import CHUNK_DURATION_SECONDS, ENERGY_THRESHOLD, AudioCapture
+from hey_bot.process_execution import CommandResult
+from hey_bot.speech_transcriber import SpeechTranscriber
 
 CHUNK_PATH = Path("/tmp/hey-bot-chunk.wav")
 

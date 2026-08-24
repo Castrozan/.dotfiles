@@ -1,4 +1,4 @@
-from conversation_actions import (
+from hey_bot.conversation_actions import (
     AnnounceAction,
     LogTranscriptionAction,
     NotifyAction,
@@ -6,7 +6,7 @@ from conversation_actions import (
     SaveWaitContextAction,
     SpeakAction,
 )
-from gateway_reply_speech import (
+from hey_bot.gateway_reply_speech import (
     UNPARSABLE_REPLY_SPEECH,
     UNREACHABLE_GATEWAY_SPEECH,
     FailureSpeech,
@@ -19,7 +19,7 @@ from hey_bot_boundary_fakes import (
     unparsable_reply,
     unreachable_reply,
 )
-from voice_command_dispatch import (
+from hey_bot.voice_command_dispatch import (
     COMMAND_PROMPT_RULES,
     MID_SENTENCE_MESSAGE,
     NONSENSICAL_INPUT_MESSAGE,

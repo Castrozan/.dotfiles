@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from process_execution import CommandResult, run_command
-from temporary_paths import create_temporary_file
+from hey_bot.process_execution import CommandResult, run_command
+from hey_bot.temporary_paths import create_temporary_file
 
 SPEECH_FILE_PREFIX = "hey-bot-tts-"
 SPEECH_FILE_SUFFIX = ".mp3"

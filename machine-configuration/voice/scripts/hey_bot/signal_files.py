@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from temporary_paths import temporary_directory
+from hey_bot.temporary_paths import temporary_directory
 
 FOLLOWUP_FLAG_FILE_NAME = "hey-bot-followup"
 WAIT_CONTEXT_FILE_NAME = "hey-bot-wait-context"

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from gateway_reply_speech import (
+from hey_bot.gateway_reply_speech import (
     UNPARSABLE_REPLY_SPEECH,
     UNREACHABLE_GATEWAY_SPEECH,
     FailureSpeech,
@@ -13,9 +13,9 @@ from hey_bot_boundary_fakes import (
     unparsable_reply,
     unreachable_reply,
 )
-from process_execution import CommandResult
-from push_to_talk_capture import PushToTalkCapture
-from push_to_talk_session import (
+from hey_bot.process_execution import CommandResult
+from hey_bot.push_to_talk_capture import PushToTalkCapture
+from hey_bot.push_to_talk_session import (
     NO_SPEECH_NOTIFICATION,
     PUSH_TO_TALK_PROMPT_HEADER,
     PushToTalkSession,

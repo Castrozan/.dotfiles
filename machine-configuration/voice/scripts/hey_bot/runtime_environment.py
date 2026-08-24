@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from assistant_gateway import GatewaySettings
+from hey_bot.assistant_gateway import GatewaySettings
 
 WHISPER_MODEL_VARIABLE = "HEY_BOT_WHISPER_MODEL"
 KEYWORDS_PATTERN_VARIABLE = "HEY_BOT_KEYWORDS_PATTERN"
