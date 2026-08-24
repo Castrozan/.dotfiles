@@ -61,7 +61,7 @@
       defaultView = "";
     };
 
-    aliases.aliases = {
+    aliases = {
       dp = "deployments";
       sec = "v1/secrets";
       jo = "jobs";
