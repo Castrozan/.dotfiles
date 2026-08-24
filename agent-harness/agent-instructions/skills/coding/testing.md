@@ -1,7 +1,7 @@
 <core-verification-authority>
-Core `<coding>` owns the persistent defaults for causal reproduction, focused-before-broad verification, and claims
-bounded by evidence. Use this chapter for the bounded testing procedure; repository-local instructions may add stronger
-gates.
+Core `<coding>` owns the persistent defaults for causal reproduction and claims bounded by evidence. This chapter owns
+focused-before-broad execution order and flaky-failure diagnosis. Use it for the bounded testing procedure;
+repository-local instructions may add stronger gates.
 </core-verification-authority>
 
 <before-changes>

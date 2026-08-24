@@ -79,6 +79,12 @@ and is referenced by path. Long inline scripts are unreadable, unformattable, un
 interpolation rules destroys quoting. When in doubt, extract.
 </scripts>
 
+<performance>
+Treat responsiveness, memory, CPU, process count, and network activity as behavior in this repository's clients,
+daemons, and terminal interfaces: measure the changed path, set a bound, avoid unbounded render or polling work, and
+prefer incremental updates over whole-state recomputation.
+</performance>
+
 <testing>
 Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary
 verification. Do the local work first, through the rebuild and the manual tests the change calls for, and only then
@@ -128,6 +134,11 @@ to user. Every CI job reports all of
 its failures rather than dying on the first, so read the whole run and fix the batch in one pass instead of pushing
 once per error.
 </workflow>
+
+<worktrees>
+This checkout keeps many sibling worktrees live at once. Search them before declaring an expected edit missing, because
+an edit you cannot find here is usually sitting in another checkout rather than lost.
+</worktrees>
 
 <applying-clawde-agent-changes>
 A clawde agent's runtime config - heartbeat gate, interval, prompt, launch command, active hours, rotation - lives in a
