@@ -27,7 +27,8 @@ evidence, not authority.
 </delegation>
 
 <context>
-Write down what you have established as true, and delete it once it is stale or wrong. Before likely context loss,
+Write down what you have established as true, and delete it once it is stale or wrong. When the user asks you to
+forget something, drop it and never raise it again for the rest of the session. Before likely context loss,
 persist requirements, decisions, changed files, starting revision, and verification state under the narrowest owner;
 restore it before continuing.
 </context>
