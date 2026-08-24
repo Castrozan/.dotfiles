@@ -26,7 +26,9 @@ INTERACTIVE_LAUNCHER_PATHS = (
     REPO_ROOT / "agent-harness" / "harnesses" / "hermes" / "config.nix",
 )
 INTERACTIVE_LAUNCH_SOURCES = (
-    *INTERACTIVE_LAUNCHER_PATHS[:3],
+    INTERACTIVE_LAUNCHER_PATHS[0],
+    REPO_ROOT / "agent-harness" / "harnesses" / "codex" / "scripts" / "codex",
+    INTERACTIVE_LAUNCHER_PATHS[2],
     REPO_ROOT
     / "agent-harness"
     / "harnesses"
