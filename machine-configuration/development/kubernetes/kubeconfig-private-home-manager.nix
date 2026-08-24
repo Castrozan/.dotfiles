@@ -2,10 +2,12 @@
   pkgs,
   config,
   lib,
+  hostname,
   ...
 }:
 let
-  kubeconfigSourcePath = ../../../private-configuration + "/cloud-services/kubernetes/config";
+  privateConfigRoot = ../../../private-configuration;
+  kubeconfigSourcePath = "${toString privateConfigRoot}/machines/${hostname}/kubeconfig";
   kubeconfigSourceExists = builtins.pathExists kubeconfigSourcePath;
 
   kubeconfigSource = builtins.path {
