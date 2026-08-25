@@ -56,7 +56,12 @@ nothing about which generation a live bridge came from, the supervisor records t
 `~/clawde/sidecar-logs/<name>.log.spawned-command` and replaces any live process whose record no longer matches the
 command the current generation wants, terminating and waiting for each before spawning the replacement. New bridge code
 therefore goes live within one supervisor poll of the rebuild that ships it, with no respawn and no reboot; a bridge
-carrying no record at all counts as superseded and is replaced once. The bridge takes no baked
+carrying no record at all counts as superseded and is replaced once. The supervisor itself needed the same treatment for
+the same reason: its unit carries `X-RestartIfChanged = false`, so home-manager rewrites the unit file and leaves the
+running process alone, and on chise that left the supervisor executing a garbage-collected store path for three days
+while every rebuild reported success. A home activation now compares the running supervisor's command line against the
+one the generation deploys and restarts only on a mismatch, so a supervisor already on the current code is still never
+disturbed. The bridge takes no baked
 one-shot command: it reads the agent's launch config, which carries one one-shot turn command per eligible harness, and
 resolves the active harness from the runtime override on every message, so a manual `clawde harness <agent> <harness>`
 or a failover rewires the Discord channel onto the new harness without the bridge restarting. Each turn is recorded in

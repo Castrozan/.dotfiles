@@ -213,16 +213,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1787619366,
-        "narHash": "sha256-iIbwgNXl3ZmaCntwaUf7zLXcqJ3pyaZ8YgaCKA9lRIE=",
+        "lastModified": 1787683876,
+        "narHash": "sha256-hc8p/WrMBPU0FRL4UX+eVUBh63PJpuiGFUEYT/k9pP4=",
         "owner": "Castrozan",
         "repo": "clawde",
-        "rev": "3ae6f6be68d81aae3c11dad17c2c1347a8ee3807",
+        "rev": "c74e7f99ca62d973605c892eb0c10d00ef6d0962",
         "type": "github"
       },
       "original": {
         "owner": "Castrozan",
-        "ref": "v0.12.7",
+        "ref": "v0.12.9",
         "repo": "clawde",
         "type": "github"
       }
