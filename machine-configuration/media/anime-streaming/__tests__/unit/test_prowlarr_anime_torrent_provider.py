@@ -110,4 +110,5 @@ def test_smart_search_requests_and_keeps_only_anime_results():
     )
 
     assert "categories=5070" in selection["requestedUrl"]
+    assert "query=LIAR+GAME+01+1080p" in selection["requestedUrl"]
     assert selection["titles"] == ["[SubsPlease] LIAR GAME - 01 [1080p].mkv"]

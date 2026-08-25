@@ -20,7 +20,8 @@ class Provider {
 
   async smartSearch(options) {
     const parts = [this.firstTitle(options)];
-    if (options.episodeNumber > 0) parts.push(String(options.episodeNumber));
+    if (options.episodeNumber > 0)
+      parts.push(String(options.episodeNumber).padStart(2, "0"));
     if (options.resolution) parts.push(options.resolution);
     if (options.batch) parts.push("batch");
     return this.searchByQuery(
