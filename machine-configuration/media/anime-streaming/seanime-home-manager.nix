@@ -95,6 +95,7 @@ in
           After = [ "seanime.service" ];
           Requires = [ "seanime.service" ];
           StartLimitIntervalSec = 0;
+          X-Restart-Triggers = [ (builtins.hashString "sha256" providerPayload) ];
         };
 
         Service = {

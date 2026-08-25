@@ -119,4 +119,9 @@ in
         && provisionerUnit.Service.TimeoutStartSec == "90s"
       )
       "both services must run at login and the reconciler must stay within the user-generation activation timeout";
+
+  chise-seanime-provider-changes-restart-the-provisioner =
+    mkEvalCheck "chise-seanime-provider-changes-restart-the-provisioner"
+      (provisionerUnit.Unit.X-Restart-Triggers == [ (builtins.hashString "sha256" providerPayload) ])
+      "a provider payload change must rerun the provisioner so Seanime reloads the extension without a manual restart";
 }
