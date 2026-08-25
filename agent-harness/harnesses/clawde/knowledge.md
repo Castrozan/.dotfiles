@@ -42,6 +42,13 @@ window name, terminating duplicates and orphans and creating a window only when 
 When an agent's window survives but its wrapper died, the supervisor relaunches into the existing window rather than
 returning early, so use a respawn that replaces the pane and never a plain new-window; the restored-from-resurrect case
 is exactly this, a real window holding a bare login shell.
+On herdr that replacement has to create the new tab before it closes the stale one, because herdr refuses to close a
+workspace's last tab, and a workspace holding one permanent agent beside on-demand ones sits at exactly one tab most of
+the time. Get the order wrong and the close is refused, the create is never reached, and the agent stays dead through
+every ten-second poll while its orphaned harness keeps sitting at an idle prompt, which is why the pane looks alive.
+A relaunch blocked this way is recorded nowhere the agent can see it: the reason goes to the supervisor's stderr, at
+`~/Library/Logs/clawde.err.log` on darwin and `journalctl --user -u clawde` on NixOS, so read that before concluding an
+agent died of anything subtler.
 </supervisor_reconciles_by_wrapper_identity>
 
 <a_channel_bridge_is_a_headless_sidecar_not_a_window>
