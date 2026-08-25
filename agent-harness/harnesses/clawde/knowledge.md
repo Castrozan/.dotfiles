@@ -51,7 +51,12 @@ through the `pgrep` pattern its adapter declares. That pattern must not carry th
 script and the pattern matches nothing, so the previous generation's bridge is never culled and two clients hold one bot
 token and answer everything twice. An eval check fails the build on a pattern containing a store path. The same matching
 is why any shell command containing a reconcile pattern is terminated as a duplicate, so a `pgrep` typed to inspect a
-bridge kills itself; assemble the pattern at runtime or run the inspection from a script file. The bridge takes no baked
+bridge kills itself; assemble the pattern at runtime or run the inspection from a script file. Because the pattern says
+nothing about which generation a live bridge came from, the supervisor records the command it launched beside the log at
+`~/clawde/sidecar-logs/<name>.log.spawned-command` and replaces any live process whose record no longer matches the
+command the current generation wants, terminating and waiting for each before spawning the replacement. New bridge code
+therefore goes live within one supervisor poll of the rebuild that ships it, with no respawn and no reboot; a bridge
+carrying no record at all counts as superseded and is replaced once. The bridge takes no baked
 one-shot command: it reads the agent's launch config, which carries one one-shot turn command per eligible harness, and
 resolves the active harness from the runtime override on every message, so a manual `clawde harness <agent> <harness>`
 or a failover rewires the Discord channel onto the new harness without the bridge restarting. Each turn is recorded in
