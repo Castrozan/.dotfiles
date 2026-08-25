@@ -72,6 +72,7 @@ class Provider {
     if (!query || !this.prowlarrBaseUrl || !this.prowlarrApiKey) return [];
     const url = new URL("/api/v1/search", this.normalizedBaseUrl());
     url.searchParams.set("query", query);
+    url.searchParams.set("categories", "5070");
     const response = await fetch(url.toString(), {
       headers: {
         "X-Api-Key": this.prowlarrApiKey,
@@ -81,7 +82,7 @@ class Provider {
     if (!response.ok) return [];
     const results = response.json();
     const torrents = results
-      .filter((item) => item.title)
+      .filter((item) => item.title && this.isAnimeCategory(item.categories))
       .map((item) => this.toAnimeTorrent(item));
     return torrents
       .filter(
@@ -147,6 +148,12 @@ class Provider {
   parsedResultLimit() {
     const value = Number(this.resultLimit);
     return Number.isInteger(value) && value > 0 ? Math.min(value, 100) : 50;
+  }
+
+  isAnimeCategory(categories) {
+    return (categories || []).some(
+      (category) => category.id === 5070 || category.name === "TV/Anime",
+    );
   }
 
   validInfoHash(value) {

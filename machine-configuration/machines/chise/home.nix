@@ -57,6 +57,7 @@ in
 
     ../../media/anime-streaming/ani-cli-home-manager.nix
     ../../media/anime-streaming/seanime-home-manager.nix
+    ../../media/media-streaming/stremio-home-manager.nix
     ../../terminal/visual-effects/bad-apple/bad-apple-chise-home-manager.nix
     ../../media/manga-streaming/suwayomi-server-home-manager.nix
     ../../media/media-command-packages-home-manager.nix

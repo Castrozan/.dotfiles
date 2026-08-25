@@ -18,7 +18,7 @@ in
     ../../../development/testing/python-interpreter-nixos.nix
     ../../../desktop/fonts/fonts-nixos.nix
     ../../../gaming/steam/steam-nixos.nix
-    # ../../../media/media-streaming/media-streaming-nixos.nix # Removed: requires insecure qtwebengine-5.15.19
+    ../../../media/media-streaming/stremio-streaming-server-nixos.nix
     ../../../security/secrets/agenix-nixos.nix
     ../../../development/system-rebuild/nixos-rebuild-guard-nixos.nix
     ../../../network/tailscale/tailscale-nixos.nix
