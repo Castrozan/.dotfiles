@@ -32,6 +32,14 @@ def agent_session_environment(session_identifier=RECORDED_SESSION_IDENTIFIER):
     }
 
 
+def codex_session_environment(session_identifier=RECORDED_SESSION_IDENTIFIER):
+    environment = agent_session_environment(session_identifier)
+    environment.pop("CLAUDE_CODE_SESSION_ID")
+    environment["CODEX_THREAD_ID"] = session_identifier
+    environment["CODEX_SESSION_ID"] = session_identifier
+    return environment
+
+
 def run_git(repository_directory: Path, *arguments: str, environment=None):
     return subprocess.run(
         ["git", "-C", str(repository_directory), *arguments],

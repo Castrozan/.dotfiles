@@ -3,6 +3,7 @@ from agent_commit_provenance_hook_test_support import (
     AMENDED_SESSION_IDENTIFIER,
     RECORDED_SESSION_IDENTIFIER,
     agent_session_environment,
+    codex_session_environment,
     commit_a_change,
     latest_commit_message,
     latest_trailer_value,
@@ -23,6 +24,18 @@ def test_a_commit_made_inside_an_agent_session_carries_its_resume_command(reposi
         "\n"
         "Agent-Machine: testmachine\n"
         f"Agent-Resume: claude --resume {RECORDED_SESSION_IDENTIFIER}"
+    )
+
+
+def test_a_commit_made_inside_a_codex_session_carries_its_resume_command(repository):
+    commit_a_change(
+        repository,
+        "a.txt",
+        "feat: codex",
+        environment=codex_session_environment(),
+    )
+    assert latest_trailer_value(repository, "Agent-Resume") == (
+        f"codex resume {RECORDED_SESSION_IDENTIFIER}"
     )
 
 

@@ -14,6 +14,8 @@ from .codex_rollout_lookup import codex_session_identifier_for_working_directory
 from .opencode_session_lookup import opencode_session_identifier_for_process
 
 CLAUDE_SESSION_IDENTIFIER_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_SESSION_ID"
+CODEX_SESSION_IDENTIFIER_ENVIRONMENT_VARIABLE = "CODEX_SESSION_ID"
+CODEX_THREAD_IDENTIFIER_ENVIRONMENT_VARIABLE = "CODEX_THREAD_ID"
 CLAWDE_AGENT_NAME_ENVIRONMENT_VARIABLE = "CLAWDE_AGENT_NAME"
 MACHINE_NAME_ENVIRONMENT_VARIABLE = "AGENT_COMMIT_PROVENANCE_MACHINE"
 
@@ -54,6 +56,12 @@ def harness_and_session_from_environment(
     ).strip()
     if claude_session_identifier:
         return "claude", claude_session_identifier
+    codex_session_identifier = (
+        environment.get(CODEX_THREAD_IDENTIFIER_ENVIRONMENT_VARIABLE, "").strip()
+        or environment.get(CODEX_SESSION_IDENTIFIER_ENVIRONMENT_VARIABLE, "").strip()
+    )
+    if codex_session_identifier:
+        return "codex", codex_session_identifier
     return None
 
 

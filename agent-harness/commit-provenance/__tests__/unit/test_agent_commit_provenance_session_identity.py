@@ -35,6 +35,36 @@ class TestResolveFromEnvironment:
         identity = resolve_agent_session_identity(environment, 4242, Path("/repo"))
         assert identity.agent_name == "dotfiles-steward"
 
+    def test_codex_thread_identifier_wins_without_touching_process_ancestry(self):
+        with patch(
+            "agent_commit_provenance.session_identity.find_agent_session"
+        ) as ancestry_lookup:
+            identity = resolve_agent_session_identity(
+                {
+                    "CODEX_THREAD_ID": "019fafd2-8d5c-70a2",
+                    "CODEX_SESSION_ID": "legacy-session",
+                    "AGENT_COMMIT_PROVENANCE_MACHINE": "kira",
+                },
+                4242,
+                Path("/repo"),
+            )
+        ancestry_lookup.assert_not_called()
+        assert identity == AgentSessionIdentity(
+            harness_name="codex",
+            machine_name="kira",
+            session_identifier="019fafd2-8d5c-70a2",
+            agent_name=None,
+        )
+
+    def test_codex_session_identifier_is_the_environment_fallback(self):
+        identity = resolve_agent_session_identity(
+            {"CODEX_SESSION_ID": "019d91b3-b7cf-7681"},
+            4242,
+            Path("/repo"),
+        )
+        assert identity.harness_name == "codex"
+        assert identity.session_identifier == "019d91b3-b7cf-7681"
+
     def test_machine_name_falls_back_to_the_hostname(self):
         with patch(
             "agent_commit_provenance.session_identity.socket.gethostname",
