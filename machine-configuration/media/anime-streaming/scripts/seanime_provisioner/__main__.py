@@ -1,4 +1,5 @@
 from seanime_configuration import (
+    desired_mpv_arguments,
     desired_torrentstream_settings,
     provider_user_config,
     read_prowlarr_api_key,
@@ -39,6 +40,7 @@ def provision():
     patch_setting(client, "library.torrentProvider", "prowlarr-torrent-provider")
     patch_setting(client, "mediaPlayer.defaultPlayer", "mpv")
     patch_setting(client, "mediaPlayer.mpvPath", mpv_path)
+    patch_setting(client, "mediaPlayer.mpvArgs", desired_mpv_arguments())
     print("Seanime settings reconciled")
 
 

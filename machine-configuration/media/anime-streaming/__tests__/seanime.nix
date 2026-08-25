@@ -103,6 +103,8 @@ in
     mkEvalCheck "chise-seanime-launches-streams-with-mpv"
       (
         lib.hasInfix "mediaPlayer.defaultPlayer" provisionerSource
+        && lib.hasInfix "mediaPlayer.mpvArgs" provisionerSource
+        && lib.hasInfix "--no-terminal --vo=gpu-next --gpu-context=wayland" provisionerConfigurationSource
         && lib.hasInfix (builtins.unsafeDiscardStringContext "SEANIME_MPV_PATH=${pkgs.mpv}/bin/mpv") provisionerEnvironment
         && lib.hasInfix (builtins.unsafeDiscardStringContext "${pkgs.mpv}/bin") serverEnvironment
       )

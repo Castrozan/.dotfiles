@@ -66,3 +66,11 @@ def test_missing_prowlarr_api_key_refuses_to_provision(tmp_path):
 
     with pytest.raises(RuntimeError, match="API key is missing"):
         seanime_configuration.read_prowlarr_api_key(config_file)
+
+
+def test_mpv_uses_wayland_gpu_output_without_terminal_rendering():
+    arguments = seanime_configuration.desired_mpv_arguments()
+
+    assert "--no-terminal" in arguments
+    assert "--vo=gpu-next" in arguments
+    assert "--gpu-context=wayland" in arguments

@@ -40,3 +40,7 @@ def provider_user_config(api_key, prowlarr_base_url):
             "resultLimit": "50",
         },
     }
+
+
+def desired_mpv_arguments():
+    return "--no-terminal --vo=gpu-next --gpu-context=wayland"

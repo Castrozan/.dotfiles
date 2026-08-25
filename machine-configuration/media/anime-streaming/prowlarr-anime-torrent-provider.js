@@ -23,7 +23,10 @@ class Provider {
     if (options.episodeNumber > 0) parts.push(String(options.episodeNumber));
     if (options.resolution) parts.push(options.resolution);
     if (options.batch) parts.push("batch");
-    return this.searchByQuery(parts.filter(Boolean).join(" "));
+    return this.searchByQuery(
+      parts.filter(Boolean).join(" "),
+      options.batch ? -1 : options.episodeNumber,
+    );
   }
 
   async getTorrentInfoHash(torrent) {
@@ -65,7 +68,7 @@ class Provider {
     return titles.find((title) => title?.trim())?.trim() || "";
   }
 
-  async searchByQuery(query) {
+  async searchByQuery(query, expectedEpisodeNumber = -1) {
     if (!query || !this.prowlarrBaseUrl || !this.prowlarrApiKey) return [];
     const url = new URL("/api/v1/search", this.normalizedBaseUrl());
     url.searchParams.set("query", query);
@@ -77,9 +80,15 @@ class Provider {
     });
     if (!response.ok) return [];
     const results = response.json();
-    return results
+    const torrents = results
       .filter((item) => item.title)
-      .map((item) => this.toAnimeTorrent(item))
+      .map((item) => this.toAnimeTorrent(item));
+    return torrents
+      .filter(
+        (torrent) =>
+          expectedEpisodeNumber <= 0 ||
+          torrent.episodeNumber === expectedEpisodeNumber,
+      )
       .slice(0, this.parsedResultLimit());
   }
 
@@ -112,7 +121,7 @@ class Provider {
       infoHash,
       resolution: this.resolutionFrom(item.title),
       isBatch: /\b(batch|complete)\b/i.test(item.title),
-      episodeNumber: -1,
+      episodeNumber: this.episodeNumberFrom(item.title),
       releaseGroup: this.releaseGroupFrom(item.title),
       isBestRelease: false,
       confirmed: false,
@@ -159,6 +168,20 @@ class Provider {
 
   resolutionFrom(name) {
     return name.match(/\b(2160p|1080p|720p|480p)\b/i)?.[1]?.toLowerCase() || "";
+  }
+
+  episodeNumberFrom(name) {
+    const patterns = [
+      /\bS\d{1,3}E(\d{1,4})(?:v\d+)?\b/i,
+      /\b(?:episode|ep|e)[ ._-]*(\d{1,4})(?:v\d+)?\b/i,
+      /(?:\s-\s+|\s{2,})(\d{1,4})(?:v\d+)?(?=\s*(?:\[|\(|$))/i,
+      /\s(\d{1,4})(?:v\d+)?\s+(?=\[(?:\d{3,4}p|web|bd|dvd|hevc|avc|x26|h\.?26|aac|flac))/i,
+    ];
+    for (const pattern of patterns) {
+      const episodeNumber = Number(name.match(pattern)?.[1]);
+      if (Number.isInteger(episodeNumber)) return episodeNumber;
+    }
+    return -1;
   }
 
   releaseGroupFrom(name) {
