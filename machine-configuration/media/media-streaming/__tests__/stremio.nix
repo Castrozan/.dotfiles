@@ -6,9 +6,10 @@
 }:
 let
   inherit (helpers) mkEvalCheck;
+  testHomeDirectory = "/home/test-user";
 
   homeModule = import ../stremio-home-manager.nix {
-    config.home.homeDirectory = "/home/zanoni";
+    config.home.homeDirectory = testHomeDirectory;
     inherit lib pkgs;
   };
   webUnit = homeModule.systemd.user.services.stremio-web;
@@ -35,7 +36,7 @@ in
   chise-stremio-addon-keeps-prowlarr-key-at-runtime =
     mkEvalCheck "chise-stremio-addon-keeps-prowlarr-key-at-runtime"
       (
-        lib.hasInfix "STREMIO_PROWLARR_CONFIG_FILE=/home/zanoni/arr-stack/config/prowlarr/config.xml" webEnvironment
+        lib.hasInfix "STREMIO_PROWLARR_CONFIG_FILE=${testHomeDirectory}/arr-stack/config/prowlarr/config.xml" webEnvironment
         && lib.hasInfix "read_prowlarr_api_key" serverSource
         && !(lib.hasInfix "runtime-secret" gatewaySource)
       )
