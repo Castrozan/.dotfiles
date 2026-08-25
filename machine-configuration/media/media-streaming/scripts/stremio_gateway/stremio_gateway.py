@@ -64,11 +64,13 @@ def addon_manifest() -> dict:
 
 
 def setup_url(web_url: str, streaming_server_url: str, addon_manifest_url: str) -> str:
-    streaming_query = urllib.parse.urlencode(
-        {"streamingServerUrl": streaming_server_url}
+    route_query = urllib.parse.urlencode(
+        {
+            "addon": addon_manifest_url,
+            "streamingServerUrl": streaming_server_url,
+        }
     )
-    addon_query = urllib.parse.urlencode({"addon": addon_manifest_url})
-    return f"{web_url.rstrip('/')}/?{streaming_query}#/addons?{addon_query}"
+    return f"{web_url.rstrip('/')}/#/addons?{route_query}"
 
 
 def request_json(url: str, headers: dict[str, str] | None = None) -> object:

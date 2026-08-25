@@ -108,12 +108,9 @@ def test_setup_url_carries_the_server_and_addon_without_an_account():
     )
 
     assert url.startswith(
-        "http://100.64.0.1:43212/?streamingServerUrl=http%3A%2F%2F100.64.0.1%3A11470%2F"
+        "http://100.64.0.1:43212/#/addons?addon=http%3A%2F%2F100.64.0.1%3A43212%2Fprowlarr%2Fmanifest.json"
     )
-    assert (
-        "#/addons?addon=http%3A%2F%2F100.64.0.1%3A43212%2Fprowlarr%2Fmanifest.json"
-        in url
-    )
+    assert "&streamingServerUrl=http%3A%2F%2F100.64.0.1%3A11470%2F" in url
 
 
 def test_missing_prowlarr_api_key_refuses_to_start(tmp_path):
