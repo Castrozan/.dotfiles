@@ -9,9 +9,9 @@ server. The declarative config enables its browser capabilities on every host an
 Work in this order: 1) `pinchtab nav <url>` navigates, with `--new-tab` or `--snap` when needed; 2) `pinchtab snap`
 returns refs, which change after navigation or interaction; 3) `pinchtab click <ref>` and
 `pinchtab type <ref> <text>` interact; 4) `pinchtab screenshot --output <file>` saves visual evidence while
-`pinchtab capture` pairs it with a snapshot; 5) `pinchtab text` extracts text while `pinchtab health` and
-`pinchtab tabs` inspect server state. Use `pinchtab help` or a command's `--help` for the changing CLI surface. Switch
-the one shared server with `pinchtab-mode headless` or `pinchtab-mode headed`; a mode switch restarts it for every
-client, and the next rebuild restores headed mode. Never attempt a second server for another mode because both
-instances race the same pidfile.
+`pinchtab capture` pairs it with a snapshot; inspect the saved file with the harness's image-reading tool before using
+it as evidence; 5) `pinchtab text` extracts text while `pinchtab health` and `pinchtab tabs` inspect server state. Use
+`pinchtab help` or a command's `--help` for the changing CLI surface. Switch the one shared server with
+`pinchtab-mode headless` or `pinchtab-mode headed`; a mode switch restarts it for every client, and the next rebuild
+restores headed mode. Never attempt a second server for another mode because both instances race the same pidfile.
 </workflow>
