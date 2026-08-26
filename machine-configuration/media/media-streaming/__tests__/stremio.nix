@@ -7,6 +7,7 @@
 let
   inherit (helpers) mkEvalCheck;
   testHomeDirectory = "/home/test-user";
+  tailnetBindAddress = import ../../tailnet-bind-address.nix { inherit lib; };
 
   homeModule = import ../stremio-home-manager.nix {
     config.home.homeDirectory = testHomeDirectory;
@@ -52,8 +53,8 @@ in
             ssl = false;
           }
         ]
-        && publicOriginVirtualHost.locations."/".proxyPass == "http://100.94.11.81:43212"
-        && publicOriginVirtualHost.locations."/server/".proxyPass == "http://100.94.11.81:11470/"
+        && publicOriginVirtualHost.locations."/".proxyPass == "http://${tailnetBindAddress}:43212"
+        && publicOriginVirtualHost.locations."/server/".proxyPass == "http://${tailnetBindAddress}:11470/"
       )
       "the public Stremio origin must expose one loopback listener to cloudflared and keep both upstream services on the tailnet";
 
@@ -62,8 +63,9 @@ in
       (
         lib.hasInfix "stream[.]lucaszanoni[.]com%2fserver" publicOriginHttpConfig
         && lib.hasInfix "127.0.0.1%3A11470" publicOriginHttpConfig
+        && publicOriginVirtualHost.locations."/hlsv2/".proxyPass == "http://${tailnetBindAddress}:11470"
         &&
-          lib.hasInfix "$stremioInternalHlsArguments"
+          lib.hasInfix "set $args $stremioInternalHlsArguments;"
             publicOriginVirtualHost.locations."/hlsv2/".extraConfig
       )
       "the public Stremio HLS proxy must replace its recursive public media URL with the streaming server's own loopback URL before probing and segmenting";

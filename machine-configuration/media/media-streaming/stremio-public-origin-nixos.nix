@@ -40,16 +40,19 @@ in
           proxyWebsockets = true;
           extraConfig = streamingProxyExtraConfig;
         };
-        "/hlsv2/".extraConfig = ''
-          proxy_pass http://${tailnetBindAddress}:11470$uri?$stremioInternalHlsArguments;
-          proxy_buffering off;
-          proxy_request_buffering off;
-          proxy_read_timeout 3600s;
-          proxy_send_timeout 3600s;
-          proxy_set_header Host $host;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto https;
-        '';
+        "/hlsv2/" = {
+          proxyPass = "http://${tailnetBindAddress}:11470";
+          extraConfig = ''
+            set $args $stremioInternalHlsArguments;
+            proxy_buffering off;
+            proxy_request_buffering off;
+            proxy_read_timeout 3600s;
+            proxy_send_timeout 3600s;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+          '';
+        };
       };
     };
   };
