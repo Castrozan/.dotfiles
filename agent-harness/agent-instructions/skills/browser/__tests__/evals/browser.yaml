@@ -42,3 +42,21 @@ tests:
         - >-
           Says PinchTab is eligible only now as the last resort because every Chrome DevTools recovery step failed,
           Chrome remains unavailable, the user did not require it, and the isolated profile can satisfy the task.
+
+  - name: browser_reports_blocked_when_autonomous_agent_requires_chrome_devtools
+    skill_path: agent-harness/agent-instructions/skills/browser/SKILL.md
+    prompt: >-
+      You are an autonomous clawde agent, and I explicitly required Chrome DevTools for this browser task. The shared
+      Chrome target reports that autonomous agents are mechanically denied. What do you do? Answer in one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - >-
+          Reports that the explicit Chrome DevTools requirement is blocked in this autonomous session and does not
+          silently substitute, invoke, inspect, restart, or configure PinchTab.
+      output_not_contains:
+        - "pinchtab nav"
+        - "pinchtab daemon"
+        - "pinchtab config"
+        - "pinchtab profiles"
