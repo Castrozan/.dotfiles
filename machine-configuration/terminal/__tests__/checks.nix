@@ -30,7 +30,7 @@ let
     && !(lib.hasInfix "herdr --session" herdrAutostartContent);
 
   herdrConfigContent = builtins.readFile ../workspace-manager/herdr/program-configuration/config.toml;
-  herdrConfigBindsWorkspaceChooserAsChooseSession = lib.hasInfix "goto = \"prefix+s\"" herdrConfigContent;
+  herdrConfigBindsWorkspaceChooserAsChooseSession = lib.hasInfix ''goto = ["prefix+s", "prefix+ctrl+s"]'' herdrConfigContent;
 in
 {
   domain-terminal-bash-enabled =
@@ -71,7 +71,7 @@ in
   domain-terminal-herdr-config-binds-workspace-chooser-as-choose-session =
     mkEvalCheck "domain-terminal-herdr-config-binds-workspace-chooser-as-choose-session"
       herdrConfigBindsWorkspaceChooserAsChooseSession
-      "herdr config.toml must bind goto (prefix+s) so the workspace chooser, which lists every workspace, is tmux choose-session: with per-client active-workspace each client jumps its own view to any workspace, the reachability half of the tmux workflow";
+      "herdr config.toml must bind goto to both prefix+s and prefix+ctrl+s so the workspace chooser survives the prefix key's lingering control modifier: the chooser lists every workspace, matching tmux choose-session, and per-client active-workspace lets each client jump its own view independently";
 
   domain-terminal-kitty-catppuccin =
     mkEvalCheck "domain-terminal-kitty-catppuccin"
