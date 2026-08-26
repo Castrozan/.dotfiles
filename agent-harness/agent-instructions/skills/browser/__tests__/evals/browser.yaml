@@ -1,0 +1,30 @@
+tests:
+  - name: browser_keeps_explicit_chrome_devtools_choice_during_recovery
+    skill_path: agent-harness/agent-instructions/skills/browser/SKILL.md
+    prompt: >-
+      I explicitly asked you to use Chrome DevTools through the browser harness. list_pages reports no attached tabs and
+      the existing headed DevTools connection looks stale. State your next action in one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - >-
+          Keeps the explicit Chrome DevTools choice, launches or reconnects Chrome Global as needed, and retries the
+          chrome-devtools list_pages call while waiting for consent instead of switching to or probing PinchTab.
+      output_not_contains:
+        - "pinchtab daemon"
+        - "pinchtab config"
+        - "pinchtab profiles"
+
+  - name: browser_uses_chrome_devtools_for_public_scraping_when_available
+    skill_path: agent-harness/agent-instructions/skills/browser/SKILL.md
+    prompt: >-
+      I need an interactive scrape of a public site. Chrome DevTools is connected and list_pages works. Which browser
+      path do you use? Answer in one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - >-
+          Chooses Chrome DevTools because it is available, and does not choose PinchTab merely because the site is
+          public or the task is scraping.

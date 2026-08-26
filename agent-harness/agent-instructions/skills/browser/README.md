@@ -1,13 +1,7 @@
 <tool_selection>
-Browser tools, pick by which session the task needs, not by habit. Default to the user's real everyday session through
-the stealth CDP target, Chrome DevTools (`mcp__chrome-devtools__*`) on every host, because it carries the user's live
-logins (Google, Cloudflare Access, banking, anything already signed in) and runs bare so bot detection never sees it;
-most tasks want exactly that session. PinchTab (`pinchtab` CLI, no MCP) is the deliberate choice for isolated work,
-never the default reach: its own persistent-profile Chrome, logged in once in headed mode, holding none of the user's
-real logins, for public scraping, bulk extraction, throwaway browsing, Electron apps, and local or dev sessions the real
-browser should stay out of. The stealth target is reserved for the interactive session and refuses autonomous clawde
-agents, so an autonomous agent uses PinchTab regardless. `SKILL.md` holds the per-tool command workflows; this file
-holds why and when.
+`SKILL.md` owns browser-tool selection: Chrome DevTools first, explicit user tool choice binding, and PinchTab eligible
+only as its defined last resort. This file explains why the Chrome target has consent, concurrency, and tab-safety
+constraints; it does not broaden fallback eligibility.
 </tool_selection>
 
 <stealth_cdp_target_chrome_global>
@@ -51,11 +45,8 @@ growth, so never diagnose slowness or contention here; the only ceiling is the m
 </chrome_devtools_performance_is_not_the_limit>
 
 <pinchtab_tradeoffs>
-PinchTab is the deliberate choice for isolated work, not the default reach. It runs its own persistent-profile Chrome
-driven from bash, needs no MCP transport, and a one-time headed login stays authenticated across runs; reach for it when
-the task wants a profile isolated from the user's real browser - public sites, scraping, research, bulk extraction,
-throwaway browsing, Electron apps, local or dev sessions - or when an autonomous clawde agent needs a browser at all,
-since the stealth target refuses it. Its profile is separate from the user's real Chrome, so it holds none of their
-logins and is not a stealth substitute for bot-detecting sites that need the real session; default to a CDP target
-there.
+PinchTab runs a separate persistent-profile Chrome with none of the user's real-browser logins. It can satisfy eligible
+isolated work after Chrome DevTools recovery fails, but it cannot substitute for an explicitly requested Chrome
+DevTools session or authenticated work that depends on the real profile. `SKILL.md` owns the last-resort gate;
+`pinchtab.md` owns the workflow after that gate passes.
 </pinchtab_tradeoffs>
