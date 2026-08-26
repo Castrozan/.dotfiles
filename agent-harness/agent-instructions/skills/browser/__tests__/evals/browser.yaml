@@ -28,3 +28,17 @@ tests:
         - >-
           Chooses Chrome DevTools because it is available, and does not choose PinchTab merely because the site is
           public or the task is scraping.
+
+  - name: browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails
+    skill_path: agent-harness/agent-instructions/skills/browser/SKILL.md
+    prompt: >-
+      I did not require a particular browser, and an isolated profile can satisfy this task. Chrome DevTools returned no
+      pages, so I launched Chrome Global, enabled remote debugging, approved the consent prompt, and retried list_pages.
+      It still cannot connect. Is PinchTab eligible now? Answer in one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - >-
+          Says PinchTab is eligible only now as the last resort because every Chrome DevTools recovery step failed,
+          Chrome remains unavailable, the user did not require it, and the isolated profile can satisfy the task.
