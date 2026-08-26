@@ -9,8 +9,8 @@ tests:
     assertions:
       llm_judge:
         - >-
-          Keeps the explicit Chrome DevTools choice, launches or reconnects Chrome Global as needed, and retries the
-          chrome-devtools list_pages call while waiting for consent instead of switching to or probing PinchTab.
+          Keeps the explicit Chrome DevTools choice and takes the next appropriate recovery action by launching or
+          reconnecting Chrome Global or retrying chrome-devtools list_pages, instead of switching to or probing PinchTab.
       output_not_contains:
         - "pinchtab daemon"
         - "pinchtab config"
