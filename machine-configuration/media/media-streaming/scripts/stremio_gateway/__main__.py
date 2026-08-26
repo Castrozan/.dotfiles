@@ -6,19 +6,20 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from stremio_gateway import (
-    ProwlarrStreamProvider,
+from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
+from stremio_protocol import (
     addon_manifest,
     parse_stream_request,
-    read_prowlarr_api_key,
-    setup_url,
+    setup_url_for_request_origin,
 )
 
 
 class StremioRequestHandler(BaseHTTPRequestHandler):
     static_root: Path
     stream_provider: ProwlarrStreamProvider
-    setup_redirect_url: str
+    public_host: str
+    public_setup_redirect_url: str
+    tailnet_setup_redirect_url: str
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -40,7 +41,13 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             return
         if path == "/setup":
             self.send_response(302)
-            self.send_header("Location", self.setup_redirect_url)
+            request_host = self.headers.get("Host", "").strip()
+            setup_redirect_url = (
+                self.public_setup_redirect_url
+                if request_host == self.public_host
+                else self.tailnet_setup_redirect_url
+            )
+            self.send_header("Location", setup_redirect_url)
             self.end_headers()
             return
         if path == "/prowlarr/manifest.json":
@@ -107,8 +114,8 @@ def main():
     bind_address = required_environment_value("STREMIO_BIND_ADDRESS")
     port = int(required_environment_value("STREMIO_WEB_PORT"))
     web_url = required_environment_value("STREMIO_WEB_URL")
+    public_web_url = required_environment_value("STREMIO_PUBLIC_WEB_URL")
     streaming_server_url = required_environment_value("STREMIO_STREAMING_SERVER_URL")
-    manifest_url = f"{web_url.rstrip('/')}/prowlarr/manifest.json"
     StremioRequestHandler.static_root = Path(
         required_environment_value("STREMIO_WEB_ROOT")
     ).resolve()
@@ -119,8 +126,16 @@ def main():
         ),
         required_environment_value("STREMIO_METADATA_URL"),
     )
-    StremioRequestHandler.setup_redirect_url = setup_url(
-        web_url, streaming_server_url, manifest_url
+    StremioRequestHandler.public_host = urllib.parse.urlsplit(public_web_url).netloc
+    StremioRequestHandler.public_setup_redirect_url = setup_url_for_request_origin(
+        public_web_url,
+        web_url,
+        streaming_server_url,
+    )
+    StremioRequestHandler.tailnet_setup_redirect_url = setup_url_for_request_origin(
+        web_url,
+        web_url,
+        streaming_server_url,
     )
     server = ThreadingHTTPServer((bind_address, port), StremioRequestHandler)
     server.serve_forever()

@@ -35,6 +35,7 @@ in
           "STREMIO_BIND_ADDRESS=${tailnetBindAddress}"
           "STREMIO_WEB_PORT=${stremioWebPort}"
           "STREMIO_WEB_URL=${stremioWebUrl}"
+          "STREMIO_PUBLIC_WEB_URL=https://stream.lucaszanoni.com"
           "STREMIO_WEB_ROOT=${stremioWeb}"
           "STREMIO_STREAMING_SERVER_URL=${stremioStreamingServerUrl}"
           "STREMIO_PROWLARR_URL=http://${tailnetBindAddress}:9696"

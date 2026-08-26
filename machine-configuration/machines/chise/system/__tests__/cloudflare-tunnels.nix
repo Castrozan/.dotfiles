@@ -48,6 +48,10 @@ let
         hostname = "read.lucaszanoni.com";
         localServiceUrl = "http://127.0.0.1:9445";
       }
+      {
+        hostname = "stream.lucaszanoni.com";
+        localServiceUrl = "http://127.0.0.1:9446";
+      }
     ];
     credentialsFile = "/run/agenix/jarvis-session-connector-credentials";
   };
@@ -80,6 +84,8 @@ in
         &&
           cloudflareTunnelConnectorEnabledTunnel.ingress."request.lucaszanoni.com" == "http://127.0.0.1:9444"
         && cloudflareTunnelConnectorEnabledTunnel.ingress."read.lucaszanoni.com" == "http://127.0.0.1:9445"
+        &&
+          cloudflareTunnelConnectorEnabledTunnel.ingress."stream.lucaszanoni.com" == "http://127.0.0.1:9446"
       )
       "the connector must route each declared Jarvis and private media origin hostname to its loopback service so it exposes no undeclared host service";
 

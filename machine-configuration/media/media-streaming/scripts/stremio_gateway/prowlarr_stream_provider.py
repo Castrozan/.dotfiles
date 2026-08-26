@@ -3,25 +3,15 @@ import re
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree
-from dataclasses import dataclass
 from pathlib import Path
+
+from stremio_protocol import StreamRequest
 
 
 VALID_INFO_HASH = re.compile(r"^[a-fA-F0-9]{40}$")
-STREAM_PATH = re.compile(
-    r"^/prowlarr/stream/(?P<media_type>movie|series)/(?P<identifier>tt\d+(?::\d+:\d+)?)\.json$"
-)
 MOVIE_COLLECTION_WORDS = re.compile(
     r"\b(collection|complete|duology|trilogy|quadrilogy|saga|pack)\b", re.IGNORECASE
 )
-
-
-@dataclass(frozen=True)
-class StreamRequest:
-    media_type: str
-    imdb_identifier: str
-    season: int | None = None
-    episode: int | None = None
 
 
 def read_prowlarr_api_key(config_file: Path) -> str:
@@ -30,47 +20,6 @@ def read_prowlarr_api_key(config_file: Path) -> str:
     if not api_key:
         raise RuntimeError("Prowlarr API key is missing")
     return api_key
-
-
-def parse_stream_request(path: str) -> StreamRequest | None:
-    match = STREAM_PATH.fullmatch(path)
-    if match is None:
-        return None
-    identifier_parts = match.group("identifier").split(":")
-    if match.group("media_type") == "movie" and len(identifier_parts) == 1:
-        return StreamRequest("movie", identifier_parts[0])
-    if match.group("media_type") == "series" and len(identifier_parts) == 3:
-        return StreamRequest(
-            "series",
-            identifier_parts[0],
-            int(identifier_parts[1]),
-            int(identifier_parts[2]),
-        )
-    return None
-
-
-def addon_manifest() -> dict:
-    return {
-        "id": "com.lucaszanoni.prowlarr-streams",
-        "version": "1.0.0",
-        "name": "Prowlarr Streams",
-        "description": "Instant private movie and TV streams from Prowlarr",
-        "resources": ["stream"],
-        "types": ["movie", "series"],
-        "idPrefixes": ["tt"],
-        "catalogs": [],
-        "behaviorHints": {"p2p": True, "configurable": False},
-    }
-
-
-def setup_url(web_url: str, streaming_server_url: str, addon_manifest_url: str) -> str:
-    route_query = urllib.parse.urlencode(
-        {
-            "addon": addon_manifest_url,
-            "streamingServerUrl": streaming_server_url,
-        }
-    )
-    return f"{web_url.rstrip('/')}/#/addons?{route_query}"
 
 
 def request_json(url: str, headers: dict[str, str] | None = None) -> object:

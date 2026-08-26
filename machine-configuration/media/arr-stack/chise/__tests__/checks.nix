@@ -47,6 +47,10 @@ in
           hostname = "read.lucaszanoni.com";
           localServiceUrl = "http://127.0.0.1:9445";
         } cloudflareMediaIngress
+        && builtins.elem {
+          hostname = "stream.lucaszanoni.com";
+          localServiceUrl = "http://127.0.0.1:9446";
+        } cloudflareMediaIngress
       )
-      "the owner-gated lucaszanoni.com media hostnames must reach the existing loopback login limiter rather than the Jellyfin or Jellyseerr container ports directly";
+      "the owner-gated lucaszanoni.com media hostnames must reach their loopback proxies rather than the media containers directly";
 }

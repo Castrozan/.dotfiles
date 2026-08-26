@@ -16,7 +16,11 @@ let
   webEnvironment = lib.concatStringsSep " " webUnit.Service.Environment;
   systemModule = import ../stremio-streaming-server-nixos.nix { inherit lib pkgs; };
   streamingUnit = systemModule.systemd.services.stremio-streaming-server;
-  gatewaySource = builtins.readFile ../scripts/stremio_gateway/stremio_gateway.py;
+  publicOriginModule = import ../stremio-public-origin-nixos.nix { inherit lib; };
+  publicOriginNginx = publicOriginModule.services.nginx;
+  publicOriginVirtualHost = publicOriginNginx.virtualHosts.stremio-public-origin;
+  publicOriginHttpConfig = publicOriginNginx.appendHttpConfig.content;
+  gatewaySource = builtins.readFile ../scripts/stremio_gateway/prowlarr_stream_provider.py;
   serverSource = builtins.readFile ../scripts/stremio_gateway/__main__.py;
 in
 {
@@ -32,6 +36,37 @@ in
     )
     && webUnit.Install.WantedBy == [ "default.target" ]
   ) "Stremio Web must come from a pinned official release and start with the user session";
+
+  chise-stremio-setup-selects-the-public-origin =
+    mkEvalCheck "chise-stremio-setup-selects-the-public-origin"
+      (lib.hasInfix "STREMIO_PUBLIC_WEB_URL=https://stream.lucaszanoni.com" webEnvironment)
+      "Stremio setup must know the Access-gated public origin so public launches select the same-origin addon and streaming proxy";
+
+  chise-stremio-public-origin-is-loopback-only =
+    mkEvalCheck "chise-stremio-public-origin-is-loopback-only"
+      (
+        publicOriginVirtualHost.listen == [
+          {
+            addr = "127.0.0.1";
+            port = 9446;
+            ssl = false;
+          }
+        ]
+        && publicOriginVirtualHost.locations."/".proxyPass == "http://100.94.11.81:43212"
+        && publicOriginVirtualHost.locations."/server/".proxyPass == "http://100.94.11.81:11470/"
+      )
+      "the public Stremio origin must expose one loopback listener to cloudflared and keep both upstream services on the tailnet";
+
+  chise-stremio-public-origin-rewrites-hls-media-url =
+    mkEvalCheck "chise-stremio-public-origin-rewrites-hls-media-url"
+      (
+        lib.hasInfix "stream[.]lucaszanoni[.]com%2fserver" publicOriginHttpConfig
+        && lib.hasInfix "127.0.0.1%3A11470" publicOriginHttpConfig
+        &&
+          lib.hasInfix "$stremioInternalHlsArguments"
+            publicOriginVirtualHost.locations."/hlsv2/".extraConfig
+      )
+      "the public Stremio HLS proxy must replace its recursive public media URL with the streaming server's own loopback URL before probing and segmenting";
 
   chise-stremio-addon-keeps-prowlarr-key-at-runtime =
     mkEvalCheck "chise-stremio-addon-keeps-prowlarr-key-at-runtime"
