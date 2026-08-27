@@ -139,8 +139,8 @@ services:
       dockerfile: miwayomi.Dockerfile
     image: arr-miwayomi:0.2.9-manga-input-initialization
     container_name: arr-miwayomi
-    hostname: miwayomi
     restart: unless-stopped
+    hostname: miwayomi
     user: "${PUID}:${PGID}"
     networks:
       - arrnet
