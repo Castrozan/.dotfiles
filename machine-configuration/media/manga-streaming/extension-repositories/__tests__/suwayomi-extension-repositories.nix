@@ -17,6 +17,8 @@ let
   releaseOverrideText = builtins.readFile ../../suwayomi-server-release-ahead-of-nixpkgs.nix;
   provisionerModuleText = builtins.readFile ../suwayomi-extension-repositories-home-manager.nix;
   clientText = builtins.readFile ../scripts/suwayomi_extension_repositories/suwayomi_graphql_client.py;
+  miwayomiClientText = builtins.readFile ../scripts/suwayomi_extension_repositories/miwayomi_rest_client.py;
+  commandText = builtins.readFile ../scripts/suwayomi_extension_repositories/__main__.py;
   reconcileText = builtins.readFile ../scripts/suwayomi_extension_repositories/extension_repository_synchronization.py;
   declarationText = builtins.readFile ../scripts/suwayomi_extension_repositories/runtime_configuration.py;
   secretDeclarationText = builtins.readFile ../../../../../secrets/secrets.nix;
@@ -32,6 +34,8 @@ let
         declarationText
         reconcileText
         clientText
+        miwayomiClientText
+        commandText
         synchronizationTestText
       ];
 
@@ -62,7 +66,7 @@ let
     && lib.hasInfix "if declared_repository_urls is None" reconcileText;
 
   anEmptyDeclarationRefusesToRun =
-    lib.hasInfix "leave Suwayomi " declarationText
+    lib.hasInfix "leave the server unable" declarationText
     && lib.hasInfix "raise SystemExit(1)" declarationText;
 
   aWriteThatDoesNotStickIsCaught =

@@ -1,3 +1,4 @@
+import importlib
 import json
 import sys
 import urllib.error
@@ -10,8 +11,10 @@ PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(PACKAGE_DIRECTORY_PATH))
 
-import extension_repository_synchronization
-import suwayomi_graphql_client
+extension_repository_synchronization = importlib.import_module(
+    "extension_repository_synchronization"
+)
+suwayomi_graphql_client = importlib.import_module("suwayomi_graphql_client")
 
 DECLARED_URLS = [
     "https://raw.githubusercontent.com/declared-one/extensions/repository-index.json",
@@ -102,6 +105,7 @@ def test_a_write_that_does_not_stick_is_reported(monkeypatch, tmp_path):
     with pytest.raises(ValueError) as error_info:
         extension_repository_synchronization.synchronize_extension_repositories()
     assert "not the declared" in str(error_info.value)
+    assert all(url not in str(error_info.value) for url in DECLARED_URLS)
 
 
 def test_an_empty_declaration_refuses_to_run(monkeypatch, tmp_path):

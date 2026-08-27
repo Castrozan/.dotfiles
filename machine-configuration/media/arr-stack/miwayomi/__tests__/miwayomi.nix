@@ -7,24 +7,10 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  provisionerScriptRequiredFragments = [
-    "--retry-connrefused"
-    "/api/v1/health"
-    "/api/v1/extensions/repos"
-    "{repos:.}"
-    ".repos"
-    "--data-binary @-"
-  ];
-  testPackages = pkgs // {
-    writeShellScript =
-      _name: scriptText:
-      assert builtins.all (fragment: lib.hasInfix fragment scriptText) provisionerScriptRequiredFragments;
-      "/nix/store/test-miwayomi-extension-repositories";
-  };
   evalMiwayomiModule =
     settings:
     (lib.evalModules {
-      specialArgs.pkgs = testPackages;
+      specialArgs = { inherit pkgs; };
       modules = [
         ../miwayomi-nixos.nix
         {
@@ -68,6 +54,9 @@ let
   composeWaitsForFlaresolverr =
     lib.hasInfix "condition: service_healthy" composeText
     && lib.hasInfix "http://127.0.0.1:8191/" composeText;
+  containersInheritTheStackTimezone =
+    lib.hasInfix "environment:\n      <<: *arr-common-environment\n      FLARESOLVERR_URL" composeText
+    && lib.hasInfix "retries: 3\n    environment:\n      <<: *arr-common-environment" composeText;
   persistenceDirectoriesAreDeclared =
     lib.hasInfix ''"miwayomi"'' stackModuleText
     && lib.hasInfix ''"miwayomi-update-disabled"'' stackModuleText
@@ -89,6 +78,10 @@ let
     == "/run/agenix/suwayomi-extension-repositories"
     && repositoryEnvironment.MIWAYOMI_BASE_URL == "http://arr:4568";
   repositoryProvisionerIsBounded = repositoryService.serviceConfig.TimeoutStartSec == "150s";
+  repositoryProvisionerUsesExistingPackage =
+    lib.hasInfix "/bin/python3" repositoryService.serviceConfig.ExecStart
+    && lib.hasInfix "suwayomi_extension_repositories" repositoryService.serviceConfig.ExecStart
+    && lib.hasSuffix "miwayomi" repositoryService.serviceConfig.ExecStart;
   chiseWiresTheCapability =
     lib.hasInfix "miwayomi = {" chiseStackText
     && lib.hasInfix "suwayomi-extension-repositories" chiseStackText
@@ -126,6 +119,10 @@ in
     mkEvalCheck "chise-miwayomi-waits-for-flaresolverr" composeWaitsForFlaresolverr
       "Miwayomi must wait for a healthy FlareSolverr container so protected extension sources do not fail during cold startup";
 
+  chise-miwayomi-containers-inherit-the-stack-timezone =
+    mkEvalCheck "chise-miwayomi-containers-inherit-the-stack-timezone" containersInheritTheStackTimezone
+      "Miwayomi progress and FlareSolverr logs must use the same declared timezone as every other arr-stack container";
+
   chise-miwayomi-persistence-directories-are-declared =
     mkEvalCheck "chise-miwayomi-persistence-directories-are-declared" persistenceDirectoriesAreDeclared
       "Home Manager must create writable Miwayomi and FlareSolverr state plus the updater directory before Docker bind-mounts them";
@@ -136,7 +133,11 @@ in
 
   chise-miwayomi-repositories-follow-compose =
     mkEvalCheck "chise-miwayomi-repositories-follow-compose"
-      (repositoryProvisionerFollowsCompose && repositoryProvisionerUsesEncryptedList)
+      (
+        repositoryProvisionerFollowsCompose
+        && repositoryProvisionerUsesEncryptedList
+        && repositoryProvisionerUsesExistingPackage
+      )
       "the repository provisioner must require the Compose applicator and reconcile the agenix declaration through chise's tailnet alias";
 
   chise-miwayomi-repository-reconciliation-is-bounded =
