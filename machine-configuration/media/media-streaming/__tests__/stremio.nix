@@ -78,6 +78,8 @@ in
         && lib.hasInfix "--env FASTAPI_HOST=${tailnetBindAddress}" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--memory 1g" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--cpus 2" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "urllib.request.urlopen('http://${tailnetBindAddress}:43214/health', timeout=5)" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--health-start-period 90s" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env-file /run/stremio-comet/prowlarr.env" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "PROWLARR_API_KEY" cometEnvironmentSource
         && !(lib.hasInfix "PROWLARR_API_KEY=" cometUnit.serviceConfig.ExecStart)
