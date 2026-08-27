@@ -18,6 +18,7 @@ let
     mkdir -p "$out"
     cp ${./miwayomi.Dockerfile} "$out/miwayomi.Dockerfile"
     cp ${./miwayomi-manga-input-initialization.patch} "$out/miwayomi-manga-input-initialization.patch"
+    cp ${./miwayomi-watch-progress.patch} "$out/miwayomi-watch-progress.patch"
   '';
   staticEnvironmentFileContents = builtins.readFile ./env;
   runtimeEnvironmentFileContents =

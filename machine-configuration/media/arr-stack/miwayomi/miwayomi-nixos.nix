@@ -57,6 +57,7 @@ in
           ../stack/miwayomi-gateway.conf
           ../stack/miwayomi.Dockerfile
           ../stack/miwayomi-manga-input-initialization.patch
+          ../stack/miwayomi-watch-progress.patch
         ];
         serviceConfig = {
           Type = "oneshot";

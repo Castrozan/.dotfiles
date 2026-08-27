@@ -15,10 +15,13 @@ let
   miwayomiPatchPath = ../../stack/miwayomi-manga-input-initialization.patch;
   miwayomiPatchText =
     if builtins.pathExists miwayomiPatchPath then builtins.readFile miwayomiPatchPath else "";
+  watchProgressPatchPath = ../../stack/miwayomi-watch-progress.patch;
+  watchProgressPatchText =
+    if builtins.pathExists watchProgressPatchPath then builtins.readFile watchProgressPatchPath else "";
   stackModuleText = builtins.readFile ../../stack/arr-stack-home-manager.nix;
 
   imagesAndBuildContextArePinned =
-    lib.hasInfix "image: arr-miwayomi:0.2.9-manga-input-initialization" composeText
+    lib.hasInfix "image: arr-miwayomi:0.2.9-browser-runtime" composeText
     && lib.hasInfix "context: \${MIWAYOMI_BUILD_CONTEXT:?set in ~/arr-stack/.env}" composeText
     && lib.hasInfix "dockerfile: miwayomi.Dockerfile" composeText
     && lib.hasInfix "gradle:8.10.2-jdk21@sha256:963d59f7f22767da4efbcf46b661361b61af5fb88b0309da1071c4234c647eba" miwayomiDockerfileText
@@ -46,6 +49,13 @@ let
     lib.hasInfix "x-miwayomi-dns: &miwayomi-dns\n  - 1.1.1.1\n  - 8.8.8.8" composeText
     && lib.hasInfix "hostname: miwayomi\n    user: \"\${PUID}:\${PGID}\"\n    networks:\n      - arrnet\n    dns: *miwayomi-dns" composeText
     && lib.hasInfix "container_name: arr-flaresolverr\n    restart: unless-stopped\n    networks:\n      - arrnet\n    dns: *miwayomi-dns" composeText;
+  watchProgressNormalizationIsIsolated =
+    lib.hasInfix "COPY miwayomi-watch-progress.patch /tmp/miwayomi-watch-progress.patch" miwayomiDockerfileText
+    && lib.hasInfix "RUN git apply /tmp/miwayomi-watch-progress.patch" miwayomiDockerfileText
+    && lib.hasInfix "cp \${./miwayomi-watch-progress.patch}" stackModuleText
+    && lib.hasInfix "const requestedAnimeUrl = safeDecode(animeUrl);" watchProgressPatchText
+    && lib.hasInfix "d.url = requestedAnimeUrl;" watchProgressPatchText
+    && !(lib.hasInfix "MangaRoutes.kt" watchProgressPatchText);
 in
 {
   chise-miwayomi-images-are-pinned =
@@ -64,4 +74,8 @@ in
   chise-miwayomi-outbound-services-use-stable-dns =
     mkEvalCheck "chise-miwayomi-outbound-services-use-stable-dns" outboundServicesUseStableDns
       "Miwayomi and FlareSolverr must bypass Docker's unusable MagicDNS upstream while retaining Compose service discovery";
+
+  chise-miwayomi-restores-watch-progress =
+    mkEvalCheck "chise-miwayomi-restores-watch-progress" watchProgressNormalizationIsIsolated
+      "the watch-history adapter must preserve the persisted anime URL when an extension duplicates its fragment during detail loading";
 }

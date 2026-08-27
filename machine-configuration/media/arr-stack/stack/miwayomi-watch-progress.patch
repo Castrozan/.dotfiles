@@ -1,0 +1,14 @@
+diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/webui/app.js
+--- a/server/src/main/resources/webui/app.js
++++ b/server/src/main/resources/webui/app.js
+@@ -811,7 +811,9 @@ async function openWatch(sourceId, animeUrl, epUrl, epName) {
+   const main = $("#content");
+   main.innerHTML = `<div class="loading">${escapeHtml(t("common.loading"))}</div>`;
+   try {
+-    const d = await getJSON(`${api}/anime/${sourceId}/details?url=${encodeURIComponent(safeDecode(animeUrl))}`);
++    const requestedAnimeUrl = safeDecode(animeUrl);
++    const d = await getJSON(`${api}/anime/${sourceId}/details?url=${encodeURIComponent(requestedAnimeUrl)}`);
++    d.url = requestedAnimeUrl;
+     await renderDetail("anime", d);
+     openEpisode(encodeURIComponent(safeDecode(epUrl)), epName, true);
+   } catch (e) {

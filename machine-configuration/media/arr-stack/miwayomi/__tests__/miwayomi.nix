@@ -68,7 +68,7 @@ let
     && builtins.elem "arr-stack-drive-guard.service" composeService.requires
     && builtins.elem "multi-user.target" composeService.wantedBy
     && lib.hasInfix "up --detach --build miwayomi flaresolverr miwayomi-gateway" composeService.serviceConfig.ExecStart
-    && builtins.length composeService.restartTriggers == 4;
+    && builtins.length composeService.restartTriggers == 5;
   repositoryProvisionerFollowsCompose =
     repositoryService.after == [ "miwayomi-compose.service" ]
     && repositoryService.requires == [ "miwayomi-compose.service" ]
