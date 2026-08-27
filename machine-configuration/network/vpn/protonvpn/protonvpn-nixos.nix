@@ -8,22 +8,16 @@ let
   protonParaguayService = "openvpn-proton-paraguay.service";
   vpnParaguay = pkgs.writeShellApplication {
     name = "vpn-py";
-    runtimeInputs = [
-      pkgs.sudo
-      pkgs.systemd
-    ];
+    runtimeInputs = [ pkgs.systemd ];
     text = ''
-      exec sudo -n systemctl start ${protonParaguayService}
+      exec /run/wrappers/bin/sudo -n systemctl start ${protonParaguayService}
     '';
   };
   vpnOff = pkgs.writeShellApplication {
     name = "vpn-off";
-    runtimeInputs = [
-      pkgs.sudo
-      pkgs.systemd
-    ];
+    runtimeInputs = [ pkgs.systemd ];
     text = ''
-      exec sudo -n systemctl stop ${protonParaguayService}
+      exec /run/wrappers/bin/sudo -n systemctl stop ${protonParaguayService}
     '';
   };
 in
