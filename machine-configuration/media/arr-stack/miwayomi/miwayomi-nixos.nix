@@ -6,7 +6,7 @@
 }:
 let
   miwayomiConfig = config.custom.miwayomi;
-  stackHomeDirectory = miwayomiConfig.stackHomeDirectory;
+  inherit (miwayomiConfig) stackHomeDirectory;
   extensionRepositoriesPackageDirectory = ../../manga-streaming/extension-repositories/scripts/suwayomi_extension_repositories;
 in
 {
