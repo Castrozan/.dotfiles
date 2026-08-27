@@ -17,12 +17,15 @@ let
   webEnvironment = lib.concatStringsSep " " webUnit.Service.Environment;
   systemModule = import ../stremio-streaming-server-nixos.nix { inherit lib pkgs; };
   streamingUnit = systemModule.systemd.services.stremio-streaming-server;
+  cometModule = import ../stremio-comet-nixos.nix { inherit lib pkgs; };
+  cometUnit = cometModule.systemd.services.stremio-comet;
   publicOriginModule = import ../stremio-public-origin-nixos.nix { inherit lib; };
   publicOriginNginx = publicOriginModule.services.nginx;
   publicOriginVirtualHost = publicOriginNginx.virtualHosts.stremio-public-origin;
   publicOriginHttpConfig = publicOriginNginx.appendHttpConfig.content;
   gatewaySource = builtins.readFile ../scripts/stremio_gateway/prowlarr_stream_provider.py;
   serverSource = builtins.readFile ../scripts/stremio_gateway/__main__.py;
+  cometEnvironmentSource = builtins.readFile ../scripts/stremio_comet_environment.py;
 in
 {
   chise-stremio-web-is-tailnet-only = mkEvalCheck "chise-stremio-web-is-tailnet-only" (
@@ -43,6 +46,14 @@ in
       (lib.hasInfix "STREMIO_PUBLIC_WEB_URL=https://stream.lucaszanoni.com" webEnvironment)
       "Stremio setup must know the Access-gated public origin so public launches select the same-origin addon and streaming proxy";
 
+  chise-stremio-setup-selects-comet =
+    mkEvalCheck "chise-stremio-setup-selects-comet"
+      (
+        lib.hasInfix "STREMIO_PUBLIC_ADDON_MANIFEST_URL=https://stream.lucaszanoni.com/comet/manifest.json" webEnvironment
+        && lib.hasInfix "STREMIO_TAILNET_ADDON_MANIFEST_URL=http://${tailnetBindAddress}:43213/manifest.json" webEnvironment
+      )
+      "Stremio setup must install the Comet manifest through the Access-gated origin or its direct tailnet endpoint";
+
   chise-stremio-public-origin-is-loopback-only =
     mkEvalCheck "chise-stremio-public-origin-is-loopback-only"
       (
@@ -55,8 +66,24 @@ in
         ]
         && publicOriginVirtualHost.locations."/".proxyPass == "http://${tailnetBindAddress}:43212"
         && publicOriginVirtualHost.locations."/server/".proxyPass == "http://${tailnetBindAddress}:11470/"
+        && publicOriginVirtualHost.locations."/comet/".proxyPass == "http://${tailnetBindAddress}:43213/"
       )
-      "the public Stremio origin must expose one loopback listener to cloudflared and keep both upstream services on the tailnet";
+      "the public Stremio origin must expose one loopback listener to cloudflared and keep every upstream service on the tailnet";
+
+  chise-stremio-comet-is-pinned-private-and-bounded =
+    mkEvalCheck "chise-stremio-comet-is-pinned-private-and-bounded"
+      (
+        lib.hasInfix "g0ldyy/comet@sha256:dca62133336e02784d02aaad861381820674d1c8e3e98a03797610b81ee4defe" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--network host" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--env FASTAPI_HOST=${tailnetBindAddress}" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--memory 1g" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--cpus 2" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--env-file /run/stremio-comet/prowlarr.env" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "PROWLARR_API_KEY" cometEnvironmentSource
+        && !(lib.hasInfix "PROWLARR_API_KEY=" cometUnit.serviceConfig.ExecStart)
+        && cometUnit.wantedBy == [ "multi-user.target" ]
+      )
+      "Comet must be digest-pinned, tailnet-bound, resource-bounded and receive the live Prowlarr key outside the Nix store";
 
   chise-stremio-public-origin-rewrites-hls-media-url =
     mkEvalCheck "chise-stremio-public-origin-rewrites-hls-media-url"

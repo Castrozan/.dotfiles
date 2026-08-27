@@ -116,6 +116,12 @@ def main():
     web_url = required_environment_value("STREMIO_WEB_URL")
     public_web_url = required_environment_value("STREMIO_PUBLIC_WEB_URL")
     streaming_server_url = required_environment_value("STREMIO_STREAMING_SERVER_URL")
+    public_addon_manifest_url = required_environment_value(
+        "STREMIO_PUBLIC_ADDON_MANIFEST_URL"
+    )
+    tailnet_addon_manifest_url = required_environment_value(
+        "STREMIO_TAILNET_ADDON_MANIFEST_URL"
+    )
     StremioRequestHandler.static_root = Path(
         required_environment_value("STREMIO_WEB_ROOT")
     ).resolve()
@@ -131,11 +137,13 @@ def main():
         public_web_url,
         web_url,
         streaming_server_url,
+        public_addon_manifest_url,
     )
     StremioRequestHandler.tailnet_setup_redirect_url = setup_url_for_request_origin(
         web_url,
         web_url,
         streaming_server_url,
+        tailnet_addon_manifest_url,
     )
     server = ThreadingHTTPServer((bind_address, port), StremioRequestHandler)
     server.serve_forever()

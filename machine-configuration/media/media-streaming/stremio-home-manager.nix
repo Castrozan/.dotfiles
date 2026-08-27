@@ -10,6 +10,7 @@ let
   stremioWebPort = "43212";
   stremioWebUrl = "http://${tailnetBindAddress}:${stremioWebPort}";
   stremioStreamingServerUrl = "http://${tailnetBindAddress}:11470/";
+  stremioCometUrl = "http://${tailnetBindAddress}:43213";
   stremioGatewayPackageDirectory = ./scripts/stremio_gateway;
   stremioWeb = pkgs.fetchzip {
     url = "https://github.com/Stremio/stremio-web/releases/download/v5.0.0-beta.39/stremio-web.zip";
@@ -38,6 +39,8 @@ in
           "STREMIO_PUBLIC_WEB_URL=https://stream.lucaszanoni.com"
           "STREMIO_WEB_ROOT=${stremioWeb}"
           "STREMIO_STREAMING_SERVER_URL=${stremioStreamingServerUrl}"
+          "STREMIO_PUBLIC_ADDON_MANIFEST_URL=https://stream.lucaszanoni.com/comet/manifest.json"
+          "STREMIO_TAILNET_ADDON_MANIFEST_URL=${stremioCometUrl}/manifest.json"
           "STREMIO_PROWLARR_URL=http://${tailnetBindAddress}:9696"
           "STREMIO_PROWLARR_CONFIG_FILE=${homeDirectory}/arr-stack/config/prowlarr/config.xml"
           "STREMIO_METADATA_URL=https://v3-cinemeta.strem.io"

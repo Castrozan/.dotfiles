@@ -19,6 +19,7 @@ in
     ../../../desktop/fonts/fonts-nixos.nix
     ../../../gaming/steam/steam-nixos.nix
     ../../../media/media-streaming/stremio-streaming-server-nixos.nix
+    ../../../media/media-streaming/stremio-comet-nixos.nix
     ../../../media/media-streaming/stremio-public-origin-nixos.nix
     ../../../security/secrets/agenix-nixos.nix
     ../../../development/system-rebuild/nixos-rebuild-guard-nixos.nix

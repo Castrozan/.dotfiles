@@ -14,6 +14,10 @@ sys.path.insert(0, str(PACKAGE_DIRECTORY_PATH))
 prowlarr_stream_provider = importlib.import_module("prowlarr_stream_provider")
 stremio_protocol = importlib.import_module("stremio_protocol")
 
+COMET_ENVIRONMENT_MODULE_PATH = (
+    Path(__file__).resolve().parents[2] / "scripts" / "stremio_comet_environment.py"
+)
+
 
 def torrent_result(title, category, seeders, size, info_hash):
     return {
@@ -119,10 +123,11 @@ def test_tailnet_setup_uses_the_direct_streaming_server():
         "http://100.64.0.1:43212",
         "http://100.64.0.1:43212",
         "http://100.64.0.1:11470/",
+        "http://100.64.0.1:43213/manifest.json",
     )
 
     assert url.startswith(
-        "http://100.64.0.1:43212/#/addons?addon=http%3A%2F%2F100.64.0.1%3A43212%2Fprowlarr%2Fmanifest.json"
+        "http://100.64.0.1:43212/#/addons?addon=http%3A%2F%2F100.64.0.1%3A43213%2Fmanifest.json"
     )
     assert "&streamingServerUrl=http%3A%2F%2F100.64.0.1%3A11470%2F" in url
 
@@ -132,10 +137,11 @@ def test_public_setup_uses_the_same_origin_streaming_proxy():
         "https://stream.lucaszanoni.com",
         "http://100.64.0.1:43212",
         "http://100.64.0.1:11470/",
+        "https://stream.lucaszanoni.com/comet/manifest.json",
     )
 
     assert url.startswith(
-        "https://stream.lucaszanoni.com/#/addons?addon=https%3A%2F%2Fstream.lucaszanoni.com%2Fprowlarr%2Fmanifest.json"
+        "https://stream.lucaszanoni.com/#/addons?addon=https%3A%2F%2Fstream.lucaszanoni.com%2Fcomet%2Fmanifest.json"
     )
     assert "&streamingServerUrl=https%3A%2F%2Fstream.lucaszanoni.com%2Fserver%2F" in url
 
@@ -146,3 +152,23 @@ def test_missing_prowlarr_api_key_refuses_to_start(tmp_path):
 
     with pytest.raises(RuntimeError, match="API key is missing"):
         prowlarr_stream_provider.read_prowlarr_api_key(config_file)
+
+
+def test_comet_environment_keeps_the_prowlarr_key_in_a_private_runtime_file(tmp_path):
+    module_specification = importlib.util.spec_from_file_location(
+        "stremio_comet_environment", COMET_ENVIRONMENT_MODULE_PATH
+    )
+    comet_environment = importlib.util.module_from_spec(module_specification)
+    module_specification.loader.exec_module(comet_environment)
+    config_file = tmp_path / "config.xml"
+    environment_file = tmp_path / "prowlarr.env"
+    config_file.write_text(
+        "<Config><ApiKey>0123456789abcdef</ApiKey></Config>", encoding="utf-8"
+    )
+
+    comet_environment.write_prowlarr_environment(config_file, environment_file)
+
+    assert environment_file.read_text(encoding="utf-8") == (
+        "PROWLARR_API_KEY=0123456789abcdef\n"
+    )
+    assert environment_file.stat().st_mode & 0o777 == 0o600

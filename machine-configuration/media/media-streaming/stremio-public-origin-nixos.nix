@@ -40,6 +40,16 @@ in
           proxyWebsockets = true;
           extraConfig = streamingProxyExtraConfig;
         };
+        "/comet/" = {
+          proxyPass = "http://${tailnetBindAddress}:43213/";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_buffering off;
+            proxy_read_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_set_header X-Forwarded-Proto https;
+          '';
+        };
         "/hlsv2/" = {
           proxyPass = "http://${tailnetBindAddress}:11470";
           extraConfig = ''
