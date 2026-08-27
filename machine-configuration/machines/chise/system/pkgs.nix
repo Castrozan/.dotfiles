@@ -82,7 +82,6 @@
       vlc
       wget
       whisper-cpp
-      wgnord # Note: Should install manually from github.com/phirecc/wgnord
       wiremix
       wireguard-go
       wireguard-tools

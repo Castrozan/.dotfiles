@@ -67,6 +67,8 @@ in
   "credentials/jellyfin-admin-api-key.age".publicKeys = all_keys;
   "credentials/kavita-admin-api-key.age".publicKeys = all_keys;
   "credentials/suwayomi-extension-repositories.age".publicKeys = all_keys;
+  "credentials/proton-openvpn-credentials.age".publicKeys = all_keys;
+  "credentials/proton-paraguay-openvpn-config.age".publicKeys = all_keys;
 
   "infrastructure/id_ed25519_phone.age".publicKeys = all_keys;
   "infrastructure/grid-hosts.age".publicKeys = all_keys;

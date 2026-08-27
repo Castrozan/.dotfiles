@@ -231,19 +231,19 @@ The default stack runs with no VPN: qBittorrent talks to the internet directly.
 There is no per-container VPN gateway in this stack and nothing to configure here
 to get the default behavior.
 
-chise already has host-level NordVPN via `wgnord`, toggled by the packaged
-scripts in this repo. Because it is a host-level WireGuard tunnel, turning it on
+chise has a host-level Proton VPN OpenVPN tunnel, toggled by packaged commands
+in this repo. Turning it on
 routes *all* of chise's traffic, the arr-stack containers included, with no
 compose changes:
 
 ```sh
-nord-on-us    # connect NordVPN (US) on chise: wgnord c US
-nord-off      # disconnect: wgnord d
+vpn-py        # connect Proton VPN through a Paraguay server
+vpn-off       # disconnect Proton VPN
 ```
 
-See `machine-configuration/network/vpn/nordvpn/scripts/` (`nord-on-us`, `nord-off`, `nord-on`,
-`setup_wgnord`) and `machine-configuration/machines/chise/system/scripts/` for the script definitions. Bring the
-stack up the same way regardless; the VPN is an independent host toggle.
+See `machine-configuration/network/vpn/protonvpn/protonvpn-nixos.nix` for the
+service and command definitions. Bring the stack up the same way regardless;
+the VPN is an independent host toggle.
 
 ## Media server GPU transcoding
 

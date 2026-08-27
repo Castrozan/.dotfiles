@@ -24,6 +24,7 @@ in
     ../../../media/media-streaming/stremio-public-origin-nixos.nix
     ../../../security/secrets/agenix-nixos.nix
     ../../../development/system-rebuild/nixos-rebuild-guard-nixos.nix
+    ../../../network/vpn/protonvpn/protonvpn-nixos.nix
     ../../../network/tailscale/tailscale-nixos.nix
     ../../../operating-system/manual-pages/man-cache-nixos.nix
     ../../../operating-system/power-management/lid-switch-nixos.nix

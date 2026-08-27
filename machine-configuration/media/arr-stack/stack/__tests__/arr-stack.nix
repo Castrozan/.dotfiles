@@ -89,8 +89,7 @@ let
   composeHasNoVpnContainer =
     !(lib.hasInfix "gluetun" composeText) && !(lib.hasInfix "service:gluetun" composeText);
   qbittorrentPinnedToV4 = lib.hasInfix "qbittorrent:4" composeText;
-  readmeDocumentsHostLevelVpn =
-    lib.hasInfix "nord-on-us" readmeText && lib.hasInfix "nord-off" readmeText;
+  readmeDocumentsHostLevelVpn = lib.hasInfix "vpn-py" readmeText && lib.hasInfix "vpn-off" readmeText;
 
   moduleConditionForHostname =
     candidateHostname:
@@ -132,7 +131,7 @@ in
 
   chise-arr-stack-no-vpn-container =
     mkEvalCheck "chise-arr-stack-no-vpn-container" composeHasNoVpnContainer
-      "the stack must ship no per-container VPN (no gluetun); qBittorrent runs direct and the optional VPN is host-level wgnord";
+      "the stack must ship no per-container VPN (no gluetun); qBittorrent runs direct and the optional Proton VPN is host-level";
 
   chise-arr-stack-qbittorrent-pinned-to-v4 =
     mkEvalCheck "chise-arr-stack-qbittorrent-pinned-to-v4" qbittorrentPinnedToV4
@@ -140,7 +139,7 @@ in
 
   chise-arr-stack-documents-host-level-vpn =
     mkEvalCheck "chise-arr-stack-documents-host-level-vpn" readmeDocumentsHostLevelVpn
-      "the README must point at the host-level wgnord toggles (nord-on-us / nord-off) as the way to route the stack through a VPN, rather than a per-container gateway";
+      "the README must point at the host-level Proton VPN toggles (vpn-py / vpn-off) as the way to route the stack through a VPN, rather than a per-container gateway";
 
   chise-arr-stack-enabled-on-chise =
     mkEvalCheck "chise-arr-stack-enabled-on-chise" (moduleConditionForHostname "chise")

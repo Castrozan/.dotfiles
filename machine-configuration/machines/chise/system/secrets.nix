@@ -140,6 +140,14 @@
         owner = "zanoni";
         mode = "400";
       };
+      "proton-openvpn-credentials" = {
+        file = ../../../../secrets/credentials/proton-openvpn-credentials.age;
+        mode = "400";
+      };
+      "proton-paraguay-openvpn-config" = {
+        file = ../../../../secrets/credentials/proton-paraguay-openvpn-config.age;
+        mode = "400";
+      };
     };
   };
 }

@@ -32,7 +32,6 @@
   networking.firewall = {
     trustedInterfaces = [
       "tailscale0"
-      "wgnord"
     ];
     checkReversePath = "loose";
   };
