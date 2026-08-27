@@ -37,6 +37,8 @@ let
     "jellyfin"
     "jellyseerr"
     "kavita"
+    "miwayomi"
+    "flaresolverr"
   ];
   serviceRestartPolicyBlock =
     service: policy: "container_name: arr-${service}\n    restart: ${policy}";
@@ -75,7 +77,7 @@ let
   );
   everyServiceHasConfigVolume = builtins.all (
     service: lib.hasInfix ("\${ARR_CONFIG_ROOT}/" + service) composeText
-  ) serviceNames;
+  ) (serviceNames ++ alwaysOnFrontEndServices);
   envPinsChiseConfigRoot = lib.hasInfix "ARR_CONFIG_ROOT=/home/zanoni/arr-stack/config" envText;
   envPinsChiseDataRoot = lib.hasInfix "ARR_DATA_ROOT=/home/zanoni/arr-stack/data" envText;
   envMatchesChiseUserAndGroup = lib.hasInfix "PUID=1000" envText && lib.hasInfix "PGID=100" envText;
@@ -117,7 +119,7 @@ in
         && unlessStoppedCount == builtins.length alwaysOnFrontEndServices
         && composeHasNoAlwaysRestartPolicy
       )
-      "restart: unless-stopped is allowed only on the always-on front ends (jellyfin, jellyseerr, kavita) so they self-heal and come back after a reboot without a manual bring-up, is forbidden on every other service, and restart: always is never allowed";
+      "restart: unless-stopped is allowed only on the declared always-on front ends so they self-heal and return after reboot, is forbidden on every download-chain service, and restart: always is never allowed";
 
   chise-arr-stack-kavita-reads-manga-library-read-only =
     mkEvalCheck "chise-arr-stack-kavita-reads-manga-library-read-only" kavitaReadsMangaLibraryReadOnly

@@ -13,6 +13,7 @@ in
     ./scripts
     ./secrets.nix
     ../../../media/arr-stack/chise/chise-arr-stack-nixos.nix
+    ../../../media/arr-stack/miwayomi/miwayomi-nixos.nix
     ./pkgs.nix
     ../../../development/virtualization/virtualization-nixos.nix
     ../../../development/testing/python-interpreter-nixos.nix

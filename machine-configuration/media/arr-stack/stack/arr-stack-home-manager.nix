@@ -28,6 +28,9 @@ let
     "jellyfin"
     "jellyseerr"
     "kavita"
+    "miwayomi"
+    "miwayomi-update-disabled"
+    "flaresolverr"
   ];
   dataDirectories = [
     "torrents"

@@ -132,3 +132,36 @@ services:
     volumes:
       - ${ARR_CONFIG_ROOT}/kavita:/config
       - ${ARR_DATA_ROOT}/manga/mangas:/manga:ro
+
+  miwayomi:
+    image: ghcr.io/miwayomi/miwayomi:0.2.9@sha256:8e7094088565b97091319dfa92b80a8c22497a712e72af09e2470454f5942ec4
+    container_name: arr-miwayomi
+    restart: unless-stopped
+    user: "${PUID}:${PGID}"
+    networks:
+      - arrnet
+    ports:
+      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4568:4567"
+    environment:
+      FLARESOLVERR_URL: http://flaresolverr:8191
+    volumes:
+      - ${ARR_CONFIG_ROOT}/miwayomi:/data
+      - ${ARR_CONFIG_ROOT}/miwayomi-update-disabled:/data/update:ro
+    depends_on:
+      flaresolverr:
+        condition: service_healthy
+
+  flaresolverr:
+    image: ghcr.io/miwayomi/flaresolverr:0.2.9@sha256:41207a879aebc3e36101734377041a9d82e7375db274aebc0d15c87e51134189
+    container_name: arr-flaresolverr
+    restart: unless-stopped
+    networks:
+      - arrnet
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8191/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    volumes:
+      - ${ARR_CONFIG_ROOT}/flaresolverr:/config
