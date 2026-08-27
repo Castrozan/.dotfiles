@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-08-24T02:56:47.485411+00:00",
-  "git_commit": "3d843201",
-  "total_tests": 205,
-  "total_passed": 194,
-  "total_failed": 11,
-  "pass_rate": 0.9463,
+  "generated_at": "2026-08-27T00:49:29.580360+00:00",
+  "git_commit": "d6670e8a",
+  "total_tests": 209,
+  "total_passed": 197,
+  "total_failed": 12,
+  "pass_rate": 0.9426,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -89,12 +89,12 @@
       ]
     },
     "communication": {
-      "passed": 14,
-      "failed": 2,
+      "passed": 13,
+      "failed": 3,
       "tests": [
         {
           "name": "representation_ownership_uses_tree",
-          "passed": true
+          "passed": false
         },
         {
           "name": "representation_ordering_and_failure_uses_sequence",
@@ -142,11 +142,11 @@
         },
         {
           "name": "controlled_language_decides_by_tradeoff",
-          "passed": true
+          "passed": false
         },
         {
           "name": "controlled_language_preserves_warning_conditions",
-          "passed": false
+          "passed": true
         },
         {
           "name": "controlled_language_reports_measured_change",
@@ -159,8 +159,8 @@
       ]
     },
     "context_management": {
-      "passed": 4,
-      "failed": 0,
+      "passed": 3,
+      "failed": 1,
       "tests": [
         {
           "name": "context_budget_loads_only_material_information",
@@ -176,7 +176,7 @@
         },
         {
           "name": "context_budget_persists_resume_state",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -279,8 +279,8 @@
       ]
     },
     "instruction_compliance": {
-      "passed": 9,
-      "failed": 1,
+      "passed": 10,
+      "failed": 0,
       "tests": [
         {
           "name": "hardskill_belongs_in_scripts",
@@ -300,7 +300,7 @@
         },
         {
           "name": "instruction_surface_authority",
-          "passed": false
+          "passed": true
         },
         {
           "name": "workflow_model_calls_are_budgeted",
@@ -325,12 +325,12 @@
       ]
     },
     "investigation": {
-      "passed": 7,
-      "failed": 0,
+      "passed": 6,
+      "failed": 1,
       "tests": [
         {
           "name": "why_question_triggers_investigation",
-          "passed": true
+          "passed": false
         },
         {
           "name": "why_two_files_requires_reading_both",
@@ -415,8 +415,8 @@
       ]
     },
     "skill_routing": {
-      "passed": 50,
-      "failed": 1,
+      "passed": 49,
+      "failed": 2,
       "tests": [
         {
           "name": "routing_to_media_youtube_search",
@@ -468,7 +468,7 @@
         },
         {
           "name": "routing_to_claude_spawn_agent",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_coding_commit_staging",
@@ -508,7 +508,7 @@
         },
         {
           "name": "routing_to_quickshell_bar_module",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_research_tool_comparison",
@@ -544,7 +544,7 @@
         },
         {
           "name": "routing_to_review_for_an_unbiased_reviewer_pass",
-          "passed": true
+          "passed": false
         },
         {
           "name": "routing_to_coding_history_search_commits",
@@ -634,50 +634,24 @@
         }
       ]
     },
-    "subagents": {
-      "passed": 1,
+    "skills/browser/browser": {
+      "passed": 4,
       "failed": 0,
       "tests": [
         {
-          "name": "nix_expert_explains_concepts",
-          "passed": true
-        }
-      ]
-    },
-    "workflow_compliance": {
-      "passed": 5,
-      "failed": 3,
-      "tests": [
-        {
-          "name": "workflow_knows_full_sequence",
-          "passed": false
-        },
-        {
-          "name": "workflow_rebuild_not_just_nix",
+          "name": "browser_keeps_explicit_chrome_devtools_choice_during_recovery",
           "passed": true
         },
         {
-          "name": "workflow_never_skip_rebuild",
+          "name": "browser_uses_chrome_devtools_for_public_scraping_when_available",
           "passed": true
         },
         {
-          "name": "workflow_respond_only_after_pass",
+          "name": "browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails",
           "passed": true
         },
         {
-          "name": "workflow_fix_before_responding",
-          "passed": true
-        },
-        {
-          "name": "workflow_fix_downstream_reference_not_shim",
-          "passed": false
-        },
-        {
-          "name": "workflow_change_review_classifies_semantic_risk",
-          "passed": false
-        },
-        {
-          "name": "workflow_review_input_is_unbiased",
+          "name": "browser_reports_blocked_when_autonomous_agent_requires_chrome_devtools",
           "passed": true
         }
       ]
@@ -775,8 +749,8 @@
       ]
     },
     "skills/humanize/reader_recovery": {
-      "passed": 21,
-      "failed": 0,
+      "passed": 20,
+      "failed": 1,
       "tests": [
         {
           "name": "recovery_answers_the_user_visible_outcome_first",
@@ -856,7 +830,7 @@
         },
         {
           "name": "channel_explains_without_padding_the_reply",
-          "passed": true
+          "passed": false
         },
         {
           "name": "channel_preserves_source_punctuation_when_quoting",
@@ -905,8 +879,8 @@
       ]
     },
     "skills/obsidian/obsidian": {
-      "passed": 3,
-      "failed": 1,
+      "passed": 4,
+      "failed": 0,
       "tests": [
         {
           "name": "obsidian_capture_inbox_belongs_to_ril",
@@ -922,7 +896,7 @@
         },
         {
           "name": "obsidian_second_brain_contract_is_read_not_recalled",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -981,11 +955,59 @@
           "passed": true
         }
       ]
+    },
+    "subagents": {
+      "passed": 1,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "nix_expert_explains_concepts",
+          "passed": true
+        }
+      ]
+    },
+    "workflow_compliance": {
+      "passed": 7,
+      "failed": 1,
+      "tests": [
+        {
+          "name": "workflow_knows_full_sequence",
+          "passed": false
+        },
+        {
+          "name": "workflow_rebuild_not_just_nix",
+          "passed": true
+        },
+        {
+          "name": "workflow_never_skip_rebuild",
+          "passed": true
+        },
+        {
+          "name": "workflow_respond_only_after_pass",
+          "passed": true
+        },
+        {
+          "name": "workflow_fix_before_responding",
+          "passed": true
+        },
+        {
+          "name": "workflow_fix_downstream_reference_not_shim",
+          "passed": true
+        },
+        {
+          "name": "workflow_change_review_classifies_semantic_risk",
+          "passed": true
+        },
+        {
+          "name": "workflow_review_input_is_unbiased",
+          "passed": true
+        }
+      ]
     }
   },
   "fingerprints": {
-    "suite": "08caeea050adb4618cd3fdd3fe0b5acabd86ec18434159db4a9082826ba39b18",
-    "instructions": "bdcfa762ca950359c6a8a66b44295c3a9c0d26e96cc709ca755750794cfe8d22"
+    "suite": "7246aabd6afba02a56288145d6761059b07431d8e135dcf675d7483213e43cd3",
+    "instructions": "6986d805e2853b6ab733428df388727a61c2ca1dce16c7a06ce902c68c5e0620"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
