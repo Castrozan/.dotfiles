@@ -41,6 +41,7 @@ let
     stackHomeDirectory = "/home/zanoni/arr-stack";
     baseUrl = "http://arr:4568";
     repositoryListSecretFile = "/run/agenix/suwayomi-extension-repositories";
+    composePredecessorUnits = [ "arr-stack-drive-guard.service" ];
   };
   disabledConfiguration = evalMiwayomiModule (baseSettings // { enable = false; });
   enabledConfiguration = evalMiwayomiModule baseSettings;
@@ -74,7 +75,9 @@ let
   composeApplicatorIsOrdered =
     builtins.elem "docker.service" composeService.after
     && builtins.elem "home-manager-zanoni.service" composeService.after
+    && builtins.elem "arr-stack-drive-guard.service" composeService.after
     && builtins.elem "docker.service" composeService.requires
+    && builtins.elem "arr-stack-drive-guard.service" composeService.requires
     && builtins.elem "multi-user.target" composeService.wantedBy
     && lib.hasInfix "up --detach miwayomi flaresolverr" composeService.serviceConfig.ExecStart;
   repositoryProvisionerFollowsCompose =
@@ -85,7 +88,7 @@ let
     repositoryEnvironment.MIWAYOMI_EXTENSION_REPOSITORIES_FILE
     == "/run/agenix/suwayomi-extension-repositories"
     && repositoryEnvironment.MIWAYOMI_BASE_URL == "http://arr:4568";
-  repositoryProvisionerIsBounded = repositoryService.serviceConfig.TimeoutStartSec == "90s";
+  repositoryProvisionerIsBounded = repositoryService.serviceConfig.TimeoutStartSec == "150s";
   chiseWiresTheCapability =
     lib.hasInfix "miwayomi = {" chiseStackText
     && lib.hasInfix "suwayomi-extension-repositories" chiseStackText
@@ -138,7 +141,7 @@ in
 
   chise-miwayomi-repository-reconciliation-is-bounded =
     mkEvalCheck "chise-miwayomi-repository-reconciliation-is-bounded" repositoryProvisionerIsBounded
-      "repository reconciliation must stop within 90 seconds so an unhealthy container cannot hang a rebuild indefinitely";
+      "repository reconciliation must stop within 150 seconds while leaving bounded headroom after the 80-second health retry for repository reads and writes";
 
   chise-miwayomi-is-wired-into-the-stack =
     mkEvalCheck "chise-miwayomi-is-wired-into-the-stack" chiseWiresTheCapability
