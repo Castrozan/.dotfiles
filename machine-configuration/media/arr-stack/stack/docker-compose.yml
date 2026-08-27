@@ -5,6 +5,10 @@ x-arr-common-environment: &arr-common-environment
   PGID: ${PGID}
   TZ: ${TZ}
 
+x-miwayomi-dns: &miwayomi-dns
+  - 1.1.1.1
+  - 8.8.8.8
+
 networks:
   arrnet:
     driver: bridge
@@ -144,6 +148,7 @@ services:
     user: "${PUID}:${PGID}"
     networks:
       - arrnet
+    dns: *miwayomi-dns
     environment:
       <<: *arr-common-environment
       FLARESOLVERR_URL: http://flaresolverr:8191
@@ -182,6 +187,7 @@ services:
     restart: unless-stopped
     networks:
       - arrnet
+    dns: *miwayomi-dns
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8191/"]
       interval: 30s

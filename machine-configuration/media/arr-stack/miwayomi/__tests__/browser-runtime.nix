@@ -42,6 +42,10 @@ let
     lib.hasInfix ''it.title = ""'' miwayomiPatchText
     && lib.hasInfix ''it.name = ""'' miwayomiPatchText
     && !(lib.hasInfix "AnimeRoutes.kt" miwayomiPatchText);
+  outboundServicesUseStableDns =
+    lib.hasInfix "x-miwayomi-dns: &miwayomi-dns\n  - 1.1.1.1\n  - 8.8.8.8" composeText
+    && lib.hasInfix "hostname: miwayomi\n    user: \"\${PUID}:\${PGID}\"\n    networks:\n      - arrnet\n    dns: *miwayomi-dns" composeText
+    && lib.hasInfix "container_name: arr-flaresolverr\n    restart: unless-stopped\n    networks:\n      - arrnet\n    dns: *miwayomi-dns" composeText;
 in
 {
   chise-miwayomi-images-are-pinned =
@@ -56,4 +60,8 @@ in
   chise-miwayomi-initializes-required-manga-inputs =
     mkEvalCheck "chise-miwayomi-initializes-required-manga-inputs" mangaInputInitializationIsIsolated
       "Miwayomi must initialize required manga and chapter fields before third-party extensions read them, while keeping the temporary workaround isolated from the working anime path";
+
+  chise-miwayomi-outbound-services-use-stable-dns =
+    mkEvalCheck "chise-miwayomi-outbound-services-use-stable-dns" outboundServicesUseStableDns
+      "Miwayomi and FlareSolverr must bypass Docker's unusable MagicDNS upstream while retaining Compose service discovery";
 }
