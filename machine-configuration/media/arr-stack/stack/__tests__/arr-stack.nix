@@ -33,7 +33,15 @@ let
   restartNoCount = (builtins.length (lib.splitString ''restart: "no"'' composeText)) - 1;
   unlessStoppedCount = (builtins.length (lib.splitString "restart: unless-stopped" composeText)) - 1;
 
-  alwaysOnFrontEndServices = [
+  alwaysOnServices = [
+    "jellyfin"
+    "jellyseerr"
+    "kavita"
+    "miwayomi"
+    "miwayomi-gateway"
+    "flaresolverr"
+  ];
+  persistentFrontEndServices = [
     "jellyfin"
     "jellyseerr"
     "kavita"
@@ -45,9 +53,9 @@ let
   downloadChainServicesPinnedToRestartNo = builtins.all (
     service: lib.hasInfix (serviceRestartPolicyBlock service ''"no"'') composeText
   ) serviceNames;
-  alwaysOnFrontEndServicesPinnedToUnlessStopped = builtins.all (
+  alwaysOnServicesPinnedToUnlessStopped = builtins.all (
     service: lib.hasInfix (serviceRestartPolicyBlock service "unless-stopped") composeText
-  ) alwaysOnFrontEndServices;
+  ) alwaysOnServices;
   composeHasNoAlwaysRestartPolicy = !(lib.hasInfix "restart: always" composeText);
 
   composeLines = lib.splitString "\n" composeText;
@@ -77,7 +85,7 @@ let
   );
   everyServiceHasConfigVolume = builtins.all (
     service: lib.hasInfix ("\${ARR_CONFIG_ROOT}/" + service) composeText
-  ) (serviceNames ++ alwaysOnFrontEndServices);
+  ) (serviceNames ++ persistentFrontEndServices);
   envPinsChiseConfigRoot = lib.hasInfix "ARR_CONFIG_ROOT=/home/zanoni/arr-stack/config" envText;
   envPinsChiseDataRoot = lib.hasInfix "ARR_DATA_ROOT=/home/zanoni/arr-stack/data" envText;
   envMatchesChiseUserAndGroup = lib.hasInfix "PUID=1000" envText && lib.hasInfix "PGID=100" envText;
@@ -114,8 +122,8 @@ in
   chise-arr-stack-front-ends-restart-unless-stopped =
     mkEvalCheck "chise-arr-stack-front-ends-restart-unless-stopped"
       (
-        alwaysOnFrontEndServicesPinnedToUnlessStopped
-        && unlessStoppedCount == builtins.length alwaysOnFrontEndServices
+        alwaysOnServicesPinnedToUnlessStopped
+        && unlessStoppedCount == builtins.length alwaysOnServices
         && composeHasNoAlwaysRestartPolicy
       )
       "restart: unless-stopped is allowed only on the declared always-on front ends so they self-heal and return after reboot, is forbidden on every download-chain service, and restart: always is never allowed";
