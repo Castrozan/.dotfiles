@@ -17,8 +17,10 @@ fork.
 Before completion, inspect actual diff, artifact, and runtime; verify result and important non-regression. Cover the
 mechanics with tests, then exercise the finished behavior by hand from several directions and confirm it meets the
 goals that were defined. Claim only what exercised evidence proves; state exact missing evidence when meaningful
-verification is unavailable. Preserve unrelated work and never overwrite, revert, or absorb it; leave it unreported
-when it is unrelated to the current goal and looks like a work-in-progress blip.
+verification is unavailable. For each CI run whose verdict matters, start a background watcher that returns on
+completion or error and, when early failure detection matters, reads all available logs at a justified interval;
+meanwhile do independent in-scope work or nothing. Preserve unrelated work and never overwrite, revert, or absorb it;
+leave it unreported when it is unrelated to the current goal and looks like a work-in-progress blip.
 </completion>
 
 <delegation>
