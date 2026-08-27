@@ -21,7 +21,7 @@ let
   stackModuleText = builtins.readFile ../../stack/arr-stack-home-manager.nix;
 
   imagesAndBuildContextArePinned =
-    lib.hasInfix "image: arr-miwayomi:0.2.9-browser-runtime" composeText
+    lib.hasInfix "image: arr-miwayomi:0.2.9-watch-progress" composeText
     && lib.hasInfix "context: \${MIWAYOMI_BUILD_CONTEXT:?set in ~/arr-stack/.env}" composeText
     && lib.hasInfix "dockerfile: miwayomi.Dockerfile" composeText
     && lib.hasInfix "gradle:8.10.2-jdk21@sha256:963d59f7f22767da4efbcf46b661361b61af5fb88b0309da1071c4234c647eba" miwayomiDockerfileText

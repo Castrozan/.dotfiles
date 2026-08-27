@@ -141,7 +141,7 @@ services:
     build:
       context: ${MIWAYOMI_BUILD_CONTEXT:?set in ~/arr-stack/.env}
       dockerfile: miwayomi.Dockerfile
-    image: arr-miwayomi:0.2.9-browser-runtime
+    image: arr-miwayomi:0.2.9-watch-progress
     container_name: arr-miwayomi
     restart: unless-stopped
     hostname: miwayomi
