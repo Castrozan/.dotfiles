@@ -7,28 +7,65 @@
 let
   inherit (helpers) mkEvalCheck;
   nixosCfg = self.nixosConfigurations.chise.config;
-  secretNames = [
-    "arr-bazarr-password"
-    "arr-prowlarr-password"
-    "arr-qbittorrent-password"
-    "arr-radarr-password"
-    "arr-samaritano-indexer-apikey"
-    "arr-sonarr-password"
-    "jellyfin-admin-api-key"
-    "jellyseerr-smtp-app-password"
-    "kavita-admin-api-key"
+  cloudflareMediaIngress = nixosCfg.custom.cloudflareTunnelConnector.ingress;
+  cloudflareProxyOrigins = nixosCfg.custom.arrMediaLoginRateLimitProxy.origins;
+  chiseTailnetBindAddress = import ../../../tailnet-bind-address.nix { inherit lib; };
+  privateCloudflareApplicationExpectations = [
+    {
+      hostname = "seanime.lucaszanoni.com";
+      proxyPort = 9447;
+      upstreamPort = 43211;
+      loginLocationRegexes = [ ];
+    }
+    {
+      hostname = "radarr.lucaszanoni.com";
+      proxyPort = 9448;
+      upstreamPort = 7878;
+      loginLocationRegexes = [ "^/login$" ];
+    }
+    {
+      hostname = "sonarr.lucaszanoni.com";
+      proxyPort = 9449;
+      upstreamPort = 8989;
+      loginLocationRegexes = [ "^/login$" ];
+    }
+    {
+      hostname = "prowlarr.lucaszanoni.com";
+      proxyPort = 9450;
+      upstreamPort = 9696;
+      loginLocationRegexes = [ "^/login$" ];
+    }
+    {
+      hostname = "bazarr.lucaszanoni.com";
+      proxyPort = 9451;
+      upstreamPort = 6767;
+      loginLocationRegexes = [ "^/login$" ];
+    }
+    {
+      hostname = "suwayomi.lucaszanoni.com";
+      proxyPort = 9452;
+      upstreamPort = 4567;
+      loginLocationRegexes = [ ];
+    }
+    {
+      hostname = "qbittorrent.lucaszanoni.com";
+      proxyPort = 9453;
+      upstreamPort = 8080;
+      loginLocationRegexes = [ "^/api/v2/auth/login$" ];
+    }
   ];
-  chiseArrStackConfiguration = import ../chise-arr-stack-nixos.nix {
-    inherit lib;
-    config.age.secrets = builtins.listToAttrs (
-      map (secretName: {
-        name = secretName;
-        value.path = "/run/agenix/${secretName}";
-      }) secretNames
-    );
-  };
-  cloudflareMediaIngress =
-    chiseArrStackConfiguration.custom.cloudflareTunnelConnector.ingress.content;
+  privateCloudflareApplicationsAreDeclared = builtins.all (
+    application:
+    builtins.elem {
+      inherit (application) hostname;
+      localServiceUrl = "http://127.0.0.1:${toString application.proxyPort}";
+    } cloudflareMediaIngress
+    && builtins.elem {
+      listenPort = application.proxyPort;
+      upstreamUrl = "http://${chiseTailnetBindAddress}:${toString application.upstreamPort}";
+      inherit (application) loginLocationRegexes;
+    } cloudflareProxyOrigins
+  ) privateCloudflareApplicationExpectations;
 in
 (import ./chise-arr-stack-host-integration.nix { inherit lib mkEvalCheck nixosCfg; })
 // {
@@ -53,4 +90,9 @@ in
         } cloudflareMediaIngress
       )
       "the owner-gated lucaszanoni.com media hostnames must reach their loopback proxies rather than the media containers directly";
+
+  chise-arr-private-cloudflare-applications-complete =
+    mkEvalCheck "chise-arr-private-cloudflare-applications-complete"
+      privateCloudflareApplicationsAreDeclared
+      "Seanime, Radarr, Sonarr, Prowlarr, Bazarr, Suwayomi, and qBittorrent must each have a dedicated owner-gated Cloudflare hostname routed through a loopback proxy to the existing tailnet-bound service";
 }

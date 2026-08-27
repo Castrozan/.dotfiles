@@ -1,48 +1,8 @@
-{ config, lib, ... }:
+{ config, ... }:
 {
+  imports = [ ./cloudflare-origins ];
+
   custom = {
-    cloudflareTunnelConnector.ingress = lib.mkAfter [
-      {
-        hostname = "watch.lucaszanoni.com";
-        localServiceUrl = "http://127.0.0.1:9443";
-      }
-      {
-        hostname = "request.lucaszanoni.com";
-        localServiceUrl = "http://127.0.0.1:9444";
-      }
-      {
-        hostname = "read.lucaszanoni.com";
-        localServiceUrl = "http://127.0.0.1:9445";
-      }
-      {
-        hostname = "stream.lucaszanoni.com";
-        localServiceUrl = "http://127.0.0.1:9446";
-      }
-    ];
-
-    arrMediaLoginRateLimitProxy = {
-      enable = true;
-      origins = [
-        {
-          listenPort = 9443;
-          upstreamUrl = "http://127.0.0.1:8096";
-          loginLocationRegexes = [ "^/Users/AuthenticateByName" ];
-        }
-        {
-          listenPort = 9444;
-          upstreamUrl = "http://127.0.0.1:5055";
-          loginLocationRegexes = [ "^/api/v1/auth/(jellyfin|plex|local)" ];
-        }
-        {
-          listenPort = 9445;
-          upstreamUrl = "http://127.0.0.1:5000";
-          loginLocationRegexes = [
-            "^/api/Account/(login|register|forgot-password|reset-password|confirm-password-reset)"
-          ];
-        }
-      ];
-    };
-
     arrMediaTailscaleFunnel = {
       enable = true;
       funnels = [ ];
