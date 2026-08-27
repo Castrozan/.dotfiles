@@ -52,6 +52,8 @@ in
     serviceConfig.Restart = lib.mkForce "no";
   };
 
+  environment.etc."openvpn/update-resolv-conf".source = updateSystemdResolved;
+
   environment.systemPackages = [
     vpnParaguay
     vpnOff

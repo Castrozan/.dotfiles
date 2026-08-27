@@ -1,6 +1,7 @@
 {
   helpers,
   lib,
+  pkgs,
   self,
   ...
 }:
@@ -32,6 +33,16 @@ in
         && lib.hasInfix "update-systemd-resolved" protonVpnConfiguration.down
       )
       "OpenVPN must register and remove Proton DNS on tun0 through update-systemd-resolved rather than openresolv";
+
+  chise-proton-vpn-accepts-profile-resolver-hook =
+    mkEvalCheck "chise-proton-vpn-accepts-profile-resolver-hook"
+      (
+        nixosConfiguration.environment.etc ? "openvpn/update-resolv-conf"
+        &&
+          nixosConfiguration.environment.etc."openvpn/update-resolv-conf".source
+          == "${pkgs.update-systemd-resolved}/libexec/openvpn/update-systemd-resolved"
+      )
+      "the resolver hook path embedded in the Proton profile must resolve to the systemd-resolved adapter";
 
   chise-proton-vpn-resolver-lifecycle-follows-tunnel =
     mkEvalCheck "chise-proton-vpn-resolver-lifecycle-follows-tunnel"
