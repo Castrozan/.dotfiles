@@ -10,7 +10,7 @@ let
   stremioWebPort = "43212";
   stremioWebUrl = "http://${tailnetBindAddress}:${stremioWebPort}";
   stremioStreamingServerUrl = "http://${tailnetBindAddress}:11470/";
-  stremioCometUrl = "http://${tailnetBindAddress}:43213";
+  stremioCometUrl = "http://${tailnetBindAddress}:43214";
   stremioGatewayPackageDirectory = ./scripts/stremio_gateway;
   stremioWeb = pkgs.fetchzip {
     url = "https://github.com/Stremio/stremio-web/releases/download/v5.0.0-beta.39/stremio-web.zip";

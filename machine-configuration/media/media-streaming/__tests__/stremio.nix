@@ -50,7 +50,7 @@ in
     mkEvalCheck "chise-stremio-setup-selects-comet"
       (
         lib.hasInfix "STREMIO_PUBLIC_ADDON_MANIFEST_URL=https://stream.lucaszanoni.com/comet/manifest.json" webEnvironment
-        && lib.hasInfix "STREMIO_TAILNET_ADDON_MANIFEST_URL=http://${tailnetBindAddress}:43213/manifest.json" webEnvironment
+        && lib.hasInfix "STREMIO_TAILNET_ADDON_MANIFEST_URL=http://${tailnetBindAddress}:43214/manifest.json" webEnvironment
       )
       "Stremio setup must install the Comet manifest through the Access-gated origin or its direct tailnet endpoint";
 
@@ -66,7 +66,7 @@ in
         ]
         && publicOriginVirtualHost.locations."/".proxyPass == "http://${tailnetBindAddress}:43212"
         && publicOriginVirtualHost.locations."/server/".proxyPass == "http://${tailnetBindAddress}:11470/"
-        && publicOriginVirtualHost.locations."/comet/".proxyPass == "http://${tailnetBindAddress}:43213/"
+        && publicOriginVirtualHost.locations."/comet/".proxyPass == "http://${tailnetBindAddress}:43214/"
       )
       "the public Stremio origin must expose one loopback listener to cloudflared and keep every upstream service on the tailnet";
 

@@ -123,11 +123,11 @@ def test_tailnet_setup_uses_the_direct_streaming_server():
         "http://100.64.0.1:43212",
         "http://100.64.0.1:43212",
         "http://100.64.0.1:11470/",
-        "http://100.64.0.1:43213/manifest.json",
+        "http://100.64.0.1:43214/manifest.json",
     )
 
     assert url.startswith(
-        "http://100.64.0.1:43212/#/addons?addon=http%3A%2F%2F100.64.0.1%3A43213%2Fmanifest.json"
+        "http://100.64.0.1:43212/#/addons?addon=http%3A%2F%2F100.64.0.1%3A43214%2Fmanifest.json"
     )
     assert "&streamingServerUrl=http%3A%2F%2F100.64.0.1%3A11470%2F" in url
 

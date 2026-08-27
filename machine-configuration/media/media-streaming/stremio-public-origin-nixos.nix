@@ -41,7 +41,7 @@ in
           extraConfig = streamingProxyExtraConfig;
         };
         "/comet/" = {
-          proxyPass = "http://${tailnetBindAddress}:43213/";
+          proxyPass = "http://${tailnetBindAddress}:43214/";
           proxyWebsockets = true;
           extraConfig = ''
             proxy_buffering off;
