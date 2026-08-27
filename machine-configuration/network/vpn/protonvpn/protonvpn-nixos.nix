@@ -24,7 +24,10 @@ in
 {
   services.openvpn.servers.proton-paraguay = {
     autoStart = false;
-    config = "config ${config.age.secrets.proton-paraguay-openvpn-config.path}";
+    config = ''
+      config ${config.age.secrets.proton-paraguay-openvpn-config.path}
+      block-ipv6
+    '';
     authUserPass = config.age.secrets.proton-openvpn-credentials.path;
     updateResolvConf = true;
   };
