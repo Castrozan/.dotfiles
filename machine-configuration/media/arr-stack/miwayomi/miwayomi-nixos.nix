@@ -52,11 +52,16 @@ in
         ++ miwayomiConfig.composePredecessorUnits;
         wants = [ "network-online.target" ];
         wantedBy = [ "multi-user.target" ];
-        restartTriggers = [ ../stack/docker-compose.yml ];
+        restartTriggers = [
+          ../stack/docker-compose.yml
+          ../stack/miwayomi-gateway.conf
+          ../stack/miwayomi.Dockerfile
+          ../stack/miwayomi-manga-input-initialization.patch
+        ];
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
-          ExecStart = "${pkgs.docker-compose}/bin/docker-compose --file ${stackHomeDirectory}/docker-compose.yml --env-file ${stackHomeDirectory}/.env --project-directory ${stackHomeDirectory} --project-name arr-stack up --detach miwayomi flaresolverr";
+          ExecStart = "${pkgs.docker-compose}/bin/docker-compose --file ${stackHomeDirectory}/docker-compose.yml --env-file ${stackHomeDirectory}/.env --project-directory ${stackHomeDirectory} --project-name arr-stack up --detach --build miwayomi flaresolverr miwayomi-gateway";
         };
       };
 

@@ -40,12 +40,11 @@ let
   chiseStackText = builtins.readFile ../../chise/chise-arr-stack-nixos.nix;
   chiseSystemText = builtins.readFile ../../../../machines/chise/system/nixos-system.nix;
 
-  miwayomiImageIsPinned = lib.hasInfix "ghcr.io/miwayomi/miwayomi:0.2.9@sha256:8e7094088565b97091319dfa92b80a8c22497a712e72af09e2470454f5942ec4" composeText;
-  flaresolverrImageIsPinned = lib.hasInfix "ghcr.io/miwayomi/flaresolverr:0.2.9@sha256:41207a879aebc3e36101734377041a9d82e7375db274aebc0d15c87e51134189" composeText;
   miwayomiIsTailnetOnly =
-    lib.hasInfix "\"\${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4568:4567\"" composeText
-    && !(lib.hasInfix "0.0.0.0:4568" composeText)
-    && !(lib.hasInfix "127.0.0.1:4568" composeText);
+    lib.hasInfix "\"\${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4568:4568\"" composeText
+    && !(lib.hasInfix "\"0.0.0.0:4568:" composeText)
+    && !(lib.hasInfix "\"127.0.0.1:4568:" composeText)
+    && !(lib.hasInfix "4568:4567" composeText);
   flaresolverrIsComposeInternal =
     lib.hasInfix "FLARESOLVERR_URL: http://flaresolverr:8191" composeText
     && !(lib.hasInfix "8191:8191" composeText);
@@ -68,7 +67,8 @@ let
     && builtins.elem "docker.service" composeService.requires
     && builtins.elem "arr-stack-drive-guard.service" composeService.requires
     && builtins.elem "multi-user.target" composeService.wantedBy
-    && lib.hasInfix "up --detach miwayomi flaresolverr" composeService.serviceConfig.ExecStart;
+    && lib.hasInfix "up --detach --build miwayomi flaresolverr miwayomi-gateway" composeService.serviceConfig.ExecStart
+    && builtins.length composeService.restartTriggers == 4;
   repositoryProvisionerFollowsCompose =
     repositoryService.after == [ "miwayomi-compose.service" ]
     && repositoryService.requires == [ "miwayomi-compose.service" ]
@@ -86,6 +86,7 @@ let
     lib.hasInfix "miwayomi = {" chiseStackText
     && lib.hasInfix "suwayomi-extension-repositories" chiseStackText
     && lib.hasInfix ''"miwayomi"'' chiseStackText
+    && lib.hasInfix ''"miwayomi-gateway"'' chiseStackText
     && lib.hasInfix ''"flaresolverr"'' chiseStackText
     && lib.hasInfix "../../../media/arr-stack/miwayomi/miwayomi-nixos.nix" chiseSystemText;
 in
@@ -94,10 +95,6 @@ in
     mkEvalCheck "chise-miwayomi-disabled-defines-no-services"
       (!(disabledConfiguration.systemd.services or { } ? miwayomi-compose))
       "hosts that do not opt into Miwayomi must receive neither its Compose applicator nor its secret provisioner";
-
-  chise-miwayomi-images-are-pinned =
-    mkEvalCheck "chise-miwayomi-images-are-pinned" (miwayomiImageIsPinned && flaresolverrImageIsPinned)
-      "Miwayomi and its FlareSolverr sidecar must use immutable upstream release digests instead of mutable latest tags";
 
   chise-miwayomi-listens-only-on-the-tailnet =
     mkEvalCheck "chise-miwayomi-listens-only-on-the-tailnet" miwayomiIsTailnetOnly

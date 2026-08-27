@@ -1,0 +1,40 @@
+diff --git a/server/src/main/kotlin/miwayomi/api/MangaRoutes.kt b/server/src/main/kotlin/miwayomi/api/MangaRoutes.kt
+index 4299b11..0f4d76c 100644
+--- a/server/src/main/kotlin/miwayomi/api/MangaRoutes.kt
++++ b/server/src/main/kotlin/miwayomi/api/MangaRoutes.kt
+@@ -50,7 +50,10 @@ fun Application.registerMangaApi() {
+         get("/api/v1/manga/{sourceId}/details") {
+             val source = call.sourceId().manga(mangaSources) ?: return@get call.respondNotFound()
+             val url = call.requiredUrl() ?: return@get call.respondMissingUrl()
+-            val manga = SManga.create().also { it.url = url }
++            val manga = SManga.create().also {
++                it.url = url
++                it.title = ""
++            }
+             val res = source.getMangaDetails(manga)
+             if (runCatching { res.url }.getOrNull().isNullOrBlank()) res.url = url
+             call.respond(res.toDto())
+@@ -59,7 +62,10 @@ fun Application.registerMangaApi() {
+         get("/api/v1/manga/{sourceId}/chapters") {
+             val source = call.sourceId().manga(mangaSources) ?: return@get call.respondNotFound()
+             val url = call.requiredUrl() ?: return@get call.respondMissingUrl()
+-            val manga = SManga.create().also { it.url = url }
++            val manga = SManga.create().also {
++                it.url = url
++                it.title = ""
++            }
+             val chapters = source.getChapterList(manga)
+             call.respond(ChaptersDto(chapters.map { it.toDto() }))
+         }
+@@ -67,7 +73,10 @@ fun Application.registerMangaApi() {
+         get("/api/v1/manga/{sourceId}/pages") {
+             val source = call.sourceId().manga(mangaSources) ?: return@get call.respondNotFound()
+             val url = call.requiredUrl() ?: return@get call.respondMissingUrl()
+-            val chapter = SChapter.create().also { it.url = url }
++            val chapter = SChapter.create().also {
++                it.url = url
++                it.name = ""
++            }
+             val pages = source.getPageList(chapter)
+             val httpSource = source as? HttpSource
+             pages.forEach { p ->

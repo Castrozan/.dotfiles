@@ -134,14 +134,16 @@ services:
       - ${ARR_DATA_ROOT}/manga/mangas:/manga:ro
 
   miwayomi:
-    image: ghcr.io/miwayomi/miwayomi:0.2.9@sha256:8e7094088565b97091319dfa92b80a8c22497a712e72af09e2470454f5942ec4
+    build:
+      context: ${MIWAYOMI_BUILD_CONTEXT:?set in ~/arr-stack/.env}
+      dockerfile: miwayomi.Dockerfile
+    image: arr-miwayomi:0.2.9-manga-input-initialization
     container_name: arr-miwayomi
+    hostname: miwayomi
     restart: unless-stopped
     user: "${PUID}:${PGID}"
     networks:
       - arrnet
-    ports:
-      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4568:4567"
     environment:
       <<: *arr-common-environment
       FLARESOLVERR_URL: http://flaresolverr:8191
@@ -151,6 +153,28 @@ services:
     depends_on:
       flaresolverr:
         condition: service_healthy
+
+  miwayomi-gateway:
+    image: nginx:1.30.4-alpine@sha256:97d490c12ba55b4946b01546d1c3ed324e8d41ab1c9fcb2a616aa470620e5b46
+    container_name: arr-miwayomi-gateway
+    restart: unless-stopped
+    networks:
+      - arrnet
+    ports:
+      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4568:4568"
+    environment:
+      <<: *arr-common-environment
+    volumes:
+      - ./miwayomi-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      miwayomi:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4568/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
 
   flaresolverr:
     image: ghcr.io/miwayomi/flaresolverr:0.2.9@sha256:41207a879aebc3e36101734377041a9d82e7375db274aebc0d15c87e51134189

@@ -14,11 +14,17 @@ let
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
   chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";
+  miwayomiBuildContext = pkgs.runCommand "miwayomi-build-context" { } ''
+    mkdir -p "$out"
+    cp ${./miwayomi.Dockerfile} "$out/miwayomi.Dockerfile"
+    cp ${./miwayomi-manga-input-initialization.patch} "$out/miwayomi-manga-input-initialization.patch"
+  '';
   staticEnvironmentFileContents = builtins.readFile ./env;
   runtimeEnvironmentFileContents =
     (lib.removeSuffix "\n" staticEnvironmentFileContents)
     + "\n"
-    + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n";
+    + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n"
+    + "MIWAYOMI_BUILD_CONTEXT=${miwayomiBuildContext}\n";
   configServiceDirectories = [
     "qbittorrent"
     "prowlarr"
@@ -58,6 +64,7 @@ lib.mkIf isChise {
 
     file = {
       "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
+      "arr-stack/miwayomi-gateway.conf".source = ./miwayomi-gateway.conf;
       "arr-stack/.env".text = runtimeEnvironmentFileContents;
       "arr-stack/README.md".source = ./README.md;
     };

@@ -28,6 +28,7 @@
           "jellyseerr"
           "kavita"
           "miwayomi"
+          "miwayomi-gateway"
           "flaresolverr"
         ];
       };
