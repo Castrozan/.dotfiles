@@ -24,6 +24,7 @@ let
   publicOriginVirtualHost = publicOriginNginx.virtualHosts.stremio-public-origin;
   publicOriginHttpConfig = publicOriginNginx.appendHttpConfig.content;
   gatewaySource = builtins.readFile ../scripts/stremio_gateway/prowlarr_stream_provider.py;
+  cometAdapterSource = builtins.readFile ../scripts/stremio_gateway/comet_stream_adapter.py;
   serverSource = builtins.readFile ../scripts/stremio_gateway/__main__.py;
   cometEnvironmentSource = builtins.readFile ../scripts/stremio_comet_environment.py;
 in
@@ -50,9 +51,12 @@ in
     mkEvalCheck "chise-stremio-setup-selects-comet"
       (
         lib.hasInfix "STREMIO_PUBLIC_ADDON_MANIFEST_URL=https://stream.lucaszanoni.com/comet/manifest.json" webEnvironment
-        && lib.hasInfix "STREMIO_TAILNET_ADDON_MANIFEST_URL=http://${tailnetBindAddress}:43214/manifest.json" webEnvironment
+        && lib.hasInfix "STREMIO_TAILNET_ADDON_MANIFEST_URL=http://${tailnetBindAddress}:43212/comet/manifest.json" webEnvironment
+        && lib.hasInfix "STREMIO_COMET_URL=http://${tailnetBindAddress}:43214" webEnvironment
+        && lib.hasInfix "tracker:" cometAdapterSource
+        && lib.hasInfix "dht:" cometAdapterSource
       )
-      "Stremio setup must install the Comet manifest through the Access-gated origin or its direct tailnet endpoint";
+      "Stremio setup must install Comet through the peer-discovery adapter on both public and tailnet origins";
 
   chise-stremio-public-origin-is-loopback-only =
     mkEvalCheck "chise-stremio-public-origin-is-loopback-only"
@@ -66,7 +70,8 @@ in
         ]
         && publicOriginVirtualHost.locations."/".proxyPass == "http://${tailnetBindAddress}:43212"
         && publicOriginVirtualHost.locations."/server/".proxyPass == "http://${tailnetBindAddress}:11470/"
-        && publicOriginVirtualHost.locations."/comet/".proxyPass == "http://${tailnetBindAddress}:43214/"
+        &&
+          publicOriginVirtualHost.locations."/comet/".proxyPass == "http://${tailnetBindAddress}:43212/comet/"
       )
       "the public Stremio origin must expose one loopback listener to cloudflared and keep every upstream service on the tailnet";
 

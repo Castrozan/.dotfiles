@@ -6,6 +6,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from comet_stream_adapter import CometStreamAdapter
 from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
 from stremio_protocol import (
     addon_manifest,
@@ -17,6 +18,7 @@ from stremio_protocol import (
 class StremioRequestHandler(BaseHTTPRequestHandler):
     static_root: Path
     stream_provider: ProwlarrStreamProvider
+    comet_adapter: CometStreamAdapter
     public_host: str
     public_setup_redirect_url: str
     tailnet_setup_redirect_url: str
@@ -53,6 +55,9 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
         if path == "/prowlarr/manifest.json":
             self._send_json(addon_manifest(), include_body)
             return
+        if path == "/comet" or path.startswith("/comet/"):
+            self._send_comet(self.path.removeprefix("/comet") or "/", include_body)
+            return
         stream_request = parse_stream_request(path)
         if stream_request is not None:
             try:
@@ -63,6 +68,24 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             self._send_json({"streams": streams}, include_body)
             return
         self._send_static(path, include_body)
+
+    def _send_comet(self, request_target: str, include_body: bool):
+        try:
+            response = self.comet_adapter.response(request_target)
+        except Exception as error:
+            print(f"Comet proxy failed: {error}", file=sys.stderr, flush=True)
+            self.send_error(502)
+            return
+        self.send_response(response.status)
+        self._send_cors_headers()
+        self.send_header("Content-Type", response.content_type)
+        self.send_header("Cache-Control", response.cache_control or "no-store")
+        if response.location is not None:
+            self.send_header("Location", response.location)
+        self.send_header("Content-Length", str(len(response.body)))
+        self.end_headers()
+        if include_body:
+            self.wfile.write(response.body)
 
     def _send_json(self, payload: dict, include_body: bool):
         body = json.dumps(payload, separators=(",", ":")).encode()
@@ -131,6 +154,9 @@ def main():
             Path(required_environment_value("STREMIO_PROWLARR_CONFIG_FILE"))
         ),
         required_environment_value("STREMIO_METADATA_URL"),
+    )
+    StremioRequestHandler.comet_adapter = CometStreamAdapter(
+        required_environment_value("STREMIO_COMET_URL")
     )
     StremioRequestHandler.public_host = urllib.parse.urlsplit(public_web_url).netloc
     StremioRequestHandler.public_setup_redirect_url = setup_url_for_request_origin(

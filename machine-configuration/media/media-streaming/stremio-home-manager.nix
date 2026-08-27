@@ -21,7 +21,7 @@ in
   systemd.user = {
     services.stremio-web = {
       Unit = {
-        Description = "Private Stremio Web and Prowlarr stream addon";
+        Description = "Private Stremio Web and stream addon gateway";
         After = [ "network-online.target" ];
         Wants = [ "network-online.target" ];
         StartLimitIntervalSec = 0;
@@ -39,8 +39,9 @@ in
           "STREMIO_PUBLIC_WEB_URL=https://stream.lucaszanoni.com"
           "STREMIO_WEB_ROOT=${stremioWeb}"
           "STREMIO_STREAMING_SERVER_URL=${stremioStreamingServerUrl}"
+          "STREMIO_COMET_URL=${stremioCometUrl}"
           "STREMIO_PUBLIC_ADDON_MANIFEST_URL=https://stream.lucaszanoni.com/comet/manifest.json"
-          "STREMIO_TAILNET_ADDON_MANIFEST_URL=${stremioCometUrl}/manifest.json"
+          "STREMIO_TAILNET_ADDON_MANIFEST_URL=${stremioWebUrl}/comet/manifest.json"
           "STREMIO_PROWLARR_URL=http://${tailnetBindAddress}:9696"
           "STREMIO_PROWLARR_CONFIG_FILE=${homeDirectory}/arr-stack/config/prowlarr/config.xml"
           "STREMIO_METADATA_URL=https://v3-cinemeta.strem.io"
