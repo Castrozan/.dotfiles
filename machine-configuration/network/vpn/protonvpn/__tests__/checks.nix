@@ -1,7 +1,6 @@
 {
   helpers,
   lib,
-  pkgs,
   self,
   ...
 }:
@@ -39,8 +38,7 @@ in
       (
         nixosConfiguration.environment.etc ? "openvpn/update-resolv-conf"
         &&
-          nixosConfiguration.environment.etc."openvpn/update-resolv-conf".source
-          == "${pkgs.update-systemd-resolved}/libexec/openvpn/update-systemd-resolved"
+          nixosConfiguration.environment.etc."openvpn/update-resolv-conf".source == protonVpnConfiguration.up
       )
       "the resolver hook path embedded in the Proton profile must resolve to the systemd-resolved adapter";
 
