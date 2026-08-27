@@ -39,4 +39,7 @@ in
     vpnParaguay
     vpnOff
   ];
+
+  environment.etc."openvpn/update-resolv-conf".source =
+    "${pkgs.update-resolv-conf}/libexec/openvpn/update-resolv-conf";
 }
