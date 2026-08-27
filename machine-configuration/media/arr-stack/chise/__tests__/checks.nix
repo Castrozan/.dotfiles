@@ -42,12 +42,6 @@ let
       loginLocationRegexes = [ "^/login$" ];
     }
     {
-      hostname = "suwayomi.lucaszanoni.com";
-      proxyPort = 9452;
-      upstreamPort = 4567;
-      loginLocationRegexes = [ ];
-    }
-    {
       hostname = "qbittorrent.lucaszanoni.com";
       proxyPort = 9453;
       upstreamPort = 8080;
@@ -94,5 +88,5 @@ in
   chise-arr-private-cloudflare-applications-complete =
     mkEvalCheck "chise-arr-private-cloudflare-applications-complete"
       privateCloudflareApplicationsAreDeclared
-      "Seanime, Radarr, Sonarr, Prowlarr, Bazarr, Suwayomi, and qBittorrent must each have a dedicated owner-gated Cloudflare hostname routed through a loopback proxy to the existing tailnet-bound service";
+      "Seanime, Radarr, Sonarr, Prowlarr, Bazarr, and qBittorrent must each have a dedicated owner-gated Cloudflare hostname routed through a loopback proxy to the existing tailnet-bound service";
 }

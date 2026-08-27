@@ -130,7 +130,7 @@ in
 
   chise-arr-stack-kavita-reads-manga-library-read-only =
     mkEvalCheck "chise-arr-stack-kavita-reads-manga-library-read-only" kavitaReadsMangaLibraryReadOnly
-      "Kavita must mount the manga library read-only; Suwayomi is the only writer of that tree, so the reader can never delete or rewrite a download the downloader owns";
+      "Kavita must mount the existing manga library read-only so the reader can never delete or rewrite a preserved CBZ file";
 
   chise-arr-stack-manga-outside-jellyfin-media-root =
     mkEvalCheck "chise-arr-stack-manga-outside-jellyfin-media-root"

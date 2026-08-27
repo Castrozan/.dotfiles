@@ -53,12 +53,6 @@ let
       loginLocationRegexes = [ "^/login$" ];
     }
     {
-      hostname = "suwayomi.lucaszanoni.com";
-      proxyPort = 9452;
-      upstreamUrl = "http://${chiseTailnetBindAddress}:4567";
-      loginLocationRegexes = [ ];
-    }
-    {
       hostname = "qbittorrent.lucaszanoni.com";
       proxyPort = 9453;
       upstreamUrl = "http://${chiseTailnetBindAddress}:8080";

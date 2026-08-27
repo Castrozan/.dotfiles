@@ -143,22 +143,17 @@ descends from Overseerr and models only movies and television, so books and mang
 have no media type there and no plugin adds one. Wanting a title is therefore
 something you act on in the manga reader, not something anyone approves.
 
-Suwayomi acquires and Kavita serves. Suwayomi pulls from scanlation sources through
-its own extensions rather than from indexers, and the module in
-`machine-configuration/media/manga-streaming/` forces the settings the rest of this
-pipeline depends on: chapters archived as CBZ, written under the data drive's manga
-root, on a bind address that is never the wildcard, and a web interface taken from
-the pinned server build rather than fetched at runtime. They are forced as JVM system
-properties on every start, so changing them in the Suwayomi UI is drift the next
-start overwrites, the same bargain the Jellyfin library allowlist makes. Left to
-itself Suwayomi periodically looks for a newer web interface and rewrites the one it
-serves into its mutable data directory, which both nags on open and takes the served
-version out of this repo's hands; pinned to the bundled build, that version moves
-only when the package moves. Kavita
-mounts that tree read-only, which is what stops the reader mutating what the
-downloader owns, and reads the source directory as a publisher with the title
-directory beneath it as a series, a nesting Kavita documents as supported. Loose
-chapter image folders are not, which is why CBZ is forced rather than preferred.
+Miwayomi handles live web manga reading and anime playback. Its extension state,
+favorites, reading progress, and watch progress persist in the arr-stack config
+root. The WebUI and its FlareSolverr sidecar run in the Compose project. The gateway
+exposes Miwayomi only on chise's tailnet address. Miwayomi does not write
+Kavita-compatible CBZ files.
+
+Kavita keeps serving the existing CBZ library read-only. Its source directory is a
+publisher and each title directory beneath it is a series, a nesting Kavita
+documents as supported. The Suwayomi module, persistent data, and encrypted
+extension repository declaration remain available for rollback, but Suwayomi is not
+deployed. A title read in Miwayomi does not appear in Kavita automatically.
 
 Two boundaries are easy to erase by accident. The manga tree sits beside the Jellyfin
 media root rather than inside it, because Jellyfin bind-mounts that whole root while
@@ -167,8 +162,8 @@ else living there is content Jellyfin serves paths into and no allowlist covers.
 who may read what is Kavita's own account model, not the friend policy in the
 `arr_users` package, which knows only Jellyfin and Jellyseerr. Kavita carries a login
 and is published on the funnel behind the login rate-limiting proxy like the other
-front ends; Suwayomi carries none and stays on the tailnet, which is the rule the
-rest of the stack already follows rather than an exception made for it.
+front ends. Miwayomi carries no authentication, so it stays on the tailnet and has no
+Cloudflare origin.
 
 ## Moving data to an external drive
 
