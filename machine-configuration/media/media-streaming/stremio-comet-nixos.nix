@@ -63,8 +63,9 @@ in
         "--env ANIMETOSHO_MAX_CONCURRENT_PAGES=3"
         "--env SCRAPE_SEADEX=live"
         "--env LIVE_SCRAPE_TIMEOUT=25"
-        "--env INDEXER_MANAGER_TIMEOUT=10"
+        "--env INDEXER_MANAGER_TIMEOUT=15"
         "--env INDEXER_MANAGER_WAIT_TIMEOUT=10"
+        "--env GET_TORRENT_TIMEOUT=10"
         "--env BACKGROUND_SCRAPER_ENABLED=False"
         "--env REMOVE_ADULT_CONTENT=True"
         image
