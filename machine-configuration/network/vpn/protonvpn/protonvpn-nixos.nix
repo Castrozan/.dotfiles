@@ -26,6 +26,8 @@ in
     autoStart = false;
     config = ''
       config ${config.age.secrets.proton-paraguay-openvpn-config.path}
+      ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1
+      redirect-gateway ipv6
       block-ipv6
     '';
     authUserPass = config.age.secrets.proton-openvpn-credentials.path;
