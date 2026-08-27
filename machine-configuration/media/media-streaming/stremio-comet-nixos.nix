@@ -1,11 +1,16 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   containerName = "stremio-comet";
   image = "g0ldyy/comet@sha256:dca62133336e02784d02aaad861381820674d1c8e3e98a03797610b81ee4defe";
   tailnetBindAddress = import ../tailnet-bind-address.nix { inherit lib; };
   port = "43214";
   runtimeEnvironmentFile = "/run/stremio-comet/prowlarr.env";
-  prowlarrConfigFile = "/home/zanoni/arr-stack/config/prowlarr/config.xml";
+  prowlarrConfigFile = "${config.users.users.zanoni.home}/arr-stack/config/prowlarr/config.xml";
   environmentWriter = ./scripts/stremio_comet_environment.py;
 in
 {

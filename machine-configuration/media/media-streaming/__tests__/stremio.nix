@@ -17,7 +17,10 @@ let
   webEnvironment = lib.concatStringsSep " " webUnit.Service.Environment;
   systemModule = import ../stremio-streaming-server-nixos.nix { inherit lib pkgs; };
   streamingUnit = systemModule.systemd.services.stremio-streaming-server;
-  cometModule = import ../stremio-comet-nixos.nix { inherit lib pkgs; };
+  cometModule = import ../stremio-comet-nixos.nix {
+    config.users.users.zanoni.home = testHomeDirectory;
+    inherit lib pkgs;
+  };
   cometUnit = cometModule.systemd.services.stremio-comet;
   publicOriginModule = import ../stremio-public-origin-nixos.nix { inherit lib; };
   publicOriginNginx = publicOriginModule.services.nginx;
@@ -88,6 +91,9 @@ in
         && lib.hasInfix "--env INDEXER_MANAGER_TIMEOUT=15" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env GET_TORRENT_TIMEOUT=10" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env-file /run/stremio-comet/prowlarr.env" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "${testHomeDirectory}/arr-stack/config/prowlarr/config.xml" (
+          lib.concatStringsSep " " cometUnit.serviceConfig.ExecStartPre
+        )
         && lib.hasInfix "PROWLARR_API_KEY" cometEnvironmentSource
         && !(lib.hasInfix "PROWLARR_API_KEY=" cometUnit.serviceConfig.ExecStart)
         && cometUnit.wantedBy == [ "multi-user.target" ]
