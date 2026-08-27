@@ -6,6 +6,7 @@
 }:
 let
   protonParaguayService = "openvpn-proton-paraguay.service";
+  updateSystemdResolved = "${pkgs.update-systemd-resolved}/libexec/openvpn/update-systemd-resolved";
   vpnParaguay = pkgs.writeShellApplication {
     name = "vpn-py";
     runtimeInputs = [ pkgs.systemd ];
@@ -22,6 +23,8 @@ let
   };
 in
 {
+  services.resolved.enable = true;
+
   services.openvpn.servers.proton-paraguay = {
     autoStart = false;
     config = ''
@@ -29,14 +32,23 @@ in
       ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1
       redirect-gateway ipv6
       block-ipv6
+      dhcp-option DOMAIN-ROUTE .
+      up-restart
+      down-pre
     '';
     authUserPass = config.age.secrets.proton-openvpn-credentials.path;
-    updateResolvConf = true;
+    up = updateSystemdResolved;
+    down = updateSystemdResolved;
+    updateResolvConf = false;
   };
 
   systemd.services.openvpn-proton-paraguay = {
-    after = [ "agenix.service" ];
+    after = [
+      "agenix.service"
+      "systemd-resolved.service"
+    ];
     wants = [ "agenix.service" ];
+    requires = [ "systemd-resolved.service" ];
     serviceConfig.Restart = lib.mkForce "no";
   };
 
@@ -44,7 +56,4 @@ in
     vpnParaguay
     vpnOff
   ];
-
-  environment.etc."openvpn/update-resolv-conf".source =
-    "${pkgs.update-resolv-conf}/libexec/openvpn/update-resolv-conf";
 }
