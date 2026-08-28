@@ -5,7 +5,7 @@ x-arr-common-environment: &arr-common-environment
   PGID: ${PGID}
   TZ: ${TZ}
 
-x-miwayomi-dns: &miwayomi-dns
+x-stable-public-dns: &stable-public-dns
   - 1.1.1.1
   - 8.8.8.8
 
@@ -113,6 +113,7 @@ services:
     restart: unless-stopped
     networks:
       - arrnet
+    dns: *stable-public-dns
     ports:
       - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:5055:5055"
       - "127.0.0.1:5055:5055"
@@ -148,7 +149,7 @@ services:
     user: "${PUID}:${PGID}"
     networks:
       - arrnet
-    dns: *miwayomi-dns
+    dns: *stable-public-dns
     environment:
       <<: *arr-common-environment
       FLARESOLVERR_URL: http://flaresolverr:8191
@@ -187,7 +188,7 @@ services:
     restart: unless-stopped
     networks:
       - arrnet
-    dns: *miwayomi-dns
+    dns: *stable-public-dns
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8191/"]
       interval: 30s

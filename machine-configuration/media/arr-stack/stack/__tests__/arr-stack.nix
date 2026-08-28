@@ -90,6 +90,11 @@ let
   envPinsChiseDataRoot = lib.hasInfix "ARR_DATA_ROOT=/home/zanoni/arr-stack/data" envText;
   envMatchesChiseUserAndGroup = lib.hasInfix "PUID=1000" envText && lib.hasInfix "PGID=100" envText;
 
+  stablePublicDnsAnchor = "x-stable-public-dns: &stable-public-dns\n  - 1.1.1.1\n  - 8.8.8.8";
+  jellyseerrUsesStablePublicDns =
+    lib.hasInfix stablePublicDnsAnchor composeText
+    && lib.hasInfix "container_name: arr-jellyseerr\n    restart: unless-stopped\n    networks:\n      - arrnet\n    dns: *stable-public-dns" composeText;
+
   kavitaReadsMangaLibraryReadOnly = lib.hasInfix "\${ARR_DATA_ROOT}/manga/mangas:/manga:ro" composeText;
   mangaLibraryStaysOutOfJellyfinMediaRoot =
     !(lib.hasInfix "\${ARR_DATA_ROOT}/media/manga" composeText);
@@ -148,6 +153,10 @@ in
   chise-arr-stack-documents-host-level-vpn =
     mkEvalCheck "chise-arr-stack-documents-host-level-vpn" readmeDocumentsHostLevelVpn
       "the README must point at the host-level Proton VPN toggles (vpn-py / vpn-off) as the way to route the stack through a VPN, rather than a per-container gateway";
+
+  chise-arr-stack-jellyseerr-uses-stable-public-dns =
+    mkEvalCheck "chise-arr-stack-jellyseerr-uses-stable-public-dns" jellyseerrUsesStablePublicDns
+      "Jellyseerr must bypass Docker's unusable MagicDNS upstream for TMDB while retaining Compose service discovery";
 
   chise-arr-stack-enabled-on-chise =
     mkEvalCheck "chise-arr-stack-enabled-on-chise" (moduleConditionForHostname "chise")

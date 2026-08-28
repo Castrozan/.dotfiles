@@ -46,9 +46,9 @@ let
     && lib.hasInfix ''it.name = ""'' miwayomiPatchText
     && !(lib.hasInfix "AnimeRoutes.kt" miwayomiPatchText);
   outboundServicesUseStableDns =
-    lib.hasInfix "x-miwayomi-dns: &miwayomi-dns\n  - 1.1.1.1\n  - 8.8.8.8" composeText
-    && lib.hasInfix "hostname: miwayomi\n    user: \"\${PUID}:\${PGID}\"\n    networks:\n      - arrnet\n    dns: *miwayomi-dns" composeText
-    && lib.hasInfix "container_name: arr-flaresolverr\n    restart: unless-stopped\n    networks:\n      - arrnet\n    dns: *miwayomi-dns" composeText;
+    lib.hasInfix "x-stable-public-dns: &stable-public-dns\n  - 1.1.1.1\n  - 8.8.8.8" composeText
+    && lib.hasInfix "hostname: miwayomi\n    user: \"\${PUID}:\${PGID}\"\n    networks:\n      - arrnet\n    dns: *stable-public-dns" composeText
+    && lib.hasInfix "container_name: arr-flaresolverr\n    restart: unless-stopped\n    networks:\n      - arrnet\n    dns: *stable-public-dns" composeText;
   watchProgressNormalizationIsIsolated =
     lib.hasInfix "COPY miwayomi-watch-progress.patch /tmp/miwayomi-watch-progress.patch" miwayomiDockerfileText
     && lib.hasInfix "RUN git apply /tmp/miwayomi-watch-progress.patch" miwayomiDockerfileText
