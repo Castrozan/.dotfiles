@@ -1,4 +1,4 @@
-local ten_line_jumping = require("config.navigation.ten_line_jumping")
+local line_jumping = require("config.navigation.line_jumping")
 
 return {
   {
@@ -9,8 +9,8 @@ return {
           cycle = false,
         },
         actions = {
-          jump_selection_down = ten_line_jumping.jump_snacks_selection_down,
-          jump_selection_up = ten_line_jumping.jump_snacks_selection_up,
+          jump_selection_down = line_jumping.jump_snacks_selection_down,
+          jump_selection_up = line_jumping.jump_snacks_selection_up,
         },
         win = {
           input = {

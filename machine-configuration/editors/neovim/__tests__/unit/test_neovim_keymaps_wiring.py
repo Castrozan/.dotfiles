@@ -2,8 +2,8 @@ import json
 
 EXPECTED_NORMAL_MODE_DESCRIPTIONS = {
     "<C-S-e>": "Toggle file explorer focus",
-    "<C-S-Down>": "Jump 10 lines down",
-    "<C-S-Up>": "Jump 10 lines up",
+    "<C-S-Down>": "Jump 7 lines down",
+    "<C-S-Up>": "Jump 7 lines up",
     "<C-S-j>": "Increase window width",
     "<C-S-k>": "Decrease window width",
     "<C-Up>": "Scroll view up one line",

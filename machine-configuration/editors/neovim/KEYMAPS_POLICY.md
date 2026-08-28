@@ -22,13 +22,13 @@ the persisted-width and resize machinery it originally shipped with.
 off the removed list. The toggle moved onto it rather than doubling: `C-b` carried it before and is
 native page-back again, so the deliberately shadowed list lost an entry instead of gaining one.
 
-`C-S-Up` and `C-S-Down` were restored on the owner's explicit request and jump ten at a time
-everywhere a cursor moves: ten lines in a buffer in normal, insert, and visual mode, and ten
-entries inside the snacks pickers, the file explorer, and the telescope pickers. They stop at the
-first and last line rather than refusing to move the way a bare `10j` does with fewer than ten
-lines left. Lists no longer wrap either, because the owner asked for a hard stop at both ends:
-snacks runs with `layout.cycle` off and telescope with `scroll_strategy` set to `limit`, so
-single-step navigation stops at the ends too.
+`C-S-Up` and `C-S-Down` were restored on the owner's explicit request and jump seven at a time
+everywhere a cursor moves: seven lines in a buffer in normal, insert, and visual mode, and seven
+entries inside the snacks pickers, the file explorer, and the telescope pickers. The count was ten
+before the owner asked for seven. They stop at the first and last line rather than refusing to
+move the way a bare `7j` does with fewer than seven lines left. Lists no longer wrap either,
+because the owner asked for a hard stop at both ends: snacks runs with `layout.cycle` off and
+telescope with `scroll_strategy` set to `limit`, so single-step navigation stops at the ends too.
 
 `C-w` was restored on the owner's explicit request and closes the current file buffer in normal and
 insert mode, focusing the buffer to its right and falling back to the one on its left, and landing
@@ -53,7 +53,7 @@ rather than doubled.
 The LazyVim `C-Up` and `C-Down` height defaults are deleted in the same place. With one window and
 the global statusline, `:resize -2` has no neighbour to take rows from, so it grows `cmdheight`
 instead and the statusline walks up the screen and stays there until the opposite chord walks it
-back down. That is one missed shift away from the owned `C-S-Up` and `C-S-Down` ten-line jumps, so
+back down. That is one missed shift away from the owned `C-S-Up` and `C-S-Down` seven-line jumps, so
 the chord kept displacing the statusline by accident. Height resizing has no chord now; use
 `:resize +2` and `:resize -2`.
 
@@ -139,7 +139,7 @@ Find how Neovim itself does a thing before proposing any mapping:
    file's existing style. That file is a chord table and nothing else: every entry is a single
    `map(...)` line pointing at a named function, so a handler carrying a body lives in its own
    module under `lua/config/`, the way `navigation/file_explorer.lua`, `navigation/pickers.lua`,
-   `navigation/ten_line_jumping.lua`, `buffer_closing.lua`, `terminal.lua`, and
+   `navigation/line_jumping.lua`, `buffer_closing.lua`, `terminal.lua`, and
    `command_line_abbreviations.lua` do.
    Keep the exported name short enough that the `map(...)` call still fits on one line, because
    the module name already carries the subject. Picker-side bindings belong in that plugin's spec
