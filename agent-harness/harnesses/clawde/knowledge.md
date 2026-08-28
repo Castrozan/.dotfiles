@@ -95,8 +95,14 @@ A `launchOnTrigger` agent runs one non-interactive turn per gate edge and exits,
 dormant; the tab appears when the gate fires and disappears when the cycle ends. The load-bearing rule is that exactly
 one component may consume the edge fingerprint, since the gate fires only on change and a second reader swallows the
 edge. Any agent opts into a token-cheap heartbeat the same way, by pointing `heartbeatGateCommand` at the change gate
-with its own probe. The active-hours gate lives in the supervisor rather than the wrapper, so an out-of-hours agent is
-fully stopped rather than idling, and it fails open. A one-shot turn cannot block on a long detached validation, which
+with its own probe. What that probe prints decides whether the gate is cheap at all: fold in a field the agent does not
+act on, or one that peers move, and ordinary fleet traffic manufactures an edge every tick, so an edge-triggered gate
+silently degrades into the level-triggered one it replaced. The steward's probe read the shared checkout's dirty flag,
+both revision shas and the raw CI state, which cycles through its pending values on every push, and woke 73 times on one
+day for a repository whose actionable state had barely moved. Print the decision, not the state it was read from: a
+count of commits behind rather than the shas, a failing-or-not boolean rather than the run's phase.
+The active-hours gate lives in the supervisor rather than the wrapper, so an out-of-hours agent is fully stopped
+rather than idling, and it fails open. A one-shot turn cannot block on a long detached validation, which
 is why an agent whose work outlives its own tick needs a warm headed session instead.
 </launch_on_trigger_and_active_hours>
 
