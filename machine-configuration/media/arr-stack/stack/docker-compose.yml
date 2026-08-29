@@ -39,6 +39,7 @@ services:
     restart: "no"
     networks:
       - arrnet
+    dns: *stable-public-dns
     ports:
       - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:9696:9696"
     environment:

@@ -22,6 +22,8 @@ in
         "${pkgs.docker}/bin/docker run"
         "--rm"
         "--name ${containerName}"
+        "--dns 1.1.1.1"
+        "--dns 8.8.8.8"
         "--env NO_CORS=1"
         "--env CASTING_DISABLED=1"
         "--publish ${tailnetBindAddress}:11470:11470"

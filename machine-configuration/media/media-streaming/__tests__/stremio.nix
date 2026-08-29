@@ -100,6 +100,7 @@ in
         && lib.hasInfix "--health-start-period 90s" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env INDEXER_MANAGER_TIMEOUT=15" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env GET_TORRENT_TIMEOUT=10" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--env 'PROWLARR_INDEXERS=[]'" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env-file /run/stremio-comet/prowlarr.env" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "${testHomeDirectory}/arr-stack/config/prowlarr/config.xml" (
           lib.concatStringsSep " " cometUnit.serviceConfig.ExecStartPre
@@ -137,8 +138,10 @@ in
         lib.hasInfix "stremio/server:v4.21.1@sha256:3dc145603defba397467b2a2aa2354be2da1f86585d4ab825a70bd72782f2ef4" streamingUnit.serviceConfig.ExecStart
         && lib.hasInfix "--publish " streamingUnit.serviceConfig.ExecStart
         && lib.hasInfix ":11470:11470" streamingUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--dns 1.1.1.1" streamingUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--dns 8.8.8.8" streamingUnit.serviceConfig.ExecStart
         && !(lib.hasInfix "0.0.0.0" streamingUnit.serviceConfig.ExecStart)
         && streamingUnit.wantedBy == [ "multi-user.target" ]
       )
-      "the official streaming server must be digest-pinned, tailnet-bound and systemd-owned";
+      "the official streaming server must be digest-pinned, tailnet-bound, systemd-owned and able to resolve public torrent trackers";
 }

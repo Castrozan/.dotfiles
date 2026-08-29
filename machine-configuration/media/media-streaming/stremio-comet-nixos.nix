@@ -62,7 +62,7 @@ in
         "--env PUBLIC_BASE_URL=https://stream.lucaszanoni.com/comet"
         "--env SCRAPE_PROWLARR=live"
         "--env PROWLARR_URL=http://${tailnetBindAddress}:9696"
-        "--env 'PROWLARR_INDEXERS=[\"The Pirate Bay\",\"YTS\",\"Knaben\"]'"
+        "--env 'PROWLARR_INDEXERS=[]'"
         "--env SCRAPE_NYAA=live"
         "--env NYAA_MAX_CONCURRENT_PAGES=2"
         "--env SCRAPE_ANIMETOSHO=live"
