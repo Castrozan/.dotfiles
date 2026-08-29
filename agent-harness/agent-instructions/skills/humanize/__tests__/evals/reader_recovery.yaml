@@ -45,7 +45,7 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Starts with the concrete scope decision between creating admin access automatically for every system that supports subcontexts and creating it only for systems that enable a new field, maps each implementation option to that outcome, and does not discuss finding 3, insulation, or unreachable rows before the choice is understandable."
+        - "Starts with the concrete scope decision between creating admin access automatically for every system that supports subcontexts and creating it only for systems that enable a new field, maps each implementation option to that outcome without selecting either option, and does not discuss finding 3, insulation, or unreachable rows before the choice is understandable."
 
   - name: recovery_reports_current_state_instead_of_process_history
     failure_mode: task_outcome
