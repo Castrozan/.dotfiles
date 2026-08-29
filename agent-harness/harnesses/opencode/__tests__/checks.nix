@@ -1,7 +1,8 @@
-{ helpers
-, pkgs
-, lib
-, ...
+{
+  helpers,
+  pkgs,
+  lib,
+  ...
 }:
 let
   inherit (helpers) mkEvalCheck;
@@ -20,11 +21,9 @@ let
   deployedFileNames = builtins.attrNames cfg.home.file;
   hasDeployedFilePrefix =
     prefix:
-    builtins.any
-      (
-        name: builtins.substring 0 (builtins.stringLength prefix) name == prefix
-      )
-      deployedFileNames;
+    builtins.any (
+      name: builtins.substring 0 (builtins.stringLength prefix) name == prefix
+    ) deployedFileNames;
 
   parseDeployedJson =
     deployedText: builtins.fromJSON (builtins.unsafeDiscardStringContext deployedText);
@@ -81,11 +80,11 @@ in
       (
         !(opencodeGoProvider ? claudeCodeModels)
         &&
-        builtins.attrNames opencodeGoProvider.models == [
-          "haiku"
-          "opus"
-          "sonnet"
-        ]
+          builtins.attrNames opencodeGoProvider.models == [
+            "haiku"
+            "opus"
+            "sonnet"
+          ]
       )
       "Console Go's Anthropic endpoint drops tool names, and claude-go answers that by translating locally rather than by running different models, so a second per-harness model set would silently split the two surfaces again";
 
@@ -107,28 +106,25 @@ in
       (builtins.elem "~/.config/opencode/AGENTS.md" deployedOpencodeSettings.instructions)
       "opencode must load the deployed global rules through its instructions list";
 
-  domain-opencode-runs-with-full-access = mkEvalCheck "domain-opencode-runs-with-full-access"
-    (
-      deployedOpencodeSettings.permission."*" == "allow"
-      && deployedOpencodeSettings.permission.bash == "allow"
-      && deployedOpencodeSettings.permission.edit == "allow"
-    ) "opencode must run without approval prompts, matching Claude's bypassPermissions posture";
+  domain-opencode-runs-with-full-access = mkEvalCheck "domain-opencode-runs-with-full-access" (
+    deployedOpencodeSettings.permission."*" == "allow"
+    && deployedOpencodeSettings.permission.bash == "allow"
+    && deployedOpencodeSettings.permission.edit == "allow"
+  ) "opencode must run without approval prompts, matching Claude's bypassPermissions posture";
 
   domain-opencode-enables-language-servers-and-formatters =
     mkEvalCheck "domain-opencode-enables-language-servers-and-formatters"
       (deployedOpencodeSettings.lsp.pyright.env.PYTHONPATH != "" && deployedOpencodeSettings.formatter)
       "opencode must enable its built-in LSP servers and formatters with the Python test environment available to Pyright";
 
-  domain-opencode-wires-the-browser-mcp = mkEvalCheck "domain-opencode-wires-the-browser-mcp"
-    (
-      deployedOpencodeSettings.mcp ? chrome-devtools
-      && deployedOpencodeSettings.mcp.chrome-devtools.enabled
-    ) "opencode must wire the shared chrome-devtools MCP that Claude and Codex both wire";
+  domain-opencode-wires-the-browser-mcp = mkEvalCheck "domain-opencode-wires-the-browser-mcp" (
+    deployedOpencodeSettings.mcp ? chrome-devtools
+    && deployedOpencodeSettings.mcp.chrome-devtools.enabled
+  ) "opencode must wire the shared chrome-devtools MCP that Claude and Codex both wire";
 
-  domain-opencode-allows-nested-subagents = mkEvalCheck "domain-opencode-allows-nested-subagents"
-    (
-      deployedOpencodeSettings.subagent_depth >= 2
-    ) "opencode must let a subagent launch its own subagents, matching Claude's nesting";
+  domain-opencode-allows-nested-subagents = mkEvalCheck "domain-opencode-allows-nested-subagents" (
+    deployedOpencodeSettings.subagent_depth >= 2
+  ) "opencode must let a subagent launch its own subagents, matching Claude's nesting";
 
   domain-opencode-deploys-subagent-definitions =
     mkEvalCheck "domain-opencode-deploys-subagent-definitions"
@@ -141,11 +137,9 @@ in
 
   domain-opencode-carries-the-shared-interactive-set =
     mkEvalCheck "domain-opencode-carries-the-shared-interactive-set"
-      (builtins.all
-        (
-          skillName: builtins.hasAttr ".config/opencode/skills/${skillName}" cfg.home.file
-        )
-        interactiveAgentSkills.defaultInteractiveSkillNames)
+      (builtins.all (
+        skillName: builtins.hasAttr ".config/opencode/skills/${skillName}" cfg.home.file
+      ) interactiveAgentSkills.defaultInteractiveSkillNames)
       "every shared interactive skill must deploy into the OpenCode machine tier";
 
   domain-opencode-core-skill =

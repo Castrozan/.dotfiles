@@ -1,7 +1,8 @@
-{ pkgs
-, config
-, latest
-, ...
+{
+  pkgs,
+  config,
+  latest,
+  ...
 }:
 let
   homeDir = config.home.homeDirectory;
