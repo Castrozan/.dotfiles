@@ -1,4 +1,9 @@
-{ helpers, lib, ... }:
+{
+  helpers,
+  lib,
+  pkgs,
+  ...
+}:
 let
   inherit (helpers) mkEvalCheck;
 
@@ -43,6 +48,7 @@ let
     && lib.hasInfix "http://127.0.0.1:4568/api/v1/health" composeText
     && lib.hasInfix "proxy_pass http://miwayomi:4567" gatewayConfigurationText
     && lib.hasInfix "map $http_x_forwarded_proto $miwayomi_external_scheme" gatewayConfigurationText
+    && lib.hasInfix ''~^https(?:\s*,|$) https;'' gatewayConfigurationText
     && lib.hasInfix "proxy_set_header X-Forwarded-Proto $miwayomi_external_scheme" gatewayConfigurationText
     && lib.hasInfix ''sub_filter "http://miwayomi:4567" "$miwayomi_external_scheme://$http_host"'' gatewayConfigurationText;
   mangaInputInitializationIsIsolated =
@@ -60,6 +66,19 @@ let
     && lib.hasInfix "const requestedAnimeUrl = safeDecode(animeUrl);" watchProgressPatchText
     && lib.hasInfix "d.url = requestedAnimeUrl;" watchProgressPatchText
     && !(lib.hasInfix "MangaRoutes.kt" watchProgressPatchText);
+  gatewaySchemeRuntimeCheck =
+    pkgs.runCommand "chise-miwayomi-gateway-scheme-runtime"
+      {
+        nativeBuildInputs = [
+          pkgs.bash
+          pkgs.curl
+          pkgs.nginx
+        ];
+      }
+      ''
+        bash ${./verify-gateway-scheme.sh} ${gatewayConfigurationPath}
+        touch "$out"
+      '';
 in
 {
   chise-miwayomi-images-are-pinned =
@@ -70,6 +89,8 @@ in
     mkEvalCheck "chise-miwayomi-stream-gateway-repairs-container-origins"
       gatewayRepairsMiwayomiProxyOrigins
       "Miwayomi emits its Docker hostname into HLS and DASH manifests, so the tailnet gateway must replace that internal origin with the browser-visible request origin";
+
+  chise-miwayomi-stream-gateway-preserves-public-scheme = gatewaySchemeRuntimeCheck;
 
   chise-miwayomi-initializes-required-manga-inputs =
     mkEvalCheck "chise-miwayomi-initializes-required-manga-inputs" mangaInputInitializationIsIsolated
