@@ -1,6 +1,6 @@
 ---
 name: herdr
-description: "Operate herdr, the terminal workspace manager: create and drive workspaces, tabs, panes, processes, and persistent interactive agent sessions."
+description: Operate herdr workspaces, tabs, panes, processes, and persistent interactive agent sessions. Use for layout, process control, inspection, input, waiting, and takeover.
 ---
 
 <orientation>

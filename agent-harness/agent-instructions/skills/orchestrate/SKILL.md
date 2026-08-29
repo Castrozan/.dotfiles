@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: "Delegate work to and drive another interactive agent, harness, or machine over a2a, herdr, or ssh: launch, dispatch, observe, correct, repeat."
+description: Delegate work to and drive another interactive agent, harness, or machine over a2a, herdr, or ssh. Use to launch, dispatch, observe, correct, and repeat.
 ---
 
 <core-delegation-authority>
