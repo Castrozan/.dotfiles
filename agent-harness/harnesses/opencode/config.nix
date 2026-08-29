@@ -1,14 +1,13 @@
-{
-  pkgs,
-  config,
-  latest,
-  ...
+{ pkgs
+, config
+, latest
+, ...
 }:
 let
   homeDir = config.home.homeDirectory;
   opencodeGo = import ./go-provider.nix { homeDirectory = homeDir; };
 
-  defaultOpencodeModel = "opencode-go/${opencodeGo.models.sonnet}";
+  defaultOpencodeModel = "opencode/big-pickle";
   titleGenerationModel = "opencode-go/${opencodeGo.models.haiku}";
 
   mcpServerDefinitions = import ./mcp-servers.nix {

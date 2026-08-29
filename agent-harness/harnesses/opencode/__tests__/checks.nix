@@ -1,8 +1,7 @@
-{
-  helpers,
-  pkgs,
-  lib,
-  ...
+{ helpers
+, pkgs
+, lib
+, ...
 }:
 let
   inherit (helpers) mkEvalCheck;
@@ -21,9 +20,11 @@ let
   deployedFileNames = builtins.attrNames cfg.home.file;
   hasDeployedFilePrefix =
     prefix:
-    builtins.any (
-      name: builtins.substring 0 (builtins.stringLength prefix) name == prefix
-    ) deployedFileNames;
+    builtins.any
+      (
+        name: builtins.substring 0 (builtins.stringLength prefix) name == prefix
+      )
+      deployedFileNames;
 
   parseDeployedJson =
     deployedText: builtins.fromJSON (builtins.unsafeDiscardStringContext deployedText);
@@ -42,6 +43,7 @@ let
 
   providersThisMachineCanAuthenticate = [
     "opencode-go"
+    "opencode"
   ];
 in
 {
@@ -64,26 +66,26 @@ in
         builtins.elem (modelProviderOf deployedOpencodeSettings.model) providersThisMachineCanAuthenticate
         && builtins.elem (modelProviderOf deployedOpencodeSettings.small_model) providersThisMachineCanAuthenticate
       )
-      "both defaults must resolve against opencode.ai on the paid Go plan under `opencode-go`, which the wrapper authenticates from the agenix key. Any other provider needs a credential nothing here deploys, so opencode would open on a model it cannot call";
+      "both defaults must resolve against a provider this machine can authenticate: `opencode-go` through the agenix key on the paid Go plan, or `opencode` through the logged-in OpenAI OAuth token, so opencode opens on a model it can actually call";
 
   domain-opencode-default-models-use-the-shared-go-provider =
     mkEvalCheck "domain-opencode-default-models-use-the-shared-go-provider"
       (
-        deployedOpencodeSettings.model == "opencode-go/${opencodeGoProvider.models.sonnet}"
+        deployedOpencodeSettings.model == "opencode/big-pickle"
         && deployedOpencodeSettings.small_model == "opencode-go/${opencodeGoProvider.models.haiku}"
       )
-      "the interactive and title defaults must use the shared Go provider model definitions";
+      "the interactive default runs opencode's big-pickle model while title generation stays on the shared Go provider's cheap haiku model";
 
   domain-opencode-go-provider-exposes-one-model-selection =
     mkEvalCheck "domain-opencode-go-provider-exposes-one-model-selection"
       (
         !(opencodeGoProvider ? claudeCodeModels)
         &&
-          builtins.attrNames opencodeGoProvider.models == [
-            "haiku"
-            "opus"
-            "sonnet"
-          ]
+        builtins.attrNames opencodeGoProvider.models == [
+          "haiku"
+          "opus"
+          "sonnet"
+        ]
       )
       "Console Go's Anthropic endpoint drops tool names, and claude-go answers that by translating locally rather than by running different models, so a second per-harness model set would silently split the two surfaces again";
 
@@ -105,25 +107,28 @@ in
       (builtins.elem "~/.config/opencode/AGENTS.md" deployedOpencodeSettings.instructions)
       "opencode must load the deployed global rules through its instructions list";
 
-  domain-opencode-runs-with-full-access = mkEvalCheck "domain-opencode-runs-with-full-access" (
-    deployedOpencodeSettings.permission."*" == "allow"
-    && deployedOpencodeSettings.permission.bash == "allow"
-    && deployedOpencodeSettings.permission.edit == "allow"
-  ) "opencode must run without approval prompts, matching Claude's bypassPermissions posture";
+  domain-opencode-runs-with-full-access = mkEvalCheck "domain-opencode-runs-with-full-access"
+    (
+      deployedOpencodeSettings.permission."*" == "allow"
+      && deployedOpencodeSettings.permission.bash == "allow"
+      && deployedOpencodeSettings.permission.edit == "allow"
+    ) "opencode must run without approval prompts, matching Claude's bypassPermissions posture";
 
   domain-opencode-enables-language-servers-and-formatters =
     mkEvalCheck "domain-opencode-enables-language-servers-and-formatters"
       (deployedOpencodeSettings.lsp.pyright.env.PYTHONPATH != "" && deployedOpencodeSettings.formatter)
       "opencode must enable its built-in LSP servers and formatters with the Python test environment available to Pyright";
 
-  domain-opencode-wires-the-browser-mcp = mkEvalCheck "domain-opencode-wires-the-browser-mcp" (
-    deployedOpencodeSettings.mcp ? chrome-devtools
-    && deployedOpencodeSettings.mcp.chrome-devtools.enabled
-  ) "opencode must wire the shared chrome-devtools MCP that Claude and Codex both wire";
+  domain-opencode-wires-the-browser-mcp = mkEvalCheck "domain-opencode-wires-the-browser-mcp"
+    (
+      deployedOpencodeSettings.mcp ? chrome-devtools
+      && deployedOpencodeSettings.mcp.chrome-devtools.enabled
+    ) "opencode must wire the shared chrome-devtools MCP that Claude and Codex both wire";
 
-  domain-opencode-allows-nested-subagents = mkEvalCheck "domain-opencode-allows-nested-subagents" (
-    deployedOpencodeSettings.subagent_depth >= 2
-  ) "opencode must let a subagent launch its own subagents, matching Claude's nesting";
+  domain-opencode-allows-nested-subagents = mkEvalCheck "domain-opencode-allows-nested-subagents"
+    (
+      deployedOpencodeSettings.subagent_depth >= 2
+    ) "opencode must let a subagent launch its own subagents, matching Claude's nesting";
 
   domain-opencode-deploys-subagent-definitions =
     mkEvalCheck "domain-opencode-deploys-subagent-definitions"
@@ -136,9 +141,11 @@ in
 
   domain-opencode-carries-the-shared-interactive-set =
     mkEvalCheck "domain-opencode-carries-the-shared-interactive-set"
-      (builtins.all (
-        skillName: builtins.hasAttr ".config/opencode/skills/${skillName}" cfg.home.file
-      ) interactiveAgentSkills.defaultInteractiveSkillNames)
+      (builtins.all
+        (
+          skillName: builtins.hasAttr ".config/opencode/skills/${skillName}" cfg.home.file
+        )
+        interactiveAgentSkills.defaultInteractiveSkillNames)
       "every shared interactive skill must deploy into the OpenCode machine tier";
 
   domain-opencode-core-skill =
