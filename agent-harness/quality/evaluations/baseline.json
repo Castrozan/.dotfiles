@@ -1,10 +1,10 @@
 {
   "generated_at": "2026-08-27T00:49:29.580360+00:00",
-  "git_commit": "d6670e8a",
+  "git_commit": "32be0b60",
   "total_tests": 209,
-  "total_passed": 197,
-  "total_failed": 12,
-  "pass_rate": 0.9426,
+  "total_passed": 199,
+  "total_failed": 10,
+  "pass_rate": 0.9522,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -415,8 +415,8 @@
       ]
     },
     "skill_routing": {
-      "passed": 49,
-      "failed": 2,
+      "passed": 51,
+      "failed": 0,
       "tests": [
         {
           "name": "routing_to_media_youtube_search",
@@ -467,7 +467,7 @@
           "passed": true
         },
         {
-          "name": "routing_to_claude_spawn_agent",
+          "name": "routing_to_orchestrate_same_goal_delegation",
           "passed": true
         },
         {
@@ -508,7 +508,7 @@
         },
         {
           "name": "routing_to_quickshell_bar_module",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_research_tool_comparison",
@@ -544,7 +544,7 @@
         },
         {
           "name": "routing_to_review_for_an_unbiased_reviewer_pass",
-          "passed": false
+          "passed": true
         },
         {
           "name": "routing_to_coding_history_search_commits",
@@ -1006,8 +1006,8 @@
     }
   },
   "fingerprints": {
-    "suite": "7246aabd6afba02a56288145d6761059b07431d8e135dcf675d7483213e43cd3",
-    "instructions": "6986d805e2853b6ab733428df388727a61c2ca1dce16c7a06ce902c68c5e0620"
+    "suite": "23441231baa40af8c8d4cbe8ee48ee6f0957bbf46979d71e7dc88a834f76a500",
+    "instructions": "5b8331e52d98ca30e63ecaea305bfa337af98dbc891b85b7fbcf3e6fdc5065f3"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
