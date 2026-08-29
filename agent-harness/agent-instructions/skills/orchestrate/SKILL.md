@@ -61,8 +61,8 @@ dispatch one self-contained task naming the goal, the constraints, where to work
 to its end instead of assuming the first answer is final; 5) inspect the artifact the turn produced, never the peer's
 account of it; 6) answer whatever the peer asks, and correct with one instruction naming the specific gap; 7) repeat
 from step 3 with the next increment, and re-route the work when two corrections have not moved it; 8) close out by
-telling the peer the goal is met, leaving its pane in place for the human to close, and removing only what is yours,
-such as a worktree or a scratch file. Give the peer the smallest
+telling the peer the goal is met, closing every local peer pane you launched under `herdr`'s owned-pane cleanup rule,
+and removing only what is yours, such as a worktree or a scratch file. Give the peer the smallest
 increment that produces inspectable evidence, because a turn you cannot check is a turn you cannot correct.
 </the_drive_loop>
 

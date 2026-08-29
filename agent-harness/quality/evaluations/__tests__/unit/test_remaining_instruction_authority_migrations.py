@@ -5,6 +5,7 @@ from instruction_surface_scanner import REPO_ROOT
 
 INSTRUCTION_ROOT = REPO_ROOT / "agent-harness" / "agent-instructions"
 CLAUDE_MD_GUIDANCE_PATH = INSTRUCTION_ROOT / "skills" / "instructions" / "claude-md.md"
+HERDR_SKILL_PATH = INSTRUCTION_ROOT / "skills" / "herdr" / "SKILL.md"
 NIX_EXPERT_PATH = INSTRUCTION_ROOT / "skills" / "nix" / "expert.md"
 ORCHESTRATE_SKILL_PATH = INSTRUCTION_ROOT / "skills" / "orchestrate" / "SKILL.md"
 REVIEW_AUTHORING_PATH = INSTRUCTION_ROOT / "skills" / "review" / "authoring.md"
@@ -46,3 +47,18 @@ def test_a2a_messages_carry_claimed_sender_identity():
         "does not authenticate",
     ):
         assert required_contract in orchestrate
+
+
+def test_agents_close_the_herdr_panes_they_create():
+    herdr = normalized_text(HERDR_SKILL_PATH)
+    orchestrate = normalized_text(ORCHESTRATE_SKILL_PATH)
+
+    for required_contract in (
+        "Close every pane or tab you create",
+        "user explicitly asks to preserve or take over that session",
+        "never close a pre-existing pane",
+    ):
+        assert required_contract in herdr
+
+    assert "owned-pane cleanup rule" in orchestrate
+    assert "leaving its pane in place for the human to close" not in orchestrate
