@@ -87,7 +87,12 @@ let
     && lib.hasInfix "d.thumbnail_url = d.thumbnail_url || knownThumbnailUrl;" interfaceArtworkPatchText
     && !(lib.hasInfix "MangaRoutes.kt" interfaceArtworkPatchText);
   staticAssetsRevalidateAfterDeployment =
-    lib.hasInfix ''<script src="/app.js?v=miwayomi-interface-artwork">'' interfaceArtworkPatchText
+    lib.hasInfix ''<script src="/app.js?v=__MIWAYOMI_WEB_CACHE_VERSION__">'' interfaceArtworkPatchText
+    && lib.hasInfix "ARG MIWAYOMI_WEB_CACHE_VERSION" miwayomiDockerfileText
+    && lib.hasInfix "s/__MIWAYOMI_WEB_CACHE_VERSION__/$MIWAYOMI_WEB_CACHE_VERSION/" miwayomiDockerfileText
+    && lib.hasInfix "MIWAYOMI_WEB_CACHE_VERSION: \${MIWAYOMI_WEB_CACHE_VERSION:?set in ~/arr-stack/.env}" composeText
+    && lib.hasInfix ''miwayomiWebCacheVersion = builtins.hashFile "sha256" ./miwayomi-interface-artwork.patch;'' stackModuleText
+    && lib.hasInfix "MIWAYOMI_WEB_CACHE_VERSION=\${miwayomiWebCacheVersion}" stackModuleText
     && lib.hasInfix "map $uri $miwayomi_static_cache_control" gatewayConfigurationText
     && lib.hasInfix ''~*\.(?:html|js|css|json)$ "no-cache, must-revalidate";'' gatewayConfigurationText
     && lib.hasInfix "add_header Cache-Control $miwayomi_static_cache_control always;" gatewayConfigurationText;

@@ -14,6 +14,7 @@ let
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
   chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";
+  miwayomiWebCacheVersion = builtins.hashFile "sha256" ./miwayomi-interface-artwork.patch;
   miwayomiBuildContext = pkgs.runCommand "miwayomi-build-context" { } ''
     mkdir -p "$out"
     cp ${./miwayomi.Dockerfile} "$out/miwayomi.Dockerfile"
@@ -27,6 +28,7 @@ let
     + "\n"
     + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n"
     + "MIWAYOMI_BUILD_CONTEXT=${miwayomiBuildContext}\n"
+    + "MIWAYOMI_WEB_CACHE_VERSION=${miwayomiWebCacheVersion}\n"
     + "MIWAYOMI_GATEWAY_CONFIG_PATH=${./miwayomi-gateway.conf}\n";
   configServiceDirectories = [
     "qbittorrent"

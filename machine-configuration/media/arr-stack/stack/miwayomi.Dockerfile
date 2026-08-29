@@ -10,6 +10,8 @@ COPY miwayomi-watch-progress.patch /tmp/miwayomi-watch-progress.patch
 RUN git apply /tmp/miwayomi-watch-progress.patch
 COPY miwayomi-interface-artwork.patch /tmp/miwayomi-interface-artwork.patch
 RUN git apply /tmp/miwayomi-interface-artwork.patch
+ARG MIWAYOMI_WEB_CACHE_VERSION
+RUN test -n "$MIWAYOMI_WEB_CACHE_VERSION" && sed -i "s/__MIWAYOMI_WEB_CACHE_VERSION__/$MIWAYOMI_WEB_CACHE_VERSION/" server/src/main/resources/webui/index.html
 RUN gradle --no-daemon --console=plain :server:shadowJar
 
 FROM ghcr.io/miwayomi/miwayomi:0.2.9@sha256:8e7094088565b97091319dfa92b80a8c22497a712e72af09e2470454f5942ec4
