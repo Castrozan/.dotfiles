@@ -1,8 +1,11 @@
 {
+  pkgs,
   lib,
   mkEvalCheck,
 }:
 let
+  agentHookScripts = import ../../../hooks/flat-hook-scripts-directory.nix { inherit pkgs lib; };
+
   listHookScriptsRecursively = import ../../../hooks/list-hook-scripts-recursively.nix {
     inherit lib;
   };
@@ -37,4 +40,14 @@ in
         + "the shared name behind a directory-qualified filename. Colliding basenames: "
         + lib.concatStringsSep "; " (lib.mapAttrsToList describeCollision collidingFlatDeploymentFilenames)
       );
+
+  hooks-flat-deploy-launcher-runs-without-bash-on-path =
+    pkgs.runCommandLocal "hooks-flat-deploy-launcher-runs-without-bash-on-path" { }
+      ''
+        HOME="$TMPDIR" PATH=/does-not-exist \
+          ${agentHookScripts}/run-hook.sh \
+          ${agentHookScripts}/pre-tool-use-dispatcher.py \
+          --surface=codex <<<'{}'
+        touch "$out"
+      '';
 }

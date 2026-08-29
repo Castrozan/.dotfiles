@@ -24,6 +24,7 @@ in
 pkgs.runCommandLocal "agent-hook-scripts" { } ''
   mkdir -p "$out"
   ${lib.concatMapStringsSep "\n" installCommandForHookScript allHookScriptsAcrossSubdirectories}
+  patchShebangs "$out/run-hook.sh"
   substituteInPlace "$out/run-hook.sh" \
     --replace-fail "@hookPythonInterpreter@" "${hookPythonInterpreter}"
   substituteInPlace "$out/servant_identity_handler.py" \

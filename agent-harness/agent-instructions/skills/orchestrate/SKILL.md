@@ -20,11 +20,13 @@ breadth instead.
 
 <placing_a_local_peer>
 When delegating part of the current goal on this machine, launch the peer in the orchestrator's existing tab with
-`herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus [--split right|down] -- <harness> <arguments>`;
-everything after `--` is the launched argv. Pin `--tab` and pass `--no-focus`: an unpinned start splits the focused tab,
-which may be one the human switched to, while `--workspace` alone does not pin a tab. Do not create a new tab for
-same-goal delegation; separate unrelated work into a new tab through `herdr`. Before launching concurrent code-editing
-peers, load `coding` and give each peer its own worktree; sharing a checkout lets one peer commit another's changes.
+`herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus [--split right|down] -- "$SHELL" -lic 'exec
+"$@"' herdr-agent-login-shell <harness> <arguments>`. The login-interactive shell restores the user's normal shell
+environment before replacing itself with the harness; a direct argv launch inherits the Herdr server's service PATH
+and silently drops user commands. Pin `--tab` and pass `--no-focus`: an unpinned start splits the focused tab, which may
+be one the human switched to, while `--workspace` alone does not pin a tab. Do not create a new tab for same-goal
+delegation; separate unrelated work into a new tab through `herdr`. Before launching concurrent code-editing peers,
+load `coding` and give each peer its own worktree; sharing a checkout lets one peer commit another's changes.
 </placing_a_local_peer>
 
 <reaching_a_peer_on_this_machine>

@@ -53,6 +53,14 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
         "skill; for unrelated work, open a fresh tab and read the herdr skill.",
     ),
     (
+        rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+agent\s+start\b"
+        rf"(?:(?![;&|\n]).)*?\s--\s+"
+        rf"(?!(?:[\"']?\$?SHELL[\"']?|/run/current-system/sw/bin/bash)\s+-lic\b)",
+        "herdr agent start must launch through the login-interactive $SHELL "
+        "adapter from the orchestrate skill. A direct argv launch inherits the "
+        "Herdr server service PATH instead of the user's normal shell PATH.",
+    ),
+    (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+(?:workspace|tab|pane)\s+close\b"
         rf"(?!\s+{HERDR_TARGET_ID_PATTERN}{COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD})",
         "A herdr workspace/tab/pane close needs a literal target id like w2F:t3 "

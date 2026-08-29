@@ -121,6 +121,7 @@ in
 }
 // import ./hook-flat-deploy-checks.nix {
   inherit
+    pkgs
     lib
     mkEvalCheck
     ;
