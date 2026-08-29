@@ -7,6 +7,7 @@ from .processes import (
     process_is_descendant_of,
     terminate_agent_session,
 )
+from .herdr_session import herdr_pane_agent_session_identifier
 from .relaunch_transport import herdr_pane_foreground_process_identifiers
 
 multiplexer_context_from_environment = relaunch.multiplexer_context_from_environment
@@ -76,14 +77,17 @@ def restart_current_agent_session(_arguments: argparse.Namespace) -> int:
     if not herdr_pane_contains_agent_session(pane_identifier, process_identifier):
         print("Restart target pane does not contain the current harness process.")
         return 1
+    session_identifier = harness.session_identifier_from_command(
+        harness_name, command_line
+    ) or herdr_pane_agent_session_identifier(pane_identifier, harness_name)
+    if session_identifier is None:
+        print("Restart could not resolve the current Herdr pane's agent session ID.")
+        return 1
     acquired_restart_lock = restart_lock.acquire_restart_lock(process_identifier)
     if acquired_restart_lock is None:
         print("A restart is already pending for the current harness process.")
         return 1
-    resume_command = harness.resume_command_for(
-        harness_name,
-        harness.session_identifier_from_command(harness_name, command_line),
-    )
+    resume_command = harness.resume_command_for(harness_name, session_identifier)
     restart_launcher_process_identifier = launch_restart_launcher(
         process_identifier,
         multiplexer_name,

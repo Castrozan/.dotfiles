@@ -13,8 +13,9 @@ harness ancestor and refuses instead of acting on some other process.
 Run `agent-session restart` to make newly built configuration live or to carry on without waiting for input. Commit
 pending changes first, because a resume starts a new process and only durable on-disk state survives it. The command
 terminates the harness and a detached launcher resumes the same session in the same herdr pane, using an explicit
-session identifier where the harness exposes one and the harness's native continue or most-recent-session form
-otherwise. Expect no reply: this session ends mid-command and returns as a resumed one holding a continuation prompt.
+session identifier from the harness or the pane's reported session. It refuses before termination when neither exposes
+an exact identifier; never replace that preservation boundary with a harness's global continue or most-recent-session
+form. Expect no reply: this session ends mid-command and returns as a resumed one holding a continuation prompt.
 </restart>
 
 <restart-refuses-what-it-cannot-preserve>

@@ -38,11 +38,8 @@ def test_walks_past_shells_to_find_the_agent_harness(monkeypatch):
     ("harness_name", "session_identifier", "expected_command"),
     [
         ("claude", "session-123", ["claude", "--resume", "session-123"]),
-        ("claude", None, ["claude", "--continue"]),
         ("codex", "session-123", ["codex", "resume", "session-123"]),
-        ("codex", None, ["codex", "resume", "--last"]),
         ("opencode", "session-123", ["opencode", "--session", "session-123"]),
-        ("opencode", None, ["opencode", "--continue"]),
     ],
 )
 def test_builds_each_harness_native_resume_command(

@@ -133,17 +133,11 @@ def codex_session_identifier_from_command_words(words: list[str]) -> str | None:
     return None
 
 
-def resume_command_for(harness_name: str, session_identifier: str | None) -> list[str]:
+def resume_command_for(harness_name: str, session_identifier: str) -> list[str]:
     if harness_name == "claude":
-        if session_identifier is not None:
-            return ["claude", "--resume", session_identifier]
-        return ["claude", "--continue"]
+        return ["claude", "--resume", session_identifier]
     if harness_name == "codex":
-        if session_identifier is not None:
-            return ["codex", "resume", session_identifier]
-        return ["codex", "resume", "--last"]
+        return ["codex", "resume", session_identifier]
     if harness_name == "opencode":
-        if session_identifier is not None:
-            return ["opencode", "--session", session_identifier]
-        return ["opencode", "--continue"]
+        return ["opencode", "--session", session_identifier]
     raise ValueError(f"unsupported harness: {harness_name}")
