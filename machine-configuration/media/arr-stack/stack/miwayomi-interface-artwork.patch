@@ -147,6 +147,15 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
  async function openChapter(encUrl, name) {
    state.currentView = "reader";
    navPush(() => { if (state.detail) renderDetail(state.detail.type, state.detailObj); });
+@@ -621,7 +695,7 @@ async function openChapter(encUrl, name) {
+         <h2 style="margin:0">${escapeHtml(name)}</h2>
+       </div>
+       <div class="viewer" id="viewer">
+         ${pages.map((p) => `
+-          <img loading="lazy" src="/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(p.imageUrl || "")}">`).join("")}
++          <img loading="lazy" decoding="async" width="800" height="1200" src="/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(p.imageUrl || "")}">`).join("")}
+       </div>`;
+   } catch (e) {
 @@ -666,7 +723,7 @@ function renderAnimeEpisodes(d, eps) {
      return "";
    };

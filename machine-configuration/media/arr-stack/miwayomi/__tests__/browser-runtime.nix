@@ -111,6 +111,7 @@ let
     && lib.hasInfix "d.title = d.title || knownTitle;" interfaceArtworkPatchText
     && lib.hasInfix "function openChapterFromCard(encUrl, encodedName)" interfaceArtworkPatchText
     && lib.hasInfix ''encodeURIComponent(c.name || "").replace(/'/g, "%27")'' interfaceArtworkPatchText;
+  readerPagesReserveLayoutForLazyLoading = lib.hasInfix ''<img loading="lazy" decoding="async" width="800" height="1200" src="/api/v1/proxy?sourceId='' interfaceArtworkPatchText;
   gatewaySchemeRuntimeCheck =
     pkgs.runCommand "chise-miwayomi-gateway-scheme-runtime"
       {
@@ -164,4 +165,8 @@ in
   chise-miwayomi-home-renders-manga-artwork =
     mkEvalCheck "chise-miwayomi-home-renders-manga-artwork" mangaHomeArtworkIsPreserved
       "Miwayomi Home must replace manga source placeholders with a remembered manga catalog whose entries carry real artwork";
+
+  chise-miwayomi-reader-bounds-page-loading =
+    mkEvalCheck "chise-miwayomi-reader-bounds-page-loading" readerPagesReserveLayoutForLazyLoading
+      "Miwayomi's chapter reader must reserve page layout so native lazy loading does not flood the upstream image proxy";
 }
