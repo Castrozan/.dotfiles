@@ -31,6 +31,9 @@ let
 
   herdrConfigContent = builtins.readFile ../workspace-manager/herdr/program-configuration/config.toml;
   herdrConfigBindsWorkspaceChooserAsChooseSession = lib.hasInfix ''goto = ["prefix+s", "prefix+ctrl+s"]'' herdrConfigContent;
+  herdrConfigBindsTabReordering =
+    lib.hasInfix ''move_tab_left = "ctrl+shift+pageup"'' herdrConfigContent
+    && lib.hasInfix ''move_tab_right = "ctrl+shift+pagedown"'' herdrConfigContent;
 in
 {
   domain-terminal-bash-enabled =
@@ -72,6 +75,10 @@ in
     mkEvalCheck "domain-terminal-herdr-config-binds-workspace-chooser-as-choose-session"
       herdrConfigBindsWorkspaceChooserAsChooseSession
       "herdr config.toml must bind goto to both prefix+s and prefix+ctrl+s so the workspace chooser survives the prefix key's lingering control modifier: the chooser lists every workspace, matching tmux choose-session, and per-client active-workspace lets each client jump its own view independently";
+
+  domain-terminal-herdr-config-binds-tab-reordering =
+    mkEvalCheck "domain-terminal-herdr-config-binds-tab-reordering" herdrConfigBindsTabReordering
+      "herdr config.toml must bind ctrl+shift+pageup to move_tab_left and ctrl+shift+pagedown to move_tab_right so focused tabs can move between adjacent indexes without changing identity or title";
 
   domain-terminal-kitty-catppuccin =
     mkEvalCheck "domain-terminal-kitty-catppuccin"
