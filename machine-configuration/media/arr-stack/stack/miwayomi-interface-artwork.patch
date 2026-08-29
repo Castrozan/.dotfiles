@@ -1,14 +1,16 @@
 diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/webui/app.js
 --- a/server/src/main/resources/webui/app.js
 +++ b/server/src/main/resources/webui/app.js
-@@ -1,4 +1,6 @@
+@@ -1,4 +1,7 @@
  const $ = (sel) => document.querySelector(sel);
  const api = "/api/v1";
 +const HOME_ANIME_SOURCE_KEY = "miwayomi.homeAnimeSourceId";
 +const DEFAULT_HOME_ANIME_SOURCE_PACKAGE = "eu.kanade.tachiyomi.animeextension.en.anikoto";
++let homeRenderGeneration = 0;
 
  let state = {
-@@ -289,10 +291,13 @@ async function renderHome() {
+@@ -289,10 +292,14 @@ async function renderHome() {
++  const renderGeneration = ++homeRenderGeneration;
    let html = hero;
 -  const watch = await listWatch();
 +  const [watch, homeAnimeCatalog] = await Promise.all([listWatch(), loadHomeAnimeCatalog()]);
@@ -24,9 +26,9 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
      html += rowWrap(t("nav.anime"), anime.map((s) => sourceCard(s)).join(""));
    }
    try {
-@@ -303,6 +308,54 @@ async function renderHome() {
+@@ -303,6 +310,54 @@ async function renderHome() {
    } catch (e) { }
-+  if (state.currentView !== "home") return;
++  if (state.currentView !== "home" || renderGeneration !== homeRenderGeneration) return;
    main.innerHTML = html;
  }
 +
@@ -79,7 +81,7 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
 
  function rowWrap(title, cards) {
    return `<div class="row"><div class="row-title">${escapeHtml(title)}</div><div class="row-scroll">${cards}</div></div>`;
-@@ -346,6 +399,7 @@ function favCard(f) {
+@@ -346,6 +401,7 @@ function favCard(f) {
  /* ---------------- Browse (source) ---------------- */
 
  function openSource(source) {
@@ -87,7 +89,7 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
    navPush(() => { setNav("home"); renderHome(); });
    renderBrowseView(source);
  }
-@@ -382,7 +436,7 @@ async function doSearch() {
+@@ -382,7 +438,7 @@ async function doSearch() {
  function catalogCard(m) {
    const type = state.activeSource.type;
    return `
@@ -96,7 +98,7 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
        ${m.thumbnail_url ? `<img loading="lazy" src="/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(m.thumbnail_url)}">` : `<div class="card-img-placeholder">${escapeHtml((m.title || "?").charAt(0).toUpperCase())}</div>`}
        <div class="card-title">${escapeHtml(m.title)}</div>
      </div>`;
-@@ -457,7 +511,7 @@ function onContentScroll() {
+@@ -457,7 +513,7 @@ function onContentScroll() {
 
  /* ---------------- Detail ---------------- */
 
@@ -105,7 +107,7 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
    navPush(backTo || (() => { if (state.activeSource) renderBrowseView(state.activeSource); }));
    const main = $("#content");
    main.innerHTML = `<div class="loading">${escapeHtml(t("common.loading"))}</div>`;
-@@ -465,6 +519,7 @@ async function openEntry(sourceId, type, url, backTo) {
+@@ -465,6 +521,7 @@ async function openEntry(sourceId, type, url, backTo) {
      const dec = decodeURIComponent(url);
      d = { url: dec, title: dec.split("/").pop() || t("detail.entry") };
    }
