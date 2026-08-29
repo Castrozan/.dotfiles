@@ -21,6 +21,7 @@ let
 
   everyPreferenceWriteToleratesItsOwnFailure =
     preferenceWriteLines != [ ] && lib.all (line: lib.hasInfix "|| true" line) preferenceWriteLines;
+  hammerspoonInitContent = builtins.readFile ../init.lua;
 in
 {
   domain-desktop-hammerspoon-preference-writes-are-time-bounded =
@@ -32,4 +33,12 @@ in
     mkEvalCheck "domain-desktop-hammerspoon-preference-writes-tolerate-their-own-failure"
       everyPreferenceWriteToleratesItsOwnFailure
       "Every `defaults write` against the Hammerspoon preference domain must end in `|| true`, because home-manager runs activation under set -e, so a write that legitimately fails on a headless rebuild or is cut short by its own timeout would otherwise abort activation before any later generation step runs; suppressing the console window is cosmetic and must never be able to fail a switch";
+
+  domain-desktop-hammerspoon-codex-notification-wezterm-summon-is-deployed =
+    mkEvalCheck "domain-desktop-hammerspoon-codex-notification-wezterm-summon-is-deployed"
+      (
+        builtins.hasAttr ".hammerspoon/wezterm_summon.lua" hammerspoonConfiguration.home.file
+        && lib.hasInfix "function summonWezTermToCurrentWorkspace()" hammerspoonInitContent
+      )
+      "The Darwin Codex notification driver calls summonWezTermToCurrentWorkspace through hs -c, so Hammerspoon must deploy its implementation and expose that exact global function";
 }

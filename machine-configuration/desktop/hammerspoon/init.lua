@@ -9,6 +9,7 @@ local windowMenuBarItem = require("workspace_grid_window_menu_bar_item")
 local windowSnapshot = require("workspace_grid_window_snapshot")
 local chromeProfileWindow = require("chrome_profile_window")
 local browserAwareDigitKeybindings = require("workspace_grid_browser_aware_digit_keybindings")
+local weztermSummon = require("wezterm_summon")
 
 windowMenuBarItem.installMenuItemBuilder(windowMenu.buildMenuItemBuilder({
 	snapshotForImmediateUse = windowSnapshot.snapshotForImmediateUse,
@@ -94,6 +95,9 @@ function summonWorkChromeToCurrentWorkspace()
 		"summon-chrome-work-profile",
 		chromeProfileWindow.windowBelongsToWorkProfile
 	)
+end
+function summonWezTermToCurrentWorkspace()
+	weztermSummon.summonToCurrentWorkspace(workspaceGrid)
 end
 
 local windowEventWatcher = hs.window.filter.new()

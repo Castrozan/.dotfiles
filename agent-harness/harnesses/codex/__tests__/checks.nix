@@ -2,7 +2,6 @@
   helpers,
   pkgs,
   lib,
-  inputs,
   self,
   ...
 }:
@@ -15,23 +14,7 @@ let
         hostname = "test";
       };
 
-  cfg =
-    (inputs.home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-      extraSpecialArgs = {
-        hostname = "test";
-      };
-      modules = [
-        self.homeManagerModules.codex
-        {
-          home = {
-            username = "test";
-            homeDirectory = "/home/test";
-            inherit (helpers) stateVersion;
-          };
-        }
-      ];
-    }).config;
+  cfg = helpers.homeManagerTestConfiguration [ self.homeManagerModules.codex ];
 
   fileNames = builtins.attrNames cfg.home.file;
 
@@ -42,6 +25,14 @@ let
   normalizedDotfilesAgentInstructions = lib.replaceStrings [ "\n" ] [ " " ] dotfilesAgentInstructions;
   codexConfigSeedActivationData = cfg.home.activation.seedCodexConfigAsMutableFile.data or "";
   legacyCodexSkillDirectoriesScript = builtins.readFile ../scripts/replace-legacy-codex-skill-directories;
+  linuxNotificationDriver = import ../notification-driver.nix {
+    inherit pkgs;
+    isDarwin = false;
+  };
+  darwinNotificationDriver = import ../notification-driver.nix {
+    inherit pkgs;
+    isDarwin = true;
+  };
 in
 {
   codex-bin-wrapper =
@@ -104,6 +95,24 @@ in
     && lib.hasInfix "CODEX_TRUSTED_PROJECT_PARENT_DIRECTORIES" codexConfigSeedActivationData
     && lib.hasInfix "/home/test/repo" codexConfigSeedActivationData
   ) "Codex config must use Claude-style mutable seeding instead of the legacy generator activation";
+
+  codex-linux-completion-notification-driver =
+    mkEvalCheck "codex-linux-completion-notification-driver"
+      (
+        linuxNotificationDriver.platform == "linux"
+        && lib.hasSuffix "/bin/notify-send" linuxNotificationDriver.notificationExecutablePath
+        && lib.hasSuffix "/bin/hyprctl" linuxNotificationDriver.desktopFocusExecutablePath
+      )
+      "Linux Codex completion notifications must use notify-send for the action and Hyprland to focus the current-workspace WezTerm window";
+
+  codex-darwin-completion-notification-driver =
+    mkEvalCheck "codex-darwin-completion-notification-driver"
+      (
+        darwinNotificationDriver.platform == "darwin"
+        && darwinNotificationDriver.notificationExecutablePath == "/opt/homebrew/bin/alerter"
+        && darwinNotificationDriver.desktopFocusExecutablePath == "/opt/homebrew/bin/hs"
+      )
+      "Darwin Codex completion notifications must use alerter for a reliable action and Hammerspoon to summon WezTerm onto the current virtual workspace";
 
   codex-config-legacy-profiles-removed = mkEvalCheck "codex-config-legacy-profiles-removed" (
     !(builtins.hasAttr ".codex/fast.config.toml" cfg.home.file)

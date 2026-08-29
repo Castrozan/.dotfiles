@@ -3,10 +3,15 @@
   lib,
   config,
   latest,
+  inputs,
+  isDarwin,
   ...
 }:
 let
   homeDir = config.home.homeDirectory;
+  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  notificationDriver = import ./notification-driver.nix { inherit pkgs isDarwin; };
+  codexTurnNotificationScripts = ./scripts/codex_turn_notification;
   browserMcp = import ../../../agent-harness/agent-instructions/skills/browser/install {
     inherit pkgs homeDir;
     nodejs = pkgs.nodejs_22;
@@ -79,8 +84,11 @@ let
     model_reasoning_effort = "xhigh";
     notify = [
       "${pkgs.python312}/bin/python3"
-      "${./scripts/notify_codex_turn_complete.py}"
-      "${pkgs.libnotify}/bin/notify-send"
+      "${codexTurnNotificationScripts}/notify.py"
+      notificationDriver.platform
+      notificationDriver.notificationExecutablePath
+      notificationDriver.desktopFocusExecutablePath
+      "${herdrPackage}/bin/herdr"
     ];
     sandbox_mode = "danger-full-access";
     suppress_unstable_features_warning = true;
