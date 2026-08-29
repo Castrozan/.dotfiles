@@ -142,6 +142,7 @@
     function render(elapsedSeconds) {
       const displayGain = field.resolveDisplayGain(elapsedSeconds);
       drawingContext.setTransform(1, 0, 0, 1, 0, 0);
+      drawingContext.filter = "grayscale(1)";
       drawingContext.globalCompositeOperation = "source-over";
       drawingContext.fillStyle = BACKGROUND_FILL_STYLE;
       drawingContext.fillRect(0, 0, canvasElement.width, canvasElement.height);

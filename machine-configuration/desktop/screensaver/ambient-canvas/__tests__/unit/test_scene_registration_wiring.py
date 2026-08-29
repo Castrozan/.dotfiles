@@ -35,6 +35,12 @@ def test_the_playlist_declares_at_least_one_scene():
     assert scene_names_declared_in_the_playlist()
 
 
+def test_requested_scene_rotation_contract():
+    playlist_scenes = scene_names_declared_in_the_playlist()
+    assert {"cube-lattice", "sixteen-segment"} <= playlist_scenes
+    assert not {"ascii-invader", "ascii-plotter"} & playlist_scenes
+
+
 def test_every_playlist_scene_has_a_registered_factory():
     missing = (
         scene_names_declared_in_the_playlist() - scene_names_registered_by_a_factory()
@@ -71,3 +77,18 @@ def test_every_webgl_scene_honours_the_recorder_drawing_buffer_override():
         if 'getContext("webgl"' in source and "preserveDrawingBuffer" not in source
     )
     assert not offenders, f"WebGL scenes that would record blank frames: {offenders}"
+
+
+def test_cube_lattice_composes_every_pixel_as_monochrome():
+    shader_source = SCENE_SOURCES[
+        AMBIENT_CANVAS_WEB_DIRECTORY / "scenes/cube-lattice/cube_lattice_shaders.js"
+    ]
+    assert "monochromeLuminanceWeights" in shader_source
+    assert "vec4(vec3(monochromeLuminance), 1.0)" in shader_source
+
+
+def test_sixteen_segment_filters_every_painted_pixel_as_monochrome():
+    scene_source = SCENE_SOURCES[
+        AMBIENT_CANVAS_WEB_DIRECTORY / "scenes/sixteen-segment/sixteen_segment_scene.js"
+    ]
+    assert 'drawingContext.filter = "grayscale(1)"' in scene_source
