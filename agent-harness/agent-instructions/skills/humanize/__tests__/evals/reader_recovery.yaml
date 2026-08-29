@@ -30,6 +30,23 @@ tests:
       llm_judge:
         - "Answers Option A immediately because independent rollback is mandatory, states the one-service cost, and does not restart a broad architecture comparison."
 
+  - name: recovery_translates_an_opaque_scope_choice
+    failure_mode: task_outcome
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      Your previous answer kept asking whether to use a global grant or opt-in per system and discussing finding 3,
+      insulation, and unreachable rows. I still do not understand the decision. The proposed behavior creates admin
+      access automatically. Without a new System field, it runs for every system that supports subcontexts. With a new
+      boolean field on System, it runs only for systems where that field is enabled. Explain the choice I need to make;
+      do not choose for me.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Starts with the concrete scope decision between creating admin access automatically for every system that supports subcontexts and creating it only for systems that enable a new field, maps each implementation option to that outcome, and does not discuss finding 3, insulation, or unreachable rows before the choice is understandable."
+
   - name: recovery_reports_current_state_instead_of_process_history
     failure_mode: task_outcome
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
