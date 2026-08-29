@@ -26,12 +26,14 @@ let
   codexConfigSeedActivationData = cfg.home.activation.seedCodexConfigAsMutableFile.data or "";
   legacyCodexSkillDirectoriesScript = builtins.readFile ../scripts/replace-legacy-codex-skill-directories;
   linuxNotificationDriver = import ../notification-driver.nix {
-    inherit pkgs;
     isDarwin = false;
+    linuxNotificationExecutablePath = "/nix/store/libnotify/bin/notify-send";
+    linuxDesktopFocusExecutablePath = "/nix/store/hyprland/bin/hyprctl";
   };
   darwinNotificationDriver = import ../notification-driver.nix {
-    inherit pkgs;
     isDarwin = true;
+    linuxNotificationExecutablePath = throw "Darwin evaluated the Linux notification executable";
+    linuxDesktopFocusExecutablePath = throw "Darwin evaluated the Linux focus executable";
   };
 in
 {

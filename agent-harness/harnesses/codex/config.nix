@@ -10,7 +10,11 @@
 let
   homeDir = config.home.homeDirectory;
   herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  notificationDriver = import ./notification-driver.nix { inherit pkgs isDarwin; };
+  notificationDriver = import ./notification-driver.nix {
+    inherit isDarwin;
+    linuxNotificationExecutablePath = "${pkgs.libnotify}/bin/notify-send";
+    linuxDesktopFocusExecutablePath = "${pkgs.hyprland}/bin/hyprctl";
+  };
   codexTurnNotificationScripts = ./scripts/codex_turn_notification;
   browserMcp = import ../../../agent-harness/agent-instructions/skills/browser/install {
     inherit pkgs homeDir;

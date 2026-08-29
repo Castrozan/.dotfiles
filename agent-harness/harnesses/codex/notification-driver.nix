@@ -1,4 +1,8 @@
-{ pkgs, isDarwin }:
+{
+  isDarwin,
+  linuxNotificationExecutablePath,
+  linuxDesktopFocusExecutablePath,
+}:
 if isDarwin then
   {
     platform = "darwin";
@@ -8,6 +12,6 @@ if isDarwin then
 else
   {
     platform = "linux";
-    notificationExecutablePath = "${pkgs.libnotify}/bin/notify-send";
-    desktopFocusExecutablePath = "${pkgs.hyprland}/bin/hyprctl";
+    notificationExecutablePath = linuxNotificationExecutablePath;
+    desktopFocusExecutablePath = linuxDesktopFocusExecutablePath;
   }
