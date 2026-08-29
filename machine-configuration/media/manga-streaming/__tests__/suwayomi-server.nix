@@ -48,6 +48,8 @@ let
 
   restartRetriesAreNeverRateLimited = suwayomiUnit.Unit.StartLimitIntervalSec == 0;
 
+  serviceRestartsAfterEveryExit = suwayomiUnit.Service.Restart == "always";
+
   webInterfaceComesFromThePinnedServerBuild = lib.hasInfix "${forcedSettingPrefix}webUIChannel=bundled" environmentText;
 
   webInterfaceNeverUpdatesItself = lib.hasInfix "${forcedSettingPrefix}webUIUpdateCheckInterval=0" environmentText;
@@ -104,6 +106,10 @@ in
     mkEvalCheck "chise-suwayomi-restart-retries-are-never-rate-limited"
       restartRetriesAreNeverRateLimited
       "the start rate limiter must stay off: the forced tailnet bind fails until tailscaled has the interface up, and systemd's default burst gives up before that on a cold boot";
+
+  chise-suwayomi-restarts-after-every-exit =
+    mkEvalCheck "chise-suwayomi-restarts-after-every-exit" serviceRestartsAfterEveryExit
+      "Suwayomi must restart after every exit: earlyoom stops Java with SIGTERM, the server handles that signal as a successful exit, and on-failure therefore leaves the manga service dead";
 
   chise-suwayomi-web-interface-comes-from-the-pinned-server-build =
     mkEvalCheck "chise-suwayomi-web-interface-comes-from-the-pinned-server-build"

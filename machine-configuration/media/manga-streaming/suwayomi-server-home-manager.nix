@@ -43,7 +43,7 @@ in
 
     Service = {
       ExecStart = "${suwayomiServerPackage}/bin/tachidesk-server";
-      Restart = "on-failure";
+      Restart = "always";
       RestartSec = "5s";
       WorkingDirectory = homeDir;
       Environment = [
