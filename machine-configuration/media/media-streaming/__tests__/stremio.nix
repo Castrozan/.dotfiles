@@ -32,6 +32,7 @@ let
     (builtins.readFile ../scripts/stremio_gateway/managed_profile.js)
     (builtins.readFile ../scripts/stremio_gateway/managed_profile.json)
   ];
+  managedServiceWorkerSource = builtins.readFile ../scripts/stremio_gateway/managed_service_worker.js;
   serverSource = builtins.readFile ../scripts/stremio_gateway/__main__.py;
   cometEnvironmentSource = builtins.readFile ../scripts/stremio_comet_environment.py;
 in
@@ -62,6 +63,9 @@ in
         && lib.hasInfix "https://v3-cinemeta.strem.io/manifest.json" managedProfileSource
         && lib.hasInfix "schema_version" managedProfileSource
         && lib.hasInfix "/managed-profile.js" serverSource
+        && lib.hasInfix "/service-worker.js" serverSource
+        && lib.hasInfix "caches.delete" managedServiceWorkerSource
+        && lib.hasInfix "self.clients.claim()" managedServiceWorkerSource
         && !(lib.hasInfix "/setup" serverSource)
       )
       "ordinary Stremio launches must reconcile the Nix-managed private addons before the upstream application starts";

@@ -12,6 +12,7 @@ from managed_profile import (
     render_managed_profile_script,
     select_streaming_server_url,
 )
+from managed_service_worker import render_managed_service_worker
 from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
 from stremio_protocol import addon_manifest, parse_stream_request
 
@@ -44,6 +45,9 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             return
         if path == "/managed-profile.js":
             self._send_managed_profile(include_body)
+            return
+        if path == "/service-worker.js":
+            self._send_managed_service_worker(include_body)
             return
         if path == "/prowlarr/manifest.json":
             self._send_json(addon_manifest(), include_body)
@@ -103,6 +107,18 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
         self._send_cors_headers()
         self.send_header("Content-Type", "text/javascript; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        if include_body:
+            self.wfile.write(body)
+
+    def _send_managed_service_worker(self, include_body: bool):
+        body = render_managed_service_worker()
+        self.send_response(200)
+        self._send_cors_headers()
+        self.send_header("Content-Type", "text/javascript; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Service-Worker-Allowed", "/")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         if include_body:
