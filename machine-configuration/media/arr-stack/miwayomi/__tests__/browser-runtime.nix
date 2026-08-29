@@ -79,6 +79,7 @@ let
     && lib.hasInfix ''<link rel="icon" type="image/png" href="/logov1.png">'' interfaceArtworkPatchText
     && lib.hasInfix "async function loadHomeAnimeCatalog()" interfaceArtworkPatchText
     && lib.hasInfix "AbortSignal.timeout(4000)" interfaceArtworkPatchText
+    && lib.hasInfix ''if (state.currentView !== "home") return;'' interfaceArtworkPatchText
     && lib.hasInfix "function openCatalogEntry(sourceId, type, url, thumbnailUrl)" interfaceArtworkPatchText
     && lib.hasInfix "d.thumbnail_url = d.thumbnail_url || knownThumbnailUrl;" interfaceArtworkPatchText
     && !(lib.hasInfix "MangaRoutes.kt" interfaceArtworkPatchText);
