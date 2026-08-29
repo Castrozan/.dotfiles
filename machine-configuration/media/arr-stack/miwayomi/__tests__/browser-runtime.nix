@@ -77,10 +77,13 @@ let
     && lib.hasInfix "RUN git apply /tmp/miwayomi-interface-artwork.patch" miwayomiDockerfileText
     && lib.hasInfix "cp \${./miwayomi-interface-artwork.patch}" stackModuleText
     && lib.hasInfix ''<link rel="icon" type="image/png" href="/logov1.png">'' interfaceArtworkPatchText
-    && lib.hasInfix "async function loadHomeAnimeCatalog()" interfaceArtworkPatchText
+    && lib.hasInfix "async function loadHomeCatalog(type)" interfaceArtworkPatchText
+    && lib.hasInfix ''sourceKey: "miwayomi.homeAnimeSourceId"'' interfaceArtworkPatchText
+    && lib.hasInfix ''defaultPackage: "eu.kanade.tachiyomi.animeextension.en.anikoto"'' interfaceArtworkPatchText
+    && lib.hasInfix ''loadHomeCatalog("anime")'' interfaceArtworkPatchText
     && lib.hasInfix "AbortSignal.timeout(4000)" interfaceArtworkPatchText
     && lib.hasInfix "renderGeneration !== homeRenderGeneration" interfaceArtworkPatchText
-    && lib.hasInfix "function openCatalogEntry(sourceId, type, url, thumbnailUrl)" interfaceArtworkPatchText
+    && lib.hasInfix "function openCatalogEntry(sourceId, type, url, thumbnailUrl, title)" interfaceArtworkPatchText
     && lib.hasInfix "d.thumbnail_url = d.thumbnail_url || knownThumbnailUrl;" interfaceArtworkPatchText
     && !(lib.hasInfix "MangaRoutes.kt" interfaceArtworkPatchText);
   staticAssetsRevalidateAfterDeployment =
@@ -92,6 +95,17 @@ let
     lib.hasInfix "function openEpisodeFromCard(encUrl, encodedName, noPush)" interfaceArtworkPatchText
     && lib.hasInfix "openEpisode(encUrl, safeDecode(encodedName), noPush);" interfaceArtworkPatchText
     && lib.hasInfix ''encodeURIComponent(e.name || "").replace(/'/g, "%27")'' interfaceArtworkPatchText;
+  mangaHomeArtworkIsPreserved =
+    lib.hasInfix "const HOME_CATALOG_SETTINGS = {" interfaceArtworkPatchText
+    && lib.hasInfix ''sourceKey: "miwayomi.homeMangaSourceId"'' interfaceArtworkPatchText
+    && lib.hasInfix ''defaultPackage: "eu.kanade.tachiyomi.extension.en.monochromescans"'' interfaceArtworkPatchText
+    && lib.hasInfix ''loadHomeCatalog("manga")'' interfaceArtworkPatchText
+    && lib.hasInfix "function homeCatalogCard(source, type, entry)" interfaceArtworkPatchText
+    && lib.hasInfix "function openHomeCatalog(sourceId, type, url, thumbnailUrl, title)" interfaceArtworkPatchText
+    && lib.hasInfix "rememberHomeSource(type, sourceId);" interfaceArtworkPatchText
+    && lib.hasInfix "d.title = d.title || knownTitle;" interfaceArtworkPatchText
+    && lib.hasInfix "function openChapterFromCard(encUrl, encodedName)" interfaceArtworkPatchText
+    && lib.hasInfix ''encodeURIComponent(c.name || "").replace(/'/g, "%27")'' interfaceArtworkPatchText;
   gatewaySchemeRuntimeCheck =
     pkgs.runCommand "chise-miwayomi-gateway-scheme-runtime"
       {
@@ -141,4 +155,8 @@ in
   chise-miwayomi-episode-links-handle-apostrophes =
     mkEvalCheck "chise-miwayomi-episode-links-handle-apostrophes" episodeNamesAreSafeInInlineHandlers
       "Miwayomi episode cards must encode titles before placing them in inline handlers so titles containing apostrophes remain playable";
+
+  chise-miwayomi-home-renders-manga-artwork =
+    mkEvalCheck "chise-miwayomi-home-renders-manga-artwork" mangaHomeArtworkIsPreserved
+      "Miwayomi Home must replace manga source placeholders with a remembered manga catalog whose entries carry real artwork";
 }

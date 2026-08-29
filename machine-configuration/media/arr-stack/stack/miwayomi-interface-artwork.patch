@@ -1,24 +1,30 @@
 diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/webui/app.js
 --- a/server/src/main/resources/webui/app.js
 +++ b/server/src/main/resources/webui/app.js
-@@ -1,4 +1,7 @@
+@@ -1,4 +1,9 @@
  const $ = (sel) => document.querySelector(sel);
  const api = "/api/v1";
-+const HOME_ANIME_SOURCE_KEY = "miwayomi.homeAnimeSourceId";
-+const DEFAULT_HOME_ANIME_SOURCE_PACKAGE = "eu.kanade.tachiyomi.animeextension.en.anikoto";
++const HOME_CATALOG_SETTINGS = {
++  anime: { sourceKey: "miwayomi.homeAnimeSourceId", defaultPackage: "eu.kanade.tachiyomi.animeextension.en.anikoto" },
++  manga: { sourceKey: "miwayomi.homeMangaSourceId", defaultPackage: "eu.kanade.tachiyomi.extension.en.monochromescans" },
++};
 +let homeRenderGeneration = 0;
 
  let state = {
-@@ -289,10 +292,14 @@ async function renderHome() {
+@@ -289,10 +294,17 @@ async function renderHome() {
 +  const renderGeneration = ++homeRenderGeneration;
    let html = hero;
 -  const watch = await listWatch();
-+  const [watch, homeAnimeCatalog] = await Promise.all([listWatch(), loadHomeAnimeCatalog()]);
++  const [watch, homeAnimeCatalog, homeMangaCatalog] = await Promise.all([listWatch(), loadHomeCatalog("anime"), loadHomeCatalog("manga")]);
    if (watch.length) html += rowWrap(t("player.continueWatching"), watch.map((w) => watchCard(w)).join(""));
-+  if (homeAnimeCatalog && (state.typeFilter === "all" || state.typeFilter === "anime")) {
-+    html += rowWrap(`${t("toolbar.popular")} ${t("nav.anime")}`, homeAnimeCatalog.entries.map((entry) => homeAnimeCard(homeAnimeCatalog.source, entry)).join(""));
++  if (homeMangaCatalog && (state.typeFilter === "all" || state.typeFilter === "manga")) {
++    html += rowWrap(`${t("toolbar.popular")} ${t("nav.manga")}`, homeMangaCatalog.entries.map((entry) => homeCatalogCard(homeMangaCatalog.source, "manga", entry)).join(""));
 +  }
-   if (manga.length && (state.typeFilter === "all" || state.typeFilter === "manga")) {
++  if (homeAnimeCatalog && (state.typeFilter === "all" || state.typeFilter === "anime")) {
++    html += rowWrap(`${t("toolbar.popular")} ${t("nav.anime")}`, homeAnimeCatalog.entries.map((entry) => homeCatalogCard(homeAnimeCatalog.source, "anime", entry)).join(""));
++  }
+-  if (manga.length && (state.typeFilter === "all" || state.typeFilter === "manga")) {
++  if (!homeMangaCatalog && manga.length && (state.typeFilter === "all" || state.typeFilter === "manga")) {
      html += rowWrap(t("nav.manga"), manga.map((s) => sourceCard(s)).join(""));
    }
 -  if (anime.length && (state.typeFilter === "all" || state.typeFilter === "anime")) {
@@ -26,57 +32,64 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
      html += rowWrap(t("nav.anime"), anime.map((s) => sourceCard(s)).join(""));
    }
    try {
-@@ -303,6 +310,54 @@ async function renderHome() {
+@@ -303,6 +315,61 @@ async function renderHome() {
    } catch (e) { }
 +  if (state.currentView !== "home" || renderGeneration !== homeRenderGeneration) return;
    main.innerHTML = html;
  }
 +
-+function preferredAnimeSource() {
-+  const animeSources = state.sources.anime || [];
-+  const rememberedSourceId = localStorage.getItem(HOME_ANIME_SOURCE_KEY);
-+  return animeSources.find((source) => String(source.id) === rememberedSourceId)
-+    || animeSources.find((source) => source.pkg === DEFAULT_HOME_ANIME_SOURCE_PACKAGE)
-+    || animeSources[0]
++function rememberHomeSource(type, sourceId) {
++  const settings = HOME_CATALOG_SETTINGS[type];
++  if (settings) localStorage.setItem(settings.sourceKey, String(sourceId));
++}
++
++function preferredHomeSource(type) {
++  const sources = state.sources[type] || [];
++  const settings = HOME_CATALOG_SETTINGS[type];
++  if (!settings) return null;
++  const rememberedSourceId = localStorage.getItem(settings.sourceKey);
++  return sources.find((source) => String(source.id) === rememberedSourceId)
++    || sources.find((source) => source.pkg === settings.defaultPackage)
++    || sources[0]
 +    || null;
 +}
 +
-+async function loadHomeAnimeCatalog() {
-+  const source = preferredAnimeSource();
++async function loadHomeCatalog(type) {
++  const source = preferredHomeSource(type);
 +  if (!source) return null;
 +  try {
-+    const response = await fetch(`${api}/anime/${source.id}/popular?page=1`, { signal: AbortSignal.timeout(4000) });
++    const response = await fetch(`${api}/${type}/${source.id}/popular?page=1`, { signal: AbortSignal.timeout(4000) });
 +    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 +    const data = await response.json();
-+    const entries = (data.animes || []).filter((entry) => entry.thumbnail_url).slice(0, 20);
++    const pluralKey = type === "anime" ? "animes" : "mangas";
++    const entries = (data[pluralKey] || []).filter((entry) => entry.thumbnail_url).slice(0, 20);
 +    return entries.length ? { source, entries } : null;
 +  } catch (e) {
 +    return null;
 +  }
 +}
 +
-+function homeAnimeCard(source, entry) {
++function homeCatalogCard(source, type, entry) {
 +  return `
-+    <div class="card" onclick="openHomeAnime('${source.id}','${encodeURIComponent(entry.url).replace(/'/g, "%27")}','${encodeURIComponent(entry.thumbnail_url || "").replace(/'/g, "%27")}')">
++    <div class="card" onclick="openHomeCatalog('${source.id}','${type}','${encodeURIComponent(entry.url).replace(/'/g, "%27")}','${encodeURIComponent(entry.thumbnail_url || "").replace(/'/g, "%27")}','${encodeURIComponent(entry.title || "").replace(/'/g, "%27")}')">
 +      <img loading="lazy" src="/api/v1/proxy?sourceId=${source.id}&url=${encodeURIComponent(entry.thumbnail_url)}">
 +      <div class="card-title">${escapeHtml(entry.title)}</div>
 +    </div>`;
 +}
 +
-+function openHomeAnime(sourceId, url, thumbnailUrl) {
-+  const source = (state.sources.anime || []).find((entry) => String(entry.id) === String(sourceId));
++function openHomeCatalog(sourceId, type, url, thumbnailUrl, title) {
++  const source = (state.sources[type] || []).find((entry) => String(entry.id) === String(sourceId));
 +  if (!source) return;
 +  state.activeSource = source;
-+  localStorage.setItem(HOME_ANIME_SOURCE_KEY, String(source.id));
-+  openEntry(source.id, "anime", url, () => { setNav("home"); renderHome(); }, safeDecode(thumbnailUrl));
++  rememberHomeSource(type, source.id);
++  openEntry(source.id, type, url, () => { setNav("home"); renderHome(); }, safeDecode(thumbnailUrl), safeDecode(title));
 +}
 +
-+function openCatalogEntry(sourceId, type, url, thumbnailUrl) {
-+  const sources = type === "manga" ? state.sources.manga : state.sources.anime;
-+  const source = (sources || []).find((entry) => String(entry.id) === String(sourceId));
++function openCatalogEntry(sourceId, type, url, thumbnailUrl, title) {
++  const source = (state.sources[type] || []).find((entry) => String(entry.id) === String(sourceId));
 +  if (source) state.activeSource = source;
-+  if (type === "anime") localStorage.setItem(HOME_ANIME_SOURCE_KEY, String(sourceId));
-+  openEntry(sourceId, type, url, undefined, safeDecode(thumbnailUrl));
++  rememberHomeSource(type, sourceId);
++  openEntry(sourceId, type, url, undefined, safeDecode(thumbnailUrl), safeDecode(title));
 +}
 
  function rowWrap(title, cards) {
@@ -85,7 +98,7 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
  /* ---------------- Browse (source) ---------------- */
 
  function openSource(source) {
-+  if (source.type === "anime") localStorage.setItem(HOME_ANIME_SOURCE_KEY, String(source.id));
++  rememberHomeSource(source.type, source.id);
    navPush(() => { setNav("home"); renderHome(); });
    renderBrowseView(source);
  }
@@ -94,7 +107,7 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
    const type = state.activeSource.type;
    return `
 -    <div class="card" onclick="openEntry('${state.activeSource.id}','${type}','${encodeURIComponent(m.url)}')">
-+    <div class="card" onclick="openCatalogEntry('${state.activeSource.id}','${type}','${encodeURIComponent(m.url).replace(/'/g, "%27")}','${encodeURIComponent(m.thumbnail_url || "").replace(/'/g, "%27")}')">
++    <div class="card" onclick="openCatalogEntry('${state.activeSource.id}','${type}','${encodeURIComponent(m.url).replace(/'/g, "%27")}','${encodeURIComponent(m.thumbnail_url || "").replace(/'/g, "%27")}','${encodeURIComponent(m.title || "").replace(/'/g, "%27")}')">
        ${m.thumbnail_url ? `<img loading="lazy" src="/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(m.thumbnail_url)}">` : `<div class="card-img-placeholder">${escapeHtml((m.title || "?").charAt(0).toUpperCase())}</div>`}
        <div class="card-title">${escapeHtml(m.title)}</div>
      </div>`;
@@ -103,18 +116,37 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
  /* ---------------- Detail ---------------- */
 
 -async function openEntry(sourceId, type, url, backTo) {
-+async function openEntry(sourceId, type, url, backTo, knownThumbnailUrl = "") {
++async function openEntry(sourceId, type, url, backTo, knownThumbnailUrl = "", knownTitle = "") {
    navPush(backTo || (() => { if (state.activeSource) renderBrowseView(state.activeSource); }));
    const main = $("#content");
    main.innerHTML = `<div class="loading">${escapeHtml(t("common.loading"))}</div>`;
-@@ -465,6 +521,7 @@ async function openEntry(sourceId, type, url, backTo) {
+@@ -465,6 +521,8 @@ async function openEntry(sourceId, type, url, backTo) {
      const dec = decodeURIComponent(url);
      d = { url: dec, title: dec.split("/").pop() || t("detail.entry") };
    }
 +  d.thumbnail_url = d.thumbnail_url || knownThumbnailUrl;
++  d.title = d.title || knownTitle;
    renderDetail(type, d);
  }
 
+@@ -501,8 +571,8 @@ async function renderDetail(type, d) {
+   const url = encodeURIComponent(d.url);
+   if (type === "manga") {
+     const data = await getJSON(`${api}/manga/${state.activeSource.id}/chapters?url=${url}`);
+     const items = (data.chapters || []).map((c, i) => `
+-      <div class="ep-card" onclick="openChapter('${encodeURIComponent(c.url)}','${escapeHtml(c.name)}')">
++      <div class="ep-card" onclick="openChapterFromCard('${encodeURIComponent(c.url).replace(/'/g, "%27")}','${encodeURIComponent(c.name || "").replace(/'/g, "%27")}')">
+         <div class="ep-thumb">
+           <span class="ep-num">#${i + 1}</span>
+           <img class="ep-thumb-img" data-ch="${encodeURIComponent(c.url)}" alt="">
+@@ -595,3 +665,7 @@ function openFavorite(sourceId, type, url) {
++function openChapterFromCard(encUrl, encodedName) {
++  openChapter(encUrl, safeDecode(encodedName));
++}
++
+ async function openChapter(encUrl, name) {
+   state.currentView = "reader";
+   navPush(() => { if (state.detail) renderDetail(state.detail.type, state.detailObj); });
 @@ -666,7 +723,7 @@ function renderAnimeEpisodes(d, eps) {
      return "";
    };
