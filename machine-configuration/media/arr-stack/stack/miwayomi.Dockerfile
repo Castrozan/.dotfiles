@@ -8,6 +8,8 @@ COPY miwayomi-manga-input-initialization.patch /tmp/miwayomi-manga-input-initial
 RUN git apply /tmp/miwayomi-manga-input-initialization.patch
 COPY miwayomi-watch-progress.patch /tmp/miwayomi-watch-progress.patch
 RUN git apply /tmp/miwayomi-watch-progress.patch
+COPY miwayomi-interface-artwork.patch /tmp/miwayomi-interface-artwork.patch
+RUN git apply /tmp/miwayomi-interface-artwork.patch
 RUN gradle --no-daemon --console=plain :server:shadowJar
 
 FROM ghcr.io/miwayomi/miwayomi:0.2.9@sha256:8e7094088565b97091319dfa92b80a8c22497a712e72af09e2470454f5942ec4

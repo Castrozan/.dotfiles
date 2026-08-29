@@ -1,0 +1,147 @@
+diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/webui/app.js
+--- a/server/src/main/resources/webui/app.js
++++ b/server/src/main/resources/webui/app.js
+@@ -1,4 +1,6 @@
+ const $ = (sel) => document.querySelector(sel);
+ const api = "/api/v1";
++const HOME_ANIME_SOURCE_KEY = "miwayomi.homeAnimeSourceId";
++const DEFAULT_HOME_ANIME_SOURCE_PACKAGE = "eu.kanade.tachiyomi.animeextension.en.anikoto";
+
+ let state = {
+@@ -289,10 +291,13 @@ async function renderHome() {
+   let html = hero;
+-  const watch = await listWatch();
++  const [watch, homeAnimeCatalog] = await Promise.all([listWatch(), loadHomeAnimeCatalog()]);
+   if (watch.length) html += rowWrap(t("player.continueWatching"), watch.map((w) => watchCard(w)).join(""));
++  if (homeAnimeCatalog && (state.typeFilter === "all" || state.typeFilter === "anime")) {
++    html += rowWrap(`${t("toolbar.popular")} ${t("nav.anime")}`, homeAnimeCatalog.entries.map((entry) => homeAnimeCard(homeAnimeCatalog.source, entry)).join(""));
++  }
+   if (manga.length && (state.typeFilter === "all" || state.typeFilter === "manga")) {
+     html += rowWrap(t("nav.manga"), manga.map((s) => sourceCard(s)).join(""));
+   }
+-  if (anime.length && (state.typeFilter === "all" || state.typeFilter === "anime")) {
++  if (!homeAnimeCatalog && anime.length && (state.typeFilter === "all" || state.typeFilter === "anime")) {
+     html += rowWrap(t("nav.anime"), anime.map((s) => sourceCard(s)).join(""));
+   }
+   try {
+@@ -303,6 +308,53 @@ async function renderHome() {
+   } catch (e) { }
+   main.innerHTML = html;
+ }
++
++function preferredAnimeSource() {
++  const animeSources = state.sources.anime || [];
++  const rememberedSourceId = localStorage.getItem(HOME_ANIME_SOURCE_KEY);
++  return animeSources.find((source) => String(source.id) === rememberedSourceId)
++    || animeSources.find((source) => source.pkg === DEFAULT_HOME_ANIME_SOURCE_PACKAGE)
++    || animeSources[0]
++    || null;
++}
++
++async function loadHomeAnimeCatalog() {
++  const source = preferredAnimeSource();
++  if (!source) return null;
++  try {
++    const response = await fetch(`${api}/anime/${source.id}/popular?page=1`, { signal: AbortSignal.timeout(4000) });
++    if (!response.ok) throw new Error(`HTTP ${response.status}`);
++    const data = await response.json();
++    const entries = (data.animes || []).filter((entry) => entry.thumbnail_url).slice(0, 20);
++    return entries.length ? { source, entries } : null;
++  } catch (e) {
++    return null;
++  }
++}
++
++function homeAnimeCard(source, entry) {
++  return `
++    <div class="card" onclick="openHomeAnime('${source.id}','${encodeURIComponent(entry.url)}','${encodeURIComponent(entry.thumbnail_url || "")}')">
++      <img loading="lazy" src="/api/v1/proxy?sourceId=${source.id}&url=${encodeURIComponent(entry.thumbnail_url)}">
++      <div class="card-title">${escapeHtml(entry.title)}</div>
++    </div>`;
++}
++
++function openHomeAnime(sourceId, url, thumbnailUrl) {
++  const source = (state.sources.anime || []).find((entry) => String(entry.id) === String(sourceId));
++  if (!source) return;
++  state.activeSource = source;
++  localStorage.setItem(HOME_ANIME_SOURCE_KEY, String(source.id));
++  openEntry(source.id, "anime", url, () => { setNav("home"); renderHome(); }, safeDecode(thumbnailUrl));
++}
++
++function openCatalogEntry(sourceId, type, url, thumbnailUrl) {
++  const sources = type === "manga" ? state.sources.manga : state.sources.anime;
++  const source = (sources || []).find((entry) => String(entry.id) === String(sourceId));
++  if (source) state.activeSource = source;
++  if (type === "anime") localStorage.setItem(HOME_ANIME_SOURCE_KEY, String(sourceId));
++  openEntry(sourceId, type, url, undefined, safeDecode(thumbnailUrl));
++}
+
+ function rowWrap(title, cards) {
+   return `<div class="row"><div class="row-title">${escapeHtml(title)}</div><div class="row-scroll">${cards}</div></div>`;
+@@ -346,6 +398,7 @@ function favCard(f) {
+ /* ---------------- Browse (source) ---------------- */
+
+ function openSource(source) {
++  if (source.type === "anime") localStorage.setItem(HOME_ANIME_SOURCE_KEY, String(source.id));
+   navPush(() => { setNav("home"); renderHome(); });
+   renderBrowseView(source);
+ }
+@@ -382,7 +435,7 @@ async function doSearch() {
+ function catalogCard(m) {
+   const type = state.activeSource.type;
+   return `
+-    <div class="card" onclick="openEntry('${state.activeSource.id}','${type}','${encodeURIComponent(m.url)}')">
++    <div class="card" onclick="openCatalogEntry('${state.activeSource.id}','${type}','${encodeURIComponent(m.url)}','${encodeURIComponent(m.thumbnail_url || "")}')">
+       ${m.thumbnail_url ? `<img loading="lazy" src="/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(m.thumbnail_url)}">` : `<div class="card-img-placeholder">${escapeHtml((m.title || "?").charAt(0).toUpperCase())}</div>`}
+       <div class="card-title">${escapeHtml(m.title)}</div>
+     </div>`;
+@@ -457,7 +510,7 @@ function onContentScroll() {
+
+ /* ---------------- Detail ---------------- */
+
+-async function openEntry(sourceId, type, url, backTo) {
++async function openEntry(sourceId, type, url, backTo, knownThumbnailUrl = "") {
+   navPush(backTo || (() => { if (state.activeSource) renderBrowseView(state.activeSource); }));
+   const main = $("#content");
+   main.innerHTML = `<div class="loading">${escapeHtml(t("common.loading"))}</div>`;
+@@ -465,6 +518,7 @@ async function openEntry(sourceId, type, url, backTo) {
+     const dec = decodeURIComponent(url);
+     d = { url: dec, title: dec.split("/").pop() || t("detail.entry") };
+   }
++  d.thumbnail_url = d.thumbnail_url || knownThumbnailUrl;
+   renderDetail(type, d);
+ }
+
+diff --git a/server/src/main/resources/webui/docs.html b/server/src/main/resources/webui/docs.html
+--- a/server/src/main/resources/webui/docs.html
++++ b/server/src/main/resources/webui/docs.html
+@@ -4,6 +4,7 @@
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>miwayomi · Documentation</title>
++<link rel="icon" type="image/png" href="/logov1.png">
+ <style>
+   :root {
+     --bg: #f6f7fb;
+diff --git a/server/src/main/resources/webui/index.html b/server/src/main/resources/webui/index.html
+--- a/server/src/main/resources/webui/index.html
++++ b/server/src/main/resources/webui/index.html
+@@ -4,6 +4,7 @@
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>miwayomi</title>
++<link rel="icon" type="image/png" href="/logov1.png">
+ <link rel="stylesheet" href="/style.css">
+ </head>
+ <body>
+diff --git a/server/src/main/resources/webui/startup.html b/server/src/main/resources/webui/startup.html
+--- a/server/src/main/resources/webui/startup.html
++++ b/server/src/main/resources/webui/startup.html
+@@ -4,6 +4,7 @@
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>miwayomi</title>
++<link rel="icon" type="image/png" href="/logov1.png">
+ <style>
+   :root { color-scheme: light dark; }
+   * { box-sizing: border-box; margin: 0; padding: 0; }

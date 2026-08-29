@@ -23,6 +23,12 @@ let
   watchProgressPatchPath = ../../stack/miwayomi-watch-progress.patch;
   watchProgressPatchText =
     if builtins.pathExists watchProgressPatchPath then builtins.readFile watchProgressPatchPath else "";
+  interfaceArtworkPatchPath = ../../stack/miwayomi-interface-artwork.patch;
+  interfaceArtworkPatchText =
+    if builtins.pathExists interfaceArtworkPatchPath then
+      builtins.readFile interfaceArtworkPatchPath
+    else
+      "";
   stackModuleText = builtins.readFile ../../stack/arr-stack-home-manager.nix;
 
   imagesAndBuildContextArePinned =
@@ -66,6 +72,16 @@ let
     && lib.hasInfix "const requestedAnimeUrl = safeDecode(animeUrl);" watchProgressPatchText
     && lib.hasInfix "d.url = requestedAnimeUrl;" watchProgressPatchText
     && !(lib.hasInfix "MangaRoutes.kt" watchProgressPatchText);
+  interfaceArtworkIsPreserved =
+    lib.hasInfix "COPY miwayomi-interface-artwork.patch /tmp/miwayomi-interface-artwork.patch" miwayomiDockerfileText
+    && lib.hasInfix "RUN git apply /tmp/miwayomi-interface-artwork.patch" miwayomiDockerfileText
+    && lib.hasInfix "cp \${./miwayomi-interface-artwork.patch}" stackModuleText
+    && lib.hasInfix ''<link rel="icon" type="image/png" href="/logov1.png">'' interfaceArtworkPatchText
+    && lib.hasInfix "async function loadHomeAnimeCatalog()" interfaceArtworkPatchText
+    && lib.hasInfix "AbortSignal.timeout(4000)" interfaceArtworkPatchText
+    && lib.hasInfix "function openCatalogEntry(sourceId, type, url, thumbnailUrl)" interfaceArtworkPatchText
+    && lib.hasInfix "d.thumbnail_url = d.thumbnail_url || knownThumbnailUrl;" interfaceArtworkPatchText
+    && !(lib.hasInfix "MangaRoutes.kt" interfaceArtworkPatchText);
   gatewaySchemeRuntimeCheck =
     pkgs.runCommand "chise-miwayomi-gateway-scheme-runtime"
       {
@@ -103,4 +119,8 @@ in
   chise-miwayomi-restores-watch-progress =
     mkEvalCheck "chise-miwayomi-restores-watch-progress" watchProgressNormalizationIsIsolated
       "the watch-history adapter must preserve the persisted anime URL when an extension duplicates its fragment during detail loading";
+
+  chise-miwayomi-home-renders-media-artwork =
+    mkEvalCheck "chise-miwayomi-home-renders-media-artwork" interfaceArtworkIsPreserved
+      "Miwayomi Home must render a working anime catalog with persisted thumbnails and every HTML entry point must declare the existing logo as its favicon";
 }
