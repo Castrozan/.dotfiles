@@ -36,7 +36,7 @@ verdict on whether the goal is achieved; never repair.
 </goal-verification>
 
 <specialized-audits>
-Read `compliance.md` for end-of-turn policy checks, `authoring.md` for AI instruction surfaces, and `skill-routing.md`
-for skill reachability or routing failures. Use `docs` for documentation standards and `humanize` for human-facing
-prose.
+Read `dotfiles-change.md` for the pre-push dotfiles change-review procedure, `compliance.md` for end-of-turn policy
+checks, `authoring.md` for AI instruction surfaces, and `skill-routing.md` for skill reachability or routing failures.
+Use `docs` for documentation standards and `humanize` for human-facing prose.
 </specialized-audits>

@@ -21,7 +21,6 @@ let
 in
 {
   home.packages = map mkWorkflowCommand [
-    "dotfiles-change-review"
     "dotfiles-housekeeping"
   ];
 }

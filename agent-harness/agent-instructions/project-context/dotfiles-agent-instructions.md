@@ -97,19 +97,18 @@ newly created Herdr pane; automated and headless checks do not replace this manu
 </testing>
 
 <change-review-scope>
-Run the packaged `dotfiles-change-review` command over your own commits before pushing a substantive change; every
-harness runs it the same way, so never hand-roll a headless `claude -p` review. It anchors at the checkout your shell
-sits in, so pass `--root <absolute checkout path>` whenever you work in a worktree, because the shell can start in a
-sibling checkout and a review of the wrong one returns a clean tree that proves nothing. Commit first: this checkout is
-shared, so a review of the working tree reads whatever peers left uncommitted, and a confirmed finding belongs in a
-follow-up commit rather than an amend a peer may already have built on. A change is substantive when a wrong edit
-would survive formatting and still change machine or agent behavior, a build, a deployment, a dependency, an
-interface, a test, security, a secret, what this public repository exposes, or an operational instruction, or when
-correctness depends on several files changing together. Skip the review only when every hunk is demonstrably
-non-semantic, meaning a formatting or prose correction that alters no command, path, identifier, factual claim, policy
-or behavior; review the whole change when substantive and non-substantive hunks are mixed or the classification stays
-uncertain. Changed line and file counts never decide this, and skipping the review never excuses the rebuild or the
-tests.
+Before pushing a substantive change, load the `review` skill and follow its dotfiles-change procedure over the exact
+commits you added; when the harness cannot load skills, read
+`agent-harness/agent-instructions/skills/review/SKILL.md` and its `dotfiles-change.md` chapter instead. Commit first:
+this checkout is shared, so a review of the working tree reads whatever peers left
+uncommitted, and a confirmed finding belongs in a follow-up commit rather than an amend a peer may already have built
+on. A change is substantive when a wrong edit would survive formatting and still change machine or agent behavior, a
+build, a deployment, a dependency, an interface, a test, security, a secret, what this public repository exposes, or an
+operational instruction, or when correctness depends on several files changing together. Skip the review only when
+every hunk is demonstrably non-semantic, meaning a formatting or prose correction that alters no command, path,
+identifier, factual claim, policy or behavior; review the whole change when substantive and non-substantive hunks are
+mixed or the classification stays uncertain. Changed line and file counts never decide this, and skipping the review
+never excuses the rebuild or the tests.
 </change-review-scope>
 
 <workflows>

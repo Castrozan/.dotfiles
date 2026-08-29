@@ -44,11 +44,6 @@ def parse_command_line(
             "defaulting to the checkout the current directory belongs to"
         ),
     )
-    parser.add_argument(
-        "--ref",
-        default="",
-        help="scope the review to this commit range, read by dotfiles-change-review",
-    )
     return parser.parse_args(command_line_arguments)
 
 
@@ -69,12 +64,8 @@ def resolve_repository_root(requested_root: str) -> Path:
     return Path(checkout_toplevel.stdout.strip())
 
 
-def build_slash_command(
-    workflow_name: str, repository_root: Path, review_scope: str
-) -> str:
+def build_slash_command(workflow_name: str, repository_root: Path) -> str:
     workflow_arguments = {"root": str(repository_root)}
-    if review_scope:
-        workflow_arguments["ref"] = review_scope
     return f"/{workflow_name} {json.dumps(workflow_arguments)}"
 
 
@@ -137,7 +128,7 @@ def main() -> int:
     workflow_name = resolve_workflow_name()
     arguments = parse_command_line(workflow_name, sys.argv[1:])
     repository_root = resolve_repository_root(arguments.root)
-    slash_command = build_slash_command(workflow_name, repository_root, arguments.ref)
+    slash_command = build_slash_command(workflow_name, repository_root)
     claude_binary = resolve_claude_binary()
     try:
         completed_workflow = run_workflow(claude_binary, slash_command, repository_root)

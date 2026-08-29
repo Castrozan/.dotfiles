@@ -146,7 +146,7 @@ finding` describes the primary current placement defect, not the final migration
 | S34 | `agent-harness/harnesses/opencode/config.nix`: autonomous local permissions, manual sharing, compaction, and pruning |
 | S35 | `agent-harness/harnesses/claude-code/skill-injection/interactive-sessions.nix`, `agent-harness/harnesses/codex/package.nix`, `agent-harness/harnesses/opencode/opencode.nix`, and `agent-harness/harnesses/pi/package.nix`: interactive communication injection |
 | S36 | `agent-harness/harnesses/claude-code/settings/global-settings.nix`, `agent-harness/harnesses/codex/global-instructions.nix`, `agent-harness/harnesses/opencode/global-instructions.nix`, and `agent-harness/harnesses/pi/global-instructions.nix`: shared-core deployment edges |
-| S37 | `agent-harness/harnesses/claude-code/workflows/dotfiles-change-review.js`: fixed-budget review control |
+| S37 | `agent-harness/agent-instructions/skills/review/dotfiles-change.md`: cross-harness pre-push change review |
 | S38 | `agent-harness/harnesses/hermes/scripts/hermes-launch`: seed-only Hermes memory deployment |
 | S39 | `agent-harness/hooks/runtime/nix-rebuild/`: changed-Nix ledger and rebuild reminder |
 | S40 | `agent-harness/agent-instructions/skills/orchestrate/SKILL.md`: settling evidence, delegation boundaries, and owning-agent synthesis |

@@ -32,28 +32,17 @@ def test_running_the_script_directly_names_the_packaged_command(monkeypatch):
 
 def test_help_is_titled_with_the_packaged_command(capsys):
     with pytest.raises(SystemExit):
-        run_dotfiles_workflow.parse_command_line("dotfiles-change-review", ["--help"])
+        run_dotfiles_workflow.parse_command_line("dotfiles-housekeeping", ["--help"])
 
-    assert "usage: dotfiles-change-review" in capsys.readouterr().out
+    assert "usage: dotfiles-housekeeping" in capsys.readouterr().out
 
 
 def test_slash_command_carries_the_resolved_root():
     slash_command = run_dotfiles_workflow.build_slash_command(
-        "dotfiles-change-review", Path("/checkouts/dotfiles"), ""
+        "dotfiles-housekeeping", Path("/checkouts/dotfiles")
     )
 
-    assert slash_command == ('/dotfiles-change-review {"root": "/checkouts/dotfiles"}')
-
-
-def test_slash_command_carries_the_review_scope_when_given():
-    slash_command = run_dotfiles_workflow.build_slash_command(
-        "dotfiles-change-review", Path("/checkouts/dotfiles"), "origin/main..HEAD"
-    )
-
-    assert json.loads(slash_command.split(" ", 1)[1]) == {
-        "root": "/checkouts/dotfiles",
-        "ref": "origin/main..HEAD",
-    }
+    assert slash_command == ('/dotfiles-housekeeping {"root": "/checkouts/dotfiles"}')
 
 
 def test_root_defaults_to_the_checkout_of_the_current_directory(monkeypatch):
