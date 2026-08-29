@@ -83,6 +83,11 @@ let
     && lib.hasInfix "function openCatalogEntry(sourceId, type, url, thumbnailUrl)" interfaceArtworkPatchText
     && lib.hasInfix "d.thumbnail_url = d.thumbnail_url || knownThumbnailUrl;" interfaceArtworkPatchText
     && !(lib.hasInfix "MangaRoutes.kt" interfaceArtworkPatchText);
+  staticAssetsRevalidateAfterDeployment =
+    lib.hasInfix ''<script src="/app.js?v=miwayomi-interface-artwork">'' interfaceArtworkPatchText
+    && lib.hasInfix "map $uri $miwayomi_static_cache_control" gatewayConfigurationText
+    && lib.hasInfix ''~*\.(?:html|js|css|json)$ "no-cache, must-revalidate";'' gatewayConfigurationText
+    && lib.hasInfix "add_header Cache-Control $miwayomi_static_cache_control always;" gatewayConfigurationText;
   gatewaySchemeRuntimeCheck =
     pkgs.runCommand "chise-miwayomi-gateway-scheme-runtime"
       {
@@ -124,4 +129,8 @@ in
   chise-miwayomi-home-renders-media-artwork =
     mkEvalCheck "chise-miwayomi-home-renders-media-artwork" interfaceArtworkIsPreserved
       "Miwayomi Home must render a working anime catalog with persisted thumbnails and every HTML entry point must declare the existing logo as its favicon";
+
+  chise-miwayomi-static-assets-revalidate =
+    mkEvalCheck "chise-miwayomi-static-assets-revalidate" staticAssetsRevalidateAfterDeployment
+      "Miwayomi static application assets must revalidate after deployment and the current JavaScript path must bypass the stale Cloudflare cache entry";
 }
