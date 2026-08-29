@@ -88,6 +88,10 @@ let
     && lib.hasInfix "map $uri $miwayomi_static_cache_control" gatewayConfigurationText
     && lib.hasInfix ''~*\.(?:html|js|css|json)$ "no-cache, must-revalidate";'' gatewayConfigurationText
     && lib.hasInfix "add_header Cache-Control $miwayomi_static_cache_control always;" gatewayConfigurationText;
+  episodeNamesAreSafeInInlineHandlers =
+    lib.hasInfix "function openEpisodeFromCard(encUrl, encodedName, noPush)" interfaceArtworkPatchText
+    && lib.hasInfix "openEpisode(encUrl, safeDecode(encodedName), noPush);" interfaceArtworkPatchText
+    && lib.hasInfix ''encodeURIComponent(e.name || "").replace(/'/g, "%27")'' interfaceArtworkPatchText;
   gatewaySchemeRuntimeCheck =
     pkgs.runCommand "chise-miwayomi-gateway-scheme-runtime"
       {
@@ -133,4 +137,8 @@ in
   chise-miwayomi-static-assets-revalidate =
     mkEvalCheck "chise-miwayomi-static-assets-revalidate" staticAssetsRevalidateAfterDeployment
       "Miwayomi static application assets must revalidate after deployment and the current JavaScript path must bypass the stale Cloudflare cache entry";
+
+  chise-miwayomi-episode-links-handle-apostrophes =
+    mkEvalCheck "chise-miwayomi-episode-links-handle-apostrophes" episodeNamesAreSafeInInlineHandlers
+      "Miwayomi episode cards must encode titles before placing them in inline handlers so titles containing apostrophes remain playable";
 }
