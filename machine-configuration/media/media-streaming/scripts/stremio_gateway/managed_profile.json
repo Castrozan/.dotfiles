@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "25",
+  "defaultSettings": {
+    "interfaceLanguage": "eng",
+    "interfaceScale": 100,
+    "hideSpoilers": false,
+    "gamepadSupport": false,
+    "streamingServerUrl": null,
+    "playerType": null,
+    "bingeWatching": true,
+    "playInBackground": true,
+    "hardwareDecoding": true,
+    "gpuVideoProcessing": false,
+    "videoMode": null,
+    "frameRateMatchingStrategy": "Disabled",
+    "nextVideoNotificationDuration": 35000,
+    "audioPassthrough": false,
+    "audioLanguage": "eng",
+    "secondaryAudioLanguage": null,
+    "subtitlesLanguage": "eng",
+    "secondarySubtitlesLanguage": null,
+    "subtitlesAutoSelect": true,
+    "subtitlesSize": 100,
+    "subtitlesFont": "Roboto",
+    "subtitlesBold": false,
+    "subtitlesOffset": 5,
+    "subtitlesTextColor": "#FFFFFFFF",
+    "subtitlesBackgroundColor": "#00000000",
+    "subtitlesOutlineColor": "#000000",
+    "subtitlesOpacity": 100,
+    "assSubtitlesStyling": false,
+    "escExitFullscreen": true,
+    "seekTimeDuration": 10000,
+    "seekShortTimeDuration": 3000,
+    "pauseOnMinimize": false,
+    "quitOnClose": true,
+    "surroundSound": false,
+    "streamingServerWarningDismissed": null,
+    "serverInForeground": false,
+    "sendCrashReports": true,
+    "discordRpcEnabled": false
+  },
+  "officialAddons": [
+    {
+      "transportUrl": "https://v3-cinemeta.strem.io/manifest.json",
+      "flags": { "official": true, "protected": true }
+    },
+    {
+      "transportUrl": "https://v3-channels.strem.io/manifest.json",
+      "flags": { "official": true, "protected": false }
+    },
+    {
+      "transportUrl": "https://watchhub.strem.io/manifest.json",
+      "flags": { "official": true, "protected": false }
+    },
+    {
+      "transportUrl": "https://caching.stremio.net/publicdomainmovies.now.sh/manifest.json",
+      "flags": { "official": true, "protected": false }
+    },
+    {
+      "transportUrl": "https://opensubtitles-v3.strem.io/manifest.json",
+      "flags": { "official": true, "protected": false }
+    },
+    {
+      "streamingServerPath": "local-addon/manifest.json",
+      "flags": { "official": true, "protected": true }
+    }
+  ],
+  "managedAddons": [
+    {
+      "manifest": {
+        "id": "com.lucaszanoni.prowlarr-streams",
+        "version": "1.0.0",
+        "name": "Prowlarr Streams",
+        "contactEmail": null,
+        "description": "Instant private movie and TV streams from Prowlarr",
+        "logo": null,
+        "background": null,
+        "types": ["movie", "series"],
+        "resources": ["stream"],
+        "idPrefixes": ["tt"],
+        "catalogs": [],
+        "addonCatalogs": [],
+        "behaviorHints": {
+          "adult": false,
+          "p2p": true,
+          "configurable": false,
+          "configurationRequired": false
+        }
+      },
+      "transportPath": "/prowlarr/manifest.json"
+    },
+    {
+      "manifest": {
+        "id": "stremio.comet.fast",
+        "version": "2.0.0",
+        "name": "Comet",
+        "contactEmail": null,
+        "description": "Stremio's fastest torrent/debrid search add-on.",
+        "logo": "https://raw.githubusercontent.com/g0ldyy/comet/refs/heads/main/comet/assets/icon.png",
+        "background": "https://raw.githubusercontent.com/g0ldyy/comet/refs/heads/main/comet/assets/background.png",
+        "types": ["movie", "series", "anime", "other"],
+        "resources": [
+          {
+            "name": "stream",
+            "types": ["movie", "series"],
+            "idPrefixes": ["tt", "kitsu"]
+          }
+        ],
+        "idPrefixes": null,
+        "catalogs": [],
+        "addonCatalogs": [],
+        "behaviorHints": {
+          "adult": false,
+          "p2p": false,
+          "configurable": true,
+          "configurationRequired": false
+        }
+      },
+      "transportPath": "/comet/manifest.json"
+    }
+  ]
+}

@@ -28,7 +28,10 @@ let
   publicOriginHttpConfig = publicOriginNginx.appendHttpConfig.content;
   gatewaySource = builtins.readFile ../scripts/stremio_gateway/prowlarr_stream_provider.py;
   cometAdapterSource = builtins.readFile ../scripts/stremio_gateway/comet_stream_adapter.py;
-  managedProfileSource = builtins.readFile ../scripts/stremio_gateway/managed_profile.js;
+  managedProfileSource = lib.concatStrings [
+    (builtins.readFile ../scripts/stremio_gateway/managed_profile.js)
+    (builtins.readFile ../scripts/stremio_gateway/managed_profile.json)
+  ];
   serverSource = builtins.readFile ../scripts/stremio_gateway/__main__.py;
   cometEnvironmentSource = builtins.readFile ../scripts/stremio_comet_environment.py;
 in
@@ -56,6 +59,8 @@ in
         && lib.hasInfix "com.lucaszanoni.prowlarr-streams" managedProfileSource
         && lib.hasInfix "stremio.comet.fast" managedProfileSource
         && lib.hasInfix "addonsLocked: true" managedProfileSource
+        && lib.hasInfix "https://v3-cinemeta.strem.io/manifest.json" managedProfileSource
+        && lib.hasInfix "schema_version" managedProfileSource
         && lib.hasInfix "/managed-profile.js" serverSource
         && !(lib.hasInfix "/setup" serverSource)
       )

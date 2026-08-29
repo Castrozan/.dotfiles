@@ -124,8 +124,11 @@ def test_managed_profile_script_receives_the_selected_streaming_server():
 
     assert '"https://stream.example.com/server/"' in script
     assert managed_profile.STREAMING_SERVER_URL_PLACEHOLDER not in script
+    assert managed_profile.CONFIGURATION_PLACEHOLDER not in script
     assert "com.lucaszanoni.prowlarr-streams" in script
     assert "stremio.comet.fast" in script
+    assert "https://v3-cinemeta.strem.io/manifest.json" in script
+    assert '"schemaVersion":"25"' in script
     assert "addonsLocked: true" in script
 
 

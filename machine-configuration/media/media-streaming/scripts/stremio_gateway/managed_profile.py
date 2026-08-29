@@ -4,8 +4,12 @@ from pathlib import Path
 
 MANAGED_PROFILE_SCRIPT_TAG = b'<script src="/managed-profile.js"></script>'
 STREAMING_SERVER_URL_PLACEHOLDER = "__STREMIO_MANAGED_STREAMING_SERVER_URL__"
+CONFIGURATION_PLACEHOLDER = "__STREMIO_MANAGED_PROFILE_CONFIGURATION__"
 MANAGED_PROFILE_SCRIPT_TEMPLATE = (
     Path(__file__).with_suffix(".js").read_text(encoding="utf-8")
+)
+MANAGED_PROFILE_CONFIGURATION = json.loads(
+    Path(__file__).with_suffix(".json").read_text(encoding="utf-8")
 )
 
 
@@ -23,12 +27,25 @@ def inject_managed_profile_script(index_html: bytes) -> bytes:
 
 
 def render_managed_profile_script(streaming_server_url: str) -> bytes:
-    if STREAMING_SERVER_URL_PLACEHOLDER not in MANAGED_PROFILE_SCRIPT_TEMPLATE:
-        raise RuntimeError("managed profile script has no streaming server placeholder")
-    return MANAGED_PROFILE_SCRIPT_TEMPLATE.replace(
+    required_placeholders = {
+        STREAMING_SERVER_URL_PLACEHOLDER,
+        CONFIGURATION_PLACEHOLDER,
+    }
+    if not all(
+        placeholder in MANAGED_PROFILE_SCRIPT_TEMPLATE
+        for placeholder in required_placeholders
+    ):
+        raise RuntimeError(
+            "managed profile script is missing configuration placeholders"
+        )
+    rendered_script = MANAGED_PROFILE_SCRIPT_TEMPLATE.replace(
         STREAMING_SERVER_URL_PLACEHOLDER,
         json.dumps(streaming_server_url),
-    ).encode()
+    ).replace(
+        CONFIGURATION_PLACEHOLDER,
+        json.dumps(MANAGED_PROFILE_CONFIGURATION, separators=(",", ":")),
+    )
+    return rendered_script.encode()
 
 
 def select_streaming_server_url(
