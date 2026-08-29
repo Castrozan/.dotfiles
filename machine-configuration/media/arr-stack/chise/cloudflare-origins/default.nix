@@ -23,9 +23,9 @@ let
       ];
     }
     {
-      hostname = "seanime.lucaszanoni.com";
+      hostname = "anime.lucaszanoni.com";
       proxyPort = 9447;
-      upstreamUrl = "http://${chiseTailnetBindAddress}:43211";
+      upstreamUrl = "http://${chiseTailnetBindAddress}:4568";
       loginLocationRegexes = [ ];
     }
     {
@@ -51,6 +51,12 @@ let
       proxyPort = 9451;
       upstreamUrl = "http://${chiseTailnetBindAddress}:6767";
       loginLocationRegexes = [ "^/login$" ];
+    }
+    {
+      hostname = "suwayomi.lucaszanoni.com";
+      proxyPort = 9452;
+      upstreamUrl = "http://${chiseTailnetBindAddress}:4567";
+      loginLocationRegexes = [ ];
     }
     {
       hostname = "qbittorrent.lucaszanoni.com";
