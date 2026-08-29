@@ -40,7 +40,9 @@ let
     && lib.hasInfix "./miwayomi-gateway.conf:/etc/nginx/conf.d/default.conf:ro" composeText
     && lib.hasInfix "http://127.0.0.1:4568/api/v1/health" composeText
     && lib.hasInfix "proxy_pass http://miwayomi:4567" gatewayConfigurationText
-    && lib.hasInfix ''sub_filter "http://miwayomi:4567" "$scheme://$http_host"'' gatewayConfigurationText;
+    && lib.hasInfix "map $http_x_forwarded_proto $miwayomi_external_scheme" gatewayConfigurationText
+    && lib.hasInfix "proxy_set_header X-Forwarded-Proto $miwayomi_external_scheme" gatewayConfigurationText
+    && lib.hasInfix ''sub_filter "http://miwayomi:4567" "$miwayomi_external_scheme://$http_host"'' gatewayConfigurationText;
   mangaInputInitializationIsIsolated =
     lib.hasInfix ''it.title = ""'' miwayomiPatchText
     && lib.hasInfix ''it.name = ""'' miwayomiPatchText
