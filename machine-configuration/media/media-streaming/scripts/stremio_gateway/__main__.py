@@ -7,12 +7,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from comet_stream_adapter import CometStreamAdapter
-from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
-from stremio_protocol import (
-    addon_manifest,
-    parse_stream_request,
-    setup_url_for_request_origin,
+from managed_profile import (
+    inject_managed_profile_script,
+    render_managed_profile_script,
+    select_streaming_server_url,
 )
+from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
+from stremio_protocol import addon_manifest, parse_stream_request
 
 
 class StremioRequestHandler(BaseHTTPRequestHandler):
@@ -20,8 +21,8 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
     stream_provider: ProwlarrStreamProvider
     comet_adapter: CometStreamAdapter
     public_host: str
-    public_setup_redirect_url: str
-    tailnet_setup_redirect_url: str
+    public_streaming_server_url: str
+    tailnet_streaming_server_url: str
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -41,16 +42,8 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
         if path == "/healthz":
             self._send_json({"status": "ok"}, include_body)
             return
-        if path == "/setup":
-            self.send_response(302)
-            request_host = self.headers.get("Host", "").strip()
-            setup_redirect_url = (
-                self.public_setup_redirect_url
-                if request_host == self.public_host
-                else self.tailnet_setup_redirect_url
-            )
-            self.send_header("Location", setup_redirect_url)
-            self.end_headers()
+        if path == "/managed-profile.js":
+            self._send_managed_profile(include_body)
             return
         if path == "/prowlarr/manifest.json":
             self._send_json(addon_manifest(), include_body)
@@ -98,6 +91,23 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
         if include_body:
             self.wfile.write(body)
 
+    def _send_managed_profile(self, include_body: bool):
+        streaming_server_url = select_streaming_server_url(
+            self.headers.get("Host", "").strip(),
+            self.public_host,
+            self.tailnet_streaming_server_url,
+            self.public_streaming_server_url,
+        )
+        body = render_managed_profile_script(streaming_server_url)
+        self.send_response(200)
+        self._send_cors_headers()
+        self.send_header("Content-Type", "text/javascript; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        if include_body:
+            self.wfile.write(body)
+
     def _send_static(self, request_path: str, include_body: bool):
         relative_path = urllib.parse.unquote(request_path).lstrip("/") or "index.html"
         candidate = (self.static_root / relative_path).resolve()
@@ -105,6 +115,8 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             self.send_error(404)
             return
         body = candidate.read_bytes()
+        if candidate.name == "index.html":
+            body = inject_managed_profile_script(body)
         self.send_response(200)
         self._send_cors_headers()
         self.send_header(
@@ -136,14 +148,9 @@ def required_environment_value(name: str) -> str:
 def main():
     bind_address = required_environment_value("STREMIO_BIND_ADDRESS")
     port = int(required_environment_value("STREMIO_WEB_PORT"))
-    web_url = required_environment_value("STREMIO_WEB_URL")
     public_web_url = required_environment_value("STREMIO_PUBLIC_WEB_URL")
-    streaming_server_url = required_environment_value("STREMIO_STREAMING_SERVER_URL")
-    public_addon_manifest_url = required_environment_value(
-        "STREMIO_PUBLIC_ADDON_MANIFEST_URL"
-    )
-    tailnet_addon_manifest_url = required_environment_value(
-        "STREMIO_TAILNET_ADDON_MANIFEST_URL"
+    tailnet_streaming_server_url = required_environment_value(
+        "STREMIO_TAILNET_STREAMING_SERVER_URL"
     )
     StremioRequestHandler.static_root = Path(
         required_environment_value("STREMIO_WEB_ROOT")
@@ -159,18 +166,10 @@ def main():
         required_environment_value("STREMIO_COMET_URL")
     )
     StremioRequestHandler.public_host = urllib.parse.urlsplit(public_web_url).netloc
-    StremioRequestHandler.public_setup_redirect_url = setup_url_for_request_origin(
-        public_web_url,
-        web_url,
-        streaming_server_url,
-        public_addon_manifest_url,
+    StremioRequestHandler.public_streaming_server_url = (
+        f"{public_web_url.rstrip('/')}/server/"
     )
-    StremioRequestHandler.tailnet_setup_redirect_url = setup_url_for_request_origin(
-        web_url,
-        web_url,
-        streaming_server_url,
-        tailnet_addon_manifest_url,
-    )
+    StremioRequestHandler.tailnet_streaming_server_url = tailnet_streaming_server_url
     server = ThreadingHTTPServer((bind_address, port), StremioRequestHandler)
     server.serve_forever()
 

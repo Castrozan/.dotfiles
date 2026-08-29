@@ -36,6 +36,7 @@ in
         "--init"
         "--name ${containerName}"
         "--network host"
+        "--dns 127.0.0.53"
         "--read-only"
         "--cap-drop ALL"
         "--security-opt no-new-privileges:true"

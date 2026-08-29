@@ -13,6 +13,7 @@ sys.path.insert(0, str(PACKAGE_DIRECTORY_PATH))
 
 prowlarr_stream_provider = importlib.import_module("prowlarr_stream_provider")
 stremio_protocol = importlib.import_module("stremio_protocol")
+managed_profile = importlib.import_module("managed_profile")
 
 COMET_ENVIRONMENT_MODULE_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "stremio_comet_environment.py"
@@ -105,45 +106,48 @@ def test_series_search_returns_only_the_requested_episode():
     assert "Game+of+Thrones+S02E03+1080p" in requests[1][0]
 
 
-def test_setup_url_carries_the_server_and_addon_without_an_account():
-    url = stremio_protocol.setup_url(
-        "http://100.64.0.1:43212",
-        "http://100.64.0.1:11470/",
-        "http://100.64.0.1:43212/prowlarr/manifest.json",
+def test_managed_profile_script_precedes_the_upstream_application():
+    index_html = b'<body><script src="release/scripts/main.js"></script></body>'
+
+    injected_html = managed_profile.inject_managed_profile_script(index_html)
+
+    assert injected_html.index(b"/managed-profile.js") < injected_html.index(
+        b"release/scripts/main.js"
     )
+    assert managed_profile.inject_managed_profile_script(injected_html) == injected_html
 
-    assert url.startswith(
-        "http://100.64.0.1:43212/#/addons?addon=http%3A%2F%2F100.64.0.1%3A43212%2Fprowlarr%2Fmanifest.json"
+
+def test_managed_profile_script_receives_the_selected_streaming_server():
+    script = managed_profile.render_managed_profile_script(
+        "https://stream.example.com/server/"
+    ).decode()
+
+    assert '"https://stream.example.com/server/"' in script
+    assert managed_profile.STREAMING_SERVER_URL_PLACEHOLDER not in script
+    assert "com.lucaszanoni.prowlarr-streams" in script
+    assert "stremio.comet.fast" in script
+    assert "addonsLocked: true" in script
+
+
+def test_managed_profile_uses_the_request_origin_streaming_server():
+    assert (
+        managed_profile.select_streaming_server_url(
+            "stream.example.com",
+            "stream.example.com",
+            "http://100.64.0.1:11470/",
+            "https://stream.example.com/server/",
+        )
+        == "https://stream.example.com/server/"
     )
-    assert "&streamingServerUrl=http%3A%2F%2F100.64.0.1%3A11470%2F" in url
-
-
-def test_tailnet_setup_uses_the_direct_streaming_server():
-    url = stremio_protocol.setup_url_for_request_origin(
-        "http://100.64.0.1:43212",
-        "http://100.64.0.1:43212",
-        "http://100.64.0.1:11470/",
-        "http://100.64.0.1:43214/manifest.json",
+    assert (
+        managed_profile.select_streaming_server_url(
+            "100.64.0.1:43212",
+            "stream.example.com",
+            "http://100.64.0.1:11470/",
+            "https://stream.example.com/server/",
+        )
+        == "http://100.64.0.1:11470/"
     )
-
-    assert url.startswith(
-        "http://100.64.0.1:43212/#/addons?addon=http%3A%2F%2F100.64.0.1%3A43214%2Fmanifest.json"
-    )
-    assert "&streamingServerUrl=http%3A%2F%2F100.64.0.1%3A11470%2F" in url
-
-
-def test_public_setup_uses_the_same_origin_streaming_proxy():
-    url = stremio_protocol.setup_url_for_request_origin(
-        "https://stream.lucaszanoni.com",
-        "http://100.64.0.1:43212",
-        "http://100.64.0.1:11470/",
-        "https://stream.lucaszanoni.com/comet/manifest.json",
-    )
-
-    assert url.startswith(
-        "https://stream.lucaszanoni.com/#/addons?addon=https%3A%2F%2Fstream.lucaszanoni.com%2Fcomet%2Fmanifest.json"
-    )
-    assert "&streamingServerUrl=https%3A%2F%2Fstream.lucaszanoni.com%2Fserver%2F" in url
 
 
 def test_missing_prowlarr_api_key_refuses_to_start(tmp_path):

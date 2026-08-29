@@ -28,6 +28,7 @@ let
   publicOriginHttpConfig = publicOriginNginx.appendHttpConfig.content;
   gatewaySource = builtins.readFile ../scripts/stremio_gateway/prowlarr_stream_provider.py;
   cometAdapterSource = builtins.readFile ../scripts/stremio_gateway/comet_stream_adapter.py;
+  managedProfileSource = builtins.readFile ../scripts/stremio_gateway/managed_profile.js;
   serverSource = builtins.readFile ../scripts/stremio_gateway/__main__.py;
   cometEnvironmentSource = builtins.readFile ../scripts/stremio_comet_environment.py;
 in
@@ -45,21 +46,20 @@ in
     && webUnit.Install.WantedBy == [ "default.target" ]
   ) "Stremio Web must come from a pinned official release and start with the user session";
 
-  chise-stremio-setup-selects-the-public-origin =
-    mkEvalCheck "chise-stremio-setup-selects-the-public-origin"
-      (lib.hasInfix "STREMIO_PUBLIC_WEB_URL=https://stream.lucaszanoni.com" webEnvironment)
-      "Stremio setup must know the Access-gated public origin so public launches select the same-origin addon and streaming proxy";
-
-  chise-stremio-setup-selects-comet =
-    mkEvalCheck "chise-stremio-setup-selects-comet"
+  chise-stremio-web-manages-private-addons =
+    mkEvalCheck "chise-stremio-web-manages-private-addons"
       (
-        lib.hasInfix "STREMIO_PUBLIC_ADDON_MANIFEST_URL=https://stream.lucaszanoni.com/comet/manifest.json" webEnvironment
-        && lib.hasInfix "STREMIO_TAILNET_ADDON_MANIFEST_URL=http://${tailnetBindAddress}:43212/comet/manifest.json" webEnvironment
+        lib.hasInfix "STREMIO_PUBLIC_WEB_URL=https://stream.lucaszanoni.com" webEnvironment
         && lib.hasInfix "STREMIO_COMET_URL=http://${tailnetBindAddress}:43214" webEnvironment
         && lib.hasInfix "tracker:" cometAdapterSource
         && lib.hasInfix "dht:" cometAdapterSource
+        && lib.hasInfix "com.lucaszanoni.prowlarr-streams" managedProfileSource
+        && lib.hasInfix "stremio.comet.fast" managedProfileSource
+        && lib.hasInfix "addonsLocked: true" managedProfileSource
+        && lib.hasInfix "/managed-profile.js" serverSource
+        && !(lib.hasInfix "/setup" serverSource)
       )
-      "Stremio setup must install Comet through the peer-discovery adapter on both public and tailnet origins";
+      "ordinary Stremio launches must reconcile the Nix-managed private addons before the upstream application starts";
 
   chise-stremio-public-origin-is-loopback-only =
     mkEvalCheck "chise-stremio-public-origin-is-loopback-only"
@@ -83,6 +83,7 @@ in
       (
         lib.hasInfix "g0ldyy/comet@sha256:dca62133336e02784d02aaad861381820674d1c8e3e98a03797610b81ee4defe" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--network host" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--dns 127.0.0.53" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env FASTAPI_HOST=${tailnetBindAddress}" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--memory 1g" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--cpus 2" cometUnit.serviceConfig.ExecStart

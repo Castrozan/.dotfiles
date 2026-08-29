@@ -1,5 +1,4 @@
 import re
-import urllib.parse
 from dataclasses import dataclass
 
 
@@ -45,33 +44,3 @@ def addon_manifest() -> dict:
         "catalogs": [],
         "behaviorHints": {"p2p": True, "configurable": False},
     }
-
-
-def setup_url(web_url: str, streaming_server_url: str, addon_manifest_url: str) -> str:
-    route_query = urllib.parse.urlencode(
-        {
-            "addon": addon_manifest_url,
-            "streamingServerUrl": streaming_server_url,
-        }
-    )
-    return f"{web_url.rstrip('/')}/#/addons?{route_query}"
-
-
-def setup_url_for_request_origin(
-    request_origin: str,
-    tailnet_web_url: str,
-    tailnet_streaming_server_url: str,
-    addon_manifest_url: str,
-) -> str:
-    normalized_origin = request_origin.rstrip("/")
-    normalized_tailnet_web_url = tailnet_web_url.rstrip("/")
-    streaming_server_url = (
-        tailnet_streaming_server_url
-        if normalized_origin == normalized_tailnet_web_url
-        else f"{normalized_origin}/server/"
-    )
-    return setup_url(
-        normalized_origin,
-        streaming_server_url,
-        addon_manifest_url,
-    )
