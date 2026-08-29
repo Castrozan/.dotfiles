@@ -68,7 +68,7 @@ let
     && builtins.elem "arr-stack-drive-guard.service" composeService.requires
     && builtins.elem "multi-user.target" composeService.wantedBy
     && lib.hasInfix "up --detach --build miwayomi flaresolverr miwayomi-gateway" composeService.serviceConfig.ExecStart
-    && builtins.length composeService.restartTriggers == 5;
+    && builtins.length composeService.restartTriggers == 6;
   repositoryProvisionerFollowsCompose =
     repositoryService.after == [ "miwayomi-compose.service" ]
     && repositoryService.requires == [ "miwayomi-compose.service" ]
@@ -126,7 +126,7 @@ in
 
   chise-miwayomi-compose-is-applied-declaratively =
     mkEvalCheck "chise-miwayomi-compose-is-applied-declaratively" composeApplicatorIsOrdered
-      "the NixOS applicator must wait for Home Manager and Docker, then bring up exactly Miwayomi and FlareSolverr on boot and rebuild";
+      "the NixOS applicator must wait for Home Manager and Docker, then bring up exactly Miwayomi, FlareSolverr and its gateway on boot and rebuild";
 
   chise-miwayomi-repositories-follow-compose =
     mkEvalCheck "chise-miwayomi-repositories-follow-compose"
