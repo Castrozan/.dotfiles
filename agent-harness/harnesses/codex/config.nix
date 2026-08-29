@@ -78,9 +78,9 @@ let
     model = codexDefaultModel;
     model_reasoning_effort = "xhigh";
     notify = [
-      "notify-send"
-      "--app-name"
-      "Codex"
+      "${pkgs.python312}/bin/python3"
+      "${./scripts/notify_codex_turn_complete.py}"
+      "${pkgs.libnotify}/bin/notify-send"
     ];
     sandbox_mode = "danger-full-access";
     suppress_unstable_features_warning = true;
