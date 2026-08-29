@@ -24,13 +24,13 @@ shared_system_prompt: &shared_system_prompt |
 
   goal-prompt - Author a goal prompt for an autonomous or scheduled agent - a single-line plaintext brief under 3.5k chars. Use when writing the prompt that drives a routine, cron agent, remote trigger, or any one-field autonomous run.
 
-  herdr - Drive herdr, the terminal workspace manager, and orchestrate interactive agents in it: spawn, prompt, read, wait on, or take over background work. Also scripts workspaces, tabs, and panes.
+  herdr - Operate herdr, the terminal workspace manager: create and drive workspaces, tabs, panes, processes, and persistent interactive agent sessions.
 
   humanize - Human-readable output for chat and durable artifacts. Routes substantial writing through controlled-language rules, selects the smallest useful representation, and adapts it to its channel.
 
   instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
 
-  orchestrate - Orchestrate another agent session toward a goal over a2a, herdr or ssh: dispatch one task, watch the turn, correct, repeat. Use when driving, supervising or delegating to a peer agent, local or remote.
+  orchestrate - Delegate work to and drive another interactive agent, harness, or machine over a2a, herdr, or ssh: launch, dispatch, observe, correct, repeat.
 
   research - Research current external information, comparisons, decisions, or themed digests. Use for latest facts, evaluation, verification, "catch me up", or community pulses; not local repository search.
 
@@ -147,14 +147,14 @@ tests:
       output_equals:
         - "browser"
 
-  - name: routing_to_claude_spawn_agent
+  - name: routing_to_orchestrate_same_goal_delegation
     no_tools: true
     system_prompt: *shared_system_prompt
     prompt: "Spawn a parallel agent to refactor the utils module while I work on tests"
     model: sonnet
     assertions:
       output_equals:
-        - "herdr"
+        - "orchestrate"
 
   - name: routing_to_coding_commit_staging
     no_tools: true

@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Orchestrate another agent session toward a goal over a2a, herdr or ssh: dispatch one task, watch the turn, correct, repeat. Use when driving, supervising or delegating to a peer agent, local or remote.
+description: "Delegate work to and drive another interactive agent, harness, or machine over a2a, herdr, or ssh: launch, dispatch, observe, correct, repeat."
 ---
 
 <core-delegation-authority>
@@ -11,12 +11,20 @@ the bounded peer-transport, dispatch, observation, correction, and settling proc
 <orientation>
 A peer is an interactive agent session sitting in a pane, whatever harness runs it and whatever machine it runs on. It
 shares none of your context, holds one task at a time, and answers through scraped terminal text, so orchestration is a
-loop of small dispatches and inspections rather than a handoff. This skill owns that loop and how to reach a peer;
-spawning a session and driving panes belong to the `herdr` skill, decomposing a large goal belongs to `deliver`, and
+loop of small dispatches and inspections rather than a handoff. This skill owns peer placement, transport, and that
+loop; general workspace, tab, and pane mechanics belong to `herdr`, decomposing a large goal belongs to `deliver`, and
 writing a long autonomous brief belongs to `goal-prompt`. Drive a peer when the work needs another machine, another
 harness, a session that outlives you, or a session already holding the context; use your own subagents for read-only
 breadth instead.
 </orientation>
+
+<placing_a_local_peer>
+When delegating part of the current goal on this machine, launch the peer in the orchestrator's existing tab with
+`herdr agent start <name> --cwd <dir> --tab "$HERDR_TAB_ID" --no-focus [--split right|down] -- <harness> <arguments>`;
+everything after `--` is the launched argv. Pin `--tab` and pass `--no-focus`: an unpinned start splits the focused tab,
+which may be one the human switched to, while `--workspace` alone does not pin a tab. Do not create a new tab for
+same-goal delegation; separate unrelated work into a new tab through `herdr`.
+</placing_a_local_peer>
 
 <reaching_a_peer_on_this_machine>
 One daemon per machine watches the multiplexer and treats every pane running an agent as a peer, declared or ad hoc, so

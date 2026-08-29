@@ -48,9 +48,9 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
-        "herdr agent start splits an active tab. Open a fresh tab so the agent is "
-        "alone in its own pane, or pin --tab with --no-focus for a deliberate "
-        "split. Read the herdr skill for more information.",
+        "herdr agent start splits the focused tab unless --tab pins one. For "
+        "same-goal delegation, pin --tab with --no-focus and read the orchestrate "
+        "skill; for unrelated work, open a fresh tab and read the herdr skill.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+(?:workspace|tab|pane)\s+close\b"

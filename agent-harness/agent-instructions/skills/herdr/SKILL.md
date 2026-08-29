@@ -1,6 +1,6 @@
 ---
 name: herdr
-description: Drive herdr, the terminal workspace manager, and orchestrate interactive agents in it: spawn, prompt, read, wait on, or take over background work. Also scripts workspaces, tabs, and panes.
+description: "Operate herdr, the terminal workspace manager: create and drive workspaces, tabs, panes, processes, and persistent interactive agent sessions."
 ---
 
 <orientation>
@@ -11,22 +11,23 @@ command talks to the running server over its own socket automatically, so unlike
 and no "no server running" trap to work around.
 </orientation>
 
-<orchestrating_agents>
-Launch a supported harness into the pane a new tab already carries, so the agent is born alone in one pane: `herdr tab
-create --workspace "$HERDR_WORKSPACE_ID" --cwd <dir> --no-focus` answers with that tab and its root pane id, and `herdr
-pane run <root pane id> <harness> <arguments>` starts the harness there. Carry the working directory and any
-environment on the create, because `pane run` takes neither. Pin the workspace and pass `--no-focus` so creation
-neither lands in nor moves the view to whatever the human switched to. Never reach for `herdr agent start`: it always
-splits a tab and never opens one, so even pinned to a fresh tab it strands that tab's root shell beside the agent for
-you to close by pane id afterwards, and a guard blocks its unpinned form, which splits the tab the human switched to.
-`pane run` starts no named agent, so name it afterwards with `herdr agent rename <pane id> <name>`; until then the pane
+<placing_work>
+Put work unrelated to the current goal in a new tab: `herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd <dir>
+--no-focus` answers with the tab and its root pane id, and `herdr pane run <root pane id> <command>` starts the work
+there. Carry the working directory and any environment on the create, because `pane run` takes neither. Keep work for
+the current goal in panes of the existing tab. Before delegating any part of that goal to another agent or harness,
+load `orchestrate`; it owns the pinned same-tab launch and drive loop.
+</placing_work>
+
+<agent_observation>
+`pane run` starts no named agent, so name one afterwards with `herdr agent rename <pane id> <name>`; until then the pane
 id is the only target that resolves, because `agent list` does not carry the pane the instant `pane run` returns.
 Synchronize on reported state, not scraped output: `herdr agent wait <target> --status idle|working|blocked [--timeout
 MS]` blocks until the agent reaches that state and takes a pane id before detection lands, so wait for `idle` to cover
 the harness boot before the first prompt and after every turn instead of polling `agent read`. Read output with `herdr
 agent read <target> [--source visible|recent|recent-unwrapped] [--lines N]`. A target is the agent name, a terminal id,
 or a pane id.
-</orchestrating_agents>
+</agent_observation>
 
 <prompt_submission_trap>
 `herdr agent send <target> <text>` writes literal text and does not press Enter, so a prompt sits unsubmitted until you
@@ -38,9 +39,8 @@ file and send a one-line `read <file> and implement it` so nothing submits early
 <when_to_spawn>
 Spawn a herdr agent when the user must watch or take over the work, when it needs a persistent interactive session, or
 when it must outlive this conversation. For read-only research, exploration, or search, use the builtin Agent tool with
-no herdr. Once a session is up, driving it to a goal, here or on another machine or harness, belongs to the
-`orchestrate` skill. For multi-agent work that edits code, run a Workflow (see the `deliver` skill) with worktree
-isolation, never Teams.
+no herdr. Delegating part of the current goal to another agent and driving it, here or on another machine or harness,
+belongs to the `orchestrate` skill.
 </when_to_spawn>
 
 <resume_and_liveness>
