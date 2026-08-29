@@ -25,7 +25,8 @@ let
     (lib.removeSuffix "\n" staticEnvironmentFileContents)
     + "\n"
     + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n"
-    + "MIWAYOMI_BUILD_CONTEXT=${miwayomiBuildContext}\n";
+    + "MIWAYOMI_BUILD_CONTEXT=${miwayomiBuildContext}\n"
+    + "MIWAYOMI_GATEWAY_CONFIG_PATH=${./miwayomi-gateway.conf}\n";
   configServiceDirectories = [
     "qbittorrent"
     "prowlarr"
@@ -65,7 +66,6 @@ lib.mkIf isChise {
 
     file = {
       "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
-      "arr-stack/miwayomi-gateway.conf".source = ./miwayomi-gateway.conf;
       "arr-stack/.env".text = runtimeEnvironmentFileContents;
       "arr-stack/README.md".source = ./README.md;
     };

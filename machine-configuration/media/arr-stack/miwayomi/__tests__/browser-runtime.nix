@@ -37,7 +37,9 @@ let
   gatewayRepairsMiwayomiProxyOrigins =
     lib.hasInfix "hostname: miwayomi" composeText
     && lib.hasInfix "container_name: arr-miwayomi-gateway" composeText
-    && lib.hasInfix "./miwayomi-gateway.conf:/etc/nginx/conf.d/default.conf:ro" composeText
+    && lib.hasInfix "\${MIWAYOMI_GATEWAY_CONFIG_PATH:?set in ~/arr-stack/.env}:/etc/nginx/conf.d/default.conf:ro" composeText
+    && lib.hasInfix "MIWAYOMI_GATEWAY_CONFIG_PATH=\${./miwayomi-gateway.conf}" stackModuleText
+    && !(lib.hasInfix ''"arr-stack/miwayomi-gateway.conf".source'' stackModuleText)
     && lib.hasInfix "http://127.0.0.1:4568/api/v1/health" composeText
     && lib.hasInfix "proxy_pass http://miwayomi:4567" gatewayConfigurationText
     && lib.hasInfix "map $http_x_forwarded_proto $miwayomi_external_scheme" gatewayConfigurationText
