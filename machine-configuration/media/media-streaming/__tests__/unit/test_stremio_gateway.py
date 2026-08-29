@@ -132,6 +132,20 @@ def test_managed_profile_script_receives_the_selected_streaming_server():
     assert "addonsLocked: true" in script
 
 
+def test_managed_profile_reconciles_storage_before_network_requests():
+    script = managed_profile.render_managed_profile_script(
+        "https://stream.example.com/server/"
+    ).decode()
+
+    local_reconciliation = script.index(
+        "storeManagedProfile(storedProfile, storedOfficialAddonEntries)"
+    )
+    remote_loading = script.index("await loadOfficialAddonEntries(storedProfile)")
+
+    assert local_reconciliation < remote_loading
+    assert "window.stop();" in script[local_reconciliation:remote_loading]
+
+
 def test_managed_profile_uses_the_request_origin_streaming_server():
     assert (
         managed_profile.select_streaming_server_url(

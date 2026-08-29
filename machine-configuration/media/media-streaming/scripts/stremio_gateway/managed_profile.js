@@ -55,6 +55,15 @@
         .map((addon) => [addon.transportUrl, addon]) ?? [],
     );
 
+  const loadStoredOfficialAddonEntries = (profile) => {
+    const storedOfficialEntries = officialEntryByTransportUrl(profile);
+    return managedProfileConfiguration.officialAddons
+      .map((addonDefinition) =>
+        storedOfficialEntries.get(officialTransportUrl(addonDefinition)),
+      )
+      .filter((addon) => addon !== undefined);
+  };
+
   const loadOfficialAddonEntries = async (profile) => {
     const storedOfficialEntries = officialEntryByTransportUrl(profile);
     const loadedEntries = await Promise.all(
@@ -132,6 +141,13 @@
 
   const synchronizeManagedProfile = async () => {
     const storedProfile = parseStoredRecord("profile");
+    const storedOfficialAddonEntries =
+      loadStoredOfficialAddonEntries(storedProfile);
+    if (storeManagedProfile(storedProfile, storedOfficialAddonEntries)) {
+      window.stop();
+      window.location.reload();
+      return;
+    }
     const officialAddonEntries = await loadOfficialAddonEntries(storedProfile);
     if (storeManagedProfile(storedProfile, officialAddonEntries)) {
       window.location.reload();
