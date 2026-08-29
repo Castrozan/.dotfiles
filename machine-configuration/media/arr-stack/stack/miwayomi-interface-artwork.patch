@@ -165,6 +165,26 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
        <div class="ep-thumb">
          <span class="ep-num">E${e.episode_number ?? i + 1}</span>
          ${epThumb(e)}
+@@ -795,14 +869,18 @@ async function listWatch() {
+ function watchCard(w) {
+   const pct = w.durationSeconds ? Math.min(100, Math.round((w.timeSeconds / w.durationSeconds) * 100)) : 0;
+   const thumb = w.thumb
+     ? `<img loading="lazy" src="/api/v1/proxy?sourceId=${w.sourceId}&url=${encodeURIComponent(w.thumb)}">`
+     : `<div class="card-img-placeholder">${escapeHtml((w.animeTitle || "?").charAt(0).toUpperCase())}</div>`;
+   return `
+-    <div class="card watch-card" onclick="openWatch('${w.sourceId}','${encodeURIComponent(w.animeUrl)}','${encodeURIComponent(w.epUrl)}','${escapeHtml(w.epName)}')">
++    <div class="card watch-card" onclick="openWatchFromCard('${w.sourceId}','${encodeURIComponent(w.animeUrl).replace(/'/g, "%27")}','${encodeURIComponent(w.epUrl).replace(/'/g, "%27")}','${encodeURIComponent(w.epName || "").replace(/'/g, "%27")}')">
+       ${thumb}
+       <div class="card-title">${escapeHtml(w.animeTitle)}</div>
+       <div class="card-sub watch-sub">${escapeHtml(w.epName)}</div>
+       <div class="watch-bar"><div class="watch-bar-fill" style="width:${pct}%"></div></div>
+     </div>`;
+ }
++function openWatchFromCard(sourceId, animeUrl, epUrl, encodedName) {
++  openWatch(sourceId, animeUrl, epUrl, safeDecode(encodedName));
++}
++
+ async function openWatch(sourceId, animeUrl, epUrl, epName) {
 @@ -985,6 +1042,10 @@ function handleAniListHash() {
 
  /* ---------------- Player ---------------- */

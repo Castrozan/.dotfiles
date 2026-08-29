@@ -99,7 +99,10 @@ let
   episodeNamesAreSafeInInlineHandlers =
     lib.hasInfix "function openEpisodeFromCard(encUrl, encodedName, noPush)" interfaceArtworkPatchText
     && lib.hasInfix "openEpisode(encUrl, safeDecode(encodedName), noPush);" interfaceArtworkPatchText
-    && lib.hasInfix ''encodeURIComponent(e.name || "").replace(/'/g, "%27")'' interfaceArtworkPatchText;
+    && lib.hasInfix ''encodeURIComponent(e.name || "").replace(/'/g, "%27")'' interfaceArtworkPatchText
+    && lib.hasInfix "function openWatchFromCard(sourceId, animeUrl, epUrl, encodedName)" interfaceArtworkPatchText
+    && lib.hasInfix "openWatch(sourceId, animeUrl, epUrl, safeDecode(encodedName));" interfaceArtworkPatchText
+    && lib.hasInfix ''encodeURIComponent(w.epName || "").replace(/'/g, "%27")'' interfaceArtworkPatchText;
   mangaHomeArtworkIsPreserved =
     lib.hasInfix "const HOME_CATALOG_SETTINGS = {" interfaceArtworkPatchText
     && lib.hasInfix ''sourceKey: "miwayomi.homeMangaSourceId"'' interfaceArtworkPatchText
