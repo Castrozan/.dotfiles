@@ -89,7 +89,7 @@ def test_every_skill_a_subagent_binds_exists_on_disk():
 
 def test_the_subagent_scan_covers_the_declared_roster():
     names = {keys.get("name") for _, keys in subagent_frontmatter()}
-    assert {"software-engineer", "quality-assurance", "Explore"} <= names, (
+    assert {"software-engineer", "quality-assurance", "explore"} <= names, (
         f"the roster the delivery process names is not what is on disk: {names}"
     )
 

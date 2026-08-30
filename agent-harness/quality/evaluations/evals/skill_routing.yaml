@@ -14,19 +14,19 @@ shared_system_prompt: &shared_system_prompt |
 
   deep-work - Persist task context to disk so big or compaction-prone work survives across sessions. Use for work over ~5 steps, spanning sessions, or when explicitly asked to preserve context; not for quick fixes.
 
-  deliver - Drive a large software goal end-to-end - investigate context, design the build process, author a goal prompt, then execute with workflows and subagents until it works live. For big objectives needing a process, not one-off tasks.
+  deliver - Drive a software goal end-to-end: investigate context, design the build process, author a goal prompt, then execute with workflows and subagents until it works live. For big objectives needing a process, not one-off tasks.
 
-  devenv - Project-level development shells with devenv - enter a shell, run one command inside it, update the lock, clear stale state. Use when a repository carries a devenv configuration and its toolchain has to be on PATH.
+  devenv - Enter a project's devenv shell, run commands, update its lock, or clear stale state. Use when a repository carries devenv configuration and needs its toolchain on PATH.
 
   docs - Documentation standards for when a doc earns its place, what never to write, evergreen phrasing, and policy shape. Use when writing or judging a README, doc, or policy; for authoring AI instruction files read instructions.
 
   explore - Search current code across text, files, callers, and context in three cycles. Use for repo sweeps, not Git history.
 
-  goal-prompt - Author a goal prompt for an autonomous or scheduled agent - a single-line plaintext brief under 3.5k chars. Use when writing the prompt that drives a routine, cron agent, remote trigger, or any one-field autonomous run.
+  goal-prompt - Write a one-line prompt under 3.5k characters for an autonomous or scheduled agent. Use for routine, cron, remote-trigger, or other one-field runs.
 
   herdr - Operate herdr workspaces, tabs, panes, processes, and persistent interactive agent sessions. Use for layout, process control, inspection, input, waiting, and takeover.
 
-  humanize - Human-readable output for chat and durable artifacts. Routes substantial writing through controlled-language rules, selects the smallest useful representation, and adapts it to its channel.
+  humanize - Use before drafting or revising substantial human-facing explanations, decisions, warnings, reports, summaries, chat replies, and durable artifacts. Skip one- or two-sentence confirmations and factual answers.
 
   instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
 
