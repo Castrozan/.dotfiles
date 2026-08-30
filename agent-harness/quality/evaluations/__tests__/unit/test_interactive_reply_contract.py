@@ -50,6 +50,7 @@ def test_work_in_progress_updates_do_not_require_user_attention():
 
     for required_behavior in (
         "Do not rely on the user reading work-in-progress updates",
+        "Assume the user reads only the final reply",
         "core `<evidence>`, `<autonomy>`, and `<completion>`",
         "do not create a second decision or stopping threshold",
         "final reply",
@@ -75,8 +76,13 @@ def test_artifact_links_are_remote_and_complete():
     artifact_links = interactive_policy_section("artifact-links")
 
     for required_behavior in (
-        "only through remote links",
-        "Push every artifact",
+        "browser link",
+        "merge request",
+        "pull request",
+        "CI run",
+        "report",
+        "artifact",
+        "Publish local artifacts",
         "full direct URL",
         "local path",
         "commit SHA",

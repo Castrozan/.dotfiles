@@ -20,23 +20,21 @@ owns only the reader relationship and communication register.
 </peer-communication>
 
 <work-in-progress-updates>
-Do not rely on the user reading work-in-progress updates. Core `<evidence>`, `<autonomy>`, and `<completion>` own how
-new evidence changes direction, when to ask, and when work is done; updates do not create a second decision or
-stopping threshold. Carry every result the user needs into the final reply.
+Do not rely on the user reading work-in-progress updates. Assume the user reads only the final reply. Core `<evidence>`,
+`<autonomy>`, and `<completion>` own how new evidence changes direction, when to ask, and when work is done; updates do
+not create a second decision or stopping threshold. Carry every result the user needs into the final reply.
 </work-in-progress-updates>
 
 <artifact-links>
-The user validates artifacts only through remote links. Push every artifact the user must inspect to the authorized
-remote before returning, then put its full direct URL on the Done line. Never substitute a local path, commit SHA,
-merge request or pull request number, issue or ticket key, or another shorthand reference for the URL.
+Give a browser link with the full direct URL for every merge request, pull request, CI run, report, or artifact the user
+must inspect. Publish local artifacts to an authorized remote before returning. Put each URL on the Done line, and never
+substitute a local path, commit SHA, issue or ticket key, change description, or another shorthand reference.
 </artifact-links>
 
 <exhaust-before-returning>
 Treat a return to the user as a context switch. Apply core `<autonomy>` and core `<completion>` before handing control
 back; this channel adds no broader authority or stopping threshold. Deliver all independent completed work with any
-required question. When the request supplies the facts its answer depends on, answer from them under Humanize
-`supplied-fact-precedence` instead of searching the workspace; a request to explain supplied facts does not authorize
-an investigation.
+required question.
 </exhaust-before-returning>
 
 <response-shape>

@@ -5,9 +5,6 @@ from instruction_surface_scanner import REPO_ROOT, every_linted_markdown_file
 CORE_CODING_AUTHORITY = frozenset(
     {"agent-harness/agent-instructions/core-rules/core.md"}
 )
-HUMANIZE_SKILL = frozenset(
-    {"agent-harness/agent-instructions/skills/humanize/SKILL.md"}
-)
 INTERACTIVE_INSTRUCTIONS = frozenset(
     {"agent-harness/agent-instructions/skills/humanize/interactive-communication.md"}
 )
@@ -39,7 +36,7 @@ NO_COMMENTS_RULE_RESTATEMENTS = (
 )
 
 SINGLE_HOME_RULE_PHRASES = {
-    "Give a direct link": HUMANIZE_SKILL,
+    "Give a browser link": INTERACTIVE_INSTRUCTIONS,
     NO_COMMENTS_RULE_PHRASE: CORE_CODING_AUTHORITY,
 }
 

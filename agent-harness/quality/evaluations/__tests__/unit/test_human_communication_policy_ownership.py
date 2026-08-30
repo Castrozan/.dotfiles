@@ -41,29 +41,32 @@ def test_humanize_package_owns_interactive_and_output_policies():
         assert f"<{tag}>" in interactive_policy
 
     for tag in (
-        "controlled-language-application",
-        "supplied-fact-precedence",
         "reader-understanding-policy",
-        "confusion-recovery",
+        "source-fidelity",
+        "whole-context-cohesion",
         "representation-selection",
         "representation-rendering",
-        "durable-report-rules",
-        "human-facing-channel-rules",
+        "meaning-and-certainty",
+        "confusion-recovery",
+        "terminology-and-jargon",
+        "sentence-and-paragraph-construction",
+        "procedures-and-explanations",
+        "human-register",
+        "revision-and-semantic-check",
+        "durable-artifacts",
     ):
         assert f"<{tag}>" in humanize_skill
 
-    for tag in (
-        "source-fidelity",
+    for removed_tag in (
+        "controlled-language-application",
+        "supplied-fact-precedence",
         "task-and-reader-model",
-        "meaning-and-certainty",
-        "terminology-and-jargon",
-        "sentence-and-paragraph-construction",
         "procedures-explanations-and-warnings",
-        "human-register",
-        "revision-and-semantic-check",
         "controlled-language-adaptation",
+        "human-facing-channel-rules",
+        "durable-report-rules",
     ):
-        assert f"<{tag}>" in humanize_skill
+        assert f"<{removed_tag}>" not in humanize_skill
 
     humanize_skill_bytes = len(humanize_skill.encode("utf-8"))
     assert humanize_skill_bytes <= MAXIMUM_HUMANIZE_SKILL_BYTES, (
@@ -92,7 +95,9 @@ def test_humanize_is_the_output_policy_and_artifact_adapter():
     skill_text = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
     description = (frontmatter_key_values(skill_text) or {}).get("description", "")
 
-    assert "human-readable output" in description.lower()
+    normalized_description = description.lower()
+    assert "substantial human-facing" in normalized_description
+    assert "one- or two-sentence confirmations" in normalized_description
     assert "enforced-wording-rules.md" not in skill_text
     assert "human-communication-policy.md" not in skill_text
     assert not (HUMANIZE_DIRECTORY / "human-communication-policy.md").exists()
@@ -107,3 +112,42 @@ def test_humanize_is_the_output_policy_and_artifact_adapter():
 def test_superseded_split_interactive_surfaces_are_removed():
     assert not (CORE_COMMUNICATION_DIRECTORY / "interactive-preferences.md").exists()
     assert not (CORE_COMMUNICATION_DIRECTORY / "enforced-reply-rules.md").exists()
+
+
+def test_humanize_explains_unresolved_choices_before_internal_rationale():
+    skill_text = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower()
+
+    for required_behavior in (
+        "who acts",
+        "what changes",
+        "scope",
+        "what remains unchanged",
+        "before internal rationale",
+    ):
+        assert required_behavior in skill_text
+
+
+def test_humanize_uses_established_language_before_coining_terms():
+    skill_text = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower()
+
+    for required_behavior in (
+        "ubiquitous language",
+        "context already uses",
+        "before coining a new term",
+        "term the reader has rejected",
+    ):
+        assert required_behavior in skill_text
+
+
+def test_humanize_integrates_new_information_without_recency_priority():
+    skill_text = " ".join(
+        HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower().split()
+    )
+
+    for required_behavior in (
+        "because it is recent",
+        "full context",
+        "restructure the whole piece",
+        "cohesive",
+    ):
+        assert required_behavior in skill_text

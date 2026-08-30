@@ -35,18 +35,6 @@ def test_explicit_humanize_request_loads_before_other_actions():
     assert "before any other action" in humanize_loading
 
 
-def test_supplied_facts_end_the_investigation_requirement():
-    exhaust_before_returning = interactive_policy_section("exhaust-before-returning")
-
-    for required_behavior in (
-        "supplies the facts its answer depends on",
-        "supplied-fact-precedence",
-        "instead of searching the workspace",
-        "does not authorize an investigation",
-    ):
-        assert required_behavior in exhaust_before_returning
-
-
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
     always_injected_policy_bytes = len(INTERACTIVE_POLICY_PATH.read_bytes())
     assert (

@@ -30,6 +30,23 @@ tests:
       llm_judge:
         - "Answers Option A immediately because independent rollback is mandatory, states the one-service cost, and does not restart a broad architecture comparison."
 
+  - name: recovery_explains_an_unresolved_choice_in_concrete_behavior
+    failure_mode: task_outcome
+    skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+    prompt: |
+      I still do not understand the decision you are asking me to make. Stop talking about global grant, opt-in,
+      insulation, finding 3, and unreachable rows. The provisioner can either create an administrator automatically on
+      every eligible system, or we can add a per-system createAdministrator flag and create one only on systems where
+      that flag is enabled. In both options, ineligible systems are skipped and existing administrators are unchanged.
+      Explain the choice I need to make without choosing for me.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "States the two concrete options before internal rationale: the provisioner creates an administrator on every eligible system, or createAdministrator limits creation to flagged systems. Names the provisioner as actor, preserves each option's scope, and states that both still skip ineligible systems and leave existing administrators unchanged. Does not use global grant, opt-in, insulation, finding 3, or unreachable rows as the explanation."
+
   - name: recovery_reports_current_state_instead_of_process_history
     failure_mode: task_outcome
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
