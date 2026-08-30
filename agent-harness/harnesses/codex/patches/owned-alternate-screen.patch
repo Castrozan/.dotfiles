@@ -1,0 +1,3658 @@
+diff --git a/tui/src/app.rs b/tui/src/app.rs
+index a947f240..575d44a9 100644
+--- a/tui/src/app.rs
++++ b/tui/src/app.rs
+@@ -5,0 +6 @@
++use self::owned_screen::OwnedScreen;
+@@ -219,0 +221 @@ mod loaded_threads;
++mod owned_screen;
+@@ -538,0 +541 @@ pub(crate) struct App {
++    owned_screen: Option<OwnedScreen>,
+@@ -790,0 +794,18 @@ impl App {
++                TuiEvent::MouseScroll(event) => {
++                    let handled = self.handle_owned_screen_mouse_scroll(tui, event);
++                    if !handled && !self.chat_widget.no_modal_or_popup_active() {
++                        let key_code = match event.direction {
++                            tui::MouseScrollDirection::Up => KeyCode::Up,
++                            tui::MouseScrollDirection::Down => KeyCode::Down,
++                        };
++                        self.handle_key_event(
++                            tui,
++                            app_server,
++                            KeyEvent::new(key_code, KeyModifiers::NONE),
++                        )
++                        .await;
++                    }
++                }
++                TuiEvent::MouseClick(event) => {
++                    self.handle_owned_screen_mouse_click(tui, event);
++                }
+@@ -859,0 +881,3 @@ impl App {
++        if let Some(rendered_area) = self.render_owned_screen_frame(tui)? {
++            return Ok(rendered_area);
++        }
+diff --git a/tui/src/app/agent_message_consolidation.rs b/tui/src/app/agent_message_consolidation.rs
+index e3486c46..ae787ccd 100644
+--- a/tui/src/app/agent_message_consolidation.rs
++++ b/tui/src/app/agent_message_consolidation.rs
+@@ -42 +42,2 @@ impl App {
+-            self.transcript_cells.push(cell);
++            self.transcript_cells.push(cell.clone());
++            self.owned_screen_push_cell(cell);
+@@ -65,0 +67 @@ impl App {
++            self.sync_owned_screen_cells();
+diff --git a/tui/src/app/background_requests.rs b/tui/src/app/background_requests.rs
+index 4f14c690..a4099241 100644
+--- a/tui/src/app/background_requests.rs
++++ b/tui/src/app/background_requests.rs
+@@ -754,0 +755 @@ impl App {
++        self.sync_owned_screen_cells();
+diff --git a/tui/src/app/event_dispatch.rs b/tui/src/app/event_dispatch.rs
+index 1a23f6f0..1230f9d7 100644
+--- a/tui/src/app/event_dispatch.rs
++++ b/tui/src/app/event_dispatch.rs
+@@ -80 +80 @@ impl App {
+-                self.reset_app_ui_state_after_clear();
++                self.reset_app_ui_state_after_clear(tui);
+@@ -96 +96 @@ impl App {
+-                self.reset_app_ui_state_after_clear();
++                self.reset_app_ui_state_after_clear(tui);
+@@ -483,0 +484 @@ impl App {
++                    self.sync_owned_screen_cells();
+@@ -492,0 +494 @@ impl App {
++                    self.owned_screen_push_cell(consolidated.clone());
+diff --git a/tui/src/app/history_ui.rs b/tui/src/app/history_ui.rs
+index 024288de..2f69880d 100644
+--- a/tui/src/app/history_ui.rs
++++ b/tui/src/app/history_ui.rs
+@@ -30,0 +31,8 @@ impl App {
++        self.owned_screen_push_cell(cell.clone());
++        if self.has_owned_screen() {
++            self.chat_widget.request_pending_usage_output_insertion();
++            if !self.owned_screen_replay_in_progress() {
++                tui.frame_requester().schedule_frame();
++            }
++            return;
++        }
+@@ -240,0 +249,7 @@ impl App {
++        self.clear_ui_header_cell(version).display_lines(width)
++    }
++
++    fn clear_ui_header_cell(
++        &self,
++        version: &'static str,
++    ) -> history_cell::SessionHeaderHistoryCell {
+@@ -252 +266,0 @@ impl App {
+-        .display_lines(width)
+@@ -259,0 +274,7 @@ impl App {
++        if self.has_owned_screen() {
++            let cell: Arc<dyn HistoryCell> = Arc::new(self.clear_ui_header_cell(CODEX_CLI_VERSION));
++            self.transcript_cells.push(cell.clone());
++            self.owned_screen_push_cell(cell);
++            tui.frame_requester().schedule_frame();
++            return;
++        }
+@@ -303 +324,6 @@ impl App {
+-    pub(super) fn reset_app_ui_state_after_clear(&mut self) {
++    pub(super) fn reset_app_ui_state_after_clear(&mut self, tui: &mut tui::Tui) {
++        if self.overlay.is_some()
++            && let Err(err) = tui.leave_alt_screen()
++        {
++            tracing::warn!(error = %err, "failed to release transcript overlay while clearing UI");
++        }
+@@ -312,0 +339,2 @@ impl App {
++        self.sync_owned_screen_cells();
++        self.finish_owned_screen_replay();
+diff --git a/tui/src/app/input.rs b/tui/src/app/input.rs
+index e386834d..8062c265 100644
+--- a/tui/src/app/input.rs
++++ b/tui/src/app/input.rs
+@@ -158,0 +159,5 @@ impl App {
++        self.sync_owned_screen_render_mode();
++        if self.has_owned_screen() {
++            tui.frame_requester().schedule_frame();
++            return;
++        }
+@@ -373,0 +379,8 @@ impl App {
++        if app_keymap_shortcuts_available && self.handle_owned_screen_navigation_key(tui, key_event)
++        {
++            if self.backtrack.primed {
++                self.reset_backtrack_state();
++            }
++            return;
++        }
++
+@@ -386 +399 @@ impl App {
+-                    self.reset_app_ui_state_after_clear();
++                    self.reset_app_ui_state_after_clear(tui);
+diff --git a/tui/src/app/owned_screen.rs b/tui/src/app/owned_screen.rs
+new file mode 100644
+index 00000000..1808d3d9
+--- /dev/null
++++ b/tui/src/app/owned_screen.rs
+@@ -0,0 +1,310 @@
++//! Application-owned alternate-screen rendering.
++//!
++//! The owned mode keeps committed conversation cells in a retained viewport and reserves the
++//! bottom of every frame for the composer. Inline mode continues to use terminal scrollback.
++
++use crossterm::cursor::SetCursorStyle;
++use crossterm::event::KeyCode;
++use crossterm::event::KeyEvent;
++use crossterm::event::KeyEventKind;
++use ratatui::buffer::Buffer;
++use ratatui::layout::Position;
++use ratatui::layout::Rect;
++use ratatui::style::Color;
++use ratatui::style::Style;
++use ratatui::widgets::Clear;
++use ratatui::widgets::Paragraph;
++use ratatui::widgets::Widget;
++
++use super::*;
++use crate::AltScreenBehavior;
++use crate::conversation_viewport::ConversationViewport;
++use crate::tui::MouseClickEvent;
++use crate::tui::MouseScrollEvent;
++
++const JUMP_TO_BOTTOM_LABEL: &str = " Jump to bottom (click) ↓ ";
++const JUMP_TO_BOTTOM_SHORT_LABEL: &str = " Bottom (click) ↓ ";
++const JUMP_TO_BOTTOM_COMPACT_LABEL: &str = " ↓ ";
++
++pub(super) struct OwnedScreen {
++    viewport: ConversationViewport,
++    replay_in_progress: bool,
++    last_conversation_area: Rect,
++    jump_to_bottom_area: Option<Rect>,
++}
++
++struct RenderedOwnedScreen {
++    cursor: Option<(u16, u16)>,
++    cursor_style: SetCursorStyle,
++}
++
++impl OwnedScreen {
++    fn new(chat_widget: &ChatWidget, keymap: crate::keymap::PagerKeymap) -> Self {
++        Self {
++            viewport: ConversationViewport::new(
++                Vec::new(),
++                chat_widget.history_render_mode(),
++                keymap,
++            ),
++            replay_in_progress: false,
++            last_conversation_area: Rect::default(),
++            jump_to_bottom_area: None,
++        }
++    }
++
++    fn render(
++        &mut self,
++        chat_widget: &ChatWidget,
++        area: Rect,
++        buffer: &mut Buffer,
++    ) -> RenderedOwnedScreen {
++        Clear.render(area, buffer);
++
++        let bottom_pane = chat_widget.bottom_pane_renderable();
++        let bottom_height = bottom_pane.desired_height(area.width).min(area.height);
++        let conversation_height = area.height.saturating_sub(bottom_height);
++        let conversation_area = Rect::new(
++            area.x,
++            area.y,
++            chat_widget.history_wrap_width(area.width),
++            conversation_height,
++        );
++        let bottom_area = Rect::new(
++            area.x,
++            area.y.saturating_add(conversation_height),
++            area.width,
++            bottom_height,
++        );
++        self.last_conversation_area = conversation_area;
++
++        self.viewport
++            .set_render_mode(chat_widget.history_render_mode());
++        let active_key = chat_widget.active_cell_render_key();
++        self.viewport
++            .sync_live_tail(conversation_area.width, active_key, |width| {
++                chat_widget.active_cell_display_hyperlink_lines(width)
++            });
++        self.viewport.render(conversation_area, buffer);
++        self.render_jump_to_bottom(conversation_area, buffer);
++        bottom_pane.render(bottom_area, buffer);
++
++        RenderedOwnedScreen {
++            cursor: bottom_pane.cursor_pos(bottom_area),
++            cursor_style: bottom_pane.cursor_style(bottom_area),
++        }
++    }
++
++    fn handle_navigation_key(&mut self, key_event: KeyEvent) -> bool {
++        // Alternate-scroll wheel events are indistinguishable from physical arrow keys. Keep
++        // arrows, Home/End, and printable pager bindings available to the composer until the TUI
++        // has direct mouse events or an explicit viewport-focus mode.
++        if !matches!(key_event.kind, KeyEventKind::Press | KeyEventKind::Repeat)
++            || !matches!(key_event.code, KeyCode::PageUp | KeyCode::PageDown)
++        {
++            return false;
++        }
++        self.viewport
++            .handle_navigation_key(self.last_conversation_area, key_event)
++    }
++
++    fn handle_mouse_scroll(&mut self, event: MouseScrollEvent) -> bool {
++        if !self
++            .last_conversation_area
++            .contains(Position::new(event.column, event.row))
++        {
++            return false;
++        }
++        self.viewport.handle_mouse_scroll(event.direction);
++        true
++    }
++
++    fn handle_mouse_click(&mut self, event: MouseClickEvent) -> bool {
++        let position = Position::new(event.column, event.row);
++        if !self
++            .jump_to_bottom_area
++            .is_some_and(|area| area.contains(position))
++        {
++            return false;
++        }
++        self.viewport.scroll_to_bottom();
++        true
++    }
++
++    fn render_jump_to_bottom(&mut self, area: Rect, buffer: &mut Buffer) {
++        self.jump_to_bottom_area = None;
++        if self.viewport.is_following_bottom() || area.height == 0 {
++            return;
++        }
++
++        let label = if area.width >= JUMP_TO_BOTTOM_LABEL.chars().count() as u16 {
++            JUMP_TO_BOTTOM_LABEL
++        } else if area.width >= JUMP_TO_BOTTOM_SHORT_LABEL.chars().count() as u16 {
++            JUMP_TO_BOTTOM_SHORT_LABEL
++        } else if area.width >= JUMP_TO_BOTTOM_COMPACT_LABEL.chars().count() as u16 {
++            JUMP_TO_BOTTOM_COMPACT_LABEL
++        } else {
++            return;
++        };
++        let width = label.chars().count() as u16;
++        let button_area = Rect::new(
++            area.x.saturating_add(area.width.saturating_sub(width) / 2),
++            area.bottom().saturating_sub(1),
++            width,
++            1,
++        );
++        Paragraph::new(label)
++            .style(Style::default().fg(Color::White).bg(Color::DarkGray))
++            .render(button_area, buffer);
++        self.jump_to_bottom_area = Some(button_area);
++    }
++}
++
++impl App {
++    pub(super) fn owned_screen_for_behavior(
++        alt_screen_behavior: AltScreenBehavior,
++        chat_widget: &ChatWidget,
++        keymap: crate::keymap::PagerKeymap,
++    ) -> Option<OwnedScreen> {
++        match alt_screen_behavior {
++            AltScreenBehavior::Disabled | AltScreenBehavior::OverlayOnly => None,
++            AltScreenBehavior::Owned => Some(OwnedScreen::new(chat_widget, keymap)),
++        }
++    }
++
++    pub(super) fn has_owned_screen(&self) -> bool {
++        self.owned_screen.is_some()
++    }
++
++    pub(super) fn owned_screen_push_cell(&mut self, cell: Arc<dyn HistoryCell>) {
++        if let Some(screen) = &mut self.owned_screen {
++            screen.viewport.push_cell(cell);
++        }
++    }
++
++    pub(super) fn begin_owned_screen_replay(&mut self) {
++        if let Some(screen) = &mut self.owned_screen {
++            screen.replay_in_progress = true;
++        }
++    }
++
++    pub(super) fn finish_owned_screen_replay(&mut self) {
++        if let Some(screen) = &mut self.owned_screen {
++            screen.replay_in_progress = false;
++        }
++    }
++
++    pub(super) fn owned_screen_replay_in_progress(&self) -> bool {
++        self.owned_screen
++            .as_ref()
++            .is_some_and(|screen| screen.replay_in_progress)
++    }
++
++    pub(super) fn handle_owned_screen_navigation_key(
++        &mut self,
++        tui: &mut tui::Tui,
++        key_event: KeyEvent,
++    ) -> bool {
++        if !self.chat_widget.composer_is_empty() || !self.chat_widget.no_modal_or_popup_active() {
++            return false;
++        }
++        let handled = self
++            .owned_screen
++            .as_mut()
++            .is_some_and(|screen| screen.handle_navigation_key(key_event));
++        if handled {
++            tui.frame_requester()
++                .schedule_frame_in(crate::tui::TARGET_FRAME_INTERVAL);
++        }
++        handled
++    }
++
++    pub(super) fn handle_owned_screen_mouse_scroll(
++        &mut self,
++        tui: &mut tui::Tui,
++        event: MouseScrollEvent,
++    ) -> bool {
++        if !self.chat_widget.no_modal_or_popup_active() {
++            return false;
++        }
++        let handled = self
++            .owned_screen
++            .as_mut()
++            .is_some_and(|screen| screen.handle_mouse_scroll(event));
++        if handled {
++            tui.frame_requester()
++                .schedule_frame_in(crate::tui::TARGET_FRAME_INTERVAL);
++        }
++        handled
++    }
++
++    pub(super) fn handle_owned_screen_mouse_click(
++        &mut self,
++        tui: &mut tui::Tui,
++        event: MouseClickEvent,
++    ) -> bool {
++        if !self.chat_widget.no_modal_or_popup_active() {
++            return false;
++        }
++        let handled = self
++            .owned_screen
++            .as_mut()
++            .is_some_and(|screen| screen.handle_mouse_click(event));
++        if handled {
++            tui.frame_requester().schedule_frame();
++        }
++        handled
++    }
++
++    pub(crate) fn sync_owned_screen_cells(&mut self) {
++        if let Some(screen) = &mut self.owned_screen {
++            screen.viewport.replace_cells(self.transcript_cells.clone());
++        }
++    }
++
++    pub(super) fn sync_owned_screen_render_mode(&mut self) {
++        if let Some(screen) = &mut self.owned_screen {
++            screen
++                .viewport
++                .set_render_mode(self.chat_widget.history_render_mode());
++        }
++    }
++
++    pub(super) fn handle_owned_draw_pre_render(&mut self, tui: &mut tui::Tui) -> Result<bool> {
++        if self.owned_screen.is_none() {
++            return Ok(false);
++        }
++        let size = tui.terminal.size()?;
++        if size.width != tui.terminal.last_known_screen_size.width {
++            self.chat_widget.on_terminal_resize(size.width);
++        }
++        if size != tui.terminal.last_known_screen_size {
++            self.refresh_status_line();
++        }
++        self.transcript_reflow.clear();
++        tui.clear_pending_history_lines();
++        Ok(true)
++    }
++
++    pub(super) fn render_owned_screen_frame(&mut self, tui: &mut tui::Tui) -> Result<Option<Rect>> {
++        let Some(screen) = &mut self.owned_screen else {
++            return Ok(None);
++        };
++        self.chat_widget
++            .update_owned_screen_width(tui.terminal.size()?.width);
++        let chat_widget = &self.chat_widget;
++        let mut rendered_area = Rect::default();
++        tui.draw(/*height*/ u16::MAX, |frame| {
++            rendered_area = frame.area();
++            let rendered = screen.render(chat_widget, rendered_area, frame.buffer);
++            if let Some((x, y)) = rendered.cursor {
++                frame.set_cursor_style(rendered.cursor_style);
++                frame.set_cursor_position((x, y));
++            }
++        })?;
++        Ok(Some(rendered_area))
++    }
++}
++
++#[cfg(test)]
++#[path = "owned_screen_tests.rs"]
++mod tests;
+diff --git a/tui/src/app/owned_screen_tests.rs b/tui/src/app/owned_screen_tests.rs
+new file mode 100644
+index 00000000..0a529bfa
+--- /dev/null
++++ b/tui/src/app/owned_screen_tests.rs
+@@ -0,0 +1,255 @@
++use crossterm::event::KeyCode;
++use crossterm::event::KeyEvent;
++use crossterm::event::KeyModifiers;
++use insta::assert_snapshot;
++use ratatui::Terminal;
++use ratatui::backend::TestBackend;
++use ratatui::text::Line;
++use std::time::Duration;
++use tokio::sync::broadcast::error::TryRecvError;
++
++use super::*;
++use crate::chatwidget::tests::make_chatwidget_manual_with_sender;
++use crate::tui::MouseClickEvent;
++use crate::tui::MouseScrollDirection;
++use crate::tui::MouseScrollEvent;
++
++#[derive(Debug)]
++struct TestCell(&'static str);
++
++impl HistoryCell for TestCell {
++    fn display_lines(&self, _width: u16) -> Vec<Line<'static>> {
++        vec![self.0.into()]
++    }
++
++    fn raw_lines(&self) -> Vec<Line<'static>> {
++        vec![self.0.into()]
++    }
++}
++
++#[tokio::test]
++async fn renders_committed_conversation_above_fixed_composer() {
++    let (mut chat_widget, _app_event_tx, _rx, _op_rx) = make_chatwidget_manual_with_sender().await;
++    chat_widget.apply_external_edit("draft sentinel".to_string());
++    let mut screen = OwnedScreen::new(&chat_widget, crate::keymap::RuntimeKeymap::defaults().pager);
++    screen
++        .viewport
++        .push_cell(Arc::new(TestCell("committed response")));
++    let mut terminal =
++        Terminal::new(TestBackend::new(/*width*/ 50, /*height*/ 10)).expect("create terminal");
++
++    terminal
++        .draw(|frame| {
++            screen.render(&chat_widget, frame.area(), frame.buffer_mut());
++        })
++        .expect("render owned screen");
++
++    assert_snapshot!(terminal.backend(), @r###"
++"committed response                                "
++"                                                  "
++"                                                  "
++"                                                  "
++"                                                  "
++"                                                  "
++"                                                  "
++"› draft sentinel                                  "
++"                                                  "
++"  gpt-5.6-sol default · /tmp/project              "
++"###);
++}
++
++#[tokio::test]
++async fn committed_cell_updates_viewport_without_queuing_terminal_history() {
++    let mut app = super::super::test_support::make_test_app().await;
++    app.owned_screen = App::owned_screen_for_behavior(
++        AltScreenBehavior::Owned,
++        &app.chat_widget,
++        app.keymap.pager.clone(),
++    );
++    let mut tui = crate::tui::test_support::make_test_tui().expect("create test TUI");
++
++    app.insert_history_cell(&mut tui, Box::new(TestCell("retained")));
++
++    let screen = app.owned_screen.as_ref().expect("owned screen");
++    assert_eq!(screen.viewport.committed_cell_count(), 1);
++    assert_eq!(app.transcript_cells.len(), 1);
++    assert!(!app.has_emitted_history_lines);
++    assert!(!tui.has_pending_history_lines());
++}
++
++#[tokio::test]
++async fn replay_retains_cells_while_draw_scheduling_is_deferred() {
++    let mut app = super::super::test_support::make_test_app().await;
++    app.owned_screen = App::owned_screen_for_behavior(
++        AltScreenBehavior::Owned,
++        &app.chat_widget,
++        app.keymap.pager.clone(),
++    );
++    let mut tui = crate::tui::test_support::make_test_tui().expect("create test TUI");
++    let mut draw_rx = tui.subscribe_draws_for_test();
++
++    app.begin_initial_history_replay_buffer();
++    app.insert_history_cell(&mut tui, Box::new(TestCell("first")));
++    app.insert_history_cell(&mut tui, Box::new(TestCell("second")));
++
++    tokio::time::sleep(Duration::from_millis(/*millis*/ 50)).await;
++    assert!(matches!(draw_rx.try_recv(), Err(TryRecvError::Empty)));
++
++    assert!(app.owned_screen_replay_in_progress());
++    assert_eq!(
++        app.owned_screen
++            .as_ref()
++            .expect("owned screen")
++            .viewport
++            .committed_cell_count(),
++        2
++    );
++
++    app.finish_initial_history_replay_buffer(&mut tui);
++
++    assert!(!app.owned_screen_replay_in_progress());
++    tokio::time::timeout(Duration::from_secs(/*secs*/ 1), draw_rx.recv())
++        .await
++        .expect("timed out waiting for replay completion draw")
++        .expect("draw channel closed");
++}
++
++#[tokio::test]
++async fn navigation_does_not_steal_printable_or_draft_input() {
++    let mut app = super::super::test_support::make_test_app().await;
++    app.owned_screen = App::owned_screen_for_behavior(
++        AltScreenBehavior::Owned,
++        &app.chat_widget,
++        app.keymap.pager.clone(),
++    );
++    let mut tui = crate::tui::test_support::make_test_tui().expect("create test TUI");
++
++    let cases = [
++        (KeyCode::Char('k'), false),
++        (KeyCode::Up, false),
++        (KeyCode::Down, false),
++        (KeyCode::Home, false),
++        (KeyCode::End, false),
++        (KeyCode::PageUp, true),
++        (KeyCode::PageDown, true),
++    ];
++    for (code, expected) in cases {
++        assert_eq!(
++            app.handle_owned_screen_navigation_key(
++                &mut tui,
++                KeyEvent::new(code, KeyModifiers::NONE),
++            ),
++            expected,
++        );
++    }
++
++    app.chat_widget.apply_external_edit("draft".to_string());
++    assert!(!app.handle_owned_screen_navigation_key(
++        &mut tui,
++        KeyEvent::new(KeyCode::PageUp, KeyModifiers::NONE),
++    ));
++}
++
++#[tokio::test]
++async fn mouse_wheel_scrolls_transcript_without_changing_draft() {
++    let (mut chat_widget, _app_event_tx, _rx, _op_rx) = make_chatwidget_manual_with_sender().await;
++    chat_widget.apply_external_edit("draft sentinel".to_string());
++    let mut screen = OwnedScreen::new(&chat_widget, crate::keymap::RuntimeKeymap::defaults().pager);
++    for text in ["oldest", "older", "middle", "newer", "LATEST"] {
++        screen.viewport.push_cell(Arc::new(TestCell(text)));
++    }
++    let mut terminal =
++        Terminal::new(TestBackend::new(/*width*/ 40, /*height*/ 8)).expect("create terminal");
++    terminal
++        .draw(|frame| {
++            screen.render(&chat_widget, frame.area(), frame.buffer_mut());
++        })
++        .expect("render bottom");
++
++    assert!(screen.handle_mouse_scroll(MouseScrollEvent {
++        direction: MouseScrollDirection::Up,
++        column: 2,
++        row: 2,
++    }));
++    terminal
++        .draw(|frame| {
++            screen.render(&chat_widget, frame.area(), frame.buffer_mut());
++        })
++        .expect("render scrolled");
++
++    assert_snapshot!(terminal.backend(), @r###"
++"                                        "
++"middle                                  "
++"        Jump to bottom (click) ↓        "
++"                                        "
++"                                        "
++"› draft sentinel                        "
++"                                        "
++"  gpt-5.6-sol default · /tmp/project    "
++"###);
++    assert!(!screen.viewport.is_following_bottom());
++    assert!(!screen.handle_mouse_scroll(MouseScrollEvent {
++        direction: MouseScrollDirection::Up,
++        column: 2,
++        row: 7,
++    }));
++
++    assert!(screen.handle_mouse_scroll(MouseScrollEvent {
++        direction: MouseScrollDirection::Down,
++        column: 2,
++        row: 2,
++    }));
++    terminal
++        .draw(|frame| {
++            screen.render(&chat_widget, frame.area(), frame.buffer_mut());
++        })
++        .expect("render restored bottom");
++    assert!(screen.viewport.is_following_bottom());
++}
++
++#[tokio::test]
++async fn jump_to_bottom_button_restores_follow_mode() {
++    let (mut chat_widget, _app_event_tx, _rx, _op_rx) = make_chatwidget_manual_with_sender().await;
++    chat_widget.apply_external_edit("draft sentinel".to_string());
++    let mut screen = OwnedScreen::new(&chat_widget, crate::keymap::RuntimeKeymap::defaults().pager);
++    for text in ["oldest", "older", "middle", "newer", "LATEST"] {
++        screen.viewport.push_cell(Arc::new(TestCell(text)));
++    }
++    let mut terminal =
++        Terminal::new(TestBackend::new(/*width*/ 40, /*height*/ 8)).expect("create terminal");
++    terminal
++        .draw(|frame| {
++            screen.render(&chat_widget, frame.area(), frame.buffer_mut());
++        })
++        .expect("render bottom");
++    assert!(screen.handle_mouse_scroll(MouseScrollEvent {
++        direction: MouseScrollDirection::Up,
++        column: 2,
++        row: 2,
++    }));
++
++    terminal
++        .draw(|frame| {
++            screen.render(&chat_widget, frame.area(), frame.buffer_mut());
++        })
++        .expect("render jump button");
++    let button = screen
++        .jump_to_bottom_area
++        .expect("jump button should be visible while scrolled");
++    let label = (button.x..button.right())
++        .map(|x| terminal.backend().buffer()[(x, button.y)].symbol())
++        .collect::<String>();
++    assert_eq!(label, JUMP_TO_BOTTOM_LABEL);
++
++    assert!(screen.handle_mouse_click(MouseClickEvent {
++        column: button.x,
++        row: button.y,
++    }));
++    terminal
++        .draw(|frame| {
++            screen.render(&chat_widget, frame.area(), frame.buffer_mut());
++        })
++        .expect("render restored bottom");
++    assert!(screen.viewport.is_following_bottom());
++    assert!(screen.jump_to_bottom_area.is_none());
++}
+diff --git a/tui/src/app/resize_reflow.rs b/tui/src/app/resize_reflow.rs
+index 9de5ebc0..6645cfd0 100644
+--- a/tui/src/app/resize_reflow.rs
++++ b/tui/src/app/resize_reflow.rs
+@@ -109,0 +110,3 @@ impl App {
++        if self.has_owned_screen() {
++            return;
++        }
+@@ -130,0 +134,4 @@ impl App {
++        if self.has_owned_screen() {
++            self.begin_owned_screen_replay();
++            return;
++        }
+@@ -141,0 +149,4 @@ impl App {
++        if self.has_owned_screen() {
++            self.begin_owned_screen_replay();
++            return;
++        }
+@@ -156,0 +168,5 @@ impl App {
++        if self.has_owned_screen() {
++            self.finish_owned_screen_replay();
++            tui.frame_requester().schedule_frame();
++            return;
++        }
+@@ -196,0 +213,3 @@ impl App {
++        if self.has_owned_screen() {
++            return;
++        }
+@@ -294,0 +314,5 @@ impl App {
++        if self.has_owned_screen() {
++            self.transcript_reflow.clear();
++            tui.frame_requester().schedule_frame();
++            return Ok(());
++        }
+@@ -315,0 +340,6 @@ impl App {
++        if self.has_owned_screen() {
++            self.transcript_reflow.clear();
++            tui.frame_requester().schedule_frame();
++            return Ok(());
++        }
++
+@@ -328 +357,0 @@ impl App {
+-
+@@ -396,0 +426,3 @@ impl App {
++        if self.handle_owned_draw_pre_render(tui)? {
++            return Ok(());
++        }
+@@ -422,0 +455,4 @@ impl App {
++        if self.has_owned_screen() {
++            self.transcript_reflow.clear();
++            return Ok(());
++        }
+@@ -465,0 +502,5 @@ impl App {
++        if self.has_owned_screen() {
++            self.transcript_reflow.clear();
++            tui.clear_pending_history_lines();
++            return Ok(terminal_width);
++        }
+@@ -546,0 +588,6 @@ impl App {
++        if self.has_owned_screen() {
++            self.sync_owned_screen_cells();
++            self.transcript_reflow.clear();
++            tui.clear_pending_history_lines();
++            return Ok(());
++        }
+diff --git a/tui/src/app/session_lifecycle.rs b/tui/src/app/session_lifecycle.rs
+index 4edbb5ab..90a7af50 100644
+--- a/tui/src/app/session_lifecycle.rs
++++ b/tui/src/app/session_lifecycle.rs
+@@ -569 +569 @@ impl App {
+-        self.reset_transcript_state_after_clear();
++        self.reset_app_ui_state_after_clear(tui);
+@@ -571 +571,3 @@ impl App {
+-        Self::clear_terminal_for_thread_switch(&mut tui.terminal)?;
++        if !self.has_owned_screen() {
++            Self::clear_terminal_for_thread_switch(&mut tui.terminal)?;
++        }
+diff --git a/tui/src/app/startup.rs b/tui/src/app/startup.rs
+index 97d5bb69..314eefdb 100644
+--- a/tui/src/app/startup.rs
++++ b/tui/src/app/startup.rs
+@@ -56,0 +57 @@ impl App {
++        alt_screen_behavior: crate::AltScreenBehavior,
+@@ -389,0 +391,5 @@ See the Codex keymap documentation for supported actions and examples."
++        let owned_screen = Self::owned_screen_for_behavior(
++            alt_screen_behavior,
++            &chat_widget,
++            runtime_keymap.pager.clone(),
++        );
+@@ -413,0 +420 @@ See the Codex keymap documentation for supported actions and examples."
++            owned_screen,
+diff --git a/tui/src/app/test_support.rs b/tui/src/app/test_support.rs
+index 45ab3116..0ab9b13d 100644
+--- a/tui/src/app/test_support.rs
++++ b/tui/src/app/test_support.rs
+@@ -38,0 +39 @@ pub(super) async fn make_test_app() -> App {
++        owned_screen: None,
+diff --git a/tui/src/app/tests.rs b/tui/src/app/tests.rs
+index 95fbd2f4..b13703bf 100644
+--- a/tui/src/app/tests.rs
++++ b/tui/src/app/tests.rs
+@@ -4835,0 +4836 @@ async fn make_test_app() -> App {
++        owned_screen: None,
+@@ -4910,0 +4912 @@ async fn make_test_app_with_channels() -> (
++            owned_screen: None,
+@@ -7835 +7837 @@ async fn clear_only_ui_reset_preserves_chat_session_state() {
+-    app.reset_app_ui_state_after_clear();
++    app.reset_transcript_state_after_clear();
+@@ -7867 +7869 @@ async fn clear_only_ui_reset_allows_active_skill_warning_to_render_again() {
+-    app.reset_app_ui_state_after_clear();
++    app.reset_transcript_state_after_clear();
+diff --git a/tui/src/app_backtrack.rs b/tui/src/app_backtrack.rs
+index 855e7c51..fcab5c2c 100644
+--- a/tui/src/app_backtrack.rs
++++ b/tui/src/app_backtrack.rs
+@@ -382 +382 @@ impl App {
+-            let active_key = self.chat_widget.active_cell_transcript_key();
++            let active_key = self.chat_widget.active_cell_render_key();
+diff --git a/tui/src/chatwidget.rs b/tui/src/chatwidget.rs
+index 2e312789..c7a9b28a 100644
+--- a/tui/src/chatwidget.rs
++++ b/tui/src/chatwidget.rs
+@@ -13 +13 @@
+-//! during draws using `active_cell_transcript_key()` and
++//! during draws using `active_cell_render_key()` and
+@@ -786 +786 @@ enum CodexOpTarget {
+-/// Snapshot of active-cell state that affects transcript overlay rendering.
++/// Snapshot of active-cell state that affects retained viewport rendering.
+@@ -788,2 +788,2 @@ enum CodexOpTarget {
+-/// The overlay keeps a cached "live tail" for the in-flight cell; this key lets
+-/// it cheaply decide when to recompute that tail as the active cell evolves.
++/// Retained views keep a cached "live tail" for the in-flight cell; this key lets them cheaply
++/// decide when to recompute that tail as the active cell evolves.
+@@ -791 +791 @@ enum CodexOpTarget {
+-pub(crate) struct ActiveCellTranscriptKey {
++pub(crate) struct ActiveCellRenderKey {
+@@ -1674,0 +1675,11 @@ impl ChatWidget {
++    /// Record the width used by an application-owned full-frame render.
++    ///
++    /// The regular `Renderable` implementation records this as a render side effect. Owned mode
++    /// renders only the bottom pane from `ChatWidget`, so it must explicitly keep stream wrapping
++    /// in sync with the width of the retained conversation viewport.
++    pub(crate) fn update_owned_screen_width(&mut self, width: u16) {
++        if self.last_rendered_width.get() != Some(width) {
++            self.on_terminal_resize(width);
++        }
++    }
++
+@@ -1891 +1902 @@ impl ChatWidget {
+-    pub(crate) fn active_cell_transcript_key(&self) -> Option<ActiveCellTranscriptKey> {
++    pub(crate) fn active_cell_render_key(&self) -> Option<ActiveCellRenderKey> {
+@@ -1903 +1914 @@ impl ChatWidget {
+-        Some(ActiveCellTranscriptKey {
++        Some(ActiveCellRenderKey {
+@@ -1954,0 +1966,33 @@ impl ChatWidget {
++    /// Returns the active cells' main-viewport lines for a given terminal width.
++    pub(crate) fn active_cell_display_hyperlink_lines(
++        &self,
++        width: u16,
++    ) -> Option<Vec<HyperlinkLine>> {
++        let mode = self.history_render_mode();
++        let mut lines = Vec::new();
++        let mut append = |cell: &dyn HistoryCell| {
++            let cell_lines = cell.display_hyperlink_lines_for_mode(width, mode);
++            if !cell_lines.is_empty() && !lines.is_empty() {
++                lines.push(HyperlinkLine::from(""));
++            }
++            lines.extend(cell_lines);
++        };
++        if let Some(cell) = self.transcript.active_cell.as_deref() {
++            append(cell);
++        }
++        if let Some(cell) = self
++            .active_hook_cell
++            .as_ref()
++            .filter(|cell| cell.should_render())
++        {
++            append(cell);
++        }
++        if let Some(cell) = self.pending_token_activity_output() {
++            append(cell);
++        }
++        if let Some(cell) = self.pending_rate_limit_reset_hint() {
++            append(cell);
++        }
++        (!lines.is_empty()).then_some(lines)
++    }
++
+diff --git a/tui/src/chatwidget/rendering.rs b/tui/src/chatwidget/rendering.rs
+index 37685eed..edf8e6e4 100644
+--- a/tui/src/chatwidget/rendering.rs
++++ b/tui/src/chatwidget/rendering.rs
+@@ -8,0 +9,8 @@ impl ChatWidget {
++    pub(crate) fn bottom_pane_renderable(&self) -> RenderableItem<'_> {
++        self.bottom_pane
++            .as_renderable_with_composer_right_reserve(self.ambient_pet_wrap_reserved_cols())
++            .inset(Insets::tlbr(
++                /*top*/ 1, /*left*/ 0, /*bottom*/ 0, /*right*/ 0,
++            ))
++    }
++
+@@ -72,8 +80 @@ impl ChatWidget {
+-        flex.push(
+-            /*flex*/ 0,
+-            self.bottom_pane
+-                .as_renderable_with_composer_right_reserve(active_cell_right_reserve)
+-                .inset(Insets::tlbr(
+-                    /*top*/ 1, /*left*/ 0, /*bottom*/ 0, /*right*/ 0,
+-                )),
+-        );
++        flex.push(/*flex*/ 0, self.bottom_pane_renderable());
+diff --git a/tui/src/chatwidget/tests/status_and_layout.rs b/tui/src/chatwidget/tests/status_and_layout.rs
+index b28bc6a6..4943bd84 100644
+--- a/tui/src/chatwidget/tests/status_and_layout.rs
++++ b/tui/src/chatwidget/tests/status_and_layout.rs
+@@ -2538,0 +2539,23 @@ async fn ambient_pet_reduces_stream_width_and_composer_text_width() {
++#[tokio::test]
++async fn bottom_pane_renderable_can_be_laid_out_independently() {
++    use ratatui::Terminal;
++
++    let (chat, _rx, _op_rx) = make_chatwidget_manual(/*model_override*/ None).await;
++    let bottom_pane = chat.bottom_pane_renderable();
++    let width = 48;
++    let height = bottom_pane.desired_height(width);
++    let mut terminal = Terminal::new(TestBackend::new(width, height)).expect("create terminal");
++
++    terminal
++        .draw(|frame| bottom_pane.render(frame.area(), frame.buffer_mut()))
++        .expect("render bottom pane");
++
++    assert_snapshot!(normalized_backend_snapshot(terminal.backend()), @r###"
++"                                                "
++"                                                "
++"› Ask Codex to do anything                      "
++"                                                "
++"  gpt-5.6-sol default · /tmp/project            "
++"###);
++}
++
+@@ -5194,0 +5218,4 @@ async fn hidden_active_hook_does_not_add_transcript_separator() {
++    let exec_only_display_line_count = chat
++        .active_cell_display_hyperlink_lines(/*width*/ 80)
++        .expect("active exec display lines")
++        .len();
+@@ -5207,0 +5235,4 @@ async fn hidden_active_hook_does_not_add_transcript_separator() {
++    let hidden_hook_display = chat
++        .active_cell_display_hyperlink_lines(/*width*/ 80)
++        .expect("active exec display lines");
++    assert_eq!(hidden_hook_display.len(), exec_only_display_line_count);
+diff --git a/tui/src/conversation_viewport.rs b/tui/src/conversation_viewport.rs
+new file mode 100644
+index 00000000..e484d0d0
+--- /dev/null
++++ b/tui/src/conversation_viewport.rs
+@@ -0,0 +1,291 @@
++//! Retained conversation rendering for an application-owned terminal viewport.
++//!
++//! This module intentionally owns only transcript projection and bottom-follow state. The app
++//! decides when the terminal is owned and how much space remains after the bottom pane is laid
++//! out. Committed cells use their main-viewport representation; the more detailed `Ctrl+T`
++//! representation remains owned by `pager_overlay`.
++
++use std::cell::Cell;
++use std::sync::Arc;
++
++use ratatui::buffer::Buffer;
++use ratatui::crossterm::event::KeyEvent;
++use ratatui::layout::Rect;
++use ratatui::text::Text;
++use ratatui::widgets::Paragraph;
++use ratatui::widgets::Widget;
++use ratatui::widgets::Wrap;
++
++use crate::chatwidget::ActiveCellRenderKey;
++use crate::history_cell::HistoryCell;
++use crate::history_cell::HistoryRenderMode;
++use crate::keymap::PagerKeymap;
++use crate::pager_overlay::PagerContent;
++use crate::render::Insets;
++use crate::render::renderable::InsetRenderable;
++use crate::render::renderable::Renderable;
++use crate::terminal_hyperlinks::HyperlinkLine;
++use crate::terminal_hyperlinks::mark_buffer_hyperlinks;
++use crate::terminal_hyperlinks::visible_lines;
++use crate::tui::MouseScrollDirection;
++
++pub(crate) struct ConversationViewport {
++    content: PagerContent,
++    cells: Vec<Arc<dyn HistoryCell>>,
++    render_mode: HistoryRenderMode,
++    live_tail_key: Option<LiveTailKey>,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++struct LiveTailKey {
++    width: u16,
++    revision: u64,
++    is_stream_continuation: bool,
++    animation_tick: Option<u64>,
++}
++
++impl ConversationViewport {
++    pub(crate) fn new(
++        cells: Vec<Arc<dyn HistoryCell>>,
++        render_mode: HistoryRenderMode,
++        keymap: PagerKeymap,
++    ) -> Self {
++        let renderables = Self::render_cells(&cells, render_mode);
++        Self {
++            content: PagerContent::new(renderables, keymap),
++            cells,
++            render_mode,
++            live_tail_key: None,
++        }
++    }
++
++    pub(crate) fn render(&mut self, area: Rect, buf: &mut Buffer) {
++        self.content.render(area, buf);
++    }
++
++    pub(crate) fn handle_navigation_key(&mut self, area: Rect, key_event: KeyEvent) -> bool {
++        self.content.handle_navigation_key(area, key_event)
++    }
++
++    pub(crate) fn handle_mouse_scroll(&mut self, direction: MouseScrollDirection) {
++        self.content.handle_mouse_scroll(direction);
++    }
++
++    pub(crate) fn push_cell(&mut self, cell: Arc<dyn HistoryCell>) {
++        let follow_bottom = self.content.is_following_bottom();
++        let had_prior_cells = !self.cells.is_empty();
++        let tail_renderable = self.take_live_tail_renderable();
++        let renderable = Self::cell_renderable(
++            cell.clone(),
++            self.render_mode,
++            /*has_prior_cells*/ had_prior_cells,
++        );
++        self.cells.push(cell);
++        self.content.push(renderable);
++
++        if let Some(tail) = tail_renderable {
++            let tail = if !had_prior_cells
++                && self
++                    .live_tail_key
++                    .is_some_and(|key| !key.is_stream_continuation)
++            {
++                Self::with_leading_spacing(tail)
++            } else {
++                tail
++            };
++            self.content.push(tail);
++        }
++        if follow_bottom {
++            self.content.scroll_to_bottom();
++        }
++    }
++
++    pub(crate) fn replace_cells(&mut self, cells: Vec<Arc<dyn HistoryCell>>) {
++        let follow_bottom = self.content.is_following_bottom();
++        self.take_live_tail_renderable();
++        self.live_tail_key = None;
++        self.cells = cells;
++        self.content
++            .replace(Self::render_cells(&self.cells, self.render_mode));
++        if follow_bottom {
++            self.content.scroll_to_bottom();
++        }
++    }
++
++    pub(crate) fn set_render_mode(&mut self, render_mode: HistoryRenderMode) {
++        if self.render_mode == render_mode {
++            return;
++        }
++        let follow_bottom = self.content.is_following_bottom();
++        self.take_live_tail_renderable();
++        self.live_tail_key = None;
++        self.render_mode = render_mode;
++        self.content
++            .replace(Self::render_cells(&self.cells, self.render_mode));
++        if follow_bottom {
++            self.content.scroll_to_bottom();
++        }
++    }
++
++    pub(crate) fn sync_live_tail(
++        &mut self,
++        width: u16,
++        active_key: Option<ActiveCellRenderKey>,
++        compute_lines: impl FnOnce(u16) -> Option<Vec<HyperlinkLine>>,
++    ) {
++        let next_key = active_key.map(|key| LiveTailKey {
++            width,
++            revision: key.revision,
++            is_stream_continuation: key.is_stream_continuation,
++            animation_tick: key.animation_tick,
++        });
++        if self.live_tail_key == next_key {
++            return;
++        }
++
++        let follow_bottom = self.content.is_following_bottom();
++        self.take_live_tail_renderable();
++        self.live_tail_key = next_key;
++        if let Some(key) = next_key {
++            let lines = compute_lines(width).unwrap_or_default();
++            if !lines.is_empty() {
++                self.content.push(Self::live_tail_renderable(
++                    lines,
++                    !self.cells.is_empty(),
++                    key.is_stream_continuation,
++                ));
++            }
++        }
++        if follow_bottom {
++            self.content.scroll_to_bottom();
++        }
++    }
++
++    pub(crate) fn is_following_bottom(&self) -> bool {
++        self.content.is_following_bottom()
++    }
++
++    pub(crate) fn scroll_to_bottom(&mut self) {
++        self.content.scroll_to_bottom();
++    }
++
++    #[cfg(test)]
++    pub(crate) fn committed_cell_count(&self) -> usize {
++        self.cells.len()
++    }
++
++    fn render_cells(
++        cells: &[Arc<dyn HistoryCell>],
++        render_mode: HistoryRenderMode,
++    ) -> Vec<Box<dyn Renderable>> {
++        cells
++            .iter()
++            .enumerate()
++            .map(|(index, cell)| {
++                Self::cell_renderable(
++                    cell.clone(),
++                    render_mode,
++                    /*has_prior_cells*/ index > 0,
++                )
++            })
++            .collect()
++    }
++
++    fn cell_renderable(
++        cell: Arc<dyn HistoryCell>,
++        render_mode: HistoryRenderMode,
++        has_prior_cells: bool,
++    ) -> Box<dyn Renderable> {
++        let is_stream_continuation = cell.is_stream_continuation();
++        let renderable: Box<dyn Renderable> = Box::new(ConversationCellRenderable {
++            cell,
++            render_mode,
++            cached_height: Cell::new(None),
++        });
++        if has_prior_cells && !is_stream_continuation {
++            Self::with_leading_spacing(renderable)
++        } else {
++            renderable
++        }
++    }
++
++    fn live_tail_renderable(
++        lines: Vec<HyperlinkLine>,
++        has_prior_cells: bool,
++        is_stream_continuation: bool,
++    ) -> Box<dyn Renderable> {
++        let renderable: Box<dyn Renderable> = Box::new(HyperlinkLinesRenderable { lines });
++        if has_prior_cells && !is_stream_continuation {
++            Self::with_leading_spacing(renderable)
++        } else {
++            renderable
++        }
++    }
++
++    fn with_leading_spacing(renderable: Box<dyn Renderable>) -> Box<dyn Renderable> {
++        Box::new(InsetRenderable::new(
++            renderable,
++            Insets::tlbr(
++                /*top*/ 1, /*left*/ 0, /*bottom*/ 0, /*right*/ 0,
++            ),
++        ))
++    }
++
++    fn take_live_tail_renderable(&mut self) -> Option<Box<dyn Renderable>> {
++        (self.content.len() > self.cells.len()).then(|| self.content.pop())?
++    }
++}
++
++struct ConversationCellRenderable {
++    cell: Arc<dyn HistoryCell>,
++    render_mode: HistoryRenderMode,
++    cached_height: Cell<Option<(u16, u16)>>,
++}
++
++impl Renderable for ConversationCellRenderable {
++    fn render(&self, area: Rect, buf: &mut Buffer) {
++        let hyperlink_lines = self
++            .cell
++            .display_hyperlink_lines_for_mode(area.width, self.render_mode);
++        Paragraph::new(Text::from(visible_lines(hyperlink_lines.clone())))
++            .wrap(Wrap { trim: false })
++            .render(area, buf);
++        mark_buffer_hyperlinks(buf, area, &hyperlink_lines, /*scroll_rows*/ 0);
++    }
++
++    fn desired_height(&self, width: u16) -> u16 {
++        if let Some((cached_width, height)) = self.cached_height.get()
++            && cached_width == width
++        {
++            return height;
++        }
++        let height = self.cell.desired_height_for_mode(width, self.render_mode);
++        self.cached_height.set(Some((width, height)));
++        height
++    }
++}
++
++struct HyperlinkLinesRenderable {
++    lines: Vec<HyperlinkLine>,
++}
++
++impl Renderable for HyperlinkLinesRenderable {
++    fn render(&self, area: Rect, buf: &mut Buffer) {
++        Paragraph::new(Text::from(visible_lines(self.lines.clone())))
++            .wrap(Wrap { trim: false })
++            .render(area, buf);
++        mark_buffer_hyperlinks(buf, area, &self.lines, /*scroll_rows*/ 0);
++    }
++
++    fn desired_height(&self, width: u16) -> u16 {
++        Paragraph::new(Text::from(visible_lines(self.lines.clone())))
++            .wrap(Wrap { trim: false })
++            .line_count(width)
++            .try_into()
++            .unwrap_or(/*default*/ 0)
++    }
++}
++
++#[cfg(test)]
++#[path = "conversation_viewport_tests.rs"]
++mod tests;
+diff --git a/tui/src/conversation_viewport_tests.rs b/tui/src/conversation_viewport_tests.rs
+new file mode 100644
+index 00000000..95911faa
+--- /dev/null
++++ b/tui/src/conversation_viewport_tests.rs
+@@ -0,0 +1,341 @@
++use crossterm::event::KeyCode;
++use crossterm::event::KeyEvent;
++use crossterm::event::KeyModifiers;
++use insta::assert_snapshot;
++use pretty_assertions::assert_eq;
++use ratatui::Terminal;
++use ratatui::backend::TestBackend;
++use ratatui::buffer::Buffer;
++use ratatui::layout::Rect;
++use ratatui::text::Line;
++
++use super::*;
++use crate::history_cell::AgentMarkdownCell;
++use crate::tui::MouseScrollDirection;
++
++#[derive(Debug)]
++struct TestCell {
++    display: &'static str,
++    raw: &'static str,
++    transcript: &'static str,
++    is_stream_continuation: bool,
++}
++
++impl HistoryCell for TestCell {
++    fn display_lines(&self, _width: u16) -> Vec<Line<'static>> {
++        vec![self.display.into()]
++    }
++
++    fn raw_lines(&self) -> Vec<Line<'static>> {
++        vec![self.raw.into()]
++    }
++
++    fn transcript_lines(&self, _width: u16) -> Vec<Line<'static>> {
++        vec![self.transcript.into()]
++    }
++
++    fn is_stream_continuation(&self) -> bool {
++        self.is_stream_continuation
++    }
++}
++
++fn cell(display: &'static str) -> Arc<dyn HistoryCell> {
++    Arc::new(TestCell {
++        display,
++        raw: display,
++        transcript: display,
++        is_stream_continuation: false,
++    })
++}
++
++fn viewport(cells: Vec<Arc<dyn HistoryCell>>) -> ConversationViewport {
++    ConversationViewport::new(
++        cells,
++        HistoryRenderMode::Rich,
++        crate::keymap::RuntimeKeymap::defaults().pager,
++    )
++}
++
++#[test]
++fn renders_main_display_and_live_tail_without_pager_chrome() {
++    let cells: Vec<Arc<dyn HistoryCell>> = vec![Arc::new(TestCell {
++        display: "compact display",
++        raw: "raw source",
++        transcript: "expanded transcript detail",
++        is_stream_continuation: false,
++    })];
++    let mut viewport = viewport(cells);
++    viewport.sync_live_tail(
++        /*width*/ 32,
++        Some(ActiveCellRenderKey {
++            revision: 1,
++            is_stream_continuation: false,
++            animation_tick: None,
++        }),
++        |_| Some(vec![HyperlinkLine::from("live tail")]),
++    );
++    let mut terminal =
++        Terminal::new(TestBackend::new(/*width*/ 32, /*height*/ 6)).expect("create terminal");
++
++    terminal
++        .draw(|frame| viewport.render(frame.area(), frame.buffer_mut()))
++        .expect("render conversation viewport");
++
++    assert_snapshot!(terminal.backend(), @r###"
++"compact display                 "
++"                                "
++"live tail                       "
++"                                "
++"                                "
++"                                "
++"###);
++}
++
++#[test]
++fn switches_between_rich_and_raw_cell_representations() {
++    let cells: Vec<Arc<dyn HistoryCell>> = vec![Arc::new(TestCell {
++        display: "rich display",
++        raw: "raw source",
++        transcript: "expanded transcript detail",
++        is_stream_continuation: false,
++    })];
++    let mut viewport = viewport(cells);
++    let area = Rect::new(
++        /*x*/ 0, /*y*/ 0, /*width*/ 24, /*height*/ 3,
++    );
++    let mut rich = Buffer::empty(area);
++    viewport.render(area, &mut rich);
++
++    viewport.set_render_mode(HistoryRenderMode::Raw);
++    let mut raw = Buffer::empty(area);
++    viewport.render(area, &mut raw);
++
++    assert!(buffer_text(&rich, area).contains("rich display"));
++    assert!(buffer_text(&raw, area).contains("raw source"));
++    assert!(!buffer_text(&raw, area).contains("expanded transcript detail"));
++}
++
++#[test]
++fn append_keeps_live_tail_after_committed_cells() {
++    let mut viewport = viewport(Vec::new());
++    viewport.sync_live_tail(
++        /*width*/ 24,
++        Some(ActiveCellRenderKey {
++            revision: 1,
++            is_stream_continuation: false,
++            animation_tick: None,
++        }),
++        |_| Some(vec![HyperlinkLine::from("live tail")]),
++    );
++
++    viewport.push_cell(cell("committed"));
++
++    let area = Rect::new(
++        /*x*/ 0, /*y*/ 0, /*width*/ 24, /*height*/ 5,
++    );
++    let mut buffer = Buffer::empty(area);
++    viewport.render(area, &mut buffer);
++    let text = buffer_text(&buffer, area);
++    let committed = text
++        .find("committed")
++        .expect("committed cell should render");
++    let live_tail = text.find("live tail").expect("live tail should render");
++    assert!(committed < live_tail);
++    assert_eq!(viewport.committed_cell_count(), 1);
++}
++
++#[test]
++fn replacing_cells_invalidates_and_respaces_the_live_tail() {
++    let key = ActiveCellRenderKey {
++        revision: 1,
++        is_stream_continuation: false,
++        animation_tick: None,
++    };
++    let mut viewport = viewport(Vec::new());
++    viewport.sync_live_tail(/*width*/ 24, Some(key), |_| {
++        Some(vec![HyperlinkLine::from("live tail")])
++    });
++
++    viewport.replace_cells(vec![cell("replacement")]);
++    viewport.sync_live_tail(/*width*/ 24, Some(key), |_| {
++        Some(vec![HyperlinkLine::from("live tail")])
++    });
++
++    let area = Rect::new(
++        /*x*/ 0, /*y*/ 0, /*width*/ 24, /*height*/ 4,
++    );
++    let mut buffer = Buffer::empty(area);
++    viewport.render(area, &mut buffer);
++    let rows = buffer_text(&buffer, area);
++    assert_eq!(
++        rows.lines().map(str::trim_end).collect::<Vec<_>>(),
++        vec!["replacement", "", "live tail", ""]
++    );
++}
++
++#[test]
++fn preserves_semantic_links_for_committed_and_live_content() {
++    let committed_destination = "https://example.com/committed";
++    let live_destination = "https://example.com/live";
++    let committed: Arc<dyn HistoryCell> = Arc::new(AgentMarkdownCell::new(
++        committed_destination.to_string(),
++        std::path::Path::new("/tmp"),
++    ));
++    let live = AgentMarkdownCell::new(live_destination.to_string(), std::path::Path::new("/tmp"));
++    let mut viewport = viewport(vec![committed]);
++    viewport.sync_live_tail(
++        /*width*/ 28,
++        Some(ActiveCellRenderKey {
++            revision: 1,
++            is_stream_continuation: false,
++            animation_tick: None,
++        }),
++        |width| Some(live.display_hyperlink_lines(width)),
++    );
++    let area = Rect::new(
++        /*x*/ 0, /*y*/ 0, /*width*/ 28, /*height*/ 6,
++    );
++    let mut buffer = Buffer::empty(area);
++
++    viewport.render(area, &mut buffer);
++
++    let rendered = buffer_text(&buffer, area);
++    assert!(rendered.contains(&format!("\x1b]8;;{committed_destination}\x07")));
++    assert!(rendered.contains(&format!("\x1b]8;;{live_destination}\x07")));
++}
++
++#[test]
++fn narrower_resize_stays_pinned_to_the_latest_cell() {
++    let mut viewport = viewport(vec![
++        cell("first long row that wraps"),
++        cell("second long row that wraps"),
++        cell("LATEST SENTINEL"),
++    ]);
++    let wide = Rect::new(
++        /*x*/ 0, /*y*/ 0, /*width*/ 24, /*height*/ 4,
++    );
++    viewport.render(wide, &mut Buffer::empty(wide));
++
++    let narrow = Rect::new(
++        /*x*/ 0, /*y*/ 0, /*width*/ 12, /*height*/ 4,
++    );
++    let mut buffer = Buffer::empty(narrow);
++    viewport.render(narrow, &mut buffer);
++
++    assert!(viewport.is_following_bottom());
++    assert!(buffer_text(&buffer, narrow).contains("SENTINEL"));
++}
++
++#[test]
++fn page_navigation_leaves_and_restores_bottom_follow() {
++    let mut viewport = viewport(vec![cell("oldest"), cell("middle"), cell("LATEST")]);
++    let area = Rect::new(
++        /*x*/ 0, /*y*/ 0, /*width*/ 20, /*height*/ 2,
++    );
++    let mut bottom = Buffer::empty(area);
++    viewport.render(area, &mut bottom);
++    assert!(buffer_text(&bottom, area).contains("LATEST"));
++
++    assert!(
++        viewport.handle_navigation_key(area, KeyEvent::new(KeyCode::PageUp, KeyModifiers::NONE),)
++    );
++    let mut scrolled = Buffer::empty(area);
++    viewport.render(area, &mut scrolled);
++    assert!(!viewport.is_following_bottom());
++    assert!(buffer_text(&scrolled, area).contains("middle"));
++
++    assert!(
++        viewport.handle_navigation_key(area, KeyEvent::new(KeyCode::PageDown, KeyModifiers::NONE),)
++    );
++    let mut restored = Buffer::empty(area);
++    viewport.render(area, &mut restored);
++    assert!(viewport.is_following_bottom());
++    let trim_rows = |buffer: &Buffer| {
++        buffer_text(buffer, area)
++            .lines()
++            .map(str::trim_end)
++            .collect::<Vec<_>>()
++            .join("\n")
++    };
++    assert_snapshot!(format!(
++        "bottom:\n{}\nscrolled:\n{}\nrestored:\n{}",
++        trim_rows(&bottom),
++        trim_rows(&scrolled),
++        trim_rows(&restored),
++    ), @r###"
++bottom:
++
++LATEST
++scrolled:
++
++middle
++restored:
++
++LATEST
++"###);
++}
++
++#[test]
++fn mouse_wheel_leaves_and_restores_bottom_follow() {
++    let mut viewport = viewport(vec![
++        cell("oldest"),
++        cell("older"),
++        cell("middle"),
++        cell("newer"),
++        cell("LATEST"),
++    ]);
++    let area = Rect::new(
++        /*x*/ 0, /*y*/ 0, /*width*/ 20, /*height*/ 3,
++    );
++    let mut bottom = Buffer::empty(area);
++    viewport.render(area, &mut bottom);
++
++    viewport.handle_mouse_scroll(MouseScrollDirection::Up);
++    let mut scrolled = Buffer::empty(area);
++    viewport.render(area, &mut scrolled);
++    assert!(!viewport.is_following_bottom());
++
++    viewport.handle_mouse_scroll(MouseScrollDirection::Down);
++    let mut restored = Buffer::empty(area);
++    viewport.render(area, &mut restored);
++    assert!(viewport.is_following_bottom());
++
++    let trim_rows = |buffer: &Buffer| {
++        buffer_text(buffer, area)
++            .lines()
++            .map(str::trim_end)
++            .collect::<Vec<_>>()
++            .join("\n")
++    };
++    assert_snapshot!(format!(
++        "bottom:\n{}\nscrolled:\n{}\nrestored:\n{}",
++        trim_rows(&bottom),
++        trim_rows(&scrolled),
++        trim_rows(&restored),
++    ), @r###"
++bottom:
++newer
++
++LATEST
++scrolled:
++
++middle
++
++restored:
++newer
++
++LATEST
++"###);
++}
++
++fn buffer_text(buffer: &Buffer, area: Rect) -> String {
++    let mut rows = Vec::new();
++    for y in area.y..area.bottom() {
++        let mut row = String::new();
++        for x in area.x..area.right() {
++            row.push_str(buffer[(x, y)].symbol());
++        }
++        rows.push(row);
++    }
++    rows.join("\n")
++}
+diff --git a/tui/src/cwd_prompt.rs b/tui/src/cwd_prompt.rs
+index 9232e8d3..f8ceed21 100644
+--- a/tui/src/cwd_prompt.rs
++++ b/tui/src/cwd_prompt.rs
+@@ -136 +136 @@ pub(crate) async fn run_cwd_selection_prompt(
+-                TuiEvent::Paste(_) => {}
++                TuiEvent::Paste(_) | TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => {}
+diff --git a/tui/src/external_agent_config_migration/mod.rs b/tui/src/external_agent_config_migration/mod.rs
+index 077ef336..16a4c1ab 100644
+--- a/tui/src/external_agent_config_migration/mod.rs
++++ b/tui/src/external_agent_config_migration/mod.rs
+@@ -111 +111 @@ pub(crate) async fn run_external_agent_config_migration_prompt(
+-                TuiEvent::Paste(_) => {}
++                TuiEvent::Paste(_) | TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => {}
+diff --git a/tui/src/external_agent_config_migration/source.rs b/tui/src/external_agent_config_migration/source.rs
+index d98aa40a..257274af 100644
+--- a/tui/src/external_agent_config_migration/source.rs
++++ b/tui/src/external_agent_config_migration/source.rs
+@@ -68 +68 @@ pub(crate) async fn run_external_agent_config_source_prompt(
+-                TuiEvent::Paste(_) => {}
++                TuiEvent::Paste(_) | TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => {}
+diff --git a/tui/src/insert_history.rs b/tui/src/insert_history.rs
+index 56a49053..b69ad04f 100644
+--- a/tui/src/insert_history.rs
++++ b/tui/src/insert_history.rs
+@@ -51,3 +51,4 @@ pub enum HistoryLineWrapPolicy {
+-/// Raw lines intentionally remain unbroken so terminal selection copies their source faithfully.
+-/// Zellij does not constrain soft-wrapped continuation rows to Codex's scroll region, so its raw
+-/// path appends history through the terminal and reserves blank rows for the next viewport draw.
++/// `Standard` uses a partial DECSTBM scroll region above the composer. `NativeScrollback` avoids
++/// partial regions and advances the whole screen with newlines, allowing terminals to record the
++/// rows in their normal scrollback buffer. Raw lines intentionally remain unbroken so terminal
++/// selection copies their source faithfully.
+@@ -57 +58 @@ pub(crate) enum InsertHistoryMode {
+-    ZellijRaw,
++    NativeScrollback,
+@@ -135 +136 @@ where
+-        InsertHistoryMode::ZellijRaw => {
++        InsertHistoryMode::NativeScrollback => {
+@@ -148,3 +149,4 @@ where
+-            // Writing raw source text through the terminal preserves its soft-wrap metadata.
+-            // Advance through empty rows for the viewport so history ends immediately above the
+-            // composer even when a replay batch is taller than the visible history region.
++            // Advancing through the terminal's main screen records overflowing rows in native
++            // scrollback. It also preserves soft-wrap metadata when raw source lines are used.
++            // Reserve empty viewport rows so history ends immediately above the composer even
++            // when a replay batch is taller than the visible history region.
+@@ -1016 +1018 @@ mod tests {
+-    fn vt100_zellij_raw_insert_keeps_soft_wrapped_tail_above_viewport() {
++    fn vt100_native_scrollback_insert_keeps_soft_wrapped_tail_above_viewport() {
+@@ -1033 +1035 @@ mod tests {
+-            InsertHistoryMode::ZellijRaw,
++            InsertHistoryMode::NativeScrollback,
+@@ -1036 +1038 @@ mod tests {
+-        .expect("insert Zellij raw history");
++        .expect("insert native scrollback history");
+@@ -1056 +1058 @@ mod tests {
+-    fn vt100_zellij_raw_replay_keeps_overflowing_soft_wrapped_tail_above_viewport() {
++    fn vt100_native_scrollback_replay_keeps_overflowing_soft_wrapped_tail_above_viewport() {
+@@ -1069 +1071 @@ mod tests {
+-            InsertHistoryMode::ZellijRaw,
++            InsertHistoryMode::NativeScrollback,
+@@ -1072 +1074 @@ mod tests {
+-        .expect("replay Zellij raw history");
++        .expect("replay native scrollback history");
+@@ -1093,0 +1096,77 @@ mod tests {
++    #[test]
++    fn vt100_native_scrollback_mode_preserves_history_that_standard_mode_drops() {
++        fn run(mode: InsertHistoryMode) -> (Vec<String>, Vec<String>) {
++            let width: u16 = 77;
++            let height: u16 = 42;
++            let backend =
++                VT100Backend::with_scrollback(width, height, /*scrollback_len*/ 4096);
++            let mut term =
++                crate::custom_terminal::Terminal::with_options(backend).expect("terminal");
++            term.set_viewport_area(Rect::new(
++                /*x*/ 0, /*y*/ 20, width, /*height*/ 20,
++            ));
++
++            let lines = (1..=50)
++                .map(|index| Line::from(format!("OVERFLOW_CASE line {index:02}")))
++                .collect();
++            insert_history_lines_with_mode_and_wrap_policy(
++                &mut term,
++                lines,
++                mode,
++                HistoryLineWrapPolicy::PreWrap,
++            )
++            .expect("insert overflowing history");
++
++            term.backend_mut()
++                .vt100_mut()
++                .screen_mut()
++                .set_scrollback(usize::MAX);
++            let oldest_rows = term.backend().vt100().screen().rows(0, width).collect();
++
++            term.backend_mut()
++                .vt100_mut()
++                .screen_mut()
++                .set_scrollback(0);
++            let live_rows = term.backend().vt100().screen().rows(0, width).collect();
++
++            (oldest_rows, live_rows)
++        }
++
++        let contains = |rows: &[String], needle: &str| rows.iter().any(|row| row.contains(needle));
++        let (standard_oldest, standard_live) = run(InsertHistoryMode::Standard);
++        let (native_oldest, native_live) = run(InsertHistoryMode::NativeScrollback);
++        let snapshot_rows = |rows: &[String]| {
++            rows.iter()
++                .map(|row| row.trim_end())
++                .filter(|row| !row.is_empty())
++                .collect::<Vec<_>>()
++                .join("\n")
++        };
++
++        insta::assert_snapshot!(
++            "native_scrollback_preserves_overflow",
++            format!(
++                "oldest scrollback:\n{}\n\nlive screen:\n{}",
++                snapshot_rows(&native_oldest),
++                snapshot_rows(&native_live),
++            ),
++        );
++
++        assert!(
++            !contains(&standard_oldest, "OVERFLOW_CASE line 01"),
++            "partial scroll-region insertion should reproduce the lost-history bug",
++        );
++        assert!(
++            contains(&native_oldest, "OVERFLOW_CASE line 01"),
++            "native scrollback insertion should preserve the oldest history row",
++        );
++        assert!(
++            contains(&standard_live, "OVERFLOW_CASE line 50"),
++            "standard insertion should retain the newest history row",
++        );
++        assert!(
++            contains(&native_live, "OVERFLOW_CASE line 50"),
++            "native scrollback insertion should retain the newest history row",
++        );
++    }
++
+diff --git a/tui/src/lib.rs b/tui/src/lib.rs
+index f8a97347..eba5112e 100644
+--- a/tui/src/lib.rs
++++ b/tui/src/lib.rs
+@@ -113,0 +114 @@ mod config_update;
++mod conversation_viewport;
+@@ -1558,2 +1559,5 @@ async fn run_ratatui_app(
+-    let use_alt_screen = determine_alt_screen_mode(no_alt_screen, config.tui_alternate_screen);
+-    tui.set_alt_screen_enabled(use_alt_screen);
++    let alt_screen_behavior =
++        determine_alt_screen_behavior(no_alt_screen, config.tui_alternate_screen);
++    tui.set_alt_screen_enabled(
++        /*enabled*/ alt_screen_behavior != AltScreenBehavior::Disabled,
++    );
+@@ -1663,0 +1668,3 @@ async fn run_ratatui_app(
++    if alt_screen_behavior == AltScreenBehavior::Owned {
++        tui.enter_owned_alt_screen()?;
++    }
+@@ -1665,0 +1673 @@ async fn run_ratatui_app(
++        alt_screen_behavior,
+@@ -1688,0 +1697,15 @@ async fn run_ratatui_app(
++    let finish_alt_screen_result = if alt_screen_behavior == AltScreenBehavior::Owned {
++        tui.finish_alt_screen()
++    } else {
++        Ok(())
++    };
++    let app_result = match (app_result, finish_alt_screen_result) {
++        (Ok(exit_info), Ok(())) => Ok(exit_info),
++        (Err(err), Ok(())) => Err(err),
++        (Ok(_), Err(err)) => Err(err.into()),
++        (Err(app_err), Err(finish_err)) => {
++            tracing::warn!(error = %finish_err, "failed to leave owned alternate screen");
++            Err(app_err)
++        }
++    };
++
+@@ -1740 +1763,8 @@ impl Drop for TerminalRestoreGuard {
+-/// Determine whether to use the terminal's alternate screen buffer.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(crate) enum AltScreenBehavior {
++    Disabled,
++    OverlayOnly,
++    Owned,
++}
++
++/// Determine how the application uses the terminal's alternate screen buffer.
+@@ -1744 +1774 @@ impl Drop for TerminalRestoreGuard {
+-///   - `always`: Use alternate screen
++///   - `always`: Own the alternate screen for the full application run
+@@ -1746,2 +1776,5 @@ impl Drop for TerminalRestoreGuard {
+-///   - `auto` (default): Use alternate screen
+-fn determine_alt_screen_mode(no_alt_screen: bool, tui_alternate_screen: AltScreenMode) -> bool {
++///   - `auto` (default): Enter alternate screen only for overlays
++fn determine_alt_screen_behavior(
++    no_alt_screen: bool,
++    tui_alternate_screen: AltScreenMode,
++) -> AltScreenBehavior {
+@@ -1749 +1782 @@ fn determine_alt_screen_mode(no_alt_screen: bool, tui_alternate_screen: AltScree
+-        return false;
++        return AltScreenBehavior::Disabled;
+@@ -1752 +1785,5 @@ fn determine_alt_screen_mode(no_alt_screen: bool, tui_alternate_screen: AltScree
+-    tui_alternate_screen != AltScreenMode::Never
++    match tui_alternate_screen {
++        AltScreenMode::Always => AltScreenBehavior::Owned,
++        AltScreenMode::Auto => AltScreenBehavior::OverlayOnly,
++        AltScreenMode::Never => AltScreenBehavior::Disabled,
++    }
+@@ -2291,17 +2328,12 @@ mod tests {
+-    fn alternate_screen_auto_uses_alt_screen() {
+-        assert!(determine_alt_screen_mode(
+-            /*no_alt_screen*/ false,
+-            AltScreenMode::Auto,
+-        ));
+-        assert!(determine_alt_screen_mode(
+-            /*no_alt_screen*/ false,
+-            AltScreenMode::Always,
+-        ));
+-        assert!(!determine_alt_screen_mode(
+-            /*no_alt_screen*/ false,
+-            AltScreenMode::Never,
+-        ));
+-        assert!(!determine_alt_screen_mode(
+-            /*no_alt_screen*/ true,
+-            AltScreenMode::Auto,
+-        ));
++    fn alternate_screen_mode_maps_to_explicit_behavior() {
++        let cases = [
++            (false, AltScreenMode::Auto, AltScreenBehavior::OverlayOnly),
++            (false, AltScreenMode::Always, AltScreenBehavior::Owned),
++            (false, AltScreenMode::Never, AltScreenBehavior::Disabled),
++            (true, AltScreenMode::Auto, AltScreenBehavior::Disabled),
++            (true, AltScreenMode::Always, AltScreenBehavior::Disabled),
++            (true, AltScreenMode::Never, AltScreenBehavior::Disabled),
++        ];
++        for (no_alt_screen, mode, expected) in cases {
++            assert_eq!(determine_alt_screen_behavior(no_alt_screen, mode), expected,);
++        }
+diff --git a/tui/src/model_migration.rs b/tui/src/model_migration.rs
+index c82f9717..f92df76d 100644
+--- a/tui/src/model_migration.rs
++++ b/tui/src/model_migration.rs
+@@ -157 +157 @@ pub(crate) async fn run_model_migration_prompt(
+-                TuiEvent::Paste(_) => {}
++                TuiEvent::Paste(_) | TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => {}
+diff --git a/tui/src/onboarding/onboarding_screen.rs b/tui/src/onboarding/onboarding_screen.rs
+index 4b82f7ba..ad866fc3 100644
+--- a/tui/src/onboarding/onboarding_screen.rs
++++ b/tui/src/onboarding/onboarding_screen.rs
+@@ -524,0 +525 @@ pub(crate) async fn run_onboarding_app(
++                        TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => {}
+diff --git a/tui/src/pager_overlay.rs b/tui/src/pager_overlay.rs
+index 1bbdb653..a2138fa2 100644
+--- a/tui/src/pager_overlay.rs
++++ b/tui/src/pager_overlay.rs
+@@ -13 +13 @@
+-//! `ActiveCellTranscriptKey` and a function to compute the active cell transcript lines, and
++//! `ActiveCellRenderKey` and a function to compute the active cell transcript lines, and
+@@ -21 +21 @@ use std::sync::Arc;
+-use crate::chatwidget::ActiveCellTranscriptKey;
++use crate::chatwidget::ActiveCellRenderKey;
+@@ -37,0 +38,2 @@ use crate::tui;
++use crate::tui::MouseScrollDirection;
++use crate::tui::MouseScrollEvent;
+@@ -102,0 +105,2 @@ fn first_or_empty(
++const MOUSE_SCROLL_ROWS: usize = 3;
++
+@@ -152,0 +157,2 @@ struct PagerView {
++    /// Rows to move upward from the freshly measured bottom on the next render.
++    pending_rows_from_bottom: usize,
+@@ -172,0 +179 @@ impl PagerView {
++            pending_rows_from_bottom: 0,
+@@ -201,3 +208 @@ impl PagerView {
+-        self.scroll_offset = self
+-            .scroll_offset
+-            .min(content_height.saturating_sub(content_area.height as usize));
++        self.resolve_scroll_offset(content_height, content_area.height as usize);
+@@ -205 +210 @@ impl PagerView {
+-        self.render_content(content_area, buf);
++        self.render_content(content_area, buf, /*empty_row_marker*/ Some('~'));
+@@ -218 +223 @@ impl PagerView {
+-    fn render_content(&self, area: Rect, buf: &mut Buffer) {
++    fn render_content(&self, area: Rect, buf: &mut Buffer, empty_row_marker: Option<char>) {
+@@ -242,0 +248,3 @@ impl PagerView {
++        let Some(empty_row_marker) = empty_row_marker else {
++            return;
++        };
+@@ -247 +255 @@ impl PagerView {
+-            buf[(area.x, y)] = Cell::from('~');
++            buf[(area.x, y)] = Cell::from(empty_row_marker);
+@@ -289,0 +298,8 @@ impl PagerView {
++        if self.apply_key_event(tui.terminal.viewport_area, key_event) {
++            tui.frame_requester()
++                .schedule_frame_in(crate::tui::TARGET_FRAME_INTERVAL);
++        }
++        Ok(())
++    }
++
++    fn apply_key_event(&mut self, viewport_area: Rect, key_event: KeyEvent) -> bool {
+@@ -292 +308 @@ impl PagerView {
+-                self.scroll_offset = self.scroll_offset.saturating_sub(1);
++                self.scroll_up_rows(/*rows*/ 1);
+@@ -295 +311 @@ impl PagerView {
+-                self.scroll_offset = self.scroll_offset.saturating_add(1);
++                self.scroll_down_rows(/*rows*/ 1);
+@@ -298,2 +314,2 @@ impl PagerView {
+-                let page_height = self.page_height(tui.terminal.viewport_area);
+-                self.scroll_offset = self.scroll_offset.saturating_sub(page_height);
++                let page_height = self.page_height(viewport_area);
++                self.scroll_up_rows(page_height);
+@@ -302,2 +318,2 @@ impl PagerView {
+-                let page_height = self.page_height(tui.terminal.viewport_area);
+-                self.scroll_offset = self.scroll_offset.saturating_add(page_height);
++                let page_height = self.page_height(viewport_area);
++                self.scroll_down_rows(page_height);
+@@ -306 +322 @@ impl PagerView {
+-                let area = self.content_area(tui.terminal.viewport_area);
++                let area = self.content_area(viewport_area);
+@@ -308 +324 @@ impl PagerView {
+-                self.scroll_offset = self.scroll_offset.saturating_add(half_page);
++                self.scroll_down_rows(half_page);
+@@ -311 +327 @@ impl PagerView {
+-                let area = self.content_area(tui.terminal.viewport_area);
++                let area = self.content_area(viewport_area);
+@@ -313 +329 @@ impl PagerView {
+-                self.scroll_offset = self.scroll_offset.saturating_sub(half_page);
++                self.scroll_up_rows(half_page);
+@@ -316,0 +333 @@ impl PagerView {
++                self.pending_rows_from_bottom = 0;
+@@ -319 +336 @@ impl PagerView {
+-                self.scroll_offset = usize::MAX;
++                self.scroll_to_bottom();
+@@ -322 +339 @@ impl PagerView {
+-                return Ok(());
++                return false;
+@@ -324,0 +342,5 @@ impl PagerView {
++        true
++    }
++
++    fn handle_mouse_scroll(&mut self, tui: &mut tui::Tui, event: MouseScrollEvent) -> Result<()> {
++        self.apply_mouse_scroll(event.direction);
+@@ -329,0 +352,38 @@ impl PagerView {
++    fn apply_mouse_scroll(&mut self, direction: MouseScrollDirection) {
++        match direction {
++            MouseScrollDirection::Up => self.scroll_up_rows(MOUSE_SCROLL_ROWS),
++            MouseScrollDirection::Down => self.scroll_down_rows(MOUSE_SCROLL_ROWS),
++        }
++    }
++
++    fn scroll_up_rows(&mut self, rows: usize) {
++        if self.scroll_offset == usize::MAX {
++            self.pending_rows_from_bottom = self.pending_rows_from_bottom.saturating_add(rows);
++        } else {
++            self.scroll_offset = self.scroll_offset.saturating_sub(rows);
++        }
++    }
++
++    fn scroll_down_rows(&mut self, rows: usize) {
++        if self.scroll_offset == usize::MAX {
++            self.pending_rows_from_bottom = self.pending_rows_from_bottom.saturating_sub(rows);
++        } else {
++            self.scroll_offset = self.scroll_offset.saturating_add(rows);
++        }
++    }
++
++    fn scroll_to_bottom(&mut self) {
++        self.scroll_offset = usize::MAX;
++        self.pending_rows_from_bottom = 0;
++    }
++
++    fn resolve_scroll_offset(&mut self, content_height: usize, viewport_height: usize) {
++        let max_scroll = content_height.saturating_sub(viewport_height);
++        if self.scroll_offset == usize::MAX {
++            self.scroll_offset = max_scroll.saturating_sub(self.pending_rows_from_bottom);
++            self.pending_rows_from_bottom = 0;
++        } else {
++            self.scroll_offset = self.scroll_offset.min(max_scroll);
++        }
++    }
++
+@@ -349,0 +410,20 @@ impl PagerView {
++
++    /// Render only scrollable content, without pager header, footer, or empty-row markers.
++    ///
++    /// This is the shared rendering primitive for application-owned views that provide their own
++    /// chrome. A view that was following the bottom stays pinned there when wrapping or the
++    /// available height changes.
++    fn render_content_only(&mut self, area: Rect, buf: &mut Buffer) {
++        let follow_bottom = self.is_scrolled_to_bottom();
++        Clear.render(area, buf);
++        self.update_last_content_height(area.height);
++        let content_height = self.content_height(area.width);
++        self.last_rendered_height = Some(content_height);
++        if let Some(idx) = self.pending_scroll_chunk.take() {
++            self.ensure_chunk_visible(idx, area);
++        } else if follow_bottom {
++            self.scroll_to_bottom();
++        }
++        self.resolve_scroll_offset(content_height, area.height as usize);
++        self.render_content(area, buf, /*empty_row_marker*/ None);
++    }
+@@ -355 +435 @@ impl PagerView {
+-            return true;
++            return self.pending_rows_from_bottom == 0;
+@@ -375,0 +456 @@ impl PagerView {
++        self.pending_rows_from_bottom = 0;
+@@ -398,0 +480,58 @@ impl PagerView {
++/// Scrollable content state shared by full-frame views that provide their own chrome.
++pub(crate) struct PagerContent {
++    view: PagerView,
++}
++
++impl PagerContent {
++    pub(crate) fn new(renderables: Vec<Box<dyn Renderable>>, keymap: PagerKeymap) -> Self {
++        Self {
++            view: PagerView::new(
++                renderables,
++                /*title*/ String::new(),
++                /*scroll_offset*/ usize::MAX,
++                keymap,
++            ),
++        }
++    }
++
++    pub(crate) fn render(&mut self, area: Rect, buf: &mut Buffer) {
++        self.view.render_content_only(area, buf);
++    }
++
++    pub(crate) fn replace(&mut self, renderables: Vec<Box<dyn Renderable>>) {
++        self.view.renderables = renderables;
++    }
++
++    pub(crate) fn push(&mut self, renderable: Box<dyn Renderable>) {
++        self.view.renderables.push(renderable);
++    }
++
++    pub(crate) fn pop(&mut self) -> Option<Box<dyn Renderable>> {
++        self.view.renderables.pop()
++    }
++
++    pub(crate) fn len(&self) -> usize {
++        self.view.renderables.len()
++    }
++
++    pub(crate) fn is_following_bottom(&self) -> bool {
++        self.view.is_scrolled_to_bottom()
++    }
++
++    pub(crate) fn scroll_to_bottom(&mut self) {
++        self.view.scroll_to_bottom();
++    }
++
++    pub(crate) fn handle_navigation_key(
++        &mut self,
++        viewport_area: Rect,
++        key_event: KeyEvent,
++    ) -> bool {
++        self.view.apply_key_event(viewport_area, key_event)
++    }
++
++    pub(crate) fn handle_mouse_scroll(&mut self, direction: MouseScrollDirection) {
++        self.view.apply_mouse_scroll(direction);
++    }
++}
++
+@@ -675 +814 @@ impl TranscriptOverlay {
+-            self.view.scroll_offset = usize::MAX;
++            self.view.scroll_to_bottom();
+@@ -750 +889 @@ impl TranscriptOverlay {
+-            self.view.scroll_offset = usize::MAX;
++            self.view.scroll_to_bottom();
+@@ -793 +932 @@ impl TranscriptOverlay {
+-            self.view.scroll_offset = usize::MAX;
++            self.view.scroll_to_bottom();
+@@ -812 +951 @@ impl TranscriptOverlay {
+-        active_key: Option<ActiveCellTranscriptKey>,
++        active_key: Option<ActiveCellRenderKey>,
+@@ -841 +980 @@ impl TranscriptOverlay {
+-            self.view.scroll_offset = usize::MAX;
++            self.view.scroll_to_bottom();
+@@ -969,0 +1109 @@ impl TranscriptOverlay {
++            TuiEvent::MouseScroll(event) => self.view.handle_mouse_scroll(tui, event),
+@@ -1043,0 +1184 @@ impl StaticOverlay {
++            TuiEvent::MouseScroll(event) => self.view.handle_mouse_scroll(tui, event),
+@@ -1329 +1470 @@ mod tests {
+-            Some(ActiveCellTranscriptKey {
++            Some(ActiveCellRenderKey {
+@@ -1350 +1491 @@ mod tests {
+-            Some(ActiveCellTranscriptKey {
++            Some(ActiveCellRenderKey {
+@@ -1390 +1531 @@ mod tests {
+-            Some(ActiveCellTranscriptKey {
++            Some(ActiveCellRenderKey {
+@@ -1413 +1554 @@ mod tests {
+-        let key = ActiveCellTranscriptKey {
++        let key = ActiveCellRenderKey {
+@@ -1538,0 +1680,60 @@ mod tests {
++    #[test]
++    fn transcript_overlay_mouse_wheel_scrolls_active_pager() {
++        let mut overlay = transcript_overlay(
++            (0..20)
++                .map(|i| {
++                    Arc::new(TestCell {
++                        lines: vec![Line::from(format!("line{i}"))],
++                    }) as Arc<dyn HistoryCell>
++                })
++                .collect(),
++        );
++        let area = Rect::new(
++            /*x*/ 0, /*y*/ 0, /*width*/ 40, /*height*/ 12,
++        );
++        let mut buffer = Buffer::empty(area);
++        overlay.render(area, &mut buffer);
++        let bottom_offset = overlay.view.scroll_offset;
++
++        overlay.view.apply_mouse_scroll(MouseScrollDirection::Up);
++        assert_eq!(
++            overlay.view.scroll_offset,
++            bottom_offset.saturating_sub(MOUSE_SCROLL_ROWS)
++        );
++
++        overlay.view.apply_mouse_scroll(MouseScrollDirection::Down);
++        overlay.render(area, &mut buffer);
++        assert!(overlay.view.is_scrolled_to_bottom());
++    }
++
++    #[test]
++    fn mouse_scroll_after_followed_append_uses_updated_bottom() {
++        let mut overlay = transcript_overlay(vec![Arc::new(TestCell {
++            lines: vec!["initial".into()],
++        })]);
++        let area = Rect::new(
++            /*x*/ 0, /*y*/ 0, /*width*/ 40, /*height*/ 12,
++        );
++        let mut buffer = Buffer::empty(area);
++        overlay.render(area, &mut buffer);
++        overlay.insert_cell(Arc::new(TestCell {
++            lines: (0..20)
++                .map(|line| Line::from(format!("tail-{line:02}")))
++                .collect(),
++        }));
++
++        overlay.view.apply_mouse_scroll(MouseScrollDirection::Up);
++        overlay.render(area, &mut buffer);
++
++        let max_scroll = overlay
++            .view
++            .last_rendered_height
++            .expect("rendered height")
++            .saturating_sub(overlay.view.last_content_height.expect("content height"));
++        assert_eq!(
++            overlay.view.scroll_offset,
++            max_scroll.saturating_sub(MOUSE_SCROLL_ROWS)
++        );
++        assert!(overlay.view.scroll_offset > 0);
++    }
++
+diff --git a/tui/src/resume_picker.rs b/tui/src/resume_picker.rs
+index 9affc853..629bd47b 100644
+--- a/tui/src/resume_picker.rs
++++ b/tui/src/resume_picker.rs
+@@ -577,0 +578 @@ async fn run_session_picker_with_loader(
++                    TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => {}
+diff --git a/tui/src/snapshots/codex_tui__insert_history__tests__native_scrollback_preserves_overflow.snap b/tui/src/snapshots/codex_tui__insert_history__tests__native_scrollback_preserves_overflow.snap
+new file mode 100644
+index 00000000..57717249
+--- /dev/null
++++ b/tui/src/snapshots/codex_tui__insert_history__tests__native_scrollback_preserves_overflow.snap
+@@ -0,0 +1,51 @@
++---
++source: tui/src/insert_history.rs
++expression: "format!(\"oldest scrollback:\\n{}\\n\\nlive screen:\\n{}\",\nsnapshot_rows(&native_oldest), snapshot_rows(&native_live),)"
++---
++oldest scrollback:
++OVERFLOW_CASE line 01
++OVERFLOW_CASE line 02
++OVERFLOW_CASE line 03
++OVERFLOW_CASE line 04
++OVERFLOW_CASE line 05
++OVERFLOW_CASE line 06
++OVERFLOW_CASE line 07
++OVERFLOW_CASE line 08
++OVERFLOW_CASE line 09
++OVERFLOW_CASE line 10
++OVERFLOW_CASE line 11
++OVERFLOW_CASE line 12
++OVERFLOW_CASE line 13
++OVERFLOW_CASE line 14
++OVERFLOW_CASE line 15
++OVERFLOW_CASE line 16
++OVERFLOW_CASE line 17
++OVERFLOW_CASE line 18
++OVERFLOW_CASE line 19
++OVERFLOW_CASE line 20
++OVERFLOW_CASE line 21
++OVERFLOW_CASE line 22
++
++live screen:
++OVERFLOW_CASE line 29
++OVERFLOW_CASE line 30
++OVERFLOW_CASE line 31
++OVERFLOW_CASE line 32
++OVERFLOW_CASE line 33
++OVERFLOW_CASE line 34
++OVERFLOW_CASE line 35
++OVERFLOW_CASE line 36
++OVERFLOW_CASE line 37
++OVERFLOW_CASE line 38
++OVERFLOW_CASE line 39
++OVERFLOW_CASE line 40
++OVERFLOW_CASE line 41
++OVERFLOW_CASE line 42
++OVERFLOW_CASE line 43
++OVERFLOW_CASE line 44
++OVERFLOW_CASE line 45
++OVERFLOW_CASE line 46
++OVERFLOW_CASE line 47
++OVERFLOW_CASE line 48
++OVERFLOW_CASE line 49
++OVERFLOW_CASE line 50
+diff --git a/tui/src/startup_draft.rs b/tui/src/startup_draft.rs
+index 983443f3..a2a77ec6 100644
+--- a/tui/src/startup_draft.rs
++++ b/tui/src/startup_draft.rs
+@@ -312 +312 @@ impl StartupDraftPump {
+-                TuiEvent::Key(_) => false,
++                TuiEvent::Key(_) | TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => false,
+@@ -359 +359,5 @@ impl StartupDraftPump {
+-            TuiEvent::Draw | TuiEvent::Resize(_) | TuiEvent::Resume => {}
++            TuiEvent::MouseScroll(_)
++            | TuiEvent::MouseClick(_)
++            | TuiEvent::Draw
++            | TuiEvent::Resize(_)
++            | TuiEvent::Resume => {}
+diff --git a/tui/src/startup_hooks_review.rs b/tui/src/startup_hooks_review.rs
+index 4a8f6433..9138d91a 100644
+--- a/tui/src/startup_hooks_review.rs
++++ b/tui/src/startup_hooks_review.rs
+@@ -184 +184 @@ async fn run_startup_hooks_review_app(
+-            TuiEvent::Paste(_) => {}
++            TuiEvent::Paste(_) | TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => {}
+diff --git a/tui/src/test_backend.rs b/tui/src/test_backend.rs
+index a71bc526..9cc87858 100644
+--- a/tui/src/test_backend.rs
++++ b/tui/src/test_backend.rs
+@@ -44,0 +45,5 @@ impl VT100Backend {
++
++    #[allow(dead_code)]
++    pub fn vt100_mut(&mut self) -> &mut vt100::Parser {
++        self.crossterm_backend.writer_mut()
++    }
+diff --git a/tui/src/tui.rs b/tui/src/tui.rs
+index 639f88fa..3adceeb5 100644
+--- a/tui/src/tui.rs
++++ b/tui/src/tui.rs
+@@ -26,2 +25,0 @@ use crossterm::event::KeyEvent;
+-use crossterm::terminal::EnterAlternateScreen;
+-use crossterm::terminal::LeaveAlternateScreen;
+@@ -59,0 +58 @@ use crate::tui::job_control::SuspendContext;
++use crate::tui::screen_session::ScreenSession;
+@@ -62,0 +62,2 @@ use codex_config::types::NotificationMethod;
++use codex_terminal_detection::TerminalInfo;
++use codex_terminal_detection::TerminalName;
+@@ -71,0 +73 @@ mod keyboard_modes;
++mod screen_session;
+@@ -104,0 +107,8 @@ fn should_emit_notification(condition: NotificationCondition, terminal_focused:
++fn default_insert_history_mode(terminal_info: &TerminalInfo) -> InsertHistoryMode {
++    if terminal_info.name == TerminalName::Iterm2 {
++        InsertHistoryMode::NativeScrollback
++    } else {
++        InsertHistoryMode::Standard
++    }
++}
++
+@@ -117,0 +128 @@ mod tests {
++    use super::default_insert_history_mode;
+@@ -119,0 +131 @@ mod tests {
++    use crate::insert_history::InsertHistoryMode;
+@@ -121,0 +134,2 @@ mod tests {
++    use codex_terminal_detection::TerminalInfo;
++    use codex_terminal_detection::TerminalName;
+@@ -125,0 +140,26 @@ mod tests {
++    fn terminal_info(name: TerminalName) -> TerminalInfo {
++        TerminalInfo {
++            name,
++            term_program: None,
++            version: None,
++            term: None,
++            multiplexer: None,
++        }
++    }
++
++    #[test]
++    fn iterm2_uses_native_scrollback_history_insert() {
++        assert_eq!(
++            default_insert_history_mode(&terminal_info(TerminalName::Iterm2)),
++            InsertHistoryMode::NativeScrollback,
++        );
++    }
++
++    #[test]
++    fn other_terminals_keep_standard_history_insert() {
++        assert_eq!(
++            default_insert_history_mode(&terminal_info(TerminalName::Ghostty)),
++            InsertHistoryMode::Standard,
++        );
++    }
++
+@@ -364,2 +404,4 @@ pub fn restore_after_exit() -> Result<()> {
+-    let mut first_error =
+-        restore_common(RawModeRestore::Disable, KeyboardRestore::ResetAfterExit).err();
++    let mut first_error = screen_session::restore_physical_alt_screen(&mut stdout()).err();
++    if let Err(err) = restore_common(RawModeRestore::Disable, KeyboardRestore::ResetAfterExit) {
++        first_error.get_or_insert(err);
++    }
+@@ -563,0 +606,4 @@ pub enum TuiEvent {
++    /// A vertical mouse-wheel event reported while an owned screen has mouse capture.
++    MouseScroll(MouseScrollEvent),
++    /// A primary-button press reported while an owned screen has mouse capture.
++    MouseClick(MouseClickEvent),
+@@ -577,0 +624,19 @@ pub enum TuiEvent {
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct MouseScrollEvent {
++    pub direction: MouseScrollDirection,
++    pub column: u16,
++    pub row: u16,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct MouseClickEvent {
++    pub column: u16,
++    pub row: u16,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum MouseScrollDirection {
++    Up,
++    Down,
++}
++
+@@ -587 +652 @@ pub struct Tui {
+-    alt_saved_viewport: Option<ratatui::layout::Rect>,
++    screen_session: ScreenSession,
+@@ -590,2 +654,0 @@ pub struct Tui {
+-    // True when overlay alt-screen UI is active
+-    alt_screen_active: Arc<AtomicBool>,
+@@ -599,2 +662,2 @@ pub struct Tui {
+-    // When false, enter_alt_screen() becomes a no-op.
+-    alt_screen_enabled: bool,
++    // iTerm2 does not save partial scroll-region output to normal scrollback by default.
++    default_history_insert_mode: InsertHistoryMode,
+@@ -634 +697,3 @@ impl Tui {
+-        let is_zellij = codex_terminal_detection::terminal_info().is_zellij();
++        let terminal_info = codex_terminal_detection::terminal_info();
++        let is_zellij = terminal_info.is_zellij();
++        let default_history_insert_mode = default_insert_history_mode(&terminal_info);
+@@ -645 +710 @@ impl Tui {
+-            alt_saved_viewport: None,
++            screen_session: ScreenSession::new(),
+@@ -648 +712,0 @@ impl Tui {
+-            alt_screen_active: Arc::new(AtomicBool::new(false)),
+@@ -654 +718 @@ impl Tui {
+-            alt_screen_enabled: true,
++            default_history_insert_mode,
+@@ -661 +725 @@ impl Tui {
+-        self.alt_screen_enabled = enabled;
++        self.screen_session.set_enabled(enabled);
+@@ -676,0 +741,5 @@ impl Tui {
++    #[cfg(test)]
++    pub(crate) fn subscribe_draws_for_test(&self) -> broadcast::Receiver<()> {
++        self.draw_tx.subscribe()
++    }
++
+@@ -682 +751 @@ impl Tui {
+-        self.alt_screen_active.load(Ordering::Relaxed)
++        self.screen_session.is_active()
+@@ -733,2 +802,2 @@ impl Tui {
+-        if was_alt_screen {
+-            let _ = self.leave_alt_screen();
++        if was_alt_screen && let Err(err) = self.screen_session.suspend(&mut self.terminal) {
++            tracing::warn!("failed to suspend alternate screen before external program: {err}");
+@@ -755,2 +824,2 @@ impl Tui {
+-        if was_alt_screen {
+-            let _ = self.enter_alt_screen();
++        if was_alt_screen && let Err(err) = self.screen_session.resume(&mut self.terminal) {
++            tracing::warn!("failed to resume alternate screen after external program: {err}");
+@@ -799 +868 @@ impl Tui {
+-            self.alt_screen_active.clone(),
++            self.screen_session.clone(),
+@@ -813,19 +882,6 @@ impl Tui {
+-        if !self.alt_screen_enabled {
+-            return Ok(());
+-        }
+-        let _ = execute!(self.terminal.backend_mut(), EnterAlternateScreen);
+-        // Enable "alternate scroll" so terminals may translate wheel to arrows
+-        let _ = execute!(self.terminal.backend_mut(), EnableAlternateScroll);
+-        if let Ok(size) = self.terminal.size() {
+-            self.alt_saved_viewport = Some(self.terminal.viewport_area);
+-            self.terminal.resize(size)?;
+-            self.terminal.set_viewport_area(ratatui::layout::Rect::new(
+-                0,
+-                0,
+-                size.width,
+-                size.height,
+-            ));
+-            let _ = self.terminal.clear();
+-        }
+-        self.alt_screen_active.store(true, Ordering::Relaxed);
+-        Ok(())
++        self.screen_session.enter(&mut self.terminal)
++    }
++
++    /// Enter an application-owned alternate screen with direct mouse input.
++    pub fn enter_owned_alt_screen(&mut self) -> Result<()> {
++        self.screen_session.enter_owned(&mut self.terminal)
+@@ -836,11 +892,6 @@ impl Tui {
+-        if !self.alt_screen_enabled {
+-            return Ok(());
+-        }
+-        // Disable alternate scroll when leaving alt-screen
+-        let _ = execute!(self.terminal.backend_mut(), DisableAlternateScroll);
+-        let _ = execute!(self.terminal.backend_mut(), LeaveAlternateScreen);
+-        if let Some(saved) = self.alt_saved_viewport.take() {
+-            self.terminal.set_viewport_area(saved);
+-        }
+-        self.alt_screen_active.store(false, Ordering::Relaxed);
+-        Ok(())
++        self.screen_session.leave(&mut self.terminal)
++    }
++
++    /// Leave alternate screen regardless of any nested overlay owners.
++    pub fn finish_alt_screen(&mut self) -> Result<()> {
++        self.screen_session.finish(&mut self.terminal)
+@@ -886,0 +938,5 @@ impl Tui {
++    #[cfg(test)]
++    pub(crate) fn has_pending_history_lines(&self) -> bool {
++        !self.pending_history_lines.is_empty()
++    }
++
+@@ -934,0 +991 @@ impl Tui {
++        default_history_insert_mode: InsertHistoryMode,
+@@ -941,2 +998,4 @@ impl Tui {
+-            let mode = if is_zellij && batch.wrap_policy == HistoryLineWrapPolicy::Terminal {
+-                InsertHistoryMode::ZellijRaw
++            let mode = if default_history_insert_mode == InsertHistoryMode::NativeScrollback
++                || (is_zellij && batch.wrap_policy == HistoryLineWrapPolicy::Terminal)
++            {
++                InsertHistoryMode::NativeScrollback
+@@ -968 +1027 @@ impl Tui {
+-            .prepare_resume_action(&mut self.alt_saved_viewport);
++            .prepare_resume_action(&self.screen_session);
+@@ -979 +1038 @@ impl Tui {
+-                prepared.apply(&mut self.terminal, screen_size)?;
++                prepared.apply(&mut self.terminal, &self.screen_session)?;
+@@ -1008,0 +1068 @@ impl Tui {
++                self.default_history_insert_mode,
+@@ -1015,2 +1075,3 @@ impl Tui {
+-                let inline_area_bottom = if self.alt_screen_active.load(Ordering::Relaxed) {
+-                    self.alt_saved_viewport
++                let inline_area_bottom = if self.screen_session.is_active() {
++                    self.screen_session
++                        .saved_viewport()
+@@ -1103 +1164 @@ impl Tui {
+-            .prepare_resume_action(&mut self.alt_saved_viewport);
++            .prepare_resume_action(&self.screen_session);
+@@ -1110 +1171 @@ impl Tui {
+-                prepared.apply(&mut self.terminal, screen_size)?;
++                prepared.apply(&mut self.terminal, &self.screen_session)?;
+@@ -1123,0 +1185 @@ impl Tui {
++                self.default_history_insert_mode,
+@@ -1134,2 +1196,3 @@ impl Tui {
+-                let inline_area_bottom = if self.alt_screen_active.load(Ordering::Relaxed) {
+-                    self.alt_saved_viewport
++                let inline_area_bottom = if self.screen_session.is_active() {
++                    self.screen_session
++                        .saved_viewport()
+diff --git a/tui/src/tui/event_stream.rs b/tui/src/tui/event_stream.rs
+index da972c87..ba415bb4 100644
+--- a/tui/src/tui/event_stream.rs
++++ b/tui/src/tui/event_stream.rs
+@@ -28,0 +29,2 @@ use crossterm::event::Event;
++use crossterm::event::MouseButton;
++use crossterm::event::MouseEventKind;
+@@ -35,0 +38,3 @@ use tokio_stream::wrappers::errors::BroadcastStreamRecvError;
++use super::MouseClickEvent;
++use super::MouseScrollDirection;
++use super::MouseScrollEvent;
+@@ -36,0 +42,4 @@ use super::TuiEvent;
++#[cfg(unix)]
++use super::screen_session::ScreenSession;
++
++const MAX_SKIPPED_EVENTS_PER_POLL: usize = 32;
+@@ -162 +171 @@ pub struct TuiEventStream<S: EventSource + Default + Unpin = CrosstermEventSourc
+-    alt_screen_active: Arc<AtomicBool>,
++    screen_session: ScreenSession,
+@@ -171 +180 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
+-        #[cfg(unix)] alt_screen_active: Arc<AtomicBool>,
++        #[cfg(unix)] screen_session: ScreenSession,
+@@ -183 +192 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
+-            alt_screen_active,
++            screen_session,
+@@ -189 +198 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
+-    /// This skips events we don't use (mouse events, etc.) and keeps polling until it yields
++    /// This skips events we don't use (mouse clicks, focus loss, etc.) and keeps polling until it yields
+@@ -193 +202 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
+-        // Some crossterm events map to None (e.g. FocusLost, mouse); loop so we keep polling
++        // Some crossterm events map to None (e.g. FocusLost, mouse clicks); loop so we keep polling
+@@ -195 +204 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
+-        loop {
++        for _ in 0..MAX_SKIPPED_EVENTS_PER_POLL {
+@@ -235,0 +245,2 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
++        cx.waker().wake_by_ref();
++        Poll::Pending
+@@ -250 +261 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
+-    /// Map a crossterm event to a [`TuiEvent`], skipping events we don't use (mouse events, etc.).
++    /// Map a crossterm event to a [`TuiEvent`], skipping events we don't use.
+@@ -257 +268 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
+-                    let suspend_result = self.suspend_context.suspend(&self.alt_screen_active);
++                    let suspend_result = self.suspend_context.suspend(&self.screen_session);
+@@ -273,0 +285,25 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
++            Event::Mouse(mouse_event) => {
++                let direction = match mouse_event.kind {
++                    MouseEventKind::ScrollUp => Some(MouseScrollDirection::Up),
++                    MouseEventKind::ScrollDown => Some(MouseScrollDirection::Down),
++                    MouseEventKind::Down(MouseButton::Left) => {
++                        return Some(TuiEvent::MouseClick(MouseClickEvent {
++                            column: mouse_event.column,
++                            row: mouse_event.row,
++                        }));
++                    }
++                    MouseEventKind::Down(_)
++                    | MouseEventKind::Up(_)
++                    | MouseEventKind::Drag(_)
++                    | MouseEventKind::Moved
++                    | MouseEventKind::ScrollLeft
++                    | MouseEventKind::ScrollRight => None,
++                };
++                direction.map(|direction| {
++                    TuiEvent::MouseScroll(MouseScrollEvent {
++                        direction,
++                        column: mouse_event.column,
++                        row: mouse_event.row,
++                    })
++                })
++            }
+@@ -284 +319,0 @@ impl<S: EventSource + Default + Unpin> TuiEventStream<S> {
+-            _ => None,
+@@ -325,0 +361,2 @@ mod tests {
++    use crossterm::event::MouseButton;
++    use crossterm::event::MouseEvent;
+@@ -394 +431 @@ mod tests {
+-            Arc::new(AtomicBool::new(false)),
++            ScreenSession::new(),
+@@ -526,0 +564,74 @@ mod tests {
++    #[tokio::test(flavor = "current_thread")]
++    async fn vertical_mouse_wheel_maps_to_scroll_and_ignored_events_yield_to_draws() {
++        let (broker, handle, draw_tx, draw_rx, terminal_focused) = setup();
++        let mut stream = make_stream(broker, draw_rx, terminal_focused);
++        stream.poll_draw_first = false;
++
++        handle.send(Ok(Event::Mouse(MouseEvent {
++            kind: MouseEventKind::Down(MouseButton::Right),
++            column: 3,
++            row: 4,
++            modifiers: KeyModifiers::NONE,
++        })));
++        for column in 0..=MAX_SKIPPED_EVENTS_PER_POLL {
++            handle.send(Ok(Event::Mouse(MouseEvent {
++                kind: MouseEventKind::Moved,
++                column: column as u16,
++                row: 0,
++                modifiers: KeyModifiers::NONE,
++            })));
++        }
++        handle.send(Ok(Event::Mouse(MouseEvent {
++            kind: MouseEventKind::ScrollUp,
++            column: 5,
++            row: 6,
++            modifiers: KeyModifiers::NONE,
++        })));
++        handle.send(Ok(Event::Mouse(MouseEvent {
++            kind: MouseEventKind::ScrollDown,
++            column: 7,
++            row: 8,
++            modifiers: KeyModifiers::NONE,
++        })));
++        draw_tx.send(()).expect("send draw");
++
++        let first = stream.next().await;
++        let second = stream.next().await;
++        let third = stream.next().await;
++        assert!(matches!(first, Some(TuiEvent::Draw)));
++        assert!(matches!(
++            second,
++            Some(TuiEvent::MouseScroll(MouseScrollEvent {
++                direction: MouseScrollDirection::Up,
++                column: 5,
++                row: 6,
++            }))
++        ));
++        assert!(matches!(
++            third,
++            Some(TuiEvent::MouseScroll(MouseScrollEvent {
++                direction: MouseScrollDirection::Down,
++                column: 7,
++                row: 8,
++            }))
++        ));
++    }
++
++    #[tokio::test(flavor = "current_thread")]
++    async fn primary_mouse_down_maps_to_click() {
++        let (broker, handle, _draw_tx, draw_rx, terminal_focused) = setup();
++        let mut stream = make_stream(broker, draw_rx, terminal_focused);
++
++        handle.send(Ok(Event::Mouse(MouseEvent {
++            kind: MouseEventKind::Down(MouseButton::Left),
++            column: 9,
++            row: 4,
++            modifiers: KeyModifiers::NONE,
++        })));
++
++        assert!(matches!(
++            stream.next().await,
++            Some(TuiEvent::MouseClick(MouseClickEvent { column: 9, row: 4 }))
++        ));
++    }
++
+diff --git a/tui/src/tui/history_tail.rs b/tui/src/tui/history_tail.rs
+index 6b018eec..99a6e7ce 100644
+--- a/tui/src/tui/history_tail.rs
++++ b/tui/src/tui/history_tail.rs
+@@ -33,0 +34 @@ impl Tui {
++            self.default_history_insert_mode,
+@@ -36 +37 @@ impl Tui {
+-            InsertHistoryMode::ZellijRaw
++            InsertHistoryMode::NativeScrollback
+diff --git a/tui/src/tui/job_control.rs b/tui/src/tui/job_control.rs
+index 2db1fc04..5d8b449d 100644
+--- a/tui/src/tui/job_control.rs
++++ b/tui/src/tui/job_control.rs
+@@ -6 +5,0 @@ use std::sync::PoisonError;
+-use std::sync::atomic::AtomicBool;
+@@ -13,2 +11,0 @@ use crossterm::event::KeyCode;
+-use crossterm::terminal::EnterAlternateScreen;
+-use crossterm::terminal::LeaveAlternateScreen;
+@@ -17 +13,0 @@ use ratatui::layout::Rect;
+-use ratatui::layout::Size;
+@@ -21,2 +16,0 @@ use crate::key_hint;
+-use super::DisableAlternateScroll;
+-use super::EnableAlternateScroll;
+@@ -23,0 +18 @@ use super::Terminal;
++use super::screen_session::ScreenSession;
+@@ -64,5 +59,5 @@ impl SuspendContext {
+-    pub(crate) fn suspend(&self, alt_screen_active: &Arc<AtomicBool>) -> Result<()> {
+-        if alt_screen_active.load(Ordering::Relaxed) {
+-            // Leave alt-screen so the terminal returns to the normal buffer while suspended; also turn off alt-scroll.
+-            let _ = execute!(stdout(), DisableAlternateScroll);
+-            let _ = execute!(stdout(), LeaveAlternateScreen);
++    pub(crate) fn suspend(&self, screen_session: &ScreenSession) -> Result<()> {
++        let mut first_error = None;
++        if screen_session.is_active() {
++            let mut terminal_stdout = stdout();
++            first_error = screen_session.suspend_to_writer(&mut terminal_stdout).err();
+@@ -97,2 +92,4 @@ impl SuspendContext {
+-
+-        Ok(())
++        match first_error {
++            Some(err) => Err(err),
++            None => Ok(()),
++        }
+@@ -107 +104 @@ impl SuspendContext {
+-        alt_saved_viewport: &mut Option<Rect>,
++        screen_session: &ScreenSession,
+@@ -109,3 +106,4 @@ impl SuspendContext {
+-        let action = self.take_resume_action()?;
+-        match action {
+-            ResumeAction::RealignInline => {
++        match self.take_resume_action() {
++            None if screen_session.is_suspended() => Some(PreparedResumeAction::RestoreAltScreen),
++            None => None,
++            Some(ResumeAction::RealignInline) => {
+@@ -120,4 +118,2 @@ impl SuspendContext {
+-            ResumeAction::RestoreAlt => {
+-                if let Some(saved) = alt_saved_viewport.as_mut() {
+-                    saved.y = self.cursor_y();
+-                }
++            Some(ResumeAction::RestoreAlt) => {
++                screen_session.update_saved_viewport_y(self.cursor_y());
+@@ -182 +178,5 @@ impl PreparedResumeAction {
+-    pub(crate) fn apply(self, terminal: &mut Terminal, screen_size: Size) -> Result<()> {
++    pub(crate) fn apply(
++        self,
++        terminal: &mut Terminal,
++        screen_session: &ScreenSession,
++    ) -> Result<()> {
+@@ -188,5 +188 @@ impl PreparedResumeAction {
+-                execute!(terminal.backend_mut(), EnterAlternateScreen)?;
+-                // Enable "alternate scroll" so terminals may translate wheel to arrows
+-                execute!(terminal.backend_mut(), EnableAlternateScroll)?;
+-                terminal.set_viewport_area(Rect::from(screen_size));
+-                terminal.clear()?;
++                screen_session.resume(terminal)?;
+diff --git a/tui/src/tui/screen_session.rs b/tui/src/tui/screen_session.rs
+new file mode 100644
+index 00000000..cf1f5fca
+--- /dev/null
++++ b/tui/src/tui/screen_session.rs
+@@ -0,0 +1,566 @@
++//! Alternate-screen ownership and physical terminal transitions.
++
++use std::io;
++use std::io::Write;
++use std::num::NonZeroUsize;
++use std::sync::Arc;
++use std::sync::Mutex;
++use std::sync::PoisonError;
++use std::sync::atomic::AtomicBool;
++use std::sync::atomic::Ordering;
++
++use crossterm::event::DisableMouseCapture;
++use crossterm::event::EnableMouseCapture;
++use crossterm::terminal::EnterAlternateScreen;
++use crossterm::terminal::LeaveAlternateScreen;
++use ratatui::crossterm::execute;
++use ratatui::layout::Rect;
++
++use super::DisableAlternateScroll;
++use super::EnableAlternateScroll;
++use super::Terminal;
++
++const INITIAL_OWNER_COUNT: usize = 1;
++static PHYSICAL_ALT_SCREEN: PhysicalAltScreenTracker = PhysicalAltScreenTracker::new();
++
++struct PhysicalAltScreenTracker {
++    active: AtomicBool,
++    alternate_scroll_active: AtomicBool,
++    mouse_capture_active: AtomicBool,
++}
++
++impl PhysicalAltScreenTracker {
++    const fn new() -> Self {
++        Self {
++            active: AtomicBool::new(/*v*/ false),
++            alternate_scroll_active: AtomicBool::new(/*v*/ false),
++            mouse_capture_active: AtomicBool::new(/*v*/ false),
++        }
++    }
++
++    fn mark_entered(&self) {
++        self.active.store(/*val*/ true, Ordering::Release);
++    }
++
++    fn mark_left(&self) {
++        self.active.store(/*val*/ false, Ordering::Release);
++    }
++
++    fn mark_alternate_scroll_enabled(&self) {
++        self.alternate_scroll_active
++            .store(/*val*/ true, Ordering::Release);
++    }
++
++    fn mark_alternate_scroll_disabled(&self) {
++        self.alternate_scroll_active
++            .store(/*val*/ false, Ordering::Release);
++    }
++
++    fn mark_mouse_capture_enabled(&self) {
++        self.mouse_capture_active
++            .store(/*val*/ true, Ordering::Release);
++    }
++
++    fn mark_mouse_capture_disabled(&self) {
++        self.mouse_capture_active
++            .store(/*val*/ false, Ordering::Release);
++    }
++
++    fn restore(&self, writer: &mut impl Write) -> io::Result<()> {
++        let mouse_result = if self.mouse_capture_active.load(Ordering::Acquire) {
++            let result = execute!(writer, DisableMouseCapture);
++            if result.is_ok() {
++                self.mark_mouse_capture_disabled();
++            }
++            result
++        } else {
++            Ok(())
++        };
++        let scroll_result = if self.alternate_scroll_active.load(Ordering::Acquire) {
++            let result = execute!(writer, DisableAlternateScroll);
++            if result.is_ok() {
++                self.mark_alternate_scroll_disabled();
++            }
++            result
++        } else {
++            Ok(())
++        };
++        let leave_result = if self.active.load(Ordering::Acquire) {
++            execute!(writer, LeaveAlternateScreen)
++        } else {
++            Ok(())
++        };
++        if leave_result.is_ok() {
++            self.mark_left();
++        }
++        merge_results(mouse_result, merge_results(scroll_result, leave_result))
++    }
++}
++
++#[derive(Clone)]
++pub(super) struct ScreenSession {
++    inner: Arc<Mutex<ScreenSessionInner>>,
++}
++
++struct ScreenSessionInner {
++    availability: AltScreenAvailability,
++    ownership: ScreenOwnership,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum AltScreenAvailability {
++    Enabled,
++    Disabled,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum ScreenOwnership {
++    Inline,
++    Alternate {
++        owners: NonZeroUsize,
++        saved_viewport: Rect,
++        physical: PhysicalAltScreen,
++        input_mode: AltScreenInputMode,
++    },
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum PhysicalAltScreen {
++    Active,
++    Suspended,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum AltScreenInputMode {
++    AlternateScroll,
++    MouseCapture,
++}
++
++impl AltScreenInputMode {
++    fn enable(self, commands: &mut impl ScreenCommands) -> io::Result<()> {
++        match self {
++            Self::AlternateScroll => commands.enable_alternate_scroll(),
++            Self::MouseCapture => commands.enable_mouse_capture(),
++        }
++    }
++
++    fn disable(self, commands: &mut impl ScreenCommands) -> io::Result<()> {
++        match self {
++            Self::AlternateScroll => commands.disable_alternate_scroll(),
++            Self::MouseCapture => commands.disable_mouse_capture(),
++        }
++    }
++}
++
++impl ScreenSession {
++    pub(super) fn new() -> Self {
++        Self {
++            inner: Arc::new(Mutex::new(ScreenSessionInner {
++                availability: AltScreenAvailability::Enabled,
++                ownership: ScreenOwnership::Inline,
++            })),
++        }
++    }
++
++    pub(super) fn set_enabled(&self, enabled: bool) {
++        self.lock().availability = match enabled {
++            true => AltScreenAvailability::Enabled,
++            false => AltScreenAvailability::Disabled,
++        };
++    }
++
++    pub(super) fn is_active(&self) -> bool {
++        matches!(self.lock().ownership, ScreenOwnership::Alternate { .. })
++    }
++
++    pub(super) fn is_suspended(&self) -> bool {
++        matches!(
++            self.lock().ownership,
++            ScreenOwnership::Alternate {
++                physical: PhysicalAltScreen::Suspended,
++                ..
++            }
++        )
++    }
++
++    pub(super) fn saved_viewport(&self) -> Option<Rect> {
++        match self.lock().ownership {
++            ScreenOwnership::Inline => None,
++            ScreenOwnership::Alternate { saved_viewport, .. } => Some(saved_viewport),
++        }
++    }
++
++    pub(super) fn update_saved_viewport_y(&self, y: u16) {
++        if let ScreenOwnership::Alternate { saved_viewport, .. } = &mut self.lock().ownership {
++            saved_viewport.y = y;
++        }
++    }
++
++    pub(super) fn enter(&self, terminal: &mut Terminal) -> io::Result<()> {
++        self.enter_with_input_mode(terminal, AltScreenInputMode::AlternateScroll)
++    }
++
++    pub(super) fn enter_owned(&self, terminal: &mut Terminal) -> io::Result<()> {
++        self.enter_with_input_mode(terminal, AltScreenInputMode::MouseCapture)
++    }
++
++    fn enter_with_input_mode(
++        &self,
++        terminal: &mut Terminal,
++        input_mode: AltScreenInputMode,
++    ) -> io::Result<()> {
++        let was_active = self.is_active();
++        let saved_viewport = terminal.viewport_area;
++        let command_result = self.acquire(terminal, saved_viewport, input_mode);
++        let layout_result = if !was_active && self.is_active() {
++            expand_to_full_screen(terminal)
++        } else {
++            Ok(())
++        };
++        merge_results(command_result, layout_result)
++    }
++
++    pub(super) fn leave(&self, terminal: &mut Terminal) -> io::Result<()> {
++        let saved_viewport = self.saved_viewport();
++        let was_active = saved_viewport.is_some();
++        let result = self.release(terminal);
++        if was_active
++            && !self.is_active()
++            && let Some(saved_viewport) = saved_viewport
++        {
++            terminal.set_viewport_area(saved_viewport);
++        }
++        result
++    }
++
++    pub(super) fn finish(&self, terminal: &mut Terminal) -> io::Result<()> {
++        let saved_viewport = self.saved_viewport();
++        let result = self.finish_commands(terminal);
++        if !self.is_active()
++            && let Some(saved_viewport) = saved_viewport
++        {
++            terminal.set_viewport_area(saved_viewport);
++        }
++        result
++    }
++
++    pub(super) fn suspend(&self, terminal: &mut Terminal) -> io::Result<()> {
++        let was_suspended = self.is_suspended();
++        let result = self.suspend_commands(terminal);
++        if !was_suspended
++            && self.is_suspended()
++            && let Some(saved_viewport) = self.saved_viewport()
++        {
++            terminal.set_viewport_area(saved_viewport);
++        }
++        result
++    }
++
++    pub(super) fn suspend_to_writer(&self, writer: &mut impl Write) -> io::Result<()> {
++        self.suspend_commands(&mut WriterCommands(writer))
++    }
++
++    pub(super) fn resume(&self, terminal: &mut Terminal) -> io::Result<()> {
++        let was_suspended = self.is_suspended();
++        let command_result = self.resume_commands(terminal);
++        let layout_result = if was_suspended && !self.is_suspended() {
++            expand_to_full_screen(terminal)
++        } else {
++            Ok(())
++        };
++        merge_results(command_result, layout_result)
++    }
++
++    fn acquire(
++        &self,
++        commands: &mut impl ScreenCommands,
++        saved_viewport: Rect,
++        input_mode: AltScreenInputMode,
++    ) -> io::Result<()> {
++        let mut inner = self.lock();
++        if inner.availability == AltScreenAvailability::Disabled {
++            return Ok(());
++        }
++        match &mut inner.ownership {
++            ScreenOwnership::Inline => {
++                commands.enter_alternate_screen()?;
++                inner.ownership = ScreenOwnership::Alternate {
++                    owners: NonZeroUsize::MIN,
++                    saved_viewport,
++                    physical: PhysicalAltScreen::Active,
++                    input_mode,
++                };
++                if let Err(enable_error) = input_mode.enable(commands) {
++                    let disable_result = input_mode.disable(commands);
++                    let leave_result = commands.leave_alternate_screen();
++                    if leave_result.is_ok() {
++                        inner.ownership = ScreenOwnership::Inline;
++                    }
++                    return merge_results(
++                        Err(enable_error),
++                        merge_results(disable_result, leave_result),
++                    );
++                }
++                Ok(())
++            }
++            ScreenOwnership::Alternate { owners, .. } => {
++                let next = owners
++                    .get()
++                    .checked_add(INITIAL_OWNER_COUNT)
++                    .ok_or_else(|| io::Error::other("alternate-screen owner count overflow"))?;
++                *owners = NonZeroUsize::new(next)
++                    .ok_or_else(|| io::Error::other("alternate-screen owner count became zero"))?;
++                Ok(())
++            }
++        }
++    }
++
++    fn release(&self, commands: &mut impl ScreenCommands) -> io::Result<()> {
++        let mut inner = self.lock();
++        let ScreenOwnership::Alternate {
++            owners,
++            physical,
++            input_mode,
++            ..
++        } = &mut inner.ownership
++        else {
++            return Ok(());
++        };
++        if owners.get() > INITIAL_OWNER_COUNT {
++            *owners = NonZeroUsize::new(owners.get() - INITIAL_OWNER_COUNT).ok_or_else(|| {
++                io::Error::other("nested alternate-screen owner count became zero")
++            })?;
++            return Ok(());
++        }
++        if *physical == PhysicalAltScreen::Suspended {
++            inner.ownership = ScreenOwnership::Inline;
++            return Ok(());
++        }
++
++        let disable_result = input_mode.disable(commands);
++        let leave_result = commands.leave_alternate_screen();
++        if leave_result.is_ok() {
++            inner.ownership = ScreenOwnership::Inline;
++        }
++        merge_results(disable_result, leave_result)
++    }
++
++    fn finish_commands(&self, commands: &mut impl ScreenCommands) -> io::Result<()> {
++        let mut inner = self.lock();
++        let ScreenOwnership::Alternate {
++            physical,
++            input_mode,
++            ..
++        } = inner.ownership
++        else {
++            return Ok(());
++        };
++        if physical == PhysicalAltScreen::Suspended {
++            inner.ownership = ScreenOwnership::Inline;
++            return Ok(());
++        }
++
++        let disable_result = input_mode.disable(commands);
++        let leave_result = commands.leave_alternate_screen();
++        if leave_result.is_ok() {
++            inner.ownership = ScreenOwnership::Inline;
++        }
++        merge_results(disable_result, leave_result)
++    }
++
++    fn suspend_commands(&self, commands: &mut impl ScreenCommands) -> io::Result<()> {
++        let mut inner = self.lock();
++        let ScreenOwnership::Alternate {
++            physical,
++            input_mode,
++            ..
++        } = &mut inner.ownership
++        else {
++            return Ok(());
++        };
++        if *physical == PhysicalAltScreen::Suspended {
++            return Ok(());
++        }
++        let disable_result = input_mode.disable(commands);
++        let leave_result = commands.leave_alternate_screen();
++        if leave_result.is_ok() {
++            *physical = PhysicalAltScreen::Suspended;
++        }
++        merge_results(disable_result, leave_result)
++    }
++
++    fn resume_commands(&self, commands: &mut impl ScreenCommands) -> io::Result<()> {
++        let mut inner = self.lock();
++        let ScreenOwnership::Alternate {
++            physical,
++            input_mode,
++            ..
++        } = &mut inner.ownership
++        else {
++            return Ok(());
++        };
++        if *physical == PhysicalAltScreen::Active {
++            return Ok(());
++        }
++        commands.enter_alternate_screen()?;
++        *physical = PhysicalAltScreen::Active;
++        if let Err(enable_error) = input_mode.enable(commands) {
++            let disable_result = input_mode.disable(commands);
++            let leave_result = commands.leave_alternate_screen();
++            if leave_result.is_ok() {
++                *physical = PhysicalAltScreen::Suspended;
++            }
++            return merge_results(
++                Err(enable_error),
++                merge_results(disable_result, leave_result),
++            );
++        }
++        Ok(())
++    }
++
++    fn lock(&self) -> std::sync::MutexGuard<'_, ScreenSessionInner> {
++        self.inner.lock().unwrap_or_else(PoisonError::into_inner)
++    }
++}
++
++/// Command sink shared by terminal-backed transitions, job-control writes, and state tests.
++trait ScreenCommands {
++    fn enter_alternate_screen(&mut self) -> io::Result<()>;
++    fn leave_alternate_screen(&mut self) -> io::Result<()>;
++    fn enable_alternate_scroll(&mut self) -> io::Result<()>;
++    fn disable_alternate_scroll(&mut self) -> io::Result<()>;
++    fn enable_mouse_capture(&mut self) -> io::Result<()>;
++    fn disable_mouse_capture(&mut self) -> io::Result<()>;
++}
++
++pub(super) fn restore_physical_alt_screen(writer: &mut impl Write) -> io::Result<()> {
++    PHYSICAL_ALT_SCREEN.restore(writer)
++}
++
++impl ScreenCommands for Terminal {
++    fn enter_alternate_screen(&mut self) -> io::Result<()> {
++        let result = execute!(self.backend_mut(), EnterAlternateScreen);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_entered();
++        }
++        result
++    }
++
++    fn leave_alternate_screen(&mut self) -> io::Result<()> {
++        let result = execute!(self.backend_mut(), LeaveAlternateScreen);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_left();
++        }
++        result
++    }
++
++    fn enable_alternate_scroll(&mut self) -> io::Result<()> {
++        let result = execute!(self.backend_mut(), EnableAlternateScroll);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_alternate_scroll_enabled();
++        }
++        result
++    }
++
++    fn disable_alternate_scroll(&mut self) -> io::Result<()> {
++        let result = execute!(self.backend_mut(), DisableAlternateScroll);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_alternate_scroll_disabled();
++        }
++        result
++    }
++
++    fn enable_mouse_capture(&mut self) -> io::Result<()> {
++        let result = execute!(self.backend_mut(), EnableMouseCapture);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_mouse_capture_enabled();
++        }
++        result
++    }
++
++    fn disable_mouse_capture(&mut self) -> io::Result<()> {
++        let result = execute!(self.backend_mut(), DisableMouseCapture);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_mouse_capture_disabled();
++        }
++        result
++    }
++}
++
++struct WriterCommands<'a, W>(&'a mut W);
++
++impl<W: Write> ScreenCommands for WriterCommands<'_, W> {
++    fn enter_alternate_screen(&mut self) -> io::Result<()> {
++        let result = execute!(self.0, EnterAlternateScreen);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_entered();
++        }
++        result
++    }
++
++    fn leave_alternate_screen(&mut self) -> io::Result<()> {
++        let result = execute!(self.0, LeaveAlternateScreen);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_left();
++        }
++        result
++    }
++
++    fn enable_alternate_scroll(&mut self) -> io::Result<()> {
++        let result = execute!(self.0, EnableAlternateScroll);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_alternate_scroll_enabled();
++        }
++        result
++    }
++
++    fn disable_alternate_scroll(&mut self) -> io::Result<()> {
++        let result = execute!(self.0, DisableAlternateScroll);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_alternate_scroll_disabled();
++        }
++        result
++    }
++
++    fn enable_mouse_capture(&mut self) -> io::Result<()> {
++        let result = execute!(self.0, EnableMouseCapture);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_mouse_capture_enabled();
++        }
++        result
++    }
++
++    fn disable_mouse_capture(&mut self) -> io::Result<()> {
++        let result = execute!(self.0, DisableMouseCapture);
++        if result.is_ok() {
++            PHYSICAL_ALT_SCREEN.mark_mouse_capture_disabled();
++        }
++        result
++    }
++}
++
++fn expand_to_full_screen(terminal: &mut Terminal) -> io::Result<()> {
++    let size = terminal.size()?;
++    terminal.set_viewport_area(Rect::new(
++        /*x*/ 0,
++        /*y*/ 0,
++        size.width,
++        size.height,
++    ));
++    terminal.clear()
++}
++
++fn merge_results(first: io::Result<()>, second: io::Result<()>) -> io::Result<()> {
++    match (first, second) {
++        (Ok(()), Ok(())) => Ok(()),
++        (Err(err), Ok(())) | (Ok(()), Err(err)) => Err(err),
++        (Err(first), Err(second)) => Err(io::Error::new(
++            first.kind(),
++            format!("{first}; additionally: {second}"),
++        )),
++    }
++}
++
++#[cfg(test)]
++#[path = "screen_session_tests.rs"]
++mod tests;
+diff --git a/tui/src/tui/screen_session_tests.rs b/tui/src/tui/screen_session_tests.rs
+new file mode 100644
+index 00000000..99ff22bd
+--- /dev/null
++++ b/tui/src/tui/screen_session_tests.rs
+@@ -0,0 +1,350 @@
++use std::io;
++
++use pretty_assertions::assert_eq;
++use ratatui::layout::Rect;
++
++use super::AltScreenInputMode;
++use super::PhysicalAltScreenTracker;
++use super::ScreenCommands;
++use super::ScreenSession;
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum Effect {
++    Enter,
++    Leave,
++    EnableScroll,
++    DisableScroll,
++    EnableMouse,
++    DisableMouse,
++}
++
++const ENTER_AND_LEAVE: &[Effect] = &[
++    Effect::Enter,
++    Effect::EnableScroll,
++    Effect::DisableScroll,
++    Effect::Leave,
++];
++const LEAVE: &[Effect] = &[Effect::DisableScroll, Effect::Leave];
++const OWNED_ENTER_AND_LEAVE: &[Effect] = &[
++    Effect::Enter,
++    Effect::EnableMouse,
++    Effect::DisableMouse,
++    Effect::Leave,
++];
++
++#[derive(Default)]
++struct FakeCommands {
++    effects: Vec<Effect>,
++    failures: Vec<Effect>,
++}
++
++impl FakeCommands {
++    fn failing(failures: Vec<Effect>) -> Self {
++        Self {
++            failures,
++            ..Self::default()
++        }
++    }
++
++    fn record(&mut self, effect: Effect) -> io::Result<()> {
++        self.effects.push(effect);
++        if let Some(index) = self.failures.iter().position(|failure| *failure == effect) {
++            self.failures.remove(index);
++            return Err(io::Error::other(format!("failed {effect:?}")));
++        }
++        Ok(())
++    }
++}
++
++impl ScreenCommands for FakeCommands {
++    fn enter_alternate_screen(&mut self) -> io::Result<()> {
++        self.record(Effect::Enter)
++    }
++
++    fn leave_alternate_screen(&mut self) -> io::Result<()> {
++        self.record(Effect::Leave)
++    }
++
++    fn enable_alternate_scroll(&mut self) -> io::Result<()> {
++        self.record(Effect::EnableScroll)
++    }
++
++    fn disable_alternate_scroll(&mut self) -> io::Result<()> {
++        self.record(Effect::DisableScroll)
++    }
++
++    fn enable_mouse_capture(&mut self) -> io::Result<()> {
++        self.record(Effect::EnableMouse)
++    }
++
++    fn disable_mouse_capture(&mut self) -> io::Result<()> {
++        self.record(Effect::DisableMouse)
++    }
++}
++
++fn acquire(session: &ScreenSession, commands: &mut FakeCommands) {
++    session
++        .acquire(
++            commands,
++            Rect {
++                x: 0,
++                y: 12,
++                width: 80,
++                height: 12,
++            },
++            AltScreenInputMode::AlternateScroll,
++        )
++        .expect("acquire");
++}
++
++fn acquire_owned(session: &ScreenSession, commands: &mut FakeCommands) {
++    session
++        .acquire(commands, Rect::default(), AltScreenInputMode::MouseCapture)
++        .expect("acquire owned");
++}
++
++fn assert_effects(commands: &FakeCommands, expected: &[Effect]) {
++    assert_eq!(commands.effects, expected);
++}
++
++#[test]
++fn nested_owners_only_transition_at_outer_boundaries() {
++    let session = ScreenSession::new();
++    let nested = session.clone();
++    let mut commands = FakeCommands::default();
++    acquire(&session, &mut commands);
++    acquire(&nested, &mut commands);
++
++    nested.release(&mut commands).expect("nested release");
++    assert!(session.is_active());
++    session.release(&mut commands).expect("outer release");
++
++    assert!(!session.is_active());
++    assert_effects(&commands, ENTER_AND_LEAVE);
++}
++
++#[test]
++fn finish_clears_all_nested_owners_with_one_physical_transition() {
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::default();
++    acquire(&session, &mut commands);
++    acquire(&session, &mut commands);
++    commands.effects.clear();
++
++    session.finish_commands(&mut commands).expect("finish");
++    session
++        .finish_commands(&mut commands)
++        .expect("repeat finish");
++
++    assert!(!session.is_active());
++    assert_effects(&commands, LEAVE);
++}
++
++#[test]
++fn owned_root_keeps_mouse_capture_across_nested_overlay_ownership() {
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::default();
++    acquire_owned(&session, &mut commands);
++    acquire(&session, &mut commands);
++
++    session.release(&mut commands).expect("nested release");
++    session.release(&mut commands).expect("owned release");
++
++    assert!(!session.is_active());
++    assert_effects(&commands, OWNED_ENTER_AND_LEAVE);
++}
++
++#[test]
++fn emergency_restore_only_leaves_a_physically_owned_screen() {
++    let tracker = PhysicalAltScreenTracker::new();
++    let mut inactive_output = Vec::new();
++    tracker
++        .restore(&mut inactive_output)
++        .expect("restore inactive screen");
++    assert_eq!(inactive_output, Vec::<u8>::new());
++
++    tracker.mark_entered();
++    tracker.mark_alternate_scroll_enabled();
++
++    let mut restore_output = Vec::new();
++    tracker
++        .restore(&mut restore_output)
++        .expect("restore active screen");
++    let mut expected_output = Vec::new();
++    ratatui::crossterm::execute!(
++        expected_output,
++        super::DisableAlternateScroll,
++        crossterm::terminal::LeaveAlternateScreen
++    )
++    .expect("write expected restore sequence");
++    assert_eq!(restore_output, expected_output);
++
++    tracker
++        .restore(&mut restore_output)
++        .expect("repeat restore");
++    assert_eq!(restore_output, expected_output);
++}
++
++#[cfg(unix)]
++#[test]
++fn emergency_restore_disables_tracked_mouse_capture() {
++    let tracker = PhysicalAltScreenTracker::new();
++    tracker.mark_entered();
++    tracker.mark_mouse_capture_enabled();
++
++    let mut restore_output = Vec::new();
++    tracker
++        .restore(&mut restore_output)
++        .expect("restore mouse-captured screen");
++    let mut expected_output = Vec::new();
++    ratatui::crossterm::execute!(
++        expected_output,
++        crossterm::event::DisableMouseCapture,
++        crossterm::terminal::LeaveAlternateScreen
++    )
++    .expect("write expected restore sequence");
++    assert_eq!(restore_output, expected_output);
++}
++
++#[test]
++fn temporary_suspend_preserves_nested_ownership_until_resume() {
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::default();
++    acquire(&session, &mut commands);
++    acquire(&session, &mut commands);
++    commands.effects.clear();
++
++    session.suspend_commands(&mut commands).expect("suspend");
++    session
++        .suspend_commands(&mut commands)
++        .expect("repeat suspend");
++    assert!(session.is_active() && session.is_suspended());
++    session.resume_commands(&mut commands).expect("resume");
++    session
++        .resume_commands(&mut commands)
++        .expect("repeat resume");
++    session.release(&mut commands).expect("nested release");
++    assert!(session.is_active());
++    session.release(&mut commands).expect("outer release");
++
++    assert_effects(
++        &commands,
++        &[
++            Effect::DisableScroll,
++            Effect::Leave,
++            Effect::Enter,
++            Effect::EnableScroll,
++            Effect::DisableScroll,
++            Effect::Leave,
++        ],
++    );
++}
++
++#[test]
++fn owned_suspend_and_resume_restore_mouse_capture() {
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::default();
++    acquire_owned(&session, &mut commands);
++    commands.effects.clear();
++
++    session.suspend_commands(&mut commands).expect("suspend");
++    session.resume_commands(&mut commands).expect("resume");
++    session.release(&mut commands).expect("release");
++
++    assert_effects(
++        &commands,
++        &[
++            Effect::DisableMouse,
++            Effect::Leave,
++            Effect::Enter,
++            Effect::EnableMouse,
++            Effect::DisableMouse,
++            Effect::Leave,
++        ],
++    );
++}
++
++#[test]
++fn disabled_session_ignores_ownership_requests() {
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::default();
++    session.set_enabled(/*enabled*/ false);
++
++    acquire(&session, &mut commands);
++    session.release(&mut commands).expect("release");
++    session.suspend_commands(&mut commands).expect("suspend");
++    session.resume_commands(&mut commands).expect("resume");
++
++    assert!(!session.is_active());
++    assert_effects(&commands, &[]);
++}
++
++#[test]
++fn partial_acquire_rolls_back_or_retains_ownership_for_retry() {
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::failing(vec![Effect::EnableScroll]);
++    assert!(
++        session
++            .acquire(
++                &mut commands,
++                Rect::default(),
++                AltScreenInputMode::AlternateScroll,
++            )
++            .is_err()
++    );
++    assert!(!session.is_active());
++    assert_effects(&commands, ENTER_AND_LEAVE);
++
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::failing(vec![Effect::EnableScroll, Effect::Leave]);
++    assert!(
++        session
++            .acquire(
++                &mut commands,
++                Rect::default(),
++                AltScreenInputMode::AlternateScroll,
++            )
++            .is_err()
++    );
++    assert!(session.is_active());
++    commands.effects.clear();
++    session.release(&mut commands).expect("retry cleanup");
++    assert!(!session.is_active());
++    assert_effects(&commands, LEAVE);
++}
++
++#[test]
++fn partial_owned_acquire_disables_mouse_before_leaving() {
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::failing(vec![Effect::EnableMouse]);
++
++    assert!(
++        session
++            .acquire(
++                &mut commands,
++                Rect::default(),
++                AltScreenInputMode::MouseCapture,
++            )
++            .is_err()
++    );
++    assert!(!session.is_active());
++    assert_effects(&commands, OWNED_ENTER_AND_LEAVE);
++}
++
++#[test]
++fn release_attempts_all_cleanup_and_retains_ownership_when_leave_fails() {
++    let session = ScreenSession::new();
++    let mut commands = FakeCommands::default();
++    acquire(&session, &mut commands);
++    commands.effects.clear();
++    commands.failures = vec![Effect::DisableScroll, Effect::Leave];
++
++    assert!(session.release(&mut commands).is_err());
++    assert!(session.is_active());
++    assert_effects(&commands, LEAVE);
++
++    commands.effects.clear();
++    session.release(&mut commands).expect("retry release");
++    assert!(!session.is_active());
++    assert_effects(&commands, LEAVE);
++}
+diff --git a/tui/src/tui/screen_size.rs b/tui/src/tui/screen_size.rs
+index c08709cc..abf9c0e3 100644
+--- a/tui/src/tui/screen_size.rs
++++ b/tui/src/tui/screen_size.rs
+@@ -48 +48,4 @@ impl Tui {
+-            TuiEvent::Key(_) | TuiEvent::Paste(_) => cached,
++            TuiEvent::Key(_)
++            | TuiEvent::Paste(_)
++            | TuiEvent::MouseScroll(_)
++            | TuiEvent::MouseClick(_) => cached,
+@@ -50,2 +53,8 @@ impl Tui {
+-        self.screen_size.pending_draw_size =
+-            (!matches!(event, TuiEvent::Key(_) | TuiEvent::Paste(_))).then_some(size);
++        self.screen_size.pending_draw_size = (!matches!(
++            event,
++            TuiEvent::Key(_)
++                | TuiEvent::Paste(_)
++                | TuiEvent::MouseScroll(_)
++                | TuiEvent::MouseClick(_)
++        ))
++        .then_some(size);
+diff --git a/tui/src/update_prompt.rs b/tui/src/update_prompt.rs
+index ae830312..b7ebce6f 100644
+--- a/tui/src/update_prompt.rs
++++ b/tui/src/update_prompt.rs
+@@ -62 +62 @@ pub(crate) async fn run_update_prompt_if_needed(
+-                TuiEvent::Paste(_) => {}
++                TuiEvent::Paste(_) | TuiEvent::MouseScroll(_) | TuiEvent::MouseClick(_) => {}
