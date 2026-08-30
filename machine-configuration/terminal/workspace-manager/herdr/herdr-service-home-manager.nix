@@ -31,7 +31,8 @@ let
   legacyServerImporter = pkgs.writeShellApplication {
     name = "herdr-legacy-server-importer";
     text = ''
-      export XDG_RUNTIME_DIR="/run/user/$(${pkgs.coreutils}/bin/id -u)"
+      runtime_user_id="$(${pkgs.coreutils}/bin/id -u)"
+      export XDG_RUNTIME_DIR="/run/user/$runtime_user_id"
       export HERDR_LEGACY_SERVER_PID="$PPID"
       ${pkgs.python3}/bin/python3 ${./scripts/adopt-legacy-herdr-server.py} prepare-import
       exec ${herdrPackage}/bin/herdr "$@"
