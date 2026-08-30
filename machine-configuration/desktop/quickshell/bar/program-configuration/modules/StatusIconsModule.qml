@@ -17,8 +17,8 @@ ColumnLayout {
     onHeightChanged: _registerAllIconPositions()
 
     function _registerAllIconPositions(): void {
-        _registerIconPosition(notificationSoundIcon, "");
         _registerIconPosition(vpnIcon, "");
+        _registerIconPosition(notificationSoundIcon, "");
         _registerIconPosition(outputDeviceTypeIcon, "");
         _registerIconPosition(microphoneIcon, "");
         if (keyboardBacklightIcon.visible)
@@ -35,16 +35,16 @@ ColumnLayout {
         barRoot.registerStatusIconPosition(popoutName, globalPos.y, globalPos.y + iconItem.height);
     }
 
-    NotificationSoundStatusIcon {
-        id: notificationSoundIcon
+    VpnStatusIcon {
+        id: vpnIcon
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
         Layout.topMargin: 4
     }
 
-    VpnStatusIcon {
-        id: vpnIcon
+    NotificationSoundStatusIcon {
+        id: notificationSoundIcon
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
