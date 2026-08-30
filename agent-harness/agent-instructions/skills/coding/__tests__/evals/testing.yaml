@@ -2,7 +2,7 @@ tests:
   - name: test_first_before_fix
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/testing.md
+      - agent-harness/agent-instructions/skills/coding/references/testing.md
     prompt: "A user reported a bug in the rebuild script. What should I do first?"
     model: haiku
     assertions:
@@ -12,7 +12,7 @@ tests:
   - name: test_behavioral_evidence_does_not_prove_root_cause
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/testing.md
+      - agent-harness/agent-instructions/skills/coding/references/testing.md
     prompt: "My regression test now passes. Does that independently prove my proposed root cause was correct?"
     model: haiku
     assertions:
@@ -22,7 +22,7 @@ tests:
   - name: test_verification_scales_to_relevant_evidence
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/testing.md
+      - agent-harness/agent-instructions/skills/coding/references/testing.md
     prompt: "A focused regression test passes after my change. What verification should follow before delivery?"
     model: haiku
     no_tools: true

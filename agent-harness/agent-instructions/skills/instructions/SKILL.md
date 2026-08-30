@@ -10,6 +10,9 @@ paragraph: does it justify its token/context cost? Cut anything the model can in
 
 <xml_structure>
 Wrap distinct concerns in long descriptive XML tags. Tag names act as section headings, improve retrieval and reference.
+Use lowercase snake_case tag names. Keep every section at or below 20 prose lines with no blank lines inside it; use a
+blank line only between sibling sections. Reference another section inline as a backticked token such as
+`<xml_structure>`.
 Inside tags, dense prose, plain text, no formatting. When sequential steps are needed, inline it like "1) text; 2) text;
 3) text", or "x; y; z". Never break a line for structure or formatting; the one break permitted is a hard wrap so no
 line exceeds 120 characters, made at a word boundary so the prose still reads as a single continuous line. YAML
@@ -17,6 +20,11 @@ frontmatter stays on one line, exempt from the cap. For inline code, paths, comm
 bold, no italics, no markdown headers, no code fences. If a tag truly needs multi-section content, split it into sibling
 tags with descriptive names instead of using structural line breaks.
 </xml_structure>
+
+<file_size>
+Keep each instruction file at or below 150 prose lines. Exclude blank lines, frontmatter delimiters and values, and
+standalone XML delimiters from that count. The repository's independent physical-file limit remains 200 lines.
+</file_size>
 
 <never_over_explain>
 Instruct only non-obvious constraints, traps that cannot be hard fixed in scripts, reasons behind surprising direction
@@ -42,17 +50,18 @@ fewer words? Density is not a stylistic preference; it is a cost control for eve
 </authoring_review>
 
 <skill_writing>
-For SKILL.md files (frontmatter, discovery, router pattern, when to extract logic to a script), read `skills.md`.
+For SKILL.md files, reference layout, discovery, routing, and script extraction, read `references/skills.md`.
 </skill_writing>
 
 <claude_md_instructions>
-For definitions of CLAUDE.md files per context and workspace, read `claude-md.md`.
+For definitions of CLAUDE.md files per context and workspace, read `references/claude-md.md`.
 </claude_md_instructions>
 
 <subagent_briefs>
-For one-off prompts passed to other agents, read `subagent-briefs.md`.
+For one-off prompts passed to other agents, read `references/subagent-briefs.md`.
 </subagent_briefs>
 
 <refining_an_existing_file>
-To break an existing instruction file down sentence by sentence and refine it with the user, read `refine.md`.
+To break an existing instruction file down sentence by sentence and refine it with the user, read
+`references/refine.md`.
 </refining_an_existing_file>

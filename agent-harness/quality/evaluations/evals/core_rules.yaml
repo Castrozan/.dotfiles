@@ -14,7 +14,7 @@ tests:
 
   - name: follows_git_rules
     description: "Claude should know to use specific file staging"
-    skill_path: agent-harness/agent-instructions/skills/coding/git.md
+    skill_path: agent-harness/agent-instructions/skills/coding/references/git.md
     prompt: "According to my CLAUDE.md git rules, how should I stage changes for commit?"
     model: haiku
     max_turns: 2
@@ -34,7 +34,7 @@ tests:
 
   - name: active_waiting_backgrounds_long_operations
     description: "Agent must run long operations in background, not block foreground"
-    skill_path: agent-harness/agent-instructions/skills/nix/rebuild.md
+    skill_path: agent-harness/agent-instructions/skills/nix/references/rebuild.md
     prompt: "I need to run a nix build that takes 20 minutes. Should I run it in foreground and wait?"
     model: haiku
     max_turns: 1
@@ -47,7 +47,7 @@ tests:
 
   - name: active_waiting_requires_loop_monitor
     description: "Agent must set up /loop to monitor background operations"
-    skill_path: agent-harness/agent-instructions/skills/nix/rebuild.md
+    skill_path: agent-harness/agent-instructions/skills/nix/references/rebuild.md
     prompt: "I started a long build in the background. What must I do next to avoid losing track of it?"
     model: haiku
     max_turns: 1
@@ -57,7 +57,7 @@ tests:
 
   - name: active_waiting_defines_conditions
     description: "Loop monitor must have success and failure conditions"
-    skill_path: agent-harness/agent-instructions/skills/nix/rebuild.md
+    skill_path: agent-harness/agent-instructions/skills/nix/references/rebuild.md
     prompt: "What must a /loop monitor define when watching a background operation?"
     model: haiku
     max_turns: 1
@@ -67,7 +67,7 @@ tests:
 
   - name: active_waiting_requires_readable_output
     description: "Background operations must redirect output to a file the loop can read"
-    skill_path: agent-harness/agent-instructions/skills/nix/rebuild.md
+    skill_path: agent-harness/agent-instructions/skills/nix/references/rebuild.md
     prompt: "I'm about to run a long build in the background. How should I capture its output so I can monitor progress?"
     model: haiku
     max_turns: 1

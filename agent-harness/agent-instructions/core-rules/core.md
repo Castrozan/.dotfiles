@@ -56,11 +56,11 @@ Before fixing a defect, establish a focused causal reproducer when practical; fo
 testable contract.
 </coding>
 
-<instruction-placement>
+<instruction_placement>
 Enforce a rule with deterministic code whenever its predicate and material exceptions can be stated precisely; write an
 instruction only when no reliable code check exists, and then keep it minimal and exact. Place rules by scope and
 horizon: core owns universal session-long defaults, including conditional behavior; local context owns repository and
 path policy; harness surfaces own mechanics; skills own bounded procedures; hooks, permissions, CI, and
 operating-system boundaries own exact controls. Load an owning skill before its bounded operation. Make complementary
 sources point to canonical authority.
-</instruction-placement>
+</instruction_placement>

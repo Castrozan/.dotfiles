@@ -42,15 +42,18 @@ machine-configuration/<domain>/<capability>/ - a capability owning its nix modul
 scripts and tests; deployment mechanism is the file-name suffix (-nixos, -nix-darwin, -home-manager)
 machine-configuration/machines/<alias>/system/ - machine-specific system config; NixOS retains
 nixos-system.nix for per-user-on-the-host bits
+</directory_organization>
+
+<repository_special_directories>
 secrets/*.age - agenix encrypted secrets
 secrets/secrets.nix - public key mappings
 private-configuration/ - private git submodule holding the private half of these same domains under the same
 capability rule; machines/<alias>/ mirrors the per-machine split above
 agent-harness/agent-instructions/ - instruction surfaces and shared skills deployed to every AI tool
-</directory_organization>
+</repository_special_directories>
 
 <rebuild_execution>
-Use the rebuild capability (rebuild.md) - it has platform detection, commands, and troubleshooting.
+Use the rebuild capability (references/rebuild.md) - it has platform detection, commands, and troubleshooting.
 </rebuild_execution>
 
 <git_workflow>
@@ -72,7 +75,8 @@ committing directly, builtins.pathExists /etc/NIXOS for NixOS detection (use isN
 </anti_patterns>
 
 <delegation_to_expert>
-Delegate to expert.md: Nix syntax/evaluation/lazy evaluation, derivations/overlays/complex expressions, module system
+Delegate to references/expert.md: Nix syntax/evaluation/lazy evaluation, derivations/overlays/complex expressions,
+module system
 internals, debugging evaluation errors, Nix ecosystem tooling questions.
 Handle directly: file locations in this repo, repository patterns/anti-patterns, module structure/import organization,
 secrets workflow, rebuild failures and enforcing conventions.

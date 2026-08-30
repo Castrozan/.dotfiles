@@ -1,20 +1,21 @@
 ---
 name: desktop
-description: Desktop automation and media control: type text, send key combos, click/move/scroll/drag mouse, capture screenshots, read/write clipboard, music and audio playback (pause, play, next, previous, volume). Cross-platform for screenshots, clipboard, and media control (Linux/Wayland + macOS); keyboard and mouse remain Linux/Wayland-only. Use for any non-browser GUI interaction, any request to pause/play music, adjust volume, or control local media. For YouTube CLI, see the youtube skill.
+description: Automate desktop input, screenshots, clipboard, and media controls across Linux/Wayland and macOS. Use for non-browser GUI interaction or local media; keyboard and mouse are Linux/Wayland-only.
 ---
 
-Desktop interaction skill. Each capability has its own doc and script.
+<cross_platform_capability_routing>
+For full, region, or active-window screenshots, read `references/screenshot.md`. For clipboard read, write, or watch,
+read `references/clipboard.md`; watch is Linux-only. For playback and volume through MPRIS on Linux or system audio
+and Music.app on macOS, read `references/media-control.md`.
+</cross_platform_capability_routing>
 
-Cross-platform capabilities (Linux/Wayland + macOS):
-- For screenshots (full, region, active window), read `screenshot.md`.
-- For clipboard read/write/watch, read `clipboard.md` (watch is Linux-only).
-- For media playback control (play, pause, volume, MPRIS players on Linux; system audio + Music.app on macOS), read
-  `media-control.md`.
+<linux_wayland_capability_routing>
+For keyboard input through wtype, read `references/keyboard.md`. For mouse clicks, movement, scrolling, or dragging
+through ydotool, read `references/mouse.md`.
+</linux_wayland_capability_routing>
 
-Linux/Wayland-only capabilities:
-- For keyboard input (type text, send key combos via wtype), read `keyboard.md`.
-- For mouse control (click, move, scroll, drag via ydotool), read `mouse.md`.
-
+<macos_debugging_routing>
 For macOS desktop traps that cost real debugging: window and application queries that report confidently wrong state,
 accessibility under-reporting, Hammerspoon probe pitfalls, applications that rewrite their own settings, and the absence
-of screen capture over SSH; read `knowledge.md`.
+of screen capture over SSH; read `references/knowledge.md`.
+</macos_debugging_routing>

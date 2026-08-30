@@ -13,6 +13,7 @@ COMPLIANCE_SKILL_PATH = (
     / "agent-instructions"
     / "skills"
     / "review"
+    / "references"
     / "compliance.md"
 )
 E2E_WORKSPACE_PARENT = Path.home() / "repo" / ".e2e-tests"

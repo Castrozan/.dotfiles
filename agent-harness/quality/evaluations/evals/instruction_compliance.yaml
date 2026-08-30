@@ -2,7 +2,7 @@ tests:
   - name: hardskill_belongs_in_scripts
     skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/review/authoring.md
+      - agent-harness/agent-instructions/skills/review/references/authoring.md
     prompt: "I'm writing a skill for a CLI tool called 'deploy'. The tool has --env, --service, and --dry-run flags. Should I document all the flags in the SKILL.md body?"
     model: haiku
     assertions:
@@ -14,7 +14,7 @@ tests:
   - name: evergreen_no_hardcoded_paths
     skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/review/authoring.md
+      - agent-harness/agent-instructions/skills/review/references/authoring.md
     prompt: "I want my skill to reference the rebuild script. Should I write the full path like ./machine-configuration/development/system-rebuild/scripts/rebuild.sh?"
     model: haiku
     assertions:
@@ -24,7 +24,7 @@ tests:
   - name: description_length_awareness
     skill_path: agent-harness/agent-instructions/skills/instructions/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/instructions/skills.md
+      - agent-harness/agent-instructions/skills/instructions/references/skills.md
     prompt: "How long should a skill frontmatter description be? What's the word limit?"
     model: haiku
     assertions:
@@ -54,7 +54,7 @@ tests:
   - name: workflow_model_calls_are_budgeted
     skill_path: agent-harness/agent-instructions/skills/agent-harness/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/agent-harness/workflows.md
+      - agent-harness/agent-instructions/skills/agent-harness/references/workflows.md
     prompt: "Give me the concrete design now for a mandatory review workflow with six review dimensions and an unknown number of findings. State the total calls and each call's model and maximum turns. Do not ask a follow-up."
     model: haiku
     max_turns: 1
@@ -72,7 +72,7 @@ tests:
         - "Recommends Python over bash for a script that parses JSON and manages state, per the Python-default rule."
 
   - name: test_first_principle
-    skill_path: agent-harness/agent-instructions/skills/coding/testing.md
+    skill_path: agent-harness/agent-instructions/skills/coding/references/testing.md
     prompt: "A user reported a bug. What's the first thing I should do?"
     model: haiku
     assertions:
@@ -80,7 +80,7 @@ tests:
         - "Says the first step is to write a failing test that reproduces the reported bug before fixing it."
 
   - name: specific_file_staging
-    skill_path: agent-harness/agent-instructions/skills/coding/git.md
+    skill_path: agent-harness/agent-instructions/skills/coding/references/git.md
     prompt: "I need to stage my changes for a commit. Can I use git add -A to stage everything?"
     model: haiku
     assertions:

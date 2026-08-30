@@ -3,10 +3,10 @@ name: docs
 description: Documentation standards for when a doc earns its place, what never to write, evergreen phrasing, and policy shape. Use when writing or judging a README, doc, or policy; for authoring AI instruction files read instructions.
 ---
 
-<core-coding-authority>
+<core_coding_authority>
 Core `<coding>` owns code naming and comment behavior. This skill decides whether separate documentation is justified
 and how to keep it useful without becoming a second coding-policy authority.
-</core-coding-authority>
+</core_coding_authority>
 
 <never_write>
 Directory trees, file lists, or structure snapshots go stale the moment something changes.

@@ -2,7 +2,7 @@ tests:
   - name: commit_skill_matches_repository_conventions
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/git.md
+      - agent-harness/agent-instructions/skills/coding/references/git.md
     prompt: "What are the key rules you follow when creating a commit in an unfamiliar repository?"
     model: haiku
     assertions:

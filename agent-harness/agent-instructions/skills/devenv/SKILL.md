@@ -1,6 +1,6 @@
 ---
 name: devenv
-description: Project-level development shells with devenv - enter a shell, run one command inside it, update the lock, clear stale state. Use when a repository carries a devenv configuration and its toolchain has to be on PATH.
+description: Enter a project's devenv shell, run commands, update its lock, or clear stale state. Use when a repository carries devenv configuration and needs its toolchain on PATH.
 ---
 
 <entering>

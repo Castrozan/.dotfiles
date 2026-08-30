@@ -44,7 +44,7 @@ def test_system_prompt_can_resolve_instruction_files_from_a_git_ref(monkeypatch)
         {
             "skill_path": "agent-harness/agent-instructions/skills/humanize/SKILL.md",
             "extra_skill_paths": [
-                "agent-harness/agent-instructions/skills/humanize/interactive-communication.md"
+                "agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md"
             ],
         },
         instruction_ref="b13f3ebb",
@@ -54,6 +54,6 @@ def test_system_prompt_can_resolve_instruction_files_from_a_git_ref(monkeypatch)
         "b13f3ebb:agent-harness/agent-instructions/skills/humanize/SKILL.md" in prompt
     )
     assert (
-        "b13f3ebb:agent-harness/agent-instructions/skills/humanize/interactive-communication.md"
+        "b13f3ebb:agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md"
         in prompt
     )

@@ -1,8 +1,8 @@
-<core-authority>
+<core_authority>
 Core `<evidence>`, `<completion>`, and `<coding>` own persistent judgment, verification, and code-quality defaults;
 `SKILL.md` owns the review method, finding contract, severity, and verdict. This file owns only the bounded dotfiles
 pre-push review procedure.
-</core-authority>
+</core_authority>
 
 <mandate>
 A substantive dotfiles review runs inside the current harness after the change is committed and before it is pushed. It
@@ -22,7 +22,7 @@ requirement and to the behavior that must stay unchanged; 8) report findings und
 `No findings.`, naming the range, files, and lenses reviewed and closing with a verdict on whether the goal is achieved.
 </procedure>
 
-<follow-up>
+<follow_up>
 Fix confirmed findings in cohesive follow-up commits and repeat the procedure; never amend the reviewed commit, because
 peers may already have built on it.
-</follow-up>
+</follow_up>

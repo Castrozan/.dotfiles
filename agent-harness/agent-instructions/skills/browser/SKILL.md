@@ -12,8 +12,9 @@ tool error starts the recovery workflow below; none permits a tool switch. Pinch
 when every recovery step has failed, Chrome DevTools remains unavailable, the user did not require Chrome DevTools,
 and an isolated browser profile can satisfy the task. An autonomous clawde agent is mechanically denied the shared
 Chrome target; that makes PinchTab eligible only for an unattended task that did not require Chrome DevTools. Otherwise
-report the blocked Chrome DevTools requirement instead of silently substituting another browser. Read `pinchtab.md`
-only after every eligibility condition holds. `README.md` explains the Chrome target's constraints.
+report the blocked Chrome DevTools requirement instead of silently substituting another browser. Read
+`references/pinchtab.md`
+only after every eligibility condition holds. `references/chrome-target.md` explains the Chrome target's constraints.
 </strategy>
 
 <chrome_devtools_connection_and_recovery>
@@ -46,5 +47,5 @@ The Chrome DevTools target is single and sequential and needs its own Allow.
 <knowledge>
 For traps that cost real debugging: threads that virtualize their middle out of the DOM so a one-shot query silently
 returns a partial read, pages that scroll inside a container rather than the window, and why an authenticated site needs
-the real browser target; read `knowledge.md`.
+the real browser target; read `references/knowledge.md`.
 </knowledge>

@@ -33,7 +33,7 @@ existing-state clause preserves current comments without treating them as permis
 generated and vendored code and required syntax directives.
 
 Five skills stopped stating coding policy and started routing to core: `skills/coding/SKILL.md`,
-`skills/coding/testing.md`, `skills/docs/SKILL.md`, `skills/architecture/SKILL.md`, and
+`skills/coding/references/testing.md`, `skills/docs/SKILL.md`, `skills/architecture/SKILL.md`, and
 `skills/agent-harness/SKILL.md`.
 
 Guards followed. `agent-instructions/__tests__/checks.nix` requires the seven sections and rejects retired skill-only
@@ -52,7 +52,7 @@ The core rewrite was the first repaired instance, not the whole defect. The acti
 each complementary source was linked to the core section that owns its behavior. Only some of them had been deciding
 that behavior independently; the rest were already bounded complements that simply lacked an explicit pointer to core.
 
-`skills/agent-harness/instruction-authority.md` is the reusable procedure that came out of it. It is a routed chapter,
+`skills/agent-harness/references/instruction-authority.md` is the reusable procedure that came out of it. It is a routed chapter,
 not another always-on policy source, and it runs in six stages: state the behavior contract before comparing text;
 trace the declared source through generated copies, deployment edges, prompt tiers, session caches, resume and
 compaction behavior, and mutable state; select the owner only after that trace; classify every related surface as

@@ -1,29 +1,29 @@
-<behavior-contract>
+<behavior_contract>
 Describe each candidate as one behavior contract: intended outcome; trigger, action, material exceptions; required
 audience and scope; required lifetime; and the observable result. Similar wording, shared vocabulary, a prior fix, or a
 test name only nominates a candidate. Split contracts whose trigger, exception, scope, or authority threshold differs.
-</behavior-contract>
+</behavior_contract>
 
-<runtime-trace>
+<runtime_trace>
 Trace the declared source, canonical owner, generated copy, deployment edge, runtime injection tier, session cache,
 resume and compaction behavior, mutable state, deterministic control, and behavioral evidence. Inspect the live prompt,
 process, or file when available. A committed source that the runtime never loads is absent authority; a seed that leaves
 existing state untouched is not managed delivery; a generated copy is not another owner.
-</runtime-trace>
+</runtime_trace>
 
-<owner-selection>
-Apply core `<instruction-placement>` after the trace, not before it. Put universal session-long behavior in core,
+<owner_selection>
+Apply core `<instruction_placement>` after the trace, not before it. Put universal session-long behavior in core,
 repository and path policy in local context, harness mechanics at that harness boundary, and a procedure that starts and
 ends with one bounded operation in its skill. Use a hook, permission, CI, or operating-system boundary only when its
 predicate and every material exception are precise. Do not move a scoped rule merely because several files mention it.
-</owner-selection>
+</owner_selection>
 
-<relationship-classification>
+<relationship_classification>
 Classify every related surface as canonical authority, generated copy, linked complement, deterministic control,
 behavioral evidence, historical evidence, or competing authority. A complement adds narrower procedure or a material
 exception and points to the canonical rule. A competing source independently decides the same behavior. Reject the
 favored classification when live delivery, a different trigger, or a narrower scope disproves it.
-</relationship-classification>
+</relationship_classification>
 
 <migration>
 Establish the new authority and its runtime delivery before deleting the old one. Replace competing prose with an

@@ -48,5 +48,5 @@ growth, so never diagnose slowness or contention here; the only ceiling is the m
 PinchTab runs a separate persistent-profile Chrome with none of the user's real-browser logins. It can satisfy eligible
 isolated work after Chrome DevTools recovery fails, but it cannot substitute for an explicitly requested Chrome
 DevTools session or authenticated work that depends on the real profile. `SKILL.md` owns the last-resort gate;
-`pinchtab.md` owns the workflow after that gate passes.
+`references/pinchtab.md` owns the workflow after that gate passes.
 </pinchtab_tradeoffs>

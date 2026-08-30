@@ -16,6 +16,7 @@ INTERACTIVE_COMMUNICATION_PATH = (
     / "agent-instructions"
     / "skills"
     / "humanize"
+    / "references"
     / "interactive-communication.md"
 )
 

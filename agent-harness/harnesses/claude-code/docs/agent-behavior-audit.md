@@ -114,22 +114,22 @@ finding` describes the primary current placement defect, not the final migration
 | S02 | `agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md`: tier selection, mid-task asks, owning-agent role |
 | S03 | `agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md`: configuration, scripts, testing, workflow, runtime application, disruptive approval |
 | S04 | `agent-harness/harnesses/claude-code/docs/agent-behavior.md`: design and write contract |
-| S05 | `agent-harness/agent-instructions/skills/humanize/interactive-communication.md`: peer communication, artifact links, completion, response shape |
+| S05 | `agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md`: peer communication, artifact links, completion, response shape |
 | S06 | `agent-harness/agent-instructions/skills/humanize/SKILL.md`: source fidelity, answer priority, certainty, reader recovery |
 | S07 | `agent-harness/agent-instructions/skills/coding/SKILL.md`: implementation, dependencies, abstraction, workarounds, performance |
-| S08 | `agent-harness/agent-instructions/skills/coding/testing.md`: philosophy, reproducer, coverage, verification |
-| S09 | `agent-harness/agent-instructions/skills/coding/git.md`: context, ownership, staging, commits, red flags |
-| S10 | `agent-harness/agent-instructions/skills/coding/knowledge.md`: worktree and shared-index ownership traps |
+| S08 | `agent-harness/agent-instructions/skills/coding/references/testing.md`: philosophy, reproducer, coverage, verification |
+| S09 | `agent-harness/agent-instructions/skills/coding/references/git.md`: context, ownership, staging, commits, red flags |
+| S10 | `agent-harness/agent-instructions/skills/coding/references/knowledge.md`: worktree and shared-index ownership traps |
 | S11 | `agent-harness/agent-instructions/skills/architecture/SKILL.md`: responsibility boundaries, evidence-sized design, state and failure |
 | S12 | `agent-harness/agent-instructions/skills/review/SKILL.md`: method and goal verification |
 | S13 | `agent-harness/agent-instructions/skills/deliver/SKILL.md`: provisional plans, evidence, artifact inspection, delivery ownership |
 | S14 | `agent-harness/agent-instructions/skills/research/SKILL.md`: disconfirming search, claim-source binding, uncertainty |
-| S15 | `agent-harness/agent-instructions/skills/instructions/subagent-briefs.md`: delegation ownership and synthesis |
+| S15 | `agent-harness/agent-instructions/skills/instructions/references/subagent-briefs.md`: delegation ownership and synthesis |
 | S16 | `agent-harness/agent-instructions/skills/agent-harness/SKILL.md`: live state, declarative ownership, enforcement boundaries |
-| S17 | `agent-harness/agent-instructions/skills/agent-harness/knowledge.md`: absolute command anchoring |
-| S18 | `agent-harness/agent-instructions/skills/agent-harness/workflows.md`: delegation budget and deterministic aggregation |
+| S17 | `agent-harness/agent-instructions/skills/agent-harness/references/knowledge.md`: absolute command anchoring |
+| S18 | `agent-harness/agent-instructions/skills/agent-harness/references/workflows.md`: delegation budget and deterministic aggregation |
 | S19 | `agent-harness/agent-instructions/skills/docs/SKILL.md`: naming over comments and durable documentation |
-| S20 | `agent-harness/agent-instructions/skills/nix/repo.md`: ownership, script placement, explicit staging |
+| S20 | `agent-harness/agent-instructions/skills/nix/references/repo.md`: ownership, script placement, explicit staging |
 | S21 | `agent-harness/harnesses/hermes/migration.nix`: durable user memory for communication, autonomy, coding, scripting, and Git |
 | S22 | `agent-harness/hooks/runtime/post-tool-use/line-count/line_count_policy.py` and `agent-harness/hooks/runtime/post-tool-use/line-count/line_count_limit_guard_handler.py`: file-size predicate and block |
 | S23 | `agent-harness/hooks/runtime/post-tool-use/auto_format_handler.py`: supported formatter execution and exceptions |
@@ -146,7 +146,7 @@ finding` describes the primary current placement defect, not the final migration
 | S34 | `agent-harness/harnesses/opencode/config.nix`: autonomous local permissions, manual sharing, compaction, and pruning |
 | S35 | `agent-harness/harnesses/claude-code/skill-injection/interactive-sessions.nix`, `agent-harness/harnesses/codex/package.nix`, `agent-harness/harnesses/opencode/opencode.nix`, and `agent-harness/harnesses/pi/package.nix`: interactive communication injection |
 | S36 | `agent-harness/harnesses/claude-code/settings/global-settings.nix`, `agent-harness/harnesses/codex/global-instructions.nix`, `agent-harness/harnesses/opencode/global-instructions.nix`, and `agent-harness/harnesses/pi/global-instructions.nix`: shared-core deployment edges |
-| S37 | `agent-harness/agent-instructions/skills/review/dotfiles-change.md`: cross-harness pre-push change review |
+| S37 | `agent-harness/agent-instructions/skills/review/references/dotfiles-change.md`: cross-harness pre-push change review |
 | S38 | `agent-harness/harnesses/hermes/scripts/hermes-launch`: seed-only Hermes memory deployment |
 | S39 | `agent-harness/hooks/runtime/nix-rebuild/`: changed-Nix ledger and rebuild reminder |
 | S40 | `agent-harness/agent-instructions/skills/orchestrate/SKILL.md`: settling evidence, delegation boundaries, and owning-agent synthesis |

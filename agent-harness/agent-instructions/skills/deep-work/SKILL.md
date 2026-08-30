@@ -3,10 +3,10 @@ name: deep-work
 description: Persist task context to disk so big or compaction-prone work survives across sessions. Use for work over ~5 steps, spanning sessions, or when explicitly asked to preserve context; not for quick fixes.
 ---
 
-<core-context-authority>
+<core_context_authority>
 Core `<context>` owns what must survive likely context loss. This skill owns the bounded workspace layout, activation,
 update, recovery, heartbeat, and cleanup procedure for work that needs durable continuity.
-</core-context-authority>
+</core_context_authority>
 
 <activation>
 Activate when any condition is met: user says "big work" or similar, task has more than 5 discrete steps, work will
@@ -27,11 +27,11 @@ dependencies, and decisions that cannot be cheaply rediscovered from the source.
 these files.
 </workspace>
 
-<update-cadence>
+<update_cadence>
 Write to disk immediately after a substantial user prompt, after each plan phase, whenever evidence changes the
 approach, and before responding after significant work. Persist before a point where context loss would force expensive
 reconstruction rather than writing continuously for ceremony.
-</update-cadence>
+</update_cadence>
 
 <recovery>
 On session start or after compaction, if a `.deep-work/` workspace contains active work, read the workspace before
@@ -40,16 +40,16 @@ continuing. Reconstruct the task from `.deep-work/{task-slug}/prompts.md`, curre
 from `.deep-work/{task-slug}/context.md`. Never ask the user to repeat information already persisted there.
 </recovery>
 
-<heartbeat-integration>
+<heartbeat_integration>
 HEARTBEAT.md remains the lightweight signal that work is active. For deep-work tasks it points to the workspace and
 current phase; the workspace owns the detailed state.
-</heartbeat-integration>
+</heartbeat_integration>
 
-<compaction-survival-test>
+<compaction_survival_test>
 Design the workspace so work can continue if conversation history disappears between any two turns. If a fresh agent
 could not recover the goal, current plan, completed work, and material discoveries from disk, persist the missing state
 before proceeding.
-</compaction-survival-test>
+</compaction_survival_test>
 
 <cleanup>
 When work is delivered and confirmed complete, remove the workspace directory and clear HEARTBEAT.md. Do not accumulate

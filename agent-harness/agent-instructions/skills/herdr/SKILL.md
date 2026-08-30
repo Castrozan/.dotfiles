@@ -62,9 +62,9 @@ take over that session, and never close a pre-existing pane. A close carries a l
 reassigned as tabs come and go and a close takes every agent inside with no undo, so re-list and match your own label
 immediately before closing rather than trusting an id you read earlier.
 </owned_pane_cleanup>
-
 <knowledge>
 For traps that cost real debugging: the per-client view fork, why a CLI focus call hijacks the human's view, the
-destructive shifted-digit chords, the pane-run paste wedge, and native agent resume; read `knowledge.md`. Read the
+destructive shifted-digit chords, the pane-run paste wedge, and native agent resume; read `references/knowledge.md`.
+Read the
 chord entry before typing any chord into a pane you do not own.
 </knowledge>

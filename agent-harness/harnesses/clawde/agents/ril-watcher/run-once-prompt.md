@@ -1,4 +1,6 @@
+<wake_scope>
 There is ril work waiting. Do exactly one unit of it, then stop.
+</wake_scope>
 
 <what_woke_you>
 `ril probe` prints the work. A `response` line is an open pull request of yours carrying a comment you have not
@@ -28,7 +30,8 @@ mid-run and the pull request is where Lucas answers.
 <building_an_adopt>
 Build it in a worktree per the coding skill, branched off a freshly fetched `origin/main` on the branch name `ril`
 plus the capture slug, with no `/` in it. Run `git submodule update --init --recursive` inside the fresh worktree first
-or the flake fetch dies on an empty `private-configuration`. Commit inside the worktree before building, because the build
+or the flake fetch dies on an empty `private-configuration`. Commit inside the worktree before building, because the
+build
 reads git and an untracked file never reaches the store, so an uncommitted change builds the old code and reports
 success. Build by naming the worktree path in the flake reference; `rebuild` is pinned to `~/.dotfiles` and you never
 run it. Then exercise whatever the change permits without activating chise, which deploys through a private entrypoint

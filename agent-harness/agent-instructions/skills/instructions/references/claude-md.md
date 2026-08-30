@@ -4,11 +4,11 @@ directory. They load unconditionally into the agent's initial context, so every 
 long as the file exists.
 </purpose>
 
-<scope-and-authority>
-Apply core `<instruction-placement>` before choosing this surface. A CLAUDE.md owns repository or directory policy that
+<scope_and_authority>
+Apply core `<instruction_placement>` before choosing this surface. A CLAUDE.md owns repository or directory policy that
 every session in that scope needs. Keep universal session-long defaults in core, harness mechanics at their harness
 boundary, bounded procedures in skills, and exact controls in code, hooks, permissions, or CI.
-</scope-and-authority>
+</scope_and_authority>
 
 <policy_not_documentation>
 CLAUDE.md states what must be true and why without prescribing implementations. A good policy survives complete

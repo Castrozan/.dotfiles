@@ -82,7 +82,7 @@ let
   };
 
   interactiveSessionDeveloperInstructionsText = lib.concatStringsSep "\n" [
-    (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/interactive-communication.md)
+    (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md)
     (builtins.readFile ../../../agent-harness/agent-instructions/core-rules/servant-identity.md)
   ];
 

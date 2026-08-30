@@ -2,7 +2,7 @@ tests:
   - name: worktrees_never_checkout_main
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/worktrees.md
+      - agent-harness/agent-instructions/skills/coding/references/worktrees.md
     prompt: "I need to switch to a feature branch. Should I run git checkout in the main repo?"
     model: haiku
     assertions:
@@ -14,7 +14,7 @@ tests:
   - name: worktrees_pr_from_main_directory
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/worktrees.md
+      - agent-harness/agent-instructions/skills/coding/references/worktrees.md
     prompt: "I finished my feature in a worktree. Where should I run the PR command?"
     model: haiku
     assertions:

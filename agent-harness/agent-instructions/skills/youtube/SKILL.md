@@ -1,6 +1,6 @@
 ---
 name: youtube
-description: Search YouTube and manage playlists from the CLI: agent-optimized youtube-cli with JSON output. Search via yt-dlp (no auth). Playlist management via YouTube Data API v3 (OAuth2).
+description: Search YouTube through yt-dlp and manage playlists through the YouTube Data API v3. Use for CLI-based video search or playlist changes.
 ---
 
 <overview>

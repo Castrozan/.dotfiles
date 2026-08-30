@@ -15,9 +15,7 @@ REQUIRED_FAILURE_MODES = {
     "channel_constraint",
     "control",
 }
-INTERACTIVE_POLICY = (
-    "agent-harness/agent-instructions/skills/humanize/interactive-communication.md"
-)
+INTERACTIVE_POLICY = "agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md"
 
 
 def recovery_tests():

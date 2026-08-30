@@ -1,6 +1,6 @@
 ---
 name: goal-prompt
-description: Author a goal prompt for an autonomous or scheduled agent - a single-line plaintext brief under 3.5k chars. Use when writing the prompt that drives a routine, cron agent, remote trigger, or any one-field autonomous run.
+description: Write a one-line prompt under 3.5k characters for an autonomous or scheduled agent. Use for routine, cron, remote-trigger, or other one-field runs.
 ---
 
 <what_a_goal_prompt_is>

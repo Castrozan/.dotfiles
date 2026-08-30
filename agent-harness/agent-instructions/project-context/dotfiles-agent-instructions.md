@@ -13,13 +13,14 @@ editing that. Before guessing where something lives, load the `nix` skill: it ca
 host split, secrets, script packaging, the "where does this belong" call.
 </orientation>
 
-<repo-local-skills>
+<repo_local_skills>
 `nix` and `agent-harness` are repo-local: both describe this tree, so they reach no global skill surface and instead
 deploy into this repo's own project skill directories, gitignored exactly like the instruction file you are reading.
 Claude and OpenCode load them automatically here. Codex discovers skills only under its own home, so read them in the
 tree at `agent-harness/agent-instructions/skills/nix/SKILL.md` and
-`agent-harness/agent-instructions/skills/agent-harness/SKILL.md`, each with a `knowledge.md` beside it.
-</repo-local-skills>
+`agent-harness/agent-instructions/skills/agent-harness/SKILL.md`; their optional knowledge chapters live under
+`references/knowledge.md` from each skill root.
+</repo_local_skills>
 
 <stewardship>
 This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the
@@ -40,22 +41,22 @@ holds across the harnesses this repo drives: reach Claude Code, Codex and OpenCo
 where each one supports the capability.
 </configuration>
 
-<nvim-keymaps>
+<nvim_keymaps>
 Before suggesting, adding, or restoring any Neovim keybind, read and follow
 `machine-configuration/editors/neovim/KEYMAPS_POLICY.md`: native Vim built-ins first, LazyVim conventions second,
 custom maps only as a documented last resort, never shadowing a native key. Keep that file current whenever a binding
 is added or removed on purpose; bindings it lists as removed stay removed unless the owner names one explicitly.
-</nvim-keymaps>
+</nvim_keymaps>
 
-<codex-managed-settings-ownership>
+<codex_managed_settings_ownership>
 MCP servers are declared in nix at `agent-harness/harnesses/claude-code/mcps/default.nix` for Claude and
 `agent-harness/harnesses/codex/config.nix` for Codex. Codex deploys an authoritative nix-source for managed settings,
 including `mcp_servers`, then seeds a mutable
 live config while preserving live entries in projects, marketplaces, and plugins. Declaratively sourced entries win on
 key collisions, so an MCP dropped from its nix source disappears from the live config on the next rebuild.
-</codex-managed-settings-ownership>
+</codex_managed_settings_ownership>
 
-<machine-local-wrapper>
+<machine_local_wrapper>
 On chise only, the live system is not built straight from this repo: a machine-local entrypoint flake at
 `~/zanoni-system` (outside this tree) imports the public chise config from here and layers a private overlay on top, and
 `rebuild` builds that entrypoint, not this repo directly. So a service, unit, secret, or option that is live on chise
@@ -66,13 +67,12 @@ fast-forward-only, so commit a wrapper change into that repo rather than assumin
 Keep `~/zanoni-system` limited to private OpenClaw integration and secrets. Generic host, provider, and harness
 configuration belongs in this repo; do not make public configuration depend on the private wrapper.
 Chise-specific; other hosts build directly from this repo.
-</machine-local-wrapper>
+</machine_local_wrapper>
 
 <scripts>
 Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native
 tools (tmux send-keys, fzf, sysctl pipelines) where Python would just be subprocess.run calls. Python scripts run via
 Nix - no uv, no venv, no pip.
-
 Only scripts under 10 lines of actual logic may live inline in `.nix` files via `pkgs.writeShellScript`,
 `pkgs.writeText`, or similar builders. Anything longer goes to a dedicated file under the module's `scripts/` directory
 and is referenced by path. Long inline scripts are unreadable, unformattable, untestable, and escape from nix string
@@ -96,10 +96,11 @@ check`: run a specific test file, or use `rebuild` as the local nix verification
 newly created Herdr pane; automated and headless checks do not replace this manual test.
 </testing>
 
-<change-review-scope>
+<change_review_scope>
 Before pushing a substantive change, load the `review` skill and follow its dotfiles-change procedure over the exact
 commits you added; when the harness cannot load skills, read
-`agent-harness/agent-instructions/skills/review/SKILL.md` and its `dotfiles-change.md` chapter instead. Commit first:
+`agent-harness/agent-instructions/skills/review/SKILL.md` and its `references/dotfiles-change.md` chapter instead.
+Commit first:
 this checkout is shared, so a review of the working tree reads whatever peers left
 uncommitted, and a confirmed finding belongs in a follow-up commit rather than an amend a peer may already have built
 on. A change is substantive when a wrong edit would survive formatting and still change machine or agent behavior, a
@@ -109,7 +110,7 @@ every hunk is demonstrably non-semantic, meaning a formatting or prose correctio
 identifier, factual claim, policy or behavior; review the whole change when substantive and non-substantive hunks are
 mixed or the classification stays uncertain. Changed line and file counts never decide this, and skipping the review
 never excuses the rebuild or the tests.
-</change-review-scope>
+</change_review_scope>
 
 <workflows>
 Treat a workflow's model calls as delegation that consumes the task's agent budget, and keep every dotfiles workflow at
@@ -122,7 +123,7 @@ how every harness other than Claude Code reaches the workflow at all.
 <workflow>
 After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
 files; 2) stage each file with git add specific-file, never -A; 3) commit; 4) review the commits you just added when
-they are substantive (see <change-review-scope>); 5) rebuild for any file change in this repo (see <rebuild>); 6) push,
+they are substantive (see <change_review_scope>); 5) rebuild for any file change in this repo (see <rebuild>); 6) push,
 which starts the run in the background; 7) do not block on the run: continue with the next independent piece of the
 task while CI works, and check the verdict only when other work is exhausted and a response to the user is due - `gh run
 list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids, then `gh run watch <id>
@@ -139,7 +140,7 @@ This checkout keeps many sibling worktrees live at once. Search them before decl
 an edit you cannot find here is usually sitting in another checkout rather than lost.
 </worktrees>
 
-<applying-clawde-agent-changes>
+<applying_clawde_agent_changes>
 A clawde agent's runtime config - heartbeat gate, interval, prompt, launch command, active hours, rotation - lives in a
 per-agent file the wrapper re-reads on every restart, so a rebuild's warm redeploy applies config changes in place, no
 respawn needed. The exception is a change to the agent-wrapper code itself: the running wrapper keeps executing the code
@@ -148,9 +149,9 @@ so the supervisor recreates it from the new spec). Never assume rebuilt wrapper 
 check the live process and respawn if it still runs the old code. Every other fleet trap that leaves no trace in the
 source - resume identity, supervisor reconciliation, channel gating, the steward loop, the shared server cgroup - is in
 `agent-harness/harnesses/clawde/knowledge.md`; read it before touching any agent, supervisor or heartbeat behavior.
-</applying-clawde-agent-changes>
+</applying_clawde_agent_changes>
 
-<agent-instructions>
+<agent_instructions>
 The eval baseline (`agent-harness/quality/evaluations/baseline.json`) is a committed snapshot that CI guards via
 `agent-eval --check-baseline` against absolute pass-rate floors and a relative regression gate that fails when the
 overall pass rate drops more than a fixed margin below the previous committed baseline, and a freshness gate that fails
@@ -159,9 +160,9 @@ once the recorded
 editing agent instructions; the full suite is a slow LLM run whose routing evals flake, so a proactive re-save bakes
 transient failures into the committed baseline. Re-save only when `--check-baseline` fails CI, whether on a genuine
 pass-rate regression or on staleness, or to deliberately record a meaningfully improved instruction surface.
-</agent-instructions>
+</agent_instructions>
 
-<herdr-server-restart>
+<herdr_server_restart>
 herdr runs as one shared server, the `default` session, hosting the whole clawde fleet, the steward, and the interactive
 session at once, so a new herdr binary from a rebuild only goes live on a full `herdr server stop` and relaunch, which
 restarts every session on it and drops the whole fleet; the fleet self-heals as the clawde supervisor respawns agents
@@ -169,4 +170,4 @@ into their pinned sessions and the human reconnects with `herdr`. This restart i
 and you complete it rather than handing it back, but it is fleet-wide and disruptive, so perform it only with the user's
 explicit approval, current or prior, never unprompted, and when approved stop the server detached after a short delay so
 your final report flushes before this session drops.
-</herdr-server-restart>
+</herdr_server_restart>

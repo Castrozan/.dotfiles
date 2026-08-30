@@ -3,10 +3,10 @@ name: research
 description: Research current external information, comparisons, decisions, or themed digests. Use for latest facts, evaluation, verification, "catch me up", or community pulses; not local repository search.
 ---
 
-<core-evidence-authority>
+<core_evidence_authority>
 Core `<evidence>` owns consequential epistemic judgment and core `<autonomy>` owns the threshold for asking. This skill
 owns the bounded source selection, currency, comparison, and citation procedure for external research.
-</core-evidence-authority>
+</core_evidence_authority>
 
 <research_intake>
 Define the exact question before searching: what decision is being made, which options matter, what geography or

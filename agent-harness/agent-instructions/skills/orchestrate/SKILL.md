@@ -3,10 +3,10 @@ name: orchestrate
 description: Delegate same-goal work to another interactive agent, harness, or machine over a2a, herdr, or ssh. Use to spawn parallel peers, dispatch, observe, correct, and repeat.
 ---
 
-<core-delegation-authority>
+<core_delegation_authority>
 Core `<delegation>` owns what the driving agent retains and core `<completion>` owns final verification. This skill owns
 the bounded peer-transport, dispatch, observation, correction, and settling procedure.
-</core-delegation-authority>
+</core_delegation_authority>
 
 <orientation>
 A peer is an interactive agent session sitting in a pane, whatever harness runs it and whatever machine it runs on. It

@@ -5,12 +5,14 @@ HUMANIZE_DIRECTORY = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "skills" / "humanize"
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
-INTERACTIVE_POLICY_PATH = HUMANIZE_DIRECTORY / "interactive-communication.md"
+INTERACTIVE_POLICY_PATH = (
+    HUMANIZE_DIRECTORY / "references" / "interactive-communication.md"
+)
 MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES = 5000
 MAXIMUM_ON_DEMAND_HUMANIZE_PACKAGE_BYTES = 19000
 
 INTERACTIVE_POLICY_SOURCE = (
-    "agent-instructions/skills/humanize/interactive-communication.md"
+    "agent-instructions/skills/humanize/references/interactive-communication.md"
 )
 ON_DEMAND_HUMANIZE_SOURCES = ("agent-instructions/skills/humanize/SKILL.md",)
 INTERACTIVE_LAUNCHER_PATHS = (

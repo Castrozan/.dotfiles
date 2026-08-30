@@ -8,43 +8,45 @@ Treat the harness as runtime infrastructure, not application code. Use this when
 subagent, model, transcript, session, or tool target behaves differently from the configured source.
 </scope>
 
-<live-state-over-files>
+<live_state_over_files>
 Apply core `<evidence>` and `<completion>` while reading the declared source, running harness, process, and session. A
 deployed file does not prove a harness loaded it, and a resumed session can retain state from before a rebuild. Compare
 versions and live state before calling a documented behavior a defect.
-</live-state-over-files>
+</live_state_over_files>
 
-<configuration-ownership>
+<configuration_ownership>
 Keep durable settings and instruction surfaces declarative. Preserve harness-owned mutable state where the deployment
 model requires it, and restart a session only after its replacement is available. Use `agent-session` for a generic
 restart or exit instead of assuming a harness-specific command.
-</configuration-ownership>
+</configuration_ownership>
 
-<place-instructions-by-scope-and-authority>
+<place_instructions_by_scope_and_authority>
 Place a rule by who needs it and how long it must remain available. Core, including `<coding>`, owns universal
 session-long defaults even when they activate only for one kind of work; repository context owns local facts and policy;
 path-scoped rules own matching-file constraints; harness surfaces own harness mechanics; skills own bounded procedures.
 Make every complementary source point to the canonical authority instead of restating it. Never leave behavior expected
 across turns or compaction solely inside an on-demand skill, because it disappears outside that skill's loading window.
-</place-instructions-by-scope-and-authority>
+</place_instructions_by_scope_and_authority>
 
-<separate-adherence-evidence-and-enforcement>
+<separate_adherence_evidence_and_enforcement>
 Treat instruction salience, behavioral evidence, and enforcement as separate controls. Put persistent behavioral
 authority at its proper scope. Enforce it mechanically only when the forbidden state and material exceptions are precise
 enough to avoid unacceptable false results; otherwise an edit-parsing hook becomes a conflicting policy engine. Use
 evaluations to expose adherence regressions, not as proof that prose forces behavior.
-</separate-adherence-evidence-and-enforcement>
+</separate_adherence_evidence_and_enforcement>
 
-<instruction-authority-diagnosis>
+<instruction_authority_diagnosis>
 Before diagnosing or migrating duplicated, missing, stale, or wrong-horizon behavior, read
-`instruction-authority.md` and trace the rule through live delivery before selecting its owner.
-</instruction-authority-diagnosis>
+`references/instruction-authority.md` and trace the rule through live delivery before selecting its owner.
+</instruction_authority_diagnosis>
 
-<workflow-authoring>
-Before authoring or reviewing a workflow that calls agents or models, read `workflows.md` and budget its control flow.
-</workflow-authoring>
+<workflow_authoring>
+Before authoring or reviewing a workflow that calls agents or models, read `references/workflows.md` and budget its
+control flow.
+</workflow_authoring>
 
 <knowledge>
-Read `knowledge.md` for harness-specific traps, including transcript locations, configuration roots, model routing,
+Read `references/knowledge.md` for harness-specific traps, including transcript locations, configuration roots, model
+routing,
 hook protocols, skill discovery, connector gates, and command anchoring.
 </knowledge>

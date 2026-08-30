@@ -3,7 +3,9 @@ name: home-assistant
 description: Control home lights and AC via the ha-light and ha-ac CLIs, including Tuya and Midea outage recovery. Use for lights, AC, temperature, or Home Assistant requests.
 ---
 
+<commands>
 Control lights with `ha-light` and the air conditioner with `ha-ac`. Run either without arguments for usage.
+</commands>
 
 <architecture>
 Home Assistant runs as a Podman container on localhost:8123. Two integrations: Tuya (lights, cloud-based) and Midea AC
@@ -15,7 +17,6 @@ module before restarting; it is not the obvious name.
 <device_constraints>
 Lights are color_temp only, no RGB. Scenes are managed in the Tuya/Smart Life phone app, not in code; HA only
 activates them, so a new scene must be created in the app first.
-
 The AC communicates over local LAN, not cloud. The Midea entity ID embeds the device's numeric ID, so re-pairing
 changes the entity ID and the script constant must be updated to match.
 </device_constraints>
@@ -25,9 +26,7 @@ Lights unavailable but working from the phone app: the Tuya cloud auth token exp
 for `tuya setup_error`. Fix by opening the integrations dashboard in the HA web UI, clicking Reconfigure on the Tuya
 entry, and scanning the QR code with the Smart Life or Tuya Smart phone app. This needs the user to scan with their
 phone.
-
 AC unavailable: the LAN IP likely changed. Run `ha-ac-recover-ip`. The toggle script calls recovery automatically.
-
 Web UI password lost: the auth provider storage file under HA's config directory holds bcrypt-hashed passwords.
 Generate a new bcrypt hash (needs the bcrypt Python package via nix-shell), write it to that file, restart the HA
 service, and update the password store.
@@ -36,7 +35,6 @@ service, and update the password store.
 <traps>
 The Midea integration needs the `midea-local` pip package inside the container, and image updates drop pip packages
 unless the config volume is mounted.
-
 Service calls (turn_on, set_temperature) return an empty body; only state queries return JSON, so do not treat an
 empty response to a command as a failure.
 </traps>

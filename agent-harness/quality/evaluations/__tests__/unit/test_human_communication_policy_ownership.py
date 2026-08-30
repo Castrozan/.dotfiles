@@ -11,7 +11,9 @@ HUMANIZE_DIRECTORY = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "skills" / "humanize"
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
-INTERACTIVE_POLICY_PATH = HUMANIZE_DIRECTORY / "interactive-communication.md"
+INTERACTIVE_POLICY_PATH = (
+    HUMANIZE_DIRECTORY / "references" / "interactive-communication.md"
+)
 REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
 REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
 MAXIMUM_HUMANIZE_SKILL_BYTES = 15000
@@ -29,31 +31,31 @@ def test_humanize_package_owns_interactive_and_output_policies():
     humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
 
     for tag in (
-        "interactive-session",
-        "humanize-policy-loading",
-        "peer-communication",
-        "work-in-progress-updates",
-        "artifact-links",
-        "exhaust-before-returning",
-        "response-shape",
-        "concise-request",
+        "interactive_session",
+        "humanize_policy_loading",
+        "peer_communication",
+        "work_in_progress_updates",
+        "artifact_links",
+        "exhaust_before_returning",
+        "response_shape",
+        "concise_request",
     ):
         assert f"<{tag}>" in interactive_policy
 
     for tag in (
-        "reader-understanding-policy",
-        "source-fidelity",
-        "whole-context-cohesion",
-        "representation-selection",
-        "representation-rendering",
-        "meaning-and-certainty",
-        "confusion-recovery",
-        "terminology-and-jargon",
-        "sentence-and-paragraph-construction",
-        "procedures-and-explanations",
-        "human-register",
-        "revision-and-semantic-check",
-        "durable-artifacts",
+        "reader_understanding_policy",
+        "source_fidelity",
+        "whole_context_cohesion",
+        "representation_selection",
+        "representation_rendering",
+        "meaning_and_certainty",
+        "confusion_recovery",
+        "terminology_and_jargon",
+        "sentence_and_paragraph_construction",
+        "procedures_and_explanations",
+        "human_register",
+        "revision_and_semantic_check",
+        "durable_artifacts",
     ):
         assert f"<{tag}>" in humanize_skill
 

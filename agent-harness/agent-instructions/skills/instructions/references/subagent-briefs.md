@@ -4,10 +4,10 @@ definition, it lives only for the lifetime of that single tool call. It must be 
 inherits no memory of the parent conversation.
 </purpose>
 
-<core-delegation-authority>
+<core_delegation_authority>
 Core `<delegation>` owns what the parent must understand, judge, verify, and synthesize. This chapter only shapes the
 self-contained brief used for one bounded delegation call.
-</core-delegation-authority>
+</core_delegation_authority>
 
 <colleague_who_walked_in>
 Write briefs for a smart colleague who just walked into the room. They have no context for what you tried, what you

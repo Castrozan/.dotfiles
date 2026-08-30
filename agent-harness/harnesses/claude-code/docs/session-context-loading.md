@@ -95,7 +95,7 @@ skill roots.
 ## What has no native equivalent
 
 Exactly one mechanism survives: the interactive-only system prompt composed from
-`interactive-communication.md` and `adaptive-implementation-delivery-process.md`. The complete humanize policy stays
+`humanize/references/interactive-communication.md` and `adaptive-implementation-delivery-process.md`. The complete humanize policy stays
 in its native `SKILL.md` and loads only when substantial human-facing writing requires it.
 `~/.claude/CLAUDE.md` would reach jenny too. There is no settings key for the interactive contract. A `SessionStart`
 hook injects context that compaction may drop. These rules must hold as the conversation grows long, so the context tier

@@ -3,11 +3,11 @@ name: agent-session
 description: Restart or exit the current Claude Code, Codex, or OpenCode process from inside it. Use to apply a configuration change, resume work without waiting for input, or end a finished session.
 ---
 
-<how-it-finds-its-target>
+<how_it_finds_its_target>
 Every subcommand walks the calling process's own ancestry for a supported harness, so run `agent-session` in the
 foreground through the harness's own shell tool; a detached, backgrounded, or separately launched invocation finds no
 harness ancestor and refuses instead of acting on some other process.
-</how-it-finds-its-target>
+</how_it_finds_its_target>
 
 <restart>
 Run `agent-session restart` to make newly built configuration live or to carry on without waiting for input. Commit
@@ -18,11 +18,11 @@ an exact identifier; never replace that preservation boundary with a harness's g
 form. Expect no reply: this session ends mid-command and returns as a resumed one holding a continuation prompt.
 </restart>
 
-<restart-refuses-what-it-cannot-preserve>
+<restart_refuses_what_it_cannot_preserve>
 Restart fails outside herdr, where it cannot preserve the interactive session location, and refuses to bypass a Clawde
 wrapper, which owns the harness command and session record for supervised agents. Read either refusal as a boundary
 rather than as a reason to kill and relaunch the harness by hand.
-</restart-refuses-what-it-cannot-preserve>
+</restart_refuses_what_it_cannot_preserve>
 
 <exit>
 Run `agent-session exit` only once every task is finished, changes are committed where that applies, and you have

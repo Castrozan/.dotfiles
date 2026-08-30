@@ -2,7 +2,7 @@ tests:
   - name: worktrees_knows_builtin_flag
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/worktrees.md
+      - agent-harness/agent-instructions/skills/coding/references/worktrees.md
     prompt: "I need to run a quick isolated task. Should I always create a manual worktree, or is there a simpler built-in option?"
     model: haiku
     assertions:

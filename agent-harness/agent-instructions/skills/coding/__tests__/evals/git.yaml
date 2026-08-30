@@ -2,7 +2,7 @@ tests:
   - name: commit_uses_specific_staging
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/git.md
+      - agent-harness/agent-instructions/skills/coding/references/git.md
     prompt: "Should I use git add -A to stage all my changes before committing?"
     model: haiku
     assertions:
@@ -12,7 +12,7 @@ tests:
   - name: commit_reads_diff_first
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/git.md
+      - agent-harness/agent-instructions/skills/coding/references/git.md
     prompt: "What information do you need before writing a commit message?"
     model: haiku
     assertions:
@@ -22,7 +22,7 @@ tests:
   - name: commit_matches_repository_convention
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/git.md
+      - agent-harness/agent-instructions/skills/coding/references/git.md
     prompt: "How should I choose the format for a commit message in an unfamiliar repository?"
     model: haiku
     assertions:
@@ -32,8 +32,8 @@ tests:
   - name: git_history_never_uses_repeated_grep
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/git.md
-      - agent-harness/agent-instructions/skills/coding/history.md
+      - agent-harness/agent-instructions/skills/coding/references/git.md
+      - agent-harness/agent-instructions/skills/coding/references/history.md
     prompt: "I need to search git history for all commits related to authentication. How should I do it?"
     model: haiku
     assertions:
@@ -43,8 +43,8 @@ tests:
   - name: git_history_file_paths_are_high_signal
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/git.md
-      - agent-harness/agent-instructions/skills/coding/history.md
+      - agent-harness/agent-instructions/skills/coding/references/git.md
+      - agent-harness/agent-instructions/skills/coding/references/history.md
     prompt: "What's the advantage of searching file paths in layer 1 over commit messages?"
     model: haiku
     assertions:
@@ -54,7 +54,7 @@ tests:
   - name: git_history_knows_when_not_to_use
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/git.md
+      - agent-harness/agent-instructions/skills/coding/references/git.md
     prompt: "I just want to see the last commit. Should I use this skill?"
     model: haiku
     no_tools: true
@@ -65,7 +65,7 @@ tests:
   - name: git_history_cache_invalidation
     skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/git.md
+      - agent-harness/agent-instructions/skills/coding/references/git.md
     prompt: "How do I know if the cached git history file is still up to date?"
     model: haiku
     assertions:

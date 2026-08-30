@@ -11,7 +11,9 @@ AGENT_HARNESS_SKILL_PATH = (
     / "agent-harness"
     / "SKILL.md"
 )
-AUTHORITY_RECIPE_PATH = AGENT_HARNESS_SKILL_PATH.with_name("instruction-authority.md")
+AUTHORITY_RECIPE_PATH = (
+    AGENT_HARNESS_SKILL_PATH.parent / "references" / "instruction-authority.md"
+)
 CORE_COMPLEMENT_REQUIREMENTS = {
     REPO_ROOT
     / "agent-harness"
@@ -55,6 +57,7 @@ CORE_COMPLEMENT_REQUIREMENTS = {
     / "agent-instructions"
     / "skills"
     / "humanize"
+    / "references"
     / "interactive-communication.md": (
         "<evidence>",
         "<autonomy>",
@@ -83,6 +86,7 @@ CORE_COMPLEMENT_REQUIREMENTS = {
     / "agent-instructions"
     / "skills"
     / "instructions"
+    / "references"
     / "subagent-briefs.md": ("<delegation>",),
 }
 HUMANIZE_INTERACTIVE_PATH = (
@@ -91,6 +95,7 @@ HUMANIZE_INTERACTIVE_PATH = (
     / "agent-instructions"
     / "skills"
     / "humanize"
+    / "references"
     / "interactive-communication.md"
 )
 HERMES_DIRECTORY = REPO_ROOT / "agent-harness" / "harnesses" / "hermes"
@@ -104,12 +109,12 @@ def test_agent_harness_routes_instruction_authority_diagnosis_to_one_recipe():
     skill = AGENT_HARNESS_SKILL_PATH.read_text(encoding="utf-8")
     recipe = AUTHORITY_RECIPE_PATH.read_text(encoding="utf-8")
 
-    assert "`instruction-authority.md`" in skill
+    assert "`references/instruction-authority.md`" in skill
     for section in (
-        "behavior-contract",
-        "runtime-trace",
-        "owner-selection",
-        "relationship-classification",
+        "behavior_contract",
+        "runtime_trace",
+        "owner_selection",
+        "relationship_classification",
         "migration",
         "verification",
     ):
@@ -165,8 +170,9 @@ def test_hermes_declares_managed_core_and_removes_memory_authority():
     ]
 
     assert "agent-instructions/core-rules/core.md" in soul_source
-    assert "agent-instructions/skills/humanize/interactive-communication.md" in (
-        config_source
+    assert (
+        "agent-instructions/skills/humanize/references/interactive-communication.md"
+        in (config_source)
     )
     for managed_surface in (
         "HERMES_AGENT_SOUL",

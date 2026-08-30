@@ -1,22 +1,18 @@
 ---
 name: quickshell
-description: Implement, debug, and test Quickshell bar/OSD/switcher. Use when modifying QML files, debugging shape paths or rendering, testing IPC calls, or verifying visual changes after edits. Also use when adding new bar modules, popouts, dashboard tabs, or launcher features.
+description: Implement, debug, and test the Quickshell bar, OSD, switcher, popouts, dashboard, and launcher. Use for QML changes, rendering failures, IPC calls, or live visual verification.
 ---
 
 <silent_failure_traps>
 Multiple shape files trace the same geometry for different purposes (fill vs stroke). They share the same property
 interface but are not programmatically linked. Changing one without the other compiles fine, renders with mismatched
 fill and border.
-
 Multiple color systems coexist across different UI layers. Mixing them compiles fine, produces wrong colors at runtime
 with no error. Read imports at the top of the file you're editing to know which system that layer uses.
-
 Region masking controls click-through. Adding a new visual element without adding it to the mask list makes it visible
 but unclickable. Read the mask region list when adding new interactive areas.
-
 PathArc direction (Clockwise vs Counterclockwise) compiles and renders either way: wrong direction takes the long way
 around, producing visual artifacts. Read existing arcs in the same file to match the convention before adding new ones.
-
 qmldir files register types for cross-directory imports. Missing entries produce "module not installed" errors that look
 like missing packages but are just registration. Check existing qmldir files in the directory when adding new types.
 </silent_failure_traps>
@@ -24,13 +20,10 @@ like missing packages but are just registration. Check existing qmldir files in 
 <service_lifecycle>
 Config directories are nix-managed symlinks. After changes: use the nix skill's rebuild capability to regenerate
 symlinks, then restart the service via systemctl. Never use pkill on quickshell processes.
-
 Discover IPC targets dynamically with `qs ipc --any-display -c bar show`. Call with `qs ipc --any-display -c bar call
 TARGET FUNCTION [ARGS]`. Use IPC to trigger UI states for testing: more reliable than mouse simulation.
-
 Always pass `ipc --any-display`: the systemd service registers its display as `wayland,wayland-1` while callers see only
 `wayland-1`, so the default display filter rejects the match and the call fails with "No running instances".
-
 Three quickshell services run independently:
 - `quickshell-bar.service`: vertical bar (dashboard, launcher, sidebar via IPC: `qs -p
   ~/.dotfiles/machine-configuration/desktop/quickshell/bar/program-configuration ipc --any-display call dashboard
@@ -38,7 +31,6 @@ Three quickshell services run independently:
 - `quickshell-switcher.service`: window switcher (`qs -c switcher ipc --any-display call switcher
   open/next/prev/confirm/cancel`)
 - `quickshell-overview.service`: workspace overview (`qs -c overview ipc --any-display call overview toggle/open/close`)
-
 The overview reads colors from `~/.config/hypr-theme/current/theme/quickshell-bar-colors.json` via FileView with live
 file watching. Colors auto-update on theme change. Grid config (rows, columns, scale, effects) lives in
 `machine-configuration/desktop/quickshell/overview/program-configuration/config.json`. Theme-to-M3 mapping is in

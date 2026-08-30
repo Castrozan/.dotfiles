@@ -2,7 +2,7 @@ tests:
   - name: dotfiles_directory_structure
     skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/nix/repo.md
+      - agent-harness/agent-instructions/skills/nix/references/repo.md
     prompt: "Where should I put a new reusable home-manager capability module in this dotfiles repo?"
     model: haiku
     assertions:
@@ -12,7 +12,7 @@ tests:
   - name: dotfiles_isnixos_detection
     skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/nix/repo.md
+      - agent-harness/agent-instructions/skills/nix/references/repo.md
     prompt: "How do I conditionally enable something only on NixOS in this repo?"
     model: haiku
     assertions:
@@ -22,8 +22,8 @@ tests:
   - name: nix_explains_lazy_evaluation_and_fixed_points
     skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/nix/repo.md
-      - agent-harness/agent-instructions/skills/nix/expert.md
+      - agent-harness/agent-instructions/skills/nix/references/repo.md
+      - agent-harness/agent-instructions/skills/nix/references/expert.md
     prompt: "I need help understanding Nix lazy evaluation and fixed-points. Can you explain?"
     model: haiku
     no_tools: true

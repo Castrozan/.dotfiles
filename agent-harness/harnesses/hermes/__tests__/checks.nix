@@ -61,7 +61,7 @@ in
 
   domain-hermes-interactive-sessions-carry-humanize =
     mkEvalCheck "domain-hermes-interactive-sessions-carry-humanize"
-      (lib.hasInfix "<interactive-session>" hermesConfigText)
+      (lib.hasInfix "<interactive_session>" hermesConfigText)
       "Hermes CLI and gateway sessions must receive the same interactive Humanize contract as the other interactive harnesses";
 
   domain-hermes-memory-does-not-own-core =

@@ -289,7 +289,7 @@ A commit touching only prose is not automatically activation-free, because part 
 into the system closure and part is read from the checkout at runtime: the skills tree is symlinked in from
 home-manager files and so ships in a closure, while the harness tree is reached by repo-relative path from an
 instruction file that is itself in a closure, so its content is read live. Editing
-`agent-harness/agent-instructions/skills/<skill>/knowledge.md` therefore owes a switch and editing
+`agent-harness/agent-instructions/skills/<skill>/references/knowledge.md` therefore owes a switch and editing
 `agent-harness/harnesses/<harness>/knowledge.md` does not, confirmed on three machines across two platforms. Resolve
 the wrapper toplevel and compare against the running system rather than assuming a docs commit changes nothing, and do
 not use the toplevel the validation result records until you have checked that what it built is what deploys, which no

@@ -3,9 +3,11 @@ name: page-composer
 description: Build a web page section by section through the compose-page workflow with a per-section meaning gate. Use for building, creating, or composing web and landing pages.
 ---
 
+<workflow_boundary>
 Build the page the user describes by invoking the `compose-page` workflow (Workflow tool, name `compose-page`).
 Never hand-scaffold the markup yourself, which reproduces the random-skeleton-of-placeholders failure this skill
 exists to prevent.
+</workflow_boundary>
 
 <invocation>
 Pass the workflow an args object. `brief` is the subject, the audience, and the single action the page drives, drawn
@@ -23,5 +25,7 @@ satisfy a requirement the gate ignores: the gate judges content meaning, not vis
 or token belongs back in `constraints` on a re-invocation, not in a hand-patch that detaches the page from its proof.
 </after_it_returns>
 
+<workflow_authority>
 The phases, schemas, and gate criteria live in the deployed `compose-page` workflow, the single source of truth; this
 skill only drives it.
+</workflow_authority>

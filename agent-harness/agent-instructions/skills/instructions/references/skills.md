@@ -5,26 +5,24 @@ repeatable, template-based action with fixed inputs and outputs.
 </extension_decision>
 
 <skill_format>
-Skills live in
-'agent-harness/agent-instructions/skills/<name>/SKILL.md' and deploy to AI agents via home-manager (drop a
-directory, the build
-picks it up). YAML frontmatter requires 'name' and 'description'. Short directory names for easy discovery. Body uses
-XML tags with dense prose per the instructions SKILL.md. Script-backed skills keep logic in a 'scripts/' subdirectory
-with SKILL.md as a minimal entry point.
+Skills live under `skills/<name>/SKILL.md` in the instruction source and deploy to AI agents through home-manager. Name
+each skill in lowercase kebab-case after its directory and provide a routing description. Keep
+optional instruction chapters under `references/` and executable logic under `scripts/`; keep SKILL.md as the minimal
+entry point. Use the XML and prose limits from the instructions SKILL.md for every instruction chapter.
 </skill_format>
 
 <skill_discovery>
 Description drives discovery. Models match semantically, so embed synonyms in prose. Every skill description is injected
 into every agent session; each word is a shared token tax across all interactions. Cap at 2 sentences, ~30 words (the
-repo validator warns above 35). Add "Do NOT use for..." only where a sibling skill creates real confusion. All trigger
+repo validator rejects above 35). Add "Do NOT use for..." only where a sibling skill creates real confusion. All trigger
 information goes in the description, not the body.
 </skill_discovery>
 
 <router_pattern>
-When a skill grows past one screen, split sub-files by surface and keep SKILL.md as a router that names each sub-file
-with one-line hooks. The router loads on every invocation; sub-files load on demand. Move depth into sub-files, keep
-triggers and orientation in SKILL.md. The repo validator checks that every `' 'filename.md' '` reference in SKILL.md
-resolves to a real file in the skill directory.
+When a skill grows past one screen, move optional chapters into `references/<chapter-name>.md` and keep SKILL.md as a
+router with one-line loading hooks. The router loads on every invocation; references load on demand. Keep triggers and
+orientation in SKILL.md. Resolve each backticked `references/<chapter-name>.md` path from the owning skill root; never
+use a repository-root or absolute path for a skill reference.
 </router_pattern>
 
 <hardskill_belongs_in_scripts>

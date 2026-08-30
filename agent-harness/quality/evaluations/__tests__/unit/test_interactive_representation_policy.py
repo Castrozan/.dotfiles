@@ -16,6 +16,7 @@ INTERACTIVE_COMMUNICATION_POLICY_PATH = (
     / "agent-instructions"
     / "skills"
     / "humanize"
+    / "references"
     / "interactive-communication.md"
 )
 
@@ -23,7 +24,7 @@ INTERACTIVE_COMMUNICATION_POLICY_PATH = (
 def representation_selection_policy() -> str:
     preferences = CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8")
     match = re.search(
-        r"<representation-selection>(.*?)</representation-selection>",
+        r"<representation_selection>(.*?)</representation_selection>",
         preferences,
         re.DOTALL,
     )
@@ -34,7 +35,7 @@ def representation_selection_policy() -> str:
 def representation_rendering_policy() -> str:
     preferences = CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8")
     match = re.search(
-        r"<representation-rendering>(.*?)</representation-rendering>",
+        r"<representation_rendering>(.*?)</representation_rendering>",
         preferences,
         re.DOTALL,
     )
@@ -74,6 +75,6 @@ def test_representation_policy_maps_reader_needs_to_the_smallest_useful_form():
 
 def test_interactive_contract_explicitly_allows_the_selected_representation():
     policy = INTERACTIVE_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8").lower()
-    assert "representation-selection" in policy
+    assert "representation_selection" in policy
     assert "smallest useful form" in policy
     assert "no bullet" not in policy

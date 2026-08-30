@@ -1,6 +1,6 @@
 ---
 name: ril
-description: Work the ReadItLater capture queue into machine changes and filed knowledge, one capture at a time, deciding each verdict live with the user or at a pull request. Use for ril, RIL, ReadItLater, the capture inbox, saved links, "process what I saved".
+description: Process the ReadItLater queue into machine changes and filed knowledge, deciding each verdict with the user or in a pull request. Use for RIL, the capture inbox, saved links, or "process what I saved."
 ---
 
 <what_this_produces>

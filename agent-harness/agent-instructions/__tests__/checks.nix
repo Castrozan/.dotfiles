@@ -86,7 +86,7 @@ let
     "<delegation>"
     "<context>"
     "<coding>"
-    "<instruction-placement>"
+    "<instruction_placement>"
   ];
   globalCoreRetiredAuthorityFragments = [
     "<judgment>"

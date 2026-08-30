@@ -3,7 +3,7 @@ tests:
     failure_mode: task_outcome
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       Earlier you explained the test system with terms such as composed instruction surface, delivery layer, control
       arm, McNemar, Wilson interval, and Cohen kappa. I still do not understand the answer. What does the user actually
@@ -19,7 +19,7 @@ tests:
     failure_mode: task_outcome
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       Your previous answer compared release mechanics for six paragraphs but never chose. I need the decision now.
       Option A can roll back independently but adds one service. Option B adds no service but can only roll back with
@@ -34,7 +34,7 @@ tests:
     failure_mode: task_outcome
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       I still do not understand the decision you are asking me to make. Stop talking about global grant, opt-in,
       insulation, finding 3, and unreachable rows. The provisioner can either create an administrator automatically on
@@ -51,7 +51,7 @@ tests:
     failure_mode: task_outcome
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       I asked whether deployment is done, but you narrated every command you tried. Try again. The rebuild passed, the
       new policy is live in Claude and Codex, OpenCode has not been checked, and nothing else is pending. Give me only
@@ -66,7 +66,7 @@ tests:
     failure_mode: missing_context
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       You said another team owns the shared recipe. Which team and which repository? The platform-runtime team owns
       deployment-recipes in github.com/acme/deployment-recipes. Our payments-api repository only consumes release.yaml.
@@ -81,7 +81,7 @@ tests:
     failure_mode: missing_context
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       You proposed base64 keys, normalized safe paths, and a bounded LRU. Do we have a cache at all? The current
       renderer stores generated image bytes in the in-memory contentCache map for the process lifetime. It has no size
@@ -96,7 +96,7 @@ tests:
     failure_mode: missing_context
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       Your answer said it writes that before they read it. I cannot tell what any pronoun means. The collector writes
       bundle.json. Validator A and Validator B read bundle.json after the write completes. If the write fails, neither
@@ -111,7 +111,7 @@ tests:
     failure_mode: concept_density
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       I did not understand your composed instruction surface, delivery layer, control arm, scope overwrite, and complete
       cycle explanation. Explain only this flow: a test prompt and the Humanize policy go to the model; the model writes
@@ -126,7 +126,7 @@ tests:
     failure_mode: concept_density
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       I understand pass rates but not McNemar's exact test. We compare the same 20 prompts under policy A and policy B,
       once each. Explain in two sentences what McNemar's exact test contributes. Keep the established statistical name.
@@ -140,7 +140,7 @@ tests:
     failure_mode: concept_density
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       What does "cross-harness reader-state fidelity regression gate" mean here? The gate runs the same reader-recovery
       tests in Claude, Codex, and OpenCode and fails the release if any harness drops below its accepted score. Explain
@@ -155,7 +155,7 @@ tests:
     failure_mode: verbosity
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       TL;DR in one short paragraph. Release remains blocked because two candidate failures omitted a safety threshold.
       The candidate passed 18 of 20 cases; the old policy passed 11 of 20.
@@ -169,7 +169,7 @@ tests:
     failure_mode: verbosity
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       You have already explained the research and implementation twice. I am multitasking. Tell me only what remains.
       The only unfinished work is one OpenCode end-to-end run. All code, documentation, unit tests, integration tests,
@@ -184,7 +184,7 @@ tests:
     failure_mode: verbosity
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       I asked for the file name and got an architecture review. Try again: the policy is in
       agent-harness/agent-instructions/skills/humanize/SKILL.md. Which file owns the policy? Answer with one sentence.
@@ -198,7 +198,7 @@ tests:
     failure_mode: representation
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       I asked for a simpler explanation, but your table still used proposed criterion, complete cycle, and overwrite
       reach. Do not make another table. The actual distinction is: a unit test checks one function; an integration test
@@ -214,7 +214,7 @@ tests:
     failure_mode: representation
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       I was confused because the previous answer mixed the harnesses together. Use the mapping below as source data;
       this is a formatting task, not a verification request. Show the exact mapping compactly: Claude loads
@@ -230,7 +230,7 @@ tests:
     failure_mode: control
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       This is a self-contained example; use the quoted sentence as supplied source text. WTF, the deployment failed
       again. Your previous answer was clear: "CI failed because test_cache.py expected 3 but received 4; change the
@@ -246,7 +246,7 @@ tests:
     failure_mode: control
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       Remove unnecessary jargon but preserve exact identifiers. contentCache is the map in code, normalizeSafePath is
       the function, and LRUCache is the library type. The proposal replaces contentCache with LRUCache and calls
@@ -261,7 +261,7 @@ tests:
     failure_mode: control
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       The earlier prose was confusing because the failure path was buried. Show this as a small flow: UI sends request
       to API; API authenticates; on failure API returns 401 to UI; on success API queries DB and returns the result.
@@ -275,7 +275,7 @@ tests:
     failure_mode: channel_constraint
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       Give me this recovery procedure as a numbered list because operators must follow the order: stop the worker,
       capture queue depth, restore snapshot s-18, start the worker, wait for health status ready, then resume intake.
@@ -290,7 +290,7 @@ tests:
     failure_mode: channel_constraint
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       Write a compact incident handoff with the headings Impact, Evidence, and Required action. Impact: checkout failed
       for 8 percent of requests. Evidence: the failures occurred only on node C after certificate rotation. Required
@@ -305,7 +305,7 @@ tests:
     failure_mode: channel_constraint
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       Explain why paired tests use the same prompts for policy A and policy B. Cover prompt difficulty, variance, and
       what a win means.
@@ -319,7 +319,7 @@ tests:
     failure_mode: channel_constraint
     skill_path: agent-harness/agent-instructions/skills/humanize/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/humanize/interactive-communication.md
+      - agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
     prompt: |
       Quote this release-note sentence exactly, including punctuation, then explain it in one plain sentence:
       "Retries are bounded — the worker stops after attempt three." Do not edit the quote.

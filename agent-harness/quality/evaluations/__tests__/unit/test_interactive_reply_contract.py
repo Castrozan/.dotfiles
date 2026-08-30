@@ -4,7 +4,7 @@ from interactive_humanize_surface_support import (
 
 
 def test_interactive_contract_reconstructs_the_whole_session():
-    interactive_session = interactive_policy_section("interactive-session")
+    interactive_session = interactive_policy_section("interactive_session")
 
     for required_context in (
         "multitasks",
@@ -26,7 +26,7 @@ def test_interactive_contract_reconstructs_the_whole_session():
 
 
 def test_standalone_recovery_does_not_license_restating_the_session():
-    interactive_session = interactive_policy_section("interactive-session")
+    interactive_session = interactive_policy_section("interactive_session")
 
     for required_behavior in (
         "not that it retells the whole session",
@@ -45,7 +45,7 @@ def test_standalone_recovery_does_not_license_restating_the_session():
 
 
 def test_work_in_progress_updates_do_not_require_user_attention():
-    work_in_progress_updates = interactive_policy_section("work-in-progress-updates")
+    work_in_progress_updates = interactive_policy_section("work_in_progress_updates")
     normalized_updates = work_in_progress_updates.lower()
 
     for required_behavior in (
@@ -61,8 +61,8 @@ def test_work_in_progress_updates_do_not_require_user_attention():
 
 
 def test_interactive_policy_routes_general_judgment_and_completion_to_core():
-    peer_communication = interactive_policy_section("peer-communication")
-    exhaust_before_returning = interactive_policy_section("exhaust-before-returning")
+    peer_communication = interactive_policy_section("peer_communication")
+    exhaust_before_returning = interactive_policy_section("exhaust_before_returning")
 
     assert "core `<evidence>`" in peer_communication.lower()
     for authority in ("core `<autonomy>`", "core `<completion>`"):
@@ -73,7 +73,7 @@ def test_interactive_policy_routes_general_judgment_and_completion_to_core():
 
 
 def test_artifact_links_are_remote_and_complete():
-    artifact_links = interactive_policy_section("artifact-links")
+    artifact_links = interactive_policy_section("artifact_links")
 
     for required_behavior in (
         "browser link",
@@ -95,7 +95,7 @@ def test_artifact_links_are_remote_and_complete():
 
 
 def test_every_substantive_reply_carries_the_three_labels():
-    response_shape = interactive_policy_section("response-shape")
+    response_shape = interactive_policy_section("response_shape")
 
     for required_label in (
         "**What is this session about?:**",
@@ -121,7 +121,7 @@ def test_every_substantive_reply_carries_the_three_labels():
 
 
 def test_the_reply_budgets_exempt_visuals_and_never_drop_a_fact():
-    response_shape = interactive_policy_section("response-shape")
+    response_shape = interactive_policy_section("response_shape")
 
     for required_budget in (
         "under 100 words",
@@ -131,12 +131,12 @@ def test_the_reply_budgets_exempt_visuals_and_never_drop_a_fact():
     ):
         assert required_budget in response_shape
 
-    concise_request = interactive_policy_section("concise-request")
+    concise_request = interactive_policy_section("concise_request")
     assert "No budget justifies deleting a fact" in concise_request
 
 
 def test_concise_request_is_semantic_instead_of_a_global_shape_limit():
-    concise_request = interactive_policy_section("concise-request")
+    concise_request = interactive_policy_section("concise_request")
 
     assert "binding" in concise_request
     assert "tldr" in concise_request

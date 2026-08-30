@@ -29,7 +29,7 @@ def test_each_harness_marks_the_same_interactive_session_boundary():
 
 
 def test_explicit_humanize_request_loads_before_other_actions():
-    humanize_loading = interactive_policy_section("humanize-policy-loading")
+    humanize_loading = interactive_policy_section("humanize_policy_loading")
 
     assert "explicitly requests Humanize" in humanize_loading
     assert "before any other action" in humanize_loading

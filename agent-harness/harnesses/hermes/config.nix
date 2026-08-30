@@ -13,7 +13,7 @@ let
       isDarwin
       ;
   };
-  interactiveCommunication = builtins.readFile ../../agent-instructions/skills/humanize/interactive-communication.md;
+  interactiveCommunication = builtins.readFile ../../agent-instructions/skills/humanize/references/interactive-communication.md;
   indentedInteractiveCommunication =
     lib.replaceStrings [ "\n" ] [ "\n      " ]
       interactiveCommunication;
