@@ -4,6 +4,7 @@ import pathlib
 import signal
 import subprocess
 import sys
+import time
 
 
 def run_command(*arguments, check=False, timeout=None):
@@ -101,6 +102,15 @@ def herdr_server_is_running():
     return any(session.get("running") for session in sessions)
 
 
+def wait_for_legacy_unit_stop(legacy_unit, timeout_seconds=30):
+    deadline = time.monotonic() + timeout_seconds
+    while unit_is_active(legacy_unit):
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.25)
+    return True
+
+
 def adopt_legacy_server():
     legacy_unit = os.environ["HERDR_LEGACY_UNIT"]
     target_unit = os.environ["HERDR_TARGET_UNIT"]
@@ -125,7 +135,7 @@ def adopt_legacy_server():
             os.kill(coordinator_process_id, signal.SIGCONT)
     if not herdr_server_is_running():
         raise RuntimeError("herdr server is unavailable after legacy adoption")
-    if unit_is_active(legacy_unit):
+    if not wait_for_legacy_unit_stop(legacy_unit):
         raise RuntimeError(f"{legacy_unit} remained active after legacy adoption")
 
 
