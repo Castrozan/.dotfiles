@@ -1,0 +1,107 @@
+{
+  config,
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  serverPath = lib.concatStringsSep ":" [
+    "/etc/profiles/per-user/${config.home.username}/bin"
+    "${config.home.homeDirectory}/.nix-profile/bin"
+    "/run/current-system/sw/bin"
+    "/nix/var/nix/profiles/default/bin"
+    "/usr/bin"
+    "/bin"
+  ];
+  serverRunning = ''
+    ${herdrPackage}/bin/herdr session list --json 2>/dev/null \
+      | ${pkgs.gnugrep}/bin/grep -q '"running":true'
+  '';
+  herdrServer = pkgs.writeShellApplication {
+    name = "herdr-server";
+    text = ''
+      while ${serverRunning}; do
+        ${pkgs.coreutils}/bin/sleep 5
+      done
+      exec ${herdrPackage}/bin/herdr server
+    '';
+  };
+  legacyServerImporter = pkgs.writeShellApplication {
+    name = "herdr-legacy-server-importer";
+    text = ''
+      export XDG_RUNTIME_DIR="/run/user/$(${pkgs.coreutils}/bin/id -u)"
+      export HERDR_LEGACY_SERVER_PID="$PPID"
+      ${pkgs.python3}/bin/python3 ${./scripts/adopt-legacy-herdr-server.py} prepare-import
+      exec ${herdrPackage}/bin/herdr "$@"
+    '';
+  };
+  waitForHerdrServer = pkgs.writeShellApplication {
+    name = "wait-for-herdr-server";
+    text = ''
+      for _ in $(${pkgs.coreutils}/bin/seq 1 300); do
+        if ${serverRunning}; then
+          exit 0
+        fi
+        ${pkgs.coreutils}/bin/sleep 0.1
+      done
+      exit 1
+    '';
+  };
+in
+{
+  config = lib.mkMerge [
+    (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
+      systemd.user.services.herdr = {
+        Unit = {
+          Description = "Shared Herdr server";
+          X-RestartIfChanged = false;
+          X-StopIfChanged = false;
+        };
+        Service = {
+          ExecStart = "${herdrServer}/bin/herdr-server";
+          ExecStartPost = "${waitForHerdrServer}/bin/wait-for-herdr-server";
+          Environment = [
+            "HOME=${config.home.homeDirectory}"
+            "PATH=${serverPath}"
+          ];
+          Restart = "always";
+          RestartSec = 1;
+          MemoryHigh = "8G";
+          Delegate = true;
+        };
+        Install.WantedBy = [ "default.target" ];
+      };
+
+      home.activation.adoptLegacyHerdrServer = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+        run ${pkgs.coreutils}/bin/env \
+          HERDR_SYSTEMCTL=${pkgs.systemd}/bin/systemctl \
+          HERDR_BUSCTL=${pkgs.systemd}/bin/busctl \
+          HERDR_EXECUTABLE=${herdrPackage}/bin/herdr \
+          HERDR_IMPORT_EXECUTABLE=${legacyServerImporter}/bin/herdr-legacy-server-importer \
+          HERDR_LEGACY_UNIT=clawde-herdr-server.service \
+          HERDR_TARGET_UNIT=herdr.service \
+          ${pkgs.python3}/bin/python3 ${./scripts/adopt-legacy-herdr-server.py} adopt
+      '';
+    })
+
+    (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+      launchd.agents.herdr = {
+        enable = true;
+        config = {
+          Label = "com.dotfiles.herdr";
+          ProgramArguments = [ "${herdrServer}/bin/herdr-server" ];
+          EnvironmentVariables = {
+            HOME = config.home.homeDirectory;
+            PATH = serverPath;
+          };
+          RunAtLoad = true;
+          KeepAlive = true;
+          StandardOutPath = "${config.home.homeDirectory}/Library/Logs/herdr-server.log";
+          StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/herdr-server.log";
+        };
+      };
+    })
+  ];
+}

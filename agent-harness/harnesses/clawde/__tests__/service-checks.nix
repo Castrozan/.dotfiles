@@ -47,12 +47,17 @@ in
         && (clawdeService.Service.KillMode or null) == "process"
         && !(clawdeService.Service ? ExecStop)
       )
-      "clawde.service must set Unit.X-RestartIfChanged=false and Service.KillMode=process and must declare no ExecStop, three attributes carrying one invariant: stopping the supervisor never takes the fleet with it. KillMode=process is the part that actually carries it, since systemd then kills the supervisor pid alone and journals every survivor as 'Unit process N remains running after unit stopped', one herdr pid having been observed surviving two such stops four days apart, where control-group (the default) would take the whole cgroup, which here is the shared herdr server, every agent wrapper, every harness under them and the human's own session. An ExecStop undoes that by hand, because any kill-session on stop destroys exactly the windows KillMode just spared. X-RestartIfChanged=false only suppresses churn, keeping activation from cutting supervision on every rebuild that touches an agent's config, and it guarantees nothing: three restarts got through 105 activations in one measured week on this machine, so a rollout reads the fleet's live store paths rather than inferring them from the flag";
+      "clawde.service must stop only the supervisor process, preserve the agent processes it coordinates, and avoid rebuild-driven restart churn";
 
-  clawde-carries-a-runaway-memory-backstop =
-    mkEvalCheck "clawde-carries-a-runaway-memory-backstop"
-      ((clawdeService.Service.MemoryHigh or null) == "8G")
-      "clawde.service must carry a MemoryHigh backstop so unbounded fan-out cannot take the whole 14G machine and push the browser's renderers into zram, where every tab switch then pays zstd decompression before it paints. The growth is fan-out rather than a leak: every helper measured had a live parent, and the cost is per concurrent session, opencode at a ~700M baseline each plus its own nixd forking two attrset-eval workers plus its own MCP servers, so five sessions multiply into gigabytes. The value is sized as a backstop rather than a daily throttle because this cgroup is not the fleet alone: clawde.service hosts the shared herdr server, so the human's interactive session and every command it launches, a rebuild included, are accounted here too. A 5G ceiling against a 6.2G resting fleet was measured producing 44k throttle events, 22% full PSI stall, and 8.6G relocated into swap until system swap was exhausted, which starves the desktop rather than freeing it, since MemoryHigh without MemorySwapMax moves pages instead of reducing them. 8G clears the resting fleet plus a concurrent rebuild and only engages on genuine runaway. MemoryHigh stays the soft knob rather than MemoryMax or MemorySwapMax: it throttles and reclaims without killing, so agents degrade into swap instead of dying, and it applies to the running supervisor on daemon-reload, so raising or lowering the ceiling never needs the unit stopped at all. It bounds the total, it does not reduce the per-session cost, so the durable fix remains fewer concurrent sessions";
+  clawde-consumes-herdr-without-owning-its-lifecycle =
+    mkEvalCheck "clawde-consumes-herdr-without-owning-its-lifecycle"
+      (
+        builtins.elem "herdr.service" (clawdeService.Unit.Wants or [ ])
+        && builtins.elem "herdr.service" (clawdeService.Unit.After or [ ])
+        && !(builtins.elem "herdr.service" (clawdeService.Unit.Requires or [ ]))
+        && !(clawdeService.Service ? MemoryHigh)
+      )
+      "clawde.service must attach to the independently managed herdr.service through Wants plus After, never own its lifecycle through Requires or carry the shared server's cgroup memory policy";
 
   clawde-depends-on-agenix-without-inheriting-its-deactivation =
     mkEvalCheck "clawde-depends-on-agenix-without-inheriting-its-deactivation"

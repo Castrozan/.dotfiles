@@ -2,7 +2,7 @@
 {
   imports = [
     inputs.clawde.homeManagerModules.default
-    ./shared-herdr-server-memory-ceiling.nix
+    ./herdr-service-consumer.nix
     ./wiring.nix
     ./harnesses.nix
     ./discord-channel-access.nix

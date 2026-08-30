@@ -16,7 +16,10 @@ let
   );
 in
 {
-  imports = [ ./herdr-config-mutable-home-manager.nix ];
+  imports = [
+    ./herdr-config-mutable-home-manager.nix
+    ./herdr-service-home-manager.nix
+  ];
 
   home = {
     packages = [ herdrPackage ];
