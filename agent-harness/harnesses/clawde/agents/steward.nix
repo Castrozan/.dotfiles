@@ -79,6 +79,7 @@ in
       "opencode"
     ];
     modelByHarness = {
+      claude = "sonnet";
       codex = "gpt-5.6-terra";
       opencode = "opencode-go/deepseek-v4-flash";
     };
