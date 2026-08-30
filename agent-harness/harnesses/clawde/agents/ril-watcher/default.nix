@@ -11,7 +11,8 @@
   ];
 
   clawde.agents.ril-watcher = {
-    harness = "codex";
+    harness = "claude";
+    model = "haiku";
     launchOnTrigger = true;
     launchGateIntervalSeconds = 1800;
     heartbeatGateCommand = "clawde-heartbeat-change-gate --label ril --retries-while-pending 2 --probe 'ril probe'";
