@@ -55,8 +55,6 @@ let
 
   effectivePersonality =
     personalityWithMachineIdentity + machineLocalWrapperDirective + repoCiToolingDirective;
-
-  stewardHarnessForMachine = if hostname == "kira" then "claude" else "codex";
 in
 {
   clawdeAgentSkillSets.steward = [
@@ -74,7 +72,7 @@ in
 
   clawde.agents.steward = {
     type = "steward";
-    harness = stewardHarnessForMachine;
+    harness = "claude";
     harnessFallbackChain = [
       "codex"
       "claude"
