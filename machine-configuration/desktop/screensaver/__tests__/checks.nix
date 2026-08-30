@@ -34,6 +34,11 @@ let
   linuxWiresAmbientCanvasKeepAlive =
     (linuxCfg.systemd.user.services ? ambient-canvas)
     && (linuxCfg.systemd.user.timers ? ambient-canvas);
+  linuxAmbientCanvasKeepAliveAvoidsActivationRestart =
+    let
+      ambientCanvasService = linuxCfg.systemd.user.services.ambient-canvas;
+    in
+    !ambientCanvasService.restartIfChanged && !ambientCanvasService.stopIfChanged;
   darwinWiresAmbientCanvasKeepAlive = darwinCfg.launchd.agents ? ambient-canvas;
 in
 {
@@ -80,4 +85,9 @@ in
     mkEvalCheck "domain-screensaver-ambient-canvas-keep-alive-wired-per-platform"
       (linuxWiresAmbientCanvasKeepAlive && darwinWiresAmbientCanvasKeepAlive)
       "the ambient-canvas keep-alive must be wired on every platform: a systemd user service on Linux and a launchd agent on darwin, or a died player is never respawned";
+
+  domain-screensaver-ambient-canvas-keep-alive-does-not-block-activation =
+    mkEvalCheck "domain-screensaver-ambient-canvas-keep-alive-does-not-block-activation"
+      linuxAmbientCanvasKeepAliveAvoidsActivationRestart
+      "the timer-driven ambient-canvas oneshot can record for minutes, so a rebuild must neither stop nor restart it and wait for the record pass";
 }

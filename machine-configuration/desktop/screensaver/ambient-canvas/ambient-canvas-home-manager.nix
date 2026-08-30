@@ -117,6 +117,8 @@ in
       };
 
       systemd.user.services.ambient-canvas = {
+        restartIfChanged = false;
+        stopIfChanged = false;
         Unit = {
           Description = "ambient-canvas screensaver keep-alive";
           After = [ "graphical-session.target" ];
