@@ -24,6 +24,7 @@ let
   dotfilesAgentInstructions = builtins.readFile ../../../../agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md;
   normalizedDotfilesAgentInstructions = lib.replaceStrings [ "\n" ] [ " " ] dotfilesAgentInstructions;
   codexConfigSeedActivationData = cfg.home.activation.seedCodexConfigAsMutableFile.data or "";
+  codexConfigContents = builtins.readFile cfg.home.file.".codex/config.toml.nix-source".source;
   legacyCodexSkillDirectoriesScript = builtins.readFile ../scripts/replace-legacy-codex-skill-directories;
   linuxNotificationDriver = import ../notification-driver.nix {
     isDarwin = false;
@@ -89,6 +90,11 @@ in
     builtins.hasAttr ".codex/config.toml.nix-source" cfg.home.file
     && !(builtins.hasAttr ".codex/config.toml" cfg.home.file)
   ) "Codex config must deploy an authoritative nix-source while leaving the live TOML mutable";
+
+  codex-config-uses-alternate-screen =
+    mkEvalCheck "codex-config-uses-alternate-screen"
+      (lib.hasInfix ''alternate_screen = "always"'' codexConfigContents)
+      "Interactive Codex sessions must use the TUI alternate screen instead of terminal scrollback";
 
   codex-config-mutable-seed-activation = mkEvalCheck "codex-config-mutable-seed-activation" (
     builtins.hasAttr "seedCodexConfigAsMutableFile" cfg.home.activation

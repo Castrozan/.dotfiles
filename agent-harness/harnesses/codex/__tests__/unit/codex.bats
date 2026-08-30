@@ -51,7 +51,7 @@ run_codex() {
 }
 
 pinned_arguments() {
-	echo '<--model> <gpt-5.6-sol> <--sandbox> <danger-full-access> <--ask-for-approval> <never> <--no-alt-screen>'
+	echo '<--model> <gpt-5.6-sol> <--sandbox> <danger-full-access> <--ask-for-approval> <never>'
 }
 
 @test "passes shellcheck apart from the dispatch file it sources by path" {
@@ -62,7 +62,7 @@ pinned_arguments() {
 	[ "$status" -eq 0 ]
 }
 
-@test "starts codex on the pinned model, sandbox, approval policy and screen mode" {
+@test "starts codex on the pinned model, sandbox and approval policy" {
 	run_codex
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "argv: $(pinned_arguments) <-c> <developer_instructions=global instructions>" ]
