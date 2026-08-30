@@ -80,6 +80,7 @@ in
     (mkHyprlandPythonScript "hypr-reopen-window" ./scripts/windows/reopen_window.py)
     (mkHyprlandPythonScript "hypr-reopen-window-picker" ./scripts/windows/reopen_window_picker.py)
     (mkHyprlandPythonScript "hypr-show-desktop" ./scripts/windows/show_desktop.py)
+    (mkHyprlandPythonScript "hypr-scrolling-vertical-tiling-toggle" ./scripts/windows/scrolling_vertical_tiling_toggle.py)
     (mkHyprlandPythonScript "hypr-move-window-to-workspace" ./scripts/windows/move_window_to_workspace.py)
   ];
 }
