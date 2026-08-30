@@ -71,6 +71,22 @@ def test_the_section_limit_is_stricter_than_the_file_limit():
     assert MAXIMUM_INSTRUCTION_PROSE_LINES == 150
 
 
+def test_prose_count_excludes_frontmatter_blanks_and_xml_delimiters():
+    frontmatter = "---\n" + prose_lines(151) + "\n---\n"
+    blank_lines = "\n" * 151
+    empty_sections = "<empty_section>\n</empty_section>\n" * 151
+    full_sections = "\n".join(
+        f"<section_{number}>\n{prose_lines(15)}\n</section_{number}>"
+        for number in range(10)
+    )
+    assert (
+        instruction_format_violations(
+            frontmatter + blank_lines + empty_sections + full_sections
+        )
+        == []
+    )
+
+
 def test_instruction_identity_ignores_frontmatter_serialization(tmp_path):
     skill_directory = tmp_path / "example-skill"
     skill_directory.mkdir()
