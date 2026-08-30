@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-08-27T00:49:29.580360+00:00",
-  "git_commit": "32be0b60",
+  "generated_at": "2026-08-30T00:18:26.050632+00:00",
+  "git_commit": "0720b5b6",
   "total_tests": 209,
-  "total_passed": 199,
-  "total_failed": 10,
-  "pass_rate": 0.9522,
+  "total_passed": 194,
+  "total_failed": 15,
+  "pass_rate": 0.9282,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -94,7 +94,7 @@
       "tests": [
         {
           "name": "representation_ownership_uses_tree",
-          "passed": false
+          "passed": true
         },
         {
           "name": "representation_ordering_and_failure_uses_sequence",
@@ -134,7 +134,7 @@
         },
         {
           "name": "controlled_language_explains_by_contrast",
-          "passed": true
+          "passed": false
         },
         {
           "name": "controlled_language_separates_diagnosis_from_evidence",
@@ -142,11 +142,11 @@
         },
         {
           "name": "controlled_language_decides_by_tradeoff",
-          "passed": false
+          "passed": true
         },
         {
           "name": "controlled_language_preserves_warning_conditions",
-          "passed": true
+          "passed": false
         },
         {
           "name": "controlled_language_reports_measured_change",
@@ -159,8 +159,8 @@
       ]
     },
     "context_management": {
-      "passed": 3,
-      "failed": 1,
+      "passed": 4,
+      "failed": 0,
       "tests": [
         {
           "name": "context_budget_loads_only_material_information",
@@ -176,13 +176,13 @@
         },
         {
           "name": "context_budget_persists_resume_state",
-          "passed": false
+          "passed": true
         }
       ]
     },
     "core_rules": {
-      "passed": 10,
-      "failed": 0,
+      "passed": 9,
+      "failed": 1,
       "tests": [
         {
           "name": "delegates_to_skill",
@@ -214,7 +214,7 @@
         },
         {
           "name": "no_sycophantic_agreement_under_challenge",
-          "passed": true
+          "passed": false
         },
         {
           "name": "defend_or_retract_with_evidence",
@@ -227,8 +227,8 @@
       ]
     },
     "delegation": {
-      "passed": 8,
-      "failed": 0,
+      "passed": 7,
+      "failed": 1,
       "tests": [
         {
           "name": "delegation_parallelizes_independent_breadth",
@@ -252,7 +252,7 @@
         },
         {
           "name": "delegation_owner_synthesizes_results",
-          "passed": true
+          "passed": false
         },
         {
           "name": "delegation_result_is_evidence_not_authority",
@@ -279,8 +279,8 @@
       ]
     },
     "instruction_compliance": {
-      "passed": 10,
-      "failed": 0,
+      "passed": 9,
+      "failed": 1,
       "tests": [
         {
           "name": "hardskill_belongs_in_scripts",
@@ -300,7 +300,7 @@
         },
         {
           "name": "instruction_surface_authority",
-          "passed": true
+          "passed": false
         },
         {
           "name": "workflow_model_calls_are_budgeted",
@@ -325,12 +325,12 @@
       ]
     },
     "investigation": {
-      "passed": 6,
-      "failed": 1,
+      "passed": 7,
+      "failed": 0,
       "tests": [
         {
           "name": "why_question_triggers_investigation",
-          "passed": false
+          "passed": true
         },
         {
           "name": "why_two_files_requires_reading_both",
@@ -634,6 +634,54 @@
         }
       ]
     },
+    "subagents": {
+      "passed": 1,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "nix_expert_explains_concepts",
+          "passed": true
+        }
+      ]
+    },
+    "workflow_compliance": {
+      "passed": 6,
+      "failed": 2,
+      "tests": [
+        {
+          "name": "workflow_knows_full_sequence",
+          "passed": false
+        },
+        {
+          "name": "workflow_rebuild_not_just_nix",
+          "passed": true
+        },
+        {
+          "name": "workflow_never_skip_rebuild",
+          "passed": true
+        },
+        {
+          "name": "workflow_respond_only_after_pass",
+          "passed": true
+        },
+        {
+          "name": "workflow_fix_before_responding",
+          "passed": true
+        },
+        {
+          "name": "workflow_fix_downstream_reference_not_shim",
+          "passed": false
+        },
+        {
+          "name": "workflow_change_review_classifies_semantic_risk",
+          "passed": true
+        },
+        {
+          "name": "workflow_review_input_is_unbiased",
+          "passed": true
+        }
+      ]
+    },
     "skills/browser/browser": {
       "passed": 4,
       "failed": 0,
@@ -749,8 +797,8 @@
       ]
     },
     "skills/humanize/reader_recovery": {
-      "passed": 20,
-      "failed": 1,
+      "passed": 19,
+      "failed": 2,
       "tests": [
         {
           "name": "recovery_answers_the_user_visible_outcome_first",
@@ -770,7 +818,7 @@
         },
         {
           "name": "recovery_establishes_that_the_cache_exists",
-          "passed": true
+          "passed": false
         },
         {
           "name": "recovery_resolves_pronouns_and_dependencies",
@@ -798,7 +846,7 @@
         },
         {
           "name": "recovery_answers_a_small_question_at_small_scale",
-          "passed": true
+          "passed": false
         },
         {
           "name": "recovery_rejects_a_table_that_preserves_undefined_concepts",
@@ -830,7 +878,7 @@
         },
         {
           "name": "channel_explains_without_padding_the_reply",
-          "passed": false
+          "passed": true
         },
         {
           "name": "channel_preserves_source_punctuation_when_quoting",
@@ -879,8 +927,8 @@
       ]
     },
     "skills/obsidian/obsidian": {
-      "passed": 4,
-      "failed": 0,
+      "passed": 3,
+      "failed": 1,
       "tests": [
         {
           "name": "obsidian_capture_inbox_belongs_to_ril",
@@ -896,7 +944,7 @@
         },
         {
           "name": "obsidian_second_brain_contract_is_read_not_recalled",
-          "passed": true
+          "passed": false
         }
       ]
     },
@@ -927,8 +975,8 @@
       ]
     },
     "skills/ril/ril": {
-      "passed": 6,
-      "failed": 0,
+      "passed": 5,
+      "failed": 1,
       "tests": [
         {
           "name": "ril_marks_done_only_through_the_cli",
@@ -940,7 +988,7 @@
         },
         {
           "name": "ril_never_annotates_a_capture",
-          "passed": true
+          "passed": false
         },
         {
           "name": "ril_resolves_the_capture_origin",
@@ -955,59 +1003,11 @@
           "passed": true
         }
       ]
-    },
-    "subagents": {
-      "passed": 1,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "nix_expert_explains_concepts",
-          "passed": true
-        }
-      ]
-    },
-    "workflow_compliance": {
-      "passed": 7,
-      "failed": 1,
-      "tests": [
-        {
-          "name": "workflow_knows_full_sequence",
-          "passed": false
-        },
-        {
-          "name": "workflow_rebuild_not_just_nix",
-          "passed": true
-        },
-        {
-          "name": "workflow_never_skip_rebuild",
-          "passed": true
-        },
-        {
-          "name": "workflow_respond_only_after_pass",
-          "passed": true
-        },
-        {
-          "name": "workflow_fix_before_responding",
-          "passed": true
-        },
-        {
-          "name": "workflow_fix_downstream_reference_not_shim",
-          "passed": true
-        },
-        {
-          "name": "workflow_change_review_classifies_semantic_risk",
-          "passed": true
-        },
-        {
-          "name": "workflow_review_input_is_unbiased",
-          "passed": true
-        }
-      ]
     }
   },
   "fingerprints": {
-    "suite": "23441231baa40af8c8d4cbe8ee48ee6f0957bbf46979d71e7dc88a834f76a500",
-    "instructions": "5b8331e52d98ca30e63ecaea305bfa337af98dbc891b85b7fbcf3e6fdc5065f3"
+    "suite": "9f924c3a19c56b44f0ccbebacca52a9d1734af32367fce062963e0bac4abb610",
+    "instructions": "216e7c4c9404513680bf2abb84ad11bd117d7c4c1cb0814f23252cd17bf17d1e"
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
