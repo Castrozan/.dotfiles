@@ -3,6 +3,7 @@ import Foundation
 struct AmbientCanvasRecordedSegment: Decodable {
     let file: String
     let durationSeconds: Double
+    let sequence: String?
 }
 
 struct AmbientCanvasRecordedSegmentManifest: Decodable {

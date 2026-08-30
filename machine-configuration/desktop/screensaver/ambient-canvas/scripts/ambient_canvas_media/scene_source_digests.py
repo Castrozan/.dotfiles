@@ -13,6 +13,7 @@ RECORDING_PIPELINE_RELATIVE_PATHS = (
     "record/ambient-canvas-recording-compositor.js",
     "record/ambient-canvas-recording-encoder.js",
     "record/ambient-canvas-recording-fingerprint.js",
+    "record/ambient-canvas-recording-plan.js",
     "vendor/mp4-muxer.min.js",
 )
 

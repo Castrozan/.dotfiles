@@ -3,6 +3,7 @@ import os
 import ensure_ambient_canvas_screensaver as ensure
 import recorded_loop_capture_plan as capture_plan
 import recorded_loop_capture_target as capture_target
+import recorded_segment_manifest as manifest
 import recorded_segment_store as store
 
 PLAYBACK_DWELL_OVERRIDE_SWIFT_SOURCE = os.path.join(
@@ -24,7 +25,7 @@ def _record_loop_for(state_directory, capture_signature, segment_fingerprint):
         state_directory, capture_signature
     )
     store.store_recorded_segment(loop_directory, segment_fingerprint, "mp4", b"media")
-    recorded_manifest = store.build_recorded_segment_manifest(
+    recorded_manifest = manifest.build_recorded_segment_manifest(
         [
             {
                 "fingerprint": segment_fingerprint,

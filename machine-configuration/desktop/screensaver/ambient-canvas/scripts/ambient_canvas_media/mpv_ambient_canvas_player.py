@@ -53,7 +53,9 @@ def play_single_segment_forever(
 
 
 def play_shuffled_loop(mpv_client, segments, segment_file_paths, dwell_override_path):
-    segment_order = ShuffledSegmentOrder(len(segments))
+    segment_order = ShuffledSegmentOrder(
+        [segment.get("sequence") for segment in segments]
+    )
     while True:
         segment_index = segment_order.next_segment_index()
         segment = segments[segment_index]

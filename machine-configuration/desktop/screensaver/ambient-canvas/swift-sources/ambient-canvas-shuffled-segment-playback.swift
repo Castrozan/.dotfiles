@@ -24,7 +24,9 @@ final class AmbientCanvasShuffledSegmentPlayback {
         self.segments = segments
         self.segmentAssets = segmentFileUrls.map { AVURLAsset(url: $0) }
         self.playbackDwellOverrideFileUrl = playbackDwellOverrideFileUrl
-        self.segmentOrder = AmbientCanvasShuffledSegmentOrder(segmentCount: segments.count)
+        self.segmentOrder = AmbientCanvasShuffledSegmentOrder(
+            sequenceIdentifiers: segments.map(\.sequence)
+        )
         player.actionAtItemEnd = .advance
     }
 

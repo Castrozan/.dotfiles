@@ -2,11 +2,15 @@ import json
 import os
 import tempfile
 
+from recorded_segment_manifest import (
+    RECORDED_SEGMENT_DIRECTORY_NAME,
+    build_recorded_segment_relative_path,
+    parse_recorded_segment_manifest,
+)
+
 RECORDED_LOOP_DIRECTORY_NAME = "loops"
-RECORDED_SEGMENT_DIRECTORY_NAME = "segments"
 RECORDED_SEGMENT_MANIFEST_FILENAME = "loop.segments.json"
 RECORDED_SOURCE_IDENTIFIER_FILENAME = "loop.source"
-DEFAULT_RECORDED_SEGMENT_EXTENSION = "mp4"
 
 
 def resolve_recorded_loop_directory(state_directory, capture_signature):
@@ -21,10 +25,6 @@ def resolve_recorded_segment_directory(output_directory):
 
 def resolve_recorded_segment_manifest_path(output_directory):
     return os.path.join(output_directory, RECORDED_SEGMENT_MANIFEST_FILENAME)
-
-
-def build_recorded_segment_relative_path(segment_fingerprint, extension):
-    return f"{RECORDED_SEGMENT_DIRECTORY_NAME}/{segment_fingerprint}.{extension}"
 
 
 def list_recorded_segment_fingerprints(output_directory):
@@ -54,61 +54,6 @@ def store_recorded_segment(
     )
     os.replace(staging_path, stored_path)
     return stored_path
-
-
-def parse_uploaded_segment_manifest(uploaded_manifest_bytes):
-    try:
-        decoded_manifest = json.loads(uploaded_manifest_bytes)
-    except (TypeError, ValueError):
-        return None
-    if not isinstance(decoded_manifest, dict):
-        return None
-    uploaded_segments = decoded_manifest.get("segments")
-    if not isinstance(uploaded_segments, list) or not uploaded_segments:
-        return None
-    if not all(
-        isinstance(uploaded_segment, dict)
-        and uploaded_segment.get("fingerprint")
-        and uploaded_segment.get("durationSeconds")
-        for uploaded_segment in uploaded_segments
-    ):
-        return None
-    return uploaded_segments
-
-
-def build_recorded_segment_manifest(uploaded_segments):
-    return {
-        "segments": [
-            {
-                "file": build_recorded_segment_relative_path(
-                    uploaded_segment["fingerprint"],
-                    uploaded_segment.get(
-                        "extension", DEFAULT_RECORDED_SEGMENT_EXTENSION
-                    ),
-                ),
-                "durationSeconds": uploaded_segment["durationSeconds"],
-            }
-            for uploaded_segment in uploaded_segments
-        ]
-    }
-
-
-def parse_recorded_segment_manifest(manifest_bytes):
-    try:
-        decoded_manifest = json.loads(manifest_bytes)
-    except (TypeError, ValueError):
-        return None
-    if not isinstance(decoded_manifest, dict):
-        return None
-    recorded_segments = decoded_manifest.get("segments")
-    if not isinstance(recorded_segments, list) or not recorded_segments:
-        return None
-    if not all(
-        isinstance(recorded_segment, dict) and recorded_segment.get("file")
-        for recorded_segment in recorded_segments
-    ):
-        return None
-    return decoded_manifest
 
 
 def resolve_manifest_segment_paths(output_directory, recorded_manifest):

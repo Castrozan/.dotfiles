@@ -14,7 +14,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     panes: [
       {
         scene: "bad-apple",
-        options: { videoId: "FtutLA63Cp8", startSeconds: 30 },
+        options: { videoId: "FtutLA63Cp8" },
       },
     ],
   },
@@ -22,7 +22,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     panes: [
       {
         scene: "bad-apple",
-        options: { videoId: "CqaAs_3azSs", startSeconds: 45 },
+        options: { videoId: "CqaAs_3azSs" },
       },
     ],
   },
@@ -30,7 +30,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     panes: [
       {
         scene: "bad-apple",
-        options: { videoId: "lX44CAz-JhU", startSeconds: 40 },
+        options: { videoId: "lX44CAz-JhU" },
       },
     ],
   },
@@ -38,7 +38,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     panes: [
       {
         scene: "bad-apple",
-        options: { videoId: "djV11Xbc914", startSeconds: 50 },
+        options: { videoId: "djV11Xbc914" },
       },
     ],
   },
@@ -46,7 +46,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     panes: [
       {
         scene: "bad-apple",
-        options: { videoId: "OBk3ynRbtsw", startSeconds: 25 },
+        options: { videoId: "OBk3ynRbtsw" },
       },
     ],
   },
@@ -56,7 +56,6 @@ window.AMBIENT_CANVAS_PLAYLIST = [
         scene: "bad-apple",
         options: {
           videoId: "I03xFqbxUp8",
-          startSeconds: 60,
           luminanceThreshold: 0.12,
         },
       },
@@ -68,7 +67,6 @@ window.AMBIENT_CANVAS_PLAYLIST = [
         scene: "bad-apple",
         options: {
           videoId: "plmXVrCKwnE",
-          startSeconds: 18,
           characterRows: 96,
           luminanceThreshold: 0.55,
         },

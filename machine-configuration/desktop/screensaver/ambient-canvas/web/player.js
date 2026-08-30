@@ -72,7 +72,7 @@
     );
   }
 
-  function buildSegment(compositionIndex) {
+  function buildSegment(compositionIndex, recordingOptionOverrides) {
     const renderers = [];
     for (const paneConfiguration of playlist[compositionIndex].panes) {
       const sceneFactory = sceneFactories[paneConfiguration.scene];
@@ -93,6 +93,7 @@
         { devicePixelRatio: currentDevicePixelRatio },
         paneConfiguration.options || {},
         window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES || {},
+        recordingOptionOverrides || {},
       );
       try {
         renderers.push({

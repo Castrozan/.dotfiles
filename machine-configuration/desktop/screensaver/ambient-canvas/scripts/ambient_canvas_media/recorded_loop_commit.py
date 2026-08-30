@@ -1,9 +1,11 @@
 import sys
 
-from recorded_segment_store import (
+from recorded_segment_manifest import (
     build_recorded_segment_manifest,
-    list_missing_manifest_segment_positions,
     parse_uploaded_segment_manifest,
+)
+from recorded_segment_store import (
+    list_missing_manifest_segment_positions,
     prune_recorded_segments_outside_manifest,
     write_recorded_segment_manifest,
     write_recorded_source_identifier,

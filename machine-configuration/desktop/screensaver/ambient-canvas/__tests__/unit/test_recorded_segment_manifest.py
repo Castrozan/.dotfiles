@@ -1,6 +1,7 @@
 import json
 import os
 
+import recorded_segment_manifest as manifest
 import recorded_segment_store as store
 
 SWIFT_MANIFEST_SOURCE = os.path.join(
@@ -12,6 +13,14 @@ SWIFT_MANIFEST_SOURCE = os.path.join(
 )
 WEB_RECORDER_SOURCE = os.path.join(
     os.path.dirname(__file__), "..", "..", "web", "recorder.js"
+)
+WEB_RECORDING_PLAN_SOURCE = os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "..",
+    "web",
+    "record",
+    "ambient-canvas-recording-plan.js",
 )
 
 
@@ -61,17 +70,17 @@ def test_an_interrupted_upload_is_not_listed_as_recorded(tmp_path):
 
 
 def test_uploaded_manifest_becomes_segment_file_paths():
-    uploaded_segments = store.parse_uploaded_segment_manifest(
+    uploaded_segments = manifest.parse_uploaded_segment_manifest(
         build_uploaded_manifest_bytes("abc123")
     )
-    assert store.build_recorded_segment_manifest(uploaded_segments) == {
+    assert manifest.build_recorded_segment_manifest(uploaded_segments) == {
         "segments": [{"file": "segments/abc123.mp4", "durationSeconds": 30}]
     }
 
 
 def test_uploaded_manifest_without_fingerprints_is_rejected():
     assert (
-        store.parse_uploaded_segment_manifest(
+        manifest.parse_uploaded_segment_manifest(
             json.dumps({"segments": [{"durationSeconds": 30}]}).encode()
         )
         is None
@@ -79,19 +88,19 @@ def test_uploaded_manifest_without_fingerprints_is_rejected():
 
 
 def test_empty_uploaded_manifest_is_rejected():
-    assert store.parse_uploaded_segment_manifest(b'{"segments": []}') is None
+    assert manifest.parse_uploaded_segment_manifest(b'{"segments": []}') is None
 
 
 def test_unparseable_uploaded_manifest_is_rejected():
-    assert store.parse_uploaded_segment_manifest(b"not json") is None
+    assert manifest.parse_uploaded_segment_manifest(b"not json") is None
 
 
 def test_manifest_is_playable_once_every_segment_is_stored(tmp_path):
     store.store_recorded_segment(str(tmp_path), "abc123", "mp4", b"media")
     store.write_recorded_segment_manifest(
         str(tmp_path),
-        store.build_recorded_segment_manifest(
-            store.parse_uploaded_segment_manifest(
+        manifest.build_recorded_segment_manifest(
+            manifest.parse_uploaded_segment_manifest(
                 build_uploaded_manifest_bytes("abc123")
             )
         ),
@@ -104,8 +113,8 @@ def test_manifest_is_playable_once_every_segment_is_stored(tmp_path):
 def test_manifest_referencing_a_missing_segment_is_not_playable(tmp_path):
     store.write_recorded_segment_manifest(
         str(tmp_path),
-        store.build_recorded_segment_manifest(
-            store.parse_uploaded_segment_manifest(
+        manifest.build_recorded_segment_manifest(
+            manifest.parse_uploaded_segment_manifest(
                 build_uploaded_manifest_bytes("abc123")
             )
         ),
@@ -115,8 +124,8 @@ def test_manifest_referencing_a_missing_segment_is_not_playable(tmp_path):
 
 def test_missing_segments_are_reported_by_their_playlist_position(tmp_path):
     store.store_recorded_segment(str(tmp_path), "first", "mp4", b"media")
-    recorded_manifest = store.build_recorded_segment_manifest(
-        store.parse_uploaded_segment_manifest(
+    recorded_manifest = manifest.build_recorded_segment_manifest(
+        manifest.parse_uploaded_segment_manifest(
             build_uploaded_manifest_bytes("first", "second", "third")
         )
     )
@@ -127,8 +136,8 @@ def test_missing_segments_are_reported_by_their_playlist_position(tmp_path):
 
 def test_no_position_is_reported_once_every_segment_is_stored(tmp_path):
     store.store_recorded_segment(str(tmp_path), "only", "mp4", b"media")
-    recorded_manifest = store.build_recorded_segment_manifest(
-        store.parse_uploaded_segment_manifest(build_uploaded_manifest_bytes("only"))
+    recorded_manifest = manifest.build_recorded_segment_manifest(
+        manifest.parse_uploaded_segment_manifest(build_uploaded_manifest_bytes("only"))
     )
     assert (
         store.list_missing_manifest_segment_positions(str(tmp_path), recorded_manifest)
@@ -143,8 +152,8 @@ def test_manifest_is_not_playable_before_the_first_recording(tmp_path):
 def test_pruning_keeps_the_segments_the_manifest_references(tmp_path):
     store.store_recorded_segment(str(tmp_path), "kept", "mp4", b"media")
     store.store_recorded_segment(str(tmp_path), "dropped", "mp4", b"media")
-    recorded_manifest = store.build_recorded_segment_manifest(
-        store.parse_uploaded_segment_manifest(build_uploaded_manifest_bytes("kept"))
+    recorded_manifest = manifest.build_recorded_segment_manifest(
+        manifest.parse_uploaded_segment_manifest(build_uploaded_manifest_bytes("kept"))
     )
     pruned = store.prune_recorded_segments_outside_manifest(
         str(tmp_path), recorded_manifest
@@ -155,8 +164,8 @@ def test_pruning_keeps_the_segments_the_manifest_references(tmp_path):
 
 def test_a_segment_reused_twice_survives_pruning(tmp_path):
     store.store_recorded_segment(str(tmp_path), "twice", "mp4", b"media")
-    recorded_manifest = store.build_recorded_segment_manifest(
-        store.parse_uploaded_segment_manifest(
+    recorded_manifest = manifest.build_recorded_segment_manifest(
+        manifest.parse_uploaded_segment_manifest(
             build_uploaded_manifest_bytes("twice", "twice")
         )
     )
@@ -175,11 +184,13 @@ def test_absent_source_identifier_reads_as_none(tmp_path):
 
 def test_swift_reader_and_python_writer_agree_on_the_field_names():
     swift_source = read_source(SWIFT_MANIFEST_SOURCE)
-    for field_name in ("file", "durationSeconds", "segments"):
+    for field_name in ("file", "durationSeconds", "sequence", "segments"):
         assert field_name in swift_source
 
 
 def test_web_recorder_uploads_the_fields_the_store_parses():
-    recorder_source = read_source(WEB_RECORDER_SOURCE)
+    recorder_source = read_source(WEB_RECORDER_SOURCE) + read_source(
+        WEB_RECORDING_PLAN_SOURCE
+    )
     for field_name in ("fingerprint", "extension", "durationSeconds"):
         assert field_name in recorder_source

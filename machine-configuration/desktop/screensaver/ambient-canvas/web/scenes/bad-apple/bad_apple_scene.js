@@ -34,6 +34,12 @@
 
     return {
       ready: videoSource.ready,
+      resolveRecordingSource() {
+        return {
+          sequence: "bad-apple:" + options.videoId,
+          durationSeconds: videoSource.resolvePlayableDurationSeconds(),
+        };
+      },
       prepareFrame(localElapsedSeconds) {
         return videoSource.prepareFrame(localElapsedSeconds);
       },

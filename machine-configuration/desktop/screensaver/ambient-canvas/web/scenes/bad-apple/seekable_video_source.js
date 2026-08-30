@@ -37,6 +37,13 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
     return startSeconds + (localElapsedSeconds % loopableSeconds);
   }
 
+  function resolvePlayableDurationSeconds(videoElement) {
+    if (!videoElement.duration || !isFinite(videoElement.duration)) {
+      return 0;
+    }
+    return Math.max(0, videoElement.duration - END_OF_VIDEO_GUARD_SECONDS);
+  }
+
   function seekVideoTo(videoElement, targetSeconds) {
     if (!videoElement.duration || !isFinite(videoElement.duration)) {
       return Promise.resolve();
@@ -94,6 +101,9 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
     return {
       ready: readyPromise,
       element: videoElement,
+      resolvePlayableDurationSeconds() {
+        return resolvePlayableDurationSeconds(videoElement);
+      },
       prepareFrame(localElapsedSeconds) {
         if (!seeksDeterministically) {
           return Promise.resolve();

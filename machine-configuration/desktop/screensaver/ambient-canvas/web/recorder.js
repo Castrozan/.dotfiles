@@ -9,7 +9,6 @@
   const captureFramesPerSecond = Number(recordParameters.get("fps")) || 30;
   const uploadUrl = recordParameters.get("uploadUrl") || "";
   const themeBackgroundHex = recordParameters.get("themeBackground") || "";
-
   const outputPixelWidth = Number(recordParameters.get("width")) || 1920;
   const outputPixelHeight = Number(recordParameters.get("height")) || 1080;
   const targetBitsPerPixelPerFrame = 0.35;
@@ -20,19 +19,12 @@
   const compositor = window.AmbientCanvasRecordingCompositor;
   const encoder = window.AmbientCanvasRecordingEncoder;
   const fingerprint = window.AmbientCanvasRecordingFingerprint;
+  const recordingPlan = window.AmbientCanvasRecordingPlan;
 
   window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES = {
     preserveDrawingBuffer: true,
     deterministicPlayback: true,
   };
-
-  function waitForSegmentAssetsToLoad(segmentHandle) {
-    return Promise.all(
-      segmentHandle.renderers.map(function awaitOneRenderer(activeRenderer) {
-        return activeRenderer.renderer.ready || Promise.resolve();
-      }),
-    );
-  }
 
   function nextAnimationFrame() {
     return new Promise(function resolveOnNextFrame(resolve) {
@@ -56,13 +48,16 @@
     playbackController,
     compositionIndex,
     durationSeconds,
+    recordingStartSeconds,
     deterministicGrid,
     recordContext,
   ) {
     playbackController.applyLayout(compositionIndex);
     await nextAnimationFrame();
-    const segmentHandle = playbackController.buildSegment(compositionIndex);
-    await waitForSegmentAssetsToLoad(segmentHandle);
+    const segmentHandle = playbackController.buildSegment(compositionIndex, {
+      startSeconds: recordingStartSeconds,
+    });
+    await recordingPlan.waitForSegmentAssetsToLoad(segmentHandle);
     const panePlacements = compositor.resolveFixedResolutionPanePlacements(
       segmentHandle.renderers,
       deterministicGrid,
@@ -141,40 +136,52 @@
       compositionIndex++
     ) {
       const composition = playbackController.compositions[compositionIndex];
-      const durationSeconds =
+      const chunkDurationSeconds =
         explicitCaptureDurationSeconds > 0
           ? explicitCaptureDurationSeconds
           : playbackController.compositionDurationSeconds(composition);
-      const segmentFingerprint =
-        await fingerprint.resolveCompositionFingerprint(
-          composition,
-          durationSeconds,
-          fingerprintInputs,
-          captureSignature,
-          themeBackgroundHex,
+      const recordingRanges =
+        await recordingPlan.resolveCompositionRecordingRanges(
+          playbackController,
+          compositionIndex,
+          chunkDurationSeconds,
+          nextAnimationFrame,
         );
-      manifestSegments.push({
-        fingerprint: segmentFingerprint,
-        extension: "mp4",
-        durationSeconds: durationSeconds,
-      });
-      if (alreadyRecordedFingerprints.has(segmentFingerprint)) {
-        continue;
+      for (const recordingRange of recordingRanges) {
+        const segmentFingerprint =
+          await fingerprint.resolveCompositionFingerprint(
+            composition,
+            recordingRange.durationSeconds,
+            fingerprintInputs,
+            captureSignature,
+            themeBackgroundHex,
+            recordingRange.startSeconds,
+          );
+        manifestSegments.push(
+          recordingPlan.buildManifestSegment(
+            segmentFingerprint,
+            recordingRange,
+          ),
+        );
+        if (alreadyRecordedFingerprints.has(segmentFingerprint)) {
+          continue;
+        }
+        const encodedBuffer = await recordOneComposition(
+          playbackController,
+          compositionIndex,
+          recordingRange.durationSeconds,
+          recordingRange.startSeconds,
+          deterministicGrid,
+          recordContext,
+        );
+        await encoder.uploadRecordedSegment(
+          encodedBuffer,
+          segmentFingerprint,
+          recordingRange.durationSeconds,
+          uploadUrl,
+        );
+        alreadyRecordedFingerprints.add(segmentFingerprint);
       }
-      const encodedBuffer = await recordOneComposition(
-        playbackController,
-        compositionIndex,
-        durationSeconds,
-        deterministicGrid,
-        recordContext,
-      );
-      await encoder.uploadRecordedSegment(
-        encodedBuffer,
-        segmentFingerprint,
-        durationSeconds,
-        uploadUrl,
-      );
-      alreadyRecordedFingerprints.add(segmentFingerprint);
     }
 
     await encoder.uploadSegmentManifest(manifestSegments, uploadUrl);
