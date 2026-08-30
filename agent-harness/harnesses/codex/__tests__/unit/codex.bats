@@ -11,7 +11,6 @@ setup() {
 	PROFILE_INSTRUCTIONS_FILE="$TEMPORARY_ROOT/profile-instructions.md"
 	DISPATCH_FILE="$TEMPORARY_ROOT/workspace-profile-dispatch"
 	DISPATCH_MARKER="$TEMPORARY_ROOT/dispatch-was-sourced"
-	TPUT_LOG="$TEMPORARY_ROOT/tput.log"
 	mkdir -p "$FAKE_BINARY_DIRECTORY"
 	printf 'global instructions' >"$GLOBAL_INSTRUCTIONS_FILE"
 	printf 'profile instructions' >"$PROFILE_INSTRUCTIONS_FILE"
@@ -23,14 +22,9 @@ setup() {
 		printf '\n'
 		printf 'AGENT_INTERACTIVE_PREFERENCES_PATH=<%s>\n' "${AGENT_INTERACTIVE_PREFERENCES_PATH-unset}"
 		printf 'NPM_CONFIG_PREFIX=<%s>\n' "${NPM_CONFIG_PREFIX-unset}"
-		exit "${FAKE_CODEX_EXIT_STATUS:-0}"
 	FAKE_CODEX
-	cat >"$FAKE_BINARY_DIRECTORY/tput" <<-'FAKE_TPUT'
-		#!/usr/bin/env bash
-		printf '%s\n' "$1" >>"$TPUT_LOG"
-	FAKE_TPUT
 
-	chmod +x "$FAKE_BINARY_DIRECTORY/codex" "$FAKE_BINARY_DIRECTORY/tput"
+	chmod +x "$FAKE_BINARY_DIRECTORY/codex"
 	write_dispatch_file
 }
 
@@ -56,21 +50,6 @@ run_codex() {
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
-run_codex_in_terminal() {
-	local quotedCommand
-	printf -v quotedCommand '%q ' "$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
-	run env -i \
-		PATH="$FAKE_BINARY_DIRECTORY:$PATH" \
-		DISPATCH_MARKER="$DISPATCH_MARKER" \
-		TPUT_LOG="$TPUT_LOG" \
-		FAKE_CODEX_EXIT_STATUS="${FAKE_CODEX_EXIT_STATUS:-0}" \
-		NPM_CONFIG_PREFIX="/nonexistent" \
-		CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE="$GLOBAL_INSTRUCTIONS_FILE" \
-		CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE="$DISPATCH_FILE" \
-		CODEX_LAUNCHER_BINARY="$FAKE_BINARY_DIRECTORY/codex" \
-		script --quiet --return --command "$quotedCommand" /dev/null
-}
-
 pinned_arguments() {
 	echo '<--model> <gpt-5.6-sol> <--sandbox> <danger-full-access> <--ask-for-approval> <never>'
 }
@@ -87,35 +66,6 @@ pinned_arguments() {
 	run_codex
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "argv: $(pinned_arguments) <-c> <developer_instructions=global instructions>" ]
-}
-
-@test "keeps an interactive terminal session in one alternate buffer" {
-	run_codex_in_terminal
-	[ "$status" -eq 0 ]
-	[ "$(sed -n '1p' "$TPUT_LOG")" = 'smcup' ]
-	[ "$(sed -n '2p' "$TPUT_LOG")" = 'rmcup' ]
-	[[ "$output" == *'<--no-alt-screen>'* ]]
-}
-
-@test "does not wrap a non-interactive subcommand in an alternate buffer" {
-	run_codex_in_terminal exec "do the thing"
-	[ "$status" -eq 0 ]
-	[ ! -e "$TPUT_LOG" ]
-	[[ "$output" != *'<--no-alt-screen>'* ]]
-}
-
-@test "does not hide help output in an alternate buffer" {
-	run_codex_in_terminal --help
-	[ "$status" -eq 0 ]
-	[ ! -e "$TPUT_LOG" ]
-	[[ "$output" != *'<--no-alt-screen>'* ]]
-}
-
-@test "restores the terminal buffer after Codex fails" {
-	FAKE_CODEX_EXIT_STATUS=23 run_codex_in_terminal
-	[ "$status" -eq 23 ]
-	[ "$(sed -n '1p' "$TPUT_LOG")" = 'smcup' ]
-	[ "$(sed -n '2p' "$TPUT_LOG")" = 'rmcup' ]
 }
 
 @test "exports the developer instructions path it injected" {

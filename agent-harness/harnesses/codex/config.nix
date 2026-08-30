@@ -102,6 +102,7 @@ let
       multi_agent = true;
     };
     tui = {
+      alternate_screen = "always";
       animations = false;
       session_picker_view = "dense";
       show_tooltips = false;
