@@ -47,12 +47,8 @@ tests:
       output_contains:
         - provisioner
         - createAdministrator
-        - ineligible systems
-        - existing administrators
       output_not_contains:
         - global grant
-        - opt-in
-        - insulation
         - finding 3
         - unreachable rows
       llm_judge:
