@@ -281,10 +281,11 @@ needed either. Sources are declared in `web/scene-videos.json`, cached under
 
 Two things are load-bearing and easy to regress. The record server **must** answer HTTP Range
 requests: `SimpleHTTPRequestHandler` does not, and without `206` responses Chrome reports the
-video as `seekable: [[0, 0]]`, so every seek silently no-ops and every frame captures the
-opening black frame. And the scene is deterministic only through `prepareFrame`, which seeks
-to the exact frame time and resolves on `seeked`; the braille grid is derived from the measured
-glyph advance width, so dots stay square and the source is letterboxed rather than stretched.
+  video as `seekable: [[0, 0]]`, so the initial range seek silently no-ops and every frame captures
+  the opening black frame. The deterministic `prepareFrame` path measures the source frame interval
+  and advances one decoded frame at a time. Repeated random seeks make video capture several times
+  slower than the ordinary software encode. The braille grid is derived from the measured glyph
+  advance width, so dots stay square and the source is letterboxed rather than stretched.
 
 Source framing follows the clip. Four of the six declared clips are 640x360 and fill the 16:9
 frame edge to edge; `FtutLA63Cp8` and `djV11Xbc914` are 480x360, so they letterbox to 75% of

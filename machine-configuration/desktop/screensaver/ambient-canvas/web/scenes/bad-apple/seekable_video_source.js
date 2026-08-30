@@ -87,10 +87,25 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
     videoElement.preload = "auto";
     videoElement.src = videoUrl;
 
+    const deterministicVideoStepper = seeksDeterministically
+      ? window.AmbientCanvasDeterministicVideoStepper.createDeterministicVideoStepper(
+          videoElement,
+          startSeconds,
+          seekVideoTo,
+          function resolveTargetSeconds(localElapsedSeconds) {
+            return resolveLoopedSeekSeconds(
+              videoElement,
+              startSeconds,
+              localElapsedSeconds,
+            );
+          },
+        )
+      : null;
+
     const readyPromise = waitForVideoReady(videoElement).then(
       function positionAtStart() {
         if (seeksDeterministically) {
-          return seekVideoTo(videoElement, startSeconds);
+          return deterministicVideoStepper.initialize();
         }
         videoElement.loop = true;
         videoElement.currentTime = startSeconds;
@@ -108,14 +123,7 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
         if (!seeksDeterministically) {
           return Promise.resolve();
         }
-        return seekVideoTo(
-          videoElement,
-          resolveLoopedSeekSeconds(
-            videoElement,
-            startSeconds,
-            localElapsedSeconds,
-          ),
-        );
+        return deterministicVideoStepper.prepareFrame(localElapsedSeconds);
       },
       dispose() {
         videoElement.pause();
