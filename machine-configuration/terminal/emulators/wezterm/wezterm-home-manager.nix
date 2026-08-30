@@ -28,7 +28,7 @@ let
       darwinAppBundleContentsMacOS="$out/Applications/WezTerm.app/Contents/MacOS"
       mkdir -p "$darwinAppBundleContentsMacOS"
       for darwinAppBundleExecutable in wezterm wezterm-gui wezterm-mux-server strip-ansi-escapes wezterm.sh; do
-        ln -s "${latest.wezterm}/Applications/WezTerm.app/$darwinAppBundleExecutable" \
+        ln -s "${patchedWezterm}/Applications/WezTerm.app/$darwinAppBundleExecutable" \
           "$darwinAppBundleContentsMacOS/$darwinAppBundleExecutable"
       done
     '';
