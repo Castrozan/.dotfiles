@@ -52,10 +52,7 @@ let
         sourceRoot = "${finalAttributes.src.name}/codex-rs";
         hash = finalAttributes.cargoHash;
       };
-      patches = (previousAttributes.patches or [ ]) ++ [
-        ./patches/owned-alternate-screen.patch
-        ./patches/servant-statusline.patch
-      ];
+      patches = (previousAttributes.patches or [ ]) ++ [ ./patches/servant-statusline.patch ];
       postPatch = ''
         substituteInPlace Cargo.toml \
           --replace-fail 'lto = "thin"' "" \
