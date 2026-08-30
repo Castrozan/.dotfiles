@@ -52,13 +52,19 @@ window.AmbientCanvasDeterministicVideoStepper =
 
       async function initialize() {
         await seekVideoTo(videoElement, startSeconds);
-        const nextMediaTimeSeconds = await waitForNextPresentedFrame(
+        const firstMediaTimeSeconds = await waitForNextPresentedFrame(
           videoElement,
           startSeconds,
         );
-        sourceFrameDurationSeconds = nextMediaTimeSeconds - startSeconds;
+        const secondMediaTimeSeconds = await waitForNextPresentedFrame(
+          videoElement,
+          firstMediaTimeSeconds,
+        );
+        sourceFrameDurationSeconds =
+          secondMediaTimeSeconds - firstMediaTimeSeconds;
         await seekVideoTo(videoElement, startSeconds);
-        presentedMediaTimeSeconds = startSeconds;
+        presentedMediaTimeSeconds =
+          firstMediaTimeSeconds - sourceFrameDurationSeconds;
       }
 
       async function prepareFrame(localElapsedSeconds) {

@@ -27,6 +27,7 @@ def test_deterministic_capture_decodes_source_frames_sequentially():
     evaluation_source = f"""
 global.window = global;
 const frameDurationSeconds = 1 / 24;
+const sourceFramePhaseSeconds = 0.01;
 const state = {{ playCalls: 0, seekTargets: [] }};
 const listeners = new Map();
 const video = {{
@@ -34,6 +35,7 @@ const video = {{
   readyState: 2,
   paused: true,
   _currentTime: 30,
+  presentedMediaTime: 30 - sourceFramePhaseSeconds,
   addEventListener(name, callback) {{ listeners.set(name, callback); }},
   removeEventListener(name) {{ listeners.delete(name); }},
   requestVideoFrameCallback(callback) {{ this.frameCallback = callback; }},
@@ -41,10 +43,11 @@ const video = {{
     this.paused = false;
     state.playCalls += 1;
     queueMicrotask(() => {{
-      this._currentTime += frameDurationSeconds;
+      this.presentedMediaTime += frameDurationSeconds;
+      this._currentTime = this.presentedMediaTime;
       const callback = this.frameCallback;
       this.frameCallback = null;
-      callback(0, {{ mediaTime: this._currentTime }});
+      callback(0, {{ mediaTime: this.presentedMediaTime }});
     }});
     return Promise.resolve();
   }},
@@ -54,6 +57,7 @@ const video = {{
   get currentTime() {{ return this._currentTime; }},
   set currentTime(value) {{
     this._currentTime = value;
+    this.presentedMediaTime = value - sourceFramePhaseSeconds;
     state.seekTargets.push(value);
     queueMicrotask(() => listeners.get("seeked")?.());
   }},
@@ -85,13 +89,13 @@ eval(require("fs").readFileSync({json.dumps(str(VIDEO_SOURCE_PATH))}, "utf8"));
     result = json.loads(completed.stdout)
 
     assert result["seekTargets"] == [30]
-    assert result["playCalls"] == 3
+    assert result["playCalls"] == 4
     assert result["presentedTimes"] == pytest.approx(
         [
             30,
-            30,
-            30 + 1 / 24,
-            30 + 2 / 24,
+            30 - 0.01 + 1 / 24,
+            30 - 0.01 + 1 / 24,
+            30 - 0.01 + 2 / 24,
         ]
     )
 
