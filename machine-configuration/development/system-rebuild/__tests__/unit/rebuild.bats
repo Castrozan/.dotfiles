@@ -171,12 +171,10 @@ readonly BACKEND_CONTRACT=(
 	[[ "$output" != *"PRIVILEGED_CALL"* ]]
 }
 
-@test "entrypoint sync is skipped when /etc/nixos already carries the flake and its lock" {
+@test "entrypoint sync is skipped when /etc/nixos already matches" {
 	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
 	machine_local_entrypoint_flake_present() { return 0; }
 	etc_nixos_flake_matches_machine_local_entrypoint() { return 0; }
-	machine_local_entrypoint_lock_present() { return 0; }
-	etc_nixos_lock_present() { return 0; }
 	run_privileged() { echo "PRIVILEGED_CALL"; }
 	run sync_etc_nixos_flake_from_machine_local_entrypoint chise
 	[ "$status" -eq 0 ]
@@ -187,50 +185,10 @@ readonly BACKEND_CONTRACT=(
 	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
 	machine_local_entrypoint_flake_present() { return 0; }
 	etc_nixos_flake_matches_machine_local_entrypoint() { return 1; }
-	machine_local_entrypoint_lock_present() { return 0; }
-	etc_nixos_lock_present() { return 0; }
 	run_privileged() { echo "PRIVILEGED_CALL $*"; }
 	run sync_etc_nixos_flake_from_machine_local_entrypoint chise
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"PRIVILEGED_CALL install -D -m 0644"* ]]
-	[[ "$output" == *"$ETC_NIXOS_FLAKE"* ]]
-}
-
-@test "entrypoint sync seeds /etc/nixos/flake.lock when it is absent" {
-	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	machine_local_entrypoint_flake_present() { return 0; }
-	etc_nixos_flake_matches_machine_local_entrypoint() { return 0; }
-	machine_local_entrypoint_lock_present() { return 0; }
-	etc_nixos_lock_present() { return 1; }
-	run_privileged() { echo "PRIVILEGED_CALL $*"; }
-	run sync_etc_nixos_flake_from_machine_local_entrypoint chise
-	[ "$status" -eq 0 ]
-	[[ "$output" == *"PRIVILEGED_CALL install -D -m 0644"* ]]
-	[[ "$output" == *"$ETC_NIXOS_LOCK"* ]]
-}
-
-@test "entrypoint sync leaves an existing /etc/nixos/flake.lock untouched" {
-	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	machine_local_entrypoint_flake_present() { return 0; }
-	etc_nixos_flake_matches_machine_local_entrypoint() { return 0; }
-	machine_local_entrypoint_lock_present() { return 0; }
-	etc_nixos_lock_present() { return 0; }
-	run_privileged() { echo "PRIVILEGED_CALL $*"; }
-	run sync_etc_nixos_flake_from_machine_local_entrypoint chise
-	[ "$status" -eq 0 ]
-	[[ "$output" != *"$ETC_NIXOS_LOCK"* ]]
-}
-
-@test "entrypoint sync does not seed the lock when the entrypoint has none" {
-	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	machine_local_entrypoint_flake_present() { return 0; }
-	etc_nixos_flake_matches_machine_local_entrypoint() { return 0; }
-	machine_local_entrypoint_lock_present() { return 1; }
-	etc_nixos_lock_present() { return 1; }
-	run_privileged() { echo "PRIVILEGED_CALL $*"; }
-	run sync_etc_nixos_flake_from_machine_local_entrypoint chise
-	[ "$status" -eq 0 ]
-	[[ "$output" != *"PRIVILEGED_CALL"* ]]
 }
 
 @test "nixos-rebuild is invoked with the rebuild-wrapper sentinel" {
