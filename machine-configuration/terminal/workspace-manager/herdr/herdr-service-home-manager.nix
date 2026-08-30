@@ -31,6 +31,10 @@ let
       runtime_user_id="$(${pkgs.coreutils}/bin/id -u)"
       export XDG_RUNTIME_DIR="/run/user/$runtime_user_id"
       export HERDR_LEGACY_SERVER_PID="$PPID"
+      export HERDR_SYSTEMCTL="''${HERDR_SYSTEMCTL:-${pkgs.systemd}/bin/systemctl}"
+      export HERDR_BUSCTL="''${HERDR_BUSCTL:-${pkgs.systemd}/bin/busctl}"
+      export HERDR_LEGACY_UNIT="''${HERDR_LEGACY_UNIT:-clawde-herdr-server.service}"
+      export HERDR_TARGET_UNIT="''${HERDR_TARGET_UNIT:-herdr.service}"
       ${pkgs.python3}/bin/python3 ${./scripts/adopt-legacy-herdr-server.py} prepare-import
       exec ${herdrPackage}/bin/herdr "$@"
     '';
