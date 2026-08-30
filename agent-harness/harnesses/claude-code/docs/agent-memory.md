@@ -15,7 +15,7 @@ Measured on kira, 2026-07-30, before removal:
 | `~/.claude/projects/-Users-lucas-zanoni--dotfiles/memory/MEMORY.md` | **19008** | yes | **no** |
 
 The memory index was the largest always-on surface in any session in this repo, 1.5x the global `CLAUDE.md`, and the only
-one that was never budgeted, never reviewed, and grew monotonically. In `~/repo/ai-first-initiative` the same index was
+one that was never budgeted, never reviewed, and grew monotonically. In `~/repo/large-monorepo` the same index was
 18006 bytes across 61 entries.
 
 Nineteen separate stores existed, 445 files total. Three of them belonged to the same agent (`~/clawde/steward`,
@@ -30,7 +30,7 @@ subject. No writing discipline fixes this: 112 perfect fifteen-word hooks still 
 
 **Index entries drift from pointer to payload.** The contract says one line, a hook, never content. In practice entries
 reached fifty words carrying the conclusion itself: MR numbers, custom field ids, and cross-project assertions. One
-`ai-first-initiative` entry fused `aplicacoes-atendimento-triage` with `betha-ai-maintainer` in a single sentence, loaded
+`large-monorepo` entry fused `triage-agent` with `maintenance-agent` in a single sentence, loaded
 unconditionally into every session in that repo. That is the observed context bleed. The index had become a second,
 always-on copy of the store it was supposed to route to.
 

@@ -99,7 +99,7 @@ def test_a_harness_still_painting_its_startup_is_not_ready_for_a_prompt(monkeypa
     assert (
         drive_startup_settle(
             monkeypatch,
-            lambda: f"Starting MCP servers (4/5): betha-core ({next(starting_seconds)}s)",
+            lambda: f"Starting MCP servers (4/5): example-core ({next(starting_seconds)}s)",
             timeout_seconds=3,
         )
         is False
@@ -186,7 +186,7 @@ def test_a_harness_still_starting_is_not_ready_while_its_busy_marker_is_up(monke
     monkeypatch.setattr(
         e2e_herdr_io,
         "capture_visible_screen",
-        lambda _pane: "Starting MCP servers (4/5): betha-core (38s - esc to interrupt)",
+        lambda _pane: "Starting MCP servers (4/5): example-core (38s - esc to interrupt)",
     )
 
     assert (

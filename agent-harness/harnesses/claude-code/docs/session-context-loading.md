@@ -10,6 +10,8 @@ with `--add-dir`.
 That walk reproduces on the skill axis the failure the memory work removed on the fact axis: an unbudgeted, unreviewed,
 silently lossy always-on surface, derived from where files happen to sit rather than from a decision anyone made.
 
+Private repository and skill names in this document are anonymized.
+
 ## What breaks
 
 Measured on kira, 2026-07-31, claude-code 2.1.220, by running the launcher's own discovery function over each root:
@@ -17,7 +19,7 @@ Measured on kira, 2026-07-31, claude-code 2.1.220, by running the launcher's own
 | Root opened | Walk | `SKILL.md` found | Unique after dedupe | Silently dropped | Eager description bytes |
 |---|---|---|---|---|---|
 | `~/.dotfiles` | 0.04s | 46 | 46 | 0 | 10378 |
-| `~/repo/ai-first-initiative` | 0.03s | 48 | 32 | **16** | 6658 |
+| `~/repo/large-monorepo` | 0.03s | 48 | 32 | **16** | 6658 |
 | `~/repo` | 0.69s | 418 | 117 | **301** | **24046** |
 | `~/code` | 0.04s | 0 | 0 | 0 | 0 |
 
@@ -26,9 +28,9 @@ Opening `~/repo` puts 24046 bytes of skill descriptions into the system prompt. 
 discarded 301 of the 418 skills it found.
 
 Deduplication is by directory name. The shallowest lexicographically first path wins and the rest vanish with no report.
-In `ai-first-initiative` that resolves `jira` to `betha-desenvolvimento/packages/jira` and drops the `betha-triagem` one
-on sort order alone. In `~/repo` the colliding pairs include `aplicacoes-atendimento-triage` against
-`betha-ai-maintainer`, the same two subjects the original context-bleed report named.
+In `large-monorepo` that resolves `jira` to `team-a/packages/jira` and drops the `team-b/packages/jira` one
+on sort order alone. In `~/repo` the colliding pairs include `triage-agent` against
+`maintenance-agent`, the same two subjects the original context-bleed report named.
 
 Five of the 46 in `~/.dotfiles` are not skills for this session at all. `machine-configuration/development/source-code-search/sourcebot/skill` is a deployment
 template that happens to contain a `SKILL.md`, and four are `private-configuration/machines/rin/skills/*`, another machine's
@@ -44,7 +46,7 @@ they happened to `cd` into.
 `jira` wins, and nobody can tell that a choice was made.
 
 **It prunes the one directory the harness uses.** `discover_workspace_skill_source_directories` skips every child whose
-name starts with a dot, so `<repo>/.claude/skills/` is the single tree it never reads. `ai-first-initiative` curates
+name starts with a dot, so `<repo>/.claude/skills/` is the single tree it never reads. `large-monorepo` curates
 nine skills there; the walk ignores those nine and injects 32 accidental ones instead.
 
 **Nothing bounds it.** The repo caps its own always-on instruction and description budgets in a test. That test governs
@@ -84,7 +86,7 @@ catalog under the building host's name, so they obey the same curation and reach
 only through the index.
 
 **Repository tier, `<repo>/.claude/skills/`.** Owned and curated by the repository, discovered natively by walking up
-from the working directory. A repo with none gets none. `ai-first-initiative` already has this and the launcher was
+from the working directory. A repo with none gets none. `large-monorepo` already has this and the launcher was
 hiding it. `~/.dotfiles` needed no such directory while all of its skills belonged to the machine tier; the follow-up
 below is where that stopped holding.
 
