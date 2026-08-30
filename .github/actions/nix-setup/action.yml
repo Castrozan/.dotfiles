@@ -26,7 +26,7 @@ runs:
     # rather than as a broken cache.
     - uses: nix-community/cache-nix-action@v7
       with:
-        primary-key: nix-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('repository/flake-assembly/dependencies/flake.lock') }}
+        primary-key: nix-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('flake.lock') }}
         restore-prefixes-first-match: nix-${{ runner.os }}-${{ inputs.cache-key }}-
         paths: |
           ~/.cache/nix

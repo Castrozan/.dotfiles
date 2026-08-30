@@ -154,3 +154,16 @@ def test_no_references_to_removed_launch_project_agent_script():
         "reference to mention the clawde.agents declaration carrying "
         'type = "project-manager" instead.\n' + "\n".join(offenders)
     )
+
+
+def test_root_lock_file_is_the_only_flake_lock():
+    lock_files = sorted(
+        path.relative_to(REPO_ROOT).as_posix()
+        for path in _walk_repo_paths_filtered()
+        if path.name == "flake.lock"
+    )
+
+    assert lock_files == ["flake.lock"], (
+        "The root flake.lock is the single dependency lock for every machine. "
+        f"Found: {lock_files}"
+    )
