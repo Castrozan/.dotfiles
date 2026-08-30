@@ -9,7 +9,7 @@ StatusIcon {
     property string serviceName: "openvpn-proton-paraguay.service"
     property bool isConnected: false
 
-    iconText: "󰖂"
+    iconText: "󰦝"
     iconColor: isConnected ? ThemeColors.accent : ThemeColors.foreground
 
     onClicked: {
