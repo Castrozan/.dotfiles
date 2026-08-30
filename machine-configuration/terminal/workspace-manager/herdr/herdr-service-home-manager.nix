@@ -17,7 +17,7 @@ let
   ];
   serverRunning = ''
     ${herdrPackage}/bin/herdr session list --json 2>/dev/null \
-      | ${pkgs.gnugrep}/bin/grep -q '"running":true'
+      | ${pkgs.jq}/bin/jq -e -f ${./scripts/default-server-running.jq} >/dev/null
   '';
   herdrServer = pkgs.writeShellApplication {
     name = "herdr-server";

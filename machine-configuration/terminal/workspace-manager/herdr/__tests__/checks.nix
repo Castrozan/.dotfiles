@@ -1,6 +1,7 @@
 {
   helpers,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -31,6 +32,19 @@ in
     mkEvalCheck "domain-terminal-herdr-server-linux-path-reaches-the-user-profile"
       (builtins.any (lib.hasInfix "/etc/profiles/per-user/test/bin") linuxEnvironment)
       "herdr.service must give every pane the stable user-profile PATH so custom commands such as lazygit and nvim remain executable across profile rebuilds";
+
+  domain-terminal-herdr-server-running-predicate-selects-only-default =
+    pkgs.runCommandLocal "check-domain-terminal-herdr-server-running-predicate-selects-only-default"
+      { nativeBuildInputs = [ pkgs.jq ]; }
+      ''
+        if echo '{"sessions":[{"default":false,"running":true}]}' \
+          | jq -e -f ${../scripts/default-server-running.jq} >/dev/null; then
+          exit 1
+        fi
+        echo '{"sessions":[{"default":true,"running":true}]}' \
+          | jq -e -f ${../scripts/default-server-running.jq} >/dev/null
+        touch "$out"
+      '';
 
   domain-terminal-herdr-server-is-owned-by-a-darwin-launch-agent =
     mkEvalCheck "domain-terminal-herdr-server-is-owned-by-a-darwin-launch-agent"
