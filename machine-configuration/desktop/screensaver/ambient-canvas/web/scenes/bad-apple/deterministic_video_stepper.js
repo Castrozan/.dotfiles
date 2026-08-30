@@ -2,6 +2,31 @@ window.AmbientCanvasDeterministicVideoStepper =
   (function buildDeterministicVideoStepper() {
     const FRAME_TIMEOUT_MILLISECONDS = 4000;
     const FRAME_TIME_TOLERANCE_SECONDS = 0.004;
+    const CALIBRATION_LOOKBACK_SECONDS = 1;
+
+    function resolveCalibrationStartSeconds(videoElement, startSeconds) {
+      if (
+        !Number.isFinite(videoElement.duration) ||
+        videoElement.duration - startSeconds >= CALIBRATION_LOOKBACK_SECONDS
+      ) {
+        return startSeconds;
+      }
+      return Math.max(0, startSeconds - CALIBRATION_LOOKBACK_SECONDS);
+    }
+
+    function resolvePresentedMediaTimeBeforeStart(
+      firstMediaTimeSeconds,
+      sourceFrameDurationSeconds,
+      startSeconds,
+    ) {
+      const elapsedSourceFrames = Math.floor(
+        (startSeconds - firstMediaTimeSeconds + FRAME_TIME_TOLERANCE_SECONDS) /
+          sourceFrameDurationSeconds,
+      );
+      return (
+        firstMediaTimeSeconds + elapsedSourceFrames * sourceFrameDurationSeconds
+      );
+    }
 
     function waitForNextPresentedFrame(videoElement, previousMediaTimeSeconds) {
       return new Promise(function resolveWhenFrameAdvances(resolve, reject) {
@@ -51,10 +76,14 @@ window.AmbientCanvasDeterministicVideoStepper =
       let sourceFrameDurationSeconds = 0;
 
       async function initialize() {
-        await seekVideoTo(videoElement, startSeconds);
-        const firstMediaTimeSeconds = await waitForNextPresentedFrame(
+        const calibrationStartSeconds = resolveCalibrationStartSeconds(
           videoElement,
           startSeconds,
+        );
+        await seekVideoTo(videoElement, calibrationStartSeconds);
+        const firstMediaTimeSeconds = await waitForNextPresentedFrame(
+          videoElement,
+          calibrationStartSeconds,
         );
         const secondMediaTimeSeconds = await waitForNextPresentedFrame(
           videoElement,
@@ -63,8 +92,11 @@ window.AmbientCanvasDeterministicVideoStepper =
         sourceFrameDurationSeconds =
           secondMediaTimeSeconds - firstMediaTimeSeconds;
         await seekVideoTo(videoElement, startSeconds);
-        presentedMediaTimeSeconds =
-          firstMediaTimeSeconds - sourceFrameDurationSeconds;
+        presentedMediaTimeSeconds = resolvePresentedMediaTimeBeforeStart(
+          firstMediaTimeSeconds,
+          sourceFrameDurationSeconds,
+          startSeconds,
+        );
       }
 
       async function prepareFrame(localElapsedSeconds) {
