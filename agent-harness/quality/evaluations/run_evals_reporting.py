@@ -3,9 +3,9 @@ from run_evals_statistics import format_pass_rate_with_confidence_interval
 from run_evals_test_runner import TestResult
 
 
-def print_results(results: list[TestResult]) -> bool:
+def print_results(results: list[TestResult], harness: str = "claude") -> bool:
     print("\n" + "=" * 60)
-    print("AGENT EVALUATION RESULTS (Claude Max/CLI)")
+    print(f"AGENT EVALUATION RESULTS ({harness})")
     print("=" * 60 + "\n")
 
     passed = 0

@@ -1,13 +1,12 @@
 import argparse
 from pathlib import Path
 
+from run_evals_subject_port import ALLOWED_HARNESSES
 from run_evals_test_runner import DEFAULT_PARALLEL_WORKERS
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Run agent evaluations (Claude Max/CLI)"
-    )
+    parser = argparse.ArgumentParser(description="Run agent harness evaluations")
     parser.add_argument("--smoke", action="store_true", help="Run smoke test only")
     parser.add_argument("--category", help="Run tests in specific category")
     parser.add_argument("--test", help="Run specific test by name")
@@ -55,6 +54,12 @@ def parse_arguments():
         action="store_true",
         help="Measure the rubric judge against labeled calibration cases",
     )
+    parser.add_argument(
+        "--harness",
+        default="claude",
+        choices=ALLOWED_HARNESSES,
+        help="Agent harness to invoke as the evaluation subject (default: claude)",
+    )
     args = parser.parse_args()
     if args.compare_ref and not args.ab:
         parser.error("--compare-ref requires --ab")
@@ -68,4 +73,6 @@ def parse_arguments():
         parser.error("dry-run results cannot be saved as evidence")
     if args.save_baseline and args.test:
         parser.error("a one-test run cannot replace a baseline category")
+    if args.harness != "claude" and (args.save_baseline or args.save_ab_profile):
+        parser.error("committed baseline evidence is currently Claude-only")
     return args

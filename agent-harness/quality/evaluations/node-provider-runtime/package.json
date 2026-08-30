@@ -1,0 +1,17 @@
+{
+  "name": "agent-eval-node-provider-runtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "agent-eval-provider": "./provider-runtime.mjs"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.233",
+    "@opencode-ai/sdk": "1.14.33",
+    "@openai/codex-sdk": "0.144.0"
+  }
+}

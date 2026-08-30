@@ -60,6 +60,7 @@ def test_experiment_pairs_instructed_run_against_stripped_control(monkeypatch):
         max_workers_override=None,
         instruction_ref=None,
         dry_run=False,
+        harness="claude",
     ):
         instructed = any(
             "skill_path" in test for tests in config["tests"].values() for test in tests
@@ -96,6 +97,7 @@ def test_repeated_experiment_alternates_arm_order_and_compares_a_git_ref(monkeyp
         max_workers_override=None,
         instruction_ref=None,
         dry_run=False,
+        harness="claude",
     ):
         calls.append(instruction_ref or "candidate")
         passed = instruction_ref is None
@@ -135,6 +137,7 @@ def test_experiment_refuses_to_grade_an_invocation_error(monkeypatch):
         max_workers_override=None,
         instruction_ref=None,
         dry_run=False,
+        harness="claude",
     ):
         result = _result("recovery", True)
         if instruction_ref:
@@ -164,6 +167,7 @@ def test_dry_run_reaches_both_experiment_arms(monkeypatch):
         max_workers_override=None,
         instruction_ref=None,
         dry_run=False,
+        harness="claude",
     ):
         dry_run_values.append(dry_run)
         return [_result("recovery", True)]

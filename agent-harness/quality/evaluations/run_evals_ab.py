@@ -41,6 +41,7 @@ def run_instruction_loading_experiment(
     epochs: int = 1,
     comparison_ref: str | None = None,
     dry_run: bool = False,
+    harness: str = "claude",
 ) -> dict:
     variant_a: dict[str, list[bool]] = {}
     variant_b: dict[str, list[bool]] = {}
@@ -54,6 +55,7 @@ def run_instruction_loading_experiment(
             category=category,
             max_workers_override=max_workers_override,
             dry_run=dry_run,
+            harness=harness,
         )
 
     def run_control():
@@ -63,6 +65,7 @@ def run_instruction_loading_experiment(
             max_workers_override=max_workers_override,
             instruction_ref=comparison_ref,
             dry_run=dry_run,
+            harness=harness,
         )
 
     for epoch_index in range(epochs):

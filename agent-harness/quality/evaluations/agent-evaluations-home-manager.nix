@@ -4,14 +4,22 @@ let
     ps.pyyaml
   ]);
 
-  # The interactive wrapper appends the always-on reply-shape surface unconditionally, so a subject launched
-  # through it carries that surface even under `-p --system-prompt` with the isolation variables stripped. Every
-  # sample then measures the live machine instead of the git-controlled instruction paths the suite declares.
+  nodeProviderRuntime = pkgs.callPackage ./node-provider-runtime-package.nix {
+    nodejs = pkgs.nodejs_22;
+  };
+
+  # The interactive wrapper appends the always-on reply-shape surface unconditionally, so an SDK-launched subject
+  # that resolves it measures the live machine instead of the git-controlled instruction paths the suite declares.
   agent-eval = pkgs.writeShellScriptBin "agent-eval" ''
+    export AGENT_EVAL_CLAUDE_BINARY="${pkgs.lib.getExe config.claude.unwrappedPackage}"
+    export AGENT_EVAL_CODEX_BINARY="${pkgs.lib.getExe config.codex.unwrappedPackage}"
     export PATH="${
       pkgs.lib.makeBinPath [
         pythonEnv
+        nodeProviderRuntime
         config.claude.unwrappedPackage
+        config.codex.unwrappedPackage
+        config.opencode.unwrappedPackage
       ]
     }:$PATH"
     exec ${pythonEnv}/bin/python3 ~/.dotfiles/agent-harness/quality/evaluations/run-evals.py "$@"

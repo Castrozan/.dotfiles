@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,7 +21,10 @@ from run_evals_baseline_thresholds import (  # noqa: F401, E402
     MINIMUM_PASS_RATE_COMPLIANCE,
     MINIMUM_PASS_RATE_OVERALL,
 )
-from run_evals_claude_cli import run_claude_cli  # noqa: E402
+from run_evals_subject_port import (  # noqa: E402
+    build_claude_judge_invoker,
+    resolve_node_runtime,
+)
 from run_evals_config_loader import (  # noqa: F401, E402
     discover_skill_adjacent_eval_files,
     load_config,
@@ -75,22 +77,23 @@ def main():
         sys.exit(0)
 
     if not args.dry_run:
-        result = subprocess.run(["which", "claude"], capture_output=True)
-        if result.returncode != 0:
-            print("Error: claude CLI not found")
-            print("Run 'rebuild' to install Claude Code")
+        try:
+            resolve_node_runtime()
+        except RuntimeError as error:
+            print(f"Error: {error}")
+            print("Run 'rebuild' to install the agent evaluation provider runtime")
             sys.exit(1)
 
     if args.calibrate_judge:
         judge_model = config.get("settings", {}).get("judge_model", "opus")
-        judge = build_llm_judge(judge_model, run_claude_cli)
+        judge = build_llm_judge(judge_model, build_claude_judge_invoker())
         agreement = judge_agreement(load_calibration_cases(), judge)
         passed = print_calibration_summary(agreement)
         sys.exit(0 if passed else 1)
 
-    print("Running agent evaluations (Claude Max - no API cost)...")
+    print(f"Running agent evaluations with the {args.harness} subject...")
     if args.dry_run:
-        print("   (dry run - no claude calls)")
+        print("   (dry run - no model calls)")
 
     if args.ab:
         with temporary_eval_worktree():
@@ -101,6 +104,7 @@ def main():
                 epochs=args.epochs,
                 comparison_ref=args.compare_ref,
                 dry_run=args.dry_run,
+                harness=args.harness,
             )
         print_ab_summary(comparison)
         if args.save_ab_profile:
@@ -119,6 +123,7 @@ def main():
                     dry_run=args.dry_run,
                     smoke_only=args.smoke,
                     max_workers_override=args.workers,
+                    harness=args.harness,
                 )
                 raise_for_evaluation_errors(epoch_results, "repeated evaluation")
                 results_per_epoch.append(epoch_results)
@@ -144,9 +149,10 @@ def main():
             dry_run=args.dry_run,
             smoke_only=args.smoke,
             max_workers_override=args.workers,
+            harness=args.harness,
         )
 
-    all_passed = print_results(results)
+    all_passed = print_results(results, harness=args.harness)
 
     if args.save_baseline:
         save_baseline(results, merge=args.category is not None)

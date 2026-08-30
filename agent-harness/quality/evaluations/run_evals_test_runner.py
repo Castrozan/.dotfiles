@@ -3,11 +3,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
 from run_evals_assertions import check_assertions
-from run_evals_claude_cli import run_claude_cli
 from run_evals_hook_test_runner import evaluate_hook_test
 from run_evals_judge import JudgeInvocationError, build_llm_judge
 from run_evals_config_loader import resolve_system_prompt_for_test
 from run_evals_progress import EvaluationProgressReporter
+import run_evals_subject_port as subject_port
 
 DEFAULT_PARALLEL_WORKERS = 2
 
@@ -31,9 +31,12 @@ def run_test(
     dry_run: bool = False,
     authored_category: str = "other",
     instruction_ref: str | None = None,
+    harness: str = "claude",
 ) -> TestResult:
     name = test["name"]
-    model = test.get("model", settings.get("default_model", "sonnet"))
+    model = subject_port.model_for_harness(
+        test, harness, settings.get("default_model", "sonnet")
+    )
     timeout = settings.get("timeout_seconds", 120)
 
     if test.get("type") == "hook_test":
@@ -84,7 +87,8 @@ def run_test(
             category=authored_category,
         )
 
-    output, success = run_claude_cli(
+    output, success = subject_port.invoke_subject(
+        harness,
         prompt=prompt,
         model=model,
         system_prompt=resolved_system_prompt,
@@ -106,11 +110,12 @@ def run_test(
         )
 
     assertions = test.get("assertions", {})
-    judge = (
-        build_llm_judge(settings.get("judge_model", "opus"), run_claude_cli)
-        if "llm_judge" in assertions
-        else None
-    )
+    judge = None
+    if "llm_judge" in assertions:
+        judge = build_llm_judge(
+            settings.get("judge_model", "opus"),
+            subject_port.build_claude_judge_invoker(timeout),
+        )
     try:
         failures = check_assertions(output, assertions, judge=judge)
     except JudgeInvocationError as error:
@@ -142,13 +147,14 @@ def run_tests(
     smoke_only: bool = False,
     max_workers_override: int | None = None,
     instruction_ref: str | None = None,
+    harness: str = "claude",
 ) -> list[TestResult]:
     settings = config.get("settings", {})
 
     if smoke_only:
         smoke = config.get("smoke_test")
         if smoke:
-            return [run_test(smoke, settings, dry_run, "smoke")]
+            return [run_test(smoke, settings, dry_run, "smoke", harness=harness)]
         return []
 
     tests_config = config.get("tests", {})
@@ -165,7 +171,7 @@ def run_tests(
 
     if dry_run or len(tests_to_run) <= 1:
         return [
-            run_test(test, settings, dry_run, cat_name, instruction_ref)
+            run_test(test, settings, dry_run, cat_name, instruction_ref, harness)
             for test, cat_name in tests_to_run
         ]
 
@@ -179,7 +185,7 @@ def run_tests(
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_index = {
             executor.submit(
-                run_test, test, settings, False, cat_name, instruction_ref
+                run_test, test, settings, False, cat_name, instruction_ref, harness
             ): index
             for index, (test, cat_name) in enumerate(tests_to_run)
         }

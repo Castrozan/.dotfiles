@@ -9,7 +9,6 @@ from run_evals_subject_binary import (
 
 EVALUATION_ROOT = REPO_ROOT / "agent-harness" / "quality" / "evaluations"
 SURFACE_FREE_CALLERS = (
-    EVALUATION_ROOT / "run_evals_claude_cli.py",
     EVALUATION_ROOT / "integration" / "ab_test_claude_session.py",
     EVALUATION_ROOT / "e2e" / "coached_compliance_reviewer.py",
 )
