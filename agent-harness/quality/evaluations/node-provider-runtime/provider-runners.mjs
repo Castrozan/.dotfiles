@@ -5,6 +5,7 @@ import { createServer } from "node:net";
 
 import {
   claudeQueryOptions,
+  claudeResultOutcome,
   codexInput,
   codexOptions,
   codexThreadOptions,
@@ -49,11 +50,7 @@ async function runClaude(invocation) {
     });
     for await (const message of agentQuery) {
       if (message.type !== "result") continue;
-      if (message.is_error) {
-        const errors = (message.errors ?? []).join("\n");
-        return { output: null, error: errors || message.subtype };
-      }
-      return { output: message.result, error: null };
+      return claudeResultOutcome(message);
     }
     return {
       output: null,

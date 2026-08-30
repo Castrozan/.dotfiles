@@ -45,6 +45,21 @@ export function claudeQueryOptions(invocation) {
   return options;
 }
 
+export function claudeResultOutcome(message) {
+  const errors = (message.errors ?? []).join("\n");
+  if (message.is_error === true) {
+    return {
+      output: null,
+      error:
+        errors ||
+        message.result ||
+        message.subtype ||
+        "claude query returned an error result",
+    };
+  }
+  return { output: message.result, error: null };
+}
+
 export function codexOptions() {
   const options = {};
   const binary = process.env.AGENT_EVAL_CODEX_BINARY;

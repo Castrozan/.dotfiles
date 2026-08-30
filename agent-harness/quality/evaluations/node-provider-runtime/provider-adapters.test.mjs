@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   claudeQueryOptions,
+  claudeResultOutcome,
   codexInput,
   codexOptions,
   codexThreadOptions,
@@ -60,6 +61,30 @@ test("claude with no model or system prompt omits both", () => {
   const options = claudeQueryOptions(invocation());
   assert.equal(options.model, undefined);
   assert.equal(options.systemPrompt, undefined);
+});
+
+test("claude preserves the result text from an error result", () => {
+  assert.deepEqual(
+    claudeResultOutcome({
+      type: "result",
+      subtype: "success",
+      is_error: true,
+      result: "You've hit your session limit",
+    }),
+    { output: null, error: "You've hit your session limit" },
+  );
+});
+
+test("claude returns successful result text as output", () => {
+  assert.deepEqual(
+    claudeResultOutcome({
+      type: "result",
+      subtype: "success",
+      is_error: false,
+      result: "OK",
+    }),
+    { output: "OK", error: null },
+  );
 });
 
 test("codex maps the binary, thread options, and model", () => {
