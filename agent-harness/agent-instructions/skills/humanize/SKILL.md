@@ -7,8 +7,9 @@ description: Use before drafting or revising substantial human-facing explanatio
 Identify the exact question, decision, or action requested. Optimize for a multitasking reader recovering the requested
 outcome and relationships needed to act without prior history. Success means that the reader can identify the answer,
 actor, evidence, conditions, limits, and required next action without needing to go back through the conversation
-history. When asking the reader to choose, state each option as concrete behavior before internal rationale or finding
-names: name who acts, what changes, its scope, and what remains unchanged. Treat `tldr`, re-explanation requests, and
+history. When asking the reader to choose, apply `<source_fidelity>` and `<confusion_recovery>` before naming the
+options. Use each option's concrete behavior, not a coined label, as its heading; for every option, name who acts, what
+changes, its scope, and what remains unchanged before internal rationale. Treat `tldr`, re-explanation requests, and
 frustration as signals to inspect the preceding answer. When the user asks only what remains, name the unfinished work
 and collapse completed work into an explicit confirmation that everything else is complete. Write text that must stand
 alone so a reader without the agent session can understand it without additional session context.

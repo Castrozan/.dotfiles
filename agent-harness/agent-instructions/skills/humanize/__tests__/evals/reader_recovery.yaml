@@ -44,6 +44,17 @@ tests:
     model: haiku
     no_tools: true
     assertions:
+      output_contains:
+        - provisioner
+        - createAdministrator
+        - ineligible systems
+        - existing administrators
+      output_not_contains:
+        - global grant
+        - opt-in
+        - insulation
+        - finding 3
+        - unreachable rows
       llm_judge:
         - "States the two concrete options before internal rationale: the provisioner creates an administrator on every eligible system, or createAdministrator limits creation to flagged systems. Names the provisioner as actor, preserves each option's scope, and states that both still skip ineligible systems and leave existing administrators unchanged. Does not use global grant, opt-in, insulation, finding 3, or unreachable rows as the explanation."
 

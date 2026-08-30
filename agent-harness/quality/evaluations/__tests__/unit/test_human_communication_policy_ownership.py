@@ -117,9 +117,15 @@ def test_superseded_split_interactive_surfaces_are_removed():
 
 
 def test_humanize_explains_unresolved_choices_before_internal_rationale():
-    skill_text = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower()
+    skill_text = " ".join(
+        HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower().split()
+    )
 
     for required_behavior in (
+        "<source_fidelity>",
+        "<confusion_recovery>",
+        "not a coined label",
+        "for every option",
         "who acts",
         "what changes",
         "scope",
