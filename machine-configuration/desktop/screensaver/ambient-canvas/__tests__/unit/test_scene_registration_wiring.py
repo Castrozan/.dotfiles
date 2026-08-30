@@ -87,8 +87,13 @@ def test_cube_lattice_composes_every_pixel_as_monochrome():
     assert "vec4(vec3(monochromeLuminance), 1.0)" in shader_source
 
 
-def test_sixteen_segment_filters_every_painted_pixel_as_monochrome():
+def test_sixteen_segment_paints_monochrome_without_a_full_frame_filter():
     scene_source = SCENE_SOURCES[
         AMBIENT_CANVAS_WEB_DIRECTORY / "scenes/sixteen-segment/sixteen_segment_scene.js"
     ]
-    assert 'drawingContext.filter = "grayscale(1)"' in scene_source
+    field_source = SCENE_SOURCES[
+        AMBIENT_CANVAS_WEB_DIRECTORY / "scenes/sixteen-segment/sixteen_segment_field.js"
+    ]
+    assert "resolveMonochromeFillStyle" in scene_source
+    assert "resolveMonochromeChannel" in field_source
+    assert "drawingContext.filter" not in scene_source

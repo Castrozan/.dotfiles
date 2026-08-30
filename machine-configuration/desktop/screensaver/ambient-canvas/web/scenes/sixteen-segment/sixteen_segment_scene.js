@@ -3,15 +3,39 @@
   const SEGMENT_END_GAP_IN_CELL_HEIGHTS = 0.03;
   const BLOOM_HALF_WIDTH_MULTIPLIER = 2.6;
   const BLOOM_ALPHA_SCALE = 0.13;
-  const UNLIT_SEGMENT_FILL_STYLE =
-    "rgba(" +
-    window.AmbientCanvasPalette.accentOrangeColorChannels +
-    ", 0.062)";
-  const BACKGROUND_FILL_STYLE = window.AmbientCanvasPalette.backgroundHex;
 
   const geometry = window.AmbientCanvasSixteenSegmentGeometry;
   const field = window.AmbientCanvasSixteenSegmentField;
   const layout = window.AmbientCanvasSixteenSegmentLayout;
+
+  function resolveMonochromeFillStyle(joinedColorChannels, alpha) {
+    const colorChannels = joinedColorChannels.split(",").map(Number);
+    const monochromeChannel = field.resolveMonochromeChannel(
+      colorChannels[0],
+      colorChannels[1],
+      colorChannels[2],
+    );
+    return (
+      "rgba(" +
+      monochromeChannel +
+      ", " +
+      monochromeChannel +
+      ", " +
+      monochromeChannel +
+      ", " +
+      alpha +
+      ")"
+    );
+  }
+
+  const UNLIT_SEGMENT_FILL_STYLE = resolveMonochromeFillStyle(
+    window.AmbientCanvasPalette.accentOrangeColorChannels,
+    0.062,
+  );
+  const BACKGROUND_FILL_STYLE = resolveMonochromeFillStyle(
+    window.AmbientCanvasPalette.backgroundColorChannels,
+    1,
+  );
 
   function fillSegmentPolygon(drawingContext, polygon, fillStyle) {
     drawingContext.fillStyle = fillStyle;
@@ -142,7 +166,6 @@
     function render(elapsedSeconds) {
       const displayGain = field.resolveDisplayGain(elapsedSeconds);
       drawingContext.setTransform(1, 0, 0, 1, 0, 0);
-      drawingContext.filter = "grayscale(1)";
       drawingContext.globalCompositeOperation = "source-over";
       drawingContext.fillStyle = BACKGROUND_FILL_STYLE;
       drawingContext.fillRect(0, 0, canvasElement.width, canvasElement.height);

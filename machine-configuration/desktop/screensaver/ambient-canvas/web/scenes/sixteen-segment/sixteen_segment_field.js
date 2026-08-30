@@ -4,6 +4,9 @@ window.AmbientCanvasSixteenSegmentField = (function buildSixteenSegmentField() {
   const GAIN_MEDIAN = 0.73;
   const GAIN_SWING = 0.27;
   const GAIN_RADIANS_PER_SECOND = 0.21;
+  const RED_LUMINANCE_WEIGHT = 0.2126;
+  const GREEN_LUMINANCE_WEIGHT = 0.7152;
+  const BLUE_LUMINANCE_WEIGHT = 0.0722;
 
   function resolveDisplayGain(elapsedSeconds) {
     return (
@@ -46,12 +49,19 @@ window.AmbientCanvasSixteenSegmentField = (function buildSixteenSegmentField() {
       const intensity = (level + 1) / INTENSITY_LEVEL_COUNT;
       const greenChannel = Math.round(88 + 132 * Math.pow(intensity, 0.7));
       const blueChannel = Math.round(8 + 148 * Math.pow(intensity, 2.4));
+      const monochromeChannel = resolveMonochromeChannel(
+        255,
+        greenChannel,
+        blueChannel,
+      );
       const alpha = Math.min(1, (0.5 + 0.5 * intensity) * alphaScale);
       fillStyles[level] =
-        "rgba(255, " +
-        greenChannel +
+        "rgba(" +
+        monochromeChannel +
         ", " +
-        blueChannel +
+        monochromeChannel +
+        ", " +
+        monochromeChannel +
         ", " +
         alpha.toFixed(3) +
         ")";
@@ -64,10 +74,19 @@ window.AmbientCanvasSixteenSegmentField = (function buildSixteenSegmentField() {
     return level >= INTENSITY_LEVEL_COUNT ? INTENSITY_LEVEL_COUNT - 1 : level;
   }
 
+  function resolveMonochromeChannel(redChannel, greenChannel, blueChannel) {
+    return Math.round(
+      redChannel * RED_LUMINANCE_WEIGHT +
+        greenChannel * GREEN_LUMINANCE_WEIGHT +
+        blueChannel * BLUE_LUMINANCE_WEIGHT,
+    );
+  }
+
   return {
     resolveDisplayGain,
     resolveSegmentIntensity,
     buildLitFillStyles,
     resolveIntensityLevel,
+    resolveMonochromeChannel,
   };
 })();
