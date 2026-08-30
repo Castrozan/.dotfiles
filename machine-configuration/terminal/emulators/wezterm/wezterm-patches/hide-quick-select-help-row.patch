@@ -1,0 +1,105 @@
+diff --git a/wezterm-gui/src/overlay/quickselect.rs b/wezterm-gui/src/overlay/quickselect.rs
+index 0b1de1b..ccc305f 100644
+--- a/wezterm-gui/src/overlay/quickselect.rs
++++ b/wezterm-gui/src/overlay/quickselect.rs
+@@ -218 +217,0 @@ struct QuickSelectRenderable {
+-    last_bar_pos: Option<StableRowIndex>,
+@@ -286 +284,0 @@ impl QuickSelectOverlay {
+-            last_bar_pos: None,
+@@ -295,2 +292,0 @@ impl QuickSelectOverlay {
+-        let search_row = renderer.compute_search_row();
+-        renderer.dirty_results.add(search_row);
+@@ -308,3 +303,0 @@ impl QuickSelectOverlay {
+-            if let Some(last) = render.last_bar_pos.take() {
+-                render.dirty_results.add(last);
+-            }
+@@ -481,8 +474 @@ impl Pane for QuickSelectOverlay {
+-        // move to the search box
+-        let renderer = self.renderer.lock();
+-        StableCursorPosition {
+-            x: 8 + wezterm_term::unicode_column_width(&renderer.selection, None),
+-            y: renderer.compute_search_row(),
+-            shape: termwiz::surface::CursorShape::SteadyBlock,
+-            visibility: termwiz::surface::CursorVisibility::Visible,
+-        }
++        self.delegate.get_cursor_position()
+@@ -524,2 +509,0 @@ impl Pane for QuickSelectOverlay {
+-        let dims = self.get_dimensions();
+-        let search_row = renderer.compute_search_row();
+@@ -529,2 +512,0 @@ impl Pane for QuickSelectOverlay {
+-            dims: RenderableDimensions,
+-            search_row: StableRowIndex,
+@@ -538,2 +519,0 @@ impl Pane for QuickSelectOverlay {
+-                dims,
+-                search_row,
+@@ -552,2 +531,0 @@ impl Pane for QuickSelectOverlay {
+-                // Process the lines; for the search row we want to render instead
+-                // the search UI.
+@@ -566,21 +544 @@ impl Pane for QuickSelectOverlay {
+-                    if stable_idx == self.search_row {
+-                        // Replace with search UI
+-                        let rev = CellAttributes::default().set_reverse(true).clone();
+-                        line.fill_range(0..self.dims.cols, &Cell::new(' ', rev.clone()), SEQ_ZERO);
+-                        line.overlay_text_with_attribute(
+-                            0,
+-                            &format!(
+-                                "Select: {}  (type highlighted prefix to {}, uppercase pastes, ESC to cancel)",
+-                                self.renderer.selection,
+-                                if self.renderer.args.label.is_empty() {
+-                                    "copy"
+-                                } else {
+-                                    &self.renderer.args.label
+-                                },
+-                            ),
+-                            rev,
+-                            SEQ_ZERO,
+-                        );
+-                        self.renderer.last_bar_pos = Some(self.search_row);
+-                        line.clear_appdata();
+-                    } else if let Some(matches) = self.renderer.by_line.get(&stable_idx) {
++                    if let Some(matches) = self.renderer.by_line.get(&stable_idx) {
+@@ -642 +599,0 @@ impl Pane for QuickSelectOverlay {
+-        let dims = self.get_dimensions();
+@@ -648,2 +604,0 @@ impl Pane for QuickSelectOverlay {
+-        // Process the lines; for the search row we want to render instead
+-        // the search UI.
+@@ -651 +605,0 @@ impl Pane for QuickSelectOverlay {
+-        let search_row = renderer.compute_search_row();
+@@ -660,20 +614 @@ impl Pane for QuickSelectOverlay {
+-            if stable_idx == search_row {
+-                // Replace with search UI
+-                let rev = CellAttributes::default().set_reverse(true).clone();
+-                line.fill_range(0..dims.cols, &Cell::new(' ', rev.clone()), SEQ_ZERO);
+-                line.overlay_text_with_attribute(
+-                    0,
+-                    &format!(
+-                        "Select: {}  (type highlighted prefix to {}, uppercase pastes, ESC to cancel)",
+-                        renderer.selection,
+-                        if renderer.args.label.is_empty() {
+-                            "copy"
+-                        } else {
+-                            &renderer.args.label
+-                        },
+-                    ),
+-                    rev,
+-                    SEQ_ZERO,
+-                );
+-                renderer.last_bar_pos = Some(search_row);
+-            } else if let Some(matches) = renderer.by_line.get(&stable_idx) {
++            if let Some(matches) = renderer.by_line.get(&stable_idx) {
+@@ -732,7 +666,0 @@ impl QuickSelectRenderable {
+-    fn compute_search_row(&self) -> StableRowIndex {
+-        let dims = self.delegate.get_dimensions();
+-        let top = self.viewport.unwrap_or_else(|| dims.physical_top);
+-        let bottom = (top + dims.viewport_rows as StableRowIndex).saturating_sub(1);
+-        bottom
+-    }
+-
+@@ -848,3 +775,0 @@ impl QuickSelectRenderable {
+-        if let Some(idx) = self.last_bar_pos.as_ref() {
+-            self.dirty_results.add(*idx);
+-        }
+@@ -856,3 +780,0 @@ impl QuickSelectRenderable {
+-        let bar_pos = self.compute_search_row();
+-        self.dirty_results.add(bar_pos);
+-

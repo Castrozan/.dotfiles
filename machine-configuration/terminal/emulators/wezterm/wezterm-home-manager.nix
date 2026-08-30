@@ -11,8 +11,10 @@ let
     inherit pkgs inputs isNixOS;
   };
 
+  patchedWezterm = import ./patched-wezterm.nix { inherit latest; };
+
   weztermAfterNixGL = nixglWrap.wrapWithNixGLIntel {
-    package = latest.wezterm;
+    package = patchedWezterm;
     binaries = [
       "wezterm"
       "wezterm-gui"
