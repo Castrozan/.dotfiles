@@ -4,6 +4,8 @@ readonly SETUID_WRAPPERS_DIRECTORY="/run/wrappers/bin"
 readonly AGENIX_IDENTITY_KEY="${HOME}/.ssh/id_ed25519"
 readonly MACHINE_LOCAL_ENTRYPOINT_FLAKE="${MACHINE_LOCAL_ENTRYPOINT_FLAKE:-${HOME}/zanoni-system/flake.nix}"
 readonly ETC_NIXOS_FLAKE="${ETC_NIXOS_FLAKE:-/etc/nixos/flake.nix}"
+readonly MACHINE_LOCAL_ENTRYPOINT_LOCK="${MACHINE_LOCAL_ENTRYPOINT_LOCK:-${HOME}/zanoni-system/flake.lock}"
+readonly ETC_NIXOS_LOCK="${ETC_NIXOS_LOCK:-/etc/nixos/flake.lock}"
 readonly MACHINE_LOCAL_ENTRYPOINT_OWNER="chise"
 
 run_privileged() {
@@ -24,6 +26,14 @@ machine_local_entrypoint_flake_present() {
 
 etc_nixos_flake_matches_machine_local_entrypoint() {
 	cmp -s "$MACHINE_LOCAL_ENTRYPOINT_FLAKE" "$ETC_NIXOS_FLAKE"
+}
+
+machine_local_entrypoint_lock_present() {
+	[ -f "$MACHINE_LOCAL_ENTRYPOINT_LOCK" ]
+}
+
+etc_nixos_lock_present() {
+	[ -f "$ETC_NIXOS_LOCK" ]
 }
 
 prepend_setuid_wrappers_to_the_path() {
@@ -54,10 +64,16 @@ take_ownership_of_the_agenix_identity_key() {
 sync_etc_nixos_flake_from_machine_local_entrypoint() {
 	[ "$1" = "$MACHINE_LOCAL_ENTRYPOINT_OWNER" ] || return 0
 	machine_local_entrypoint_flake_present || return 0
-	etc_nixos_flake_matches_machine_local_entrypoint && return 0
 
-	echo ":: Syncing ${ETC_NIXOS_FLAKE} from ${MACHINE_LOCAL_ENTRYPOINT_FLAKE}..."
-	run_privileged install -D -m 0644 "$MACHINE_LOCAL_ENTRYPOINT_FLAKE" "$ETC_NIXOS_FLAKE"
+	if ! etc_nixos_flake_matches_machine_local_entrypoint; then
+		echo ":: Syncing ${ETC_NIXOS_FLAKE} from ${MACHINE_LOCAL_ENTRYPOINT_FLAKE}..."
+		run_privileged install -D -m 0644 "$MACHINE_LOCAL_ENTRYPOINT_FLAKE" "$ETC_NIXOS_FLAKE"
+	fi
+
+	if machine_local_entrypoint_lock_present && ! etc_nixos_lock_present; then
+		echo ":: Seeding ${ETC_NIXOS_LOCK} from ${MACHINE_LOCAL_ENTRYPOINT_LOCK}..."
+		run_privileged install -D -m 0644 "$MACHINE_LOCAL_ENTRYPOINT_LOCK" "$ETC_NIXOS_LOCK"
+	fi
 }
 
 refuse_to_deploy_the_entrypoint_owner_from_bare_dotfiles() {
@@ -90,18 +106,13 @@ backend_switch() {
 	local flake_reference
 	flake_reference="$(resolve_flake_reference "$MACHINE_ALIAS")"
 
-	local -a lock_flags=()
-	if etc_nixos_flake_present; then
-		lock_flags+=(--no-write-lock-file)
-	fi
-
 	echo ":: Rebuilding NixOS from ${flake_reference}..."
 	run_privileged env \
 		"PATH=${SETUID_WRAPPERS_DIRECTORY}:${PATH}" \
 		NIXPKGS_ALLOW_UNFREE=1 \
 		DOTFILES_REBUILD_WRAPPER=1 \
 		"${LOW_PRIORITY_COMMAND_PREFIX[@]}" \
-		nixos-rebuild switch --flake "$flake_reference" "${lock_flags[@]}" "$@"
+		nixos-rebuild switch --flake "$flake_reference" "$@"
 }
 
 backend_verify_switch_landed() {
