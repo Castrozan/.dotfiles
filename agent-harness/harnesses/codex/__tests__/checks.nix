@@ -24,7 +24,7 @@ let
   dotfilesAgentInstructions = builtins.readFile ../../../../agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md;
   normalizedDotfilesAgentInstructions = lib.replaceStrings [ "\n" ] [ " " ] dotfilesAgentInstructions;
   codexConfigSeedActivationData = cfg.home.activation.seedCodexConfigAsMutableFile.data or "";
-  codexConfigModule = builtins.readFile ../config.nix;
+  codexLauncherScript = builtins.readFile ../scripts/codex;
   legacyCodexSkillDirectoriesScript = builtins.readFile ../scripts/replace-legacy-codex-skill-directories;
   linuxNotificationDriver = import ../notification-driver.nix {
     isDarwin = false;
@@ -91,10 +91,11 @@ in
     && !(builtins.hasAttr ".codex/config.toml" cfg.home.file)
   ) "Codex config must deploy an authoritative nix-source while leaving the live TOML mutable";
 
-  codex-config-uses-alternate-screen =
-    mkEvalCheck "codex-config-uses-alternate-screen"
-      (lib.hasInfix ''alternate_screen = "always";'' codexConfigModule)
-      "Interactive Codex sessions must use the TUI alternate screen instead of terminal scrollback";
+  codex-launcher-owns-alternate-screen = mkEvalCheck "codex-launcher-owns-alternate-screen" (
+    lib.hasInfix "tput smcup" codexLauncherScript
+    && lib.hasInfix "tput rmcup" codexLauncherScript
+    && lib.hasInfix "--no-alt-screen" codexLauncherScript
+  ) "The interactive launcher must keep the whole Codex session in one terminal alternate buffer";
 
   codex-config-mutable-seed-activation = mkEvalCheck "codex-config-mutable-seed-activation" (
     builtins.hasAttr "seedCodexConfigAsMutableFile" cfg.home.activation

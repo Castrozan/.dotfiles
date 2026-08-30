@@ -104,6 +104,7 @@ let
     name = "codex";
     bashOptions = [ ];
     excludeShellChecks = [ "SC1090" ];
+    runtimeInputs = [ pkgs.ncurses ];
     runtimeEnv = {
       NPM_CONFIG_PREFIX = "/nonexistent";
       CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE = "${interactivePreferencesFile}";

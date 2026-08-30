@@ -3,19 +3,41 @@
 codexDeveloperInstructionsFile="$CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE"
 workspaceProfileArguments=()
 interactivePreferencesArguments=()
+useTerminalAlternateScreen=false
 case "${1:-}" in
 "" | -* | resume | fork)
 	source "$CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
 	export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
+	useTerminalAlternateScreen=true
 	interactivePreferencesArguments=(
 		-c "developer_instructions=$(cat "$codexDeveloperInstructionsFile")"
 	)
 	;;
 esac
-exec "$CODEX_LAUNCHER_BINARY" \
-	--model "gpt-5.6-sol" \
-	--sandbox "danger-full-access" \
-	--ask-for-approval "never" \
-	"${interactivePreferencesArguments[@]}" \
-	"${workspaceProfileArguments[@]}" \
-	"$@"
+for codexArgument in "$@"; do
+	case "$codexArgument" in
+	-h | --help | -V | --version)
+		useTerminalAlternateScreen=false
+		break
+		;;
+	esac
+done
+codexArguments=(
+	--model "gpt-5.6-sol"
+	--sandbox "danger-full-access"
+	--ask-for-approval "never"
+	"${interactivePreferencesArguments[@]}"
+	"${workspaceProfileArguments[@]}"
+)
+if [[ "$useTerminalAlternateScreen" == true && -t 0 && -t 1 ]] && tput smcup 2>/dev/null; then
+	restoreTerminalBuffer() {
+		tput rmcup 2>/dev/null || true
+	}
+	trap restoreTerminalBuffer EXIT
+	"$CODEX_LAUNCHER_BINARY" "${codexArguments[@]}" --no-alt-screen "$@"
+	codexExitStatus=$?
+	trap - EXIT
+	restoreTerminalBuffer
+	exit "$codexExitStatus"
+fi
+exec "$CODEX_LAUNCHER_BINARY" "${codexArguments[@]}" "$@"
