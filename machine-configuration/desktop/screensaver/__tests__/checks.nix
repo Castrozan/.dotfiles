@@ -38,7 +38,7 @@ let
     let
       ambientCanvasService = linuxCfg.systemd.user.services.ambient-canvas;
     in
-    !ambientCanvasService.restartIfChanged && !ambientCanvasService.stopIfChanged;
+    !ambientCanvasService.Unit.X-RestartIfChanged && !ambientCanvasService.Unit.X-StopIfChanged;
   darwinWiresAmbientCanvasKeepAlive = darwinCfg.launchd.agents ? ambient-canvas;
 in
 {

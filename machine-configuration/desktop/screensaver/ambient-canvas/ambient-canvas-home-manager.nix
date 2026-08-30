@@ -117,13 +117,13 @@ in
       };
 
       systemd.user.services.ambient-canvas = {
-        restartIfChanged = false;
-        stopIfChanged = false;
         Unit = {
           Description = "ambient-canvas screensaver keep-alive";
           After = [ "graphical-session.target" ];
           PartOf = [ "graphical-session.target" ];
           ConditionEnvironment = "WAYLAND_DISPLAY";
+          X-RestartIfChanged = false;
+          X-StopIfChanged = false;
         };
         Service = {
           Type = "oneshot";
