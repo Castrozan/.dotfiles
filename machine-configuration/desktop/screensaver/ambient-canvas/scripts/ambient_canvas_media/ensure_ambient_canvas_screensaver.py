@@ -6,6 +6,11 @@ import subprocess
 import sys
 import time
 
+from ambient_canvas_theme import (
+    compose_theme_source_identifier,
+    resolve_theme_background_color,
+)
+
 from display_ambient_canvas_loop import (
     DEFAULT_PLAYER_BINARY_PATH,
     launch_display,
@@ -100,6 +105,7 @@ def ensure_screensaver(
     index_file_path,
     capture_target,
     source_identifier,
+    theme_background_hex,
     player_binary_path,
     duration_seconds,
     frames_per_second,
@@ -115,6 +121,7 @@ def ensure_screensaver(
             source_identifier,
             duration_seconds,
             frames_per_second,
+            theme_background_hex,
         )
         if rendered_manifest_path is None and not recorded_loop_exists(loop_directory):
             return 1
@@ -135,6 +142,7 @@ def main():
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument("--output-directory", required=True)
     argument_parser.add_argument("--source-identifier", required=True)
+    argument_parser.add_argument("--theme-colors-path", required=True)
     argument_parser.add_argument("--player-binary", default=DEFAULT_PLAYER_BINARY_PATH)
     argument_parser.add_argument(
         "--seconds", type=int, default=DEFAULT_CAPTURE_DURATION_SECONDS
@@ -154,12 +162,19 @@ def main():
     capture_target = resolve_recorded_loop_capture_target(
         parsed_arguments.output_directory
     )
+    theme_background_hex = resolve_theme_background_color(
+        parsed_arguments.theme_colors_path
+    )
     return ensure_screensaver(
         index_file_path,
         capture_target,
         compose_recorded_source_identifier(
-            parsed_arguments.source_identifier, capture_target.capture_signature
+            compose_theme_source_identifier(
+                parsed_arguments.source_identifier, theme_background_hex
+            ),
+            capture_target.capture_signature,
         ),
+        theme_background_hex,
         parsed_arguments.player_binary,
         parsed_arguments.seconds,
         parsed_arguments.fps,

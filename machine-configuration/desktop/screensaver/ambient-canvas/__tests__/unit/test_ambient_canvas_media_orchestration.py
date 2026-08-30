@@ -54,7 +54,13 @@ def _install_orchestration_stubs(
 def _run_ensure(monkeypatch, **stub_arguments):
     observed_calls = _install_orchestration_stubs(monkeypatch, **stub_arguments)
     result = ensure.ensure_screensaver(
-        "index", LAPTOP_CAPTURE_TARGET, "source", PLAYER_BINARY_PATH, 30, 30
+        "index",
+        LAPTOP_CAPTURE_TARGET,
+        "source",
+        "#241010",
+        PLAYER_BINARY_PATH,
+        30,
+        30,
     )
     return result, observed_calls
 

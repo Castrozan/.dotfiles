@@ -79,12 +79,13 @@ def test_every_webgl_scene_honours_the_recorder_drawing_buffer_override():
     assert not offenders, f"WebGL scenes that would record blank frames: {offenders}"
 
 
-def test_cube_lattice_composes_every_pixel_as_monochrome():
+def test_cube_lattice_keeps_the_theme_background_and_paints_monochrome_wires():
     shader_source = SCENE_SOURCES[
         AMBIENT_CANVAS_WEB_DIRECTORY / "scenes/cube-lattice/cube_lattice_shaders.js"
     ]
     assert "monochromeLuminanceWeights" in shader_source
-    assert "vec4(vec3(monochromeLuminance), 1.0)" in shader_source
+    assert "monochromeEmission" in shader_source
+    assert "vec4(backgroundColour + vec3(monochromeEmission), 1.0)" in shader_source
 
 
 def test_sixteen_segment_paints_monochrome_without_a_full_frame_filter():
@@ -96,4 +97,8 @@ def test_sixteen_segment_paints_monochrome_without_a_full_frame_filter():
     ]
     assert "resolveMonochromeFillStyle" in scene_source
     assert "resolveMonochromeChannel" in field_source
+    assert (
+        "const BACKGROUND_FILL_STYLE = window.AmbientCanvasPalette.backgroundHex;"
+        in scene_source
+    )
     assert "drawingContext.filter" not in scene_source

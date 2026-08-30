@@ -11,6 +11,10 @@ DOCUMENT_SOURCE = (AMBIENT_CANVAS_WEB_DIRECTORY / "index.html").read_text()
 COMPOSITOR_SOURCE = (
     AMBIENT_CANVAS_WEB_DIRECTORY / "record" / "ambient-canvas-recording-compositor.js"
 ).read_text()
+FINGERPRINT_SOURCE = (
+    AMBIENT_CANVAS_WEB_DIRECTORY / "record" / "ambient-canvas-recording-fingerprint.js"
+).read_text()
+RECORDER_SOURCE = (AMBIENT_CANVAS_WEB_DIRECTORY / "recorder.js").read_text()
 PLAYLIST_PATH = AMBIENT_CANVAS_WEB_DIRECTORY / "panes.js"
 SCENES_DIRECTORY = AMBIENT_CANVAS_WEB_DIRECTORY / "scenes"
 AUTHORING_SOURCES = {
@@ -22,8 +26,12 @@ SCENE_REGISTRATION_PATTERN = re.compile(
     r"AMBIENT_CANVAS_SCENE_FACTORIES\[\s*\"([^\"]+)\"\s*\]\s*="
 )
 SCRIPT_REFERENCE_PATTERN = re.compile(r"<script src=\"([^\"]+)\"></script>")
-DOCUMENT_BACKGROUND_PATTERN = re.compile(r"background:\s*(#[0-9a-fA-F]{6});")
-PALETTE_BACKGROUND_PATTERN = re.compile(r"BACKGROUND_HEX = \"(#[0-9a-fA-F]{6})\"")
+DOCUMENT_BACKGROUND_PATTERN = re.compile(
+    r"--ambient-canvas-background:\s*(#[0-9a-fA-F]{6});"
+)
+PALETTE_BACKGROUND_PATTERN = re.compile(
+    r"DEFAULT_BACKGROUND_HEX = \"(#[0-9a-fA-F]{6})\""
+)
 HEX_COLOUR_PATTERN = re.compile(r"#([0-9a-fA-F]{6})\b")
 QUOTED_STRING_PATTERN = re.compile(r"\"([^\"\n]*)\"|'([^'\n]*)'")
 CHANNEL_TRIPLE_PATTERN = re.compile(
@@ -127,6 +135,15 @@ def test_the_document_background_matches_the_palette_background():
     )
 
 
+def test_the_palette_applies_the_theme_background_query_parameter():
+    assert "URLSearchParams" in PALETTE_SOURCE
+    assert '"themeBackground"' in PALETTE_SOURCE
+    assert re.search(
+        r'setProperty\(\s*"--ambient-canvas-background",\s*backgroundHex,\s*\)',
+        PALETTE_SOURCE,
+    )
+
+
 def test_no_authoring_source_declares_a_dark_colour_literal():
     offenders = {
         str(path.relative_to(AMBIENT_CANVAS_WEB_DIRECTORY)): found
@@ -165,3 +182,9 @@ def test_editing_the_palette_re_records_every_segment(tmp_path):
         scene_source_digests.build_recording_pipeline_digest(str(tmp_path))
         != before_edit
     ), "a palette edit must change the pipeline digest or every segment stays stale"
+
+
+def test_the_theme_background_participates_in_every_segment_fingerprint():
+    assert 'recordParameters.get("themeBackground")' in RECORDER_SOURCE
+    assert "themeBackgroundHex" in FINGERPRINT_SOURCE
+    assert "themeBackground: themeBackgroundHex" in FINGERPRINT_SOURCE

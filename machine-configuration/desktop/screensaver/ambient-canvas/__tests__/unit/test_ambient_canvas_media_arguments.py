@@ -52,7 +52,12 @@ def test_resolve_browser_on_linux_uses_the_which_result(monkeypatch):
 
 def test_build_record_index_url_encodes_record_query():
     record_url = capture_plan.build_record_index_url(
-        "file:///store/index.html", "http://127.0.0.1:5000/upload", 30, 24, (1920, 1080)
+        "file:///store/index.html",
+        "http://127.0.0.1:5000/upload",
+        30,
+        24,
+        (1920, 1080),
+        "#241010",
     )
     assert record_url.startswith("file:///store/index.html?")
     assert "record=1" in record_url
@@ -60,6 +65,7 @@ def test_build_record_index_url_encodes_record_query():
     assert "fps=24" in record_url
     assert "width=1920" in record_url
     assert "height=1080" in record_url
+    assert "themeBackground=%23241010" in record_url
     assert "uploadUrl=http%3A%2F%2F127.0.0.1%3A5000%2Fupload" in record_url
 
 
@@ -70,6 +76,7 @@ def test_build_record_index_url_omits_seconds_so_the_playlist_derives_the_length
         None,
         30,
         (1662, 1080),
+        "#241010",
     )
     assert "seconds=" not in record_url
     assert "record=1" in record_url

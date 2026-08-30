@@ -1,7 +1,17 @@
 window.AmbientCanvasPalette = (function buildAmbientCanvasPalette() {
-  const BACKGROUND_HEX = "#0a1a2f";
+  const DEFAULT_BACKGROUND_HEX = "#0a1a2f";
   const ACCENT_ORANGE_HEX = "#ff6c18";
   const LUMINANCE_SAMPLING_FLOOR_HEX = "#000000";
+
+  function resolveBackgroundHex() {
+    const themeBackgroundHex = new URLSearchParams(window.location.search).get(
+      "themeBackground",
+    );
+    if (!/^#[0-9a-fA-F]{6}$/.test(themeBackgroundHex || "")) {
+      return DEFAULT_BACKGROUND_HEX;
+    }
+    return themeBackgroundHex.toLowerCase();
+  }
 
   function colorChannelsFromHex(hexColor) {
     return [
@@ -30,11 +40,16 @@ window.AmbientCanvasPalette = (function buildAmbientCanvasPalette() {
     return "vec3(" + formattedChannels.join(", ") + ")";
   }
 
-  const backgroundColorChannels = colorChannelsFromHex(BACKGROUND_HEX);
+  const backgroundHex = resolveBackgroundHex();
+  const backgroundColorChannels = colorChannelsFromHex(backgroundHex);
   const backgroundGlColor = normalizedColorChannels(backgroundColorChannels);
+  document.documentElement.style.setProperty(
+    "--ambient-canvas-background",
+    backgroundHex,
+  );
 
   return {
-    backgroundHex: BACKGROUND_HEX,
+    backgroundHex,
     backgroundColorChannels: joinedColorChannels(backgroundColorChannels),
     backgroundGlColor: backgroundGlColor,
     backgroundGlslVector: glslVectorLiteral(backgroundGlColor),

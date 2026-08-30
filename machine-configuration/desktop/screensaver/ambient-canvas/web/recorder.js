@@ -8,6 +8,7 @@
     Number(recordParameters.get("seconds")) || 0;
   const captureFramesPerSecond = Number(recordParameters.get("fps")) || 30;
   const uploadUrl = recordParameters.get("uploadUrl") || "";
+  const themeBackgroundHex = recordParameters.get("themeBackground") || "";
 
   const outputPixelWidth = Number(recordParameters.get("width")) || 1920;
   const outputPixelHeight = Number(recordParameters.get("height")) || 1080;
@@ -150,6 +151,7 @@
           durationSeconds,
           fingerprintInputs,
           captureSignature,
+          themeBackgroundHex,
         );
       manifestSegments.push({
         fingerprint: segmentFingerprint,

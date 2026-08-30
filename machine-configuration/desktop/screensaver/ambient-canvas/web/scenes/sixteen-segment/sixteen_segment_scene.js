@@ -32,10 +32,7 @@
     window.AmbientCanvasPalette.accentOrangeColorChannels,
     0.062,
   );
-  const BACKGROUND_FILL_STYLE = resolveMonochromeFillStyle(
-    window.AmbientCanvasPalette.backgroundColorChannels,
-    1,
-  );
+  const BACKGROUND_FILL_STYLE = window.AmbientCanvasPalette.backgroundHex;
 
   function fillSegmentPolygon(drawingContext, polygon, fillStyle) {
     drawingContext.fillStyle = fillStyle;

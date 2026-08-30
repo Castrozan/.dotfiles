@@ -11,6 +11,10 @@ from ambient_canvas_browser import (
     resolve_centered_window_geometry,
     resolve_chromium_browser_application,
 )
+from ambient_canvas_theme import (
+    compose_theme_source_identifier,
+    resolve_theme_background_color,
+)
 from recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
@@ -22,15 +26,8 @@ from recorded_loop_capture_target import (
     compose_recorded_source_identifier,
     resolve_recorded_loop_capture_target,
 )
+from recorded_loop_commit import commit_recorded_segment_manifest
 from recorded_loop_upload_server import start_recorded_loop_upload_server
-from recorded_segment_store import (
-    build_recorded_segment_manifest,
-    list_missing_manifest_segment_positions,
-    parse_uploaded_segment_manifest,
-    prune_recorded_segments_outside_manifest,
-    write_recorded_segment_manifest,
-    write_recorded_source_identifier,
-)
 from scene_video_cache import download_missing_scene_videos
 
 
@@ -56,6 +53,7 @@ def drive_record_browser(
     browser_application,
     duration_seconds,
     frames_per_second,
+    theme_background_hex,
 ):
     served_web_directory = os.path.dirname(index_file_path)
     download_missing_scene_videos(
@@ -77,6 +75,7 @@ def drive_record_browser(
         duration_seconds,
         frames_per_second,
         capture_target.capture_pixel_dimensions,
+        theme_background_hex,
     )
     browser_process = subprocess.Popen(
         build_record_browser_arguments(
@@ -99,36 +98,13 @@ def drive_record_browser(
     return upload_server
 
 
-def commit_recorded_segment_manifest(
-    output_directory, uploaded_manifest_bytes, source_identifier
-):
-    uploaded_segments = parse_uploaded_segment_manifest(uploaded_manifest_bytes)
-    if uploaded_segments is None:
-        print("render-ambient-canvas-loop: recording did not complete", file=sys.stderr)
-        return None
-    recorded_manifest = build_recorded_segment_manifest(uploaded_segments)
-    missing_positions = list_missing_manifest_segment_positions(
-        output_directory, recorded_manifest
-    )
-    if missing_positions:
-        print(
-            "render-ambient-canvas-loop: no segment was stored for playlist "
-            f"composition {', '.join(str(position) for position in missing_positions)}",
-            file=sys.stderr,
-        )
-        return None
-    manifest_path = write_recorded_segment_manifest(output_directory, recorded_manifest)
-    prune_recorded_segments_outside_manifest(output_directory, recorded_manifest)
-    write_recorded_source_identifier(output_directory, source_identifier)
-    return manifest_path
-
-
 def render_recorded_loop(
     index_file_path,
     capture_target,
     source_identifier,
     duration_seconds,
     frames_per_second,
+    theme_background_hex,
 ):
     browser_application = resolve_chromium_browser_application()
     if browser_application is None:
@@ -144,6 +120,7 @@ def render_recorded_loop(
         browser_application,
         duration_seconds,
         frames_per_second,
+        theme_background_hex,
     )
     return commit_recorded_segment_manifest(
         capture_target.loop_directory,
@@ -163,6 +140,7 @@ def main():
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument("--output-directory", required=True)
     argument_parser.add_argument("--source-identifier", required=True)
+    argument_parser.add_argument("--theme-colors-path", required=True)
     argument_parser.add_argument(
         "--seconds", type=int, default=DEFAULT_CAPTURE_DURATION_SECONDS
     )
@@ -179,14 +157,21 @@ def main():
     capture_target = resolve_recorded_loop_capture_target(
         parsed_arguments.output_directory
     )
+    theme_background_hex = resolve_theme_background_color(
+        parsed_arguments.theme_colors_path
+    )
     manifest_path = render_recorded_loop(
         index_file_path,
         capture_target,
         compose_recorded_source_identifier(
-            parsed_arguments.source_identifier, capture_target.capture_signature
+            compose_theme_source_identifier(
+                parsed_arguments.source_identifier, theme_background_hex
+            ),
+            capture_target.capture_signature,
         ),
         parsed_arguments.seconds,
         parsed_arguments.fps,
+        theme_background_hex,
     )
     if manifest_path is None:
         return 1

@@ -28,6 +28,7 @@ def build_record_index_url(
     duration_seconds,
     frames_per_second,
     capture_pixel_dimensions,
+    theme_background_hex,
 ):
     capture_pixel_width, capture_pixel_height = capture_pixel_dimensions
     record_query_parameters = {
@@ -36,6 +37,7 @@ def build_record_index_url(
         "width": str(capture_pixel_width),
         "height": str(capture_pixel_height),
         "uploadUrl": upload_url,
+        "themeBackground": theme_background_hex,
     }
     if duration_seconds is not None:
         record_query_parameters["seconds"] = str(duration_seconds)

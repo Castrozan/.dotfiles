@@ -68,6 +68,7 @@ window.AmbientCanvasRecordingFingerprint =
       durationSeconds,
       fingerprintInputs,
       captureSignature,
+      themeBackgroundHex,
     ) {
       const fingerprintSource = JSON.stringify({
         composition: composition,
@@ -75,6 +76,7 @@ window.AmbientCanvasRecordingFingerprint =
         scenes: resolveComposedSceneDigests(composition, fingerprintInputs),
         pipeline: fingerprintInputs.pipeline,
         capture: captureSignature,
+        themeBackground: themeBackgroundHex,
       });
       const digestBuffer = await crypto.subtle.digest(
         "SHA-256",

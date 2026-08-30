@@ -10,6 +10,7 @@ let
   ambientCanvasMediaScriptsDirectory = ./scripts/ambient_canvas_media;
   ambientCanvasStateDirectory = "${config.home.homeDirectory}/.local/state/ambient-canvas";
   ambientCanvasSourceIdentifier = "${ambientCanvasWebRoot}";
+  ambientCanvasThemeColorsPath = "${config.home.homeDirectory}/.config/hypr-theme/current/theme/colors.toml";
   ambientCanvasPlayerBinaryPath = "${config.home.homeDirectory}/.local/bin/ᓚᘏᗢ";
   ambientCanvasPlaybackDwellSecondsPath = "${ambientCanvasStateDirectory}/playback-dwell-seconds";
   ambientCanvasDefaultPlaybackDwellSeconds = 30;
@@ -31,6 +32,7 @@ let
       ${ambientCanvasMediaScriptsDirectory}/ensure_ambient_canvas_screensaver.py \
       --output-directory "${ambientCanvasStateDirectory}" \
       --source-identifier "${ambientCanvasSourceIdentifier}" \
+      --theme-colors-path "${ambientCanvasThemeColorsPath}" \
       --player-binary "${ambientCanvasPlayerBinaryPath}" \
       "$@"
   '';
@@ -42,6 +44,7 @@ let
       ${ambientCanvasMediaScriptsDirectory}/render_ambient_canvas_loop.py \
       --output-directory "${ambientCanvasStateDirectory}" \
       --source-identifier "${ambientCanvasSourceIdentifier}" \
+      --theme-colors-path "${ambientCanvasThemeColorsPath}" \
       "$@"
   '';
 

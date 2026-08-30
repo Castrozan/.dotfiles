@@ -92,11 +92,8 @@ window.AmbientCanvasCubeLatticeShaders = (function buildCubeLatticeShaders() {
       float glow =
         nearestWireResponse(rayOrigin, fisheyeRayDirection(screenOffset));
       vec3 neonEmission = 1.0 - exp(-glow * neonGreenResponse);
-      float monochromeLuminance = dot(
-        backgroundColour + neonEmission,
-        monochromeLuminanceWeights
-      );
-      gl_FragColor = vec4(vec3(monochromeLuminance), 1.0);
+      float monochromeEmission = dot(neonEmission, monochromeLuminanceWeights);
+      gl_FragColor = vec4(backgroundColour + vec3(monochromeEmission), 1.0);
     }
   `;
 

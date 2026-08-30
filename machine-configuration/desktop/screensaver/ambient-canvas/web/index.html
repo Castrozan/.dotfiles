@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ambient-canvas-recorder</title>
     <style>
+      :root {
+        --ambient-canvas-background: #0a1a2f;
+      }
       html,
       body {
         margin: 0;
         height: 100%;
-        background: #0a1a2f;
+        background: var(--ambient-canvas-background);
         overflow: hidden;
       }
       #ambient-canvas-grid {
@@ -17,13 +20,13 @@
         width: 100vw;
         height: 100vh;
         gap: 2px;
-        background: #0a1a2f;
+        background: var(--ambient-canvas-background);
       }
       canvas.ambient-canvas-pane {
         display: block;
         width: 100%;
         height: 100%;
-        background: #0a1a2f;
+        background: var(--ambient-canvas-background);
       }
     </style>
   </head>
