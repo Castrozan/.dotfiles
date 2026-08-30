@@ -15,10 +15,7 @@ let
     "/usr/bin"
     "/bin"
   ];
-  serverRunning = ''
-    ${herdrPackage}/bin/herdr session list --json 2>/dev/null \
-      | ${pkgs.jq}/bin/jq -e -f ${./scripts/default-server-running.jq} >/dev/null
-  '';
+  serverRunning = "${herdrPackage}/bin/herdr session list --json 2>/dev/null | ${pkgs.jq}/bin/jq -e -f ${./scripts/default-server-running.jq} >/dev/null";
   herdrServer = pkgs.writeShellApplication {
     name = "herdr-server";
     text = ''
