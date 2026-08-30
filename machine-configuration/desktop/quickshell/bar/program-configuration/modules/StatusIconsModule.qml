@@ -1,8 +1,6 @@
-import Quickshell
-import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
-import ".."
+import "./status-icons/"
 
 ColumnLayout {
     id: statusIconsModuleRoot
@@ -20,6 +18,7 @@ ColumnLayout {
 
     function _registerAllIconPositions(): void {
         _registerIconPosition(notificationSoundIcon, "");
+        _registerIconPosition(vpnIcon, "");
         _registerIconPosition(outputDeviceTypeIcon, "");
         _registerIconPosition(microphoneIcon, "");
         if (keyboardBacklightIcon.visible)
@@ -36,385 +35,63 @@ ColumnLayout {
         barRoot.registerStatusIconPosition(popoutName, globalPos.y, globalPos.y + iconItem.height);
     }
 
-    StatusIcon {
+    NotificationSoundStatusIcon {
         id: notificationSoundIcon
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
         Layout.topMargin: 4
-
-        property bool isMuted: false
-
-        iconText: isMuted ? "󰂛" : "󰂚"
-        iconColor: isMuted ? ThemeColors.warning : ThemeColors.foreground
-
-        onClicked: notificationSoundToggleProcess.running = true
-
-        Process {
-            id: notificationSoundStatusProcess
-            command: ["hypr-notification-sound-toggle", "status"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    try {
-                        let parsed = JSON.parse(data);
-                        notificationSoundIcon.isMuted = parsed.class === "muted";
-                    } catch (e) {}
-                }
-            }
-        }
-
-        Process {
-            id: notificationSoundToggleProcess
-            command: ["hypr-notification-sound-toggle", "toggle"]
-            running: false
-            onExited: notificationSoundStatusProcess.running = true
-        }
-
-        Component.onCompleted: notificationSoundStatusProcess.running = true
     }
 
-    StatusIcon {
+    VpnStatusIcon {
+        id: vpnIcon
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: 28
+        Layout.preferredHeight: 28
+    }
+
+    OutputDeviceStatusIcon {
         id: outputDeviceTypeIcon
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
-
-        property bool isMuted: false
-        property string outputType: "speaker"
-
-        iconText: {
-            if (isMuted) return "󰖁";
-            if (outputType === "bluetooth") return "󰋋";
-            return "󰕾";
-        }
-        iconColor: isMuted ? ThemeColors.warning : ThemeColors.foreground
-
-        onClicked: outputMuteToggleProcess.running = true
-
-        Process {
-            id: outputDefaultSinkProcess
-            command: ["pactl", "get-default-sink"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    const sinkName = data.trim();
-                    outputDeviceTypeIcon.outputType = sinkName.startsWith("bluez_") ? "bluetooth" : "speaker";
-                }
-            }
-        }
-
-        Process {
-            id: outputMuteStatusProcess
-            command: ["bash", "-c", "pactl get-default-sink | xargs pactl get-sink-mute"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    outputDeviceTypeIcon.isMuted = data.trim() === "Mute: yes";
-                }
-            }
-        }
-
-        Process {
-            id: outputMuteToggleProcess
-            command: ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
-            running: false
-            onExited: {
-                outputDefaultSinkProcess.running = true;
-                outputMuteStatusProcess.running = true;
-            }
-        }
-
-        Timer {
-            interval: 15000
-            running: true
-            repeat: true
-            triggeredOnStart: true
-            onTriggered: {
-                outputDefaultSinkProcess.running = true;
-                outputMuteStatusProcess.running = true;
-            }
-        }
     }
 
-    StatusIcon {
+    MicrophoneStatusIcon {
         id: microphoneIcon
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
-
-        property bool isMuted: false
-
-        iconText: isMuted ? "󰖁" : "󰍰"
-        iconColor: isMuted ? ThemeColors.warning : ThemeColors.foreground
-
-        onClicked: microphoneToggleProcess.running = true
-
-        Process {
-            id: microphoneStatusProcess
-            command: ["hypr-microphone-toggle", "status"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    try {
-                        let parsed = JSON.parse(data);
-                        microphoneIcon.isMuted = parsed.class === "muted";
-                    } catch (e) {}
-                }
-            }
-        }
-
-        Process {
-            id: microphoneToggleProcess
-            command: ["hypr-microphone-toggle", "toggle"]
-            running: false
-            onExited: microphoneStatusProcess.running = true
-        }
-
-        Component.onCompleted: microphoneStatusProcess.running = true
     }
 
-    StatusIcon {
+    NetworkStatusIcon {
         id: networkIcon
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
-        popoutName: "network"
         screenScope: statusIconsModuleRoot.screenScope
-
-        property int signalStrength: 0
-        property string connectionState: "disconnected"
-
-        readonly property var wifiSignalIcons: ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"]
-
-        iconText: {
-            if (connectionState === "ethernet") return "󰀂";
-            if (connectionState === "disconnected") return "󰤮";
-            let tier = Math.min(Math.floor(signalStrength / 25), 4);
-            return wifiSignalIcons[tier];
-        }
-        iconColor: ThemeColors.foreground
-
-        onClicked: launchNetworkProcess.running = true
-
-        Process {
-            id: launchNetworkProcess
-            command: ["hypr-network"]
-            running: false
-        }
-
-        Process {
-            id: networkDeviceStatusProcess
-            command: ["nmcli", "-t", "-f", "TYPE,STATE,CONNECTION", "device", "status"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    let lines = data.trim().split("\n");
-                    let foundWifi = false;
-                    for (let i = 0; i < lines.length; i++) {
-                        let parts = lines[i].split(":");
-                        if (parts.length < 3) continue;
-                        let deviceType = parts[0];
-                        let deviceState = parts[1];
-
-                        if (deviceType === "ethernet" && deviceState === "connected") {
-                            networkIcon.connectionState = "ethernet";
-                            return;
-                        }
-                        if (deviceType === "wifi" && deviceState === "connected") {
-                            networkIcon.connectionState = "wifi";
-                            foundWifi = true;
-                        }
-                    }
-                    if (!foundWifi && networkIcon.connectionState !== "ethernet") {
-                        networkIcon.connectionState = "disconnected";
-                    }
-                }
-            }
-        }
-
-        Process {
-            id: networkSignalStrengthProcess
-            command: ["nmcli", "-t", "-f", "SIGNAL,IN-USE", "device", "wifi", "list"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    let lines = data.trim().split("\n");
-                    for (let i = 0; i < lines.length; i++) {
-                        let parts = lines[i].split(":");
-                        if (parts.length >= 2 && parts[1] === "*") {
-                            networkIcon.signalStrength = parseInt(parts[0]) || 0;
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-
-        Timer {
-            interval: 30000
-            running: true
-            repeat: true
-            triggeredOnStart: true
-            onTriggered: {
-                networkDeviceStatusProcess.running = true;
-                networkSignalStrengthProcess.running = true;
-            }
-        }
     }
 
-    StatusIcon {
+    BluetoothStatusIcon {
         id: bluetoothIcon
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
-        popoutName: "bluetooth"
         screenScope: statusIconsModuleRoot.screenScope
-
-        property bool isPowered: true
-        property bool hasConnectedDevices: false
-
-        iconText: {
-            if (!isPowered) return "󰂲";
-            if (hasConnectedDevices) return "󰂱";
-            return "󰂯";
-        }
-        iconColor: ThemeColors.foreground
-
-        onClicked: launchBluetoothProcess.running = true
-
-        Process {
-            id: launchBluetoothProcess
-            command: ["hyprctl", "dispatch", "exec", "wezterm start -- bluetui"]
-            running: false
-        }
-
-        Process {
-            id: bluetoothPoweredProcess
-            command: ["bluetoothctl", "show"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    bluetoothIcon.isPowered = data.indexOf("Powered: yes") !== -1;
-                }
-            }
-        }
-
-        Process {
-            id: bluetoothConnectedProcess
-            command: ["bluetoothctl", "devices", "Connected"]
-            running: false
-            stdout: SplitParser {
-                splitMarker: ""
-                onRead: data => {
-                    bluetoothIcon.hasConnectedDevices = data.trim().length > 0;
-                }
-            }
-        }
-
-        Timer {
-            interval: 30000
-            running: true
-            repeat: true
-            triggeredOnStart: true
-            onTriggered: {
-                bluetoothPoweredProcess.running = true;
-                bluetoothConnectedProcess.running = true;
-            }
-        }
     }
 
-    StatusIcon {
+    KeyboardBacklightStatusIcon {
         id: keyboardBacklightIcon
-        visible: MachineFeatures.hasKeyboardBacklight
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
-
-        property int brightnessLevel: 2
-        readonly property var levels: [0, 5, 25, 50, 100]
-        readonly property var levelIcons: ["󰌐", "󰌌", "󰌌", "󰌌", "󰌌"]
-        readonly property var levelOpacities: [0.3, 0.4, 0.6, 0.8, 1.0]
-
-        iconText: levelIcons[brightnessLevel]
-        iconColor: ThemeColors.foreground
-        opacity: levelOpacities[brightnessLevel]
-
-        onClicked: {
-            brightnessLevel = (brightnessLevel + 1) % levels.length;
-            kbdBacklightProcess.command = ["set-keyboard-backlight-brightness", String(levels[brightnessLevel])];
-            kbdBacklightProcess.running = true;
-        }
-
-        Behavior on opacity {
-            NumberAnimation { duration: 150 }
-        }
-
-        Process {
-            id: kbdBacklightProcess
-            command: ["set-keyboard-backlight-brightness", "5"]
-            running: false
-        }
     }
 
-    StatusIcon {
+    BatteryStatusIcon {
         id: batteryIcon
-        visible: MachineFeatures.hasBattery
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: 28
         Layout.preferredHeight: 28
-        popoutName: "battery"
         screenScope: statusIconsModuleRoot.screenScope
-
-        property int batteryCapacity: 100
-        property string batteryStatus: "Full"
-
-        readonly property var chargingIcons: ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"]
-        readonly property var dischargingIcons: ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
-
-        iconText: {
-            if (batteryStatus === "Full") return "󰂅";
-            let tier = Math.min(Math.floor(batteryCapacity / 11), 9);
-            if (batteryStatus === "Charging") return chargingIcons[tier];
-            return dischargingIcons[tier];
-        }
-        iconColor: {
-            if (batteryCapacity <= 20 && batteryStatus !== "Charging") return ThemeColors.warning;
-            return ThemeColors.foreground;
-        }
-
-        FileView {
-            id: batteryCapacityFileView
-            path: MachineFeatures.batteryPath !== "" ? MachineFeatures.batteryPath + "/capacity" : ""
-            onLoaded: {
-                batteryIcon.batteryCapacity = parseInt(text().trim()) || 0;
-            }
-        }
-
-        FileView {
-            id: batteryStatusFileView
-            path: MachineFeatures.batteryPath !== "" ? MachineFeatures.batteryPath + "/status" : ""
-            onLoaded: {
-                batteryIcon.batteryStatus = text().trim();
-            }
-        }
-
-        Timer {
-            interval: 30000
-            running: MachineFeatures.hasBattery
-            repeat: true
-            triggeredOnStart: true
-            onTriggered: {
-                batteryCapacityFileView.reload();
-                batteryStatusFileView.reload();
-            }
-        }
     }
 }

@@ -15,7 +15,7 @@ ColumnLayout {
         : inlineStatusIconsModule.hasHoveredPopoutIcon
     property var statusIconPositions: ({})
 
-    readonly property real fullStatusIconsImpliedHeight: 6 * 28 + 5 * 2 + 4
+    readonly property real fullStatusIconsImpliedHeight: 7 * 28 + 6 * 2 + 4
     readonly property real minimumRunningAppsAllocation: 30
     readonly property real fixedModulesHeightExcludingStatusIcons:
         launcherButton.implicitHeight +

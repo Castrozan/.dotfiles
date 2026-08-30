@@ -1,0 +1,8 @@
+NotificationSoundStatusIcon 1.0 NotificationSoundStatusIcon.qml
+VpnStatusIcon 1.0 VpnStatusIcon.qml
+OutputDeviceStatusIcon 1.0 OutputDeviceStatusIcon.qml
+MicrophoneStatusIcon 1.0 MicrophoneStatusIcon.qml
+NetworkStatusIcon 1.0 NetworkStatusIcon.qml
+BluetoothStatusIcon 1.0 BluetoothStatusIcon.qml
+KeyboardBacklightStatusIcon 1.0 KeyboardBacklightStatusIcon.qml
+BatteryStatusIcon 1.0 BatteryStatusIcon.qml
