@@ -24,13 +24,15 @@ window.AmbientCanvasRecordingPlan = (function buildRecordingPlan() {
   }
 
   function resolveRecordingRanges(recordingSource, chunkDurationSeconds) {
+    if (!recordingSource) {
+      return [{ startSeconds: 0, durationSeconds: chunkDurationSeconds }];
+    }
     if (
-      !recordingSource ||
       !recordingSource.sequence ||
       !Number.isFinite(recordingSource.durationSeconds) ||
       recordingSource.durationSeconds <= 0
     ) {
-      return [{ startSeconds: 0, durationSeconds: chunkDurationSeconds }];
+      throw new Error("recording source has no playable duration");
     }
     const recordingRanges = [];
     for (

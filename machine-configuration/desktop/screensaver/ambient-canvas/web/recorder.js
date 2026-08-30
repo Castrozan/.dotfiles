@@ -193,6 +193,7 @@
     driveDeterministicRecording(playbackController).catch(
       function reportRecordingFailure(recordingError) {
         console.error("ambient-canvas record: driver failed", recordingError);
+        encoder.uploadSegmentManifest([], uploadUrl);
       },
     );
   };

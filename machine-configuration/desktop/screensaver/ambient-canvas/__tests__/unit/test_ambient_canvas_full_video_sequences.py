@@ -2,6 +2,8 @@ import json
 import pathlib
 import subprocess
 
+import pytest
+
 import recorded_segment_manifest as segment_manifest
 
 AMBIENT_CANVAS_DIRECTORY = pathlib.Path(__file__).resolve().parents[2]
@@ -101,6 +103,13 @@ def test_non_video_scene_keeps_one_bounded_recording_range():
     assert resolve_recording_ranges(None, 30) == [
         {"startSeconds": 0, "durationSeconds": 30}
     ]
+
+
+def test_video_without_duration_is_not_cached_as_one_fixed_excerpt():
+    with pytest.raises(subprocess.CalledProcessError):
+        resolve_recording_ranges(
+            {"sequence": "bad-apple:djV11Xbc914", "durationSeconds": 0}, 30
+        )
 
 
 def test_each_source_range_owns_a_distinct_cache_fingerprint():
