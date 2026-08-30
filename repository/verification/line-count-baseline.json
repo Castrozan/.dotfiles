@@ -40,7 +40,6 @@
   "machine-configuration/desktop/quickshell/bar/program-configuration/dashboard/widgets/MediaWidget.qml": 218,
   "machine-configuration/desktop/quickshell/bar/program-configuration/launcher/LauncherResultsList.qml": 239,
   "machine-configuration/desktop/quickshell/bar/program-configuration/modules/RunningAppsModule.qml": 238,
-  "machine-configuration/desktop/quickshell/bar/program-configuration/modules/StatusIconsModule.qml": 420,
   "machine-configuration/desktop/quickshell/bar/program-configuration/panels/SidebarContent.qml": 311,
   "machine-configuration/desktop/quickshell/bar/program-configuration/panels/UtilitiesContent.qml": 334,
   "machine-configuration/desktop/quickshell/bar/program-configuration/popouts/StatusIconsPopout.qml": 335,
