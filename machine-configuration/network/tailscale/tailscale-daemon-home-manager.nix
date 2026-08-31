@@ -6,8 +6,8 @@ let
     standaloneNixProfile = "${config.home.homeDirectory}/.nix-profile/bin";
     homebrewAppleSilicon = "/opt/homebrew/bin";
     homebrewIntel = "/usr/local/bin";
-    linuxDistributionPackage = "/usr/bin";
-    macosPackageInstaller = "/usr/sbin";
+    linuxDistributionPackageSbin = "/usr/sbin";
+    linuxDistributionPackageBin = "/usr/bin";
   };
 
   tailscaleDaemonCandidates = lib.mapAttrsToList (
