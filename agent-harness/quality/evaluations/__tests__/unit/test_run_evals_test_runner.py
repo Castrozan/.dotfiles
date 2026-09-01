@@ -133,7 +133,7 @@ def test_codex_subject_and_judge_use_their_pinned_models_and_reasoning(monkeypat
     monkeypatch.setattr(subject_port, "invoke_subject", invoke)
     settings = {
         "subject_models": {"codex": "gpt-5.6-sol"},
-        "subject_reasoning_efforts": {"codex": "medium"},
+        "subject_reasoning_efforts": {"codex": "high"},
         "judge_models": {"codex": "gpt-5.6-luna"},
         "judge_reasoning_efforts": {"codex": "low"},
     }
