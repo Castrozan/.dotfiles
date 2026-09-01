@@ -26,16 +26,18 @@ from run_evals_statistics import (
 )
 from run_evals_fingerprint import (
     evaluation_category_names,
-    evaluation_fingerprints,
     humanize_recovery_fingerprints,
 )
+from run_evals_impact import evaluation_test_fingerprints
 
 
 def compliance_passed_and_total(categories: dict) -> tuple[int, int]:
     return policy_compliance_passed_and_total(categories, COMPLIANCE_CATEGORIES)
 
 
-def check_baseline_for_regression(expected_execution_profile: dict) -> bool:
+def check_baseline_for_regression(
+    expected_execution_profile: dict, config: dict
+) -> bool:
     if not BASELINE_PATH.exists():
         print(
             "FAIL: No baseline file found at agent-harness/quality/evaluations/baseline.json"
@@ -50,7 +52,7 @@ def check_baseline_for_regression(expected_execution_profile: dict) -> bool:
     failures.extend(
         baseline_evidence_failures(
             baseline,
-            evaluation_fingerprints(),
+            evaluation_test_fingerprints(config, expected_execution_profile),
             humanize_recovery_fingerprints(),
             evaluation_category_names(),
             expected_execution_profile,

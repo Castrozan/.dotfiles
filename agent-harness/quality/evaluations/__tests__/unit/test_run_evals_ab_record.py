@@ -66,6 +66,13 @@ def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(
         run_evals_ab_record,
+        "evaluation_test_fingerprints",
+        lambda config, profile: {
+            "skills/humanize/reader_recovery::recovery": "recovery-sha"
+        },
+    )
+    monkeypatch.setattr(
+        run_evals_ab_record,
         "merge_baseline_categories",
         lambda baseline, replacements, execution_profile, token_usage: observed.update(
             token_usage=token_usage

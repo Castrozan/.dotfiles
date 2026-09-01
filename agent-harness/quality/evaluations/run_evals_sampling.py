@@ -46,7 +46,13 @@ def suite_pass_at_k(per_test, k):
 
 
 def build_epoch_enriched_baseline(
-    per_test, epochs, git_commit, generated_at, execution_profile, token_usage
+    per_test,
+    epochs,
+    git_commit,
+    generated_at,
+    execution_profile,
+    token_usage,
+    test_fingerprints,
 ):
     fingerprints = evaluation_fingerprints()
     existing_baseline = (
@@ -68,6 +74,8 @@ def build_epoch_enriched_baseline(
                 "samples": test["total"],
                 "lower": round(test["lower"], 4),
                 "upper": round(test["upper"], 4),
+                "fingerprint": test_fingerprints[f"{test['category']}::{test['name']}"],
+                "generated_at": generated_at,
             }
         )
         bucket["passed" if majority_passed else "failed"] += 1

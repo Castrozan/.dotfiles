@@ -2,13 +2,18 @@ from datetime import datetime, timezone
 
 from run_evals_ab import run_instruction_loading_experiment
 from run_evals_ab_record import save_ab_profile
+from run_evals_baseline_incremental import BaselineCheckpoint, read_baseline
 from run_evals_baseline_record import (
     get_current_git_commit,
     merge_baseline_snapshot,
-    save_baseline,
     write_baseline,
 )
 from run_evals_evidence import raise_for_evaluation_errors
+from run_evals_impact import (
+    affected_test_keys,
+    evaluation_test_fingerprints,
+    selected_test_keys_for_filters,
+)
 from run_evals_judge import build_llm_judge
 from run_evals_judge_calibration import judge_agreement, load_calibration_cases
 from run_evals_provider_usage import provider_usage_summary
@@ -72,11 +77,13 @@ def run_ab_evaluation(config: dict, args, execution_profile: dict) -> int:
             args.compare_ref,
             execution_profile,
             token_usage,
+            evaluation_test_fingerprints(config, execution_profile),
         )
     return 0
 
 
 def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
+    current_fingerprints = evaluation_test_fingerprints(config, execution_profile)
     with temporary_eval_worktree():
         results_per_epoch = []
         for epoch_index in range(args.epochs):
@@ -104,6 +111,7 @@ def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
             datetime.now(timezone.utc).isoformat(),
             execution_profile,
             token_usage,
+            current_fingerprints,
         )
         write_baseline(
             merge_baseline_snapshot(baseline, execution_profile, token_usage)
@@ -114,6 +122,31 @@ def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
 
 
 def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
+    checkpoint = None
+    selected_test_keys = None
+    if args.save_baseline:
+        current_fingerprints = evaluation_test_fingerprints(config, execution_profile)
+        selected_test_keys = (
+            selected_test_keys_for_filters(
+                current_fingerprints, args.category, args.test
+            )
+            if args.all_tests
+            else affected_test_keys(
+                config,
+                read_baseline(),
+                execution_profile,
+                category=args.category,
+                test_name=args.test,
+            )
+        )
+        checkpoint = BaselineCheckpoint(
+            execution_profile,
+            current_fingerprints,
+            reset_test_keys=selected_test_keys if args.all_tests else None,
+        )
+        if not selected_test_keys:
+            checkpoint.announce()
+            return 0
     with temporary_eval_worktree():
         results = run_tests(
             config,
@@ -124,14 +157,12 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
             max_workers_override=args.workers,
             harness=args.harness,
             judge_harness=args.judge_harness,
+            selected_test_keys=selected_test_keys,
+            on_result=checkpoint.record if checkpoint else None,
         )
     all_passed = print_results(results, harness=args.harness)
-    token_usage = collect_and_print_provider_usage()
+    collect_and_print_provider_usage()
     if args.save_baseline:
-        save_baseline(
-            results,
-            execution_profile,
-            token_usage,
-            merge=args.category is not None,
-        )
+        raise_for_evaluation_errors(results, "baseline evidence")
+        checkpoint.announce()
     return 0 if all_passed else 1

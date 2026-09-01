@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from run_evals_arguments import parse_arguments  # noqa: E402
 from run_evals_baseline import check_baseline_for_regression  # noqa: E402
+from run_evals_baseline_incremental import read_baseline  # noqa: E402
 from run_evals_cli_modes import (  # noqa: E402
     run_ab_evaluation,
     run_judge_calibration,
@@ -15,6 +16,7 @@ from run_evals_cli_modes import (  # noqa: E402
 )
 from run_evals_config_loader import load_config  # noqa: E402
 from run_evals_execution_profile import build_execution_profile  # noqa: E402
+from run_evals_impact import affected_test_keys  # noqa: E402
 from run_evals_provider_usage import reset_provider_usage  # noqa: E402
 from run_evals_reporting import list_categories  # noqa: E402
 from run_evals_subject_port import resolve_node_runtime  # noqa: E402
@@ -34,10 +36,22 @@ def main():
     )
 
     if args.check_baseline:
-        passed = check_baseline_for_regression(canonical_execution_profile)
+        passed = check_baseline_for_regression(canonical_execution_profile, config)
         sys.exit(0 if passed else 1)
     if args.list:
         list_categories(config)
+        sys.exit(0)
+    if args.list_affected:
+        affected = affected_test_keys(
+            config,
+            read_baseline(),
+            canonical_execution_profile,
+            category=args.category,
+            test_name=args.test,
+        )
+        print(f"Affected evaluations: {len(affected)}")
+        for key in sorted(affected):
+            print(f"  {key}")
         sys.exit(0)
 
     reset_provider_usage()

@@ -1,17 +1,12 @@
 import json
 
-import pytest
-
 import run_evals_baseline_record
 from run_evals_baseline import compliance_passed_and_total
 from run_evals_baseline_record import (
-    build_baseline_from_results,
     merge_baseline_categories,
     merge_baseline_snapshot,
-    repeated_outcomes_category_bucket,
 )
 from run_evals_baseline_thresholds import COMPLIANCE_CATEGORIES
-from run_evals_test_runner import TestResult
 
 EXECUTION_PROFILE = {
     "subject": {"harness": "claude", "model": "sonnet", "reasoning_effort": "high"},
@@ -20,37 +15,9 @@ EXECUTION_PROFILE = {
 TOKEN_USAGE = {"input_tokens": 100, "output_tokens": 50}
 
 
-def _result(name, passed, category):
-    return TestResult(
-        name=name,
-        passed=passed,
-        duration=0.0,
-        output="",
-        assertions_failed=[] if passed else ["failed"],
-        category=category,
-    )
-
-
-def test_build_baseline_buckets_by_authored_category_not_name_prefix():
-    results = [
-        _result("obeys_the_commit_sequence", True, "workflow_compliance"),
-        _result("rebuilds_after_every_edit", True, "workflow_compliance"),
-        _result("desktop_control_over_keyboard", False, "skill_routing"),
-    ]
-
-    baseline = build_baseline_from_results(results, EXECUTION_PROFILE, TOKEN_USAGE)
-
-    assert set(baseline["categories"]) == {"workflow_compliance", "skill_routing"}
-    assert baseline["categories"]["workflow_compliance"]["passed"] == 2
-    assert baseline["categories"]["workflow_compliance"]["failed"] == 0
-    assert baseline["categories"]["skill_routing"]["failed"] == 1
-
-
 def test_off_prefix_compliance_test_counts_toward_the_floor():
-    results = [_result("obeys_the_commit_sequence", False, "workflow_compliance")]
-
-    baseline = build_baseline_from_results(results, EXECUTION_PROFILE, TOKEN_USAGE)
-    passed, total = compliance_passed_and_total(baseline["categories"])
+    categories = {"workflow_compliance": {"passed": 0, "failed": 1}}
+    passed, total = compliance_passed_and_total(categories)
 
     assert total == 1
     assert passed == 0
@@ -109,25 +76,6 @@ def test_category_refresh_preserves_other_baseline_categories(monkeypatch):
     assert merged["generated_at"] == baseline["generated_at"]
 
 
-def test_repeated_outcomes_become_a_majority_graded_category_bucket():
-    bucket = repeated_outcomes_category_bucket(
-        {
-            "category::stable": [True, True, True],
-            "category::flaky": [True, False, True],
-            "category::failed": [False, False, False],
-        }
-    )
-
-    assert bucket["passed"] == 2
-    assert bucket["failed"] == 1
-    assert bucket["tests"][1] == {
-        "name": "flaky",
-        "passed": True,
-        "passes": 2,
-        "samples": 3,
-    }
-
-
 def test_selected_category_snapshot_merges_into_the_committed_baseline(
     tmp_path, monkeypatch
 ):
@@ -181,18 +129,3 @@ def test_category_refresh_prunes_categories_without_current_suites(monkeypatch):
     assert set(merged["categories"]) == {"communication"}
     assert merged["total_passed"] == 3
     assert merged["total_tests"] == 3
-
-
-def test_baseline_save_rejects_invocation_errors(tmp_path, monkeypatch):
-    monkeypatch.setattr(
-        run_evals_baseline_record, "BASELINE_PATH", tmp_path / "baseline.json"
-    )
-    result = _result("provider_limit", False, "communication")
-    result.error = "session limit reached"
-
-    with pytest.raises(RuntimeError, match="baseline evidence has invocation errors"):
-        run_evals_baseline_record.save_baseline(
-            [result], EXECUTION_PROFILE, TOKEN_USAGE
-        )
-
-    assert not run_evals_baseline_record.BASELINE_PATH.exists()

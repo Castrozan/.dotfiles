@@ -50,7 +50,9 @@ def test_baseline_check_compares_against_the_configured_execution_profile(
         lambda profile: None,
     )
 
-    passed = run_evals_baseline.check_baseline_for_regression(EXPECTED_PROFILE)
+    passed = run_evals_baseline.check_baseline_for_regression(
+        EXPECTED_PROFILE, {"tests": {}}
+    )
 
     assert passed is False
     assert observed["expected"] == EXPECTED_PROFILE

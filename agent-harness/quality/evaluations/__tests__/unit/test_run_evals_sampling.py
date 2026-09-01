@@ -16,6 +16,13 @@ EXECUTION_PROFILE = {
 TOKEN_USAGE = {"input_tokens": 100, "output_tokens": 50}
 
 
+def _fingerprints(per_test):
+    return {
+        f"{test['category']}::{test['name']}": f"{test['category']}::{test['name']}-sha"
+        for test in per_test
+    }
+
+
 def _isolate_baseline(tmp_path, monkeypatch):
     monkeypatch.setattr(run_evals_sampling, "BASELINE_PATH", tmp_path / "baseline.json")
 
@@ -103,6 +110,7 @@ def test_epoch_baseline_ties_toward_pass_on_an_even_split(tmp_path, monkeypatch)
         "2026-07-23T00:00:00+00:00",
         EXECUTION_PROFILE,
         TOKEN_USAGE,
+        _fingerprints(per_test),
     )
 
     assert baseline["categories"]["core_rules"]["passed"] == 1
@@ -134,6 +142,7 @@ def test_epoch_baseline_buckets_by_category_and_uses_majority_vote(
         "2026-07-23T00:00:00+00:00",
         EXECUTION_PROFILE,
         TOKEN_USAGE,
+        _fingerprints(per_test),
     )
 
     assert baseline["total_tests"] == 2
@@ -161,6 +170,7 @@ def test_epoch_baseline_carries_provenance_and_omits_pass_at_2_for_one_epoch(
         "2026-07-23T00:00:00+00:00",
         EXECUTION_PROFILE,
         TOKEN_USAGE,
+        _fingerprints(per_test),
     )
 
     assert baseline["git_commit"] == "deadbeef"
@@ -182,6 +192,7 @@ def test_full_epoch_baseline_replaces_another_execution_profile(tmp_path, monkey
         "2026-07-23T00:00:00+00:00",
         EXECUTION_PROFILE,
         TOKEN_USAGE,
+        _fingerprints(per_test),
     )
 
     assert baseline["execution_profile"] == EXECUTION_PROFILE

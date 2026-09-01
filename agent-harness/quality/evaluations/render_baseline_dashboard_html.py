@@ -74,10 +74,10 @@ the agent passed against the instructions as they stood at that commit.</p>
 <p>This is the <b>Tier-1 static-eval pass rate</b> - the headline health number for the agent's
 instruction compliance. A suite of prompt-based evals in <code>agent-harness/quality/evaluations/evals/</code> runs each prompt
 through a vendor SDK inside a throwaway git worktree, then checks assertions on the answer. The committed baseline uses
-Claude; local comparisons can select Claude, Codex, or OpenCode with <code>--harness</code>. Tests are bucketed into <code>compliance</code>,
+Codex; local comparisons can select Claude, Codex, or OpenCode with <code>--harness</code>. Tests are bucketed into <code>compliance</code>,
 <code>routing</code>, <code>navigation</code>, <code>knowledge</code> and <code>other</code>.</p>
-<p>Running <code>agent-eval --save-baseline</code> executes the whole suite and commits the result
-to <code>agent-harness/quality/evaluations/baseline.json</code>. This page reads that file's full git history, so every
+<p>Running <code>agent-eval --save-baseline</code> executes only missing, stale, or behaviorally affected tests and
+checkpoints each result to <code>agent-harness/quality/evaluations/baseline.json</code>. This page reads that file's full git history, so every
 point is a commit - the chart is the repo remembering its own report cards.</p>
 </div>
 

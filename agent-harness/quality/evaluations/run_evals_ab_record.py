@@ -7,6 +7,9 @@ from run_evals_baseline_record import (
     repeated_outcomes_category_bucket,
 )
 from run_evals_fingerprint import humanize_recovery_fingerprints
+from run_evals_config_loader import load_config
+from run_evals_impact import evaluation_test_fingerprints
+from run_evals_worktree_and_environment import REPO_ROOT
 
 
 def save_ab_profile(
@@ -27,8 +30,13 @@ def save_ab_profile(
     baseline = json.loads(BASELINE_PATH.read_text())
     baseline_token_usage = baseline.get("token_usage", {})
     fingerprints = humanize_recovery_fingerprints()
+    generated_at = datetime.now(timezone.utc).isoformat()
+    test_fingerprints = evaluation_test_fingerprints(
+        load_config(REPO_ROOT / "agent-harness/quality/evaluations/evals"),
+        execution_profile,
+    )
     profile = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": generated_at,
         "comparison_ref": comparison_ref,
         "epochs": comparison["epochs"],
         "paired_cases": comparison["n_paired"],
@@ -55,7 +63,9 @@ def save_ab_profile(
         baseline,
         {
             category: repeated_outcomes_category_bucket(
-                comparison["candidate_case_outcomes"]
+                comparison["candidate_case_outcomes"],
+                test_fingerprints,
+                generated_at,
             )
         },
         execution_profile,

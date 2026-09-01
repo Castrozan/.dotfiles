@@ -44,3 +44,13 @@ def record_provider_usage(role: str, harness: str, usage: dict | None) -> None:
 def provider_usage_summary() -> dict:
     with _usage_lock:
         return deepcopy(_usage_by_role)
+
+
+def merge_provider_usage(first: dict, second: dict) -> dict:
+    merged = deepcopy(first)
+    for role, harnesses in second.items():
+        for harness, usage in harnesses.items():
+            bucket = merged.setdefault(role, {}).setdefault(harness, {})
+            for field, value in usage.items():
+                bucket[field] = int(bucket.get(field) or 0) + int(value or 0)
+    return merged

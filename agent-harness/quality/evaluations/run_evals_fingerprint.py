@@ -12,6 +12,20 @@ HUMANIZE_RECOVERY_SUITE_PATH = Path(
 JUDGE_CALIBRATION_PATH = Path(
     "agent-harness/quality/evaluations/calibration/judge_calibration.yaml"
 )
+HUMANIZE_EVIDENCE_RUNNER_COMPONENTS = (
+    "run_evals_ab.py",
+    "run_evals_assertions.py",
+    "run_evals_config_loader.py",
+    "run_evals_judge.py",
+    "run_evals_significance.py",
+    "run_evals_subject_port.py",
+    "run_evals_test_runner.py",
+    "node-provider-runtime/package.json",
+    "node-provider-runtime/package-lock.json",
+    "node-provider-runtime/provider-adapters.mjs",
+    "node-provider-runtime/provider-runners.mjs",
+    "node-provider-runtime/provider-runtime.mjs",
+)
 
 
 MARKDOWN_EMPHASIS_PATTERN = re.compile(r"[*_`]+")
@@ -101,6 +115,15 @@ def evaluation_category_names(repo_root: Path = REPO_ROOT) -> set[str]:
     return categories
 
 
+def humanize_evidence_runner_paths(repo_root: Path) -> set[Path]:
+    evaluation_root = repo_root / "agent-harness" / "quality" / "evaluations"
+    return {
+        path
+        for relative_path in HUMANIZE_EVIDENCE_RUNNER_COMPONENTS
+        if (path := evaluation_root / relative_path).is_file()
+    }
+
+
 def referenced_instruction_paths(repo_root: Path, suite_paths: set[Path]) -> set[Path]:
     paths = set()
     for suite_path in suite_paths:
@@ -139,7 +162,7 @@ def humanize_recovery_fingerprints(
     instruction_paths = referenced_instruction_paths(repo_root, suite_paths)
     return {
         "suite": digest_paths(
-            repo_root, suite_paths | evaluation_runner_paths(repo_root)
+            repo_root, suite_paths | humanize_evidence_runner_paths(repo_root)
         ),
         "instructions": digest_instruction_paths(repo_root, instruction_paths),
     }

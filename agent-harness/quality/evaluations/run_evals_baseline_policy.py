@@ -35,7 +35,7 @@ def preserved_evidence_profiles(
 
 def baseline_evidence_failures(
     baseline: dict,
-    current_fingerprints: dict[str, str],
+    current_test_fingerprints: dict[str, str],
     current_humanize_fingerprints: dict[str, str],
     current_categories: set[str],
     expected_execution_profile: dict,
@@ -57,6 +57,35 @@ def baseline_evidence_failures(
         failures.append(
             "Baseline contains obsolete evaluation categories: "
             + ", ".join(sorted(obsolete_inventory))
+        )
+    recorded_test_fingerprints = {
+        f"{category_name}::{test['name']}": test.get("fingerprint")
+        for category_name, bucket in baseline.get("categories", {}).items()
+        for test in bucket.get("tests", [])
+    }
+    current_test_keys = set(current_test_fingerprints)
+    recorded_test_keys = set(recorded_test_fingerprints)
+    missing_tests = current_test_keys - recorded_test_keys
+    obsolete_tests = recorded_test_keys - current_test_keys
+    stale_tests = {
+        key
+        for key in current_test_keys & recorded_test_keys
+        if recorded_test_fingerprints[key] != current_test_fingerprints[key]
+    }
+    if missing_tests:
+        failures.append(
+            "Baseline is missing current evaluation tests: "
+            + ", ".join(sorted(missing_tests))
+        )
+    if obsolete_tests:
+        failures.append(
+            "Baseline contains obsolete evaluation tests: "
+            + ", ".join(sorted(obsolete_tests))
+        )
+    if stale_tests:
+        failures.append(
+            "Baseline contains stale evaluation tests: "
+            + ", ".join(sorted(stale_tests))
         )
     missing_categories = REQUIRED_BASELINE_CATEGORIES - set(
         baseline.get("categories", {})
@@ -83,13 +112,6 @@ def baseline_evidence_failures(
         failures.append(
             f"Communication pass rate is below {MINIMUM_COMMUNICATION_PASS_RATE:.0%}"
         )
-
-    recorded_fingerprints = baseline.get("fingerprints", {})
-    for name, current_value in current_fingerprints.items():
-        if recorded_fingerprints.get(name) != current_value:
-            failures.append(
-                f"Baseline {name} fingerprint does not match the current source"
-            )
 
     profile = baseline.get("evidence_profiles", {}).get(REQUIRED_HUMANIZE_PROFILE)
     if not profile:

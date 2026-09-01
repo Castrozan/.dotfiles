@@ -1,5 +1,9 @@
 import run_evals_subject_port as subject_port
-from run_evals_provider_usage import provider_usage_summary, reset_provider_usage
+from run_evals_provider_usage import (
+    merge_provider_usage,
+    provider_usage_summary,
+    reset_provider_usage,
+)
 from run_evals_subject_port import invoke_subject
 
 
@@ -42,4 +46,25 @@ def test_usage_is_normalized_by_role_and_harness(monkeypatch):
                 "reasoning_output_tokens": 4,
             }
         }
+    }
+
+
+def test_usage_merge_accumulates_resumed_runs_without_double_counting():
+    first = {
+        "subject": {
+            "codex": {"invocations": 2, "input_tokens": 100, "output_tokens": 10}
+        }
+    }
+    second = {
+        "subject": {
+            "codex": {"invocations": 1, "input_tokens": 40, "output_tokens": 5}
+        },
+        "judge": {"codex": {"invocations": 1, "input_tokens": 20}},
+    }
+
+    assert merge_provider_usage(first, second) == {
+        "subject": {
+            "codex": {"invocations": 3, "input_tokens": 140, "output_tokens": 15}
+        },
+        "judge": {"codex": {"invocations": 1, "input_tokens": 20}},
     }
