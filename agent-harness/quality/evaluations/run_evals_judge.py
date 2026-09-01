@@ -1,3 +1,6 @@
+import re
+
+
 class JudgeInvocationError(RuntimeError):
     pass
 
@@ -8,13 +11,13 @@ def parse_judge_verdict(raw_verdict: str) -> tuple[bool, str]:
         return False, "no verdict"
 
     for line in reversed(stripped.splitlines()):
-        if "VERDICT:" in line.upper():
-            after_marker = line.upper().split("VERDICT:", 1)[1]
-            passed = "PASS" in after_marker and "FAIL" not in after_marker
+        verdict = re.search(r"\bVERDICT:\s*(PASS|FAIL)\b", line, re.IGNORECASE)
+        if verdict:
+            passed = verdict.group(1).upper() == "PASS"
             return passed, line.strip()
 
     first_line = stripped.splitlines()[0].strip()
-    return first_line.upper().startswith("PASS"), first_line
+    return bool(re.match(r"PASS\b", first_line, re.IGNORECASE)), first_line
 
 
 def build_llm_judge(model: str | None, cli_invoker):

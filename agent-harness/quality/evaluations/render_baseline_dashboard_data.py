@@ -5,6 +5,26 @@ from run_evals_baseline_history import (
 )
 
 
+USAGE_TOTAL_FIELDS = (
+    "invocations",
+    "measured_invocations",
+    "input_tokens",
+    "cached_input_tokens",
+    "cache_write_input_tokens",
+    "output_tokens",
+    "reasoning_output_tokens",
+)
+
+
+def summarize_token_usage(token_usage):
+    totals = {field: 0 for field in USAGE_TOTAL_FIELDS}
+    for harnesses in token_usage.values():
+        for usage in harnesses.values():
+            for field in USAGE_TOTAL_FIELDS:
+                totals[field] += usage.get(field, 0)
+    return totals
+
+
 def collect_baseline_revisions():
     revisions = []
     for (
@@ -28,6 +48,7 @@ def collect_baseline_revisions():
                 "rate": round(rate * 100, 1)
                 if isinstance(rate, (int, float))
                 else None,
+                "usage": summarize_token_usage(baseline.get("token_usage", {})),
             }
         )
     return revisions

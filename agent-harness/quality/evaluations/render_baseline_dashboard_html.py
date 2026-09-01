@@ -5,6 +5,7 @@ ATRIUM_QUALITY_URL = "/engineering/dotfiles/reports/quality/"
 
 def render_stat_cards(summary):
     latest = summary["latest"]
+    latest_usage = latest.get("usage", {})
     peak = summary["peak"]
     trough = summary["trough"]
     suite = (
@@ -17,6 +18,14 @@ def render_stat_cards(summary):
             "current pass rate",
             f"{latest['rate']}%",
             f"{latest['passed']}/{latest['total']} on {latest['date']}",
+        ),
+        (
+            "latest eval tokens",
+            f"{latest_usage.get('input_tokens', 0) + latest_usage.get('output_tokens', 0):,}",
+            f"{latest_usage.get('input_tokens', 0):,} input, "
+            f"{latest_usage.get('output_tokens', 0):,} output, "
+            f"{latest_usage.get('measured_invocations', 0):,}/"
+            f"{latest_usage.get('invocations', 0):,} measured",
         ),
         ("all-time high", f"{peak['rate']}%", f"{peak['date']} ({peak['commit']})"),
         (
@@ -101,7 +110,7 @@ reproduce on a standalone re-run are concurrency noise on long runs, not real re
 
 <h2>Every recorded baseline</h2>
 <table id="dataTable">
-<thead><tr><th>date</th><th>commit</th><th>passed</th><th>total</th><th>pass rate</th></tr></thead>
+<thead><tr><th>date</th><th>commit</th><th>passed</th><th>total</th><th>pass rate</th><th>measured</th><th>input tokens</th><th>cached input</th><th>cache write</th><th>output tokens</th><th>reasoning tokens</th></tr></thead>
 <tbody></tbody>
 </table>
 
@@ -145,7 +154,11 @@ const tbody = document.querySelector("#dataTable tbody");
 for (const r of revisions) {{
   const tr = document.createElement("tr");
   tr.innerHTML = `<td>${{r.date}}</td><td>${{r.commit}}</td><td>${{r.passed}}</td>` +
-                 `<td>${{r.total}}</td><td>${{r.rate}}%</td>`;
+                 `<td>${{r.total}}</td><td>${{r.rate}}%</td>` +
+                 `<td>${{r.usage.measured_invocations}}/${{r.usage.invocations}}</td>` +
+                 `<td>${{r.usage.input_tokens}}</td><td>${{r.usage.cached_input_tokens}}</td>` +
+                 `<td>${{r.usage.cache_write_input_tokens}}</td><td>${{r.usage.output_tokens}}</td>` +
+                 `<td>${{r.usage.reasoning_output_tokens}}</td>`;
   tbody.appendChild(tr);
 }}
 </script>

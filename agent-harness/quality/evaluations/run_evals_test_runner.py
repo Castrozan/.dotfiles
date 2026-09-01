@@ -92,6 +92,7 @@ def run_test(
         model_reasoning_effort=model_reasoning_effort,
         system_prompt=resolved_system_prompt,
         timeout=timeout,
+        max_turns=test.get("max_turns"),
         no_tools=test.get("no_tools", False),
         invocation_role="subject",
     )

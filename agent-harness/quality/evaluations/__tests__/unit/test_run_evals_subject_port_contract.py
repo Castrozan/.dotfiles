@@ -1,4 +1,5 @@
 import run_evals_subject_port as subject_port
+import run_evals_test_runner
 from run_evals_subject_port import build_subject_invocation, model_for_harness
 
 
@@ -26,6 +27,7 @@ def test_invocation_is_a_normalized_payload_without_provider_concepts():
         model_reasoning_effort="low",
         system_prompt="SYS",
         timeout=90,
+        max_turns=2,
         no_tools=False,
         working_directory=None,
         result_file="/tmp/result.json",
@@ -38,6 +40,31 @@ def test_invocation_is_a_normalized_payload_without_provider_concepts():
         "system_prompt": "SYS",
         "working_directory": str(subject_port.EVAL_WORKING_DIRECTORY),
         "timeout": 90,
+        "max_turns": 2,
         "no_tools": False,
         "result_file": "/tmp/result.json",
     }
+
+
+def test_subject_runner_passes_the_declared_turn_limit(monkeypatch):
+    invocation = {}
+
+    def invoke(harness, **keyword_arguments):
+        invocation.update(keyword_arguments)
+        return "candidate answer", True
+
+    monkeypatch.setattr(subject_port, "invoke_subject", invoke)
+
+    result = run_evals_test_runner.run_test(
+        {
+            "name": "bounded_subject",
+            "prompt": "answer",
+            "max_turns": 2,
+            "assertions": {"output_contains": ["candidate"]},
+        },
+        settings={},
+        harness="claude",
+    )
+
+    assert result.passed is True
+    assert invocation["max_turns"] == 2
