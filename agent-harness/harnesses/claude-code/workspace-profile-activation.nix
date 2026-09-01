@@ -4,11 +4,7 @@
   interactiveSessionSystemPromptText,
 }:
 let
-  settingsOverlayFile =
-    workspaceProfile:
-    pkgs.writeText "claude-workspace-profile-${workspaceProfile.name}-settings.json" (
-      builtins.toJSON workspaceProfile.claudeCode.settingsOverlay
-    );
+  settingsOverlayFile = import ./workspace-profile-settings-overlay.nix { inherit pkgs; };
 
   systemPromptFile =
     workspaceProfile:

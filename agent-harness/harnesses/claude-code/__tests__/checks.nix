@@ -34,6 +34,19 @@ let
       == testMachinePrivateMarketplacePlugins.extraKnownMarketplaces
       && (deployedSettings.enabledPlugins or { }) == testMachinePrivateMarketplacePlugins.enabledPlugins
     );
+  updateEnabledPluginsActivation = cfg.home.activation.updateEnabledClaudePlugins.data;
+
+  workspaceProfilesDeclaringPlugins = lib.filter (
+    workspaceProfile: workspaceProfile.claudeCode ? settingsOverlay
+  ) cfg.agentWorkspaceProfiles.profiles;
+
+  everyEnabledPluginSourceReachesThePluginUpdate =
+    lib.hasInfix ".claude/settings.json.nix-source" updateEnabledPluginsActivation
+    && builtins.all (
+      workspaceProfile:
+      lib.hasInfix "claude-workspace-profile-${workspaceProfile.name}-settings.json" updateEnabledPluginsActivation
+    ) workspaceProfilesDeclaringPlugins;
+
   darwinCfg = helpers.homeManagerTestConfigurationForDarwin [
     self.homeManagerModules.claude-code
   ];
@@ -84,6 +97,11 @@ in
     mkEvalCheck "claude-private-marketplace-plugins-folded-into-settings"
       privateMarketplacePluginsAreFoldedIntoSettings
       "when a private-configuration/machines/<hostname>/claude-plugins.nix exists, global-settings.nix must fold its extraKnownMarketplaces and enabledPlugins into the deployed settings.json.nix-source; a dropped `// privateMarketplacePlugins` would silently regress the only path that installs the per-machine plugin";
+
+  claude-plugin-update-reads-every-enabled-plugin-source =
+    mkEvalCheck "claude-plugin-update-reads-every-enabled-plugin-source"
+      everyEnabledPluginSourceReachesThePluginUpdate
+      "a workspace profile is the only place some machines turn a plugin on, so the update activation has to read every profile's settings overlay alongside the user-scope nix source; reading the nix source alone leaves each profile-scoped plugin frozen at the version it was first installed with, and no rebuild ever moves it";
 
   claude-home-carries-no-nix-modules =
     mkEvalCheck "claude-home-carries-no-nix-modules"

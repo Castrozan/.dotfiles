@@ -3,24 +3,25 @@ import pathlib
 import subprocess
 import sys
 
-claude_settings_nix_source_path = (
-    pathlib.Path.home() / ".claude" / "settings.json.nix-source"
-)
 
-
-def read_enabled_plugin_keys() -> list[str]:
-    if not claude_settings_nix_source_path.exists():
-        return []
-    try:
-        settings = json.loads(claude_settings_nix_source_path.read_text())
-    except json.JSONDecodeError:
-        return []
-    enabled_plugins = settings.get("enabledPlugins", {})
-    if not isinstance(enabled_plugins, dict):
-        return []
-    return sorted(
-        plugin_key for plugin_key, enabled in enabled_plugins.items() if enabled is True
-    )
+def read_enabled_plugin_keys(settings_paths: list[pathlib.Path]) -> list[str]:
+    enabled_plugin_keys: set[str] = set()
+    for settings_path in settings_paths:
+        if not settings_path.exists():
+            continue
+        try:
+            settings = json.loads(settings_path.read_text())
+        except json.JSONDecodeError:
+            continue
+        enabled_plugins = settings.get("enabledPlugins", {})
+        if not isinstance(enabled_plugins, dict):
+            continue
+        enabled_plugin_keys.update(
+            plugin_key
+            for plugin_key, enabled in enabled_plugins.items()
+            if enabled is True
+        )
+    return sorted(enabled_plugin_keys)
 
 
 def run_claude_plugin_command(arguments: list[str]) -> tuple[bool, str]:
@@ -47,7 +48,8 @@ def update_plugins(enabled_plugin_keys: list[str]) -> None:
 
 
 def main() -> int:
-    enabled_plugin_keys = read_enabled_plugin_keys()
+    settings_paths = [pathlib.Path(argument) for argument in sys.argv[1:]]
+    enabled_plugin_keys = read_enabled_plugin_keys(settings_paths)
     if not enabled_plugin_keys:
         return 0
     update_plugins(enabled_plugin_keys)
