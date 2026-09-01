@@ -1,7 +1,7 @@
 import json
-from datetime import datetime, timezone
 
 from run_evals_baseline_history import (
+    baseline_evidence_age_days,
     baseline_regression_failure,
     baseline_staleness_failure,
     previous_committed_baseline_pass_rate,
@@ -72,8 +72,7 @@ def check_baseline_for_regression(
         )
     )
 
-    generated_at = datetime.fromisoformat(baseline["generated_at"])
-    age_days = (datetime.now(timezone.utc) - generated_at).days
+    age_days = baseline_evidence_age_days(baseline)
 
     current_passed = sum(bucket["passed"] for bucket in current_categories.values())
     current_total = sum(
@@ -115,6 +114,10 @@ def check_baseline_for_regression(
     print("EVAL BASELINE CHECK")
     print("=" * 60)
     print(f"  Generated: {baseline['generated_at']}")
+    print(
+        "  Oldest evidence: "
+        f"{baseline.get('oldest_evidence_at', baseline['generated_at'])}"
+    )
     print(f"  Age: {age_days} days (freshness window {MAXIMUM_BASELINE_AGE_DAYS})")
     print(f"  Commit: {baseline.get('git_commit', 'unknown')}")
     print(

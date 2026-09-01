@@ -78,6 +78,10 @@ def build_epoch_enriched_baseline(
                 "fingerprint": test_fingerprints[f"{test['category']}::{test['name']}"],
                 "generated_at": generated_at,
                 "execution_profile_id": execution_profile_id,
+                "run_source": {
+                    "kind": "repeated_sampling",
+                    "git_commit": git_commit,
+                },
             }
         )
         bucket["passed" if majority_passed else "failed"] += 1
@@ -88,11 +92,13 @@ def build_epoch_enriched_baseline(
     total_passed = sum(bucket["passed"] for bucket in categories.values())
     return {
         "generated_at": generated_at,
+        "oldest_evidence_at": generated_at,
         "git_commit": git_commit,
         "total_tests": total_tests,
         "total_passed": total_passed,
         "total_failed": total_tests - total_passed,
         "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
+        "minimum_current_evidence": total_tests,
         "categories": dict(sorted(categories.items())),
         "fingerprints": fingerprints,
         "execution_profile": execution_profile,

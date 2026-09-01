@@ -59,7 +59,17 @@ def test_category_refresh_preserves_other_baseline_categories(monkeypatch):
         "generated_at": "2026-07-24T03:26:24+00:00",
         "execution_profile": EXECUTION_PROFILE,
         "categories": {
-            "existing": {"passed": 2, "failed": 1, "tests": []},
+            "existing": {
+                "passed": 2,
+                "failed": 1,
+                "tests": [
+                    {
+                        "name": "retained",
+                        "passed": True,
+                        "generated_at": "2026-07-23T03:26:24+00:00",
+                    }
+                ],
+            },
             "communication": {"passed": 1, "failed": 1, "tests": []},
         },
     }
@@ -73,7 +83,8 @@ def test_category_refresh_preserves_other_baseline_categories(monkeypatch):
     assert merged["categories"]["communication"] == replacement
     assert merged["total_passed"] == 5
     assert merged["total_tests"] == 6
-    assert merged["generated_at"] == baseline["generated_at"]
+    assert merged["generated_at"] != baseline["generated_at"]
+    assert merged["oldest_evidence_at"] == "2026-07-23T03:26:24+00:00"
 
 
 def test_selected_category_snapshot_merges_into_the_committed_baseline(

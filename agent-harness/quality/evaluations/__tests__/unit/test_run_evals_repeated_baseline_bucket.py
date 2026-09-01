@@ -1,4 +1,7 @@
-from run_evals_baseline_record import repeated_outcomes_category_bucket
+from run_evals_baseline_record import (
+    get_current_git_commit,
+    repeated_outcomes_category_bucket,
+)
 from run_evals_execution_profile import execution_profile_identifier
 
 
@@ -31,4 +34,8 @@ def test_repeated_outcomes_become_a_majority_graded_category_bucket():
         "fingerprint": "flaky-sha",
         "generated_at": "2026-09-01T00:00:00+00:00",
         "execution_profile_id": execution_profile_identifier(EXECUTION_PROFILE),
+        "run_source": {
+            "kind": "repeated_sampling",
+            "git_commit": get_current_git_commit(),
+        },
     }

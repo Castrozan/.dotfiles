@@ -53,16 +53,24 @@ def merge_baseline_categories(
         bucket["passed"] + bucket["failed"] for bucket in categories.values()
     )
     execution_profile_id = execution_profile_identifier(execution_profile)
-    generated_at = (
-        existing_baseline.get("generated_at") or datetime.now(timezone.utc).isoformat()
-    )
+    generated_at = datetime.now(timezone.utc).isoformat()
+    evidence_timestamps = [
+        entry["generated_at"]
+        for bucket in categories.values()
+        for entry in bucket.get("tests", [])
+        if entry.get("generated_at")
+    ]
     return {
         "generated_at": generated_at,
+        "oldest_evidence_at": min(evidence_timestamps, default=generated_at),
         "git_commit": get_current_git_commit(),
         "total_tests": total_tests,
         "total_passed": total_passed,
         "total_failed": total_tests - total_passed,
         "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
+        "minimum_current_evidence": existing_baseline.get(
+            "minimum_current_evidence", 1
+        ),
         "categories": dict(sorted(categories.items())),
         "fingerprints": evaluation_fingerprints(),
         "execution_profile": execution_profile,
@@ -82,6 +90,7 @@ def repeated_outcomes_category_bucket(
     execution_profile: dict,
 ) -> dict:
     execution_profile_id = execution_profile_identifier(execution_profile)
+    git_commit = get_current_git_commit()
     tests = []
     for outcome_key, samples in sorted(outcomes.items()):
         name = outcome_key.split("::", 1)[-1]
@@ -95,6 +104,10 @@ def repeated_outcomes_category_bucket(
                 "fingerprint": fingerprints[outcome_key],
                 "generated_at": generated_at,
                 "execution_profile_id": execution_profile_id,
+                "run_source": {
+                    "kind": "repeated_sampling",
+                    "git_commit": git_commit,
+                },
             }
         )
     passed = sum(test["passed"] for test in tests)

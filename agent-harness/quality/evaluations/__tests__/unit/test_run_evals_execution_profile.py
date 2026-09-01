@@ -62,7 +62,11 @@ def test_category_merge_writes_execution_profile_and_token_usage(monkeypatch):
         "evaluation_category_names",
         lambda: {"communication"},
     )
-    baseline = {}
+    baseline = {
+        "minimum_current_evidence": 7,
+        "execution_profile": EXECUTION_PROFILE,
+        "categories": {},
+    }
     merged = merge_baseline_categories(
         baseline,
         {"communication": {"passed": 3, "failed": 0, "tests": []}},
@@ -71,6 +75,7 @@ def test_category_merge_writes_execution_profile_and_token_usage(monkeypatch):
     )
     assert merged["execution_profile"] == EXECUTION_PROFILE
     assert merged["token_usage"] == TOKEN_USAGE
+    assert merged["minimum_current_evidence"] == 7
 
 
 def test_category_merge_rejects_a_mismatched_or_missing_existing_profile():

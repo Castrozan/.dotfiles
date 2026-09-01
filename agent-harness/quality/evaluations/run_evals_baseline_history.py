@@ -1,11 +1,21 @@
 import json
 import subprocess
+from datetime import datetime, timezone
 
 from run_evals_worktree_and_environment import REPO_ROOT
 
 BASELINE_REPOSITORY_PATH = "agent-harness/quality/evaluations/baseline.json"
 COMMIT_RECORD_PREFIX = "commit "
 RESET_PLACEHOLDER_TOTAL_TESTS = 1
+
+
+def baseline_evidence_age_days(
+    baseline: dict, current_time: datetime | None = None
+) -> int:
+    evidence_timestamp = baseline.get("oldest_evidence_at", baseline["generated_at"])
+    generated_at = datetime.fromisoformat(evidence_timestamp)
+    now = current_time or datetime.now(timezone.utc)
+    return (now - generated_at).days
 
 
 def commits_touching_baseline():
