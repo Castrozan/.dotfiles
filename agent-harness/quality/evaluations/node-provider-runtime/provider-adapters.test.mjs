@@ -129,20 +129,23 @@ test("codex thread options omit reasoning effort when not given", () => {
   assert.equal(threadOptions.modelReasoningEffort, undefined);
 });
 
-test("codex omits the binary override and prefixes the system prompt", () => {
+test("codex routes system instructions through vendor config", () => {
   delete process.env.AGENT_EVAL_CODEX_BINARY;
   assert.deepEqual(codexOptions(invocation()), {});
-  assert.equal(
-    codexInput(invocation({ system_prompt: "SYS" })),
-    "SYS\n\nrespond",
-  );
+  assert.deepEqual(codexOptions(invocation({ system_prompt: "SYS" })), {
+    config: { developer_instructions: "SYS" },
+  });
+  assert.equal(codexInput(invocation({ system_prompt: "SYS" })), "respond");
   assert.equal(codexInput(invocation()), "respond");
 });
 
 test("codex no_tools supplies config overrides that disable agent tool use", () => {
   delete process.env.AGENT_EVAL_CODEX_BINARY;
-  const options = codexOptions(invocation({ no_tools: true }));
+  const options = codexOptions(
+    invocation({ no_tools: true, system_prompt: "SYS" }),
+  );
   assert.deepEqual(options.config, {
+    developer_instructions: "SYS",
     apps: { _default: { enabled: false } },
     mcp_servers: {},
     tools: { view_image: false, web_search: false },

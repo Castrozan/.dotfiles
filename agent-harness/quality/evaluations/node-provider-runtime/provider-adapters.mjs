@@ -73,14 +73,17 @@ export function codexOptions(invocation) {
   const options = {};
   const binary = process.env.AGENT_EVAL_CODEX_BINARY;
   if (binary) options.codexPathOverride = binary;
-  if (invocation.no_tools) {
-    options.config = {
-      apps: { _default: { enabled: false } },
-      mcp_servers: {},
-      tools: { view_image: false, web_search: false },
-      features: { ...CODEX_NO_TOOLS_FEATURES },
-    };
+  const config = {};
+  if (invocation.system_prompt) {
+    config.developer_instructions = invocation.system_prompt;
   }
+  if (invocation.no_tools) {
+    config.apps = { _default: { enabled: false } };
+    config.mcp_servers = {};
+    config.tools = { view_image: false, web_search: false };
+    config.features = { ...CODEX_NO_TOOLS_FEATURES };
+  }
+  if (Object.keys(config).length > 0) options.config = config;
   return options;
 }
 
@@ -102,8 +105,7 @@ export function codexThreadOptions(invocation) {
 }
 
 export function codexInput(invocation) {
-  if (!invocation.system_prompt) return invocation.prompt;
-  return `${invocation.system_prompt}\n\n${invocation.prompt}`;
+  return invocation.prompt;
 }
 
 export function openCodeConfig(invocation) {

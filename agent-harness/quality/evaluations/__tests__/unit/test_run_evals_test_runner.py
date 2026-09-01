@@ -152,7 +152,7 @@ def test_codex_subject_and_judge_use_their_pinned_models_and_reasoning(monkeypat
     assert result.passed is True
     assert invocations[0][0] == "codex"
     assert invocations[0][1]["model"] == "gpt-5.6-sol"
-    assert invocations[0][1]["model_reasoning_effort"] == "medium"
+    assert invocations[0][1]["model_reasoning_effort"] == "high"
     assert invocations[0][1]["invocation_role"] == "subject"
     assert invocations[1][0] == "codex"
     assert invocations[1][1]["model"] == "gpt-5.6-luna"
