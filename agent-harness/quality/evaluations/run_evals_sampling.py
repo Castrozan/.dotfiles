@@ -52,11 +52,6 @@ def build_epoch_enriched_baseline(
     existing_baseline = (
         json.loads(BASELINE_PATH.read_text()) if BASELINE_PATH.exists() else {}
     )
-    if (
-        existing_baseline
-        and existing_baseline.get("execution_profile") != execution_profile
-    ):
-        raise ValueError("existing baseline execution profile does not match")
     categories = {}
     total_samples = 0
     total_sample_passes = 0

@@ -123,3 +123,30 @@ def test_baseline_policy_rejects_a_mismatched_execution_profile():
         OTHER_EXECUTION_PROFILE,
     )
     assert any("execution profile" in failure for failure in failures)
+
+
+def test_baseline_policy_rejects_a_mismatched_evidence_profile():
+    baseline = {
+        "categories": {},
+        "execution_profile": EXECUTION_PROFILE,
+        "evidence_profiles": {
+            REQUIRED_HUMANIZE_PROFILE: {
+                "epochs": 3,
+                "candidate_pass_rate": 0.95,
+                "delta": 0.05,
+                "candidate_hard_failures": [],
+                "fingerprints": FINGERPRINTS,
+                "execution_profile": OTHER_EXECUTION_PROFILE,
+            }
+        },
+    }
+
+    failures = baseline_evidence_failures(
+        baseline,
+        FINGERPRINTS,
+        FINGERPRINTS,
+        set(baseline["categories"]),
+        EXECUTION_PROFILE,
+    )
+
+    assert any("Humanize recovery execution profile" in failure for failure in failures)

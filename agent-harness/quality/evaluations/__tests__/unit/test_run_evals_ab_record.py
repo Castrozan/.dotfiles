@@ -10,6 +10,7 @@ EXECUTION_PROFILE = {
     "judge": {"harness": "claude", "model": "opus", "reasoning_effort": None},
 }
 TOKEN_USAGE = {"input_tokens": 100, "output_tokens": 50}
+BASELINE_TOKEN_USAGE = {"input_tokens": 1000, "output_tokens": 500}
 
 
 def valid_comparison():
@@ -55,7 +56,8 @@ def test_ab_profile_requires_repeated_absolute_and_control_gates(tmp_path, monke
 
 def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
     baseline_path = tmp_path / "baseline.json"
-    baseline_path.write_text("{}")
+    baseline_path.write_text(json.dumps({"token_usage": BASELINE_TOKEN_USAGE}))
+    observed = {}
     monkeypatch.setattr(run_evals_ab_record, "BASELINE_PATH", baseline_path)
     monkeypatch.setattr(
         run_evals_ab_record,
@@ -65,8 +67,10 @@ def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
     monkeypatch.setattr(
         run_evals_ab_record,
         "merge_baseline_categories",
-        lambda baseline, replacements, execution_profile, token_usage: baseline
-        | {"categories": replacements},
+        lambda baseline, replacements, execution_profile, token_usage: observed.update(
+            token_usage=token_usage
+        )
+        or baseline | {"categories": replacements},
     )
 
     save_ab_profile(
@@ -89,3 +93,4 @@ def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
     }
     assert profile["execution_profile"] == EXECUTION_PROFILE
     assert profile["token_usage"] == TOKEN_USAGE
+    assert observed["token_usage"] == BASELINE_TOKEN_USAGE

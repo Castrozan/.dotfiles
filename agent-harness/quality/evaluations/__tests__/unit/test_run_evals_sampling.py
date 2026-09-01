@@ -109,7 +109,9 @@ def test_epoch_baseline_ties_toward_pass_on_an_even_split(tmp_path, monkeypatch)
     assert baseline["categories"]["core_rules"]["failed"] == 0
 
 
-def test_epoch_baseline_buckets_by_category_and_uses_majority_vote(tmp_path, monkeypatch):
+def test_epoch_baseline_buckets_by_category_and_uses_majority_vote(
+    tmp_path, monkeypatch
+):
     _isolate_baseline(tmp_path, monkeypatch)
     per_test = aggregate_repeated_runs(
         [
@@ -146,7 +148,9 @@ def test_epoch_baseline_buckets_by_category_and_uses_majority_vote(tmp_path, mon
     assert baseline["token_usage"] == TOKEN_USAGE
 
 
-def test_epoch_baseline_carries_provenance_and_omits_pass_at_2_for_one_epoch(tmp_path, monkeypatch):
+def test_epoch_baseline_carries_provenance_and_omits_pass_at_2_for_one_epoch(
+    tmp_path, monkeypatch
+):
     _isolate_baseline(tmp_path, monkeypatch)
     per_test = aggregate_repeated_runs([_epoch(("a", True, "review"))])
 
@@ -163,3 +167,21 @@ def test_epoch_baseline_carries_provenance_and_omits_pass_at_2_for_one_epoch(tmp
     assert baseline["generated_at"] == "2026-07-23T00:00:00+00:00"
     assert baseline["sampling"]["suite_pass_at_2"] is None
     assert baseline["sampling"]["suite_pass_at_1"] == 1.0
+
+
+def test_full_epoch_baseline_replaces_another_execution_profile(tmp_path, monkeypatch):
+    baseline_path = tmp_path / "baseline.json"
+    baseline_path.write_text('{"execution_profile":{"subject":{"harness":"codex"}}}')
+    monkeypatch.setattr(run_evals_sampling, "BASELINE_PATH", baseline_path)
+    per_test = aggregate_repeated_runs([_epoch(("a", True, "review"))])
+
+    baseline = build_epoch_enriched_baseline(
+        per_test,
+        3,
+        "deadbeef",
+        "2026-07-23T00:00:00+00:00",
+        EXECUTION_PROFILE,
+        TOKEN_USAGE,
+    )
+
+    assert baseline["execution_profile"] == EXECUTION_PROFILE

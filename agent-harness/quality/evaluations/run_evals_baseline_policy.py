@@ -95,6 +95,10 @@ def baseline_evidence_failures(
     if not profile:
         failures.append("Baseline is missing the repeated Humanize recovery profile")
         return failures
+    if profile.get("execution_profile") != expected_execution_profile:
+        failures.append(
+            "Humanize recovery execution profile does not match the expected profile"
+        )
     if profile.get("epochs", 0) < MINIMUM_HUMANIZE_PROFILE_EPOCHS:
         failures.append(
             "Humanize recovery profile needs at least "

@@ -25,6 +25,7 @@ def save_ab_profile(
     if comparison.get("candidate_hard_failures"):
         raise ValueError("candidate recovery profile contains a hard-failed case")
     baseline = json.loads(BASELINE_PATH.read_text())
+    baseline_token_usage = baseline.get("token_usage", {})
     fingerprints = humanize_recovery_fingerprints()
     profile = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -58,6 +59,6 @@ def save_ab_profile(
             )
         },
         execution_profile,
-        token_usage,
+        baseline_token_usage,
     )
     BASELINE_PATH.write_text(json.dumps(baseline, indent=2) + "\n")
