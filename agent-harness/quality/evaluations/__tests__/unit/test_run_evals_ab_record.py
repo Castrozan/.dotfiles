@@ -88,3 +88,4 @@ def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
         "instructions": "humanize",
     }
     assert profile["execution_profile"] == EXECUTION_PROFILE
+    assert profile["token_usage"] == TOKEN_USAGE

@@ -7,7 +7,6 @@ import {
   codexInput,
   codexOptions,
   codexThreadOptions,
-  validationError,
 } from "./provider-adapters.mjs";
 
 function invocation(overrides = {}) {
@@ -159,19 +158,5 @@ test("codex no_tools keeps the binary override and config overrides", () => {
     assert.equal(options.config.features.apps, false);
   } finally {
     delete process.env.AGENT_EVAL_CODEX_BINARY;
-  }
-});
-
-test("codex no_tools is accepted by the edge", () => {
-  const closedError = validationError({
-    harness: "codex",
-    no_tools: true,
-  });
-  assert.equal(closedError, null);
-});
-
-test("non-codex no_tools is not rejected by the edge", () => {
-  for (const harness of ["claude", "opencode"]) {
-    assert.equal(validationError({ harness, no_tools: true }), null);
   }
 });

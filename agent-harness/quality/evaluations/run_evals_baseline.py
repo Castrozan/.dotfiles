@@ -35,7 +35,7 @@ def compliance_passed_and_total(categories: dict) -> tuple[int, int]:
     return policy_compliance_passed_and_total(categories, COMPLIANCE_CATEGORIES)
 
 
-def check_baseline_for_regression() -> bool:
+def check_baseline_for_regression(expected_execution_profile: dict) -> bool:
     if not BASELINE_PATH.exists():
         print(
             "FAIL: No baseline file found at agent-harness/quality/evaluations/baseline.json"
@@ -53,7 +53,7 @@ def check_baseline_for_regression() -> bool:
             evaluation_fingerprints(),
             humanize_recovery_fingerprints(),
             evaluation_category_names(),
-            baseline.get("execution_profile"),
+            expected_execution_profile,
         )
     )
 
@@ -79,7 +79,7 @@ def check_baseline_for_regression() -> bool:
             )
 
     previous_pass_rate = previous_committed_baseline_pass_rate(
-        baseline.get("execution_profile")
+        expected_execution_profile
     )
     regression = baseline_regression_failure(
         overall_pass_rate, previous_pass_rate, MAXIMUM_REGRESSION_DROP

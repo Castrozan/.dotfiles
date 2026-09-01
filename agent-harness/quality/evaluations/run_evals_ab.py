@@ -2,7 +2,7 @@ import copy
 
 from run_evals_significance import paired_comparison, paired_hierarchical_bootstrap
 from run_evals_evidence import raise_for_evaluation_errors
-from run_evals_test_runner import run_tests
+from run_evals_suite_runner import run_tests
 
 INSTRUCTION_SURFACE_FIELDS = (
     "system_prompt",
@@ -42,6 +42,7 @@ def run_instruction_loading_experiment(
     comparison_ref: str | None = None,
     dry_run: bool = False,
     harness: str = "claude",
+    judge_harness: str = "claude",
 ) -> dict:
     variant_a: dict[str, list[bool]] = {}
     variant_b: dict[str, list[bool]] = {}
@@ -56,6 +57,7 @@ def run_instruction_loading_experiment(
             max_workers_override=max_workers_override,
             dry_run=dry_run,
             harness=harness,
+            judge_harness=judge_harness,
         )
 
     def run_control():
@@ -66,6 +68,7 @@ def run_instruction_loading_experiment(
             instruction_ref=comparison_ref,
             dry_run=dry_run,
             harness=harness,
+            judge_harness=judge_harness,
         )
 
     for epoch_index in range(epochs):

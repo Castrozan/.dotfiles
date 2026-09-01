@@ -168,7 +168,3 @@ export function normalizeRequestError(error) {
   }
   return String(error);
 }
-
-export function validationError() {
-  return null;
-}

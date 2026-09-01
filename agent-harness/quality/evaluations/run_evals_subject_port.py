@@ -10,6 +10,7 @@ from run_evals_worktree_and_environment import (
     EVAL_WORKING_DIRECTORY,
     build_filtered_environment,
 )
+from run_evals_provider_usage import record_provider_invocation, record_provider_usage
 
 NODE_RUNTIME_OVERRIDE = "AGENT_EVAL_NODE_RUNTIME"
 NODE_RUNTIME_BINARY = "agent-eval-provider"
@@ -19,7 +20,6 @@ ALLOWED_HARNESSES = ("claude", "codex", "opencode")
 TRANSIENT_RETRY_ATTEMPTS = 2
 TRANSIENT_RETRY_BACKOFF_SECONDS = 3
 NON_RETRYABLE_FAILURE_MARKERS = (
-    "cannot enforce no_tools",
     "session limit",
     "usage limit",
     "not logged in",
@@ -30,14 +30,20 @@ RESULT_WRITE_TIMEOUT_SECONDS = 5
 RUNTIME_CLEANUP_GRACE_SECONDS = 5
 
 
-def build_claude_judge_invoker(timeout: int = 120):
+def build_provider_invoker(
+    harness: str,
+    timeout: int = 120,
+    model_reasoning_effort: str | None = None,
+):
     def invoke(judge_prompt, model="opus", no_tools=False):
         return invoke_subject(
-            "claude",
+            harness,
             prompt=judge_prompt,
             model=model,
+            model_reasoning_effort=model_reasoning_effort,
             timeout=timeout,
             no_tools=no_tools,
+            invocation_role="judge",
         )
 
     return invoke
@@ -62,14 +68,14 @@ def resolve_node_runtime() -> str:
 
 
 def model_for_harness(
-    test: dict, harness: str, default_model: str | None
+    test: dict, harness: str, default_models: dict[str, str]
 ) -> str | None:
     named_models = test.get("models") or {}
     if harness in named_models:
         return named_models[harness]
     if harness == "claude":
-        return test.get("model", default_model)
-    return None
+        return test.get("model", default_models.get(harness))
+    return default_models.get(harness)
 
 
 def build_subject_invocation(
@@ -77,6 +83,7 @@ def build_subject_invocation(
     *,
     prompt: str,
     model: str | None,
+    model_reasoning_effort: str | None,
     system_prompt: str | None,
     timeout: int,
     no_tools: bool,
@@ -87,6 +94,7 @@ def build_subject_invocation(
         "harness": harness,
         "prompt": prompt,
         "model": model,
+        "model_reasoning_effort": model_reasoning_effort,
         "system_prompt": system_prompt,
         "working_directory": str(working_directory or EVAL_WORKING_DIRECTORY),
         "timeout": timeout,
@@ -118,10 +126,12 @@ def invoke_subject(
     *,
     prompt: str,
     model: str | None = None,
+    model_reasoning_effort: str | None = None,
     system_prompt: str | None = None,
     timeout: int = 120,
     no_tools: bool = False,
     working_directory: Path | None = None,
+    invocation_role: str = "subject",
 ) -> tuple[str, bool]:
     runtime_command = resolve_node_runtime()
 
@@ -131,6 +141,7 @@ def invoke_subject(
             harness=harness,
             prompt=prompt,
             model=model,
+            model_reasoning_effort=model_reasoning_effort,
             system_prompt=system_prompt,
             timeout=timeout,
             no_tools=no_tools,
@@ -140,6 +151,7 @@ def invoke_subject(
         last_transient_failure = ""
         for attempt in range(TRANSIENT_RETRY_ATTEMPTS + 1):
             result_file_path.unlink(missing_ok=True)
+            record_provider_invocation(invocation_role, harness)
             try:
                 subprocess.run(
                     [runtime_command],
@@ -158,6 +170,7 @@ def invoke_subject(
                 return str(error), False
             else:
                 result = read_result_file(result_file_path)
+                record_provider_usage(invocation_role, harness, result.get("usage"))
                 error_text = result.get("error")
                 output_text = result.get("output")
                 if error_text is None:

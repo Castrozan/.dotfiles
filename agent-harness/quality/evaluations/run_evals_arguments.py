@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 
 from run_evals_subject_port import ALLOWED_HARNESSES
-from run_evals_test_runner import DEFAULT_PARALLEL_WORKERS
+from run_evals_suite_runner import DEFAULT_PARALLEL_WORKERS
 
 
 def parse_arguments():
@@ -56,9 +56,15 @@ def parse_arguments():
     )
     parser.add_argument(
         "--harness",
-        default="claude",
+        default="codex",
         choices=ALLOWED_HARNESSES,
-        help="Agent harness to invoke as the evaluation subject (default: claude)",
+        help="Agent harness to invoke as the evaluation subject (default: codex)",
+    )
+    parser.add_argument(
+        "--judge-harness",
+        default="codex",
+        choices=ALLOWED_HARNESSES,
+        help="Agent harness to invoke as the rubric judge (default: codex)",
     )
     args = parser.parse_args()
     if args.compare_ref and not args.ab:
@@ -73,6 +79,8 @@ def parse_arguments():
         parser.error("dry-run results cannot be saved as evidence")
     if args.save_baseline and args.test:
         parser.error("a one-test run cannot replace a baseline category")
-    if args.harness != "claude" and (args.save_baseline or args.save_ab_profile):
-        parser.error("committed baseline evidence is currently Claude-only")
+    if (args.save_baseline or args.save_ab_profile) and (
+        args.harness != "codex" or args.judge_harness != "codex"
+    ):
+        parser.error("committed baseline evidence requires Codex subject and judge")
     return args

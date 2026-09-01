@@ -1,15 +1,11 @@
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
 from run_evals_assertions import check_assertions
 from run_evals_hook_test_runner import evaluate_hook_test
 from run_evals_judge import JudgeInvocationError, build_llm_judge
 from run_evals_config_loader import resolve_system_prompt_for_test
-from run_evals_progress import EvaluationProgressReporter
 import run_evals_subject_port as subject_port
-
-DEFAULT_PARALLEL_WORKERS = 2
 
 
 @dataclass
@@ -32,11 +28,13 @@ def run_test(
     authored_category: str = "other",
     instruction_ref: str | None = None,
     harness: str = "claude",
+    judge_harness: str = "claude",
 ) -> TestResult:
     name = test["name"]
     model = subject_port.model_for_harness(
-        test, harness, settings.get("default_model", "sonnet")
+        test, harness, settings.get("subject_models", {"claude": "sonnet"})
     )
+    model_reasoning_effort = settings.get("subject_reasoning_efforts", {}).get(harness)
     timeout = settings.get("timeout_seconds", 120)
 
     if test.get("type") == "hook_test":
@@ -91,9 +89,11 @@ def run_test(
         harness,
         prompt=prompt,
         model=model,
+        model_reasoning_effort=model_reasoning_effort,
         system_prompt=resolved_system_prompt,
         timeout=timeout,
         no_tools=test.get("no_tools", False),
+        invocation_role="subject",
     )
 
     duration = time.time() - start_time
@@ -113,8 +113,12 @@ def run_test(
     judge = None
     if "llm_judge" in assertions:
         judge = build_llm_judge(
-            settings.get("judge_model", "opus"),
-            subject_port.build_claude_judge_invoker(timeout),
+            settings.get("judge_models", {"claude": "opus"})[judge_harness],
+            subject_port.build_provider_invoker(
+                judge_harness,
+                timeout,
+                settings.get("judge_reasoning_efforts", {}).get(judge_harness),
+            ),
         )
     try:
         failures = check_assertions(output, assertions, judge=judge)
@@ -137,62 +141,3 @@ def run_test(
         assertions_failed=failures,
         category=authored_category,
     )
-
-
-def run_tests(
-    config: dict,
-    category: str | None = None,
-    test_name: str | None = None,
-    dry_run: bool = False,
-    smoke_only: bool = False,
-    max_workers_override: int | None = None,
-    instruction_ref: str | None = None,
-    harness: str = "claude",
-) -> list[TestResult]:
-    settings = config.get("settings", {})
-
-    if smoke_only:
-        smoke = config.get("smoke_test")
-        if smoke:
-            return [run_test(smoke, settings, dry_run, "smoke", harness=harness)]
-        return []
-
-    tests_config = config.get("tests", {})
-    tests_to_run = []
-
-    for cat_name, tests in tests_config.items():
-        if category and cat_name != category:
-            continue
-
-        for test in tests:
-            if test_name and test["name"] != test_name:
-                continue
-            tests_to_run.append((test, cat_name))
-
-    if dry_run or len(tests_to_run) <= 1:
-        return [
-            run_test(test, settings, dry_run, cat_name, instruction_ref, harness)
-            for test, cat_name in tests_to_run
-        ]
-
-    max_workers = max_workers_override or settings.get(
-        "parallel_workers", DEFAULT_PARALLEL_WORKERS
-    )
-    results_by_index = {}
-    reporter = EvaluationProgressReporter(len(tests_to_run), max_workers)
-    reporter.announce_start()
-
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_index = {
-            executor.submit(
-                run_test, test, settings, False, cat_name, instruction_ref, harness
-            ): index
-            for index, (test, cat_name) in enumerate(tests_to_run)
-        }
-        for future in as_completed(future_to_index):
-            result = future.result()
-            results_by_index[future_to_index[future]] = result
-            reporter.record(result)
-
-    reporter.announce_finish()
-    return [results_by_index[index] for index in range(len(tests_to_run))]

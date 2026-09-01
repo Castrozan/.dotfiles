@@ -39,7 +39,6 @@ def test_retryable_failure_excludes_the_non_retryable_markers():
     assert not is_retryable_failure("You've hit your session limit")
     assert not is_retryable_failure("usage limit reached")
     assert not is_retryable_failure("not logged in")
-    assert not is_retryable_failure("cannot enforce no_tools")
 
 
 def test_success_returns_the_output_string(monkeypatch):

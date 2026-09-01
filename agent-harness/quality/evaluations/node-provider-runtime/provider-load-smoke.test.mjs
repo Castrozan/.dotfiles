@@ -7,7 +7,6 @@ import {
   codexThreadOptions,
   openCodeConfig,
   openCodePromptBody,
-  validationError,
 } from "./provider-adapters.mjs";
 import { runSubjectInvocation } from "./provider-runtime.mjs";
 
@@ -57,7 +56,6 @@ for (const harness of ALL_HARNESSES) {
 
 test("codex no_tools request is accepted and options build without a model call", () => {
   const invocation = { ...representativeInvocation("codex"), no_tools: true };
-  assert.equal(validationError(invocation), null);
   assert.equal(codexOptions(invocation).config.tools.view_image, false);
   assert.equal(codexOptions(invocation).config.features.apps, false);
 });

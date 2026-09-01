@@ -47,6 +47,7 @@ def save_ab_profile(
         },
         "fingerprints": fingerprints,
         "execution_profile": execution_profile,
+        "token_usage": token_usage,
     }
     baseline.setdefault("evidence_profiles", {})[category] = profile
     baseline = merge_baseline_categories(
