@@ -2,7 +2,18 @@
 # Shared settings for all test categories
 
 settings:
-  default_model: haiku  # faster for most tests
+  canonical_subject_harness: codex
+  canonical_judge_harness: codex
+  subject_models:
+    claude: haiku
+    codex: gpt-5.6-sol
+  subject_reasoning_efforts:
+    codex: high
+  judge_models:
+    claude: opus
+    codex: gpt-5.6-luna
+  judge_reasoning_efforts:
+    codex: low
   timeout_seconds: 120
 
 # Smoke test - quick sanity check

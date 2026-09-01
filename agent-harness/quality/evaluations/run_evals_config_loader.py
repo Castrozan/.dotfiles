@@ -95,9 +95,9 @@ def discover_skill_adjacent_eval_files(repo_root: Path) -> dict[str, list[dict]]
     return discovered_tests
 
 
-def load_config(config_path: Path) -> dict:
+def load_config(config_path: Path, repo_root: Path = REPO_ROOT) -> dict:
     if config_path.is_dir():
-        return load_config_from_dir(config_path)
+        return load_config_from_dir(config_path, repo_root)
     with open(config_path) as f:
         data = yaml.safe_load(f)
     if not isinstance(data, dict):
@@ -107,7 +107,7 @@ def load_config(config_path: Path) -> dict:
     return data
 
 
-def load_config_from_dir(config_dir: Path) -> dict:
+def load_config_from_dir(config_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
     config = {"settings": {}, "tests": {}, "smoke_test": None}
 
     settings_file = config_dir / "settings.yaml"
@@ -127,7 +127,7 @@ def load_config_from_dir(config_dir: Path) -> dict:
             if data and "tests" in data:
                 config["tests"][category_name] = data["tests"]
 
-    skill_adjacent_tests = discover_skill_adjacent_eval_files(REPO_ROOT)
+    skill_adjacent_tests = discover_skill_adjacent_eval_files(repo_root)
     config["tests"].update(skill_adjacent_tests)
 
     return config

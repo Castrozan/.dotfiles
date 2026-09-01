@@ -2,7 +2,6 @@ import { realpathSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { validationError } from "./provider-adapters.mjs";
 import { runnerFor } from "./provider-runners.mjs";
 
 const CHECK_RESOLUTIONS = [
@@ -20,10 +19,6 @@ function writeResult(resultFile, result) {
 }
 
 export async function runSubjectInvocation(invocation) {
-  const closedError = validationError(invocation);
-  if (closedError) {
-    return { output: null, error: closedError };
-  }
   const runner = runnerFor(invocation.harness);
   if (!runner) {
     return { output: null, error: `unknown harness: ${invocation.harness}` };
@@ -64,6 +59,9 @@ async function main() {
       const outcome = await runSubjectInvocation(request);
       result.output = outcome.output;
       result.error = outcome.error;
+      if (outcome.usage != null) {
+        result.usage = outcome.usage;
+      }
     }
   } catch (error) {
     result.error = error instanceof Error ? error.message : String(error);

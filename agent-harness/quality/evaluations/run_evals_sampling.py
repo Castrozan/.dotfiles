@@ -4,10 +4,10 @@ from collections import defaultdict
 from run_evals_statistics import pass_at_k, wilson_score_interval
 from run_evals_fingerprint import (
     evaluation_fingerprints,
-    humanize_recovery_fingerprints,
 )
 from run_evals_baseline_record import BASELINE_PATH
 from run_evals_baseline_policy import preserved_evidence_profiles
+from run_evals_execution_profile import execution_profile_identifier
 
 
 def aggregate_repeated_runs(results_per_epoch):
@@ -45,11 +45,20 @@ def suite_pass_at_k(per_test, k):
     return sum(pass_at_k(t["total"], t["passes"], k) for t in per_test) / len(per_test)
 
 
-def build_epoch_enriched_baseline(per_test, epochs, git_commit, generated_at):
+def build_epoch_enriched_baseline(
+    per_test,
+    epochs,
+    git_commit,
+    generated_at,
+    execution_profile,
+    token_usage,
+    test_fingerprints,
+):
     fingerprints = evaluation_fingerprints()
     existing_baseline = (
         json.loads(BASELINE_PATH.read_text()) if BASELINE_PATH.exists() else {}
     )
+    execution_profile_id = execution_profile_identifier(execution_profile)
     categories = {}
     total_samples = 0
     total_sample_passes = 0
@@ -66,6 +75,13 @@ def build_epoch_enriched_baseline(per_test, epochs, git_commit, generated_at):
                 "samples": test["total"],
                 "lower": round(test["lower"], 4),
                 "upper": round(test["upper"], 4),
+                "fingerprint": test_fingerprints[f"{test['category']}::{test['name']}"],
+                "generated_at": generated_at,
+                "execution_profile_id": execution_profile_id,
+                "run_source": {
+                    "kind": "repeated_sampling",
+                    "git_commit": git_commit,
+                },
             }
         )
         bucket["passed" if majority_passed else "failed"] += 1
@@ -76,16 +92,22 @@ def build_epoch_enriched_baseline(per_test, epochs, git_commit, generated_at):
     total_passed = sum(bucket["passed"] for bucket in categories.values())
     return {
         "generated_at": generated_at,
+        "oldest_evidence_at": generated_at,
         "git_commit": git_commit,
         "total_tests": total_tests,
         "total_passed": total_passed,
         "total_failed": total_tests - total_passed,
         "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
+        "minimum_current_evidence": total_tests,
         "categories": dict(sorted(categories.items())),
         "fingerprints": fingerprints,
-        "evidence_profiles": preserved_evidence_profiles(
-            existing_baseline, humanize_recovery_fingerprints()
-        ),
+        "execution_profile": execution_profile,
+        "execution_profiles": {
+            **existing_baseline.get("execution_profiles", {}),
+            execution_profile_id: execution_profile,
+        },
+        "token_usage": token_usage,
+        "evidence_profiles": preserved_evidence_profiles(existing_baseline),
         "sampling": {
             "epochs": epochs,
             "total_samples": total_samples,

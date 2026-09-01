@@ -1,6 +1,8 @@
 import run_evals_subject_port as subject_port
+import run_evals_suite_runner
 import run_evals_test_runner
-from run_evals_test_runner import TestResult, run_tests
+from run_evals_suite_runner import run_tests
+from run_evals_test_runner import TestResult
 
 
 def _echo_run_test(
@@ -10,6 +12,7 @@ def _echo_run_test(
     authored_category="other",
     instruction_ref=None,
     harness="claude",
+    judge_harness="claude",
 ):
     return TestResult(
         name=test["name"],
@@ -22,7 +25,7 @@ def _echo_run_test(
 
 
 def test_parallel_run_keeps_results_for_duplicate_test_names(monkeypatch):
-    monkeypatch.setattr(run_evals_test_runner, "run_test", _echo_run_test)
+    monkeypatch.setattr(run_evals_suite_runner, "run_test", _echo_run_test)
     config = {
         "settings": {"parallel_workers": 2},
         "tests": {
@@ -38,7 +41,7 @@ def test_parallel_run_keeps_results_for_duplicate_test_names(monkeypatch):
 
 
 def test_run_tests_tags_each_result_with_its_authored_category(monkeypatch):
-    monkeypatch.setattr(run_evals_test_runner, "run_test", _echo_run_test)
+    monkeypatch.setattr(run_evals_suite_runner, "run_test", _echo_run_test)
     config = {
         "settings": {"parallel_workers": 2},
         "tests": {
@@ -61,7 +64,7 @@ def test_run_tests_tags_each_result_with_its_authored_category(monkeypatch):
 
 
 def test_serial_single_test_still_carries_authored_category(monkeypatch):
-    monkeypatch.setattr(run_evals_test_runner, "run_test", _echo_run_test)
+    monkeypatch.setattr(run_evals_suite_runner, "run_test", _echo_run_test)
     config = {
         "settings": {},
         "tests": {"core_rules": [{"name": "only", "prompt": "p"}]},
@@ -116,3 +119,67 @@ def test_judge_invocation_failure_is_an_evaluation_error(monkeypatch):
     assert result.passed is False
     assert result.error.startswith("judge invocation failed")
     assert result.assertions_failed == []
+
+
+def test_codex_subject_and_judge_use_their_pinned_models_and_reasoning(monkeypatch):
+    invocations = []
+
+    def invoke(harness, **kwargs):
+        invocations.append((harness, kwargs))
+        if kwargs["invocation_role"] == "judge":
+            return "VERDICT: PASS", True
+        return "candidate answer", True
+
+    monkeypatch.setattr(subject_port, "invoke_subject", invoke)
+    settings = {
+        "subject_models": {"codex": "gpt-5.6-sol"},
+        "subject_reasoning_efforts": {"codex": "high"},
+        "judge_models": {"codex": "gpt-5.6-luna"},
+        "judge_reasoning_efforts": {"codex": "low"},
+    }
+
+    result = run_evals_test_runner.run_test(
+        {
+            "name": "codex_profile",
+            "prompt": "answer",
+            "assertions": {"llm_judge": ["must answer"]},
+        },
+        settings=settings,
+        harness="codex",
+        judge_harness="codex",
+    )
+
+    assert result.passed is True
+    assert invocations[0][0] == "codex"
+    assert invocations[0][1]["model"] == "gpt-5.6-sol"
+    assert invocations[0][1]["model_reasoning_effort"] == "high"
+    assert invocations[0][1]["invocation_role"] == "subject"
+    assert invocations[1][0] == "codex"
+    assert invocations[1][1]["model"] == "gpt-5.6-luna"
+    assert invocations[1][1]["model_reasoning_effort"] == "low"
+    assert invocations[1][1]["invocation_role"] == "judge"
+
+
+def test_opencode_subject_and_judge_can_use_provider_default_models(monkeypatch):
+    invocations = []
+
+    def invoke(harness, **keyword_arguments):
+        invocations.append((harness, keyword_arguments))
+        if keyword_arguments["invocation_role"] == "judge":
+            return "VERDICT: PASS", True
+        return "candidate answer", True
+
+    monkeypatch.setattr(subject_port, "invoke_subject", invoke)
+    result = run_evals_test_runner.run_test(
+        {
+            "name": "opencode_defaults",
+            "prompt": "answer",
+            "assertions": {"llm_judge": ["must answer"]},
+        },
+        settings={"subject_models": {}, "judge_models": {}},
+        harness="opencode",
+        judge_harness="opencode",
+    )
+
+    assert result.passed is True
+    assert [invocation[1]["model"] for invocation in invocations] == [None, None]

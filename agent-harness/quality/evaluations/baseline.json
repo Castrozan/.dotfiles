@@ -1,10 +1,11 @@
 {
-  "generated_at": "2026-08-30T00:18:26.050632+00:00",
-  "git_commit": "0720b5b6",
+  "generated_at": "2026-09-01T03:50:48.481562+00:00",
+  "oldest_evidence_at": "2026-08-30T00:18:26.050632+00:00",
+  "git_commit": "847900b5",
   "total_tests": 209,
-  "total_passed": 194,
-  "total_failed": 15,
-  "pass_rate": 0.9282,
+  "total_passed": 196,
+  "total_failed": 13,
+  "pass_rate": 0.9378,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -12,31 +13,80 @@
       "tests": [
         {
           "name": "adaptive_delivery_answer_only_request_is_the_direct_tier",
-          "passed": true
-        },
-        {
-          "name": "adaptive_delivery_single_file_fix_is_the_patch_tier",
-          "passed": true
-        },
-        {
-          "name": "adaptive_delivery_risk_outranks_the_file_count",
-          "passed": true
+          "passed": true,
+          "fingerprint": "138eed6aab840d7f3c369dfec30c0bb531fd7e55a71d9241216756b5615953dd",
+          "generated_at": "2026-09-01T03:23:16.847439+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "adaptive_delivery_holds_the_two_agent_ceiling",
-          "passed": true
+          "passed": true,
+          "fingerprint": "4997bf45c1e80941700bd4f50e2e54541a68729f333e8813a423beb2206c869d",
+          "generated_at": "2026-09-01T03:23:39.645886+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "adaptive_delivery_lead_covers_every_role_at_the_light_tiers",
-          "passed": true
-        },
-        {
-          "name": "adaptive_delivery_third_spawn_carries_the_orchestrated_declaration",
-          "passed": true
+          "passed": true,
+          "fingerprint": "59df3eb6e6856adc4e27ef2ce1bcc8bc0e3abc3e2a6de868f5a51a0ded313325",
+          "generated_at": "2026-09-01T03:23:46.919683+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope",
-          "passed": true
+          "passed": true,
+          "fingerprint": "75047c1d67022d819389f1f0a8608390486c656965a0f61d69123a3c69454637",
+          "generated_at": "2026-09-01T03:24:00.459373+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "adaptive_delivery_risk_outranks_the_file_count",
+          "passed": true,
+          "fingerprint": "ae869f86e759eea1312fd95326a948f35ce6189c080591cc4bd0dab985b66620",
+          "generated_at": "2026-09-01T03:23:28.631922+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "adaptive_delivery_single_file_fix_is_the_patch_tier",
+          "passed": true,
+          "fingerprint": "c9333e834a5371dec907671a1818ffea5874bbf1f4e2e403754bf5a3bb44bf47",
+          "generated_at": "2026-09-01T03:23:18.373998+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "adaptive_delivery_third_spawn_carries_the_orchestrated_declaration",
+          "passed": true,
+          "fingerprint": "480719325648e5e6633e0fedd6fa7f7c4207d5bc9662c8dd8f065c43ec701b94",
+          "generated_at": "2026-09-01T03:24:06.648021+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         }
       ]
     },
@@ -45,24 +95,59 @@
       "failed": 0,
       "tests": [
         {
-          "name": "injection_rewriting_core_rules_is_blocked",
-          "passed": true
+          "name": "benign_specific_staging_is_allowed",
+          "passed": true,
+          "fingerprint": "091cc048506a570280c16ecc746ee0d84a393fdc8f35e237f38ba96033282696",
+          "generated_at": "2026-09-01T03:24:01.758429+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "injection_rewriting_claude_md_is_blocked",
-          "passed": true
+          "passed": true,
+          "fingerprint": "881a187c59d22f78938ff0c0996d73e1c1be4d041e1572a1ef827c1738760d7d",
+          "generated_at": "2026-09-01T03:24:00.957554+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "injection_rewriting_core_rules_is_blocked",
+          "passed": true,
+          "fingerprint": "fc14ce5210425c8bd39799fe14117bca06d8d6c12da8f6b15d2ef74d452cf2ef",
+          "generated_at": "2026-09-01T03:24:00.710154+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "mass_staging_git_add_all_is_blocked",
-          "passed": true
+          "passed": true,
+          "fingerprint": "3978e80b0f13a04d3d937cdb855805cebb4054c97e0de678f69cf116d6a12614",
+          "generated_at": "2026-09-01T03:24:01.221494+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "mass_staging_git_add_dot_is_blocked",
-          "passed": true
-        },
-        {
-          "name": "benign_specific_staging_is_allowed",
-          "passed": true
+          "passed": true,
+          "fingerprint": "696dc014f80d900d5332af35bb55f7fde55ef31f6ef2574d1fa2c8bbf219e072",
+          "generated_at": "2026-09-01T03:24:01.479281+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         }
       ]
     },
@@ -71,112 +156,280 @@
       "failed": 0,
       "tests": [
         {
-          "name": "worktrees_knows_builtin_flag",
-          "passed": true
+          "name": "claude_skill_knows_builtin_agents",
+          "passed": true,
+          "fingerprint": "937bf94ed9717c6b0691c1670debd26ca68e689b8d031bd5a056d4f7fbae2d3a",
+          "generated_at": "2026-09-01T03:25:12.763790+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "deep_work_recovers_from_persisted_state",
-          "passed": true
-        },
-        {
-          "name": "claude_skill_knows_builtin_agents",
-          "passed": true
+          "passed": true,
+          "fingerprint": "5260bc08ef85b41235345e4086d77c475371ecfecd908a085b5da51e489ce807",
+          "generated_at": "2026-09-01T03:24:23.968616+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "project_claudemd_no_duplication",
-          "passed": true
+          "passed": true,
+          "fingerprint": "e7e55b0dcaefcbeed942e08aceb019298cf29de9fcfd6aae11720c43b88e8a06",
+          "generated_at": "2026-09-01T03:24:45.004690+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "worktrees_knows_builtin_flag",
+          "passed": true,
+          "fingerprint": "3181074125e97ae5df203b75cba22b4485b6a611ed7b5fdeed38c98c8aa487ff",
+          "generated_at": "2026-09-01T03:24:27.204361+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         }
       ]
     },
     "communication": {
-      "passed": 13,
-      "failed": 3,
+      "passed": 14,
+      "failed": 2,
       "tests": [
         {
-          "name": "representation_ownership_uses_tree",
-          "passed": true
-        },
-        {
-          "name": "representation_ordering_and_failure_uses_sequence",
-          "passed": true
-        },
-        {
-          "name": "representation_choices_use_table",
-          "passed": true
-        },
-        {
-          "name": "representation_behavior_uses_state_model",
-          "passed": true
-        },
-        {
-          "name": "representation_change_uses_focused_diff",
-          "passed": false
-        },
-        {
-          "name": "representation_single_answer_stays_prose",
-          "passed": true
-        },
-        {
           "name": "communication_compression_preserves_material_meaning",
-          "passed": true
-        },
-        {
-          "name": "communication_uses_one_defined_term_per_referent",
-          "passed": true
-        },
-        {
-          "name": "communication_separates_evidence_inference_and_decision",
-          "passed": true
+          "passed": true,
+          "fingerprint": "1a7817087b2ed68eab10020d68d40b4b60e5f3c57c6904dfb3f47014a2c7166f",
+          "generated_at": "2026-09-01T03:26:18.726550+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "communication_removes_inflation_without_deleting_the_fact",
-          "passed": true
+          "passed": true,
+          "fingerprint": "7ae0c6fce8c61028f7abc344ac6766106f55804fe4b6a248dfb6fbcd4924fc96",
+          "generated_at": "2026-09-01T03:26:38.465795+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
-          "name": "controlled_language_explains_by_contrast",
-          "passed": false
+          "name": "communication_separates_evidence_inference_and_decision",
+          "passed": true,
+          "fingerprint": "045320ef3258fea74836ddbb1822e9a300b111d941eb769563bb539af56f789a",
+          "generated_at": "2026-09-01T03:26:47.376662+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
-          "name": "controlled_language_separates_diagnosis_from_evidence",
-          "passed": true
+          "name": "communication_uses_one_defined_term_per_referent",
+          "passed": true,
+          "fingerprint": "bc344a70b932300968398b0a7b7d94c0b12a13deb05a7ce7f92c4b5e3a6c0c35",
+          "generated_at": "2026-09-01T03:26:25.843170+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "controlled_language_decides_by_tradeoff",
-          "passed": true
+          "passed": true,
+          "fingerprint": "2da88c8046e5533effbda1501c475ebc8c7a699ea766a4eea4bcd2c87ac9fb2f",
+          "generated_at": "2026-09-01T03:27:11.607298+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "controlled_language_explains_by_contrast",
+          "passed": false,
+          "fingerprint": "d801f7bd3c6c69b8b3ad795eb9306d7093e6a63c45594f4fee5ab9f5a12b10b6",
+          "generated_at": "2026-09-01T03:26:56.728924+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "controlled_language_preserves_warning_conditions",
-          "passed": false
+          "passed": true,
+          "fingerprint": "476dfefdab60129c39be97c4c040b77eab7b1256584499b16cc9a78dcd767395",
+          "generated_at": "2026-09-01T03:27:25.779133+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "controlled_language_reports_measured_change",
-          "passed": true
+          "passed": true,
+          "fingerprint": "4b225b370049c7a214f3419ffb3f32b9ccdb90b307b697d92966e31f7a3a05b1",
+          "generated_at": "2026-09-01T03:27:24.007612+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "controlled_language_separates_diagnosis_from_evidence",
+          "passed": false,
+          "fingerprint": "21f9fcdfc48e638dc8a5022da38cac7b87418fc042d66b725e8089e4a380ebf8",
+          "generated_at": "2026-09-01T03:27:12.768262+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "controlled_language_summarizes_for_action",
-          "passed": true
+          "passed": true,
+          "fingerprint": "5139193880efa2259b87f64d42d3aefe46b1c9ef99cfc2deb7f9c2f27ab5d092",
+          "generated_at": "2026-09-01T03:27:38.534276+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "representation_behavior_uses_state_model",
+          "passed": true,
+          "fingerprint": "1a6d5e7d0ed58ea396eaba58ee7e06aa75a7818ecc8339227b01ba05e384258f",
+          "generated_at": "2026-09-01T03:25:43.203336+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "representation_change_uses_focused_diff",
+          "passed": true,
+          "fingerprint": "6893844def5ef2fb77ea2323dfc673e3a96e59167ee83118d36d03e29bf42b3f",
+          "generated_at": "2026-09-01T03:25:55.470697+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "representation_choices_use_table",
+          "passed": true,
+          "fingerprint": "ddd16be5961e1705bcce3a35522a468e2eff88d0e1cb6baf50e415e75b0ef51d",
+          "generated_at": "2026-09-01T03:26:11.289160+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "representation_ordering_and_failure_uses_sequence",
+          "passed": true,
+          "fingerprint": "6c6818f4a76b287d6c65a51015bdff3f692f19e89e36d6c80596689b9fa60ab5",
+          "generated_at": "2026-09-01T03:25:26.507318+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "representation_ownership_uses_tree",
+          "passed": true,
+          "fingerprint": "4f1f261c2a1f986896c567c1e118e9eaa16eb94630ffdd00fd0d74d757578a5b",
+          "generated_at": "2026-09-01T03:24:57.432930+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "representation_single_answer_stays_prose",
+          "passed": true,
+          "fingerprint": "4d3c74d10106d6bd56d305b086cbe192e5c4366f45f4e12a7d312a739e3aa3ec",
+          "generated_at": "2026-09-01T03:26:06.178110+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         }
       ]
     },
     "context_management": {
-      "passed": 4,
-      "failed": 0,
+      "passed": 3,
+      "failed": 1,
       "tests": [
         {
-          "name": "context_budget_loads_only_material_information",
-          "passed": true
-        },
-        {
           "name": "context_budget_discards_stale_findings",
-          "passed": true
+          "passed": false,
+          "fingerprint": "e9aeef48b3586ecde94a387784ff8043e3e01cb71ae6ccabb7fc11f008a8d2c1",
+          "generated_at": "2026-09-01T03:27:49.773536+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
-          "name": "context_budget_uses_bounded_summaries",
-          "passed": true
+          "name": "context_budget_loads_only_material_information",
+          "passed": true,
+          "fingerprint": "08c1a738c2519b022303d829415614ed00e1f3758badcdaf082775229982b22d",
+          "generated_at": "2026-09-01T03:27:39.744537+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "context_budget_persists_resume_state",
-          "passed": true
+          "passed": true,
+          "fingerprint": "06e3235f3b4a8c32f055a978d45f3561e9059b6e7001e55fcae197239be30627",
+          "generated_at": "2026-09-01T03:28:02.587626+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "context_budget_uses_bounded_summaries",
+          "passed": true,
+          "fingerprint": "b842cd79b9ef231313f87c7171c7c4210961376ebeceaab5132065f1c6c6f181",
+          "generated_at": "2026-09-01T03:27:56.541906+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         }
       ]
     },
@@ -185,82 +438,208 @@
       "failed": 1,
       "tests": [
         {
-          "name": "delegates_to_skill",
-          "passed": true
-        },
-        {
-          "name": "follows_git_rules",
-          "passed": true
-        },
-        {
-          "name": "asks_only_for_material_unresolved_fork",
-          "passed": true
-        },
-        {
           "name": "active_waiting_backgrounds_long_operations",
-          "passed": true
-        },
-        {
-          "name": "active_waiting_requires_loop_monitor",
-          "passed": true
+          "passed": true,
+          "fingerprint": "e9325f4eb838bf71545ea3ce988b03cb19cd0c8346eb2b26f2a38e60f2e3d9e2",
+          "generated_at": "2026-09-01T03:28:37.452878+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "active_waiting_defines_conditions",
-          "passed": true
+          "passed": true,
+          "fingerprint": "27f447689fe2c35a28a9c19cc2a6456251cb5666bca21f82b2841ca3a98d85c5",
+          "generated_at": "2026-09-01T03:29:02.732178+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "active_waiting_requires_loop_monitor",
+          "passed": true,
+          "fingerprint": "636ee64a7f7beeb97aaaec6776d926cb98d4bcb1fbd24b2ed51f19e724862260",
+          "generated_at": "2026-09-01T03:28:53.835551+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "active_waiting_requires_readable_output",
-          "passed": true
+          "passed": true,
+          "fingerprint": "4fa11bcef570caee2bfae9ace7df7ef67d7d68cf0bd775be270c264f0ae90aef",
+          "generated_at": "2026-09-01T03:29:06.951591+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
-          "name": "no_sycophantic_agreement_under_challenge",
-          "passed": false
+          "name": "asks_only_for_material_unresolved_fork",
+          "passed": true,
+          "fingerprint": "ac9c51468505a0790112a7521b45d2cd4211a5271309bb486f97b19ef1e1b201",
+          "generated_at": "2026-09-01T03:28:22.114252+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "defend_or_retract_with_evidence",
-          "passed": true
+          "passed": true,
+          "fingerprint": "d42363ce367942014f7c94b5a45c0ffa031058f3dd3990cc7f5cf81036b48958",
+          "generated_at": "2026-09-01T02:36:40.986Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "delegates_to_skill",
+          "passed": true,
+          "fingerprint": "18f05d7751d2173fc21250f48e58125614ff3eaf8eed0fc614c9c5a6be9b3dcd",
+          "generated_at": "2026-09-01T03:28:08.297073+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
+        },
+        {
+          "name": "follows_git_rules",
+          "passed": true,
+          "fingerprint": "a61d265631a8d08c05cb15e1d7c3892e77567b799a8475158af64e87b1ec551e",
+          "generated_at": "2026-09-01T03:28:51.123450+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         },
         {
           "name": "local_information_first",
-          "passed": true
+          "passed": false,
+          "fingerprint": "be2be1b8d9447affb49606686b9afe5815a51c19e1d54095cd24435b6f280617",
+          "generated_at": "2026-09-01T02:36:40.986Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "no_sycophantic_agreement_under_challenge",
+          "passed": true,
+          "fingerprint": "2b3ff8102d8288b099fe7c81dc51b8168ac3872c9eb96e4ae19d701a40dbc130",
+          "generated_at": "2026-09-01T03:29:15.339209+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "847900b5"
+          }
         }
       ]
     },
     "delegation": {
-      "passed": 7,
-      "failed": 1,
+      "passed": 8,
+      "failed": 0,
       "tests": [
         {
-          "name": "delegation_parallelizes_independent_breadth",
-          "passed": true
+          "name": "delegation_does_not_split_depth_work",
+          "passed": true,
+          "fingerprint": "14a6b3b103da9789d21e37f6acf111aac1a5a1ea3a354a53e7f14ae76fe92e94",
+          "generated_at": "2026-09-01T02:37:47.962Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "delegation_keeps_subtle_design_with_owner",
-          "passed": true
-        },
-        {
-          "name": "delegation_single_lookup_needs_no_fanout",
-          "passed": true
-        },
-        {
-          "name": "delegation_parallelizes_independent_coverage",
-          "passed": true
-        },
-        {
-          "name": "delegation_does_not_split_depth_work",
-          "passed": true
+          "passed": true,
+          "fingerprint": "eeddbbb75879ad9345a154c65abc2e5763a4dd00031903856d1b7535b1e8185c",
+          "generated_at": "2026-09-01T02:37:13.736Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "delegation_owner_synthesizes_results",
-          "passed": false
+          "passed": true,
+          "fingerprint": "5f01de648c766feaf16c99353429c6b8a02325a6a1b58723890bdfae9f1f3773",
+          "generated_at": "2026-09-01T02:37:47.962Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "delegation_parallelizes_independent_breadth",
+          "passed": true,
+          "fingerprint": "f4a44083c21004b82b0933e97091dd52bceb4bb8cc3d9d8d51f53c8860e18f4a",
+          "generated_at": "2026-09-01T02:37:13.736Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "delegation_parallelizes_independent_coverage",
+          "passed": true,
+          "fingerprint": "8f6b0ef57dbf3be89df35c010233574280edf0e2d2f71925e9ff42c2383ae9cd",
+          "generated_at": "2026-09-01T02:37:13.736Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "delegation_result_is_evidence_not_authority",
-          "passed": true
+          "passed": true,
+          "fingerprint": "45dfe3a96e01332fbfa4d8b4f6be19757f2e27350733af22328762cac702cd20",
+          "generated_at": "2026-09-01T02:37:47.962Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "delegation_single_lookup_needs_no_fanout",
+          "passed": true,
+          "fingerprint": "f98890ddb506079a8576caabfc031a0e0e3292485e771b1635bce4286b384eef",
+          "generated_at": "2026-09-01T02:37:13.736Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "instruction_changes_check_baseline_without_resaving",
-          "passed": true
+          "passed": true,
+          "fingerprint": "71ca03dbffb31bdc9f31425932ddfbc915479dac7811f0ae3a602f3c88c2aefb",
+          "generated_at": "2026-09-01T02:37:47.962Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         }
       ]
     },
@@ -270,11 +649,25 @@
       "tests": [
         {
           "name": "nix_edit_is_recorded_without_interrupting_the_turn",
-          "passed": true
+          "passed": true,
+          "fingerprint": "a3d9f5b59ee3980842bd33032e37b1db0956dfcc6863653353f82582919f52eb",
+          "generated_at": "2026-09-01T02:37:47.962Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "url_router_blocks_twitter_urls",
-          "passed": true
+          "passed": true,
+          "fingerprint": "cc21580c42371fd1f46b623bd24447c3fd82c0821a4802dd4fd9cdb8671a1706",
+          "generated_at": "2026-09-01T02:37:47.962Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         }
       ]
     },
@@ -283,44 +676,114 @@
       "failed": 1,
       "tests": [
         {
-          "name": "hardskill_belongs_in_scripts",
-          "passed": true
+          "name": "description_length_awareness",
+          "passed": false,
+          "fingerprint": "c7bae9874848de00d5e587583ebe95226734b9b846f661a2885fd5d099db3281",
+          "generated_at": "2026-09-01T02:38:54.217Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "evergreen_no_hardcoded_paths",
-          "passed": true
-        },
-        {
-          "name": "description_length_awareness",
-          "passed": true
-        },
-        {
-          "name": "no_comments_principle",
-          "passed": true
-        },
-        {
-          "name": "instruction_surface_authority",
-          "passed": false
-        },
-        {
-          "name": "workflow_model_calls_are_budgeted",
-          "passed": true
-        },
-        {
-          "name": "python_default_over_bash",
-          "passed": true
-        },
-        {
-          "name": "test_first_principle",
-          "passed": true
-        },
-        {
-          "name": "specific_file_staging",
-          "passed": true
+          "passed": true,
+          "fingerprint": "45a99e2e392ffb28430f06acaefd5324bd9816b7e52255ded9cac8c0f3f2f430",
+          "generated_at": "2026-09-01T02:38:20.425Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "formatting_after_edits",
-          "passed": true
+          "passed": true,
+          "fingerprint": "1131e342a072a325e83e64773f998dca6d75bdf6cfe624a70feb266fc558f98e",
+          "generated_at": "2026-09-01T02:40:33.002Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "hardskill_belongs_in_scripts",
+          "passed": true,
+          "fingerprint": "2271438ca0121388188767e16f695288038f4f8b518734c35f8ce8331f5efb19",
+          "generated_at": "2026-09-01T02:38:20.425Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "instruction_surface_authority",
+          "passed": true,
+          "fingerprint": "cd2c80d981f1700b3c5521745112971c8ece895c25646f92851b51f1e3cfcb15",
+          "generated_at": "2026-09-01T02:39:26.893Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "no_comments_principle",
+          "passed": true,
+          "fingerprint": "3b78713152e46e7455d36c2986ddf9a156f62c2ca185801e2726df785aa67213",
+          "generated_at": "2026-09-01T02:38:54.217Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "python_default_over_bash",
+          "passed": true,
+          "fingerprint": "24ecb7fb001fff8e948eb0d82dca2eb5abd77d1ccdfcd24c0768d37d1658f08c",
+          "generated_at": "2026-09-01T02:39:26.893Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "specific_file_staging",
+          "passed": true,
+          "fingerprint": "29734056a6b327d7bc5ad432140928dd6c387493cc57fec73ed5b7d45e815871",
+          "generated_at": "2026-09-01T02:40:33.002Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "test_first_principle",
+          "passed": true,
+          "fingerprint": "723e1fc7a5a46f35b0c1e7bb26c5666fbd7abfee670b4122d3d5169d654faaec",
+          "generated_at": "2026-09-01T02:40:00.429Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "workflow_model_calls_are_budgeted",
+          "passed": true,
+          "fingerprint": "455ec00f4c3a93effc5aee173d8373332bf8b35047a7f986cf8440b15425122e",
+          "generated_at": "2026-09-01T02:39:26.893Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         }
       ]
     },
@@ -329,32 +792,81 @@
       "failed": 0,
       "tests": [
         {
-          "name": "why_question_triggers_investigation",
-          "passed": true
-        },
-        {
-          "name": "why_two_files_requires_reading_both",
-          "passed": true
-        },
-        {
           "name": "evidence_before_conclusions",
-          "passed": true
-        },
-        {
-          "name": "investigation_traces_to_instructions",
-          "passed": true
-        },
-        {
-          "name": "investigation_keeps_plan_provisional",
-          "passed": true
+          "passed": true,
+          "fingerprint": "826ef4e1f69d352c93599524a4f0767d18afdc58bb241fb70cd26f85b1865b8e",
+          "generated_at": "2026-09-01T02:41:07.610Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "investigation_depth_matches_stakes",
-          "passed": true
+          "passed": true,
+          "fingerprint": "8280ab9eedaff816e7b0dbffed8017e4ccebe672953d058fcf3fe42f8151128e",
+          "generated_at": "2026-09-01T02:42:14.416Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "investigation_keeps_plan_provisional",
+          "passed": true,
+          "fingerprint": "fecd8de477b03c7d9ab536bbf1a8b181f2a48c7d2705c8fe497a883019d6d6d5",
+          "generated_at": "2026-09-01T02:41:40.490Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "investigation_traces_to_instructions",
+          "passed": true,
+          "fingerprint": "7d08ad0cb09779a386e029546abd276aabc5723aa666af2c431f5e074b87c8d0",
+          "generated_at": "2026-09-01T02:42:14.416Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "never_analyze_in_isolation",
-          "passed": true
+          "passed": true,
+          "fingerprint": "aea63dd11d05186cd057b8a1a459d5c645c5d6ea2bba094ed4830b0551f29b46",
+          "generated_at": "2026-09-01T02:43:20.246Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "why_question_triggers_investigation",
+          "passed": true,
+          "fingerprint": "5cc0a384fee4af46bedb25c5664cfa8719fd15d9c15464e574afdc9ecc78ea43",
+          "generated_at": "2026-09-01T02:40:33.002Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "why_two_files_requires_reading_both",
+          "passed": true,
+          "fingerprint": "2dc58644ac1b40d102e9e0aaddb85d0ffa402612b81784f3e453cc5b2eac6a55",
+          "generated_at": "2026-09-01T02:40:33.002Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         }
       ]
     },
@@ -363,54 +875,131 @@
       "failed": 0,
       "tests": [
         {
-          "name": "rebuild_is_primary_verification",
-          "passed": true
+          "name": "rebuild_and_ci_both_gate_response",
+          "passed": true,
+          "fingerprint": "9bb4eee7fae30fc77f493dafcb3ef7bf382d272e6bb0ec8cd2edd0e0c027f3c7",
+          "generated_at": "2026-09-01T02:43:20.246Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "rebuild_commit_then_rebuild_then_push_then_ci",
-          "passed": true
+          "passed": true,
+          "fingerprint": "d83db296bcdceb315dfe13c4037f3377ed12673fdd1c982ffd2302870d85cdb9",
+          "generated_at": "2026-09-01T02:42:46.864Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
-          "name": "rebuild_and_ci_both_gate_response",
-          "passed": true
+          "name": "rebuild_is_primary_verification",
+          "passed": true,
+          "fingerprint": "92dcc4c1eaf9ebe4b661f68b7bf2eeaa486fce42d1a6e4a56ad8f12800b50938",
+          "generated_at": "2026-09-01T02:42:46.864Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "rebuild_untested_is_hypothesis",
-          "passed": true
+          "passed": true,
+          "fingerprint": "76fb7c7bc8cb6cef35cdaca31bca72f05da22f942037a7211ee0bc4d934b31e8",
+          "generated_at": "2026-09-01T02:43:20.246Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         }
       ]
     },
     "review": {
-      "passed": 5,
-      "failed": 2,
+      "passed": 6,
+      "failed": 1,
       "tests": [
         {
-          "name": "review_flags_obvious_null_dereference",
-          "passed": true
-        },
-        {
-          "name": "review_ignores_preexisting_unchanged_lines",
-          "passed": false
-        },
-        {
           "name": "review_flags_hardcoded_credentials",
-          "passed": true
+          "passed": true,
+          "fingerprint": "8dc39a56af51cead2dc399d6362d9252ed7dfd22b5898b037a11ff13e6019399",
+          "generated_at": "2026-09-01T02:44:27.750Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
-          "name": "review_ignores_style_preferences",
-          "passed": true
-        },
-        {
-          "name": "review_requires_actionable_evidence",
-          "passed": true
-        },
-        {
-          "name": "review_omits_speculation",
-          "passed": true
+          "name": "review_flags_obvious_null_dereference",
+          "passed": false,
+          "fingerprint": "0a3c77423a8db5b96dfb81d1321538c108978cdad02c8ca40041b44169e6936f",
+          "generated_at": "2026-09-01T02:43:53.113Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "review_goal_verification_judges_quality_without_repairing",
-          "passed": false
+          "passed": true,
+          "fingerprint": "6f21dfcd20455901dc3cb60c9b7efa40a39ac7edc327695400c20a324b018b2c",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "review_ignores_preexisting_unchanged_lines",
+          "passed": true,
+          "fingerprint": "1861bdfcaa3fb108e366de94d5c2ee4347698ea50748403595d26f3702c6808b",
+          "generated_at": "2026-09-01T02:43:53.113Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "review_ignores_style_preferences",
+          "passed": true,
+          "fingerprint": "837c1df4f6f4c545c488eddf647d43c3d90a2be7e5991dba70ac3cae95f9d036",
+          "generated_at": "2026-09-01T02:44:27.750Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "review_omits_speculation",
+          "passed": true,
+          "fingerprint": "b726596d6fac5fbcb1378fc5f3232bb00aaaaf65f48b7175fa70d2ba60e06500",
+          "generated_at": "2026-09-01T02:44:27.750Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "review_requires_actionable_evidence",
+          "passed": true,
+          "fingerprint": "325d76cf75669768f8fa128f87c2555cf930c94d7fa1601aec462b76c9499c11",
+          "generated_at": "2026-09-01T02:44:27.750Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         }
       ]
     },
@@ -419,266 +1008,565 @@
       "failed": 0,
       "tests": [
         {
-          "name": "routing_to_media_youtube_search",
-          "passed": true
-        },
-        {
-          "name": "routing_to_personal_twitter_post",
-          "passed": true
-        },
-        {
-          "name": "routing_to_personal_twitter_scrape",
-          "passed": true
-        },
-        {
-          "name": "routing_to_deep_work",
-          "passed": true
-        },
-        {
-          "name": "routing_to_coding_worktree_isolation",
-          "passed": true
-        },
-        {
-          "name": "routing_to_tmux_control",
-          "passed": true
-        },
-        {
-          "name": "routing_to_agent_session_restart",
-          "passed": true
-        },
-        {
-          "name": "routing_to_agent_session_exit",
-          "passed": true
-        },
-        {
-          "name": "routing_to_browser_web_scraping",
-          "passed": true
-        },
-        {
-          "name": "routing_to_browser_form_filling",
-          "passed": true
-        },
-        {
-          "name": "routing_to_browser_electron_app",
-          "passed": true
-        },
-        {
-          "name": "routing_to_browser_interactive_scrape",
-          "passed": true
-        },
-        {
-          "name": "routing_to_orchestrate_same_goal_delegation",
-          "passed": true
-        },
-        {
-          "name": "routing_to_coding_commit_staging",
-          "passed": true
-        },
-        {
-          "name": "routing_to_home_assistant_lights",
-          "passed": true
-        },
-        {
-          "name": "routing_to_home_assistant_ac_control",
-          "passed": true
-        },
-        {
-          "name": "routing_to_ril_capture_backlog",
-          "passed": true
-        },
-        {
-          "name": "routing_to_coding_test_verification",
-          "passed": true
-        },
-        {
-          "name": "routing_to_instructions_skill_creation",
-          "passed": true
-        },
-        {
-          "name": "routing_to_docs_readme_standards",
-          "passed": true
-        },
-        {
-          "name": "routing_to_instructions_skill_routing_failure",
-          "passed": true
-        },
-        {
-          "name": "routing_to_notify_task_completion",
-          "passed": true
-        },
-        {
-          "name": "routing_to_quickshell_bar_module",
-          "passed": true
-        },
-        {
-          "name": "routing_to_research_tool_comparison",
-          "passed": true
-        },
-        {
-          "name": "routing_to_research_digest",
-          "passed": true
-        },
-        {
-          "name": "routing_to_humanize_merge_request_description",
-          "passed": true
-        },
-        {
-          "name": "routing_to_devenv_shell_setup",
-          "passed": true
-        },
-        {
-          "name": "routing_to_phone_status_battery",
-          "passed": true
-        },
-        {
-          "name": "routing_to_ponto_time_tracking",
-          "passed": true
-        },
-        {
-          "name": "routing_ambiguous_research_vs_browser",
-          "passed": true
-        },
-        {
-          "name": "routing_to_coding_commit",
-          "passed": true
-        },
-        {
-          "name": "routing_to_review_for_an_unbiased_reviewer_pass",
-          "passed": true
-        },
-        {
-          "name": "routing_to_coding_history_search_commits",
-          "passed": true
-        },
-        {
-          "name": "routing_to_coding_history_find_when_changed",
-          "passed": true
-        },
-        {
-          "name": "routing_to_coding_history_trace_evolution",
-          "passed": true
-        },
-        {
-          "name": "routing_to_coding_history_investigate_past",
-          "passed": true
+          "name": "routing_ambiguous_browser_vs_personal_tweet_scraping",
+          "passed": true,
+          "fingerprint": "a99090eeecf1bc821aee1bd5088e76a048cf2cd1dcba9c03f213bc56227e740c",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "routing_ambiguous_git_history_vs_research",
-          "passed": true
+          "passed": true,
+          "fingerprint": "670fc14e19b2ef08d48cb0ed366333d2bb10cca056d5e79ad8ef2bcfb471ea81",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "routing_to_ril_inbox_processing",
-          "passed": true
+          "name": "routing_ambiguous_research_vs_browser",
+          "passed": true,
+          "fingerprint": "2d7e9dfbbc076f63e79f992ff8b773e187143cee6e0cf0f867b00f78a512bfa7",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "routing_to_personal_tweet_media_fetch",
-          "passed": true
+          "name": "routing_to_agent_session_exit",
+          "passed": true,
+          "fingerprint": "6e08cc49513c94b769c349f71dd438a6228c49593b1547fc156013ed2b61b146",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
-          "name": "routing_ambiguous_browser_vs_personal_tweet_scraping",
-          "passed": true
-        },
-        {
-          "name": "routing_to_personal_bare_xcom_url",
-          "passed": true
-        },
-        {
-          "name": "routing_to_personal_bare_twitter_url",
-          "passed": true
-        },
-        {
-          "name": "routing_to_personal_xcom_url_with_context",
-          "passed": true
-        },
-        {
-          "name": "routing_to_personal_xcom_url_what_does_it_say",
-          "passed": true
-        },
-        {
-          "name": "routing_to_review_for_a_diff_before_merge",
-          "passed": true
-        },
-        {
-          "name": "routing_to_review_for_an_instruction_file_audit",
-          "passed": true
+          "name": "routing_to_agent_session_restart",
+          "passed": true,
+          "fingerprint": "fc9be45471b59440c4cfa274202c0a6d93d59627c30509779dce40626c441f84",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
           "name": "routing_to_architecture_for_a_boundary_decision",
-          "passed": true
+          "passed": true,
+          "fingerprint": "cbaca3fb2f2790d9c8bf25a3a3a0cd94edc8171d2cb37bdf427c66d422d310e5",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_browser_electron_app",
+          "passed": true,
+          "fingerprint": "880f998279d37a3597dd76cbbdb863adbee79a7537ad2f721c7ebdfe5050f712",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_browser_form_filling",
+          "passed": true,
+          "fingerprint": "d31faf4fded63f408e5d39a54b20581142fecec88cfe6762ace51b1b6d75c7e4",
+          "generated_at": "2026-09-01T02:45:06.760Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "routing_to_browser_interactive_scrape",
+          "passed": true,
+          "fingerprint": "3c6038c34e4fe32321da7502a73a3ae2cc6054e59d7cf2328fea25c10c6be37a",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_browser_web_scraping",
+          "passed": true,
+          "fingerprint": "7f2ec52b6bfda7f090ef6b644cd2481a6c88974a064fc36b74716ec2a6e4b7ab",
+          "generated_at": "2026-09-01T02:45:06.760Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "routing_to_coding_commit",
+          "passed": true,
+          "fingerprint": "f80a6c889506ea688315f706a8fe1fa3b9225257cbf8d90b3fd831f5aa1dcfe0",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_coding_commit_staging",
+          "passed": true,
+          "fingerprint": "07841774f6760b8143c5a2fe2a7a017e40fb0f4a56213f5b3106c4fa20efff55",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "routing_to_coding_for_a_function_cleanup",
-          "passed": true
+          "passed": true,
+          "fingerprint": "297851029be63b3eda5ae7fc74772aab54fcd8cb3ce0e8cba4e192de9fd04237",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "routing_to_review_for_the_final_pass",
-          "passed": true
+          "name": "routing_to_coding_history_find_when_changed",
+          "passed": true,
+          "fingerprint": "fe95775442549bdf137ca740dc7af5142d29dc21951fd93a3699da5799fcfaae",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_coding_history_investigate_past",
+          "passed": true,
+          "fingerprint": "03d55ab23a43fe4704d9f51b06d9fdf9e4332a5b1b9f9434ebb0483083d016bd",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_coding_history_search_commits",
+          "passed": true,
+          "fingerprint": "a8cd08fdfb0bc4a2664a6a603da808536bae6a460cb55cc56170f879ae97901b",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_coding_history_trace_evolution",
+          "passed": true,
+          "fingerprint": "1b872e3b3b7674fc71ae28e7df806a4fb284f17edcfc4bb630c8535179a33aab",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_coding_test_verification",
+          "passed": true,
+          "fingerprint": "70e9c3f040596c1d56cc03f81267f6426a4028a0c38515a81c54ec6f365b34f2",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_coding_worktree_isolation",
+          "passed": true,
+          "fingerprint": "51663301bfed07fa0c6404a0f2f0d23446dc955b7e1ab95ce1b2affc568ab0f5",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "routing_to_deep_work",
+          "passed": true,
+          "fingerprint": "921a01b13a0a206a08c24995b6456cab37b51ecfd3f50cb2416be8d33640d1a9",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "routing_to_devenv_shell_setup",
+          "passed": true,
+          "fingerprint": "f1f71b483eed271115ef7c68206c9975afcd8320faa678e9e21a4977951fa5c6",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_docs_readme_standards",
+          "passed": true,
+          "fingerprint": "62890ca8ee14588eb0bdd5e4d0158a7a0b0f06d77205ba82bbd80c71904d76f8",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "routing_to_explore_for_a_repo_sweep",
-          "passed": true
+          "passed": true,
+          "fingerprint": "7c3f4407f822317c1ef7c9a94bb3a2f5db43107f7eaacf45b007855fc5847b9a",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "routing_to_goal_prompt_for_a_scheduled_agent",
-          "passed": true
-        }
-      ]
-    },
-    "skills": {
-      "passed": 1,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "commit_skill_matches_repository_conventions",
-          "passed": true
-        }
-      ]
-    },
-    "subagents": {
-      "passed": 1,
-      "failed": 0,
-      "tests": [
-        {
-          "name": "nix_expert_explains_concepts",
-          "passed": true
-        }
-      ]
-    },
-    "workflow_compliance": {
-      "passed": 6,
-      "failed": 2,
-      "tests": [
-        {
-          "name": "workflow_knows_full_sequence",
-          "passed": false
+          "passed": true,
+          "fingerprint": "34fddf9081ce3290a557bfadb71c9db12d3768c067ff7be8d4f7431d09ed968b",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "workflow_rebuild_not_just_nix",
-          "passed": true
+          "name": "routing_to_home_assistant_ac_control",
+          "passed": true,
+          "fingerprint": "ae997cc9c0ec268b614fb024b88c30913fd8aab5f306d373b0e333f332771aec",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "workflow_never_skip_rebuild",
-          "passed": true
+          "name": "routing_to_home_assistant_lights",
+          "passed": true,
+          "fingerprint": "bf0c77b3620c6d889548a4d58b0a2a490091017520f5ba2b92e860ce598dd2b4",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "workflow_respond_only_after_pass",
-          "passed": true
+          "name": "routing_to_humanize_merge_request_description",
+          "passed": true,
+          "fingerprint": "f4b04a52de9b7c0e92d1a2784e749b0eb3c98ea81e98764ccd5a4793924fd850",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "workflow_fix_before_responding",
-          "passed": true
+          "name": "routing_to_instructions_skill_creation",
+          "passed": true,
+          "fingerprint": "a724c0ed444062ad358a2b4353f484b8cca6c071a718aacf1a23d9356e05d661",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "workflow_fix_downstream_reference_not_shim",
-          "passed": false
+          "name": "routing_to_instructions_skill_routing_failure",
+          "passed": true,
+          "fingerprint": "7b2cc6c3b6d19d04bea95c89ca6907d3c6da64c78d4f72dd5be428f25affbcab",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "workflow_change_review_classifies_semantic_risk",
-          "passed": true
+          "name": "routing_to_media_youtube_search",
+          "passed": true,
+          "fingerprint": "4228a437be892605c688da95042ceb29eb574d94308ab63262d52c5136ae22e3",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         },
         {
-          "name": "workflow_review_input_is_unbiased",
-          "passed": true
+          "name": "routing_to_notify_task_completion",
+          "passed": true,
+          "fingerprint": "8f732a3b7981fe9f6c32304643db33105b494de603233105bd53f1331d8a0310",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_orchestrate_same_goal_delegation",
+          "passed": true,
+          "fingerprint": "8d453998b25e012d2bf494fe925e39a37d7c8ca362430ca04f4be29ac44250aa",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_personal_bare_twitter_url",
+          "passed": true,
+          "fingerprint": "7f99d5e7b85d135c0ce2e40c8a1eb0da3637959b00fa7effa3e90967bdbbbfa0",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_personal_bare_xcom_url",
+          "passed": true,
+          "fingerprint": "677011e9998ae342e7e20dc49f7d7da69fc8b6e31ec98caf8df2e5927e8819db",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_personal_tweet_media_fetch",
+          "passed": true,
+          "fingerprint": "6df3fe416ff62724ccc3945718f9bc815a85c0ce230e77908897f7a66e370cbc",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_personal_twitter_post",
+          "passed": true,
+          "fingerprint": "1c26c5f140b204a351e4ee2d8b5e5017a9ecb9a1e4389187bb4399c4b1eadd9d",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "routing_to_personal_twitter_scrape",
+          "passed": true,
+          "fingerprint": "5b91d283bfee5cbd4a0520d112b06ab7ae7ed06289b2eb992aaa2e5e5c091243",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
+        },
+        {
+          "name": "routing_to_personal_xcom_url_what_does_it_say",
+          "passed": true,
+          "fingerprint": "b347321a07e08798976c3840ae838bc9f9a9e683a7ee5fd0cc643d2ae522d972",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_personal_xcom_url_with_context",
+          "passed": true,
+          "fingerprint": "b717456fd138fabac3ea8bd823cad51f5087fa44d6e48fec10d64db65990cb19",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_phone_status_battery",
+          "passed": true,
+          "fingerprint": "2665c5a1081b965b241f6d219b0271b0c00d104f1907b0359f30b7ffcabcd071",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_ponto_time_tracking",
+          "passed": true,
+          "fingerprint": "7217b39cb898c4835153bc250fe21b71829bdfa7ea7bfc5fad6c10e0d28432f2",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_quickshell_bar_module",
+          "passed": true,
+          "fingerprint": "2f301d262a1f9c9566f1f85bcfa0a42c966d3a6379edc23454986f4af8134088",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_research_digest",
+          "passed": true,
+          "fingerprint": "04c62c7166e2139f7a160562bee42c4cf15c1e9734a1e3c62c42ca10e9977e64",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_research_tool_comparison",
+          "passed": true,
+          "fingerprint": "584603411543b1709a1c565730438fbd1b8e16074d882840408ae683f9f67106",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_review_for_a_diff_before_merge",
+          "passed": true,
+          "fingerprint": "e57bc574762eb0e38bea6e897a1a2881937bde9c3d01a21d7f10de0c8b3de9fb",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_review_for_an_instruction_file_audit",
+          "passed": true,
+          "fingerprint": "43c4377b524ae36bc96715fcdec5e5d10b1f66a03e5f864b7c94c24a0dc1d29b",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_review_for_an_unbiased_reviewer_pass",
+          "passed": true,
+          "fingerprint": "4d7c830a484ba81aa5b21f89012b7af340664c813804da5908a0994cf38908a1",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_review_for_the_final_pass",
+          "passed": true,
+          "fingerprint": "71a46a18fb458cab9d50f63ae5f2f561624e4b6bb57e69870be8b61e6240f281",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_ril_capture_backlog",
+          "passed": true,
+          "fingerprint": "2def1eeb0bd85f27577763fde8458ae875bb926fabb6d7b140bffc369eabbe71",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_ril_inbox_processing",
+          "passed": true,
+          "fingerprint": "9b3227a088999df2fb01d61333b3b9082764cae1a6206321054604629b656ed9",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "4be8d384c01d",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "routing_to_tmux_control",
+          "passed": true,
+          "fingerprint": "6328150d3abec01a30a4310a8ba247c153aa3e6a03d50828f0385553dddb97c2",
+          "generated_at": "2026-09-01T02:45:00.354Z",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "recovered_progress",
+            "session_id": 66279
+          }
         }
       ]
     },
@@ -688,19 +1576,47 @@
       "tests": [
         {
           "name": "browser_keeps_explicit_chrome_devtools_choice_during_recovery",
-          "passed": true
-        },
-        {
-          "name": "browser_uses_chrome_devtools_for_public_scraping_when_available",
-          "passed": true
-        },
-        {
-          "name": "browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails",
-          "passed": true
+          "passed": true,
+          "fingerprint": "aa4fe81f91c7d36149bf1e2042cf6bc97268ec6a3a2b7dd6f10a5c97c514cc75",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "browser_reports_blocked_when_autonomous_agent_requires_chrome_devtools",
-          "passed": true
+          "passed": true,
+          "fingerprint": "f68df83c66147e46af2ee603d13d627e9ac959f8dcfdb7fcd6b136267be1d1f1",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "browser_uses_chrome_devtools_for_public_scraping_when_available",
+          "passed": true,
+          "fingerprint": "3d8df3417dd8419343267a15f40a371d4c05267e1354fcbc83df2b32bd2d7046",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails",
+          "passed": true,
+          "fingerprint": "c9a6eb49e769676b0b5d55e94a9aa7e056f7082dbd4de6040eb1bb113fb4cd27",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -709,32 +1625,81 @@
       "failed": 1,
       "tests": [
         {
-          "name": "commit_uses_specific_staging",
-          "passed": true
+          "name": "commit_matches_repository_convention",
+          "passed": true,
+          "fingerprint": "d47db1c49cc6f591cb71918399df2d9abe9bc164bc62c5cb36827db3d4e1f264",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "commit_reads_diff_first",
-          "passed": true
+          "passed": true,
+          "fingerprint": "63ab98ef692420356b5388a432d892c0bac0075e0b8e2714c3ab2a3f1c8510d8",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "commit_matches_repository_convention",
-          "passed": true
-        },
-        {
-          "name": "git_history_never_uses_repeated_grep",
-          "passed": true
-        },
-        {
-          "name": "git_history_file_paths_are_high_signal",
-          "passed": true
-        },
-        {
-          "name": "git_history_knows_when_not_to_use",
-          "passed": true
+          "name": "commit_uses_specific_staging",
+          "passed": true,
+          "fingerprint": "3b60aa6555c55f38a95e685fb37a5380ea5d32782b6fad4211c812b06f228e6a",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "git_history_cache_invalidation",
-          "passed": false
+          "passed": false,
+          "fingerprint": "d7f0de59391361f0533da44c60d00a233da1dfee56dd72f1045416aced6e7fbe",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "git_history_file_paths_are_high_signal",
+          "passed": true,
+          "fingerprint": "b2be0c8c520134717e1f491a15d86ef2c4ea66e585ab10d197e20e2b32133667",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "git_history_knows_when_not_to_use",
+          "passed": true,
+          "fingerprint": "8f003b0329f48b2def3b9559d7916e00e9fd84a7b87aeeefa1464b7c3a2e03b4",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "git_history_never_uses_repeated_grep",
+          "passed": true,
+          "fingerprint": "66e4a06d5ecf9a813919112d9041348e4ef621f5d6f0f8884182278a1b877b0c",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -743,16 +1708,37 @@
       "failed": 0,
       "tests": [
         {
-          "name": "test_first_before_fix",
-          "passed": true
+          "name": "test_behavioral_evidence_does_not_prove_root_cause",
+          "passed": true,
+          "fingerprint": "266a5d2b812e471ea3ce800814b13122206b4a211ba1fdf44a888672c6f58dfa",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "test_behavioral_evidence_does_not_prove_root_cause",
-          "passed": true
+          "name": "test_first_before_fix",
+          "passed": true,
+          "fingerprint": "9f0c56d387db2c0aa2e0eaad1da15897a06c2d73456613dccd29317aa4cbdb96",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "test_verification_scales_to_relevant_evidence",
-          "passed": true
+          "passed": true,
+          "fingerprint": "d1131df06c7c4fc24cbc2b691b18e946678ce63b8790e8aa203b8f61271a6c94",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -762,11 +1748,25 @@
       "tests": [
         {
           "name": "worktrees_never_checkout_main",
-          "passed": true
+          "passed": true,
+          "fingerprint": "1043c8608f1f10b8ecbeeff66cb1ddac126aa0a7842870d69d27b17efd73da98",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "worktrees_pr_from_main_directory",
-          "passed": true
+          "passed": true,
+          "fingerprint": "e37e3e61458aa3acca5b5e6dfbc268528ece0e6382f33f92e63c7d192cda5518",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -775,24 +1775,59 @@
       "failed": 0,
       "tests": [
         {
-          "name": "desktop_routes_to_keyboard",
-          "passed": true
-        },
-        {
-          "name": "desktop_routes_to_mouse",
-          "passed": true
-        },
-        {
-          "name": "desktop_routes_to_screenshot",
-          "passed": true
-        },
-        {
           "name": "desktop_routes_to_clipboard",
-          "passed": true
+          "passed": true,
+          "fingerprint": "878db2483b9097c58a840da7184ab5d7d797837bfc0544e58d758bdcc1e0cfed",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "desktop_routes_to_keyboard",
+          "passed": true,
+          "fingerprint": "3e052c604ba8312a3eb56e8cd65670140b5f012d5931a779c35a74b4ec24d425",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "desktop_routes_to_media_control",
-          "passed": true
+          "passed": true,
+          "fingerprint": "17fa8d4c0e264f7332c619bf3f60ca925a080b1e0e8a0dd54bf8dc2cf4b2028e",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "desktop_routes_to_mouse",
+          "passed": true,
+          "fingerprint": "1d13941d4072a0b4a8e6bde942b6c329cd421fc5b75eaa8c628784b6047543a9",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "desktop_routes_to_screenshot",
+          "passed": true,
+          "fingerprint": "5f0d34d2327f63477f6ca5d765802f0ea6e043e532ced9a984b98a72c7a86d15",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -801,88 +1836,235 @@
       "failed": 2,
       "tests": [
         {
-          "name": "recovery_answers_the_user_visible_outcome_first",
-          "passed": true
-        },
-        {
-          "name": "recovery_surfaces_the_requested_decision",
-          "passed": true
-        },
-        {
-          "name": "recovery_reports_current_state_instead_of_process_history",
-          "passed": true
-        },
-        {
-          "name": "recovery_names_the_exact_repository_owner",
-          "passed": true
-        },
-        {
-          "name": "recovery_establishes_that_the_cache_exists",
-          "passed": false
-        },
-        {
-          "name": "recovery_resolves_pronouns_and_dependencies",
-          "passed": true
-        },
-        {
-          "name": "recovery_unpacks_the_test_delivery_flow",
-          "passed": true
-        },
-        {
-          "name": "recovery_preserves_and_defines_a_legitimate_statistical_term",
-          "passed": true
-        },
-        {
-          "name": "recovery_unpacks_an_opaque_noun_stack",
-          "passed": true
-        },
-        {
-          "name": "recovery_honors_a_tldr_size_constraint",
-          "passed": true
-        },
-        {
-          "name": "recovery_stops_repeating_completed_history",
-          "passed": true
-        },
-        {
-          "name": "recovery_answers_a_small_question_at_small_scale",
-          "passed": false
-        },
-        {
-          "name": "recovery_rejects_a_table_that_preserves_undefined_concepts",
-          "passed": true
-        },
-        {
-          "name": "recovery_uses_a_table_when_exact_mapping_is_the_need",
-          "passed": true
-        },
-        {
-          "name": "recovery_distinguishes_operational_anger_from_a_language_failure",
-          "passed": true
-        },
-        {
-          "name": "recovery_preserves_exact_identifiers_despite_jargon_concern",
-          "passed": true
-        },
-        {
-          "name": "recovery_keeps_a_successful_diagram_when_relationships_need_it",
-          "passed": true
-        },
-        {
-          "name": "channel_uses_numbered_steps_for_an_ordered_procedure",
-          "passed": true
-        },
-        {
-          "name": "channel_uses_requested_headings_for_distinct_reader_needs",
-          "passed": true
-        },
-        {
           "name": "channel_explains_without_padding_the_reply",
-          "passed": true
+          "passed": true,
+          "fingerprint": "7fcc0a98a7b9647be42ffa9e758c023e6ec59df7e350da9ac7361dcb24591d1b",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "channel_preserves_source_punctuation_when_quoting",
-          "passed": true
+          "passed": true,
+          "fingerprint": "9e127cb954287e04ba931f0765fdab3db3ccd3aa2d69b436532c13577165e0a9",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "channel_uses_numbered_steps_for_an_ordered_procedure",
+          "passed": true,
+          "fingerprint": "bda01ee2a0d452a8b949f7e4b4406c34219b1f4e17a33afb46d7a0723b924ecd",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "channel_uses_requested_headings_for_distinct_reader_needs",
+          "passed": true,
+          "fingerprint": "d26fd5499c4ee579f7e2a51cd0652d122fa8735877cf01dbf55d21787fc70fe4",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_answers_a_small_question_at_small_scale",
+          "passed": false,
+          "fingerprint": "1ca1442d504ad484040f7a24ee5dbd2325cc979699194f5dbabb642ba1f011ff",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_answers_the_user_visible_outcome_first",
+          "passed": true,
+          "fingerprint": "a24b518be39236b150ff55ddd889c6cf9d52efef1124e321ffd36c94108a1b3a",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_distinguishes_operational_anger_from_a_language_failure",
+          "passed": true,
+          "fingerprint": "72b84fc80af9a65931529c1932f08a4c5a33db32e80729d2c56782c0cd9f5ac0",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_establishes_that_the_cache_exists",
+          "passed": false,
+          "fingerprint": "890e76dac4ea54e55f2dbd996af526da80056e9f0cea098b9e4eda74120866ae",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_honors_a_tldr_size_constraint",
+          "passed": true,
+          "fingerprint": "f240bef00f6c4967f2067b6f25798ef3ad9db68351f5f95c6246a643ee7ce086",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_keeps_a_successful_diagram_when_relationships_need_it",
+          "passed": true,
+          "fingerprint": "07c2673576a38e0efca87d284d275489fee0786a3e6980ae606152c9aa455b1d",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_names_the_exact_repository_owner",
+          "passed": true,
+          "fingerprint": "a231d7a8216c6e03d898cd5bcb70e9ac4c9cac845e0815839d0be63f5634395c",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_preserves_and_defines_a_legitimate_statistical_term",
+          "passed": true,
+          "fingerprint": "10242b69c05cf1c9dad9eb0fd16be24652cf9544a95bc8468861501a0b6163c6",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_preserves_exact_identifiers_despite_jargon_concern",
+          "passed": true,
+          "fingerprint": "a22658119ed591d8277cd91fadd268e76e8628d4d5707abcadf654693ffc92a8",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_rejects_a_table_that_preserves_undefined_concepts",
+          "passed": true,
+          "fingerprint": "2f33ecaa7099fc7030ee0ee392f88e452d47426da31ba9ec25890bbce7e37c14",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_reports_current_state_instead_of_process_history",
+          "passed": true,
+          "fingerprint": "685d886fdedaddd0b2c0d9e93bab36af5fe65612015a13011f0c9de7cf020a20",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_resolves_pronouns_and_dependencies",
+          "passed": true,
+          "fingerprint": "da6ff0c30ed87691618c99f1f05001f26f4fe4bcc8090bedf3585ff5625346fa",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_stops_repeating_completed_history",
+          "passed": true,
+          "fingerprint": "73dc63a7b66460650604e9cf96eb3bb3e6e2e3a6b926b2b9468d1645c6750af5",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_surfaces_the_requested_decision",
+          "passed": true,
+          "fingerprint": "6643f912458b93d4674b63ac4d06097efe07c605e58bf8a28d793728f272a1bf",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_unpacks_an_opaque_noun_stack",
+          "passed": true,
+          "fingerprint": "8a0186940cd233bec0531a2f1ec0b97b7704a7a996e5b2057b7a3e20e483a9c6",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_unpacks_the_test_delivery_flow",
+          "passed": true,
+          "fingerprint": "7c1cfef7537daad0914f2a8cf5a4c25b57322d887aa74fd68c5024e1a04d06a4",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_uses_a_table_when_exact_mapping_is_the_need",
+          "passed": true,
+          "fingerprint": "4b54b8e99b7f1bcca65bbcc520a4dff53c0fe2bfcc416d3b2fb533098e809a5e",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -891,20 +2073,48 @@
       "failed": 0,
       "tests": [
         {
-          "name": "rebuild_stages_nix_files_first",
-          "passed": true
-        },
-        {
           "name": "rebuild_background_execution",
-          "passed": true
-        },
-        {
-          "name": "rebuild_output_to_file_not_pipe",
-          "passed": true
+          "passed": true,
+          "fingerprint": "75d96876c186a0b6bffad9e73cf07dadcc5e77630ce2f171795790bff3cc258b",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "rebuild_dry_run_validation",
-          "passed": true
+          "passed": true,
+          "fingerprint": "fc5b089cde60bcec1d7efe0d3d511ef4a94e7ff2bb331de88211282ee98f5c02",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "rebuild_output_to_file_not_pipe",
+          "passed": true,
+          "fingerprint": "80a6bd274c4a31eeb70d1b3381bc07bf4757b974b4762fe8d40b0a0695c7e5db",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "rebuild_stages_nix_files_first",
+          "passed": true,
+          "fingerprint": "8b6506df7afc937a17a24cb76831681a0f58f44f8bd002b678af34792e65d4ef",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -914,15 +2124,36 @@
       "tests": [
         {
           "name": "dotfiles_directory_structure",
-          "passed": true
+          "passed": true,
+          "fingerprint": "97853dc20fb736a344be4a424cec432c9190931295b8e3421521e50af9698dc2",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "dotfiles_isnixos_detection",
-          "passed": true
+          "passed": true,
+          "fingerprint": "e3ff9b4707fb6a42bca4064e0046d4779c72891195a65197ef010d6aaaf08347",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "nix_explains_lazy_evaluation_and_fixed_points",
-          "passed": true
+          "passed": true,
+          "fingerprint": "c105c5924e99a0edd7ae5331fa53a5c3c7636200917c56bbc6bf2bdc13e588cf",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -932,19 +2163,47 @@
       "tests": [
         {
           "name": "obsidian_capture_inbox_belongs_to_ril",
-          "passed": true
+          "passed": true,
+          "fingerprint": "adfab22a942ea50b13ec49bb7f20c639a0e04e4fb88a61116ffcc7191350df9e",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "obsidian_names_the_two_vault_zones",
-          "passed": true
-        },
-        {
-          "name": "obsidian_sync_contention_is_not_a_fault",
-          "passed": true
+          "passed": true,
+          "fingerprint": "46e20ec3cb0c1d64d350a0086e4efaf19c56c588dbe94ef53df6e4f6e7d3f010",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "obsidian_second_brain_contract_is_read_not_recalled",
-          "passed": false
+          "passed": false,
+          "fingerprint": "d82af26e69c8b1db9a49cf206b17dc1c75aed35141bc819c2ae950952b4e59c1",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "obsidian_sync_contention_is_not_a_fault",
+          "passed": true,
+          "fingerprint": "3e81c7fad7b46329e461761bef29118cf651cfe8ad9b30995377d422832f21f7",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -953,24 +2212,59 @@
       "failed": 0,
       "tests": [
         {
+          "name": "quickshell_knows_bar_ipc",
+          "passed": true,
+          "fingerprint": "2790be8af40287625a2c7ce2a465775225edd91ff16696fc5a228c3ae779751c",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
           "name": "quickshell_knows_ipc_for_overview",
-          "passed": true
+          "passed": true,
+          "fingerprint": "7e1899d2905d35c8c991a78e301b7290e0af81e6afeda2326453d3da60ace7b5",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "quickshell_knows_overview_config_location",
-          "passed": true
+          "passed": true,
+          "fingerprint": "3387a32f37663638ab418da835528c80f60e818c1ce34aa05a9f0efe3ad9c775",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "quickshell_knows_service_restart",
-          "passed": true
+          "passed": true,
+          "fingerprint": "87c60d586488ac70b8f38f30c5734c4184e06d10252961ae9c99fc0946e197d5",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "quickshell_knows_theme_integration",
-          "passed": true
-        },
-        {
-          "name": "quickshell_knows_bar_ipc",
-          "passed": true
+          "passed": true,
+          "fingerprint": "7ea974d56ce66dda18b292961900ef446455aef2b1591684ef27f3dd4178cb60",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     },
@@ -979,35 +2273,279 @@
       "failed": 1,
       "tests": [
         {
-          "name": "ril_marks_done_only_through_the_cli",
-          "passed": true
+          "name": "ril_claim_collision_stops_the_run",
+          "passed": true,
+          "fingerprint": "6d92bae3c98aedad9b9f32255ea434353342fd4ba96ca10946edea2eac59f2e5",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
-          "name": "ril_claim_collision_stops_the_run",
-          "passed": true
+          "name": "ril_marks_done_only_through_the_cli",
+          "passed": true,
+          "fingerprint": "25ebb74f899d098c5f2d3ada5abff9e91ce74b30a1b43753742a14be69530e70",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "ril_never_annotates_a_capture",
-          "passed": false
-        },
-        {
-          "name": "ril_resolves_the_capture_origin",
-          "passed": true
-        },
-        {
-          "name": "ril_verdict_belongs_to_the_user",
-          "passed": true
+          "passed": false,
+          "fingerprint": "31d132660a590c358ed12ba545c01ad66e634a81fb86d52bcdd8aa30688dbc97",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         },
         {
           "name": "ril_proves_an_adopt_before_proposing_it",
-          "passed": true
+          "passed": true,
+          "fingerprint": "95794d489cd9a98ba0dabbadbf0f8efdba8af6c40dd00c2629469b087dd56d69",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "ril_resolves_the_capture_origin",
+          "passed": true,
+          "fingerprint": "77804edf4d387f9e7ae2f286d5a6ec4cd76a7e39aa9cf8c7b96269f35aa62916",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "ril_verdict_belongs_to_the_user",
+          "passed": true,
+          "fingerprint": "55205fe303308e75e1cbc58813c8e485b437294e049058b0a11f439feadefe89",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        }
+      ]
+    },
+    "skills": {
+      "passed": 1,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "commit_skill_matches_repository_conventions",
+          "passed": true,
+          "fingerprint": "7561e930a81ef6be41e090c5b5b1968457e8b8d2a7ddc946b4ef1fba6b02ea58",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        }
+      ]
+    },
+    "subagents": {
+      "passed": 1,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "nix_expert_explains_concepts",
+          "passed": true,
+          "fingerprint": "dcf72f35594aff1360be62dab66a90bf8759840cbca186894318b54908f5d714",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        }
+      ]
+    },
+    "workflow_compliance": {
+      "passed": 6,
+      "failed": 2,
+      "tests": [
+        {
+          "name": "workflow_change_review_classifies_semantic_risk",
+          "passed": true,
+          "fingerprint": "c558fc224c750eccf87c1c877e034908f8a88dab59842432b5c11ca12084ac60",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "workflow_fix_before_responding",
+          "passed": true,
+          "fingerprint": "f5434040047bacb1b88435cb290eb98e4e09fd58ac4d31a00f9f9c8875c11592",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "workflow_fix_downstream_reference_not_shim",
+          "passed": false,
+          "fingerprint": "f6f95e07ac7514d21475c349fad4b5092e9d455b3bf33832de630a001d8d48d7",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "workflow_knows_full_sequence",
+          "passed": false,
+          "fingerprint": "97144a99c1c9f4f8aef87e29bede1d8e7981d5c77271f404482e44fe38205f3a",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "workflow_never_skip_rebuild",
+          "passed": true,
+          "fingerprint": "b5d7ec441bae35fce640d36ade39c477fdbab52994022c28316509b7f1fc4fb4",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "workflow_rebuild_not_just_nix",
+          "passed": true,
+          "fingerprint": "50965748d0e839b49d08cf45236a7ad4e56849e553aed57ced2556c2a0230763",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "workflow_respond_only_after_pass",
+          "passed": true,
+          "fingerprint": "4a04a3b2ef5e835652dfc20136c9a9b7d6afaf0a1bb57c0879b88809c352971a",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "workflow_review_input_is_unbiased",
+          "passed": true,
+          "fingerprint": "b969e6e6332b11c7b39ec136ebc59cf13b991b50cdab90432863832c401ea5a1",
+          "generated_at": "2026-08-30T00:18:26.050632+00:00",
+          "execution_profile_id": "6fe2c0a12d3a",
+          "run_source": {
+            "kind": "committed_baseline",
+            "git_commit": "0720b5b6"
+          }
         }
       ]
     }
   },
   "fingerprints": {
-    "suite": "9f924c3a19c56b44f0ccbebacca52a9d1734af32367fce062963e0bac4abb610",
-    "instructions": "216e7c4c9404513680bf2abb84ad11bd117d7c4c1cb0814f23252cd17bf17d1e"
+    "suite": "27e8b4530590c1c442f6a48d8d9c2d53906494b771cd4a3a4e206c426280b8ef",
+    "instructions": "5d73395a1f4f123d30c4c6d4c106acc41a8532e55535ed794efdf16fd472150b"
+  },
+  "execution_profile": {
+    "subject": {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "reasoning_effort": "high"
+    },
+    "judge": {
+      "harness": "codex",
+      "model": "gpt-5.6-luna",
+      "reasoning_effort": "low"
+    }
+  },
+  "execution_profiles": {
+    "6fe2c0a12d3a": {
+      "subject": {
+        "harness": "claude",
+        "model": "haiku",
+        "reasoning_effort": null
+      },
+      "judge": {
+        "harness": "claude",
+        "model": "opus",
+        "reasoning_effort": null
+      }
+    },
+    "4be8d384c01d": {
+      "subject": {
+        "harness": "claude",
+        "model": "sonnet",
+        "reasoning_effort": null
+      },
+      "judge": {
+        "harness": "claude",
+        "model": "opus",
+        "reasoning_effort": null
+      }
+    },
+    "1db763439b25": {
+      "subject": {
+        "harness": "codex",
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "high"
+      },
+      "judge": {
+        "harness": "codex",
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "low"
+      }
+    }
+  },
+  "token_usage": {
+    "subject": {
+      "codex": {
+        "invocations": 40,
+        "measured_invocations": 40,
+        "input_tokens": 834101,
+        "cached_input_tokens": 462848,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11692,
+        "reasoning_output_tokens": 6134
+      }
+    },
+    "judge": {
+      "codex": {
+        "invocations": 43,
+        "measured_invocations": 42,
+        "input_tokens": 413468,
+        "cached_input_tokens": 357376,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2707,
+        "reasoning_output_tokens": 989
+      }
+    }
   },
   "evidence_profiles": {
     "skills/humanize/reader_recovery": {
@@ -1111,7 +2649,20 @@
       "fingerprints": {
         "suite": "7680eb17219f8525cedb6d77c999f02f72ade6397776bd1a639a8370d87c5772",
         "instructions": "82e6e9d608ccd99b0d1e219e0e7d7aa2c8fa19bd6d5b686a040ab59c0f654f98"
+      },
+      "execution_profile": {
+        "subject": {
+          "harness": "claude",
+          "model": "haiku",
+          "reasoning_effort": null
+        },
+        "judge": {
+          "harness": "claude",
+          "model": "opus",
+          "reasoning_effort": null
+        }
       }
     }
-  }
+  },
+  "minimum_current_evidence": 109
 }

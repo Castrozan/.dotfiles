@@ -17,7 +17,7 @@ def parse_judge_verdict(raw_verdict: str) -> tuple[bool, str]:
     return first_line.upper().startswith("PASS"), first_line
 
 
-def build_llm_judge(model: str, cli_invoker):
+def build_llm_judge(model: str | None, cli_invoker):
     def judge(rubric: str, output: str) -> tuple[bool, str]:
         judge_prompt = (
             "You grade an AI assistant response against ONE rubric. "

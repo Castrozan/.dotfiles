@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+import run_evals_sampling
 from run_evals_sampling import (
     aggregate_repeated_runs,
     build_epoch_enriched_baseline,
@@ -7,6 +8,23 @@ from run_evals_sampling import (
 )
 
 FakeResult = namedtuple("FakeResult", ["name", "passed", "category"])
+
+EXECUTION_PROFILE = {
+    "subject": {"harness": "claude", "model": "sonnet", "reasoning_effort": "high"},
+    "judge": {"harness": "claude", "model": "opus", "reasoning_effort": None},
+}
+TOKEN_USAGE = {"input_tokens": 100, "output_tokens": 50}
+
+
+def _fingerprints(per_test):
+    return {
+        f"{test['category']}::{test['name']}": f"{test['category']}::{test['name']}-sha"
+        for test in per_test
+    }
+
+
+def _isolate_baseline(tmp_path, monkeypatch):
+    monkeypatch.setattr(run_evals_sampling, "BASELINE_PATH", tmp_path / "baseline.json")
 
 
 def _epoch(*items):
@@ -76,7 +94,8 @@ def test_aggregate_keeps_same_name_in_different_categories_separate():
     assert by_key[("nix/knowledge", "shared")]["total"] == 2
 
 
-def test_epoch_baseline_ties_toward_pass_on_an_even_split():
+def test_epoch_baseline_ties_toward_pass_on_an_even_split(tmp_path, monkeypatch):
+    _isolate_baseline(tmp_path, monkeypatch)
     per_test = aggregate_repeated_runs(
         [
             _epoch(("even", True, "core_rules")),
@@ -85,14 +104,23 @@ def test_epoch_baseline_ties_toward_pass_on_an_even_split():
     )
 
     baseline = build_epoch_enriched_baseline(
-        per_test, 2, "abc123", "2026-07-23T00:00:00+00:00"
+        per_test,
+        2,
+        "abc123",
+        "2026-07-23T00:00:00+00:00",
+        EXECUTION_PROFILE,
+        TOKEN_USAGE,
+        _fingerprints(per_test),
     )
 
     assert baseline["categories"]["core_rules"]["passed"] == 1
     assert baseline["categories"]["core_rules"]["failed"] == 0
 
 
-def test_epoch_baseline_buckets_by_category_and_uses_majority_vote():
+def test_epoch_baseline_buckets_by_category_and_uses_majority_vote(
+    tmp_path, monkeypatch
+):
+    _isolate_baseline(tmp_path, monkeypatch)
     per_test = aggregate_repeated_runs(
         [
             _epoch(
@@ -108,7 +136,13 @@ def test_epoch_baseline_buckets_by_category_and_uses_majority_vote():
     )
 
     baseline = build_epoch_enriched_baseline(
-        per_test, 3, "abc123", "2026-07-23T00:00:00+00:00"
+        per_test,
+        3,
+        "abc123",
+        "2026-07-23T00:00:00+00:00",
+        EXECUTION_PROFILE,
+        TOKEN_USAGE,
+        _fingerprints(per_test),
     )
 
     assert baseline["total_tests"] == 2
@@ -119,16 +153,46 @@ def test_epoch_baseline_buckets_by_category_and_uses_majority_vote():
     assert baseline["sampling"]["epochs"] == 3
     assert baseline["sampling"]["total_samples"] == 6
     assert baseline["sampling"]["flaky_tests"] == ["flaky"]
+    assert baseline["execution_profile"] == EXECUTION_PROFILE
+    assert baseline["token_usage"] == TOKEN_USAGE
 
 
-def test_epoch_baseline_carries_provenance_and_omits_pass_at_2_for_one_epoch():
+def test_epoch_baseline_carries_provenance_and_omits_pass_at_2_for_one_epoch(
+    tmp_path, monkeypatch
+):
+    _isolate_baseline(tmp_path, monkeypatch)
     per_test = aggregate_repeated_runs([_epoch(("a", True, "review"))])
 
     baseline = build_epoch_enriched_baseline(
-        per_test, 1, "deadbeef", "2026-07-23T00:00:00+00:00"
+        per_test,
+        1,
+        "deadbeef",
+        "2026-07-23T00:00:00+00:00",
+        EXECUTION_PROFILE,
+        TOKEN_USAGE,
+        _fingerprints(per_test),
     )
 
     assert baseline["git_commit"] == "deadbeef"
     assert baseline["generated_at"] == "2026-07-23T00:00:00+00:00"
     assert baseline["sampling"]["suite_pass_at_2"] is None
     assert baseline["sampling"]["suite_pass_at_1"] == 1.0
+
+
+def test_full_epoch_baseline_replaces_another_execution_profile(tmp_path, monkeypatch):
+    baseline_path = tmp_path / "baseline.json"
+    baseline_path.write_text('{"execution_profile":{"subject":{"harness":"codex"}}}')
+    monkeypatch.setattr(run_evals_sampling, "BASELINE_PATH", baseline_path)
+    per_test = aggregate_repeated_runs([_epoch(("a", True, "review"))])
+
+    baseline = build_epoch_enriched_baseline(
+        per_test,
+        3,
+        "deadbeef",
+        "2026-07-23T00:00:00+00:00",
+        EXECUTION_PROFILE,
+        TOKEN_USAGE,
+        _fingerprints(per_test),
+    )
+
+    assert baseline["execution_profile"] == EXECUTION_PROFILE

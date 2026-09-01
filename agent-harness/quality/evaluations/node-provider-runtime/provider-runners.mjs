@@ -68,7 +68,7 @@ async function runClaude(invocation) {
 }
 
 async function runCodex(invocation) {
-  const codex = new Codex(codexOptions());
+  const codex = new Codex(codexOptions(invocation));
   const thread = codex.startThread(codexThreadOptions(invocation));
   const controller = new AbortController();
   const timeoutMs = timeoutFor(invocation);
@@ -77,7 +77,7 @@ async function runCodex(invocation) {
     const turn = await thread.run(codexInput(invocation), {
       signal: controller.signal,
     });
-    return { output: turn.finalResponse, error: null };
+    return { output: turn.finalResponse, error: null, usage: turn.usage };
   } catch (error) {
     if (controller.signal.aborted) {
       return { output: null, error: `timeout after ${timeoutMs / 1000}s` };

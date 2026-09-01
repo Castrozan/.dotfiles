@@ -138,6 +138,22 @@ def print_calibration_summary(agreement: dict) -> bool:
     return agreement["meets_gate"]
 
 
+def print_provider_usage(usage: dict) -> None:
+    if not usage:
+        return
+    print("PROVIDER TOKEN USAGE")
+    for role, harnesses in sorted(usage.items()):
+        for harness, bucket in sorted(harnesses.items()):
+            print(
+                f"  {role}/{harness}: {bucket['invocations']} invocations, "
+                f"{bucket['input_tokens']} input "
+                f"({bucket['cached_input_tokens']} cached), "
+                f"{bucket['output_tokens']} output "
+                f"({bucket['reasoning_output_tokens']} reasoning)"
+            )
+    print()
+
+
 def list_categories(config: dict) -> None:
     print("Available test categories:")
     for cat_name, tests in config.get("tests", {}).items():
