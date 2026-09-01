@@ -44,6 +44,18 @@ def test_build_execution_profile_omits_reasoning_effort_when_unconfigured():
     assert profile["judge"]["reasoning_effort"] is None
 
 
+def test_build_execution_profile_records_provider_default_models_as_none():
+    settings = {
+        "subject_models": {"codex": "gpt-5.6-luna"},
+        "judge_models": {"codex": "gpt-5.6-luna"},
+    }
+
+    profile = build_execution_profile(settings, "opencode", "opencode")
+
+    assert profile["subject"]["model"] is None
+    assert profile["judge"]["model"] is None
+
+
 def test_category_merge_writes_execution_profile_and_token_usage(monkeypatch):
     monkeypatch.setattr(
         run_evals_baseline_record,

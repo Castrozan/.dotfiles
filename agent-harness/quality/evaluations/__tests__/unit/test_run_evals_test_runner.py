@@ -158,3 +158,28 @@ def test_codex_subject_and_judge_use_their_pinned_models_and_reasoning(monkeypat
     assert invocations[1][1]["model"] == "gpt-5.6-luna"
     assert invocations[1][1]["model_reasoning_effort"] == "low"
     assert invocations[1][1]["invocation_role"] == "judge"
+
+
+def test_opencode_subject_and_judge_can_use_provider_default_models(monkeypatch):
+    invocations = []
+
+    def invoke(harness, **keyword_arguments):
+        invocations.append((harness, keyword_arguments))
+        if keyword_arguments["invocation_role"] == "judge":
+            return "VERDICT: PASS", True
+        return "candidate answer", True
+
+    monkeypatch.setattr(subject_port, "invoke_subject", invoke)
+    result = run_evals_test_runner.run_test(
+        {
+            "name": "opencode_defaults",
+            "prompt": "answer",
+            "assertions": {"llm_judge": ["must answer"]},
+        },
+        settings={"subject_models": {}, "judge_models": {}},
+        harness="opencode",
+        judge_harness="opencode",
+    )
+
+    assert result.passed is True
+    assert [invocation[1]["model"] for invocation in invocations] == [None, None]

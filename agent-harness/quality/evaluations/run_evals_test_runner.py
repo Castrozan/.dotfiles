@@ -113,7 +113,7 @@ def run_test(
     judge = None
     if "llm_judge" in assertions:
         judge = build_llm_judge(
-            settings.get("judge_models", {"claude": "opus"})[judge_harness],
+            settings.get("judge_models", {"claude": "opus"}).get(judge_harness),
             subject_port.build_provider_invoker(
                 judge_harness,
                 timeout,

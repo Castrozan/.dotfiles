@@ -34,7 +34,7 @@ def collect_and_print_provider_usage() -> dict:
 def run_judge_calibration(config: dict, args) -> int:
     settings = config.get("settings", {})
     judge = build_llm_judge(
-        settings["judge_models"][args.judge_harness],
+        settings.get("judge_models", {}).get(args.judge_harness),
         build_provider_invoker(
             args.judge_harness,
             settings.get("timeout_seconds", 120),
