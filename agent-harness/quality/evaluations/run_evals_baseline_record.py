@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 from run_evals_baseline_policy import (
     preserved_evidence_profiles,
 )
+from run_evals_execution_profile import execution_profile_identifier
 from run_evals_fingerprint import (
     evaluation_category_names,
     evaluation_fingerprints,
-    humanize_recovery_fingerprints,
 )
 from run_evals_worktree_and_environment import REPO_ROOT
 
@@ -52,6 +52,7 @@ def merge_baseline_categories(
     total_tests = sum(
         bucket["passed"] + bucket["failed"] for bucket in categories.values()
     )
+    execution_profile_id = execution_profile_identifier(execution_profile)
     generated_at = (
         existing_baseline.get("generated_at") or datetime.now(timezone.utc).isoformat()
     )
@@ -65,12 +66,12 @@ def merge_baseline_categories(
         "categories": dict(sorted(categories.items())),
         "fingerprints": evaluation_fingerprints(),
         "execution_profile": execution_profile,
+        "execution_profiles": {
+            **existing_baseline.get("execution_profiles", {}),
+            execution_profile_id: execution_profile,
+        },
         "token_usage": token_usage,
-        "evidence_profiles": preserved_evidence_profiles(
-            existing_baseline,
-            humanize_recovery_fingerprints(),
-            execution_profile,
-        ),
+        "evidence_profiles": preserved_evidence_profiles(existing_baseline),
     }
 
 
@@ -78,7 +79,9 @@ def repeated_outcomes_category_bucket(
     outcomes: dict[str, list[bool]],
     fingerprints: dict[str, str],
     generated_at: str,
+    execution_profile: dict,
 ) -> dict:
+    execution_profile_id = execution_profile_identifier(execution_profile)
     tests = []
     for outcome_key, samples in sorted(outcomes.items()):
         name = outcome_key.split("::", 1)[-1]
@@ -91,6 +94,7 @@ def repeated_outcomes_category_bucket(
                 "samples": len(samples),
                 "fingerprint": fingerprints[outcome_key],
                 "generated_at": generated_at,
+                "execution_profile_id": execution_profile_id,
             }
         )
     passed = sum(test["passed"] for test in tests)

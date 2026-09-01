@@ -1,4 +1,8 @@
 from run_evals_baseline_record import repeated_outcomes_category_bucket
+from run_evals_execution_profile import execution_profile_identifier
+
+
+EXECUTION_PROFILE = {"subject": {"harness": "codex"}, "judge": {"harness": "codex"}}
 
 
 def test_repeated_outcomes_become_a_majority_graded_category_bucket():
@@ -14,6 +18,7 @@ def test_repeated_outcomes_become_a_majority_graded_category_bucket():
             "category::failed": "failed-sha",
         },
         "2026-09-01T00:00:00+00:00",
+        EXECUTION_PROFILE,
     )
 
     assert bucket["passed"] == 2
@@ -25,4 +30,5 @@ def test_repeated_outcomes_become_a_majority_graded_category_bucket():
         "samples": 3,
         "fingerprint": "flaky-sha",
         "generated_at": "2026-09-01T00:00:00+00:00",
+        "execution_profile_id": execution_profile_identifier(EXECUTION_PROFILE),
     }

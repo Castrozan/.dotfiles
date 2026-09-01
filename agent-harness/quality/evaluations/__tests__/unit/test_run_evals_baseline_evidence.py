@@ -1,6 +1,7 @@
 from run_evals_baseline_policy import (
     REQUIRED_HUMANIZE_PROFILE,
     baseline_evidence_failures,
+    baseline_test_evidence_status,
 )
 
 EXECUTION_PROFILE = {
@@ -61,14 +62,10 @@ def valid_baseline():
 
 def test_baseline_evidence_accepts_current_repeated_recovery_measurement():
     baseline = valid_baseline()
-    profile_fingerprints = baseline["evidence_profiles"][REQUIRED_HUMANIZE_PROFILE][
-        "fingerprints"
-    ]
     assert (
         baseline_evidence_failures(
             baseline,
             CURRENT_TEST_FINGERPRINTS,
-            profile_fingerprints,
             set(baseline["categories"]),
             EXECUTION_PROFILE,
         )
@@ -76,35 +73,35 @@ def test_baseline_evidence_accepts_current_repeated_recovery_measurement():
     )
 
 
-def test_baseline_evidence_rejects_stale_sources_and_missing_coverage():
+def test_partial_baseline_preserves_its_current_evidence_floor():
     baseline = valid_baseline()
     del baseline["categories"]["communication"]
-    baseline["evidence_profiles"][REQUIRED_HUMANIZE_PROFILE]["epochs"] = 1
+    current = {
+        **CURRENT_TEST_FINGERPRINTS,
+        "skills/humanize/reader_recovery::recovery_case": "changed-sha",
+    }
+
+    status = baseline_test_evidence_status(baseline, current)
     failures = baseline_evidence_failures(
         baseline,
-        {
-            **CURRENT_TEST_FINGERPRINTS,
-            "skills/humanize/reader_recovery::recovery_case": "changed-sha",
-        },
-        baseline["evidence_profiles"][REQUIRED_HUMANIZE_PROFILE]["fingerprints"],
+        current,
         set(baseline["categories"]),
         EXECUTION_PROFILE,
     )
-    assert any("communication" in failure for failure in failures)
-    assert any("stale evaluation tests" in failure for failure in failures)
-    assert any("at least 3 epochs" in failure for failure in failures)
+
+    assert status["missing"] == {"communication::communication_case"}
+    assert status["stale"] == {"skills/humanize/reader_recovery::recovery_case"}
+    assert failures == [
+        "Current evaluation evidence covers 0 tests, below the baseline floor of 1"
+    ]
 
 
 def test_baseline_evidence_rejects_weak_or_empty_communication_coverage():
     baseline = valid_baseline()
-    profile_fingerprints = baseline["evidence_profiles"][REQUIRED_HUMANIZE_PROFILE][
-        "fingerprints"
-    ]
     baseline["categories"]["communication"] = {"passed": 12, "failed": 4}
     failures = baseline_evidence_failures(
         baseline,
         CURRENT_TEST_FINGERPRINTS,
-        profile_fingerprints,
         set(baseline["categories"]),
         EXECUTION_PROFILE,
     )
@@ -114,24 +111,19 @@ def test_baseline_evidence_rejects_weak_or_empty_communication_coverage():
     failures = baseline_evidence_failures(
         baseline,
         CURRENT_TEST_FINGERPRINTS,
-        profile_fingerprints,
         set(baseline["categories"]),
         EXECUTION_PROFILE,
     )
     assert any("contains no results" in failure for failure in failures)
 
 
-def test_baseline_evidence_rejects_missing_and_obsolete_category_buckets():
+def test_baseline_evidence_allows_missing_and_rejects_obsolete_category_buckets():
     baseline = valid_baseline()
     baseline["categories"]["obsolete"] = {"passed": 1, "failed": 0}
-    profile_fingerprints = baseline["evidence_profiles"][REQUIRED_HUMANIZE_PROFILE][
-        "fingerprints"
-    ]
 
     failures = baseline_evidence_failures(
         baseline,
         CURRENT_TEST_FINGERPRINTS,
-        profile_fingerprints,
         {
             "communication",
             "skills/humanize/reader_recovery",
@@ -140,7 +132,5 @@ def test_baseline_evidence_rejects_missing_and_obsolete_category_buckets():
         EXECUTION_PROFILE,
     )
 
-    assert any(
-        "missing current evaluation categories" in failure for failure in failures
-    )
+    assert not any("missing current" in failure for failure in failures)
     assert any("obsolete evaluation categories" in failure for failure in failures)

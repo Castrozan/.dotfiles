@@ -2,7 +2,8 @@ from datetime import datetime, timezone
 
 from run_evals_ab import run_instruction_loading_experiment
 from run_evals_ab_record import save_ab_profile
-from run_evals_baseline_incremental import BaselineCheckpoint, read_baseline
+from run_evals_baseline_incremental import BaselineCheckpoint
+from run_evals_baseline_store import read_baseline
 from run_evals_baseline_record import (
     get_current_git_commit,
     merge_baseline_snapshot,
@@ -77,13 +78,13 @@ def run_ab_evaluation(config: dict, args, execution_profile: dict) -> int:
             args.compare_ref,
             execution_profile,
             token_usage,
-            evaluation_test_fingerprints(config, execution_profile),
+            evaluation_test_fingerprints(config),
         )
     return 0
 
 
 def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
-    current_fingerprints = evaluation_test_fingerprints(config, execution_profile)
+    current_fingerprints = evaluation_test_fingerprints(config)
     with temporary_eval_worktree():
         results_per_epoch = []
         for epoch_index in range(args.epochs):
@@ -125,7 +126,7 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
     checkpoint = None
     selected_test_keys = None
     if args.save_baseline:
-        current_fingerprints = evaluation_test_fingerprints(config, execution_profile)
+        current_fingerprints = evaluation_test_fingerprints(config)
         selected_test_keys = (
             selected_test_keys_for_filters(
                 current_fingerprints, args.category, args.test
@@ -134,7 +135,6 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
             else affected_test_keys(
                 config,
                 read_baseline(),
-                execution_profile,
                 category=args.category,
                 test_name=args.test,
             )

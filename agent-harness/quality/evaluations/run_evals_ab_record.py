@@ -60,6 +60,7 @@ def save_ab_profile(
                 comparison["candidate_case_outcomes"],
                 test_fingerprints,
                 generated_at,
+                execution_profile,
             )
         },
         execution_profile,

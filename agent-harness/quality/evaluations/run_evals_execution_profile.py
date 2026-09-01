@@ -1,3 +1,7 @@
+import hashlib
+import json
+
+
 def build_execution_profile(settings, subject_harness, judge_harness):
     return {
         "subject": {
@@ -15,3 +19,10 @@ def build_execution_profile(settings, subject_harness, judge_harness):
             ),
         },
     }
+
+
+def execution_profile_identifier(execution_profile: dict) -> str:
+    encoded = json.dumps(
+        execution_profile, sort_keys=True, separators=(",", ":")
+    ).encode()
+    return hashlib.sha256(encoded).hexdigest()[:12]

@@ -9,20 +9,8 @@ from run_evals_fingerprint import instruction_wording
 from run_evals_worktree_and_environment import REPO_ROOT
 
 
-EVALUATION_BEHAVIOR_PATHS = (
-    "agent-harness/quality/evaluations/run_evals_assertions.py",
-    "agent-harness/quality/evaluations/run_evals_config_loader.py",
-    "agent-harness/quality/evaluations/run_evals_hook_test_runner.py",
-    "agent-harness/quality/evaluations/run_evals_judge.py",
-    "agent-harness/quality/evaluations/run_evals_subject_port.py",
-    "agent-harness/quality/evaluations/run_evals_test_runner.py",
-    "agent-harness/quality/evaluations/run_evals_worktree_and_environment.py",
-    "agent-harness/quality/evaluations/node-provider-runtime/package.json",
-    "agent-harness/quality/evaluations/node-provider-runtime/package-lock.json",
-    "agent-harness/quality/evaluations/node-provider-runtime/provider-adapters.mjs",
-    "agent-harness/quality/evaluations/node-provider-runtime/provider-runners.mjs",
-    "agent-harness/quality/evaluations/node-provider-runtime/provider-runtime.mjs",
-)
+EXECUTION_FIELDS = frozenset({"model", "models", "max_turns"})
+INSTRUCTION_LOCATION_FIELDS = frozenset({"agent", "extra_skill_paths", "skill_path"})
 
 
 def test_key(category: str, test_name: str) -> str:
@@ -30,56 +18,37 @@ def test_key(category: str, test_name: str) -> str:
 
 
 def instruction_paths_for_test(repo_root: Path, test: dict) -> list[Path]:
-    path_values = []
-    if test.get("skill_path"):
-        path_values.append(test["skill_path"])
-    path_values.extend(test.get("extra_skill_paths") or [])
-    if test.get("agent"):
-        path_values.append(
+    primary_path = test.get("skill_path")
+    if not primary_path and test.get("agent"):
+        primary_path = (
             f"agent-harness/agent-instructions/skills/{test['agent']}/SKILL.md"
         )
-    return sorted(
-        path for value in path_values if (path := repo_root / value).is_file()
-    )
-
-
-def behavior_contract(repo_root: Path) -> list[tuple[str, str]]:
-    contract = []
-    for relative_path in EVALUATION_BEHAVIOR_PATHS:
-        path = repo_root / relative_path
-        if path.is_file():
-            contract.append(
-                (relative_path, hashlib.sha256(path.read_bytes()).hexdigest())
-            )
-    return contract
+    path_values = [primary_path] if primary_path else []
+    path_values.extend(test.get("extra_skill_paths") or [])
+    return [path for value in path_values if (path := repo_root / value).is_file()]
 
 
 def evaluation_test_fingerprints(
     config: dict,
-    execution_profile: dict,
     repo_root: Path = REPO_ROOT,
 ) -> dict[str, str]:
-    contract = behavior_contract(repo_root)
-    timeout_seconds = config.get("settings", {}).get("timeout_seconds", 120)
     fingerprints = {}
     for category, tests in config.get("tests", {}).items():
         for test in tests:
             instructions = [
-                (
-                    str(path.relative_to(repo_root)),
-                    instruction_wording(
-                        skill_body_from_content(path.read_text(encoding="utf-8"))
-                    ),
+                instruction_wording(
+                    skill_body_from_content(path.read_text(encoding="utf-8"))
                 )
                 for path in instruction_paths_for_test(repo_root, test)
             ]
             payload = {
-                "behavior_contract": contract,
                 "category": category,
-                "execution_profile": execution_profile,
                 "instructions": instructions,
-                "test": test,
-                "timeout_seconds": timeout_seconds,
+                "test": {
+                    key: value
+                    for key, value in test.items()
+                    if key not in EXECUTION_FIELDS | INSTRUCTION_LOCATION_FIELDS
+                },
             }
             encoded = json.dumps(
                 payload, sort_keys=True, separators=(",", ":")
@@ -114,15 +83,12 @@ def selected_test_keys_for_filters(
 def affected_test_keys(
     config: dict,
     baseline: dict,
-    execution_profile: dict,
     repo_root: Path = REPO_ROOT,
     category: str | None = None,
     test_name: str | None = None,
 ) -> set[str]:
-    current = evaluation_test_fingerprints(config, execution_profile, repo_root)
+    current = evaluation_test_fingerprints(config, repo_root)
     selected = selected_test_keys_for_filters(current, category, test_name)
-    if baseline.get("execution_profile") != execution_profile:
-        return selected
     recorded = recorded_test_entries(baseline)
     cutoff = datetime.now(timezone.utc).timestamp() - (
         MAXIMUM_BASELINE_AGE_DAYS * 24 * 60 * 60

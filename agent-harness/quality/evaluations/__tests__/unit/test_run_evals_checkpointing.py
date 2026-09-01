@@ -134,3 +134,40 @@ def test_invocation_errors_are_not_checkpointed(tmp_path):
     )
 
     assert not path.exists()
+
+
+def test_obsolete_results_are_pruned_without_model_calls(tmp_path):
+    path = tmp_path / "baseline.json"
+    profile = {"subject": {"harness": "codex"}, "judge": {"harness": "codex"}}
+    path.write_text(
+        json.dumps(
+            {
+                "execution_profile": profile,
+                "minimum_current_evidence": 2,
+                "categories": {
+                    "communication": {
+                        "tests": [
+                            {
+                                "name": name,
+                                "passed": True,
+                                "fingerprint": f"{name}-fingerprint",
+                                "generated_at": "2026-09-01T00:00:00+00:00",
+                            }
+                            for name in ("current", "obsolete")
+                        ]
+                    }
+                },
+            }
+        )
+    )
+    checkpoint = BaselineCheckpoint(
+        profile,
+        {"communication::current": "current-fingerprint"},
+        path=path,
+    )
+
+    checkpoint.announce()
+
+    baseline = json.loads(path.read_text())
+    assert baseline["total_tests"] == 1
+    assert baseline["minimum_current_evidence"] == 1

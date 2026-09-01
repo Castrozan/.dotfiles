@@ -60,8 +60,8 @@ def render_dashboard_html(revisions, summary, latest_baseline_age_days=None):
 <div class="wrap">
 <h1>agent-eval baseline</h1>
 <p class="lede">How well the AI agent on this machine obeys the dotfiles instruction surface,
-tracked over time. Each point is one recorded eval run; the line is the share of compliance tests
-the agent passed against the instructions as they stood at that commit.</p>
+tracked over time. Each point is one committed baseline assembled from the latest recorded result for each test; the
+line is the share of compliance tests the agent passed.</p>
 
 <div class="cards">
 {stat_cards}
@@ -73,17 +73,20 @@ the agent passed against the instructions as they stood at that commit.</p>
 <div class="panel">
 <p>This is the <b>Tier-1 static-eval pass rate</b> - the headline health number for the agent's
 instruction compliance. A suite of prompt-based evals in <code>agent-harness/quality/evaluations/evals/</code> runs each prompt
-through a vendor SDK inside a throwaway git worktree, then checks assertions on the answer. The committed baseline uses
-Codex; local comparisons can select Claude, Codex, or OpenCode with <code>--harness</code>. Tests are bucketed into <code>compliance</code>,
+through a vendor SDK inside a throwaway git worktree, then checks assertions on the answer. Codex is the default for new
+results; each test row retains its execution profile, so unaffected Claude or Codex results remain until that test's
+prompt, assertions, or instructions change. Tests are bucketed into <code>compliance</code>,
 <code>routing</code>, <code>navigation</code>, <code>knowledge</code> and <code>other</code>.</p>
-<p>Running <code>agent-eval --save-baseline</code> executes only missing, stale, or behaviorally affected tests and
+<p>Running <code>agent-eval --save-baseline</code> executes only missing or old tests, plus tests whose prompt,
+assertions, or instructions changed, and
 checkpoints each result to <code>agent-harness/quality/evaluations/baseline.json</code>. This page reads that file's full git history, so every
 point is a commit - the chart is the repo remembering its own report cards.</p>
 </div>
 
 <h2>The gate that keeps it honest</h2>
 <p class="lede"><code>agent-eval --check-baseline</code> runs in CI with
-no model calls. It just reads the committed baseline and fails the build when:</p>
+no model calls. It reports current and pending evidence separately, then fails the build when recorded quality crosses
+a gate or current evidence coverage falls below the committed floor:</p>
 <div class="chips">
 <span class="chip">overall pass rate <b>&ge; 75%</b></span>
 <span class="chip">compliance pass rate <b>&ge; 85%</b></span>

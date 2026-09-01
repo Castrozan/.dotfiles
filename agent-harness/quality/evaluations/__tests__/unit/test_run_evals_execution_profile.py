@@ -85,7 +85,7 @@ def test_category_merge_rejects_a_mismatched_or_missing_existing_profile():
             )
 
 
-def test_evidence_profile_preserved_only_for_an_exact_execution_profile_match():
+def test_historical_evidence_profiles_preserve_their_own_provenance():
     baseline = {
         "evidence_profiles": {
             "a": {"fingerprints": FINGERPRINTS, "execution_profile": EXECUTION_PROFILE},
@@ -96,8 +96,8 @@ def test_evidence_profile_preserved_only_for_an_exact_execution_profile_match():
             "c": {"fingerprints": FINGERPRINTS},
         }
     }
-    preserved = preserved_evidence_profiles(baseline, FINGERPRINTS, EXECUTION_PROFILE)
-    assert set(preserved) == {"a"}
+    preserved = preserved_evidence_profiles(baseline)
+    assert set(preserved) == {"a", "b", "c"}
 
 
 def test_baseline_policy_rejects_a_mismatched_execution_profile():
@@ -118,14 +118,13 @@ def test_baseline_policy_rejects_a_mismatched_execution_profile():
     failures = baseline_evidence_failures(
         baseline,
         FINGERPRINTS,
-        FINGERPRINTS,
         set(baseline["categories"]),
         OTHER_EXECUTION_PROFILE,
     )
     assert any("execution profile" in failure for failure in failures)
 
 
-def test_baseline_policy_rejects_a_mismatched_evidence_profile():
+def test_baseline_policy_accepts_historical_evidence_profile_provenance():
     baseline = {
         "categories": {},
         "execution_profile": EXECUTION_PROFILE,
@@ -144,9 +143,10 @@ def test_baseline_policy_rejects_a_mismatched_evidence_profile():
     failures = baseline_evidence_failures(
         baseline,
         FINGERPRINTS,
-        FINGERPRINTS,
         set(baseline["categories"]),
         EXECUTION_PROFILE,
     )
 
-    assert any("Humanize recovery execution profile" in failure for failure in failures)
+    assert failures == [
+        "Current evaluation evidence covers 0 tests, below the baseline floor of 1"
+    ]

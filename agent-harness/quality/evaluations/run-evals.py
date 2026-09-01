@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from run_evals_arguments import parse_arguments  # noqa: E402
 from run_evals_baseline import check_baseline_for_regression  # noqa: E402
-from run_evals_baseline_incremental import read_baseline  # noqa: E402
+from run_evals_baseline_store import read_baseline  # noqa: E402
 from run_evals_cli_modes import (  # noqa: E402
     run_ab_evaluation,
     run_judge_calibration,
@@ -45,7 +45,6 @@ def main():
         affected = affected_test_keys(
             config,
             read_baseline(),
-            canonical_execution_profile,
             category=args.category,
             test_name=args.test,
         )

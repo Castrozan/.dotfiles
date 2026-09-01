@@ -1,9 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from run_evals_baseline_incremental import merge_baseline_results
 from run_evals_impact import affected_test_keys, evaluation_test_fingerprints
-from run_evals_test_runner import TestResult
 
 
 EXECUTION_PROFILE = {
@@ -38,27 +36,16 @@ def create_instruction(root: Path, name: str, content: str):
     path.write_text(content)
 
 
-def result(name: str, passed: bool):
-    return TestResult(
-        name=name,
-        passed=passed,
-        duration=0.0,
-        output="",
-        assertions_failed=[] if passed else ["failed"],
-        category="communication",
-    )
-
-
 def test_instruction_change_only_invalidates_tests_that_reference_it():
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         create_instruction(root, "first", "first policy")
         create_instruction(root, "second", "second policy")
         config = evaluation_config()
-        original = evaluation_test_fingerprints(config, EXECUTION_PROFILE, root)
+        original = evaluation_test_fingerprints(config, root)
 
         create_instruction(root, "first", "changed first policy")
-        changed = evaluation_test_fingerprints(config, EXECUTION_PROFILE, root)
+        changed = evaluation_test_fingerprints(config, root)
 
         assert changed["communication::first"] != original["communication::first"]
         assert changed["communication::second"] == original["communication::second"]
@@ -70,11 +57,41 @@ def test_instruction_frontmatter_does_not_invalidate_behavioral_evidence():
         config = evaluation_config()
         create_instruction(root, "first", "---\nname: first\n---\nfirst policy")
         create_instruction(root, "second", "second policy")
-        original = evaluation_test_fingerprints(config, EXECUTION_PROFILE, root)
+        original = evaluation_test_fingerprints(config, root)
 
         create_instruction(root, "first", "---\nname: renamed\n---\nfirst policy")
 
-        assert evaluation_test_fingerprints(config, EXECUTION_PROFILE, root) == original
+        assert evaluation_test_fingerprints(config, root) == original
+
+
+def test_execution_tuning_does_not_invalidate_independent_test_evidence():
+    config = evaluation_config()
+    original = evaluation_test_fingerprints(config)
+
+    config["tests"]["communication"][0]["models"] = {"codex": "different"}
+    config["settings"]["timeout_seconds"] = 300
+
+    assert evaluation_test_fingerprints(config) == original
+
+
+def test_instruction_loading_order_invalidates_the_referencing_test():
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        create_instruction(root, "first", "first policy")
+        create_instruction(root, "second", "second policy")
+        config = evaluation_config()
+        test = config["tests"]["communication"][0]
+        test["extra_skill_paths"] = [
+            "agent-harness/agent-instructions/skills/second/SKILL.md"
+        ]
+        original = evaluation_test_fingerprints(config, root)
+
+        test["skill_path"], test["extra_skill_paths"][0] = (
+            test["extra_skill_paths"][0],
+            test["skill_path"],
+        )
+
+        assert evaluation_test_fingerprints(config, root) != original
 
 
 def test_affected_selection_returns_only_missing_or_stale_tests():
@@ -83,7 +100,7 @@ def test_affected_selection_returns_only_missing_or_stale_tests():
         create_instruction(root, "first", "first policy")
         create_instruction(root, "second", "second policy")
         config = evaluation_config()
-        fingerprints = evaluation_test_fingerprints(config, EXECUTION_PROFILE, root)
+        fingerprints = evaluation_test_fingerprints(config, root)
         baseline = {
             "execution_profile": EXECUTION_PROFILE,
             "categories": {
@@ -100,86 +117,31 @@ def test_affected_selection_returns_only_missing_or_stale_tests():
             },
         }
 
-        assert affected_test_keys(config, baseline, EXECUTION_PROFILE, root) == {
-            "communication::second"
-        }
+        assert affected_test_keys(config, baseline, root) == {"communication::second"}
 
 
-def test_execution_profile_change_invalidates_every_test():
+def test_execution_profile_change_preserves_independent_test_evidence():
     config = evaluation_config()
-    baseline = {"execution_profile": {"subject": {}}, "categories": {}}
-
-    assert affected_test_keys(config, baseline, EXECUTION_PROFILE) == {
-        "communication::first",
-        "communication::second",
-    }
-
-
-def test_per_test_merge_preserves_fresh_results_and_prunes_obsolete_tests():
-    fingerprints = {
-        "communication::first": "first-fingerprint",
-        "communication::second": "second-fingerprint",
-    }
+    fingerprints = evaluation_test_fingerprints(config)
+    generated_at = "2026-08-31T00:00:00+00:00"
     baseline = {
-        "execution_profile": EXECUTION_PROFILE,
+        "execution_profile": {"subject": {}},
         "categories": {
             "communication": {
-                "passed": 1,
-                "failed": 1,
                 "tests": [
                     {
-                        "name": "first",
+                        "name": name,
                         "passed": True,
-                        "fingerprint": "first-fingerprint",
-                        "generated_at": "2026-08-30T00:00:00+00:00",
-                    },
-                    {
-                        "name": "stale",
-                        "passed": False,
-                        "fingerprint": "stale-fingerprint",
-                        "generated_at": "2026-08-30T00:00:00+00:00",
-                    },
-                ],
-            },
-            "obsolete": {
-                "passed": 1,
-                "failed": 0,
-                "tests": [
-                    {
-                        "name": "gone",
-                        "passed": True,
-                        "fingerprint": "gone-fingerprint",
-                        "generated_at": "2026-08-30T00:00:00+00:00",
+                        "fingerprint": fingerprint,
+                        "generated_at": generated_at,
                     }
-                ],
-            },
+                    for name, fingerprint in (
+                        ("first", fingerprints["communication::first"]),
+                        ("second", fingerprints["communication::second"]),
+                    )
+                ]
+            }
         },
     }
 
-    merged = merge_baseline_results(
-        baseline,
-        [result("second", False)],
-        EXECUTION_PROFILE,
-        {"subject": {"codex": {"invocations": 1}}},
-        fingerprints,
-        "2026-08-31T00:00:00+00:00",
-    )
-
-    assert set(merged["categories"]) == {"communication"}
-    assert merged["categories"]["communication"]["tests"] == [
-        {
-            "name": "first",
-            "passed": True,
-            "fingerprint": "first-fingerprint",
-            "generated_at": "2026-08-30T00:00:00+00:00",
-        },
-        {
-            "name": "second",
-            "passed": False,
-            "fingerprint": "second-fingerprint",
-            "generated_at": "2026-08-31T00:00:00+00:00",
-        },
-    ]
-    assert merged["total_passed"] == 1
-    assert merged["total_tests"] == 2
-    assert merged["generated_at"] == "2026-08-30T00:00:00+00:00"
+    assert affected_test_keys(config, baseline) == set()
