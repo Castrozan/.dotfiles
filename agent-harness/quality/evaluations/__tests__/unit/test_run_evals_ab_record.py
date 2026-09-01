@@ -11,6 +11,7 @@ EXECUTION_PROFILE = {
 }
 TOKEN_USAGE = {"input_tokens": 100, "output_tokens": 50}
 BASELINE_TOKEN_USAGE = {"input_tokens": 1000, "output_tokens": 500}
+TEST_FINGERPRINTS = {"skills/humanize/reader_recovery::recovery": "recovery-sha"}
 
 
 def valid_comparison():
@@ -51,6 +52,7 @@ def test_ab_profile_requires_repeated_absolute_and_control_gates(tmp_path, monke
                 "base",
                 EXECUTION_PROFILE,
                 TOKEN_USAGE,
+                TEST_FINGERPRINTS,
             )
 
 
@@ -63,13 +65,6 @@ def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
         run_evals_ab_record,
         "humanize_recovery_fingerprints",
         lambda: {"suite": "recovery", "instructions": "humanize"},
-    )
-    monkeypatch.setattr(
-        run_evals_ab_record,
-        "evaluation_test_fingerprints",
-        lambda config, profile: {
-            "skills/humanize/reader_recovery::recovery": "recovery-sha"
-        },
     )
     monkeypatch.setattr(
         run_evals_ab_record,
@@ -86,6 +81,7 @@ def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
         "pre-change",
         EXECUTION_PROFILE,
         TOKEN_USAGE,
+        TEST_FINGERPRINTS,
     )
 
     profile = json.loads(baseline_path.read_text())["evidence_profiles"][

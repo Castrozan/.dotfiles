@@ -7,9 +7,6 @@ from run_evals_baseline_record import (
     repeated_outcomes_category_bucket,
 )
 from run_evals_fingerprint import humanize_recovery_fingerprints
-from run_evals_config_loader import load_config
-from run_evals_impact import evaluation_test_fingerprints
-from run_evals_worktree_and_environment import REPO_ROOT
 
 
 def save_ab_profile(
@@ -18,6 +15,7 @@ def save_ab_profile(
     comparison_ref: str,
     execution_profile: dict,
     token_usage: dict,
+    test_fingerprints: dict[str, str],
 ) -> None:
     if comparison.get("method") != "paired_hierarchical_bootstrap":
         raise ValueError("an evidence profile requires repeated sampling")
@@ -31,10 +29,6 @@ def save_ab_profile(
     baseline_token_usage = baseline.get("token_usage", {})
     fingerprints = humanize_recovery_fingerprints()
     generated_at = datetime.now(timezone.utc).isoformat()
-    test_fingerprints = evaluation_test_fingerprints(
-        load_config(REPO_ROOT / "agent-harness/quality/evaluations/evals"),
-        execution_profile,
-    )
     profile = {
         "generated_at": generated_at,
         "comparison_ref": comparison_ref,

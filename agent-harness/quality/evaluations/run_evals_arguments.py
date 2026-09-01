@@ -91,6 +91,8 @@ def parse_arguments():
         parser.error("--all-tests requires --save-baseline")
     if args.epochs > 1 and args.save_baseline and not args.all_tests:
         parser.error("repeated baseline sampling requires explicit --all-tests")
+    if args.epochs > 1 and args.save_baseline and args.test:
+        parser.error("a repeated baseline snapshot cannot contain only one test")
     if args.smoke and args.save_baseline:
         parser.error("smoke results cannot replace behavioral baseline evidence")
     if args.list_affected and (args.save_baseline or args.save_ab_profile):

@@ -27,6 +27,15 @@ from run_evals_arguments import parse_arguments
         ["run-evals.py", "--epochs", "3", "--save-baseline"],
         [
             "run-evals.py",
+            "--epochs",
+            "3",
+            "--save-baseline",
+            "--all-tests",
+            "--test",
+            "one",
+        ],
+        [
+            "run-evals.py",
             "--harness",
             "opencode",
             "--ab",
