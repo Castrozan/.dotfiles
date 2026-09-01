@@ -9,7 +9,9 @@ let
     ./node-provider-runtime/provider-runtime.mjs
     ./node-provider-runtime/provider-adapters.mjs
     ./node-provider-runtime/provider-runners.mjs
+    ./node-provider-runtime/provider-usage.mjs
     ./node-provider-runtime/provider-adapters.test.mjs
+    ./node-provider-runtime/provider-usage.test.mjs
     ./node-provider-runtime/opencode-adapter.test.mjs
     ./node-provider-runtime/provider-load-smoke.test.mjs
     ./node-provider-runtime/provider-check-mode.test.mjs

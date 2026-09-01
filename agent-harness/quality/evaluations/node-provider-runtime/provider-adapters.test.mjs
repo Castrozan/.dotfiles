@@ -17,18 +17,20 @@ function invocation(overrides = {}) {
     system_prompt: null,
     working_directory: "/tmp",
     timeout: 120,
+    max_turns: null,
     no_tools: false,
     ...overrides,
   };
 }
 
-test("claude maps cwd, model, system prompt, dontAsk, and the binary path", () => {
+test("claude maps cwd, model, turn limit, system prompt, dontAsk, and the binary path", () => {
   process.env.AGENT_EVAL_CLAUDE_BINARY = "/bin/claude";
   try {
     const options = claudeQueryOptions(
       invocation({
         system_prompt: "SYS",
         model: "sonnet",
+        max_turns: 2,
         working_directory: "/eval/dir",
       }),
     );
@@ -36,6 +38,7 @@ test("claude maps cwd, model, system prompt, dontAsk, and the binary path", () =
     assert.equal(options.permissionMode, "dontAsk");
     assert.equal(options.pathToClaudeCodeExecutable, "/bin/claude");
     assert.equal(options.model, "sonnet");
+    assert.equal(options.maxTurns, 2);
     assert.equal(options.systemPrompt, "SYS");
     assert.deepEqual(options.tools, ["Read", "Glob", "Grep"]);
     assert.deepEqual(options.allowedTools, ["Read", "Glob", "Grep"]);

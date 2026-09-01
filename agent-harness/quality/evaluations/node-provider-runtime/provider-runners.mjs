@@ -9,9 +9,9 @@ import {
   codexInput,
   codexOptions,
   codexThreadOptions,
-  collectOpenCodeTextParts,
   normalizeRequestError,
   openCodeConfig,
+  openCodeMessageOutcome,
   openCodePromptBody,
   openCodeToolSelection,
 } from "./provider-adapters.mjs";
@@ -132,10 +132,7 @@ async function runOpenCode(invocation) {
     if (message.error) {
       return { output: null, error: normalizeRequestError(message.error) };
     }
-    return {
-      output: collectOpenCodeTextParts(message.data.parts),
-      error: null,
-    };
+    return openCodeMessageOutcome(message.data);
   } catch (error) {
     if (controller.signal.aborted) {
       return { output: null, error: `timeout after ${timeoutMs / 1000}s` };

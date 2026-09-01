@@ -5,16 +5,13 @@ from datetime import datetime, timezone
 from run_evals_baseline_policy import (
     preserved_evidence_profiles,
 )
+from run_evals_baseline_store import BASELINE_PATH, write_baseline_checkpoint
 from run_evals_execution_profile import execution_profile_identifier
 from run_evals_fingerprint import (
     evaluation_category_names,
     evaluation_fingerprints,
 )
 from run_evals_worktree_and_environment import REPO_ROOT
-
-BASELINE_PATH = (
-    REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "baseline.json"
-)
 
 
 def get_current_git_commit() -> str:
@@ -139,11 +136,6 @@ def merge_baseline_snapshot(
 
 
 def write_baseline(baseline: dict) -> None:
-    with open(BASELINE_PATH, "w") as baseline_file:
-        json.dump(baseline, baseline_file, indent=2)
-    print(f"\nBaseline saved to {BASELINE_PATH}")
-    print(f"  Pass rate: {baseline['pass_rate']:.1%}")
-    print(f"  Tests: {baseline['total_passed']}/{baseline['total_tests']}")
-    print(f"  Commit: {baseline['git_commit']}")
+    write_baseline_checkpoint(baseline, BASELINE_PATH, announce=True)
     if baseline.get("sampling"):
         print(f"  Epochs: {baseline['sampling']['epochs']}")

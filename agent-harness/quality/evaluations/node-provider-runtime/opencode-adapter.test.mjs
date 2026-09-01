@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   collectOpenCodeTextParts,
   openCodeConfig,
+  openCodeMessageOutcome,
   openCodePromptBody,
   openCodeToolSelection,
   splitOpenCodeModel,
@@ -17,6 +18,7 @@ function invocation(overrides = {}) {
     system_prompt: null,
     working_directory: "/tmp",
     timeout: 120,
+    max_turns: null,
     no_tools: false,
     ...overrides,
   };
@@ -50,6 +52,17 @@ test("openCode no_tools disables every tool", () => {
   ]) {
     assert.equal(config.tools[tool], false);
   }
+});
+
+test("openCode maps the turn limit onto a dedicated agent", () => {
+  const boundedInvocation = invocation({ max_turns: 3 });
+  const config = openCodeConfig(boundedInvocation);
+  const body = openCodePromptBody(boundedInvocation, {});
+
+  assert.deepEqual(config.agent, {
+    "agent-eval": { mode: "primary", steps: 3 },
+  });
+  assert.equal(body.agent, "agent-eval");
 });
 
 test("openCode splits the provider and model", () => {
@@ -110,4 +123,34 @@ test("openCode text collection joins text parts and skips non-text parts", () =>
     "first\nsecond",
   );
   assert.equal(collectOpenCodeTextParts([]), "");
+});
+
+test("openCode normalizes message token usage", () => {
+  assert.deepEqual(
+    openCodeMessageOutcome({
+      info: {
+        tokens: {
+          input: 13,
+          output: 7,
+          reasoning: 2,
+          cache: { read: 5, write: 3 },
+        },
+      },
+      parts: [
+        { type: "text", text: "first" },
+        { type: "text", text: "second" },
+      ],
+    }),
+    {
+      output: "first\nsecond",
+      error: null,
+      usage: {
+        input_tokens: 13,
+        cached_input_tokens: 5,
+        cache_write_input_tokens: 3,
+        output_tokens: 7,
+        reasoning_output_tokens: 2,
+      },
+    },
+  );
 });

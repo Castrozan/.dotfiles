@@ -3,11 +3,26 @@ import re
 from render_baseline_dashboard_html import ATRIUM_QUALITY_URL, render_dashboard_html
 
 SINGLE_REVISION = [
-    {"date": "2026-01-01", "commit": "abc1234", "passed": 9, "total": 10, "rate": 90}
+    {
+        "date": "2026-01-01",
+        "commit": "abc1234",
+        "passed": 9,
+        "total": 10,
+        "rate": 90,
+        "usage": {
+            "invocations": 4,
+            "measured_invocations": 4,
+            "input_tokens": 120,
+            "cached_input_tokens": 80,
+            "cache_write_input_tokens": 10,
+            "output_tokens": 20,
+            "reasoning_output_tokens": 5,
+        },
+    }
 ]
 
 SINGLE_REVISION_SUMMARY = {
-    "latest": {"rate": 90, "passed": 9, "total": 10, "date": "2026-01-01"},
+    "latest": SINGLE_REVISION[0],
     "peak": {"rate": 90, "date": "2026-01-01", "commit": "abc1234"},
     "trough": {"rate": 90, "date": "2026-01-01", "commit": "abc1234"},
     "count": 1,
@@ -47,6 +62,17 @@ class TestBaselineDashboardLinksWhenFramedInsideAtrium:
 
 
 class TestBaselineDashboardGateAndFreshness:
+    def test_surfaces_latest_eval_token_usage(self):
+        html = render_dashboard_html(SINGLE_REVISION, SINGLE_REVISION_SUMMARY)
+
+        assert "latest eval tokens" in html
+        assert "120 input" in html
+        assert "20 output" in html
+        assert "4/4 measured" in html
+        assert "input tokens" in html
+        assert "cache write" in html
+        assert "reasoning tokens" in html
+
     def test_lists_the_regression_delta_gate_alongside_the_floors(self):
         html = render_dashboard_html(SINGLE_REVISION, SINGLE_REVISION_SUMMARY)
 

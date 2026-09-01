@@ -31,6 +31,11 @@ def test_parse_verdict_is_fail_even_when_reasoning_mentions_pass():
     assert passed is False
 
 
+def test_parse_verdict_uses_the_token_after_the_marker_only():
+    passed, _ = parse_judge_verdict("VERDICT: PASS because no FAIL condition applies")
+    assert passed is True
+
+
 def test_parse_verdict_falls_back_to_the_first_word():
     passed, _ = parse_judge_verdict("PASS because it stages by path")
     assert passed is True

@@ -1,3 +1,8 @@
+import {
+  normalizeClaudeModelUsage,
+  normalizeOpenCodeUsage,
+} from "./provider-usage.mjs";
+
 const CLAUDE_READ_TOOLS = ["Read", "Glob", "Grep"];
 
 const OPENCODE_READ_TOOLS = ["read", "grep", "glob", "list"];
@@ -50,14 +55,16 @@ export function claudeQueryOptions(invocation) {
   const binary = process.env.AGENT_EVAL_CLAUDE_BINARY;
   if (binary) options.pathToClaudeCodeExecutable = binary;
   if (invocation.model) options.model = invocation.model;
+  if (invocation.max_turns) options.maxTurns = invocation.max_turns;
   if (invocation.system_prompt) options.systemPrompt = invocation.system_prompt;
   return options;
 }
 
 export function claudeResultOutcome(message) {
   const errors = (message.errors ?? []).join("\n");
+  const usage = normalizeClaudeModelUsage(message.modelUsage);
   if (message.is_error === true) {
-    return {
+    const outcome = {
       output: null,
       error:
         errors ||
@@ -65,8 +72,12 @@ export function claudeResultOutcome(message) {
         message.subtype ||
         "claude query returned an error result",
     };
+    if (usage) outcome.usage = usage;
+    return outcome;
   }
-  return { output: message.result, error: null };
+  const outcome = { output: message.result, error: null };
+  if (usage) outcome.usage = usage;
+  return outcome;
 }
 
 export function codexOptions(invocation) {
@@ -109,18 +120,23 @@ export function codexInput(invocation) {
 }
 
 export function openCodeConfig(invocation) {
-  if (invocation.no_tools) {
-    return {
-      tools: Object.fromEntries(
-        Object.keys(OPENCODE_TOOL_STATES).map((tool) => [tool, false]),
-      ),
-      permission: { ...OPENCODE_DENIED_PERMISSIONS },
+  const config = invocation.no_tools
+    ? {
+        tools: Object.fromEntries(
+          Object.keys(OPENCODE_TOOL_STATES).map((tool) => [tool, false]),
+        ),
+        permission: { ...OPENCODE_DENIED_PERMISSIONS },
+      }
+    : {
+        tools: { ...OPENCODE_TOOL_STATES },
+        permission: { ...OPENCODE_DENIED_PERMISSIONS },
+      };
+  if (invocation.max_turns) {
+    config.agent = {
+      "agent-eval": { mode: "primary", steps: invocation.max_turns },
     };
   }
-  return {
-    tools: { ...OPENCODE_TOOL_STATES },
-    permission: { ...OPENCODE_DENIED_PERMISSIONS },
-  };
+  return config;
 }
 
 export function openCodeToolSelection(availableTools, noTools) {
@@ -150,6 +166,7 @@ export function openCodePromptBody(invocation, tools) {
   };
   if (invocation.system_prompt) body.system = invocation.system_prompt;
   if (invocation.model) body.model = splitOpenCodeModel(invocation.model);
+  if (invocation.max_turns) body.agent = "agent-eval";
   return body;
 }
 
@@ -158,6 +175,14 @@ export function collectOpenCodeTextParts(parts) {
     .filter((part) => part.type === "text")
     .map((part) => part.text)
     .join("\n");
+}
+
+export function openCodeMessageOutcome(message) {
+  return {
+    output: collectOpenCodeTextParts(message.parts),
+    error: null,
+    usage: normalizeOpenCodeUsage(message.info.tokens),
+  };
 }
 
 export function normalizeRequestError(error) {

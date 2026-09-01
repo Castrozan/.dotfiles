@@ -2,7 +2,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from run_evals_baseline_record import BASELINE_PATH
+BASELINE_PATH = Path(__file__).with_name("baseline.json")
 
 
 def read_baseline(path: Path = BASELINE_PATH) -> dict:
@@ -20,9 +20,9 @@ def write_baseline_checkpoint(
         with tempfile.NamedTemporaryFile(
             mode="w", encoding="utf-8", dir=path.parent, delete=False
         ) as temporary_file:
+            temporary_path = Path(temporary_file.name)
             json.dump(baseline, temporary_file, indent=2)
             temporary_file.write("\n")
-            temporary_path = Path(temporary_file.name)
         temporary_path.replace(path)
     finally:
         if temporary_path is not None:
