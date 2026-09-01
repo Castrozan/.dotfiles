@@ -27,8 +27,17 @@ const OPENCODE_DENIED_PERMISSIONS = {
   external_directory: "deny",
 };
 
-const NO_TOOLS_CODEX_ERROR =
-  "codex-sdk adapter cannot enforce no_tools: the Codex SDK thread has no supported path to disable agent tool use, so the request is rejected instead of running with tools enabled";
+const CODEX_NO_TOOLS_FEATURES = {
+  apps: false,
+  browser_use: false,
+  code_mode_host: false,
+  computer_use: false,
+  image_generation: false,
+  multi_agent: false,
+  plugins: false,
+  shell_tool: false,
+  unified_exec: false,
+};
 
 export function claudeQueryOptions(invocation) {
   const tools = invocation.no_tools ? [] : CLAUDE_READ_TOOLS;
@@ -60,10 +69,18 @@ export function claudeResultOutcome(message) {
   return { output: message.result, error: null };
 }
 
-export function codexOptions() {
+export function codexOptions(invocation) {
   const options = {};
   const binary = process.env.AGENT_EVAL_CODEX_BINARY;
   if (binary) options.codexPathOverride = binary;
+  if (invocation.no_tools) {
+    options.config = {
+      apps: { _default: { enabled: false } },
+      mcp_servers: {},
+      tools: { view_image: false, web_search: false },
+      features: { ...CODEX_NO_TOOLS_FEATURES },
+    };
+  }
   return options;
 }
 
@@ -78,6 +95,9 @@ export function codexThreadOptions(invocation) {
     skipGitRepoCheck: true,
   };
   if (invocation.model) options.model = invocation.model;
+  if (invocation.model_reasoning_effort) {
+    options.modelReasoningEffort = invocation.model_reasoning_effort;
+  }
   return options;
 }
 
@@ -149,9 +169,6 @@ export function normalizeRequestError(error) {
   return String(error);
 }
 
-export function validationError(invocation) {
-  if (invocation.no_tools && invocation.harness === "codex") {
-    return NO_TOOLS_CODEX_ERROR;
-  }
+export function validationError() {
   return null;
 }

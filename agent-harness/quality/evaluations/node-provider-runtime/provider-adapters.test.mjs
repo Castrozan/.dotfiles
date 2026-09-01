@@ -87,16 +87,32 @@ test("claude returns successful result text as output", () => {
   );
 });
 
-test("codex maps the binary, thread options, and model", () => {
+const CODEX_NO_TOOLS_FEATURES = {
+  apps: false,
+  browser_use: false,
+  code_mode_host: false,
+  computer_use: false,
+  image_generation: false,
+  multi_agent: false,
+  plugins: false,
+  shell_tool: false,
+  unified_exec: false,
+};
+
+test("codex maps the binary, thread options, model, and reasoning effort", () => {
   process.env.AGENT_EVAL_CODEX_BINARY = "/bin/codex";
   try {
-    const options = codexOptions();
+    const options = codexOptions(invocation());
     assert.equal(options.codexPathOverride, "/bin/codex");
   } finally {
     delete process.env.AGENT_EVAL_CODEX_BINARY;
   }
   const threadOptions = codexThreadOptions(
-    invocation({ model: "gpt-5", working_directory: "/eval/dir" }),
+    invocation({
+      model: "gpt-5",
+      working_directory: "/eval/dir",
+      model_reasoning_effort: "high",
+    }),
   );
   assert.equal(threadOptions.sandboxMode, "read-only");
   assert.equal(threadOptions.approvalPolicy, "never");
@@ -106,11 +122,17 @@ test("codex maps the binary, thread options, and model", () => {
   assert.equal(threadOptions.skipGitRepoCheck, true);
   assert.equal(threadOptions.workingDirectory, "/eval/dir");
   assert.equal(threadOptions.model, "gpt-5");
+  assert.equal(threadOptions.modelReasoningEffort, "high");
+});
+
+test("codex thread options omit reasoning effort when not given", () => {
+  const threadOptions = codexThreadOptions(invocation({ model: "gpt-5" }));
+  assert.equal(threadOptions.modelReasoningEffort, undefined);
 });
 
 test("codex omits the binary override and prefixes the system prompt", () => {
   delete process.env.AGENT_EVAL_CODEX_BINARY;
-  assert.deepEqual(codexOptions(), {});
+  assert.deepEqual(codexOptions(invocation()), {});
   assert.equal(
     codexInput(invocation({ system_prompt: "SYS" })),
     "SYS\n\nrespond",
@@ -118,13 +140,34 @@ test("codex omits the binary override and prefixes the system prompt", () => {
   assert.equal(codexInput(invocation()), "respond");
 });
 
-test("codex no_tools fails closed", () => {
+test("codex no_tools supplies config overrides that disable agent tool use", () => {
+  delete process.env.AGENT_EVAL_CODEX_BINARY;
+  const options = codexOptions(invocation({ no_tools: true }));
+  assert.deepEqual(options.config, {
+    apps: { _default: { enabled: false } },
+    mcp_servers: {},
+    tools: { view_image: false, web_search: false },
+    features: CODEX_NO_TOOLS_FEATURES,
+  });
+});
+
+test("codex no_tools keeps the binary override and config overrides", () => {
+  process.env.AGENT_EVAL_CODEX_BINARY = "/bin/codex";
+  try {
+    const options = codexOptions(invocation({ no_tools: true }));
+    assert.equal(options.codexPathOverride, "/bin/codex");
+    assert.equal(options.config.features.apps, false);
+  } finally {
+    delete process.env.AGENT_EVAL_CODEX_BINARY;
+  }
+});
+
+test("codex no_tools is accepted by the edge", () => {
   const closedError = validationError({
     harness: "codex",
     no_tools: true,
   });
-  assert.ok(closedError);
-  assert.match(closedError, /cannot enforce no_tools/);
+  assert.equal(closedError, null);
 });
 
 test("non-codex no_tools is not rejected by the edge", () => {

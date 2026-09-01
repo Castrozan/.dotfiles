@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   claudeQueryOptions,
+  codexOptions,
   codexThreadOptions,
   openCodeConfig,
   openCodePromptBody,
@@ -54,13 +55,11 @@ for (const harness of ALL_HARNESSES) {
   });
 }
 
-test("codex no_tools request fails closed before any model call", async () => {
-  const outcome = await runSubjectInvocation({
-    ...representativeInvocation("codex"),
-    no_tools: true,
-  });
-  assert.equal(outcome.output, null);
-  assert.match(outcome.error, /cannot enforce no_tools/);
+test("codex no_tools request is accepted and options build without a model call", () => {
+  const invocation = { ...representativeInvocation("codex"), no_tools: true };
+  assert.equal(validationError(invocation), null);
+  assert.equal(codexOptions(invocation).config.tools.view_image, false);
+  assert.equal(codexOptions(invocation).config.features.apps, false);
 });
 
 test("unknown harness is rejected without reaching a model call", async () => {

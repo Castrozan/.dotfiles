@@ -64,6 +64,9 @@ async function main() {
       const outcome = await runSubjectInvocation(request);
       result.output = outcome.output;
       result.error = outcome.error;
+      if (outcome.usage != null) {
+        result.usage = outcome.usage;
+      }
     }
   } catch (error) {
     result.error = error instanceof Error ? error.message : String(error);
