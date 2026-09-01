@@ -6,7 +6,7 @@ import run_evals_baseline
 EXPECTED_PROFILE = {
     "subject": {
         "harness": "codex",
-        "model": "gpt-5.6-luna",
+        "model": "gpt-5.6-sol",
         "reasoning_effort": "low",
     },
     "judge": {
