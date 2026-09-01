@@ -1,7 +1,7 @@
 import json
+from datetime import datetime, timezone
 
 from run_evals_baseline_history import (
-    baseline_evidence_age_days,
     baseline_regression_failure,
     baseline_staleness_failure,
     previous_committed_baseline_pass_rate,
@@ -72,7 +72,8 @@ def check_baseline_for_regression(
         )
     )
 
-    age_days = baseline_evidence_age_days(baseline)
+    generated_at = datetime.fromisoformat(baseline["generated_at"])
+    age_days = (datetime.now(timezone.utc) - generated_at).days
 
     current_passed = sum(bucket["passed"] for bucket in current_categories.values())
     current_total = sum(

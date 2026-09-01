@@ -123,20 +123,36 @@ def test_category_refresh_prunes_categories_without_current_suites(monkeypatch):
         lambda: {"communication"},
     )
     baseline = {
+        "minimum_current_evidence": 2,
         "execution_profile": EXECUTION_PROFILE,
         "categories": {
-            "obsolete": {"passed": 2, "failed": 0, "tests": []},
-            "communication": {"passed": 1, "failed": 1, "tests": []},
+            "obsolete": {
+                "passed": 1,
+                "failed": 0,
+                "tests": [{"name": "gone", "passed": True}],
+            },
+            "communication": {
+                "passed": 1,
+                "failed": 0,
+                "tests": [{"name": "kept", "passed": True}],
+            },
         },
     }
 
     merged = merge_baseline_categories(
         baseline,
-        {"communication": {"passed": 3, "failed": 0, "tests": []}},
+        {
+            "communication": {
+                "passed": 1,
+                "failed": 0,
+                "tests": [{"name": "kept", "passed": True}],
+            }
+        },
         EXECUTION_PROFILE,
         TOKEN_USAGE,
     )
 
     assert set(merged["categories"]) == {"communication"}
-    assert merged["total_passed"] == 3
-    assert merged["total_tests"] == 3
+    assert merged["total_passed"] == 1
+    assert merged["total_tests"] == 1
+    assert merged["minimum_current_evidence"] == 1

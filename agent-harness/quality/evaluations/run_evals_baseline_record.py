@@ -60,6 +60,21 @@ def merge_baseline_categories(
         for entry in bucket.get("tests", [])
         if entry.get("generated_at")
     ]
+    existing_test_keys = {
+        f"{category}::{entry['name']}"
+        for category, bucket in existing_baseline.get("categories", {}).items()
+        for entry in bucket.get("tests", [])
+    }
+    merged_test_keys = {
+        f"{category}::{entry['name']}"
+        for category, bucket in categories.items()
+        for entry in bucket.get("tests", [])
+    }
+    removed_test_count = len(existing_test_keys - merged_test_keys)
+    minimum_current_evidence = max(
+        0,
+        existing_baseline.get("minimum_current_evidence", 1) - removed_test_count,
+    )
     return {
         "generated_at": generated_at,
         "oldest_evidence_at": min(evidence_timestamps, default=generated_at),
@@ -68,9 +83,7 @@ def merge_baseline_categories(
         "total_passed": total_passed,
         "total_failed": total_tests - total_passed,
         "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
-        "minimum_current_evidence": existing_baseline.get(
-            "minimum_current_evidence", 1
-        ),
+        "minimum_current_evidence": minimum_current_evidence,
         "categories": dict(sorted(categories.items())),
         "fingerprints": evaluation_fingerprints(),
         "execution_profile": execution_profile,
