@@ -70,7 +70,7 @@ def merge_baseline_categories(
         for category, bucket in categories.items()
         for entry in bucket.get("tests", [])
     }
-    removed_test_count = len(existing_test_keys - merged_test_keys)
+    removed_test_count = max(0, len(existing_test_keys) - len(merged_test_keys))
     minimum_current_evidence = max(
         0,
         existing_baseline.get("minimum_current_evidence", 1) - removed_test_count,

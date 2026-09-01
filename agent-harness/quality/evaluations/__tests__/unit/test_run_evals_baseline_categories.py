@@ -156,3 +156,33 @@ def test_category_refresh_prunes_categories_without_current_suites(monkeypatch):
     assert merged["total_passed"] == 1
     assert merged["total_tests"] == 1
     assert merged["minimum_current_evidence"] == 1
+
+
+def test_category_refresh_keeps_floor_when_inventory_size_is_unchanged(monkeypatch):
+    monkeypatch.setattr(
+        run_evals_baseline_record,
+        "evaluation_category_names",
+        lambda: {"communication"},
+    )
+    baseline = {
+        "minimum_current_evidence": 2,
+        "execution_profile": EXECUTION_PROFILE,
+        "categories": {
+            "communication": {
+                "passed": 2,
+                "failed": 0,
+                "tests": [{"name": "first"}, {"name": "second"}],
+            }
+        },
+    }
+    replacement = {
+        "passed": 2,
+        "failed": 0,
+        "tests": [{"name": "third"}, {"name": "fourth"}],
+    }
+
+    merged = merge_baseline_categories(
+        baseline, {"communication": replacement}, EXECUTION_PROFILE, TOKEN_USAGE
+    )
+
+    assert merged["minimum_current_evidence"] == 2
