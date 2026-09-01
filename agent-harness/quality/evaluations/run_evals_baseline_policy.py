@@ -21,12 +21,15 @@ def compliance_passed_and_total(
 
 
 def preserved_evidence_profiles(
-    baseline: dict, current_fingerprints: dict[str, str]
+    baseline: dict,
+    current_fingerprints: dict[str, str],
+    execution_profile: dict,
 ) -> dict:
     return {
         name: profile
         for name, profile in baseline.get("evidence_profiles", {}).items()
         if profile.get("fingerprints") == current_fingerprints
+        and profile.get("execution_profile") == execution_profile
     }
 
 
@@ -35,8 +38,13 @@ def baseline_evidence_failures(
     current_fingerprints: dict[str, str],
     current_humanize_fingerprints: dict[str, str],
     current_categories: set[str],
+    expected_execution_profile: dict,
 ) -> list[str]:
     failures = []
+    if baseline.get("execution_profile") != expected_execution_profile:
+        failures.append(
+            "Baseline execution profile does not match the expected profile"
+        )
     recorded_categories = set(baseline.get("categories", {}))
     missing_inventory = current_categories - recorded_categories
     obsolete_inventory = recorded_categories - current_categories

@@ -45,11 +45,18 @@ def suite_pass_at_k(per_test, k):
     return sum(pass_at_k(t["total"], t["passes"], k) for t in per_test) / len(per_test)
 
 
-def build_epoch_enriched_baseline(per_test, epochs, git_commit, generated_at):
+def build_epoch_enriched_baseline(
+    per_test, epochs, git_commit, generated_at, execution_profile, token_usage
+):
     fingerprints = evaluation_fingerprints()
     existing_baseline = (
         json.loads(BASELINE_PATH.read_text()) if BASELINE_PATH.exists() else {}
     )
+    if (
+        existing_baseline
+        and existing_baseline.get("execution_profile") != execution_profile
+    ):
+        raise ValueError("existing baseline execution profile does not match")
     categories = {}
     total_samples = 0
     total_sample_passes = 0
@@ -83,8 +90,10 @@ def build_epoch_enriched_baseline(per_test, epochs, git_commit, generated_at):
         "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
         "categories": dict(sorted(categories.items())),
         "fingerprints": fingerprints,
+        "execution_profile": execution_profile,
+        "token_usage": token_usage,
         "evidence_profiles": preserved_evidence_profiles(
-            existing_baseline, humanize_recovery_fingerprints()
+            existing_baseline, humanize_recovery_fingerprints(), execution_profile
         ),
         "sampling": {
             "epochs": epochs,

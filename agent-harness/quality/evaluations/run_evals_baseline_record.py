@@ -52,7 +52,17 @@ def categories_from_results(results: list[TestResult]) -> dict:
     return categories
 
 
-def merge_baseline_categories(existing_baseline: dict, replacements: dict) -> dict:
+def merge_baseline_categories(
+    existing_baseline: dict,
+    replacements: dict,
+    execution_profile: dict,
+    token_usage: dict,
+) -> dict:
+    if (
+        existing_baseline
+        and existing_baseline.get("execution_profile") != execution_profile
+    ):
+        raise ValueError("existing baseline execution profile does not match")
     current_categories = evaluation_category_names()
     categories = {
         name: bucket
@@ -76,8 +86,12 @@ def merge_baseline_categories(existing_baseline: dict, replacements: dict) -> di
         "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
         "categories": dict(sorted(categories.items())),
         "fingerprints": evaluation_fingerprints(),
+        "execution_profile": execution_profile,
+        "token_usage": token_usage,
         "evidence_profiles": preserved_evidence_profiles(
-            existing_baseline, humanize_recovery_fingerprints()
+            existing_baseline,
+            humanize_recovery_fingerprints(),
+            execution_profile,
         ),
     }
 
@@ -99,14 +113,20 @@ def repeated_outcomes_category_bucket(outcomes: dict[str, list[bool]]) -> dict:
     return {"passed": passed, "failed": len(tests) - passed, "tests": tests}
 
 
-def merge_baseline_snapshot(snapshot: dict) -> dict:
+def merge_baseline_snapshot(
+    snapshot: dict, execution_profile: dict, token_usage: dict
+) -> dict:
     existing_baseline = (
         json.loads(BASELINE_PATH.read_text()) if BASELINE_PATH.exists() else {}
     )
-    return merge_baseline_categories(existing_baseline, snapshot["categories"])
+    return merge_baseline_categories(
+        existing_baseline, snapshot["categories"], execution_profile, token_usage
+    )
 
 
-def build_baseline_from_results(results: list[TestResult]) -> dict:
+def build_baseline_from_results(
+    results: list[TestResult], execution_profile: dict, token_usage: dict
+) -> dict:
     fingerprints = evaluation_fingerprints()
     existing_baseline = (
         json.loads(BASELINE_PATH.read_text()) if BASELINE_PATH.exists() else {}
@@ -125,8 +145,12 @@ def build_baseline_from_results(results: list[TestResult]) -> dict:
         "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
         "categories": categories,
         "fingerprints": fingerprints,
+        "execution_profile": execution_profile,
+        "token_usage": token_usage,
         "evidence_profiles": preserved_evidence_profiles(
-            existing_baseline, humanize_recovery_fingerprints()
+            existing_baseline,
+            humanize_recovery_fingerprints(),
+            execution_profile,
         ),
     }
 
@@ -142,14 +166,26 @@ def write_baseline(baseline: dict) -> None:
         print(f"  Epochs: {baseline['sampling']['epochs']}")
 
 
-def save_baseline(results: list[TestResult], merge: bool = False) -> None:
+def save_baseline(
+    results: list[TestResult],
+    execution_profile: dict,
+    token_usage: dict,
+    merge: bool = False,
+) -> None:
     raise_for_evaluation_errors(results, "baseline evidence")
     if not merge:
-        write_baseline(build_baseline_from_results(results))
+        write_baseline(
+            build_baseline_from_results(results, execution_profile, token_usage)
+        )
         return
     existing_baseline = (
         json.loads(BASELINE_PATH.read_text()) if BASELINE_PATH.exists() else {}
     )
     write_baseline(
-        merge_baseline_categories(existing_baseline, categories_from_results(results))
+        merge_baseline_categories(
+            existing_baseline,
+            categories_from_results(results),
+            execution_profile,
+            token_usage,
+        )
     )

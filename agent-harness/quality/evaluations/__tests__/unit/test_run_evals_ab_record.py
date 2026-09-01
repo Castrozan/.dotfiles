@@ -5,6 +5,12 @@ import pytest
 import run_evals_ab_record
 from run_evals_ab_record import save_ab_profile
 
+EXECUTION_PROFILE = {
+    "subject": {"harness": "claude", "model": "sonnet", "reasoning_effort": "high"},
+    "judge": {"harness": "claude", "model": "opus", "reasoning_effort": None},
+}
+TOKEN_USAGE = {"input_tokens": 100, "output_tokens": 50}
+
 
 def valid_comparison():
     return {
@@ -38,7 +44,13 @@ def test_ab_profile_requires_repeated_absolute_and_control_gates(tmp_path, monke
         comparison = valid_comparison()
         comparison[field] = value
         with pytest.raises(ValueError, match=message):
-            save_ab_profile(comparison, "skills/humanize/reader_recovery", "base")
+            save_ab_profile(
+                comparison,
+                "skills/humanize/reader_recovery",
+                "base",
+                EXECUTION_PROFILE,
+                TOKEN_USAGE,
+            )
 
 
 def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
@@ -53,10 +65,17 @@ def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
     monkeypatch.setattr(
         run_evals_ab_record,
         "merge_baseline_categories",
-        lambda baseline, replacements: baseline | {"categories": replacements},
+        lambda baseline, replacements, execution_profile, token_usage: baseline
+        | {"categories": replacements},
     )
 
-    save_ab_profile(valid_comparison(), "skills/humanize/reader_recovery", "pre-change")
+    save_ab_profile(
+        valid_comparison(),
+        "skills/humanize/reader_recovery",
+        "pre-change",
+        EXECUTION_PROFILE,
+        TOKEN_USAGE,
+    )
 
     profile = json.loads(baseline_path.read_text())["evidence_profiles"][
         "skills/humanize/reader_recovery"
@@ -68,3 +87,4 @@ def test_ab_profile_records_scoped_fingerprints(tmp_path, monkeypatch):
         "suite": "recovery",
         "instructions": "humanize",
     }
+    assert profile["execution_profile"] == EXECUTION_PROFILE

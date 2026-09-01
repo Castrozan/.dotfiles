@@ -9,7 +9,13 @@ from run_evals_baseline_record import (
 from run_evals_fingerprint import humanize_recovery_fingerprints
 
 
-def save_ab_profile(comparison: dict, category: str, comparison_ref: str) -> None:
+def save_ab_profile(
+    comparison: dict,
+    category: str,
+    comparison_ref: str,
+    execution_profile: dict,
+    token_usage: dict,
+) -> None:
     if comparison.get("method") != "paired_hierarchical_bootstrap":
         raise ValueError("an evidence profile requires repeated sampling")
     if comparison.get("variant_a_pass_rate", 0) < 0.9:
@@ -40,6 +46,7 @@ def save_ab_profile(comparison: dict, category: str, comparison_ref: str) -> Non
             for name, samples in comparison["candidate_case_outcomes"].items()
         },
         "fingerprints": fingerprints,
+        "execution_profile": execution_profile,
     }
     baseline.setdefault("evidence_profiles", {})[category] = profile
     baseline = merge_baseline_categories(
@@ -49,5 +56,7 @@ def save_ab_profile(comparison: dict, category: str, comparison_ref: str) -> Non
                 comparison["candidate_case_outcomes"]
             )
         },
+        execution_profile,
+        token_usage,
     )
     BASELINE_PATH.write_text(json.dumps(baseline, indent=2) + "\n")

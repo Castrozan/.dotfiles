@@ -53,6 +53,7 @@ def check_baseline_for_regression() -> bool:
             evaluation_fingerprints(),
             humanize_recovery_fingerprints(),
             evaluation_category_names(),
+            baseline.get("execution_profile"),
         )
     )
 
@@ -77,7 +78,9 @@ def check_baseline_for_regression() -> bool:
                 f"below minimum {MINIMUM_PASS_RATE_COMPLIANCE:.1%}"
             )
 
-    previous_pass_rate = previous_committed_baseline_pass_rate()
+    previous_pass_rate = previous_committed_baseline_pass_rate(
+        baseline.get("execution_profile")
+    )
     regression = baseline_regression_failure(
         overall_pass_rate, previous_pass_rate, MAXIMUM_REGRESSION_DROP
     )

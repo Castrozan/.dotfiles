@@ -8,6 +8,11 @@ from run_evals_fingerprint import (
     humanize_recovery_fingerprints,
 )
 
+EXECUTION_PROFILE = {
+    "subject": {"harness": "claude", "model": "sonnet", "reasoning_effort": "high"},
+    "judge": {"harness": "claude", "model": "opus", "reasoning_effort": None},
+}
+
 
 def valid_baseline():
     fingerprints = {"suite": "suite-sha", "instructions": "instruction-sha"}
@@ -21,6 +26,7 @@ def valid_baseline():
             "skills/humanize/reader_recovery": {"passed": 21, "failed": 0},
         },
         "fingerprints": fingerprints,
+        "execution_profile": EXECUTION_PROFILE,
         "evidence_profiles": {
             REQUIRED_HUMANIZE_PROFILE: {
                 "epochs": 3,
@@ -28,6 +34,7 @@ def valid_baseline():
                 "delta": 0.05,
                 "candidate_hard_failures": [],
                 "fingerprints": humanize_fingerprints,
+                "execution_profile": EXECUTION_PROFILE,
             }
         },
     }
@@ -44,6 +51,7 @@ def test_baseline_evidence_accepts_current_repeated_recovery_measurement():
             baseline["fingerprints"],
             profile_fingerprints,
             set(baseline["categories"]),
+            EXECUTION_PROFILE,
         )
         == []
     )
@@ -58,6 +66,7 @@ def test_baseline_evidence_rejects_stale_sources_and_missing_coverage():
         {"suite": "new-suite", "instructions": "instruction-sha"},
         baseline["evidence_profiles"][REQUIRED_HUMANIZE_PROFILE]["fingerprints"],
         set(baseline["categories"]),
+        EXECUTION_PROFILE,
     )
     assert any("communication" in failure for failure in failures)
     assert any("fingerprint" in failure for failure in failures)
@@ -75,6 +84,7 @@ def test_baseline_evidence_rejects_weak_or_empty_communication_coverage():
         baseline["fingerprints"],
         profile_fingerprints,
         set(baseline["categories"]),
+        EXECUTION_PROFILE,
     )
     assert any("Communication pass rate" in failure for failure in failures)
 
@@ -84,6 +94,7 @@ def test_baseline_evidence_rejects_weak_or_empty_communication_coverage():
         baseline["fingerprints"],
         profile_fingerprints,
         set(baseline["categories"]),
+        EXECUTION_PROFILE,
     )
     assert any("contains no results" in failure for failure in failures)
 
@@ -104,6 +115,7 @@ def test_baseline_evidence_rejects_missing_and_obsolete_category_buckets():
             "skills/humanize/reader_recovery",
             "new_category",
         },
+        EXECUTION_PROFILE,
     )
 
     assert any(

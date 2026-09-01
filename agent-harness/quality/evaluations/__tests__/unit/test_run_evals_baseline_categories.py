@@ -13,6 +13,12 @@ from run_evals_baseline_record import (
 from run_evals_baseline_thresholds import COMPLIANCE_CATEGORIES
 from run_evals_test_runner import TestResult
 
+EXECUTION_PROFILE = {
+    "subject": {"harness": "claude", "model": "sonnet", "reasoning_effort": "high"},
+    "judge": {"harness": "claude", "model": "opus", "reasoning_effort": None},
+}
+TOKEN_USAGE = {"input_tokens": 100, "output_tokens": 50}
+
 
 def _result(name, passed, category):
     return TestResult(
@@ -32,7 +38,7 @@ def test_build_baseline_buckets_by_authored_category_not_name_prefix():
         _result("desktop_control_over_keyboard", False, "skill_routing"),
     ]
 
-    baseline = build_baseline_from_results(results)
+    baseline = build_baseline_from_results(results, EXECUTION_PROFILE, TOKEN_USAGE)
 
     assert set(baseline["categories"]) == {"workflow_compliance", "skill_routing"}
     assert baseline["categories"]["workflow_compliance"]["passed"] == 2
@@ -43,7 +49,7 @@ def test_build_baseline_buckets_by_authored_category_not_name_prefix():
 def test_off_prefix_compliance_test_counts_toward_the_floor():
     results = [_result("obeys_the_commit_sequence", False, "workflow_compliance")]
 
-    baseline = build_baseline_from_results(results)
+    baseline = build_baseline_from_results(results, EXECUTION_PROFILE, TOKEN_USAGE)
     passed, total = compliance_passed_and_total(baseline["categories"])
 
     assert total == 1
@@ -84,6 +90,7 @@ def test_category_refresh_preserves_other_baseline_categories(monkeypatch):
     )
     baseline = {
         "generated_at": "2026-07-24T03:26:24+00:00",
+        "execution_profile": EXECUTION_PROFILE,
         "categories": {
             "existing": {"passed": 2, "failed": 1, "tests": []},
             "communication": {"passed": 1, "failed": 1, "tests": []},
@@ -91,7 +98,9 @@ def test_category_refresh_preserves_other_baseline_categories(monkeypatch):
     }
     replacement = {"passed": 3, "failed": 0, "tests": []}
 
-    merged = merge_baseline_categories(baseline, {"communication": replacement})
+    merged = merge_baseline_categories(
+        baseline, {"communication": replacement}, EXECUTION_PROFILE, TOKEN_USAGE
+    )
 
     assert merged["categories"]["existing"]["failed"] == 1
     assert merged["categories"]["communication"] == replacement
@@ -125,7 +134,10 @@ def test_selected_category_snapshot_merges_into_the_committed_baseline(
     baseline_path = tmp_path / "baseline.json"
     baseline_path.write_text(
         json.dumps(
-            {"categories": {"existing": {"passed": 2, "failed": 0, "tests": []}}}
+            {
+                "execution_profile": EXECUTION_PROFILE,
+                "categories": {"existing": {"passed": 2, "failed": 0, "tests": []}},
+            }
         )
     )
     monkeypatch.setattr(run_evals_baseline_record, "BASELINE_PATH", baseline_path)
@@ -136,7 +148,9 @@ def test_selected_category_snapshot_merges_into_the_committed_baseline(
     )
 
     merged = merge_baseline_snapshot(
-        {"categories": {"communication": {"passed": 3, "failed": 1, "tests": []}}}
+        {"categories": {"communication": {"passed": 3, "failed": 1, "tests": []}}},
+        EXECUTION_PROFILE,
+        TOKEN_USAGE,
     )
 
     assert set(merged["categories"]) == {"existing", "communication"}
@@ -150,15 +164,18 @@ def test_category_refresh_prunes_categories_without_current_suites(monkeypatch):
         lambda: {"communication"},
     )
     baseline = {
+        "execution_profile": EXECUTION_PROFILE,
         "categories": {
             "obsolete": {"passed": 2, "failed": 0, "tests": []},
             "communication": {"passed": 1, "failed": 1, "tests": []},
-        }
+        },
     }
 
     merged = merge_baseline_categories(
         baseline,
         {"communication": {"passed": 3, "failed": 0, "tests": []}},
+        EXECUTION_PROFILE,
+        TOKEN_USAGE,
     )
 
     assert set(merged["categories"]) == {"communication"}
@@ -174,6 +191,8 @@ def test_baseline_save_rejects_invocation_errors(tmp_path, monkeypatch):
     result.error = "session limit reached"
 
     with pytest.raises(RuntimeError, match="baseline evidence has invocation errors"):
-        run_evals_baseline_record.save_baseline([result])
+        run_evals_baseline_record.save_baseline(
+            [result], EXECUTION_PROFILE, TOKEN_USAGE
+        )
 
     assert not run_evals_baseline_record.BASELINE_PATH.exists()
