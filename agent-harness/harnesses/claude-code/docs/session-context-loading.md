@@ -67,7 +67,7 @@ load natively, found by walking **up** from the working directory: a probe skill
 root that declared it. Extra sets load from `--add-dir <dir>` when `<dir>` contains `.claude/skills/`, which is the
 mechanism jenny already uses in production. Skill descriptions are eager: the probe named a skill it had never invoked.
 
-Model and effort are already set globally and the launcher's copies are dead weight. `model = "claude-opus-5[1m]"` is in
+Model and effort are already set globally and the launcher's copies are dead weight. `model` is pinned per host in
 the deployed `settings.json` and `CLAUDE_CODE_EFFORT_LEVEL = "max"` is exported by the `claude` wrapper in
 `binary.nix` for every session. `--append-system-prompt-file` exists alongside `--append-system-prompt`, so the
 launcher reading the file into an argv string is also unnecessary.

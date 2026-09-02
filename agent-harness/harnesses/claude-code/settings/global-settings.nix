@@ -35,9 +35,14 @@ let
 
   spinnerVerbs = import ./spinner-verbs.nix;
 
+  defaultModelByHostname = {
+    kira = "claude-fable-5-1";
+  };
+  defaultModelForThisHost = defaultModelByHostname.${hostname} or "claude-sonnet-5";
+
   claudeGlobalSettings = {
-    model = "claude-opus-5[1m]";
-    effortLevel = "xhigh";
+    model = defaultModelForThisHost;
+    effortLevel = "max";
     ultracode = false;
     enableWorkflows = true;
     language = "english";
