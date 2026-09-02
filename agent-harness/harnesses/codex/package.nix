@@ -10,13 +10,13 @@ let
     inherit pkgs;
   };
 
-  version = "0.148.0";
+  version = "0.152.1";
   servantsDomain = ../../servants;
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      codeModeHostSha256 = "sha256-jm5VmyKPphsY+ywowx7AIGh1ECW8zj8Az2PHlJnVmCk=";
+      codeModeHostSha256 = "sha256-DxpUTVweia7XaakdjmNCHrju+dtVToYe2QcEEmpBke0=";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -25,7 +25,7 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      codeModeHostSha256 = "sha256-EOr1Yuzv7hufF/tgnNjzK28Bh2Z0VVq9LduBli87XjQ=";
+      codeModeHostSha256 = "sha256-mx3dyz41yMVFzH6hhYoH9+HFT/jlmrJmk634l/uzU2M=";
       buildInputs = [ ];
     };
   };
@@ -43,9 +43,9 @@ let
         owner = "openai";
         repo = "codex";
         tag = "rust-v${version}";
-        hash = "sha256-Au61OzWJgYoQFHjV6LHCXTVfwN5AF3+MjdN5FLYhLYI=";
+        hash = "sha256-XPfKxUQACUgJ+LNTxjbBm4pNHB3NhuNci2ECovAv38w=";
       };
-      cargoHash = "sha256-MswemCvyG7uju6QrGKsZoD4S1GUhB8fP38o0R0mPa2M=";
+      cargoHash = "sha256-m50x+ClPnbxhq0Lg9csDkfOLbHh3EAqVNSM1gwEF8rk=";
       cargoDeps = latest.rustPlatform.fetchCargoVendor {
         name = "codex-${version}-vendor";
         inherit (finalAttributes) src;
