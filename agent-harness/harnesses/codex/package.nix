@@ -11,7 +11,6 @@ let
   };
 
   version = "0.152.1";
-  servantsDomain = ../../servants;
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
@@ -52,16 +51,11 @@ let
         sourceRoot = "${finalAttributes.src.name}/codex-rs";
         hash = finalAttributes.cargoHash;
       };
-      patches = (previousAttributes.patches or [ ]) ++ [ ./patches/servant-statusline.patch ];
       postPatch = ''
         substituteInPlace Cargo.toml \
           --replace-fail 'lto = "thin"' "" \
-            --replace-fail 'codegen-units = 4' ""
-          cp ${./patches/servant-name.rs} tui/src/servant_name.rs
+          --replace-fail 'codegen-units = 4' ""
       '';
-      env = (previousAttributes.env or { }) // {
-        CODEX_SERVANT_ROSTER_PATH = "${servantsDomain}/roster.txt";
-      };
       postFixup = (previousAttributes.postFixup or "") + ''
         ln -s ${codex-code-mode-host}/bin/codex-code-mode-host "$out/bin/codex-code-mode-host"
       '';
