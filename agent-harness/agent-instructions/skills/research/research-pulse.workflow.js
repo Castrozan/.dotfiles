@@ -103,7 +103,7 @@ const RANKED_SCHEMA = {
   },
 };
 
-const dateHint = `First run "date -u +%Y-%m-%d" via Bash to learn today's date, then prioritise items from roughly the last 7 days.`;
+const dateHint = `First run "date +%Y-%m-%d" via Bash to learn today's date, then prioritise items from roughly the last 7 days.`;
 const freeApiRule = `Use Bash curl against the free public API (no key). Prefer curl over WebFetch for exact JSON. Fall back to WebSearch only if the API fails. Return real URLs you actually saw, never invented ones.`;
 
 const SOURCES = [

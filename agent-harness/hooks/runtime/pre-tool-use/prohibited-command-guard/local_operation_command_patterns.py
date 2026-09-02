@@ -23,12 +23,49 @@ DATE_INPUT_WITH_IANA_TIMEZONE_DENIAL_REASON = (
     "to avoid a silently wrong time."
 )
 
+UTC_ZONE_ALIAS_PATTERN = (
+    r"(?:Etc/)?(?:UTC|UCT|GMT|Universal|Zulu|Greenwich|Z)(?:0|[+-]0+)?"
+)
+DATE_PARSED_INPUT_ABSENT_LOOKAHEAD = (
+    r"(?![^;&|\n]*\s(?:-(?-i:[A-Za-z]{0,2}[dfjrs])\b|--(?:date|file|reference|set)\b))"
+)
+DATE_UTC_CLOCK_READ_BY_FLAG_PATTERN = (
+    rf"{COMMAND_INVOCATION_POSITION_PREFIX}(?P<date_utc_clock_read>date)"
+    rf"(?=(?:\s+[^\s;&|]+)*?\s+(?:-u|--utc|--universal)"
+    rf"{COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}){DATE_PARSED_INPUT_ABSENT_LOOKAHEAD}"
+)
+DATE_UTC_CLOCK_READ_BY_ZONE_PATTERN = (
+    r"(?:^|[\n;&|(`{!]|\$\(|&&|\|\||\b(?:sudo|exec|env|command)\s+)\s*"
+    r"(?:[A-Za-z_]\w*=\S*\s+)*"
+    rf"(?P<date_utc_clock_read>TZ=[\"']?{UTC_ZONE_ALIAS_PATTERN}[\"']?"
+    rf"\s+(?:[A-Za-z_]\w*=\S*\s+)*date){COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}"
+    rf"{DATE_PARSED_INPUT_ABSENT_LOOKAHEAD}"
+)
+DATE_UTC_CLOCK_READ_DENIAL_REASON = (
+    "date -u and a TZ=UTC prefix read the clock in UTC, not the user's zone. Use "
+    "plain date, which prints the local zone; 'local-time --iso' for an API "
+    "parameter; and 'local-time <stamp>' to convert a stamp ending in Z before "
+    "quoting it."
+)
+
 LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
     (
         DATE_INPUT_WITH_IANA_TIMEZONE_PATTERN,
         DATE_INPUT_WITH_IANA_TIMEZONE_DENIAL_REASON,
         None,
         "date_with_inline_iana_timezone",
+    ),
+    (
+        DATE_UTC_CLOCK_READ_BY_FLAG_PATTERN,
+        DATE_UTC_CLOCK_READ_DENIAL_REASON,
+        None,
+        "date_utc_clock_read",
+    ),
+    (
+        DATE_UTC_CLOCK_READ_BY_ZONE_PATTERN,
+        DATE_UTC_CLOCK_READ_DENIAL_REASON,
+        None,
+        "date_utc_clock_read",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}git\s+add\s+"

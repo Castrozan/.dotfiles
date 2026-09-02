@@ -51,5 +51,21 @@ def format_system_info_section(sys_info: Dict[str, str]) -> str | None:
     return " | ".join(sys_parts)
 
 
+def describe_utc_distance(local_now: datetime) -> str:
+    offset_minutes = int(local_now.utcoffset().total_seconds() // 60)
+    if offset_minutes == 0:
+        return "UTC itself"
+    hours, minutes = divmod(abs(offset_minutes), 60)
+    span = f"{hours}h{minutes:02d}" if minutes else f"{hours}h"
+    direction = "behind" if offset_minutes < 0 else "ahead of"
+    return f"{span} {direction} UTC"
+
+
 def format_time_sections(now: datetime) -> list[str]:
-    return [f"Date: {now.strftime('%Y-%m-%d %H:%M')} ({now.strftime('%A')})"]
+    local_now = now if now.tzinfo else now.astimezone()
+    return [
+        f"Date: {local_now.strftime('%Y-%m-%d %H:%M %Z')} "
+        f"({local_now.strftime('%A')}) at session start",
+        f"Zone: {describe_utc_distance(local_now)}; a stamp ending in Z is UTC, "
+        "run local-time <stamp> before quoting it",
+    ]
