@@ -16,14 +16,16 @@ function workspaceGridTwoWindowTilingEntryPoints.install(workspaceGrid, dependen
 			return false
 		end
 		local focusedWindow = hs.window.focusedWindow()
+		local currentWorkspaceNumber = dependencies.currentWorkspaceNumber()
 		if
 			focusedWindow == nil
+			or focusedWindow:id() == nil
+			or windowAssignment.workspaceOfWindowId(focusedWindow:id()) ~= currentWorkspaceNumber
 			or not windowLayout.windowIsTileable(focusedWindow)
 			or pinnedWindow.windowIsPinned(focusedWindow)
 		then
 			return false
 		end
-		local currentWorkspaceNumber = dependencies.currentWorkspaceNumber()
 		local previousWindowId = windowAssignment.previouslyFocusedWindowId(currentWorkspaceNumber)
 		if previousWindowId == nil then
 			return false

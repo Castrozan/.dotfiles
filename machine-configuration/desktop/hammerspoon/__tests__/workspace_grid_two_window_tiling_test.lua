@@ -72,4 +72,20 @@ grid.toggleTwoWindowTiling()
 grid.switchToWorkspace(12)
 expectEqual("switching workspace leaves two-window mode", false, grid.twoWindowTilingIsActive())
 
+local crossWorkspaceGrid = harness.loadFreshGrid()
+crossWorkspaceGrid.registerExistingWindowsOnDefaultWorkspace()
+windows[3]:focus()
+crossWorkspaceGrid.onWindowFocused(windows[3])
+crossWorkspaceGrid.moveFocusedWindowToWorkspace(2)
+crossWorkspaceGrid.switchToWorkspace(11)
+windows[2]:focus()
+crossWorkspaceGrid.onWindowFocused(windows[2])
+windows[3]:focus()
+crossWorkspaceGrid.onWindowFocused(windows[3])
+expectEqual(
+	"a window externally focused from another workspace cannot enter the pair",
+	false,
+	crossWorkspaceGrid.toggleTwoWindowTiling()
+)
+
 harness.exitWithAccumulatedStatus()
