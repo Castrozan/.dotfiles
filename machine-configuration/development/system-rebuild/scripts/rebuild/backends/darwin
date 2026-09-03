@@ -47,11 +47,6 @@ reload_hammerspoon_config() {
 	wait "$reload_pid" 2>/dev/null || true
 }
 
-nudge_clawde_agents_to_redeploy_on_continued_sessions() {
-	command -v clawde-redeploy >/dev/null 2>&1 || return 0
-	clawde-redeploy || true
-}
-
 extract_activation_failure_hint() {
 	local hint
 	hint="$(grep -E "brew bundle failed|Homebrew bundle|error:" "$REBUILD_SWITCH_LOG_PATH" | tail -5 || true)"
@@ -109,5 +104,4 @@ backend_verify_switch_landed() {
 
 backend_after_switch() {
 	reload_hammerspoon_config
-	nudge_clawde_agents_to_redeploy_on_continued_sessions
 }

@@ -251,3 +251,35 @@ fail_test() {
 	echo "$1" >&2
 	return 1
 }
+
+@test "every switch ends by nudging clawde agents to redeploy on their continued sessions" {
+	grep -A1 'backend_after_switch || echo' "$SCRIPT_UNDER_TEST" |
+		grep -q '^	nudge_clawde_agents_to_redeploy_on_continued_sessions$'
+}
+
+@test "the redeploy nudge belongs to the entrypoint, not to one backend" {
+	for backend in "$BACKENDS_SOURCE_DIRECTORY"/*; do
+		! grep -q 'clawde-redeploy' "$backend" ||
+			fail_test "$(basename "$backend") nudges clawde on its own"
+	done
+}
+
+@test "the redeploy nudge runs clawde-redeploy when the machine has it" {
+	clawde-redeploy() { echo "CLAWDE_REDEPLOY_CALLED"; }
+	run nudge_clawde_agents_to_redeploy_on_continued_sessions
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"CLAWDE_REDEPLOY_CALLED"* ]]
+}
+
+@test "a failing redeploy nudge does not fail a switch that already landed" {
+	clawde-redeploy() { return 1; }
+	run nudge_clawde_agents_to_redeploy_on_continued_sessions
+	[ "$status" -eq 0 ]
+}
+
+@test "a machine without clawde skips the redeploy nudge silently" {
+	unset -f clawde-redeploy
+	PATH="$BATS_TEST_TMPDIR" run nudge_clawde_agents_to_redeploy_on_continued_sessions
+	[ "$status" -eq 0 ]
+	[ -z "$output" ]
+}

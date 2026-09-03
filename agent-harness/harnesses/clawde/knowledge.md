@@ -15,12 +15,14 @@ looking at the configured workspace will find it.
 
 <a_rebuilt_change_is_not_a_live_change>
 Four layers apply at four different moments and the config on disk lies about all of them. Per-agent runtime config is
-re-read on wrapper restart, so a warm redeploy applies it. Wrapper code keeps running whatever it launched with, so it
-needs a full respawn. A `SKILL.md` edit is dormant on a resumed agent because the agent invokes its skill once at
-session start and then runs hundreds of heartbeat ticks off that in-context copy; it lands on the next session
-rotation, or immediately if you rotate deliberately. A model change deploys but does not reach a running session, and a
-codex resume restores the model recorded in the session while ignoring `config.toml`, so force it by deleting the
-session record and killing the process, which makes the next launch mint a fresh session that reads config.
+re-read on wrapper restart, so a warm redeploy applies it. That warm redeploy is the rebuild entrypoint's own
+post-switch `clawde-redeploy` nudge, not a clawde activation, so it reaches every platform the rebuild script runs on.
+Wrapper code keeps running whatever it launched with, so it needs a full respawn. A `SKILL.md` edit is dormant on a
+resumed agent because the agent invokes its skill once at session start and then runs hundreds of heartbeat ticks off
+that in-context copy; it lands on the next session rotation, or immediately if you rotate deliberately. A model change
+deploys but does not reach a running session, and a codex resume restores the model recorded in the session while
+ignoring `config.toml`, so force it by deleting the session record and killing the process, which makes the next launch
+mint a fresh session that reads config.
 </a_rebuilt_change_is_not_a_live_change>
 
 <a_supervisor_restart_spares_everything_sharing_its_cgroup>

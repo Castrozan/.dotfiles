@@ -63,6 +63,11 @@ initialize_git_submodules() {
 	git -C "$DOTFILES_DIRECTORY" submodule update --init --recursive 2>/dev/null || true
 }
 
+nudge_clawde_agents_to_redeploy_on_continued_sessions() {
+	command -v clawde-redeploy >/dev/null 2>&1 || return 0
+	clawde-redeploy || true
+}
+
 main() {
 	ensure_dotfiles_directory_exists
 	ensure_nix_is_on_the_path
@@ -75,6 +80,7 @@ main() {
 	backend_switch "$@"
 	backend_verify_switch_landed
 	backend_after_switch || echo ":: Post-switch desktop refresh did not complete." >&2
+	nudge_clawde_agents_to_redeploy_on_continued_sessions
 
 	echo ":: Rebuild complete on ${MACHINE_ALIAS}."
 }
