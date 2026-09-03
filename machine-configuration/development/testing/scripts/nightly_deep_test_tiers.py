@@ -1,7 +1,10 @@
+import json
 import os
 import shutil
+import socket
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -33,6 +36,7 @@ DOCKER_LEFTOVER_PRUNE_COMMANDS = (
 EXIT_CODE_A_TIER_FAILED = 1
 EXIT_CODE_CANNOT_RUN = 2
 CANNOT_RUN_VERDICT = "FAILED to run: dotfiles-test is not on PATH, so no tier can run"
+STEWARD_INBOX_SENDER = "nightly-deep-tiers"
 
 
 def log_file_path() -> Path:
@@ -141,6 +145,34 @@ def report_paths_the_run_left_behind(paths_before: set[str], log) -> None:
         log.write(f"  leftover {leftover}\n")
 
 
+def steward_workspace_directory() -> Path:
+    return Path(
+        os.environ.get("STEWARD_WORKSPACE_DIR", Path.home() / "clawde" / "steward")
+    )
+
+
+def leave_the_failed_night_in_the_steward_inbox(verdict: str, log) -> None:
+    steward_workspace = steward_workspace_directory()
+    if not steward_workspace.is_dir():
+        log.write("no steward workspace on this machine, so nobody is told\n")
+        return
+    inbox = steward_workspace / "inbox"
+    inbox.mkdir(parents=True, exist_ok=True)
+    sent_at = time.time()
+    message = {
+        "from": STEWARD_INBOX_SENDER,
+        "to": "steward",
+        "sent_unix": int(sent_at),
+        "text": (
+            f"Nightly deep tiers on {socket.gethostname()}: {verdict}. "
+            f"Log: {log_file_path()}. Treat it like red CI."
+        ),
+    }
+    message_file = inbox / f"{int(sent_at * 1000)}-from-{STEWARD_INBOX_SENDER}.json"
+    message_file.write_text(json.dumps(message) + "\n")
+    log.write(f"left the failed night in the steward inbox as {message_file.name}\n")
+
+
 def run_the_deep_tiers_and_clean_up() -> int:
     with open_log_file() as log:
         paths_before = untracked_paths_in_repository()
@@ -150,7 +182,9 @@ def run_the_deep_tiers_and_clean_up() -> int:
         report_paths_the_run_left_behind(paths_before, log)
 
         if failed_tiers:
-            log.write(f"FAILED tiers: {', '.join(failed_tiers)}\n")
+            verdict = f"FAILED tiers: {', '.join(failed_tiers)}"
+            leave_the_failed_night_in_the_steward_inbox(verdict, log)
+            log.write(f"{verdict}\n")
             return EXIT_CODE_A_TIER_FAILED
 
         log.write(f"every deep tier passed: {', '.join(DEEP_TIER_FLAGS)}\n")
@@ -172,6 +206,7 @@ def main() -> int:
 
     if shutil.which("dotfiles-test") is None:
         with open_log_file() as log:
+            leave_the_failed_night_in_the_steward_inbox(CANNOT_RUN_VERDICT, log)
             log.write(f"{CANNOT_RUN_VERDICT}\n")
         print(CANNOT_RUN_VERDICT, file=sys.stderr)
         return EXIT_CODE_CANNOT_RUN
