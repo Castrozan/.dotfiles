@@ -15,8 +15,12 @@ let
   };
   webUnit = homeModule.systemd.user.services.stremio-web;
   webEnvironment = lib.concatStringsSep " " webUnit.Service.Environment;
-  systemModule = import ../stremio-streaming-server-nixos.nix { inherit lib pkgs; };
-  streamingUnit = systemModule.systemd.services.stremio-streaming-server;
+  streamCacheDirectory = "/mnt/media-drive/stremio-cache";
+  systemModule = import ../stremio-streaming-server-nixos.nix {
+    config.custom.stremioStreamingServer.streamCacheDirectory = streamCacheDirectory;
+    inherit lib pkgs;
+  };
+  streamingUnit = systemModule.config.systemd.services.stremio-streaming-server;
   cometModule = import ../stremio-comet-nixos.nix {
     config.users.users.zanoni.home = testHomeDirectory;
     inherit lib pkgs;
@@ -144,4 +148,13 @@ in
         && streamingUnit.wantedBy == [ "multi-user.target" ]
       )
       "the official streaming server must be digest-pinned, tailnet-bound, systemd-owned and able to resolve public torrent trackers";
+
+  chise-stremio-streaming-server-keeps-its-stream-cache-on-the-media-drive =
+    mkEvalCheck "chise-stremio-streaming-server-keeps-its-stream-cache-on-the-media-drive"
+      (
+        lib.hasInfix "--volume ${streamCacheDirectory}:/root/.stremio-server/stremio-cache" streamingUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--volume /var/lib/stremio-streaming-server:/root/.stremio-server" streamingUnit.serviceConfig.ExecStart
+        && streamingUnit.unitConfig.RequiresMountsFor == [ streamCacheDirectory ]
+      )
+      "the stream cache is the only media the streaming server writes and it must land on the configured drive with the unit waiting for that mount, while settings stay in the systemd state directory; a cache back on the root disk is what filled it to 95%";
 }

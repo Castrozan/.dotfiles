@@ -34,6 +34,8 @@
       };
     };
 
+    stremioStreamingServer.streamCacheDirectory = "/home/zanoni/arr-stack/data/stremio-cache";
+
     miwayomi = {
       enable = true;
       stackHomeDirectory = "/home/zanoni/arr-stack";
