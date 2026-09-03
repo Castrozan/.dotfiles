@@ -1,4 +1,5 @@
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -30,6 +31,13 @@ def import_hyphenated_hook_module(hyphenated_name):
     return module
 
 
+WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_WORKSPACE_STATE_FILE"
+
+
+def environment_isolated_from_the_machine_workspace_switch() -> dict:
+    return {**os.environ, WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE: os.devnull}
+
+
 def run_hook_subprocess(
     hook_script_path, stdin_text, timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS
 ):
@@ -39,4 +47,5 @@ def run_hook_subprocess(
         capture_output=True,
         text=True,
         timeout=timeout,
+        env=environment_isolated_from_the_machine_workspace_switch(),
     )

@@ -21,7 +21,10 @@ for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
 
 from hook_dispatch import HandlerResult  # noqa: E402
 
-WORKSPACE_STATE_FILE = "/tmp/claude-code-workspace-cwd"
+WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_WORKSPACE_STATE_FILE"
+WORKSPACE_STATE_FILE = os.environ.get(
+    WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE, "/tmp/claude-code-workspace-cwd"
+)
 
 
 def read_target_workspace_directory():
