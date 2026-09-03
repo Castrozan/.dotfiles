@@ -9,6 +9,8 @@ let
     "/nix/var/nix/profiles/default/bin"
   ];
 
+  testingPythonLibraryPath = ./scripts/lib;
+
   nightlyRunnerPythonSource = pkgs.writeText "dotfiles-nightly-deep-tests-source.py" (
     builtins.readFile ./scripts/nightly_deep_test_tiers.py
   );
@@ -20,6 +22,7 @@ let
         pkgs.bash
       ]
     }:${lib.concatStringsSep ":" userProfileBinaryDirectories}:$PATH"
+    export PYTHONPATH="${testingPythonLibraryPath}:''${PYTHONPATH:-}"
     exec ${pkgs.python312}/bin/python3 ${nightlyRunnerPythonSource} "$@"
   '';
 

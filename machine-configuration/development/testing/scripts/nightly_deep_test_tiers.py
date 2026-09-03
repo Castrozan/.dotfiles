@@ -1,12 +1,12 @@
-import json
 import os
 import shutil
 import socket
 import subprocess
 import sys
-import time
 from datetime import datetime
 from pathlib import Path
+
+from steward_inbox import leave_message_in_the_steward_inbox
 
 DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
 LOG_DIRECTORY = Path.home() / ".local" / "state" / "dotfiles-nightly-tests"
@@ -20,16 +20,8 @@ ARTIFACT_FREE_ENVIRONMENT = {
     "PYTHONDONTWRITEBYTECODE": "1",
     "PYTEST_ADDOPTS": "-p no:cacheprovider",
 }
-DOCKER_BUILD_CACHE_KEEP_WINDOW = "24h"
 DOCKER_LEFTOVER_PRUNE_COMMANDS = (
-    (
-        "docker",
-        "builder",
-        "prune",
-        "--force",
-        "--filter",
-        f"until={DOCKER_BUILD_CACHE_KEEP_WINDOW}",
-    ),
+    ("docker", "builder", "prune", "--force", "--filter", "until=24h"),
     ("docker", "image", "prune", "--force"),
 )
 
@@ -145,31 +137,15 @@ def report_paths_the_run_left_behind(paths_before: set[str], log) -> None:
         log.write(f"  leftover {leftover}\n")
 
 
-def steward_workspace_directory() -> Path:
-    return Path(
-        os.environ.get("STEWARD_WORKSPACE_DIR", Path.home() / "clawde" / "steward")
-    )
-
-
 def leave_the_failed_night_in_the_steward_inbox(verdict: str, log) -> None:
-    steward_workspace = steward_workspace_directory()
-    if not steward_workspace.is_dir():
+    message_file = leave_message_in_the_steward_inbox(
+        STEWARD_INBOX_SENDER,
+        f"Nightly deep tiers on {socket.gethostname()}: {verdict}. "
+        f"Log: {log_file_path()}. Treat it like red CI.",
+    )
+    if message_file is None:
         log.write("no steward workspace on this machine, so nobody is told\n")
         return
-    inbox = steward_workspace / "inbox"
-    inbox.mkdir(parents=True, exist_ok=True)
-    sent_at = time.time()
-    message = {
-        "from": STEWARD_INBOX_SENDER,
-        "to": "steward",
-        "sent_unix": int(sent_at),
-        "text": (
-            f"Nightly deep tiers on {socket.gethostname()}: {verdict}. "
-            f"Log: {log_file_path()}. Treat it like red CI."
-        ),
-    }
-    message_file = inbox / f"{int(sent_at * 1000)}-from-{STEWARD_INBOX_SENDER}.json"
-    message_file.write_text(json.dumps(message) + "\n")
     log.write(f"left the failed night in the steward inbox as {message_file.name}\n")
 
 
