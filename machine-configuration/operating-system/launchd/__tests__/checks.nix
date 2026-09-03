@@ -53,6 +53,7 @@ in
         && builtins.elem "--greeting=hello" testAgent.config.ProgramArguments
         && testAgent.config.Label == "com.dotfiles.example"
         && testAgent.config.KeepAlive
+        && builtins.elem "writeBoundary" testPreservation.after
         && builtins.elem "setupLaunchAgents" testPreservation.before
       )
       "the constructor must keep the plist independent from generation-specific store paths and preserve loaded jobs before Home Manager reloads agents";

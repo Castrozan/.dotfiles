@@ -54,6 +54,7 @@ in
         darwinAgent.enable
         && lib.hasSuffix "/bin/herdr-rebuild-safe-launcher" darwinAgentProgram
         && !(lib.hasPrefix "/nix/store/" darwinAgentProgram)
+        && builtins.elem "writeBoundary" darwinAgentPreservation.after
         && builtins.elem "setupLaunchAgents" darwinAgentPreservation.before
         && darwinAgent.config.RunAtLoad
         && darwinAgent.config.KeepAlive

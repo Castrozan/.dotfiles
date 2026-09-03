@@ -53,13 +53,15 @@ in
     {
       home = {
         packages = [ launcher ];
-        activation."preserveRunningLaunchAgent-${name}" = lib.hm.dag.entryBefore [ "setupLaunchAgents" ] ''
-          run ${preserveRunningLaunchAgent}/bin/preserve-running-launch-agent \
-            ${lib.escapeShellArg label} \
-            "$newGenPath/LaunchAgents/${label}.plist" \
-            ${lib.escapeShellArg "${config.home.homeDirectory}/Library/LaunchAgents/${label}.plist"} \
-            ${lib.escapeShellArg runtimeRootDirectory}
-        '';
+        activation."preserveRunningLaunchAgent-${name}" =
+          lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "writeBoundary" ]
+            ''
+              run ${preserveRunningLaunchAgent}/bin/preserve-running-launch-agent \
+                ${lib.escapeShellArg label} \
+                "$newGenPath/LaunchAgents/${label}.plist" \
+                ${lib.escapeShellArg "${config.home.homeDirectory}/Library/LaunchAgents/${label}.plist"} \
+                ${lib.escapeShellArg runtimeRootDirectory}
+            '';
       };
 
       launchd.agents.${name} = {
