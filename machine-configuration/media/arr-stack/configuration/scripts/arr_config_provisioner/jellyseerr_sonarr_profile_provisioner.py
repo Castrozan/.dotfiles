@@ -17,7 +17,7 @@ def build_desired_server_settings(current_server, desired_route, profiles_by_nam
     anime_profile = profiles_by_name.get(anime_profile_name)
     if standard_profile is None or anime_profile is None:
         return None
-    return {
+    desired_server = {
         **current_server,
         "activeProfileId": standard_profile["id"],
         "activeProfileName": standard_profile_name,
@@ -27,6 +27,8 @@ def build_desired_server_settings(current_server, desired_route, profiles_by_nam
             "animeDirectory", current_server.get("activeDirectory")
         ),
     }
+    desired_server.pop("id", None)
+    return desired_server
 
 
 def managed_settings_match(current_server, desired_server):

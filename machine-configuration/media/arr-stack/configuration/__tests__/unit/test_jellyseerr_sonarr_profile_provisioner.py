@@ -56,6 +56,7 @@ def test_routes_standard_and_anime_requests_to_named_profiles(monkeypatch):
     assert method == "PUT"
     assert url == "http://jellyseerr/api/v1/settings/sonarr/0"
     assert api_key == "jellyseerr-key"
+    assert "id" not in body
     assert body["activeProfileId"] == 8
     assert body["activeProfileName"] == "HD - Original Language"
     assert body["activeAnimeProfileId"] == 9
