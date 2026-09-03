@@ -11,6 +11,8 @@ let
     builtins.readFile ../../../program-configuration/preferences-overrides.json
   );
 
+  chromeCaretBrowsingEnabled = chromePreferencesOverrides.accessibility.caret_browsing.enabled;
+
   chromeBookmarkBarShownOnAllTabs = chromePreferencesOverrides.bookmark_bar.show_on_all_tabs;
 
   chromeThemeColorSchemeIsDark = chromePreferencesOverrides.browser.theme.color_scheme == 2;
@@ -28,6 +30,10 @@ let
   chromeOmitsIntlLanguageOverrideChromeRevertsOnLaunch = !(chromePreferencesOverrides ? intl);
 in
 {
+  domain-desktop-chrome-caret-browsing-enabled =
+    mkEvalCheck "domain-desktop-chrome-caret-browsing-enabled" chromeCaretBrowsingEnabled
+      "Chrome accessibility.caret_browsing.enabled must be true to enable caret browsing";
+
   domain-desktop-chrome-bookmark-bar-shown-on-all-tabs =
     mkEvalCheck "domain-desktop-chrome-bookmark-bar-shown-on-all-tabs" chromeBookmarkBarShownOnAllTabs
       "Chrome bookmark_bar.show_on_all_tabs must be true to mirror the Brave bookmark bar";

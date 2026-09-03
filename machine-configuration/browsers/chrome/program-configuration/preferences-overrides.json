@@ -1,4 +1,9 @@
 {
+  "accessibility": {
+    "caret_browsing": {
+      "enabled": true
+    }
+  },
   "bookmark_bar": {
     "show_on_all_tabs": true
   },
