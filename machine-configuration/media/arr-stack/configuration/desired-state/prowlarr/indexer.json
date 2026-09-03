@@ -3,9 +3,7 @@
     "added": "2026-06-29T05:12:13Z",
     "appProfileId": 1,
     "capabilities": {
-      "bookSearchParams": [
-        "q"
-      ],
+      "bookSearchParams": ["q"],
       "categories": [
         {
           "id": 3000,
@@ -106,22 +104,11 @@
       ],
       "limitsDefault": 100,
       "limitsMax": 100,
-      "movieSearchParams": [
-        "q"
-      ],
-      "musicSearchParams": [
-        "q"
-      ],
-      "searchParams": [
-        "q",
-        "q"
-      ],
+      "movieSearchParams": ["q"],
+      "musicSearchParams": ["q"],
+      "searchParams": ["q", "q"],
       "supportsRawSearch": false,
-      "tvSearchParams": [
-        "q",
-        "season",
-        "ep"
-      ]
+      "tvSearchParams": ["q", "season", "ep"]
     },
     "configContract": "CardigannSettings",
     "definitionName": "internetarchive",
@@ -321,9 +308,7 @@
     ],
     "implementation": "Cardigann",
     "implementationName": "Cardigann",
-    "indexerUrls": [
-      "https://archive.org/"
-    ],
+    "indexerUrls": ["https://archive.org/"],
     "infoLink": "https://wiki.servarr.com/prowlarr/supported-indexers#internetarchive",
     "language": "en-US",
     "legacyUrls": [],
@@ -343,9 +328,7 @@
     "added": "2026-06-29T05:12:14Z",
     "appProfileId": 1,
     "capabilities": {
-      "bookSearchParams": [
-        "q"
-      ],
+      "bookSearchParams": ["q"],
       "categories": [
         {
           "id": 3000,
@@ -998,21 +981,11 @@
       ],
       "limitsDefault": 100,
       "limitsMax": 100,
-      "movieSearchParams": [
-        "q"
-      ],
-      "musicSearchParams": [
-        "q"
-      ],
-      "searchParams": [
-        "q"
-      ],
+      "movieSearchParams": ["q"],
+      "musicSearchParams": ["q"],
+      "searchParams": ["q"],
       "supportsRawSearch": false,
-      "tvSearchParams": [
-        "q",
-        "season",
-        "ep"
-      ]
+      "tvSearchParams": ["q", "season", "ep"]
     },
     "configContract": "NoAuthTorrentBaseSettings",
     "definitionName": "Knaben",
@@ -1133,14 +1106,10 @@
     ],
     "implementation": "Knaben",
     "implementationName": "Knaben",
-    "indexerUrls": [
-      "https://knaben.org/"
-    ],
+    "indexerUrls": ["https://knaben.org/"],
     "infoLink": "https://wiki.servarr.com/prowlarr/supported-indexers#knaben",
     "language": "en-US",
-    "legacyUrls": [
-      "https://knaben.eu/"
-    ],
+    "legacyUrls": ["https://knaben.eu/"],
     "name": "Knaben",
     "priority": 25,
     "privacy": "public",
@@ -1157,9 +1126,7 @@
     "added": "2026-06-29T05:11:49Z",
     "appProfileId": 1,
     "capabilities": {
-      "bookSearchParams": [
-        "q"
-      ],
+      "bookSearchParams": ["q"],
       "categories": [
         {
           "id": 5000,
@@ -1257,22 +1224,11 @@
       ],
       "limitsDefault": 100,
       "limitsMax": 100,
-      "movieSearchParams": [
-        "q"
-      ],
-      "musicSearchParams": [
-        "q"
-      ],
-      "searchParams": [
-        "q",
-        "q"
-      ],
+      "movieSearchParams": ["q"],
+      "musicSearchParams": ["q"],
+      "searchParams": ["q", "q"],
       "supportsRawSearch": false,
-      "tvSearchParams": [
-        "q",
-        "season",
-        "ep"
-      ]
+      "tvSearchParams": ["q", "season", "ep"]
     },
     "configContract": "CardigannSettings",
     "definitionName": "limetorrents",
@@ -1528,9 +1484,7 @@
     "added": "2026-06-29T05:11:50Z",
     "appProfileId": 1,
     "capabilities": {
-      "bookSearchParams": [
-        "q"
-      ],
+      "bookSearchParams": ["q"],
       "categories": [
         {
           "id": 5000,
@@ -1728,22 +1682,11 @@
       ],
       "limitsDefault": 100,
       "limitsMax": 100,
-      "movieSearchParams": [
-        "q"
-      ],
-      "musicSearchParams": [
-        "q"
-      ],
-      "searchParams": [
-        "q",
-        "q"
-      ],
+      "movieSearchParams": ["q"],
+      "musicSearchParams": ["q"],
+      "searchParams": ["q", "q"],
       "supportsRawSearch": true,
-      "tvSearchParams": [
-        "q",
-        "season",
-        "ep"
-      ]
+      "tvSearchParams": ["q", "season", "ep"]
     },
     "configContract": "CardigannSettings",
     "definitionName": "nyaasi",
@@ -1889,7 +1832,7 @@
         "order": 1,
         "privacy": "normal",
         "type": "checkbox",
-        "value": false
+        "value": true
       },
       {
         "advanced": false,
@@ -2068,7 +2011,7 @@
           }
         ],
         "type": "select",
-        "value": 0
+        "value": 3
       },
       {
         "advanced": false,
@@ -2161,9 +2104,7 @@
     "added": "2026-07-04T23:04:00Z",
     "appProfileId": 1,
     "capabilities": {
-      "bookSearchParams": [
-        "q"
-      ],
+      "bookSearchParams": ["q"],
       "categories": [
         {
           "id": 2000,
@@ -2286,27 +2227,11 @@
       ],
       "limitsDefault": 100,
       "limitsMax": 100,
-      "movieSearchParams": [
-        "q",
-        "imdbId",
-        "tmdbId"
-      ],
-      "musicSearchParams": [
-        "q"
-      ],
-      "searchParams": [
-        "q",
-        "q"
-      ],
+      "movieSearchParams": ["q", "imdbId", "tmdbId"],
+      "musicSearchParams": ["q"],
+      "searchParams": ["q", "q"],
       "supportsRawSearch": false,
-      "tvSearchParams": [
-        "q",
-        "season",
-        "ep",
-        "imdbId",
-        "tvdbId",
-        "tmdbId"
-      ]
+      "tvSearchParams": ["q", "season", "ep", "imdbId", "tvdbId", "tmdbId"]
     },
     "configContract": "CardigannSettings",
     "definitionName": "samaritano",
@@ -2542,9 +2467,7 @@
     ],
     "implementation": "Cardigann",
     "implementationName": "Cardigann",
-    "indexerUrls": [
-      "https://samaritano.cc/"
-    ],
+    "indexerUrls": ["https://samaritano.cc/"],
     "infoLink": "https://wiki.servarr.com/prowlarr/supported-indexers#samaritano",
     "language": "pt-BR",
     "legacyUrls": [],
@@ -2564,9 +2487,7 @@
     "added": "2026-06-29T05:11:48Z",
     "appProfileId": 1,
     "capabilities": {
-      "bookSearchParams": [
-        "q"
-      ],
+      "bookSearchParams": ["q"],
       "categories": [
         {
           "id": 3000,
@@ -3033,22 +2954,11 @@
       ],
       "limitsDefault": 100,
       "limitsMax": 100,
-      "movieSearchParams": [
-        "q"
-      ],
-      "musicSearchParams": [
-        "q"
-      ],
-      "searchParams": [
-        "q",
-        "q"
-      ],
+      "movieSearchParams": ["q"],
+      "musicSearchParams": ["q"],
+      "searchParams": ["q", "q"],
       "supportsRawSearch": false,
-      "tvSearchParams": [
-        "q",
-        "season",
-        "ep"
-      ]
+      "tvSearchParams": ["q", "season", "ep"]
     },
     "configContract": "CardigannSettings",
     "definitionName": "thepiratebay",
@@ -3336,15 +3246,9 @@
       ],
       "limitsDefault": 100,
       "limitsMax": 100,
-      "movieSearchParams": [
-        "q",
-        "imdbId"
-      ],
+      "movieSearchParams": ["q", "imdbId"],
       "musicSearchParams": [],
-      "searchParams": [
-        "q",
-        "q"
-      ],
+      "searchParams": ["q", "q"],
       "supportsRawSearch": false,
       "tvSearchParams": []
     },

@@ -3,6 +3,7 @@ import sys
 
 from provisioner_core import provision_all
 from runtime_config import (
+    build_app_api_key_map,
     build_secret_map,
     read_bind_address,
     read_secret_value,
@@ -26,11 +27,12 @@ def resolve_login_passwords():
 
 def resolve_configuration():
     env_file = required_environment_value("ARR_PROVISIONER_ENV_FILE")
+    config_root = required_environment_value("ARR_PROVISIONER_CONFIG_ROOT")
     return {
         "bind_address": read_bind_address(
             env_file, required_environment_value("ARR_BIND_ADDRESS_KEY")
         ),
-        "config_root": required_environment_value("ARR_PROVISIONER_CONFIG_ROOT"),
+        "config_root": config_root,
         "desired_state_dir": required_environment_value(
             "ARR_PROVISIONER_DESIRED_STATE_DIR"
         ),
@@ -42,18 +44,21 @@ def resolve_configuration():
         "qbittorrent_password": read_secret_value(
             os.environ.get("ARR_PROVISIONER_QBITTORRENT_PASSWORD_FILE", "")
         ),
-        "secret_map": build_secret_map(
-            [
-                (
-                    "@QBITTORRENT_PASSWORD@",
-                    os.environ.get("ARR_PROVISIONER_QBITTORRENT_PASSWORD_FILE", ""),
-                ),
-                (
-                    "@SAMARITANO_APIKEY@",
-                    os.environ.get("ARR_PROVISIONER_SAMARITANO_APIKEY_FILE", ""),
-                ),
-            ]
-        ),
+        "secret_map": {
+            **build_secret_map(
+                [
+                    (
+                        "@QBITTORRENT_PASSWORD@",
+                        os.environ.get("ARR_PROVISIONER_QBITTORRENT_PASSWORD_FILE", ""),
+                    ),
+                    (
+                        "@SAMARITANO_APIKEY@",
+                        os.environ.get("ARR_PROVISIONER_SAMARITANO_APIKEY_FILE", ""),
+                    ),
+                ]
+            ),
+            **build_app_api_key_map(config_root, [("@SONARR_API_KEY@", "sonarr")]),
+        },
     }
 
 

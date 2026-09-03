@@ -27,6 +27,10 @@ def read_app_api_key(config_root, app):
     return match.group(1)
 
 
+def build_app_api_key_map(config_root, token_app_pairs):
+    return {token: read_app_api_key(config_root, app) for token, app in token_app_pairs}
+
+
 def read_secret_value(secret_file_path):
     try:
         with open(secret_file_path, encoding="utf-8") as handle:

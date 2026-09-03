@@ -29,6 +29,16 @@ def test_read_app_api_key_raises_runtimeerror_when_key_absent(tmp_path):
         runtime_config.read_app_api_key(str(tmp_path), "radarr")
 
 
+def test_build_app_api_key_map_uses_runtime_app_keys(tmp_path):
+    (tmp_path / "sonarr").mkdir()
+    (tmp_path / "sonarr" / "config.xml").write_text(
+        "<Config><ApiKey>sonarr-key</ApiKey></Config>", encoding="utf-8"
+    )
+    assert runtime_config.build_app_api_key_map(
+        str(tmp_path), [("@SONARR_API_KEY@", "sonarr")]
+    ) == {"@SONARR_API_KEY@": "sonarr-key"}
+
+
 def test_required_environment_value_raises_on_missing_and_empty(monkeypatch):
     monkeypatch.delenv("ARR_PROVISIONER_PROBE", raising=False)
     with pytest.raises(SystemExit):

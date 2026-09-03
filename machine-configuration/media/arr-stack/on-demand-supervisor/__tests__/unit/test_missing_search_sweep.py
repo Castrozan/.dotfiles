@@ -8,6 +8,7 @@ SUPERVISOR_PACKAGE_DIRECTORY_PATH = (
 sys.path.insert(0, str(SUPERVISOR_PACKAGE_DIRECTORY_PATH))
 
 import missing_search_sweep
+import missing_search_api
 
 RADARR_ENDPOINT = ("http://radarr", "radarr-key")
 SONARR_ENDPOINT = ("http://sonarr", "sonarr-key")
@@ -24,6 +25,8 @@ def build_http_router(responses, recorded_posts):
             return responses["indexer"]
         if "wanted/missing" in url:
             return responses["missing"]
+        if url.endswith("/api/v3/series"):
+            return responses["series"]
         if "queue" in url:
             return responses["queue"]
         raise AssertionError(f"unexpected request {method} {url}")
@@ -50,14 +53,14 @@ def test_active_indexer_count_subtracts_backed_off_indexers(monkeypatch):
         ),
     }
     monkeypatch.setattr(
-        missing_search_sweep, "http_request", build_http_router(responses, [])
+        missing_search_api, "http_request", build_http_router(responses, [])
     )
     assert missing_search_sweep.active_indexer_count("http://radarr", "k", 1000.0) == 2
 
 
 def test_active_indexer_count_is_none_when_app_unreachable(monkeypatch):
     monkeypatch.setattr(
-        missing_search_sweep,
+        missing_search_api,
         "http_request",
         lambda method, url, headers, timeout_seconds=15, body=None: (500, ""),
     )
@@ -76,7 +79,7 @@ def test_sweep_app_defers_and_sends_nothing_when_no_indexers_active(monkeypatch)
         ),
     }
     monkeypatch.setattr(
-        missing_search_sweep,
+        missing_search_api,
         "http_request",
         build_http_router(responses, recorded_posts),
     )
@@ -99,7 +102,7 @@ def test_sweep_app_searches_missing_items_not_already_queued(monkeypatch):
         "queue": (200, json.dumps({"records": [{"movieId": 11}]})),
     }
     monkeypatch.setattr(
-        missing_search_sweep,
+        missing_search_api,
         "http_request",
         build_http_router(responses, recorded_posts),
     )
@@ -121,7 +124,7 @@ def test_sweep_app_sends_nothing_when_every_missing_item_is_queued(monkeypatch):
         "queue": (200, json.dumps({"records": [{"movieId": 10}]})),
     }
     monkeypatch.setattr(
-        missing_search_sweep,
+        missing_search_api,
         "http_request",
         build_http_router(responses, recorded_posts),
     )
@@ -138,6 +141,11 @@ def test_run_missing_search_sweep_reports_false_when_both_apps_defer(monkeypatch
         "sweep_app",
         lambda *args, **kwargs: "deferred",
     )
+    monkeypatch.setattr(
+        missing_search_sweep,
+        "sweep_sonarr",
+        lambda *args, **kwargs: "deferred",
+    )
     assert (
         missing_search_sweep.run_missing_search_sweep(
             RADARR_ENDPOINT, SONARR_ENDPOINT, 1000.0, False
@@ -147,11 +155,15 @@ def test_run_missing_search_sweep_reports_false_when_both_apps_defer(monkeypatch
 
 
 def test_run_missing_search_sweep_reports_true_when_one_app_sweeps(monkeypatch):
-    outcomes = iter(["deferred", "swept"])
     monkeypatch.setattr(
         missing_search_sweep,
         "sweep_app",
-        lambda *args, **kwargs: next(outcomes),
+        lambda *args, **kwargs: "deferred",
+    )
+    monkeypatch.setattr(
+        missing_search_sweep,
+        "sweep_sonarr",
+        lambda *args, **kwargs: "swept",
     )
     assert (
         missing_search_sweep.run_missing_search_sweep(

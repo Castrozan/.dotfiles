@@ -58,6 +58,14 @@ RESOURCE_PLAN = [
     {
         "app": "prowlarr",
         "port": 9696,
+        "resource": "applications",
+        "match": "name",
+        "update": True,
+        "force_save": True,
+    },
+    {
+        "app": "prowlarr",
+        "port": 9696,
         "resource": "indexer",
         "match": "name",
         "update": True,

@@ -44,7 +44,7 @@
     "name": "English Subtitle Group",
     "specifications": [
       {
-        "name": "English or known English-subtitle fansub group",
+        "name": "English audio, subtitles, or known English-subtitle group",
         "implementation": "ReleaseTitleSpecification",
         "implementationName": "Release Title",
         "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
@@ -53,7 +53,7 @@
         "fields": [
           {
             "name": "value",
-            "value": "\\b(english|eng[ ._-]?subs?|erai[ ._-]?raws|toonshub|subsplease|judas)\\b"
+            "value": "\\b(english|eng[ ._-]?subs?|dual[ ._-]?audio|erai[ ._-]?raws|toonshub|subsplease|judas)\\b"
           }
         ]
       }

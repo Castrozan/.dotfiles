@@ -9,6 +9,15 @@ sys.path.insert(0, str(PROVISIONER_PACKAGE_DIRECTORY_PATH))
 import provisioner_core
 
 
+def test_prowlarr_application_is_reconciled_before_indexers():
+    prowlarr_resources = [
+        step["resource"]
+        for step in provisioner_core.RESOURCE_PLAN
+        if step["app"] == "prowlarr"
+    ]
+    assert prowlarr_resources == ["applications", "indexer"]
+
+
 def stub_all_steps(monkeypatch):
     monkeypatch.setattr(
         provisioner_core, "provision_step", lambda configuration, step, dry_run: None

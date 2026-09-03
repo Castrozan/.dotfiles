@@ -9,6 +9,7 @@ SUPERVISOR_PACKAGE_DIRECTORY_PATH = (
 sys.path.insert(0, str(SUPERVISOR_PACKAGE_DIRECTORY_PATH))
 
 import missing_search_sweep
+import missing_search_api
 
 RADARR_ENDPOINT = ("http://radarr", "radarr-key")
 
@@ -18,22 +19,18 @@ def raise_connection_refused(method, url, headers, timeout_seconds=15, body=None
 
 
 def test_active_indexer_count_is_none_when_connection_raises(monkeypatch):
-    monkeypatch.setattr(missing_search_sweep, "http_request", raise_connection_refused)
-    assert (
-        missing_search_sweep.active_indexer_count("http://radarr", "k", 1000.0) is None
-    )
+    monkeypatch.setattr(missing_search_api, "http_request", raise_connection_refused)
+    assert missing_search_api.active_indexer_count("http://radarr", "k", 1000.0) is None
 
 
-def test_monitored_missing_item_ids_is_empty_when_connection_raises(monkeypatch):
-    monkeypatch.setattr(missing_search_sweep, "http_request", raise_connection_refused)
-    assert missing_search_sweep.monitored_missing_item_ids("http://radarr", "k") == []
+def test_monitored_missing_records_is_none_when_connection_raises(monkeypatch):
+    monkeypatch.setattr(missing_search_api, "http_request", raise_connection_refused)
+    assert missing_search_api.monitored_missing_records("http://radarr", "k") is None
 
 
-def test_queued_item_ids_is_empty_when_connection_raises(monkeypatch):
-    monkeypatch.setattr(missing_search_sweep, "http_request", raise_connection_refused)
-    assert (
-        missing_search_sweep.queued_item_ids("http://radarr", "k", "movieId") == set()
-    )
+def test_queued_records_is_none_when_connection_raises(monkeypatch):
+    monkeypatch.setattr(missing_search_api, "http_request", raise_connection_refused)
+    assert missing_search_api.queued_records("http://radarr", "k") is None
 
 
 def test_sweep_app_defers_when_search_post_connection_raises(monkeypatch):
@@ -50,7 +47,7 @@ def test_sweep_app_defers_when_search_post_connection_raises(monkeypatch):
             return 200, json.dumps({"records": []})
         raise AssertionError(f"unexpected request {method} {url}")
 
-    monkeypatch.setattr(missing_search_sweep, "http_request", http_request)
+    monkeypatch.setattr(missing_search_api, "http_request", http_request)
     outcome = missing_search_sweep.sweep_app(
         RADARR_ENDPOINT, "MoviesSearch", "movieIds", "movieId", 1000.0, False
     )
