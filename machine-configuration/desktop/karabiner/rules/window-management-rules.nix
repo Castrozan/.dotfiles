@@ -1,4 +1,8 @@
-_: [
+_:
+let
+  hammerspoonCommandLineBinaryPath = "/opt/homebrew/bin/hs";
+in
+[
   {
     description = "Cmd+Q sends show to application-launcher daemon (send_user_command, no fork+exec)";
     manipulators = [
@@ -14,6 +18,23 @@ _: [
               endpoint = "/tmp/application-launcher.sock";
               payload = "show";
             };
+          }
+        ];
+      }
+    ];
+  }
+  {
+    description = "Cmd+E toggles the current and previous workspace windows side by side via Hammerspoon";
+    manipulators = [
+      {
+        type = "basic";
+        from = {
+          key_code = "e";
+          modifiers.mandatory = [ "command" ];
+        };
+        to = [
+          {
+            shell_command = "${hammerspoonCommandLineBinaryPath} -c \"toggleTwoWindowTiling()\"";
           }
         ];
       }

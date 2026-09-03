@@ -4,6 +4,7 @@ local pinnedWindow = require("workspace_grid_pinned_window")
 local windowAssignment = require("workspace_grid_window_assignment")
 local windowLayout = require("workspace_grid_window_layout")
 local windowQuery = require("workspace_grid_window_query")
+local twoWindowTiling = require("workspace_grid_two_window_tiling")
 
 function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 	local handlers = {}
@@ -17,6 +18,7 @@ function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 		if assignedWorkspaceNumber ~= context.currentWorkspaceNumber() then
 			windowLayout.parkWindowOffScreen(window)
 		elseif windowLayout.windowIsTileable(window) then
+			twoWindowTiling.deactivate()
 			windowLayout.showWindowOnScreen(window)
 		end
 		context.renderMenuBarIndicator()
@@ -28,6 +30,7 @@ function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 
 	function handlers.onWindowDestroyed(window)
 		if window and window:id() and windowQuery.windowIsNoLongerManageable(window:id()) then
+			twoWindowTiling.deactivate(window:id())
 			windowAssignment.forgetWindow(window:id())
 			context.renderMenuBarIndicator()
 			context.onWorkspaceLayoutChanged()
@@ -42,8 +45,15 @@ function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 			and windowLayout.windowIsTileable(window)
 		then
 			windowAssignment.rememberFocusedWindow(context.currentWorkspaceNumber(), window:id())
+			local tilingStateChanged = false
+			if twoWindowTiling.isActive() and not twoWindowTiling.containsWindow(window) then
+				tilingStateChanged = twoWindowTiling.deactivate()
+			end
 			if windowLayout.windowIsParkedOffScreen(window) then
 				windowLayout.showWindowOnScreen(window)
+			end
+			if tilingStateChanged then
+				context.onWorkspaceLayoutChanged()
 			end
 		end
 	end

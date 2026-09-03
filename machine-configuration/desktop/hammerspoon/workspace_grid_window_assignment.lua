@@ -2,7 +2,7 @@ local workspaceGridWindowAssignment = {}
 
 local defaultWorkspaceNumber = 11
 local workspaceNumberByWindowId = {}
-local lastFocusedWindowIdByWorkspaceNumber = {}
+local focusedWindowIdsByRecencyByWorkspaceNumber = {}
 
 function workspaceGridWindowAssignment.workspaceOfWindowId(windowId)
 	local assignedWorkspaceNumber = workspaceNumberByWindowId[windowId]
@@ -22,19 +22,40 @@ end
 
 function workspaceGridWindowAssignment.forgetWindow(windowId)
 	workspaceNumberByWindowId[windowId] = nil
-	for workspaceNumber, focusedWindowId in pairs(lastFocusedWindowIdByWorkspaceNumber) do
-		if focusedWindowId == windowId then
-			lastFocusedWindowIdByWorkspaceNumber[workspaceNumber] = nil
+	for workspaceNumber, focusedWindowIdsByRecency in pairs(focusedWindowIdsByRecencyByWorkspaceNumber) do
+		for recencyIndex = #focusedWindowIdsByRecency, 1, -1 do
+			if focusedWindowIdsByRecency[recencyIndex] == windowId then
+				table.remove(focusedWindowIdsByRecency, recencyIndex)
+			end
+		end
+		if #focusedWindowIdsByRecency == 0 then
+			focusedWindowIdsByRecencyByWorkspaceNumber[workspaceNumber] = nil
 		end
 	end
 end
 
 function workspaceGridWindowAssignment.rememberFocusedWindow(workspaceNumber, windowId)
-	lastFocusedWindowIdByWorkspaceNumber[workspaceNumber] = windowId
+	local focusedWindowIdsByRecency = focusedWindowIdsByRecencyByWorkspaceNumber[workspaceNumber] or {}
+	for recencyIndex = #focusedWindowIdsByRecency, 1, -1 do
+		if focusedWindowIdsByRecency[recencyIndex] == windowId then
+			table.remove(focusedWindowIdsByRecency, recencyIndex)
+		end
+	end
+	table.insert(focusedWindowIdsByRecency, 1, windowId)
+	while #focusedWindowIdsByRecency > 2 do
+		table.remove(focusedWindowIdsByRecency)
+	end
+	focusedWindowIdsByRecencyByWorkspaceNumber[workspaceNumber] = focusedWindowIdsByRecency
 end
 
 function workspaceGridWindowAssignment.rememberedFocusedWindowId(workspaceNumber)
-	return lastFocusedWindowIdByWorkspaceNumber[workspaceNumber]
+	local focusedWindowIdsByRecency = focusedWindowIdsByRecencyByWorkspaceNumber[workspaceNumber] or {}
+	return focusedWindowIdsByRecency[1]
+end
+
+function workspaceGridWindowAssignment.previouslyFocusedWindowId(workspaceNumber)
+	local focusedWindowIdsByRecency = focusedWindowIdsByRecencyByWorkspaceNumber[workspaceNumber] or {}
+	return focusedWindowIdsByRecency[2]
 end
 
 function workspaceGridWindowAssignment.allWorkspaceNumbersByWindowId()

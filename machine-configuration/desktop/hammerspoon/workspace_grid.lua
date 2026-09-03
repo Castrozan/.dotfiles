@@ -19,8 +19,11 @@ local windowQuery = require("workspace_grid_window_query")
 local windowSnapshot = require("workspace_grid_window_snapshot")
 local navigation = require("workspace_grid_navigation")
 local pinnedWindow = require("workspace_grid_pinned_window")
+local twoWindowTiling = require("workspace_grid_two_window_tiling")
 
-local manageableWindows = windowQuery.manageableWindows
+local function readCurrentWorkspaceNumber()
+	return currentWorkspaceNumber
+end
 
 function workspaceGrid.setSessionGenerationTokenForTest(token)
 	sessionGeneration.setTokenForTest(token)
@@ -55,12 +58,13 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 	if targetWorkspaceNumber < 1 or targetWorkspaceNumber > totalWorkspaceCount then
 		return
 	end
+	twoWindowTiling.deactivate()
 	local workspaceChanged = targetWorkspaceNumber ~= currentWorkspaceNumber
 	currentWorkspaceNumber = targetWorkspaceNumber
 	local rememberedFocusWindowId = windowAssignment.rememberedFocusedWindowId(targetWorkspaceNumber)
 	local rememberedFocusWindow = nil
 	local firstTileableWindow = nil
-	for _, window in ipairs(manageableWindows()) do
+	for _, window in ipairs(windowQuery.manageableWindows()) do
 		if windowAssignment.workspaceOfWindowId(window:id()) == targetWorkspaceNumber then
 			windowLayout.showWindowOnScreen(window)
 			if windowLayout.windowIsTileable(window) then
@@ -108,6 +112,7 @@ function workspaceGrid.navigateWorkspace(deltaWithinGrid, alsoMoveFocusedWindow)
 end
 
 local function placeSummonedWindowOnCurrentWorkspace(window)
+	twoWindowTiling.deactivate()
 	windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
 	windowLayout.showWindowOnScreen(window)
 	window:focus()
@@ -122,7 +127,8 @@ workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace =
 	summonToWorkspaceEntryPoints.summonApplicationProfileWindowToCurrentWorkspace
 
 function workspaceGrid.gatherAllWindowsToCurrentWorkspace()
-	for _, window in ipairs(manageableWindows()) do
+	twoWindowTiling.deactivate()
+	for _, window in ipairs(windowQuery.manageableWindows()) do
 		if not pinnedWindow.windowIsPinned(window) then
 			windowAssignment.assignWindowToWorkspace(window:id(), currentWorkspaceNumber)
 			windowLayout.showWindowOnScreen(window)
@@ -140,10 +146,13 @@ function workspaceGrid.currentWorkspaceWindowList()
 	return windowSnapshot.windowListForWorkspace(currentWorkspaceNumber)
 end
 
+require("workspace_grid_two_window_tiling_entry_points").install(workspaceGrid, {
+	currentWorkspaceNumber = readCurrentWorkspaceNumber,
+	onWorkspaceLayoutChanged = onWorkspaceLayoutChanged,
+})
+
 local windowFocusEntryPoints = require("workspace_grid_window_focus").buildWindowFocusEntryPoints({
-	currentWorkspaceNumber = function()
-		return currentWorkspaceNumber
-	end,
+	currentWorkspaceNumber = readCurrentWorkspaceNumber,
 	switchToWorkspace = workspaceGrid.switchToWorkspace,
 	onWorkspaceLayoutChanged = onWorkspaceLayoutChanged,
 })
@@ -151,9 +160,7 @@ workspaceGrid.focusWindowById = windowFocusEntryPoints.focusWindowById
 workspaceGrid.revealWindowById = windowFocusEntryPoints.revealWindowById
 
 local windowEventHandlers = require("workspace_grid_window_events").buildWindowEventHandlers({
-	currentWorkspaceNumber = function()
-		return currentWorkspaceNumber
-	end,
+	currentWorkspaceNumber = readCurrentWorkspaceNumber,
 	renderMenuBarIndicator = renderMenuBarIndicator,
 	onWorkspaceLayoutChanged = onWorkspaceLayoutChanged,
 })
@@ -163,7 +170,7 @@ workspaceGrid.onWindowFocused = windowEventHandlers.onWindowFocused
 workspaceGrid.onWindowLeftFullScreen = windowEventHandlers.onWindowLeftFullScreen
 
 function workspaceGrid.registerExistingWindowsOnDefaultWorkspace()
-	for _, window in ipairs(manageableWindows()) do
+	for _, window in ipairs(windowQuery.manageableWindows()) do
 		if not windowAssignment.isWindowAssigned(window:id()) then
 			windowAssignment.assignWindowToWorkspace(window:id(), defaultWorkspaceNumber)
 		end
@@ -187,8 +194,6 @@ function workspaceGrid.restorePersistedWorkspaceState()
 	windowAssignment.adoptPersistedAssignments(restoredAssignments)
 end
 
-function workspaceGrid.currentWorkspaceNumber()
-	return currentWorkspaceNumber
-end
+workspaceGrid.currentWorkspaceNumber = readCurrentWorkspaceNumber
 
 return workspaceGrid

@@ -67,6 +67,15 @@ let
 
   hammerspoonInitModuleContent = builtins.readFile ../../hammerspoon/init.lua;
 
+  commandETilingManipulators = lib.filter (
+    manipulator:
+    manipulator.from.key_code or "" == "e"
+    && manipulator.from.modifiers.mandatory or [ ] == [ "command" ]
+    && lib.any (toEntry: lib.hasInfix "toggleTwoWindowTiling()" (toEntry.shell_command or "")) (
+      manipulator.to or [ ]
+    )
+  ) allManipulators;
+
   browserSummonShellCommands = lib.concatMap (
     rule:
     lib.concatMap (manipulator: map (toEntry: toEntry.shell_command or "") (manipulator.to or [ ])) (
@@ -134,6 +143,14 @@ in
     mkEvalCheck "domain-desktop-karabiner-browser-summon-functions-defined-in-hammerspoon"
       everyBrowserSummonFunctionIsDefinedInHammerspoonInit
       "Every hammerspoon global function the karabiner browser-summon rules invoke via `hs -c` must be defined in init.lua, otherwise renaming or dropping one side of the seam leaves Cmd+B or Cmd+C a silently dead keybind with all other tests still green";
+
+  domain-desktop-karabiner-command-e-two-window-tiling-routes-to-hammerspoon =
+    mkEvalCheck "domain-desktop-karabiner-command-e-two-window-tiling-routes-to-hammerspoon"
+      (
+        builtins.length commandETilingManipulators == 1
+        && lib.hasInfix "function toggleTwoWindowTiling()" hammerspoonInitModuleContent
+      )
+      "Physical Cmd+E must invoke the Hammerspoon two-window tiling entry point exactly once, rather than a global Hammerspoon hotkey that would also consume Karabiner's existing Ctrl+E to Cmd+E remap";
 
   domain-desktop-karabiner-chrome-zoom-in-remap-present =
     mkEvalCheck "domain-desktop-karabiner-chrome-zoom-in-remap-present" chromeZoomInRemapIsPresent

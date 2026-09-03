@@ -13,6 +13,11 @@
         ./workspace_grid_browser_aware_digit_keybindings.lua;
       ".hammerspoon/workspace_grid_navigation.lua".source = ./workspace_grid_navigation.lua;
       ".hammerspoon/workspace_grid_pinned_window.lua".source = ./workspace_grid_pinned_window.lua;
+      ".hammerspoon/workspace_grid_two_window_tiling.lua".source = ./workspace_grid_two_window_tiling.lua;
+      ".hammerspoon/workspace_grid_two_window_tiling_entry_points.lua".source =
+        ./workspace_grid_two_window_tiling_entry_points.lua;
+      ".hammerspoon/workspace_grid_two_window_tiling_hotkeys.lua".source =
+        ./workspace_grid_two_window_tiling_hotkeys.lua;
       ".hammerspoon/workspace_grid_window_layout.lua".source = ./workspace_grid_window_layout.lua;
       ".hammerspoon/workspace_grid_window_assignment.lua".source = ./workspace_grid_window_assignment.lua;
       ".hammerspoon/workspace_grid_window_query.lua".source = ./workspace_grid_window_query.lua;

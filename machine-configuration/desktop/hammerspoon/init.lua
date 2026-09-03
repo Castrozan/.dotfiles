@@ -34,6 +34,7 @@ browserAwareDigitKeybindings.install({
 	workspaceGrid = workspaceGrid,
 	workspaceColumnByKeyCode = workspaceColumnByKeyCode,
 })
+require("workspace_grid_two_window_tiling_hotkeys").install(workspaceGrid)
 
 for rowIndex = 1, #workspaceRowSwitchModifiers - 1 do
 	for columnNumber = 1, workspaceGrid.columns do
@@ -100,6 +101,9 @@ function summonWorkChromeToCurrentWorkspace()
 end
 function summonWezTermToCurrentWorkspace()
 	weztermSummon.summonToCurrentWorkspace(workspaceGrid)
+end
+function toggleTwoWindowTiling()
+	return workspaceGrid.toggleTwoWindowTiling()
 end
 
 local windowEventWatcher = hs.window.filter.new()
