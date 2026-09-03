@@ -53,3 +53,11 @@ def test_a_failed_night_and_steward_work_share_one_fingerprint(monkeypatch, tmp_
     assert output.startswith(
         '{"verdict": "behind"} | nightly deep tiers: FAILED tiers: --runtime'
     )
+
+
+def test_a_long_log_still_yields_its_final_verdict(monkeypatch, tmp_path):
+    noisy_night = (
+        "=== --runtime output line ===\n" * 2000
+    ) + "FAILED tiers: --runtime\n"
+    output = run_probe(monkeypatch, "", noisy_night, tmp_path)
+    assert output.startswith("nightly deep tiers: FAILED tiers: --runtime")

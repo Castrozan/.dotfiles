@@ -13,6 +13,7 @@ NIGHTLY_LOG_FILE = (
 FAILED_NIGHT_PREFIX = "FAILED"
 FINGERPRINT_SEPARATOR = " | "
 UPSTREAM_PROBE_TIMEOUT_SECONDS = 240
+LOG_TAIL_BYTES = 4096
 
 
 def upstream_probe_command() -> list[str]:
@@ -38,9 +39,10 @@ def nightly_log_file() -> Path:
 
 
 def last_line_of(path: Path) -> str:
-    lines = [
-        line for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
-    ]
+    with path.open("rb") as log:
+        log.seek(max(path.stat().st_size - LOG_TAIL_BYTES, 0))
+        tail = log.read().decode("utf-8", errors="replace")
+    lines = [line for line in tail.splitlines() if line.strip()]
     return lines[-1] if lines else ""
 
 
