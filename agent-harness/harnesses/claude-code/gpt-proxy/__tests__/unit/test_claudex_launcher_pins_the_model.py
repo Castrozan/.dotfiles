@@ -22,9 +22,9 @@ def test_claudex_pins_the_declared_proxy_model():
     assert matched, "claudex no longer execs Claude Code"
     launcher_exec_line = matched.group(0)
     assert "--model" in launcher_exec_line, (
-        "claudex must pass --model explicitly: the deployed settings.json pins a "
-        "concrete model, so the ANTHROPIC_DEFAULT_OPUS_MODEL alias never takes effect "
-        "and the launcher would silently run on the Anthropic model instead of the proxy"
+        "claudex must pass --model explicitly: the deployed settings.json carries the "
+        "model the user last switched to, so the ANTHROPIC_DEFAULT_OPUS_MODEL alias never "
+        "takes effect and the launcher would silently run on the Anthropic model instead of the proxy"
     )
     declared = re.search(r'gptModelForOpusTier = "([^"]+)"', source)
     assert declared, "gptModelForOpusTier is no longer declared in the module"
