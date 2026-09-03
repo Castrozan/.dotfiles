@@ -51,7 +51,7 @@ run_codex() {
 }
 
 pinned_arguments() {
-	echo '<--model> <gpt-5.6-sol> <--sandbox> <danger-full-access> <--ask-for-approval> <never>'
+	echo '<--model> <gpt-5.6-sol> <--sandbox> <danger-full-access> <--ask-for-approval> <never> <--dangerously-bypass-hook-trust>'
 }
 
 @test "passes shellcheck apart from the dispatch file it sources by path" {
