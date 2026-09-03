@@ -39,6 +39,7 @@
       ".GlobalPreferences"."com.apple.mouse.scaling" = 5.0;
       CustomUserPreferences = {
         ".GlobalPreferences".AppleActionOnDoubleClick = "None";
+        ".GlobalPreferences".AppleMenuBarVisibleInFullscreen = false;
         ".GlobalPreferences"."com.apple.scrollwheel.scaling" = -1;
         "com.apple.driver.AppleBluetoothMultitouch.mouse"."MouseMomentumScroll" = false;
         "com.apple.AppleMultitouchMouse"."MouseMomentumScroll" = false;
