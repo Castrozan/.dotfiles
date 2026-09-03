@@ -45,7 +45,7 @@ for rowIndex = 1, #workspaceRowSwitchModifiers - 1 do
 	end
 end
 
-hs.hotkey.bind({ "cmd", "ctrl" }, "m", function()
+hs.hotkey.bind({ "cmd" }, "m", function()
 	menuBarReveal.brieflyReveal()
 end)
 
