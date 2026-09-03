@@ -30,6 +30,13 @@ import ./service-checks.nix {
     self
     ;
 }
+// import ./agent-enable-checks.nix {
+  inherit
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
 // import ./agents-denied-destructive-commands-checks.nix {
   inherit
     mkEvalCheck

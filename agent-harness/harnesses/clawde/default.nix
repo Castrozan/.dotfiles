@@ -4,6 +4,7 @@
     inputs.clawde.homeManagerModules.default
     ./herdr-service-consumer.nix
     ./wiring.nix
+    ./agent-enable.nix
     ./harnesses.nix
     ./discord-channel-access.nix
     ./discord-agents-allowed-to-stay-silent.nix

@@ -77,9 +77,12 @@ heartbeat driver accrue the three-empty-turn refusal signature and fail over at 
 </a_channel_bridge_is_a_headless_sidecar_not_a_window>
 
 <taking_an_agent_offline>
-There is no per-agent `enable`. `onDemand = true` is the off switch: the supervisor never brings the agent up, so it
-holds no process, no multiplexer window, no Discord connection and no firing heartbeat until someone runs `clawde start
-<agent>`, which writes a lease file. Nothing asserts against pairing `onDemand` with a heartbeat interval, and the
+The per-agent `enable` is this repo's wiring, not upstream: `agent-enable.nix` filters `enable = false` agents out of
+`config.clawde.agents` before the clawde module reads it, so the declaration stays in the tree while the supervisor
+spawns no window, no Discord sidecar and no heartbeat for it, and any module that looks the agent up by name fails
+evaluation. `onDemand = true` is the softer switch: the supervisor never brings the agent up on its own, so it holds no
+process, no multiplexer window and no firing heartbeat until someone runs `clawde start <agent>`, which writes a lease
+file, but a `sidecarLifetime = "service"` bridge stays connected the whole time so a Discord message can start it. Nothing asserts against pairing `onDemand` with a heartbeat interval, and the
 heartbeat driver runs inside the agent's own window, so no window is what actually stops the schedule. Deleting an
 agent that owned its own dedicated multiplexer session is worse: the supervisor only iterates sessions present in the
 spec and has no pass that kills sessions absent from it, so the live session and its wrapper keep running forever and
