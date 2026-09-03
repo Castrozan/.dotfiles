@@ -12,7 +12,7 @@ let
 in
 {
   options.custom.arrConfigProvisioner = {
-    enable = lib.mkEnableOption "a root systemd oneshot that reconstructs the arr-stack app config (radarr/sonarr/prowlarr download clients, root folders, custom formats, applications and indexers, plus qBittorrent's own seeding and queueing preferences) declaratively by idempotently writing committed desired-state JSON into each app's API at rebuild, so a wiped or lost config directory is rebuilt from the repo instead of from an off-host backup; the only real secrets (the qBittorrent password and the private indexer key) are injected from agenix at runtime";
+    enable = lib.mkEnableOption "a root systemd oneshot that reconstructs the arr-stack app config (radarr/sonarr/prowlarr download clients, root folders, custom formats, applications and indexers, plus qBittorrent's own seeding and queueing preferences) declaratively by idempotently writing committed desired-state JSON into each app's API at rebuild, so a wiped or lost config directory is rebuilt from the repo instead of from an off-host backup; app API keys are read from runtime config and the qBittorrent password and private indexer key are injected from agenix";
 
     stackHomeDirectory = lib.mkOption {
       type = lib.types.str;
