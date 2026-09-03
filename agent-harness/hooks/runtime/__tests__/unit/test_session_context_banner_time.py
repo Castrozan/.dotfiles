@@ -13,12 +13,9 @@ def test_date_line_carries_zone_weekday_and_its_snapshot_nature():
     assert date_line == "Date: 2026-09-02 18:06 -03 (Wednesday) at session start"
 
 
-def test_zone_line_states_the_distance_to_utc_and_the_converter():
+def test_zone_line_states_the_distance_to_utc():
     _date_line, zone_line = format_time_sections(aware_now(-3, "-03"))
-    assert zone_line == (
-        "Zone: 3h behind UTC; a stamp ending in Z is UTC, "
-        "run local-time <stamp> before quoting it"
-    )
+    assert zone_line == "Zone: 3h behind UTC; a stamp ending in Z is UTC"
 
 
 def test_half_hour_zones_ahead_of_utc_render_their_minutes():

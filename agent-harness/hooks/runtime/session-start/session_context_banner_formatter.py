@@ -66,6 +66,5 @@ def format_time_sections(now: datetime) -> list[str]:
     return [
         f"Date: {local_now.strftime('%Y-%m-%d %H:%M %Z')} "
         f"({local_now.strftime('%A')}) at session start",
-        f"Zone: {describe_utc_distance(local_now)}; a stamp ending in Z is UTC, "
-        "run local-time <stamp> before quoting it",
+        f"Zone: {describe_utc_distance(local_now)}; a stamp ending in Z is UTC",
     ]

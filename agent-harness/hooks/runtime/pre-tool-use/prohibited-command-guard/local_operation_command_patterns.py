@@ -42,10 +42,8 @@ DATE_UTC_CLOCK_READ_BY_ZONE_PATTERN = (
     rf"{DATE_PARSED_INPUT_ABSENT_LOOKAHEAD}"
 )
 DATE_UTC_CLOCK_READ_DENIAL_REASON = (
-    "date -u and a TZ=UTC prefix read the clock in UTC, not the user's zone. Use "
-    "plain date, which prints the local zone; 'local-time --iso' for an API "
-    "parameter; and 'local-time <stamp>' to convert a stamp ending in Z before "
-    "quoting it."
+    "date -u and a TZ=UTC prefix read the clock in UTC, not the user's zone. "
+    "Run plain date instead; it prints the user's zone."
 )
 
 LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [

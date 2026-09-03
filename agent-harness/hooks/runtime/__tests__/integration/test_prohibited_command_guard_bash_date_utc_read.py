@@ -27,7 +27,7 @@ class TestBashDateUtcClockReadBlocking:
         assert result.returncode == 0
         message = parse_prohibited_command_guard_system_message(result.stdout)
         assert "utc" in message.lower()
-        assert "local-time" in message
+        assert "Run plain date instead" in message
 
     @pytest.mark.parametrize(
         "command",

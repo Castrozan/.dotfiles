@@ -7,7 +7,6 @@ in
 {
   imports = [
     ../agent-to-agent-communication/client/a2a-client-home-manager.nix
-    ../local-time/local-time-home-manager.nix
     ../servants/servants-home-manager.nix
     ../session-control/agent-session-control-home-manager.nix
     ../workflow-commands/dotfiles-workflow-commands-home-manager.nix
