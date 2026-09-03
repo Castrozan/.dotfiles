@@ -11,7 +11,9 @@ let
     "com.apple.AMPDeviceDiscoveryAgent"
     "com.apple.AMPDevicesAgent"
     "com.apple.AMPSystemPlayerAgent"
+    "com.apple.amp.mediasharingd"
     "com.apple.mediaremoteagent"
+    "com.apple.videosubscriptionsd"
     "com.apple.itunescloudd"
     "com.apple.photoanalysisd"
     "com.apple.photolibraryd"
@@ -25,6 +27,7 @@ let
 
   systemDomainDisabledAppleDaemonLabels = [
     "com.apple.mediaremoted"
+    "com.apple.musicd"
     "com.apple.cloudd"
   ];
 
@@ -40,7 +43,7 @@ let
 in
 {
   system.activationScripts.postActivation.text = lib.mkAfter ''
-    echo "disabling unused Apple background agents (Music/media, iCloud, Photos, App Store, Siri/Shortcuts)..." >&2
+    echo "disabling unused Apple background agents (Music/TV/media, iCloud, Photos, App Store, Siri/Shortcuts)..." >&2
     appleBackgroundAgentOwnerUserId=$(/usr/bin/id -u ${lib.escapeShellArg username})
     ${disableGuiDomainAgentCommands}
     ${disableSystemDomainDaemonCommands}

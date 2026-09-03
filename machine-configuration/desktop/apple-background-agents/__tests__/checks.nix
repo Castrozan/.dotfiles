@@ -27,6 +27,9 @@ let
     "com.apple.suggestd"
     "com.apple.siriactionsd"
     "com.apple.mediaremoted"
+    "com.apple.musicd"
+    "com.apple.videosubscriptionsd"
+    "com.apple.amp.mediasharingd"
   ];
 
   everyRepresentativeAgentIsForcedDisabled = lib.all (
@@ -43,5 +46,5 @@ in
   macbook-unused-apple-background-agents-disabled =
     mkEvalCheck "macbook-unused-apple-background-agents-disabled"
       (everyRepresentativeAgentIsForcedDisabled && bothDomainsTargeted)
-      "the postActivation sweep must launchctl-disable the unused Apple background agents (Music/media, iCloud, Photos, App Store, Siri/Shortcuts) across both the gui and system domains so they stop lingering after every rebuild";
+      "the postActivation sweep must launchctl-disable the unused Apple background agents (Music/TV/media, iCloud, Photos, App Store, Siri/Shortcuts) across both the gui and system domains so they stop lingering after every rebuild";
 }
