@@ -29,10 +29,18 @@ function workspaceGridWindowEvents.buildWindowEventHandlers(context)
 	handlers.onWindowLeftFullScreen = adoptWindowOntoCurrentWorkspace
 
 	function handlers.onWindowDestroyed(window)
-		if window and window:id() and windowQuery.windowIsNoLongerManageable(window:id()) then
-			twoWindowTiling.deactivate(window:id())
+		if not (window and window:id()) then
+			return
+		end
+		local tilingStateChanged = false
+		if twoWindowTiling.containsWindow(window) then
+			tilingStateChanged = twoWindowTiling.deactivate(window:id())
+		end
+		if windowQuery.windowIsNoLongerManageable(window:id()) then
 			windowAssignment.forgetWindow(window:id())
 			context.renderMenuBarIndicator()
+			context.onWorkspaceLayoutChanged()
+		elseif tilingStateChanged then
 			context.onWorkspaceLayoutChanged()
 		end
 	end

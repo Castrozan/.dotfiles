@@ -54,6 +54,21 @@ grid.onWindowFocused(windows[2])
 windows[1]:focus()
 grid.onWindowFocused(windows[1])
 grid.toggleTwoWindowTiling()
+harness.setWindowServerVisibleWindowIds({})
+grid.onWindowDestroyed(windows[2])
+expectEqual(
+	"destroying a pair member during a WindowServer blackout leaves two-window mode",
+	false,
+	grid.twoWindowTilingIsActive()
+)
+expectEqual("the surviving pair member is maximized after its peer closes", 1440, windows[1]:frame().w)
+harness.setWindowServerVisibleWindowIds(nil)
+
+windows[2]:focus()
+grid.onWindowFocused(windows[2])
+windows[1]:focus()
+grid.onWindowFocused(windows[1])
+grid.toggleTwoWindowTiling()
 grid.switchToWorkspace(12)
 expectEqual("switching workspace leaves two-window mode", false, grid.twoWindowTilingIsActive())
 
