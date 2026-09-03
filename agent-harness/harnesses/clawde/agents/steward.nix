@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   hostname,
   inputs,
   ...
@@ -49,14 +50,20 @@ let
   repoCiToolingDirective = ''
 
         <repo-ci-tooling>
-    Watch CI with `gh`: `gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids for a commit and `gh run watch <id> --exit-status` blocks on each until it finishes and exits non-zero when it ends red. A short sha matches no run and a just-pushed commit has none for a few seconds, so pass the full sha and retry an empty list rather than reading it as a verdict. The integration and runtime tiers need the live machine, so a nightly 03:00 job owns them and no tick of yours ever runs them; a red nightly log under `~/.local/state/dotfiles-nightly-tests` is repo breakage you fix like a red CI.
+    Watch CI with `gh`: `gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids for a commit and `gh run watch <id> --exit-status` blocks on each until it finishes and exits non-zero when it ends red. A short sha matches no run and a just-pushed commit has none for a few seconds, so pass the full sha and retry an empty list rather than reading it as a verdict. The integration and runtime tiers need the live machine, so a nightly 03:00 job owns them and no tick of yours ever runs them; a red night is repo breakage you fix like a red CI. Your heartbeat probe wakes you for it: the verdict is the last line of `~/.local/state/dotfiles-nightly-tests/nightly-deep-test-tiers.log`, either `FAILED tiers:` naming the tiers or `FAILED to run:`. Read that log, run the failing test files directly, fix and push when the cause is in the tree, and otherwise report the tier and the failing test names to the human through notify. A passing night needs no word.
         </repo-ci-tooling>
   '';
 
   effectivePersonality =
     personalityWithMachineIdentity + machineLocalWrapperDirective + repoCiToolingDirective;
+
+  dotfilesStewardHeartbeatProbe = pkgs.writeShellScriptBin "dotfiles-steward-heartbeat-probe" ''
+    exec ${pkgs.python312}/bin/python3 ${../scripts/dotfiles_steward_heartbeat_probe.py} "$@"
+  '';
 in
 {
+  home.packages = [ dotfilesStewardHeartbeatProbe ];
+
   clawdeAgentSkillSets.steward = [
     "coding"
     "nix"
@@ -86,6 +93,7 @@ in
     reasoningEffort = "none";
     personality = effectivePersonality;
     launchOnTrigger = false;
+    heartbeatGateCommand = "clawde-heartbeat-change-gate --label steward --retries-while-pending 2 --probe dotfiles-steward-heartbeat-probe";
     mcpServers = { };
     expose.a2a.agentDescriptionForCard = "keeps every machine's checkout synced, green and pushed";
   };

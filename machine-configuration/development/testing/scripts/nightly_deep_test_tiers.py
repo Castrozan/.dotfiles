@@ -32,6 +32,7 @@ DOCKER_LEFTOVER_PRUNE_COMMANDS = (
 
 EXIT_CODE_A_TIER_FAILED = 1
 EXIT_CODE_CANNOT_RUN = 2
+CANNOT_RUN_VERDICT = "FAILED to run: dotfiles-test is not on PATH, so no tier can run"
 
 
 def log_file_path() -> Path:
@@ -170,7 +171,9 @@ def main() -> int:
         return 0
 
     if shutil.which("dotfiles-test") is None:
-        print("dotfiles-test is not on PATH, so no tier can run", file=sys.stderr)
+        with open_log_file() as log:
+            log.write(f"{CANNOT_RUN_VERDICT}\n")
+        print(CANNOT_RUN_VERDICT, file=sys.stderr)
         return EXIT_CODE_CANNOT_RUN
 
     return run_the_deep_tiers_and_clean_up()
