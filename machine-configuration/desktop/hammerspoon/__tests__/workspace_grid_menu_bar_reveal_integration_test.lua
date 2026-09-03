@@ -6,6 +6,7 @@ harness.installFakeHammerspoonGlobal()
 harness.setLiveWindowsToIds({ 101 })
 
 local grid = harness.loadFreshGrid()
+grid.registerExistingWindowsOnDefaultWorkspace()
 local menuBarReveal = require("workspace_grid_menu_bar_reveal")
 local revealCount = 0
 menuBarReveal.brieflyReveal = function()
@@ -20,5 +21,11 @@ harness.expectEqual("switching to another workspace reveals the menu bar once", 
 
 grid.switchToWorkspace(22)
 harness.expectEqual("an invalid workspace does not reveal the menu bar", 1, revealCount)
+
+grid.focusWindowById(101)
+harness.expectEqual("switching to a valid window reveals the menu bar once", 2, revealCount)
+
+grid.focusWindowById(999)
+harness.expectEqual("a stale window switch request does not reveal the menu bar", 2, revealCount)
 
 harness.exitWithAccumulatedStatus()

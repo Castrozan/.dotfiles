@@ -16,8 +16,13 @@ end
 local createdMenuBars = {}
 hs = {
 	menubar = {
-		new = function()
-			local menuBarItem = { deleted = false, title = nil }
+		new = function(inMenuBar, autosaveName)
+			local menuBarItem = {
+				deleted = false,
+				title = nil,
+				inMenuBar = inMenuBar,
+				autosaveName = autosaveName,
+			}
 			function menuBarItem:setTitle(newTitle)
 				self.title = newTitle
 			end
@@ -101,6 +106,13 @@ local function findCell(cells, workspaceNumber)
 	end
 	return nil
 end
+
+expectEqual("the indicator is created in the menu bar", true, createdMenuBars[1].inMenuBar)
+expectEqual(
+	"the indicator keeps one stable AppKit identity across reloads",
+	"workspace-grid-indicator",
+	createdMenuBars[1].autosaveName
+)
 
 local firstRowCells = menuBar.cellsForRow(2, 7, { [2] = true, [5] = true })
 expectEqual("the active row shows exactly seven workspaces", 7, #firstRowCells)

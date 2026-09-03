@@ -19,12 +19,13 @@ function workspaceGridWindowFocus.buildWindowFocusEntryPoints(dependencies)
 				pinnedWindow.resolveWorkspaceForWindow(window, currentWorkspaceNumber),
 				window
 			)
-			return
+		else
+			windowAssignment.assignWindowToWorkspace(windowId, currentWorkspaceNumber)
+			window:focus()
+			windowLayout.showWindowOnScreen(window)
+			dependencies.onWorkspaceLayoutChanged()
 		end
-		windowAssignment.assignWindowToWorkspace(windowId, currentWorkspaceNumber)
-		window:focus()
-		windowLayout.showWindowOnScreen(window)
-		dependencies.onWorkspaceLayoutChanged()
+		dependencies.revealMenuBar()
 	end
 
 	function entryPoints.revealWindowById(windowId)

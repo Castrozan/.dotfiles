@@ -4,8 +4,14 @@ package.path = moduleDirectory .. "?.lua;" .. package.path
 local createdMenuBarItems = {}
 hs = {
 	menubar = {
-		new = function()
-			local menuBarItem = { deleted = false, title = nil, menuItemBuilder = nil }
+		new = function(inMenuBar, autosaveName)
+			local menuBarItem = {
+				deleted = false,
+				title = nil,
+				menuItemBuilder = nil,
+				inMenuBar = inMenuBar,
+				autosaveName = autosaveName,
+			}
 			function menuBarItem:setTitle(newTitle)
 				self.title = newTitle
 			end
@@ -45,6 +51,12 @@ local function expectEqual(description, expectedValue, actualValue)
 end
 
 expectEqual("loading the module claims exactly one slot in the menu bar", 1, #createdMenuBarItems)
+expectEqual("the window menu is created in the menu bar", true, createdMenuBarItems[1].inMenuBar)
+expectEqual(
+	"the window menu keeps one stable AppKit identity across reloads",
+	"workspace-grid-window-menu",
+	createdMenuBarItems[1].autosaveName
+)
 
 local builtMenuItems = { { title = "a window" } }
 menuBarItem.installMenuItemBuilder(function()

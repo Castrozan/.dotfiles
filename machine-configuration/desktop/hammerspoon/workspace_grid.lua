@@ -89,27 +89,13 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 	onWorkspaceLayoutChanged()
 end
 
-function workspaceGrid.moveFocusedWindowToWorkspace(targetWorkspaceNumber)
-	local focused = hs.window.focusedWindow()
-	if not focused then
-		return
-	end
-	if pinnedWindow.windowIsPinned(focused) then
-		workspaceGrid.switchToWorkspace(targetWorkspaceNumber)
-		return
-	end
-	windowAssignment.assignWindowToWorkspace(focused:id(), targetWorkspaceNumber)
-	workspaceGrid.switchToWorkspace(targetWorkspaceNumber, focused)
-end
-
-function workspaceGrid.navigateWorkspace(deltaWithinGrid, alsoMoveFocusedWindow)
-	local target = navigation.wrapWorkspaceNumber(currentWorkspaceNumber, deltaWithinGrid, totalWorkspaceCount)
-	if alsoMoveFocusedWindow then
-		workspaceGrid.moveFocusedWindowToWorkspace(target)
-	else
-		workspaceGrid.switchToWorkspace(target)
-	end
-end
+local navigationEntryPoints = navigation.buildNavigationEntryPoints({
+	currentWorkspaceNumber = readCurrentWorkspaceNumber,
+	totalWorkspaceCount = totalWorkspaceCount,
+	switchToWorkspace = workspaceGrid.switchToWorkspace,
+})
+workspaceGrid.moveFocusedWindowToWorkspace = navigationEntryPoints.moveFocusedWindowToWorkspace
+workspaceGrid.navigateWorkspace = navigationEntryPoints.navigateWorkspace
 
 local function placeSummonedWindowOnCurrentWorkspace(window)
 	twoWindowTiling.deactivate()
@@ -155,6 +141,9 @@ local windowFocusEntryPoints = require("workspace_grid_window_focus").buildWindo
 	currentWorkspaceNumber = readCurrentWorkspaceNumber,
 	switchToWorkspace = workspaceGrid.switchToWorkspace,
 	onWorkspaceLayoutChanged = onWorkspaceLayoutChanged,
+	revealMenuBar = function()
+		menuBarReveal.brieflyReveal()
+	end,
 })
 workspaceGrid.focusWindowById = windowFocusEntryPoints.focusWindowById
 workspaceGrid.revealWindowById = windowFocusEntryPoints.revealWindowById

@@ -1,6 +1,6 @@
 local workspaceGridMenuBar = {}
 
-local menuBarIndicatorHandle = hs.menubar.new()
+local menuBarIndicatorHandle = hs.menubar.new(true, "workspace-grid-indicator")
 
 local menuBarFont = { name = "Menlo", size = 13 }
 local accentColor = { list = "System", name = "controlAccentColor" }

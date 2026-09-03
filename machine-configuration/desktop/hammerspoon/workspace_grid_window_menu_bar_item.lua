@@ -4,7 +4,7 @@ local menuBarItemGlyph = "⌘⇥"
 local menuBarItemFont = { name = "Menlo", size = 13 }
 local menuBarItemColor = { list = "System", name = "labelColor" }
 
-local menuBarItemHandle = hs.menubar.new()
+local menuBarItemHandle = hs.menubar.new(true, "workspace-grid-window-menu")
 
 function workspaceGridWindowMenuBarItem.installMenuItemBuilder(buildMenuItems)
 	if not menuBarItemHandle then
