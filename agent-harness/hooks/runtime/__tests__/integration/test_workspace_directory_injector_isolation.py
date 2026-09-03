@@ -3,10 +3,15 @@ import os
 import subprocess
 import sys
 
-from conftest import PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH
 from hook_module_loader import (
+    HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE,
+    find_hook_module_path,
     run_hook_subprocess,
+)
+
+PRE_TOOL_USE_DISPATCHER_HOOK_SCRIPT_PATH = find_hook_module_path(
+    "pre-tool-use-dispatcher"
 )
 
 BASH_LISTING_CALL = json.dumps({"tool_name": "Bash", "tool_input": {"command": "ls"}})
@@ -25,7 +30,7 @@ def test_the_state_file_override_reaches_the_injector_end_to_end(tmp_path):
         input=BASH_LISTING_CALL,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
         env={**os.environ, WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE: str(state_file)},
     )
     assert completed.returncode == 0
