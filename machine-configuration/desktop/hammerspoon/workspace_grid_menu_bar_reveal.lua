@@ -1,11 +1,10 @@
 local workspaceGridMenuBarReveal = {}
 
-local cursorReturnDelaySeconds = 0.12
+local accessibilityTimeoutSeconds = 0.1
 local menuBarVisibleDurationSeconds = 1
-local cursorPositionBeforeReveal = nil
-local menuBarRevealPosition = nil
-local cursorReturnTimer = nil
-local menuBarHideTimer = nil
+local pendingRevealTimer = nil
+local pendingHideTimer = nil
+local selectedMenuBar = nil
 
 local function stopTimer(timer)
 	if timer then
@@ -13,54 +12,80 @@ local function stopTimer(timer)
 	end
 end
 
-local function pointsAreEqual(firstPoint, secondPoint)
-	return firstPoint.x == secondPoint.x and firstPoint.y == secondPoint.y
-end
-
-local function restoreCursorIfUnmoved()
-	local currentCursorPosition = hs.mouse.absolutePosition()
-	if
-		cursorPositionBeforeReveal
-		and menuBarRevealPosition
-		and pointsAreEqual(currentCursorPosition, menuBarRevealPosition)
-	then
-		hs.mouse.absolutePosition(cursorPositionBeforeReveal)
+local function supportsAction(accessibilityElement, expectedActionName)
+	for _, actionName in ipairs(accessibilityElement:actionNames() or {}) do
+		if actionName == expectedActionName then
+			return true
+		end
 	end
-	cursorPositionBeforeReveal = nil
-	menuBarRevealPosition = nil
-	cursorReturnTimer = nil
+	return false
 end
 
-local function hideMenuBar()
-	local currentCursorPosition = hs.mouse.absolutePosition()
-	hs.eventtap.event.newMouseEvent(hs.eventtap.event.types.mouseMoved, currentCursorPosition):post()
-	menuBarHideTimer = nil
+local function cancelSelectedMenuBar()
+	if selectedMenuBar and selectedMenuBar:isValid() then
+		selectedMenuBar:performAction("AXCancel")
+	end
+	selectedMenuBar = nil
 end
 
-function workspaceGridMenuBarReveal.brieflyReveal()
-	local currentScreen = hs.mouse.getCurrentScreen()
-	if not currentScreen then
+local function frontmostApplicationMenuBar()
+	local frontmostApplication = hs.application.frontmostApplication()
+	if not frontmostApplication then
+		return nil
+	end
+	local applicationElement = hs.axuielement.applicationElement(frontmostApplication)
+	if not applicationElement then
+		return nil
+	end
+	applicationElement:setTimeout(accessibilityTimeoutSeconds)
+	for _, childElement in ipairs(applicationElement:attributeValue("AXChildren") or {}) do
+		if childElement:attributeValue("AXRole") == "AXMenuBar" then
+			childElement:setTimeout(accessibilityTimeoutSeconds)
+			return childElement
+		end
+	end
+	return nil
+end
+
+local function revealFrontmostApplicationMenuBar()
+	pendingRevealTimer = nil
+	local menuBar = frontmostApplicationMenuBar()
+	if
+		not menuBar
+		or not menuBar:isAttributeSettable("AXSelectedChildren")
+		or not supportsAction(menuBar, "AXCancel")
+	then
 		return
 	end
-
-	stopTimer(cursorReturnTimer)
-	stopTimer(menuBarHideTimer)
-
-	cursorPositionBeforeReveal = cursorPositionBeforeReveal or hs.mouse.absolutePosition()
-	menuBarRevealPosition = {
-		x = cursorPositionBeforeReveal.x,
-		y = currentScreen:fullFrame().y,
-	}
-	hs.eventtap.event.newMouseEvent(hs.eventtap.event.types.mouseMoved, menuBarRevealPosition):post()
-	cursorReturnTimer = hs.timer.doAfter(cursorReturnDelaySeconds, restoreCursorIfUnmoved)
-	menuBarHideTimer = hs.timer.doAfter(menuBarVisibleDurationSeconds, hideMenuBar)
+	local menuBarChildren = menuBar:attributeValue("AXChildren") or {}
+	if not menuBarChildren[1] then
+		return
+	end
+	if not menuBar:setAttributeValue("AXSelectedChildren", { menuBarChildren[1] }) then
+		return
+	end
+	local selectedChildren = menuBar:attributeValue("AXSelectedChildren") or {}
+	if not selectedChildren[1] then
+		return
+	end
+	selectedMenuBar = menuBar
+	pendingHideTimer = hs.timer.doAfter(menuBarVisibleDurationSeconds, function()
+		pendingHideTimer = nil
+		cancelSelectedMenuBar()
+	end)
 end
 
 function workspaceGridMenuBarReveal.cancel()
-	stopTimer(cursorReturnTimer)
-	stopTimer(menuBarHideTimer)
-	restoreCursorIfUnmoved()
-	hideMenuBar()
+	stopTimer(pendingRevealTimer)
+	stopTimer(pendingHideTimer)
+	pendingRevealTimer = nil
+	pendingHideTimer = nil
+	cancelSelectedMenuBar()
+end
+
+function workspaceGridMenuBarReveal.brieflyReveal()
+	workspaceGridMenuBarReveal.cancel()
+	pendingRevealTimer = hs.timer.doAfter(0, revealFrontmostApplicationMenuBar)
 end
 
 return workspaceGridMenuBarReveal
