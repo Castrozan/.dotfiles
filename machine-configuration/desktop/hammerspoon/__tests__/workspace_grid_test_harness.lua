@@ -170,6 +170,10 @@ function workspaceGridTestHarness.loadFreshGrid()
 			package.loaded[loadedModuleName] = nil
 		end
 	end
+	package.loaded["workspace_grid_menu_bar_reveal"] = {
+		brieflyReveal = function() end,
+		cancel = function() end,
+	}
 	local grid = require("workspace_grid")
 	require("workspace_grid_persistence").setStateFilePathForTest(stateFile)
 	return grid

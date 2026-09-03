@@ -60,30 +60,47 @@ local function findWindowById(targetWindowId)
 end
 
 local function windowServerEntriesForWindows(windows)
-  local windowServerEntries = {}
-  for _, window in ipairs(windows) do
-    windowServerEntries[#windowServerEntries + 1] = { kCGWindowNumber = window:id() }
-  end
-  return windowServerEntries
+	local windowServerEntries = {}
+	for _, window in ipairs(windows) do
+		windowServerEntries[#windowServerEntries + 1] = { kCGWindowNumber = window:id() }
+	end
+	return windowServerEntries
 end
 
 hs = {
-  menubar = { new = function() return { setTitle = function() end } end },
-  styledtext = {
-    new = function(text)
-      return setmetatable({ text = text }, {
-        __concat = function(left, right) return hs.styledtext.new(left.text .. right.text) end,
-      })
-    end,
-  },
-  window = {
-    focusedWindow = function() return findWindowById(currentlyFocusedWindowId) end,
-    get = function(windowId) return findWindowById(windowId) end,
-    list = function() return windowServerEntriesForWindows(allWindows) end,
-    filter = { default = { getWindows = function() return allWindows end } },
-  },
+	menubar = {
+		new = function()
+			return { setTitle = function() end }
+		end,
+	},
+	styledtext = {
+		new = function(text)
+			return setmetatable({ text = text }, {
+				__concat = function(left, right)
+					return hs.styledtext.new(left.text .. right.text)
+				end,
+			})
+		end,
+	},
+	window = {
+		focusedWindow = function()
+			return findWindowById(currentlyFocusedWindowId)
+		end,
+		get = function(windowId)
+			return findWindowById(windowId)
+		end,
+		list = function()
+			return windowServerEntriesForWindows(allWindows)
+		end,
+		filter = { default = {
+			getWindows = function()
+				return allWindows
+			end,
+		} },
+	},
 }
 
+package.loaded["workspace_grid_menu_bar_reveal"] = { brieflyReveal = function() end }
 local workspaceGrid = require("workspace_grid")
 require("workspace_grid_persistence").setStateFilePathForTest(os.tmpname())
 

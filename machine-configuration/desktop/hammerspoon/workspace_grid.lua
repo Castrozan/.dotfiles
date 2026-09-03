@@ -10,6 +10,7 @@ workspaceGrid.totalWorkspaceCount = totalWorkspaceCount
 
 local currentWorkspaceNumber = defaultWorkspaceNumber
 local menuBarIndicator = require("workspace_grid_menubar")
+local menuBarReveal = require("workspace_grid_menu_bar_reveal")
 local workspaceGridPersistence = require("workspace_grid_persistence")
 local windowLayout = require("workspace_grid_window_layout")
 local sessionGeneration = require("workspace_grid_session_generation")
@@ -54,6 +55,7 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 	if targetWorkspaceNumber < 1 or targetWorkspaceNumber > totalWorkspaceCount then
 		return
 	end
+	local workspaceChanged = targetWorkspaceNumber ~= currentWorkspaceNumber
 	currentWorkspaceNumber = targetWorkspaceNumber
 	local rememberedFocusWindowId = windowAssignment.rememberedFocusedWindowId(targetWorkspaceNumber)
 	local rememberedFocusWindow = nil
@@ -77,6 +79,9 @@ function workspaceGrid.switchToWorkspace(targetWorkspaceNumber, preferredFocusWi
 		windowAssignment.rememberFocusedWindow(targetWorkspaceNumber, windowToRefocus:id())
 	end
 	renderMenuBarIndicator()
+	if workspaceChanged then
+		menuBarReveal.brieflyReveal()
+	end
 	onWorkspaceLayoutChanged()
 end
 

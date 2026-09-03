@@ -13,71 +13,117 @@ local deadWindowSetFrameCallCount = 0
 local currentlyFocusedWindowId = nil
 
 local function makeFakeWindow(windowId, onSetFrame)
-  local fakeWindow = { storedFrame = { x = 100, y = 100, w = 400, h = 300 } }
-  function fakeWindow:id() return windowId end
-  function fakeWindow:isStandard() return true end
-  function fakeWindow:frame()
-    return { x = self.storedFrame.x, y = self.storedFrame.y, w = self.storedFrame.w, h = self.storedFrame.h }
-  end
-  function fakeWindow:setFrame(newFrame)
-    self.storedFrame = newFrame
-    onSetFrame()
-  end
-  function fakeWindow:screen()
-    return { frame = function() return { x = 0, y = 0, w = 1440, h = 900 } end }
-  end
-  function fakeWindow:focus() currentlyFocusedWindowId = windowId end
-  function fakeWindow:application() return { name = function() return "FakeApp" end, bundleID = function() return "com.example.fakeapp" end } end
-  function fakeWindow:title() return "fake-title-" .. windowId end
-  return fakeWindow
+	local fakeWindow = { storedFrame = { x = 100, y = 100, w = 400, h = 300 } }
+	function fakeWindow:id()
+		return windowId
+	end
+	function fakeWindow:isStandard()
+		return true
+	end
+	function fakeWindow:frame()
+		return { x = self.storedFrame.x, y = self.storedFrame.y, w = self.storedFrame.w, h = self.storedFrame.h }
+	end
+	function fakeWindow:setFrame(newFrame)
+		self.storedFrame = newFrame
+		onSetFrame()
+	end
+	function fakeWindow:screen()
+		return {
+			frame = function()
+				return { x = 0, y = 0, w = 1440, h = 900 }
+			end,
+		}
+	end
+	function fakeWindow:focus()
+		currentlyFocusedWindowId = windowId
+	end
+	function fakeWindow:application()
+		return {
+			name = function()
+				return "FakeApp"
+			end,
+			bundleID = function()
+				return "com.example.fakeapp"
+			end,
+		}
+	end
+	function fakeWindow:title()
+		return "fake-title-" .. windowId
+	end
+	return fakeWindow
 end
 
-local liveWindow = makeFakeWindow(1, function() liveWindowSetFrameCallCount = liveWindowSetFrameCallCount + 1 end)
-local deadWindow = makeFakeWindow(99, function() deadWindowSetFrameCallCount = deadWindowSetFrameCallCount + 1 end)
+local liveWindow = makeFakeWindow(1, function()
+	liveWindowSetFrameCallCount = liveWindowSetFrameCallCount + 1
+end)
+local deadWindow = makeFakeWindow(99, function()
+	deadWindowSetFrameCallCount = deadWindowSetFrameCallCount + 1
+end)
 
 local liveWindowsReturnedByWindowServer = { liveWindow }
 local windowsReturnedByDefaultFilter = { liveWindow, deadWindow }
 local function resolveLiveWindowById(targetWindowId)
-  if targetWindowId == 1 then return liveWindow end
-  return nil
+	if targetWindowId == 1 then
+		return liveWindow
+	end
+	return nil
 end
 
 local function windowServerEntriesForWindows(windows)
-  local windowServerEntries = {}
-  for _, window in ipairs(windows) do
-    windowServerEntries[#windowServerEntries + 1] = { kCGWindowNumber = window:id() }
-  end
-  return windowServerEntries
+	local windowServerEntries = {}
+	for _, window in ipairs(windows) do
+		windowServerEntries[#windowServerEntries + 1] = { kCGWindowNumber = window:id() }
+	end
+	return windowServerEntries
 end
 
 hs = {
-  menubar = { new = function() return { setTitle = function() end } end },
-  styledtext = {
-    new = function(text)
-      return setmetatable({ text = text }, {
-        __concat = function(left, right) return hs.styledtext.new(left.text .. right.text) end,
-      })
-    end,
-  },
-  window = {
-    focusedWindow = function() return resolveLiveWindowById(currentlyFocusedWindowId) end,
-    get = function(windowId) return resolveLiveWindowById(windowId) end,
-    list = function() return windowServerEntriesForWindows(liveWindowsReturnedByWindowServer) end,
-    filter = { default = { getWindows = function() return windowsReturnedByDefaultFilter end } },
-  },
+	menubar = {
+		new = function()
+			return { setTitle = function() end }
+		end,
+	},
+	styledtext = {
+		new = function(text)
+			return setmetatable({ text = text }, {
+				__concat = function(left, right)
+					return hs.styledtext.new(left.text .. right.text)
+				end,
+			})
+		end,
+	},
+	window = {
+		focusedWindow = function()
+			return resolveLiveWindowById(currentlyFocusedWindowId)
+		end,
+		get = function(windowId)
+			return resolveLiveWindowById(windowId)
+		end,
+		list = function()
+			return windowServerEntriesForWindows(liveWindowsReturnedByWindowServer)
+		end,
+		filter = { default = {
+			getWindows = function()
+				return windowsReturnedByDefaultFilter
+			end,
+		} },
+	},
 }
 
+package.loaded["workspace_grid_menu_bar_reveal"] = { brieflyReveal = function() end }
 local workspaceGrid = require("workspace_grid")
 require("workspace_grid_persistence").setStateFilePathForTest(os.tmpname())
 
 local failureCount = 0
 local function expectEqual(description, expectedValue, actualValue)
-  if expectedValue ~= actualValue then
-    failureCount = failureCount + 1
-    print(string.format("FAIL: %s (expected %s, got %s)", description, tostring(expectedValue), tostring(actualValue)))
-  else
-    print(string.format("PASS: %s", description))
-  end
+	if expectedValue ~= actualValue then
+		failureCount = failureCount + 1
+		print(
+			string.format("FAIL: %s (expected %s, got %s)", description, tostring(expectedValue), tostring(actualValue))
+		)
+	else
+		print(string.format("PASS: %s", description))
+	end
 end
 
 workspaceGrid.registerExistingWindowsOnDefaultWorkspace()
@@ -90,9 +136,9 @@ expectEqual("the live window is still laid out across the switches", true, liveW
 local windowsOnCurrentWorkspace = workspaceGrid.currentWorkspaceWindowList().windows
 expectEqual("only the live window is reported to the switcher (no phantom)", 1, #windowsOnCurrentWorkspace)
 expectEqual(
-  "the reported window is the live one, not the dead phantom",
-  1,
-  windowsOnCurrentWorkspace[1] and windowsOnCurrentWorkspace[1]["window-id"] or -1
+	"the reported window is the live one, not the dead phantom",
+	1,
+	windowsOnCurrentWorkspace[1] and windowsOnCurrentWorkspace[1]["window-id"] or -1
 )
 
 os.exit(failureCount == 0 and 0 or 1)

@@ -4,6 +4,7 @@ require("hs.ipc")
 -- defined in workspace_grid.lua, and feed it window create/focus events.
 local workspaceGrid = require("workspace_grid")
 local menuBarIndicator = require("workspace_grid_menubar")
+local menuBarReveal = require("workspace_grid_menu_bar_reveal")
 local windowMenu = require("workspace_grid_window_menu")
 local windowMenuBarItem = require("workspace_grid_window_menu_bar_item")
 local windowSnapshot = require("workspace_grid_window_snapshot")
@@ -18,6 +19,7 @@ windowMenuBarItem.installMenuItemBuilder(windowMenu.buildMenuItemBuilder({
 }))
 
 hs.shutdownCallback = function()
+	menuBarReveal.cancel()
 	menuBarIndicator.deleteIndicator()
 	windowMenuBarItem.deleteMenuBarItem()
 end

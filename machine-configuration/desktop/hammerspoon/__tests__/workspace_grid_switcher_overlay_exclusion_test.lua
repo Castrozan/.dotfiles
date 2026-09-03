@@ -106,6 +106,7 @@ hs = {
 	},
 }
 
+package.loaded["workspace_grid_menu_bar_reveal"] = { brieflyReveal = function() end }
 local workspaceGrid = require("workspace_grid")
 require("workspace_grid_persistence").setStateFilePathForTest(os.tmpname())
 local windowQuery = require("workspace_grid_window_query")

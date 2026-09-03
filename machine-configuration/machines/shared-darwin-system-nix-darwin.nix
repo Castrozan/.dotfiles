@@ -72,6 +72,7 @@
         KeyRepeat = 2;
         NSAutomaticWindowAnimationsEnabled = false;
         NSWindowResizeTime = 0.001;
+        _HIHideMenuBar = true;
         "com.apple.swipescrolldirection" = false;
       };
       dock = {
