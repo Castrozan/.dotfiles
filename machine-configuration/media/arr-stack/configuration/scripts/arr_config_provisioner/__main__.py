@@ -6,6 +6,7 @@ from runtime_config import (
     build_app_api_key_map,
     build_secret_map,
     read_bind_address,
+    read_jellyseerr_api_key,
     read_secret_value,
     required_environment_value,
 )
@@ -33,6 +34,10 @@ def resolve_configuration():
             env_file, required_environment_value("ARR_BIND_ADDRESS_KEY")
         ),
         "config_root": config_root,
+        "jellyseerr_api_key": read_jellyseerr_api_key(config_root),
+        "jellyseerr_base_url": required_environment_value(
+            "ARR_PROVISIONER_JELLYSEERR_BASE_URL"
+        ),
         "desired_state_dir": required_environment_value(
             "ARR_PROVISIONER_DESIRED_STATE_DIR"
         ),

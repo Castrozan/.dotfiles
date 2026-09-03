@@ -64,3 +64,46 @@ def test_sonarr_language_policy_accepts_dual_audio_without_foreign_markers():
         "Planet Earth S01E01 Hindi Dub 1080p BDRip",
         re.IGNORECASE,
     )
+
+
+def test_sonarr_separates_original_language_from_english_caption_profiles():
+    custom_formats = load_desired_state("sonarr", "customformat")
+    original_language_format = next(
+        custom_format
+        for custom_format in custom_formats
+        if custom_format["name"] == "Original Language"
+    )
+    original_language_value = original_language_format["specifications"][0]["fields"][
+        0
+    ]["value"]
+    assert original_language_value == -2
+
+    profiles = load_desired_state("sonarr", "qualityprofile")
+    profiles_by_name = {profile["name"]: profile for profile in profiles}
+    original_language_scores = profiles_by_name["HD - Original Language"][
+        "formatScores"
+    ]
+    english_caption_scores = profiles_by_name["HD - English Captions"]["formatScores"]
+    assert original_language_scores["Original Language"] == 50
+    assert "English Subtitle Group" not in original_language_scores
+    assert english_caption_scores["English Subtitle Group"] == 50
+    assert "Original Language" not in english_caption_scores
+
+
+def test_jellyseerr_routes_standard_and_anime_requests_to_distinct_profiles():
+    routes = load_desired_state("jellyseerr", "sonarr")
+    route = next(route for route in routes if route["name"] == "Sonarr")
+    assert route["standardProfileName"] == "HD - Original Language"
+    assert route["animeProfileName"] == "HD - English Captions"
+
+
+def test_limetorrents_uses_current_download_link_fields():
+    indexers = load_desired_state("prowlarr", "indexer")
+    limetorrents_indexer = next(
+        indexer for indexer in indexers if indexer["name"] == "LimeTorrents"
+    )
+    field_names = {field["name"] for field in limetorrents_indexer["fields"]}
+    assert "primarydownloadlink" in field_names
+    assert "fallbackdownloadlink" in field_names
+    assert "downloadlink" not in field_names
+    assert "downloadlink2" not in field_names

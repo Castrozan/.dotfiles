@@ -1360,7 +1360,7 @@
         "advanced": false,
         "isFloat": false,
         "label": "Download link",
-        "name": "downloadlink",
+        "name": "primarydownloadlink",
         "order": 0,
         "privacy": "normal",
         "selectOptions": [
@@ -1382,7 +1382,7 @@
         "advanced": false,
         "isFloat": false,
         "label": "Download link (fallback)",
-        "name": "downloadlink2",
+        "name": "fallbackdownloadlink",
         "order": 1,
         "privacy": "normal",
         "selectOptions": [

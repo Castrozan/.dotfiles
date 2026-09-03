@@ -34,6 +34,11 @@ def stub_all_steps(monkeypatch):
     )
     monkeypatch.setattr(
         provisioner_core,
+        "provision_jellyseerr_sonarr_profile_step",
+        lambda configuration, step, dry_run: None,
+    )
+    monkeypatch.setattr(
+        provisioner_core,
         "provision_qbittorrent_preference_step",
         lambda configuration, step, dry_run: None,
     )
@@ -87,6 +92,21 @@ def test_provision_all_counts_failing_host_login_steps(monkeypatch):
     )
     failed_steps = provisioner_core.provision_all({}, False)
     assert failed_steps == len(provisioner_core.HOST_LOGIN_PLAN)
+
+
+def test_provision_all_counts_a_failing_jellyseerr_profile_step(monkeypatch):
+    stub_all_steps(monkeypatch)
+
+    def failing_jellyseerr_profile_step(configuration, step, dry_run):
+        raise RuntimeError("jellyseerr profile step failed")
+
+    monkeypatch.setattr(
+        provisioner_core,
+        "provision_jellyseerr_sonarr_profile_step",
+        failing_jellyseerr_profile_step,
+    )
+    failed_steps = provisioner_core.provision_all({}, False)
+    assert failed_steps == len(provisioner_core.JELLYSEERR_SONARR_PROFILE_PLAN)
 
 
 def test_provision_all_counts_a_failing_qbittorrent_preference_step(monkeypatch):

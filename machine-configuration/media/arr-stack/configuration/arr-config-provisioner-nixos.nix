@@ -12,7 +12,7 @@ let
 in
 {
   options.custom.arrConfigProvisioner = {
-    enable = lib.mkEnableOption "a root systemd oneshot that reconstructs the arr-stack app config (radarr/sonarr/prowlarr download clients, root folders, custom formats, applications and indexers, plus qBittorrent's own seeding and queueing preferences) declaratively by idempotently writing committed desired-state JSON into each app's API at rebuild, so a wiped or lost config directory is rebuilt from the repo instead of from an off-host backup; app API keys are read from runtime config and the qBittorrent password and private indexer key are injected from agenix";
+    enable = lib.mkEnableOption "a root systemd oneshot that reconstructs the arr-stack app config (radarr/sonarr/prowlarr download clients, root folders, custom formats, applications and indexers, Jellyseerr's Sonarr profile routing, plus qBittorrent's own seeding and queueing preferences) declaratively by idempotently writing committed desired-state JSON into each app's API at rebuild, so a wiped or lost config directory is rebuilt from the repo instead of from an off-host backup; app API keys are read from runtime config and the qBittorrent password and private indexer key are injected from agenix";
 
     stackHomeDirectory = lib.mkOption {
       type = lib.types.str;
@@ -23,6 +23,12 @@ in
       type = lib.types.str;
       default = "ARR_BIND_ADDR";
       description = "The .env key the provisioner reads at runtime to learn the tailnet address the *arr web UIs listen on, so the tailscale IP stays out of the nix source and lives only in the build-generated .env.";
+    };
+
+    jellyseerrBaseUrl = lib.mkOption {
+      type = lib.types.str;
+      default = "http://127.0.0.1:5055";
+      description = "Loopback Jellyseerr API URL used to assign distinct Sonarr quality profiles to standard and anime requests.";
     };
 
     qbittorrentPasswordSecretFile = lib.mkOption {
@@ -70,7 +76,7 @@ in
 
   config = lib.mkIf arrConfigProvisionerConfig.enable {
     systemd.services.arr-config-provisioner = {
-      description = "Reconstruct the arr-stack app config declaratively from committed desired state";
+      description = "Reconstruct the arr-stack and Jellyseerr routing config from committed desired state";
       after = [
         "docker.service"
         "network-online.target"
@@ -81,6 +87,7 @@ in
         ARR_PROVISIONER_ENV_FILE = "${stackHome}/.env";
         ARR_BIND_ADDRESS_KEY = arrConfigProvisionerConfig.bindAddressKey;
         ARR_PROVISIONER_CONFIG_ROOT = "${stackHome}/config";
+        ARR_PROVISIONER_JELLYSEERR_BASE_URL = arrConfigProvisionerConfig.jellyseerrBaseUrl;
         ARR_PROVISIONER_DESIRED_STATE_DIR = "${desiredStateDirectory}";
         ARR_PROVISIONER_QBITTORRENT_PASSWORD_FILE =
           arrConfigProvisionerConfig.qbittorrentPasswordSecretFile;

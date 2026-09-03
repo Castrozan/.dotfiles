@@ -1,5 +1,6 @@
 from arr_api_client import wait_for_api_ready
 from host_auth_provisioner import provision_host_login
+from jellyseerr_sonarr_profile_provisioner import provision_sonarr_profiles
 from provisioner_logging import log
 from qbittorrent_preference_provisioner import provision_qbittorrent_preferences
 from quality_profile_provisioner import provision_quality_profiles
@@ -59,6 +60,30 @@ def provision_quality_profile_step(configuration, step, dry_run):
         return
     outcomes = provision_quality_profiles(base_url, api_key, desired_profiles, dry_run)
     log(f"{step['app']}/qualityprofile: {outcomes}")
+
+
+def provision_jellyseerr_sonarr_profile_step(configuration, step, dry_run):
+    base_url, api_key = open_ready_app(configuration, step)
+    jellyseerr_api_key = configuration["jellyseerr_api_key"]
+    if not jellyseerr_api_key:
+        raise RuntimeError("jellyseerr api key unavailable")
+    desired_routes = load_optional_desired_objects(
+        configuration["desired_state_dir"],
+        "jellyseerr",
+        "sonarr",
+        configuration["secret_map"],
+    )
+    if not desired_routes:
+        return
+    outcomes = provision_sonarr_profiles(
+        configuration["jellyseerr_base_url"],
+        jellyseerr_api_key,
+        base_url,
+        api_key,
+        desired_routes,
+        dry_run,
+    )
+    log(f"jellyseerr/sonarr: {outcomes}")
 
 
 def provision_host_login_step(configuration, step, dry_run):

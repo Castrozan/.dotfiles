@@ -85,6 +85,30 @@
   },
   {
     "includeCustomFormatWhenRenaming": false,
+    "name": "Original Language",
+    "specifications": [
+      {
+        "name": "Series original language",
+        "implementation": "LanguageSpecification",
+        "implementationName": "Language",
+        "infoLink": "https://wiki.servarr.com/sonarr/settings#custom-formats",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": -2
+          },
+          {
+            "name": "exceptLanguage",
+            "value": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "includeCustomFormatWhenRenaming": false,
     "name": "Portuguese (BR)",
     "specifications": [
       {

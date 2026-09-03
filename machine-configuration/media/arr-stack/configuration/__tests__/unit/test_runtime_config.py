@@ -39,6 +39,18 @@ def test_build_app_api_key_map_uses_runtime_app_keys(tmp_path):
     ) == {"@SONARR_API_KEY@": "sonarr-key"}
 
 
+def test_read_jellyseerr_api_key_uses_runtime_settings(tmp_path):
+    (tmp_path / "jellyseerr").mkdir()
+    (tmp_path / "jellyseerr" / "settings.json").write_text(
+        json.dumps({"main": {"apiKey": "jellyseerr-key"}}), encoding="utf-8"
+    )
+    assert runtime_config.read_jellyseerr_api_key(str(tmp_path)) == "jellyseerr-key"
+
+
+def test_read_jellyseerr_api_key_returns_empty_when_settings_are_absent(tmp_path):
+    assert runtime_config.read_jellyseerr_api_key(str(tmp_path)) == ""
+
+
 def test_required_environment_value_raises_on_missing_and_empty(monkeypatch):
     monkeypatch.delenv("ARR_PROVISIONER_PROBE", raising=False)
     with pytest.raises(SystemExit):

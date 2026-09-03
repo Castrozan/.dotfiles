@@ -73,6 +73,7 @@ in
         lib.hasInfix "desired-state" enabledEnvironment.ARR_PROVISIONER_DESIRED_STATE_DIR
         && lib.hasInfix "arr-stack/config" enabledEnvironment.ARR_PROVISIONER_CONFIG_ROOT
         && enabledEnvironment.ARR_BIND_ADDRESS_KEY == "ARR_BIND_ADDR"
+        && enabledEnvironment.ARR_PROVISIONER_JELLYSEERR_BASE_URL == "http://127.0.0.1:5055"
       )
       "the provisioner must read the committed desired state, each app's on-disk api key under the config root, and the tailnet bind address from the .env key at runtime, so the tailscale IP stays out of the nix source";
 

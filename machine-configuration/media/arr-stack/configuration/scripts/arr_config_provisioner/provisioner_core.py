@@ -1,6 +1,7 @@
 from provisioner_logging import log
 from provisioning_steps import (
     provision_host_login_step,
+    provision_jellyseerr_sonarr_profile_step,
     provision_qbittorrent_preference_step,
     provision_quality_profile_step,
     provision_step,
@@ -78,6 +79,8 @@ QUALITY_PROFILE_PLAN = [
     {"app": "sonarr", "port": 8989},
 ]
 
+JELLYSEERR_SONARR_PROFILE_PLAN = [{"app": "sonarr", "port": 8989}]
+
 HOST_LOGIN_PLAN = [
     {"app": "radarr", "port": 7878},
     {"app": "sonarr", "port": 8989},
@@ -102,6 +105,11 @@ def provision_all(configuration, dry_run):
     plans = [
         (RESOURCE_PLAN, provision_step, "resource"),
         (QUALITY_PROFILE_PLAN, provision_quality_profile_step, "qualityprofile"),
+        (
+            JELLYSEERR_SONARR_PROFILE_PLAN,
+            provision_jellyseerr_sonarr_profile_step,
+            "jellyseerr-profile",
+        ),
         (HOST_LOGIN_PLAN, provision_host_login_step, "host-login"),
         (
             QBITTORRENT_PREFERENCE_PLAN,

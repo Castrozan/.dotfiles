@@ -27,6 +27,17 @@ def read_app_api_key(config_root, app):
     return match.group(1)
 
 
+def read_jellyseerr_api_key(config_root):
+    try:
+        with open(
+            f"{config_root}/jellyseerr/settings.json", encoding="utf-8"
+        ) as handle:
+            settings = json.load(handle)
+    except FileNotFoundError:
+        return ""
+    return settings.get("main", {}).get("apiKey", "")
+
+
 def build_app_api_key_map(config_root, token_app_pairs):
     return {token: read_app_api_key(config_root, app) for token, app in token_app_pairs}
 
