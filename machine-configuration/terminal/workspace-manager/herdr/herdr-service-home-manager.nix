@@ -6,6 +6,11 @@
   ...
 }:
 let
+  rebuildSafeLaunchAgentLib =
+    import ../../../operating-system/launchd/rebuild-safe-launch-agent-library.nix
+      {
+        inherit config lib pkgs;
+      };
   herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
   serverPath = lib.concatStringsSep ":" [
     "/etc/profiles/per-user/${config.home.username}/bin"
@@ -88,12 +93,13 @@ in
       '';
     })
 
-    (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-      launchd.agents.herdr = {
-        enable = true;
-        config = {
-          Label = "com.dotfiles.herdr";
-          ProgramArguments = [ "${herdrServer}/bin/herdr-server" ];
+    (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
+      rebuildSafeLaunchAgentLib.mkRebuildSafeLaunchAgent {
+        name = "herdr";
+        label = "com.dotfiles.herdr";
+        package = herdrServer;
+        executableName = "herdr-server";
+        serviceConfig = {
           EnvironmentVariables = {
             HOME = config.home.homeDirectory;
             PATH = serverPath;
@@ -103,7 +109,7 @@ in
           StandardOutPath = "${config.home.homeDirectory}/Library/Logs/herdr-server.log";
           StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/herdr-server.log";
         };
-      };
-    })
+      }
+    ))
   ];
 }

@@ -11,6 +11,8 @@ let
   darwinConfiguration = helpers.homeManagerTestConfigurationForDarwin [ ../herdr-home-manager.nix ];
   linuxService = linuxConfiguration.systemd.user.services.herdr;
   darwinAgent = darwinConfiguration.launchd.agents.herdr;
+  darwinAgentProgram = builtins.head darwinAgent.config.ProgramArguments;
+  darwinAgentPreservation = darwinConfiguration.home.activation."preserveRunningLaunchAgent-herdr";
   linuxEnvironment = lib.toList linuxService.Service.Environment;
 in
 {
@@ -50,10 +52,12 @@ in
     mkEvalCheck "domain-terminal-herdr-server-is-owned-by-a-darwin-launch-agent"
       (
         darwinAgent.enable
-        && lib.hasSuffix "/bin/herdr-server" (builtins.head darwinAgent.config.ProgramArguments)
+        && lib.hasSuffix "/bin/herdr-rebuild-safe-launcher" darwinAgentProgram
+        && !(lib.hasPrefix "/nix/store/" darwinAgentProgram)
+        && builtins.elem "setupLaunchAgents" darwinAgentPreservation.before
         && darwinAgent.config.RunAtLoad
         && darwinAgent.config.KeepAlive
         && lib.hasInfix "/etc/profiles/per-user/test/bin" darwinAgent.config.EnvironmentVariables.PATH
       )
-      "the shared herdr server must have the same independent launchd ownership and user-profile PATH on darwin";
+      "the shared herdr server must use the rebuild-safe LaunchAgent constructor so profile changes cannot unload it";
 }
