@@ -38,7 +38,7 @@ required question.
 </exhaust_before_returning>
 
 <response_shape>
-A reply of 40 prose words or fewer is a confirmation and takes no labels. Every longer reply ends in this order,
+A reply of 80 prose words or fewer is a confirmation and takes no labels. Every longer reply ends in this order,
 whether it explains, decides, answers a question, or hands off status:
 Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship,
 chosen through Humanize `<representation_selection>`. Visual lines never count against the budgets below.

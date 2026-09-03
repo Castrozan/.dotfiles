@@ -5,31 +5,31 @@ from human_facing_reply_test_support import (
 )
 
 
-def test_a_short_confirmation_needs_no_labels():
-    reply = "The rebuild is green and the change is live on chise."
+def test_an_eighty_word_confirmation_needs_no_labels():
+    reply = " ".join(["evidence"] * 80)
 
     assert template_violations_in_reply(reply, "did it deploy?") == []
 
 
 def test_a_reply_past_the_confirmation_names_the_labels_it_omits():
     violations = template_violations_in_reply(
-        " ".join(["evidence"] * 60), "explain the architecture"
+        " ".join(["evidence"] * 81), "explain the architecture"
     )
 
     assert violations == [
-        "runs 60 prose words, past the 40-word confirmation, but omits the "
+        "runs 81 prose words, past the 80-word confirmation, but omits the "
         "What is this session about?:/done:/next: label"
     ]
 
 
 def test_a_partially_labeled_reply_names_only_the_missing_label():
-    body = " ".join(["evidence"] * 50)
+    body = " ".join(["evidence"] * 72)
     reply = f"**what is this session about?:** the release gate.\n\n**done:** {body}"
 
     violations = template_violations_in_reply(reply, "where does it stand?")
 
     assert violations == [
-        "runs 59 prose words, past the 40-word confirmation, but omits the next: label"
+        "runs 81 prose words, past the 80-word confirmation, but omits the next: label"
     ]
 
 
@@ -89,7 +89,9 @@ def test_five_short_list_lines_pass():
 
 
 def test_a_label_without_bold_emphasis_is_blocked():
+    context = " ".join(["evidence"] * 50)
     reply = (
+        f"{context}\n\n"
         "what is this session about?: the release gate that decides whether the "
         "candidate policy ships.\n\n"
         "done: measured the candidate against the control across three epochs and "
@@ -104,7 +106,9 @@ def test_a_label_without_bold_emphasis_is_blocked():
 
 
 def test_labels_crammed_into_one_block_are_blocked():
+    context = " ".join(["evidence"] * 50)
     reply = (
+        f"{context}\n\n"
         "**what is this session about?:** the release gate that decides whether the "
         "candidate policy ships.\n"
         "**done:** measured the candidate against the control across three epochs and "

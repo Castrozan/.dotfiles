@@ -100,9 +100,9 @@ def test_allows_benign_bang_number(tmp_path):
     assert result.stdout.strip() == ""
 
 
-def test_allows_short_one_line_confirmation(tmp_path):
+def test_allows_eighty_word_confirmation(tmp_path):
     transcript = write_transcript_with_final_assistant_reply(
-        tmp_path, "Committed as abc123 and rebuilt clean."
+        tmp_path, " ".join(["evidence"] * 80)
     )
     result = invoke_guard(stop_payload(transcript))
     assert result.stdout.strip() == ""
