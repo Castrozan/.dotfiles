@@ -22,6 +22,11 @@ let
   everyPreferenceWriteToleratesItsOwnFailure =
     preferenceWriteLines != [ ] && lib.all (line: lib.hasInfix "|| true" line) preferenceWriteLines;
   hammerspoonInitContent = builtins.readFile ../init.lua;
+  commandOptionGRevealsMenuBar = lib.hasInfix (
+    "hs.hotkey.bind({ \"cmd\", \"alt\" }, \"g\", function()\n"
+    + "\tmenuBarReveal.brieflyReveal()\n"
+    + "end)"
+  ) hammerspoonInitContent;
 in
 {
   domain-desktop-hammerspoon-preference-writes-are-time-bounded =
@@ -41,4 +46,9 @@ in
         && lib.hasInfix "function summonWezTermToCurrentWorkspace()" hammerspoonInitContent
       )
       "The Darwin Codex notification driver calls summonWezTermToCurrentWorkspace through hs -c, so Hammerspoon must deploy its implementation and expose that exact global function";
+
+  domain-desktop-hammerspoon-command-option-g-reveals-menu-bar =
+    mkEvalCheck "domain-desktop-hammerspoon-command-option-g-reveals-menu-bar"
+      commandOptionGRevealsMenuBar
+      "Cmd+Option+G must invoke the shared pointer-free menu bar reveal capability so the direct keybind preserves the same auto-hide behavior as workspace and window switching";
 }

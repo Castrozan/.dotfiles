@@ -45,6 +45,10 @@ for rowIndex = 1, #workspaceRowSwitchModifiers - 1 do
 	end
 end
 
+hs.hotkey.bind({ "cmd", "alt" }, "g", function()
+	menuBarReveal.brieflyReveal()
+end)
+
 hs.hotkey.bind({ "cmd", "ctrl", "alt" }, "g", function()
 	workspaceGrid.gatherAllWindowsToCurrentWorkspace()
 end)
