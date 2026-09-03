@@ -44,10 +44,11 @@ belongs to the `orchestrate` skill.
 </when_to_spawn>
 
 <resume_and_liveness>
-Restart a current supported session with `agent-session restart`, which detects its harness and preserves the pane. When
-a spawned agent exits, its pane survives as an idle shell rather than closing, so a later reference focuses a dead pane;
-detect liveness by process, not presence. A pane is idle when its `foreground_process_group_id` equals its `shell_pid`
-in `herdr pane process-info`; relaunch into it instead of assuming the agent is alive.
+Restart the current supported session with `agent-session restart`; Herdr resumes its exact recorded conversation in
+the same pane. When a spawned agent exits, its pane survives as an idle shell rather than closing, so a later reference
+focuses a dead pane; detect liveness by process, not presence. A pane is idle when its
+`foreground_process_group_id` equals its `shell_pid` in `herdr pane process-info`; relaunch into it instead of assuming
+the agent is alive.
 </resume_and_liveness>
 
 <oneshot_is_gated>

@@ -55,7 +55,7 @@ KNOWN_GOOD_BASH_COMMANDS = (
 KNOWN_GOOD_BACKGROUND_BASH_COMMANDS = (
     "launch-command-detached-into-new-session /tmp/rebuild.log rebuild",
     "pytest agent-harness/hooks/runtime/__tests__/unit/test_shell_heredoc_body.py > /tmp/out.txt 2>&1",
-    "python3 -u agent-harness/session-control/agent_session_control.py --status > /tmp/status.txt 2>&1",
+    "agent-session exit --print-target > /tmp/status.txt 2>&1",
     "gh run watch 30957498339 --exit-status > /tmp/ci.log 2>&1",
 )
 
