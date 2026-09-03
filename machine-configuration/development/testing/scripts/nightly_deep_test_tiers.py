@@ -17,6 +17,18 @@ ARTIFACT_FREE_ENVIRONMENT = {
     "PYTHONDONTWRITEBYTECODE": "1",
     "PYTEST_ADDOPTS": "-p no:cacheprovider",
 }
+DOCKER_BUILD_CACHE_KEEP_WINDOW = "24h"
+DOCKER_LEFTOVER_PRUNE_COMMANDS = (
+    (
+        "docker",
+        "builder",
+        "prune",
+        "--force",
+        "--filter",
+        f"until={DOCKER_BUILD_CACHE_KEEP_WINDOW}",
+    ),
+    ("docker", "image", "prune", "--force"),
+)
 
 EXIT_CODE_A_TIER_FAILED = 1
 EXIT_CODE_CANNOT_RUN = 2
@@ -101,6 +113,20 @@ def remove_generated_cache_directories(log) -> None:
         log.write(f"removed cache directory {directory}\n")
 
 
+def prune_docker_build_leftovers_the_run_did_not_reuse(log) -> None:
+    if shutil.which("docker") is None:
+        log.write("docker is not on PATH, so the run left no build cache to prune\n")
+        return
+    for command in DOCKER_LEFTOVER_PRUNE_COMMANDS:
+        completed = subprocess.run(list(command), capture_output=True, text=True)
+        outcome_lines = completed.stdout.strip().splitlines() or [
+            completed.stderr.strip()
+        ]
+        log.write(
+            f"{' '.join(command)}: exit {completed.returncode}, {outcome_lines[-1]}\n"
+        )
+
+
 def report_paths_the_run_left_behind(paths_before: set[str], log) -> None:
     leftovers = sorted(untracked_paths_in_repository() - paths_before)
     if not leftovers:
@@ -119,6 +145,7 @@ def run_the_deep_tiers_and_clean_up() -> int:
         paths_before = untracked_paths_in_repository()
         failed_tiers = run_every_tier_reporting_all_failures(log)
         remove_generated_cache_directories(log)
+        prune_docker_build_leftovers_the_run_did_not_reuse(log)
         report_paths_the_run_left_behind(paths_before, log)
 
         if failed_tiers:
