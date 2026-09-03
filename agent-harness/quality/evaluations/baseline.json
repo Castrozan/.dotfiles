@@ -1,11 +1,12 @@
 {
-  "generated_at": "2026-09-01T03:50:48.481562+00:00",
+  "generated_at": "2026-09-03T03:21:22.224895+00:00",
   "oldest_evidence_at": "2026-08-30T00:18:26.050632+00:00",
-  "git_commit": "847900b5",
-  "total_tests": 209,
-  "total_passed": 196,
+  "git_commit": "1b2b56f9",
+  "total_tests": 210,
+  "total_passed": 197,
   "total_failed": 13,
-  "pass_rate": 0.9378,
+  "pass_rate": 0.9381,
+  "minimum_current_evidence": 109,
   "categories": {
     "adaptive_delivery": {
       "passed": 7,
@@ -1832,7 +1833,7 @@
       ]
     },
     "skills/humanize/reader_recovery": {
-      "passed": 19,
+      "passed": 20,
       "failed": 2,
       "tests": [
         {
@@ -1921,6 +1922,17 @@
           "run_source": {
             "kind": "committed_baseline",
             "git_commit": "0720b5b6"
+          }
+        },
+        {
+          "name": "recovery_explains_an_unresolved_choice_in_concrete_behavior",
+          "passed": true,
+          "fingerprint": "7fbf7079b62ac89a3a8f1e432fe0a6b98f87bfca2d9c0561edb0ce9c5b9f94ce",
+          "generated_at": "2026-09-03T03:21:22.224895+00:00",
+          "execution_profile_id": "1db763439b25",
+          "run_source": {
+            "kind": "checkpoint",
+            "git_commit": "1b2b56f9"
           }
         },
         {
@@ -2470,8 +2482,8 @@
     }
   },
   "fingerprints": {
-    "suite": "27e8b4530590c1c442f6a48d8d9c2d53906494b771cd4a3a4e206c426280b8ef",
-    "instructions": "5d73395a1f4f123d30c4c6d4c106acc41a8532e55535ed794efdf16fd472150b"
+    "suite": "89cd093d46412ee0d073817932ea763d017435a99ac3f30bebbfa92670f82458",
+    "instructions": "57b4571882ac14a9f12762b305ddaf5f5eaa98e19e55f6eeffbb730eaf9ed2f5"
   },
   "execution_profile": {
     "subject": {
@@ -2526,24 +2538,24 @@
   "token_usage": {
     "subject": {
       "codex": {
-        "invocations": 40,
-        "measured_invocations": 40,
-        "input_tokens": 834101,
-        "cached_input_tokens": 462848,
+        "invocations": 41,
+        "measured_invocations": 41,
+        "input_tokens": 850884,
+        "cached_input_tokens": 470272,
         "cache_write_input_tokens": 0,
-        "output_tokens": 11692,
-        "reasoning_output_tokens": 6134
+        "output_tokens": 12003,
+        "reasoning_output_tokens": 6389
       }
     },
     "judge": {
       "codex": {
-        "invocations": 43,
-        "measured_invocations": 42,
-        "input_tokens": 413468,
-        "cached_input_tokens": 357376,
+        "invocations": 44,
+        "measured_invocations": 43,
+        "input_tokens": 426108,
+        "cached_input_tokens": 369408,
         "cache_write_input_tokens": 0,
-        "output_tokens": 2707,
-        "reasoning_output_tokens": 989
+        "output_tokens": 2811,
+        "reasoning_output_tokens": 1050
       }
     }
   },
@@ -2663,6 +2675,5 @@
         }
       }
     }
-  },
-  "minimum_current_evidence": 109
+  }
 }
