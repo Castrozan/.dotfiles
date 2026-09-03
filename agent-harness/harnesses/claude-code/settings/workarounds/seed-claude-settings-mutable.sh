@@ -17,7 +17,7 @@ fi
 
 chmod 600 "$claude_settings_path" 2>/dev/null || true
 
-runtime_owned_keys_preserved_across_rebuilds='["theme","voice","voiceEnabled","extraKnownMarketplaces"]'
+runtime_owned_keys_preserved_across_rebuilds='["model","theme","voice","voiceEnabled","extraKnownMarketplaces"]'
 
 # shellcheck disable=SC2016
 merged_settings="$(

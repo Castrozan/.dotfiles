@@ -28,15 +28,15 @@ _run_seed() {
 }
 
 @test "creates settings from nix-source when the mutable file is absent" {
-	echo '{"model":"opus"}' >"$NIX_SOURCE"
+	echo '{"effortLevel":"max"}' >"$NIX_SOURCE"
 	_run_seed
 	[ "$status" -eq 0 ]
-	[ "$(jq -r .model "$CLAUDE_SETTINGS")" = "opus" ]
+	[ "$(jq -r .effortLevel "$CLAUDE_SETTINGS")" = "max" ]
 }
 
 @test "drops a key removed from nix-source so a rebuild applies the deletion" {
-	echo '{"model":"opus","enabledPlugins":{"discord@claude-plugins-official":true},"theme":"dark"}' >"$CLAUDE_SETTINGS"
-	echo '{"model":"opus"}' >"$NIX_SOURCE"
+	echo '{"effortLevel":"max","enabledPlugins":{"discord@claude-plugins-official":true},"theme":"dark"}' >"$CLAUDE_SETTINGS"
+	echo '{"effortLevel":"max"}' >"$NIX_SOURCE"
 	_run_seed
 	[ "$status" -eq 0 ]
 	[ "$(jq 'has("enabledPlugins")' "$CLAUDE_SETTINGS")" = "false" ]
@@ -44,21 +44,29 @@ _run_seed() {
 
 @test "preserves runtime-owned keys that nix-source does not manage" {
 	echo '{"theme":"dark","voice":"alloy","voiceEnabled":true,"extraKnownMarketplaces":{"m":1}}' >"$CLAUDE_SETTINGS"
-	echo '{"model":"opus"}' >"$NIX_SOURCE"
+	echo '{"effortLevel":"max"}' >"$NIX_SOURCE"
 	_run_seed
 	[ "$status" -eq 0 ]
 	[ "$(jq -r .theme "$CLAUDE_SETTINGS")" = "dark" ]
 	[ "$(jq -r .voice "$CLAUDE_SETTINGS")" = "alloy" ]
 	[ "$(jq -r .voiceEnabled "$CLAUDE_SETTINGS")" = "true" ]
-	[ "$(jq -r .model "$CLAUDE_SETTINGS")" = "opus" ]
+	[ "$(jq -r .effortLevel "$CLAUDE_SETTINGS")" = "max" ]
+}
+
+@test "keeps the model the user switched to instead of a nix-declared one" {
+	echo '{"model":"claude-opus-5[1m]"}' >"$CLAUDE_SETTINGS"
+	echo '{"effortLevel":"max"}' >"$NIX_SOURCE"
+	_run_seed
+	[ "$status" -eq 0 ]
+	[ "$(jq -r .model "$CLAUDE_SETTINGS")" = "claude-opus-5[1m]" ]
 }
 
 @test "nix-source managed values win over stale current values" {
-	echo '{"model":"sonnet"}' >"$CLAUDE_SETTINGS"
-	echo '{"model":"opus"}' >"$NIX_SOURCE"
+	echo '{"effortLevel":"low"}' >"$CLAUDE_SETTINGS"
+	echo '{"effortLevel":"max"}' >"$NIX_SOURCE"
 	_run_seed
 	[ "$status" -eq 0 ]
-	[ "$(jq -r .model "$CLAUDE_SETTINGS")" = "opus" ]
+	[ "$(jq -r .effortLevel "$CLAUDE_SETTINGS")" = "max" ]
 }
 
 @test "hooks come entirely from nix-source not the mutable file" {
