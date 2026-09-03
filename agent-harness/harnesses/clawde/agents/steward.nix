@@ -87,7 +87,7 @@ in
     modelByHarness = {
       claude = "sonnet";
       codex = "gpt-5.6-terra";
-      opencode = "opencode-go/deepseek-v4-flash";
+      opencode = "opencode/ling-3.0-flash-fin-free";
     };
     reasoningEffort = "none";
     personality = effectivePersonality;
