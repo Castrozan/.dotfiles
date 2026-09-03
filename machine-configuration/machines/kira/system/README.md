@@ -7,7 +7,7 @@ nix-darwin owns the system, home-manager owns the user environment. The Mac base
 </stack>
 
 <per_host_delta>
-`machine-configuration/machines/kira/system/default.nix` carries only what rin must not also get: Tailscale as a nix-darwin service plus the Firefox and Hammerspoon casks. Put a setting here only when it is genuinely unique to kira; anything both Macs share belongs in the shared layer.
+`machine-configuration/machines/kira/system/default.nix` carries only what rin must not also get: Tailscale as a nix-darwin service, the Claude, Codex, Firefox and MongoDB Compass casks, and Wi-Fi IPv6 pinned to link-local only, a workaround for a home router that advertises an IPv6 prefix it cannot route. Put a setting here only when it is genuinely unique to kira; anything both Macs share belongs in the shared layer.
 </per_host_delta>
 
 <apply>

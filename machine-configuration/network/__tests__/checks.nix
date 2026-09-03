@@ -14,6 +14,10 @@ let
 
   hasActivation = name: builtins.hasAttr name cfg.home.activation;
 
+  wifiIpv6LinkLocalDarwinActivation =
+    (import ../ipv6/ipv6-link-local-nix-darwin.nix { inherit lib pkgs; })
+    .system.activationScripts.postActivation.text.content;
+
   tailscaleDaemonActivation = cfg.home.activation.checkTailscaleDaemon.data;
 
   tailscaleDaemonLocationsThisRepoInstallsTo = [
@@ -38,4 +42,13 @@ in
     mkEvalCheck "domain-network-tailscale-daemon-must-not-end-the-activation-run"
       (!lib.hasInfix "exit " tailscaleDaemonActivation)
       "home-manager concatenates every activation snippet into one script, so an exit here would silently skip every later activation step including linkGeneration";
+
+  domain-network-wifi-ipv6-link-local-darwin-activation-reconciles-through-the-script =
+    mkEvalCheck "domain-network-wifi-ipv6-link-local-darwin-activation-reconciles-through-the-script"
+      (
+        lib.hasInfix "/bin/python3" wifiIpv6LinkLocalDarwinActivation
+        && lib.hasInfix "set_wifi_ipv6_link_local.py" wifiIpv6LinkLocalDarwinActivation
+        && !lib.hasInfix "exit " wifiIpv6LinkLocalDarwinActivation
+      )
+      "the darwin Wi-Fi IPv6 module must reconcile through its script from an explicit python interpreter and never end the activation: nix-darwin aborts the profile swap on a non-zero postActivation step, so the call stays guarded and exit-free";
 }
