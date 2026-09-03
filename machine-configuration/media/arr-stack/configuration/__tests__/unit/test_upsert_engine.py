@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 PROVISIONER_PACKAGE_DIRECTORY_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "arr_config_provisioner"
 )
@@ -131,3 +133,33 @@ def test_dry_run_create_writes_nothing(monkeypatch):
     assert outcomes == ["would-create"]
     assert created == []
     assert updated == []
+
+
+def test_continues_after_one_object_update_fails(monkeypatch):
+    attempted_names = []
+    existing = [
+        {"id": 1, "name": "Broken"},
+        {"id": 2, "name": "Nyaa.si"},
+    ]
+    monkeypatch.setattr(
+        upsert_engine, "get_resource_list", lambda base, key, resource: existing
+    )
+
+    def update_resource(base, key, resource, resource_id, body, force_save):
+        attempted_names.append(body["name"])
+        if body["name"] == "Broken":
+            raise RuntimeError("provider rejected update")
+
+    monkeypatch.setattr(upsert_engine, "update_resource", update_resource)
+    with pytest.raises(RuntimeError, match="1 of 2 indexer objects failed"):
+        upsert_engine.upsert_resource(
+            "b",
+            "k",
+            "indexer",
+            [{"name": "Broken"}, {"name": "Nyaa.si"}],
+            "name",
+            True,
+            True,
+            False,
+        )
+    assert attempted_names == ["Broken", "Nyaa.si"]

@@ -26,6 +26,36 @@ def update_existing_object(
     return "updated"
 
 
+def upsert_desired_object(
+    base_url,
+    api_key,
+    resource,
+    current,
+    desired,
+    key_value,
+    supports_update,
+    force_save,
+    dry_run,
+):
+    if current is None:
+        return create_missing_object(
+            base_url, api_key, resource, desired, key_value, force_save, dry_run
+        )
+    if supports_update:
+        return update_existing_object(
+            base_url,
+            api_key,
+            resource,
+            current,
+            desired,
+            key_value,
+            force_save,
+            dry_run,
+        )
+    log(f"{resource} '{key_value}': present, left as is")
+    return "unchanged"
+
+
 def upsert_resource(
     base_url,
     api_key,
@@ -41,6 +71,7 @@ def upsert_resource(
         for obj in get_resource_list(base_url, api_key, resource)
     }
     outcomes = []
+    failed_keys = []
     for desired in desired_objects:
         key_value = desired.get(match_key)
         if contains_unresolved_secret_token(desired):
@@ -48,26 +79,28 @@ def upsert_resource(
             outcomes.append("skipped-missing-secret")
             continue
         current = existing_by_key.get(key_value)
-        if current is None:
+        try:
             outcomes.append(
-                create_missing_object(
-                    base_url, api_key, resource, desired, key_value, force_save, dry_run
-                )
-            )
-        elif supports_update:
-            outcomes.append(
-                update_existing_object(
+                upsert_desired_object(
                     base_url,
                     api_key,
                     resource,
                     current,
                     desired,
                     key_value,
+                    supports_update,
                     force_save,
                     dry_run,
                 )
             )
-        else:
-            log(f"{resource} '{key_value}': present, left as is")
-            outcomes.append("unchanged")
+        except Exception as error:
+            failed_keys.append(key_value)
+            outcomes.append("failed")
+            log(f"{resource} '{key_value}': failed: {error}")
+    if failed_keys:
+        failed_key_list = ", ".join(str(key) for key in failed_keys)
+        raise RuntimeError(
+            f"{len(failed_keys)} of {len(desired_objects)} {resource} objects failed: "
+            f"{failed_key_list}"
+        )
     return outcomes
