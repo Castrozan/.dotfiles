@@ -1,6 +1,14 @@
 from unittest.mock import patch
 
 import nightly_deep_test_tiers
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def keep_the_log_out_of_the_live_state_directory(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        nightly_deep_test_tiers, "LOG_DIRECTORY", tmp_path / "nightly-log"
+    )
 
 
 class TestIdleWindow:
@@ -38,6 +46,15 @@ class TestIdleWindow:
                         nightly_deep_test_tiers.main()
                         == nightly_deep_test_tiers.EXIT_CODE_CANNOT_RUN
                     )
+
+    def test_a_missing_runner_leaves_a_failed_verdict_in_the_log(self):
+        with patch("nightly_deep_test_tiers.current_hour", return_value=3):
+            with patch("nightly_deep_test_tiers.sys.argv", ["nightly"]):
+                with patch("nightly_deep_test_tiers.shutil.which", return_value=None):
+                    nightly_deep_test_tiers.main()
+        verdict = nightly_deep_test_tiers.log_file_path().read_text().strip()
+        assert verdict == nightly_deep_test_tiers.CANNOT_RUN_VERDICT
+        assert verdict.startswith("FAILED")
 
 
 class TestEveryTierRuns:
