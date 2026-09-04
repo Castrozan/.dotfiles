@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-04T19:46:14.171899+00:00",
+  "generated_at": "2026-09-04T19:47:11.306342+00:00",
   "oldest_evidence_at": "2026-08-30T00:18:26.050632+00:00",
-  "git_commit": "a99f70a7",
+  "git_commit": "105b9dbb",
   "total_tests": 210,
-  "total_passed": 185,
-  "total_failed": 25,
-  "pass_rate": 0.881,
+  "total_passed": 186,
+  "total_failed": 24,
+  "pass_rate": 0.8857,
   "minimum_current_evidence": 210,
   "categories": {
     "adaptive_delivery": {
@@ -2387,18 +2387,18 @@
       ]
     },
     "workflow_compliance": {
-      "passed": 6,
-      "failed": 2,
+      "passed": 7,
+      "failed": 1,
       "tests": [
         {
           "name": "workflow_change_review_classifies_semantic_risk",
-          "passed": false,
-          "fingerprint": "63248722a53afce4675df2a0d162a3cb415554324c7e91d4c010380be4db1753",
-          "generated_at": "2026-09-04T01:25:41.341601+00:00",
+          "passed": true,
+          "fingerprint": "b44579552467fccfe5697094cb0594ccaf7c069ba68247d8a4820f225163f95a",
+          "generated_at": "2026-09-04T19:47:11.306342+00:00",
           "execution_profile_id": "1db763439b25",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b26b575e"
+            "git_commit": "105b9dbb"
           }
         },
         {
@@ -2539,23 +2539,23 @@
     "subject": {
       "codex": {
         "invocations": 172,
-        "measured_invocations": 170,
-        "input_tokens": 3870997,
-        "cached_input_tokens": 1978112,
+        "measured_invocations": 171,
+        "input_tokens": 3905189,
+        "cached_input_tokens": 1994880,
         "cache_write_input_tokens": 0,
-        "output_tokens": 40027,
-        "reasoning_output_tokens": 20734
+        "output_tokens": 40934,
+        "reasoning_output_tokens": 21331
       }
     },
     "judge": {
       "codex": {
-        "invocations": 133,
-        "measured_invocations": 132,
-        "input_tokens": 1550581,
-        "cached_input_tokens": 838400,
+        "invocations": 137,
+        "measured_invocations": 136,
+        "input_tokens": 1601446,
+        "cached_input_tokens": 850176,
         "cache_write_input_tokens": 0,
-        "output_tokens": 7649,
-        "reasoning_output_tokens": 2283
+        "output_tokens": 7928,
+        "reasoning_output_tokens": 2412
       }
     }
   },
