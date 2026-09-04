@@ -1,15 +1,15 @@
 { pkgs, ... }:
 let
-  flylineVersion = "1.4.0";
+  flylineVersion = "1.7.1";
 
   flylineReleaseAssetForSystem = {
     "aarch64-darwin" = {
       asset = "libflyline-v${flylineVersion}-aarch64-apple-darwin.tar.gz";
-      hash = "sha256-JDA9XBOl5xTt1NoHbdUGhbUMlJ8G85TKPYkCErA3Ddw=";
+      hash = "sha256-2F+07gYBK1mbuWX+M1Rld41BkJTxVk4XZl8wnMoX8zI=";
     };
     "x86_64-linux" = {
       asset = "libflyline-v${flylineVersion}-x86_64-unknown-linux-gnu.tar.gz";
-      hash = "sha256-YmwiehbsD/Krwz+EjAkO2GcR8JSvHMtruEX+IHzvIrA=";
+      hash = "sha256-oX+hhN2/rSmb2SmoR4+CnmSrGP++B/Ab1g108J3wREY=";
     };
   };
 
