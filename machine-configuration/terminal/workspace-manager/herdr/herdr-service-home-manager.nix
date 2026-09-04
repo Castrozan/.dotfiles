@@ -22,10 +22,23 @@ let
   ];
   serverRunning = "${herdrPackage}/bin/herdr session list --json 2>/dev/null | ${pkgs.jq}/bin/jq -e -f ${./scripts/default-server-running.jq} >/dev/null";
   activeServerPackageFile = "${config.xdg.stateHome}/herdr/active-server-package";
+  systemdHandoffImporter = pkgs.writeShellApplication {
+    name = "herdr-systemd-handoff-importer";
+    text = ''
+      ${pkgs.systemd}/bin/systemd-notify --pid=parent
+      exec ${herdrPackage}/bin/herdr "$@"
+    '';
+  };
+  handoffImportExecutable =
+    if pkgs.stdenv.hostPlatform.isLinux then
+      "${systemdHandoffImporter}/bin/herdr-systemd-handoff-importer"
+    else
+      "${herdrPackage}/bin/herdr";
   herdrServerReconciler = pkgs.writeShellApplication {
     name = "reconcile-herdr-server";
     text = ''
       export HERDR_EXECUTABLE=${herdrPackage}/bin/herdr
+      export HERDR_IMPORT_EXECUTABLE=${handoffImportExecutable}
       export HERDR_PACKAGE_IDENTITY=${herdrPackage}
       export HERDR_ACTIVE_PACKAGE_FILE=${activeServerPackageFile}
       exec ${pkgs.python3}/bin/python3 ${./scripts/reconcile-herdr-server.py} "$@"
@@ -97,6 +110,7 @@ in
             "HOME=${config.home.homeDirectory}"
             "PATH=${serverPath}"
           ];
+          NotifyAccess = "all";
           Restart = "always";
           RestartSec = 1;
           MemoryHigh = "8G";

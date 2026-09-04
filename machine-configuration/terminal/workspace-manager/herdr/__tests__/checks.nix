@@ -26,6 +26,7 @@ in
         && linuxService.Service.Restart == "always"
         && linuxService.Service.MemoryHigh == "8G"
         && linuxService.Service.Delegate
+        && linuxService.Service.NotifyAccess == "all"
         && builtins.elem "default.target" linuxService.Install.WantedBy
         && !(linuxService.Unit.X-RestartIfChanged or true)
         && !(linuxService.Unit.X-StopIfChanged or true)

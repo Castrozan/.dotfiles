@@ -11,6 +11,7 @@ import tempfile
 @dataclasses.dataclass(frozen=True)
 class ServerDeployment:
     executable: str
+    import_executable: str
     package_identity: str
     active_package_file: pathlib.Path
 
@@ -18,6 +19,7 @@ class ServerDeployment:
     def from_environment(cls):
         return cls(
             executable=os.environ["HERDR_EXECUTABLE"],
+            import_executable=os.environ["HERDR_IMPORT_EXECUTABLE"],
             package_identity=os.environ["HERDR_PACKAGE_IDENTITY"],
             active_package_file=pathlib.Path(os.environ["HERDR_ACTIVE_PACKAGE_FILE"]),
         )
@@ -108,7 +110,7 @@ def reconcile_server(deployment):
         "server",
         "live-handoff",
         "--import-exe",
-        deployment.executable,
+        deployment.import_executable,
         "--expected-protocol",
         str(client_status["protocol"]),
         "--expected-version",

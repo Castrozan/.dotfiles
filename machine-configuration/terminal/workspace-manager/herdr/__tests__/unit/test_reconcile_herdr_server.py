@@ -35,6 +35,9 @@ def _result(returncode=0, payload=None):
 def _set_environment(monkeypatch, tmp_path):
     active_package_file = tmp_path / "active-server-package"
     monkeypatch.setenv("HERDR_EXECUTABLE", "/nix/store/new-herdr/bin/herdr")
+    monkeypatch.setenv(
+        "HERDR_IMPORT_EXECUTABLE", "/nix/store/importer/bin/herdr-handoff-importer"
+    )
     monkeypatch.setenv("HERDR_PACKAGE_IDENTITY", "/nix/store/new-herdr")
     monkeypatch.setenv("HERDR_ACTIVE_PACKAGE_FILE", str(active_package_file))
     return active_package_file
@@ -114,7 +117,7 @@ def test_changed_package_hands_off_once_and_records_identity(monkeypatch, tmp_pa
             "server",
             "live-handoff",
             "--import-exe",
-            "/nix/store/new-herdr/bin/herdr",
+            "/nix/store/importer/bin/herdr-handoff-importer",
             "--expected-protocol",
             "16",
             "--expected-version",
