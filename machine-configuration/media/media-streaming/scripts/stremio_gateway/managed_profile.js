@@ -40,10 +40,21 @@
     }
   };
 
+  const configuredTransportPath = (transportPath, configuration) => {
+    if (configuration === undefined) {
+      return transportPath;
+    }
+    const encodedConfiguration = window.btoa(JSON.stringify(configuration));
+    return transportPath.replace(
+      "/manifest.json",
+      `/${encodedConfiguration}/manifest.json`,
+    );
+  };
+
   const managedAddonEntries = managedProfileConfiguration.managedAddons.map(
-    ({ manifest, transportPath }) => ({
+    ({ manifest, transportPath, configuration }) => ({
       manifest,
-      transportUrl: `${window.location.origin}${transportPath}`,
+      transportUrl: `${window.location.origin}${configuredTransportPath(transportPath, configuration)}`,
       flags: { official: false, protected: false },
     }),
   );
@@ -112,6 +123,10 @@
       addonsLocked: true,
       settings: {
         ...profile.settings,
+        audioLanguage:
+          managedProfileConfiguration.defaultSettings.audioLanguage,
+        secondaryAudioLanguage:
+          managedProfileConfiguration.defaultSettings.secondaryAudioLanguage,
         streamingServerUrl: managedStreamingServerUrl,
       },
     };

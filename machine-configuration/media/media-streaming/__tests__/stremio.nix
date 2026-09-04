@@ -105,6 +105,7 @@ in
         && lib.hasInfix "--env INDEXER_MANAGER_TIMEOUT=15" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env GET_TORRENT_TIMEOUT=10" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env 'PROWLARR_INDEXERS=[]'" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--env 'INDEXER_LANGUAGES=[\"pt\"]'" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env-file /run/stremio-comet/prowlarr.env" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "${testHomeDirectory}/arr-stack/config/prowlarr/config.xml" (
           lib.concatStringsSep " " cometUnit.serviceConfig.ExecStartPre

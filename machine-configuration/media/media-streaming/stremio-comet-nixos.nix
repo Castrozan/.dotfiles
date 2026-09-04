@@ -63,6 +63,7 @@ in
         "--env SCRAPE_PROWLARR=live"
         "--env PROWLARR_URL=http://${tailnetBindAddress}:9696"
         "--env 'PROWLARR_INDEXERS=[]'"
+        "--env 'INDEXER_LANGUAGES=[\"pt\"]'"
         "--env SCRAPE_NYAA=live"
         "--env NYAA_MAX_CONCURRENT_PAGES=2"
         "--env SCRAPE_ANIMETOSHO=live"

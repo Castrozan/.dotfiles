@@ -15,8 +15,8 @@
     "frameRateMatchingStrategy": "Disabled",
     "nextVideoNotificationDuration": 35000,
     "audioPassthrough": false,
-    "audioLanguage": "eng",
-    "secondaryAudioLanguage": null,
+    "audioLanguage": "por",
+    "secondaryAudioLanguage": "eng",
     "subtitlesLanguage": "eng",
     "secondarySubtitlesLanguage": null,
     "subtitlesAutoSelect": true,
@@ -117,7 +117,15 @@
           "configurationRequired": false
         }
       },
-      "transportPath": "/comet/manifest.json"
+      "transportPath": "/comet/manifest.json",
+      "configuration": {
+        "languages": {
+          "required": [],
+          "allowed": [],
+          "exclude": [],
+          "preferred": ["pt"]
+        }
+      }
     }
   ]
 }
