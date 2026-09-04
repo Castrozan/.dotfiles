@@ -30,7 +30,7 @@ let
     && lib.hasInfix "const seenSubtitleUrls = new Set();" subtitleTracksPatchText
     && lib.hasInfix ''subtitleElement.kind = "subtitles";'' subtitleTracksPatchText
     && lib.hasInfix ''subtitleElement.track.mode = seenSubtitleUrls.size === 1 ? "showing" : "disabled";'' subtitleTracksPatchText
-    && lib.hasInfix "configureSubtitleTracks(video, v.subtitleTracks || [], headersEnc);" subtitleTracksPatchText;
+    && lib.hasInfix "     video.src = proxyBase;\n   }\n+  configureSubtitleTracks(video, v.subtitleTracks || [], headersEnc);\n }" subtitleTracksPatchText;
   productionSourcesExcludeTestFixtures =
     lib.hasInfix "COPY miwayomi-production-sources.patch /tmp/miwayomi-production-sources.patch" miwayomiDockerfileText
     && lib.hasInfix "RUN git apply /tmp/miwayomi-production-sources.patch" miwayomiDockerfileText

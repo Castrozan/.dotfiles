@@ -1,15 +1,13 @@
 diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/webui/app.js
 --- a/server/src/main/resources/webui/app.js
 +++ b/server/src/main/resources/webui/app.js
-@@ -1082,7 +1082,8 @@ function playVideo(i) {
-   const label = $("#playingLabel");
-   if (label) label.textContent = t("player.playing", v.videoTitle || t("player.video"));
-   const video = $("#videoPlayer");
-   if (!video) return;
+@@ -1116,5 +1116,6 @@ function playVideo(i) {
+     video.src = hlsProxy;
+   } else {
+     video.src = proxyBase;
+   }
 +  configureSubtitleTracks(video, v.subtitleTracks || [], headersEnc);
-   setQualityActive(i);
-   bindVideoEvents(video);
-   maybeResume(video);
+ }
 @@ -1122,2 +1123,22 @@ function playVideo(i) {
 -function statusText(s) {
 +function configureSubtitleTracks(video, subtitleTracks, headersEnc) {
