@@ -4,10 +4,10 @@ from pathlib import Path
 CODEX_MODULE_DIRECTORY = Path(__file__).parents[2]
 
 
-def test_codex_launcher_bypasses_hook_trust_for_declared_hooks():
+def test_codex_launcher_does_not_bypass_managed_hook_trust():
     launcher_source = (CODEX_MODULE_DIRECTORY / "scripts" / "codex").read_text()
 
-    assert "--dangerously-bypass-hook-trust" in launcher_source
+    assert "--dangerously-bypass-hook-trust" not in launcher_source
 
 
 def test_codex_disables_self_update_banner():
