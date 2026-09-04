@@ -23,9 +23,9 @@ grid.switchToWorkspace(22)
 harness.expectEqual("an invalid workspace does not reveal the menu bar", 1, revealCount)
 
 grid.focusWindowById(101)
-harness.expectEqual("switching to a valid window reveals the menu bar once", 2, revealCount)
+harness.expectEqual("switching to a valid window does not reveal the menu bar", 1, revealCount)
 
 grid.focusWindowById(999)
-harness.expectEqual("a stale window switch request does not reveal the menu bar", 2, revealCount)
+harness.expectEqual("a stale window switch request does not reveal the menu bar", 1, revealCount)
 
 harness.exitWithAccumulatedStatus()

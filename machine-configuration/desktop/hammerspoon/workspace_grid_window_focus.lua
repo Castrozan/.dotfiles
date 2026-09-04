@@ -25,7 +25,6 @@ function workspaceGridWindowFocus.buildWindowFocusEntryPoints(dependencies)
 			windowLayout.showWindowOnScreen(window)
 			dependencies.onWorkspaceLayoutChanged()
 		end
-		dependencies.revealMenuBar()
 	end
 
 	function entryPoints.revealWindowById(windowId)

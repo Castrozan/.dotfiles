@@ -141,9 +141,6 @@ local windowFocusEntryPoints = require("workspace_grid_window_focus").buildWindo
 	currentWorkspaceNumber = readCurrentWorkspaceNumber,
 	switchToWorkspace = workspaceGrid.switchToWorkspace,
 	onWorkspaceLayoutChanged = onWorkspaceLayoutChanged,
-	revealMenuBar = function()
-		menuBarReveal.brieflyReveal()
-	end,
 })
 workspaceGrid.focusWindowById = windowFocusEntryPoints.focusWindowById
 workspaceGrid.revealWindowById = windowFocusEntryPoints.revealWindowById
