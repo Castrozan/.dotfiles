@@ -35,6 +35,11 @@ let
   sidecarSubtitleTracksReachThePlayer =
     lib.hasInfix "COPY miwayomi-subtitle-tracks.patch /tmp/miwayomi-subtitle-tracks.patch" miwayomiDockerfileText
     && lib.hasInfix "RUN git apply /tmp/miwayomi-subtitle-tracks.patch" miwayomiDockerfileText
+    && lib.hasInfix "function scheduleSubtitleTracks(video, subtitleTracks, headersEnc)" subtitleTracksPatchText
+    && lib.hasInfix "const subtitleGeneration = (video.__subtitleGeneration || 0) + 1;" subtitleTracksPatchText
+    && lib.hasInfix "video.__subtitleGeneration = subtitleGeneration;" subtitleTracksPatchText
+    && lib.hasInfix ''video.addEventListener("loadedmetadata", () => {'' subtitleTracksPatchText
+    && lib.hasInfix "if (video.__subtitleGeneration !== subtitleGeneration) return;" subtitleTracksPatchText
     && lib.hasInfix "function configureSubtitleTracks(video, subtitleTracks, headersEnc)" subtitleTracksPatchText
     && lib.hasInfix ''video.querySelectorAll("track").forEach((subtitleElement) => subtitleElement.remove());'' subtitleTracksPatchText
     && lib.hasInfix "const seenSubtitleUrls = new Set();" subtitleTracksPatchText
@@ -43,10 +48,8 @@ let
     && lib.hasInfix "const subtitleIsDefault = seenSubtitleUrls.size === 1;" subtitleTracksPatchText
     && lib.hasInfix "subtitleElement.default = subtitleIsDefault;" subtitleTracksPatchText
     && lib.hasInfix "&subtitleVersion=\${subtitleRequestVersion}`;" subtitleTracksPatchText
-    && lib.hasInfix "if (!subtitleElement.isConnected) return;" subtitleTracksPatchText
-    && lib.hasInfix ''video.addEventListener("loadedmetadata", applySubtitleMode, { once: true });'' subtitleTracksPatchText
-    && lib.hasInfix "applySubtitleMode();" subtitleTracksPatchText
-    && lib.hasInfix "     video.src = proxyBase;\n   }\n+  configureSubtitleTracks(video, v.subtitleTracks || [], headersEnc);\n }" subtitleTracksPatchText;
+    && lib.hasInfix ''subtitleElement.track.mode = subtitleIsDefault ? "showing" : "disabled";'' subtitleTracksPatchText
+    && lib.hasInfix "   if (!video) return;\n+  scheduleSubtitleTracks(video, v.subtitleTracks || [], headersEnc);\n   setQualityActive(i);" subtitleTracksPatchText;
   productionSourcesExcludeTestFixtures =
     lib.hasInfix "COPY miwayomi-production-sources.patch /tmp/miwayomi-production-sources.patch" miwayomiDockerfileText
     && lib.hasInfix "RUN git apply /tmp/miwayomi-production-sources.patch" miwayomiDockerfileText
