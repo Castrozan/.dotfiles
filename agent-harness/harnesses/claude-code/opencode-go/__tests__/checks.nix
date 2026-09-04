@@ -15,9 +15,12 @@ let
     map
       (
         hostname:
-        helpers.homeManagerTestConfigurationForDarwinHost hostname [
-          self.homeManagerModules.claude-code
-        ]
+        helpers.homeManagerTestConfigurationForDarwinHost hostname (
+          [ self.homeManagerModules.claude-code ]
+          ++ lib.optional (hostname == "rin") {
+            claude.requiredWorkspaceProfileName = "mcd-ca";
+          }
+        )
       )
       [
         "kira"
