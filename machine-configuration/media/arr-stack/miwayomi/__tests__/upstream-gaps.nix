@@ -38,9 +38,11 @@ let
     && lib.hasInfix "function configureSubtitleTracks(video, subtitleTracks, headersEnc)" subtitleTracksPatchText
     && lib.hasInfix ''video.querySelectorAll("track").forEach((subtitleElement) => subtitleElement.remove());'' subtitleTracksPatchText
     && lib.hasInfix "const seenSubtitleUrls = new Set();" subtitleTracksPatchText
+    && lib.hasInfix "const subtitleRequestVersion = Date.now();" subtitleTracksPatchText
     && lib.hasInfix ''subtitleElement.kind = "subtitles";'' subtitleTracksPatchText
     && lib.hasInfix "const subtitleIsDefault = seenSubtitleUrls.size === 1;" subtitleTracksPatchText
     && lib.hasInfix "subtitleElement.default = subtitleIsDefault;" subtitleTracksPatchText
+    && lib.hasInfix "&subtitleVersion=\${subtitleRequestVersion}`;" subtitleTracksPatchText
     && lib.hasInfix "if (!subtitleElement.isConnected) return;" subtitleTracksPatchText
     && lib.hasInfix ''video.addEventListener("loadedmetadata", applySubtitleMode, { once: true });'' subtitleTracksPatchText
     && lib.hasInfix "applySubtitleMode();" subtitleTracksPatchText

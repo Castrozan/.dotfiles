@@ -8,11 +8,12 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
    }
 +  configureSubtitleTracks(video, v.subtitleTracks || [], headersEnc);
  }
-@@ -1122,2 +1123,28 @@ function playVideo(i) {
+@@ -1122,2 +1123,29 @@ function playVideo(i) {
 -function statusText(s) {
 +function configureSubtitleTracks(video, subtitleTracks, headersEnc) {
 +  video.querySelectorAll("track").forEach((subtitleElement) => subtitleElement.remove());
 +  const seenSubtitleUrls = new Set();
++  const subtitleRequestVersion = Date.now();
 +  subtitleTracks.forEach((subtitleTrack) => {
 +    if (!subtitleTrack.url || seenSubtitleUrls.has(subtitleTrack.url)) return;
 +    seenSubtitleUrls.add(subtitleTrack.url);
@@ -25,7 +26,7 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
 +    subtitleElement.srclang = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(subtitleLanguage)
 +      ? subtitleLanguage
 +      : "und";
-+    subtitleElement.src = `/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(subtitleTrack.url)}&headers=${headersEnc}`;
++    subtitleElement.src = `/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(subtitleTrack.url)}&headers=${headersEnc}&subtitleVersion=${subtitleRequestVersion}`;
 +    video.appendChild(subtitleElement);
 +    const applySubtitleMode = () => {
 +      if (!subtitleElement.isConnected) return;
