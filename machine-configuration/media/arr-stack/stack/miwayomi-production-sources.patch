@@ -1,0 +1,24 @@
+diff --git a/server/src/main/kotlin/miwayomi/Main.kt b/server/src/main/kotlin/miwayomi/Main.kt
+--- a/server/src/main/kotlin/miwayomi/Main.kt
++++ b/server/src/main/kotlin/miwayomi/Main.kt
+@@ -7,12 +7,9 @@ import io.ktor.server.embeddedServer
+ import io.ktor.server.netty.Netty
+ import miwayomi.api.registerApi
+ import miwayomi.api.syncExtensionRegistry
+-import miwayomi.builtin.DemoSource
+-import miwayomi.builtin.MockCfSource
+ import miwayomi.di.AppModule
+ import miwayomi.di.ConfigHolder
+ import miwayomi.extension.ExtensionManager
+-import miwayomi.source.MangaSourceManager
+ import miwayomi.update.UpdateManager
+ import uy.kohesive.injekt.Injekt
+ import uy.kohesive.injekt.api.get
+@@ -40,7 +37,3 @@ fun buildServer(config: ServerConfig): EmbeddedServer<*, *> {
+     println("[miwayomi] $loaded extension(s) loaded")
+     syncExtensionRegistry(extensionManager)
+-
+-    Injekt.get<MangaSourceManager>().register(DemoSource())
+-    Injekt.get<MangaSourceManager>().register(MockCfSource())
+-
+     val srv = embeddedServer(Netty, port = config.port, host = config.host) {

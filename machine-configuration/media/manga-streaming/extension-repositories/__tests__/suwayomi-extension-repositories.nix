@@ -18,6 +18,7 @@ let
   provisionerModuleText = builtins.readFile ../suwayomi-extension-repositories-home-manager.nix;
   clientText = builtins.readFile ../scripts/suwayomi_extension_repositories/suwayomi_graphql_client.py;
   miwayomiClientText = builtins.readFile ../scripts/suwayomi_extension_repositories/miwayomi_rest_client.py;
+  miwayomiReconcileText = builtins.readFile ../scripts/suwayomi_extension_repositories/miwayomi_extension_synchronization.py;
   commandText = builtins.readFile ../scripts/suwayomi_extension_repositories/__main__.py;
   reconcileText = builtins.readFile ../scripts/suwayomi_extension_repositories/extension_repository_synchronization.py;
   declarationText = builtins.readFile ../scripts/suwayomi_extension_repositories/runtime_configuration.py;
@@ -35,6 +36,7 @@ let
         reconcileText
         clientText
         miwayomiClientText
+        miwayomiReconcileText
         commandText
         synchronizationTestText
       ];

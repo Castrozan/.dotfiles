@@ -41,6 +41,11 @@
       stackHomeDirectory = "/home/zanoni/arr-stack";
       baseUrl = "http://arr:4568";
       repositoryListSecretFile = config.age.secrets."suwayomi-extension-repositories".path;
+      removedExtensionPackages = [
+        "eu.kanade.tachiyomi.animeextension.en.animepahe"
+        "eu.kanade.tachiyomi.animeextension.en.kayoanime"
+        "eu.kanade.tachiyomi.extension.en.bakkin"
+      ];
       composePredecessorUnits = [ "arr-stack-drive-guard.service" ];
     };
 

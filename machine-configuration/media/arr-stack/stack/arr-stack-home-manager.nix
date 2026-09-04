@@ -14,13 +14,18 @@ let
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
   chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";
-  miwayomiWebCacheVersion = builtins.hashFile "sha256" ./miwayomi-interface-artwork.patch;
+  miwayomiWebCacheVersion = builtins.hashString "sha256" (
+    builtins.readFile ./miwayomi-interface-artwork.patch
+    + builtins.readFile ./miwayomi-subtitle-tracks.patch
+  );
   miwayomiBuildContext = pkgs.runCommand "miwayomi-build-context" { } ''
     mkdir -p "$out"
     cp ${./miwayomi.Dockerfile} "$out/miwayomi.Dockerfile"
     cp ${./miwayomi-manga-input-initialization.patch} "$out/miwayomi-manga-input-initialization.patch"
     cp ${./miwayomi-watch-progress.patch} "$out/miwayomi-watch-progress.patch"
     cp ${./miwayomi-interface-artwork.patch} "$out/miwayomi-interface-artwork.patch"
+    cp ${./miwayomi-subtitle-tracks.patch} "$out/miwayomi-subtitle-tracks.patch"
+    cp ${./miwayomi-production-sources.patch} "$out/miwayomi-production-sources.patch"
   '';
   staticEnvironmentFileContents = builtins.readFile ./env;
   runtimeEnvironmentFileContents =

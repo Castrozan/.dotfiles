@@ -55,3 +55,21 @@ def write_extension_repository_urls(base_url, repository_urls):
 
 def count_extensions_offered(_base_url):
     return None
+
+
+def read_installed_extensions(base_url):
+    return execute(base_url, "/api/v1/extensions/installed")["extensions"]
+
+
+def uninstall_extension(base_url, package_name):
+    result = execute(
+        base_url,
+        "/api/v1/extensions/uninstall",
+        method="POST",
+        payload={"pkg": package_name},
+    )
+    if not result.get("ok"):
+        raise ValueError(
+            f"Miwayomi refused to uninstall {package_name}: {result.get('error', 'unknown error')}"
+        )
+    return result

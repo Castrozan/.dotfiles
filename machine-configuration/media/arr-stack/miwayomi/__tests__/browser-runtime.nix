@@ -44,6 +44,8 @@ let
     && lib.hasInfix ''pkgs.runCommand "miwayomi-build-context"'' stackModuleText
     && lib.hasInfix "cp \${./miwayomi.Dockerfile}" stackModuleText
     && lib.hasInfix "cp \${./miwayomi-manga-input-initialization.patch}" stackModuleText
+    && lib.hasInfix "cp \${./miwayomi-subtitle-tracks.patch}" stackModuleText
+    && lib.hasInfix "cp \${./miwayomi-production-sources.patch}" stackModuleText
     && lib.hasInfix "MIWAYOMI_BUILD_CONTEXT=\${miwayomiBuildContext}" stackModuleText;
   gatewayRepairsMiwayomiProxyOrigins =
     lib.hasInfix "hostname: miwayomi" composeText
@@ -91,7 +93,7 @@ let
     && lib.hasInfix "ARG MIWAYOMI_WEB_CACHE_VERSION" miwayomiDockerfileText
     && lib.hasInfix "s/__MIWAYOMI_WEB_CACHE_VERSION__/$MIWAYOMI_WEB_CACHE_VERSION/" miwayomiDockerfileText
     && lib.hasInfix "MIWAYOMI_WEB_CACHE_VERSION: \${MIWAYOMI_WEB_CACHE_VERSION:?set in ~/arr-stack/.env}" composeText
-    && lib.hasInfix ''miwayomiWebCacheVersion = builtins.hashFile "sha256" ./miwayomi-interface-artwork.patch;'' stackModuleText
+    && lib.hasInfix "builtins.readFile ./miwayomi-subtitle-tracks.patch" stackModuleText
     && lib.hasInfix "MIWAYOMI_WEB_CACHE_VERSION=\${miwayomiWebCacheVersion}" stackModuleText
     && lib.hasInfix "map $uri $miwayomi_static_cache_control" gatewayConfigurationText
     && lib.hasInfix ''~*\.(?:html|js|css|json)$ "no-cache, must-revalidate";'' gatewayConfigurationText

@@ -28,6 +28,12 @@ in
       description = "Agenix-decrypted JSON list of Miwayomi extension repository URLs.";
     };
 
+    removedExtensionPackages = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Miwayomi extension packages that must remain uninstalled.";
+    };
+
     composePredecessorUnits = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
@@ -59,6 +65,8 @@ in
           ../stack/miwayomi-manga-input-initialization.patch
           ../stack/miwayomi-watch-progress.patch
           ../stack/miwayomi-interface-artwork.patch
+          ../stack/miwayomi-subtitle-tracks.patch
+          ../stack/miwayomi-production-sources.patch
         ];
         serviceConfig = {
           Type = "oneshot";
@@ -68,13 +76,14 @@ in
       };
 
       miwayomi-extension-repositories = {
-        description = "Reconcile Miwayomi extension repositories";
+        description = "Reconcile Miwayomi extension repositories and package policy";
         after = [ "miwayomi-compose.service" ];
         requires = [ "miwayomi-compose.service" ];
         wantedBy = [ "multi-user.target" ];
         environment = {
           MIWAYOMI_BASE_URL = miwayomiConfig.baseUrl;
           MIWAYOMI_EXTENSION_REPOSITORIES_FILE = miwayomiConfig.repositoryListSecretFile;
+          MIWAYOMI_REMOVED_EXTENSION_PACKAGES = builtins.toJSON miwayomiConfig.removedExtensionPackages;
         };
         serviceConfig = {
           Type = "oneshot";

@@ -27,6 +27,11 @@ let
     stackHomeDirectory = "/home/zanoni/arr-stack";
     baseUrl = "http://arr:4568";
     repositoryListSecretFile = "/run/agenix/suwayomi-extension-repositories";
+    removedExtensionPackages = [
+      "eu.kanade.tachiyomi.animeextension.en.animepahe"
+      "eu.kanade.tachiyomi.animeextension.en.kayoanime"
+      "eu.kanade.tachiyomi.extension.en.bakkin"
+    ];
     composePredecessorUnits = [ "arr-stack-drive-guard.service" ];
   };
   disabledConfiguration = evalMiwayomiModule (baseSettings // { enable = false; });
@@ -68,7 +73,7 @@ let
     && builtins.elem "arr-stack-drive-guard.service" composeService.requires
     && builtins.elem "multi-user.target" composeService.wantedBy
     && lib.hasInfix "up --detach --build miwayomi flaresolverr miwayomi-gateway" composeService.serviceConfig.ExecStart
-    && builtins.length composeService.restartTriggers == 6;
+    && builtins.length composeService.restartTriggers == 8;
   repositoryProvisionerFollowsCompose =
     repositoryService.after == [ "miwayomi-compose.service" ]
     && repositoryService.requires == [ "miwayomi-compose.service" ]
@@ -76,7 +81,10 @@ let
   repositoryProvisionerUsesEncryptedList =
     repositoryEnvironment.MIWAYOMI_EXTENSION_REPOSITORIES_FILE
     == "/run/agenix/suwayomi-extension-repositories"
-    && repositoryEnvironment.MIWAYOMI_BASE_URL == "http://arr:4568";
+    && repositoryEnvironment.MIWAYOMI_BASE_URL == "http://arr:4568"
+    &&
+      repositoryEnvironment.MIWAYOMI_REMOVED_EXTENSION_PACKAGES
+      == ''["eu.kanade.tachiyomi.animeextension.en.animepahe","eu.kanade.tachiyomi.animeextension.en.kayoanime","eu.kanade.tachiyomi.extension.en.bakkin"]'';
   repositoryProvisionerIsBounded = repositoryService.serviceConfig.TimeoutStartSec == "150s";
   repositoryProvisionerUsesExistingPackage =
     lib.hasInfix "/bin/python3" repositoryService.serviceConfig.ExecStart

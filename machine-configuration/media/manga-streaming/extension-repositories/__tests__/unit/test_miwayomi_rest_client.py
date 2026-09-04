@@ -89,6 +89,39 @@ def test_readiness_retries_a_bounded_number_of_times(monkeypatch):
     assert len(attempts) == miwayomi_rest_client.MIWAYOMI_READINESS_ATTEMPTS
 
 
+def test_reads_installed_extensions(monkeypatch):
+    calls = []
+
+    def execute(base_url, path, method="GET", payload=None, timeout_seconds=None):
+        calls.append((base_url, path, method, payload, timeout_seconds))
+        return {"extensions": [{"pkg": "example.package", "version": "2.0"}]}
+
+    monkeypatch.setattr(miwayomi_rest_client, "execute", execute)
+
+    installed_extensions = miwayomi_rest_client.read_installed_extensions(
+        "http://miwayomi:4567"
+    )
+
+    assert installed_extensions == [{"pkg": "example.package", "version": "2.0"}]
+    assert calls[0][1] == "/api/v1/extensions/installed"
+
+
+def test_uninstalls_extensions_through_supported_api(monkeypatch):
+    calls = []
+
+    def execute(base_url, path, method="GET", payload=None, timeout_seconds=None):
+        calls.append((base_url, path, method, payload, timeout_seconds))
+        return {"ok": True}
+
+    monkeypatch.setattr(miwayomi_rest_client, "execute", execute)
+
+    miwayomi_rest_client.uninstall_extension("http://miwayomi:4567", "obsolete.package")
+
+    assert calls[0][1] == "/api/v1/extensions/uninstall"
+    assert calls[0][2] == "POST"
+    assert calls[0][3] == {"pkg": "obsolete.package"}
+
+
 def test_reuses_the_shared_echo_back_reconciliation(monkeypatch, tmp_path):
     list_file_path = tmp_path / "miwayomi-extension-repositories"
     list_file_path.write_text(json.dumps(DECLARED_URLS))
