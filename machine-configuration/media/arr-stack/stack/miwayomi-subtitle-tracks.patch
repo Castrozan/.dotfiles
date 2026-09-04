@@ -8,7 +8,7 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
    }
 +  configureSubtitleTracks(video, v.subtitleTracks || [], headersEnc);
  }
-@@ -1122,2 +1123,22 @@ function playVideo(i) {
+@@ -1122,2 +1123,21 @@ function playVideo(i) {
 -function statusText(s) {
 +function configureSubtitleTracks(video, subtitleTracks, headersEnc) {
 +  video.querySelectorAll("track").forEach((subtitleElement) => subtitleElement.remove());
@@ -24,9 +24,8 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
 +      ? subtitleLanguage
 +      : "und";
 +    subtitleElement.src = `/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(subtitleTrack.url)}&headers=${headersEnc}`;
-+    subtitleElement.default = seenSubtitleUrls.size === 1;
 +    video.appendChild(subtitleElement);
-+    subtitleElement.track.mode = seenSubtitleUrls.size === 1 ? "showing" : "disabled";
++    subtitleElement.track.mode = "disabled";
 +  });
 +}
 +
