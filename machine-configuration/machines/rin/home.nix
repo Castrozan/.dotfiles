@@ -18,4 +18,6 @@ in
     tmuxEnumerationSocket = "";
     persistentSession.enable = false;
   };
+
+  claude.requiredWorkspaceProfileName = "mcd-ca";
 }

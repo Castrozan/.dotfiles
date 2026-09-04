@@ -58,6 +58,7 @@ let
   claudeConfiguration = helpers.homeManagerTestConfiguration [
     ../../harnesses/claude-code
     ../../agent-instructions/interactive-skill-catalog/interactive-skill-index-home-manager.nix
+    { claude.requiredWorkspaceProfileName = "test-profile"; }
   ];
   codexConfiguration = helpers.homeManagerTestConfiguration [ ../../harnesses/codex ];
   opencodeConfiguration = helpers.homeManagerTestConfiguration [ ../../harnesses/opencode ];
@@ -118,6 +119,14 @@ in
         && containsText claudeWrapperText "claudeSystemPromptFile"
       )
       "claude activation lands as extra argv and a swapped system-prompt file; a wrapper refactor that stops splicing either one leaves routing resolving correctly and applying nothing";
+
+  claude-required-workspace-profile-cannot-be-forced-from-the-calling-shell =
+    mkEvalCheck "claude-required-workspace-profile-cannot-be-forced-from-the-calling-shell"
+      (
+        containsText claudeWrapperText "unset AGENT_WORKSPACE_PROFILE AGENT_WORKSPACE_PROFILE_ROUTING_TABLE"
+        && containsText claudeWrapperText "Claude is restricted to the %s workspace profile on this machine"
+      )
+      "a caller-controlled profile or routing table must not bypass a machine's Claude launch restriction";
 
   codex-applies-the-resolved-workspace-profile =
     mkEvalCheck "codex-applies-the-resolved-workspace-profile"
