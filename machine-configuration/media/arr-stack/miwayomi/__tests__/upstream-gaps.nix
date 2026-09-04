@@ -29,8 +29,8 @@ let
     && lib.hasInfix ''video.querySelectorAll("track").forEach((subtitleElement) => subtitleElement.remove());'' subtitleTracksPatchText
     && lib.hasInfix "const seenSubtitleUrls = new Set();" subtitleTracksPatchText
     && lib.hasInfix ''subtitleElement.kind = "subtitles";'' subtitleTracksPatchText
-    && lib.hasInfix ''subtitleElement.track.mode = "disabled";'' subtitleTracksPatchText
-    && !(lib.hasInfix "subtitleElement.default =" subtitleTracksPatchText)
+    && lib.hasInfix "subtitleElement.default = true;" subtitleTracksPatchText
+    && lib.hasInfix ''subtitleElement.track.mode = "showing";'' subtitleTracksPatchText
     && lib.hasInfix "     video.src = proxyBase;\n   }\n+  configureSubtitleTracks(video, v.subtitleTracks || [], headersEnc);\n }" subtitleTracksPatchText;
   productionSourcesExcludeTestFixtures =
     lib.hasInfix "COPY miwayomi-production-sources.patch /tmp/miwayomi-production-sources.patch" miwayomiDockerfileText
