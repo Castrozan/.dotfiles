@@ -21,7 +21,7 @@ let
     nodejs = pkgs.nodejs_22;
     chromePackage = latest.google-chrome;
   };
-  codexDefaultModel = "gpt-5.6-sol";
+  codexDefaultModel = import ./default-model.nix;
   codexConfigTomlFormat = pkgs.formats.toml { };
   codexConfigSeedPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.tomli-w ]);
   mcpServerModule = {

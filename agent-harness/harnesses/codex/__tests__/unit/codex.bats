@@ -45,13 +45,14 @@ run_codex() {
 		DISPATCH_MARKER="$DISPATCH_MARKER" \
 		NPM_CONFIG_PREFIX="/nonexistent" \
 		CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE="$GLOBAL_INSTRUCTIONS_FILE" \
+		CODEX_LAUNCHER_MODEL="gpt-6-astra" \
 		CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE="$DISPATCH_FILE" \
 		CODEX_LAUNCHER_BINARY="$FAKE_BINARY_DIRECTORY/codex" \
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
 pinned_arguments() {
-	echo '<--model> <gpt-5.6-sol> <--sandbox> <danger-full-access> <--ask-for-approval> <never>'
+	echo '<--model> <gpt-6-astra> <--sandbox> <danger-full-access> <--ask-for-approval> <never>'
 }
 
 @test "passes shellcheck apart from the dispatch file it sources by path" {
