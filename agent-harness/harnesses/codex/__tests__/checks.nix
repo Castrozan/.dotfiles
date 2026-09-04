@@ -96,6 +96,10 @@ in
       (lib.hasInfix ''alternate_screen = "always";'' codexConfigModule)
       "Interactive Codex sessions must use the TUI alternate screen instead of terminal scrollback";
 
+  codex-config-leaves-model-runtime-owned =
+    mkEvalCheck "codex-config-leaves-model-runtime-owned" (!(lib.hasInfix "model = " codexConfigModule))
+      "Codex model selection must remain runtime-owned so a rebuild preserves the user's remembered model";
+
   codex-config-mutable-seed-activation = mkEvalCheck "codex-config-mutable-seed-activation" (
     builtins.hasAttr "seedCodexConfigAsMutableFile" cfg.home.activation
     && !(builtins.hasAttr "codexBaselineConfig" cfg.home.activation)

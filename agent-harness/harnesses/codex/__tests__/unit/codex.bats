@@ -45,14 +45,13 @@ run_codex() {
 		DISPATCH_MARKER="$DISPATCH_MARKER" \
 		NPM_CONFIG_PREFIX="/nonexistent" \
 		CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE="$GLOBAL_INSTRUCTIONS_FILE" \
-		CODEX_LAUNCHER_MODEL="gpt-6-astra" \
 		CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE="$DISPATCH_FILE" \
 		CODEX_LAUNCHER_BINARY="$FAKE_BINARY_DIRECTORY/codex" \
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
-pinned_arguments() {
-	echo '<--model> <gpt-6-astra> <--sandbox> <danger-full-access> <--ask-for-approval> <never>'
+launcher_arguments() {
+	echo '<--sandbox> <danger-full-access> <--ask-for-approval> <never>'
 }
 
 @test "passes shellcheck apart from the dispatch file it sources by path" {
@@ -63,10 +62,10 @@ pinned_arguments() {
 	[ "$status" -eq 0 ]
 }
 
-@test "starts codex on the pinned model, sandbox and approval policy" {
+@test "starts codex without overriding its remembered model" {
 	run_codex
 	[ "$status" -eq 0 ]
-	[ "${lines[0]}" = "argv: $(pinned_arguments) <-c> <developer_instructions=global instructions>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <-c> <developer_instructions=global instructions>" ]
 }
 
 @test "exports the developer instructions path it injected" {
@@ -87,40 +86,40 @@ pinned_arguments() {
 @test "injects the developer instructions the dispatch resolved" {
 	write_dispatch_file "codexDeveloperInstructionsFile=$PROFILE_INSTRUCTIONS_FILE"
 	run_codex
-	[ "${lines[0]}" = "argv: $(pinned_arguments) <-c> <developer_instructions=profile instructions>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <-c> <developer_instructions=profile instructions>" ]
 	[ "${lines[1]}" = "AGENT_INTERACTIVE_PREFERENCES_PATH=<$PROFILE_INSTRUCTIONS_FILE>" ]
 }
 
 @test "appends the workspace profile arguments after the interactive preferences" {
 	write_dispatch_file "workspaceProfileArguments+=(-c 'model_reasoning_effort=\"high\"')"
 	run_codex
-	[ "${lines[0]}" = "argv: $(pinned_arguments) <-c> <developer_instructions=global instructions> <-c> <model_reasoning_effort=\"high\">" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <-c> <developer_instructions=global instructions> <-c> <model_reasoning_effort=\"high\">" ]
 }
 
 @test "passes caller arguments through after every injected argument" {
 	write_dispatch_file "workspaceProfileArguments+=(-c 'model_reasoning_effort=\"high\"')"
 	run_codex resume --last
-	[ "${lines[0]}" = "argv: $(pinned_arguments) <-c> <developer_instructions=global instructions> <-c> <model_reasoning_effort=\"high\"> <resume> <--last>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <-c> <developer_instructions=global instructions> <-c> <model_reasoning_effort=\"high\"> <resume> <--last>" ]
 }
 
 @test "treats a leading flag as an interactive launch" {
 	run_codex --search
-	[ "${lines[0]}" = "argv: $(pinned_arguments) <-c> <developer_instructions=global instructions> <--search>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <-c> <developer_instructions=global instructions> <--search>" ]
 }
 
 @test "treats fork as an interactive launch" {
 	run_codex fork
-	[ "${lines[0]}" = "argv: $(pinned_arguments) <-c> <developer_instructions=global instructions> <fork>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <-c> <developer_instructions=global instructions> <fork>" ]
 }
 
 @test "leaves a subcommand launch without interactive preferences or profile activation" {
 	run_codex exec "do the thing"
-	[ "${lines[0]}" = "argv: $(pinned_arguments) <exec> <do the thing>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <exec> <do the thing>" ]
 	[ "${lines[1]}" = 'AGENT_INTERACTIVE_PREFERENCES_PATH=<unset>' ]
 	[ ! -f "$DISPATCH_MARKER" ]
 }
 
 @test "preserves caller arguments that contain spaces and quotes" {
 	run_codex exec 'a "quoted" argument'
-	[ "${lines[0]}" = "argv: $(pinned_arguments) <exec> <a \"quoted\" argument>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <exec> <a \"quoted\" argument>" ]
 }

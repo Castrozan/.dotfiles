@@ -21,7 +21,6 @@ let
     nodejs = pkgs.nodejs_22;
     chromePackage = latest.google-chrome;
   };
-  codexDefaultModel = import ./default-model.nix;
   codexConfigTomlFormat = pkgs.formats.toml { };
   codexConfigSeedPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.tomli-w ]);
   mcpServerModule = {
@@ -84,7 +83,6 @@ let
   codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
     approval_policy = "never";
     check_for_update_on_startup = false;
-    model = codexDefaultModel;
     model_reasoning_effort = "xhigh";
     notify = [
       "${pkgs.python312}/bin/python3"

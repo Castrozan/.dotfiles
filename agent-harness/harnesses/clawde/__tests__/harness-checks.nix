@@ -84,7 +84,7 @@ in
   clawde-codex-harness-launches-the-unwrapped-binary =
     mkEvalCheck "clawde-codex-harness-launches-the-unwrapped-binary"
       (harnesses.codex.package == cfgWithBothHarnesses.codex.unwrappedPackage)
-      "clawde must launch the bare codex binary, not the interactive on-PATH wrapper: that wrapper already injects --model/--sandbox/--ask-for-approval plus the human's own developer_instructions, and re-passing any of them makes codex exit 2";
+      "clawde must launch the bare codex binary, not the interactive on-PATH wrapper: that wrapper already injects --sandbox/--ask-for-approval plus the human's own developer_instructions, and re-passing either flag makes codex exit 2";
 
   clawde-codex-agent-gets-its-own-harness-home =
     mkEvalCheck "clawde-codex-agent-gets-its-own-harness-home"

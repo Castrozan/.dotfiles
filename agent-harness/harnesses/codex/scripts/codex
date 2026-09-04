@@ -13,7 +13,6 @@ case "${1:-}" in
 	;;
 esac
 exec "$CODEX_LAUNCHER_BINARY" \
-	--model "$CODEX_LAUNCHER_MODEL" \
 	--sandbox "danger-full-access" \
 	--ask-for-approval "never" \
 	"${interactivePreferencesArguments[@]}" \

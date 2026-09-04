@@ -11,7 +11,6 @@ let
   };
 
   version = "0.153.2";
-  codexDefaultModel = import ./default-model.nix;
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
@@ -102,7 +101,6 @@ let
     runtimeEnv = {
       NPM_CONFIG_PREFIX = "/nonexistent";
       CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE = "${interactivePreferencesFile}";
-      CODEX_LAUNCHER_MODEL = codexDefaultModel;
       CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
       CODEX_LAUNCHER_BINARY = "${codex-binary}/bin/codex";
     };
@@ -114,7 +112,7 @@ in
     type = lib.types.package;
     default = codex-binary;
     readOnly = true;
-    description = "The bare upstream codex binary, without the interactive wrapper that injects a model, sandbox mode, approval policy and the human's own developer_instructions. An autonomous harness builds its own full argv and must launch this, because re-passing a flag the wrapper already injected makes codex exit 2.";
+    description = "The bare upstream codex binary, without the interactive wrapper that injects sandbox mode, approval policy and the human's own developer_instructions. An autonomous harness builds its own full argv and must launch this, because re-passing a flag the wrapper already injected makes codex exit 2.";
   };
 
   config.home = {

@@ -9,6 +9,7 @@ import tomli_w
 
 
 legacy_profile_names = ("fast", "deep", "web")
+runtime_preserved_value_names = ("model",)
 runtime_preserved_section_names = ("projects", "marketplaces", "plugins")
 secret_file_wait_seconds = 10
 secret_file_retry_seconds = 0.1
@@ -38,8 +39,13 @@ def read_optional_toml_document(document_path: pathlib.Path) -> dict | None:
         return None
 
 
-def merge_runtime_preserved_sections(nix_source: dict, current_config: dict) -> dict:
+def merge_runtime_preserved_configuration(
+    nix_source: dict, current_config: dict
+) -> dict:
     merged_config = dict(nix_source)
+    for value_name in runtime_preserved_value_names:
+        if value_name in current_config:
+            merged_config[value_name] = current_config[value_name]
     for section_name in runtime_preserved_section_names:
         current_section = current_config.get(section_name)
         source_section = nix_source.get(section_name)
@@ -137,7 +143,7 @@ def build_seeded_config_content() -> bytes | None:
     current_config = read_optional_toml_document(codex_config_path)
     if current_config is None:
         return None
-    merged_config = merge_runtime_preserved_sections(nix_source, current_config)
+    merged_config = merge_runtime_preserved_configuration(nix_source, current_config)
     add_trusted_project_directories(
         merged_config, declarative_project_paths(nix_source)
     )

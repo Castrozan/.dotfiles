@@ -31,7 +31,7 @@ def test_every_profile_carries_a_directive_and_a_confirmation_marker():
         assert profile.compaction_confirmation_marker
 
 
-def test_claude_takes_the_requested_model_and_codex_takes_its_wrapper_defaults():
+def test_claude_takes_the_requested_model_and_codex_leaves_its_model_unset():
     workspace = Path("/tmp/e2e-workspace")
     assert CLAUDE_PROFILE.launch_command("sonnet", workspace) == (
         "claude --model sonnet --dangerously-skip-permissions"
