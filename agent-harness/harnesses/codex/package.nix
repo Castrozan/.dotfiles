@@ -2,7 +2,6 @@
   pkgs,
   lib,
   config,
-  latest,
   ...
 }:
 let
@@ -15,6 +14,7 @@ let
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
+      sha256 = "sha256-6M0RYAcfcl0qEMq4EHPdaBj8iwljchJdJ+9uZv3wl54=";
       codeModeHostSha256 = "sha256-F3pFB7nMf5fxE6wDRpezn2pxqHaovVCP9tf1LzQuvko=";
       buildInputs = with pkgs; [
         openssl
@@ -24,6 +24,7 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
+      sha256 = "sha256-kd/CcPDfuuwW2BTxqpDU8n503J43hOZABr7zt5/p4Jw=";
       codeModeHostSha256 = "sha256-NHHlSmFB+8vpTOyH0UNwNTZn1A81DvFvqgBevBhUMAs=";
       buildInputs = [ ];
     };
@@ -35,32 +36,14 @@ let
     assetName:
     "https://github.com/openai/codex/releases/download/rust-v${version}/${assetName}-${currentHostSystem.releaseTargetTriple}.tar.gz";
 
-  codex-binary = latest.codex.overrideAttrs (
-    finalAttributes: previousAttributes: {
-      inherit version;
-      src = pkgs.fetchFromGitHub {
-        owner = "openai";
-        repo = "codex";
-        tag = "rust-v${version}";
-        hash = "sha256-R97lEHS2XfMQNbAc9k8v7EbcQCnwxND7zhnK3EBsI3Y=";
-      };
-      cargoHash = "sha256-GG6kOXmCdq+bZLU2ul0DIVL8lDuweayvZvXn6+bcUZw=";
-      cargoDeps = latest.rustPlatform.fetchCargoVendor {
-        name = "codex-${version}-vendor";
-        inherit (finalAttributes) src;
-        sourceRoot = "${finalAttributes.src.name}/codex-rs";
-        hash = finalAttributes.cargoHash;
-      };
-      postPatch = ''
-        substituteInPlace Cargo.toml \
-          --replace-fail 'lto = "thin"' "" \
-          --replace-fail 'codegen-units = 4' ""
-      '';
-      postFixup = (previousAttributes.postFixup or "") + ''
-        ln -s ${codex-code-mode-host}/bin/codex-code-mode-host "$out/bin/codex-code-mode-host"
-      '';
-    }
-  );
+  codex-binary = fetchPrebuiltBinary {
+    pname = "codex";
+    inherit version;
+    url = codexReleaseAssetUrl "codex";
+    inherit (currentHostSystem) sha256 buildInputs;
+    binaryName = "codex";
+    archiveBinaryPath = "codex-${currentHostSystem.releaseTargetTriple}";
+  };
 
   codex-code-mode-host = fetchPrebuiltBinary {
     pname = "codex-code-mode-host";
@@ -70,6 +53,15 @@ let
     inherit (currentHostSystem) buildInputs;
     binaryName = "codex-code-mode-host";
     archiveBinaryPath = "codex-code-mode-host-${currentHostSystem.releaseTargetTriple}";
+  };
+
+  codex-unwrapped = pkgs.symlinkJoin {
+    name = "codex-${version}";
+    paths = [
+      codex-binary
+      codex-code-mode-host
+    ];
+    meta.mainProgram = "codex";
   };
 
   interactiveSessionDeveloperInstructionsText = lib.concatStringsSep "\n" [
@@ -102,7 +94,7 @@ let
       NPM_CONFIG_PREFIX = "/nonexistent";
       CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE = "${interactivePreferencesFile}";
       CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
-      CODEX_LAUNCHER_BINARY = "${codex-binary}/bin/codex";
+      CODEX_LAUNCHER_BINARY = "${codex-unwrapped}/bin/codex";
     };
     text = builtins.readFile ./scripts/codex;
   };
@@ -110,7 +102,7 @@ in
 {
   options.codex.unwrappedPackage = lib.mkOption {
     type = lib.types.package;
-    default = codex-binary;
+    default = codex-unwrapped;
     readOnly = true;
     description = "The bare upstream codex binary, without the interactive wrapper that injects sandbox mode, approval policy and the human's own developer_instructions. An autonomous harness builds its own full argv and must launch this, because re-passing a flag the wrapper already injected makes codex exit 2.";
   };

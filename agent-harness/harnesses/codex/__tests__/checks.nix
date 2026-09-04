@@ -16,6 +16,8 @@ let
 
   cfg = helpers.homeManagerTestConfiguration [ self.homeManagerModules.codex ];
 
+  codexPackage = cfg.codex.unwrappedPackage;
+
   fileNames = builtins.attrNames cfg.home.file;
 
   hasFilePrefix =
@@ -41,6 +43,15 @@ in
   codex-bin-wrapper =
     mkEvalCheck "codex-bin-wrapper" (builtins.hasAttr ".local/bin/codex" cfg.home.file)
       ".local/bin/codex should be in home.file";
+
+  codex-package-uses-upstream-binaries =
+    mkEvalCheck "codex-package-uses-upstream-binaries"
+      (
+        !(codexPackage.drvAttrs ? cargoDeps)
+        && builtins.length codexPackage.drvAttrs.paths == 2
+        && lib.getExe codexPackage == "${codexPackage}/bin/codex"
+      )
+      "Codex and its code-mode host must use upstream release binaries instead of compiling Rust source";
 
   codex-skills-directory =
     mkEvalCheck "codex-skills-directory" (hasFilePrefix ".codex/skills/")
