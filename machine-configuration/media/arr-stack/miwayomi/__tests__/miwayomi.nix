@@ -41,6 +41,12 @@ let
   repositoryEnvironment = repositoryService.environment;
 
   composeText = builtins.readFile ../../stack/docker-compose.yml;
+  miwayomiServiceText = lib.head (
+    lib.splitString "\n  miwayomi-gateway:\n" (
+      lib.elemAt (lib.splitString "\n  miwayomi:\n" composeText) 1
+    )
+  );
+  flaresolverrServiceText = lib.elemAt (lib.splitString "\n  flaresolverr:\n" composeText) 1;
   stackModuleText = builtins.readFile ../../stack/arr-stack-home-manager.nix;
   chiseStackText = builtins.readFile ../../chise/chise-arr-stack-nixos.nix;
   chiseSystemText = builtins.readFile ../../../../machines/chise/system/nixos-system.nix;
@@ -59,8 +65,12 @@ let
     lib.hasInfix "condition: service_healthy" composeText
     && lib.hasInfix "http://127.0.0.1:8191/" composeText;
   containersInheritTheStackTimezone =
-    lib.hasInfix "environment:\n      <<: *arr-common-environment\n      FLARESOLVERR_URL" composeText
-    && lib.hasInfix "retries: 3\n    environment:\n      <<: *arr-common-environment" composeText;
+    builtins.all
+      (serviceText: lib.hasInfix "environment:\n      <<: *arr-common-environment" serviceText)
+      [
+        miwayomiServiceText
+        flaresolverrServiceText
+      ];
   persistenceDirectoriesAreDeclared =
     lib.hasInfix ''"miwayomi"'' stackModuleText
     && lib.hasInfix ''"miwayomi-update-disabled"'' stackModuleText
