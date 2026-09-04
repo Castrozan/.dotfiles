@@ -75,6 +75,7 @@ in
 
     ../../terminal/visual-effects/cbonsai/cbonsai-chise-home-manager.nix
     ../../gaming/install-nothing/install-nothing-home-manager.nix
+    ../../gaming/minecraft/minecraft-home-manager.nix
     ../../gaming/vesktop/vesktop-home-manager.nix
 
     ../../operating-system/bluetooth/bluetui-home-manager.nix
