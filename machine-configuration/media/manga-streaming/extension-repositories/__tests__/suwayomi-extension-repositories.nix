@@ -7,15 +7,16 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  extensionRepositoriesModule = import ../suwayomi-extension-repositories-home-manager.nix {
+  extensionRepositoriesModule = import ../suwayomi-extension-repositories-nixos.nix {
     inherit lib pkgs;
   };
-  provisionerUnit = extensionRepositoriesModule.systemd.user.services.suwayomi-extension-repositories;
-  environmentText = lib.concatStringsSep " " provisionerUnit.Service.Environment;
+  provisionerUnit = extensionRepositoriesModule.systemd.services.suwayomi-extension-repositories;
+  environmentText = lib.concatStringsSep " " (
+    lib.mapAttrsToList (name: value: "${name}=${value}") provisionerUnit.environment
+  );
 
-  serverModuleText = builtins.readFile ../../suwayomi-server-home-manager.nix;
-  releaseOverrideText = builtins.readFile ../../suwayomi-server-release-ahead-of-nixpkgs.nix;
-  provisionerModuleText = builtins.readFile ../suwayomi-extension-repositories-home-manager.nix;
+  serverModuleText = builtins.readFile ../../suwayomi-server-nixos.nix;
+  provisionerModuleText = builtins.readFile ../suwayomi-extension-repositories-nixos.nix;
   clientText = builtins.readFile ../scripts/suwayomi_extension_repositories/suwayomi_graphql_client.py;
   miwayomiClientText = builtins.readFile ../scripts/suwayomi_extension_repositories/miwayomi_rest_client.py;
   miwayomiReconcileText = builtins.readFile ../scripts/suwayomi_extension_repositories/miwayomi_extension_synchronization.py;
@@ -31,7 +32,6 @@ let
       [
         provisionerModuleText
         serverModuleText
-        releaseOverrideText
         declarationText
         reconcileText
         clientText
@@ -52,11 +52,12 @@ let
   theRepositoriesAreNeverForcedAsAJvmProperty = !(lib.hasInfix "extensionRepos" serverModuleText);
 
   theProvisionerFollowsTheServerItConfigures =
-    provisionerUnit.Unit.After == [ "suwayomi-server.service" ]
-    && provisionerUnit.Unit.Requires == [ "suwayomi-server.service" ]
-    && provisionerUnit.Install.WantedBy == [ "default.target" ];
+    provisionerUnit.after == [ "suwayomi-server.service" ]
+    && provisionerUnit.requires == [ "suwayomi-server.service" ]
+    && provisionerUnit.wantedBy == [ "multi-user.target" ]
+    && provisionerUnit.serviceConfig.User == "zanoni";
 
-  theProvisionerShipsWithEveryServer = lib.hasInfix "./extension-repositories/suwayomi-extension-repositories-home-manager.nix" serverModuleText;
+  theProvisionerShipsWithEveryServer = lib.hasInfix "./extension-repositories/suwayomi-extension-repositories-nixos.nix" serverModuleText;
 
   theProvisionerReachesTheAddressTheServerBindsTo =
     lib.hasInfix "import ../../tailnet-bind-address.nix" provisionerModuleText
@@ -109,7 +110,7 @@ in
   suwayomi-extension-repositories-follow-the-server =
     mkEvalCheck "suwayomi-extension-repositories-follow-the-server"
       theProvisionerFollowsTheServerItConfigures
-      "the provisioner must require and follow suwayomi-server and start with the user session, or it would race the server's startup and write settings the server then overwrites from its own stored config";
+      "the provisioner must run as the secret-owning user, require and follow the system Suwayomi container, and start with the machine, or it would race startup or lose access to its declared repository list";
 
   suwayomi-extension-repositories-ship-with-every-server =
     mkEvalCheck "suwayomi-extension-repositories-ship-with-every-server"

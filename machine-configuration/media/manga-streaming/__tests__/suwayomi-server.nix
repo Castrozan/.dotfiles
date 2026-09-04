@@ -1,137 +1,78 @@
 {
   helpers,
   lib,
+  pkgs,
+  self,
   ...
 }:
 let
   inherit (helpers) mkEvalCheck;
-
-  suwayomiModule = import ../suwayomi-server-home-manager.nix {
-    config = {
-      home.homeDirectory = "/home/zanoni";
-    };
-    inherit lib;
-    pkgs = {
-      lib = lib // {
-        makeLibraryPath = _packages: "/nix/store/test-kcef-chromium-libraries/lib";
-      };
-    };
-    latest = {
-      suwayomi-server.overrideAttrs = _overriddenAttributes: "/nix/store/test-suwayomi-server";
-      fetchurl = _fetchArguments: "/nix/store/test-suwayomi-server-jar";
-    };
+  homeDirectory = "/home/zanoni";
+  tailnetBindAddress = import ../../tailnet-bind-address.nix { inherit lib; };
+  suwayomiModule = import ../suwayomi-server-nixos.nix {
+    config.users.users.zanoni.home = homeDirectory;
+    inherit lib pkgs;
   };
-
-  releaseOverrideText = builtins.readFile ../suwayomi-server-release-ahead-of-nixpkgs.nix;
-
-  suwayomiUnit = suwayomiModule.systemd.user.services.suwayomi-server;
-  environmentEntries = suwayomiUnit.Service.Environment;
-  environmentText = lib.concatStringsSep " " environmentEntries;
-  forcedSettingPrefix = "-Dsuwayomi.tachidesk.config.server.";
-
-  unitStartsWithTheUserSession = suwayomiUnit.Install.WantedBy == [ "default.target" ];
-
-  downloadsAreArchivedAsCbz = lib.hasInfix "${forcedSettingPrefix}downloadAsCbz=true" environmentText;
-
-  downloadsLandInTheKavitaLibraryRoot = lib.hasInfix "${forcedSettingPrefix}downloadsPath=/home/zanoni/arr-stack/data/manga" environmentText;
-
-  javaToolOptionsSurviveSystemdWordSplitting = builtins.any (
-    entry: lib.hasPrefix ''"JAVA_TOOL_OPTIONS='' entry && lib.hasSuffix ''"'' entry
-  ) environmentEntries;
-
-  bindAddressIsForcedAndNotAWildcard =
-    lib.hasInfix "${forcedSettingPrefix}ip=" environmentText
-    && !(lib.hasInfix "${forcedSettingPrefix}ip=0.0.0.0" environmentText);
-
-  unitRefusesToRunWithoutTheDataDrive =
-    suwayomiUnit.Unit.ConditionPathIsMountPoint == "/home/zanoni/arr-stack/data";
-
-  restartRetriesAreNeverRateLimited = suwayomiUnit.Unit.StartLimitIntervalSec == 0;
-
-  serviceRestartsAfterEveryExit = suwayomiUnit.Service.Restart == "always";
-
-  webInterfaceComesFromThePinnedServerBuild = lib.hasInfix "${forcedSettingPrefix}webUIChannel=bundled" environmentText;
-
-  webInterfaceNeverUpdatesItself = lib.hasInfix "${forcedSettingPrefix}webUIUpdateCheckInterval=0" environmentText;
-
-  webViewChromiumCanResolveItsSharedLibraries = builtins.any (
-    entry: lib.hasPrefix "LD_LIBRARY_PATH=" entry && entry != "LD_LIBRARY_PATH="
-  ) environmentEntries;
-
-  serverModuleText = builtins.readFile ../suwayomi-server-home-manager.nix;
-
-  pinnedReleaseVersion = lib.elemAt (lib.splitString ''"'' (
-    lib.head (
-      lib.filter (line: lib.hasInfix "releaseVersion = " line) (lib.splitString "\n" releaseOverrideText)
-    )
-  )) 1;
-
-  serverIsPinnedPastTheExtensionIndexGate =
-    lib.hasInfix "import ./suwayomi-server-release-ahead-of-nixpkgs.nix" serverModuleText
-    && lib.versionAtLeast pinnedReleaseVersion "2.3";
-
-  theOverrideReplacesTheJarAndNotJustTheVersionString =
-    lib.hasInfix "src = latest.fetchurl" releaseOverrideText
-    && lib.hasInfix "Suwayomi-Server-v\${releaseVersion}.jar" releaseOverrideText;
+  suwayomiUnit = suwayomiModule.systemd.services.suwayomi-server;
+  command = suwayomiUnit.serviceConfig.ExecStart;
+  chiseConfiguration = self.nixosConfigurations.chise.config;
+  downloadsVolume = "--volume ${homeDirectory}/arr-stack/data/manga:/home/suwayomi/.local/share/Tachidesk/downloads";
+  dataVolume = "--volume ${homeDirectory}/.local/share/Tachidesk:/home/suwayomi/.local/share/Tachidesk";
 in
 {
-  chise-suwayomi-starts-with-the-user-session =
-    mkEvalCheck "chise-suwayomi-starts-with-the-user-session" unitStartsWithTheUserSession
-      "Suwayomi is the acquisition half of the manga stack, so its unit must be wanted by default.target; left out, the unit deploys but never runs and Kavita reads an empty library forever";
+  chise-suwayomi-runs-in-the-official-pinned-container =
+    mkEvalCheck "chise-suwayomi-runs-in-the-official-pinned-container"
+      (
+        lib.hasInfix "ghcr.io/suwayomi/suwayomi-server:v2.3.2243-preview@sha256:2b95476844614748285ecba0deef97cb8eabd17c6ccb58d136f829ec20b8040f" command
+        && lib.hasInfix "--user 1000:100" command
+        && suwayomiUnit.wantedBy == [ "multi-user.target" ]
+        && !(chiseConfiguration.home-manager.users.zanoni.systemd.user.services ? suwayomi-server)
+      )
+      "Suwayomi must use the official non-root KCEF image pinned to the same server release and digest, with the escaped desktop JVM service retired so every process stays inside the container cgroup";
 
-  chise-suwayomi-downloads-as-cbz =
-    mkEvalCheck "chise-suwayomi-downloads-as-cbz" downloadsAreArchivedAsCbz
-      "downloads must be forced to CBZ, because Kavita ingests archives and silently skips the loose per-chapter image folders Suwayomi writes by default";
+  chise-suwayomi-is-tailnet-only-and-drive-guarded =
+    mkEvalCheck "chise-suwayomi-is-tailnet-only-and-drive-guarded"
+      (
+        lib.hasInfix "--publish ${tailnetBindAddress}:4567:4567" command
+        && !(lib.hasInfix "--publish 0.0.0.0" command)
+        && suwayomiUnit.unitConfig.RequiresMountsFor == [ "${homeDirectory}/arr-stack/data" ]
+        && builtins.elem "tailscaled.service" suwayomiUnit.after
+        && builtins.elem "home-manager-zanoni.service" suwayomiUnit.after
+      )
+      "the loginless server must publish only on chise's tailnet address, wait for Tailscale and Home Manager, and refuse startup when the media drive is absent";
 
-  chise-suwayomi-downloads-into-the-kavita-library-root =
-    mkEvalCheck "chise-suwayomi-downloads-into-the-kavita-library-root"
-      downloadsLandInTheKavitaLibraryRoot
-      "the download root must be the arr data drive's manga tree that Kavita bind-mounts, not the Tachidesk data directory in the home partition, or manga lands where no reader serves it and the disk guard never watches it grow";
+  chise-suwayomi-preserves-state-and-kavita-downloads =
+    mkEvalCheck "chise-suwayomi-preserves-state-and-kavita-downloads"
+      (
+        lib.hasInfix "${downloadsVolume} ${dataVolume}" command
+        && lib.hasInfix "--env DOWNLOAD_AS_CBZ=true" command
+      )
+      "the container migration must mount the existing downloads before the whole Tachidesk state tree, preserving the database and placing CBZ chapters in Kavita's existing manga root as required by the official image";
 
-  chise-suwayomi-java-tool-options-quoted-as-one-assignment =
-    mkEvalCheck "chise-suwayomi-java-tool-options-quoted-as-one-assignment"
-      javaToolOptionsSurviveSystemdWordSplitting
-      "the JAVA_TOOL_OPTIONS entry must stay wrapped in double quotes: systemd splits an unquoted Environment= line on whitespace, so dropping them turns every forced setting after the first into a malformed assignment and Suwayomi quietly falls back to whatever server.conf happens to hold";
+  chise-suwayomi-keeps-webview-and-bundled-interface =
+    mkEvalCheck "chise-suwayomi-keeps-webview-and-bundled-interface"
+      (
+        lib.hasInfix "--env KCEF_ENABLED=true" command
+        && lib.hasInfix "--env WEB_UI_CHANNEL=bundled" command
+        && lib.hasInfix "--env WEB_UI_UPDATE_INTERVAL=0" command
+      )
+      "the official container must retain KCEF for browser-backed extensions while serving only its pinned bundled interface without mutable update checks";
 
-  chise-suwayomi-never-binds-the-wildcard-interface =
-    mkEvalCheck "chise-suwayomi-never-binds-the-wildcard-interface" bindAddressIsForcedAndNotAWildcard
-      "Suwayomi ships no login, so its bind address must be forced to the tailnet address rather than left at the 0.0.0.0 default; the host firewall is the only other thing keeping a loginless manga server off every interface";
+  chise-suwayomi-has-layered-memory-and-health-bounds =
+    mkEvalCheck "chise-suwayomi-has-layered-memory-and-health-bounds"
+      (
+        lib.hasInfix "--cgroup-parent media-containers.slice" command
+        && lib.hasInfix "--memory 3g" command
+        && lib.hasInfix ''--env "JAVA_TOOL_OPTIONS=-Xms128m -Xmx768m"'' command
+        && lib.hasInfix ''--health-cmd "curl -fsS http://127.0.0.1:4567/api/v1/health"'' command
+        && lib.hasInfix "--health-start-period 120s" command
+      )
+      "Suwayomi must keep its JVM heap modest, admit measured native Chromium overhead within a 3 GiB container ceiling, join the aggregate media slice, and report application health through its supported endpoint";
 
-  chise-suwayomi-refuses-to-run-without-the-data-drive =
-    mkEvalCheck "chise-suwayomi-refuses-to-run-without-the-data-drive"
-      unitRefusesToRunWithoutTheDataDrive
-      "the unit must condition on the arr data drive being mounted, or a disconnected drive lets Suwayomi download into the bare mountpoint on the root filesystem and the library splits across two places";
-
-  chise-suwayomi-restart-retries-are-never-rate-limited =
-    mkEvalCheck "chise-suwayomi-restart-retries-are-never-rate-limited"
-      restartRetriesAreNeverRateLimited
-      "the start rate limiter must stay off: the forced tailnet bind fails until tailscaled has the interface up, and systemd's default burst gives up before that on a cold boot";
-
-  chise-suwayomi-restarts-after-every-exit =
-    mkEvalCheck "chise-suwayomi-restarts-after-every-exit" serviceRestartsAfterEveryExit
-      "Suwayomi must restart after every exit: earlyoom stops Java with SIGTERM, the server handles that signal as a successful exit, and on-failure therefore leaves the manga service dead";
-
-  chise-suwayomi-web-interface-comes-from-the-pinned-server-build =
-    mkEvalCheck "chise-suwayomi-web-interface-comes-from-the-pinned-server-build"
-      webInterfaceComesFromThePinnedServerBuild
-      "the web interface must come from the bundled build inside the pinned server jar; on any other channel the server downloads a web interface into its mutable data directory, so the version served stops being a function of this repo and a wiped data directory silently comes back on whatever upstream ships that day";
-
-  chise-suwayomi-web-interface-never-updates-itself =
-    mkEvalCheck "chise-suwayomi-web-interface-never-updates-itself" webInterfaceNeverUpdatesItself
-      "the web interface update check must be off, which is what the zero interval means: left at the default it nags about an available update every 23 hours and rewrites the served interface behind the pinned package, and the version belongs to the package rather than to whatever the server fetched last";
-
-  chise-suwayomi-web-view-chromium-can-resolve-its-shared-libraries =
-    mkEvalCheck "chise-suwayomi-web-view-chromium-can-resolve-its-shared-libraries"
-      webViewChromiumCanResolveItsSharedLibraries
-      "the unit must carry a library search path for the Chromium build the server downloads into its data directory at runtime; that binary is never patched by nix and links against two dozen system libraries this machine keeps only in the store, so without it the WebView dies on a load error at startup and every source that needs a browser login or a Cloudflare challenge stays unreachable while the rest of the server looks healthy";
-
-  chise-suwayomi-is-pinned-past-the-extension-index-gate =
-    mkEvalCheck "chise-suwayomi-is-pinned-past-the-extension-index-gate"
-      serverIsPinnedPastTheExtensionIndexGate
-      "the server must come from the release override pinned at 2.3 or later rather than straight from nixpkgs; the extension repositories this machine declares publish an index the 2.1 line cannot parse, so it reads the same repository as two placeholder entries instead of the full catalogue and the stack looks configured while being able to install almost nothing";
-
-  chise-suwayomi-release-override-replaces-the-jar =
-    mkEvalCheck "chise-suwayomi-release-override-replaces-the-jar"
-      theOverrideReplacesTheJarAndNotJustTheVersionString
-      "the override must fetch the release jar for the version it names, because the package is that one jar; overriding the version string alone would relabel the nixpkgs build without changing a byte of it, and every report of the running version would then agree with the declaration while the old server kept running";
+  chise-suwayomi-restarts-without-rate-limiting =
+    mkEvalCheck "chise-suwayomi-restarts-without-rate-limiting"
+      (
+        suwayomiUnit.serviceConfig.Restart == "always" && suwayomiUnit.unitConfig.StartLimitIntervalSec == 0
+      )
+      "Suwayomi must restart after every exit without exhausting systemd's start limiter while its tailnet publish is settling";
 }

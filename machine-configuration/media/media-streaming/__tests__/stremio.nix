@@ -2,6 +2,7 @@
   helpers,
   lib,
   pkgs,
+  self,
   ...
 }:
 let
@@ -39,8 +40,18 @@ let
   managedServiceWorkerSource = builtins.readFile ../scripts/stremio_gateway/managed_service_worker.js;
   serverSource = builtins.readFile ../scripts/stremio_gateway/__main__.py;
   cometEnvironmentSource = builtins.readFile ../scripts/stremio_comet_environment.py;
+  mediaContainerSlice = self.nixosConfigurations.chise.config.systemd.slices.media-containers;
 in
 {
+  chise-media-container-slice-preserves-rebuild-headroom =
+    mkEvalCheck "chise-media-container-slice-preserves-rebuild-headroom"
+      (
+        mediaContainerSlice.sliceConfig.MemoryHigh == "3G"
+        && mediaContainerSlice.sliceConfig.MemoryMax == "5G"
+        && mediaContainerSlice.sliceConfig.MemorySwapMax == "3G"
+      )
+      "the shared media-container slice must reclaim above 3 GiB and enforce 5 GiB RAM plus 3 GiB swap ceilings, preserving enough machine headroom for a measured Nix evaluator without forcing ordinary media traffic into an early OOM";
+
   chise-stremio-web-is-tailnet-only = mkEvalCheck "chise-stremio-web-is-tailnet-only" (
     lib.hasInfix "STREMIO_BIND_ADDRESS=" webEnvironment
     && !(lib.hasInfix "STREMIO_BIND_ADDRESS=0.0.0.0" webEnvironment)
@@ -99,6 +110,8 @@ in
         && lib.hasInfix "--dns 127.0.0.53" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--env FASTAPI_HOST=${tailnetBindAddress}" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--memory 1g" cometUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--cgroup-parent media-containers.slice" cometUnit.serviceConfig.ExecStart
+        && !(lib.hasInfix "--memory-swap" cometUnit.serviceConfig.ExecStart)
         && lib.hasInfix "--cpus 2" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "urllib.request.urlopen('http://${tailnetBindAddress}:43214/health', timeout=5)" cometUnit.serviceConfig.ExecStart
         && lib.hasInfix "--health-start-period 90s" cometUnit.serviceConfig.ExecStart
@@ -143,6 +156,9 @@ in
         lib.hasInfix "stremio/server:v4.21.1@sha256:3dc145603defba397467b2a2aa2354be2da1f86585d4ab825a70bd72782f2ef4" streamingUnit.serviceConfig.ExecStart
         && lib.hasInfix "--publish " streamingUnit.serviceConfig.ExecStart
         && lib.hasInfix ":11470:11470" streamingUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--cgroup-parent media-containers.slice" streamingUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--memory 512m" streamingUnit.serviceConfig.ExecStart
+        && lib.hasInfix "--health-cmd \"curl -fsS http://127.0.0.1:11470/\"" streamingUnit.serviceConfig.ExecStart
         && lib.hasInfix "--dns 1.1.1.1" streamingUnit.serviceConfig.ExecStart
         && lib.hasInfix "--dns 8.8.8.8" streamingUnit.serviceConfig.ExecStart
         && !(lib.hasInfix "0.0.0.0" streamingUnit.serviceConfig.ExecStart)

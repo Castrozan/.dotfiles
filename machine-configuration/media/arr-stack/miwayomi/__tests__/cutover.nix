@@ -7,19 +7,20 @@ let
   inherit (helpers) mkEvalCheck;
 
   chiseHomeText = builtins.readFile ../../../../machines/chise/home.nix;
+  chiseSystemText = builtins.readFile ../../../../machines/chise/system/nixos-system.nix;
   cloudflareOriginsText = builtins.readFile ../../chise/cloudflare-origins/default.nix;
   stackReadmeText = builtins.readFile ../../stack/README.md;
-  suwayomiModulePath = ../../../manga-streaming/suwayomi-server-home-manager.nix;
+  suwayomiModulePath = ../../../manga-streaming/suwayomi-server-nixos.nix;
   suwayomiModuleText = builtins.readFile suwayomiModulePath;
   repositorySecretPath = ../../../../../secrets/credentials/suwayomi-extension-repositories.age;
   animeStreamingDirectory = ../../../anime-streaming;
 
-  suwayomiIsDeployed = lib.hasInfix "../../media/manga-streaming/suwayomi-server-home-manager.nix" chiseHomeText;
+  suwayomiIsDeployed = lib.hasInfix "../../../media/manga-streaming/suwayomi-server-nixos.nix" chiseSystemText;
   mangaReaderArtifactsRemain =
     builtins.pathExists suwayomiModulePath
     && builtins.pathExists repositorySecretPath
-    && lib.hasInfix "TACHIDESK_DATA_DIR=\${homeDir}/.local/share/Tachidesk" suwayomiModuleText
-    && lib.hasInfix "downloadsPath = mangaDownloadRoot;" suwayomiModuleText;
+    && lib.hasInfix "--volume \${mangaDownloadRoot}:\${containerDataDirectory}/downloads" suwayomiModuleText
+    && lib.hasInfix "--volume \${dataDirectory}:\${containerDataDirectory}" suwayomiModuleText;
   mangaAndAnimeOriginsAreDeclared =
     lib.hasInfix "anime.lucaszanoni.com" cloudflareOriginsText
     && lib.hasInfix "suwayomi.lucaszanoni.com" cloudflareOriginsText

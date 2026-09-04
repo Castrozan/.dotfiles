@@ -1,26 +1,32 @@
 name: arr-stack
-
 x-arr-common-environment: &arr-common-environment
   PUID: ${PUID}
   PGID: ${PGID}
   TZ: ${TZ}
-
 x-stable-public-dns: &stable-public-dns
   - 1.1.1.1
   - 8.8.8.8
-
+x-media-2g: &media-2g { cgroup_parent: media-containers.slice, mem_limit: 2g }
+x-media-1536m:
+  &media-1536m { cgroup_parent: media-containers.slice, mem_limit: 1536m }
+x-media-768m:
+  &media-768m { cgroup_parent: media-containers.slice, mem_limit: 768m }
+x-media-512m:
+  &media-512m { cgroup_parent: media-containers.slice, mem_limit: 512m }
+x-media-128m:
+  &media-128m { cgroup_parent: media-containers.slice, mem_limit: 128m }
 networks:
   arrnet:
     driver: bridge
     ipam:
       config:
         - subnet: 172.28.0.0/16
-
 services:
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:4.6.7
     container_name: arr-qbittorrent
     restart: "no"
+    <<: *media-2g
     networks:
       - arrnet
     ports:
@@ -32,7 +38,14 @@ services:
     volumes:
       - ${ARR_CONFIG_ROOT}/qbittorrent:/config
       - ${ARR_DATA_ROOT}:/data
-
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 60s,
+        retries: 3,
+      }
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:2.4.0.5397-ls151@sha256:3950b5e48cf4ba9dab78fe14038dd7f062e66b7b4ab368b02c94a13f6a3dae9f
     container_name: arr-prowlarr
@@ -40,17 +53,26 @@ services:
     networks:
       - arrnet
     dns: *stable-public-dns
+    <<: *media-768m
     ports:
       - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:9696:9696"
     environment:
       <<: *arr-common-environment
     volumes:
       - ${ARR_CONFIG_ROOT}/prowlarr:/config
-
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9696/ping"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 120s,
+        retries: 3,
+      }
   sonarr:
     image: lscr.io/linuxserver/sonarr:4.0.19.2979-ls316@sha256:fbb15bb4fb14d1ffe017f6be0e3fed8f1b300e4687e329767da0b61f36ba1eed
     container_name: arr-sonarr
     restart: "no"
+    <<: *media-768m
     networks:
       - arrnet
     ports:
@@ -60,11 +82,19 @@ services:
     volumes:
       - ${ARR_CONFIG_ROOT}/sonarr:/config
       - ${ARR_DATA_ROOT}:/data
-
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8989/ping"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 120s,
+        retries: 3,
+      }
   radarr:
     image: lscr.io/linuxserver/radarr:6.2.1.10461-ls308@sha256:39da107b5a9371fdaa651bd188049b863716a815385eb3a30d41071b7e1aeb33
     container_name: arr-radarr
     restart: "no"
+    <<: *media-512m
     networks:
       - arrnet
     ports:
@@ -74,11 +104,19 @@ services:
     volumes:
       - ${ARR_CONFIG_ROOT}/radarr:/config
       - ${ARR_DATA_ROOT}:/data
-
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:7878/ping"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 120s,
+        retries: 3,
+      }
   bazarr:
     image: lscr.io/linuxserver/bazarr:v1.5.6-ls352@sha256:aaaa087af75a73b7ac765dcc5d748874cfafdb93c23ec9f64fbb481dea291b23
     container_name: arr-bazarr
     restart: "no"
+    <<: *media-512m
     networks:
       - arrnet
     ports:
@@ -88,11 +126,19 @@ services:
     volumes:
       - ${ARR_CONFIG_ROOT}/bazarr:/config
       - ${ARR_DATA_ROOT}:/data
-
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:6767/"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 60s,
+        retries: 3,
+      }
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:10.11.11ubu2404-ls39@sha256:96d21c396f46f10578931c2941e3f2789f7087b5ab0e166afedf29e7385c6aa7
     container_name: arr-jellyfin
     restart: unless-stopped
+    <<: *media-2g
     networks:
       - arrnet
     ports:
@@ -107,7 +153,14 @@ services:
     volumes:
       - ${ARR_CONFIG_ROOT}/jellyfin:/config
       - ${ARR_DATA_ROOT}/media:/media:ro
-
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8096/health"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 120s,
+        retries: 3,
+      }
   jellyseerr:
     image: fallenbagel/jellyseerr:2.7.3@sha256:4538137bc5af902dece165f2bf73776d9cf4eafb6dd714670724af8f3eb77764
     container_name: arr-jellyseerr
@@ -115,6 +168,7 @@ services:
     networks:
       - arrnet
     dns: *stable-public-dns
+    <<: *media-768m
     ports:
       - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:5055:5055"
       - "127.0.0.1:5055:5055"
@@ -123,11 +177,19 @@ services:
       LOG_LEVEL: "info"
     volumes:
       - ${ARR_CONFIG_ROOT}/jellyseerr:/app/config
-
+    healthcheck:
+      {
+        test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5055/api/v1/status"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 60s,
+        retries: 3,
+      }
   kavita:
     image: lscr.io/linuxserver/kavita:v0.9.0.2-ls119@sha256:08bc0679401c5370e32373a9a7fa43ed4aa800388e04dcb2015500c09ead8ddb
     container_name: arr-kavita
     restart: unless-stopped
+    <<: *media-768m
     networks:
       - arrnet
     ports:
@@ -138,7 +200,14 @@ services:
     volumes:
       - ${ARR_CONFIG_ROOT}/kavita:/config
       - ${ARR_DATA_ROOT}/manga/mangas:/manga:ro
-
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5000/api/health"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 60s,
+        retries: 3,
+      }
   miwayomi:
     build:
       context: ${MIWAYOMI_BUILD_CONTEXT:?set in ~/arr-stack/.env}
@@ -148,6 +217,7 @@ services:
     image: arr-miwayomi:0.2.9-watch-progress
     container_name: arr-miwayomi
     restart: unless-stopped
+    <<: *media-768m
     hostname: miwayomi
     user: "${PUID}:${PGID}"
     networks:
@@ -162,11 +232,19 @@ services:
     depends_on:
       flaresolverr:
         condition: service_healthy
-
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4567/api/v1/health"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 60s,
+        retries: 3,
+      }
   miwayomi-gateway:
     image: nginx:1.30.4-alpine@sha256:97d490c12ba55b4946b01546d1c3ed324e8d41ab1c9fcb2a616aa470620e5b46
     container_name: arr-miwayomi-gateway
     restart: unless-stopped
+    <<: *media-128m
     networks:
       - arrnet
     ports:
@@ -179,12 +257,13 @@ services:
       miwayomi:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4568/api/v1/health"]
-      interval: 30s
-      timeout: 5s
-      start_period: 10s
-      retries: 3
-
+      {
+        test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4568/api/v1/health"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 10s,
+        retries: 3,
+      }
   flaresolverr:
     image: ghcr.io/miwayomi/flaresolverr:0.2.9@sha256:41207a879aebc3e36101734377041a9d82e7375db274aebc0d15c87e51134189
     container_name: arr-flaresolverr
@@ -192,12 +271,15 @@ services:
     networks:
       - arrnet
     dns: *stable-public-dns
+    <<: *media-1536m
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8191/"]
-      interval: 30s
-      timeout: 5s
-      start_period: 20s
-      retries: 3
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8191/"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 20s,
+        retries: 3,
+      }
     environment:
       <<: *arr-common-environment
     volumes:
