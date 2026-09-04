@@ -61,7 +61,7 @@ in
     bash = {
       enable = true;
       initExtra = ''
-        if [[ $- == *i* ]]; then
+        if [[ $- == *i* && -t 0 && -t 1 ]]; then
           if enable -f ${flylineLoadableBuiltin}/lib/libflyline.loadable flyline 2>/dev/null; then
             if [ -r "${flylineKeybindingsConfiguration}" ]; then
               . "${flylineKeybindingsConfiguration}"
