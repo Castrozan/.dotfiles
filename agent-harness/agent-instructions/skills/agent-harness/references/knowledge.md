@@ -65,8 +65,9 @@ off-switch is a denied-server list in the system-level managed settings, deploye
 Codex hooks mirror the Claude event vocabulary but differ in two ways that break a straight port: the timeout is in
 seconds rather than milliseconds, and blocking works only through a deny decision returned with a zero exit, never
 through a non-zero exit. Writes arrive as a patch-application tool rather than as a write tool, so a guard keyed on the
-Claude write tool name never fires. The on-PATH `codex` is a wrapper that already injects model, sandbox, approval and
-screen flags, so spawn it bare in a pane; re-passing any of those flags makes it exit with a duplicate-argument error.
+Claude write tool name never fires. The on-PATH `codex` wrapper injects sandbox and approval flags plus the interactive
+developer instructions while leaving model selection to Codex's runtime-owned config. Spawn it bare in a pane;
+re-passing either flag makes it exit with a duplicate-argument error.
 A Codex session bridged over MCP has no interactive approval channel back to the caller, so it must never be launched
 with a sandbox or approval setting weaker than full access, or every escalation it needs is auto-rejected and it
 strands.

@@ -52,7 +52,8 @@ is added or removed on purpose; bindings it lists as removed stay removed unless
 MCP servers are declared in nix at `agent-harness/harnesses/claude-code/mcps/default.nix` for Claude and
 `agent-harness/harnesses/codex/config.nix` for Codex. Codex deploys an authoritative nix-source for managed settings,
 including `mcp_servers`, then seeds a mutable
-live config while preserving live entries in projects, marketplaces, and plugins. Declaratively sourced entries win on
+live config while preserving the live model and entries in projects, marketplaces, and plugins. Declaratively sourced
+entries win on
 key collisions, so an MCP dropped from its nix source disappears from the live config on the next rebuild.
 </codex_managed_settings_ownership>
 
