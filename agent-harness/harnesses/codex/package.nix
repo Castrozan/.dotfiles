@@ -55,14 +55,14 @@ let
     archiveBinaryPath = "codex-code-mode-host-${currentHostSystem.releaseTargetTriple}";
   };
 
-  codex-unwrapped = pkgs.symlinkJoin {
-    name = "codex-${version}";
-    paths = [
-      codex-binary
-      codex-code-mode-host
-    ];
-    meta.mainProgram = "codex";
-  };
+  codex-unwrapped = codex-binary.overrideAttrs (previousAttributes: {
+    meta = (previousAttributes.meta or { }) // {
+      mainProgram = "codex";
+    };
+    postFixup = (previousAttributes.postFixup or "") + ''
+      ln -s ${codex-code-mode-host}/bin/codex-code-mode-host "$out/bin/codex-code-mode-host"
+    '';
+  });
 
   interactiveSessionDeveloperInstructionsText = lib.concatStringsSep "\n" [
     (builtins.readFile ../../../agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md)

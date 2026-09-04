@@ -45,13 +45,17 @@ in
       ".local/bin/codex should be in home.file";
 
   codex-package-uses-upstream-binaries =
-    mkEvalCheck "codex-package-uses-upstream-binaries"
-      (
-        !(codexPackage.drvAttrs ? cargoDeps)
-        && builtins.length codexPackage.drvAttrs.paths == 2
-        && lib.getExe codexPackage == "${codexPackage}/bin/codex"
-      )
-      "Codex and its code-mode host must use upstream release binaries instead of compiling Rust source";
+    assert !(codexPackage.drvAttrs ? cargoDeps);
+    pkgs.runCommand "check-codex-package-uses-upstream-binaries" { } ''
+      export HOME="$TMPDIR"
+      codexExecutable=${lib.getExe codexPackage}
+      codexExecutableDirectory=$(dirname "$(readlink -f "$codexExecutable")")
+      test "$codexExecutableDirectory" = "$(dirname "$codexExecutable")"
+      test -x "$codexExecutableDirectory/codex-code-mode-host"
+      "$codexExecutable" --version >/dev/null 2>&1
+      "$codexExecutableDirectory/codex-code-mode-host" --help >/dev/null
+      touch "$out"
+    '';
 
   codex-skills-directory =
     mkEvalCheck "codex-skills-directory" (hasFilePrefix ".codex/skills/")
