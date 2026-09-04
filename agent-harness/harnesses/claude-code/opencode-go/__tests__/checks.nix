@@ -34,6 +34,7 @@ let
   rinClaudeGoPackage = builtins.head (
     builtins.filter (package: lib.getName package == "claude-go") rinConfiguration.home.packages
   );
+  executableText = package: builtins.unsafeDiscardStringContext "${package}/bin/claude";
   darwinProxyAgents = map (
     configuration: configuration.launchd.agents.claude-go-proxy or null
   ) darwinConfigurations;
@@ -69,8 +70,8 @@ in
   opencode-go-rin-launches-the-unrestricted-interactive-package =
     mkEvalCheck "opencode-go-rin-launches-the-unrestricted-interactive-package"
       (
-        lib.hasInfix "${rinConfiguration.claude.unrestrictedInteractivePackage}/bin/claude" rinClaudeGoPackage.text
-        && !(lib.hasInfix "${rinConfiguration.claude.package}/bin/claude" rinClaudeGoPackage.text)
+        lib.hasInfix (executableText rinConfiguration.claude.unrestrictedInteractivePackage) rinClaudeGoPackage.text
+        && !(lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudeGoPackage.text)
       )
       "claude-go uses a different provider and must remain available outside Rin's MCD-only plain claude command";
 

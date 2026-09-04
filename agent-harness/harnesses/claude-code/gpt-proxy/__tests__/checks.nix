@@ -39,6 +39,8 @@ let
   rinClaudexPackage = builtins.head (
     builtins.filter (package: lib.getName package == "claudex") rinConfiguration.home.packages
   );
+
+  executableText = package: builtins.unsafeDiscardStringContext "${package}/bin/claude";
 in
 {
   claudex-packages = mkEvalCheck "claudex-packages" (builtins.all (
@@ -66,8 +68,8 @@ in
   claudex-rin-launches-the-unrestricted-interactive-package =
     mkEvalCheck "claudex-rin-launches-the-unrestricted-interactive-package"
       (
-        lib.hasInfix "${rinConfiguration.claude.unrestrictedInteractivePackage}/bin/claude" rinClaudexPackage.text
-        && !(lib.hasInfix "${rinConfiguration.claude.package}/bin/claude" rinClaudexPackage.text)
+        lib.hasInfix (executableText rinConfiguration.claude.unrestrictedInteractivePackage) rinClaudexPackage.text
+        && !(lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudexPackage.text)
       )
       "claudex uses a different provider and must remain available outside Rin's MCD-only plain claude command";
 }
