@@ -1,6 +1,7 @@
 {
   helpers,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -21,6 +22,15 @@ let
       builtins.readFile productionSourcesPatchPath
     else
       "";
+  subtitleTracksPatchIsStructurallyValid =
+    pkgs.runCommand "chise-miwayomi-subtitle-patch-structure"
+      {
+        nativeBuildInputs = [ pkgs.git ];
+      }
+      ''
+        git apply --numstat ${subtitleTracksPatchPath} >/dev/null
+        touch "$out"
+      '';
 
   sidecarSubtitleTracksReachThePlayer =
     lib.hasInfix "COPY miwayomi-subtitle-tracks.patch /tmp/miwayomi-subtitle-tracks.patch" miwayomiDockerfileText
@@ -45,6 +55,8 @@ in
   chise-miwayomi-player-renders-sidecar-subtitles =
     mkEvalCheck "chise-miwayomi-player-renders-sidecar-subtitles" sidecarSubtitleTracksReachThePlayer
       "Miwayomi must translate extension-provided sidecar VTT tracks into native browser subtitle tracks through its same-origin proxy";
+
+  chise-miwayomi-subtitle-patch-is-structurally-valid = subtitleTracksPatchIsStructurallyValid;
 
   chise-miwayomi-production-sources-exclude-test-fixtures =
     mkEvalCheck "chise-miwayomi-production-sources-exclude-test-fixtures"
