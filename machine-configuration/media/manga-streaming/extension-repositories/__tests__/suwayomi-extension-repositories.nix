@@ -55,6 +55,7 @@ let
     provisionerUnit.after == [ "suwayomi-server.service" ]
     && provisionerUnit.requires == [ "suwayomi-server.service" ]
     && provisionerUnit.wantedBy == [ "multi-user.target" ]
+    && provisionerUnit.serviceConfig.RemainAfterExit
     && provisionerUnit.serviceConfig.User == "zanoni";
 
   theProvisionerShipsWithEveryServer = lib.hasInfix "./extension-repositories/suwayomi-extension-repositories-nixos.nix" serverModuleText;
@@ -110,7 +111,7 @@ in
   suwayomi-extension-repositories-follow-the-server =
     mkEvalCheck "suwayomi-extension-repositories-follow-the-server"
       theProvisionerFollowsTheServerItConfigures
-      "the provisioner must run as the secret-owning user, require and follow the system Suwayomi container, and start with the machine, or it would race startup or lose access to its declared repository list";
+      "the provisioner must remain active as the secret-owning user, require and follow the system Suwayomi container, and start with the machine, or it would race startup, lose secret access, or evade restart when the declaration changes";
 
   suwayomi-extension-repositories-ship-with-every-server =
     mkEvalCheck "suwayomi-extension-repositories-ship-with-every-server"

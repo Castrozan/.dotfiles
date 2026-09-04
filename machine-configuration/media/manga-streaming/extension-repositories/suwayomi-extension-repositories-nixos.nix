@@ -23,6 +23,7 @@ in
     };
     serviceConfig = {
       Type = "oneshot";
+      RemainAfterExit = true;
       User = "zanoni";
       Group = "users";
       ExecStart = "${pkgs.python3}/bin/python3 ${extensionRepositoriesPackageDirectory}";
