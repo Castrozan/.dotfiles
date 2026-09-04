@@ -13,6 +13,9 @@ let
   darwinAgent = darwinConfiguration.launchd.agents.herdr;
   darwinAgentProgram = builtins.head darwinAgent.config.ProgramArguments;
   darwinAgentPreservation = darwinConfiguration.home.activation."preserveRunningLaunchAgent-herdr";
+  linuxAdoption = linuxConfiguration.home.activation.adoptLegacyHerdrServer;
+  linuxReconciliation = linuxConfiguration.home.activation.reconcileHerdrServer;
+  darwinReconciliation = darwinConfiguration.home.activation.reconcileHerdrServer;
   linuxEnvironment = lib.toList linuxService.Service.Environment;
 in
 {
@@ -26,9 +29,18 @@ in
         && builtins.elem "default.target" linuxService.Install.WantedBy
         && !(linuxService.Unit.X-RestartIfChanged or true)
         && !(linuxService.Unit.X-StopIfChanged or true)
-        && builtins.hasAttr "adoptLegacyHerdrServer" linuxConfiguration.home.activation
+        && lib.hasInfix "HERDR_RECONCILER=" linuxAdoption.data
       )
       "herdr.service must independently own the shared server lifecycle and memory backstop while activation adopts the live legacy server and its panes without stopping them";
+
+  domain-terminal-herdr-server-reconciles-linux-build-changes =
+    mkEvalCheck "domain-terminal-herdr-server-reconciles-linux-build-changes"
+      (
+        builtins.elem "adoptLegacyHerdrServer" linuxReconciliation.after
+        && builtins.elem "reloadHerdrAfterConfigSeed" linuxReconciliation.after
+        && lib.hasInfix "/bin/reconcile-herdr-server reconcile" linuxReconciliation.data
+      )
+      "Linux activation must live-handoff a running Herdr server after service migration and config seeding";
 
   domain-terminal-herdr-server-linux-path-reaches-the-user-profile =
     mkEvalCheck "domain-terminal-herdr-server-linux-path-reaches-the-user-profile"
@@ -61,4 +73,13 @@ in
         && lib.hasInfix "/etc/profiles/per-user/test/bin" darwinAgent.config.EnvironmentVariables.PATH
       )
       "the shared herdr server must use the rebuild-safe LaunchAgent constructor so profile changes cannot unload it";
+
+  domain-terminal-herdr-server-reconciles-darwin-build-changes =
+    mkEvalCheck "domain-terminal-herdr-server-reconciles-darwin-build-changes"
+      (
+        builtins.elem "setupLaunchAgents" darwinReconciliation.after
+        && builtins.elem "reloadHerdrAfterConfigSeed" darwinReconciliation.after
+        && lib.hasInfix "/bin/reconcile-herdr-server reconcile" darwinReconciliation.data
+      )
+      "Darwin activation must live-handoff a running Herdr server after LaunchAgent and config activation";
 }

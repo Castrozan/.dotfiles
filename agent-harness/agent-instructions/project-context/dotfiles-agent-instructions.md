@@ -164,10 +164,9 @@ pass-rate regression or on staleness, or to deliberately record a meaningfully i
 
 <herdr_server_restart>
 herdr runs as one shared server, the `default` session, hosting the whole clawde fleet, the steward, and the interactive
-session at once, so a new herdr binary from a rebuild only goes live on a full `herdr server stop` and relaunch, which
-restarts every session on it and drops the whole fleet; the fleet self-heals as the clawde supervisor respawns agents
-into their pinned sessions and the human reconnects with `herdr`. This restart is the normal way to apply a herdr change
-and you complete it rather than handing it back, but it is fleet-wide and disruptive, so perform it only with the user's
-explicit approval, current or prior, never unprompted, and when approved stop the server detached after a short delay so
-your final report flushes before this session drops.
+session at once. A rebuild activates a changed herdr package through its transactional live handoff, preserving sessions
+and pane processes while the server binary changes. A full `herdr server stop` and relaunch remains the fallback when
+the running server cannot hand off; it restarts every session and drops the whole fleet, so perform it only with the
+user's explicit approval, current or prior, never unprompted. When approved, stop the server detached after a short
+delay so the final report flushes before this session drops.
 </herdr_server_restart>

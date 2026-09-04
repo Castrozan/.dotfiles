@@ -21,12 +21,23 @@ let
     "/bin"
   ];
   serverRunning = "${herdrPackage}/bin/herdr session list --json 2>/dev/null | ${pkgs.jq}/bin/jq -e -f ${./scripts/default-server-running.jq} >/dev/null";
+  activeServerPackageFile = "${config.xdg.stateHome}/herdr/active-server-package";
+  herdrServerReconciler = pkgs.writeShellApplication {
+    name = "reconcile-herdr-server";
+    text = ''
+      export HERDR_EXECUTABLE=${herdrPackage}/bin/herdr
+      export HERDR_PACKAGE_IDENTITY=${herdrPackage}
+      export HERDR_ACTIVE_PACKAGE_FILE=${activeServerPackageFile}
+      exec ${pkgs.python3}/bin/python3 ${./scripts/reconcile-herdr-server.py} "$@"
+    '';
+  };
   herdrServer = pkgs.writeShellApplication {
     name = "herdr-server";
     text = ''
       while ${serverRunning}; do
         ${pkgs.coreutils}/bin/sleep 5
       done
+      ${herdrServerReconciler}/bin/reconcile-herdr-server record-active
       exec ${herdrPackage}/bin/herdr server
     '';
   };
@@ -59,6 +70,19 @@ let
 in
 {
   config = lib.mkMerge [
+    {
+      home.activation.reconcileHerdrServer =
+        lib.hm.dag.entryAfter
+          (
+            [ "reloadHerdrAfterConfigSeed" ]
+            ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ "adoptLegacyHerdrServer" ]
+            ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [ "setupLaunchAgents" ]
+          )
+          ''
+            run ${herdrServerReconciler}/bin/reconcile-herdr-server reconcile
+          '';
+    }
+
     (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       systemd.user.services.herdr = {
         Unit = {
@@ -87,6 +111,7 @@ in
           HERDR_BUSCTL=${pkgs.systemd}/bin/busctl \
           HERDR_EXECUTABLE=${herdrPackage}/bin/herdr \
           HERDR_IMPORT_EXECUTABLE=${legacyServerImporter}/bin/herdr-legacy-server-importer \
+          HERDR_RECONCILER=${herdrServerReconciler}/bin/reconcile-herdr-server \
           HERDR_LEGACY_UNIT=clawde-herdr-server.service \
           HERDR_TARGET_UNIT=herdr.service \
           ${pkgs.python3}/bin/python3 ${./scripts/adopt-legacy-herdr-server.py} adopt

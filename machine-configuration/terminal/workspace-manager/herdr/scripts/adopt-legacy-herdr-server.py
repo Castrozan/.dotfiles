@@ -137,6 +137,11 @@ def adopt_legacy_server():
         raise RuntimeError("herdr server is unavailable after legacy adoption")
     if not wait_for_legacy_unit_stop(legacy_unit):
         raise RuntimeError(f"{legacy_unit} remained active after legacy adoption")
+    run_command(
+        os.environ["HERDR_RECONCILER"],
+        "record-active",
+        check=True,
+    )
 
 
 def main():

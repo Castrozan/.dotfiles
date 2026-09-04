@@ -1,8 +1,8 @@
 <per_client_views_are_a_local_fork>
 Upstream fuses server and session so one server holds a single global active-workspace pointer mirrored to every
-attached client. The tmux model, where each client moves independently, comes from a local fork pinned by tag. A running
-server keeps the binary it launched with across a rebuild, so a fork change goes live only on a full server restart,
-which drops every session on it.
+attached client. The tmux model, where each client moves independently, comes from a local fork pinned by tag. Rebuild
+activation moves a running server to a changed package through transactional live handoff, preserving its sessions and
+pane processes. A full restart that drops every session is only the fallback when the running server cannot hand off.
 </per_client_views_are_a_local_fork>
 
 <never_steer_a_view_from_the_cli>
