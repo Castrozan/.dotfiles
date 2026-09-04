@@ -17,16 +17,17 @@ diff --git a/server/src/main/resources/webui/app.js b/server/src/main/resources/
 +    if (!subtitleTrack.url || seenSubtitleUrls.has(subtitleTrack.url)) return;
 +    seenSubtitleUrls.add(subtitleTrack.url);
 +    const subtitleLanguage = (subtitleTrack.lang || "").trim();
++    const subtitleIsDefault = seenSubtitleUrls.size === 1;
 +    const subtitleElement = document.createElement("track");
 +    subtitleElement.kind = "subtitles";
 +    subtitleElement.label = subtitleLanguage || "Subtitle";
-+    subtitleElement.default = true;
++    subtitleElement.default = subtitleIsDefault;
 +    subtitleElement.srclang = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(subtitleLanguage)
 +      ? subtitleLanguage
 +      : "und";
 +    subtitleElement.src = `/api/v1/proxy?sourceId=${state.activeSource.id}&url=${encodeURIComponent(subtitleTrack.url)}&headers=${headersEnc}`;
 +    video.appendChild(subtitleElement);
-+    subtitleElement.track.mode = "showing";
++    subtitleElement.track.mode = subtitleIsDefault ? "showing" : "disabled";
 +  });
 +}
 +
