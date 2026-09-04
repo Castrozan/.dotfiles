@@ -24,11 +24,16 @@ let
         "rin"
       ];
 
+  rinConfiguration = builtins.elemAt darwinConfigurations 1;
+
   hasPackage =
     configuration: packageName:
     builtins.any (package: lib.getName package == packageName) configuration.home.packages;
 
   linuxProxyService = linuxConfiguration.systemd.user.services.claude-go-proxy or null;
+  rinClaudeGoPackage = builtins.head (
+    builtins.filter (package: lib.getName package == "claude-go") rinConfiguration.home.packages
+  );
   darwinProxyAgents = map (
     configuration: configuration.launchd.agents.claude-go-proxy or null
   ) darwinConfigurations;
@@ -60,6 +65,14 @@ in
   opencode-go-darwin-packages = mkEvalCheck "opencode-go-darwin-packages" (builtins.all (
     configuration: hasPackage configuration "claude-go"
   ) darwinConfigurations) "Kira and Rin must install the claude-go launcher";
+
+  opencode-go-rin-launches-the-unrestricted-interactive-package =
+    mkEvalCheck "opencode-go-rin-launches-the-unrestricted-interactive-package"
+      (
+        lib.hasInfix "${rinConfiguration.claude.unrestrictedInteractivePackage}/bin/claude" rinClaudeGoPackage.text
+        && !(lib.hasInfix "${rinConfiguration.claude.package}/bin/claude" rinClaudeGoPackage.text)
+      )
+      "claude-go uses a different provider and must remain available outside Rin's MCD-only plain claude command";
 
   opencode-go-linux-translation-proxy-service =
     mkEvalCheck "opencode-go-linux-translation-proxy-service"

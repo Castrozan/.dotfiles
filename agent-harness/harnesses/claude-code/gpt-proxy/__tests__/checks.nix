@@ -26,12 +26,18 @@ let
 
   allConfigurations = [ linuxConfiguration ] ++ darwinConfigurations;
 
+  rinConfiguration = builtins.elemAt darwinConfigurations 1;
+
   hasPackage =
     configuration: packageName:
     builtins.any (package: lib.getName package == packageName) configuration.home.packages;
 
   linuxCliProxyApiPackage = builtins.head (
     builtins.filter (package: lib.getName package == "cli-proxy-api") linuxConfiguration.home.packages
+  );
+
+  rinClaudexPackage = builtins.head (
+    builtins.filter (package: lib.getName package == "claudex") rinConfiguration.home.packages
   );
 in
 {
@@ -56,6 +62,14 @@ in
     configuration.launchd.agents ? cli-proxy-api
     && builtins.any (lib.hasSuffix "cli-proxy-api-ipv4-gateway.py") configuration.launchd.agents.cli-proxy-api.config.ProgramArguments
   ) darwinConfigurations) "Rin and Kira must run cli-proxy-api through the IPv4 gateway";
+
+  claudex-rin-launches-the-unrestricted-interactive-package =
+    mkEvalCheck "claudex-rin-launches-the-unrestricted-interactive-package"
+      (
+        lib.hasInfix "${rinConfiguration.claude.unrestrictedInteractivePackage}/bin/claude" rinClaudexPackage.text
+        && !(lib.hasInfix "${rinConfiguration.claude.package}/bin/claude" rinClaudexPackage.text)
+      )
+      "claudex uses a different provider and must remain available outside Rin's MCD-only plain claude command";
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
   claudex-linux-proxy-binary = pkgs.runCommandLocal "check-claudex-linux-proxy-binary" { } ''

@@ -86,7 +86,7 @@ let
       CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS = translationProxyListenAddress;
       CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT = toString translationProxyListenPort;
       CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND = translationProxyInspectionCommand;
-      CLAUDE_GO_LAUNCHER_CLAUDE_BINARY = "${config.claude.package}/bin/claude";
+      CLAUDE_GO_LAUNCHER_CLAUDE_BINARY = "${config.claude.unrestrictedInteractivePackage}/bin/claude";
       CLAUDE_GO_LAUNCHER_MODEL = opencodeGo.models.sonnet;
     };
     text = builtins.readFile ./scripts/claude-go;

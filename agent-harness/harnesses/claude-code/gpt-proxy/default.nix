@@ -98,7 +98,7 @@ let
       CLAUDEX_LAUNCHER_PROXY_LISTEN_ADDRESS = proxyListenAddress;
       CLAUDEX_LAUNCHER_PROXY_LISTEN_PORT = toString proxyListenPort;
       CLAUDEX_LAUNCHER_PROXY_SERVICE_INSPECTION_COMMAND = proxyServiceInspectionCommand;
-      CLAUDEX_LAUNCHER_CLAUDE_BINARY = "${config.claude.package}/bin/claude";
+      CLAUDEX_LAUNCHER_CLAUDE_BINARY = "${config.claude.unrestrictedInteractivePackage}/bin/claude";
       CLAUDEX_LAUNCHER_MODEL = gptModelForOpusTier;
     };
     text = builtins.readFile ./scripts/claudex;
