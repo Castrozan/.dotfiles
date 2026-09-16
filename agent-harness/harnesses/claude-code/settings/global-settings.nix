@@ -11,7 +11,7 @@ let
     import
       ../../../../agent-harness/hooks/integrations/claude/event-registrations/claude-hook-event-registrations.nix
       { inherit lib hostname isDarwin; };
-  pluginsConfig = import ./plugins.nix { inherit pkgs; };
+  pluginsConfig = import ../plugins/language-server-packages.nix { inherit pkgs; };
 
   privateMarketplacePluginsPath =
     ../../../../private-configuration/machines + "/${hostname}/claude-plugins.nix";

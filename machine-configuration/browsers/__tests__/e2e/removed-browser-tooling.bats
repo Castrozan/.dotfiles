@@ -15,10 +15,10 @@ readonly BROWSER_MODULE_DIRECTORY="$BATS_TEST_DIRNAME/../.."
 }
 
 @test "deleted pw and playwright files do not exist" {
-	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/browser/scripts/pw.sh" ]]
-	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/browser/scripts/pw.js" ]]
-	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/browser/scripts/pw-daemon.js" ]]
-	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/browser/default.nix" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/workstation/browser/scripts/pw.sh" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/workstation/browser/scripts/pw.js" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/workstation/browser/scripts/pw-daemon.js" ]]
+	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/workstation/browser/default.nix" ]]
 	[[ ! -f "$REPOSITORY_ROOT/agent-harness/agent-instructions/skills/ponto/scripts/playwright-resolver.js" ]]
 	[[ ! -f "$REPOSITORY_ROOT/home/base/playwright.nix" ]]
 }

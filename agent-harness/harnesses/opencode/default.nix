@@ -3,10 +3,10 @@
   imports = [
     ./opencode.nix
     ./config.nix
-    ./global-instructions.nix
+    ./instructions/global-instructions.nix
     ./tui.nix
     ./skills.nix
-    ./subagents.nix
+    ./agents/subagents.nix
     ./claude-plugin-port.nix
     ./private.nix
     ../../workspace-profiles

@@ -1,0 +1,72 @@
+from instructions.ai_instruction_format import inspect_markdown_instruction
+from instructions.ai_instruction_references import (
+    repository_path_references,
+    skill_reference_references,
+    skill_relative_script_references,
+    unresolved_repository_paths,
+    unresolved_skill_relative_scripts,
+)
+from instructions.instruction_surface_scanner import (
+    REPO_ROOT,
+    every_linted_markdown_file,
+    instruction_surface_files,
+    skill_definition_files,
+    skill_reference_files,
+)
+
+
+def test_backticked_repository_paths_in_instruction_surfaces_resolve():
+    for path in every_linted_markdown_file():
+        unresolved = unresolved_repository_paths(path)
+        assert not unresolved, (
+            f"{path.relative_to(REPO_ROOT)} points at repository paths "
+            f"that no longer exist: {unresolved}"
+        )
+
+
+def test_backticked_skill_relative_scripts_resolve_from_the_skill_root():
+    for path in skill_definition_files() + skill_reference_files():
+        unresolved = unresolved_skill_relative_scripts(path)
+        assert not unresolved, (
+            f"{path.relative_to(REPO_ROOT)} tells the agent to run scripts that "
+            f"are not packaged with the skill: {unresolved}"
+        )
+
+
+def test_every_declared_instruction_surface_exists_on_disk():
+    missing = [
+        str(path.relative_to(REPO_ROOT))
+        for path in instruction_surface_files()
+        if not path.is_file()
+    ]
+    assert not missing, (
+        "these surfaces are declared for linting but absent, so the lint would "
+        f"silently cover less than it claims: {missing}"
+    )
+
+
+def test_the_instruction_surface_scan_covers_the_repository():
+    assert len(skill_definition_files()) > 20
+    assert len(instruction_surface_files()) > 3
+    assert len(skill_reference_files()) > 20
+
+
+def test_the_reference_lint_actually_inspects_references():
+    repository_references = sum(
+        len(repository_path_references(path)) for path in every_linted_markdown_file()
+    )
+    reference_files = sum(
+        len(
+            skill_reference_references(
+                path, inspect_markdown_instruction(path.read_text())
+            )
+        )
+        for path in skill_definition_files() + skill_reference_files()
+    )
+    script_references = sum(
+        len(skill_relative_script_references(path))
+        for path in skill_definition_files() + skill_reference_files()
+    )
+    assert repository_references > 5
+    assert reference_files > 10
+    assert script_references > 2

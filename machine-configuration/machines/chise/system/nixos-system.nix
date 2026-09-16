@@ -18,7 +18,7 @@ in
     ./pkgs.nix
     ../../../development/virtualization/virtualization-nixos.nix
     ../../../development/testing/python-interpreter-nixos.nix
-    ../../../desktop/fonts/fonts-nixos.nix
+    ../../../desktop/appearance/fonts/fonts-nixos.nix
     ../../../gaming/steam/steam-nixos.nix
     ../../../media/media-streaming/stremio-streaming-server-nixos.nix
     ../../../media/media-streaming/stremio-comet-nixos.nix
@@ -31,7 +31,7 @@ in
     ../../../operating-system/manual-pages/man-cache-nixos.nix
     ../../../operating-system/power-management/lid-switch-nixos.nix
     ../../../security/privilege-escalation/sudo-nixos.nix
-    ../../../desktop/mouse/mouse-polling-rate-nixos.nix
+    ../../../desktop/input/mouse/mouse-polling-rate-nixos.nix
     ../../../home-automation/home-assistant/home-assistant-nixos.nix
     ../../../terminal/workspace-manager/cockpit-session-bridge/cockpit-session-bridge-nixos.nix
     ../../../network/cloudflare-tunnel-connector/cloudflare-tunnel-connector-nixos.nix
@@ -41,9 +41,9 @@ in
     ../../../media/arr-stack/jellyseerr-notifications/jellyseerr-notifications-nixos.nix
     ../../../media/arr-stack/configuration/arr-config-provisioner-nixos.nix
     ../../../media/arr-stack/bazarr-auth/bazarr-auth-provisioner-nixos.nix
-    ../../../media/arr-stack/jellyfin-library-access/jellyfin-library-access-provisioner-nixos.nix
+    ../../../media/arr-stack/library-access/jellyfin/jellyfin-library-access-provisioner-nixos.nix
     ../../../media/arr-stack/jellyfin-subtitle-extraction/jellyfin-subtitle-extraction-warmer-nixos.nix
-    ../../../media/arr-stack/kavita-library-access/kavita-library-access-provisioner-nixos.nix
+    ../../../media/arr-stack/library-access/kavita/kavita-library-access-provisioner-nixos.nix
     ../../../media/arr-stack/jellyseerr-account-permissions/jellyseerr-account-permission-provisioner-nixos.nix
     ../../../media/arr-stack/jellyseerr-private-request-routing/jellyseerr-private-request-routing-provisioner-nixos.nix
   ]
@@ -93,7 +93,7 @@ in
     hyprland = {
       enable = true;
       xwayland.enable = true;
-      package = import ../../../../machine-configuration/desktop/hyprland/patched-hyprland.nix {
+      package = import ../../../desktop/desktop-environments/hyprland/build/patched-hyprland.nix {
         inherit pkgs inputs;
       };
       portalPackage =

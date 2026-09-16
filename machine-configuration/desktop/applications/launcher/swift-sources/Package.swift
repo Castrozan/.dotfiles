@@ -1,0 +1,14 @@
+// swift-tools-version:5.9
+import PackageDescription
+
+let package = Package(
+  name: "ApplicationLauncherDaemon",
+  platforms: [.macOS(.v14)],
+  targets: [
+    .executableTarget(
+      name: "ApplicationLauncherDaemon",
+      path: ".",
+      exclude: ["__tests__"]
+    )
+  ]
+)

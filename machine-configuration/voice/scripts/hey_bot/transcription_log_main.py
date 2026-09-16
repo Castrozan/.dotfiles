@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import sys
 
-from hey_bot.console_output import ConsoleOutput
-from hey_bot.runtime_environment import transcription_directory
-from hey_bot.transcription_log_reader import TranscriptionLogReader
+from hey_bot.system.console_output import ConsoleOutput
+from hey_bot.system.runtime_environment import transcription_directory
+from hey_bot.transcription.transcription_log_reader import TranscriptionLogReader
 
 FOLLOW_FLAG = "-f"
 

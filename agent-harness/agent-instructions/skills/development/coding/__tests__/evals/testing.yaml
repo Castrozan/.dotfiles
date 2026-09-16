@@ -1,0 +1,31 @@
+tests:
+  - name: test_first_before_fix
+    skill_path: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/development/coding/references/testing.md
+    prompt: "A user reported a bug in the rebuild script. What should I do first?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "The response says to establish a focused reproducer that fails for the reported behavior before modifying the rebuild script and, where practical, to make that reproducer traverse the same causal path."
+
+  - name: test_behavioral_evidence_does_not_prove_root_cause
+    skill_path: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/development/coding/references/testing.md
+    prompt: "My regression test now passes. Does that independently prove my proposed root cause was correct?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "The response says no: a green regression test proves only the behavior it actually exercises and does not independently prove the proposed root cause."
+
+  - name: test_verification_scales_to_relevant_evidence
+    skill_path: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/development/coding/references/testing.md
+    prompt: "A focused regression test passes after my change. What verification should follow before delivery?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "The response says to follow with the repository's relevant build, static checks, integration tests, runtime probes, or CI gate according to the change, and treats contradictory runtime evidence as stronger than a green test that modeled the wrong behavior."

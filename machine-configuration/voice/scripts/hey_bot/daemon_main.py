@@ -3,19 +3,19 @@ from __future__ import annotations
 import signal
 
 from hey_bot.assistant_gateway import AssistantGateway
-from hey_bot.audio_capture import AudioCapture
+from hey_bot.audio.audio_capture import AudioCapture
 from hey_bot.background_commands import BackgroundCommandRunner
-from hey_bot.console_output import ConsoleOutput
-from hey_bot.conversation_state import MachineSettings
+from hey_bot.system.console_output import ConsoleOutput
+from hey_bot.conversation.conversation_state import MachineSettings
 from hey_bot.daemon_actions import DaemonActions
 from hey_bot.daemon_runtime import HeyBotDaemon
-from hey_bot.desktop_notifier import DesktopNotifier
+from hey_bot.system.desktop_notifier import DesktopNotifier
 from hey_bot.gateway_reply_speech import (
     UNPARSABLE_REPLY_SPEECH,
     UNREACHABLE_GATEWAY_SPEECH,
     FailureSpeech,
 )
-from hey_bot.runtime_environment import (
+from hey_bot.system.runtime_environment import (
     gateway_settings,
     keywords_pattern,
     maximum_log_size_bytes,
@@ -23,12 +23,12 @@ from hey_bot.runtime_environment import (
     transcription_directory,
     whisper_model,
 )
-from hey_bot.signal_files import SignalFiles, default_signal_file_paths
-from hey_bot.speech_synthesizer import SpeechSynthesizer
-from hey_bot.speech_transcriber import SpeechTranscriber
-from hey_bot.system_clock import SystemClock
-from hey_bot.transcription_log import TranscriptionLog
-from hey_bot.voice_command_dispatch import VoiceCommandDispatcher
+from hey_bot.system.signal_files import SignalFiles, default_signal_file_paths
+from hey_bot.audio.speech_synthesizer import SpeechSynthesizer
+from hey_bot.audio.speech_transcriber import SpeechTranscriber
+from hey_bot.system.system_clock import SystemClock
+from hey_bot.transcription.transcription_log import TranscriptionLog
+from hey_bot.conversation.voice_command_dispatch import VoiceCommandDispatcher
 
 
 def build_daemon() -> HeyBotDaemon:

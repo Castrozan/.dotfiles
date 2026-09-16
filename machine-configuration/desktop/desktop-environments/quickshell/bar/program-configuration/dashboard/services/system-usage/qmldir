@@ -1,0 +1,3 @@
+GraphicsUsage 1.0 GraphicsUsage.qml
+HardwareTemperatures 1.0 HardwareTemperatures.qml
+StorageUsage 1.0 StorageUsage.qml

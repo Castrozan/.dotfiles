@@ -9,7 +9,7 @@ let
 
   privateAgentDefinitions =
     if agentsDirExists then
-      import ./translate-claude-agent-definitions.nix {
+      import ./agents/translate-claude-agent-definitions.nix {
         inherit pkgs;
         derivationName = "opencode-private-agent-definitions";
         claudeAgentDefinitionsDirectory = agentsDir;

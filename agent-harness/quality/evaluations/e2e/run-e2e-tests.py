@@ -5,10 +5,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-from e2e_harness_profiles import scenario_harness_profile
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from e2e.sessions.e2e_harness_profiles import scenario_harness_profile
 from e2e_reporting import print_e2e_results, print_multi_run_pass_rate_summary
 from e2e_scenario_runner import run_e2e_scenario
-from e2e_workspace import SCENARIOS_DIR, discover_scenario_files, load_scenario
+from e2e.sessions.e2e_workspace import (
+    SCENARIOS_DIR,
+    discover_scenario_files,
+    load_scenario,
+)
 
 
 def executable_is_installed(executable_name: str) -> bool:

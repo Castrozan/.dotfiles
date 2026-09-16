@@ -1,8 +1,13 @@
-from instruction_surface_scanner import REPO_ROOT
+from instructions.instruction_surface_scanner import REPO_ROOT
 
 
 HUMANIZE_DIRECTORY = (
-    REPO_ROOT / "agent-harness" / "agent-instructions" / "skills" / "humanize"
+    REPO_ROOT
+    / "agent-harness"
+    / "agent-instructions"
+    / "skills"
+    / "writing"
+    / "humanize"
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
 INTERACTIVE_POLICY_PATH = (
@@ -12,16 +17,16 @@ MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES = 5000
 MAXIMUM_ON_DEMAND_HUMANIZE_PACKAGE_BYTES = 19000
 
 INTERACTIVE_POLICY_SOURCE = (
-    "agent-instructions/skills/humanize/references/interactive-communication.md"
+    "agent-instructions/skills/writing/humanize/references/interactive-communication.md"
 )
-ON_DEMAND_HUMANIZE_SOURCES = ("agent-instructions/skills/humanize/SKILL.md",)
+ON_DEMAND_HUMANIZE_SOURCES = ("agent-instructions/skills/writing/humanize/SKILL.md",)
 INTERACTIVE_GENERATOR_PATHS = (
     REPO_ROOT
     / "agent-harness"
     / "harnesses"
     / "claude-code"
-    / "skill-injection"
-    / "interactive-instructions.nix",
+    / "launch"
+    / "interactive-session-instructions.nix",
     REPO_ROOT
     / "agent-harness"
     / "harnesses"
@@ -31,6 +36,7 @@ INTERACTIVE_GENERATOR_PATHS = (
     / "agent-harness"
     / "harnesses"
     / "opencode"
+    / "instructions"
     / "interactive-instructions.nix",
     REPO_ROOT / "agent-harness" / "harnesses" / "pi" / "interactive-instructions.nix",
     REPO_ROOT
@@ -41,7 +47,7 @@ INTERACTIVE_GENERATOR_PATHS = (
 )
 INTERACTIVE_LAUNCH_SOURCES = (
     REPO_ROOT
-    / "agent-harness/harnesses/claude-code/skill-injection/interactive-sessions.nix",
+    / "agent-harness/harnesses/claude-code/launch/interactive-claude-command.nix",
     REPO_ROOT / "agent-harness" / "harnesses" / "codex" / "scripts" / "codex",
     REPO_ROOT / "agent-harness/harnesses/opencode/opencode.nix",
     REPO_ROOT

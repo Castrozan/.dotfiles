@@ -124,39 +124,39 @@
     docker.unitConfig.RequiresMountsFor = [ "/home/zanoni/arr-stack/data" ];
 
     jellyseerr-email-notifications.restartTriggers = [
-      ../../../../secrets/credentials/jellyseerr-smtp-app-password.age
+      ../../../../secrets/credentials/media/jellyseerr-smtp-app-password.age
     ];
 
     arr-config-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/arr-qbittorrent-password.age
-      ../../../../secrets/credentials/arr-radarr-password.age
-      ../../../../secrets/credentials/arr-sonarr-password.age
-      ../../../../secrets/credentials/arr-prowlarr-password.age
-      ../../../../secrets/credentials/arr-samaritano-indexer-apikey.age
+      ../../../../secrets/credentials/media/arr-qbittorrent-password.age
+      ../../../../secrets/credentials/media/arr-radarr-password.age
+      ../../../../secrets/credentials/media/arr-sonarr-password.age
+      ../../../../secrets/credentials/media/arr-prowlarr-password.age
+      ../../../../secrets/credentials/media/arr-samaritano-indexer-apikey.age
     ];
 
     bazarr-auth-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/arr-bazarr-password.age
+      ../../../../secrets/credentials/media/arr-bazarr-password.age
     ];
 
     jellyfin-library-access-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/jellyfin-admin-api-key.age
+      ../../../../secrets/credentials/media/jellyfin-admin-api-key.age
     ];
 
     kavita-library-access-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/kavita-admin-api-key.age
+      ../../../../secrets/credentials/media/kavita-admin-api-key.age
     ];
 
     miwayomi-extension-repositories.restartTriggers = [
-      ../../../../secrets/credentials/suwayomi-extension-repositories.age
+      ../../../../secrets/credentials/media/suwayomi-extension-repositories.age
     ];
 
     jellyseerr-private-request-routing-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/jellyfin-admin-api-key.age
+      ../../../../secrets/credentials/media/jellyfin-admin-api-key.age
     ];
 
     jellyseerr-account-permission-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/jellyfin-admin-api-key.age
+      ../../../../secrets/credentials/media/jellyfin-admin-api-key.age
     ];
   };
 }

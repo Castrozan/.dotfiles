@@ -2,10 +2,10 @@ import urllib.error
 from dataclasses import dataclass
 
 import friend_account_policy
-import jellyfin_api_client
-import jellyfin_library_declaration
-import jellyseerr_api_client
-import jellyseerr_friend_access
+from jellyfin import jellyfin_api_client
+from jellyfin import jellyfin_library_declaration
+from jellyseerr import jellyseerr_api_client
+from jellyseerr import jellyseerr_friend_access
 import password_generation
 
 

@@ -1,8 +1,8 @@
 tests:
   - name: nix_expert_explains_concepts
-    skill_path: agent-harness/agent-instructions/skills/nix/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/nix/references/expert.md
+      - agent-harness/agent-instructions/skills/services/nix/references/expert.md
     prompt: "What is a Nix overlay?"
     model: haiku
     assertions:

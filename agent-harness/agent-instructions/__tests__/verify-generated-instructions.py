@@ -4,10 +4,10 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from ai_instruction_format import inspect_markdown_instruction
-from instruction_link_targets import instruction_link_violations
-from instruction_markdown_frontmatter import parse_instruction_body
-from instruction_surface_prose import line_is_exempt_from_the_wrap
+from instructions.ai_instruction_format import inspect_markdown_instruction
+from instructions.instruction_link_targets import instruction_link_violations
+from instructions.instruction_markdown_frontmatter import parse_instruction_body
+from instructions.instruction_surface_prose import line_is_exempt_from_the_wrap
 
 
 def copy_projection(source: Path, target: Path) -> None:

@@ -1,6 +1,9 @@
-from hey_bot.conversation_actions import DispatchCommandAction, LogTranscriptionAction
+from hey_bot.conversation.conversation_actions import (
+    DispatchCommandAction,
+    LogTranscriptionAction,
+)
 from hey_bot_daemon_fakes import build_daemon, signal_file_paths
-from hey_bot.signal_files import SignalFiles
+from hey_bot.system.signal_files import SignalFiles
 
 
 def test_a_chunk_is_processed_while_the_next_one_records(tmp_path):

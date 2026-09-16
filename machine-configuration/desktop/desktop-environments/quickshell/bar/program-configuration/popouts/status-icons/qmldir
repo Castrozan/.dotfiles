@@ -1,0 +1,7 @@
+NotificationSoundRow 1.0 NotificationSoundRow.qml
+OutputSoundRow 1.0 OutputSoundRow.qml
+MicrophoneRow 1.0 MicrophoneRow.qml
+KeyboardBacklightRow 1.0 KeyboardBacklightRow.qml
+NetworkRow 1.0 NetworkRow.qml
+BluetoothRow 1.0 BluetoothRow.qml
+BatteryRow 1.0 BatteryRow.qml

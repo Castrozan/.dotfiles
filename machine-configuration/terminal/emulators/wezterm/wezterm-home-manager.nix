@@ -42,7 +42,7 @@ let
 in
 {
   home.file.".config/wezterm/wallpaper.png".source =
-    ../../../desktop/theming/wallpapers/wallpaper.png;
+    ../../../desktop/appearance/theming/wallpapers/artwork/wallpaper.png;
 
   xdg.configFile."xdg-terminals.list" = lib.mkIf isNixOS { source = ./xdg-terminals.list; };
 

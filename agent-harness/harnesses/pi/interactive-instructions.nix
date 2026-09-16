@@ -5,7 +5,7 @@ in
 projection.instructionFile {
   name = "pi-interactive-session-only-reply-rules.md";
   sources = [
-    ../../../agent-harness/agent-instructions/skills/humanize/references/interactive-communication.md
+    ../../agent-instructions/skills/writing/humanize/references/interactive-communication.md
   ];
   destinations = projection.interactiveDestinations {
     coreInstructionFile = "${homeDirectory}/.pi/agent/AGENTS.md";

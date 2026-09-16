@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  codingSkillInstall = import ./skills/coding/install {
+  codingSkillInstall = import ./skills/development/coding/install {
     inherit pkgs;
   };
 in
@@ -13,10 +13,10 @@ in
     ./dotfiles-checkout-agent-surfaces/dotfiles-repo-agent-instructions-home-manager.nix
     ./dotfiles-checkout-agent-surfaces/dotfiles-repo-skills-home-manager.nix
     ./interactive-skill-catalog/interactive-skill-index-home-manager.nix
-    ./skills/twitter/install/twitter-home-manager.nix
-    ./skills/phone-status/phone-status-cli-home-manager.nix
-    ./skills/ril/install/ril-home-manager.nix
-    ./skills/todo/install/todo-home-manager.nix
+    ./skills/media/twitter/install/twitter-home-manager.nix
+    ./skills/services/phone-status/phone-status-cli-home-manager.nix
+    ./skills/knowledge/ril/install/ril-home-manager.nix
+    ./skills/knowledge/todo/install/todo-home-manager.nix
   ];
 
   home.packages = codingSkillInstall.packages;

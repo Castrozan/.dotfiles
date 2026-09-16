@@ -1,0 +1,62 @@
+tests:
+  - name: browser_keeps_explicit_chrome_devtools_choice_during_recovery
+    skill_path: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md
+    prompt: >-
+      I explicitly asked you to use Chrome DevTools through the browser harness. list_pages reports no attached tabs and
+      the existing headed DevTools connection looks stale. State your next action in one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - >-
+          Keeps the explicit Chrome DevTools choice and takes the next appropriate recovery action by launching or
+          reconnecting Chrome Global or retrying chrome-devtools list_pages, instead of switching to or probing PinchTab.
+      output_not_contains:
+        - "pinchtab daemon"
+        - "pinchtab config"
+        - "pinchtab profiles"
+
+  - name: browser_uses_chrome_devtools_for_public_scraping_when_available
+    skill_path: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md
+    prompt: >-
+      I need an interactive scrape of a public site. Chrome DevTools is connected and list_pages works. Which browser
+      path do you use? Answer in one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - >-
+          Chooses Chrome DevTools because it is available, and does not choose PinchTab merely because the site is
+          public or the task is scraping.
+
+  - name: browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails
+    skill_path: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md
+    prompt: >-
+      I did not require a particular browser, and an isolated profile can satisfy this task. Chrome DevTools returned no
+      pages, so I launched Chrome Global, enabled remote debugging, approved the consent prompt, and retried list_pages.
+      It still cannot connect. Is PinchTab eligible now? Answer in one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - >-
+          Says PinchTab is eligible only now as the last resort because every Chrome DevTools recovery step failed,
+          Chrome remains unavailable, the user did not require it, and the isolated profile can satisfy the task.
+
+  - name: browser_reports_blocked_when_autonomous_agent_requires_chrome_devtools
+    skill_path: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md
+    prompt: >-
+      You are an autonomous clawde agent, and I explicitly required Chrome DevTools for this browser task. The shared
+      Chrome target reports that autonomous agents are mechanically denied. What do you do? Answer in one sentence.
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - >-
+          Reports that the explicit Chrome DevTools requirement is blocked in this autonomous session and does not
+          silently substitute, invoke, inspect, restart, or configure PinchTab.
+      output_not_contains:
+        - "pinchtab nav"
+        - "pinchtab daemon"
+        - "pinchtab config"
+        - "pinchtab profiles"

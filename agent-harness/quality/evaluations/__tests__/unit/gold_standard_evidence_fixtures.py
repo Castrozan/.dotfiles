@@ -36,7 +36,7 @@ def build_synthetic_evidence_repository(repository_root):
     )
     write_eval_suite(
         repository_root,
-        "agent-harness/agent-instructions/skills/nix/__tests__/evals/rebuild.yaml",
+        "agent-harness/agent-instructions/skills/services/nix/__tests__/evals/rebuild.yaml",
         ["five"],
         False,
     )

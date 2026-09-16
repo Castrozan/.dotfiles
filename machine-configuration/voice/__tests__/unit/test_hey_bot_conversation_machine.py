@@ -1,12 +1,12 @@
 import pytest
-from hey_bot.conversation_actions import (
+from hey_bot.conversation.conversation_actions import (
     AnnounceAction,
     ClearWaitContextAction,
     LogTranscriptionAction,
     NotifyAction,
 )
-from hey_bot.conversation_machine import advance
-from hey_bot.conversation_state import ChunkObservation, ConversationMode
+from hey_bot.conversation.conversation_machine import advance
+from hey_bot.conversation.conversation_state import ChunkObservation, ConversationMode
 from hey_bot_conversation_fixtures import (
     COLLECTING,
     EMPTY_CHUNK,

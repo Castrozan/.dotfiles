@@ -1,0 +1,7 @@
+UtilityToggleButton 1.0 UtilityToggleButton.qml
+WifiToggleButton 1.0 WifiToggleButton.qml
+BluetoothToggleButton 1.0 BluetoothToggleButton.qml
+MicrophoneMuteToggleButton 1.0 MicrophoneMuteToggleButton.qml
+DoNotDisturbToggleButton 1.0 DoNotDisturbToggleButton.qml
+KeepAwakeToggleButton 1.0 KeepAwakeToggleButton.qml
+NightLightToggleButton 1.0 NightLightToggleButton.qml

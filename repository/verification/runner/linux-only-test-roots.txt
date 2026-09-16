@@ -1,7 +1,7 @@
 machine-configuration/audio
 machine-configuration/desktop/clipboard-history
-machine-configuration/desktop/gnome
-machine-configuration/desktop/hyprland
+machine-configuration/desktop/desktop-environments/gnome
+machine-configuration/desktop/desktop-environments/hyprland
 machine-configuration/home-automation/home-assistant
 machine-configuration/media/arr-stack/status
 machine-configuration/media/arr-stack/users

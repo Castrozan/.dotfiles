@@ -1,0 +1,4 @@
+DefaultMaterialPalette 1.0 DefaultMaterialPalette.qml
+FallbackMaterialPalette 1.0 FallbackMaterialPalette.qml
+singleton PaletteMapping 1.0 PaletteMapping.qml
+CaelestiaSchemeProcess 1.0 CaelestiaSchemeProcess.qml

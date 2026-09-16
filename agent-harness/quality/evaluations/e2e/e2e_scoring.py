@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from e2e_models import E2eAssertionResult, TerminalSessionTrace
-from e2e_trace import extract_tool_name_sequence
+from e2e.sessions.e2e_models import E2eAssertionResult, TerminalSessionTrace
+from e2e.sessions.e2e_trace import extract_tool_name_sequence
 
 
 def calculate_e2e_experience_score(

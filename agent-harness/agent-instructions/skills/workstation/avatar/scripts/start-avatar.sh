@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+# shellcheck source-path=SCRIPTDIR
+# Avatar System Launcher
+# Starts all components in the correct order
+
+set -e
+
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export XDG_RUNTIME_DIR
+
+AVATAR_DIR="@homePath@/@workspacePath@/skills/avatar"
+LOG_DIR="/tmp/clever-avatar-logs"
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+mkdir -p "$LOG_DIR"
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}   Avatar System - Launcher${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+LAUNCHER_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=launcher-readiness.sh
+source "$LAUNCHER_DIRECTORY/launcher-readiness.sh"
+V4L2_DEVICE=$(detect_v4l2_device)
+
+# Step 1: Create virtual audio devices
+echo -e "${YELLOW}[1/5]${NC} Creating virtual audio devices..."
+
+create_virtual_sink "AvatarSpeaker" "Avatar Speaker" "Audio/Sink"
+create_virtual_sink "AvatarMic" "Avatar Mic Sink" "Audio/Sink"
+create_virtual_sink "AvatarMicSource" "Avatar Microphone" "Audio/Source/Virtual"
+
+echo ""
+
+# Step 2: Start Control Server via systemd
+echo -e "${YELLOW}[2/5]${NC} Starting Avatar Control Server..."
+
+if systemctl --user is-active --quiet avatar-control-server; then
+	echo -e "  ${YELLOW}⚠${NC}  Control server is already running"
+else
+	systemctl --user start avatar-control-server
+	echo -e "  ${GREEN}✓${NC} Control server started (systemd)"
+
+	if wait_for_port @avatarWsPort@; then
+		echo -e "  ${GREEN}✓${NC} WebSocket server ready on port @avatarWsPort@"
+	else
+		echo -e "  ${RED}✗${NC} WebSocket server failed to start"
+		systemctl --user status avatar-control-server --no-pager
+		exit 1
+	fi
+
+	if wait_for_port @avatarHttpPort@; then
+		echo -e "  ${GREEN}✓${NC} HTTP server ready on port @avatarHttpPort@"
+	else
+		echo -e "  ${RED}✗${NC} HTTP server failed to start"
+		exit 1
+	fi
+fi
+
+echo ""
+
+# Step 3: Start Avatar Renderer
+echo -e "${YELLOW}[3/5]${NC} Starting Avatar Renderer..."
+
+if is_running "skills/avatar/renderer.*next"; then
+	echo -e "  ${YELLOW}⚠${NC}  Renderer is already running"
+else
+	cd "$AVATAR_DIR/renderer"
+	nohup env NODE_ENV=development npm run dev >"$LOG_DIR/avatar-renderer.log" 2>&1 &
+	RENDERER_PID=$!
+	echo -e "  ${GREEN}✓${NC} Avatar renderer started (PID: $RENDERER_PID)"
+	echo -e "    Log: $LOG_DIR/avatar-renderer.log"
+
+	if wait_for_port @avatarRendererPort@; then
+		echo -e "  ${GREEN}✓${NC} Renderer ready on http://localhost:@avatarRendererPort@"
+	else
+		echo -e "  ${RED}✗${NC} Renderer failed to start"
+		tail -10 "$LOG_DIR/avatar-renderer.log"
+		exit 1
+	fi
+fi
+
+# shellcheck source=renderer-browser.sh
+source "$LAUNCHER_DIRECTORY/renderer-browser.sh"
+
+# Step 4: Start Virtual Camera (requires v4l2loopback)
+echo -e "${YELLOW}[4/5]${NC} Starting Virtual Camera..."
+
+# Use discovered CDP port, fall back to env, then 9222
+CDP_PORT="${CDP_PORT:-${DISCOVERED_CDP_PORT:-9222}}"
+
+if is_running "virtual-camera.js"; then
+	echo -e "  ${YELLOW}⚠${NC}  Virtual camera is already running"
+elif [ ! -e "$V4L2_DEVICE" ]; then
+	echo -e "  ${YELLOW}⚠${NC}  $V4L2_DEVICE not found (v4l2loopback not loaded), skipping"
+elif [ -z "$DISCOVERED_CDP_PORT" ]; then
+	echo -e "  ${YELLOW}⚠${NC}  No Chrome CDP port discovered, skipping virtual camera"
+else
+	cd "$AVATAR_DIR/control-server"
+	NODE_PATH="$AVATAR_DIR/control-server/node_modules" \
+		CDP_PORT="$CDP_PORT" \
+		V4L2_DEVICE="$V4L2_DEVICE" \
+		nohup node virtual-camera.js --fps 15 --width 1280 --height 720 >"$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
+	CAMERA_PID=$!
+	sleep 2
+	if kill -0 "$CAMERA_PID" 2>/dev/null; then
+		echo -e "  ${GREEN}✓${NC} Virtual camera started (PID: $CAMERA_PID)"
+		echo -e "    Device: $V4L2_DEVICE"
+		echo -e "    Log: $LOG_DIR/avatar-virtual-camera.log"
+	else
+		echo -e "  ${YELLOW}⚠${NC}  Virtual camera failed to start"
+		echo -e "    Check: $LOG_DIR/avatar-virtual-camera.log"
+	fi
+fi
+
+echo ""
+
+# Step 5: Health Check
+echo -e "${YELLOW}[5/5]${NC} Running health checks..."
+
+echo -n "  Control server health endpoint..."
+if curl -sf http://localhost:@avatarHttpPort@/health >/dev/null 2>&1; then
+	echo -e " ${GREEN}OK${NC}"
+else
+	echo -e " ${RED}FAILED${NC}"
+fi
+
+echo -n "  Renderer HTTP endpoint..."
+if curl -sf http://localhost:@avatarRendererPort@ >/dev/null 2>&1; then
+	echo -e " ${GREEN}OK${NC}"
+else
+	echo -e " ${RED}FAILED${NC}"
+fi
+
+echo -n "  Virtual camera device..."
+if [ -e "$V4L2_DEVICE" ]; then
+	echo -e " ${GREEN}OK${NC}"
+else
+	echo -e " ${YELLOW}SKIP${NC}"
+fi
+
+echo ""
+echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+# Disable hey-bot keyword detection while avatar is active (prevents feedback loops)
+touch /tmp/hey-bot-keywords-disabled
+echo -e "${GREEN}   ✓ Avatar System Ready!${NC}"
+echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo -e "${BLUE}Services:${NC}"
+echo -e "  • Control Server:  ws://localhost:@avatarWsPort@"
+echo -e "  • HTTP API:        http://localhost:@avatarHttpPort@"
+echo -e "  • Avatar Renderer: http://localhost:@avatarRendererPort@"
+echo -e "  • Virtual Mic:     Avatar_Microphone (AvatarMicSource)"
+echo -e "  • Virtual Camera:  $V4L2_DEVICE"
+echo ""
+echo -e "${BLUE}Speak:${NC}"
+echo -e "  avatar-speak.sh \"Hello\" neutral speakers   # room audio"
+echo -e "  avatar-speak.sh \"Hello\" neutral mic        # Meet mic"
+echo -e "  avatar-speak.sh \"Hello\" neutral both       # both"
+echo ""
+echo -e "${BLUE}Stop:${NC}"
+echo -e "  $AVATAR_DIR/scripts/stop-avatar.sh"
+echo ""

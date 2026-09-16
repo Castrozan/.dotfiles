@@ -8,7 +8,7 @@ let
   claudePluginPortGenerator = pkgs.runCommand "codex-claude-plugin-porter" { } ''
     mkdir -p "$out"
     cp ${./claude-plugin-port}/*.py "$out"/
-    cp ${../claude-code/plugin-discovery}/*.py "$out"/
+    cp ${../claude-code/plugins/installed_plugin_discovery.py} "$out/installed_plugin_discovery.py"
   '';
   codexBinary = "${config.home.homeDirectory}/.local/bin/codex";
 in

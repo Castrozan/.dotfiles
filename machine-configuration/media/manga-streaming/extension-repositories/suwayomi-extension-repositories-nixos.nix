@@ -7,7 +7,7 @@ let
   suwayomiBindAddress = import ../../tailnet-bind-address.nix { inherit lib; };
   extensionRepositoriesPackageDirectory = ./scripts/suwayomi_extension_repositories;
   declaredRepositoryListFile = "/run/agenix/suwayomi-extension-repositories";
-  declaredRepositoryListDigest = builtins.hashFile "sha256" ../../../../secrets/credentials/suwayomi-extension-repositories.age;
+  declaredRepositoryListDigest = builtins.hashFile "sha256" ../../../../secrets/credentials/media/suwayomi-extension-repositories.age;
 in
 {
   systemd.services.suwayomi-extension-repositories = {
@@ -15,7 +15,7 @@ in
     after = [ "suwayomi-server.service" ];
     requires = [ "suwayomi-server.service" ];
     wantedBy = [ "multi-user.target" ];
-    restartTriggers = [ ../../../../secrets/credentials/suwayomi-extension-repositories.age ];
+    restartTriggers = [ ../../../../secrets/credentials/media/suwayomi-extension-repositories.age ];
     environment = {
       SUWAYOMI_GRAPHQL_URL = "http://${suwayomiBindAddress}:4567/api/graphql";
       SUWAYOMI_EXTENSION_REPOSITORIES_FILE = declaredRepositoryListFile;

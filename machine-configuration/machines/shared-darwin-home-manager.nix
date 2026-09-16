@@ -29,16 +29,16 @@
 
     ../editors/neovim/neovim-home-manager.nix
 
-    ../desktop/theming/theming-home-manager.nix
-    ../desktop/application-installation/darwin-application-links-home-manager.nix
+    ../desktop/appearance/theming/theming-home-manager.nix
+    ../desktop/applications/installation/darwin-application-links-home-manager.nix
     ../desktop/hammerspoon/hammerspoon-home-manager.nix
-    ../desktop/application-launcher/application-launcher-home-manager.nix
-    ../desktop/screensaver/screensaver-home-manager.nix
+    ../desktop/applications/launcher/application-launcher-home-manager.nix
+    ../desktop/appearance/screensaver/screensaver-home-manager.nix
     ../browsers/brave/brave-profile-preferences-home-manager.nix
     ../browsers/chrome/chrome-profile-launchers-home-manager.nix
-    ../desktop/fonts/fonts-home-manager.nix
-    ../desktop/karabiner/karabiner-home-manager.nix
-    ../desktop/keyboard-layout/keyboard-layout-home-manager.nix
+    ../desktop/appearance/fonts/fonts-home-manager.nix
+    ../desktop/input/karabiner/karabiner-home-manager.nix
+    ../desktop/input/keyboard-layout/keyboard-layout-home-manager.nix
     ../desktop/clipboard-history/maccy-home-manager.nix
     ../home-automation/home-assistant/home-assistant-remote-home-manager.nix
 

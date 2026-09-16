@@ -1,0 +1,125 @@
+import asyncio
+import dataclasses
+import sys
+from pathlib import Path
+
+BRIDGE_PACKAGE_DIRECTORY_PATH = (
+    Path(__file__).resolve().parents[3] / "scripts" / "cockpit_session_bridge"
+)
+sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
+
+import cockpit_session_process
+import cockpit_tmux_commands
+import settings
+from cockpit_multiplexer_test_doubles import RecordingSubprocessRunner
+
+TMUX_EXECUTABLE_PATH = "/run/current-system/sw/bin/tmux"
+HERDR_EXECUTABLE_PATH = "/run/current-system/sw/bin/herdr"
+
+
+class _FakeWebsocketRequest:
+    def __init__(self, request_path):
+        self.path = request_path
+
+
+class _FakeWebsocketConnection:
+    def __init__(self, request_path):
+        self.request = _FakeWebsocketRequest(request_path)
+
+
+def _attach_settings():
+    return settings.CockpitSessionBridgeSettings(
+        listen_address="127.0.0.1",
+        listen_port=8787,
+        session_command=["/bin/sh", "-il"],
+        allowed_request_origin="https://lucaszanoni.com",
+        terminal_type="xterm-256color",
+        cockpit_tmux_executable_path=TMUX_EXECUTABLE_PATH,
+        cockpit_tmux_enumeration_socket_name="",
+        cockpit_tmux_mutation_socket_name="cockpit",
+        cockpit_herdr_executable_path=HERDR_EXECUTABLE_PATH,
+    )
+
+
+def _resolve_over_a_tmux_only_machine(websocket_connection, attach_settings):
+    return asyncio.run(
+        cockpit_session_process.resolve_session_command(
+            websocket_connection,
+            attach_settings,
+            subprocess_runner=RecordingSubprocessRunner(),
+        )
+    )
+
+
+def test_read_session_attach_target_reads_the_terminal_identifier_from_the_query():
+    assert (
+        settings.read_session_attach_target(
+            "/cockpit/jarvis-session/?terminal=term_abc123&windowIdentifier=@1"
+        )
+        == "term_abc123"
+    )
+
+
+def test_read_session_attach_target_is_none_without_a_terminal_identifier():
+    assert settings.read_session_attach_target("/cockpit/jarvis-session/") is None
+    assert settings.read_session_attach_target("/?terminal=") is None
+
+
+def test_build_attach_session_command_targets_the_default_socket_when_enumeration_is_empty():
+    assert cockpit_tmux_commands.build_attach_session_command(
+        TMUX_EXECUTABLE_PATH, "", "dotfiles"
+    ) == [TMUX_EXECUTABLE_PATH, "-u", "attach-session", "-t", "dotfiles"]
+
+
+def test_build_attach_session_command_uses_the_enumeration_socket_when_named():
+    assert cockpit_tmux_commands.build_attach_session_command(
+        TMUX_EXECUTABLE_PATH, "cockpit", "reports-deploy"
+    ) == [
+        TMUX_EXECUTABLE_PATH,
+        "-L",
+        "cockpit",
+        "-u",
+        "attach-session",
+        "-t",
+        "reports-deploy",
+    ]
+
+
+def test_resolve_session_command_attaches_the_requested_session_on_the_enumeration_socket():
+    resolved = _resolve_over_a_tmux_only_machine(
+        _FakeWebsocketConnection("/cockpit/jarvis-session/?terminal=dotfiles"),
+        _attach_settings(),
+    )
+    assert resolved == [
+        TMUX_EXECUTABLE_PATH,
+        "-u",
+        "attach-session",
+        "-t",
+        "dotfiles",
+    ]
+
+
+def test_resolve_session_command_attaches_the_requested_session_over_ssh_when_a_remote_host_is_set():
+    remote_settings = dataclasses.replace(
+        _attach_settings(), cockpit_tmux_remote_ssh_host="lucas.zanoni@kira"
+    )
+    resolved = _resolve_over_a_tmux_only_machine(
+        _FakeWebsocketConnection("/cockpit/jarvis-session/?terminal=dotfiles"),
+        remote_settings,
+    )
+    assert resolved == [
+        "ssh",
+        *cockpit_tmux_commands.NON_INTERACTIVE_SSH_OPTIONS,
+        "-tt",
+        "lucas.zanoni@kira",
+        f"{cockpit_tmux_commands.REMOTE_TMUX_EXECUTABLE} -u attach-session -t dotfiles",
+    ]
+
+
+def test_resolve_session_command_keeps_the_static_command_without_a_session_target():
+    settings_with_static_command = _attach_settings()
+    resolved = _resolve_over_a_tmux_only_machine(
+        _FakeWebsocketConnection("/cockpit/jarvis-session/"),
+        settings_with_static_command,
+    )
+    assert resolved == settings_with_static_command.session_command

@@ -83,7 +83,7 @@ _run_qmllint_checks() {
 
 	echo "--- QML Lint ---"
 	local qmlFiles
-	qmlFiles=$(find "$REPO_DIR/machine-configuration/desktop/quickshell" -name "*.qml" -type f | sort)
+	qmlFiles=$(find "$REPO_DIR/machine-configuration/desktop/desktop-environments/quickshell" -name "*.qml" -type f | sort)
 
 	local warningLog
 	warningLog="$(mktemp)"

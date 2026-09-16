@@ -7,7 +7,7 @@ let
   claudePluginSkillPorter = pkgs.runCommand "opencode-claude-plugin-skill-porter" { } ''
     mkdir -p "$out"
     cp ${./claude-plugin-port}/*.py "$out"/
-    cp ${../claude-code/plugin-discovery}/*.py "$out"/
+    cp ${../claude-code/plugins/installed_plugin_discovery.py} "$out/installed_plugin_discovery.py"
   '';
 in
 {

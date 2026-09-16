@@ -1,7 +1,7 @@
 import pathlib
 import shutil
 
-from claude_plugin_discovery import read_skill_directories_of_every_enabled_plugin
+from installed_plugin_discovery import read_skill_directories_of_every_enabled_plugin
 
 home_directory = pathlib.Path.home()
 opencode_skills_directory = home_directory / ".config" / "opencode" / "skills"

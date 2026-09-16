@@ -170,7 +170,7 @@ in
     mkEvalCheck
     ;
 }
-// import ../gpt-proxy/__tests__/checks.nix {
+// import ../model-providers/chatgpt-subscription/__tests__/checks.nix {
   inherit
     pkgs
     lib
@@ -179,7 +179,7 @@ in
     self
     ;
 }
-// import ../opencode-go/__tests__/checks.nix {
+// import ../model-providers/opencode-go/__tests__/checks.nix {
   inherit
     pkgs
     lib

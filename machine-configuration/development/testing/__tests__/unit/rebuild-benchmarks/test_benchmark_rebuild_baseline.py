@@ -1,0 +1,117 @@
+import json
+from datetime import datetime, timedelta, timezone
+from unittest.mock import patch
+
+import benchmark_core
+import rebuild_benchmarks.baseline
+from benchmark_baseline import BaselineValidation
+
+
+def _valid_baseline() -> dict:
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "git_commit": "abc1234",
+        "host": "kira",
+        "config": "darwin",
+        "threshold_percent": 150,
+        "measurements": {"eval": {"duration_seconds": 2.0, "max_allowed_seconds": 3.0}},
+    }
+
+
+class TestTrackedBaselinePath:
+    def test_resolves_a_baseline_that_exists_in_the_checkout(self, repository_root):
+        relative_path = rebuild_benchmarks.baseline.BASELINE_PATH.relative_to(
+            benchmark_core.DOTFILES_DIRECTORY
+        )
+        assert (repository_root / relative_path).is_file()
+
+
+class TestCheckBaselineReporting:
+    def test_reports_tracked_measurements_without_any_local_results_csv(
+        self, tmp_path, capsys
+    ):
+        baseline_file = tmp_path / "baseline.json"
+        baseline_file.write_text(json.dumps(_valid_baseline()))
+
+        with (
+            patch("rebuild_benchmarks.baseline.BASELINE_PATH", baseline_file),
+            patch("benchmark_core.RESULTS_DIRECTORY", tmp_path / "absent"),
+        ):
+            assert rebuild_benchmarks.baseline.check_baseline(False) is True
+
+        report = capsys.readouterr().out
+        assert "Commit: abc1234" in report
+        assert "Host: kira/darwin" in report
+        assert "Threshold: 150%" in report
+        assert "eval: 2.0s (max 3.0s)" in report
+        assert "PASSED" in report
+
+
+class TestCheckBaselineIgnoresAge:
+    def test_passes_on_a_structurally_valid_but_stale_baseline(self, tmp_path, capsys):
+        stale = datetime.now(timezone.utc) - timedelta(days=200)
+        document = _valid_baseline()
+        document["generated_at"] = stale.isoformat(timespec="seconds")
+        baseline_file = tmp_path / "baseline.json"
+        baseline_file.write_text(json.dumps(document))
+
+        with patch("rebuild_benchmarks.baseline.BASELINE_PATH", baseline_file):
+            assert rebuild_benchmarks.baseline.check_baseline(False) is True
+
+        report = capsys.readouterr().out
+        assert "Age: 200 days" in report
+        assert "PASSED" in report
+
+
+class TestCheckBaselineDelegatesValidation:
+    def test_fails_and_prints_every_failure_the_validator_reports(self, capsys):
+        validation = BaselineValidation({}, None, ["first problem", "second problem"])
+
+        with patch(
+            "benchmark_baseline.validate_tracked_baseline", return_value=validation
+        ):
+            assert rebuild_benchmarks.baseline.check_baseline(False) is False
+
+        report = capsys.readouterr().out
+        assert "FAILED (2 issues)" in report
+        assert "- first problem" in report
+        assert "- second problem" in report
+
+    def test_asks_the_validator_for_the_tracked_path_and_rebuild_keys(self):
+        validation = BaselineValidation({}, None, ["stubbed"])
+
+        with patch(
+            "benchmark_baseline.validate_tracked_baseline", return_value=validation
+        ) as validate:
+            rebuild_benchmarks.baseline.check_baseline(False)
+
+        validate.assert_called_once_with(
+            rebuild_benchmarks.baseline.BASELINE_PATH,
+            "duration_seconds",
+            "max_allowed_seconds",
+            rebuild_benchmarks.baseline.SAVE_BASELINE_COMMAND,
+        )
+
+
+class TestCheckBaselineFreshnessIsTheCallersChoice:
+    def test_accepts_a_stale_baseline_when_freshness_is_not_required(self, tmp_path):
+        baseline_file = tmp_path / "stale.json"
+        stale = _valid_baseline()
+        stale["generated_at"] = "2024-01-01T00:00:00+00:00"
+        baseline_file.write_text(json.dumps(stale))
+
+        with patch.object(rebuild_benchmarks.baseline, "BASELINE_PATH", baseline_file):
+            assert rebuild_benchmarks.baseline.check_baseline(False) is True
+
+    def test_rejects_a_stale_baseline_when_freshness_is_required(
+        self, tmp_path, capsys
+    ):
+        baseline_file = tmp_path / "stale.json"
+        stale = _valid_baseline()
+        stale["generated_at"] = "2024-01-01T00:00:00+00:00"
+        baseline_file.write_text(json.dumps(stale))
+
+        with patch.object(rebuild_benchmarks.baseline, "BASELINE_PATH", baseline_file):
+            assert rebuild_benchmarks.baseline.check_baseline(True) is False
+
+        assert "days old" in capsys.readouterr().out

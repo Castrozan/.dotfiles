@@ -168,7 +168,7 @@ reachable at `~/.local/share/agent-skill-index/<name>`, deployed by `agent-harne
 The former `personal` umbrella skill was deleted and replaced by a nix-generated `all-skills` skill, built like `core`
 from `renderAllSkillsIndexSkill` in `interactive-agent-skills.nix`. Its frontmatter description names every skill not
 curated-injected for that harness, and its body points at each indexed skill's reachable path. Its chapters became real
-skills: `agent-harness/agent-instructions/skills/obsidian` and `agent-harness/agent-instructions/skills/passwords`.
+skills: `agent-harness/agent-instructions/skills/knowledge/obsidian` and `agent-harness/agent-instructions/skills/services/passwords`.
 
 ## Follow-up: the third state, skills no interactive session reaches
 

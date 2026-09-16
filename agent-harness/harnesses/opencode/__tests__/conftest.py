@@ -4,7 +4,7 @@ from pathlib import Path
 OPENCODE_SCRIPTS_DIRECTORY = Path(__file__).parent.parent / "scripts"
 CLAUDE_PLUGIN_PORT_DIRECTORY = Path(__file__).parent.parent / "claude-plugin-port"
 PLUGIN_DISCOVERY_DIRECTORY = (
-    Path(__file__).parent.parent.parent / "claude-code" / "plugin-discovery"
+    Path(__file__).parent.parent.parent / "claude-code" / "plugins"
 )
 
 sys.path.insert(0, str(PLUGIN_DISCOVERY_DIRECTORY))

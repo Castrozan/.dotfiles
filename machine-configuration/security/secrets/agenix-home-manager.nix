@@ -17,9 +17,9 @@ let
   privateMachineSecretsModulePath = "${toString privateConfigRoot}/machines/${hostname}/secrets.nix";
   privateMachineSecretsModuleExists = builtins.pathExists privateMachineSecretsModulePath;
 
-  makeSecret = name: {
-    file = ../../../secrets/${name}.age;
-    path = "${secretsDirectory}/${builtins.baseNameOf name}";
+  makeSecret = secret: {
+    inherit (secret) file;
+    path = "${secretsDirectory}/${builtins.baseNameOf secret.name}";
   };
 
   secretsWithEnvironmentVariables = {
@@ -27,57 +27,8 @@ let
     "credentials/glab-token" = "GITLAB_TOKEN";
   };
 
-  secretsWithoutEnvironmentVariables = [
-    "api-keys/sonarqube-token"
-    "api-keys/brave-api-key"
-    "api-keys/deepgram-api-key"
-    "api-keys/gemini-api-key"
-    "api-keys/klipy-api-key"
-    "api-keys/nvidia-api-key"
-    "api-keys/opencode-api-key"
-    "api-keys/openai-api-key"
-    "api-keys/todoist-api-token"
-    "infrastructure/telegram-ids"
-    "infrastructure/ssh-hosts"
-    "credentials/x-username"
-    "credentials/x-email"
-    "credentials/x-password"
-    "credentials/x-cookies"
-    "bot-tokens/telegram-bot-token-jarvis"
-    "bot-tokens/telegram-bot-token-golden"
-    "bot-tokens/telegram-bot-token-clever"
-    "bot-tokens/telegram-bot-token-robson"
-    "bot-tokens/telegram-bot-token-jenny"
-    "bot-tokens/telegram-bot-token-monster"
-    "bot-tokens/telegram-bot-token-silver"
-    "bot-tokens/discord-bot-token-jarvis"
-    "bot-tokens/discord-bot-token-golden"
-    "bot-tokens/discord-bot-token-clever"
-    "bot-tokens/discord-bot-token-robson"
-    "bot-tokens/discord-bot-token-jenny"
-    "bot-tokens/discord-bot-token-monster"
-    "bot-tokens/discord-bot-token-silver"
-    "bot-tokens/discord-bot-token-claude"
-    "discord-channels/discord-channels-monster"
-    "credentials/obsidian-headless-auth-token"
-    "credentials/obsidian-headless-sync-config"
-    "infrastructure/gpg-private-key"
-    "credentials/viu-auth"
-    "credentials/home-assistant-token"
-    "credentials/google-totp-secret"
-    "credentials/gcp-usage-uploader-key"
-    "credentials/ingest-producer-secret"
-    "credentials/bitwarden-client-id"
-    "credentials/bitwarden-client-secret"
-    "credentials/bitwarden-master-password"
-    "infrastructure/kira-session-connector-credentials"
-    "infrastructure/rin-session-connector-credentials"
-  ];
-
-  secretFileExists = name: builtins.pathExists (../../../secrets/${name}.age);
-
-  allSecretNames = builtins.filter secretFileExists (
-    (lib.attrNames secretsWithEnvironmentVariables) ++ secretsWithoutEnvironmentVariables
+  availableSecrets = builtins.filter (secret: builtins.pathExists secret.file) (
+    import ./public-secret-sources.nix
   );
 
   exportLines = lib.concatStringsSep "\n" (
@@ -107,10 +58,10 @@ in
   age = {
     identityPaths = identityKeyPaths;
     secrets = builtins.listToAttrs (
-      map (name: {
-        inherit name;
-        value = makeSecret name;
-      }) allSecretNames
+      map (secret: {
+        inherit (secret) name;
+        value = makeSecret secret;
+      }) availableSecrets
     );
   };
 
@@ -120,13 +71,13 @@ in
   };
 
   healthCheck.probes = map (
-    secretName:
+    secret:
     healthCheckLib.mkFileProbe {
       category = "secret";
-      name = "agenix: ${secretName}";
-      path = "${secretsDirectory}/${builtins.baseNameOf secretName}";
+      name = "agenix: ${secret.name}";
+      path = "${secretsDirectory}/${builtins.baseNameOf secret.name}";
     }
-  ) allSecretNames;
+  ) availableSecrets;
 
   # Upstream agenix-home-manager ships the activate-agenix launchd plist with
   # KeepAlive {Crashed: false, SuccessfulExit: false}. Both subkeys evaluate

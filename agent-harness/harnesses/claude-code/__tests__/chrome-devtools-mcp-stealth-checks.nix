@@ -4,7 +4,7 @@
   mkEvalCheck,
 }:
 let
-  browserMcpInstall = import ../../../../agent-harness/agent-instructions/skills/browser/install {
+  browserMcpInstall = import ../../../agent-instructions/skills/workstation/browser/install {
     inherit pkgs;
     nodejs = pkgs.nodejs_22;
     homeDir = "/home/test-user";

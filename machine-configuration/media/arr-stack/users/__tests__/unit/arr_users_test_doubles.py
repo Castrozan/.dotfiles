@@ -6,7 +6,7 @@ ARR_USERS_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(ARR_USERS_PACKAGE_DIRECTORY_PATH))
 
-import jellyseerr_account_permissions
+from jellyseerr import jellyseerr_account_permissions
 import library_access_synchronization
 import private_request_routing
 import user_account_operations

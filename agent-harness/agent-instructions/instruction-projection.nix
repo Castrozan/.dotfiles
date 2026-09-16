@@ -2,7 +2,7 @@
 let
   evaluationDirectory = ../quality/evaluations;
   python = pkgs.python312.withPackages (
-    import (evaluationDirectory + "/instruction-python-packages.nix")
+    import (evaluationDirectory + "/instructions/python-packages.nix")
   );
   project =
     name: manifest:
@@ -13,7 +13,7 @@ let
         manifestFile = pkgs.writeText "${name}-manifest.json" (builtins.toJSON manifest);
       }
       ''
-        python ${evaluationDirectory}/instruction_projection.py "$manifestFile" "$out"
+        python ${evaluationDirectory}/instructions/instruction_projection.py "$manifestFile" "$out"
       '';
 in
 {
@@ -23,7 +23,7 @@ in
     { coreInstructionFile, humanizeSkillDirectory }:
     {
       "${toString ./core-rules/core.md}" = coreInstructionFile;
-      "${toString ./skills/humanize}" = humanizeSkillDirectory;
+      "${toString ./skills/writing/humanize}" = humanizeSkillDirectory;
     };
 
   instructionFile =

@@ -1,5 +1,5 @@
-from e2e_models import E2eScenarioResult
-from e2e_trace import extract_tool_name_sequence
+from e2e.sessions.e2e_models import E2eScenarioResult
+from e2e.sessions.e2e_trace import extract_tool_name_sequence
 
 
 def print_e2e_results(

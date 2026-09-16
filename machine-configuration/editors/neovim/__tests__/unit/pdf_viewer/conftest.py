@@ -72,5 +72,5 @@ def pdf_viewer_prelude(neovim_lua_path, neovim_lua_directory, tmp_path):
       settle()
       refresh()
     end
-    dofile({json.dumps(str(neovim_lua_path("config", "pdf_viewer.lua")))}).setup()
+    dofile({json.dumps(str(neovim_lua_path("config", "pdf", "viewer.lua")))}).setup()
     """

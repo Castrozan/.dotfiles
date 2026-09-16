@@ -1,0 +1,13 @@
+DrawerHoverController 1.0 DrawerHoverController.qml
+DrawerHoverTiming 1.0 DrawerHoverTiming.qml
+DrawerInputMask 1.0 DrawerInputMask.qml
+DrawerIpcAdapter 1.0 DrawerIpcAdapter.qml
+DrawerState 1.0 DrawerState.qml
+ExclusionZones 1.0 ExclusionZones.qml
+Interactions 1.0 Interactions.qml
+RightPanelGeometry 1.0 RightPanelGeometry.qml
+RightPanelGroup 1.0 RightPanelGroup.qml
+ScreenDrawerWindow 1.0 ScreenDrawerWindow.qml
+ScreenDrawers 1.0 ScreenDrawers.qml
+ScreenEdgeHoverAreas 1.0 ScreenEdgeHoverAreas.qml
+TopBottomPanelGroup 1.0 TopBottomPanelGroup.qml

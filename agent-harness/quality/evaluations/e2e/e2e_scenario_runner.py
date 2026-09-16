@@ -3,27 +3,27 @@ import tempfile
 import time
 from pathlib import Path
 
-from e2e_assertions import run_e2e_assertions
-from e2e_harness_profiles import scenario_harness_profile
-from e2e_models import E2eScenarioResult, TerminalSessionTrace
+from e2e.assertions.e2e_assertions import run_e2e_assertions
+from e2e.sessions.e2e_harness_profiles import scenario_harness_profile
+from e2e.sessions.e2e_models import E2eScenarioResult, TerminalSessionTrace
 from e2e_scoring import (
     calculate_e2e_experience_score,
     check_minimum_e2e_experience_score,
 )
-from e2e_herdr import (
+from e2e.sessions.e2e_herdr import (
     E2E_TAB_LABEL_PREFIX,
     create_isolated_herdr_tab_for_test,
     destroy_test_tab,
     herdr_server_is_reachable,
     launch_agent_in_herdr_pane,
 )
-from e2e_herdr_io import (
+from e2e.sessions.e2e_herdr_io import (
     capture_full_terminal_output,
     wait_for_agent_to_become_ready,
 )
-from e2e_scenario_steps import run_scenario_step, scenario_steps
-from e2e_trace import build_terminal_session_trace
-from e2e_workspace import (
+from e2e.sessions.e2e_scenario_steps import run_scenario_step, scenario_steps
+from e2e.sessions.e2e_trace import build_terminal_session_trace
+from e2e.sessions.e2e_workspace import (
     E2E_WORKSPACE_PARENT,
     load_scenario,
     sanitize_name_for_session,

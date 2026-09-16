@@ -10,7 +10,7 @@
         mode = "600";
       };
       "telegram-bot-token" = {
-        file = ../../../../secrets/bot-tokens/telegram-bot-token.age;
+        file = ../../../../secrets/bot-tokens/telegram/telegram-bot-token.age;
         owner = "zanoni";
         mode = "400";
       };
@@ -55,17 +55,17 @@
         mode = "400";
       };
       "telegram-bot-token-clever" = {
-        file = ../../../../secrets/bot-tokens/telegram-bot-token-clever.age;
+        file = ../../../../secrets/bot-tokens/telegram/telegram-bot-token-clever.age;
         owner = "zanoni";
         mode = "400";
       };
       "telegram-bot-token-golden" = {
-        file = ../../../../secrets/bot-tokens/telegram-bot-token-golden.age;
+        file = ../../../../secrets/bot-tokens/telegram/telegram-bot-token-golden.age;
         owner = "zanoni";
         mode = "400";
       };
       "telegram-bot-token-jarvis" = {
-        file = ../../../../secrets/bot-tokens/telegram-bot-token-jarvis.age;
+        file = ../../../../secrets/bot-tokens/telegram/telegram-bot-token-jarvis.age;
         owner = "zanoni";
         mode = "400";
       };
@@ -75,17 +75,17 @@
         mode = "400";
       };
       "discord-bot-token-clever" = {
-        file = ../../../../secrets/bot-tokens/discord-bot-token-clever.age;
+        file = ../../../../secrets/bot-tokens/discord/discord-bot-token-clever.age;
         owner = "zanoni";
         mode = "400";
       };
       "discord-bot-token-golden" = {
-        file = ../../../../secrets/bot-tokens/discord-bot-token-golden.age;
+        file = ../../../../secrets/bot-tokens/discord/discord-bot-token-golden.age;
         owner = "zanoni";
         mode = "400";
       };
       "discord-bot-token-jarvis" = {
-        file = ../../../../secrets/bot-tokens/discord-bot-token-jarvis.age;
+        file = ../../../../secrets/bot-tokens/discord/discord-bot-token-jarvis.age;
         owner = "zanoni";
         mode = "400";
       };
@@ -98,54 +98,54 @@
         mode = "400";
       };
       "jellyseerr-smtp-app-password" = {
-        file = ../../../../secrets/credentials/jellyseerr-smtp-app-password.age;
+        file = ../../../../secrets/credentials/media/jellyseerr-smtp-app-password.age;
         mode = "400";
       };
       "arr-qbittorrent-password" = {
-        file = ../../../../secrets/credentials/arr-qbittorrent-password.age;
+        file = ../../../../secrets/credentials/media/arr-qbittorrent-password.age;
         mode = "400";
       };
       "arr-radarr-password" = {
-        file = ../../../../secrets/credentials/arr-radarr-password.age;
+        file = ../../../../secrets/credentials/media/arr-radarr-password.age;
         mode = "400";
       };
       "arr-sonarr-password" = {
-        file = ../../../../secrets/credentials/arr-sonarr-password.age;
+        file = ../../../../secrets/credentials/media/arr-sonarr-password.age;
         mode = "400";
       };
       "arr-prowlarr-password" = {
-        file = ../../../../secrets/credentials/arr-prowlarr-password.age;
+        file = ../../../../secrets/credentials/media/arr-prowlarr-password.age;
         mode = "400";
       };
       "arr-bazarr-password" = {
-        file = ../../../../secrets/credentials/arr-bazarr-password.age;
+        file = ../../../../secrets/credentials/media/arr-bazarr-password.age;
         mode = "400";
       };
       "arr-samaritano-indexer-apikey" = {
-        file = ../../../../secrets/credentials/arr-samaritano-indexer-apikey.age;
+        file = ../../../../secrets/credentials/media/arr-samaritano-indexer-apikey.age;
         mode = "400";
       };
       "jellyfin-admin-api-key" = {
-        file = ../../../../secrets/credentials/jellyfin-admin-api-key.age;
+        file = ../../../../secrets/credentials/media/jellyfin-admin-api-key.age;
         owner = "zanoni";
         mode = "400";
       };
       "kavita-admin-api-key" = {
-        file = ../../../../secrets/credentials/kavita-admin-api-key.age;
+        file = ../../../../secrets/credentials/media/kavita-admin-api-key.age;
         owner = "zanoni";
         mode = "400";
       };
       "suwayomi-extension-repositories" = {
-        file = ../../../../secrets/credentials/suwayomi-extension-repositories.age;
+        file = ../../../../secrets/credentials/media/suwayomi-extension-repositories.age;
         owner = "zanoni";
         mode = "400";
       };
       "proton-openvpn-credentials" = {
-        file = ../../../../secrets/credentials/proton-openvpn-credentials.age;
+        file = ../../../../secrets/credentials/proton-vpn/proton-openvpn-credentials.age;
         mode = "400";
       };
       "proton-paraguay-openvpn-config" = {
-        file = ../../../../secrets/credentials/proton-paraguay-openvpn-config.age;
+        file = ../../../../secrets/credentials/proton-vpn/proton-paraguay-openvpn-config.age;
         mode = "400";
       };
     };

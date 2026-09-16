@@ -1,0 +1,8 @@
+BarBackgroundShape 1.0 BarBackgroundShape.qml
+BarFrameGeometry 1.0 BarFrameGeometry.qml
+BarFramePath 1.0 BarFramePath.qml
+BarInternalBorderShape 1.0 BarInternalBorderShape.qml
+DashboardContour 1.0 DashboardContour.qml
+LauncherContour 1.0 LauncherContour.qml
+PopoutContour 1.0 PopoutContour.qml
+RightPanelContour 1.0 RightPanelContour.qml

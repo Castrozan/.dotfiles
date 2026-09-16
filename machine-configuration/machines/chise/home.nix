@@ -20,9 +20,9 @@ in
     ../../../agent-harness/harnesses/claude-code
     ../../../agent-harness/harnesses/clawde
     ../../../agent-harness/harnesses/codex
-    ../../desktop/gnome/gnome-home-manager.nix
+    ../../desktop/desktop-environments/gnome/gnome-home-manager.nix
     ../../home-automation/home-assistant/home-assistant-home-manager.nix
-    ../../desktop/hyprland/hyprland-nixos.nix
+    ../../desktop/desktop-environments/hyprland/hyprland-nixos.nix
     ../../../agent-harness/harnesses/opencode
     ../../development/testing/testing-home-manager.nix
 
@@ -43,9 +43,9 @@ in
     ../../browsers/chrome/chrome-global-linux-home-manager.nix
 
     ../../desktop/clipboard-history/clipse-home-manager.nix
-    ../../desktop/fonts/fonts-home-manager.nix
-    ../../desktop/screensaver/screensaver-home-manager.nix
-    ../../desktop/application-launcher/fuzzel-home-manager.nix
+    ../../desktop/appearance/fonts/fonts-home-manager.nix
+    ../../desktop/appearance/screensaver/screensaver-home-manager.nix
+    ../../desktop/applications/launcher/fuzzel-home-manager.nix
     ../../desktop/screen-capture/screen-capture-command-packages-home-manager.nix
 
     ../../development/cost-monitoring/ccost-home-manager.nix
@@ -80,7 +80,7 @@ in
     ../../operating-system/bluetooth/bluetui-home-manager.nix
     ../../operating-system/service-management/systemd-manager-tui-home-manager.nix
     ../../development/development-environments/ralph-tui-home-manager.nix
-    ../../desktop/vial/vial-home-manager.nix
+    ../../desktop/input/vial/vial-home-manager.nix
     ../../media/obsidian/obsidian-home-manager.nix
     ../../media/content-summarization/summarize-home-manager.nix
     ../../media/terminal-media-viewer/viu-home-manager.nix

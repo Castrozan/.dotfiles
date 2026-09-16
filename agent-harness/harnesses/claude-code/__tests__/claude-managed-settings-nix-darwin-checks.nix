@@ -7,7 +7,9 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  claudeDarwinPolicyConfig = import ../claude-managed-settings-nix-darwin.nix { inherit lib; };
+  claudeDarwinPolicyConfig = import ../settings/claude-managed-settings-nix-darwin.nix {
+    inherit lib;
+  };
 
   managedSettingsInstallScript =
     claudeDarwinPolicyConfig.system.activationScripts.postActivation.text.content;

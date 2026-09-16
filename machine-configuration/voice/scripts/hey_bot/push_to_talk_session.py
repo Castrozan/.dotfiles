@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from hey_bot.assistant_gateway import AssistantGateway
-from hey_bot.desktop_notifier import DesktopNotifier
+from hey_bot.system.desktop_notifier import DesktopNotifier
 from hey_bot.gateway_reply_speech import FailureSpeech, spoken_reply
-from hey_bot.push_to_talk_capture import PushToTalkCapture
-from hey_bot.speech_synthesizer import SpeechSynthesizer
+from hey_bot.audio.push_to_talk_capture import PushToTalkCapture
+from hey_bot.audio.speech_synthesizer import SpeechSynthesizer
 
 NO_SPEECH_NOTIFICATION = "No speech detected"
 PUSH_TO_TALK_PROMPT_HEADER = (

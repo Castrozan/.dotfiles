@@ -1,0 +1,58 @@
+tests:
+  - name: ril_marks_done_only_through_the_cli
+    skill_path: agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md
+    prompt: "I finished working a capture. Should I hand-edit the done marker, or is there a command that owns this?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says not to hand-edit the marker and names ril record as the command that owns marking the capture done."
+
+  - name: ril_claim_collision_stops_the_run
+    skill_path: agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md
+    prompt: "ril claim printed 'held: capture.md' and exited non-zero. What now? Respond in one sentence."
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says another run already holds that capture, so stop and take the next one instead of forcing a takeover."
+
+  - name: ril_completed_capture_is_not_a_claim_collision
+    skill_path: agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md
+    prompt: "ril claim printed 'already-done: capture.md' and exited non-zero. Is another run holding it? What should I do?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Distinguishes an already completed capture from one held by another run, skips it without changing its completion record, and does not force a claim or repeat the work."
+
+  - name: ril_never_annotates_a_capture
+    skill_path: agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md
+    prompt: "Should I summarize each saved item, tag it and rate its relevance in place?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Refuses, saying a capture must end as a change to the repo, a deliberate thing to learn, or a filed reference, and that a pass leaving the machines and the brain unchanged has failed."
+
+  - name: ril_resolves_the_capture_origin
+    skill_path: agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md
+    prompt: "In an interactive session, the capture's first link is an Instagram reel that serves an empty page to curl. Which source-resolution route should the agent use?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Chooses chrome-devtools against the user's live browser rather than the browser skill, WebFetch, or topic search because curl cannot render the reel."
+
+  - name: ril_verdict_belongs_to_the_user
+    skill_path: agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md
+    no_tools: true
+    prompt: "You, the agent, think this capture is obviously worth adopting. May you choose adopt and apply it without showing me a proposal? What must the user see and decide first?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Refuses to self-approve, saying the user picks the verdict at the gate after being shown what it is, what it changes here, and the cost."
+
+  - name: ril_proves_an_adopt_before_proposing_it
+    skill_path: agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md
+    prompt: "The user approved an adopt. Outline how it gets applied."
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Uses an isolated worktree rather than the main checkout, commits before building, names the worktree path in the flake reference instead of running rebuild, exercises the change, and opens a pull request that it merges only after approval."

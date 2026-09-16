@@ -18,12 +18,11 @@ secrets, script packaging, the "where does this belong" call.
 
 ### Repo local skills
 
-`nix` and `agent-harness` are repo-local: both describe this tree, so they reach no global skill surface and instead
-deploy into this repo's own project skill directories, gitignored exactly like the instruction file you are reading.
-Claude and OpenCode load them automatically here. Codex discovers skills only under its own home, so read them in the
-tree at `agent-harness/agent-instructions/skills/nix/SKILL.md` and
-`agent-harness/agent-instructions/skills/agent-harness/SKILL.md`; their optional knowledge chapters live under
-`references/knowledge.md` from each skill root.
+`nix` and `agent-harness` describe this repo and deploy only into its ignored project skill directories. Claude and
+OpenCode discover them here. Codex discovers only home skills, so read
+`agent-harness/agent-instructions/skills/services/nix/SKILL.md` and
+`agent-harness/agent-instructions/skills/agent-workflows/agent-harness/SKILL.md` directly. Optional knowledge chapters
+live at `references/knowledge.md` beneath each skill.
 
 ### Stewardship
 
@@ -109,8 +108,9 @@ test.
 ### Change review scope
 
 Before pushing a substantive change, load the `review` skill and follow its dotfiles-change procedure over the exact
-commits you added; when the harness cannot load skills, read `agent-harness/agent-instructions/skills/review/SKILL.md`
-and its `references/dotfiles-change.md` chapter instead.
+commits you added; when the harness cannot load skills, read
+`agent-harness/agent-instructions/skills/development/review/SKILL.md` and its `references/dotfiles-change.md` chapter
+instead.
 
 Commit first: this checkout is shared, so a review of the working tree reads whatever peers left uncommitted, and a
 confirmed finding belongs in a follow-up commit rather than an amend a peer may already have built on.

@@ -7,7 +7,7 @@ ARR_USERS_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(ARR_USERS_PACKAGE_DIRECTORY_PATH))
 
-import kavita_api_client
+from kavita import kavita_api_client
 import user_account_operations
 
 KAVITA_LIBRARIES = [

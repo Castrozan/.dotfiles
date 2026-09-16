@@ -1,4 +1,8 @@
-from hey_bot.conversation_state import ConversationMode, ConversationState, MachineSettings
+from hey_bot.conversation.conversation_state import (
+    ConversationMode,
+    ConversationState,
+    MachineSettings,
+)
 
 SETTINGS = MachineSettings(keywords_pattern="clever|jarvis")
 

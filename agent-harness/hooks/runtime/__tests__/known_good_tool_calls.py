@@ -21,7 +21,7 @@ DOTFILES_REPOSITORY_PATH = "/Users/lucas.zanoni/.dotfiles"
 KNOWN_GOOD_BASH_COMMANDS = (
     "git status --short",
     "git log --oneline -5",
-    "git add agent-harness/hooks/runtime/common/shell_heredoc_body.py",
+    "git add agent-harness/hooks/runtime/pre-tool-use/common/shell_heredoc_body.py",
     "git commit -F /tmp/commit-message.txt -- agent-harness/hooks/runtime/common",
     "git diff --stat origin/main",
     "git worktree add .worktrees/feature -b feature",
@@ -29,12 +29,12 @@ KNOWN_GOOD_BASH_COMMANDS = (
     "grep -R 'repository/verification/run.sh' agents",
     "ls -la agent-harness/hooks/runtime/__tests__/unit",
     "tree agent-harness/hooks/runtime/nix-rebuild",
-    "cat agent-harness/hooks/runtime/common/shell_heredoc_body.py",
+    "cat agent-harness/hooks/runtime/pre-tool-use/common/shell_heredoc_body.py",
     "wc -l agent-harness/hooks/runtime/common/*.py",
     "echo 'repository/verification/run.sh belongs to CI'",
-    "pytest agent-harness/hooks/runtime/__tests__/unit/test_shell_heredoc_body.py",
+    "pytest agent-harness/hooks/runtime/__tests__/unit/shell-commands/test_shell_heredoc_body.py",
     "pytest agent-harness/hooks/runtime/__tests__/integration/test_foreground_ci_wait_guard.py -q",
-    "ruff format agent-harness/hooks/runtime/common/shell_heredoc_body.py",
+    "ruff format agent-harness/hooks/runtime/pre-tool-use/common/shell_heredoc_body.py",
     "ruff check agent-harness/hooks/runtime/common",
     "nixfmt agent-harness/harnesses/codex/__tests__/hook-registration-checks.nix",
     "gh run list --commit abc123def456 --json databaseId,name,conclusion",
@@ -54,13 +54,13 @@ KNOWN_GOOD_BASH_COMMANDS = (
 
 KNOWN_GOOD_BACKGROUND_BASH_COMMANDS = (
     "launch-command-detached-into-new-session /tmp/rebuild.log rebuild",
-    "pytest agent-harness/hooks/runtime/__tests__/unit/test_shell_heredoc_body.py > /tmp/out.txt 2>&1",
+    "pytest agent-harness/hooks/runtime/__tests__/unit/shell-commands/test_shell_heredoc_body.py > /tmp/out.txt 2>&1",
     "agent-session exit --print-target > /tmp/status.txt 2>&1",
     "gh run watch 30957498339 --exit-status > /tmp/ci.log 2>&1",
 )
 
 KNOWN_GOOD_FILE_WRITES = (
-    f"{DOTFILES_REPOSITORY_PATH}/agent-harness/hooks/runtime/common/shell_heredoc_body.py",
+    f"{DOTFILES_REPOSITORY_PATH}/agent-harness/hooks/runtime/pre-tool-use/common/shell_heredoc_body.py",
     f"{DOTFILES_REPOSITORY_PATH}/agent-harness/hooks/runtime/__tests__/unit/test_thing.py",
     f"{DOTFILES_REPOSITORY_PATH}/agent-harness/hooks/integrations/claude/claude-hooks-home-manager.nix",
 )

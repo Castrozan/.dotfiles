@@ -17,7 +17,8 @@ let
 in
 {
   home.file.".config/kitty/startup.conf".source = ./program-configuration/startup.conf;
-  home.file.".config/kitty/wallpaper.png".source = ../../../desktop/theming/wallpapers/wallpaper.png;
+  home.file.".config/kitty/wallpaper.png".source =
+    ../../../desktop/appearance/theming/wallpapers/artwork/wallpaper.png;
 
   programs.kitty = {
     enable = true;

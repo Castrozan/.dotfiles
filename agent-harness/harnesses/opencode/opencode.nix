@@ -36,7 +36,7 @@ let
     archiveBinaryPath = "opencode";
   };
 
-  interactivePreferencesFile = import ./interactive-instructions.nix {
+  interactivePreferencesFile = import ./instructions/interactive-instructions.nix {
     inherit pkgs;
     inherit (config.home) homeDirectory;
   };

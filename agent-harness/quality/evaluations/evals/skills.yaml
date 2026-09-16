@@ -1,8 +1,8 @@
 tests:
   - name: commit_skill_matches_repository_conventions
-    skill_path: agent-harness/agent-instructions/skills/coding/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/development/coding/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/coding/references/git.md
+      - agent-harness/agent-instructions/skills/development/coding/references/git.md
     prompt: "In an unfamiliar repository, how do you choose which files to stage and the commit message format? If it uses Conventional Commits, show that format."
     model: haiku
     assertions:

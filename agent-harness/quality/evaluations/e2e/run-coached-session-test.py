@@ -6,9 +6,11 @@ from pathlib import Path
 
 import yaml
 
-from coached_fixtures import SCENARIOS_DIR
-from coached_reporting import print_coached_results
-from coached_scenario_runner import run_coached_scenario
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from e2e.coaching.coached_fixtures import SCENARIOS_DIR
+from e2e.coaching.coached_reporting import print_coached_results
+from e2e.coaching.coached_scenario_runner import run_coached_scenario
 
 
 def main():
@@ -21,7 +23,13 @@ def main():
     parser.add_argument("--scenarios-dir", default=SCENARIOS_DIR, type=Path)
     args = parser.parse_args()
 
-    scenario_files = sorted(args.scenarios_dir.glob("*.yaml"))
+    scenario_files = sorted(
+        [
+            *args.scenarios_dir.glob("*.yaml"),
+            *(args.scenarios_dir / "no-comments").glob("*.yaml"),
+        ],
+        key=lambda path: path.name,
+    )
 
     if args.list:
         print("Available scenarios:")

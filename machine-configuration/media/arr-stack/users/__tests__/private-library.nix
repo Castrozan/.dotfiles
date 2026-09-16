@@ -9,14 +9,14 @@ let
 
   composeText = builtins.readFile ../../stack/docker-compose.yml;
   arrStackModuleText = builtins.readFile ../../stack/arr-stack-home-manager.nix;
-  libraryDeclarationText = builtins.readFile ../scripts/arr_users/jellyfin_library_declaration.py;
+  libraryDeclarationText = builtins.readFile ../scripts/arr_users/jellyfin/jellyfin_library_declaration.py;
   friendPolicyText = builtins.readFile ../scripts/arr_users/friend_account_policy.py;
   radarrRootFolderText = builtins.readFile ../../configuration/desired-state/radarr/rootfolder.json;
   sonarrRootFolderText = builtins.readFile ../../configuration/desired-state/sonarr/rootfolder.json;
 
   requestRoutingText = builtins.readFile ../scripts/arr_users/private_request_routing.py;
   visibilityReconcileText = builtins.readFile ../scripts/arr_users/library_access_synchronization.py;
-  accountPermissionsText = builtins.readFile ../scripts/arr_users/jellyseerr_account_permissions.py;
+  accountPermissionsText = builtins.readFile ../scripts/arr_users/jellyseerr/jellyseerr_account_permissions.py;
   permissionReconcileText = builtins.readFile ../scripts/arr_users/account_permission_synchronization.py;
 
   everyAccountHoldsTheSamePermissionsAsAFriend =

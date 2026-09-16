@@ -1,8 +1,8 @@
 tests:
   - name: hardskill_belongs_in_scripts
-    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/development/review/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/review/references/authoring.md
+      - agent-harness/agent-instructions/skills/development/review/references/authoring.md
     prompt: "I'm writing a skill for a CLI tool called 'deploy'. The tool has --env, --service, and --dry-run flags. Should I document all the flags in the SKILL.md body?"
     model: haiku
     assertions:
@@ -12,9 +12,9 @@ tests:
         - "here are the flags"
 
   - name: evergreen_no_hardcoded_paths
-    skill_path: agent-harness/agent-instructions/skills/review/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/development/review/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/review/references/authoring.md
+      - agent-harness/agent-instructions/skills/development/review/references/authoring.md
     prompt: "I want my skill to reference the rebuild script. Should I write the full path like ./machine-configuration/development/system-rebuild/scripts/rebuild.sh?"
     model: haiku
     assertions:
@@ -22,9 +22,9 @@ tests:
         - "Advises against hardcoding the full path and recommends a stable pointer or referring to the rebuild by name, because hardcoded paths go stale (the evergreen principle)."
 
   - name: description_length_awareness
-    skill_path: agent-harness/agent-instructions/skills/instructions/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/instructions/references/skills.md
+      - agent-harness/agent-instructions/skills/agent-workflows/instructions/references/skills.md
     prompt: "How long should a skill frontmatter description be? What's the word limit?"
     model: haiku
     assertions:
@@ -43,7 +43,7 @@ tests:
           #\s|"""|'''
 
   - name: instruction_surface_authority
-    skill_path: agent-harness/agent-instructions/skills/agent-harness/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/agent-workflows/agent-harness/SKILL.md
     prompt: "A coding policy in a skill keeps getting missed. Should I copy the full policy into core.md or write a hook that parses every edit?"
     model: haiku
     assertions:
@@ -52,9 +52,9 @@ tests:
         - "Recommends mechanical enforcement only when the forbidden state and its material exceptions are precise enough to avoid unacceptable false results, rather than parsing every edit by default."
 
   - name: workflow_model_calls_are_budgeted
-    skill_path: agent-harness/agent-instructions/skills/agent-harness/SKILL.md
+    skill_path: agent-harness/agent-instructions/skills/agent-workflows/agent-harness/SKILL.md
     extra_skill_paths:
-      - agent-harness/agent-instructions/skills/agent-harness/references/workflows.md
+      - agent-harness/agent-instructions/skills/agent-workflows/agent-harness/references/workflows.md
     prompt: "Give me the concrete design now for a mandatory review workflow with six review dimensions and an unknown number of findings. State the total calls and each call's model and maximum turns. Do not ask a follow-up."
     model: haiku
     max_turns: 1
@@ -72,7 +72,7 @@ tests:
         - "Recommends Python over bash for a script that parses JSON and manages state, per the Python-default rule."
 
   - name: test_first_principle
-    skill_path: agent-harness/agent-instructions/skills/coding/references/testing.md
+    skill_path: agent-harness/agent-instructions/skills/development/coding/references/testing.md
     prompt: "A user reported a bug. What's the first thing I should do?"
     model: haiku
     assertions:
@@ -80,7 +80,7 @@ tests:
         - "Says to establish a focused reproducer, using a test or runtime probe, that demonstrably fails for the reported bug before fixing it and follows the reported causal path where practical."
 
   - name: specific_file_staging
-    skill_path: agent-harness/agent-instructions/skills/coding/references/git.md
+    skill_path: agent-harness/agent-instructions/skills/development/coding/references/git.md
     prompt: "I need to stage my changes for a commit. Can I use git add -A to stage everything?"
     model: haiku
     assertions:

@@ -4,7 +4,9 @@ let
 in
 projection.instructionFile {
   name = "hermes-interactive-instructions.md";
-  sources = [ ../../agent-instructions/skills/humanize/references/interactive-communication.md ];
+  sources = [
+    ../../agent-instructions/skills/writing/humanize/references/interactive-communication.md
+  ];
   deployed = "/.hermes/config.yaml";
   destinations = projection.interactiveDestinations {
     coreInstructionFile = "/.hermes/SOUL.md";

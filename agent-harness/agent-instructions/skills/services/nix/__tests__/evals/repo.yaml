@@ -1,0 +1,32 @@
+tests:
+  - name: dotfiles_directory_structure
+    skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/services/nix/references/repo.md
+    prompt: "Where should I put a new reusable home-manager capability module in this dotfiles repo?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Places the module under the domain capability that owns it in machine-configuration/<domain>/<capability>, using a -home-manager file-name suffix for the deployment mechanism instead of adding configuration to a machine entry point."
+
+  - name: dotfiles_isnixos_detection
+    skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/services/nix/references/repo.md
+    prompt: "How do I conditionally enable something only on NixOS in this repo?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says to consume the injected isNixOS argument in the module's function arguments and guard the option with lib.mkIf, rather than probing the filesystem for a NixOS marker."
+
+  - name: nix_explains_lazy_evaluation_and_fixed_points
+    skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/services/nix/references/repo.md
+      - agent-harness/agent-instructions/skills/services/nix/references/expert.md
+    prompt: "I need help understanding Nix lazy evaluation and fixed-points. Can you explain?"
+    model: haiku
+    no_tools: true
+    assertions:
+      llm_judge:
+        - "Explains that lazy evaluation defers computing a value until it is demanded, and that a fixed-point is a self-referential definition that feeds its own result back into itself."

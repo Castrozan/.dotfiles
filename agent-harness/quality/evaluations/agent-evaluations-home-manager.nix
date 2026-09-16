@@ -4,7 +4,7 @@ let
     ps.pyyaml
   ]);
 
-  nodeProviderRuntime = pkgs.callPackage ./node-provider-runtime-package.nix {
+  nodeProviderRuntime = pkgs.callPackage ./node-provider-runtime/package.nix {
     nodejs = pkgs.nodejs_22;
   };
 

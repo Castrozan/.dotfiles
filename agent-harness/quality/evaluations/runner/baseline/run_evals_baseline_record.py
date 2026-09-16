@@ -1,0 +1,144 @@
+import json
+import subprocess
+from datetime import datetime, timezone
+
+from runner.baseline.run_evals_baseline_policy import (
+    preserved_evidence_profiles,
+)
+from runner.baseline.run_evals_baseline_store import (
+    BASELINE_PATH,
+    write_baseline_checkpoint,
+)
+from runner.run_evals_execution_profile import execution_profile_identifier
+from runner.baseline.run_evals_fingerprint import (
+    evaluation_category_names,
+    evaluation_fingerprints,
+)
+from runner.run_evals_worktree_and_environment import REPO_ROOT
+
+
+def get_current_git_commit() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        return result.stdout.strip()
+    except Exception:
+        return "unknown"
+
+
+def merge_baseline_categories(
+    existing_baseline: dict,
+    replacements: dict,
+    execution_profile: dict,
+    token_usage: dict,
+) -> dict:
+    if (
+        existing_baseline
+        and existing_baseline.get("execution_profile") != execution_profile
+    ):
+        raise ValueError("existing baseline execution profile does not match")
+    current_categories = evaluation_category_names()
+    categories = {
+        name: bucket
+        for name, bucket in existing_baseline.get("categories", {}).items()
+        if name in current_categories
+    }
+    categories.update(replacements)
+    total_passed = sum(bucket["passed"] for bucket in categories.values())
+    total_tests = sum(
+        bucket["passed"] + bucket["failed"] for bucket in categories.values()
+    )
+    execution_profile_id = execution_profile_identifier(execution_profile)
+    generated_at = datetime.now(timezone.utc).isoformat()
+    evidence_timestamps = [
+        entry["generated_at"]
+        for bucket in categories.values()
+        for entry in bucket.get("tests", [])
+        if entry.get("generated_at")
+    ]
+    existing_test_keys = {
+        f"{category}::{entry['name']}"
+        for category, bucket in existing_baseline.get("categories", {}).items()
+        for entry in bucket.get("tests", [])
+    }
+    merged_test_keys = {
+        f"{category}::{entry['name']}"
+        for category, bucket in categories.items()
+        for entry in bucket.get("tests", [])
+    }
+    removed_test_count = max(0, len(existing_test_keys) - len(merged_test_keys))
+    minimum_current_evidence = max(
+        0,
+        existing_baseline.get("minimum_current_evidence", 1) - removed_test_count,
+    )
+    return {
+        "generated_at": generated_at,
+        "oldest_evidence_at": min(evidence_timestamps, default=generated_at),
+        "git_commit": get_current_git_commit(),
+        "total_tests": total_tests,
+        "total_passed": total_passed,
+        "total_failed": total_tests - total_passed,
+        "pass_rate": round(total_passed / total_tests, 4) if total_tests else 0,
+        "minimum_current_evidence": minimum_current_evidence,
+        "categories": dict(sorted(categories.items())),
+        "fingerprints": evaluation_fingerprints(),
+        "execution_profile": execution_profile,
+        "execution_profiles": {
+            **existing_baseline.get("execution_profiles", {}),
+            execution_profile_id: execution_profile,
+        },
+        "token_usage": token_usage,
+        "evidence_profiles": preserved_evidence_profiles(existing_baseline),
+    }
+
+
+def repeated_outcomes_category_bucket(
+    outcomes: dict[str, list[bool]],
+    fingerprints: dict[str, str],
+    generated_at: str,
+    execution_profile: dict,
+) -> dict:
+    execution_profile_id = execution_profile_identifier(execution_profile)
+    git_commit = get_current_git_commit()
+    tests = []
+    for outcome_key, samples in sorted(outcomes.items()):
+        name = outcome_key.split("::", 1)[-1]
+        passes = sum(samples)
+        tests.append(
+            {
+                "name": name,
+                "passed": passes * 2 >= len(samples),
+                "passes": passes,
+                "samples": len(samples),
+                "fingerprint": fingerprints[outcome_key],
+                "generated_at": generated_at,
+                "execution_profile_id": execution_profile_id,
+                "run_source": {
+                    "kind": "repeated_sampling",
+                    "git_commit": git_commit,
+                },
+            }
+        )
+    passed = sum(test["passed"] for test in tests)
+    return {"passed": passed, "failed": len(tests) - passed, "tests": tests}
+
+
+def merge_baseline_snapshot(
+    snapshot: dict, execution_profile: dict, token_usage: dict
+) -> dict:
+    existing_baseline = (
+        json.loads(BASELINE_PATH.read_text()) if BASELINE_PATH.exists() else {}
+    )
+    return merge_baseline_categories(
+        existing_baseline, snapshot["categories"], execution_profile, token_usage
+    )
+
+
+def write_baseline(baseline: dict) -> None:
+    write_baseline_checkpoint(baseline, BASELINE_PATH, announce=True)
+    if baseline.get("sampling"):
+        print(f"  Epochs: {baseline['sampling']['epochs']}")

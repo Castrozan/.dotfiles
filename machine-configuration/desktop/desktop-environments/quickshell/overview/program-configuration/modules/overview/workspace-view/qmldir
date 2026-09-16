@@ -1,0 +1,5 @@
+OverviewBackground 1.0 OverviewBackground.qml
+OverviewDraggableWindow 1.0 OverviewDraggableWindow.qml
+OverviewState 1.0 OverviewState.qml
+OverviewWindowLayer 1.0 OverviewWindowLayer.qml
+OverviewWindowOverlay 1.0 OverviewWindowOverlay.qml

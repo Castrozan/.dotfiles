@@ -20,7 +20,32 @@ jobs:
         if: ${{ !cancelled() }}
         run: python3 repository/verification/quality/directory-entries/check.py
 
+  swift-tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
+      - name: Run Swift tests with native coverage
+        run: |
+          nix shell --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake "nixpkgs").legacyPackages; in pkgs.python312.withPackages (packages: [ packages.coverage ])' --command bash -e -c '
+            mkdir -p .sonar-reports
+            python3 -m coverage run --rcfile=repository/verification/quality/sonarqube/coverage.ini repository/verification/cover/swift-coverage.py
+            python3 -m coverage combine --rcfile=repository/verification/quality/sonarqube/coverage.ini
+            python3 -m coverage xml --rcfile=repository/verification/quality/sonarqube/coverage.ini -o .sonar-reports/swift-runner-coverage.xml
+          '
+      - name: Upload Swift coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-coverage
+          path: |
+            .sonar-reports/swift-coverage.xml
+            .sonar-reports/swift-runner-coverage.xml
+          if-no-files-found: error
+
   qml-and-python-tests:
+    needs: swift-tests
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,6 +61,7 @@ jobs:
           nix shell --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash -c '
             export REPO_DIR="$PWD"
             mkdir -p .sonar-reports
+            export COVERAGE_PROCESS_START="$PWD/repository/verification/quality/sonarqube/coverage.ini"
             export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/quality/sonarqube/coverage.ini --cov-report=xml"
             source repository/verification/runner/discovery.sh
             source repository/verification/runner/pytest.sh
@@ -51,7 +77,7 @@ jobs:
         run: |
           nix shell nixpkgs#qt6.qtdeclarative --command bash -c '
             export QT_DECLARATIVE_PATH=$(dirname $(dirname $(which qmltestrunner)))
-            bash machine-configuration/desktop/hyprland/__tests__/qml/run-qml-tests.sh
+            bash machine-configuration/desktop/desktop-environments/hyprland/__tests__/qml/run-qml-tests.sh
           '
 
       - name: Upload Python coverage
@@ -61,6 +87,13 @@ jobs:
           name: python-coverage
           path: .sonar-reports/python-coverage.xml
           if-no-files-found: error
+
+      - name: Download Swift coverage
+        if: ${{ !cancelled() }}
+        uses: actions/download-artifact@v4
+        with:
+          name: swift-coverage
+          path: .sonar-reports
 
       - name: Apply SonarQube policy from Git
         if: ${{ !cancelled() && github.event_name == 'push' }}

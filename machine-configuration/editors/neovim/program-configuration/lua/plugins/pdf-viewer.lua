@@ -9,13 +9,13 @@ return {
         math = { enabled = false },
         convert = {
           magick = {
-            pdf = require("config.pdf_document_view").conversion_arguments,
+            pdf = require("config.pdf.document_view").conversion_arguments,
           },
         },
       },
     },
     init = function()
-      require("config.pdf_viewer").setup()
+      require("config.pdf.viewer").setup()
     end,
   },
 }

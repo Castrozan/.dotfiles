@@ -1,0 +1,167 @@
+import json
+
+ATRIUM_QUALITY_URL = "/engineering/dotfiles/reports/quality/"
+
+
+def render_stat_cards(summary):
+    latest = summary["latest"]
+    latest_usage = latest.get("usage", {})
+    peak = summary["peak"]
+    trough = summary["trough"]
+    suite = (
+        str(summary["suite_min"])
+        if summary["suite_min"] == summary["suite_max"]
+        else f"{summary['suite_min']}-{summary['suite_max']}"
+    )
+    cards = [
+        (
+            "current pass rate",
+            f"{latest['rate']}%",
+            f"{latest['passed']}/{latest['total']} on {latest['date']}",
+        ),
+        (
+            "latest eval tokens",
+            f"{latest_usage.get('input_tokens', 0) + latest_usage.get('output_tokens', 0):,}",
+            f"{latest_usage.get('input_tokens', 0):,} input, "
+            f"{latest_usage.get('output_tokens', 0):,} output, "
+            f"{latest_usage.get('measured_invocations', 0):,}/"
+            f"{latest_usage.get('invocations', 0):,} measured",
+        ),
+        ("all-time high", f"{peak['rate']}%", f"{peak['date']} ({peak['commit']})"),
+        (
+            "all-time low",
+            f"{trough['rate']}%",
+            f"{trough['date']} ({trough['commit']})",
+        ),
+        (
+            "baselines recorded",
+            str(summary["count"]),
+            f"{summary['first_date']} to {summary['last_date']}",
+        ),
+        ("suite size", suite, "tests per run"),
+    ]
+    return "\n".join(
+        f'<div class="card"><div class="k">{value}</div>'
+        f'<div class="l">{label}</div><div class="s">{sub}</div></div>'
+        for label, value, sub in cards
+    )
+
+
+def render_dashboard_html(revisions, summary, latest_baseline_age_days=None):
+    data_json = json.dumps(revisions)
+    stat_cards = render_stat_cards(summary) if summary else ""
+    freshness_note = ""
+    if summary and latest_baseline_age_days is not None:
+        freshness_note = (
+            '<p class="lede">The current baseline was recorded '
+            f"{summary['last_date']}, {latest_baseline_age_days} days ago.</p>"
+        )
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>agent-eval baseline | dotfiles</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+<h1>agent-eval baseline</h1>
+<p class="lede">How well the AI agent on this machine obeys the dotfiles instruction surface,
+tracked over time. Each point is one committed baseline assembled from the latest recorded result for each test; the
+line is the share of compliance tests the agent passed.</p>
+
+<div class="cards">
+{stat_cards}
+</div>
+
+<div class="chart-wrap"><canvas id="passRateChart"></canvas></div>
+
+<h2>What this measures</h2>
+<div class="panel">
+<p>This is the <b>Tier-1 static-eval pass rate</b> - the headline health number for the agent's
+instruction compliance. A suite of prompt-based evals in <code>agent-harness/quality/evaluations/evals/</code> runs each prompt
+through a vendor SDK inside a throwaway git worktree, then checks assertions on the answer. Codex is the default for new
+results; each test row retains its execution profile, so unaffected Claude or Codex results remain until that test's
+prompt, assertions, or instructions change. Tests are bucketed into <code>compliance</code>,
+<code>routing</code>, <code>navigation</code>, <code>knowledge</code> and <code>other</code>.</p>
+<p>Running <code>agent-eval --save-baseline</code> executes only missing or old tests, plus tests whose prompt,
+assertions, or instructions changed, and
+checkpoints each result to <code>agent-harness/quality/evaluations/baseline.json</code>. This page reads that file's full git history, so every
+point is a commit - the chart is the repo remembering its own report cards.</p>
+</div>
+
+<h2>The gate that keeps it honest</h2>
+<p class="lede"><code>agent-eval --check-baseline</code> runs in CI with
+no model calls. It reports current and pending evidence separately, then fails the build when recorded quality crosses
+a gate or current evidence coverage falls below the committed floor:</p>
+<div class="chips">
+<span class="chip">overall pass rate <b>&ge; 75%</b></span>
+<span class="chip">compliance pass rate <b>&ge; 85%</b></span>
+<span class="chip">pass rate drop <b>&le; 5%</b> vs previous baseline</span>
+</div>
+<p class="lede">The baseline is a committed snapshot, refreshed intentionally with
+<code>agent-eval --save-baseline</code> when the instruction surface meaningfully changes, never on a
+clock. CI guards both the absolute floors and the drop from the previous committed baseline, so a
+re-save that slid more than five points below the last recorded run fails the build. Dips that do not
+reproduce on a standalone re-run are concurrency noise on long runs, not real regressions.</p>
+{freshness_note}
+
+<h2>Every recorded baseline</h2>
+<table id="dataTable">
+<thead><tr><th>date</th><th>commit</th><th>passed</th><th>total</th><th>pass rate</th><th>measured</th><th>input tokens</th><th>cached input</th><th>cache write</th><th>output tokens</th><th>reasoning tokens</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<footer>
+Auto-generated from <code>agent-harness/quality/evaluations/baseline.json</code> history by
+<code>agent-harness/quality/evaluations/reporting/render_baseline_dashboard.py</code> on every push &middot;
+<a href="{ATRIUM_QUALITY_URL}" target="_top">how quality is measured</a> &middot;
+<a href="https://github.com/Castrozan/.dotfiles/issues/70" target="_top">design notes</a>
+</footer>
+</div>
+
+<script>
+const revisions = {data_json};
+const labels = revisions.map(r => r.date);
+const rates = revisions.map(r => r.rate);
+new Chart(document.getElementById("passRateChart"), {{
+  type: "line",
+  data: {{ labels, datasets: [{{
+    label: "pass rate %", data: rates, borderColor: "#58a6ff",
+    backgroundColor: "rgba(88,166,255,.15)", fill: true, tension: .2,
+    pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: "#58a6ff"
+  }}] }},
+  options: {{
+    plugins: {{
+      legend: {{ labels: {{ color: "#e6edf3" }} }},
+      tooltip: {{ callbacks: {{
+        label: (ctx) => {{
+          const r = revisions[ctx.dataIndex];
+          return ` ${{r.rate}}%  (${{r.passed}}/${{r.total}})  ${{r.commit}}`;
+        }}
+      }} }}
+    }},
+    scales: {{
+      y: {{ suggestedMin: 80, suggestedMax: 100,
+        ticks: {{ color: "#8b949e", callback: v => v + "%" }}, grid: {{ color: "#21262d" }} }},
+      x: {{ ticks: {{ color: "#8b949e" }}, grid: {{ color: "#21262d" }} }}
+    }}
+  }}
+}});
+const tbody = document.querySelector("#dataTable tbody");
+for (const r of revisions) {{
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${{r.date}}</td><td>${{r.commit}}</td><td>${{r.passed}}</td>` +
+                 `<td>${{r.total}}</td><td>${{r.rate}}%</td>` +
+                 `<td>${{r.usage.measured_invocations}}/${{r.usage.invocations}}</td>` +
+                 `<td>${{r.usage.input_tokens}}</td><td>${{r.usage.cached_input_tokens}}</td>` +
+                 `<td>${{r.usage.cache_write_input_tokens}}</td><td>${{r.usage.output_tokens}}</td>` +
+                 `<td>${{r.usage.reasoning_output_tokens}}</td>`;
+  tbody.appendChild(tr);
+}}
+</script>
+</body>
+</html>
+"""

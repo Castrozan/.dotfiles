@@ -13,8 +13,8 @@ from hey_bot_boundary_fakes import (
     unparsable_reply,
     unreachable_reply,
 )
-from hey_bot.process_execution import CommandResult
-from hey_bot.push_to_talk_capture import PushToTalkCapture
+from hey_bot.system.process_execution import CommandResult
+from hey_bot.audio.push_to_talk_capture import PushToTalkCapture
 from hey_bot.push_to_talk_session import (
     NO_SPEECH_NOTIFICATION,
     PUSH_TO_TALK_PROMPT_HEADER,

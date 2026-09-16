@@ -1,5 +1,5 @@
-local moduleDirectory = arg[0]:gsub("__tests__/[^/]*$", "")
-package.path = moduleDirectory .. "?.lua;" .. moduleDirectory .. "__tests__/?.lua;" .. package.path
+local moduleDirectory = arg[0]:gsub("__tests__/.*$", "")
+dofile(moduleDirectory .. "__tests__/hammerspoon_module_paths.lua")(moduleDirectory)
 
 local harness = require("workspace_grid_test_harness")
 harness.installFakeHammerspoonGlobal()

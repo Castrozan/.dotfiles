@@ -1,5 +1,5 @@
 import account_permission_synchronization
-import kavita_access_synchronization
+from kavita import kavita_access_synchronization
 import library_access_synchronization
 import private_request_routing
 import request_routing_synchronization

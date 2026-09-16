@@ -11,7 +11,7 @@ let
     inherit pkgs herdrPackage;
   };
 
-  selectedTheme = import ../../../desktop/theming/selected-theme.nix;
+  selectedTheme = import ../../../desktop/appearance/theming/selected-theme.nix;
 
   renderedHerdrConfig = pkgs.writeText "herdr-config.toml" (
     lib.replaceStrings [ "@herdr_accent@" ] [ selectedTheme.accentHex ] (

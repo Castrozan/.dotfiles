@@ -7,15 +7,22 @@ import sys
 import tempfile
 from pathlib import Path
 
-from ab_test_claude_session import (
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from integration.comparisons.ab_test_claude_session import (
     run_claude_session_with_system_prompt,
     run_claude_session_without_system_prompt,
 )
-from ab_test_metrics import measure_instruction_following
-from ab_test_models import AbTestResult
-from ab_test_reporting import print_ab_test_results
-from ab_test_scenarios import UNPROMPTED_SCENARIOS, load_core_instructions
-from ab_test_workspace_setup import CONFIGURATION_SETUP_FUNCTIONS
+from integration.comparisons.ab_test_metrics import measure_instruction_following
+from integration.comparisons.ab_test_models import AbTestResult
+from integration.comparisons.ab_test_reporting import print_ab_test_results
+from integration.comparisons.ab_test_scenarios import (
+    UNPROMPTED_SCENARIOS,
+    load_core_instructions,
+)
+from integration.comparisons.ab_test_workspace_setup import (
+    CONFIGURATION_SETUP_FUNCTIONS,
+)
 
 
 def run_ab_test_for_scenario(

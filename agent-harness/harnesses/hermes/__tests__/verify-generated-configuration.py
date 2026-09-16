@@ -3,7 +3,7 @@ from pathlib import Path
 
 import yaml
 
-from ai_instruction_format import inspect_markdown_instruction
+from instructions.ai_instruction_format import inspect_markdown_instruction
 
 
 def main():

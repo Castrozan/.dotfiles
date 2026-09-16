@@ -1,6 +1,6 @@
 import shutil
 
-from claude_plugin_discovery import (
+from installed_plugin_discovery import (
     read_claude_plugin_manifest,
     read_enabled_plugin_keys,
     read_installed_third_party_plugins,

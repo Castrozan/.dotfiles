@@ -1,5 +1,5 @@
-import jellyseerr_account_permissions
-import jellyseerr_api_client
+from jellyseerr import jellyseerr_account_permissions
+from jellyseerr import jellyseerr_api_client
 
 
 def synchronize_account_permissions(context):

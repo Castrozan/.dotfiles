@@ -100,7 +100,7 @@ def test_mixed_page_sizes_and_rotations_determine_the_scrolling_layout(
         "pdf_page_dimensions.lua",
         pdf_viewer_prelude
         + """
-        local layout = require("config.pdf_page_layout")
+        local layout = require("config.pdf.page_layout")
         local sizes = layout.parse([[Pages: 3
 Page 1 size: 480 x 640 pts
 Page 1 rot: 0

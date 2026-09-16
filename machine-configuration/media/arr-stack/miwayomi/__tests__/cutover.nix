@@ -12,7 +12,7 @@ let
   stackReadmeText = builtins.readFile ../../stack/README.md;
   suwayomiModulePath = ../../../manga-streaming/suwayomi-server-nixos.nix;
   suwayomiModuleText = builtins.readFile suwayomiModulePath;
-  repositorySecretPath = ../../../../../secrets/credentials/suwayomi-extension-repositories.age;
+  repositorySecretPath = ../../../../../secrets/credentials/media/suwayomi-extension-repositories.age;
   animeStreamingDirectory = ../../../anime-streaming;
 
   suwayomiIsDeployed = lib.hasInfix "../../../media/manga-streaming/suwayomi-server-nixos.nix" chiseSystemText;

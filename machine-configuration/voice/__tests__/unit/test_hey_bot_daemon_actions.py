@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 import pytest
-from hey_bot.conversation_actions import (
+from hey_bot.conversation.conversation_actions import (
     AnnounceAction,
     ClearWaitContextAction,
     DispatchCommandAction,
@@ -19,7 +19,7 @@ from hey_bot_boundary_fakes import (
     RecordingSynthesizer,
 )
 from hey_bot_daemon_fakes import signal_file_paths
-from hey_bot.signal_files import SignalFilePaths, SignalFiles
+from hey_bot.system.signal_files import SignalFilePaths, SignalFiles
 
 
 @dataclass

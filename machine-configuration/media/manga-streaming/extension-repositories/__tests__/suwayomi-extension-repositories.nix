@@ -41,7 +41,7 @@ let
         synchronizationTestText
       ];
 
-  declaredRepositoryListDigest = builtins.hashFile "sha256" ../../../../../secrets/credentials/suwayomi-extension-repositories.age;
+  declaredRepositoryListDigest = builtins.hashFile "sha256" ../../../../../secrets/credentials/media/suwayomi-extension-repositories.age;
 
   aChangedListReachesTheRunningServer = lib.hasInfix "SUWAYOMI_EXTENSION_REPOSITORIES_DECLARATION_DIGEST=${declaredRepositoryListDigest}" environmentText;
 

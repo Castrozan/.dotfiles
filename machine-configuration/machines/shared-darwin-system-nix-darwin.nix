@@ -8,19 +8,19 @@
   imports = [
     ../browsers/brave/brave-update-policy-nix-darwin.nix
     ../browsers/chrome/chrome-update-policy-nix-darwin.nix
-    ../../agent-harness/harnesses/claude-code/claude-managed-settings-nix-darwin.nix
+    ../../agent-harness/harnesses/claude-code/settings/claude-managed-settings-nix-darwin.nix
     ../terminal/emulators/wezterm/wezterm-nix-darwin.nix
     ../desktop/displays/displays-nix-darwin.nix
     ../desktop/finder/finder-nix-darwin.nix
-    ../desktop/spotlight/spotlight-nix-darwin.nix
+    ../desktop/applications/spotlight/spotlight-nix-darwin.nix
     ../desktop/window-management/macos-window-manager-nix-darwin.nix
-    ../desktop/keyboard-shortcuts/symbolic-hotkeys-nix-darwin.nix
-    ../desktop/quit-windowless-applications/quit-windowless-applications-nix-darwin.nix
+    ../desktop/input/keyboard-shortcuts/symbolic-hotkeys-nix-darwin.nix
+    ../desktop/applications/quit-windowless-applications/quit-windowless-applications-nix-darwin.nix
     ../desktop/apple-background-agents/disable-unused-apple-background-agents-nix-darwin.nix
-    ../desktop/workspace-window-switcher/workspace-window-switcher-nix-darwin.nix
+    ../desktop/window-management/workspace-window-switcher/workspace-window-switcher-nix-darwin.nix
     ../development/system-rebuild/rebuild-nix-darwin.nix
     ../development/testing/python-interpreter-nix-darwin.nix
-    ../desktop/karabiner/karabiner-nix-darwin.nix
+    ../desktop/input/karabiner/karabiner-nix-darwin.nix
   ];
 
   users.users.${username} = {

@@ -33,7 +33,8 @@
     "agent-harness/hooks/runtime/session-start",
     "agent-harness/hooks/runtime/stop",
     "agent-harness/hooks/runtime/user-prompt-submit",
-    "agent-harness/hooks/runtime/post-tool-use/directory-entries"
+    "agent-harness/hooks/runtime/post-tool-use/directory-entries",
+    "agent-harness/hooks/runtime/__tests__/support"
   ],
   "pythonVersion": "3.12"
 }

@@ -118,7 +118,7 @@ def summarize_tests_directory(tests_directory):
         "tiers": tiers,
         "lua_test_file_count": len(list(tests_directory.rglob("*_test.lua"))),
         "has_qml_runner": (tests_directory / "qml" / "run-qml-tests.sh").is_file(),
-        "eval_yaml_count": len(list((tests_directory / "evals").glob("*.yaml"))),
+        "eval_yaml_count": len(list((tests_directory / "evals").rglob("*.yaml"))),
         "has_checks_nix": (tests_directory / "checks.nix").is_file(),
     }
 

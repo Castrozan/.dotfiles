@@ -1,1 +1,1 @@
-machine-configuration/desktop/workspace-window-switcher
+machine-configuration/desktop/window-management/workspace-window-switcher

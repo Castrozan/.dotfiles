@@ -12,11 +12,11 @@ CLIPSE_WAYLAND_LISTENER = (
 )
 HYPRLAND_AUTOSTART = (
     DOTFILES_ROOT
-    / "machine-configuration/desktop/hyprland/program-configuration/conf.d/autostart.conf"
+    / "machine-configuration/desktop/desktop-environments/hyprland/program-configuration/conf.d/autostart.conf"
 )
 GRAPHICAL_SERVICES_ACTIVATION_MODULE = (
     DOTFILES_ROOT
-    / "machine-configuration/desktop/hyprland/graphical-services-activation.nix"
+    / "machine-configuration/desktop/desktop-environments/hyprland/session/graphical-services-activation.nix"
 )
 
 

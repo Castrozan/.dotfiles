@@ -1,0 +1,5 @@
+AudioSectionHeader 1.0 AudioSectionHeader.qml
+AudioDeviceCard 1.0 AudioDeviceCard.qml
+BluetoothDeviceCard 1.0 BluetoothDeviceCard.qml
+AudioProfileChip 1.0 AudioProfileChip.qml
+AudioDeviceDetails 1.0 AudioDeviceDetails.qml

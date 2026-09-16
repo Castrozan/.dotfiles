@@ -1,7 +1,15 @@
 { hostname, pkgs }:
 let
   projection = import ../instruction-projection.nix { inherit pkgs; };
-  publicSkillsDirectory = ../skills;
+  publicSkillSourceDirectories = [
+    ../skills/agent-workflows
+    ../skills/development
+    ../skills/knowledge
+    ../skills/media
+    ../skills/services
+    ../skills/workstation
+    ../skills/writing
+  ];
   privateSharedSkillsDirectory = ../../../private-configuration/agent-harness/claude/skills;
   privateMachineSkillsDirectory = ../../../private-configuration/machines + "/${hostname}/skills";
 
@@ -12,11 +20,7 @@ let
     privateMachineSkillsDirectory
   ];
 
-  skillSourceDirectories =
-    presentDirectories [
-      publicSkillsDirectory
-    ]
-    ++ privateSkillSourceDirectories;
+  skillSourceDirectories = publicSkillSourceDirectories ++ privateSkillSourceDirectories;
 
   completeSkillNamesIn =
     skillSourceDirectory:
@@ -25,17 +29,20 @@ let
     );
 
   privateSkillNames = builtins.concatMap completeSkillNamesIn privateSkillSourceDirectories;
+  publicSkillNames = builtins.concatMap completeSkillNamesIn publicSkillSourceDirectories;
 
-  skillSourceDirectoryByName = builtins.foldl' (
-    accumulatedSourceDirectoryByName: skillSourceDirectory:
-    accumulatedSourceDirectoryByName
-    // builtins.listToAttrs (
-      map (skillName: {
-        name = skillName;
-        value = skillSourceDirectory + "/${skillName}";
-      }) (completeSkillNamesIn skillSourceDirectory)
-    )
-  ) { } skillSourceDirectories;
+  skillSourceDirectoryByName =
+    assert builtins.length publicSkillNames == builtins.length (pkgs.lib.unique publicSkillNames);
+    builtins.foldl' (
+      accumulatedSourceDirectoryByName: skillSourceDirectory:
+      accumulatedSourceDirectoryByName
+      // builtins.listToAttrs (
+        map (skillName: {
+          name = skillName;
+          value = skillSourceDirectory + "/${skillName}";
+        }) (completeSkillNamesIn skillSourceDirectory)
+      )
+    ) { } skillSourceDirectories;
 
   allSkillNames = builtins.attrNames skillSourceDirectoryByName;
 
@@ -81,7 +88,7 @@ let
       };
     in
     if skillName == "research" then
-      import ../skills/research/pulse/install.nix { inherit pkgs skillDirectory; }
+      import ../skills/knowledge/research/pulse/install.nix { inherit pkgs skillDirectory; }
     else
       skillDirectory;
 

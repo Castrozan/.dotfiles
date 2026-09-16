@@ -2,15 +2,19 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from hey_bot.audio_capture import STEP_INTERVAL_SECONDS, AudioCapture
+from hey_bot.audio.audio_capture import STEP_INTERVAL_SECONDS, AudioCapture
 from hey_bot.background_commands import BackgroundCommandRunner
-from hey_bot.console_output import ConsoleOutput
-from hey_bot.conversation_machine import advance
-from hey_bot.conversation_state import ChunkObservation, ConversationState, MachineSettings
+from hey_bot.system.console_output import ConsoleOutput
+from hey_bot.conversation.conversation_machine import advance
+from hey_bot.conversation.conversation_state import (
+    ChunkObservation,
+    ConversationState,
+    MachineSettings,
+)
 from hey_bot.daemon_actions import DaemonActions
-from hey_bot.signal_files import SignalFiles
-from hey_bot.speech_transcriber import SpeechTranscriber
-from hey_bot.system_clock import SystemClock
+from hey_bot.system.signal_files import SignalFiles
+from hey_bot.audio.speech_transcriber import SpeechTranscriber
+from hey_bot.system.system_clock import SystemClock
 
 
 class HeyBotDaemon:

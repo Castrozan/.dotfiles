@@ -1,7 +1,7 @@
 import friend_account_policy
-import jellyfin_api_client
-import jellyfin_library_declaration
-import jellyfin_library_provisioning
+from jellyfin import jellyfin_api_client
+from jellyfin import jellyfin_library_declaration
+from jellyfin import jellyfin_library_provisioning
 
 
 def reconcile_library_visibility(context, jellyfin_libraries):

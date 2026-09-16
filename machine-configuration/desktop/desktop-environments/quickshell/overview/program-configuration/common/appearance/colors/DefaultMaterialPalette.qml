@@ -1,0 +1,29 @@
+import QtQuick
+import "../.."
+
+MaterialColorScheme {
+    darkmode: true
+    m3primary: "#E5B6F2"
+    m3onPrimary: "#452152"
+    m3primaryContainer: "#5D386A"
+    m3onPrimaryContainer: "#F9D8FF"
+    m3secondary: "#D5C0D7"
+    m3onSecondary: "#392C3D"
+    m3secondaryContainer: "#534457"
+    m3onSecondaryContainer: "#F2DCF3"
+    m3background: "#161217"
+    m3onBackground: "#EAE0E7"
+    m3surface: "#161217"
+    m3surfaceContainerLow: "#1F1A1F"
+    m3surfaceContainer: "#231E23"
+    m3surfaceContainerHigh: "#2D282E"
+    m3surfaceContainerHighest: "#383339"
+    m3onSurface: "#EAE0E7"
+    m3surfaceVariant: "#4C444D"
+    m3onSurfaceVariant: "#CFC3CD"
+    m3inverseSurface: "#EAE0E7"
+    m3inverseOnSurface: "#342F34"
+    m3outline: "#988E97"
+    m3outlineVariant: "#4C444D"
+    m3shadow: "#000000"
+}

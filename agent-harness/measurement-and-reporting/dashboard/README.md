@@ -35,6 +35,8 @@ npx ng build --configuration=production
 
 ## Container
 
-`Dockerfile` builds the app and serves `dist/usage-dashboard/browser` from nginx. The listen
-port is templated as `${PORT}` and rendered by `docker-entrypoint.sh` at start so Cloud Run can
+`container/Dockerfile` builds the app and serves `dist/usage-dashboard/browser` from nginx. The listen
+port is templated as `${PORT}` and rendered by `container/docker-entrypoint.sh` at start so Cloud Run can
 inject it. `/health` returns 200.
+
+Build from the dashboard directory with `docker build -f container/Dockerfile .`.
