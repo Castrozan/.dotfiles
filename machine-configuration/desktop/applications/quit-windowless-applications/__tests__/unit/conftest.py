@@ -42,20 +42,14 @@ def build_cocoa_module_stubs():
 
 
 @pytest.fixture(scope="session")
-def cocoa_module_stub_patcher():
-    monkeypatch = pytest.MonkeyPatch()
-    yield monkeypatch
-    monkeypatch.undo()
-
-
-@pytest.fixture(scope="session")
-def daemon(cocoa_module_stub_patcher):
-    for module_name, module_stub in build_cocoa_module_stubs().items():
-        cocoa_module_stub_patcher.setitem(sys.modules, module_name, module_stub)
+def daemon():
     loader = importlib.machinery.SourceFileLoader(
         "quit_windowless_applications_daemon", str(DAEMON_SOURCE_PATH)
     )
     specification = importlib.util.spec_from_loader(loader.name, loader)
     module = importlib.util.module_from_spec(specification)
-    loader.exec_module(module)
+    with pytest.MonkeyPatch.context() as module_stub_patcher:
+        for module_name, module_stub in build_cocoa_module_stubs().items():
+            module_stub_patcher.setitem(sys.modules, module_name, module_stub)
+        loader.exec_module(module)
     return module
