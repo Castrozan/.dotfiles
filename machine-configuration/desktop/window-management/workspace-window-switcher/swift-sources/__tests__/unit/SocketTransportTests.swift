@@ -57,7 +57,10 @@ enum SocketTransportTests {
       }
     }
     server.startReceivingDatagramsOnBackgroundThread()
-    TestMainRunLoop.until { FileManager.default.fileExists(atPath: path) }
+    TestMainRunLoop.until {
+      let attributes = try? FileManager.default.attributesOfItem(atPath: path)
+      return (attributes?[.posixPermissions] as? NSNumber)?.intValue == 0o600
+    }
     let permissions =
       try FileManager.default.attributesOfItem(atPath: path)[.posixPermissions] as! NSNumber
     precondition(permissions.intValue == 0o600)

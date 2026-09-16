@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import select
+import shutil
 import signal
 import subprocess
 import sys
@@ -68,8 +69,10 @@ def test_missing_command_and_empty_capture_fail_with_context(tmp_path):
         timeout=10,
     )
     assert missing.returncode == 2 and "no command given" in missing.stderr
+    silent_command = shutil.which("true")
+    assert silent_command is not None
     empty = subprocess.run(
-        [sys.executable, str(SCRIPT), "--seconds", "0.1", "--", "/bin/true"],
+        [sys.executable, str(SCRIPT), "--seconds", "0.1", "--", silent_command],
         env=environment,
         capture_output=True,
         text=True,

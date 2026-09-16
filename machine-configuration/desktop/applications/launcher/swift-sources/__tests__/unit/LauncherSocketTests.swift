@@ -27,7 +27,9 @@ enum LauncherSocketTests {
     }
     server.startReceivingDatagramsOnBackgroundThread()
     let deadline = Date().addingTimeInterval(3)
-    while !FileManager.default.fileExists(atPath: path) && Date() < deadline {
+    while Date() < deadline {
+      let attributes = try? FileManager.default.attributesOfItem(atPath: path)
+      if (attributes?[.posixPermissions] as? NSNumber)?.intValue == 0o600 { break }
       Thread.sleep(forTimeInterval: 0.002)
     }
     let permissions =
