@@ -40,7 +40,7 @@ STOP_HANDLERS = [
 ]
 
 COMPLETION_HANDLERS = [
-    HookHandler(handler_module_name="speed_read_reply_capture_handler")
+    HookHandler(handler_module_name="herdr_pace_reply_capture_handler")
 ]
 
 

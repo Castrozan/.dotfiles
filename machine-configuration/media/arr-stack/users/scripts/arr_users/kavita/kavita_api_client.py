@@ -54,7 +54,7 @@ def wait_for_bearer_token(base_url, api_key):
             if remaining_attempt == 1:
                 return None
             time.sleep(KAVITA_READINESS_DELAY_SECONDS)
-        except (urllib.error.URLError, OSError):
+        except OSError:
             if remaining_attempt == 1:
                 return None
             time.sleep(KAVITA_READINESS_DELAY_SECONDS)

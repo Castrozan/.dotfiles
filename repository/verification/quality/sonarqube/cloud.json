@@ -33,7 +33,7 @@
     {
       "language": "py",
       "name": "Dotfiles",
-      "parent": "Sonar way",
+      "parent": "Sonar way comprehensive",
       "rules": [
         {
           "key": "python:S104",
@@ -46,7 +46,7 @@
     {
       "language": "js",
       "name": "Dotfiles",
-      "parent": "Sonar way",
+      "parent": "Sonar way comprehensive",
       "rules": [
         {
           "key": "javascript:S104",
@@ -59,7 +59,7 @@
     {
       "language": "ts",
       "name": "Dotfiles",
-      "parent": "Sonar way",
+      "parent": "Sonar way comprehensive",
       "rules": [
         {
           "key": "typescript:S104",
@@ -72,7 +72,7 @@
     {
       "language": "shell",
       "name": "Dotfiles",
-      "parent": "Sonar way",
+      "parent": "Sonar way comprehensive",
       "rules": []
     }
   ],

@@ -116,7 +116,7 @@ class IPv4ConnectProxyRequestHandler(socketserver.StreamRequestHandler):
         try:
             request_method, request_target, http_version = self.read_request_line()
             self.discard_request_headers()
-        except (UnicodeDecodeError, ValueError):
+        except ValueError:
             self.send_response(400, "Bad Request")
             return
 

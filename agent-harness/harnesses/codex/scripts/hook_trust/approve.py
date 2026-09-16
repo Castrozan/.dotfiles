@@ -103,7 +103,7 @@ def main() -> int:
             asyncio.run(
                 approve_launch_hooks(os.environ["CODEX_LAUNCHER_BINARY"], discovery)
             )
-    except (OSError, ValueError, RuntimeError, TimeoutError) as error:
+    except (OSError, ValueError, RuntimeError) as error:
         detail = str(error) or f"exceeded {approval_timeout_seconds} seconds"
         print(f"Codex hook approval failed: {detail}", file=sys.stderr)
         return 1

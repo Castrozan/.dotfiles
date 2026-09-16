@@ -1,6 +1,5 @@
 import json
 import time
-import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -32,7 +31,7 @@ def wait_until_ready(base_url, api_key):
         try:
             request_json(base_url, api_key, "GET", "/System/Info")
             return True
-        except (urllib.error.URLError, OSError):
+        except OSError:
             if remaining_attempt == 1:
                 return False
             time.sleep(JELLYFIN_READINESS_DELAY_SECONDS)

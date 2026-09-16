@@ -35,7 +35,7 @@ def terminate_browser_process(browser_process, throwaway_profile_directory):
     try:
         browser_process.terminate()
         browser_process.wait(timeout=5)
-    except (subprocess.TimeoutExpired, ProcessLookupError, OSError):
+    except (subprocess.TimeoutExpired, OSError):
         try:
             browser_process.kill()
         except OSError:

@@ -1,6 +1,5 @@
 import json
 import time
-import urllib.error
 import urllib.request
 
 MIWAYOMI_REQUEST_TIMEOUT_SECONDS = 10
@@ -32,7 +31,7 @@ def wait_until_ready(base_url):
                 timeout_seconds=MIWAYOMI_READINESS_REQUEST_TIMEOUT_SECONDS,
             )
             return True
-        except (urllib.error.URLError, OSError, ValueError):
+        except (OSError, ValueError):
             if remaining_attempt == 1:
                 return False
             time.sleep(MIWAYOMI_READINESS_DELAY_SECONDS)

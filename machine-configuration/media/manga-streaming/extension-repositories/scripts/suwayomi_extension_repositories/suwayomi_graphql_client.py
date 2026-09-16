@@ -1,6 +1,5 @@
 import json
 import time
-import urllib.error
 import urllib.request
 
 SUWAYOMI_REQUEST_TIMEOUT_SECONDS = 30
@@ -50,7 +49,7 @@ def wait_until_ready(graphql_url):
         try:
             execute(graphql_url, READ_EXTENSION_REPOSITORIES_QUERY)
             return True
-        except (urllib.error.URLError, OSError, ValueError):
+        except (OSError, ValueError):
             if remaining_attempt == 1:
                 return False
             time.sleep(SUWAYOMI_READINESS_DELAY_SECONDS)
@@ -80,5 +79,5 @@ def count_extensions_offered(graphql_url):
                 timeout_seconds=SUWAYOMI_EXTENSION_FETCH_TIMEOUT_SECONDS,
             )["fetchExtensions"]["extensions"]
         )
-    except (ValueError, urllib.error.URLError, OSError):
+    except (ValueError, OSError):
         return None

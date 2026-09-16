@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import speed_read_reply_capture_handler as capture
+import herdr_pace_reply_capture_handler as capture
 from hook_module_loader import import_hyphenated_hook_module
 
 
@@ -13,7 +13,7 @@ def capture_calls(monkeypatch):
     monkeypatch.setenv("HERDR_PANE_ID", "pane")
     monkeypatch.setenv("HERDR_SOCKET_PATH", "socket")
     monkeypatch.setattr(
-        capture.shutil, "which", lambda command: "/plugin/bin/herdr-speed-read"
+        capture.shutil, "which", lambda command: "/plugin/bin/herdr-pace"
     )
     calls = []
     monkeypatch.setattr(
@@ -27,7 +27,7 @@ def test_capture_passes_only_completed_reply_fields(capture_calls):
         {"hook_event_name": "Stop", "reply_text": "Ready.", "tool_input": "irrelevant"}
     )
     arguments, options = capture_calls[0]
-    assert arguments[0] == ["/plugin/bin/herdr-speed-read", "capture"]
+    assert arguments[0] == ["/plugin/bin/herdr-pace", "capture"]
     assert "Ready." in options["input"]
     assert "tool_input" not in options["input"]
     assert options["timeout"] == 0.5

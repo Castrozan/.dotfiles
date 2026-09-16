@@ -81,7 +81,7 @@ let
 
   aFailedIndexNeverFailsTheStoredDeclaration =
     lib.hasInfix "def count_extensions_offered" clientText
-    && lib.hasInfix "except (ValueError, urllib.error.URLError, OSError)" clientText;
+    && lib.hasInfix "except (ValueError, OSError)" clientText;
 
   theErrorMessageDropsTheJavaStackTrace = lib.hasInfix "def first_line_of" clientText;
 

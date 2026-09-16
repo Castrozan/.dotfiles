@@ -21,7 +21,7 @@ let
 in
 {
   imports = [
-    ./herdr-speed-read-home-manager.nix
+    ./herdr-pace-home-manager.nix
     ./herdr-config-mutable-home-manager.nix
     ./herdr-service-home-manager.nix
   ];

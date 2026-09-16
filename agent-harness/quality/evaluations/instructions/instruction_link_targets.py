@@ -22,7 +22,7 @@ def instruction_link_violations(
             anchor = unquote(destination.fragment, errors="strict")
             if destination.scheme in {"http", "https"} and not destination.hostname:
                 raise ValueError("expected a URL hostname")
-        except (ValueError, UnicodeError):
+        except ValueError:
             violations.append(
                 InstructionFormatViolation(
                     "instruction_link_destination",

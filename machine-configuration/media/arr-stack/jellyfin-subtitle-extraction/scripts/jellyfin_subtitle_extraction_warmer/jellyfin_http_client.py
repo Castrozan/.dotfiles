@@ -1,5 +1,4 @@
 import json
-import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -31,7 +30,7 @@ def jellyfin_is_reachable(base_url, api_key):
     try:
         request_json(base_url, api_key, "/System/Info")
         return True
-    except (urllib.error.URLError, OSError):
+    except OSError:
         return False
 
 

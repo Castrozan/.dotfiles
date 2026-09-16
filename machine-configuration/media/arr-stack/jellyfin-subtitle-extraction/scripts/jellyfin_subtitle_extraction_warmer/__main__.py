@@ -1,6 +1,5 @@
 import os
 import time
-import urllib.error
 
 from jellyfin_http_client import (
     jellyfin_is_reachable,
@@ -27,7 +26,7 @@ def extract_streams_of_item(base_url, api_key, item, unextracted_streams):
                 base_url, api_key, subtitle_stream_request_path(unextracted_stream)
             )
             extracted_count += 1
-        except (urllib.error.URLError, OSError) as extraction_failure:
+        except OSError as extraction_failure:
             print(
                 f"{LOG_PREFIX}: stream {unextracted_stream['streamIndex']} of "
                 f"'{item.get('Name')}' failed: {extraction_failure}"
@@ -128,7 +127,7 @@ def main():
             pause_seconds,
             yield_to_playback=server_went_quiet,
         )
-    except (urllib.error.URLError, OSError) as jellyfin_failure:
+    except OSError as jellyfin_failure:
         print(f"{LOG_PREFIX}: stopped, jellyfin stopped answering: {jellyfin_failure}")
         return
     print(

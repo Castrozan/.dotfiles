@@ -10,7 +10,7 @@ def handle(hook_input: dict):
         return None
     if belongs_to_a_subagent(hook_input) or not running_inside_a_herdr_pane():
         return None
-    command = shutil.which("herdr-speed-read")
+    command = shutil.which("herdr-pace")
     if command is None:
         return None
     capture_fields = (

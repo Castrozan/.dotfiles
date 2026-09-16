@@ -14,7 +14,7 @@ def write_json_to_osd_socket(payload: dict) -> None:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
             sock.connect(OSD_SOCKET_PATH)
             sock.sendall((json.dumps(payload) + "\n").encode())
-    except (ConnectionRefusedError, OSError):
+    except OSError:
         pass
 
 

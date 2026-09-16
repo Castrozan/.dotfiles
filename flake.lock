@@ -313,7 +313,7 @@
         "cmatrix": "cmatrix",
         "devenv": "devenv",
         "herdr": "herdr",
-        "herdr-speed-read": "herdr-speed-read",
+        "herdr-pace": "herdr-pace",
         "home-manager": "home-manager_2",
         "hyprland": "hyprland",
         "install-nothing": "install-nothing",
@@ -762,7 +762,7 @@
         "type": "github"
       }
     },
-    "herdr-speed-read": {
+    "herdr-pace": {
       "inputs": {
         "nixpkgs": [
           "dependencies",
@@ -770,17 +770,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1789438774,
-        "narHash": "sha256-xxX/FbjVg++yHmg4KG/syqGal4p+RBXAZxZsj75pPnE=",
+        "lastModified": 1789505288,
+        "narHash": "sha256-/a+s92ytGFhOKz6GbE7Hbxq/QZZQjYJoOHObaveAt4Q=",
         "owner": "Castrozan",
-        "repo": "herdr-speed-read",
-        "rev": "6767b936071f17675c2986dda27a7d92f18a69f5",
+        "repo": "herdr-pace",
+        "rev": "97d1ef9e52331e9f56507122e057931659142062",
         "type": "github"
       },
       "original": {
         "owner": "Castrozan",
-        "repo": "herdr-speed-read",
-        "rev": "6767b936071f17675c2986dda27a7d92f18a69f5",
+        "repo": "herdr-pace",
+        "rev": "97d1ef9e52331e9f56507122e057931659142062",
         "type": "github"
       }
     },

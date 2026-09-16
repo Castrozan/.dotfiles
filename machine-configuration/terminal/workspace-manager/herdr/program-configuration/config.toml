@@ -59,14 +59,14 @@ command = "lazygit"
 [[keys.command]]
 key = "prefix+f"
 type = "plugin_action"
-command = "castrozan.speed-read.read"
-description = "speed-read the latest AI reply"
+command = "castrozan.pace.read"
+description = "open Herdr Pace"
 
 [[keys.command]]
 key = "prefix+ctrl+f"
 type = "plugin_action"
-command = "castrozan.speed-read.read"
-description = "speed-read the latest AI reply"
+command = "castrozan.pace.read"
+description = "open Herdr Pace"
 
 [[keys.command]]
 key = "prefix+b"

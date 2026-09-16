@@ -63,7 +63,7 @@ class MpvIpcClient:
         self._buffer = self._buffer[newline_index + 1 :]
         try:
             return json.loads(line_bytes.decode("utf-8"))
-        except (ValueError, UnicodeDecodeError):
+        except ValueError:
             return {"event": "unparseable"}
 
 

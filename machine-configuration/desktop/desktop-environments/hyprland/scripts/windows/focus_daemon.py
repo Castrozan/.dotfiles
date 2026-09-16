@@ -118,7 +118,7 @@ def connect_and_process_events_with_reconnect() -> None:
         try:
             read_and_dispatch_hyprland_events(state, event_socket_path)
             reconnect_delay_seconds = RECONNECT_INITIAL_DELAY_SECONDS
-        except (ConnectionError, OSError):
+        except OSError:
             pass
 
         while not Path(event_socket_path).is_socket():

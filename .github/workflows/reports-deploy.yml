@@ -25,7 +25,7 @@ jobs:
           fetch-depth: 0
           submodules: false
 
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
 
       - uses: actions/setup-python@v5
         with:
@@ -58,12 +58,12 @@ jobs:
             agent-harness/measurement-and-reporting/reports/site/quality/metrics.json
 
       - id: auth
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed
         with:
           workload_identity_provider: projects/933601426694/locations/global/workloadIdentityPools/github-actions/providers/github
           service_account: dotfiles-github-deployer@zg-url-shortener-2026.iam.gserviceaccount.com
 
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f
 
       - name: Publish baseline, coverage and quality metrics to the usage snapshots bucket
         if: ${{ vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
