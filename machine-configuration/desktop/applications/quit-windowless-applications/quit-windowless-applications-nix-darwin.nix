@@ -3,6 +3,7 @@ let
   pythonWithCorrectedCocoaMetadata = pkgs.python312.override {
     packageOverrides = _final: previous: {
       pyobjc-core = previous.pyobjc-core.overridePythonAttrs (previousAttributes: {
+        patchFlags = (previousAttributes.patchFlags or [ "-p1" ]) ++ [ "-l" ];
         patches = (previousAttributes.patches or [ ]) ++ [
           (pkgs.fetchpatch {
             url = "https://github.com/ronaldoussoren/pyobjc/commit/58d6b127f23bfbc62d46d211ed0df11f25b3e36f.patch";
