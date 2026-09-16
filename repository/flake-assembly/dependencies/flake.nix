@@ -39,7 +39,7 @@
     devenv.url = "github:cachix/devenv/v2.2.1";
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
     hyprland.url = "github:hyprwm/Hyprland/v0.55.2";
-    herdr.url = "github:Castrozan/herdr/cb147e49332f078f0581a978d2a134347f2d01f6";
+    herdr.url = "github:Castrozan/herdr/8a1d2dd9a31f9c6382602e0b22d3e326ac570738";
     herdr-pace.url = "github:Castrozan/herdr-pace/97d1ef9e52331e9f56507122e057931659142062";
     herdr-pace.inputs.nixpkgs.follows = "nixpkgs";
 
