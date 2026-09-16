@@ -7,15 +7,25 @@ from pathlib import Path
 import pytest
 
 
-@pytest.mark.skipif(sys.platform != "darwin", reason="Requires the macOS Cocoa bridge")
-def test_repeated_window_number_conversion_has_bounded_retained_memory():
+pytestmark = pytest.mark.skipif(
+    sys.platform != "darwin", reason="Requires the macOS Cocoa bridge"
+)
+
+
+@pytest.fixture
+def deployed_launch_agent():
     launch_agent_path = (
         Path.home()
         / "Library/LaunchAgents/com.dotfiles.quit-windowless-applications.plist"
     )
     if not launch_agent_path.exists():
         pytest.skip("The windowless-applications daemon is not deployed")
-    launch_agent = plistlib.loads(launch_agent_path.read_bytes())
+    return plistlib.loads(launch_agent_path.read_bytes())
+
+
+def test_repeated_window_number_conversion_has_bounded_retained_memory(
+    deployed_launch_agent,
+):
     probe = """
 import gc
 import json
@@ -35,7 +45,7 @@ gc.collect()
 print(json.dumps({"retained_bytes": tracemalloc.get_traced_memory()[0] - before}))
 """
     result = subprocess.run(
-        [launch_agent["ProgramArguments"][0], "-c", probe],
+        [deployed_launch_agent["ProgramArguments"][0], "-c", probe],
         capture_output=True,
         text=True,
         check=True,
@@ -46,3 +56,19 @@ print(json.dumps({"retained_bytes": tracemalloc.get_traced_memory()[0] - before}
     assert retained_bytes < 64 * 1024, (
         f"100,000 window-number conversions retained {retained_bytes} bytes"
     )
+
+
+def test_native_polling_loop_has_bounded_physical_memory(deployed_launch_agent):
+    python_executable, daemon_source = deployed_launch_agent["ProgramArguments"]
+    probe_path = Path(__file__).with_name("native_poll_memory_probe.py")
+    result = subprocess.run(
+        [python_executable, str(probe_path), daemon_source],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=150,
+    )
+    measurement = json.loads(result.stdout.splitlines()[-1])
+    growth_bytes = measurement["after_bytes"] - measurement["before_bytes"]
+
+    assert growth_bytes < 8 * 1024 * 1024, measurement

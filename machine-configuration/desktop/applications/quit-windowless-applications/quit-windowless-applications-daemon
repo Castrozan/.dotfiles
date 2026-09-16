@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import Quartz
 from AppKit import NSApplicationActivationPolicyRegular, NSScreen, NSWorkspace
 from Foundation import NSDate, NSRunLoop
+from objc import autorelease_pool
 
 POLL_INTERVAL_SECONDS = 2
 SECONDS_WITHOUT_A_WINDOW_BEFORE_QUITTING = 5
@@ -164,50 +165,56 @@ def main():
     window_history_by_process_identifier = {}
 
     while True:
-        wait_for_the_next_poll_while_the_workspace_receives_notifications()
+        with autorelease_pool():
+            wait_for_the_next_poll_while_the_workspace_receives_notifications()
 
-        running_applications = get_running_regular_applications()
-        process_identifiers_with_windows = get_process_identifiers_with_visible_windows(
-            get_tallest_menu_bar_height(), get_screen_bottom_left_corners()
-        )
-        current_time = time.time()
-
-        for application in running_applications:
-            process_identifier = application.processIdentifier()
-
-            if (
-                application.bundleIdentifier()
-                in EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS
-            ):
-                continue
-
-            history = window_history_by_process_identifier.setdefault(
-                process_identifier, ApplicationWindowHistory(first_seen_at=current_time)
+            running_applications = get_running_regular_applications()
+            process_identifiers_with_windows = (
+                get_process_identifiers_with_visible_windows(
+                    get_tallest_menu_bar_height(), get_screen_bottom_left_corners()
+                )
             )
+            current_time = time.time()
 
-            if process_identifier in process_identifiers_with_windows:
-                history.last_seen_with_a_window_at = current_time
-                history.quit_requested_at = None
-                continue
+            for application in running_applications:
+                process_identifier = application.processIdentifier()
 
-            if not should_request_quit(history, current_time):
-                continue
+                if (
+                    application.bundleIdentifier()
+                    in EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS
+                ):
+                    continue
 
-            seconds_without_a_window = (
-                seconds_the_application_has_been_without_a_window(history, current_time)
+                history = window_history_by_process_identifier.setdefault(
+                    process_identifier,
+                    ApplicationWindowHistory(first_seen_at=current_time),
+                )
+
+                if process_identifier in process_identifiers_with_windows:
+                    history.last_seen_with_a_window_at = current_time
+                    history.quit_requested_at = None
+                    continue
+
+                if not should_request_quit(history, current_time):
+                    continue
+
+                seconds_without_a_window = (
+                    seconds_the_application_has_been_without_a_window(
+                        history, current_time
+                    )
+                )
+                history.quit_requested_at = current_time
+                application_name = application.localizedName() or "unknown"
+                print(
+                    f"Quitting {application_name} (PID {process_identifier})"
+                    f" - no windows for {seconds_without_a_window:.0f}s",
+                    flush=True,
+                )
+                application.terminate()
+
+            forget_applications_that_exited(
+                window_history_by_process_identifier, running_applications
             )
-            history.quit_requested_at = current_time
-            application_name = application.localizedName() or "unknown"
-            print(
-                f"Quitting {application_name} (PID {process_identifier})"
-                f" - no windows for {seconds_without_a_window:.0f}s",
-                flush=True,
-            )
-            application.terminate()
-
-        forget_applications_that_exited(
-            window_history_by_process_identifier, running_applications
-        )
 
 
 if __name__ == "__main__":

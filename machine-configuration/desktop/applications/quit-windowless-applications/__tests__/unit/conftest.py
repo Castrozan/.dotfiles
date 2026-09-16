@@ -2,6 +2,7 @@ import importlib.machinery
 import importlib.util
 import sys
 import types
+from contextlib import nullcontext
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,9 @@ DAEMON_SOURCE_PATH = (
 
 
 def build_cocoa_module_stubs():
+    objc_stub = types.ModuleType("objc")
+    objc_stub.autorelease_pool = nullcontext
+
     quartz_stub = types.ModuleType("Quartz")
     quartz_stub.CGWindowListCopyWindowInfo = lambda *_arguments: []
     quartz_stub.kCGWindowListOptionAll = 0
@@ -35,6 +39,7 @@ def build_cocoa_module_stubs():
     )
 
     return {
+        "objc": objc_stub,
         "Quartz": quartz_stub,
         "AppKit": appkit_stub,
         "Foundation": foundation_stub,
