@@ -37,8 +37,20 @@ let
       (sharedDarwinConfiguration.system.defaults.CustomUserPreferences.".GlobalPreferences".AppleMenuBarVisibleInFullscreen
         or null
       ) == false;
+  parallelBuildJobs = sharedDarwinConfiguration.nix.settings.max-jobs or 0;
+  coresPerBuild = sharedDarwinConfiguration.nix.settings.cores or 0;
+  boundsBuildParallelism =
+    builtins.isInt parallelBuildJobs
+    && parallelBuildJobs > 0
+    && parallelBuildJobs <= 2
+    && builtins.isInt coresPerBuild
+    && coresPerBuild > 0
+    && coresPerBuild <= 2;
 in
 {
+  darwin-build-parallelism-is-bounded =
+    mkEvalCheck "darwin-build-parallelism-is-bounded" boundsBuildParallelism
+      "Darwin builds must use at most two parallel jobs and two cores per job to preserve capacity for interactive applications";
   darwin-primary-user-shell-is-reconciled-to-bash =
     mkEvalCheck "darwin-primary-user-shell-is-reconciled-to-bash" reconcilesPrimaryUserShellToBash
       "The shared Darwin activation must reconcile the primary admin user's directory-service shell to the stable Bash path with time-bounded dscl calls; declaring users.users.<name>.shell alone does not manage an existing admin because nix-darwin intentionally excludes primary admins from users.knownUsers, while Codex reads pw_shell through getpwuid_r and ignores the SHELL environment variable";

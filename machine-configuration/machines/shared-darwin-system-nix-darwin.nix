@@ -174,6 +174,8 @@
   };
 
   nix.settings = {
+    max-jobs = 2;
+    cores = 2;
     trusted-users = [
       "root"
       username
