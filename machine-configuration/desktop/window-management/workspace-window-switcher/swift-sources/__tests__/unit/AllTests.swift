@@ -1,12 +1,17 @@
-import Foundation
+import AppKit
 
 @main
 struct AllTestsRunner {
-    static func main() {
-        WorkspaceWindowTests.runAll()
-        SelectionIndexCalculatorTests.runAll()
-        MostRecentlyUsedWindowTrackerTests.runAll()
-        SocketCommandParserTests.runAll()
-        print("ALL SWIFT LOGIC TESTS PASSED")
-    }
+  static func main() throws {
+    _ = NSApplication.shared
+    WorkspaceWindowTests.runAll()
+    SelectionIndexCalculatorTests.runAll()
+    MostRecentlyUsedWindowTrackerTests.runAll()
+    SocketCommandParserTests.runAll()
+    StateMachineTests.runAll()
+    OverlayTests.runAll()
+    try ActivationPersistenceTests.runAll()
+    try SocketTransportTests.runAll()
+    print("ALL SWIFT LOGIC TESTS PASSED")
+  }
 }
