@@ -17,16 +17,15 @@ function audioDeviceListsAreEqual(oldList, newList) {
 
 function extractVolumePercent(volumeObject) {
   if (!volumeObject) return 0;
-  for (const channel in volumeObject) {
-    const percentString = volumeObject[channel].value_percent ?? "0%";
-    return parseInt(percentString) || 0;
-  }
-  return 0;
+  const channels = Object.values(volumeObject);
+  if (channels.length === 0) return 0;
+  const percentString = channels[0].value_percent ?? "0%";
+  return Number.parseInt(percentString) || 0;
 }
 
 function extractPortType(ports, activePortName) {
   if (!ports || !activePortName) return "";
-  for (let i = 0; i < ports.length; i++)
-    if (ports[i].name === activePortName) return ports[i].type ?? "";
+  for (const port of ports)
+    if (port.name === activePortName) return port.type ?? "";
   return "";
 }

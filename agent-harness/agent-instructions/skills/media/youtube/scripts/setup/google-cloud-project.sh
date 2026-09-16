@@ -4,7 +4,7 @@ _ensure_gcloud() {
 		return
 	fi
 
-	if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+	if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
 		# shellcheck disable=SC1091
 		. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 	fi
@@ -19,18 +19,19 @@ _ensure_gcloud() {
 }
 
 _gcloud() {
-	if [ "${USE_NIX_SHELL:-}" = "true" ]; then
+	if [[ "${USE_NIX_SHELL:-}" = "true" ]]; then
 		nix-shell -p google-cloud-sdk --run "gcloud $*"
 	else
 		gcloud "$@"
 	fi
+	return
 }
 
 _ensure_logged_in() {
 	local current_account
 	current_account=$(_gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null || true)
 
-	if [ -z "$current_account" ]; then
+	if [[ -z "$current_account" ]]; then
 		_log "Not logged in. Opening browser for Google authentication..."
 		_gcloud auth login --brief
 		current_account=$(_gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null)
@@ -38,13 +39,14 @@ _ensure_logged_in() {
 
 	_log "Authenticated as: $current_account"
 	echo "$current_account"
+	return
 }
 
 _create_or_select_project() {
 	local existing_projects
 	existing_projects=$(_gcloud projects list --format="value(projectId)" --filter="projectId:${PROJECT_PREFIX}*" 2>/dev/null || true)
 
-	if [ -n "$existing_projects" ]; then
+	if [[ -n "$existing_projects" ]]; then
 		local project_id
 		project_id=$(echo "$existing_projects" | head -1)
 		_log "Found existing project: $project_id"
@@ -68,4 +70,5 @@ _enable_youtube_api() {
 	local project_id="$1"
 	_log "Enabling YouTube Data API v3..."
 	_gcloud services enable youtube.googleapis.com --project="$project_id" 2>&1 | grep -v "^$" >&2 || true
+	return
 }

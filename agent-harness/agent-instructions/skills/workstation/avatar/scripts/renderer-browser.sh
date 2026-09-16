@@ -5,6 +5,7 @@ discover_cdp_port() {
 		grep -o '127\.0\.0\.1:[0-9]*' |
 		head -1 |
 		cut -d: -f2
+	return
 }
 
 # Try pinchtab first, then fall back to launching Chrome directly
@@ -19,14 +20,14 @@ sleep 3
 
 DISCOVERED_CDP_PORT=$(discover_cdp_port)
 
-if [ -z "$DISCOVERED_CDP_PORT" ]; then
+if [[ -z "$DISCOVERED_CDP_PORT" ]]; then
 	# Pinchtab failed — launch Chrome directly with CDP
 	chromium --remote-debugging-port=9222 --autoplay-policy=no-user-gesture-required "http://localhost:@avatarRendererPort@" >/dev/null 2>&1 &
 	sleep 3
 	DISCOVERED_CDP_PORT=$(discover_cdp_port)
 fi
 
-if [ -n "$DISCOVERED_CDP_PORT" ]; then
+if [[ -n "$DISCOVERED_CDP_PORT" ]]; then
 	echo -e " ${GREEN}OK${NC} (CDP port: $DISCOVERED_CDP_PORT)"
 	# Navigate to renderer if not already there
 	curl -sf "http://127.0.0.1:$DISCOVERED_CDP_PORT/json" 2>/dev/null |
@@ -37,7 +38,7 @@ else
 fi
 
 # Inject renderer bridge (connects ChatVRM to control server for lip sync)
-if [ -n "$DISCOVERED_CDP_PORT" ]; then
+if [[ -n "$DISCOVERED_CDP_PORT" ]]; then
 	echo -n "  Injecting renderer bridge for lip sync..."
 	sleep 3
 	CDP_PORT="$DISCOVERED_CDP_PORT" \

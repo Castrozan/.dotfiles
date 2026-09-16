@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 is_running() {
-	pgrep -f "$1" >/dev/null 2>&1
+	local process_pattern=$1
+	pgrep -f "$process_pattern" >/dev/null 2>&1
+	return
 }
 
 detect_v4l2_device() {
 	for sysdir in /sys/class/video4linux/video*; do
-		[ -d "$sysdir" ] || continue
-		local deviceName
-		deviceName=$(cat "$sysdir/name" 2>/dev/null || true)
-		if echo "$deviceName" | grep -qi -e "avatar" -e "v4l2loopback"; then
+		[[ -d "$sysdir" ]] || continue
+		local device_name
+		device_name=$(cat "$sysdir/name" 2>/dev/null || true)
+		if echo "$device_name" | grep -qi -e "avatar" -e "v4l2loopback"; then
 			echo "/dev/$(basename "$sysdir")"
 			return
 		fi
@@ -22,12 +24,12 @@ wait_for_port() {
 	local elapsed=0
 
 	echo -n "  Waiting for port $port to be available..."
-	while ! ss -tlnp 2>/dev/null | grep -q ":$port " && [ $elapsed -lt $timeout ]; do
+	while ! ss -tlnp 2>/dev/null | grep -q ":$port " && [[ $elapsed -lt $timeout ]]; do
 		sleep 1
 		elapsed=$((elapsed + 1))
 	done
 
-	if [ $elapsed -ge $timeout ]; then
+	if [[ $elapsed -ge $timeout ]]; then
 		echo -e " ${RED}TIMEOUT${NC}"
 		return 1
 	else
@@ -44,4 +46,5 @@ create_virtual_sink() {
 		pactl load-module module-null-sink sink_name="$name" sink_properties=device.description="$description" media.class="$media_class" channel_map=front-left,front-right >/dev/null
 		echo -e "  ${GREEN}✓${NC} $name created"
 	fi
+	return
 }

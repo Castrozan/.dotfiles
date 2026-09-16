@@ -1,4 +1,4 @@
-var weatherIconMap = {
+const weatherIconMap = {
   0: "clear_day",
   1: "clear_day",
   2: "partly_cloudy_day",
@@ -29,7 +29,7 @@ var weatherIconMap = {
   99: "thunderstorm",
 };
 
-var weatherConditionMap = {
+const weatherConditionMap = {
   0: "Clear",
   1: "Clear",
   2: "Partly cloudy",

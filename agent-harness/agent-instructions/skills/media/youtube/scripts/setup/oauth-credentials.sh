@@ -8,7 +8,7 @@ _create_oauth_credentials() {
 	local access_token
 	access_token=$(_gcloud auth print-access-token 2>/dev/null)
 
-	if [ "$brand_name" != "manual" ]; then
+	if [[ "$brand_name" != "manual" ]]; then
 		# Try creating via IAP API (works for internal brands)
 		local client_response
 		client_response=$(curl -s -X POST \
@@ -21,7 +21,7 @@ _create_oauth_credentials() {
 		client_id=$(echo "$client_response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('name','').split('/')[-1])" 2>/dev/null || true)
 		client_secret=$(echo "$client_response" | python3 -c "import sys,json; print(json.load(sys.stdin).get('secret',''))" 2>/dev/null || true)
 
-		if [ -n "$client_id" ] && [ -n "$client_secret" ] && [ "$client_id" != "" ]; then
+		if [[ -n "$client_id" ]] && [[ -n "$client_secret" ]] && [[ "$client_id" != "" ]]; then
 			_write_credentials "$client_id" "$client_secret"
 			return
 		fi
@@ -50,7 +50,7 @@ _create_oauth_credentials() {
 	created_client_id=$(echo "$create_response" | python3 -c "import sys,json; print(json.load(sys.stdin).get('clientId',''))" 2>/dev/null || true)
 	created_client_secret=$(echo "$create_response" | python3 -c "import sys,json; print(json.load(sys.stdin).get('clientSecret',''))" 2>/dev/null || true)
 
-	if [ -n "$created_client_id" ] && [ -n "$created_client_secret" ]; then
+	if [[ -n "$created_client_id" ]] && [[ -n "$created_client_secret" ]]; then
 		_write_credentials "$created_client_id" "$created_client_secret"
 		return
 	fi
@@ -76,10 +76,10 @@ _create_credentials_via_browser() {
 	xdg-open "$credentials_url" 2>/dev/null || open "$credentials_url" 2>/dev/null || true
 	read -rp "Press Enter after saving credentials.json..."
 
-	if [ ! -f "$CREDENTIALS_FILE" ]; then
+	if [[ ! -f "$CREDENTIALS_FILE" ]]; then
 		_log "Credentials file not found at $CREDENTIALS_FILE"
 		read -rp "Enter the path where you saved the JSON: " downloaded_path
-		if [ -f "$downloaded_path" ]; then
+		if [[ -f "$downloaded_path" ]]; then
 			mkdir -p "$CREDENTIALS_DIR"
 			cp "$downloaded_path" "$CREDENTIALS_FILE"
 			_log "Credentials saved to $CREDENTIALS_FILE"
@@ -87,6 +87,7 @@ _create_credentials_via_browser() {
 			_error "File not found: $downloaded_path"
 		fi
 	fi
+	return
 }
 
 _write_credentials() {
@@ -107,4 +108,5 @@ _write_credentials() {
 }
 EOF
 	_log "Credentials saved to $CREDENTIALS_FILE"
+	return
 }

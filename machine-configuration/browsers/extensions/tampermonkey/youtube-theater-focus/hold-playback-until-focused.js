@@ -27,14 +27,14 @@
 
     try {
       nativeMediaPause.call(video);
-    } catch (ignored) {}
+    } catch (error_) {}
   }
 
   function holdEveryPlayingVideo() {
     const videos = document.getElementsByTagName("video");
 
-    for (let index = 0; index < videos.length; index += 1) {
-      if (!videos[index].paused) holdVideo(videos[index]);
+    for (const video of videos) {
+      if (!video.paused) holdVideo(video);
     }
   }
 

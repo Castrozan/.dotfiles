@@ -14,6 +14,7 @@ def search_videos(query, max_results=10):
             "--dump-json",
             "--flat-playlist",
             "--no-warnings",
+            "--",
             search_query,
         ],
         capture_output=True,

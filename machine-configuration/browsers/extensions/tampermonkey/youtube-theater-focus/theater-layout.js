@@ -44,7 +44,7 @@
 
     const existing = document.getElementById(TABS_ID);
 
-    if (existing && existing.nextElementSibling === comments) {
+    if (existing?.nextElementSibling === comments) {
       return true;
     }
 

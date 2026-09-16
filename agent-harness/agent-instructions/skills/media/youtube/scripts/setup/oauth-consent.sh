@@ -14,7 +14,7 @@ _configure_oauth_consent_screen() {
 		"https://iap.googleapis.com/v1/projects/${project_id}/brands" 2>/dev/null |
 		python3 -c "import sys,json; brands=json.load(sys.stdin).get('brands',[]); print(brands[0]['name'] if brands else '')" 2>/dev/null || true)
 
-	if [ -n "$existing_brand" ]; then
+	if [[ -n "$existing_brand" ]]; then
 		_log "OAuth consent screen already configured"
 		echo "$existing_brand"
 		return
@@ -35,7 +35,7 @@ _configure_oauth_consent_screen() {
 	local brand_name
 	brand_name=$(echo "$brand_response" | python3 -c "import sys,json; print(json.load(sys.stdin).get('name',''))" 2>/dev/null || true)
 
-	if [ -z "$brand_name" ]; then
+	if [[ -z "$brand_name" ]]; then
 		_log "Warning: Could not create consent screen via API. Response: $brand_response"
 		_log "Falling back to manual consent screen setup..."
 		_setup_consent_screen_manually "$project_id"
@@ -60,4 +60,5 @@ _setup_consent_screen_manually() {
 	_log ""
 	xdg-open "$consent_url" 2>/dev/null || open "$consent_url" 2>/dev/null || true
 	read -rp "Press Enter when done..."
+	return
 }

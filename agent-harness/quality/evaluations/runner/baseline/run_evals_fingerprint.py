@@ -30,6 +30,7 @@ HUMANIZE_EVIDENCE_RUNNER_COMPONENTS = (
 )
 
 
+YAML_FILE_PATTERN = "*.yaml"
 MARKDOWN_EMPHASIS_PATTERN = re.compile(r"[*_`]+")
 
 
@@ -71,8 +72,8 @@ def digest_instruction_paths(repo_root: Path, paths: set[Path]) -> str:
 
 def evaluation_suite_paths(repo_root: Path) -> set[Path]:
     evaluation_root = repo_root / "agent-harness" / "quality" / "evaluations"
-    paths = set((evaluation_root / "evals").rglob("*.yaml"))
-    paths.update((evaluation_root / "calibration").glob("*.yaml"))
+    paths = set((evaluation_root / "evals").rglob(YAML_FILE_PATTERN))
+    paths.update((evaluation_root / "calibration").glob(YAML_FILE_PATTERN))
     paths.update(
         repo_root.glob(
             "agent-harness/agent-instructions/skills/**/__tests__/evals/*.yaml"
@@ -108,7 +109,7 @@ def evaluation_category_names(repo_root: Path = REPO_ROOT) -> set[str]:
     evaluation_root = repo_root / "agent-harness" / "quality" / "evaluations"
     categories = {
         path.stem
-        for path in (evaluation_root / "evals").rglob("*.yaml")
+        for path in (evaluation_root / "evals").rglob(YAML_FILE_PATTERN)
         if path.name != "settings.yaml"
     }
     for path in repo_root.glob(

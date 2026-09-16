@@ -2,7 +2,6 @@
 # shellcheck source-path=SCRIPTDIR
 set -Eeuo pipefail
 
-# TODO: migrate to nix install like agent-harness/agent-instructions/skills/workstation/browser
 readonly CREDENTIALS_DIR="$HOME/.config/youtube-cli"
 readonly CREDENTIALS_FILE="$CREDENTIALS_DIR/credentials.json"
 readonly PROJECT_PREFIX="youtube-cli"
