@@ -11,6 +11,6 @@ in
 {
   home.packages = [ annotatePackage ];
   home.activation.linkHerdrAnnotate = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    run ${herdrPackage}/bin/herdr plugin link ${annotatePackage}/share/herdr-plugin --enabled
+    run ${herdrPackage}/bin/herdr plugin link ${annotatePackage}/share/herdr/plugins/annotate --enabled
   '';
 }
