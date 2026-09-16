@@ -92,7 +92,8 @@ def test_commands_preserve_cli_arguments_and_json(
         assert item["id"] == ("user-1" if kind in {"user", "users"} else "tweet-1")
         assert item["url"].startswith("https://x.com/reader")
         if kind in {"tweet", "tweets"}:
-            assert item["text"] == "café" and item["view_count"] == 10
+            assert item["text"] == "café"
+            assert item["view_count"] == 10
 
 
 @pytest.mark.parametrize(
@@ -116,7 +117,8 @@ def test_write_commands_acknowledge_only_success(
     getattr(twitter_modules.client, method).side_effect = RuntimeError("rejected")
     twitter_modules.cli.main()
     failure = json.loads(capsys.readouterr().out)
-    assert "rejected" in failure["error"] and "status" not in failure
+    assert "rejected" in failure["error"]
+    assert "status" not in failure
     assert failure[key] == "target"
 
 
@@ -161,7 +163,8 @@ def test_replies_apply_limit_and_thread_omits_duplicate_root(
     twitter_modules.cli.main()
     result = json.loads(capsys.readouterr().out)
     assert [item["id"] for item in result] == ["reply", "nested"]
-    assert result[0]["url"] is None and result[0]["user"]["id"] is None
+    assert result[0]["url"] is None
+    assert result[0]["user"]["id"] is None
     monkeypatch.setattr(sys, "argv", ["twikit-cli", "thread", "tweet-1"])
     twitter_modules.cli.main()
     assert [item["id"] for item in json.loads(capsys.readouterr().out)] == [

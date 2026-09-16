@@ -50,7 +50,8 @@ def run_until_replaying(cache_directory, force=False):
 def test_recording_cache_replay_force_and_signal_restore_terminal(tmp_path):
     assert "recording 1s" in run_until_replaying(tmp_path)
     cast_files = list(tmp_path.rglob("cast.bin"))
-    assert len(cast_files) == 1 and cast_files[0].read_bytes().startswith(b"PCL1")
+    assert len(cast_files) == 1
+    assert cast_files[0].read_bytes().startswith(b"PCL1")
     before = cast_files[0].stat().st_mtime_ns
     assert "recording" not in run_until_replaying(tmp_path)
     assert cast_files[0].stat().st_mtime_ns == before
@@ -68,7 +69,8 @@ def test_missing_command_and_empty_capture_fail_with_context(tmp_path):
         text=True,
         timeout=10,
     )
-    assert missing.returncode == 2 and "no command given" in missing.stderr
+    assert missing.returncode == 2
+    assert "no command given" in missing.stderr
     silent_command = shutil.which("true")
     assert silent_command is not None
     empty = subprocess.run(
@@ -78,4 +80,5 @@ def test_missing_command_and_empty_capture_fail_with_context(tmp_path):
         text=True,
         timeout=10,
     )
-    assert empty.returncode == 1 and "nothing captured" in empty.stderr
+    assert empty.returncode == 1
+    assert "nothing captured" in empty.stderr

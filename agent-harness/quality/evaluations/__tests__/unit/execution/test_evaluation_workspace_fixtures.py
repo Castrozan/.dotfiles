@@ -60,7 +60,8 @@ def test_coached_fixture_diff_scoring_and_review_prompt(tmp_path, monkeypatch):
     )
     assert score == 80
     prompt = coached_fixtures.build_coach_prompt(["Read", "Edit"], tmp_path)
-    assert "Read -> Edit" in prompt and "+value = 2" in prompt
+    assert "Read -> Edit" in prompt
+    assert "+value = 2" in prompt
     (tmp_path / "src/example.py").write_text("# explanation\nvalue = 2\n")
     assert (
         coached_scoring.calculate_nps_from_tool_sequence_and_workspace(
@@ -109,4 +110,5 @@ def test_compliance_body_frontmatter_and_unavailable_diff(tmp_path, monkeypatch)
         coached_fixtures.subprocess, "run", Mock(side_effect=OSError("git unavailable"))
     )
     prompt = coached_fixtures.build_coach_prompt([], tmp_path)
-    assert "(no tools used)" in prompt and "(could not get diff)" in prompt
+    assert "(no tools used)" in prompt
+    assert "(could not get diff)" in prompt

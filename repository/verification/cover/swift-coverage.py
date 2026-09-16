@@ -4,6 +4,8 @@ from pathlib import Path
 import subprocess
 import tempfile
 
+from swift_coverage_report import sonar_coverage_xml
+
 
 REPOSITORY = Path(__file__).resolve().parents[3]
 DESKTOP = Path("machine-configuration/desktop")
@@ -103,22 +105,18 @@ def collect_coverage(output_directory):
         command = [
             "xcrun",
             "llvm-cov",
-            "show",
+            "export",
             str(binaries[0]),
             *objects,
             f"-instr-profile={profile}",
-            "-use-color=0",
+            "-format=lcov",
         ]
         report = subprocess.run(
             command, check=True, capture_output=True, text=True, timeout=60
         ).stdout
-        report = "\n".join(
-            line.removeprefix(str(REPOSITORY) + "/")
-            if line.endswith(".swift:")
-            else line
-            for line in report.splitlines()
+        (output_directory / "swift-coverage.xml").write_text(
+            sonar_coverage_xml(report, REPOSITORY) + "\n"
         )
-        (output_directory / "swift-coverage.txt").write_text(report + "\n")
         subprocess.run(
             [
                 "xcrun",

@@ -55,11 +55,9 @@ def test_main_menu_routes_selection(network_ports, monkeypatch, action, target):
         monkeypatch.setattr(network, target, handler)
     network.show_main_menu()
     arguments = ports.show_fuzzel_menu.call_args_list[0].args
-    assert (
-        arguments[0] == "Network"
-        and "Office" in arguments[1]
-        and "Disable WiFi" in arguments[1]
-    )
+    assert arguments[0] == "Network"
+    assert "Office" in arguments[1]
+    assert "Disable WiFi" in arguments[1]
     if target in {"show_wifi_networks", "show_connections"}:
         handler.assert_called_once_with()
     elif target == "toggle_wifi":

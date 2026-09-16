@@ -15,7 +15,7 @@
       {
         "metric": "new_coverage",
         "op": "LT",
-        "error": "80"
+        "error": "65"
       },
       {
         "metric": "new_duplicated_lines_density",

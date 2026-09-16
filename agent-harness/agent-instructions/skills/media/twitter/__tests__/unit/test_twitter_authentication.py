@@ -35,8 +35,9 @@ def test_client_uses_cookies_without_reading_credentials(authentication):
 
 def test_missing_credentials_fail_without_network(authentication, capsys):
     module, client, _, _ = authentication
+    authentication_request = module.get_client()
     with pytest.raises(SystemExit) as failure:
-        asyncio.run(module.get_client())
+        asyncio.run(authentication_request)
     assert failure.value.code == 1
     assert "No cookies and no credentials" in capsys.readouterr().err
     client.login.assert_not_awaited()
@@ -80,7 +81,8 @@ def test_login_reuses_valid_session_and_refreshes_expired_session(
     )
     assert cookies.stat().st_mode & 0o777 == 0o600
     output = capsys.readouterr().out
-    assert "expired" in output and "test-password" not in output
+    assert "expired" in output
+    assert "test-password" not in output
 
 
 def test_secret_reader_tolerates_missing_path(twitter_modules, tmp_path):

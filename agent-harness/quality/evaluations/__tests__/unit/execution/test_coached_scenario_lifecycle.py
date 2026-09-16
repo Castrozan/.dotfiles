@@ -46,7 +46,8 @@ def test_coaching_applies_penalty_correction_and_always_cleans_up(coached_enviro
     assert (result.initial_nps, result.coached_nps, result.improvement) == (45, 85, 40)
     assert result.initial_tool_sequence == ["Read", "Edit"]
     assert result.coached_tool_sequence == ["Read", "Read", "Edit"]
-    assert "AFTER CORRECTION" in result.coach_findings and result.error is None
+    assert "AFTER CORRECTION" in result.coach_findings
+    assert result.error is None
     prompts = ports["send_prompt_to_agent_session"].call_args_list
     assert prompts[0].args == ("pane", "rename variable")
     assert "FAIL: naming" in prompts[1].args[1]
@@ -60,7 +61,8 @@ def test_passing_review_needs_no_correction(coached_environment):
     scenario, _, ports = coached_environment
     ports["review_tool_sequence_for_compliance"].side_effect = ["PASS: naming"]
     result = runner.run_coached_scenario(scenario)
-    assert result.initial_nps == 60 and result.coached_nps == 85
+    assert result.initial_nps == 60
+    assert result.coached_nps == 85
     assert ports["send_prompt_to_agent_session"].call_count == 1
     assert ports["review_tool_sequence_for_compliance"].call_count == 1
 
@@ -77,7 +79,8 @@ def test_worker_failures_release_tab_and_workspace(coached_environment, port, er
     scenario, parent, ports = coached_environment
     ports[port].return_value = False
     result = runner.run_coached_scenario(scenario)
-    assert result.error == error and result.initial_nps == 0
+    assert result.error == error
+    assert result.initial_nps == 0
     ports["destroy_test_tab"].assert_called_once_with("tab")
     ports["review_tool_sequence_for_compliance"].assert_not_called()
     assert list(parent.iterdir()) == []

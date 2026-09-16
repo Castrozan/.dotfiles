@@ -22,8 +22,10 @@ def test_instruction_following_scores_observable_actions():
         ("Bash", {"command": "git add total.py"}),
     )
     metrics = measure_instruction_following(compliant)
-    assert metrics.score == 100 and metrics.read_to_edit_ratio == 1
-    assert metrics.read_before_edit and metrics.used_specific_git_staging
+    assert metrics.score == 100
+    assert metrics.read_to_edit_ratio == 1
+    assert metrics.read_before_edit
+    assert metrics.used_specific_git_staging
     assert metrics.total_tool_calls == 4
     violated = trace(
         ("Write", {"content": "def calc():\n    # explanation\n    return 1"}),
@@ -42,11 +44,13 @@ def test_instruction_following_scores_observable_actions():
         ]
     )
     no_read = measure_instruction_following(trace(("Write", {"content": "value = 1"})))
-    assert not no_read.read_before_edit and no_read.read_to_edit_ratio == 0
+    assert not no_read.read_before_edit
+    assert no_read.read_to_edit_ratio == 0
     mixed = measure_instruction_following(
         trace(("Read", {}), ("Edit", {}), ("Write", {}), ("Grep", {}))
     )
-    assert mixed.read_to_edit_ratio == 0.5 and mixed.score == 93
+    assert mixed.read_to_edit_ratio == 0.5
+    assert mixed.score == 93
     assert measure_instruction_following(SessionTrace()).score == 50
 
 

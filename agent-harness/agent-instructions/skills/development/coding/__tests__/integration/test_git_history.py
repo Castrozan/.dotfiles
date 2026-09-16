@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -20,7 +21,7 @@ REPO_ROOT = Path(
 def run_gh(
     *args: str, repo: str | None = None, check: bool = True
 ) -> subprocess.CompletedProcess:
-    cmd = ["python3", str(SCRIPT)]
+    cmd = [sys.executable, str(SCRIPT)]
     if repo:
         cmd += ["--repo", repo]
     cmd += list(args)

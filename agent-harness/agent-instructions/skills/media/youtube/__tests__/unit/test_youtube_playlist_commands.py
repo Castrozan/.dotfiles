@@ -163,11 +163,9 @@ def test_video_info_and_search_dispatch_preserve_arguments(
         part="snippet,contentDetails,statistics", id="abcdefghijk,raw-id"
     )
     result = json.loads(capsys.readouterr().out)[0]
-    assert (
-        result["duration"] == "PT2M"
-        and len(result["description"]) == 300
-        and result["like_count"] is None
-    )
+    assert result["duration"] == "PT2M"
+    assert len(result["description"]) == 300
+    assert result["like_count"] is None
     search = Mock()
     monkeypatch.setattr(youtube.cli.youtube_videos, "search_videos", search)
     invoke(youtube, monkeypatch, ["search", "nix", "-n", "3"])

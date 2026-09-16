@@ -63,13 +63,16 @@ def test_session_transport_preserves_exit_and_isolates_environment(
     result = function(
         "prompt", tmp_path, timeout_seconds=9, model="test-model", **options
     )
-    assert result.exit_code == 7 and result.assistant_messages == ["done"]
+    assert result.exit_code == 7
+    assert result.assistant_messages == ["done"]
     arguments = run.call_args.args[0]
-    assert arguments[:2] == ["/test/claude", "-p"] and arguments[-1] == "prompt"
+    assert arguments[:2] == ["/test/claude", "-p"]
+    assert arguments[-1] == "prompt"
     assert ("--system-prompt" in arguments) == with_system_prompt
     assert run.call_args.kwargs["timeout"] == 9
     assert "CLAUDECODE" not in run.call_args.kwargs["env"]
     assert run.call_args.kwargs["env"]["TEST_RETAINED"] == "present"
     run.side_effect = subprocess.TimeoutExpired(arguments, 9)
     timed_out = function("prompt", tmp_path, **options)
-    assert timed_out.exit_code == 124 and timed_out.tool_calls == []
+    assert timed_out.exit_code == 124
+    assert timed_out.tool_calls == []

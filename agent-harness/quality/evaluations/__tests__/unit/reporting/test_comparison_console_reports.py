@@ -23,7 +23,9 @@ def test_comparison_report_aligns_missing_results_and_averages(capsys):
     ]
     print_ab_test_results(results, ["inline", "reference", "empty", "missing"])
     output = capsys.readouterr().out
-    assert "N/A" in output and "Read/edit ratio" in output and "0.5" in output
+    assert "N/A" in output
+    assert "Read/edit ratio" in output
+    assert "0.5" in output
     for score in [80, 45, 20]:
         assert f"{score}/100" in output
     assert output.count("time: 2s") == 3

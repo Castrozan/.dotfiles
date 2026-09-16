@@ -55,8 +55,10 @@ def test_sampling_summary_distinguishes_flaky_and_hard_failures(capsys):
     ]
     assert not reporting.print_epoch_summary(samples, 2)
     output = capsys.readouterr().out
-    assert "[FLAKY] flaky: 1/2" in output and "[FAIL] failed: 0/2" in output
-    assert "suite pass@2:" in output and "hard-failed: 1" in output
+    assert "[FLAKY] flaky: 1/2" in output
+    assert "[FAIL] failed: 0/2" in output
+    assert "suite pass@2:" in output
+    assert "hard-failed: 1" in output
     assert reporting.print_epoch_summary(samples[:2], 1)
     assert "suite pass@2:" not in capsys.readouterr().out
 
@@ -86,7 +88,8 @@ def test_comparison_gate_requires_positive_significant_difference(
     )
     assert reporting.print_ab_summary(comparison) == passed
     output = capsys.readouterr().out
-    assert "Paired tests: 10" in output and "Candidate: 80.0%" in output
+    assert "Paired tests: 10" in output
+    assert "Candidate: 80.0%" in output
     assert ("McNemar" in output) == (method == "mcnemar_exact")
 
 
@@ -144,4 +147,6 @@ def test_usage_and_category_listing_preserve_counts(capsys):
         {"tests": {"routing": [{"name": "skill"}]}, "smoke_test": {"name": "alive"}}
     )
     output = capsys.readouterr().out
-    assert "routing (1 tests)" in output and "- skill" in output and "- alive" in output
+    assert "routing (1 tests)" in output
+    assert "- skill" in output
+    assert "- alive" in output
