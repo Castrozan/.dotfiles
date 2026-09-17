@@ -12,6 +12,7 @@ let
   containerDataDirectory = "/home/suwayomi/.local/share/Tachidesk";
   containerName = "suwayomi-server";
   image = "ghcr.io/suwayomi/suwayomi-server:v2.3.2243-preview@sha256:2b95476844614748285ecba0deef97cb8eabd17c6ccb58d136f829ec20b8040f";
+  flaresolverrPort = 8191;
   tailnetBindAddress = import ../tailnet-bind-address.nix { inherit lib; };
 in
 {
@@ -64,7 +65,7 @@ in
           "--env WEB_UI_UPDATE_INTERVAL=0"
           "--env KCEF_ENABLED=true"
           "--env FLARESOLVERR_ENABLED=true"
-          "--env FLARESOLVERR_URL=http://${tailnetBindAddress}:8191"
+          "--env FLARESOLVERR_URL=http://${tailnetBindAddress}:${toString flaresolverrPort}"
           ''--env "JAVA_TOOL_OPTIONS=-Xms128m -Xmx768m"''
           image
         ];
@@ -81,4 +82,6 @@ in
       "d ${mangaDownloadRoot} 0755 zanoni users - -"
     ];
   };
+
+  networking.firewall.interfaces.docker0.allowedTCPPorts = [ flaresolverrPort ];
 }

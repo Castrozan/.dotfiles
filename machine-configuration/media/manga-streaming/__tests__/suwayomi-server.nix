@@ -75,4 +75,13 @@ in
         suwayomiUnit.serviceConfig.Restart == "always" && suwayomiUnit.unitConfig.StartLimitIntervalSec == 0
       )
       "Suwayomi must restart after every exit without exhausting systemd's start limiter while its tailnet publish is settling";
+
+  chise-suwayomi-bypasses-cloudflare-through-the-stack-solver =
+    mkEvalCheck "chise-suwayomi-bypasses-cloudflare-through-the-stack-solver"
+      (
+        lib.hasInfix "--env FLARESOLVERR_ENABLED=true" command
+        && lib.hasInfix "--env FLARESOLVERR_URL=http://${tailnetBindAddress}:8191" command
+        && builtins.elem 8191 chiseConfiguration.networking.firewall.interfaces.docker0.allowedTCPPorts
+      )
+      "sources behind Cloudflare's bot check must have the solver enabled and reachable: the server reads the solver address from FLARESOLVERR_URL, and because the request leaves the container for the host's published port it arrives on docker0, where a firewall that admits only the tailnet interface would drop it and every bypass would fail with the solver sitting healthy";
 }
