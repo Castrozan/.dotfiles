@@ -272,8 +272,6 @@ services:
       - arrnet
     dns: *stable-public-dns
     <<: *media-1536m
-    ports:
-      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:8191:8191"
     healthcheck:
       {
         test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8191/"],
