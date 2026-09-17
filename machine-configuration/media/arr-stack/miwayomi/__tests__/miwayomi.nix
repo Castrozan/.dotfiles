@@ -56,11 +56,9 @@ let
     && !(lib.hasInfix "\"0.0.0.0:4568:" composeText)
     && !(lib.hasInfix "\"127.0.0.1:4568:" composeText)
     && !(lib.hasInfix "4568:4567" composeText);
-  flaresolverrIsTailnetOnly =
+  flaresolverrIsComposeInternal =
     lib.hasInfix "FLARESOLVERR_URL: http://flaresolverr:8191" composeText
-    && lib.hasInfix "\"\${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:8191:8191\"" composeText
-    && !(lib.hasInfix "\"0.0.0.0:8191:" composeText)
-    && !(lib.hasInfix "\"127.0.0.1:8191:" composeText);
+    && !(lib.hasInfix "8191:8191" composeText);
   miwayomiStateIsPersistent = lib.hasInfix "\${ARR_CONFIG_ROOT}/miwayomi:/data" composeText;
   miwayomiUpdaterCannotWrite = lib.hasInfix "\${ARR_CONFIG_ROOT}/miwayomi-update-disabled:/data/update:ro" composeText;
   composeWaitsForFlaresolverr =
@@ -120,9 +118,9 @@ in
     mkEvalCheck "chise-miwayomi-listens-only-on-the-tailnet" miwayomiIsTailnetOnly
       "Miwayomi ships no authentication, so Docker must publish it only on chise's runtime tailnet address and never on wildcard or loopback";
 
-  chise-flaresolverr-listens-only-on-the-tailnet =
-    mkEvalCheck "chise-flaresolverr-listens-only-on-the-tailnet" flaresolverrIsTailnetOnly
-      "FlareSolverr now serves both Miwayomi and the standalone Suwayomi container, so Docker must publish it only on chise's runtime tailnet address and never on wildcard or loopback";
+  chise-miwayomi-flaresolverr-is-compose-internal =
+    mkEvalCheck "chise-miwayomi-flaresolverr-is-compose-internal" flaresolverrIsComposeInternal
+      "FlareSolverr serves only Miwayomi, so its port must stay inside the Compose network rather than being published on any host interface";
 
   chise-miwayomi-state-survives-container-replacement =
     mkEvalCheck "chise-miwayomi-state-survives-container-replacement" miwayomiStateIsPersistent
