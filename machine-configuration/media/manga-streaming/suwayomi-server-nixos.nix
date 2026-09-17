@@ -63,6 +63,8 @@ in
           "--env WEB_UI_CHANNEL=bundled"
           "--env WEB_UI_UPDATE_INTERVAL=0"
           "--env KCEF_ENABLED=true"
+          "--env FLARESOLVERR_ENABLED=true"
+          "--env FLARESOLVERR_URL=http://${tailnetBindAddress}:8191"
           ''--env "JAVA_TOOL_OPTIONS=-Xms128m -Xmx768m"''
           image
         ];
