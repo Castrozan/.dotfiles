@@ -11,7 +11,7 @@ Measured on kira, 2026-07-30, before removal:
 | Surface | Bytes | Always-on | Reviewed |
 |---|---|---|---|
 | `~/.claude/CLAUDE.md` (assembled from `agent-harness/agent-instructions/core-rules/`) | 12665 | yes | yes |
-| `.dotfiles/CLAUDE.md` | 9155 | yes | yes |
+| `.dotfiles/AGENTS.md` | 9155 | yes | yes |
 | `~/.claude/projects/-Users-lucas-zanoni--dotfiles/memory/MEMORY.md` | **19008** | yes | **no** |
 
 The memory index was the largest always-on surface in any session in this repo, 1.5x the global `CLAUDE.md`, and the only
@@ -129,7 +129,7 @@ nothing until a session actually needs them, and capping them would push facts b
 
 The failure this prevents is precisely the one that happened: a surface nobody budgeted growing past the surfaces everyone
 reviews. For scale, the 19008-byte index was a 47 percent increase on the entire 40.4 KB always-on budget it was invisibly
-added to. The repository-root `CLAUDE.md` is a generated symlink into the store rather than a tracked file, so the check
+added to. The repository-root `AGENTS.md` is a generated symlink into the store rather than a tracked file, so the check
 reads its source, `agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md`, which is what CI has.
 
 ## Explicitly rejected

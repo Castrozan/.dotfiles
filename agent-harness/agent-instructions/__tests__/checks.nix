@@ -51,10 +51,7 @@ let
 
   dotfilesCheckoutAgentInstructionFilesAreDeclared =
     builtins.hasAttr ".dotfiles/AGENTS.md" cfgOnTheEvaluatingSystem.home.file
-    && builtins.hasAttr ".dotfiles/CLAUDE.md" cfgOnTheEvaluatingSystem.home.file
-    &&
-      cfgOnTheEvaluatingSystem.home.file.".dotfiles/AGENTS.md".source
-      == cfgOnTheEvaluatingSystem.home.file.".dotfiles/CLAUDE.md".source;
+    && !(builtins.hasAttr ".dotfiles/CLAUDE.md" cfgOnTheEvaluatingSystem.home.file);
 
   globalCoreInstructions = builtins.readFile ../core-rules/core.md;
   normalizedGlobalCoreInstructions = lib.toLower globalCoreInstructions;
@@ -111,7 +108,7 @@ in
   default-home-manager-module-deploys-agent-session =
     mkEvalCheck "default-home-manager-module-deploys-agent-session"
       (deploysAgentSession cfgOnTheEvaluatingSystem && dotfilesCheckoutAgentInstructionFilesAreDeclared)
-      "the default exported Home Manager module must install agent-session and deploy identical AGENTS.md and CLAUDE.md into the dotfiles checkout so every harness reads the same project context";
+      "the default exported Home Manager module must install agent-session and deploy AGENTS.md alone into the dotfiles checkout, because every harness including Claude reads it natively and a CLAUDE.md beside it would make Claude ignore it";
 
   standalone-harness-modules-deploy-agent-session =
     mkEvalCheck "standalone-harness-modules-deploy-agent-session"

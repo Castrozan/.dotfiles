@@ -21,8 +21,11 @@ def check_project_context() -> list[str]:
         }
     )
 
-    if os.path.exists(os.path.join(cwd, "CLAUDE.md")):
-        context_files.append("CLAUDE.md (project instructions)")
+    for project_instruction_filename in ("CLAUDE.md", "AGENTS.md"):
+        if os.path.exists(os.path.join(cwd, project_instruction_filename)):
+            context_files.append(
+                f"{project_instruction_filename} (project instructions)"
+            )
 
     if os.path.exists(os.path.join(cwd, ".claude", "settings.json")):
         context_files.append(".claude/settings.json (project hooks)")

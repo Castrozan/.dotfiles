@@ -153,8 +153,8 @@ finding` describes the primary current placement defect, not the final migration
 
 ## Deployment and conflict notes
 
-The shared core is declaratively deployed to Claude, Codex, OpenCode, and Pi through S36. Repository `CLAUDE.md` and
-`AGENTS.md` are generated deployment copies of S03. Interactive communication reaches Claude, Codex, OpenCode, and Pi
+The shared core is declaratively deployed to Claude, Codex, OpenCode, and Pi through S36. The repository `AGENTS.md` is a
+generated deployment copy of S03. Interactive communication reaches Claude, Codex, OpenCode, and Pi
 through S35; the reply guard in S28 covers those keyboard-driven surfaces. Hermes does not consume the shared core: S21
 is seeded by S38 only when its memory is absent, so an existing live Hermes memory can remain stale.
 
@@ -175,7 +175,7 @@ selected controls but has no single shared authority across harnesses.
 | Provider, authentication, model, MCP, and bridge mechanics | `agent-harness/harnesses/*/config.nix`, provider wrappers, connector wiring | They describe how a harness runs, not how the user expects an agent to reason or work. | Permission, context, and privacy behavior appears where it changes agent conduct. |
 | Machine-local, private, secret, and host facts | `private-configuration/`, host modules, chise wrapper policy | They are facts or scoped configuration, not cross-session general behavior. Uncommitted state was not audited. | R01 retains declarative ownership; P01 retains the privacy boundary. |
 | Narrow domain policies | Neovim keymaps, Herdr restart procedure, clawde lifecycle details, eval-baseline procedure | They govern one artifact or disruptive operation rather than ordinary agent behavior. | A03 and R04 retain the general approval and live-verification behavior. |
-| Generated instruction copies | Root `CLAUDE.md`, root `AGENTS.md`, generated harness instruction files | They duplicate a canonical declarative owner and add no independent intent. | Deployment coverage is recorded above. |
+| Generated instruction copies | Root `AGENTS.md`, generated harness instruction files | They duplicate a canonical declarative owner and add no independent intent. | Deployment coverage is recorded above. |
 | Tests, evals, fixtures, and recorded compliance | `agent-harness/quality/evaluations/`, all `__tests__/`, integration and E2E fixtures | Short-term compliance and local mechanics do not define the intended long-horizon behavior. | Future validation must use multi-turn, compaction-aware E2E and long E2E cases. |
 | Tool-specific denials and allowlists | S30, S33, command convenience rules | A tool name or provider limitation is not itself a general behavior. | C01 and P02 retain the context and permission intent. |
 | Uncommitted working-tree changes | Codex configuration work and dirty `private-configuration` present during the audit | The audit is pinned to committed revision `5cfd1a69a5d6a1414bc3bb58d5f7874ca7dd7224`. | None |

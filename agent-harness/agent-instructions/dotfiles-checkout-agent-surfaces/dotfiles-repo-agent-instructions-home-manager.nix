@@ -12,8 +12,5 @@ let
   };
 in
 {
-  home.file = {
-    ".dotfiles/AGENTS.md".source = dotfilesRepoAgentInstructions;
-    ".dotfiles/CLAUDE.md".source = dotfilesRepoAgentInstructions;
-  };
+  home.file.".dotfiles/AGENTS.md".source = dotfilesRepoAgentInstructions;
 }
