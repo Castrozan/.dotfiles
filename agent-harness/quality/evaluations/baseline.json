@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-09-10T02:07:43.922341+00:00",
   "oldest_evidence_at": "2026-09-09T21:47:59.145048+00:00",
-  "git_commit": "a7e088fd",
+  "git_commit": "4c67d5fac6d28f6357d74220e441eb74d6bed478",
   "total_tests": 211,
   "total_passed": 198,
   "total_failed": 13,
@@ -2553,8 +2553,8 @@
     }
   },
   "fingerprints": {
-    "suite": "4d9b735ef07b9263d2f62942393307d87d355879b31476ec33169948a7e94e75",
-    "instructions": "a950136a956cf488d643cc0880eb66855e0333f806657b02116dad8bb8701623"
+    "suite": "df9f6cda4e58cb6537f6bcb10434cf2a873646e71df933ed0aedb9c824682a29",
+    "instructions": "efde31a42580fe4bf009a16ad5d97ceb30a3fecfbd68f02f4d2bbf4e49ffb4a8"
   },
   "execution_profile": {
     "subject": {
