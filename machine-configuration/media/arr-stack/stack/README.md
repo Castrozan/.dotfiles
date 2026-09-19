@@ -1,9 +1,10 @@
 # arr-stack (chise only)
 
 Self-hosted media-automation stack, deployed declaratively to `~/arr-stack/` on
-host **chise** only, as a single docker-compose project. The front ends
-(Jellyfin, Jellyseerr) run under `restart: unless-stopped`, so they start on boot
-and self-heal. The download chain (qBittorrent and the \*arr apps) stays
+host **chise** only, as a single docker-compose project. The always-on front ends
+and their sidecars (Jellyfin, Jellyseerr, Kavita, Suwayomi, Miwayomi, its gateway,
+and FlareSolverr) run under `restart: unless-stopped`, so they start on boot and
+self-heal. The download chain (qBittorrent and the \*arr apps) stays
 `restart: "no"` and is driven by the on-demand supervisor
 (`arr-stack-on-demand-supervisor`): it comes up when a Jellyseerr request needs
 fulfilling and idles down after a grace, or stays resident when
