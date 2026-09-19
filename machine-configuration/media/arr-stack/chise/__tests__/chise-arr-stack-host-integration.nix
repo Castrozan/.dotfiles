@@ -5,6 +5,7 @@
 }:
 let
   arrMediaFunnelExecStart = builtins.concatStringsSep "\n" nixosCfg.systemd.services.arr-media-tailscale-funnel.serviceConfig.ExecStart;
+  arrStackDriveGuard = nixosCfg.systemd.services.arr-stack-drive-guard;
 in
 {
   chise-jellyseerr-email-notifications-wired-on-chise =
@@ -139,6 +140,11 @@ in
 
   chise-arr-drive-guard-restores-front-ends-on-reconnect =
     mkEvalCheck "chise-arr-drive-guard-restores-front-ends-on-reconnect"
-      (lib.hasInfix "arr-stack-drive-guard-start" nixosCfg.systemd.services.arr-stack-drive-guard.serviceConfig.ExecStart)
-      "the drive guard's ExecStart must run the compose bring-up script rather than the true no-op, so when the data drive reconnects and the mount reactivates the always-on front ends the guard tore down come back without a manual bring-up; the download chain is left to the supervisor poll, and the guard's ExecStop still stops it gracefully on disconnect";
+      (
+        lib.hasInfix "arr-stack-drive-guard-start" arrStackDriveGuard.serviceConfig.ExecStart
+        && lib.hasInfix "arr-stack-drive-guard-start" arrStackDriveGuard.serviceConfig.ExecReload
+        && arrStackDriveGuard.reloadIfChanged
+        && !arrStackDriveGuard.restartIfChanged
+      )
+      "the drive guard must apply the always-on front ends on mount activation and reload them after a Compose change without restarting the guard, whose stop step would interrupt the download chain";
 }

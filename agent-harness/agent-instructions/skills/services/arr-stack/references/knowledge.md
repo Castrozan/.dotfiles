@@ -29,15 +29,6 @@ not hunt for one; it does write a correct `ComicInfo.xml` into every archive, an
 metadata is what recovers the real titles. Delete the mis-parsed series before the forced rescan rather than trusting
 the rescan to rename it in place.
 
-### A newly declared front end does not start on the rebuild that declares it
-
-The unit that runs compose up for the always-on front ends is declared neither to restart nor to stop when it changes,
-and to remain after exit, so a rebuild that adds a front end leaves it resting on the start script it already ran and
-the new container simply never appears, with no failed unit and no error anywhere. Bring the one missing service up
-against the deployed compose file, env file and project name instead of restarting that unit, whose stop step tears down
-the entire on-demand download chain and interrupts live torrents. The container spec still comes wholly from the repo,
-so that is convergence rather than drift.
-
 ### Fetching additional data is ffmpeg lifting subtitles out of the container
 
 The spinner the Jellyfin player raises over its transport bar is the client waiting on one subtitle request and nothing

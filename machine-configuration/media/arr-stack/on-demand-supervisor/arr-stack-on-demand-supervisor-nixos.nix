@@ -107,6 +107,8 @@ in
                   [ mountGuardConfig.dataMountUnit ]
                 else
                   [ "multi-user.target" ];
+              restartTriggers = [ ../stack/docker-compose.yml ];
+              reloadIfChanged = true;
               restartIfChanged = false;
               stopIfChanged = false;
               unitConfig.X-StopOnRemoval = false;
@@ -114,6 +116,7 @@ in
                 Type = "oneshot";
                 RemainAfterExit = true;
                 ExecStart = driveGuardStartCommand;
+                ExecReload = driveGuardStartCommand;
                 ExecStop = driveGuardStopScript;
               };
             };

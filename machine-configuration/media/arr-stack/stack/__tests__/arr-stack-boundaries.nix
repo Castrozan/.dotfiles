@@ -45,8 +45,12 @@ let
   ];
   lineIsFunnelLoopbackPublish =
     line: builtins.any (publish: lib.hasInfix publish line) funnelLoopbackPublishes;
+  tailnetBoundPublishCount = builtins.length (
+    builtins.filter (line: lib.hasInfix tailnetBindVariable line) publishedPortLines
+  );
   everyPublishedPortIsTailnetBoundOrFunnelLoopback =
     publishedPortLines != [ ]
+    && tailnetBoundPublishCount >= builtins.length downloadChainServices
     && builtins.all (
       line: lib.hasInfix tailnetBindVariable line || lineIsFunnelLoopbackPublish line
     ) publishedPortLines;
