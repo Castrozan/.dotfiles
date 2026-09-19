@@ -3,7 +3,7 @@
 Self-hosted media-automation stack, deployed declaratively to `~/arr-stack/` on
 host **chise** only, as a single docker-compose project. The front ends
 (Jellyfin, Jellyseerr) run under `restart: unless-stopped`, so they start on boot
-and self-heal. The download chain (qBittorrent and the *arr apps) stays
+and self-heal. The download chain (qBittorrent and the \*arr apps) stays
 `restart: "no"` and is driven by the on-demand supervisor
 (`arr-stack-on-demand-supervisor`): it comes up when a Jellyseerr request needs
 fulfilling and idles down after a grace, or stays resident when
@@ -32,7 +32,7 @@ also why a password manager holding the HTTPS origin refuses to fill a login for
 served over the other one.
 
 The stack carries only the libraries that get used. Music and books are gone and
-their *arr apps are not coming back, Readarr having been archived upstream in
+their \*arr apps are not coming back, Readarr having been archived upstream in
 mid-2025 with no maintained successor. Manga is carried, but by a separate path
 that shares none of the machinery below; see "Manga is a second pipeline".
 
@@ -131,13 +131,13 @@ could recover. The CLIs and provisioners never depend on any of this, because
 Jellyseerr resolves an API key to the owner account regardless of what the human
 accounts hold.
 
-An *arr app keys a title by its TMDB or TVDB id and can hold it under exactly one
+An \*arr app keys a title by its TMDB or TVDB id and can hold it under exactly one
 root folder, so a title the stack already holds makes a new request for it fail
 rather than relocate it. Grab a second copy by hand when both are genuinely wanted.
 
 ## Manga is a second pipeline
 
-Manga shares the data drive and nothing else. No *arr app indexes it, Prowlarr and
+Manga shares the data drive and nothing else. No \*arr app indexes it, Prowlarr and
 qBittorrent never see it, and the request front end cannot reach it: Jellyseerr
 descends from Overseerr and models only movies and television, so books and manga
 have no media type there and no plugin adds one. Wanting a title is therefore
@@ -145,13 +145,14 @@ something you act on in the manga reader, not something anyone approves.
 
 Suwayomi handles manga discovery, browser reading, and downloads
 Kavita-compatible CBZ files. Its library, extension state, reading progress, and
-downloads persist outside the Nix store. Kavita serves the persisted CBZ library
-read-only. Its source directory is a publisher and each title directory beneath it
-is a series, a nesting Kavita documents as supported.
+browser state persist in the arr-stack config root, while its downloads persist on
+the shared data drive. Kavita serves the persisted CBZ library read-only. Its source
+directory is a publisher and each title directory beneath it is a series, a nesting
+Kavita documents as supported.
 
 Miwayomi handles instant anime playback. Its extension state, favorites, and watch
-progress persist in the arr-stack config root. The WebUI and its FlareSolverr
-sidecar run in the Compose project.
+progress persist in the arr-stack config root. Suwayomi and Miwayomi run in the
+Compose project and share its FlareSolverr sidecar.
 
 Two boundaries are easy to erase by accident. The manga tree sits beside the Jellyfin
 media root rather than inside it, because Jellyfin bind-mounts that whole root while
@@ -227,7 +228,7 @@ to get the default behavior.
 
 chise has a host-level Proton VPN OpenVPN tunnel, toggled by packaged commands
 in this repo. Turning it on
-routes *all* of chise's traffic, the arr-stack containers included, with no
+routes _all_ of chise's traffic, the arr-stack containers included, with no
 compose changes:
 
 ```sh

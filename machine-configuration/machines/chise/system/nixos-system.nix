@@ -23,7 +23,6 @@ in
     ../../../media/media-streaming/stremio-streaming-server-nixos.nix
     ../../../media/media-streaming/stremio-comet-nixos.nix
     ../../../media/media-streaming/stremio-public-origin-nixos.nix
-    ../../../media/manga-streaming/suwayomi-server-nixos.nix
     ../../../security/secrets/agenix-nixos.nix
     ../../../development/system-rebuild/nixos-rebuild-guard-nixos.nix
     ../../../network/vpn/protonvpn/protonvpn-nixos.nix

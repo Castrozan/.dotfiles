@@ -15,7 +15,9 @@ let
     lib.mapAttrsToList (name: value: "${name}=${value}") provisionerUnit.environment
   );
 
-  serverModuleText = builtins.readFile ../../suwayomi-server-nixos.nix;
+  composeText = builtins.readFile ../../../arr-stack/stack/docker-compose.yml;
+  chiseArrStackModuleText = builtins.readFile ../../../arr-stack/chise/chise-arr-stack-nixos.nix;
+  stackHomeManagerText = builtins.readFile ../../../arr-stack/stack/arr-stack-home-manager.nix;
   provisionerModuleText = builtins.readFile ../suwayomi-extension-repositories-nixos.nix;
   clientText = builtins.readFile ../scripts/suwayomi_extension_repositories/suwayomi_graphql_client.py;
   miwayomiClientText = builtins.readFile ../scripts/suwayomi_extension_repositories/miwayomi_rest_client.py;
@@ -31,7 +33,7 @@ let
     builtins.all (trackedText: !(lib.hasInfix "index.min.json" trackedText))
       [
         provisionerModuleText
-        serverModuleText
+        composeText
         declarationText
         reconcileText
         clientText
@@ -49,20 +51,23 @@ let
     lib.hasInfix "SUWAYOMI_EXTENSION_REPOSITORIES_FILE=/run/agenix/" environmentText
     && lib.hasInfix "suwayomi-extension-repositories.age" secretDeclarationText;
 
-  theRepositoriesAreNeverForcedAsAJvmProperty = !(lib.hasInfix "extensionRepos" serverModuleText);
+  theRepositoriesAreNeverForcedAsAJvmProperty = !(lib.hasInfix "extensionRepos" composeText);
 
   theProvisionerFollowsTheServerItConfigures =
-    provisionerUnit.after == [ "suwayomi-server.service" ]
-    && provisionerUnit.requires == [ "suwayomi-server.service" ]
+    provisionerUnit.after == [ "arr-stack-drive-guard.service" ]
+    && provisionerUnit.requires == [ "arr-stack-drive-guard.service" ]
     && provisionerUnit.wantedBy == [ "multi-user.target" ]
     && provisionerUnit.serviceConfig.RemainAfterExit
     && provisionerUnit.serviceConfig.User == "zanoni";
 
-  theProvisionerShipsWithEveryServer = lib.hasInfix "./extension-repositories/suwayomi-extension-repositories-nixos.nix" serverModuleText;
+  theProvisionerShipsWithEveryServer =
+    lib.hasInfix "../../manga-streaming/extension-repositories/suwayomi-extension-repositories-nixos.nix" chiseArrStackModuleText
+    && lib.hasInfix "\n  suwayomi:\n" composeText;
 
   theProvisionerReachesTheAddressTheServerBindsTo =
     lib.hasInfix "import ../../tailnet-bind-address.nix" provisionerModuleText
-    && lib.hasInfix "import ../tailnet-bind-address.nix" serverModuleText;
+    && lib.hasInfix "\"ARR_BIND_ADDR=\${chiseTailnetBindAddress}\\n\"" stackHomeManagerText
+    && lib.hasInfix "\"\${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4567:4567\"" composeText;
 
   aHostWithoutTheSecretLeavesSuwayomiAlone =
     lib.hasInfix "if not list_file_path.is_file()" declarationText
@@ -111,17 +116,17 @@ in
   suwayomi-extension-repositories-follow-the-server =
     mkEvalCheck "suwayomi-extension-repositories-follow-the-server"
       theProvisionerFollowsTheServerItConfigures
-      "the provisioner must remain active as the secret-owning user, require and follow the system Suwayomi container, and start with the machine, or it would race startup, lose secret access, or evade restart when the declaration changes";
+      "the provisioner must remain active as the secret-owning user, require the drive guard that restores Suwayomi, and start with the machine, or it would race startup, lose secret access, or evade restart when the declaration changes";
 
   suwayomi-extension-repositories-ship-with-every-server =
     mkEvalCheck "suwayomi-extension-repositories-ship-with-every-server"
       theProvisionerShipsWithEveryServer
-      "the server module must import the provisioner itself, so a host that gains Suwayomi cannot get the server without the repository declaration and end up serving an instance that can install nothing";
+      "the chise arr-stack module must import the provisioner beside the Compose service, so Suwayomi cannot be deployed without its repository declaration and end up serving an instance that can install nothing";
 
   suwayomi-extension-repositories-reach-the-bound-address =
     mkEvalCheck "suwayomi-extension-repositories-reach-the-bound-address"
       theProvisionerReachesTheAddressTheServerBindsTo
-      "both modules must derive the bind address from the same file; Suwayomi listens only on the tailnet address, so a provisioner that guessed loopback instead would never connect and the declared list would silently never be applied";
+      "the provisioner and Compose environment must derive the same chise tailnet address; Suwayomi listens only there, so a provisioner that guessed loopback would never connect and the declared list would silently never be applied";
 
   suwayomi-a-host-without-the-secret-leaves-suwayomi-alone =
     mkEvalCheck "suwayomi-a-host-without-the-secret-leaves-suwayomi-alone"

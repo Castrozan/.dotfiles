@@ -1,6 +1,9 @@
 { config, ... }:
 {
-  imports = [ ./cloudflare-origins ];
+  imports = [
+    ./cloudflare-origins
+    ../../manga-streaming/extension-repositories/suwayomi-extension-repositories-nixos.nix
+  ];
 
   custom = {
     arrMediaTailscaleFunnel = {
@@ -27,6 +30,7 @@
           "jellyfin"
           "jellyseerr"
           "kavita"
+          "suwayomi"
           "miwayomi"
           "miwayomi-gateway"
           "flaresolverr"

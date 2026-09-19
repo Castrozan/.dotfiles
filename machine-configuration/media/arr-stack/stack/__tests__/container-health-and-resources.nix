@@ -51,9 +51,15 @@ let
     }
     {
       name = "kavita";
-      nextName = "miwayomi";
+      nextName = "suwayomi";
       memoryLimit = "768m";
       healthProbe = ''["CMD", "curl", "-fsS", "http://127.0.0.1:5000/api/health"]'';
+    }
+    {
+      name = "suwayomi";
+      nextName = "miwayomi";
+      memoryLimit = "3g";
+      healthProbe = ''["CMD", "curl", "-fsS", "http://127.0.0.1:4567/api/v1/health"]'';
     }
     {
       name = "miwayomi";

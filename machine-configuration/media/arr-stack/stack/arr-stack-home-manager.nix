@@ -44,6 +44,7 @@ let
     "jellyfin"
     "jellyseerr"
     "kavita"
+    "suwayomi"
     "miwayomi"
     "miwayomi-update-disabled"
     "flaresolverr"

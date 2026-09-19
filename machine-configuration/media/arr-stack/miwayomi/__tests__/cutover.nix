@@ -7,20 +7,21 @@ let
   inherit (helpers) mkEvalCheck;
 
   chiseHomeText = builtins.readFile ../../../../machines/chise/home.nix;
-  chiseSystemText = builtins.readFile ../../../../machines/chise/system/nixos-system.nix;
   cloudflareOriginsText = builtins.readFile ../../chise/cloudflare-origins/default.nix;
   stackReadmeText = builtins.readFile ../../stack/README.md;
-  suwayomiModulePath = ../../../manga-streaming/suwayomi-server-nixos.nix;
-  suwayomiModuleText = builtins.readFile suwayomiModulePath;
+  composeText = builtins.readFile ../../stack/docker-compose.yml;
+  stackHomeManagerText = builtins.readFile ../../stack/arr-stack-home-manager.nix;
+  chiseArrStackModuleText = builtins.readFile ../../chise/chise-arr-stack-nixos.nix;
   repositorySecretPath = ../../../../../secrets/credentials/media/suwayomi-extension-repositories.age;
   animeStreamingDirectory = ../../../anime-streaming;
 
-  suwayomiIsDeployed = lib.hasInfix "../../../media/manga-streaming/suwayomi-server-nixos.nix" chiseSystemText;
+  suwayomiIsDeployed =
+    lib.hasInfix "\n  suwayomi:\n" composeText && lib.hasInfix ''"suwayomi"'' chiseArrStackModuleText;
   mangaReaderArtifactsRemain =
-    builtins.pathExists suwayomiModulePath
-    && builtins.pathExists repositorySecretPath
-    && lib.hasInfix "--volume \${mangaDownloadRoot}:\${containerDataDirectory}/downloads" suwayomiModuleText
-    && lib.hasInfix "--volume \${dataDirectory}:\${containerDataDirectory}" suwayomiModuleText;
+    builtins.pathExists repositorySecretPath
+    && lib.hasInfix "\${ARR_DATA_ROOT}/manga:/home/suwayomi/.local/share/Tachidesk/downloads" composeText
+    && lib.hasInfix "\${ARR_CONFIG_ROOT}/suwayomi:/home/suwayomi/.local/share/Tachidesk" composeText
+    && lib.hasInfix ''"suwayomi"'' stackHomeManagerText;
   mangaAndAnimeOriginsAreDeclared =
     lib.hasInfix "anime.lucaszanoni.com" cloudflareOriginsText
     && lib.hasInfix "suwayomi.lucaszanoni.com" cloudflareOriginsText
@@ -31,7 +32,8 @@ let
     && lib.hasInfix "Kavita-compatible CBZ files." stackReadmeText
     && lib.hasInfix "Kavita serves the persisted CBZ library" stackReadmeText
     && lib.hasInfix "read-only." stackReadmeText
-    && lib.hasInfix "Miwayomi handles instant anime playback." stackReadmeText;
+    && lib.hasInfix "Miwayomi handles instant anime playback." stackReadmeText
+    && lib.hasInfix "Suwayomi and Miwayomi run in the Compose project." stackReadmeText;
   seanimeIsRemoved =
     !(lib.hasInfix "../../media/anime-streaming/seanime-home-manager.nix" chiseHomeText)
     && !(lib.hasInfix "seanime.lucaszanoni.com" cloudflareOriginsText)

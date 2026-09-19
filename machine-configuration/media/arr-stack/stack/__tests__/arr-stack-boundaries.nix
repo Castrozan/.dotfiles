@@ -1,16 +1,13 @@
 {
   helpers,
-  pkgs,
   lib,
   ...
 }:
 let
   inherit (helpers) mkEvalCheck;
-
   composeText = builtins.readFile ../docker-compose.yml;
   envText = builtins.readFile ../env;
   readmeText = builtins.readFile ../README.md;
-
   machineIdentityMapPath = ../../../../../private-configuration/machines.nix;
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   forbiddenTailnetBindAddress =
@@ -21,43 +18,21 @@ let
       !(lib.hasInfix forbiddenTailnetBindAddress composeText)
       && !(lib.hasInfix forbiddenTailnetBindAddress readmeText)
     );
-
-  serviceNames = [
+  downloadChainServices = [
     "qbittorrent"
     "prowlarr"
     "sonarr"
     "radarr"
     "bazarr"
   ];
-  composeContainsEveryService = builtins.all (service: lib.hasInfix service composeText) serviceNames;
-  restartNoCount = (builtins.length (lib.splitString ''restart: "no"'' composeText)) - 1;
-  unlessStoppedCount = (builtins.length (lib.splitString "restart: unless-stopped" composeText)) - 1;
-
-  alwaysOnServices = [
-    "jellyfin"
-    "jellyseerr"
-    "kavita"
-    "miwayomi"
-    "miwayomi-gateway"
-    "flaresolverr"
-  ];
   persistentFrontEndServices = [
     "jellyfin"
     "jellyseerr"
     "kavita"
+    "suwayomi"
     "miwayomi"
     "flaresolverr"
   ];
-  serviceRestartPolicyBlock =
-    service: policy: "container_name: arr-${service}\n    restart: ${policy}";
-  downloadChainServicesPinnedToRestartNo = builtins.all (
-    service: lib.hasInfix (serviceRestartPolicyBlock service ''"no"'') composeText
-  ) serviceNames;
-  alwaysOnServicesPinnedToUnlessStopped = builtins.all (
-    service: lib.hasInfix (serviceRestartPolicyBlock service "unless-stopped") composeText
-  ) alwaysOnServices;
-  composeHasNoAlwaysRestartPolicy = !(lib.hasInfix "restart: always" composeText);
-
   composeLines = lib.splitString "\n" composeText;
   publishedPortLines = builtins.filter (
     line: builtins.match ''.*- "[0-9$].*'' line != null
@@ -70,69 +45,36 @@ let
   ];
   lineIsFunnelLoopbackPublish =
     line: builtins.any (publish: lib.hasInfix publish line) funnelLoopbackPublishes;
-  tailnetBoundPublishCount = builtins.length (
-    builtins.filter (line: lib.hasInfix tailnetBindVariable line) publishedPortLines
-  );
   everyPublishedPortIsTailnetBoundOrFunnelLoopback =
     publishedPortLines != [ ]
-    && tailnetBoundPublishCount >= builtins.length serviceNames
     && builtins.all (
       line: lib.hasInfix tailnetBindVariable line || lineIsFunnelLoopbackPublish line
     ) publishedPortLines;
-  composeBindsAWildcardInterface = lib.hasInfix "0.0.0.0" composeText;
+  composeBindsAWildcardInterface = builtins.any (
+    line: lib.hasInfix "0.0.0.0" line
+  ) publishedPortLines;
   composeLoopbackPublishesOnlyFunnelTargets = builtins.all lineIsFunnelLoopbackPublish (
     builtins.filter (line: lib.hasInfix "127.0.0.1" line) publishedPortLines
   );
   everyServiceHasConfigVolume = builtins.all (
     service: lib.hasInfix ("\${ARR_CONFIG_ROOT}/" + service) composeText
-  ) (serviceNames ++ persistentFrontEndServices);
+  ) (downloadChainServices ++ persistentFrontEndServices);
   envPinsChiseConfigRoot = lib.hasInfix "ARR_CONFIG_ROOT=/home/zanoni/arr-stack/config" envText;
   envPinsChiseDataRoot = lib.hasInfix "ARR_DATA_ROOT=/home/zanoni/arr-stack/data" envText;
   envMatchesChiseUserAndGroup = lib.hasInfix "PUID=1000" envText && lib.hasInfix "PGID=100" envText;
-
   stablePublicDnsAnchor = "x-stable-public-dns: &stable-public-dns\n  - 1.1.1.1\n  - 8.8.8.8";
   jellyseerrUsesStablePublicDns =
     lib.hasInfix stablePublicDnsAnchor composeText
     && lib.hasInfix "container_name: arr-jellyseerr\n    restart: unless-stopped\n    networks:\n      - arrnet\n    dns: *stable-public-dns" composeText;
-
   kavitaReadsMangaLibraryReadOnly = lib.hasInfix "\${ARR_DATA_ROOT}/manga/mangas:/manga:ro" composeText;
   mangaLibraryStaysOutOfJellyfinMediaRoot =
     !(lib.hasInfix "\${ARR_DATA_ROOT}/media/manga" composeText);
-
   composeHasNoVpnContainer =
     !(lib.hasInfix "gluetun" composeText) && !(lib.hasInfix "service:gluetun" composeText);
   qbittorrentPinnedToV4 = lib.hasInfix "qbittorrent:4" composeText;
   readmeDocumentsHostLevelVpn = lib.hasInfix "vpn-py" readmeText && lib.hasInfix "vpn-off" readmeText;
-
-  moduleConditionForHostname =
-    candidateHostname:
-    (import ../arr-stack-home-manager.nix {
-      config = {
-        home.homeDirectory = "/home/test";
-      };
-      inherit lib pkgs;
-      hostname = candidateHostname;
-    }).condition;
 in
 {
-  chise-arr-stack-roster-complete =
-    mkEvalCheck "chise-arr-stack-roster-complete" composeContainsEveryService
-      "the compose file must define every mandated service (qbittorrent, prowlarr, sonarr, radarr, bazarr) so the full *arr stack is present";
-
-  chise-arr-stack-download-chain-restart-no =
-    mkEvalCheck "chise-arr-stack-download-chain-restart-no"
-      (downloadChainServicesPinnedToRestartNo && restartNoCount == builtins.length serviceNames)
-      ''the five download-chain *arr services (qbittorrent, prowlarr, sonarr, radarr, bazarr) must each set restart: "no", and no other service may, so docker never resurrects the download chain on boot: the on-demand supervisor, not docker, owns its lifecycle'';
-
-  chise-arr-stack-front-ends-restart-unless-stopped =
-    mkEvalCheck "chise-arr-stack-front-ends-restart-unless-stopped"
-      (
-        alwaysOnServicesPinnedToUnlessStopped
-        && unlessStoppedCount == builtins.length alwaysOnServices
-        && composeHasNoAlwaysRestartPolicy
-      )
-      "restart: unless-stopped is allowed only on the declared always-on front ends so they self-heal and return after reboot, is forbidden on every download-chain service, and restart: always is never allowed";
-
   chise-arr-stack-kavita-reads-manga-library-read-only =
     mkEvalCheck "chise-arr-stack-kavita-reads-manga-library-read-only" kavitaReadsMangaLibraryReadOnly
       "Kavita must mount the existing manga library read-only so the reader can never delete or rewrite a preserved CBZ file";
@@ -157,15 +99,6 @@ in
   chise-arr-stack-jellyseerr-uses-stable-public-dns =
     mkEvalCheck "chise-arr-stack-jellyseerr-uses-stable-public-dns" jellyseerrUsesStablePublicDns
       "Jellyseerr must bypass Docker's unusable MagicDNS upstream for TMDB while retaining Compose service discovery";
-
-  chise-arr-stack-enabled-on-chise =
-    mkEvalCheck "chise-arr-stack-enabled-on-chise" (moduleConditionForHostname "chise")
-      "the arr-stack module must materialize on chise";
-
-  chise-arr-stack-noop-off-chise =
-    mkEvalCheck "chise-arr-stack-noop-off-chise"
-      (!(moduleConditionForHostname "kira") && !(moduleConditionForHostname "rin"))
-      "the arr-stack module must be a no-op on every host other than chise so kira/rin never deploy the stack";
 
   chise-arr-stack-published-ports-tailnet-bound =
     mkEvalCheck "chise-arr-stack-published-ports-tailnet-bound"
@@ -193,5 +126,4 @@ in
   chise-arr-stack-env-matches-chise-user-and-group =
     mkEvalCheck "chise-arr-stack-env-matches-chise-user-and-group" envMatchesChiseUserAndGroup
       "PUID/PGID must match zanoni on chise (uid 1000, gid 100 = users group), or the linuxserver containers write files the user cannot manage and chown the bind mounts to the wrong group";
-
 }

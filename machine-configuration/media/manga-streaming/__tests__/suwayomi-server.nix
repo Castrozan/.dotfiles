@@ -1,87 +1,93 @@
 {
   helpers,
   lib,
-  pkgs,
   self,
   ...
 }:
 let
   inherit (helpers) mkEvalCheck;
-  homeDirectory = "/home/zanoni";
-  tailnetBindAddress = import ../../tailnet-bind-address.nix { inherit lib; };
-  suwayomiModule = import ../suwayomi-server-nixos.nix {
-    config.users.users.zanoni.home = homeDirectory;
-    inherit lib pkgs;
-  };
-  suwayomiUnit = suwayomiModule.systemd.services.suwayomi-server;
-  command = suwayomiUnit.serviceConfig.ExecStart;
+  composeText = builtins.readFile ../../arr-stack/stack/docker-compose.yml;
+  serviceBodyParts = lib.splitString "\n  suwayomi:\n" composeText;
+  suwayomiServiceBody =
+    if builtins.length serviceBodyParts == 2 then
+      lib.head (lib.splitString "\n  miwayomi:\n" (lib.elemAt serviceBodyParts 1))
+    else
+      "";
   chiseConfiguration = self.nixosConfigurations.chise.config;
-  downloadsVolume = "--volume ${homeDirectory}/arr-stack/data/manga:/home/suwayomi/.local/share/Tachidesk/downloads";
-  dataVolume = "--volume ${homeDirectory}/.local/share/Tachidesk:/home/suwayomi/.local/share/Tachidesk";
+  driveGuardFrontEndServices =
+    chiseConfiguration.custom.arrStackOnDemandSupervisor.mountGuard.frontEndServices;
+  extensionRepositoryUnit = chiseConfiguration.systemd.services.suwayomi-extension-repositories;
+  dockerBridgeAllowedTcpPorts =
+    lib.attrByPath
+      [
+        "networking"
+        "firewall"
+        "interfaces"
+        "docker0"
+        "allowedTCPPorts"
+      ]
+      [ ]
+      chiseConfiguration;
 in
 {
-  chise-suwayomi-runs-in-the-official-pinned-container =
-    mkEvalCheck "chise-suwayomi-runs-in-the-official-pinned-container"
+  chise-suwayomi-runs-as-an-arr-stack-front-end =
+    mkEvalCheck "chise-suwayomi-runs-as-an-arr-stack-front-end"
       (
-        lib.hasInfix "ghcr.io/suwayomi/suwayomi-server:v2.3.2243-preview@sha256:2b95476844614748285ecba0deef97cb8eabd17c6ccb58d136f829ec20b8040f" command
-        && lib.hasInfix "--user 1000:100" command
-        && suwayomiUnit.wantedBy == [ "multi-user.target" ]
-        && !(chiseConfiguration.home-manager.users.zanoni.systemd.user.services ? suwayomi-server)
+        lib.hasInfix "image: ghcr.io/suwayomi/suwayomi-server:v2.3.2243-preview@sha256:2b95476844614748285ecba0deef97cb8eabd17c6ccb58d136f829ec20b8040f" suwayomiServiceBody
+        && lib.hasInfix "container_name: arr-suwayomi" suwayomiServiceBody
+        && lib.hasInfix "restart: unless-stopped" suwayomiServiceBody
+        && lib.hasInfix "user: \"\${PUID}:\${PGID}\"" suwayomiServiceBody
+        && lib.hasInfix "- arrnet" suwayomiServiceBody
+        && builtins.elem "suwayomi" driveGuardFrontEndServices
+        && !(chiseConfiguration.systemd.services ? suwayomi-server)
       )
-      "Suwayomi must use the official non-root KCEF image pinned to the same server release and digest, with the escaped desktop JVM service retired so every process stays inside the container cgroup";
+      "Suwayomi must be an ordinary always-on arr-stack Compose front end, restored by the same drive guard as Jellyfin, Kavita, and Miwayomi, with no parallel standalone container unit";
 
   chise-suwayomi-is-tailnet-only-and-drive-guarded =
     mkEvalCheck "chise-suwayomi-is-tailnet-only-and-drive-guarded"
       (
-        lib.hasInfix "--publish ${tailnetBindAddress}:4567:4567" command
-        && !(lib.hasInfix "--publish 0.0.0.0" command)
-        && suwayomiUnit.unitConfig.RequiresMountsFor == [ "${homeDirectory}/arr-stack/data" ]
-        && builtins.elem "tailscaled.service" suwayomiUnit.after
-        && builtins.elem "home-manager-zanoni.service" suwayomiUnit.after
+        lib.hasInfix "\"\${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4567:4567\"" suwayomiServiceBody
+        && !(lib.hasInfix ''- "0.0.0.0:4567:4567"'' suwayomiServiceBody)
+        && builtins.elem "arr-stack-drive-guard.service" extensionRepositoryUnit.after
+        && builtins.elem "arr-stack-drive-guard.service" extensionRepositoryUnit.requires
       )
-      "the loginless server must publish only on chise's tailnet address, wait for Tailscale and Home Manager, and refuse startup when the media drive is absent";
+      "the loginless server must publish only on chise's tailnet address, and its repository reconciler must wait for the drive guard that restores the Compose front ends";
 
   chise-suwayomi-preserves-state-and-kavita-downloads =
     mkEvalCheck "chise-suwayomi-preserves-state-and-kavita-downloads"
       (
-        lib.hasInfix "${downloadsVolume} ${dataVolume}" command
-        && lib.hasInfix "--env DOWNLOAD_AS_CBZ=true" command
+        lib.hasInfix "\${ARR_CONFIG_ROOT}/suwayomi:/home/suwayomi/.local/share/Tachidesk" suwayomiServiceBody
+        && lib.hasInfix "\${ARR_DATA_ROOT}/manga:/home/suwayomi/.local/share/Tachidesk/downloads" suwayomiServiceBody
+        && lib.hasInfix "DOWNLOAD_AS_CBZ: \"true\"" suwayomiServiceBody
       )
-      "the container migration must mount the existing downloads before the whole Tachidesk state tree, preserving the database and placing CBZ chapters in Kavita's existing manga root as required by the official image";
+      "Suwayomi must keep its state under the arr-stack config root and write CBZ downloads into the shared manga tree Kavita reads";
 
   chise-suwayomi-keeps-webview-and-bundled-interface =
     mkEvalCheck "chise-suwayomi-keeps-webview-and-bundled-interface"
       (
-        lib.hasInfix "--env KCEF_ENABLED=true" command
-        && lib.hasInfix "--env WEB_UI_CHANNEL=bundled" command
-        && lib.hasInfix "--env WEB_UI_UPDATE_INTERVAL=0" command
+        lib.hasInfix "KCEF_ENABLED: \"true\"" suwayomiServiceBody
+        && lib.hasInfix "WEB_UI_CHANNEL: bundled" suwayomiServiceBody
+        && lib.hasInfix "WEB_UI_UPDATE_INTERVAL: \"0\"" suwayomiServiceBody
       )
-      "the official container must retain KCEF for browser-backed extensions while serving only its pinned bundled interface without mutable update checks";
+      "the Compose service must retain KCEF for browser-backed extensions while serving only its pinned bundled interface without mutable update checks";
 
   chise-suwayomi-has-layered-memory-and-health-bounds =
     mkEvalCheck "chise-suwayomi-has-layered-memory-and-health-bounds"
       (
-        lib.hasInfix "--cgroup-parent media-containers.slice" command
-        && lib.hasInfix "--memory 3g" command
-        && lib.hasInfix ''--env "JAVA_TOOL_OPTIONS=-Xms128m -Xmx768m"'' command
-        && lib.hasInfix ''--health-cmd "curl -fsS http://127.0.0.1:4567/api/v1/health"'' command
-        && lib.hasInfix "--health-start-period 120s" command
+        lib.hasInfix "<<: *media-3g" suwayomiServiceBody
+        && lib.hasInfix "JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m" suwayomiServiceBody
+        && lib.hasInfix ''test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4567/api/v1/health"]'' suwayomiServiceBody
+        && lib.hasInfix "start_period: 120s" suwayomiServiceBody
       )
-      "Suwayomi must keep its JVM heap modest, admit measured native Chromium overhead within a 3 GiB container ceiling, join the aggregate media slice, and report application health through its supported endpoint";
+      "Suwayomi must keep its JVM heap modest, admit native Chromium overhead within a 3 GiB container ceiling, join the shared media slice, and expose application health";
 
-  chise-suwayomi-restarts-without-rate-limiting =
-    mkEvalCheck "chise-suwayomi-restarts-without-rate-limiting"
+  chise-suwayomi-uses-the-stack-solver =
+    mkEvalCheck "chise-suwayomi-uses-the-stack-solver"
       (
-        suwayomiUnit.serviceConfig.Restart == "always" && suwayomiUnit.unitConfig.StartLimitIntervalSec == 0
+        lib.hasInfix "FLARESOLVERR_ENABLED: \"true\"" suwayomiServiceBody
+        && lib.hasInfix "FLARESOLVERR_URL: http://flaresolverr:8191" suwayomiServiceBody
+        && lib.hasInfix "flaresolverr:\n        condition: service_healthy" suwayomiServiceBody
+        && !(builtins.elem 8191 dockerBridgeAllowedTcpPorts)
       )
-      "Suwayomi must restart after every exit without exhausting systemd's start limiter while its tailnet publish is settling";
-
-  chise-suwayomi-bypasses-cloudflare-through-the-stack-solver =
-    mkEvalCheck "chise-suwayomi-bypasses-cloudflare-through-the-stack-solver"
-      (
-        lib.hasInfix "--env FLARESOLVERR_ENABLED=true" command
-        && lib.hasInfix "--env FLARESOLVERR_URL=http://${tailnetBindAddress}:8191" command
-        && builtins.elem 8191 chiseConfiguration.networking.firewall.interfaces.docker0.allowedTCPPorts
-      )
-      "sources behind Cloudflare's bot check must have the solver enabled and reachable: the server reads the solver address from FLARESOLVERR_URL, and because the request leaves the container for the host's published port it arrives on docker0, where a firewall that admits only the tailnet interface would drop it and every bypass would fail with the solver sitting healthy";
+      "Suwayomi must reach FlareSolverr over the shared Compose network and wait for its health check instead of leaving that network to re-enter through a host firewall exception";
 }

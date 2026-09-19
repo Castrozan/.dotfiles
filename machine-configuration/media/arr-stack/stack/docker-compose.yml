@@ -6,6 +6,7 @@ x-arr-common-environment: &arr-common-environment
 x-stable-public-dns: &stable-public-dns
   - 1.1.1.1
   - 8.8.8.8
+x-media-3g: &media-3g { cgroup_parent: media-containers.slice, mem_limit: 3g }
 x-media-2g: &media-2g { cgroup_parent: media-containers.slice, mem_limit: 2g }
 x-media-1536m:
   &media-1536m { cgroup_parent: media-containers.slice, mem_limit: 1536m }
@@ -206,6 +207,45 @@ services:
         interval: 30s,
         timeout: 5s,
         start_period: 60s,
+        retries: 3,
+      }
+  suwayomi:
+    image: ghcr.io/suwayomi/suwayomi-server:v2.3.2243-preview@sha256:2b95476844614748285ecba0deef97cb8eabd17c6ccb58d136f829ec20b8040f
+    container_name: arr-suwayomi
+    restart: unless-stopped
+    <<: *media-3g
+    hostname: suwayomi
+    user: "${PUID}:${PGID}"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - arrnet
+    dns: *stable-public-dns
+    ports:
+      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4567:4567"
+    environment:
+      <<: *arr-common-environment
+      BIND_IP: 0.0.0.0
+      BIND_PORT: "4567"
+      DOWNLOAD_AS_CBZ: "true"
+      WEB_UI_CHANNEL: bundled
+      WEB_UI_UPDATE_INTERVAL: "0"
+      KCEF_ENABLED: "true"
+      FLARESOLVERR_ENABLED: "true"
+      FLARESOLVERR_URL: http://flaresolverr:8191
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m
+    volumes:
+      - ${ARR_CONFIG_ROOT}/suwayomi:/home/suwayomi/.local/share/Tachidesk
+      - ${ARR_DATA_ROOT}/manga:/home/suwayomi/.local/share/Tachidesk/downloads
+    depends_on:
+      flaresolverr:
+        condition: service_healthy
+    healthcheck:
+      {
+        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4567/api/v1/health"],
+        interval: 30s,
+        timeout: 5s,
+        start_period: 120s,
         retries: 3,
       }
   miwayomi:
