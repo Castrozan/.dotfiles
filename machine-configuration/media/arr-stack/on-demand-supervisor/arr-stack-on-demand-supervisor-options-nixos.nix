@@ -167,6 +167,12 @@
         description = ''systemd .mount unit that mounts the data drive, e.g. "home-zanoni-arr\\x2dstack-data.mount"; the instant guard arms while this unit is active so it only reacts to a disconnect of an actually-mounted drive. Empty arms the guard at multi-user.target instead.'';
       };
 
+      composeDeclarationProviderUnits = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = "Units that must finish installing the Compose declaration before the drive guard applies its front-end services.";
+      };
+
       frontEndServices = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
