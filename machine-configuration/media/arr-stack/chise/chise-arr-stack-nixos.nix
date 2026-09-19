@@ -27,6 +27,7 @@
         dataDeviceUnit = "dev-disk-by\\x2dlabel-arr\\x2ddata.device";
         dataMountUnit = "home-zanoni-arr\\x2dstack-data.mount";
         composeDeclarationProviderUnits = [ "home-manager-zanoni.service" ];
+        composeApplicatorPredecessorUnits = [ "miwayomi-compose.service" ];
         frontEndServices = [
           "jellyfin"
           "jellyseerr"

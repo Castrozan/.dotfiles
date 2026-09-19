@@ -20,19 +20,31 @@ let
       --project-name ${arrStackOnDemandSupervisorConfig.composeProjectName} \
       stop --timeout 30 ${lib.concatStringsSep " " arrStackOnDemandSupervisorConfig.onDemandServices} || true
   '';
-  driveGuardStartScript = pkgs.writeShellScript "arr-stack-drive-guard-start" ''
+  frontEndComposeCommand = ''
     ${pkgs.docker-compose}/bin/docker-compose \
       --file ${stackHome}/docker-compose.yml \
       --env-file ${stackHome}/.env \
       --project-directory ${stackHome} \
       --project-name ${arrStackOnDemandSupervisorConfig.composeProjectName} \
-      up --detach ${lib.concatStringsSep " " mountGuardConfig.frontEndServices} || true
+      up --detach ${lib.concatStringsSep " " mountGuardConfig.frontEndServices}
   '';
+  frontEndApplyScript = pkgs.writeShellScript "arr-stack-front-ends-apply" frontEndComposeCommand;
+  driveGuardStartScript = pkgs.writeShellScript "arr-stack-drive-guard-start" ''
+    ${frontEndApplyScript} || true
+  '';
+  frontEndApplyCommand =
+    if mountGuardConfig.frontEndServices == [ ] then
+      "${pkgs.coreutils}/bin/true"
+    else
+      frontEndApplyScript;
   driveGuardStartCommand =
     if mountGuardConfig.frontEndServices == [ ] then
       "${pkgs.coreutils}/bin/true"
     else
       driveGuardStartScript;
+  frontEndComposeGuardUnits = lib.optional (
+    mountGuardConfig.dataDeviceUnit != ""
+  ) "arr-stack-drive-guard.service";
 in
 {
   imports = [ ./arr-stack-on-demand-supervisor-options-nixos.nix ];
@@ -100,16 +112,13 @@ in
                 mountGuardConfig.dataDeviceUnit
                 "docker.service"
               ]
-              ++ lib.optional (mountGuardConfig.dataMountUnit != "") mountGuardConfig.dataMountUnit
-              ++ mountGuardConfig.composeDeclarationProviderUnits;
+              ++ lib.optional (mountGuardConfig.dataMountUnit != "") mountGuardConfig.dataMountUnit;
               requires = [ "docker.service" ];
               wantedBy =
                 if mountGuardConfig.dataMountUnit != "" then
                   [ mountGuardConfig.dataMountUnit ]
                 else
                   [ "multi-user.target" ];
-              restartTriggers = [ ../stack/docker-compose.yml ];
-              reloadIfChanged = true;
               restartIfChanged = false;
               stopIfChanged = false;
               unitConfig.X-StopOnRemoval = false;
@@ -117,8 +126,34 @@ in
                 Type = "oneshot";
                 RemainAfterExit = true;
                 ExecStart = driveGuardStartCommand;
-                ExecReload = driveGuardStartCommand;
                 ExecStop = driveGuardStopScript;
+              };
+            };
+
+        arr-stack-front-ends-compose =
+          lib.mkIf (mountGuardConfig.enable && mountGuardConfig.frontEndServices != [ ])
+            {
+              description = "Apply the arr-stack always-on front ends after their Compose declaration is deployed";
+              after = [
+                "docker.service"
+                "network-online.target"
+              ]
+              ++ frontEndComposeGuardUnits
+              ++ mountGuardConfig.composeDeclarationProviderUnits
+              ++ mountGuardConfig.composeApplicatorPredecessorUnits;
+              requires = [
+                "docker.service"
+              ]
+              ++ frontEndComposeGuardUnits
+              ++ mountGuardConfig.composeDeclarationProviderUnits
+              ++ mountGuardConfig.composeApplicatorPredecessorUnits;
+              wants = [ "network-online.target" ];
+              wantedBy = [ "multi-user.target" ];
+              restartTriggers = [ ../stack/docker-compose.yml ];
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+                ExecStart = frontEndApplyCommand;
               };
             };
       };

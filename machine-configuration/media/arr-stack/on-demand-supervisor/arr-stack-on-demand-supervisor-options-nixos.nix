@@ -170,7 +170,13 @@
       composeDeclarationProviderUnits = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
-        description = "Units that must finish installing the Compose declaration before the drive guard applies its front-end services.";
+        description = "Units that must finish installing the Compose declaration before the front-end roster applicator runs.";
+      };
+
+      composeApplicatorPredecessorUnits = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = "Compose applicator units that must settle before the front-end roster is applied.";
       };
 
       frontEndServices = lib.mkOption {

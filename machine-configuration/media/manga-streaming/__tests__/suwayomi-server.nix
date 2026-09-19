@@ -48,10 +48,10 @@ in
       (
         lib.hasInfix "\"\${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:4567:4567\"" suwayomiServiceBody
         && !(lib.hasInfix ''- "0.0.0.0:4567:4567"'' suwayomiServiceBody)
-        && builtins.elem "arr-stack-drive-guard.service" extensionRepositoryUnit.after
-        && builtins.elem "arr-stack-drive-guard.service" extensionRepositoryUnit.requires
+        && builtins.elem "arr-stack-front-ends-compose.service" extensionRepositoryUnit.after
+        && builtins.elem "arr-stack-front-ends-compose.service" extensionRepositoryUnit.requires
       )
-      "the loginless server must publish only on chise's tailnet address, and its repository reconciler must wait for the drive guard that restores the Compose front ends";
+      "the loginless server must publish only on chise's tailnet address, and its repository reconciler must wait for the Compose applicator that restores the front ends";
 
   chise-suwayomi-preserves-state-and-kavita-downloads =
     mkEvalCheck "chise-suwayomi-preserves-state-and-kavita-downloads"

@@ -12,8 +12,8 @@ in
 {
   systemd.services.suwayomi-extension-repositories = {
     description = "Point Suwayomi at the declared extension repositories";
-    after = [ "arr-stack-drive-guard.service" ];
-    requires = [ "arr-stack-drive-guard.service" ];
+    after = [ "arr-stack-front-ends-compose.service" ];
+    requires = [ "arr-stack-front-ends-compose.service" ];
     wantedBy = [ "multi-user.target" ];
     restartTriggers = [ ../../../../secrets/credentials/media/suwayomi-extension-repositories.age ];
     environment = {

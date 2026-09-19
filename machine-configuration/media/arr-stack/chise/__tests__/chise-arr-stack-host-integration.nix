@@ -6,6 +6,7 @@
 let
   arrMediaFunnelExecStart = builtins.concatStringsSep "\n" nixosCfg.systemd.services.arr-media-tailscale-funnel.serviceConfig.ExecStart;
   arrStackDriveGuard = nixosCfg.systemd.services.arr-stack-drive-guard;
+  arrStackFrontEndsCompose = nixosCfg.systemd.services.arr-stack-front-ends-compose;
 in
 {
   chise-jellyseerr-email-notifications-wired-on-chise =
@@ -142,11 +143,16 @@ in
     mkEvalCheck "chise-arr-drive-guard-restores-front-ends-on-reconnect"
       (
         lib.hasInfix "arr-stack-drive-guard-start" arrStackDriveGuard.serviceConfig.ExecStart
-        && lib.hasInfix "arr-stack-drive-guard-start" arrStackDriveGuard.serviceConfig.ExecReload
-        && builtins.elem "home-manager-zanoni.service" arrStackDriveGuard.after
-        && !(builtins.elem "home-manager-zanoni.service" arrStackDriveGuard.requires)
-        && arrStackDriveGuard.reloadIfChanged
+        && !(arrStackDriveGuard.serviceConfig ? ExecReload)
         && !arrStackDriveGuard.restartIfChanged
+        && lib.hasInfix "arr-stack-front-ends-apply" arrStackFrontEndsCompose.serviceConfig.ExecStart
+        && builtins.elem "home-manager-zanoni.service" arrStackFrontEndsCompose.after
+        && builtins.elem "home-manager-zanoni.service" arrStackFrontEndsCompose.requires
+        && builtins.elem "miwayomi-compose.service" arrStackFrontEndsCompose.after
+        && builtins.elem "miwayomi-compose.service" arrStackFrontEndsCompose.requires
+        && builtins.elem "arr-stack-drive-guard.service" arrStackFrontEndsCompose.after
+        && builtins.elem "arr-stack-drive-guard.service" arrStackFrontEndsCompose.requires
+        && arrStackFrontEndsCompose.restartTriggers != [ ]
       )
-      "the drive guard must wait for Home Manager to deploy the Compose declaration during boot and rebuild without requiring a fresh Home Manager activation on every drive reconnect, apply the always-on front ends on mount activation, and reload them after a Compose change without restarting the guard, whose stop step would interrupt the download chain";
+      "the drive guard must restore front ends on mount activation without waking Home Manager on every reconnect, while a separate Compose applicator waits for Home Manager and Miwayomi before applying front-end declaration changes without interrupting the download chain";
 }

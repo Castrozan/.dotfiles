@@ -54,8 +54,8 @@ let
   theRepositoriesAreNeverForcedAsAJvmProperty = !(lib.hasInfix "extensionRepos" composeText);
 
   theProvisionerFollowsTheServerItConfigures =
-    provisionerUnit.after == [ "arr-stack-drive-guard.service" ]
-    && provisionerUnit.requires == [ "arr-stack-drive-guard.service" ]
+    provisionerUnit.after == [ "arr-stack-front-ends-compose.service" ]
+    && provisionerUnit.requires == [ "arr-stack-front-ends-compose.service" ]
     && provisionerUnit.wantedBy == [ "multi-user.target" ]
     && provisionerUnit.serviceConfig.RemainAfterExit
     && provisionerUnit.serviceConfig.User == "zanoni";
@@ -116,7 +116,7 @@ in
   suwayomi-extension-repositories-follow-the-server =
     mkEvalCheck "suwayomi-extension-repositories-follow-the-server"
       theProvisionerFollowsTheServerItConfigures
-      "the provisioner must remain active as the secret-owning user, require the drive guard that restores Suwayomi, and start with the machine, or it would race startup, lose secret access, or evade restart when the declaration changes";
+      "the provisioner must remain active as the secret-owning user, require the Compose applicator that restores Suwayomi, and start with the machine, or it would race startup, lose secret access, or evade restart when the declaration changes";
 
   suwayomi-extension-repositories-ship-with-every-server =
     mkEvalCheck "suwayomi-extension-repositories-ship-with-every-server"
