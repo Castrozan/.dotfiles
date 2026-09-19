@@ -102,7 +102,7 @@ in
               ]
               ++ lib.optional (mountGuardConfig.dataMountUnit != "") mountGuardConfig.dataMountUnit
               ++ mountGuardConfig.composeDeclarationProviderUnits;
-              requires = [ "docker.service" ] ++ mountGuardConfig.composeDeclarationProviderUnits;
+              requires = [ "docker.service" ];
               wantedBy =
                 if mountGuardConfig.dataMountUnit != "" then
                   [ mountGuardConfig.dataMountUnit ]

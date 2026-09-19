@@ -144,9 +144,9 @@ in
         lib.hasInfix "arr-stack-drive-guard-start" arrStackDriveGuard.serviceConfig.ExecStart
         && lib.hasInfix "arr-stack-drive-guard-start" arrStackDriveGuard.serviceConfig.ExecReload
         && builtins.elem "home-manager-zanoni.service" arrStackDriveGuard.after
-        && builtins.elem "home-manager-zanoni.service" arrStackDriveGuard.requires
+        && !(builtins.elem "home-manager-zanoni.service" arrStackDriveGuard.requires)
         && arrStackDriveGuard.reloadIfChanged
         && !arrStackDriveGuard.restartIfChanged
       )
-      "the drive guard must wait for Home Manager to deploy the Compose declaration, apply the always-on front ends on mount activation, and reload them after a Compose change without restarting the guard, whose stop step would interrupt the download chain";
+      "the drive guard must wait for Home Manager to deploy the Compose declaration during boot and rebuild without requiring a fresh Home Manager activation on every drive reconnect, apply the always-on front ends on mount activation, and reload them after a Compose change without restarting the guard, whose stop step would interrupt the download chain";
 }
