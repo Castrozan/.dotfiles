@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+readonly TIER_SKIPPED_STATUS=77
+
 _run_evals_tier() {
 	if ! command -v agent-eval &>/dev/null; then
 		echo "SKIP: agent-eval not installed, skipping agent evals" >&2
-		return 0
+		return $TIER_SKIPPED_STATUS
 	fi
 
 	echo "--- Agent Evals (LLM) ---"
@@ -16,7 +18,7 @@ _run_evals_tier() {
 _run_integration_tier() {
 	if ! command -v claude &>/dev/null; then
 		echo "SKIP: claude CLI not installed, skipping integration tests" >&2
-		return 0
+		return $TIER_SKIPPED_STATUS
 	fi
 
 	echo "--- Integration Tests (real Claude sessions) ---"
@@ -27,11 +29,11 @@ _run_integration_tier() {
 _run_e2e_tier() {
 	if ! command -v claude &>/dev/null; then
 		echo "SKIP: claude CLI not installed, skipping E2E tests" >&2
-		return 0
+		return $TIER_SKIPPED_STATUS
 	fi
 	if ! command -v herdr &>/dev/null; then
 		echo "SKIP: herdr not installed, skipping E2E tests" >&2
-		return 0
+		return $TIER_SKIPPED_STATUS
 	fi
 
 	echo "--- E2E Tests (herdr interactive Claude sessions) ---"

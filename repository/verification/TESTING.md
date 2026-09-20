@@ -144,6 +144,17 @@ repository configures. The nightly deep tiers run `--perf` on the owning host it
 so an expired baseline surfaces in the steward inbox on the one machine that can
 retake it, instead of waiting for someone to type the flag.
 
+The nightly runner owns every tier continuous integration cannot reach:
+`--integration-scripts`, `--runtime`, `--perf`, `--integration` and `--e2e`. The last
+two need a real `claude` and a real `herdr`, which no shared runner has.
+
+A tier that cannot run is not a tier that passed. `--evals`, `--integration` and
+`--e2e` return 77, the automake convention for a skipped test, when the tool they
+drive is absent. The nightly runner counts that status as neither a pass nor a
+failure and names the skipped tiers in its verdict, so a machine that quietly lost
+`agent-eval`, `claude` or `herdr` cannot read as a green night. A night where every
+tier skipped proved nothing and fails.
+
 `benchmark-desktop` is packaged on Linux only, so on darwin the `dotfiles-perf`
 subcommands that delegate to it report the command as unavailable rather than
 producing numbers; `benchmark-rebuild` and `benchmark-shell` are packaged on both.

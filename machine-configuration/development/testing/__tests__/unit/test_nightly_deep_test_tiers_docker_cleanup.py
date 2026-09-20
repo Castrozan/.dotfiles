@@ -54,7 +54,7 @@ def test_the_run_prunes_docker_leftovers_after_the_tiers_and_caches(
     monkeypatch.setattr(
         nightly,
         "run_every_tier_reporting_all_failures",
-        lambda log: order.append("tiers") or [],
+        lambda log: (order.append("tiers"), ([], []))[1],
     )
     monkeypatch.setattr(
         nightly,

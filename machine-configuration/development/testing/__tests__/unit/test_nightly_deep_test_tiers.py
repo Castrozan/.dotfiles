@@ -63,18 +63,37 @@ class TestIdleWindow:
 class TestEveryTierRuns:
     def test_a_failing_tier_does_not_stop_the_next_one(self, tmp_path):
         log = (tmp_path / "log").open("w")
-        with patch("nightly_deep_test_tiers.run_tier", side_effect=[1, 0, 0]) as tier:
-            failed = nightly_deep_test_tiers.run_every_tier_reporting_all_failures(log)
+        with patch(
+            "nightly_deep_test_tiers.run_tier", side_effect=[1, 0, 0, 0, 0]
+        ) as tier:
+            failed, skipped = (
+                nightly_deep_test_tiers.run_every_tier_reporting_all_failures(log)
+            )
         log.close()
 
         assert tier.call_count == len(nightly_deep_test_tiers.DEEP_TIER_FLAGS)
         assert failed == ["--integration-scripts"]
+        assert skipped == []
+
+    def test_a_skipped_tier_is_neither_a_pass_nor_a_failure(self, tmp_path):
+        log = (tmp_path / "log").open("w")
+        skip = nightly_deep_test_tiers.TIER_SKIPPED_STATUS
+        with patch("nightly_deep_test_tiers.run_tier", side_effect=[0, 0, 0, skip, skip]):
+            failed, skipped = (
+                nightly_deep_test_tiers.run_every_tier_reporting_all_failures(log)
+            )
+        log.close()
+
+        assert failed == []
+        assert skipped == ["--integration", "--e2e"]
 
     def test_the_tiers_it_owns_are_the_ones_ci_cannot_reach(self):
         assert nightly_deep_test_tiers.DEEP_TIER_FLAGS == (
             "--integration-scripts",
             "--runtime",
             "--perf",
+            "--integration",
+            "--e2e",
         )
 
 
@@ -112,10 +131,10 @@ class TestAFailedNightReachesTheSteward:
         self.steward_workspace.mkdir()
         monkeypatch.setenv("STEWARD_WORKSPACE_DIR", str(self.steward_workspace))
 
-    def run_the_night_with_tiers_failing(self, failed_tiers):
+    def run_the_night_with_tiers_failing(self, failed_tiers, skipped_tiers=()):
         with patch(
             "nightly_deep_test_tiers.run_every_tier_reporting_all_failures",
-            return_value=failed_tiers,
+            return_value=(failed_tiers, list(skipped_tiers)),
         ):
             with patch(
                 "nightly_deep_test_tiers.untracked_paths_in_repository",
@@ -176,3 +195,21 @@ class TestAFailedNightReachesTheSteward:
         assert self.run_the_night_with_tiers_failing(["--runtime"]) == 1
         assert not (tmp_path / "absent").exists()
         assert "nobody is told" in nightly_deep_test_tiers.log_file_path().read_text()
+
+
+class TestTheVerdictSeparatesSkippedFromPassed:
+    def test_a_skipped_tier_is_named_as_proving_nothing(self):
+        verdict = nightly_deep_test_tiers.night_verdict([], ["--e2e"])
+        assert "SKIPPED, proving nothing: --e2e" in verdict
+        assert "--e2e" not in verdict.split(". SKIPPED")[0]
+
+    def test_a_night_where_every_tier_skipped_is_a_failure(self):
+        verdict = nightly_deep_test_tiers.night_verdict(
+            [], list(nightly_deep_test_tiers.DEEP_TIER_FLAGS)
+        )
+        assert verdict.startswith("FAILED")
+
+    def test_a_failure_outranks_a_skip_in_the_verdict(self):
+        verdict = nightly_deep_test_tiers.night_verdict(["--perf"], ["--e2e"])
+        assert verdict.startswith("FAILED tiers: --perf")
+        assert "SKIPPED, proving nothing: --e2e" in verdict

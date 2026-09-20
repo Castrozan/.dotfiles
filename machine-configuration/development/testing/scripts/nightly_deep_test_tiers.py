@@ -11,7 +11,14 @@ from steward_inbox import leave_message_in_the_steward_inbox
 DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
 LOG_DIRECTORY = Path.home() / ".local" / "state" / "dotfiles-nightly-tests"
 LOG_FILE_NAME = "nightly-deep-test-tiers.log"
-DEEP_TIER_FLAGS = ("--integration-scripts", "--runtime", "--perf")
+DEEP_TIER_FLAGS = (
+    "--integration-scripts",
+    "--runtime",
+    "--perf",
+    "--integration",
+    "--e2e",
+)
+TIER_SKIPPED_STATUS = 77
 IDLE_WINDOW_FIRST_HOUR = 2
 IDLE_WINDOW_LAST_HOUR = 5
 ARTIFACT_DIRECTORY_NAMES = frozenset({".pytest_cache", ".ruff_cache", "__pycache__"})
@@ -83,12 +90,16 @@ def run_tier(tier_flag: str, log) -> int:
     return completed.returncode
 
 
-def run_every_tier_reporting_all_failures(log) -> list[str]:
+def run_every_tier_reporting_all_failures(log) -> tuple[list[str], list[str]]:
     failed_tiers = []
+    skipped_tiers = []
     for tier_flag in DEEP_TIER_FLAGS:
-        if run_tier(tier_flag, log) != 0:
+        status = run_tier(tier_flag, log)
+        if status == TIER_SKIPPED_STATUS:
+            skipped_tiers.append(tier_flag)
+        elif status != 0:
             failed_tiers.append(tier_flag)
-    return failed_tiers
+    return failed_tiers, skipped_tiers
 
 
 def artifact_directories_under(root: Path) -> list[Path]:
@@ -137,6 +148,19 @@ def report_paths_the_run_left_behind(paths_before: set[str], log) -> None:
         log.write(f"  leftover {leftover}\n")
 
 
+def night_verdict(failed_tiers: list[str], skipped_tiers: list[str]) -> str:
+    if failed_tiers:
+        verdict = f"FAILED tiers: {', '.join(failed_tiers)}"
+    elif len(skipped_tiers) == len(DEEP_TIER_FLAGS):
+        verdict = "FAILED to prove anything: every deep tier skipped"
+    else:
+        passed = [flag for flag in DEEP_TIER_FLAGS if flag not in skipped_tiers]
+        verdict = f"every deep tier passed: {', '.join(passed)}"
+    if skipped_tiers and not verdict.startswith("FAILED to prove"):
+        verdict += f". SKIPPED, proving nothing: {', '.join(skipped_tiers)}"
+    return verdict
+
+
 def leave_the_failed_night_in_the_steward_inbox(verdict: str, log) -> None:
     message_file = leave_message_in_the_steward_inbox(
         STEWARD_INBOX_SENDER,
@@ -152,18 +176,18 @@ def leave_the_failed_night_in_the_steward_inbox(verdict: str, log) -> None:
 def run_the_deep_tiers_and_clean_up() -> int:
     with open_log_file() as log:
         paths_before = untracked_paths_in_repository()
-        failed_tiers = run_every_tier_reporting_all_failures(log)
+        failed_tiers, skipped_tiers = run_every_tier_reporting_all_failures(log)
         remove_generated_cache_directories(log)
         prune_docker_build_leftovers_the_run_did_not_reuse(log)
         report_paths_the_run_left_behind(paths_before, log)
 
-        if failed_tiers:
-            verdict = f"FAILED tiers: {', '.join(failed_tiers)}"
+        verdict = night_verdict(failed_tiers, skipped_tiers)
+        if failed_tiers or len(skipped_tiers) == len(DEEP_TIER_FLAGS):
             leave_the_failed_night_in_the_steward_inbox(verdict, log)
             log.write(f"{verdict}\n")
             return EXIT_CODE_A_TIER_FAILED
 
-        log.write(f"every deep tier passed: {', '.join(DEEP_TIER_FLAGS)}\n")
+        log.write(f"{verdict}\n")
         return 0
 
 
