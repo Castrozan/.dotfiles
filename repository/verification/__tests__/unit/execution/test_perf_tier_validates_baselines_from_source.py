@@ -20,6 +20,14 @@ MODERN_BASH_CANDIDATE_PATHS = (
     "/opt/homebrew/bin/bash",
 )
 
+MODERN_PYTHON_CANDIDATE_PATHS = (
+    "/run/current-system/sw/bin/python3",
+    f"/etc/profiles/per-user/{os.environ.get('USER', '')}/bin/python3",
+    "/opt/homebrew/bin/python3",
+)
+
+EARLIEST_PYTHON_MINOR_THE_VALIDATORS_PARSE = 10
+
 BASELINE_FILE_NAME_PER_TIER_FUNCTION = {
     "_run_rebuild_baseline_check": "baseline.json",
     "_run_desktop_baseline_check": "baseline-desktop.json",
@@ -47,10 +55,26 @@ def _resolve_modern_bash_absolute_path() -> str:
     pytest.skip("no bash >= 4 available to exercise the perf tier library")
 
 
+def _resolve_modern_python_absolute_path() -> str:
+    for candidate in [shutil.which("python3"), *MODERN_PYTHON_CANDIDATE_PATHS]:
+        if not candidate or not os.path.exists(candidate):
+            continue
+        probe = subprocess.run(
+            [candidate, "-c", "import sys; print(sys.version_info[1])"],
+            capture_output=True,
+            text=True,
+        )
+        minor = probe.stdout.strip()
+        if (
+            minor.isdigit()
+            and int(minor) >= EARLIEST_PYTHON_MINOR_THE_VALIDATORS_PARSE
+        ):
+            return candidate
+    pytest.skip("no python3 >= 3.10 available to run the baseline validators")
+
+
 def _command_poor_bin_directory(tmp_path: pathlib.Path) -> pathlib.Path:
-    interpreter = shutil.which("python3")
-    if interpreter is None:
-        pytest.skip("python3 unavailable to run the baseline validators from source")
+    interpreter = _resolve_modern_python_absolute_path()
     bin_directory = tmp_path / "bin"
     bin_directory.mkdir()
     (bin_directory / "python3").symlink_to(interpreter)
