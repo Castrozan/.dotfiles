@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-05-30T20:46:21+00:00",
-  "git_commit": "aa688a86",
+  "generated_at": "2026-09-20T05:37:00+00:00",
+  "git_commit": "f8178cf33",
   "host": "kira",
   "config": "darwin",
   "threshold_percent": 150,
   "measurements": {
     "eval": {
-      "duration_seconds": 1199.526,
-      "max_allowed_seconds": 1799.289
+      "duration_seconds": 98.721,
+      "max_allowed_seconds": 148.082
     },
     "rebuild": {
-      "duration_seconds": 102.571,
-      "max_allowed_seconds": 153.857
+      "duration_seconds": 598.97,
+      "max_allowed_seconds": 898.455
     }
   }
 }
