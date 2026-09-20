@@ -12,17 +12,27 @@ def test_a_hundred_word_confirmation_needs_no_labels():
     assert template_violations_in_reply(reply, "did it deploy?") == []
 
 
-def test_a_reply_past_the_confirmation_names_the_labels_it_omits():
+def test_a_reply_past_the_confirmation_and_its_grace_names_the_labels_it_omits():
     violations = template_violations_in_reply(
-        " ".join(["evidence"] * 101), "explain the architecture"
+        " ".join(["evidence"] * 111), "explain the architecture"
     )
 
     assert violations == [
-        "runs 101 prose words, past the 100-word confirmation, but omits the "
+        "runs 111 prose words, past the 100-word confirmation, but omits the "
         "What is this session about?:/done:/next: label",
-        "spends 101 prose words above the labels, past their own 80-word budget; "
-        "move the detail into a table, tree or diagram, which is not counted",
+        "spends 111 prose words above the labels, past their own 80-word budget and "
+        "its 10-word grace; move the detail into a table, tree or diagram, which is "
+        "not counted",
     ]
+
+
+def test_a_reply_inside_the_confirmation_grace_still_needs_no_labels():
+    assert (
+        template_violations_in_reply(
+            " ".join(["evidence"] * 110), "explain the architecture"
+        )
+        == []
+    )
 
 
 def test_a_partially_labeled_reply_names_only_the_missing_label():
@@ -42,26 +52,49 @@ def test_a_labeled_reply_within_both_budgets_passes():
     assert template_violations_in_reply(labeled_reply_of(40), "status?") == []
 
 
-def test_prose_above_the_labels_past_its_own_budget_is_blocked():
-    violations = template_violations_in_reply(labeled_reply_of(90), "status?")
+def test_prose_above_the_labels_past_its_budget_and_grace_is_blocked():
+    violations = template_violations_in_reply(labeled_reply_of(100), "status?")
 
     assert any("past their own 80-word budget" in violation for violation in violations)
 
 
-def test_labeled_sections_past_their_shared_budget_are_blocked():
-    reply = reply_with_label_word_counts(session=25, done=15, next_block=15)
+def test_prose_above_the_labels_inside_the_grace_passes():
+    violations = template_violations_in_reply(labeled_reply_of(90), "status?")
+
+    assert not any(
+        "past their own 80-word budget" in violation for violation in violations
+    )
+
+
+def test_labeled_sections_past_their_shared_budget_and_grace_are_blocked():
+    reply = reply_with_label_word_counts(session=25, done=20, next_block=20)
 
     violations = template_violations_in_reply(reply, "status?")
 
     assert any("50-word budget" in violation for violation in violations)
 
 
-def test_one_label_past_its_own_budget_is_blocked():
-    reply = reply_with_label_word_counts(session=10, done=21, next_block=5)
+def test_labeled_sections_inside_the_shared_grace_pass():
+    reply = reply_with_label_word_counts(session=20, done=20, next_block=20)
+
+    violations = template_violations_in_reply(reply, "status?")
+
+    assert not any("50-word budget" in violation for violation in violations)
+
+
+def test_one_label_past_its_own_budget_and_grace_is_blocked():
+    reply = reply_with_label_word_counts(session=10, done=31, next_block=5)
 
     assert template_violations_in_reply(reply, "status?") == [
-        "spends 21 words on the done: block, past its 20-word budget"
+        "spends 31 words on the done: block, past its 20-word budget and its "
+        "10-word grace"
     ]
+
+
+def test_one_label_inside_its_own_grace_passes():
+    reply = reply_with_label_word_counts(session=10, done=30, next_block=5)
+
+    assert template_violations_in_reply(reply, "status?") == []
 
 
 def test_a_table_is_exempt_from_the_word_count():

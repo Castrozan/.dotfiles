@@ -12,6 +12,7 @@ from reply_template_limits import (
     REQUIRED_REPLY_LABELS,
     SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS,
     UNLABELED_BODY_WORD_CEILING,
+    WORD_BUDGET_GRACE,
 )
 from reply_text_metrics import ReplyUnderReview
 
@@ -83,11 +84,18 @@ def missing_required_labels_violation(reply: ReplyUnderReview) -> str | None:
     )
 
 
+def word_budget_is_exceeded(word_count: int, budget: int) -> bool:
+    return word_count > budget + WORD_BUDGET_GRACE
+
+
 def labeled_section_ceiling_violation(reply: ReplyUnderReview) -> str | None:
-    if reply.labeled_section_word_count > LABELED_SECTION_WORD_CEILING:
+    if word_budget_is_exceeded(
+        reply.labeled_section_word_count, LABELED_SECTION_WORD_CEILING
+    ):
         return (
             f"spends {reply.labeled_section_word_count} words under the labeled "
-            f"blocks, past their {LABELED_SECTION_WORD_CEILING}-word budget"
+            f"blocks, past their {LABELED_SECTION_WORD_CEILING}-word budget and its "
+            f"{WORD_BUDGET_GRACE}-word grace"
         )
     return None
 
@@ -95,11 +103,14 @@ def labeled_section_ceiling_violation(reply: ReplyUnderReview) -> str | None:
 def unlabeled_body_ceiling_violation(reply: ReplyUnderReview) -> str | None:
     if reply_is_a_short_confirmation(reply):
         return None
-    if reply.unlabeled_body_word_count > UNLABELED_BODY_WORD_CEILING:
+    if word_budget_is_exceeded(
+        reply.unlabeled_body_word_count, UNLABELED_BODY_WORD_CEILING
+    ):
         return (
             f"spends {reply.unlabeled_body_word_count} prose words above the labels, "
-            f"past their own {UNLABELED_BODY_WORD_CEILING}-word budget; move the "
-            "detail into a table, tree or diagram, which is not counted"
+            f"past their own {UNLABELED_BODY_WORD_CEILING}-word budget and its "
+            f"{WORD_BUDGET_GRACE}-word grace; move the detail into a table, tree or "
+            "diagram, which is not counted"
         )
     return None
 
@@ -107,10 +118,12 @@ def unlabeled_body_ceiling_violation(reply: ReplyUnderReview) -> str | None:
 def per_label_ceiling_violation(reply: ReplyUnderReview) -> str | None:
     for label, ceiling in PER_LABEL_WORD_CEILINGS.items():
         label_word_count = reply.per_label_word_counts.get(label)
-        if label_word_count is not None and label_word_count > ceiling:
+        if label_word_count is not None and word_budget_is_exceeded(
+            label_word_count, ceiling
+        ):
             return (
                 f"spends {label_word_count} words on the {label}: block, past its "
-                f"{ceiling}-word budget"
+                f"{ceiling}-word budget and its {WORD_BUDGET_GRACE}-word grace"
             )
     return None
 
@@ -138,7 +151,9 @@ def list_line_word_violation(reply: ReplyUnderReview) -> str | None:
 
 
 def reply_is_a_short_confirmation(reply: ReplyUnderReview) -> bool:
-    return reply.prose_word_count <= SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS
+    return not word_budget_is_exceeded(
+        reply.prose_word_count, SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS
+    )
 
 
 def unemphasized_label_violation(reply: ReplyUnderReview) -> str | None:

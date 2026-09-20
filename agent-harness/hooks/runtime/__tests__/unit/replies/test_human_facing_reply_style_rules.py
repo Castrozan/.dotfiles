@@ -74,11 +74,11 @@ def test_section_headers_remain_available():
 
 
 def test_the_request_text_no_longer_gates_any_rule():
-    reply = " ".join(["evidence"] * 101)
+    reply = " ".join(["evidence"] * 111)
 
     for request in ("explain the architecture", "quick question", "write a full audit"):
         assert template_violations_in_reply(reply, request)[0] == (
-            "runs 101 prose words, past the 100-word confirmation, but omits the "
+            "runs 111 prose words, past the 100-word confirmation, but omits the "
             "What is this session about?:/done:/next: label"
         )
 
