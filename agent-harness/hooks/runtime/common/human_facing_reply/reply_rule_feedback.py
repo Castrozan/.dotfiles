@@ -16,3 +16,12 @@ def bounce_guidance(violations: list[str]) -> str:
         + "). "
         + REPLY_RECOVERY_INSTRUCTION
     )
+
+
+def mechanical_repair_guidance(violations: list[str], repaired_reply: str) -> str:
+    return (
+        "Reply breaks the enforced interactive rules ("
+        + "; ".join(violations)
+        + "). Every violation is mechanical, so no rewrite is needed: send the "
+        "corrected reply below verbatim as your whole answer.\n\n" + repaired_reply
+    )

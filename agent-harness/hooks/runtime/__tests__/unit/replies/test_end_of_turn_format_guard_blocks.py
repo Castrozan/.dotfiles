@@ -44,3 +44,32 @@ def test_judges_only_the_final_reply_for_unlinked_artifacts(tmp_path):
     )
     result = invoke_guard(stop_payload(transcript))
     assert result.stdout.strip() == ""
+
+
+def test_a_mechanical_only_violation_returns_the_corrected_reply(tmp_path):
+    transcript = write_transcript_with_request_and_reply(
+        tmp_path,
+        "review the migration",
+        "**what is this session about?:** the gate.\n\n"
+        "**done:** the host was removed — the migration is safe.\n\n"
+        "**next:** push.",
+    )
+    result = invoke_guard(stop_payload(transcript))
+    parsed = json.loads(result.stdout)
+    assert parsed["decision"] == "block"
+    assert "verbatim" in parsed["reason"]
+    assert "the host was removed, the migration is safe." in parsed["reason"]
+
+
+def test_a_reply_past_the_word_ceiling_still_demands_a_rewrite(tmp_path):
+    transcript = write_transcript_with_request_and_reply(
+        tmp_path,
+        "review the migration",
+        "**what is this session about?:** the gate — measured.\n\n"
+        "**done:** " + "evidence " * 300 + "\n\n**next:** push.",
+    )
+    result = invoke_guard(stop_payload(transcript))
+    parsed = json.loads(result.stdout)
+    assert parsed["decision"] == "block"
+    assert "verbatim" not in parsed["reason"]
+    assert "Load the humanize skill" in parsed["reason"]

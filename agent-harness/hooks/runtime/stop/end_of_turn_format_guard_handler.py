@@ -25,8 +25,12 @@ from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_session_detection import (  # noqa: E402
     is_keyboard_driven_interactive_session,
 )
+from reply_mechanical_repairs import repaired_reply_text  # noqa: E402
 from reply_rule_catalog import template_violations_in_reply  # noqa: E402
-from reply_rule_feedback import bounce_guidance  # noqa: E402
+from reply_rule_feedback import (  # noqa: E402
+    bounce_guidance,
+    mechanical_repair_guidance,
+)
 
 
 def text_from_content(content, accepted_block_types=("text",)) -> str:
@@ -118,5 +122,14 @@ def handle(hook_input: dict):
     violations = template_violations_in_reply(reply_text, user_request_text)
     if not violations:
         return None
+
+    repaired_reply = repaired_reply_text(reply_text)
+    if repaired_reply != reply_text and not template_violations_in_reply(
+        repaired_reply, user_request_text
+    ):
+        return HandlerResult(
+            decision="block",
+            reason=mechanical_repair_guidance(violations, repaired_reply),
+        )
 
     return HandlerResult(decision="block", reason=bounce_guidance(violations))
