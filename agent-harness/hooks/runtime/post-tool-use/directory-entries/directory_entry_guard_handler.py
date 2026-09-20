@@ -56,6 +56,10 @@ def handle(hook_input):
     import subprocess
 
     from directory_entry_policy import directory_entry_violations
+    from excluded_repositories import (
+        load_excluded_repository_patterns,
+        repository_is_excluded,
+    )
     from repository_directory_entries import (
         directory_entry_ceilings,
         repository_entry_counts,
@@ -63,7 +67,10 @@ def handle(hook_input):
 
     try:
         repositories = affected_repository_directories(paths)
+        excluded_repository_patterns = load_excluded_repository_patterns()
         for repository_root, directories in repositories.items():
+            if repository_is_excluded(repository_root, excluded_repository_patterns):
+                continue
             violations = directory_entry_violations(
                 repository_entry_counts(repository_root),
                 directory_entry_ceilings(repository_root),
