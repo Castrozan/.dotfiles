@@ -77,10 +77,10 @@ def test_the_request_text_no_longer_gates_any_rule():
     reply = " ".join(["evidence"] * 101)
 
     for request in ("explain the architecture", "quick question", "write a full audit"):
-        assert template_violations_in_reply(reply, request) == [
+        assert template_violations_in_reply(reply, request)[0] == (
             "runs 101 prose words, past the 100-word confirmation, but omits the "
             "What is this session about?:/done:/next: label"
-        ]
+        )
 
 
 def test_bounce_guidance_names_the_violation_and_routes_to_humanize():

@@ -19,7 +19,9 @@ def test_a_reply_past_the_confirmation_names_the_labels_it_omits():
 
     assert violations == [
         "runs 101 prose words, past the 100-word confirmation, but omits the "
-        "What is this session about?:/done:/next: label"
+        "What is this session about?:/done:/next: label",
+        "spends 101 prose words above the labels, past their own 80-word budget; "
+        "move the detail into a table, tree or diagram, which is not counted",
     ]
 
 

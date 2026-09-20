@@ -93,7 +93,7 @@ def labeled_section_ceiling_violation(reply: ReplyUnderReview) -> str | None:
 
 
 def unlabeled_body_ceiling_violation(reply: ReplyUnderReview) -> str | None:
-    if not reply.labels_present:
+    if reply_is_a_short_confirmation(reply):
         return None
     if reply.unlabeled_body_word_count > UNLABELED_BODY_WORD_CEILING:
         return (
