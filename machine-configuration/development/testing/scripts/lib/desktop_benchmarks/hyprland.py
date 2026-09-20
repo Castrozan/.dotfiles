@@ -11,7 +11,15 @@ QUICKSHELL_SETTLE_SECONDS = 0.15
 WINDOW_SWITCHER_SETTLE_SECONDS = 0.1
 
 
-QS_BAR_PATH = str(benchmark_core.DOTFILES_DIRECTORY / ".config" / "quickshell" / "bar")
+QS_BAR_PATH = str(
+    benchmark_core.DOTFILES_DIRECTORY
+    / "machine-configuration"
+    / "desktop"
+    / "desktop-environments"
+    / "quickshell"
+    / "bar"
+    / "program-configuration"
+)
 
 
 def quickshell_bar_call(target: str, action: str) -> list[str]:

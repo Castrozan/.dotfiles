@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import desktop_benchmarks.catalog
@@ -142,3 +143,12 @@ class TestRecordResult:
         assert "test-comp" in lines[1]
         assert "42.1" in lines[1]
         assert lines[1].endswith(",5")
+
+
+class TestQuickshellBarConfiguration:
+    def test_the_bar_path_is_a_configuration_that_exists_in_the_checkout(self):
+        assert Path(desktop_benchmarks.hyprland.QS_BAR_PATH).is_dir()
+
+    def test_the_bar_path_holds_the_shell_entry_point_quickshell_loads(self):
+        bar_path = Path(desktop_benchmarks.hyprland.QS_BAR_PATH)
+        assert (bar_path / "shell.qml").is_file()
