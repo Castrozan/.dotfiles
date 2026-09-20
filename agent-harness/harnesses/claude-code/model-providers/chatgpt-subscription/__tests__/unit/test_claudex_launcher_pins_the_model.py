@@ -4,7 +4,7 @@ from pathlib import Path
 GPT_PROXY_MODULE = Path(__file__).resolve().parents[2] / "default.nix"
 GPT_PROXY_LAUNCHER_SCRIPT = GPT_PROXY_MODULE.parent / "scripts" / "claudex"
 LAUNCHER_EXEC_LINE = re.compile(
-    r'^\s*exec "\$CLAUDEX_LAUNCHER_CLAUDE_BINARY" .*$', re.M
+    r'^\s*-- "\$CLAUDEX_LAUNCHER_CLAUDE_BINARY" .*$', re.M
 )
 
 
@@ -19,7 +19,7 @@ def launcher_source() -> str:
 def test_claudex_pins_the_declared_proxy_model():
     source = module_source()
     matched = LAUNCHER_EXEC_LINE.search(launcher_source())
-    assert matched, "claudex no longer execs Claude Code"
+    assert matched, "claudex no longer hands Claude Code to the lifecycle wrapper"
     launcher_exec_line = matched.group(0)
     assert "--model" in launcher_exec_line, (
         "claudex must pass --model explicitly: the deployed settings.json carries the "
@@ -38,4 +38,36 @@ def test_claudex_pins_the_declared_proxy_model():
     assert declared.group(1).startswith("gpt-"), (
         f"the opus tier is pinned to {declared.group(1)}, which is not a proxy model, "
         f"so claudex would bill the Anthropic subscription instead of the ChatGPT one"
+    )
+
+
+def test_claudex_starts_and_releases_the_proxy_around_the_session():
+    source = launcher_source()
+    assert "--registry-directory" in source
+    assert "--start-command" in source
+    assert "--stop-command" in source, (
+        "claudex owns the proxy lifetime now, so dropping the stop command leaves "
+        "cli-proxy-api running long after the last session closed"
+    )
+
+
+def test_the_proxy_no_longer_runs_when_no_launcher_is_open():
+    source = module_source()
+    assert "RunAtLoad = false;" in source
+    assert "KeepAlive = false;" in source, (
+        "KeepAlive restarts cli-proxy-api the moment claudex stops it, which "
+        "defeats the on-demand lifetime entirely"
+    )
+    assert 'Install.WantedBy = [ "default.target" ];' not in source, (
+        "a wanted-by unit starts at login, so the Linux host would keep the "
+        "always-on behaviour the Darwin host just dropped"
+    )
+
+
+def test_the_login_releases_the_proxy_so_the_next_session_starts_it_fresh():
+    source = module_source()
+    assert "stopProxyServiceCommand" in source
+    assert "launchctl kickstart" not in source, (
+        "restarting the agent after a login leaves a proxy running that no launcher "
+        "holds, and the next claudex adopts it and never stops it again"
     )

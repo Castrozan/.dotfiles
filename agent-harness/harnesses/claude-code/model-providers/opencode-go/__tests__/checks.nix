@@ -80,13 +80,15 @@ in
 
   opencode-go-linux-translation-proxy-service =
     mkEvalCheck "opencode-go-linux-translation-proxy-service"
-      (linuxProxyService != null && linuxProxyService.Service.Restart == "always")
-      "claude-go reaches Console Go only through the local translation proxy, so a host installing the launcher without an always-restarting proxy behind it ships a launcher that 400s on its first tool call";
+      (linuxProxyService != null && linuxProxyService.Service.Restart == "no")
+      "claude-go reaches Console Go only through the local translation proxy, so a host installing the launcher must define that proxy; the launcher starts and stops it per session, and a restarting service would outlive every session instead";
 
   opencode-go-darwin-translation-proxy-agents =
     mkEvalCheck "opencode-go-darwin-translation-proxy-agents"
-      (builtins.all (agent: agent != null && agent.config.KeepAlive) darwinProxyAgents)
-      "the darwin hosts install the same launcher, so they need the same always-running translation proxy behind it";
+      (builtins.all (
+        agent: agent != null && !agent.config.KeepAlive && !agent.config.RunAtLoad
+      ) darwinProxyAgents)
+      "claude-go owns the translation proxy lifetime, so a KeepAlive or RunAtLoad agent would restart it the moment the last session released it";
 
   opencode-go-translation-proxy-nests-every-model-under-its-provider =
     mkEvalCheck "opencode-go-translation-proxy-nests-every-model-under-its-provider"

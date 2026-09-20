@@ -15,6 +15,7 @@ let
 
   cliProxyApiPackage = import ../api-translation/cli-proxy-api-package.nix { inherit pkgs lib; };
   cliProxyApiIpv4Gateway = import ../api-translation/ipv4-gateway { inherit pkgs; };
+  onDemandService = import ../api-translation/on-demand-service { inherit pkgs; };
 
   proxyListenAddress = "127.0.0.1";
   proxyListenPort = 8317;
@@ -22,7 +23,12 @@ let
   proxyIpv4GatewayListenPort = 8318;
   proxyIpv4GatewayLoginPort = 8319;
   proxyAuthenticationDirectory = "${config.home.homeDirectory}/.cli-proxy-api";
-  proxyLogFilePath = "${config.home.homeDirectory}/.local/state/cli-proxy-api/cli-proxy-api.log";
+  proxyStateDirectory = "${config.home.homeDirectory}/.local/state/cli-proxy-api";
+  proxyLogFilePath = "${proxyStateDirectory}/cli-proxy-api.log";
+  proxyInstalledConfigurationPath = "${proxyStateDirectory}/config.yaml";
+  proxyInstalledLoginConfigurationPath = "${proxyStateDirectory}/login-config.yaml";
+  proxyLauncherRegistryDirectory = "${proxyStateDirectory}/launcher-holders";
+  proxyStartupTimeoutSeconds = 20;
   proxyLaunchdAgentLabel = "com.dotfiles.cli-proxy-api";
   proxySystemdServiceName = "cli-proxy-api.service";
 
@@ -32,11 +38,22 @@ let
     else
       "systemctl --user status ${proxySystemdServiceName}";
 
-  reloadProxyServiceCommand =
+  stopProxyServiceCommand =
     if pkgs.stdenv.hostPlatform.isDarwin then
-      ''launchctl kickstart -k "gui/$(id -u)/${proxyLaunchdAgentLabel}" 2>/dev/null || true''
+      ''launchctl kill SIGTERM "gui/$(id -u)/${proxyLaunchdAgentLabel}" 2>/dev/null || true''
     else
-      "systemctl --user restart ${proxySystemdServiceName} 2>/dev/null || true";
+      "systemctl --user stop ${proxySystemdServiceName} 2>/dev/null || true";
+
+  proxyServiceSelector = {
+    launchdAgentLabel = proxyLaunchdAgentLabel;
+    systemdServiceName = proxySystemdServiceName;
+  };
+  proxyStartCommand = onDemandService.startCommandFor proxyServiceSelector;
+  proxyStopCommand = onDemandService.stopCommandFor proxyServiceSelector;
+  proxyUnavailableMessage = ''
+    cli-proxy-api is not listening on ${proxyListenAddress}:${toString proxyListenPort}.
+    If you have never authenticated your ChatGPT subscription, run: claudex-login
+    Otherwise inspect the service: ${proxyServiceInspectionCommand}'';
 
   outboundProxyUrlForGatewayPort =
     ipv4GatewayPort:
@@ -61,7 +78,7 @@ let
   cliProxyApiProgramArguments = [
     "${cliProxyApiPackage}/bin/cli-proxy-api"
     "--config"
-    "${cliProxyApiConfigFile}"
+    proxyInstalledConfigurationPath
     "--local-model"
   ];
   ipv4GatewayCliProxyApiProgramArguments = cliProxyApiIpv4Gateway.programArgumentsThroughIpv4Gateway {
@@ -77,7 +94,7 @@ let
         programArguments = [
           "${cliProxyApiPackage}/bin/cli-proxy-api"
           "--config"
-          "${cliProxyApiLoginConfigFile}"
+          proxyInstalledLoginConfigurationPath
           "--codex-login"
         ];
       };
@@ -98,6 +115,13 @@ let
       CLAUDEX_LAUNCHER_PROXY_LISTEN_ADDRESS = proxyListenAddress;
       CLAUDEX_LAUNCHER_PROXY_LISTEN_PORT = toString proxyListenPort;
       CLAUDEX_LAUNCHER_PROXY_SERVICE_INSPECTION_COMMAND = proxyServiceInspectionCommand;
+      CLAUDEX_LAUNCHER_PROXY_REGISTRY_DIRECTORY = proxyLauncherRegistryDirectory;
+      CLAUDEX_LAUNCHER_PROXY_STARTUP_TIMEOUT_SECONDS = toString proxyStartupTimeoutSeconds;
+      CLAUDEX_LAUNCHER_PROXY_START_COMMAND = builtins.toJSON proxyStartCommand;
+      CLAUDEX_LAUNCHER_PROXY_STOP_COMMAND = builtins.toJSON proxyStopCommand;
+      CLAUDEX_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = proxyUnavailableMessage;
+      CLAUDEX_LAUNCHER_LIFECYCLE_PYTHON = builtins.elemAt onDemandService.lifecycleProgramArguments 0;
+      CLAUDEX_LAUNCHER_LIFECYCLE_SCRIPT = builtins.elemAt onDemandService.lifecycleProgramArguments 1;
       CLAUDEX_LAUNCHER_CLAUDE_BINARY = "${config.claude.unrestrictedInteractivePackage}/bin/claude";
       CLAUDEX_LAUNCHER_MODEL = gptModelForOpusTier;
     };
@@ -112,13 +136,15 @@ let
       exit 1
     fi
     echo "Credentials stored under ${proxyAuthenticationDirectory}."
-    ${reloadProxyServiceCommand}
-    echo "Proxy reloaded. Run claudex to start Claude Code on your ChatGPT subscription."
+    ${stopProxyServiceCommand}
+    echo "Run claudex; it starts the proxy on the new credentials and stops it again when you leave."
   '';
 
   ensureCliProxyApiStateDirectoriesScript = pkgs.writeShellScript "cli-proxy-api-ensure-state-directories" ''
     mkdir -p ${lib.escapeShellArg proxyAuthenticationDirectory}
-    mkdir -p ${lib.escapeShellArg (builtins.dirOf proxyLogFilePath)}
+    mkdir -p ${lib.escapeShellArg proxyStateDirectory}
+    ${pkgs.coreutils}/bin/install -m 600 ${cliProxyApiConfigFile} ${lib.escapeShellArg proxyInstalledConfigurationPath}
+    ${pkgs.coreutils}/bin/install -m 600 ${cliProxyApiLoginConfigFile} ${lib.escapeShellArg proxyInstalledLoginConfigurationPath}
   '';
 in
 {
@@ -141,8 +167,8 @@ in
           config = {
             Label = proxyLaunchdAgentLabel;
             ProgramArguments = ipv4GatewayCliProxyApiProgramArguments;
-            RunAtLoad = true;
-            KeepAlive = true;
+            RunAtLoad = false;
+            KeepAlive = false;
             StandardOutPath = proxyLogFilePath;
             StandardErrorPath = proxyLogFilePath;
           };
@@ -156,10 +182,8 @@ in
           };
           Service = {
             ExecStart = lib.concatMapStringsSep " " lib.escapeShellArg ipv4GatewayCliProxyApiProgramArguments;
-            Restart = "always";
-            RestartSec = 5;
+            Restart = "no";
           };
-          Install.WantedBy = [ "default.target" ];
         };
       })
     ]

@@ -13,17 +13,26 @@ from reply_text_metrics import (
     matched_reply_label,
 )
 
-NUMERIC_RANGE_EN_DASH_PATTERN = re.compile(r"(?<=\d)\s*–\s*(?=\d)")
-SENTENCE_DASH_PATTERN = re.compile(r"\s*[—–]\s*")
-REDUNDANT_PUNCTUATION_PATTERN = re.compile(r",\s*(?=[,;:.!?])")
+HORIZONTAL_SPACE = "[ \t]"
+NUMERIC_RANGE_EN_DASH_PATTERN = re.compile(
+    rf"(?<=\d){HORIZONTAL_SPACE}*–{HORIZONTAL_SPACE}*(?=\d)"
+)
+SENTENCE_DASH_PATTERN = re.compile(rf"{HORIZONTAL_SPACE}*[—–]{HORIZONTAL_SPACE}*")
+REDUNDANT_PUNCTUATION_PATTERN = re.compile(rf",{HORIZONTAL_SPACE}*(?=[,;:.!?])")
 PROTECTED_SPAN_PATTERN = re.compile(
     INLINE_CODE_SPAN_PATTERN.pattern + "|" + QUOTED_SPAN_PATTERN.pattern
 )
-LABEL_LINE_PATTERN = re.compile(r"^(\s*)\*{0,2}([^*:]+?)\*{0,2}\s*:\*{0,2}\s*(.*)$")
-DANGLING_COMMA_LINE_START_PATTERN = re.compile(r"^(\s*)([-*+])?\s*,\s*")
-DANGLING_COMMA_LINE_END_PATTERN = re.compile(r",\s*$")
-LINE_LEADING_DASH_PATTERN = re.compile(r"^\s*(?:[-*+]\s+)?[—–]")
-LINE_TRAILING_DASH_PATTERN = re.compile(r"[—–]\s*$")
+LABEL_LINE_PATTERN = re.compile(
+    rf"^({HORIZONTAL_SPACE}*)\*{{0,2}}([^*:]+)\*{{0,2}}:\*{{0,2}}{HORIZONTAL_SPACE}*(.*)$"
+)
+DANGLING_COMMA_LINE_START_PATTERN = re.compile(
+    rf"^({HORIZONTAL_SPACE}*)(?:([-*+]){HORIZONTAL_SPACE}*)?,{HORIZONTAL_SPACE}*"
+)
+DANGLING_COMMA_LINE_END_PATTERN = re.compile(rf",{HORIZONTAL_SPACE}*$")
+LINE_LEADING_DASH_PATTERN = re.compile(
+    rf"^{HORIZONTAL_SPACE}*(?:[-*+]{HORIZONTAL_SPACE}+)?[—–]"
+)
+LINE_TRAILING_DASH_PATTERN = re.compile(rf"[—–]{HORIZONTAL_SPACE}*$")
 
 
 def dashes_replaced_outside_protected_spans(line: str) -> str:
@@ -69,32 +78,32 @@ def label_line_with_emphasis(line: str) -> str:
     return f"{emphasized_label} {remainder}".rstrip()
 
 
+def repaired_prose_line(line: str) -> str:
+    repaired_line = line
+    if not is_visual_line(line) and not BLOCK_QUOTE_LINE_PATTERN.match(line):
+        repaired_line = dangling_commas_trimmed(
+            line, dashes_replaced_outside_protected_spans(line)
+        )
+    if matched_reply_label(repaired_line):
+        repaired_line = label_line_with_emphasis(repaired_line)
+    return repaired_line
+
+
 def repaired_reply_text(reply_text: str) -> str:
     repaired_lines: list[str] = []
     inside_code_fence = False
     previous_line_was_blank = True
     for line in reply_text.splitlines():
-        if line.lstrip().startswith(CODE_FENCE_PREFIX):
+        line_opens_or_closes_a_fence = line.lstrip().startswith(CODE_FENCE_PREFIX)
+        if line_opens_or_closes_a_fence:
             inside_code_fence = not inside_code_fence
+        if inside_code_fence or line_opens_or_closes_a_fence or not line.strip():
             repaired_lines.append(line)
-            previous_line_was_blank = False
+            previous_line_was_blank = not line.strip()
             continue
-        if inside_code_fence:
-            repaired_lines.append(line)
-            continue
-        if not line.strip():
-            repaired_lines.append(line)
-            previous_line_was_blank = True
-            continue
-        repaired_line = line
-        if not is_visual_line(line) and not BLOCK_QUOTE_LINE_PATTERN.match(line):
-            repaired_line = dangling_commas_trimmed(
-                line, dashes_replaced_outside_protected_spans(line)
-            )
-        if matched_reply_label(repaired_line):
-            repaired_line = label_line_with_emphasis(repaired_line)
-            if not previous_line_was_blank and repaired_lines:
-                repaired_lines.append("")
+        repaired_line = repaired_prose_line(line)
+        if matched_reply_label(repaired_line) and not previous_line_was_blank:
+            repaired_lines.append("")
         repaired_lines.append(repaired_line)
         previous_line_was_blank = False
     repaired_text = "\n".join(repaired_lines)

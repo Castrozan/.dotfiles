@@ -16,7 +16,7 @@ CONSOLE_GO_MODELS = {
 }
 API_KEY_PLACEHOLDER = "@OPENCODE_GO_API_KEY@"
 LAUNCHER_EXEC_LINE = re.compile(
-    r'^\s*exec "\$CLAUDE_GO_LAUNCHER_CLAUDE_BINARY" .*$', re.M
+    r'^\s*-- "\$CLAUDE_GO_LAUNCHER_CLAUDE_BINARY" .*$', re.M
 )
 
 
@@ -56,7 +56,7 @@ def test_the_opencode_go_module_still_defines_a_claude_launcher():
         "the module must still deploy the extracted launcher script as the claude-go body"
     )
     assert launcher_exec_line(), (
-        "the claude-go launcher no longer execs claude, so the contract guards below are vacuous"
+        "the claude-go launcher no longer hands claude to the lifecycle wrapper, so the contract guards below are vacuous"
     )
 
 
@@ -146,15 +146,40 @@ def test_the_default_model_flag_precedes_caller_arguments():
     )
 
 
-def test_the_launcher_reports_a_proxy_that_is_not_listening():
+def test_the_launcher_starts_and_releases_the_proxy_around_the_session():
     source = launcher_source()
-    probe = 'exec 3<>"/dev/tcp/$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS'
-    assert probe in source, (
-        "claude-go must probe the proxy before starting, because without it every tool-carrying request 400s"
+    assert "--registry-directory" in source
+    assert "--start-command" in source
+    assert "--stop-command" in source, (
+        "claude-go owns the proxy lifetime now, so dropping the stop command leaves "
+        "the translation proxy running for every session the user ever opened"
     )
+    assert '--listen-port "$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT"' in source, (
+        "the wrapper waits on the proxy port before starting claude, because without "
+        "the proxy every tool-carrying request 400s"
+    )
+
+
+def test_the_module_explains_a_proxy_that_never_comes_up():
+    source = module_source()
+    assert "translationProxyUnavailableMessage" in source
     assert (
-        "Inspect the service: ${CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND" in source
+        "Inspect the service: ${translationProxyInspectionCommand}" in source
     ), "the failure must name the service inspection command for the running platform"
-    assert source.index(probe) < source.index(
-        'exec "$CLAUDE_GO_LAUNCHER_CLAUDE_BINARY"'
-    ), "the proxy probe must run before claude is started"
+    assert (
+        "CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = translationProxyUnavailableMessage;"
+        in source
+    ), "the launcher must carry that message, or a failed start goes unexplained"
+
+
+def test_the_proxy_no_longer_runs_when_no_launcher_is_open():
+    source = module_source()
+    assert "RunAtLoad = false;" in source
+    assert "KeepAlive = false;" in source, (
+        "KeepAlive restarts the proxy the moment the launcher stops it, which "
+        "defeats the on-demand lifetime entirely"
+    )
+    assert 'Install.WantedBy = [ "default.target" ];' not in source, (
+        "a wanted-by unit starts at login, so the Linux host would keep the "
+        "always-on behaviour the Darwin host just dropped"
+    )

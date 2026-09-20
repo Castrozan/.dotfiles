@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
 unset ANTHROPIC_API_KEY
-if ! (exec 3<>"/dev/tcp/$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS/$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT") 2>/dev/null; then
-	echo "claude-go: the Console Go translation proxy is not listening on $CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS:$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT." >&2
-	echo "Console Go's own Anthropic endpoint drops tool names, so Claude Code cannot reach these models without it." >&2
-	echo "Inspect the service: ${CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND//@CURRENT_USER_ID@/$(id -u)}" >&2
-fi
-exec "$CLAUDE_GO_LAUNCHER_CLAUDE_BINARY" --model "$CLAUDE_GO_LAUNCHER_MODEL" "$@"
+currentUserId="$(id -u)"
+exec "$CLAUDE_GO_LAUNCHER_LIFECYCLE_PYTHON" \
+	"$CLAUDE_GO_LAUNCHER_LIFECYCLE_SCRIPT" \
+	--registry-directory "$CLAUDE_GO_LAUNCHER_PROXY_REGISTRY_DIRECTORY" \
+	--listen-address "$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS" \
+	--listen-port "$CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT" \
+	--start-command "${CLAUDE_GO_LAUNCHER_PROXY_START_COMMAND//@CURRENT_USER_ID@/$currentUserId}" \
+	--stop-command "${CLAUDE_GO_LAUNCHER_PROXY_STOP_COMMAND//@CURRENT_USER_ID@/$currentUserId}" \
+	--startup-timeout-seconds "$CLAUDE_GO_LAUNCHER_PROXY_STARTUP_TIMEOUT_SECONDS" \
+	--unavailable-message "${CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE//@CURRENT_USER_ID@/$currentUserId}" \
+	-- "$CLAUDE_GO_LAUNCHER_CLAUDE_BINARY" --model "$CLAUDE_GO_LAUNCHER_MODEL" "$@"

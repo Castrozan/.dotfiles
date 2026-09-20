@@ -16,6 +16,7 @@ let
 
   cliProxyApiPackage = import ../api-translation/cli-proxy-api-package.nix { inherit pkgs lib; };
   cliProxyApiIpv4Gateway = import ../api-translation/ipv4-gateway { inherit pkgs; };
+  onDemandService = import ../api-translation/on-demand-service { inherit pkgs; };
 
   translationProxyListenAddress = "127.0.0.1";
   translationProxyListenPort = 8321;
@@ -27,12 +28,25 @@ let
   translationProxyLogFilePath = "${translationProxyStateDirectory}/claude-go-proxy.log";
   translationProxyLaunchdAgentLabel = "com.dotfiles.claude-go-proxy";
   translationProxySystemdServiceName = "claude-go-proxy.service";
+  translationProxyLauncherRegistryDirectory = "${translationProxyStateDirectory}/launcher-holders";
+  translationProxyStartupTimeoutSeconds = 20;
 
   translationProxyInspectionCommand =
     if pkgs.stdenv.hostPlatform.isDarwin then
       "launchctl print gui/@CURRENT_USER_ID@/${translationProxyLaunchdAgentLabel}"
     else
       "systemctl --user status ${translationProxySystemdServiceName}";
+
+  translationProxyServiceSelector = {
+    launchdAgentLabel = translationProxyLaunchdAgentLabel;
+    systemdServiceName = translationProxySystemdServiceName;
+  };
+  translationProxyStartCommand = onDemandService.startCommandFor translationProxyServiceSelector;
+  translationProxyStopCommand = onDemandService.stopCommandFor translationProxyServiceSelector;
+  translationProxyUnavailableMessage = ''
+    claude-go: the Console Go translation proxy is not listening on ${translationProxyListenAddress}:${toString translationProxyListenPort}.
+    Console Go's own Anthropic endpoint drops tool names, so Claude Code cannot reach these models without it.
+    Inspect the service: ${translationProxyInspectionCommand}'';
 
   translatedModelNames = lib.unique (builtins.attrValues opencodeGo.models);
 
@@ -86,6 +100,13 @@ let
       CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS = translationProxyListenAddress;
       CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT = toString translationProxyListenPort;
       CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND = translationProxyInspectionCommand;
+      CLAUDE_GO_LAUNCHER_PROXY_REGISTRY_DIRECTORY = translationProxyLauncherRegistryDirectory;
+      CLAUDE_GO_LAUNCHER_PROXY_STARTUP_TIMEOUT_SECONDS = toString translationProxyStartupTimeoutSeconds;
+      CLAUDE_GO_LAUNCHER_PROXY_START_COMMAND = builtins.toJSON translationProxyStartCommand;
+      CLAUDE_GO_LAUNCHER_PROXY_STOP_COMMAND = builtins.toJSON translationProxyStopCommand;
+      CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = translationProxyUnavailableMessage;
+      CLAUDE_GO_LAUNCHER_LIFECYCLE_PYTHON = builtins.elemAt onDemandService.lifecycleProgramArguments 0;
+      CLAUDE_GO_LAUNCHER_LIFECYCLE_SCRIPT = builtins.elemAt onDemandService.lifecycleProgramArguments 1;
       CLAUDE_GO_LAUNCHER_CLAUDE_BINARY = "${config.claude.unrestrictedInteractivePackage}/bin/claude";
       CLAUDE_GO_LAUNCHER_MODEL = opencodeGo.models.sonnet;
     };
@@ -113,8 +134,8 @@ in
           config = {
             Label = translationProxyLaunchdAgentLabel;
             ProgramArguments = translationProxyProgramArguments;
-            RunAtLoad = true;
-            KeepAlive = true;
+            RunAtLoad = false;
+            KeepAlive = false;
             StandardOutPath = translationProxyLogFilePath;
             StandardErrorPath = translationProxyLogFilePath;
           };
@@ -128,10 +149,8 @@ in
           };
           Service = {
             ExecStart = lib.concatMapStringsSep " " lib.escapeShellArg translationProxyProgramArguments;
-            Restart = "always";
-            RestartSec = 5;
+            Restart = "no";
           };
-          Install.WantedBy = [ "default.target" ];
         };
       })
     ]
