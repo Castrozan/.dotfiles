@@ -14,13 +14,17 @@ DOCKER_LEFTOVER_PRUNE_COMMANDS = (
 def artifact_directories_under(root: Path) -> list[Path]:
     found = []
     for directory, subdirectories, _ in os.walk(root):
-        subdirectories[:] = [
+        unpruned = [
             name for name in subdirectories if name not in PRUNED_DIRECTORY_NAMES
         ]
-        for name in list(subdirectories):
-            if name in ARTIFACT_DIRECTORY_NAMES:
-                found.append(Path(directory) / name)
-                subdirectories.remove(name)
+        found.extend(
+            Path(directory) / name
+            for name in unpruned
+            if name in ARTIFACT_DIRECTORY_NAMES
+        )
+        subdirectories[:] = [
+            name for name in unpruned if name not in ARTIFACT_DIRECTORY_NAMES
+        ]
     return found
 
 
