@@ -20,6 +20,10 @@ PROTECTED_SPAN_PATTERN = re.compile(
     INLINE_CODE_SPAN_PATTERN.pattern + "|" + QUOTED_SPAN_PATTERN.pattern
 )
 LABEL_LINE_PATTERN = re.compile(r"^(\s*)\*{0,2}([^*:]+?)\*{0,2}\s*:\*{0,2}\s*(.*)$")
+DANGLING_COMMA_LINE_START_PATTERN = re.compile(r"^(\s*)([-*+])?\s*,\s*")
+DANGLING_COMMA_LINE_END_PATTERN = re.compile(r",\s*$")
+LINE_LEADING_DASH_PATTERN = re.compile(r"^\s*(?:[-*+]\s+)?[—–]")
+LINE_TRAILING_DASH_PATTERN = re.compile(r"[—–]\s*$")
 
 
 def dashes_replaced_outside_protected_spans(line: str) -> str:
@@ -39,6 +43,21 @@ def dashes_replaced_in_plain_text(text: str) -> str:
     without_numeric_ranges = NUMERIC_RANGE_EN_DASH_PATTERN.sub("-", text)
     without_sentence_dashes = SENTENCE_DASH_PATTERN.sub(", ", without_numeric_ranges)
     return REDUNDANT_PUNCTUATION_PATTERN.sub("", without_sentence_dashes)
+
+
+def line_start_without_comma(start_match: re.Match[str]) -> str:
+    indentation, list_marker = start_match.groups()
+    return indentation + (f"{list_marker} " if list_marker else "")
+
+
+def dangling_commas_trimmed(original_line: str, repaired_line: str) -> str:
+    if LINE_LEADING_DASH_PATTERN.match(original_line):
+        repaired_line = DANGLING_COMMA_LINE_START_PATTERN.sub(
+            line_start_without_comma, repaired_line
+        )
+    if LINE_TRAILING_DASH_PATTERN.search(original_line):
+        repaired_line = DANGLING_COMMA_LINE_END_PATTERN.sub("", repaired_line)
+    return repaired_line
 
 
 def label_line_with_emphasis(line: str) -> str:
@@ -69,7 +88,9 @@ def repaired_reply_text(reply_text: str) -> str:
             continue
         repaired_line = line
         if not is_visual_line(line) and not BLOCK_QUOTE_LINE_PATTERN.match(line):
-            repaired_line = dashes_replaced_outside_protected_spans(line)
+            repaired_line = dangling_commas_trimmed(
+                line, dashes_replaced_outside_protected_spans(line)
+            )
         if matched_reply_label(repaired_line):
             repaired_line = label_line_with_emphasis(repaired_line)
             if not previous_line_was_blank and repaired_lines:

@@ -73,3 +73,11 @@ def test_a_dash_free_overlong_reply_is_not_repairable():
     reply = "word " * 400
 
     assert repaired_reply_text(reply) == reply
+
+
+def test_a_leading_dash_does_not_leave_a_comma_opening_the_line():
+    assert repaired_reply_text("- — the gate holds") == "- the gate holds"
+
+
+def test_a_trailing_dash_does_not_leave_a_comma_ending_the_line():
+    assert repaired_reply_text("the gate holds —") == "the gate holds"
