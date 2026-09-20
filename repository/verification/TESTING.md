@@ -140,7 +140,9 @@ clear it: clearing it means retaking the measurement, and the nix packaging inje
 `DOTFILES_BENCHMARK_HOST` from the machine the flake builds the command for, so
 `dotfiles-perf baseline` measures the owning host and no other. Continuous integration
 therefore never benchmarks — a shared runner's numbers describe no machine this
-repository configures.
+repository configures. The nightly deep tiers run `--perf` on the owning host itself,
+so an expired baseline surfaces in the steward inbox on the one machine that can
+retake it, instead of waiting for someone to type the flag.
 
 `benchmark-desktop` is packaged on Linux only, so on darwin the `dotfiles-perf`
 subcommands that delegate to it report the command as unavailable rather than

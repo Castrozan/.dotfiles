@@ -63,7 +63,7 @@ class TestIdleWindow:
 class TestEveryTierRuns:
     def test_a_failing_tier_does_not_stop_the_next_one(self, tmp_path):
         log = (tmp_path / "log").open("w")
-        with patch("nightly_deep_test_tiers.run_tier", side_effect=[1, 0]) as tier:
+        with patch("nightly_deep_test_tiers.run_tier", side_effect=[1, 0, 0]) as tier:
             failed = nightly_deep_test_tiers.run_every_tier_reporting_all_failures(log)
         log.close()
 
@@ -74,6 +74,7 @@ class TestEveryTierRuns:
         assert nightly_deep_test_tiers.DEEP_TIER_FLAGS == (
             "--integration-scripts",
             "--runtime",
+            "--perf",
         )
 
 

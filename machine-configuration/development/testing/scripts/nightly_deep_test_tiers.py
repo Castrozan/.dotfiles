@@ -11,7 +11,7 @@ from steward_inbox import leave_message_in_the_steward_inbox
 DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
 LOG_DIRECTORY = Path.home() / ".local" / "state" / "dotfiles-nightly-tests"
 LOG_FILE_NAME = "nightly-deep-test-tiers.log"
-DEEP_TIER_FLAGS = ("--integration-scripts", "--runtime")
+DEEP_TIER_FLAGS = ("--integration-scripts", "--runtime", "--perf")
 IDLE_WINDOW_FIRST_HOUR = 2
 IDLE_WINDOW_LAST_HOUR = 5
 ARTIFACT_DIRECTORY_NAMES = frozenset({".pytest_cache", ".ruff_cache", "__pycache__"})
