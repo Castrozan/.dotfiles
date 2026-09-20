@@ -109,6 +109,10 @@ final class WindowSwitcherStateMachine: SocketCommandHandling {
     }
 
     private func onWindowsFetched(workspaceWindows: [WorkspaceWindow], focusedWindowIdentifier: Int?) {
+        if !isActivationActive {
+            isFetchingWindows = false
+            return
+        }
         performanceProfiler.markPhase("main_callback")
         performanceProfiler.recordWorkspaceWindowCount(workspaceWindows.count)
         isFetchingWindows = false

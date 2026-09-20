@@ -110,6 +110,7 @@ final class SwitcherOverlayPanel: OverlayRendering {
     }
 
     func showWithWindowsAndSelection(_ windows: [WorkspaceWindow], selectedIndex: Int) {
+        hide()
         let panel = NonActivatingFloatingPanelFactory.makeFloatingPanel()
         floatingPanel = panel
         buildOverlayContents(windows: windows, selectedIndex: selectedIndex, panel: panel)

@@ -9,6 +9,7 @@ struct AllTestsRunner {
     MostRecentlyUsedWindowTrackerTests.runAll()
     SocketCommandParserTests.runAll()
     StateMachineTests.runAll()
+    StaleActivationTests.runAll()
     OverlayTests.runAll()
     try ActivationPersistenceTests.runAll()
     try SocketTransportTests.runAll()
