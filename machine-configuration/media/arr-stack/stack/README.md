@@ -152,8 +152,10 @@ directory is a publisher and each title directory beneath it is a series, a nest
 Kavita documents as supported.
 
 Miwayomi handles instant anime playback. Its extension state, favorites, and watch
-progress persist in the arr-stack config root. Suwayomi and Miwayomi run in the
-Compose project and share its FlareSolverr sidecar.
+progress persist in the arr-stack config root.
+
+Suwayomi and Miwayomi run in the Compose project. They share its FlareSolverr
+sidecar.
 
 Two boundaries are easy to erase by accident. The manga tree sits beside the Jellyfin
 media root rather than inside it, because Jellyfin bind-mounts that whole root while
