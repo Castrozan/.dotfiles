@@ -7,12 +7,17 @@ def configuration_label(target: benchmark_core.BenchmarkTarget) -> str:
     return f"{target.host}/{target.configuration}"
 
 
-def get_benchmark_commands(target: benchmark_core.BenchmarkTarget) -> dict[str, str]:
+def flake_reference(attribute_path: str) -> str:
     dotfiles = str(benchmark_core.DOTFILES_DIRECTORY)
+    return f"git+file://{dotfiles}?submodules=1#{attribute_path}"
+
+
+def get_benchmark_commands(target: benchmark_core.BenchmarkTarget) -> dict[str, str]:
+    configuration = flake_reference(target.flake_output)
     return {
-        "eval": f"nix flake check {dotfiles} --no-build",
-        "dry-run": (f"nix build {dotfiles}#{target.flake_output} --dry-run"),
-        "build": f"nix build {dotfiles}#{target.flake_output}",
+        "eval": f"nix eval {configuration}.drvPath --raw",
+        "dry-run": f"nix build {configuration} --dry-run",
+        "build": f"nix build {configuration}",
         "rebuild": "rebuild",
     }
 
@@ -49,6 +54,9 @@ def run_and_record_benchmark(
             f"  Command failed after {measurement.elapsed_seconds:.2f}s; "
             "no result recorded"
         )
+        print(f"  the failing command was: {command}")
+        for reported_line in measurement.failure_output.splitlines():
+            print(f"    {reported_line}")
         return measurement
 
     record_benchmark_result(

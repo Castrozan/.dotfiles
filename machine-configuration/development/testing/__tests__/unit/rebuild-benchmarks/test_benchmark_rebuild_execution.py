@@ -1,6 +1,7 @@
 import subprocess
 from unittest.mock import MagicMock, patch
 
+import benchmark_core
 import benchmark_rebuild
 import rebuild_benchmarks.execution
 from benchmark_core import CommandMeasurement
@@ -10,6 +11,36 @@ def _empty_results_file(tmp_path):
     results_file = tmp_path / "results.csv"
     results_file.write_text(benchmark_rebuild.CSV_HEADER + "\n")
     return results_file
+
+
+class TestBenchmarkCommands:
+    def test_every_measured_command_names_only_the_host_being_benchmarked(self):
+        kira = benchmark_core.BenchmarkTarget(
+            "kira", "darwin", "darwinConfigurations.kira.system"
+        )
+        commands = rebuild_benchmarks.execution.get_benchmark_commands(kira)
+
+        for benchmark_type in ("eval", "dry-run", "build"):
+            assert kira.flake_output in commands[benchmark_type], benchmark_type
+
+    def test_eval_measures_the_host_configuration_without_building_it(self):
+        chise = benchmark_core.BenchmarkTarget(
+            "chise", "nixos", "nixosConfigurations.chise.config.system.build.toplevel"
+        )
+        eval_command = rebuild_benchmarks.execution.get_benchmark_commands(chise)["eval"]
+
+        assert eval_command.startswith("nix eval ")
+        assert eval_command.endswith(f"#{chise.flake_output}.drvPath --raw")
+
+    def test_every_command_reads_the_flake_with_its_private_submodule(self):
+        kira = benchmark_core.BenchmarkTarget(
+            "kira", "darwin", "darwinConfigurations.kira.system"
+        )
+        commands = rebuild_benchmarks.execution.get_benchmark_commands(kira)
+
+        for benchmark_type in ("eval", "dry-run", "build"):
+            assert "git+file://" in commands[benchmark_type], benchmark_type
+            assert "?submodules=1#" in commands[benchmark_type], benchmark_type
 
 
 class TestRecordBenchmarkResult:

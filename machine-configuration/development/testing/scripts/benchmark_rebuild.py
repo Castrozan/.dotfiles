@@ -85,22 +85,24 @@ def main() -> None:
     command = sys.argv[1] if len(sys.argv) > 1 else "all"
 
     if command == "all":
-        for benchmark_type in ("eval", "dry-run"):
-            rebuild_benchmarks.execution.run_and_record_benchmark(
-                benchmark_type,
-                benchmark_commands[benchmark_type],
-                rebuild_benchmarks.execution.configuration_label(target),
-                results_file,
-            )
+        measured_types = ("eval", "dry-run")
     elif command in benchmark_commands:
-        rebuild_benchmarks.execution.run_and_record_benchmark(
-            command,
-            benchmark_commands[command],
-            rebuild_benchmarks.execution.configuration_label(target),
-            results_file,
-        )
+        measured_types = (command,)
     else:
         print_usage()
+        raise SystemExit(1)
+
+    failed_types = [
+        benchmark_type
+        for benchmark_type in measured_types
+        if not rebuild_benchmarks.execution.run_and_record_benchmark(
+            benchmark_type,
+            benchmark_commands[benchmark_type],
+            rebuild_benchmarks.execution.configuration_label(target),
+            results_file,
+        ).succeeded
+    ]
+    if failed_types:
         raise SystemExit(1)
 
 

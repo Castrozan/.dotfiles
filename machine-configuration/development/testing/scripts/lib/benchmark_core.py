@@ -17,11 +17,14 @@ TRACKED_BASELINE_DIRECTORY = (
 )
 RESULTS_DIRECTORY = Path.home() / ".local" / "share" / "dotfiles-benchmarks"
 
+FAILURE_OUTPUT_LINE_LIMIT = 20
+
 
 @dataclass(frozen=True)
 class CommandMeasurement:
     succeeded: bool
     elapsed_seconds: float
+    failure_output: str = ""
 
 
 @dataclass(frozen=True)
@@ -74,6 +77,11 @@ def unmeasurable_command() -> CommandMeasurement:
     return CommandMeasurement(succeeded=False, elapsed_seconds=0.0)
 
 
+def last_reported_lines(command_output: str) -> str:
+    reported_lines = (command_output or "").strip().splitlines()
+    return "\n".join(reported_lines[-FAILURE_OUTPUT_LINE_LIMIT:])
+
+
 def measure_command(
     arguments: list[str],
     timeout_seconds: float | None = None,
@@ -99,14 +107,30 @@ def _measure_subprocess(
             command,
             shell=use_shell,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
             timeout=timeout_seconds,
         )
-    except (subprocess.TimeoutExpired, OSError):
-        return CommandMeasurement(False, time.perf_counter() - start_time)
+    except subprocess.TimeoutExpired as expiry:
+        return CommandMeasurement(
+            False,
+            time.perf_counter() - start_time,
+            f"no output: the command was killed after {expiry.timeout}s",
+        )
+    except OSError as error:
+        return CommandMeasurement(
+            False,
+            time.perf_counter() - start_time,
+            f"the command could not start: {error}",
+        )
+
+    if completed_process.returncode == 0:
+        return CommandMeasurement(True, time.perf_counter() - start_time)
+
     return CommandMeasurement(
-        completed_process.returncode == 0,
+        False,
         time.perf_counter() - start_time,
+        last_reported_lines(completed_process.stderr),
     )
 
 
