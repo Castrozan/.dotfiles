@@ -103,6 +103,11 @@ let
       CLAUDE_GO_LAUNCHER_PROXY_STARTUP_TIMEOUT_SECONDS = toString translationProxyStartupTimeoutSeconds;
       CLAUDE_GO_LAUNCHER_PROXY_SERVICE_CONTROLLER = onDemandService.serviceControllerName;
       CLAUDE_GO_LAUNCHER_PROXY_SERVICE_LABEL = translationProxyServiceLabel;
+      # shellcheck disable=SC2089,SC2090 # JSON is consumed literally by the Python lifecycle helper.
+      CLAUDE_GO_LAUNCHER_PROXY_START_COMMAND = builtins.toJSON translationProxyStartCommand;
+      # shellcheck disable=SC2089,SC2090 # JSON is consumed literally by the Python lifecycle helper.
+      CLAUDE_GO_LAUNCHER_PROXY_STOP_COMMAND = builtins.toJSON translationProxyStopCommand;
+      # shellcheck disable=SC2089,SC2090 # Text is forwarded verbatim to the lifecycle helper.
       CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = translationProxyUnavailableMessage;
       CLAUDE_GO_LAUNCHER_LIFECYCLE_PYTHON = builtins.elemAt onDemandService.lifecycleProgramArguments 0;
       CLAUDE_GO_LAUNCHER_LIFECYCLE_SCRIPT = builtins.elemAt onDemandService.lifecycleProgramArguments 1;
