@@ -12,6 +12,12 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from holder_registry import HolderRegistry
+from service_commands import (
+    SERVICE_CONTROLLERS,
+    run_service_command,
+    start_command_for,
+    stop_command_for,
+)
 
 LISTEN_POLL_INTERVAL_SECONDS = 0.1
 PROBE_CONNECTION_TIMEOUT_SECONDS = 0.5
@@ -51,28 +57,6 @@ def wait_until_listening(
             return True
         time.sleep(LISTEN_POLL_INTERVAL_SECONDS)
     return service_is_listening(listen_address, listen_port)
-
-
-def launchd_service_target(service_label: str) -> str:
-    return f"gui/{os.getuid()}/{service_label}"
-
-
-def start_command_for(service_controller: str, service_label: str) -> list[str]:
-    if service_controller == "launchd":
-        return ["launchctl", "kickstart", launchd_service_target(service_label)]
-    return ["systemctl", "--user", "start", service_label]
-
-
-def stop_command_for(service_controller: str, service_label: str) -> list[str]:
-    if service_controller == "launchd":
-        return ["launchctl", "kill", "SIGTERM", launchd_service_target(service_label)]
-    return ["systemctl", "--user", "stop", service_label]
-
-
-def run_service_command(command: Sequence[str]) -> None:
-    if not command:
-        return
-    subprocess.run(command, check=False)
 
 
 def acquire_service(
@@ -153,7 +137,7 @@ def parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--registry-directory", required=True, type=Path)
     parser.add_argument("--listen-address", required=True)
     parser.add_argument("--listen-port", required=True, type=int)
-    parser.add_argument("--service-controller", required=True, choices=["launchd", "systemd"])
+    parser.add_argument("--service-controller", required=True, choices=list(SERVICE_CONTROLLERS))
     parser.add_argument("--service-label", required=True)
     parser.add_argument("--startup-timeout-seconds", required=True, type=float)
     parser.add_argument("--unavailable-message", required=True)

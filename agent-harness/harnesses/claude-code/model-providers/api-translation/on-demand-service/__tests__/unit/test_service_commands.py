@@ -15,16 +15,17 @@ assert LIFECYCLE_SPECIFICATION.loader
 LIFECYCLE = importlib.util.module_from_spec(LIFECYCLE_SPECIFICATION)
 LIFECYCLE_SPECIFICATION.loader.exec_module(LIFECYCLE)
 
-import holder_registry as REGISTRY
+import pytest
+import service_commands as COMMANDS
 
 def test_the_launchd_commands_name_the_current_user_domain():
     label = "com.dotfiles.cli-proxy-api"
-    assert LIFECYCLE.start_command_for("launchd", label) == [
+    assert COMMANDS.start_command_for("launchd", label) == [
         "launchctl",
         "kickstart",
         f"gui/{os.getuid()}/{label}",
     ]
-    assert LIFECYCLE.stop_command_for("launchd", label) == [
+    assert COMMANDS.stop_command_for("launchd", label) == [
         "launchctl",
         "kill",
         "SIGTERM",
@@ -36,15 +37,25 @@ def test_the_launchd_commands_name_the_current_user_domain():
 
 def test_the_systemd_commands_address_the_user_unit():
     unit = "cli-proxy-api.service"
-    assert LIFECYCLE.start_command_for("systemd", unit) == [
+    assert COMMANDS.start_command_for("systemd", unit) == [
         "systemctl",
         "--user",
         "start",
         unit,
     ]
-    assert LIFECYCLE.stop_command_for("systemd", unit) == [
+    assert COMMANDS.stop_command_for("systemd", unit) == [
         "systemctl",
         "--user",
         "stop",
         unit,
     ]
+
+
+def test_a_label_outside_the_allowed_shape_is_refused():
+    for rejected in ["", "has space", "semi;colon", "slash/label", "-leading-dash"]:
+        with pytest.raises(ValueError):
+            COMMANDS.start_command_for("launchd", rejected)
+
+
+def test_a_missing_service_controller_binary_does_not_crash_the_launcher():
+    COMMANDS.run_service_command(["a-binary-no-host-has", "kickstart"])

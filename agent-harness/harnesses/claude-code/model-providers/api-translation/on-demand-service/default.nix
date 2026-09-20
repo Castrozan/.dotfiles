@@ -4,6 +4,7 @@ let
     mkdir -p $out
     cp ${./scripts/on_demand_proxy_lifecycle.py} $out/on_demand_proxy_lifecycle.py
     cp ${./scripts/holder_registry.py} $out/holder_registry.py
+    cp ${./scripts/service_commands.py} $out/service_commands.py
   '';
 in
 {
