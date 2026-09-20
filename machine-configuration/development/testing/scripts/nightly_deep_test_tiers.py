@@ -6,6 +6,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from nightly_cleanup import (
+    artifact_directories_under,
+    prune_docker_build_leftovers_the_run_did_not_reuse,
+)
 from steward_inbox import leave_message_in_the_steward_inbox
 
 DOTFILES_DIRECTORY = Path.home() / ".dotfiles"
@@ -21,16 +25,10 @@ DEEP_TIER_FLAGS = (
 TIER_SKIPPED_STATUS = 77
 IDLE_WINDOW_FIRST_HOUR = 2
 IDLE_WINDOW_LAST_HOUR = 5
-ARTIFACT_DIRECTORY_NAMES = frozenset({".pytest_cache", ".ruff_cache", "__pycache__"})
-PRUNED_DIRECTORY_NAMES = frozenset({".git", ".worktrees", "node_modules", "result"})
 ARTIFACT_FREE_ENVIRONMENT = {
     "PYTHONDONTWRITEBYTECODE": "1",
     "PYTEST_ADDOPTS": "-p no:cacheprovider",
 }
-DOCKER_LEFTOVER_PRUNE_COMMANDS = (
-    ("docker", "builder", "prune", "--force", "--filter", "until=24h"),
-    ("docker", "image", "prune", "--force"),
-)
 
 EXIT_CODE_A_TIER_FAILED = 1
 EXIT_CODE_CANNOT_RUN = 2
@@ -102,37 +100,10 @@ def run_every_tier_reporting_all_failures(log) -> tuple[list[str], list[str]]:
     return failed_tiers, skipped_tiers
 
 
-def artifact_directories_under(root: Path) -> list[Path]:
-    found = []
-    for directory, subdirectories, _ in os.walk(root):
-        subdirectories[:] = [
-            name for name in subdirectories if name not in PRUNED_DIRECTORY_NAMES
-        ]
-        for name in list(subdirectories):
-            if name in ARTIFACT_DIRECTORY_NAMES:
-                found.append(Path(directory) / name)
-                subdirectories.remove(name)
-    return found
-
-
 def remove_generated_cache_directories(log) -> None:
     for directory in artifact_directories_under(DOTFILES_DIRECTORY):
         shutil.rmtree(directory, ignore_errors=True)
         log.write(f"removed cache directory {directory}\n")
-
-
-def prune_docker_build_leftovers_the_run_did_not_reuse(log) -> None:
-    if shutil.which("docker") is None:
-        log.write("docker is not on PATH, so the run left no build cache to prune\n")
-        return
-    for command in DOCKER_LEFTOVER_PRUNE_COMMANDS:
-        completed = subprocess.run(list(command), capture_output=True, text=True)
-        outcome_lines = completed.stdout.strip().splitlines() or [
-            completed.stderr.strip()
-        ]
-        log.write(
-            f"{' '.join(command)}: exit {completed.returncode}, {outcome_lines[-1]}\n"
-        )
 
 
 def report_paths_the_run_left_behind(paths_before: set[str], log) -> None:

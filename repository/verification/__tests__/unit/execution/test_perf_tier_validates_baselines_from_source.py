@@ -1,132 +1,13 @@
-import json
-import os
-import pathlib
-import shutil
-import subprocess
-from datetime import datetime, timezone
-
 import pytest
 
-HARNESS_TESTS_ROOT = pathlib.Path(__file__).resolve().parents[3]
-REPOSITORY_ROOT = HARNESS_TESTS_ROOT.parents[1]
-PERF_TIER_LIBRARY = HARNESS_TESTS_ROOT / "runner" / "perf.sh"
-
-CAPABILITY_RELATIVE_PATH = pathlib.Path("machine-configuration/development/testing")
-CAPABILITY_SOURCE_DIRECTORY = REPOSITORY_ROOT / CAPABILITY_RELATIVE_PATH
-
-MODERN_BASH_CANDIDATE_PATHS = (
-    "/run/current-system/sw/bin/bash",
-    f"/etc/profiles/per-user/{os.environ.get('USER', '')}/bin/bash",
-    "/opt/homebrew/bin/bash",
+from perf_tier_baseline_harness import (
+    BASELINE_FILE_NAME_PER_TIER_FUNCTION,
+    STALE_GENERATED_AT,
+    checkout_with_baseline,
+    command_poor_bin_directory,
+    run_tier_function,
+    tracked_baseline,
 )
-
-MODERN_PYTHON_CANDIDATE_PATHS = (
-    "/run/current-system/sw/bin/python3",
-    f"/etc/profiles/per-user/{os.environ.get('USER', '')}/bin/python3",
-    "/opt/homebrew/bin/python3",
-)
-
-EARLIEST_PYTHON_MINOR_THE_VALIDATORS_PARSE = 10
-
-BASELINE_FILE_NAME_PER_TIER_FUNCTION = {
-    "_run_rebuild_baseline_check": "baseline.json",
-    "_run_desktop_baseline_check": "baseline-desktop.json",
-}
-
-STALE_GENERATED_AT = "2024-01-01T00:00:00+00:00"
-
-MEASUREMENT_PER_BASELINE_FILE_NAME = {
-    "baseline.json": {"eval": {"duration_seconds": 2.0, "max_allowed_seconds": 3.0}},
-    "baseline-desktop.json": {"tmux": {"avg_ms": 20.0, "max_allowed_ms": 40.0}},
-}
-
-
-def _resolve_modern_bash_absolute_path() -> str:
-    for candidate in [shutil.which("bash"), *MODERN_BASH_CANDIDATE_PATHS]:
-        if not candidate or not os.path.exists(candidate):
-            continue
-        probe = subprocess.run(
-            [candidate, "-c", "echo ${BASH_VERSINFO[0]}"],
-            capture_output=True,
-            text=True,
-        )
-        if probe.stdout.strip().isdigit() and int(probe.stdout.strip()) >= 4:
-            return candidate
-    pytest.skip("no bash >= 4 available to exercise the perf tier library")
-
-
-def _resolve_modern_python_absolute_path() -> str:
-    for candidate in [shutil.which("python3"), *MODERN_PYTHON_CANDIDATE_PATHS]:
-        if not candidate or not os.path.exists(candidate):
-            continue
-        probe = subprocess.run(
-            [candidate, "-c", "import sys; print(sys.version_info[1])"],
-            capture_output=True,
-            text=True,
-        )
-        minor = probe.stdout.strip()
-        if (
-            minor.isdigit()
-            and int(minor) >= EARLIEST_PYTHON_MINOR_THE_VALIDATORS_PARSE
-        ):
-            return candidate
-    pytest.skip("no python3 >= 3.10 available to run the baseline validators")
-
-
-def _command_poor_bin_directory(tmp_path: pathlib.Path) -> pathlib.Path:
-    interpreter = _resolve_modern_python_absolute_path()
-    bin_directory = tmp_path / "bin"
-    bin_directory.mkdir()
-    (bin_directory / "python3").symlink_to(interpreter)
-    return bin_directory
-
-
-def _tracked_baseline(file_name: str, **overrides) -> dict:
-    baseline = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": "abc1234",
-        "host": "kira",
-        "config": "darwin",
-        "threshold_percent": 150,
-        "measurements": MEASUREMENT_PER_BASELINE_FILE_NAME[file_name],
-    }
-    baseline.update(overrides)
-    return baseline
-
-
-def _checkout_with_baseline(
-    tmp_path: pathlib.Path, file_name: str, baseline: dict
-) -> pathlib.Path:
-    checkout_root = tmp_path / "checkout"
-    capability_directory = checkout_root / CAPABILITY_RELATIVE_PATH
-    capability_directory.mkdir(parents=True)
-    (capability_directory / "scripts").symlink_to(
-        CAPABILITY_SOURCE_DIRECTORY / "scripts"
-    )
-    (capability_directory / file_name).write_text(json.dumps(baseline))
-    return checkout_root
-
-
-def _run_tier_function(
-    tier_function: str,
-    checkout_root: pathlib.Path,
-    bin_directory: pathlib.Path,
-    tier_arguments: str = "",
-):
-    return subprocess.run(
-        [
-            _resolve_modern_bash_absolute_path(),
-            "-c",
-            f"source {PERF_TIER_LIBRARY}\n{tier_function} {tier_arguments}\n",
-        ],
-        env={
-            "PATH": str(bin_directory),
-            "HOME": str(checkout_root.parent),
-            "REPO_DIR": str(checkout_root),
-        },
-        capture_output=True,
-        text=True,
-    )
 
 
 @pytest.mark.parametrize(
@@ -136,12 +17,12 @@ def _run_tier_function(
 def test_the_check_validates_the_source_baseline_without_the_installed_command(
     tmp_path, tier_function, baseline_file_name
 ):
-    bin_directory = _command_poor_bin_directory(tmp_path)
-    checkout_root = _checkout_with_baseline(
-        tmp_path, baseline_file_name, _tracked_baseline(baseline_file_name)
+    bin_directory = command_poor_bin_directory(tmp_path)
+    checkout_root = checkout_with_baseline(
+        tmp_path, baseline_file_name, tracked_baseline(baseline_file_name)
     )
 
-    completed = _run_tier_function(tier_function, checkout_root, bin_directory)
+    completed = run_tier_function(tier_function, checkout_root, bin_directory)
 
     assert completed.returncode == 0, (
         f"{tier_function} must validate {baseline_file_name} straight from the "
@@ -163,14 +44,14 @@ def test_the_check_validates_the_source_baseline_without_the_installed_command(
 def test_the_check_propagates_an_invalid_source_baseline_as_a_failure(
     tmp_path, tier_function, baseline_file_name
 ):
-    bin_directory = _command_poor_bin_directory(tmp_path)
-    unattributed_baseline = _tracked_baseline(baseline_file_name)
+    bin_directory = command_poor_bin_directory(tmp_path)
+    unattributed_baseline = tracked_baseline(baseline_file_name)
     del unattributed_baseline["host"]
-    checkout_root = _checkout_with_baseline(
+    checkout_root = checkout_with_baseline(
         tmp_path, baseline_file_name, unattributed_baseline
     )
 
-    completed = _run_tier_function(tier_function, checkout_root, bin_directory)
+    completed = run_tier_function(tier_function, checkout_root, bin_directory)
 
     assert completed.returncode != 0, (
         f"{tier_function} must return the validator's exit code, otherwise the "
@@ -191,15 +72,15 @@ def test_the_check_propagates_an_invalid_source_baseline_as_a_failure(
 def test_a_stale_baseline_fails_only_where_it_can_be_recaptured(
     tmp_path, tier_function, baseline_file_name
 ):
-    bin_directory = _command_poor_bin_directory(tmp_path)
-    checkout_root = _checkout_with_baseline(
+    bin_directory = command_poor_bin_directory(tmp_path)
+    checkout_root = checkout_with_baseline(
         tmp_path,
         baseline_file_name,
-        _tracked_baseline(baseline_file_name, generated_at=STALE_GENERATED_AT),
+        tracked_baseline(baseline_file_name, generated_at=STALE_GENERATED_AT),
     )
 
-    integration = _run_tier_function(tier_function, checkout_root, bin_directory)
-    owning_host = _run_tier_function(
+    integration = run_tier_function(tier_function, checkout_root, bin_directory)
+    owning_host = run_tier_function(
         tier_function, checkout_root, bin_directory, "--require-fresh"
     )
 

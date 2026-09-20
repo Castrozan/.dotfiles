@@ -3,6 +3,7 @@ import pathlib
 import benchmark_baseline
 import benchmark_core
 import benchmark_report
+import benchmark_result_rows
 import desktop_benchmarks.results
 
 BASELINE_PATH = benchmark_core.TRACKED_BASELINE_DIRECTORY / "baseline-desktop.json"
@@ -107,7 +108,7 @@ def compare_latest_to_baseline(results_file: pathlib.Path) -> bool:
         )
         return False
 
-    measured_values = benchmark_core.latest_value_by_key(
+    measured_values = benchmark_result_rows.latest_value_by_key(
         results_file.read_text().splitlines()[1:], (1,), 2
     )
     comparison = benchmark_baseline.compare_measured_values(

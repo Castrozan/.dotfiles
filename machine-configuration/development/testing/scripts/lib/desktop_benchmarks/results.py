@@ -1,6 +1,7 @@
 import pathlib
 
 import benchmark_core
+import benchmark_result_rows
 import desktop_benchmarks.measurement
 
 RESULTS_FILE_NAME = "desktop-times.csv"
@@ -98,7 +99,9 @@ def print_report(results_file: pathlib.Path) -> None:
         return
 
     print("=== Recent Desktop Benchmark Results ===")
-    for row in benchmark_core.recent_result_table_lines(lines, RECENT_RESULT_ROW_LIMIT):
+    for row in benchmark_result_rows.recent_result_table_lines(
+        lines, RECENT_RESULT_ROW_LIMIT
+    ):
         print(row)
 
     print()
@@ -107,7 +110,7 @@ def print_report(results_file: pathlib.Path) -> None:
 
 def _print_averages(data_lines: list[str]) -> None:
     print("=== Averages by Component ===")
-    averages = benchmark_core.aggregate_values_by_key(data_lines, (1,), 2)
+    averages = benchmark_result_rows.aggregate_values_by_key(data_lines, (1,), 2)
     for name, aggregate in sorted(averages.items()):
         print(
             f"  {name}: {format_ms(aggregate.total / aggregate.count)} avg "

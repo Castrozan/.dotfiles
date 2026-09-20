@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import benchmark_core
 import desktop_benchmarks.catalog
 import desktop_benchmarks.hyprland
 import desktop_benchmarks.measurement
@@ -146,9 +147,17 @@ class TestRecordResult:
 
 
 class TestQuickshellBarConfiguration:
-    def test_the_bar_path_is_a_configuration_that_exists_in_the_checkout(self):
-        assert Path(desktop_benchmarks.hyprland.QS_BAR_PATH).is_dir()
-
-    def test_the_bar_path_holds_the_shell_entry_point_quickshell_loads(self):
+    @staticmethod
+    def bar_directory_in(repository_root):
         bar_path = Path(desktop_benchmarks.hyprland.QS_BAR_PATH)
-        assert (bar_path / "shell.qml").is_file()
+        return repository_root / bar_path.relative_to(benchmark_core.DOTFILES_DIRECTORY)
+
+    def test_the_bar_path_is_a_configuration_that_exists_in_the_checkout(
+        self, repository_root
+    ):
+        assert self.bar_directory_in(repository_root).is_dir()
+
+    def test_the_bar_path_holds_the_shell_entry_point_quickshell_loads(
+        self, repository_root
+    ):
+        assert (self.bar_directory_in(repository_root) / "shell.qml").is_file()

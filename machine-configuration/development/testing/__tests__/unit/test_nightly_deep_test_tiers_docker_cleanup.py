@@ -1,18 +1,19 @@
 import io
 import subprocess
 
+import nightly_cleanup
 import nightly_deep_test_tiers as nightly
 
 
 def test_prune_is_skipped_when_docker_is_absent(monkeypatch):
     calls = []
-    monkeypatch.setattr(nightly.shutil, "which", lambda name: None)
+    monkeypatch.setattr(nightly_cleanup.shutil, "which", lambda name: None)
     monkeypatch.setattr(
-        nightly.subprocess, "run", lambda *args, **kwargs: calls.append(args)
+        nightly_cleanup.subprocess, "run", lambda *args, **kwargs: calls.append(args)
     )
     log = io.StringIO()
 
-    nightly.prune_docker_build_leftovers_the_run_did_not_reuse(log)
+    nightly_cleanup.prune_docker_build_leftovers_the_run_did_not_reuse(log)
 
     assert calls == []
     assert "no build cache to prune" in log.getvalue()
@@ -27,11 +28,11 @@ def test_prune_drops_build_cache_and_dangling_images_the_run_did_not_reuse(monke
             command, 0, stdout="Total:\t23.1GB\n", stderr=""
         )
 
-    monkeypatch.setattr(nightly.shutil, "which", lambda name: "/usr/bin/docker")
-    monkeypatch.setattr(nightly.subprocess, "run", fake_run)
+    monkeypatch.setattr(nightly_cleanup.shutil, "which", lambda name: "/usr/bin/docker")
+    monkeypatch.setattr(nightly_cleanup.subprocess, "run", fake_run)
     log = io.StringIO()
 
-    nightly.prune_docker_build_leftovers_the_run_did_not_reuse(log)
+    nightly_cleanup.prune_docker_build_leftovers_the_run_did_not_reuse(log)
 
     assert commands == [
         ["docker", "builder", "prune", "--force", "--filter", "until=24h"],
