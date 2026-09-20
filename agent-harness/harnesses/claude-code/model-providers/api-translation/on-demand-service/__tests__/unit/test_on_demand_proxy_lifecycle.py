@@ -1,11 +1,12 @@
 import importlib.util
 import os
 import socket
+import sys
 from pathlib import Path
 
-LIFECYCLE_PATH = (
-    Path(__file__).resolve().parents[2] / "scripts" / "on_demand_proxy_lifecycle.py"
-)
+SCRIPTS_DIRECTORY = Path(__file__).resolve().parents[2] / "scripts"
+sys.path.insert(0, str(SCRIPTS_DIRECTORY))
+LIFECYCLE_PATH = SCRIPTS_DIRECTORY / "on_demand_proxy_lifecycle.py"
 LIFECYCLE_SPECIFICATION = importlib.util.spec_from_file_location(
     "on_demand_proxy_lifecycle", LIFECYCLE_PATH
 )
@@ -13,6 +14,8 @@ assert LIFECYCLE_SPECIFICATION
 assert LIFECYCLE_SPECIFICATION.loader
 LIFECYCLE = importlib.util.module_from_spec(LIFECYCLE_SPECIFICATION)
 LIFECYCLE_SPECIFICATION.loader.exec_module(LIFECYCLE)
+
+import holder_registry as REGISTRY
 
 START_COMMAND = ["start-the-proxy"]
 STOP_COMMAND = ["stop-the-proxy"]
@@ -87,7 +90,7 @@ def test_a_second_live_launcher_keeps_the_proxy_running(tmp_path, monkeypatch):
     LIFECYCLE.acquire_service(
         tmp_path, "127.0.0.1", closed_loopback_port(), START_COMMAND
     )
-    registry = LIFECYCLE.HolderRegistry(tmp_path)
+    registry = REGISTRY.HolderRegistry(tmp_path)
     with registry:
         registry.write_holders([os.getpid(), os.getppid()])
 
@@ -103,7 +106,7 @@ def test_a_crashed_launcher_does_not_pin_the_proxy_open(tmp_path, monkeypatch):
     recorded = RecordedServiceCommands()
     monkeypatch.setattr(LIFECYCLE, "run_service_command", recorded)
 
-    registry = LIFECYCLE.HolderRegistry(tmp_path)
+    registry = REGISTRY.HolderRegistry(tmp_path)
     with registry:
         registry.write_holders([unused_process_id()])
 
@@ -120,7 +123,7 @@ def test_a_crashed_launcher_does_not_pin_the_proxy_open(tmp_path, monkeypatch):
 
 def unused_process_id() -> int:
     candidate = 2**22 - 1
-    while LIFECYCLE.process_is_alive(candidate):
+    while REGISTRY.process_is_alive(candidate):
         candidate -= 1
     return candidate
 

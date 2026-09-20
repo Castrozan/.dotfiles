@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import argparse
-import errno
-import json
+import ipaddress
 import os
 import signal
 import socket
@@ -12,84 +11,31 @@ import time
 from collections.abc import Sequence
 from pathlib import Path
 
-LOCK_ACQUISITION_TIMEOUT_SECONDS = 10
-LOCK_RETRY_INTERVAL_SECONDS = 0.05
+from holder_registry import HolderRegistry
+
 LISTEN_POLL_INTERVAL_SECONDS = 0.1
 PROBE_CONNECTION_TIMEOUT_SECONDS = 0.5
 SIGNALS_FORWARDED_TO_CHILD = (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)
 
 
-class HolderRegistry:
-    def __init__(self, registry_directory: Path) -> None:
-        self.registry_directory = registry_directory
-        self.holders_path = registry_directory / "holders"
-        self.adopted_marker_path = registry_directory / "started-outside-the-launchers"
-        self.lock_path = registry_directory / "lock"
-
-    def __enter__(self) -> "HolderRegistry":
-        self.registry_directory.mkdir(parents=True, exist_ok=True)
-        deadline = time.monotonic() + LOCK_ACQUISITION_TIMEOUT_SECONDS
-        while True:
-            try:
-                os.mkdir(self.lock_path)
-                return self
-            except FileExistsError:
-                if time.monotonic() >= deadline:
-                    self._break_stale_lock()
-                    continue
-                time.sleep(LOCK_RETRY_INTERVAL_SECONDS)
-
-    def __exit__(self, *_exception_details: object) -> None:
-        try:
-            os.rmdir(self.lock_path)
-        except OSError:
-            pass
-
-    def _break_stale_lock(self) -> None:
-        try:
-            os.rmdir(self.lock_path)
-        except OSError:
-            pass
-
-    def live_holders(self) -> list[int]:
-        try:
-            recorded = self.holders_path.read_text().split()
-        except OSError:
-            return []
-
-        return [
-            process_id
-            for process_id in (int(entry) for entry in recorded if entry.isdigit())
-            if process_is_alive(process_id)
-        ]
-
-    def write_holders(self, holders: Sequence[int]) -> None:
-        self.holders_path.write_text(
-            "".join(f"{process_id}\n" for process_id in holders)
-        )
-
-    def mark_adopted(self) -> None:
-        self.adopted_marker_path.touch()
-
-    def clear_adoption(self) -> None:
-        self.adopted_marker_path.unlink(missing_ok=True)
-
-    def was_adopted(self) -> bool:
-        return self.adopted_marker_path.exists()
-
-
-def process_is_alive(process_id: int) -> bool:
-    try:
-        os.kill(process_id, 0)
-    except OSError as probe_failure:
-        return probe_failure.errno == errno.EPERM
-    return True
+def loopback_probe_target(listen_address: str, listen_port: int) -> tuple[str, int]:
+    address = ipaddress.ip_address(listen_address)
+    if not address.is_loopback:
+        raise ValueError(f"{listen_address} is not a loopback address")
+    if not 1 <= listen_port <= 65535:
+        raise ValueError(f"{listen_port} is not a usable port")
+    return str(address), listen_port
 
 
 def service_is_listening(listen_address: str, listen_port: int) -> bool:
     try:
+        probe_target = loopback_probe_target(listen_address, listen_port)
+    except ValueError:
+        return False
+
+    try:
         with socket.create_connection(
-            (listen_address, listen_port), PROBE_CONNECTION_TIMEOUT_SECONDS
+            probe_target, PROBE_CONNECTION_TIMEOUT_SECONDS
         ):
             return True
     except OSError:
@@ -105,6 +51,22 @@ def wait_until_listening(
             return True
         time.sleep(LISTEN_POLL_INTERVAL_SECONDS)
     return service_is_listening(listen_address, listen_port)
+
+
+def launchd_service_target(service_label: str) -> str:
+    return f"gui/{os.getuid()}/{service_label}"
+
+
+def start_command_for(service_controller: str, service_label: str) -> list[str]:
+    if service_controller == "launchd":
+        return ["launchctl", "kickstart", launchd_service_target(service_label)]
+    return ["systemctl", "--user", "start", service_label]
+
+
+def stop_command_for(service_controller: str, service_label: str) -> list[str]:
+    if service_controller == "launchd":
+        return ["launchctl", "kill", "SIGTERM", launchd_service_target(service_label)]
+    return ["systemctl", "--user", "stop", service_label]
 
 
 def run_service_command(command: Sequence[str]) -> None:
@@ -191,8 +153,8 @@ def parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--registry-directory", required=True, type=Path)
     parser.add_argument("--listen-address", required=True)
     parser.add_argument("--listen-port", required=True, type=int)
-    parser.add_argument("--start-command", required=True)
-    parser.add_argument("--stop-command", required=True)
+    parser.add_argument("--service-controller", required=True, choices=["launchd", "systemd"])
+    parser.add_argument("--service-label", required=True)
     parser.add_argument("--startup-timeout-seconds", required=True, type=float)
     parser.add_argument("--unavailable-message", required=True)
     parser.add_argument("child_arguments", nargs=argparse.REMAINDER)
@@ -211,8 +173,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         arguments.registry_directory,
         arguments.listen_address,
         arguments.listen_port,
-        json.loads(arguments.start_command),
-        json.loads(arguments.stop_command),
+        start_command_for(arguments.service_controller, arguments.service_label),
+        stop_command_for(arguments.service_controller, arguments.service_label),
         arguments.startup_timeout_seconds,
         arguments.unavailable_message,
         child_arguments,

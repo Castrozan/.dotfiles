@@ -48,8 +48,7 @@ let
     launchdAgentLabel = proxyLaunchdAgentLabel;
     systemdServiceName = proxySystemdServiceName;
   };
-  proxyStartCommand = onDemandService.startCommandFor proxyServiceSelector;
-  proxyStopCommand = onDemandService.stopCommandFor proxyServiceSelector;
+  proxyServiceLabel = onDemandService.serviceLabelFor proxyServiceSelector;
   proxyUnavailableMessage = ''
     cli-proxy-api is not listening on ${proxyListenAddress}:${toString proxyListenPort}.
     If you have never authenticated your ChatGPT subscription, run: claudex-login
@@ -117,8 +116,8 @@ let
       CLAUDEX_LAUNCHER_PROXY_SERVICE_INSPECTION_COMMAND = proxyServiceInspectionCommand;
       CLAUDEX_LAUNCHER_PROXY_REGISTRY_DIRECTORY = proxyLauncherRegistryDirectory;
       CLAUDEX_LAUNCHER_PROXY_STARTUP_TIMEOUT_SECONDS = toString proxyStartupTimeoutSeconds;
-      CLAUDEX_LAUNCHER_PROXY_START_COMMAND = builtins.toJSON proxyStartCommand;
-      CLAUDEX_LAUNCHER_PROXY_STOP_COMMAND = builtins.toJSON proxyStopCommand;
+      CLAUDEX_LAUNCHER_PROXY_SERVICE_CONTROLLER = onDemandService.serviceControllerName;
+      CLAUDEX_LAUNCHER_PROXY_SERVICE_LABEL = proxyServiceLabel;
       CLAUDEX_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = proxyUnavailableMessage;
       CLAUDEX_LAUNCHER_LIFECYCLE_PYTHON = builtins.elemAt onDemandService.lifecycleProgramArguments 0;
       CLAUDEX_LAUNCHER_LIFECYCLE_SCRIPT = builtins.elemAt onDemandService.lifecycleProgramArguments 1;

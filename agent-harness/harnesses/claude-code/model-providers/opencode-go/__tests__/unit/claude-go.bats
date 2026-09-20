@@ -15,7 +15,7 @@ setup() {
 	LIFECYCLE_PYTHON="$(command -v python3)"
 	LIFECYCLE_SCRIPT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)/../api-translation/on-demand-service/scripts/on_demand_proxy_lifecycle.py"
 	PROXY_UNAVAILABLE_MESSAGE="claude-go: the Console Go translation proxy is not listening on $PROXY_LISTEN_ADDRESS:$PROXY_LISTEN_PORT.
-Console Go's own Anthropic endpoint drops tool names, so Claude Code cannot reach these models without it.
+The native Console Go Anthropic endpoint drops tool names, so Claude Code cannot reach these models without it.
 Inspect the service: $PROXY_INSPECTION_COMMAND"
 	mkdir -p "$FAKE_BINARY_DIRECTORY"
 
@@ -77,8 +77,8 @@ run_claude_go() {
 		CLAUDE_GO_LAUNCHER_LIFECYCLE_SCRIPT="$LIFECYCLE_SCRIPT" \
 		CLAUDE_GO_LAUNCHER_PROXY_REGISTRY_DIRECTORY="$TEMPORARY_ROOT/holders" \
 		CLAUDE_GO_LAUNCHER_PROXY_STARTUP_TIMEOUT_SECONDS="$PROXY_STARTUP_TIMEOUT_SECONDS" \
-		CLAUDE_GO_LAUNCHER_PROXY_START_COMMAND='["true"]' \
-		CLAUDE_GO_LAUNCHER_PROXY_STOP_COMMAND='["true"]' \
+		CLAUDE_GO_LAUNCHER_PROXY_SERVICE_CONTROLLER="launchd" \
+		CLAUDE_GO_LAUNCHER_PROXY_SERVICE_LABEL="com.dotfiles.claude-go-proxy.absent-under-test" \
 		CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE="$PROXY_UNAVAILABLE_MESSAGE" \
 		CLAUDE_GO_LAUNCHER_CLAUDE_BINARY="$FAKE_BINARY_DIRECTORY/claude" \
 		CLAUDE_GO_LAUNCHER_MODEL="deepseek-v4-flash" \
@@ -114,7 +114,7 @@ run_claude_go() {
 @test "reports a proxy that is not listening and why it matters" {
 	run_claude_go
 	[[ "$output" == *"claude-go: the Console Go translation proxy is not listening on $PROXY_LISTEN_ADDRESS:$PROXY_LISTEN_PORT."* ]]
-	[[ "$output" == *"Console Go's own Anthropic endpoint drops tool names"* ]]
+	[[ "$output" == *"The native Console Go Anthropic endpoint drops tool names"* ]]
 }
 
 @test "names the inspection command with the current user id resolved" {

@@ -1,45 +1,20 @@
 { pkgs }:
 let
-  onDemandLifecycleSource = pkgs.writeText "on-demand-proxy-lifecycle.py" (
-    builtins.readFile ./scripts/on_demand_proxy_lifecycle.py
-  );
+  onDemandLifecycleSource = pkgs.runCommandLocal "on-demand-proxy-lifecycle" { } ''
+    mkdir -p $out
+    cp ${./scripts/on_demand_proxy_lifecycle.py} $out/on_demand_proxy_lifecycle.py
+    cp ${./scripts/holder_registry.py} $out/holder_registry.py
+  '';
 in
 {
-  startCommandFor =
-    { launchdAgentLabel, systemdServiceName }:
-    if pkgs.stdenv.hostPlatform.isDarwin then
-      [
-        "launchctl"
-        "kickstart"
-        "gui/@CURRENT_USER_ID@/${launchdAgentLabel}"
-      ]
-    else
-      [
-        "systemctl"
-        "--user"
-        "start"
-        systemdServiceName
-      ];
+  serviceControllerName = if pkgs.stdenv.hostPlatform.isDarwin then "launchd" else "systemd";
 
-  stopCommandFor =
+  serviceLabelFor =
     { launchdAgentLabel, systemdServiceName }:
-    if pkgs.stdenv.hostPlatform.isDarwin then
-      [
-        "launchctl"
-        "kill"
-        "SIGTERM"
-        "gui/@CURRENT_USER_ID@/${launchdAgentLabel}"
-      ]
-    else
-      [
-        "systemctl"
-        "--user"
-        "stop"
-        systemdServiceName
-      ];
+    if pkgs.stdenv.hostPlatform.isDarwin then launchdAgentLabel else systemdServiceName;
 
   lifecycleProgramArguments = [
     "${pkgs.python312}/bin/python3"
-    "${onDemandLifecycleSource}"
+    "${onDemandLifecycleSource}/on_demand_proxy_lifecycle.py"
   ];
 }

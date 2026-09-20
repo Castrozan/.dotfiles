@@ -149,8 +149,8 @@ def test_the_default_model_flag_precedes_caller_arguments():
 def test_the_launcher_starts_and_releases_the_proxy_around_the_session():
     source = launcher_source()
     assert "--registry-directory" in source
-    assert "--start-command" in source
-    assert "--stop-command" in source, (
+    assert "--service-controller" in source
+    assert "--service-label" in source, (
         "claude-go owns the proxy lifetime now, so dropping the stop command leaves "
         "the translation proxy running for every session the user ever opened"
     )

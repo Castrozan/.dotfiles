@@ -41,11 +41,10 @@ let
     launchdAgentLabel = translationProxyLaunchdAgentLabel;
     systemdServiceName = translationProxySystemdServiceName;
   };
-  translationProxyStartCommand = onDemandService.startCommandFor translationProxyServiceSelector;
-  translationProxyStopCommand = onDemandService.stopCommandFor translationProxyServiceSelector;
+  translationProxyServiceLabel = onDemandService.serviceLabelFor translationProxyServiceSelector;
   translationProxyUnavailableMessage = ''
     claude-go: the Console Go translation proxy is not listening on ${translationProxyListenAddress}:${toString translationProxyListenPort}.
-    Console Go's own Anthropic endpoint drops tool names, so Claude Code cannot reach these models without it.
+    The native Console Go Anthropic endpoint drops tool names, so Claude Code cannot reach these models without it.
     Inspect the service: ${translationProxyInspectionCommand}'';
 
   translatedModelNames = lib.unique (builtins.attrValues opencodeGo.models);
@@ -102,8 +101,8 @@ let
       CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND = translationProxyInspectionCommand;
       CLAUDE_GO_LAUNCHER_PROXY_REGISTRY_DIRECTORY = translationProxyLauncherRegistryDirectory;
       CLAUDE_GO_LAUNCHER_PROXY_STARTUP_TIMEOUT_SECONDS = toString translationProxyStartupTimeoutSeconds;
-      CLAUDE_GO_LAUNCHER_PROXY_START_COMMAND = builtins.toJSON translationProxyStartCommand;
-      CLAUDE_GO_LAUNCHER_PROXY_STOP_COMMAND = builtins.toJSON translationProxyStopCommand;
+      CLAUDE_GO_LAUNCHER_PROXY_SERVICE_CONTROLLER = onDemandService.serviceControllerName;
+      CLAUDE_GO_LAUNCHER_PROXY_SERVICE_LABEL = translationProxyServiceLabel;
       CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = translationProxyUnavailableMessage;
       CLAUDE_GO_LAUNCHER_LIFECYCLE_PYTHON = builtins.elemAt onDemandService.lifecycleProgramArguments 0;
       CLAUDE_GO_LAUNCHER_LIFECYCLE_SCRIPT = builtins.elemAt onDemandService.lifecycleProgramArguments 1;

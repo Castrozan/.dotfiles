@@ -44,8 +44,8 @@ def test_claudex_pins_the_declared_proxy_model():
 def test_claudex_starts_and_releases_the_proxy_around_the_session():
     source = launcher_source()
     assert "--registry-directory" in source
-    assert "--start-command" in source
-    assert "--stop-command" in source, (
+    assert "--service-controller" in source
+    assert "--service-label" in source, (
         "claudex owns the proxy lifetime now, so dropping the stop command leaves "
         "cli-proxy-api running long after the last session closed"
     )
