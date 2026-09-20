@@ -83,12 +83,12 @@ def test_the_request_text_no_longer_gates_any_rule():
         )
 
 
-def test_bounce_guidance_names_the_violation_and_routes_to_humanize():
+def test_bounce_guidance_names_the_violation_and_demands_a_repair_in_place():
     guidance = bounce_guidance(["names an MR or PR but gives no link to validate it"])
 
     assert "names an MR or PR" in guidance
-    assert "load the humanize skill" in guidance.lower()
     assert "interactive communication instructions" in guidance
+    assert "load the humanize skill" not in guidance.lower()
 
 
 def test_interactive_instructions_route_substantive_output_to_humanize():
