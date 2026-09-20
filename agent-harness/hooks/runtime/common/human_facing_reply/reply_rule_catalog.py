@@ -8,12 +8,13 @@ from reply_rule_violations import (
     list_line_word_violation,
     missing_required_labels_violation,
     narration_opener_violation,
+    per_label_ceiling_violation,
     reaction_opener_violation,
     sentence_dash_violation,
     unemphasized_label_violation,
+    unlabeled_body_ceiling_violation,
     unlinked_artifact_violation,
     unseparated_label_violation,
-    word_ceiling_violation,
 )
 from reply_text_metrics import ReplyUnderReview
 
@@ -30,7 +31,8 @@ HUMAN_FACING_REPLY_RULES = [
     HumanFacingReplyRule("label_emphasis", unemphasized_label_violation),
     HumanFacingReplyRule("label_separation", unseparated_label_violation),
     HumanFacingReplyRule("labeled_section_ceiling", labeled_section_ceiling_violation),
-    HumanFacingReplyRule("word_ceiling", word_ceiling_violation),
+    HumanFacingReplyRule("per_label_ceiling", per_label_ceiling_violation),
+    HumanFacingReplyRule("unlabeled_body_ceiling", unlabeled_body_ceiling_violation),
     HumanFacingReplyRule("list_block_length", list_block_length_violation),
     HumanFacingReplyRule("list_line_words", list_line_word_violation),
     HumanFacingReplyRule("sentence_dash", sentence_dash_violation),

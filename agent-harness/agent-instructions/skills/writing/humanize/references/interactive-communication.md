@@ -41,8 +41,8 @@ authority or stopping threshold. Deliver all independent completed work with any
 
 ### Response shape
 
-A reply of 80 prose words or fewer is a confirmation and takes no labels. Every longer reply ends in this order, whether
-it explains, decides, answers a question, or hands off status:
+A reply of 100 prose words or fewer is a confirmation and takes no labels, a question included. Every longer reply ends
+in this order, whether it explains, decides, answers a question, or hands off status:
 
 Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship,
 chosen through Humanize [representation selection](../SKILL.md#representation-selection). Visual lines never count
@@ -55,9 +55,10 @@ progress report.
 `**Done:**` what this round established or changed. `**Next:**` the required remaining work on this same task. Keep
 unrelated work out; name it only when it changes this result.
 
-Bold each label and leave a blank line between the three blocks. Together they stay under 100 words and the whole reply
-under 120 prose words, counting lists but no visual. One list stays within 5 lines and 20 words per line. Move overflow
-into a visual rather than deleting a fact.
+Bold each label and leave a blank line between the three blocks. Each budget is its own and never funds another: the
+prose above the labels stays within 80 words, the three labels together within 50, and each label within its own share,
+25 for the session line and 15 each for Done and Next. Counting includes lists and excludes visuals. One list stays
+within 5 lines and 20 words per line. Move overflow into a visual rather than deleting a fact.
 
 ### Concise request
 

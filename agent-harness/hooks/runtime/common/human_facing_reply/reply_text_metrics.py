@@ -67,10 +67,6 @@ def matched_reply_label(line: str) -> str | None:
     return None
 
 
-def line_starts_a_reply_label(line: str) -> bool:
-    return matched_reply_label(line) is not None
-
-
 class ReplyLabelLine:
     def __init__(self, label: str, text: str, preceded_by_blank_line: bool):
         self.label = label
@@ -108,15 +104,22 @@ def labels_present_in(prose_lines: list[str]) -> set[str]:
     }
 
 
-def labeled_section_word_count(prose_lines: list[str]) -> int:
-    words = 0
-    inside_labeled_section = False
+def unlabeled_body_and_per_label_word_counts(
+    prose_lines: list[str],
+) -> tuple[int, dict[str, int]]:
+    body_words = 0
+    per_label_words: dict[str, int] = {}
+    open_label: str | None = None
     for line in prose_lines:
-        if line_starts_a_reply_label(line):
-            inside_labeled_section = True
-        if inside_labeled_section:
-            words += len(line.split())
-    return words
+        label = matched_reply_label(line)
+        if label:
+            open_label = label
+            per_label_words.setdefault(label, 0)
+        if open_label is None:
+            body_words += len(line.split())
+        else:
+            per_label_words[open_label] += len(line.split())
+    return body_words, per_label_words
 
 
 def text_without_quotations(prose_text: str) -> str:
@@ -140,5 +143,9 @@ class ReplyUnderReview:
         self.prose_word_count = sum(len(line.split()) for line in self.prose_lines)
         self.list_blocks = list_line_blocks(self.prose_lines)
         self.labels_present = labels_present_in(self.prose_lines)
-        self.labeled_section_word_count = labeled_section_word_count(self.prose_lines)
+        (
+            self.unlabeled_body_word_count,
+            self.per_label_word_counts,
+        ) = unlabeled_body_and_per_label_word_counts(self.prose_lines)
+        self.labeled_section_word_count = sum(self.per_label_word_counts.values())
         self.label_lines = reply_label_lines(reply_text)

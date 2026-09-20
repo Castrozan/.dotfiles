@@ -115,7 +115,7 @@ def test_every_substantive_reply_carries_the_three_labels():
     )
 
     for required_behavior in (
-        "80 prose words or fewer is a confirmation",
+        "100 prose words or fewer is a confirmation",
         "the whole session's subject and goal",
         "never the current step alone",
         "someone who never saw this session can start working",
@@ -130,8 +130,8 @@ def test_the_reply_budgets_exempt_visuals_and_never_drop_a_fact():
     response_shape = interactive_policy_section("response_shape")
 
     for required_budget in (
-        "under 100 words",
-        "under 120 prose words",
+        "the three labels together within 50",
+        "prose above the labels stays within 80 words",
         "within 5 lines and 20 words per line",
         "Visual lines never count",
     ):

@@ -8,9 +8,10 @@ from reply_template_limits import (
     LABELED_SECTION_WORD_CEILING,
     MAXIMUM_LIST_BLOCK_LINES,
     MAXIMUM_LIST_LINE_WORDS,
-    REPLY_HARD_WORD_CEILING,
+    PER_LABEL_WORD_CEILINGS,
     REQUIRED_REPLY_LABELS,
     SHORT_CONFIRMATION_MAXIMUM_PROSE_WORDS,
+    UNLABELED_BODY_WORD_CEILING,
 )
 from reply_text_metrics import ReplyUnderReview
 
@@ -91,13 +92,26 @@ def labeled_section_ceiling_violation(reply: ReplyUnderReview) -> str | None:
     return None
 
 
-def word_ceiling_violation(reply: ReplyUnderReview) -> str | None:
-    if reply.prose_word_count > REPLY_HARD_WORD_CEILING:
+def unlabeled_body_ceiling_violation(reply: ReplyUnderReview) -> str | None:
+    if not reply.labels_present:
+        return None
+    if reply.unlabeled_body_word_count > UNLABELED_BODY_WORD_CEILING:
         return (
-            f"runs {reply.prose_word_count} prose words, a wall past the "
-            f"{REPLY_HARD_WORD_CEILING}-word ceiling; move the detail into a table, "
-            "tree or diagram, which is not counted"
+            f"spends {reply.unlabeled_body_word_count} prose words above the labels, "
+            f"past their own {UNLABELED_BODY_WORD_CEILING}-word budget; move the "
+            "detail into a table, tree or diagram, which is not counted"
         )
+    return None
+
+
+def per_label_ceiling_violation(reply: ReplyUnderReview) -> str | None:
+    for label, ceiling in PER_LABEL_WORD_CEILINGS.items():
+        label_word_count = reply.per_label_word_counts.get(label)
+        if label_word_count is not None and label_word_count > ceiling:
+            return (
+                f"spends {label_word_count} words on the {label}: block, past its "
+                f"{ceiling}-word budget"
+            )
     return None
 
 
