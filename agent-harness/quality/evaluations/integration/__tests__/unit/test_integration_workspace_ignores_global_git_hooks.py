@@ -3,7 +3,7 @@ import subprocess
 from integration_workspace import setup_scenario_workspace
 
 
-def test_scenario_workspace_ignores_global_git_hooks(tmp_path, monkeypatch):
+def test_integration_scenario_workspace_ignores_global_git_hooks(tmp_path, monkeypatch):
     hooks_directory = tmp_path / "hooks"
     hooks_directory.mkdir()
     rejecting_hook = hooks_directory / "commit-msg"
