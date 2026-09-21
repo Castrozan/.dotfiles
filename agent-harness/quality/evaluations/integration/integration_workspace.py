@@ -66,6 +66,13 @@ def setup_scenario_workspace(scenario: dict, workspace_directory: Path) -> None:
             check=True,
         )
         subprocess.run(
+            ["git", "config", "core.hooksPath", "/dev/null"],
+            cwd=workspace_directory,
+            capture_output=True,
+            timeout=10,
+            check=True,
+        )
+        subprocess.run(
             ["git", "add", "."],
             cwd=workspace_directory,
             capture_output=True,
