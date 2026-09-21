@@ -2,6 +2,19 @@ import Foundation
 
 enum ApplicationCatalogTests {
   static func runAll() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    let applicationDirectory = directory.appendingPathComponent("home-manager-applications")
+    let applicationBundle = applicationDirectory.appendingPathComponent("WezTerm.app")
+    let applicationDirectoryLink = directory.appendingPathComponent("Home Manager Apps")
+    try FileManager.default.createDirectory(
+      at: applicationBundle, withIntermediateDirectories: true)
+    try FileManager.default.createSymbolicLink(
+      at: applicationDirectoryLink, withDestinationURL: applicationDirectory)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let linkedApplicationBundleNames = InstalledApplicationCatalog.applicationBundleURLs(
+      in: applicationDirectoryLink
+    ).map(\.lastPathComponent)
+    precondition(linkedApplicationBundleNames == ["WezTerm.app"])
     let catalog = InstalledApplicationCatalog.discoverInstalledApplications()
     let names = catalog.applicationsSortedByDisplayName.map(\.displayName)
     precondition(names == names.sorted() && Set(names).count == names.count)
@@ -44,19 +57,21 @@ enum ApplicationCatalogTests {
     registryCache.prewarmInBackground()
     registryCache.refreshInBackground()
     registryCache.refreshInBackground()
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    defer { try? FileManager.default.removeItem(at: directory) }
+    let historyDirectory = FileManager.default.temporaryDirectory.appendingPathComponent(
+      UUID().uuidString)
+    try FileManager.default.createDirectory(at: historyDirectory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: historyDirectory) }
     let historyCache = LaunchHistoryStoreCache()
     historyCache.updateCachedStore(
-      LaunchHistoryStore.loadOrEmpty(fromFilePath: directory.appendingPathComponent("history.json"))
+      LaunchHistoryStore.loadOrEmpty(
+        fromFilePath: historyDirectory.appendingPathComponent("history.json"))
     )
     let handler = ShowPickerCommandHandler(
       installedApplicationCatalogCache: catalogCache,
       launchHistoryStoreCache: historyCache, runningApplicationsRegistryCache: registryCache)
     handler.handleSocketCommand("unknown")
     handler.handleSocketCommand("dismiss")
-    let output = directory.appendingPathComponent("display-lines")
+    let output = historyDirectory.appendingPathComponent("display-lines")
     handler.handleSocketCommand("dump-display-lines \(output.path)")
     let displayNames = try String(contentsOf: output, encoding: .utf8).split(separator: "\n")
       .map { RunningApplicationsRegistry.extractApplicationName(fromDisplayLine: String($0)) }

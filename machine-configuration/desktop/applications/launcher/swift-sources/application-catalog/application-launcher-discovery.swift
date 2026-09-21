@@ -76,15 +76,19 @@ struct InstalledApplicationCatalog {
         ),
     ]
 
+    static func applicationBundleURLs(in directoryURL: URL) -> [URL] {
+        let resolvedDirectoryURL = directoryURL.resolvingSymlinksInPath()
+        let directoryContents = try? FileManager.default.contentsOfDirectory(
+            at: resolvedDirectoryURL,
+            includingPropertiesForKeys: nil
+        )
+        return directoryContents?.filter { $0.pathExtension == "app" } ?? []
+    }
+
     static func discoverInstalledApplications() -> InstalledApplicationCatalog {
-        let fileManager = FileManager.default
         var bundlesByDisplayName: [String: InstalledApplication] = [:]
         for searchDirectory in searchDirectories {
-            guard let directoryContents = try? fileManager.contentsOfDirectory(
-                at: searchDirectory.directoryURL,
-                includingPropertiesForKeys: nil
-            ) else { continue }
-            for bundleURL in directoryContents where bundleURL.pathExtension == "app" {
+            for bundleURL in applicationBundleURLs(in: searchDirectory.directoryURL) {
                 let displayName = bundleURL.deletingPathExtension().lastPathComponent
                 if let allowlist = searchDirectory.userLaunchableDisplayNameAllowlist,
                     !allowlist.contains(displayName)

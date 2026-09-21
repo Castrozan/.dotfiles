@@ -48,3 +48,13 @@ def test_discovered_set_includes_finder_from_core_services():
         "expected Finder to be discovered from /System/Library/CoreServices via the"
         " user-launchable allowlist"
     )
+
+
+def test_discovered_set_includes_wezterm_from_home_manager_application_links():
+    display_lines = collect_discovered_display_lines_via_dump_command()
+    application_names_in_display_lines = [
+        display_line[2:] for display_line in display_lines
+    ]
+    assert "WezTerm" in application_names_in_display_lines, (
+        "expected WezTerm to be discovered through the Home Manager application link"
+    )
