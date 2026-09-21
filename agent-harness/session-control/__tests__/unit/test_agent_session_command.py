@@ -13,6 +13,13 @@ PREFLIGHT_COMMAND = (
 COMPACT_WHEN_IDLE_COMMAND = (
     Path(__file__).resolve().parents[2] / "agent-session-compact-when-idle"
 )
+DETACHED_LAUNCHER_COMMAND = (
+    Path(__file__).resolve().parents[3]
+    / "harnesses"
+    / "claude-code"
+    / "scripts"
+    / "launch-command-detached-into-new-session"
+)
 CONTINUATION_PROMPT = "This session was restarted. Continue from where you left off."
 SESSION_IDENTIFIER = "01a08137-f15e-7680-8ff1-5b4fe898b515"
 TURN_END_WAIT_CALL = "agent wait w1:p2 --until idle --until done --timeout 3600000"
@@ -83,6 +90,12 @@ def run_command(tmp_path, arguments, environment=None, persist_session=True):
         encoding="utf-8",
     )
     compact_when_idle.chmod(0o755)
+    detached_launcher = tmp_path / "launch-command-detached-into-new-session"
+    detached_launcher.write_text(
+        f'#!/bin/sh\nexec python3 {DETACHED_LAUNCHER_COMMAND} "$@"\n',
+        encoding="utf-8",
+    )
+    detached_launcher.chmod(0o755)
     codex_home = tmp_path / "codex-home"
     if persist_session:
         saved_rollout(codex_home)

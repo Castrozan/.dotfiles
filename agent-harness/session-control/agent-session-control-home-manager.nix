@@ -16,6 +16,13 @@ let
       exec python3 ${./agent-session-restart-preflight.py}
     '';
   };
+  launchCommandDetachedIntoNewSession = pkgs.writeShellApplication {
+    name = "launch-command-detached-into-new-session";
+    runtimeInputs = [ pkgs.python3 ];
+    text = ''
+      exec python3 ${../harnesses/claude-code/scripts/launch-command-detached-into-new-session} "$@"
+    '';
+  };
   agentSessionCompactWhenIdle = pkgs.writeShellApplication {
     name = "agent-session-compact-when-idle";
     runtimeInputs = [ herdrClientPackage ];
@@ -27,7 +34,7 @@ in
     (pkgs.writeShellApplication {
       name = "agent-session";
       runtimeInputs = [
-        pkgs.coreutils
+        launchCommandDetachedIntoNewSession
         agentSessionCompactWhenIdle
         agentSessionRestartPreflight
         herdrClientPackage

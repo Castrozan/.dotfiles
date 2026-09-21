@@ -22,7 +22,7 @@ if [[ -z "${HERDR_PANE_ID:-}" ]]; then
 fi
 
 if [[ "$1" == "compact" ]]; then
-	nohup agent-session-compact-when-idle "$HERDR_PANE_ID" >/dev/null 2>&1 &
+	launch-command-detached-into-new-session /dev/null agent-session-compact-when-idle "$HERDR_PANE_ID" >/dev/null
 	echo "Compaction is queued and starts when this turn ends."
 	exit 0
 fi
