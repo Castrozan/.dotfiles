@@ -1,4 +1,4 @@
 set -euo pipefail
 
-herdr agent wait "$1" --until idle --until done --timeout 3600000 >/dev/null
+herdr agent wait "$1" --until idle --until "done" --timeout 3600000 >/dev/null
 exec herdr agent prompt "$1" "/compact"
