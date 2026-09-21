@@ -19,5 +19,5 @@ in
     persistentSession.enable = false;
   };
 
-  claude.requiredWorkspaceProfileName = "mcd-ca";
+  claude.requiredOrganizationId = "9f111c85-d2e9-4ef7-8049-e29707ff855a";
 }

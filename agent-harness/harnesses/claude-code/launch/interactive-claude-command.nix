@@ -27,21 +27,22 @@ let
   # the id Claude Code mints for itself, so this wrapper neither knows nor needs to
   # know which one a launch draws, and a resume lands on the same one for free.
   makeClaudeInteractivePackage =
-    requiredWorkspaceProfileName:
+    requiredOrganizationId:
     pkgs.writeShellScriptBin "claude" ''
+      ${lib.optionalString (requiredOrganizationId != null) ''
+        if [[ "''${1-}" != "auth" ]]; then
+          claudeAuthenticationStatus="$(${lib.getExe config.claude.unwrappedPackage} auth status --json 2>/dev/null)" || claudeAuthenticationStatus=""
+          authenticatedOrganizationId="$(printf '%s' "$claudeAuthenticationStatus" | ${lib.getExe pkgs.jq} --exit-status --raw-output 'select(.loggedIn == true) | .orgId // empty' 2>/dev/null)" || authenticatedOrganizationId=""
+          if [[ "$authenticatedOrganizationId" != ${lib.escapeShellArg requiredOrganizationId} ]]; then
+            printf 'Claude is not authenticated to the required Claude organization on this machine; run `claude auth login` and select it.\n' >&2
+            exit 1
+          fi
+        fi
+      ''}
       claudeSystemPromptFile="${interactiveSessionOnlySystemPromptSurfaces}"
       workspaceProfileArguments=()
       resolvedWorkspaceProfileName=""
-      ${lib.optionalString (requiredWorkspaceProfileName != null) ''
-        unset AGENT_WORKSPACE_PROFILE AGENT_WORKSPACE_PROFILE_ROUTING_TABLE
-      ''}
       ${workspaceProfileLaunchDispatch}
-      ${lib.optionalString (requiredWorkspaceProfileName != null) ''
-        if [[ "$resolvedWorkspaceProfileName" != ${lib.escapeShellArg requiredWorkspaceProfileName} ]]; then
-          printf 'Claude is restricted to the %s workspace profile on this machine; %s is outside it.\n' ${lib.escapeShellArg requiredWorkspaceProfileName} "$PWD" >&2
-          exit 1
-        fi
-      ''}
       export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
       exec ${lib.getExe config.claude.unwrappedPackage} \
         --append-system-prompt-file "$claudeSystemPromptFile" \
@@ -50,7 +51,7 @@ let
     '';
 
   unrestrictedClaudeInteractivePackage = makeClaudeInteractivePackage null;
-  claudePackage = makeClaudeInteractivePackage config.claude.requiredWorkspaceProfileName;
+  claudePackage = makeClaudeInteractivePackage config.claude.requiredOrganizationId;
 in
 {
   options.claude = {
@@ -58,20 +59,20 @@ in
       type = lib.types.package;
       default = claudePackage;
       readOnly = true;
-      description = "The package exposed as the plain claude command, carrying the interactive prompt, workspace profile, and any required workspace-profile admission policy.";
+      description = "The package exposed as the plain claude command, carrying the interactive prompt, workspace profile, and any required organization admission policy.";
     };
 
     unrestrictedInteractivePackage = lib.mkOption {
       type = lib.types.package;
       default = unrestrictedClaudeInteractivePackage;
       readOnly = true;
-      description = "The interactive Claude package with workspace-profile activation but without the plain command's admission policy. Alternate model-provider frontends consume this capability.";
+      description = "The interactive Claude package with workspace-profile activation but without the plain command's organization admission policy. Alternate model-provider frontends consume this capability.";
     };
 
-    requiredWorkspaceProfileName = lib.mkOption {
+    requiredOrganizationId = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
-      description = "The workspace profile that must match the launch directory before interactive Claude may start. Null permits every directory.";
+      description = "The exact organization ID that must own the authenticated Claude account before the plain command may start. Null disables organization admission.";
     };
   };
 

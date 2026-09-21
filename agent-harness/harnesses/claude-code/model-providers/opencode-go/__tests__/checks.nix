@@ -18,7 +18,7 @@ let
         helpers.homeManagerTestConfigurationForDarwinHost hostname (
           [ self.homeManagerModules.claude-code ]
           ++ lib.optional (hostname == "rin") {
-            claude.requiredWorkspaceProfileName = "mcd-ca";
+            claude.requiredOrganizationId = "test-organization-id";
           }
         )
       )
@@ -76,7 +76,7 @@ in
         lib.hasInfix (executableText rinConfiguration.claude.unrestrictedInteractivePackage) rinClaudeGoPackage.text
         && !(lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudeGoPackage.text)
       )
-      "claude-go uses a different provider and must remain available outside Rin's MCD-only plain claude command";
+      "claude-go uses a different provider and must remain independent of Rin's organization-restricted plain Claude command";
 
   opencode-go-linux-translation-proxy-service =
     mkEvalCheck "opencode-go-linux-translation-proxy-service"

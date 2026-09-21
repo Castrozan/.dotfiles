@@ -58,7 +58,7 @@ let
   claudeConfiguration = helpers.homeManagerTestConfiguration [
     ../../harnesses/claude-code
     ../../agent-instructions/interactive-skill-catalog/interactive-skill-index-home-manager.nix
-    { claude.requiredWorkspaceProfileName = "test-profile"; }
+    { claude.requiredOrganizationId = "test-organization-id"; }
   ];
   codexConfiguration = helpers.homeManagerTestConfiguration [ ../../harnesses/codex ];
   opencodeConfiguration = helpers.homeManagerTestConfiguration [ ../../harnesses/opencode ];
@@ -120,13 +120,23 @@ in
       )
       "claude activation lands as extra argv and a swapped system-prompt file; a wrapper refactor that stops splicing either one leaves routing resolving correctly and applying nothing";
 
-  claude-required-workspace-profile-cannot-be-forced-from-the-calling-shell =
-    mkEvalCheck "claude-required-workspace-profile-cannot-be-forced-from-the-calling-shell"
+  claude-required-organization-is-checked-before-launch =
+    mkEvalCheck "claude-required-organization-is-checked-before-launch"
       (
-        containsText claudeWrapperText "unset AGENT_WORKSPACE_PROFILE AGENT_WORKSPACE_PROFILE_ROUTING_TABLE"
-        && containsText claudeWrapperText "Claude is restricted to the %s workspace profile on this machine"
+        containsText claudeWrapperText "auth status --json"
+        && containsText claudeWrapperText "select(.loggedIn == true)"
+        && containsText claudeWrapperText "test-organization-id"
+        && containsText claudeWrapperText "required Claude organization"
       )
-      "a caller-controlled profile or routing table must not bypass a machine's Claude launch restriction";
+      "the plain Claude launcher must fail closed unless the authenticated account belongs to the machine's required organization";
+
+  claude-auth-management-bypasses-organization-check =
+    mkEvalCheck "claude-auth-management-bypasses-organization-check"
+      (
+        containsText claudeWrapperText ''"''${1-}" != "auth"''
+        && !(containsText claudeWrapperText "Claude is restricted to the")
+      )
+      "authentication commands must remain available when the current account is logged out or belongs to the wrong organization, and launch directories must no longer decide admission";
 
   codex-applies-the-resolved-workspace-profile =
     mkEvalCheck "codex-applies-the-resolved-workspace-profile"

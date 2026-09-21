@@ -18,7 +18,7 @@ let
         helpers.homeManagerTestConfigurationForDarwinHost hostname (
           [ self.homeManagerModules.claude-code ]
           ++ lib.optional (hostname == "rin") {
-            claude.requiredWorkspaceProfileName = "mcd-ca";
+            claude.requiredOrganizationId = "test-organization-id";
           }
         )
       )
@@ -74,7 +74,7 @@ in
         lib.hasInfix (executableText rinConfiguration.claude.unrestrictedInteractivePackage) rinClaudexPackage.text
         && !(lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudexPackage.text)
       )
-      "claudex uses a different provider and must remain available outside Rin's MCD-only plain claude command";
+      "claudex uses a different provider and must remain independent of Rin's organization-restricted plain Claude command";
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
   claudex-linux-proxy-binary = pkgs.runCommandLocal "check-claudex-linux-proxy-binary" { } ''
