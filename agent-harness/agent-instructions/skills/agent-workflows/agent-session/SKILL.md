@@ -1,6 +1,6 @@
 ---
 name: agent-session
-description: Restart, compact, or exit the current Claude Code, Codex, or OpenCode session from inside it. Use to apply a configuration change, resume work without waiting for input, compact its own context, or end a finished session.
+description: Restart, compact, or exit the current Claude Code, Codex, or OpenCode session from inside it. Use to apply a configuration change, resume work without waiting for input, compact context, or end a finished session.
 ---
 
 ### How it finds its target

@@ -4,7 +4,7 @@ shared_system_prompt: &shared_system_prompt |
 
   all-skills - Route requests for these indexed capabilities to all-skills, then load the nested skill it names: arr-stack, avatar, desktop, home-assistant, notify, obsidian, page-composer, passwords, phone-status, quickshell, ril, todo, twitter, youtube
 
-  agent-session - Restart, compact, or exit the current Claude Code, Codex, or OpenCode session from inside it. Use to apply a configuration change, resume work without waiting for input, compact its own context, or end a finished session.
+  agent-session - Restart, compact, or exit the current Claude Code, Codex, or OpenCode session from inside it. Use to apply a configuration change, resume work without waiting for input, compact context, or end a finished session.
 
   architecture - Boundaries, dependency direction, system design, UML and deployment shape. Use when choosing a structure, adding a module or service, moving a boundary, or reviewing a design.
 
