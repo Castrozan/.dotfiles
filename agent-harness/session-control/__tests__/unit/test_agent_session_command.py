@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -9,8 +10,13 @@ COMMAND = Path(__file__).resolve().parents[2] / "agent-session"
 PREFLIGHT_COMMAND = (
     Path(__file__).resolve().parents[2] / "agent-session-restart-preflight.py"
 )
+COMPACT_WHEN_IDLE_COMMAND = (
+    Path(__file__).resolve().parents[2] / "agent-session-compact-when-idle"
+)
 CONTINUATION_PROMPT = "This session was restarted. Continue from where you left off."
 SESSION_IDENTIFIER = "01a08137-f15e-7680-8ff1-5b4fe898b515"
+TURN_END_WAIT_CALL = "agent wait w1:p2 --until idle --until done --timeout 3600000"
+DEFERRED_CALLS_DEADLINE_SECONDS = 10
 
 
 def saved_rollout(codex_home, session_identifier=SESSION_IDENTIFIER):
@@ -58,6 +64,9 @@ def run_command(tmp_path, arguments, environment=None, persist_session=True):
         "  printf '%s\\n' \"$HERDR_AGENT_RESPONSE\"\n"
         "  exit 0\n"
         "fi\n"
+        "if [ \"${1:-} ${2:-}\" = 'agent wait' ]; then\n"
+        '  exit "${HERDR_WAIT_EXIT_STATUS:-0}"\n'
+        "fi\n"
         "printf '%s\\n' \"$@\"\n",
         encoding="utf-8",
     )
@@ -68,6 +77,12 @@ def run_command(tmp_path, arguments, environment=None, persist_session=True):
         encoding="utf-8",
     )
     preflight.chmod(0o755)
+    compact_when_idle = tmp_path / "agent-session-compact-when-idle"
+    compact_when_idle.write_text(
+        f'#!/bin/sh\nexec bash {COMPACT_WHEN_IDLE_COMMAND} "$@"\n',
+        encoding="utf-8",
+    )
+    compact_when_idle.chmod(0o755)
     codex_home = tmp_path / "codex-home"
     if persist_session:
         saved_rollout(codex_home)
@@ -91,6 +106,19 @@ def run_command(tmp_path, arguments, environment=None, persist_session=True):
         check=False,
         env=command_environment,
     )
+
+
+def deferred_herdr_calls(tmp_path, expected_call_count):
+    calls_path = tmp_path / "herdr-calls"
+    deadline = time.monotonic() + DEFERRED_CALLS_DEADLINE_SECONDS
+    calls = []
+    while time.monotonic() < deadline:
+        if calls_path.exists():
+            calls = calls_path.read_text(encoding="utf-8").splitlines()
+        if len(calls) >= expected_call_count:
+            break
+        time.sleep(0.05)
+    return calls
 
 
 def test_restart_delegates_self_lifecycle_to_herdr(tmp_path):
@@ -166,6 +194,33 @@ def test_print_target_resolves_the_callers_herdr_pane(tmp_path):
     assert json.loads(result.stdout)["result"]["agent"]["agent"] == "codex"
 
 
+def test_compact_submits_the_command_only_after_the_turn_ends(tmp_path):
+    result = run_command(tmp_path, ["compact"])
+
+    assert result.returncode == 0
+    assert "queued" in result.stdout
+    assert deferred_herdr_calls(tmp_path, 2) == [
+        TURN_END_WAIT_CALL,
+        "agent prompt w1:p2 /compact",
+    ]
+
+
+def test_compact_submits_nothing_when_the_turn_end_wait_fails(tmp_path):
+    result = run_command(tmp_path, ["compact"], {"HERDR_WAIT_EXIT_STATUS": "1"})
+
+    assert result.returncode == 0
+    assert deferred_herdr_calls(tmp_path, 1) == [TURN_END_WAIT_CALL]
+    time.sleep(0.5)
+    assert deferred_herdr_calls(tmp_path, 1) == [TURN_END_WAIT_CALL]
+
+
+def test_compact_stays_available_to_clawde_owned_sessions(tmp_path):
+    result = run_command(tmp_path, ["compact"], {"CLAWDE_AGENT_NAME": "steward"})
+
+    assert result.returncode == 0
+    assert deferred_herdr_calls(tmp_path, 2)[-1] == "agent prompt w1:p2 /compact"
+
+
 @pytest.mark.parametrize("operation", ["restart", "exit"])
 def test_clawde_owned_sessions_refuse_direct_lifecycle(tmp_path, operation):
     result = run_command(
@@ -179,8 +234,9 @@ def test_clawde_owned_sessions_refuse_direct_lifecycle(tmp_path, operation):
     assert result.stdout == ""
 
 
-def test_lifecycle_requires_the_callers_herdr_pane(tmp_path):
-    result = run_command(tmp_path, ["restart"], {"HERDR_PANE_ID": ""})
+@pytest.mark.parametrize("operation", ["restart", "compact", "exit"])
+def test_every_operation_requires_the_callers_herdr_pane(tmp_path, operation):
+    result = run_command(tmp_path, [operation], {"HERDR_PANE_ID": ""})
 
     assert result.returncode == 1
     assert "Herdr pane" in result.stderr

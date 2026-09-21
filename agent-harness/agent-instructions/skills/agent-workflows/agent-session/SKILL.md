@@ -1,6 +1,6 @@
 ---
 name: agent-session
-description: Restart or exit the current Claude Code, Codex, or OpenCode process from inside it. Use to apply a configuration change, resume work without waiting for input, or end a finished session.
+description: Restart, compact, or exit the current Claude Code, Codex, or OpenCode session from inside it. Use to apply a configuration change, resume work without waiting for input, compact its own context, or end a finished session.
 ---
 
 ### How it finds its target
@@ -15,6 +15,13 @@ pending changes first, because restart creates a new process and only durable on
 the exact recorded session in the same pane and submits the continuation prompt after the replacement agent is idle. It
 refuses before shutdown when it has no exact resume record. Expect no reply from the old process: the turn resumes after
 restart with the continuation prompt.
+
+### Compact
+
+Run `agent-session compact` when asked to compact your own session. Persist the state you must recover first, because
+only the compaction summary survives. The harness rejects or merely queues its compact command during a turn, so the
+command returns at once and submits compaction after the turn ends: finish the reply and stop, since compaction cannot
+start while the turn keeps working. Clawde-managed sessions may compact, because the process survives.
 
 ### Restart refuses what it cannot preserve
 
