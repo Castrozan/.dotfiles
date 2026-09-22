@@ -17,10 +17,10 @@ def wait_for_agent_status(
 ) -> bool:
     completed = run_herdr_command(
         [
+            "agent",
             "wait",
-            "agent-status",
             pane_id,
-            "--status",
+            "--until",
             agent_status,
             "--timeout",
             str(int(timeout_seconds * 1000)),
