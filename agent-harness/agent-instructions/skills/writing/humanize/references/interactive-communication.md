@@ -57,8 +57,12 @@ unrelated work out; name it only when it changes this result.
 
 Bold each label and leave a blank line between the three blocks. Each budget is its own and never funds another: the
 prose above the labels stays within 80 words, the three labels together within 50, and each label within its own share,
-25 for the session line and 20 each for Done and Next. Counting includes lists and excludes visuals. One list stays
-within 5 lines and 20 words per line. Move overflow into a visual rather than deleting a fact.
+25 for the session line and 20 each for Done and Next. Each label and list item has five words of grace; the body,
+confirmation, and combined-label budgets have ten. One list stays within 5 lines and 20 words per line before grace.
+
+Like visuals and fenced diffs, a bulleted or numbered list of up to three items within the item budget including grace
+is excluded from prose word budgets. Longer lists count as prose. Choose lists for parallel facts or steps and visuals
+for the relationships Humanize names; never force prose into a table to avoid a word budget.
 
 ### Concise request
 

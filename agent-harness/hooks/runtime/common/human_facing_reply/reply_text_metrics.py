@@ -3,8 +3,14 @@
 from __future__ import annotations
 
 import re
+from itertools import groupby
 
-from reply_template_limits import REQUIRED_REPLY_LABELS
+from reply_template_limits import (
+    LIST_ITEM_WORD_BUDGET_GRACE,
+    MAXIMUM_EXEMPT_LIST_ITEMS,
+    MAXIMUM_LIST_LINE_WORDS,
+    REQUIRED_REPLY_LABELS,
+)
 
 BOX_DRAWING_CHARACTERS = frozenset("─│┌┐└┘├┤┬┴┼╭╮╯╰━┃┏┓┗┛╔╗╚╝║═")
 TABLE_ROW_PREFIX = "|"
@@ -58,6 +64,26 @@ def list_line_blocks(prose_lines: list[str]) -> list[list[str]]:
     if current_block:
         blocks.append(current_block)
     return blocks
+
+
+def prose_lines_outside_short_lists(prose_lines: list[str]) -> list[str]:
+    counted_lines: list[str] = []
+    for is_list, grouped_lines in groupby(
+        prose_lines, key=lambda line: bool(LIST_MARKER_LINE_PATTERN.match(line))
+    ):
+        block = list(grouped_lines)
+        if (
+            is_list
+            and len(block) <= MAXIMUM_EXEMPT_LIST_ITEMS
+            and all(
+                len(line.split())
+                <= MAXIMUM_LIST_LINE_WORDS + LIST_ITEM_WORD_BUDGET_GRACE
+                for line in block
+            )
+        ):
+            continue
+        counted_lines.extend(block)
+    return counted_lines
 
 
 def matched_reply_label(line: str) -> str | None:
@@ -140,12 +166,13 @@ class ReplyUnderReview:
         self.prose_lines = prose_lines_outside_visuals(reply_text)
         self.prose_text = "\n".join(self.prose_lines)
         self.prose_without_quotations = text_without_quotations(self.prose_text)
-        self.prose_word_count = sum(len(line.split()) for line in self.prose_lines)
+        counted_lines = prose_lines_outside_short_lists(self.prose_lines)
+        self.prose_word_count = sum(len(line.split()) for line in counted_lines)
         self.list_blocks = list_line_blocks(self.prose_lines)
         self.labels_present = labels_present_in(self.prose_lines)
         (
             self.unlabeled_body_word_count,
             self.per_label_word_counts,
-        ) = unlabeled_body_and_per_label_word_counts(self.prose_lines)
+        ) = unlabeled_body_and_per_label_word_counts(counted_lines)
         self.labeled_section_word_count = sum(self.per_label_word_counts.values())
         self.label_lines = reply_label_lines(reply_text)

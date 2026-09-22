@@ -21,8 +21,8 @@ def test_a_reply_past_the_confirmation_and_its_grace_names_the_labels_it_omits()
         "runs 111 prose words, past the 100-word confirmation, but omits the "
         "What is this session about?:/done:/next: label",
         "spends 111 prose words above the labels, past their own 80-word budget and "
-        "its 10-word grace; move the detail into a table, tree or diagram, which is "
-        "not counted",
+        "its 10-word grace; move suitable detail into a short list, table, tree or "
+        "diagram, which is not counted",
     ]
 
 
@@ -83,16 +83,16 @@ def test_labeled_sections_inside_the_shared_grace_pass():
 
 
 def test_one_label_past_its_own_budget_and_grace_is_blocked():
-    reply = reply_with_label_word_counts(session=10, done=31, next_block=5)
+    reply = reply_with_label_word_counts(session=10, done=26, next_block=5)
 
     assert template_violations_in_reply(reply, "status?") == [
-        "spends 31 words on the done: block, past its 20-word budget and its "
-        "10-word grace"
+        "spends 26 words on the done: block, past its 20-word budget and its "
+        "5-word grace"
     ]
 
 
 def test_one_label_inside_its_own_grace_passes():
-    reply = reply_with_label_word_counts(session=10, done=30, next_block=5)
+    reply = reply_with_label_word_counts(session=10, done=25, next_block=5)
 
     assert template_violations_in_reply(reply, "status?") == []
 
@@ -119,14 +119,15 @@ def test_a_list_past_five_lines_is_blocked():
     assert violations == ["stacks 6 list lines, past the 5-line ceiling for one list"]
 
 
-def test_a_list_line_past_twenty_words_is_blocked():
-    long_line = "- " + " ".join(["evidence"] * 21)
+def test_a_list_line_past_twenty_words_and_its_grace_is_blocked():
+    long_line = "- " + " ".join(["evidence"] * 25)
     reply = f"{long_line}\n\n{LABELED_REPLY}"
 
     violations = template_violations_in_reply(reply, "what did you find?")
 
     assert violations == [
-        "runs a 22-word list line, past the 20-word ceiling for one line"
+        "runs a 26-word list line, past the 20-word ceiling and its 5-word grace "
+        "for one line"
     ]
 
 
