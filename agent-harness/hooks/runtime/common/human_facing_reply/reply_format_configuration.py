@@ -2,71 +2,45 @@ import json
 import os
 import re
 
-
-def require_fields(value, fields, location):
-    if not isinstance(value, dict) or set(value) != set(fields):
-        raise ValueError(f"{location} must contain exactly {', '.join(fields)}")
-
-
-def require_nonnegative_integer(value, location):
-    if type(value) is not int or value < 0:
-        raise ValueError(f"{location} must be a nonnegative integer")
-
-
-def validate_word_budget(budget, location):
-    require_fields(budget, ("maximum_words", "grace_words"), location)
-    for field, value in budget.items():
-        require_nonnegative_integer(value, f"{location}.{field}")
-
-
-def validate_restriction(restriction):
-    required = {"name", "message"}
-    allowed = required | {"pattern", "required_pattern", "characters"}
-    if (
-        not isinstance(restriction, dict)
-        or not required <= restriction.keys() <= allowed
-    ):
-        raise ValueError(
-            "reply restrictions require name, message, and supported parameters"
-        )
-    for field in required:
-        if not isinstance(restriction[field], str) or not restriction[field]:
-            raise ValueError(f"restriction {field} must be a nonempty string")
-    restriction["message"].format(
-        word_count=0,
-        maximum_words=0,
-        grace_words=0,
-        missing_labels="",
-        label="",
-        line_count=0,
-        maximum_lines=0,
-        character_name="",
-    )
+from reply_configuration_validation import (
+    compile_reply_pattern,
+    require_fields,
+    require_nonempty_text,
+    require_nonnegative_integer,
+    require_text_mapping,
+    validate_instruction_templates,
+    validate_reply_labels,
+    validate_restriction,
+    validate_word_budget,
+)
 
 
 def exceeds_word_budget(word_count, budget):
     return word_count > budget["maximum_words"] + budget["grace_words"]
 
 
-def validate_reply_labels(configured_labels):
-    labels = {}
-    for label in configured_labels:
-        require_fields(
-            label, ("name", "maximum_words", "grace_words", "instruction"), "label"
-        )
-        name = label["name"]
-        if (
-            not isinstance(name, str)
-            or not name
-            or name.lower() in {existing.lower() for existing in labels}
-        ):
-            raise ValueError("reply labels must have distinct nonempty names")
-        for field in ("maximum_words", "grace_words"):
-            require_nonnegative_integer(label[field], f"{name}.{field}")
-        labels[name] = label
-    if not labels:
-        raise ValueError("labeled replies require at least one label")
-    return labels
+def validate_reply_syntax(syntax):
+    require_fields(
+        syntax,
+        (
+            "tree_branch_pattern",
+            "label_emphasis_marker",
+            "quotation_pairs",
+            "apostrophe_characters",
+        ),
+        "syntax",
+    )
+    if syntax["label_emphasis_marker"] not in ("**", "__"):
+        raise ValueError("label emphasis must use CommonMark strong emphasis")
+    require_nonempty_text(syntax["apostrophe_characters"], "apostrophe characters")
+    require_text_mapping(syntax["quotation_pairs"], "quotation pairs")
+    if any(
+        len(character) != 1
+        for pair in syntax["quotation_pairs"].items()
+        for character in pair
+    ):
+        raise ValueError("quotation pairs must contain single characters")
+    return compile_reply_pattern(syntax["tree_branch_pattern"], "tree branch pattern")
 
 
 class ReplyFormatConfiguration:
@@ -103,54 +77,37 @@ class ReplyFormatConfiguration:
         if self.lists["maximum_exempt_items"] > self.lists["maximum_lines"]:
             raise ValueError("exempt list size cannot exceed the list line limit")
         self.syntax = document["syntax"]
-        require_fields(
-            self.syntax,
-            (
-                "list_marker_pattern",
-                "table_row_prefix",
-                "box_drawing_characters",
-                "code_fence_prefix",
-                "label_emphasis_marker",
-                "block_quote_pattern",
-                "inline_code_pattern",
-                "quotation_pattern",
-            ),
-            "syntax",
-        )
-        if any(
-            not isinstance(value, str) or not value for value in self.syntax.values()
-        ):
-            raise ValueError("reply syntax values must be nonempty strings")
-        self.syntax_patterns = {
-            name: re.compile(value)
-            for name, value in self.syntax.items()
-            if name.endswith("_pattern")
-        }
-        emphasis = self.syntax["label_emphasis_marker"]
-        marker = f"(?:{re.escape(emphasis)}|{re.escape(emphasis[0])})?"
+        self.tree_branch_pattern = validate_reply_syntax(self.syntax)
         self.label_patterns = {
             name: re.compile(
-                rf"^\s*{marker}{re.escape(name)}{marker}\s*:", re.IGNORECASE
+                rf"^\s*(?:\*{{1,2}}|_{{1,2}})?{re.escape(name)}(?:\*{{1,2}}|_{{1,2}})?\s*:",
+                re.IGNORECASE,
             )
             for name in self.labels
         }
-        self.restrictions = {}
-        self.restriction_patterns = {}
-        for restriction in document["restrictions"]:
-            validate_restriction(restriction)
-            name = restriction["name"]
-            if name in self.restrictions:
-                raise ValueError(f"duplicate reply restriction: {name}")
-            self.restrictions[name] = restriction
-            self.restriction_patterns[name] = {
-                key: re.compile(value, re.IGNORECASE)
-                for key, value in restriction.items()
-                if key in ("pattern", "required_pattern")
-            }
+        self.restrictions, self.restriction_patterns = self.validated_restrictions(
+            document["restrictions"]
+        )
         self.feedback = document["feedback"]
         require_fields(self.feedback, ("prefix", "repair"), "feedback")
-        if any(not isinstance(value, str) for value in self.feedback.values()):
-            raise ValueError("reply feedback must contain strings")
+        for field, value in self.feedback.items():
+            require_nonempty_text(value, f"feedback.{field}")
+        validate_instruction_templates(document)
+
+    @staticmethod
+    def validated_restrictions(configured_restrictions):
+        if not isinstance(configured_restrictions, list):
+            raise ValueError("reply restrictions must be a list")
+        restrictions = {}
+        patterns = {}
+        for restriction in configured_restrictions:
+            compiled_patterns = validate_restriction(restriction)
+            name = restriction["name"]
+            if name in restrictions:
+                raise ValueError(f"duplicate reply restriction: {name}")
+            restrictions[name] = restriction
+            patterns[name] = compiled_patterns
+        return restrictions, patterns
 
     def violation(self, restriction, **values):
         return self.restrictions[restriction]["message"].format(**values)

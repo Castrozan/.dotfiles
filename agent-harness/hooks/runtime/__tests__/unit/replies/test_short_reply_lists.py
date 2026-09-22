@@ -55,7 +55,7 @@ def test_an_oversized_item_keeps_the_whole_list_in_the_prose_budget():
     violations = template_violations_in_reply(reply)
 
     assert any("spends 146 prose words" in violation for violation in violations)
-    assert any("26-word list line" in violation for violation in violations)
+    assert any("26-word list item" in violation for violation in violations)
 
 
 def test_list_item_grace_applies_to_lists_that_are_not_exempt():

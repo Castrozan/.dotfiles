@@ -132,7 +132,7 @@ def test_the_reply_budgets_exempt_visuals_and_never_drop_a_fact():
     for required_budget in (
         "the labels together within 50",
         "prose above the labels stays within 80 words",
-        "within 5 lines and 20 words per line",
+        "within 5 lines and 20 words per complete item",
         "Visual lines never count",
     ):
         assert required_budget in response_shape

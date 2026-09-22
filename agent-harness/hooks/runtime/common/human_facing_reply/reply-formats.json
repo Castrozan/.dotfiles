@@ -44,21 +44,29 @@
     }
   },
   "syntax": {
-    "list_marker_pattern": "^\\s*([-*+]\\s|\\d+[.)]\\s)",
-    "table_row_prefix": "|",
-    "box_drawing_characters": "─│┌┐└┘├┤┬┴┼╭╮╯╰━┃┏┓┗┛╔╗╚╝║═",
-    "code_fence_prefix": "```",
+    "tree_branch_pattern": "^[ \\t│|]*(?:[├└]─+|[+`]--)\\s+\\S",
     "label_emphasis_marker": "**",
-    "block_quote_pattern": "^\\s*>",
-    "inline_code_pattern": "`[^`]*`",
-    "quotation_pattern": "[\\\"“][^\\\"”]*[\\\"”]"
+    "quotation_pairs": {
+      "\"": "\"",
+      "'": "'",
+      "“": "”",
+      "‘": "’"
+    },
+    "apostrophe_characters": "’‘"
   },
   "restrictions": [
     {
       "name": "unlinked_artifact",
-      "pattern": "\\b(?:the|this|that)\\s+(?:merge request|pull request)\\b|\\bmerge request\\s*!?\\d+\\b|\\bpull request\\s*#?\\d+\\b|\\bMR\\s*!?\\d+\\b|\\bPR\\s*#?\\d+\\b",
-      "required_pattern": "https?://",
-      "message": "names an MR or PR but gives no link to validate it"
+      "pattern": "\\b(?:(?:the|this|that)\\s+(?P<generic_kind>merge request|pull request)|(?P<numbered_kind>merge request|pull request|MR|PR)\\s*[!#]?(?P<number>\\d+))\\b",
+      "required_pattern": "/(?P<kind>pull|merge_requests)/(?P<number>\\d+)(?:/|$)",
+      "message": "names an MR or PR but gives no link to validate it",
+      "url_pattern": "https?://[^\\s<>\"\\x27`]+",
+      "kind_paths": {
+        "pr": "pull",
+        "pull request": "pull",
+        "mr": "merge_requests",
+        "merge request": "merge_requests"
+      }
     },
     {
       "name": "required_labels",
@@ -71,6 +79,14 @@
     {
       "name": "label_separation",
       "message": "runs the {label}: label into the line above it instead of starting its own block"
+    },
+    {
+      "name": "duplicate_label",
+      "message": "repeats the {label}: label"
+    },
+    {
+      "name": "label_order",
+      "message": "places the labels out of order; use {expected_labels}"
     },
     {
       "name": "labeled_section_ceiling",
@@ -90,7 +106,7 @@
     },
     {
       "name": "list_line_words",
-      "message": "runs a {word_count}-word list line, past the {maximum_words}-word ceiling and its {grace_words}-word grace for one line"
+      "message": "runs a {word_count}-word list item, past the {maximum_words}-word ceiling and its {grace_words}-word grace for one item"
     },
     {
       "name": "sentence_dash",
@@ -116,10 +132,10 @@
     "repair": "Repair exactly that in the reply you already wrote, against the response shape section of the interactive communication instructions you are already carrying. Keep the answer and remove only filler. Loading a skill is not needed, because every enforced rule is already stated in those instructions."
   },
   "instruction_paragraphs": [
-    "A reply of {formats[confirmation][maximum_words]} prose words or fewer is a confirmation and takes no labels, a question included. Every longer reply ends with these labels, in order:",
+    "A reply of {formats[confirmation][maximum_words]} prose words or fewer is a confirmation and takes no labels, a question included. Every longer reply ends with these labels exactly once, in order:",
     "Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship, chosen through Humanize [representation selection](../SKILL.md#representation-selection). Visual lines never count against the budgets below.",
     "{label_instructions}",
     "Bold each label and leave a blank line between the blocks. Budgets are independent: the prose above the labels stays within {formats[labeled_reply][body][maximum_words]} words, the labels together within {formats[labeled_reply][combined_labels][maximum_words]}. Label budgets including grace: {label_budgets}. Body grace: {formats[labeled_reply][body][grace_words]}; confirmation: {formats[confirmation][grace_words]}; combined labels: {formats[labeled_reply][combined_labels][grace_words]} words.",
-    "One list stays within {lists[maximum_lines]} lines and {lists[item][maximum_words]} words per line, plus {lists[item][grace_words]} words of grace per item. Choose representations through Humanize first. Exclude visuals, fenced diffs, and lists of up to {lists[maximum_exempt_items]} items within the item budget plus grace from prose budgets. Other lists count as prose."
+    "One list stays within {lists[maximum_lines]} lines and {lists[item][maximum_words]} words per complete item, plus {lists[item][grace_words]} words of grace per item. Choose representations through Humanize first. Exclude visuals, fenced code and diffs, and lists of up to {lists[maximum_exempt_items]} items within the item budget plus grace from prose budgets. Other lists count as prose."
   ]
 }

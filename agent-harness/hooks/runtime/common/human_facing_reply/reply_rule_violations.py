@@ -1,3 +1,4 @@
+from reply_artifact_links import reply_has_unlinked_artifacts
 from reply_format_configuration import exceeds_word_budget
 from reply_text_metrics import ReplyUnderReview
 
@@ -17,7 +18,7 @@ def sentence_dash_violation(reply: ReplyUnderReview) -> str | None:
 def opener_violation(reply: ReplyUnderReview, restriction: str) -> str | None:
     configuration = reply.configuration
     if configuration.restriction_patterns[restriction]["pattern"].match(
-        reply.text_without_leading_space
+        reply.opening_text
     ):
         return configuration.violation(restriction)
     return None
@@ -32,12 +33,8 @@ def narration_opener_violation(reply: ReplyUnderReview) -> str | None:
 
 
 def unlinked_artifact_violation(reply: ReplyUnderReview) -> str | None:
-    configuration = reply.configuration
-    patterns = configuration.restriction_patterns["unlinked_artifact"]
-    if patterns["pattern"].search(reply.prose_text) and not patterns[
-        "required_pattern"
-    ].search(reply.prose_text):
-        return configuration.violation("unlinked_artifact")
+    if reply_has_unlinked_artifacts(reply):
+        return reply.configuration.violation("unlinked_artifact")
     return None
 
 
@@ -95,9 +92,11 @@ def per_label_ceiling_violation(reply: ReplyUnderReview) -> str | None:
 def list_block_length_violation(reply: ReplyUnderReview) -> str | None:
     maximum_lines = reply.configuration.lists["maximum_lines"]
     for block in reply.list_blocks:
-        if len(block) > maximum_lines:
+        if block.line_count > maximum_lines:
             return reply.configuration.violation(
-                "list_block_length", line_count=len(block), maximum_lines=maximum_lines
+                "list_block_length",
+                line_count=block.line_count,
+                maximum_lines=maximum_lines,
             )
     return None
 
@@ -105,8 +104,8 @@ def list_block_length_violation(reply: ReplyUnderReview) -> str | None:
 def list_line_word_violation(reply: ReplyUnderReview) -> str | None:
     budget = reply.configuration.lists["item"]
     for block in reply.list_blocks:
-        for line in block:
-            word_count = len(line.split())
+        for item in block.items:
+            word_count = item.word_count
             if exceeds_word_budget(word_count, budget):
                 return reply.configuration.violation(
                     "list_line_words", word_count=word_count, **budget
@@ -139,4 +138,27 @@ def unseparated_label_violation(reply: ReplyUnderReview) -> str | None:
             return reply.configuration.violation(
                 "label_separation", label=label_line.label
             )
+    return None
+
+
+def duplicate_label_violation(reply: ReplyUnderReview) -> str | None:
+    if reply_is_a_short_confirmation(reply):
+        return None
+    seen = set()
+    for label in reply.label_lines:
+        if label.label in seen:
+            return reply.configuration.violation("duplicate_label", label=label.label)
+        seen.add(label.label)
+    return None
+
+
+def label_order_violation(reply: ReplyUnderReview) -> str | None:
+    if reply_is_a_short_confirmation(reply):
+        return None
+    expected = list(reply.configuration.labels)
+    observed = list(dict.fromkeys(label.label for label in reply.label_lines))
+    if observed != [label for label in expected if label in observed]:
+        return reply.configuration.violation(
+            "label_order", expected_labels=", ".join(expected)
+        )
     return None

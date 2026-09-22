@@ -14,7 +14,8 @@ let
     + "${hooksRootDirectory + "/${entry.relativePathToHooksRoot}"} "
     + ''"$out/${entry.flatDeploymentFilename}"'';
 
-  hookPythonInterpreter = "${pkgs.python312}/bin/python3";
+  hookPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.markdown-it-py ]);
+  hookPythonInterpreter = "${hookPython}/bin/python3";
 
   # The servant handler imports the servants domain rather than being flattened
   # beside it: `catalog.py` and `roster.py` are names generic enough to collide in

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from reply_format_configuration import REPLY_FORMAT_CONFIGURATION
 from reply_rule_violations import (
+    duplicate_label_violation,
+    label_order_violation,
     labeled_section_ceiling_violation,
     list_block_length_violation,
     list_line_word_violation,
@@ -25,6 +27,8 @@ REPLY_RESTRICTION_VALIDATORS = {
     "required_labels": missing_required_labels_violation,
     "label_emphasis": unemphasized_label_violation,
     "label_separation": unseparated_label_violation,
+    "label_order": label_order_violation,
+    "duplicate_label": duplicate_label_violation,
     "labeled_section_ceiling": labeled_section_ceiling_violation,
     "per_label_ceiling": per_label_ceiling_violation,
     "unlabeled_body_ceiling": unlabeled_body_ceiling_violation,
@@ -37,11 +41,6 @@ REPLY_RESTRICTION_VALIDATORS = {
 
 
 def violations_from_rules(reply: ReplyUnderReview) -> list[str]:
-    unknown = (
-        set(reply.configuration.restrictions) - REPLY_RESTRICTION_VALIDATORS.keys()
-    )
-    if unknown:
-        raise ValueError(f"unknown reply restriction: {sorted(unknown)}")
     return [
         violation
         for violation in (

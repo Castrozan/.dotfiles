@@ -91,8 +91,10 @@ def test_one_label_inside_its_own_grace_passes():
 
 
 def test_a_table_is_exempt_from_the_word_count():
+    header = "| " + " | ".join(["Column"] * 8) + " |\n"
+    separator = "| " + " | ".join(["---"] * 8) + " |\n"
     table_rows = "\n".join(["| " + " | ".join(["measured"] * 8) + " |"] * 40)
-    reply = f"{LABELED_REPLY}\n\n{table_rows}"
+    reply = f"{LABELED_REPLY}\n\n{header}{separator}{table_rows}"
 
     assert template_violations_in_reply(reply) == []
 
@@ -119,8 +121,8 @@ def test_a_list_line_past_twenty_words_and_its_grace_is_blocked():
     violations = template_violations_in_reply(reply)
 
     assert violations == [
-        "runs a 26-word list line, past the 20-word ceiling and its 5-word grace "
-        "for one line"
+        "runs a 26-word list item, past the 20-word ceiling and its 5-word grace "
+        "for one item"
     ]
 
 

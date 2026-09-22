@@ -96,14 +96,14 @@ def test_configured_patterns_and_active_restrictions_are_used(configuration_docu
     )
 
 
-def test_configured_visual_syntax_changes_prose_counting(configuration_document):
-    configuration_document["syntax"]["table_row_prefix"] = "TABLE:"
+def test_configured_quotation_pairs_change_dash_exemptions(configuration_document):
+    configuration_document["syntax"]["quotation_pairs"] = {"«": "»"}
     configuration = ReplyFormatConfiguration(configuration_document)
-    reply = "TABLE: " + "cell " * 150
+    reply = "The source says «The result — verified.»"
 
     assert template_violations_in_reply(reply, configuration=configuration) == []
     assert template_violations_in_reply(
-        reply.replace("TABLE:", "|"), configuration=configuration
+        reply.replace("«", '"').replace("»", '"'), configuration=configuration
     )
 
 
@@ -127,7 +127,6 @@ def test_duplicate_labels_are_rejected_case_insensitively(configuration_document
 
 def test_unknown_restrictions_are_rejected(configuration_document):
     configuration_document["restrictions"][0]["name"] = "misspelled_rule"
-    configuration = ReplyFormatConfiguration(configuration_document)
 
     with pytest.raises(ValueError, match="unknown reply restriction"):
-        template_violations_in_reply("reply", configuration=configuration)
+        ReplyFormatConfiguration(configuration_document)
