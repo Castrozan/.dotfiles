@@ -8,17 +8,17 @@ let
     inherit pkgs;
   };
 
-  version = "2.1.277";
+  version = "2.1.280";
   bucket = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases";
 
   platformBinaryHashBySystem = {
     "x86_64-linux" = {
       platform = "linux-x64";
-      sha256 = "sha256-ciIQ8FuklNj232lCPE1PKWCQD3oAfQUyhRx6NuN1yrc=";
+      sha256 = "sha256-HghQPb3zwssNcG0y80CCdziNHHbvEIZz6P5CwbMikls=";
     };
     "aarch64-darwin" = {
       platform = "darwin-arm64";
-      sha256 = "sha256-c9aipVxGkH5JvYu3YI4TQzO9cRczUe4W3c59fbmRS5w=";
+      sha256 = "sha256-OHpcXc27gVCF7fC695WR+diJTv6SK86vPXWxsIBVIp0=";
     };
   };
 
