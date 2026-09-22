@@ -13,6 +13,9 @@ sudo modprobe acpi_call
 
 ## Power / Fan Control
 
+Normal mode disables CPU boost after boot and resume through `cpu-thermal.nix`. `game-shift`
+re-enables boost with G Mode and disables it again when G Mode is turned off.
+
 ### Power Modes (0x15 set, 0x14 get)
 
 Only two modes work on G15 5515 (confirmed via Dell-G-Series-Controller patch.py):

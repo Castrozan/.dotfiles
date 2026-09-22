@@ -13,6 +13,7 @@
     ./keyboard-backlight.nix
     ./nix-daemon.nix
     ./memory-pressure.nix
+    ./cpu-thermal.nix
     ../scripts
     ../../../../desktop/xdg-portal/xdg-portal-nixos.nix
     ../../../../network/network-optimization/network-optimization-nixos.nix

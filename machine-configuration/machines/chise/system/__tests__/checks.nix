@@ -43,6 +43,14 @@ cloudflareTunnelChecks
     nixosCfg.systemd.services.nix-daemon.serviceConfig.Nice == 19
   ) "nix-daemon must run at Nice=19 (lowest CPU priority)";
 
+  chise-cpu-boost-disabled-on-power-up =
+    mkEvalCheck "chise-cpu-boost-disabled-on-power-up"
+      (
+        lib.hasInfix "/sys/devices/system/cpu/cpufreq/boost" nixosCfg.powerManagement.powerUpCommands
+        && lib.hasInfix "printf '0\\n'" nixosCfg.powerManagement.powerUpCommands
+      )
+      "chise must disable CPU boost after boot and resume so steady background work does not hold the processor at its thermal ceiling";
+
   chise-earlyoom-enabled =
     mkEvalCheck "chise-earlyoom-enabled" nixosCfg.services.earlyoom.enable
       "earlyoom must be enabled to prevent kernel OOM freezes";
