@@ -57,7 +57,7 @@
   "restrictions": [
     {
       "name": "unlinked_artifact",
-      "pattern": "\\b(?:(?:the|this|that)\\s+(?P<generic_kind>merge request|pull request)|(?P<numbered_kind>merge request|pull request|MR|PR)\\s*[!#]?(?P<number>\\d+))\\b",
+      "pattern": "\\b(?:(?:(?:the|this|that)\\s+)?(?P<numbered_kind>merge request|pull request|MR|PR)\\s*[!#]?(?P<number>\\d+)|(?:the|this|that)\\s+(?P<generic_kind>merge request|pull request))\\b",
       "required_pattern": "/(?P<kind>pull|merge_requests)/(?P<number>\\d+)(?:/|$)",
       "message": "names an MR or PR but gives no link to validate it",
       "url_pattern": "https?://[^\\s<>\"\\x27`]+",

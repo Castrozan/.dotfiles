@@ -1,18 +1,14 @@
 class ReplyInlineContent:
     def __init__(self, children):
-        visible = []
         outside_code = []
         self.destinations = []
         for child in children:
             if child.type == "link_open":
                 self.destinations.append(child.attrGet("href"))
             if child.type in ("softbreak", "hardbreak"):
-                visible.append("\n")
                 outside_code.append("\n")
             elif child.type in ("text", "code_inline"):
-                visible.append(child.content)
                 outside_code.append(child.content if child.type == "text" else " ")
-        self.visible_text = "".join(visible)
         self.outside_code = "".join(outside_code)
 
 

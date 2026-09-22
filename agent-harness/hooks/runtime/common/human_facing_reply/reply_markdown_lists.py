@@ -3,9 +3,9 @@ from reply_format_configuration import exceeds_word_budget
 
 class ReplyListItem:
     def __init__(self, source_range, source_lines, prose_line_indices):
-        self.line_indices = set(range(*source_range)) & prose_line_indices
+        line_indices = set(range(*source_range)) & prose_line_indices
         self.word_count = sum(
-            len(source_lines[index].split()) for index in self.line_indices
+            len(source_lines[index].split()) for index in line_indices
         )
 
 

@@ -47,3 +47,14 @@ def test_a_quoted_url_does_not_link_an_artifact():
     assert template_violations_in_reply(
         'PR #17 is ready. The input included "https://".'
     )
+
+
+@pytest.mark.parametrize("article", ["The", "This", "That"])
+@pytest.mark.parametrize(
+    "kind,route", [("pull request", "pull"), ("merge request", "merge_requests")]
+)
+def test_long_form_numbered_references_keep_their_identifier(article, kind, route):
+    reply = f"{article} {kind} #17 is ready: https://example.com/group/repo/{route}/18"
+
+    assert template_violations_in_reply(reply)
+    assert template_violations_in_reply(reply.replace("/18", "/17")) == []
