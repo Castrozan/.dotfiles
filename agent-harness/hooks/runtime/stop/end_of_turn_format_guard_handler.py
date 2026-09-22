@@ -111,11 +111,11 @@ def handle(hook_input: dict):
     if hook_input.get("stop_hook_active"):
         return None
 
-    user_request_text, reply_text = final_turn_request_and_reply(hook_input)
+    _, reply_text = final_turn_request_and_reply(hook_input)
     if not reply_text:
         return None
 
-    violations = template_violations_in_reply(reply_text, user_request_text)
+    violations = template_violations_in_reply(reply_text)
     if not violations:
         return None
 

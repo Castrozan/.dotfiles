@@ -54,7 +54,7 @@ def violations_from_rules(reply: ReplyUnderReview) -> list[str]:
 
 def template_violations_in_reply(
     reply_text: str,
-    user_request_text: str = "",
+    *,
     configuration=REPLY_FORMAT_CONFIGURATION,
 ) -> list[str]:
     return violations_from_rules(ReplyUnderReview(reply_text, configuration))

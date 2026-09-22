@@ -1,3 +1,6 @@
+import json
+
+from end_of_turn_format_guard_test_support import invoke_guard
 from human_facing_reply_test_support import (
     INTERACTIVE_COMMUNICATION_PATH,
     LABELED_REPLY,
@@ -7,9 +10,7 @@ from human_facing_reply_test_support import (
 
 
 def test_named_merge_request_without_a_direct_link_is_blocked():
-    violations = template_violations_in_reply(
-        "MR !41 is ready for review.", "is the change ready?"
-    )
+    violations = template_violations_in_reply("MR !41 is ready for review.")
 
     assert violations == ["names an MR or PR but gives no link to validate it"]
 
@@ -17,7 +18,7 @@ def test_named_merge_request_without_a_direct_link_is_blocked():
 def test_named_pull_request_with_a_direct_link_passes():
     reply = "PR #17 is ready: https://github.com/example/project/pull/17"
 
-    assert template_violations_in_reply(reply, "is the change ready?") == []
+    assert template_violations_in_reply(reply) == []
 
 
 def test_generic_merge_and_pull_request_terms_do_not_claim_an_artifact():
@@ -26,13 +27,13 @@ def test_generic_merge_and_pull_request_terms_do_not_claim_an_artifact():
         "merge request."
     )
 
-    assert template_violations_in_reply(reply, "what changed in CI?") == []
+    assert template_violations_in_reply(reply) == []
 
 
 def test_a_quoted_unlinked_artifact_inside_a_fence_does_not_block():
     reply = "The source says:\n```\nMR !41 is pending\n```\nNo artifact is named in my prose."
 
-    assert template_violations_in_reply(reply, "quote the source") == []
+    assert template_violations_in_reply(reply) == []
 
 
 def test_an_em_dash_in_prose_is_blocked():
@@ -42,7 +43,7 @@ def test_an_em_dash_in_prose_is_blocked():
         "**next:** push."
     )
 
-    violations = template_violations_in_reply(reply, "review the migration")
+    violations = template_violations_in_reply(reply)
 
     assert violations == ["contains an em dash outside a quotation"]
 
@@ -55,14 +56,14 @@ def test_an_em_dash_inside_a_quotation_is_preserved():
         "**next:** publish it."
     )
 
-    assert template_violations_in_reply(reply, "quote the note") == []
+    assert template_violations_in_reply(reply) == []
 
 
 def test_reaction_and_narration_openers_are_blocked():
-    assert template_violations_in_reply("Sure, the host is gone.", "is it gone?") == [
+    assert template_violations_in_reply("Sure, the host is gone.") == [
         "opens with a reaction or sycophancy phrase"
     ]
-    assert template_violations_in_reply("Let me check the host.", "is it gone?") == [
+    assert template_violations_in_reply("Let me check the host.") == [
         "opens by narrating what you are about to do"
     ]
 
@@ -70,17 +71,24 @@ def test_reaction_and_narration_openers_are_blocked():
 def test_section_headers_remain_available():
     reply = f"## Decision\n\n{LABELED_REPLY}"
 
-    assert template_violations_in_reply(reply, "review the migration") == []
+    assert template_violations_in_reply(reply) == []
 
 
 def test_the_request_text_no_longer_gates_any_rule():
     reply = " ".join(["evidence"] * 111)
 
     for request in ("explain the architecture", "quick question", "write a full audit"):
-        assert template_violations_in_reply(reply, request)[0] == (
+        result = invoke_guard(
+            {
+                "hook_event_name": "Stop",
+                "reply_text": reply,
+                "user_request_text": request,
+            }
+        )
+        assert (
             "runs 111 prose words, past the 100-word confirmation, but omits the "
             "What is this session about?:/done:/next: label"
-        )
+        ) in json.loads(result.stdout)["reason"]
 
 
 def test_bounce_guidance_names_the_violation_and_demands_a_repair_in_place():

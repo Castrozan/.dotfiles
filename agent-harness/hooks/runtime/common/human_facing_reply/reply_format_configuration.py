@@ -48,6 +48,27 @@ def exceeds_word_budget(word_count, budget):
     return word_count > budget["maximum_words"] + budget["grace_words"]
 
 
+def validate_reply_labels(configured_labels):
+    labels = {}
+    for label in configured_labels:
+        require_fields(
+            label, ("name", "maximum_words", "grace_words", "instruction"), "label"
+        )
+        name = label["name"]
+        if (
+            not isinstance(name, str)
+            or not name
+            or name.lower() in {existing.lower() for existing in labels}
+        ):
+            raise ValueError("reply labels must have distinct nonempty names")
+        for field in ("maximum_words", "grace_words"):
+            require_nonnegative_integer(label[field], f"{name}.{field}")
+        labels[name] = label
+    if not labels:
+        raise ValueError("labeled replies require at least one label")
+    return labels
+
+
 class ReplyFormatConfiguration:
     def __init__(self, document):
         require_fields(
@@ -71,23 +92,7 @@ class ReplyFormatConfiguration:
         )
         for name in ("body", "combined_labels"):
             validate_word_budget(labeled_reply[name], name)
-        self.labels = {}
-        for label in labeled_reply["labels"]:
-            require_fields(
-                label, ("name", "maximum_words", "grace_words", "instruction"), "label"
-            )
-            name = label["name"]
-            if (
-                not isinstance(name, str)
-                or not name
-                or name.lower() in {existing.lower() for existing in self.labels}
-            ):
-                raise ValueError("reply labels must have distinct nonempty names")
-            for field in ("maximum_words", "grace_words"):
-                require_nonnegative_integer(label[field], f"{name}.{field}")
-            self.labels[name] = label
-        if not self.labels:
-            raise ValueError("labeled replies require at least one label")
+        self.labels = validate_reply_labels(labeled_reply["labels"])
         self.lists = document["lists"]
         require_fields(
             self.lists, ("maximum_lines", "maximum_exempt_items", "item"), "lists"
