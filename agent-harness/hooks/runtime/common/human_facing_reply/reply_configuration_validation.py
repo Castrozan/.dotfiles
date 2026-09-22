@@ -75,7 +75,7 @@ def validate_artifact_patterns(restriction, patterns):
         "required_pattern": {"kind", "number"},
     }
     for field, groups in expected_groups.items():
-        if not groups.issubset(patterns[field].groupindex.keys()):
+        if groups.difference(patterns[field].groupindex):
             raise ValueError(
                 f"unlinked_artifact.{field} requires groups {sorted(groups)}"
             )
