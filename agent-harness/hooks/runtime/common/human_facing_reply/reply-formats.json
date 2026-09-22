@@ -1,0 +1,125 @@
+{
+  "formats": {
+    "confirmation": {
+      "maximum_words": 100,
+      "grace_words": 10
+    },
+    "labeled_reply": {
+      "body": {
+        "maximum_words": 80,
+        "grace_words": 10
+      },
+      "combined_labels": {
+        "maximum_words": 50,
+        "grace_words": 10
+      },
+      "labels": [
+        {
+          "name": "What is this session about?",
+          "maximum_words": 25,
+          "grace_words": 5,
+          "instruction": "the whole session's subject and goal, never the current step alone: what is being built or changed, on what, and toward what outcome. Enough that someone who never saw this session can start working. No progress report."
+        },
+        {
+          "name": "done",
+          "maximum_words": 20,
+          "grace_words": 5,
+          "instruction": "what this round established or changed."
+        },
+        {
+          "name": "next",
+          "maximum_words": 20,
+          "grace_words": 5,
+          "instruction": "the required remaining work on this same task. Keep unrelated work out; name it only when it changes this result."
+        }
+      ]
+    }
+  },
+  "lists": {
+    "maximum_lines": 5,
+    "maximum_exempt_items": 3,
+    "item": {
+      "maximum_words": 20,
+      "grace_words": 5
+    }
+  },
+  "syntax": {
+    "list_marker_pattern": "^\\s*([-*+]\\s|\\d+[.)]\\s)",
+    "table_row_prefix": "|",
+    "box_drawing_characters": "─│┌┐└┘├┤┬┴┼╭╮╯╰━┃┏┓┗┛╔╗╚╝║═",
+    "code_fence_prefix": "```",
+    "label_emphasis_marker": "**",
+    "block_quote_pattern": "^\\s*>",
+    "inline_code_pattern": "`[^`]*`",
+    "quotation_pattern": "[\\\"“][^\\\"”]*[\\\"”]"
+  },
+  "restrictions": [
+    {
+      "name": "unlinked_artifact",
+      "pattern": "\\b(?:the|this|that)\\s+(?:merge request|pull request)\\b|\\bmerge request\\s*!?\\d+\\b|\\bpull request\\s*#?\\d+\\b|\\bMR\\s*!?\\d+\\b|\\bPR\\s*#?\\d+\\b",
+      "required_pattern": "https?://",
+      "message": "names an MR or PR but gives no link to validate it"
+    },
+    {
+      "name": "required_labels",
+      "message": "runs {word_count} prose words, past the {maximum_words}-word confirmation, but omits the {missing_labels} label"
+    },
+    {
+      "name": "label_emphasis",
+      "message": "writes the {label}: label without bold emphasis"
+    },
+    {
+      "name": "label_separation",
+      "message": "runs the {label}: label into the line above it instead of starting its own block"
+    },
+    {
+      "name": "labeled_section_ceiling",
+      "message": "spends {word_count} words under the labeled blocks, past their {maximum_words}-word budget and its {grace_words}-word grace"
+    },
+    {
+      "name": "per_label_ceiling",
+      "message": "spends {word_count} words on the {label}: block, past its {maximum_words}-word budget and its {grace_words}-word grace"
+    },
+    {
+      "name": "unlabeled_body_ceiling",
+      "message": "spends {word_count} prose words above the labels, past their own {maximum_words}-word budget and its {grace_words}-word grace; move suitable detail into a short list, table, tree or diagram, which is not counted"
+    },
+    {
+      "name": "list_block_length",
+      "message": "stacks {line_count} list lines, past the {maximum_lines}-line ceiling for one list"
+    },
+    {
+      "name": "list_line_words",
+      "message": "runs a {word_count}-word list line, past the {maximum_words}-word ceiling and its {grace_words}-word grace for one line"
+    },
+    {
+      "name": "sentence_dash",
+      "characters": {
+        "—": "em dash",
+        "–": "en dash"
+      },
+      "message": "contains an {character_name} outside a quotation"
+    },
+    {
+      "name": "reaction_opener",
+      "pattern": "^\\s*(you're right|you are right|you're absolutely right|you are absolutely right|good catch|great question|great point|i apologize|my apologies|sorry|absolutely|sure thing|sure|of course|happy to)\\b",
+      "message": "opens with a reaction or sycophancy phrase"
+    },
+    {
+      "name": "narration_opener",
+      "pattern": "^\\s*(let me\\b|let's\\b|i'll go ahead|i'll now|now i'll|now let me|first,? i\\b|i'm going to|i am going to|i will now|i'm about to)",
+      "message": "opens by narrating what you are about to do"
+    }
+  ],
+  "feedback": {
+    "prefix": "Reply breaks the enforced interactive rules",
+    "repair": "Repair exactly that in the reply you already wrote, against the response shape section of the interactive communication instructions you are already carrying. Keep the answer and remove only filler. Loading a skill is not needed, because every enforced rule is already stated in those instructions."
+  },
+  "instruction_paragraphs": [
+    "A reply of {formats[confirmation][maximum_words]} prose words or fewer is a confirmation and takes no labels, a question included. Every longer reply ends in this order, whether it explains, decides, answers a question, or hands off status:",
+    "Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship, chosen through Humanize [representation selection](../SKILL.md#representation-selection). Visual lines never count against the budgets below.",
+    "{label_instructions}",
+    "Bold each label and leave a blank line between the blocks. Each budget is its own and never funds another: the prose above the labels stays within {formats[labeled_reply][body][maximum_words]} words, the labels together within {formats[labeled_reply][combined_labels][maximum_words]}. Label budgets including grace: {label_budgets}. Body grace: {formats[labeled_reply][body][grace_words]}; confirmation grace: {formats[confirmation][grace_words]}; combined-label grace: {formats[labeled_reply][combined_labels][grace_words]} words.",
+    "One list stays within {lists[maximum_lines]} lines and {lists[item][maximum_words]} words per line, plus {lists[item][grace_words]} words of grace per item. Choose representations through Humanize first. Exclude visuals, fenced diffs, and lists of up to {lists[maximum_exempt_items]} items within the item budget plus grace from prose budgets. Other lists count as prose."
+  ]
+}

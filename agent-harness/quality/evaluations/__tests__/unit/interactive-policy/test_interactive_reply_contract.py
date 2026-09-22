@@ -110,7 +110,7 @@ def test_every_substantive_reply_carries_the_three_labels():
     ):
         assert required_label in response_shape
 
-    assert "Bold each label and leave a blank line between the three blocks" in (
+    assert "Bold each label and leave a blank line between the blocks" in (
         response_shape
     )
 
@@ -130,7 +130,7 @@ def test_the_reply_budgets_exempt_visuals_and_never_drop_a_fact():
     response_shape = interactive_policy_section("response_shape")
 
     for required_budget in (
-        "the three labels together within 50",
+        "the labels together within 50",
         "prose above the labels stays within 80 words",
         "within 5 lines and 20 words per line",
         "Visual lines never count",

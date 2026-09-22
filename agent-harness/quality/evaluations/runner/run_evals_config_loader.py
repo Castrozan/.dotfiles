@@ -1,9 +1,15 @@
 from pathlib import Path
+import json
 import subprocess
 
 import yaml
 
 from instructions.instruction_surface_scanner import public_skill_definition_path
+from instructions.reply_format_instructions import (
+    REPLY_FORMAT_CONFIGURATION_PATH,
+    REPLY_FORMAT_PLACEHOLDER,
+    expand_reply_format_instructions,
+)
 from runner.run_evals_worktree_and_environment import REPO_ROOT
 
 
@@ -11,6 +17,11 @@ def load_skill_body_from_path(skill_path: Path) -> str | None:
     if not skill_path.exists():
         return None
     content = skill_path.read_text()
+    if REPLY_FORMAT_PLACEHOLDER in content:
+        configuration = json.loads(
+            (REPO_ROOT / REPLY_FORMAT_CONFIGURATION_PATH).read_text()
+        )
+        content = expand_reply_format_instructions(content, configuration)
     parts = content.split("---", 2)
     if len(parts) >= 3:
         return parts[2].strip()
@@ -33,7 +44,19 @@ def load_skill_body_from_git_ref(skill_path: str, instruction_ref: str) -> str |
     )
     if result.returncode != 0:
         return None
-    return skill_body_from_content(result.stdout)
+    content = result.stdout
+    if REPLY_FORMAT_PLACEHOLDER in content:
+        configuration = subprocess.run(
+            ["git", "show", f"{instruction_ref}:{REPLY_FORMAT_CONFIGURATION_PATH}"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        content = expand_reply_format_instructions(
+            content, json.loads(configuration.stdout)
+        )
+    return skill_body_from_content(content)
 
 
 def resolve_system_prompt_for_test(

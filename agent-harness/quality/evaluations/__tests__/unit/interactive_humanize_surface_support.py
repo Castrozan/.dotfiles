@@ -1,4 +1,5 @@
 from instructions.instruction_surface_scanner import REPO_ROOT
+from instructions.reply_format_instructions import expand_reply_format_instructions
 
 
 HUMANIZE_DIRECTORY = (
@@ -60,7 +61,9 @@ INTERACTIVE_LAUNCH_SOURCES = (
 
 
 def interactive_policy_section(tag: str) -> str:
-    policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
+    policy = expand_reply_format_instructions(
+        INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
+    )
     section = policy.split("### " + tag.replace("_", " ").capitalize() + "\n", 1)[
         1
     ].split("\n### ", 1)[0]

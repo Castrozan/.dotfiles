@@ -1,8 +1,14 @@
 import hashlib
+import json
 import re
 from pathlib import Path
 
 from instructions.instruction_surface_scanner import public_skill_definition_path
+from instructions.reply_format_instructions import (
+    REPLY_FORMAT_CONFIGURATION_PATH,
+    REPLY_FORMAT_PLACEHOLDER,
+    expand_reply_format_instructions,
+)
 
 import yaml
 
@@ -18,6 +24,7 @@ HUMANIZE_EVIDENCE_RUNNER_COMPONENTS = (
     "runner/comparisons/run_evals_ab.py",
     "runner/judging/run_evals_assertions.py",
     "runner/run_evals_config_loader.py",
+    "instructions/reply_format_instructions.py",
     "runner/judging/run_evals_judge.py",
     "runner/sampling/run_evals_significance.py",
     "runner/execution/run_evals_subject_port.py",
@@ -63,9 +70,13 @@ def digest_instruction_paths(repo_root: Path, paths: set[Path]) -> str:
         relative_path = path.relative_to(repo_root)
         digest.update(str(relative_path).encode())
         digest.update(b"\0")
-        digest.update(
-            instruction_wording(path.read_text(encoding="utf-8")).encode("utf-8")
-        )
+        text = path.read_text(encoding="utf-8")
+        if REPLY_FORMAT_PLACEHOLDER in text:
+            configuration = json.loads(
+                (repo_root / REPLY_FORMAT_CONFIGURATION_PATH).read_text()
+            )
+            text = expand_reply_format_instructions(text, configuration)
+        digest.update(instruction_wording(text).encode("utf-8"))
         digest.update(b"\0")
     return digest.hexdigest()
 
@@ -88,6 +99,7 @@ def evaluation_runner_paths(repo_root: Path) -> set[Path]:
     paths.update((evaluation_root / "reporting").glob("run_evals_*.py"))
     for runner_component in (
         "instructions/instruction_surface_scanner.py",
+        "instructions/reply_format_instructions.py",
         "run-evals.py",
         "agent-evaluations-home-manager.nix",
         "node-provider-runtime/package.nix",

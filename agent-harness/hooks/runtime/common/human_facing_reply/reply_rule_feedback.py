@@ -1,20 +1,13 @@
-#!/usr/bin/env python3
-
-from __future__ import annotations
+from reply_format_configuration import REPLY_FORMAT_CONFIGURATION
 
 
-REPLY_RECOVERY_INSTRUCTION = (
-    "Repair exactly that in the reply you already wrote, against the response shape "
-    "section of the interactive communication instructions you are already carrying. "
-    "Keep the answer and remove only filler. Loading a skill is not needed, because "
-    "every enforced rule is already stated in those instructions."
-)
-
-
-def bounce_guidance(violations: list[str]) -> str:
+def bounce_guidance(
+    violations: list[str], configuration=REPLY_FORMAT_CONFIGURATION
+) -> str:
     return (
-        "Reply breaks the enforced interactive rules ("
+        configuration.feedback["prefix"]
+        + " ("
         + "; ".join(violations)
         + "). "
-        + REPLY_RECOVERY_INSTRUCTION
+        + configuration.feedback["repair"]
     )

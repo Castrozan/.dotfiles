@@ -1,6 +1,7 @@
 import re
 
 from instructions.instruction_surface_scanner import REPO_ROOT
+from instructions.reply_format_instructions import expand_reply_format_instructions
 
 CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH = (
     REPO_ROOT
@@ -76,7 +77,9 @@ def test_representation_policy_maps_reader_needs_to_the_smallest_useful_form():
 
 
 def test_interactive_contract_explicitly_allows_the_selected_representation():
-    policy = INTERACTIVE_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8").lower()
+    policy = expand_reply_format_instructions(
+        INTERACTIVE_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8")
+    ).lower()
     assert "#representation-selection)" in policy
     assert "smallest useful form" in policy
     assert "no bullet" not in policy

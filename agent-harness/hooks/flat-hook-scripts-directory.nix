@@ -29,4 +29,6 @@ pkgs.runCommandLocal "agent-hook-scripts" { } ''
     --replace-fail "@hookPythonInterpreter@" "${hookPythonInterpreter}"
   substituteInPlace "$out/servant_identity_handler.py" \
     --replace-fail "@servantsDomainDirectory@" "${servantsDomainDirectory}"
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$out" ${hookPythonInterpreter} -c \
+    'from reply_rule_catalog import template_violations_in_reply; template_violations_in_reply("")'
 ''

@@ -9,6 +9,7 @@ from interactive_humanize_surface_support import (
     ON_DEMAND_HUMANIZE_SOURCES,
     interactive_policy_section,
 )
+from instructions.reply_format_instructions import expand_reply_format_instructions
 
 
 def test_each_harness_injects_only_the_interactive_contract():
@@ -36,7 +37,9 @@ def test_explicit_humanize_request_loads_before_other_actions():
 
 
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
-    always_injected_policy_bytes = len(INTERACTIVE_POLICY_PATH.read_bytes())
+    always_injected_policy_bytes = len(
+        expand_reply_format_instructions(INTERACTIVE_POLICY_PATH.read_text()).encode()
+    )
     assert (
         always_injected_policy_bytes <= MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES
     ), (

@@ -63,3 +63,21 @@ def test_stop_dispatcher_imports_shared_modules_after_flat_deploy(
     )
     assert clawde.returncode == 0
     assert clawde.stdout.strip() == ""
+
+
+def test_packaged_stop_hook_reads_the_packaged_reply_configuration(tmp_path):
+    flatten_into_single_runtime_directory(tmp_path)
+    configuration_path = tmp_path / "reply-formats.json"
+    configuration = json.loads(configuration_path.read_text())
+    configuration["formats"]["confirmation"] = {"maximum_words": 5, "grace_words": 0}
+    configuration_path.write_text(json.dumps(configuration))
+
+    result = run_flattened_hook(
+        tmp_path,
+        "stop-dispatcher.py",
+        {"hook_event_name": "Stop", "reply_text": "word " * 6},
+        {INTERACTIVE_ENV_VAR: "/some/interactive-communication.md"},
+    )
+
+    assert result.returncode == 0
+    assert "5-word confirmation" in json.loads(result.stdout)["reason"]

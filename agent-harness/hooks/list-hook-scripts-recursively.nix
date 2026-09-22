@@ -2,7 +2,10 @@
 let
   isHookScriptFilename =
     filename:
-    lib.hasSuffix ".py" filename || lib.hasSuffix ".sh" filename || lib.hasSuffix ".md" filename;
+    lib.hasSuffix ".py" filename
+    || lib.hasSuffix ".sh" filename
+    || lib.hasSuffix ".md" filename
+    || lib.hasSuffix ".json" filename;
 
   isExcludedDirectoryName =
     directoryName: directoryName == "__pycache__" || directoryName == "__tests__";

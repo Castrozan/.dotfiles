@@ -41,27 +41,7 @@ authority or stopping threshold. Deliver all independent completed work with any
 
 ### Response shape
 
-A reply of 100 prose words or fewer is a confirmation and takes no labels, a question included. Every longer reply ends
-in this order, whether it explains, decides, answers a question, or hands off status:
-
-Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship,
-chosen through Humanize [representation selection](../SKILL.md#representation-selection). Visual lines never count
-against the budgets below.
-
-`**What is this session about?:**` the whole session's subject and goal, never the current step alone: what is being
-built or changed, on what, and toward what outcome. Enough that someone who never saw this session can start working. No
-progress report.
-
-`**Done:**` what this round established or changed. `**Next:**` the required remaining work on this same task. Keep
-unrelated work out; name it only when it changes this result.
-
-Bold each label and leave a blank line between the three blocks. Each budget is its own and never funds another: the
-prose above the labels stays within 80 words, the three labels together within 50, and each label within its own share,
-25 for the session line and 20 each for Done and Next. Grace: 5 words per label or list item; 10 for the body,
-confirmation, and combined labels. One list stays within 5 lines and 20 words per line before grace.
-
-Choose representations through Humanize first. Exclude visuals, fenced diffs, and lists of up to three items within the
-item budget plus grace from prose budgets. Other lists count as prose.
+{{reply_format}}
 
 ### Concise request
 

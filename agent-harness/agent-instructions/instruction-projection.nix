@@ -6,11 +6,27 @@ let
   );
   project =
     name: manifest:
+    let
+      usesReplyFormats =
+        if manifest ? sourceDirectory then
+          toString manifest.sourceDirectory == toString ./skills/writing/humanize
+        else
+          builtins.any (document: pkgs.lib.hasInfix "{{reply_format}}" document.text) manifest.documents;
+    in
     pkgs.runCommand name
       {
         nativeBuildInputs = [ python ];
         PYTHONPATH = evaluationDirectory;
-        manifestFile = pkgs.writeText "${name}-manifest.json" (builtins.toJSON manifest);
+        manifestFile = pkgs.writeText "${name}-manifest.json" (
+          builtins.toJSON (
+            manifest
+            // pkgs.lib.optionalAttrs usesReplyFormats {
+              replyFormatConfiguration = builtins.fromJSON (
+                builtins.readFile ../hooks/runtime/common/human_facing_reply/reply-formats.json
+              );
+            }
+          )
+        );
       }
       ''
         python ${evaluationDirectory}/instructions/instruction_projection.py "$manifestFile" "$out"

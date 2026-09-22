@@ -8,7 +8,7 @@ from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
 
 HOOKS_ROOT = Path(__file__).resolve().parents[2]
 
-DEPLOYED_HOOK_SCRIPT_SUFFIXES = (".py", ".sh", ".md")
+DEPLOYED_HOOK_SCRIPT_SUFFIXES = (".py", ".sh", ".md", ".json")
 DIRECTORIES_EXCLUDED_FROM_DEPLOY = ("__pycache__", "__tests__")
 
 INTERACTIVE_ENV_VAR = "AGENT_INTERACTIVE_PREFERENCES_PATH"
