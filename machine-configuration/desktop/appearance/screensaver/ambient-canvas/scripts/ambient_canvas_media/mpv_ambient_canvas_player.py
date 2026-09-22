@@ -28,6 +28,7 @@ def build_mpv_arguments(socket_path):
         "--vo=gpu",
         "--gpu-context=wayland",
         "--hwdec=auto-safe",
+        "--video-sync=desync",
         "--force-window=yes",
         "--audio=no",
         "--title=ambient-canvas-gpu-screensaver",

@@ -74,6 +74,7 @@ def test_dwell_override_ignores_a_missing_or_garbage_file(tmp_path):
 def test_mpv_arguments_pin_the_window_title_and_screensaver_flags():
     arguments = build_mpv_arguments("/tmp/ambient-canvas.sock")
     assert "--hwdec=auto-safe" in arguments
+    assert "--video-sync=desync" in arguments
     assert "--force-window=yes" in arguments
     assert "--title=ambient-canvas-gpu-screensaver" in arguments
     assert "--audio=no" in arguments
