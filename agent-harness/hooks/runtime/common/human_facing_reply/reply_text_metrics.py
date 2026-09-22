@@ -41,10 +41,7 @@ class ReplyUnderReview:
         self.inline_blocks = document.content.inline_blocks
         self.opening_text = document.content.opening_text.translate(
             str.maketrans(
-                {
-                    character: "'"
-                    for character in configuration.syntax["apostrophe_characters"]
-                }
+                dict.fromkeys(configuration.syntax["apostrophe_characters"], "'")
             )
         )
         self.prose_without_quotations = text_outside_quotations(
