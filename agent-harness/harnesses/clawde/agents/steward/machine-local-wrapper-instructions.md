@@ -13,3 +13,10 @@ only, and escalate to the operator on any non-fast-forward divergence you cannot
 Its green proof is the ordinary rebuild you already run for this machine, since that rebuild reads this wrapper. Treat
 it purely as a second repo you keep synced, never a peer to coordinate with, and never let its private contents cross
 into the shared dotfiles repo.
+
+### Chise validation launcher
+
+Launch every chise validation through
+`scripts/validation/start_detached_validation_of_head.py` in the steward workspace. It owns the systemd scope, pinned
+wrapper build, log, and revision-keyed result sentinel. Never replace it with a raw background `nix build`: a successful
+build can finish silently, leaving no verdict and making the next tick misclassify success as missing evidence.
