@@ -6,6 +6,7 @@ let
 in
 {
   imports = [
+    ../plugin-distribution/home-manager.nix
     ../agent-to-agent-communication/client/a2a-client-home-manager.nix
     ../servants/servants-home-manager.nix
     ../session-control/agent-session-control-home-manager.nix

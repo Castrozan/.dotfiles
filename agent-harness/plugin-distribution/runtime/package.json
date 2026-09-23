@@ -1,0 +1,8 @@
+{
+  "name": "agent-plugin-distribution-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@sentry/dotagents": "3.1.0"
+  }
+}

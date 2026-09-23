@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "distribution-probe",
+  "version": "1.0.0",
+  "description": "Exercise skill discovery and a stateless MCP tool across harnesses.",
+  "author": {
+    "name": "Carmilla"
+  }
+}
