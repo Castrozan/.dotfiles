@@ -22,6 +22,8 @@ def main():
         for violation in directory_entry_violations(counts, ceilings)
     ]
     for directory, ceiling in sorted(ceilings.items()):
+        if directory == ".":
+            continue
         count = counts.get(directory, 0)
         if count < ceiling:
             action = (
