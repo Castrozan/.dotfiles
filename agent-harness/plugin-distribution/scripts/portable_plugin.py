@@ -52,6 +52,14 @@ def read_portable_plugin(source: Path, targets: tuple[str, ...]) -> str:
             "Native extensions, instructions, hooks, agents and workflows "
             "need explicit adapters; this prototype only builds skills and MCP"
         )
+    validate_portable_links(source)
+    mcp_path = source / "mcp.json"
+    if mcp_path.exists():
+        validate_mcp_targets(mcp_path, targets)
+    return name
+
+
+def validate_portable_links(source: Path) -> None:
     for path in source.rglob("*"):
         if ".git" in path.relative_to(source).parts:
             continue
@@ -59,10 +67,6 @@ def read_portable_plugin(source: Path, targets: tuple[str, ...]) -> str:
             resolved = path.resolve(strict=True)
             if resolved.is_dir() or not resolved.is_relative_to(source):
                 raise ValueError(f"Materialize directory or external symlinks: {path}")
-    mcp_path = source / "mcp.json"
-    if mcp_path.exists():
-        validate_mcp_targets(mcp_path, targets)
-    return name
 
 
 def validate_mcp_targets(mcp_path: Path, targets: tuple[str, ...]) -> None:
