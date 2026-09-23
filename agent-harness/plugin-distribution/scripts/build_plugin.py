@@ -9,6 +9,7 @@ import tempfile
 from itertools import chain
 from pathlib import Path
 
+from claude_mcp import write_claude_mcp
 from portable_plugin import read_portable_plugin
 
 
@@ -69,6 +70,11 @@ def build_plugin(source: Path, output: Path, targets: tuple[str, ...]) -> None:
             }
             run_dotagents("install", output, environment)
             run_dotagents("doctor", output, environment)
+            if "claude" in targets:
+                write_claude_mcp(
+                    output / ".agents/plugins" / name,
+                    environment["AGENT_PLUGIN_MCP_SHELL"],
+                )
         remove_build_inputs(output)
     except BaseException:
         shutil.rmtree(output)

@@ -13,6 +13,7 @@ pkgs.writeShellApplication {
   runtimeInputs = [ pkgs.python312 ];
   text = ''
     export DOTAGENTS_PLUGIN_BUILDER=${dotagents}
+    export AGENT_PLUGIN_MCP_SHELL=${pkgs.bash}/bin/bash
     exec python3 ${./scripts}/build_plugin.py "$@"
   '';
 }

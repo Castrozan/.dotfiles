@@ -4,6 +4,11 @@ This boundary turns a resolved [Agent Plugins v1 package](https://agent-plugins.
 artifacts. It uses the public [dotagents CLI](https://github.com/getsentry/dotagents) as its adapter backend, pinned with
 its dependencies in the npm lockfile. It does not depend on Claude's installed cache or require a hosted marketplace.
 
+A narrow Claude MCP adapter translates portable plugin variables to
+[Claude's native variables](https://code.claude.com/docs/en/plugins-reference#environment-variables), preserves the
+portable process environment, and applies the working directory through a pinned Bash launcher. This covers a gap in
+the pinned upstream renderer; Codex and OpenCode keep upstream output.
+
 `agent-plugin-build SOURCE --output DESTINATION --target claude --target codex --target opencode` builds one package
 into a new directory. The source must contain the portable root `plugin.json`. Select the package directory from an
 existing marketplace checkout, a pinned repository, or a local source before building. Existing destinations are refused;

@@ -1,11 +1,18 @@
 import json
 import os
 import sys
+from pathlib import Path
 
 
 def respond(request):
     method = request.get("method")
     if method == "initialize":
+        directory = Path(__file__).resolve().parents[1]
+        if (
+            Path.cwd().resolve() != directory
+            or Path(os.environ.get("PLUGIN_ROOT", "")).resolve() != directory
+        ):
+            raise RuntimeError("Plugin runtime paths were not projected")
         return {
             "protocolVersion": request["params"]["protocolVersion"],
             "capabilities": {"tools": {}},

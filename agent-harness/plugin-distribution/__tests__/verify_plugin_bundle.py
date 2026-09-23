@@ -9,7 +9,7 @@ def read_json(path):
     return json.loads(path.read_text())
 
 
-def verify_mcp(command, environment):
+def verify_mcp(command, environment, directory=None):
     requests = [
         {
             "jsonrpc": "2.0",
@@ -36,6 +36,7 @@ def verify_mcp(command, environment):
     process = subprocess.run(
         command,
         env=os.environ | environment,
+        cwd=directory,
         input="".join(json.dumps(request) + "\n" for request in requests),
         capture_output=True,
         text=True,
@@ -63,10 +64,20 @@ def verify_bundle(bundle, source):
         server = read_json(plugin / manifest["mcpServers"])["mcpServers"][
             "distribution-probe"
         ]
-        arguments = [
-            value.replace("${PLUGIN_ROOT}", str(plugin)) for value in server["args"]
-        ]
-        verify_mcp([server["command"], *arguments], server["env"])
+        placeholder = (
+            "${CLAUDE_PLUGIN_ROOT}" if target == "claude" else "${PLUGIN_ROOT}"
+        )
+        serialized = json.dumps(server).replace(placeholder, str(plugin))
+        if target == "claude":
+            assert "${PLUGIN_ROOT}" not in serialized
+            serialized = serialized.replace("${CLAUDE_PLUGIN_DATA}", str(plugin))
+        server = json.loads(serialized)
+        environment = {"PLUGIN_ROOT": str(plugin)} | server["env"]
+        verify_mcp(
+            [server["command"], *server["args"]],
+            environment,
+            plugin if target == "codex" else None,
+        )
 
     claude_marketplace = read_json(bundle / ".claude-plugin/marketplace.json")
     assert (bundle / claude_marketplace["plugins"][0]["source"]).resolve() == plugin
@@ -81,7 +92,7 @@ def verify_bundle(bundle, source):
     server = read_json(bundle / ".opencode/opencode.jsonc")["mcp"][
         "plugin.distribution-probe.distribution-probe"
     ]
-    verify_mcp(server["command"], server["environment"])
+    verify_mcp(server["command"], server["environment"], server["cwd"])
     for removed in ("input", ".git", "agents.toml", "agents.lock"):
         assert not (bundle / removed).exists()
     print("Skills, references, catalogs and MCP calls verified for all three targets")
