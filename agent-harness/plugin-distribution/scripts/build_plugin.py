@@ -2,9 +2,11 @@ import argparse
 import json
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
+from itertools import chain
 from pathlib import Path
 
 from portable_plugin import read_portable_plugin
@@ -30,7 +32,10 @@ def run_dotagents(command: str, output: Path, environment: dict[str, str]) -> No
 
 def prepare_workspace(source: Path, output: Path, name: str, targets: tuple) -> None:
     (output / ".git").mkdir()
-    shutil.copytree(source, output / "input", ignore=shutil.ignore_patterns(".git"))
+    snapshot = output / "input"
+    shutil.copytree(source, snapshot, ignore=shutil.ignore_patterns(".git"))
+    for path in chain((snapshot,), snapshot.rglob("*")):
+        path.chmod(path.stat().st_mode | stat.S_IWUSR)
     (output / ".gitignore").write_text("agents.lock\n.agents/.gitignore\n")
     (output / "agents.toml").write_text(
         f"version = 1\nagents = {json.dumps(targets)}\n\n"

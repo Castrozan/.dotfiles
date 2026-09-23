@@ -1,4 +1,5 @@
 import shutil
+import stat
 import subprocess
 from pathlib import Path
 
@@ -8,6 +9,22 @@ import build_plugin
 
 
 FIXTURE = Path(__file__).parents[1] / "fixtures" / "portable-plugin"
+
+
+def test_readonly_input_is_materialized_without_mutating_source(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    executable = source / "script"
+    executable.write_text("preserve executable permissions")
+    executable.chmod(0o555)
+    output = tmp_path / "output"
+    output.mkdir()
+    build_plugin.prepare_workspace(source, output, "example", ("claude",))
+    copied = output / "input/script"
+    assert copied.stat().st_mode & stat.S_IWUSR
+    assert copied.stat().st_mode & stat.S_IXUSR
+    assert not executable.stat().st_mode & stat.S_IWUSR
+    assert copied.read_bytes() == executable.read_bytes()
 
 
 def test_existing_output_is_untouched(tmp_path):

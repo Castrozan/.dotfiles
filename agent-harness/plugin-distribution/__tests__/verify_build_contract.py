@@ -41,6 +41,7 @@ def verify_contract(fixture):
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary).resolve()
         source = Path(shutil.copytree(fixture, root / "source"))
+        subprocess.run(["chmod", "-R", "u+w", str(source)], check=True, timeout=5)
         output = root / "bundle"
         targets = ("claude", "codex", "opencode")
         build(source, output, targets)
