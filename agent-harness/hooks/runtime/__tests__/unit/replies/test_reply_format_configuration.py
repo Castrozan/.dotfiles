@@ -65,6 +65,12 @@ def test_configured_label_names_and_budgets_are_used(configuration_document):
         template_violations_in_reply("**Result:** one two", configuration=configuration)
         == []
     )
+    assert any(
+        "same line" in violation
+        for violation in template_violations_in_reply(
+            "**Result:**\none two", configuration=configuration
+        )
+    )
     assert (
         "Result:"
         in template_violations_in_reply("missing label", configuration=configuration)[0]

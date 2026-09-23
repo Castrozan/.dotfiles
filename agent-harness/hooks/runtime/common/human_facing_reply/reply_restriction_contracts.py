@@ -6,6 +6,7 @@ REPLY_RESTRICTION_CONTRACTS = {
     "required_labels": (set(), {"word_count", "maximum_words", "missing_labels"}),
     "label_emphasis": (set(), {"label"}),
     "label_separation": (set(), {"label"}),
+    "label_inline_content": (set(), {"label"}),
     "label_order": (set(), {"expected_labels"}),
     "duplicate_label": (set(), {"label"}),
     "labeled_section_ceiling": (

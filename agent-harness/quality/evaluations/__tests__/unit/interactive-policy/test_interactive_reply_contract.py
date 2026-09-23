@@ -110,11 +110,10 @@ def test_every_substantive_reply_carries_the_three_labels():
     ):
         assert required_label in response_shape
 
-    assert "Bold each label and leave a blank line between the blocks" in (
-        response_shape
-    )
-
     for required_behavior in (
+        "Bold each label",
+        "start its content on the same line",
+        "Leave a blank line between blocks",
         "100 prose words or fewer is a confirmation",
         "the whole session's subject and goal",
         "never the current step alone",

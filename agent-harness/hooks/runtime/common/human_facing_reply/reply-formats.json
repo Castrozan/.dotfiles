@@ -81,6 +81,10 @@
       "message": "runs the {label}: label into the line above it instead of starting its own block"
     },
     {
+      "name": "label_inline_content",
+      "message": "leaves the {label}: line without content; start the content on the same line as the label"
+    },
+    {
       "name": "duplicate_label",
       "message": "repeats the {label}: label"
     },
@@ -135,7 +139,7 @@
     "A reply of {formats[confirmation][maximum_words]} prose words or fewer is a confirmation and takes no labels, a question included. Every longer reply ends with these labels exactly once, in order:",
     "Optional visual first: a table, file tree, or diagram whenever it is the smallest useful form for the relationship, chosen through Humanize [representation selection](../SKILL.md#representation-selection). Visual lines never count against the budgets below.",
     "{label_instructions}",
-    "Bold each label and leave a blank line between the blocks. Budgets are independent: the prose above the labels stays within {formats[labeled_reply][body][maximum_words]} words, the labels together within {formats[labeled_reply][combined_labels][maximum_words]}. Label budgets including grace: {label_budgets}. Body grace: {formats[labeled_reply][body][grace_words]}; confirmation: {formats[confirmation][grace_words]}; combined labels: {formats[labeled_reply][combined_labels][grace_words]} words.",
+    "Bold each label and start its content on the same line. Leave a blank line between blocks. Budgets are independent: the prose above the labels stays within {formats[labeled_reply][body][maximum_words]} words, the labels together within {formats[labeled_reply][combined_labels][maximum_words]}. Label budgets including grace: {label_budgets}. Body grace: {formats[labeled_reply][body][grace_words]}; confirmation: {formats[confirmation][grace_words]}; combined labels: {formats[labeled_reply][combined_labels][grace_words]} words.",
     "One list stays within {lists[maximum_lines]} lines and {lists[item][maximum_words]} words per complete item, plus {lists[item][grace_words]} words of grace per item. Choose representations through Humanize first. Exclude visuals, fenced code and diffs, and lists of up to {lists[maximum_exempt_items]} items within the item budget plus grace from prose budgets. Other lists count as prose."
   ]
 }
