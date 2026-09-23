@@ -34,6 +34,7 @@ def directory_entry_violations(counts, ceilings, directories=None):
             directory, count, ceilings.get(directory, DIRECTORY_ENTRY_LIMIT)
         )
         for directory, count in sorted(counts.items())
-        if (directories is None or directory in directories)
+        if directory != "."
+        and (directories is None or directory in directories)
         and count > ceilings.get(directory, DIRECTORY_ENTRY_LIMIT)
     ]
