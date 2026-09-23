@@ -14,7 +14,7 @@ in
       ],
     }:
     pkgs.runCommand "agent-plugin-bundle" { nativeBuildInputs = [ package ]; } ''
-      agent-plugin-build ${pkgs.lib.escapeShellArg (toString source)} --output "$out" \
+      agent-plugin-build ${pkgs.lib.escapeShellArg "${source}"} --output "$out" \
         ${pkgs.lib.escapeShellArgs (
           pkgs.lib.concatMap (target: [
             "--target"
