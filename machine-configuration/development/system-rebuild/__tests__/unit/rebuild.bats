@@ -116,79 +116,45 @@ readonly BACKEND_CONTRACT=(
 	[ -z "$output" ]
 }
 
-@test "the nixos backend resolves the flake ref to /etc/nixos when that flake is present" {
+@test "the nixos backend resolves the entrypoint owner to the whole machine-local repository" {
 	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	etc_nixos_flake_present() { return 0; }
+	machine_local_entrypoint_flake_present() { return 0; }
 	run resolve_flake_reference chise
-	[ "$output" = "/etc/nixos#chise" ]
+	[ "$output" = "git+file:///home/zanoni/zanoni-system#chise" ]
 }
 
-@test "the nixos backend falls back to bare dotfiles when /etc/nixos has no flake" {
+@test "a host without an entrypoint repository builds from bare dotfiles" {
 	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	etc_nixos_flake_present() { return 1; }
-	run resolve_flake_reference chise
-	[[ "$output" == *".dotfiles?submodules=1#chise" ]]
+	machine_local_entrypoint_flake_present() { return 0; }
+	run resolve_flake_reference kira
+	[[ "$output" == *".dotfiles?submodules=1#kira" ]]
 }
 
 @test "the entrypoint owner may not deploy from bare dotfiles" {
 	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	etc_nixos_flake_present() { return 1; }
+	machine_local_entrypoint_flake_present() { return 1; }
 	run refuse_to_deploy_the_entrypoint_owner_from_bare_dotfiles chise
 	[ "$status" -ne 0 ]
 	[[ "$output" == *"refusing to deploy chise from bare"* ]]
 }
 
-@test "the entrypoint owner may deploy once /etc/nixos carries the flake" {
+@test "the entrypoint owner may deploy when its repository carries a flake" {
 	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	etc_nixos_flake_present() { return 0; }
+	machine_local_entrypoint_flake_present() { return 0; }
 	run refuse_to_deploy_the_entrypoint_owner_from_bare_dotfiles chise
 	[ "$status" -eq 0 ]
 }
 
 @test "a host that does not own the entrypoint deploys from bare dotfiles freely" {
 	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	etc_nixos_flake_present() { return 1; }
+	machine_local_entrypoint_flake_present() { return 1; }
 	run refuse_to_deploy_the_entrypoint_owner_from_bare_dotfiles kira
 	[ "$status" -eq 0 ]
 }
 
-@test "entrypoint sync is skipped for hosts that do not own it" {
-	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	machine_local_entrypoint_flake_present() { return 0; }
-	etc_nixos_flake_matches_machine_local_entrypoint() { return 1; }
-	run_privileged() { echo "PRIVILEGED_CALL"; }
-	run sync_etc_nixos_flake_from_machine_local_entrypoint kira
-	[ "$status" -eq 0 ]
-	[[ "$output" != *"PRIVILEGED_CALL"* ]]
-}
-
-@test "entrypoint sync is skipped when the entrypoint flake is absent" {
-	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	machine_local_entrypoint_flake_present() { return 1; }
-	run_privileged() { echo "PRIVILEGED_CALL"; }
-	run sync_etc_nixos_flake_from_machine_local_entrypoint chise
-	[ "$status" -eq 0 ]
-	[[ "$output" != *"PRIVILEGED_CALL"* ]]
-}
-
-@test "entrypoint sync is skipped when /etc/nixos already matches" {
-	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	machine_local_entrypoint_flake_present() { return 0; }
-	etc_nixos_flake_matches_machine_local_entrypoint() { return 0; }
-	run_privileged() { echo "PRIVILEGED_CALL"; }
-	run sync_etc_nixos_flake_from_machine_local_entrypoint chise
-	[ "$status" -eq 0 ]
-	[[ "$output" != *"PRIVILEGED_CALL"* ]]
-}
-
-@test "entrypoint sync installs /etc/nixos from the entrypoint when they differ" {
-	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	machine_local_entrypoint_flake_present() { return 0; }
-	etc_nixos_flake_matches_machine_local_entrypoint() { return 1; }
-	run_privileged() { echo "PRIVILEGED_CALL $*"; }
-	run sync_etc_nixos_flake_from_machine_local_entrypoint chise
-	[ "$status" -eq 0 ]
-	[[ "$output" == *"PRIVILEGED_CALL install -D -m 0644"* ]]
+@test "the entrypoint owner builds the repository without a persistent lock" {
+	grep -q 'lock_flags+=(--no-write-lock-file)' "$BACKENDS_SOURCE_DIRECTORY/nixos"
+	grep -q 'nixos-rebuild switch --flake.*"${lock_flags\[@\]}"' "$BACKENDS_SOURCE_DIRECTORY/nixos"
 }
 
 @test "nixos-rebuild is invoked with the rebuild-wrapper sentinel" {

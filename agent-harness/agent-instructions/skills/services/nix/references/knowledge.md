@@ -22,17 +22,14 @@ your work in a branchless stack that a reset silently orphans, and staging the s
 whatever the live HEAD is, dragging all of their unpushed work into your commit. Stage the intended pointer explicitly
 with `git update-index --cacheinfo` rather than adding the submodule path.
 
-### The machine local wrapper lock is not in the deploy path
+### The machine local wrapper repository is the deploy path
 
-On the host built through the machine-local entrypoint flake, the rebuild copies that flake to the system flake
-directory and builds from there with lock writing disabled, and that directory carries no lock at all, so the dotfiles
-input resolves fresh at the branch tip on every rebuild. Landing the commit on the branch is therefore the whole deploy
-step, and the wrapper's own recorded revision can sit arbitrarily far behind without holding anything back. When a
-change fails to appear, do not chase a stale lock there; check whether the commit reached the branch.
+On a host with a machine-local entrypoint, `rebuild` resolves that whole repository through the local Git fetcher and
+disables lock writes. This keeps relative module imports inside one flake source. Never copy only `flake.nix` into
+`/etc/nixos` or add the wrapper as its own input; both split composition from the files it owns.
 
-Only the switch refreshes that copy, so an entrypoint edit not yet switched leaves the system flake directory on the
-superseded flake and any proof resolved from it silently reports green for the old one; compare the two before trusting
-such a proof.
+The Git source excludes untracked files, so stage every new wrapper file before rebuilding. If a wrapper change does not
+appear, inspect the resolved wrapper revision and verify the deployed runtime instead of chasing its ignored lock file.
 
 ### A oneshot that runs long hangs every rebuild that restarts it
 
