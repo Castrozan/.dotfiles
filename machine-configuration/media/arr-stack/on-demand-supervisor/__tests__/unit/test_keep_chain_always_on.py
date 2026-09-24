@@ -33,6 +33,12 @@ def test_always_on_starts_full_chain_and_never_queries_jellyseerr(monkeypatch):
     written_epochs = []
     jellyseerr_calls = []
     sweep_calls = []
+    alert_calls = []
+    monkeypatch.setattr(
+        supervisor_core,
+        "maybe_alert_blocked_imports",
+        lambda configuration, now, dry_run: alert_calls.append(now),
+    )
     monkeypatch.setattr(
         supervisor_core, "running_on_demand_services", lambda base, services: set()
     )
@@ -63,6 +69,7 @@ def test_always_on_starts_full_chain_and_never_queries_jellyseerr(monkeypatch):
     assert written_epochs == [1000.0]
     assert jellyseerr_calls == []
     assert sweep_calls == [1000.0]
+    assert alert_calls == [1000.0]
 
 
 def test_always_on_holds_without_restart_when_full_chain_is_up(monkeypatch):

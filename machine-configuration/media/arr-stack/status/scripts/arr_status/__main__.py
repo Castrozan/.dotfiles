@@ -45,6 +45,10 @@ def gather_status_lines():
                 sonarr_snapshot,
             )
         )
+    status_lines.extend(
+        status_assembly.untracked_download_lines(radarr_snapshot, "movie")
+    )
+    status_lines.extend(status_assembly.untracked_download_lines(sonarr_snapshot, "tv"))
     return status_lines
 
 

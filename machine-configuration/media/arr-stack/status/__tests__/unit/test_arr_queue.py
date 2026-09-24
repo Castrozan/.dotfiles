@@ -9,6 +9,7 @@ sys.path.insert(0, str(ARR_STATUS_PACKAGE_DIRECTORY_PATH))
 from types import SimpleNamespace
 
 import arr_queue
+from urllib.parse import parse_qs, urlsplit
 
 
 def endpoint():
@@ -18,6 +19,21 @@ def endpoint():
 def test_fetch_queue_records_falls_back_to_empty(monkeypatch):
     monkeypatch.setattr(arr_queue.arr_http, "get_json", lambda *a, **k: None)
     assert arr_queue.fetch_queue_records(endpoint()) == []
+
+
+def test_fetch_queue_includes_unknown_downloads_and_every_page(monkeypatch):
+    queries = []
+
+    def get_page(base_url, api_key, path):
+        query = parse_qs(urlsplit(path).query)
+        queries.append(query)
+        return {"records": [{"id": len(queries)}], "totalRecords": 2}
+
+    monkeypatch.setattr(arr_queue.arr_http, "get_json", get_page)
+    assert arr_queue.fetch_queue_records(endpoint()) == [{"id": 1}, {"id": 2}]
+    assert [query["page"] for query in queries] == [["1"], ["2"]]
+    assert all(query["includeUnknownSeriesItems"] == ["true"] for query in queries)
+    assert all(query["includeUnknownMovieItems"] == ["true"] for query in queries)
 
 
 def test_build_radarr_movie_index_maps_tmdb_to_id(monkeypatch):

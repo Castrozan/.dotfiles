@@ -4,12 +4,22 @@ ARR_QUEUE_PAGE_SIZE = 200
 
 
 def fetch_queue_records(endpoint):
-    result = arr_http.get_json(
-        endpoint.base_url,
-        endpoint.api_key,
-        f"/api/v3/queue?pageSize={ARR_QUEUE_PAGE_SIZE}",
-    )
-    return (result or {}).get("records", [])
+    records = []
+    for page in range(1, 101):
+        result = (
+            arr_http.get_json(
+                endpoint.base_url,
+                endpoint.api_key,
+                f"/api/v3/queue?pageSize={ARR_QUEUE_PAGE_SIZE}&page={page}"
+                "&includeUnknownSeriesItems=true&includeUnknownMovieItems=true",
+            )
+            or {}
+        )
+        page_records = result.get("records", [])
+        records.extend(page_records)
+        if not page_records or len(records) >= result.get("totalRecords", len(records)):
+            return records
+    raise RuntimeError("ARR queue exceeds 100 pages; refusing an incomplete report")
 
 
 def build_radarr_movie_index(endpoint):
@@ -36,6 +46,14 @@ def download_progress_for_records(records):
         "percent": downloaded_percent,
         "time_left": bottleneck_time_left(records),
         "record_count": len(records),
+        "problems": list(
+            dict.fromkeys(
+                message
+                for record in records
+                for status in record.get("statusMessages", [])
+                for message in status.get("messages", [])
+            )
+        ),
     }
 
 

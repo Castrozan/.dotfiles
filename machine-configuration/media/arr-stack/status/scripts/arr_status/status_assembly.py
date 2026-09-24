@@ -23,6 +23,40 @@ class MediaStatusLine:
     arr_reachable: bool
 
 
+def untracked_download_lines(snapshot, media_type):
+    record_id_field = "movieId" if media_type == "movie" else "seriesId"
+    library_ids = set(snapshot.id_by_external_id.values())
+    seen = set()
+    lines = []
+    for record in snapshot.records:
+        if record.get(record_id_field) in library_ids:
+            continue
+        identity = record.get("downloadId") or record.get("id") or record.get("title")
+        if identity in seen:
+            continue
+        seen.add(identity)
+        reasons = [
+            message
+            for status in record.get("statusMessages", [])
+            for message in status.get("messages", [])
+        ]
+        size = (record.get("size") or 0) / 1024**3
+        stage = f"untracked download | {size:.1f} GiB | "
+        stage += "; ".join(reasons) or record.get("status", "unknown")
+        lines.append(
+            MediaStatusLine(
+                title=record.get("title") or "Unknown release",
+                year=None,
+                media_type=media_type,
+                requested_by="not linked",
+                stage=stage,
+                progress=None,
+                arr_reachable=snapshot.reachable,
+            )
+        )
+    return lines
+
+
 def snapshot_radarr(endpoint):
     return build_snapshot(endpoint, arr_queue.build_radarr_movie_index)
 

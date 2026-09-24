@@ -52,7 +52,11 @@ def monitored_missing_records(base_url, api_key):
 
 
 def queued_records(base_url, api_key):
-    response = get_json(base_url, api_key, "/api/v3/queue?pageSize=1000")
+    response = get_json(
+        base_url,
+        api_key,
+        "/api/v3/queue?pageSize=1000&includeUnknownSeriesItems=true&includeUnknownMovieItems=true",
+    )
     if response is None:
         return None
     return response.get("records", [])

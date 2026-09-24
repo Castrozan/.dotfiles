@@ -17,7 +17,8 @@ def arr_download_queue_active(arr_endpoints):
         try:
             status_code, body = http_request(
                 "GET",
-                f"{base_url}/api/v3/queue?pageSize=1",
+                f"{base_url}/api/v3/queue?pageSize=1"
+                "&includeUnknownSeriesItems=true&includeUnknownMovieItems=true",
                 {"X-Api-Key": api_key},
                 timeout_seconds=10,
             )

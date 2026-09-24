@@ -10,6 +10,10 @@ def format_status_line(status_line):
 
 def stage_text(status_line):
     if status_line.progress is not None:
+        if status_line.progress.get("problems"):
+            return f"{status_line.stage} | download needs attention: " + "; ".join(
+                status_line.progress["problems"]
+            )
         text = f"{status_line.stage} | downloading {status_line.progress['percent']}%"
         if status_line.progress["time_left"]:
             text += f" ETA {status_line.progress['time_left']}"

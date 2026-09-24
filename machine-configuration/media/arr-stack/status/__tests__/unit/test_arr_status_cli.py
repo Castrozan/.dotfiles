@@ -55,6 +55,52 @@ def test_main_prints_download_progress(monkeypatch, capsys):
     assert "downloading 33%" in printed
 
 
+def test_main_shows_import_failure_instead_of_downloading_100_percent(
+    monkeypatch, capsys
+):
+    line = make_line(
+        "Slime",
+        "partial",
+        progress={
+            "percent": 100,
+            "time_left": None,
+            "problems": ["Not enough free space"],
+        },
+    )
+    monkeypatch.setattr(cli, "gather_status_lines", lambda: [line])
+    monkeypatch.setattr(sys, "argv", ["arr-status"])
+    cli.main()
+    printed = capsys.readouterr().out
+    assert "Not enough free space" in printed
+    assert "downloading 100%" not in printed
+
+
+def test_gather_includes_orphan_download_without_requests(monkeypatch):
+    snapshot = cli.status_assembly.ArrSnapshot(
+        True,
+        [{"title": "Orphan release", "status": "completed", "downloadId": "hash"}],
+        {},
+    )
+    monkeypatch.setattr(
+        cli.status_runtime_config, "jellyseerr_base_url", lambda: "http://jellyseerr"
+    )
+    monkeypatch.setattr(
+        cli.status_runtime_config, "read_jellyseerr_api_key", lambda: "key"
+    )
+    monkeypatch.setattr(cli.status_runtime_config, "radarr_endpoint", lambda: None)
+    monkeypatch.setattr(cli.status_runtime_config, "sonarr_endpoint", lambda: None)
+    monkeypatch.setattr(
+        cli.status_assembly, "snapshot_radarr", lambda endpoint: snapshot
+    )
+    monkeypatch.setattr(
+        cli.status_assembly,
+        "snapshot_sonarr",
+        lambda endpoint: cli.status_assembly.ArrSnapshot(False, [], {}),
+    )
+    monkeypatch.setattr(cli.jellyseerr_requests, "fetch_requests", lambda *args: [])
+    assert [line.title for line in cli.gather_status_lines()] == ["Orphan release"]
+
+
 def test_main_filters_by_title(monkeypatch, capsys):
     lines = [make_line("Slime", "partial"), make_line("Frieren", "available")]
     monkeypatch.setattr(cli, "gather_status_lines", lambda: lines)

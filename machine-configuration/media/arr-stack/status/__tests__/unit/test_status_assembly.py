@@ -14,6 +14,28 @@ import status_assembly
 ENDPOINT = SimpleNamespace(base_url="http://arr", api_key="key")
 
 
+def test_untracked_downloads_surface_without_a_request_or_library_record():
+    record = {
+        "title": "Unmatched release",
+        "downloadId": "torrent",
+        "status": "completed",
+        "size": 1024**3,
+        "statusMessages": [{"messages": ["Series title mismatch"]}],
+    }
+    snapshot = status_assembly.ArrSnapshot(True, [record, record], {})
+    lines = status_assembly.untracked_download_lines(snapshot, "tv")
+    assert len(lines) == 1
+    assert lines[0].title == "Unmatched release"
+    assert "Series title mismatch" in lines[0].stage
+    assert "1.0 GiB" in lines[0].stage
+    assert lines[0].progress is None
+
+
+def test_untracked_downloads_exclude_existing_library_records():
+    snapshot = status_assembly.ArrSnapshot(True, [{"seriesId": 4}], {99: 4})
+    assert status_assembly.untracked_download_lines(snapshot, "tv") == []
+
+
 def test_build_snapshot_returns_unreachable_when_endpoint_none():
     snapshot = status_assembly.build_snapshot(None, lambda endpoint: {})
     assert snapshot.reachable is False
