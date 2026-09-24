@@ -19,11 +19,13 @@ if (!plugin || realpathSync(plugin.root) !== realpathSync(process.argv[3])) {
     "The managed Pi plugin was not discovered at its declared root",
   );
 }
-runtime.setEnabled("dotfiles", true);
-runtime.trust("dotfiles");
-const errors = runtime
-  .allDiagnostics()
-  .filter((diagnostic) => diagnostic.severity === "error");
+const enabled = runtime.setEnabled("dotfiles", true);
+const trusted = runtime.trust("dotfiles");
+const errors = [
+  ...runtime.allDiagnostics(),
+  ...enabled.diagnostics,
+  ...trusted.diagnostics,
+].filter((diagnostic) => diagnostic.severity === "error");
 if (errors.length) {
   throw new Error(JSON.stringify(errors));
 }

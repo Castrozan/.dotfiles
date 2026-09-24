@@ -16,6 +16,13 @@ let
     (import ../../codex/global-instructions.nix { }).home.file.".codex/AGENTS.md".text;
 in
 {
+  domain-pi-native-plugin-registration = pkgs.runCommand "domain-pi-native-plugin-registration" { } ''
+    ${pkgs.nodejs_22}/bin/node ${./verify-registration.mjs} \
+      ${import ../plugin-loaders { inherit pkgs; }}/node_modules \
+      ${../scripts/register-managed-plugin.mjs}
+    touch "$out"
+  '';
+
   domain-pi-package =
     mkEvalCheck "domain-pi-package" (hasPackageMatching "pi")
       "the Pi module must install its wrapped native executable";
