@@ -64,6 +64,8 @@ def test_opencode_data_survives_bundle_updates_outside_package(tmp_path):
         output = tmp_path / revision
         data = output / ".agents/plugin-data/example"
         data.mkdir(parents=True)
+        plugin = output / ".agents/plugins/example"
+        plugin.mkdir(parents=True)
         configuration = output / ".opencode/opencode.jsonc"
         configuration.parent.mkdir()
         server = {
@@ -78,9 +80,26 @@ def test_opencode_data_survives_bundle_updates_outside_package(tmp_path):
             "environment": {"PLUGIN_DATA": str(data)},
             "cwd": str(data),
         }
-        configuration.write_text(json.dumps({"mcp": {"example": server}}))
+        server["environment"]["PLUGIN_ROOT"] = str(plugin)
+        (plugin / "mcp.json").write_text(
+            json.dumps(
+                {
+                    "mcpServers": {
+                        "example": {
+                            "type": "stdio",
+                            "command": server["command"][0],
+                            "args": server["command"][1:],
+                            "cwd": "${PLUGIN_DATA}",
+                        }
+                    }
+                }
+            )
+        )
+        configuration.write_text(
+            json.dumps({"mcp": {"plugin.example.example": server}})
+        )
         write_opencode_mcp(output, "example")
-        emitted = json.loads(configuration.read_text())["mcp"]["example"]
+        emitted = json.loads(configuration.read_text())["mcp"]["plugin.example.example"]
         result = subprocess.run(
             emitted["command"],
             cwd=emitted["cwd"],
@@ -91,7 +110,7 @@ def test_opencode_data_survives_bundle_updates_outside_package(tmp_path):
             timeout=5,
         )
         assert Path(result.stdout.strip()).is_relative_to(state)
-        assert list(data.iterdir()) == []
+        assert not (data / "state").exists()
     assert (state / "agent-plugins/opencode/example/state").read_text() == "firstsecond"
 
 
@@ -110,17 +129,51 @@ def test_opencode_launcher_expands_data_in_arguments_and_environment(
 ):
     from opencode_mcp import launch_server
 
-    previous = tmp_path / "immutable-data"
-    previous.mkdir()
-    monkeypatch.chdir(previous)
+    plugin = tmp_path / "example"
+    plugin.mkdir()
+    (plugin / "mcp.json").write_text(
+        json.dumps(
+            {
+                "mcpServers": {
+                    "declared": {
+                        "type": "stdio",
+                        "command": "./server",
+                        "args": ["${PLUGIN_DATA}/config.json"],
+                        "env": {
+                            "CONFIG": "${PLUGIN_ROOT}/config",
+                            "LITERAL": "${HOME}",
+                        },
+                        "cwd": "${PLUGIN_DATA}",
+                    }
+                }
+            }
+        )
+    )
+    monkeypatch.chdir(plugin)
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
-    monkeypatch.setenv("PLUGIN_DATA", str(previous))
+    monkeypatch.setenv("PLUGIN_ROOT", str(plugin))
     captured = []
     monkeypatch.setattr(os, "execvpe", lambda *arguments: captured.append(arguments))
-    launch_server(str(previous), "example", ["server", str(previous / "config.json")])
+    launch_server("declared")
     expected = tmp_path / "state/agent-plugins/opencode/example"
     command, arguments, environment = captured[0]
-    assert command == "server"
-    assert arguments == ["server", str(expected / "config.json")]
+    assert command == str(plugin / "server")
+    assert arguments == [str(plugin / "server"), str(expected / "config.json")]
     assert environment["PLUGIN_DATA"] == str(expected)
+    assert environment["CONFIG"] == str(plugin / "config")
+    assert environment["LITERAL"] == "${HOME}"
     assert Path.cwd() == expected
+
+
+@pytest.mark.parametrize("server_name", ["unknown-command", "remote"])
+def test_opencode_launcher_cannot_accept_an_arbitrary_command(
+    tmp_path, monkeypatch, server_name
+):
+    from opencode_mcp import launch_server
+
+    (tmp_path / "mcp.json").write_text(
+        '{"mcpServers":{"remote":{"type":"sse","url":"https://example.com/mcp"}}}'
+    )
+    monkeypatch.setenv("PLUGIN_ROOT", str(tmp_path))
+    with pytest.raises((KeyError, ValueError)):
+        launch_server(server_name)
