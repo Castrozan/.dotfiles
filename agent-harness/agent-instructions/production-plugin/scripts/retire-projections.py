@@ -6,6 +6,8 @@ import tempfile
 import tomllib
 from pathlib import Path
 
+CODEX_EXECUTABLE = "@codex@"
+
 
 def archive_projection(source: Path, archive: Path) -> None:
     if not source.exists() and not source.is_symlink():
@@ -15,7 +17,7 @@ def archive_projection(source: Path, archive: Path) -> None:
     source.rename(destination / source.name)
 
 
-def retire_codex(home: Path, archive: Path, binary: str) -> None:
+def retire_codex(home: Path, archive: Path) -> None:
     codex_home = home / ".codex"
     configuration_path = codex_home / "config.toml"
     configuration = (
@@ -32,15 +34,15 @@ def retire_codex(home: Path, archive: Path, binary: str) -> None:
     ):
         raise ValueError("Retired marketplace name belongs to another source")
     removals = [
-        ["remove", plugin, "--json"]
+        ["remove", "--json", "--", plugin]
         for plugin in configuration.get("plugins", {})
         if plugin.endswith("@" + name)
     ]
     if marketplace:
-        removals.append(["marketplace", "remove", name, "--json"])
+        removals.append(["marketplace", "remove", "--json", "--", name])
     for arguments in removals:
         subprocess.run(
-            [binary, "plugin", *arguments],
+            [CODEX_EXECUTABLE, "plugin", *arguments],
             env=os.environ | {"CODEX_HOME": str(codex_home)},
             check=True,
             timeout=60,
@@ -83,7 +85,7 @@ def retire_repository_backups(home: Path, bundle: Path, archive: Path) -> None:
         archive_projection(backup, archive)
 
 
-def retire(target: str, home: Path, bundle: Path, codex: str | None) -> None:
+def retire(target: str, home: Path, bundle: Path) -> None:
     if not (bundle / "plugin/plugin.json").is_file():
         raise ValueError("Complete replacement package is missing")
     archive = home / ".local/state/agent-plugins/retired-projections" / target
@@ -91,9 +93,7 @@ def retire(target: str, home: Path, bundle: Path, codex: str | None) -> None:
     if marker.exists():
         return
     if target == "codex":
-        if not codex:
-            raise ValueError("Codex executable is required")
-        retire_codex(home, archive, codex)
+        retire_codex(home, archive)
     elif target == "opencode":
         retire_opencode(home, archive)
     elif target == "hermes":
@@ -110,6 +110,5 @@ if __name__ == "__main__":
     parser.add_argument("target", choices=["codex", "opencode", "hermes", "repository"])
     parser.add_argument("home", type=Path)
     parser.add_argument("bundle", type=Path)
-    parser.add_argument("--codex")
     arguments = parser.parse_args()
-    retire(arguments.target, arguments.home, arguments.bundle, arguments.codex)
+    retire(arguments.target, arguments.home, arguments.bundle)

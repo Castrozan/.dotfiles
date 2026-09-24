@@ -10,6 +10,11 @@ register_plugin = runpy.run_path(
 )["register_plugin"]
 
 
+@pytest.fixture(autouse=True)
+def configured_codex(monkeypatch):
+    monkeypatch.setitem(register_plugin.__globals__, "CODEX_EXECUTABLE", "/codex")
+
+
 def test_new_store_revision_replaces_only_the_owned_marketplace(tmp_path, monkeypatch):
     previous = tmp_path / "previous"
     manifest = previous / ".agents/plugins/marketplace.json"
@@ -23,11 +28,27 @@ def test_new_store_revision_replaces_only_the_owned_marketplace(tmp_path, monkey
     monkeypatch.setattr(
         "subprocess.run", lambda command, **kwargs: calls.append(command)
     )
-    register_plugin(Path("/codex"), tmp_path / "next", tmp_path)
+    register_plugin(tmp_path / "next", tmp_path)
     assert calls == [
-        ["/codex", "plugin", "marketplace", "remove", "dotagents-local", "--json"],
-        ["/codex", "plugin", "marketplace", "add", str(tmp_path / "next"), "--json"],
-        ["/codex", "plugin", "add", "dotfiles@dotagents-local", "--json"],
+        [
+            "/codex",
+            "plugin",
+            "marketplace",
+            "remove",
+            "--json",
+            "--",
+            "dotagents-local",
+        ],
+        [
+            "/codex",
+            "plugin",
+            "marketplace",
+            "add",
+            "--json",
+            "--",
+            str(tmp_path / "next"),
+        ],
+        ["/codex", "plugin", "add", "--json", "--", "dotfiles@dotagents-local"],
     ]
     assert "marketplaces.external" in (tmp_path / "config.toml").read_text()
 
@@ -43,5 +64,23 @@ def test_conflicting_marketplace_is_not_removed(tmp_path, monkeypatch):
     calls = []
     monkeypatch.setattr("subprocess.run", lambda *args, **kwargs: calls.append(args))
     with pytest.raises(ValueError, match="belongs to another source"):
-        register_plugin(Path("/codex"), tmp_path / "next", tmp_path)
+        register_plugin(tmp_path / "next", tmp_path)
     assert not calls
+
+
+def test_option_like_bundle_is_a_resolved_positional_path(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    calls = []
+    monkeypatch.setattr(
+        "subprocess.run", lambda command, **kwargs: calls.append(command)
+    )
+    register_plugin(Path("--config=features.example=true"), tmp_path)
+    assert calls[0] == [
+        "/codex",
+        "plugin",
+        "marketplace",
+        "add",
+        "--json",
+        "--",
+        str(tmp_path / "--config=features.example=true"),
+    ]

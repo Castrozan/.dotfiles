@@ -10,6 +10,11 @@ RETIREMENT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(RETIREMENT)
 
 
+@pytest.fixture(autouse=True)
+def configured_codex(monkeypatch):
+    monkeypatch.setattr(RETIREMENT, "CODEX_EXECUTABLE", "/codex", raising=False)
+
+
 def replacement(home):
     bundle = home / "bundle"
     (bundle / "plugin").mkdir(parents=True)
@@ -23,7 +28,7 @@ def test_hermes_preserves_modified_assets_and_retires_only_once(tmp_path):
     skill.mkdir(parents=True)
     (skill / "SKILL.md").write_text("modified instructions")
     (skill / "custom.bin").write_bytes(b"opaque")
-    RETIREMENT.retire("hermes", tmp_path, bundle, None)
+    RETIREMENT.retire("hermes", tmp_path, bundle)
     assert not skill.exists()
     archived = list(tmp_path.glob(".local/state/agent-plugins/**/custom.bin"))
     assert len(archived) == 1
@@ -31,13 +36,13 @@ def test_hermes_preserves_modified_assets_and_retires_only_once(tmp_path):
     assert (archived[0].parent / "SKILL.md").read_text() == "modified instructions"
     skill.mkdir()
     (skill / "SKILL.md").write_text("deliberate new override")
-    RETIREMENT.retire("hermes", tmp_path, bundle, None)
+    RETIREMENT.retire("hermes", tmp_path, bundle)
     assert (skill / "SKILL.md").read_text() == "deliberate new override"
 
 
 def test_missing_replacement_does_not_retire_anything(tmp_path):
     with pytest.raises(ValueError, match="replacement"):
-        RETIREMENT.retire("hermes", tmp_path, tmp_path / "missing", None)
+        RETIREMENT.retire("hermes", tmp_path, tmp_path / "missing")
     assert not (tmp_path / ".local/state").exists()
 
 
@@ -69,11 +74,11 @@ def test_repository_backups_leave_discovery_only_after_canonical_installation(
     unrelated.mkdir()
     if not canonical_installed or not skill_present:
         with pytest.raises(ValueError, match="canonical"):
-            RETIREMENT.retire("repository", tmp_path, bundle, None)
+            RETIREMENT.retire("repository", tmp_path, bundle)
         assert all((discovery / (name + ".backup")).exists() for name in names)
         return
-    RETIREMENT.retire("repository", tmp_path, bundle, None)
-    RETIREMENT.retire("repository", tmp_path, bundle, None)
+    RETIREMENT.retire("repository", tmp_path, bundle)
+    RETIREMENT.retire("repository", tmp_path, bundle)
     assert unrelated.is_dir()
     for name in names:
         assert not (discovery / (name + ".backup")).exists()
@@ -93,7 +98,7 @@ def test_opencode_removes_only_links_into_retired_root(tmp_path):
     skills.mkdir()
     (skills / "old").symlink_to(root / "old")
     (skills / "other").symlink_to(bundle)
-    RETIREMENT.retire("opencode", tmp_path, bundle, None)
+    RETIREMENT.retire("opencode", tmp_path, bundle)
     assert not (skills / "old").is_symlink()
     assert (skills / "other").resolve() == bundle
     assert not root.exists()
@@ -107,13 +112,14 @@ def test_foreign_marketplace_is_not_removed(tmp_path):
         '[marketplaces.claude-code-ports]\nsource_type="local"\nsource="/foreign"\n'
     )
     with pytest.raises(ValueError, match="another source"):
-        RETIREMENT.retire("codex", tmp_path, bundle, "/invalid/binary")
+        RETIREMENT.retire("codex", tmp_path, bundle)
     assert "/foreign" in config.read_text()
 
 
 @pytest.mark.parametrize("marketplace_present", [True, False])
+@pytest.mark.parametrize("plugin_name", ["old", "--config=features.example=true"])
 def test_codex_unregisters_only_owned_plugins_before_the_marketplace(
-    tmp_path, monkeypatch, marketplace_present
+    tmp_path, monkeypatch, marketplace_present, plugin_name
 ):
     bundle = replacement(tmp_path)
     config = tmp_path / ".codex/config.toml"
@@ -127,7 +133,8 @@ def test_codex_unregisters_only_owned_plugins_before_the_marketplace(
         else ""
     )
     config.write_text(
-        marketplace_configuration + '[plugins."old@claude-code-ports"]\nenabled=true\n'
+        marketplace_configuration
+        + f'[plugins."{plugin_name}@claude-code-ports"]\nenabled=true\n'
         '[plugins."other@native"]\nenabled=true\n'
     )
     calls = []
@@ -136,13 +143,28 @@ def test_codex_unregisters_only_owned_plugins_before_the_marketplace(
         "run",
         lambda arguments, **kwargs: calls.append(arguments),
     )
-    RETIREMENT.retire("codex", tmp_path, bundle, "codex")
+    RETIREMENT.retire("codex", tmp_path, bundle)
     expected = [
-        ["codex", "plugin", "remove", "old@claude-code-ports", "--json"],
+        [
+            "/codex",
+            "plugin",
+            "remove",
+            "--json",
+            "--",
+            f"{plugin_name}@claude-code-ports",
+        ],
     ]
     if marketplace_present:
         expected.append(
-            ["codex", "plugin", "marketplace", "remove", "claude-code-ports", "--json"]
+            [
+                "/codex",
+                "plugin",
+                "marketplace",
+                "remove",
+                "--json",
+                "--",
+                "claude-code-ports",
+            ]
         )
     assert calls == expected
     assert not root.exists()

@@ -55,7 +55,7 @@ def managed_skill_was_read(package, skill_path, read_paths):
         if len(content) > MAXIMUM_SKILL_BYTES:
             return False
         manifest = json.loads(content)
-    except (OSError, ValueError, UnicodeError):
+    except (OSError, ValueError):
         return False
     if not isinstance(manifest, dict) or manifest.get("name") != "dotfiles":
         return False

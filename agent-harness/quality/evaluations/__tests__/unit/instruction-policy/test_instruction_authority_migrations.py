@@ -151,11 +151,21 @@ def test_hermes_declares_managed_core_and_removes_memory_authority():
     )
     for managed_surface in (
         "HERMES_AGENT_SOUL",
-        "HERMES_AGENT_HUMANIZE_SKILL",
-        "HERMES_AGENT_DOCS_SKILL",
         "HERMES_AGENT_MEMORY_SYNCHRONIZER",
     ):
         assert managed_surface in launcher_source
+
+    deployment_source = (HERMES_DIRECTORY / "hermes.nix").read_text(encoding="utf-8")
+    assert (
+        'file.".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin"'
+        in deployment_source
+    )
+    for retired_skill_projection in (
+        "HERMES_AGENT_HUMANIZE_SKILL",
+        "HERMES_AGENT_DOCS_SKILL",
+    ):
+        assert retired_skill_projection not in launcher_source
+        assert retired_skill_projection not in deployment_source
 
     for retired_memory_authority in (
         "Correction stance:",

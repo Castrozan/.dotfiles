@@ -5,8 +5,10 @@ import subprocess
 import tomllib
 from pathlib import Path
 
+CODEX_EXECUTABLE = "@codex@"
 
-def register_plugin(binary: Path, bundle: Path, home: Path) -> None:
+
+def register_plugin(bundle: Path, home: Path) -> None:
     marketplace_name = "dotagents-local"
     configuration_path = home / "config.toml"
     configuration = (
@@ -19,7 +21,7 @@ def register_plugin(binary: Path, bundle: Path, home: Path) -> None:
 
     def run(*arguments: str) -> None:
         subprocess.run(
-            [str(binary), "plugin", *arguments],
+            [CODEX_EXECUTABLE, "plugin", *arguments],
             env=environment,
             check=True,
             timeout=60,
@@ -32,15 +34,14 @@ def register_plugin(binary: Path, bundle: Path, home: Path) -> None:
             plugin["name"] for plugin in catalog["plugins"]
         ] != ["dotfiles"]:
             raise ValueError("The managed marketplace name belongs to another source")
-        run("marketplace", "remove", marketplace_name, "--json")
-    run("marketplace", "add", str(bundle), "--json")
-    run("add", f"dotfiles@{marketplace_name}", "--json")
+        run("marketplace", "remove", "--json", "--", marketplace_name)
+    run("marketplace", "add", "--json", "--", str(bundle.resolve()))
+    run("add", "--json", "--", f"dotfiles@{marketplace_name}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("binary", type=Path)
     parser.add_argument("bundle", type=Path)
     parser.add_argument("home", type=Path)
     arguments = parser.parse_args()
-    register_plugin(arguments.binary, arguments.bundle, arguments.home)
+    register_plugin(arguments.bundle, arguments.home)
