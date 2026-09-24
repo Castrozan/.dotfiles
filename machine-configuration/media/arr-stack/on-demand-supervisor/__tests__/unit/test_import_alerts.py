@@ -6,6 +6,7 @@ sys.path.insert(
 )
 
 import import_alerts
+import pytest
 
 
 def configuration(tmp_path):
@@ -85,3 +86,28 @@ def test_unavailable_or_empty_queues_do_not_send(monkeypatch, tmp_path):
     )
     import_alerts.maybe_alert_blocked_imports(configuration(tmp_path), 100000, False)
     assert calls == []
+
+
+@pytest.mark.parametrize("error", [FileNotFoundError(), ValueError(), SystemExit()])
+def test_unready_configuration_cannot_interrupt_supervisor(
+    monkeypatch, tmp_path, error
+):
+    def fail(path):
+        raise error
+
+    monkeypatch.setattr(import_alerts, "read_arr_api_key_from_config_xml", fail)
+    assert import_alerts.blocked_download_lines(configuration(tmp_path)) == []
+
+
+def test_daily_reminder_and_download_deduplication(monkeypatch, tmp_path):
+    stub_queues(monkeypatch)
+    calls = []
+    monkeypatch.setattr(
+        import_alerts,
+        "deliver_alert_message_best_effort",
+        lambda *args: calls.append(True) or True,
+    )
+    config = configuration(tmp_path)
+    import_alerts.maybe_alert_blocked_imports(config, 100000, False)
+    import_alerts.maybe_alert_blocked_imports(config, 186400, False)
+    assert len(calls) == 2

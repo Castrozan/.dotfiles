@@ -1,5 +1,6 @@
 from email.message import EmailMessage
 from pathlib import Path
+from xml.etree.ElementTree import ParseError
 
 from disk_alert_email import deliver_alert_message_best_effort
 from download_chain_control import read_last_active_epoch, write_last_active_epoch
@@ -13,10 +14,14 @@ def blocked_download_lines(configuration):
     lines = []
     for application in ("radarr", "sonarr"):
         base_url = configuration[f"{application}_url"]
-        api_key = read_arr_api_key_from_config_xml(
-            configuration[f"{application}_config_file"]
-        )
-        records = queued_records(base_url, api_key)
+        try:
+            api_key = read_arr_api_key_from_config_xml(
+                configuration[f"{application}_config_file"]
+            )
+            records = queued_records(base_url, api_key)
+        except (OSError, ValueError, ParseError, SystemExit):
+            log(f"import-alert: {application} configuration or queue unavailable")
+            continue
         if records is None:
             log(f"import-alert: {application} queue unavailable")
             continue

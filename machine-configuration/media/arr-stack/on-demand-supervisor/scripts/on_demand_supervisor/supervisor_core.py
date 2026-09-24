@@ -120,7 +120,6 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
     effective_services = [
         service for service in on_demand_services if service not in held_down_services
     ]
-    maybe_alert_blocked_imports(configuration, now_epoch, dry_run)
 
     if configuration["keep_chain_always_on"]:
         running = running_on_demand_services(base_command, on_demand_services)
@@ -132,6 +131,7 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
             start_on_demand_services(base_command, effective_services, dry_run)
         else:
             log("keep-chain-always-on: full chain up, holding")
+        maybe_alert_blocked_imports(configuration, now_epoch, dry_run)
         maybe_run_missing_search_sweep(configuration, now_epoch, dry_run)
         write_last_active_epoch(state_file_path, now_epoch)
         return
@@ -165,6 +165,8 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
     if not radarr_running:
         log("no actionable requests and chain is down; nothing to do")
         return
+
+    maybe_alert_blocked_imports(configuration, now_epoch, dry_run)
 
     arr_endpoints = [
         (
