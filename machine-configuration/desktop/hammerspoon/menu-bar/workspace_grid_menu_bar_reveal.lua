@@ -1,91 +1,55 @@
 local workspaceGridMenuBarReveal = {}
 
-local accessibilityTimeoutSeconds = 0.1
-local menuBarVisibleDurationSeconds = 1
 local pendingRevealTimer = nil
-local pendingHideTimer = nil
-local selectedMenuBar = nil
+local revealTask = nil
+local revealRequested = false
+local revealTaskCancelled = false
 
-local function stopTimer(timer)
-	if timer then
-		timer:stop()
+local function launchRequestedReveal()
+	if revealTask or not revealRequested then
+		return
 	end
-end
-
-local function supportsAction(accessibilityElement, expectedActionName)
-	for _, actionName in ipairs(accessibilityElement:actionNames() or {}) do
-		if actionName == expectedActionName then
-			return true
+	revealRequested = false
+	local focusedWindow = hs.window.focusedWindow()
+	local screen = (focusedWindow and focusedWindow:screen()) or hs.screen.mainScreen()
+	if not screen then
+		return
+	end
+	revealTaskCancelled = false
+	revealTask = hs.task.new("@MENU_BAR_REVEAL_HELPER@", function(exitCode, _, standardError)
+		local wasCancelled = revealTaskCancelled
+		revealTask = nil
+		revealTaskCancelled = false
+		if exitCode ~= 0 and not wasCancelled then
+			hs.printf("Menu bar reveal failed (%s): %s", exitCode, standardError)
 		end
+		launchRequestedReveal()
+	end, { tostring(screen:id()) })
+	if not revealTask or not revealTask:start() then
+		revealTask = nil
+		hs.printf("Menu bar reveal helper could not start")
 	end
-	return false
-end
-
-local function cancelSelectedMenuBar()
-	if selectedMenuBar and selectedMenuBar:isValid() then
-		selectedMenuBar:performAction("AXCancel")
-	end
-	selectedMenuBar = nil
-end
-
-local function frontmostApplicationMenuBar()
-	local frontmostApplication = hs.application.frontmostApplication()
-	if not frontmostApplication then
-		return nil
-	end
-	local applicationElement = hs.axuielement.applicationElement(frontmostApplication)
-	if not applicationElement then
-		return nil
-	end
-	applicationElement:setTimeout(accessibilityTimeoutSeconds)
-	for _, childElement in ipairs(applicationElement:attributeValue("AXChildren") or {}) do
-		if childElement:attributeValue("AXRole") == "AXMenuBar" then
-			childElement:setTimeout(accessibilityTimeoutSeconds)
-			return childElement
-		end
-	end
-	return nil
-end
-
-local function revealFrontmostApplicationMenuBar()
-	pendingRevealTimer = nil
-	local menuBar = frontmostApplicationMenuBar()
-	if
-		not menuBar
-		or not menuBar:isAttributeSettable("AXSelectedChildren")
-		or not supportsAction(menuBar, "AXCancel")
-	then
-		return
-	end
-	local menuBarChildren = menuBar:attributeValue("AXChildren") or {}
-	if not menuBarChildren[1] then
-		return
-	end
-	if not menuBar:setAttributeValue("AXSelectedChildren", { menuBarChildren[1] }) then
-		return
-	end
-	local selectedChildren = menuBar:attributeValue("AXSelectedChildren") or {}
-	if not selectedChildren[1] then
-		return
-	end
-	selectedMenuBar = menuBar
-	pendingHideTimer = hs.timer.doAfter(menuBarVisibleDurationSeconds, function()
-		pendingHideTimer = nil
-		cancelSelectedMenuBar()
-	end)
 end
 
 function workspaceGridMenuBarReveal.cancel()
-	stopTimer(pendingRevealTimer)
-	stopTimer(pendingHideTimer)
-	pendingRevealTimer = nil
-	pendingHideTimer = nil
-	cancelSelectedMenuBar()
+	revealRequested = false
+	if pendingRevealTimer then
+		pendingRevealTimer:stop()
+		pendingRevealTimer = nil
+	end
+	if revealTask and not revealTaskCancelled then
+		revealTaskCancelled = true
+		revealTask:terminate()
+	end
 end
 
 function workspaceGridMenuBarReveal.brieflyReveal()
 	workspaceGridMenuBarReveal.cancel()
-	pendingRevealTimer = hs.timer.doAfter(0, revealFrontmostApplicationMenuBar)
+	pendingRevealTimer = hs.timer.doAfter(0, function()
+		pendingRevealTimer = nil
+		revealRequested = true
+		launchRequestedReveal()
+	end)
 end
 
 return workspaceGridMenuBarReveal

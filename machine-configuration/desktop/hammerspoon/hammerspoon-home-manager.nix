@@ -1,4 +1,9 @@
 { config, pkgs, ... }:
+let
+  menuBarRevealHelper = pkgs.writeShellScript "reveal-menu-bar" ''
+    exec ${pkgs.python312}/bin/python3 ${./scripts/reveal-menu-bar.py} "$@"
+  '';
+in
 {
   # Hammerspoon is notarized (Developer ID), so Sophos endpoint security trusts
   # it - unlike the ad-hoc-signed AeroSpace fork, whose disk access SophosCryptoGuard
@@ -8,8 +13,9 @@
     file = {
       ".hammerspoon/init.lua".source = ./init.lua;
       ".hammerspoon/workspace_grid.lua".source = ./workspaces/workspace_grid.lua;
-      ".hammerspoon/workspace_grid_menu_bar_reveal.lua".source =
-        ./menu-bar/workspace_grid_menu_bar_reveal.lua;
+      ".hammerspoon/workspace_grid_menu_bar_reveal.lua".text =
+        builtins.replaceStrings [ "@MENU_BAR_REVEAL_HELPER@" ] [ "${menuBarRevealHelper}" ]
+          (builtins.readFile ./menu-bar/workspace_grid_menu_bar_reveal.lua);
       ".hammerspoon/workspace_grid_browser_aware_digit_keybindings.lua".source =
         ./input/workspace_grid_browser_aware_digit_keybindings.lua;
       ".hammerspoon/workspace_grid_navigation.lua".source = ./workspaces/workspace_grid_navigation.lua;

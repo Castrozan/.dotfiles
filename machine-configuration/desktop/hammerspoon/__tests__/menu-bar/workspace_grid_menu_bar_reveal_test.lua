@@ -2,13 +2,12 @@ local moduleDirectory = arg[0]:gsub("__tests__/.*$", "")
 dofile(moduleDirectory .. "__tests__/hammerspoon_module_paths.lua")(moduleDirectory)
 
 local timers = {}
-local applicationTimeouts = {}
-local menuBarTimeouts = {}
-local selectedChildrenAssignments = {}
-local performedActions = {}
-local frontmostApplication = {}
-local menuBarSelectionIsSettable = true
-local menuBarSelectionSucceeds = true
+local tasks = {}
+local activeTaskCount = 0
+local maximumActiveTaskCount = 0
+local focusedDisplayId = 2
+local taskStartSucceeds = true
+local reportedFailures = {}
 
 local function makeTimer(delaySeconds, callback)
 	local timer = { delaySeconds = delaySeconds, stopped = false }
@@ -25,89 +24,62 @@ local function makeTimer(delaySeconds, callback)
 	return timer
 end
 
-local firstMenuItem = {}
-local selectedChildren = {}
-local menuBar = {}
-
-function menuBar:attributeValue(attributeName)
-	if attributeName == "AXRole" then
-		return "AXMenuBar"
-	end
-	if attributeName == "AXChildren" then
-		return { firstMenuItem }
-	end
-	if attributeName == "AXSelectedChildren" then
-		return selectedChildren
-	end
-end
-
-function menuBar:isAttributeSettable(attributeName)
-	return attributeName == "AXSelectedChildren" and menuBarSelectionIsSettable
-end
-
-function menuBar:actionNames()
-	return { "AXCancel" }
-end
-
-function menuBar:setAttributeValue(attributeName, value)
-	table.insert(selectedChildrenAssignments, { attributeName = attributeName, value = value })
-	if not menuBarSelectionSucceeds then
-		return nil, "selection rejected"
-	end
-	selectedChildren = value
-	return self
-end
-
-function menuBar:setTimeout(timeoutSeconds)
-	table.insert(menuBarTimeouts, timeoutSeconds)
-	return self
-end
-
-function menuBar:isValid()
-	return true
-end
-
-function menuBar:performAction(actionName)
-	table.insert(performedActions, actionName)
-	selectedChildren = {}
-	return self
-end
-
-local nonMenuChild = {}
-function nonMenuChild:attributeValue(attributeName)
-	if attributeName == "AXRole" then
-		return "AXWindow"
-	end
-end
-
-local applicationElement = {}
-function applicationElement:attributeValue(attributeName)
-	if attributeName == "AXChildren" then
-		return { nonMenuChild, menuBar }
-	end
-end
-
-function applicationElement:setTimeout(timeoutSeconds)
-	table.insert(applicationTimeouts, timeoutSeconds)
-	return self
+local function makeScreen(displayId)
+	return {
+		id = function()
+			return displayId
+		end,
+	}
 end
 
 hs = {
-	application = {
-		frontmostApplication = function()
-			return frontmostApplication
-		end,
-	},
-	axuielement = {
-		applicationElement = function(application)
-			if application then
-				return applicationElement
+	window = {
+		focusedWindow = function()
+			if focusedDisplayId then
+				return {
+					screen = function()
+						return makeScreen(focusedDisplayId)
+					end,
+				}
 			end
 		end,
 	},
-	timer = {
-		doAfter = makeTimer,
+	screen = {
+		mainScreen = function()
+			return makeScreen(1)
+		end,
 	},
+	application = {
+		frontmostApplication = function()
+			error("revealing the bar must not select an application menu")
+		end,
+	},
+	timer = { doAfter = makeTimer },
+	task = {
+		new = function(executable, callback, arguments)
+			local task = { executable = executable, arguments = arguments, terminated = false }
+			function task:start()
+				if not taskStartSucceeds then
+					return false
+				end
+				activeTaskCount = activeTaskCount + 1
+				maximumActiveTaskCount = math.max(maximumActiveTaskCount, activeTaskCount)
+				return self
+			end
+			function task:terminate()
+				self.terminated = true
+			end
+			function task:complete(exitCode)
+				activeTaskCount = activeTaskCount - 1
+				callback(exitCode or 0, "", "visibility unavailable")
+			end
+			table.insert(tasks, task)
+			return task
+		end,
+	},
+	printf = function(...)
+		table.insert(reportedFailures, string.format(...))
+	end,
 }
 
 local failureCount = 0
@@ -118,49 +90,57 @@ local function expectEqual(description, expectedValue, actualValue)
 			string.format("FAIL: %s (expected %s, got %s)", description, tostring(expectedValue), tostring(actualValue))
 		)
 	else
-		print(string.format("PASS: %s", description))
+		print("PASS: " .. description)
 	end
 end
 
 local menuBarReveal = require("workspace_grid_menu_bar_reveal")
+menuBarReveal.brieflyReveal()
+expectEqual("reveal waits for workspace focus to settle", 0, timers[1].delaySeconds)
+expectEqual("the old workspace is not revealed", 0, #tasks)
+timers[1]:fire()
+expectEqual("the focused window determines the display", "2", tasks[1].arguments[1])
 
 menuBarReveal.brieflyReveal()
-expectEqual("reveal waits for the focus change to settle", 0, timers[1].delaySeconds)
-expectEqual("reveal does not select the old application menu", 0, #selectedChildrenAssignments)
-
-timers[1]:fire()
-expectEqual("the application query has a bounded timeout", 0.1, applicationTimeouts[1])
-expectEqual("the menu bar query has a bounded timeout", 0.1, menuBarTimeouts[1])
-expectEqual("the menu bar selection is changed", "AXSelectedChildren", selectedChildrenAssignments[1].attributeName)
-expectEqual("the first menu item is selected", firstMenuItem, selectedChildrenAssignments[1].value[1])
-expectEqual("the menu bar remains visible briefly", 1, timers[2].delaySeconds)
-
+expectEqual("another reveal terminates the previous helper", true, tasks[1].terminated)
 timers[2]:fire()
-expectEqual("hiding cancels the menu bar selection", "AXCancel", performedActions[1])
-expectEqual("hiding clears the selected menu item", 0, #selectedChildren)
-
+expectEqual("a replacement waits for the old override to be released", 1, #tasks)
+focusedDisplayId = 3
 menuBarReveal.brieflyReveal()
 timers[3]:fire()
-menuBarReveal.brieflyReveal()
-expectEqual("a repeated reveal cancels the previous hide timer", true, timers[4].stopped)
-expectEqual("a repeated reveal cancels the previous selection", "AXCancel", performedActions[2])
-expectEqual("a repeated reveal schedules against the new frontmost application", 0, timers[5].delaySeconds)
+tasks[1]:complete(15)
+expectEqual("rapid switches coalesce onto the latest display", "3", tasks[2].arguments[1])
+expectEqual("cancelling a helper does not report an error", 0, #reportedFailures)
+expectEqual("there is never more than one helper process", 1, maximumActiveTaskCount)
+tasks[2]:complete()
 
+focusedDisplayId = nil
+menuBarReveal.brieflyReveal()
+timers[4]:fire()
+expectEqual("an empty workspace uses the main display", "1", tasks[3].arguments[1])
+menuBarReveal.brieflyReveal()
 timers[5]:fire()
 menuBarReveal.cancel()
-expectEqual("cancelling stops the pending hide timer", true, timers[6].stopped)
-expectEqual("cancelling clears the active selection", "AXCancel", performedActions[3])
+tasks[3]:complete(15)
+expectEqual("shutdown discards a queued reveal", 3, #tasks)
 
-menuBarSelectionIsSettable = false
+menuBarReveal.brieflyReveal()
+menuBarReveal.cancel()
+timers[6]:fire()
+expectEqual("cancellation before focus settles launches nothing", 3, #tasks)
+
+taskStartSucceeds = false
 menuBarReveal.brieflyReveal()
 timers[7]:fire()
-expectEqual("an unsupported application does not schedule a hide", 7, #timers)
-expectEqual("an unsupported application does not change selection", 3, #selectedChildrenAssignments)
-
-menuBarSelectionIsSettable = true
-menuBarSelectionSucceeds = false
+expectEqual("failure to start is reported", 1, #reportedFailures)
+taskStartSucceeds = true
 menuBarReveal.brieflyReveal()
 timers[8]:fire()
-expectEqual("a rejected selection does not schedule a hide", 8, #timers)
+tasks[5]:complete(1)
+expectEqual("an unavailable visibility API is reported without selecting a menu", 2, #reportedFailures)
+menuBarReveal.brieflyReveal()
+timers[9]:fire()
+tasks[6]:complete()
+expectEqual("a failed helper does not block later reveals", 0, activeTaskCount)
 
 os.exit(failureCount == 0 and 0 or 1)
