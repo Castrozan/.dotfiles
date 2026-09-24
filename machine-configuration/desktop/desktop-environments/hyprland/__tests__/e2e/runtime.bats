@@ -13,7 +13,7 @@ setup() {
 }
 
 @test "hyprctl: version matches expected release" {
-    repositoryRoot=$(realpath "${BATS_TEST_DIRNAME}/../../../../..")
+    repositoryRoot=$(realpath "${BATS_TEST_DIRNAME}/../../../../../..")
     expectedVersion=$(grep -rhoP --include=flake.nix 'Hyprland/v\K[0-9.]+' "${repositoryRoot}" | head -1)
     [ -n "${expectedVersion}" ]
     run hyprctl version
