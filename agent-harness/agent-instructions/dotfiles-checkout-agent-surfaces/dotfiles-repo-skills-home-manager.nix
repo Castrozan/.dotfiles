@@ -1,4 +1,9 @@
-{ pkgs, hostname, ... }:
+{
+  pkgs,
+  hostname,
+  config,
+  ...
+}:
 let
   interactiveAgentSkills = import ../interactive-skill-catalog/interactive-agent-skills.nix {
     inherit hostname;
@@ -6,35 +11,24 @@ let
   };
 
   harnessProjectSkillDirectories = [
-    {
-      pathInRepository = ".claude/skills";
-      deploysEachSkillFileSeparately = false;
-    }
-    {
-      pathInRepository = ".opencode/skills";
-      deploysEachSkillFileSeparately = true;
-    }
+    ".claude/skills"
+    ".opencode/skills"
   ];
 
   repositorySkillSymlinksIn =
-    {
-      pathInRepository,
-      deploysEachSkillFileSeparately,
-    }:
+    pathInRepository:
     builtins.listToAttrs (
       map (skillName: {
         name = ".dotfiles/${pathInRepository}/${skillName}";
         value = {
-          source =
-            interactiveAgentSkills.deployedSkillDirectory ".dotfiles/${pathInRepository}"
-              interactiveAgentSkills.dotfilesRepoSkillNames
-              skillName;
-          recursive = deploysEachSkillFileSeparately;
+          source = "${config.agentPlugins.bundle}/plugin/library/skills/${skillName}";
         };
       }) interactiveAgentSkills.dotfilesRepoSkillNames
     );
 in
 {
+  imports = [ ../production-plugin/home-manager.nix ];
+
   home.file = builtins.foldl' (
     accumulated: harnessProjectSkillDirectory:
     accumulated // repositorySkillSymlinksIn harnessProjectSkillDirectory

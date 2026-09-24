@@ -39,6 +39,18 @@ let
     ) interactiveAgentSkills.dotfilesRepoSkillNames
   ) harnessProjectSkillDirectoriesInRepository;
 
+  everyRepositorySkillUsesTheCompletePackage = builtins.all (
+    pathInRepository:
+    builtins.all (
+      skillName:
+      let
+        entry = cfg.home.file.".dotfiles/${pathInRepository}/${skillName}";
+      in
+      toString entry.source == "${cfg.agentPlugins.bundle}/plugin/library/skills/${skillName}"
+      && !entry.recursive
+    ) interactiveAgentSkills.dotfilesRepoSkillNames
+  ) harnessProjectSkillDirectoriesInRepository;
+
   interactiveSkillCatalogContainsEveryCuratedSkill = builtins.all (
     skillName: builtins.elem skillName interactiveAgentSkills.allSkillNames
   ) interactiveAgentSkills.defaultInteractiveSkillNames;
@@ -122,8 +134,9 @@ in
       (
         interactiveSkillCatalogContainsEveryCuratedSkill
         && everyRepositorySkillDirectoryCarriesTheRepoLocalSkills
+        && everyRepositorySkillUsesTheCompletePackage
       )
-      "the interactive skill catalog must resolve every curated skill and deploy every repo-local skill into each harness project skill directory inside the dotfiles checkout";
+      "the interactive skill catalog must resolve every curated skill and link every repo-local skill directory directly to the complete plugin package inside each harness project skill directory";
 
   skill-routing-evaluation-matches-generated-all-skills-catalog =
     mkEvalCheck "skill-routing-evaluation-matches-generated-all-skills-catalog"
