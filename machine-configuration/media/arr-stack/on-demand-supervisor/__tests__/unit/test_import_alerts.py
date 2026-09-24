@@ -117,8 +117,9 @@ def test_process_exit_is_not_swallowed(monkeypatch, tmp_path):
         raise SystemExit(1)
 
     monkeypatch.setattr(import_alerts, "read_arr_api_key_from_config_xml", exit_process)
+    config = configuration(tmp_path)
     with pytest.raises(SystemExit):
-        import_alerts.blocked_download_lines(configuration(tmp_path))
+        import_alerts.blocked_download_lines(config)
 
 
 def test_daily_reminder_and_download_deduplication(monkeypatch, tmp_path):
