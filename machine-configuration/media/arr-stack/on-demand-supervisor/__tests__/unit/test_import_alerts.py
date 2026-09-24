@@ -88,7 +88,7 @@ def test_unavailable_or_empty_queues_do_not_send(monkeypatch, tmp_path):
     assert calls == []
 
 
-@pytest.mark.parametrize("error", [FileNotFoundError(), ValueError(), SystemExit()])
+@pytest.mark.parametrize("error", [FileNotFoundError(), ValueError()])
 def test_unready_configuration_cannot_interrupt_supervisor(
     monkeypatch, tmp_path, error
 ):
@@ -97,6 +97,28 @@ def test_unready_configuration_cannot_interrupt_supervisor(
 
     monkeypatch.setattr(import_alerts, "read_arr_api_key_from_config_xml", fail)
     assert import_alerts.blocked_download_lines(configuration(tmp_path)) == []
+
+
+def test_missing_api_key_is_a_configuration_error(monkeypatch):
+    import runtime_environment
+    from xml.etree.ElementTree import Element, ElementTree
+
+    monkeypatch.setattr(
+        runtime_environment.ElementTree,
+        "parse",
+        lambda path: ElementTree(Element("Config")),
+    )
+    with pytest.raises(ValueError, match="ApiKey not found"):
+        runtime_environment.read_arr_api_key_from_config_xml("config.xml")
+
+
+def test_process_exit_is_not_swallowed(monkeypatch, tmp_path):
+    def exit_process(path):
+        raise SystemExit(1)
+
+    monkeypatch.setattr(import_alerts, "read_arr_api_key_from_config_xml", exit_process)
+    with pytest.raises(SystemExit):
+        import_alerts.blocked_download_lines(configuration(tmp_path))
 
 
 def test_daily_reminder_and_download_deduplication(monkeypatch, tmp_path):

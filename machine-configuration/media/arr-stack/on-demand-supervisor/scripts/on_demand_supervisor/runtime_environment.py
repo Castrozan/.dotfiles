@@ -38,5 +38,5 @@ def read_arr_api_key_from_config_xml(config_xml_path):
     root = ElementTree.parse(config_xml_path).getroot()
     element = root.find("ApiKey")
     if element is None or not (element.text or "").strip():
-        raise SystemExit(f"ApiKey not found in {config_xml_path}")
+        raise ValueError(f"ApiKey not found in {config_xml_path}")
     return element.text.strip()

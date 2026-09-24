@@ -19,7 +19,7 @@ def blocked_download_lines(configuration):
                 configuration[f"{application}_config_file"]
             )
             records = queued_records(base_url, api_key)
-        except (OSError, ValueError, ParseError, SystemExit):
+        except (OSError, ValueError, ParseError):
             log(f"import-alert: {application} configuration or queue unavailable")
             continue
         if records is None:
