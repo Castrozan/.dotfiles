@@ -58,18 +58,32 @@ def test_partial_build_is_removed_on_adapter_failure(tmp_path, monkeypatch):
     assert not output.exists()
 
 
-@pytest.mark.parametrize(
-    ("exit_code", "diagnostic"), [(0, "  warn: MCP skipped"), (1, "failed")]
-)
-def test_adapter_warning_is_failure(tmp_path, monkeypatch, exit_code, diagnostic):
+def test_adapter_failure_is_reported(tmp_path, monkeypatch):
     monkeypatch.setattr(
         subprocess,
         "run",
-        lambda *args, **kwargs: subprocess.CompletedProcess(
-            args[0], exit_code, diagnostic, ""
-        ),
+        lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 1, "failed", ""),
     )
     with pytest.raises(ValueError, match="dotagents install failed"):
         build_plugin.run_dotagents(
             "install", tmp_path, {"DOTAGENTS_PLUGIN_BUILDER": "dotagents"}
         )
+
+
+@pytest.mark.parametrize(("command", "status"), [("install", 0), ("doctor", 1)])
+def test_adapter_warnings_are_preserved_without_rejecting_package(
+    tmp_path, monkeypatch, capsys, command, status
+):
+    diagnostic = "warn: Authored Claude interface retained"
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], status, diagnostic, ""
+        ),
+    )
+    build_plugin.run_dotagents(
+        command, tmp_path, {"DOTAGENTS_PLUGIN_BUILDER": "dotagents"}
+    )
+    assert (tmp_path / f"dotagents-{command}.log").read_text() == diagnostic
+    assert diagnostic in capsys.readouterr().err
