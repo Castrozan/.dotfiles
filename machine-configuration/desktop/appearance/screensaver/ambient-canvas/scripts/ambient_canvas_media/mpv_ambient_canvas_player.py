@@ -20,6 +20,20 @@ from recording.recorded_segment_store import (
 TARGET_WORKSPACE_ID = 11
 
 
+def build_mpv_environment(environment):
+    driver_overrides = {
+        "LIBVA_DRIVER_NAME",
+        "NVD_BACKEND",
+        "GBM_BACKEND",
+        "__GLX_VENDOR_LIBRARY_NAME",
+    }
+    return {
+        name: value
+        for name, value in environment.items()
+        if name not in driver_overrides
+    }
+
+
 def build_mpv_arguments(socket_path):
     return [
         "mpv",
@@ -27,7 +41,8 @@ def build_mpv_arguments(socket_path):
         f"--input-ipc-server={socket_path}",
         "--vo=gpu",
         "--gpu-context=wayland",
-        "--hwdec=auto-safe",
+        "--hwdec=vaapi",
+        "--gpu-hwdec-interop=vaapi",
         "--video-sync=desync",
         "--force-window=yes",
         "--audio=no",
@@ -86,6 +101,7 @@ def run_player(segment_manifest_path, playback_dwell_override_path):
     )
     mpv_process = subprocess.Popen(
         build_mpv_arguments(socket_path),
+        env=build_mpv_environment(os.environ),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )

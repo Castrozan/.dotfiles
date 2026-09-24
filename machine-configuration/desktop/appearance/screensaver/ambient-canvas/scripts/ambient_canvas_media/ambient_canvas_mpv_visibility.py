@@ -27,6 +27,7 @@ class VisibilityGatedPlaybackController:
     def __init__(self, mpv_client, target_workspace_id):
         self.mpv_client = mpv_client
         self.target_workspace_id = target_workspace_id
+        self._previous_should_play = None
         self._stop_event = threading.Event()
         self._thread = threading.Thread(
             target=self._watch_workspace_visibility, daemon=True
@@ -47,6 +48,9 @@ class VisibilityGatedPlaybackController:
     def _synchronize_with_active_workspace(self):
         active_workspace_id = resolve_active_workspace_id()
         should_play = active_workspace_id == self.target_workspace_id
+        if should_play == self._previous_should_play:
+            return
         self.mpv_client.send_command(
             ["set_property", "pause", "no" if should_play else "yes"]
         )
+        self._previous_should_play = should_play

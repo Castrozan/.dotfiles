@@ -26,12 +26,7 @@ The kernel is pinned to `linuxPackages_6_1` (LTS 6.1.x). NVIDIA 550.x is built a
 
 ## Power Management
 
-Power management is explicitly disabled (`powerManagement.enable = false`, `finegrained = false`). NVIDIA power management on Linux uses D3cold (PCIe power gating) which requires BIOS ACPI cooperation. The Dell G15 5515 BIOS does not properly support runtime D3 for the dGPU — enabling it causes the GPU to fail to wake from suspend, requiring a hard reboot. The GPU draws ~5W at idle which is acceptable for a plugged-in workstation.
-
-
-## Performance Locking
-
-A systemd oneshot service locks GPU clocks to 1500-2100 MHz core and 6001 MHz memory after `nvidia-persistenced` starts. Without this, the GPU dynamically clocks between 210-2100 MHz, causing microstutter when the clock ramps up during sudden load transitions (compositor effects, video decoding, CUDA launches). Persistence mode (`nvidia-smi -pm 1`) keeps the driver loaded even with no active clients, eliminating the 200ms cold-start latency when the first GPU application launches.
+Power management is explicitly disabled (`powerManagement.enable = false`, `finegrained = false`). NVIDIA power management on Linux uses D3cold (PCIe power gating) which requires BIOS ACPI cooperation. The Dell G15 5515 BIOS does not properly support runtime D3 for the dGPU — enabling it causes the GPU to fail to wake from suspend, requiring a hard reboot.
 
 
 ## Session Variables

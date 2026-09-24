@@ -55,6 +55,10 @@ cloudflareTunnelChecks
     mkEvalCheck "chise-earlyoom-enabled" nixosCfg.services.earlyoom.enable
       "earlyoom must be enabled to prevent kernel OOM freezes";
 
+  chise-nvidia-adaptive-clocks = mkEvalCheck "chise-nvidia-adaptive-clocks" (
+    !(nixosCfg.systemd.services ? nvidia-maximum-performance)
+  ) "chise must allow NVIDIA clocks to scale down when idle";
+
   chise-zram-enabled =
     mkEvalCheck "chise-zram-enabled" nixosCfg.zramSwap.enable
       "zram swap must be enabled for compressed in-memory swap";

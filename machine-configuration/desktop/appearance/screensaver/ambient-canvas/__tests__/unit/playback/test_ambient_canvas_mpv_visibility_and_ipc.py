@@ -77,6 +77,30 @@ def test_mpv_client_reads_newline_delimited_json_events(tmp_path):
     listener.close()
 
 
+def test_visibility_controller_sends_only_transitions_and_pauses_on_unknown(
+    monkeypatch,
+):
+    sent_commands = []
+
+    class RecordingClient:
+        def send_command(self, command):
+            sent_commands.append(command)
+
+    workspaces = iter([11, 11, 5, 5, None, 11])
+    monkeypatch.setattr(
+        "ambient_canvas_mpv_visibility.resolve_active_workspace_id",
+        lambda: next(workspaces),
+    )
+    controller = VisibilityGatedPlaybackController(RecordingClient(), 11)
+    for _ in range(6):
+        controller._synchronize_with_active_workspace()
+    assert sent_commands == [
+        ["set_property", "pause", "no"],
+        ["set_property", "pause", "yes"],
+        ["set_property", "pause", "no"],
+    ]
+
+
 def test_mpv_client_raises_when_the_socket_closes_mid_read(tmp_path):
     socket_path = str(tmp_path / "mpv.sock")
 

@@ -4,6 +4,7 @@ import ambient_canvas_shuffled_segment_order as shuffle_order
 from ambient_canvas_playback_dwell_override import effective_dwell_seconds
 from mpv_ambient_canvas_player import (
     build_mpv_arguments,
+    build_mpv_environment,
     resolve_segment_dwell,
 )
 from play_ambient_canvas_loop_mpv import parse_player_arguments, set_process_name
@@ -73,7 +74,8 @@ def test_dwell_override_ignores_a_missing_or_garbage_file(tmp_path):
 
 def test_mpv_arguments_pin_the_window_title_and_screensaver_flags():
     arguments = build_mpv_arguments("/tmp/ambient-canvas.sock")
-    assert "--hwdec=auto-safe" in arguments
+    assert "--hwdec=vaapi" in arguments
+    assert "--gpu-hwdec-interop=vaapi" in arguments
     assert "--video-sync=desync" in arguments
     assert "--force-window=yes" in arguments
     assert "--title=ambient-canvas-gpu-screensaver" in arguments
@@ -81,6 +83,24 @@ def test_mpv_arguments_pin_the_window_title_and_screensaver_flags():
     assert "--input-ipc-server=/tmp/ambient-canvas.sock" in arguments
     assert "--vo=gpu" in arguments
     assert "--gpu-context=wayland" in arguments
+
+
+def test_mpv_environment_uses_compositor_driver_without_mutating_parent():
+    environment = {
+        "LIBVA_DRIVER_NAME": "nvidia",
+        "NVD_BACKEND": "direct",
+        "GBM_BACKEND": "nvidia-drm",
+        "__GLX_VENDOR_LIBRARY_NAME": "nvidia",
+        "WAYLAND_DISPLAY": "wayland-1",
+        "XDG_RUNTIME_DIR": "/run/user/1000",
+        "PATH": "/bin",
+    }
+    assert build_mpv_environment(environment) == {
+        "WAYLAND_DISPLAY": "wayland-1",
+        "XDG_RUNTIME_DIR": "/run/user/1000",
+        "PATH": "/bin",
+    }
+    assert environment["LIBVA_DRIVER_NAME"] == "nvidia"
 
 
 def test_process_name_is_set_to_the_pinned_player_marker():
