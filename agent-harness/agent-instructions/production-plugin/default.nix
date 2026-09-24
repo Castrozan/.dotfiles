@@ -7,6 +7,7 @@
   isDarwin ? pkgs.stdenv.isDarwin,
 }:
 let
+  distribution = import ../../plugin-distribution { inherit pkgs; };
   artifacts = import ./artifacts.nix {
     inherit
       pkgs
@@ -22,7 +23,9 @@ let
     "1.0.0+"
     + builtins.substring 0 12 (
       builtins.hashString "sha256" (
-        builtins.toJSON artifactEntries + builtins.hashFile "sha256" ./default.nix
+        builtins.toJSON artifactEntries
+        + builtins.hashFile "sha256" ./default.nix
+        + "${distribution.package}"
       )
     );
   manifest = {
