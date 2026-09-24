@@ -2,21 +2,24 @@ import json
 from pathlib import Path
 
 
+CLAUDE_PLUGIN_ROOT_VARIABLE = "${CLAUDE_PLUGIN_ROOT}"
+
+
 def write_claude_mcp(plugin: Path, shell: str) -> None:
     source = plugin / "mcp.json"
     if not source.is_file():
         return
     configuration = json.loads(
         source.read_text()
-        .replace("${PLUGIN_ROOT}", "${CLAUDE_PLUGIN_ROOT}")
+        .replace("${PLUGIN_ROOT}", CLAUDE_PLUGIN_ROOT_VARIABLE)
         .replace("${PLUGIN_DATA}", "${CLAUDE_PLUGIN_DATA}")
     )
     for server in configuration["mcpServers"].values():
         if server.get("type", "stdio") != "stdio":
             continue
-        directory = server.pop("cwd", "${CLAUDE_PLUGIN_ROOT}")
+        directory = server.pop("cwd", CLAUDE_PLUGIN_ROOT_VARIABLE)
         if not directory.startswith("${CLAUDE_PLUGIN_"):
-            directory = "${CLAUDE_PLUGIN_ROOT}/" + directory
+            directory = CLAUDE_PLUGIN_ROOT_VARIABLE + "/" + directory
         server["args"] = [
             "-c",
             'cd -- "$1" && shift && exec "$@"',
@@ -27,7 +30,7 @@ def write_claude_mcp(plugin: Path, shell: str) -> None:
         ]
         server["command"] = shell
         server["env"] = server.get("env", {}) | {
-            "PLUGIN_ROOT": "${CLAUDE_PLUGIN_ROOT}",
+            "PLUGIN_ROOT": CLAUDE_PLUGIN_ROOT_VARIABLE,
             "PLUGIN_DATA": "${CLAUDE_PLUGIN_DATA}",
         }
     destination = plugin / ".claude-plugin"
