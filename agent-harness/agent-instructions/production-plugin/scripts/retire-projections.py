@@ -59,6 +59,30 @@ def retire_opencode(home: Path, archive: Path) -> None:
     archive_projection(root, archive)
 
 
+def retire_repository_backups(home: Path, bundle: Path, archive: Path) -> None:
+    inventory = json.loads((bundle / "plugin/artifact-inventory.json").read_text())
+    backups = []
+    for harness in (".claude", ".opencode"):
+        discovery = home / ".dotfiles" / harness / "skills"
+        for name in inventory["discovery"]["repositorySkills"]:
+            backup = discovery / (name + ".backup")
+            if not backup.exists() and not backup.is_symlink():
+                continue
+            replacement = discovery / name
+            canonical = bundle / "plugin/library/skills" / name
+            if (
+                not (canonical / "SKILL.md").is_file()
+                or not replacement.is_symlink()
+                or replacement.resolve() != canonical.resolve()
+            ):
+                raise ValueError(
+                    "Repository skill has no installed canonical replacement"
+                )
+            backups.append(backup)
+    for backup in backups:
+        archive_projection(backup, archive)
+
+
 def retire(target: str, home: Path, bundle: Path, codex: str | None) -> None:
     if not (bundle / "plugin/plugin.json").is_file():
         raise ValueError("Complete replacement package is missing")
@@ -75,13 +99,15 @@ def retire(target: str, home: Path, bundle: Path, codex: str | None) -> None:
     elif target == "hermes":
         for name in ("humanize", "docs"):
             archive_projection(home / ".hermes/skills" / name, archive)
+    elif target == "repository":
+        retire_repository_backups(home, bundle, archive)
     archive.mkdir(parents=True, exist_ok=True)
     marker.write_text(json.dumps({"replacement": str(bundle.resolve())}) + "\n")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("target", choices=["codex", "opencode", "hermes"])
+    parser.add_argument("target", choices=["codex", "opencode", "hermes", "repository"])
     parser.add_argument("home", type=Path)
     parser.add_argument("bundle", type=Path)
     parser.add_argument("--codex")

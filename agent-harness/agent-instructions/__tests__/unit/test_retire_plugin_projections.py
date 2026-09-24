@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -38,6 +39,49 @@ def test_missing_replacement_does_not_retire_anything(tmp_path):
     with pytest.raises(ValueError, match="replacement"):
         RETIREMENT.retire("hermes", tmp_path, tmp_path / "missing", None)
     assert not (tmp_path / ".local/state").exists()
+
+
+@pytest.mark.parametrize(
+    "canonical_installed,skill_present", [(True, True), (False, True), (True, False)]
+)
+def test_repository_backups_leave_discovery_only_after_canonical_installation(
+    tmp_path, canonical_installed, skill_present
+):
+    bundle = replacement(tmp_path)
+    names = ["nix", "agent-harness"]
+    (bundle / "plugin/artifact-inventory.json").write_text(
+        json.dumps({"discovery": {"repositorySkills": names}})
+    )
+    discovery = tmp_path / ".dotfiles/.opencode/skills"
+    discovery.mkdir(parents=True)
+    for name in names:
+        source = bundle / "plugin/library/skills" / name
+        source.mkdir(parents=True)
+        if skill_present:
+            (source / "SKILL.md").write_text("canonical " + name)
+        if canonical_installed:
+            (discovery / name).symlink_to(source)
+        backup = discovery / (name + ".backup")
+        backup.mkdir()
+        (backup / "SKILL.md").write_text("old " + name)
+        (backup / "opaque.bin").write_bytes(name.encode())
+    unrelated = discovery / "unrelated.backup"
+    unrelated.mkdir()
+    if not canonical_installed or not skill_present:
+        with pytest.raises(ValueError, match="canonical"):
+            RETIREMENT.retire("repository", tmp_path, bundle, None)
+        assert all((discovery / (name + ".backup")).exists() for name in names)
+        return
+    RETIREMENT.retire("repository", tmp_path, bundle, None)
+    RETIREMENT.retire("repository", tmp_path, bundle, None)
+    assert unrelated.is_dir()
+    for name in names:
+        assert not (discovery / (name + ".backup")).exists()
+        assert (discovery / name / "SKILL.md").read_text() == "canonical " + name
+        archived = list(tmp_path.glob(f".local/state/agent-plugins/**/{name}.backup"))
+        assert len(archived) == 1
+        assert (archived[0] / "opaque.bin").read_bytes() == name.encode()
+        assert (archived[0] / "SKILL.md").read_text() == "old " + name
 
 
 def test_opencode_removes_only_links_into_retired_root(tmp_path):

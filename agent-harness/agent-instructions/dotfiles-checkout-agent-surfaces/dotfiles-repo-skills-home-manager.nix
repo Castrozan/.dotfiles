@@ -2,6 +2,7 @@
   pkgs,
   hostname,
   config,
+  lib,
   ...
 }:
 let
@@ -28,6 +29,11 @@ let
 in
 {
   imports = [ ../production-plugin/home-manager.nix ];
+
+  home.activation.retireRepositorySkillBackups = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    ${pkgs.python312}/bin/python3 ${../production-plugin/scripts/retire-projections.py} \
+      repository "${config.home.homeDirectory}" ${config.agentPlugins.bundle}
+  '';
 
   home.file = builtins.foldl' (
     accumulated: harnessProjectSkillDirectory:
