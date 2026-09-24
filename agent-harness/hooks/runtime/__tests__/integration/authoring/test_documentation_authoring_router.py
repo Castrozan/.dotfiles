@@ -36,7 +36,7 @@ class TestDocumentationFileClassification:
             }
         )
         assert_blocked(result)
-        assert "Skill(skill='docs')" in permission_reason(result)
+        assert "Skill(skill='dotfiles:docs')" in permission_reason(result)
 
     @pytest.mark.parametrize(
         "file_path",

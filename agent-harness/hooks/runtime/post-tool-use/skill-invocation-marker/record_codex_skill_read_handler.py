@@ -1,4 +1,6 @@
 from pathlib import Path
+import json
+import os
 import shlex
 
 import skill_loaded_marker
@@ -7,6 +9,7 @@ AUTHORING_SKILL_NAMES = ("instructions", "docs")
 MAXIMUM_SKILL_BYTES = 65536
 MAXIMUM_COMMAND_CHARACTERS = 16384
 MAXIMUM_READ_PATHS = 16
+MANAGED_PLUGIN_DIRECTORY = ".local/share/agent-plugins/dotfiles/plugin"
 
 
 def standalone_cat_paths(tool_input, working_directory):
@@ -39,6 +42,32 @@ def standalone_cat_paths(tool_input, working_directory):
     }
 
 
+def managed_skill_was_read(package, skill_path, read_paths):
+    if skill_path.resolve() in read_paths:
+        return True
+    codex_home = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
+    cache = codex_home / "plugins/cache/dotagents-local/dotfiles"
+    if not any(path.is_relative_to(cache.resolve()) for path in read_paths):
+        return False
+    try:
+        with (package / "plugin.json").open("rb") as manifest_file:
+            content = manifest_file.read(MAXIMUM_SKILL_BYTES + 1)
+        if len(content) > MAXIMUM_SKILL_BYTES:
+            return False
+        manifest = json.loads(content)
+    except (OSError, ValueError, UnicodeError):
+        return False
+    if not isinstance(manifest, dict) or manifest.get("name") != "dotfiles":
+        return False
+    version = manifest.get("version")
+    if not isinstance(version, str) or version in {"", ".", ".."}:
+        return False
+    if Path(version).name != version:
+        return False
+    cached_skill = cache / version / skill_path.relative_to(package)
+    return cached_skill.resolve() in read_paths
+
+
 def handle(hook_input):
     session_id = hook_input.get("session_id")
     tool_input = hook_input.get("tool_input")
@@ -59,9 +88,10 @@ def handle(hook_input):
     read_paths = standalone_cat_paths(tool_input, working_directory)
     if not read_paths:
         return None
+    package = Path.home() / MANAGED_PLUGIN_DIRECTORY
     for skill_name in AUTHORING_SKILL_NAMES:
-        skill_path = Path.home() / ".codex" / "skills" / skill_name / "SKILL.md"
-        if skill_path.resolve() not in read_paths:
+        skill_path = package / "skills" / skill_name / "SKILL.md"
+        if not managed_skill_was_read(package, skill_path, read_paths):
             continue
         try:
             with skill_path.open("rb") as skill_file:

@@ -40,7 +40,10 @@ def test_cat_parser_rejects_oversized_and_malformed_commands(tmp_path):
 def test_skill_read_size_is_bounded(monkeypatch, tmp_path):
     monkeypatch.setattr(record_codex_skill_read_handler.Path, "home", lambda: tmp_path)
     monkeypatch.setenv("AGENT_SKILL_LOADED_MARKER_STATE_DIRECTORY", str(tmp_path))
-    path = tmp_path / ".codex/skills/instructions/SKILL.md"
+    path = (
+        tmp_path
+        / ".local/share/agent-plugins/dotfiles/plugin/skills/instructions/SKILL.md"
+    )
     path.parent.mkdir(parents=True)
     content = "x" * (record_codex_skill_read_handler.MAXIMUM_SKILL_BYTES + 1)
     path.write_text(content)

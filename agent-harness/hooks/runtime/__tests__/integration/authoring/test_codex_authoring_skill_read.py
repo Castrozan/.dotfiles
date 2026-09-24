@@ -31,9 +31,18 @@ def skill_read_environment(tmp_path, monkeypatch):
     )
     monkeypatch.setenv("CLAUDE_CODE_WORKSPACE_STATE_FILE", os.devnull)
     for skill in ("instructions", "docs"):
-        path = tmp_path / ".codex" / "skills" / skill / "SKILL.md"
+        path = (
+            tmp_path
+            / ".local/share/agent-plugins/dotfiles/plugin/skills"
+            / skill
+            / "SKILL.md"
+        )
         path.parent.mkdir(parents=True)
         path.write_text(f"---\nname: {skill}\n---\nApply the {skill} standards.\n")
+    (tmp_path / ".local/share/agent-plugins/dotfiles/plugin/plugin.json").write_text(
+        json.dumps({"name": "dotfiles", "version": "1.0.0+fixture"})
+    )
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path / ".codex"))
     return tmp_path
 
 
@@ -49,7 +58,9 @@ def edit_payload(skill, session="authoring-session"):
 
 
 def read_payload(home, skill="instructions", session="authoring-session"):
-    path = home / ".codex" / "skills" / skill / "SKILL.md"
+    path = (
+        home / ".local/share/agent-plugins/dotfiles/plugin/skills" / skill / "SKILL.md"
+    )
     return {
         "session_id": session,
         "cwd": str(home),
@@ -90,7 +101,10 @@ def test_codex_unproven_skill_read_keeps_gate_closed(
     skill_read_environment, command_template, response
 ):
     payload = read_payload(skill_read_environment)
-    path = skill_read_environment / ".codex/skills/instructions/SKILL.md"
+    path = (
+        skill_read_environment
+        / ".local/share/agent-plugins/dotfiles/plugin/skills/instructions/SKILL.md"
+    )
     payload["tool_input"]["command"] = command_template.format(path=path)
     if response != "complete":
         payload["tool_response"] = response
@@ -99,7 +113,10 @@ def test_codex_unproven_skill_read_keeps_gate_closed(
 
 
 def test_codex_reads_deployed_symlink_targets_with_quoted_paths(skill_read_environment):
-    path = skill_read_environment / ".codex/skills/instructions/SKILL.md"
+    path = (
+        skill_read_environment
+        / ".local/share/agent-plugins/dotfiles/plugin/skills/instructions/SKILL.md"
+    )
     payload = read_payload(skill_read_environment)
     source = skill_read_environment / "nix store source"
     source.mkdir()
@@ -115,7 +132,7 @@ def test_codex_reads_both_authoring_skills_in_one_command(skill_read_environment
     payload = read_payload(skill_read_environment)
     docs = read_payload(skill_read_environment, "docs")
     payload["tool_input"]["command"] = (
-        "cat -- ~/.codex/skills/instructions/SKILL.md .codex/skills/docs/SKILL.md"
+        "cat -- ~/.local/share/agent-plugins/dotfiles/plugin/skills/instructions/SKILL.md .local/share/agent-plugins/dotfiles/plugin/skills/docs/SKILL.md"
     )
     payload["tool_response"] += docs["tool_response"]
     dispatch("PostToolUse", payload)
@@ -144,4 +161,34 @@ def test_codex_denial_explains_the_supported_load_command(skill_read_environment
     for skill in ("instructions", "docs"):
         result = dispatch("PreToolUse", edit_payload(skill))
         assert_blocked(result)
-        assert f"cat ~/.codex/skills/{skill}/SKILL.md" in result.stdout
+        assert (
+            f"cat ~/.local/share/agent-plugins/dotfiles/plugin/skills/{skill}/SKILL.md"
+            in result.stdout
+        )
+
+
+@pytest.mark.parametrize(
+    "version,corrupt,allowed",
+    [
+        ("1.0.0+fixture", False, True),
+        ("old", False, False),
+        ("1.0.0+fixture", True, False),
+    ],
+)
+def test_codex_reads_only_current_intact_native_cache(
+    skill_read_environment, version, corrupt, allowed
+):
+    payload = read_payload(skill_read_environment)
+    cached = (
+        skill_read_environment
+        / ".codex/plugins/cache/dotagents-local/dotfiles"
+        / version
+        / "skills/instructions/SKILL.md"
+    )
+    cached.parent.mkdir(parents=True)
+    cached.write_text("corrupted" if corrupt else payload["tool_response"])
+    payload["tool_input"]["command"] = f"cat {cached}"
+    payload["tool_response"] = cached.read_text()
+    dispatch("PostToolUse", payload)
+    result = dispatch("PreToolUse", edit_payload("instructions"))
+    (assert_allowed if allowed else assert_blocked)(result)

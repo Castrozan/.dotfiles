@@ -39,8 +39,8 @@ DOCUMENTATION_AUTHORING_DIRECTIVE = (
     "BLOCKED: this file is user-facing documentation, so it must be authored against the "
     "documentation standards. This guard blocks every edit to a README or a file under a "
     "docs/ directory until you have loaded the docs skill into context this session. "
-    "Use Skill(skill='docs') where supported; on Codex, run a standalone "
-    "cat ~/.codex/skills/docs/SKILL.md and read its complete output. "
+    "Use Skill(skill='dotfiles:docs') where supported; on Codex, run a standalone "
+    "cat ~/.local/share/agent-plugins/dotfiles/plugin/skills/docs/SKILL.md and read its complete output. "
     "Then re-attempt this edit applying those standards."
 )
 
