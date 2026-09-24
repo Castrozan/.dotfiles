@@ -12,7 +12,10 @@ let
   defaultOpencodeModel = "opencode/big-pickle";
   titleGenerationModel = "opencode-go/${opencodeGo.models.haiku}";
 
-  mcpServerDefinitions = import ./mcp-servers.nix { inherit pkgs latest homeDir; };
+  mcpServerDefinitions = import ./mcp-servers.nix {
+    inherit pkgs latest homeDir;
+    bundle = config.agentPlugins.bundle;
+  };
 
   opencodePythonLspEnvironment =
     import ../../../machine-configuration/development/testing/python-test-environment.nix

@@ -123,6 +123,13 @@ in
     && deployedOpencodeSettings.mcp.chrome-devtools.enabled
   ) "opencode must wire the shared chrome-devtools MCP that Claude and Codex both wire";
 
+  domain-opencode-mcp-loads-emitted-package =
+    mkEvalCheck "domain-opencode-mcp-loads-emitted-package"
+      (builtins.all (
+        server: (server.environment.PLUGIN_ROOT or null) == "${cfg.agentPlugins.bundle}/plugin"
+      ) (builtins.attrValues deployedOpencodeSettings.mcp))
+      "OpenCode MCP execution must read the emitted package declarations";
+
   domain-opencode-allows-nested-subagents = mkEvalCheck "domain-opencode-allows-nested-subagents" (
     deployedOpencodeSettings.subagent_depth >= 2
   ) "opencode must let a subagent launch its own subagents, matching Claude's nesting";

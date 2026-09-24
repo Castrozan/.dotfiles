@@ -4,6 +4,10 @@ let
 in
 {
   inherit package;
+  opencodeMcpCommand = [
+    "${pkgs.python312}/bin/python3"
+    "${./scripts}/opencode_mcp.py"
+  ];
   buildPlugin =
     {
       source,
