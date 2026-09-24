@@ -79,11 +79,10 @@ run codex and take skills through their own path.
 
 ## The design: curated tiers, all native
 
-**Machine tier, `~/.claude/skills/`.** Each interactive harness receives a curated set from
-`interactive-agent-skills.nix`, plus a generated `all-skills` index for the source skills outside that set. This bounds
-always-on descriptions while retaining a path to domain knowledge. Machine-private skills are enumerated by that same
-catalog under the building host's name, so they obey the same curation and reach a session that does not curate them
-only through the index.
+**Machine tier, the complete `dotfiles` plugin.** The production package preserves every catalogued skill.
+`interactive-agent-skills.nix` selects skills for global discovery and a generated `all-skills` index for indexed domain
+skills. Remaining catalogued skills stay under `library/skills`. The building host's private skills follow that
+catalog's curation.
 
 **Repository tier, `<repo>/.claude/skills/`.** Owned and curated by the repository, discovered natively by walking up
 from the working directory. A repo with none gets none. `large-monorepo` already has this and the launcher was

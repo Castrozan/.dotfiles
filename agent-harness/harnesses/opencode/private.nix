@@ -2,10 +2,8 @@
 let
   privateConfigDir = ../../../private-configuration/agent-harness/claude;
   agentsDir = privateConfigDir + "/agents";
-  skillsDir = privateConfigDir + "/skills";
 
   agentsDirExists = builtins.pathExists agentsDir;
-  skillsDirExists = builtins.pathExists skillsDir;
 
   privateAgentDefinitions =
     if agentsDirExists then
@@ -25,14 +23,6 @@ let
     else
       [ ];
 
-  privateSkillDirs =
-    if skillsDirExists then
-      builtins.filter (
-        name: name != ".gitkeep" && builtins.pathExists (skillsDir + "/${name}/SKILL.md")
-      ) (builtins.attrNames (builtins.readDir skillsDir))
-    else
-      [ ];
-
   privateAgentEntries = builtins.listToAttrs (
     map (fileName: {
       name = ".config/opencode/agent/${fileName}";
@@ -42,16 +32,7 @@ let
     }) privateAgentFileNames
   );
 
-  privateSkillEntries = builtins.listToAttrs (
-    map (dirname: {
-      name = ".config/opencode/skills/${dirname}";
-      value = {
-        source = "${skillsDir}/${dirname}";
-        recursive = true;
-      };
-    }) privateSkillDirs
-  );
 in
 {
-  home.file = privateAgentEntries // privateSkillEntries;
+  home.file = privateAgentEntries;
 }
