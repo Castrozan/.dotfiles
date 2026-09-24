@@ -1,17 +1,17 @@
 import argparse
 import ctypes
 import signal
-import threading
+import time
+
+
+class RevealCancelled(Exception):
+    pass
 
 
 def reveal_menu_bar(display_id):
-    cancellation = threading.Event()
-
     def cancel_reveal(_signal_number, _frame):
-        cancellation.set()
+        raise RevealCancelled
 
-    signal.signal(signal.SIGTERM, cancel_reveal)
-    signal.signal(signal.SIGINT, cancel_reveal)
     visibility_library = ctypes.CDLL(
         "/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight"
     )
@@ -21,13 +21,15 @@ def reveal_menu_bar(display_id):
     set_visibility.argtypes = (ctypes.c_int, ctypes.c_int, ctypes.c_bool)
     set_visibility.restype = ctypes.c_int
     connection_id = visibility_library.SLSMainConnectionID()
-    if cancellation.is_set():
-        return
-    result = set_visibility(connection_id, display_id, True)
-    if result != 0:
-        raise RuntimeError(f"Menu bar reveal failed: {result}")
+    signal.signal(signal.SIGTERM, cancel_reveal)
+    signal.signal(signal.SIGINT, cancel_reveal)
     try:
-        cancellation.wait(1)
+        result = set_visibility(connection_id, display_id, True)
+        if result != 0:
+            raise RuntimeError(f"Menu bar reveal failed: {result}")
+        time.sleep(1)
+    except RevealCancelled:
+        pass
     finally:
         result = set_visibility(connection_id, display_id, False)
         if result != 0:
