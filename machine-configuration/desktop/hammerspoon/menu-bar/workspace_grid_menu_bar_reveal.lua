@@ -1,55 +1,61 @@
 local workspaceGridMenuBarReveal = {}
 
+local menuBarVisibleDurationSeconds = 1
 local pendingRevealTimer = nil
-local revealTask = nil
-local revealRequested = false
-local revealTaskCancelled = false
+local pendingHideTimer = nil
+local revealedDisplayId = nil
+local menuBarVisibilityScript = [=[
+ObjC.bindFunction("SLSMainConnectionID", ["int", []]);
+ObjC.bindFunction("SLSSetMenuBarVisibilityOverrideOnDisplay", ["int", ["int", "unsigned int", "bool"]]);
+$.SLSSetMenuBarVisibilityOverrideOnDisplay($.SLSMainConnectionID(), %d, %s);
+]=]
 
-local function launchRequestedReveal()
-	if revealTask or not revealRequested then
-		return
+local function setMenuBarVisibility(displayId, visible)
+	local succeeded, result, detail =
+		hs.osascript.javascript(string.format(menuBarVisibilityScript, displayId, tostring(visible)))
+	if not succeeded or result ~= 0 then
+		hs.printf("Menu bar visibility failed: %s", tostring(detail or result))
+		return false
 	end
-	revealRequested = false
-	local focusedWindow = hs.window.focusedWindow()
-	local screen = (focusedWindow and focusedWindow:screen()) or hs.screen.mainScreen()
-	if not screen then
-		return
-	end
-	revealTaskCancelled = false
-	revealTask = hs.task.new("@MENU_BAR_REVEAL_HELPER@", function(exitCode, _, standardError)
-		local wasCancelled = revealTaskCancelled
-		revealTask = nil
-		revealTaskCancelled = false
-		if exitCode ~= 0 and not wasCancelled then
-			hs.printf("Menu bar reveal failed (%s): %s", exitCode, standardError)
-		end
-		launchRequestedReveal()
-	end, { tostring(screen:id()) })
-	if not revealTask or not revealTask:start() then
-		revealTask = nil
-		hs.printf("Menu bar reveal helper could not start")
+	return true
+end
+
+local function releaseMenuBarVisibility()
+	if revealedDisplayId then
+		setMenuBarVisibility(revealedDisplayId, false)
+		revealedDisplayId = nil
 	end
 end
 
+local function revealFocusedDisplayMenuBar()
+	pendingRevealTimer = nil
+	local focusedWindow = hs.window.focusedWindow()
+	local screen = (focusedWindow and focusedWindow:screen()) or hs.screen.mainScreen()
+	if not screen or not setMenuBarVisibility(screen:id(), true) then
+		return
+	end
+	revealedDisplayId = screen:id()
+	pendingHideTimer = hs.timer.doAfter(menuBarVisibleDurationSeconds, function()
+		pendingHideTimer = nil
+		releaseMenuBarVisibility()
+	end)
+end
+
 function workspaceGridMenuBarReveal.cancel()
-	revealRequested = false
 	if pendingRevealTimer then
 		pendingRevealTimer:stop()
 		pendingRevealTimer = nil
 	end
-	if revealTask and not revealTaskCancelled then
-		revealTaskCancelled = true
-		revealTask:terminate()
+	if pendingHideTimer then
+		pendingHideTimer:stop()
+		pendingHideTimer = nil
 	end
+	releaseMenuBarVisibility()
 end
 
 function workspaceGridMenuBarReveal.brieflyReveal()
 	workspaceGridMenuBarReveal.cancel()
-	pendingRevealTimer = hs.timer.doAfter(0, function()
-		pendingRevealTimer = nil
-		revealRequested = true
-		launchRequestedReveal()
-	end)
+	pendingRevealTimer = hs.timer.doAfter(0, revealFocusedDisplayMenuBar)
 end
 
 return workspaceGridMenuBarReveal

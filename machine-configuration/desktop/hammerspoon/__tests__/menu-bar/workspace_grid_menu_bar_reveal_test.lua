@@ -2,11 +2,11 @@ local moduleDirectory = arg[0]:gsub("__tests__/.*$", "")
 dofile(moduleDirectory .. "__tests__/hammerspoon_module_paths.lua")(moduleDirectory)
 
 local timers = {}
-local tasks = {}
-local activeTaskCount = 0
-local maximumActiveTaskCount = 0
+local visibilityChanges = {}
 local focusedDisplayId = 2
-local taskStartSucceeds = true
+local mainDisplayId = 1
+local scriptSucceeds = true
+local nativeResult = 0
 local reportedFailures = {}
 
 local function makeTimer(delaySeconds, callback)
@@ -25,11 +25,13 @@ local function makeTimer(delaySeconds, callback)
 end
 
 local function makeScreen(displayId)
-	return {
-		id = function()
-			return displayId
-		end,
-	}
+	if displayId then
+		return {
+			id = function()
+				return displayId
+			end,
+		}
+	end
 end
 
 hs = {
@@ -46,7 +48,7 @@ hs = {
 	},
 	screen = {
 		mainScreen = function()
-			return makeScreen(1)
+			return makeScreen(mainDisplayId)
 		end,
 	},
 	application = {
@@ -55,26 +57,14 @@ hs = {
 		end,
 	},
 	timer = { doAfter = makeTimer },
-	task = {
-		new = function(executable, callback, arguments)
-			local task = { executable = executable, arguments = arguments, terminated = false }
-			function task:start()
-				if not taskStartSucceeds then
-					return false
-				end
-				activeTaskCount = activeTaskCount + 1
-				maximumActiveTaskCount = math.max(maximumActiveTaskCount, activeTaskCount)
-				return self
-			end
-			function task:terminate()
-				self.terminated = true
-			end
-			function task:complete(exitCode)
-				activeTaskCount = activeTaskCount - 1
-				callback(exitCode or 0, "", "visibility unavailable")
-			end
-			table.insert(tasks, task)
-			return task
+	osascript = {
+		javascript = function(source)
+			local displayId, visible = source:match(
+				"%$%.SLSSetMenuBarVisibilityOverrideOnDisplay%(%$%.SLSMainConnectionID%(%), (%d+), (%a+)%)"
+			)
+			assert(displayId and visible, "visibility must use the native display override")
+			table.insert(visibilityChanges, { displayId = tonumber(displayId), visible = visible == "true" })
+			return scriptSucceeds, nativeResult
 		end,
 	},
 	printf = function(...)
@@ -97,50 +87,64 @@ end
 local menuBarReveal = require("workspace_grid_menu_bar_reveal")
 menuBarReveal.brieflyReveal()
 expectEqual("reveal waits for workspace focus to settle", 0, timers[1].delaySeconds)
-expectEqual("the old workspace is not revealed", 0, #tasks)
+expectEqual("the old workspace is not revealed", 0, #visibilityChanges)
 timers[1]:fire()
-expectEqual("the focused window determines the display", "2", tasks[1].arguments[1])
+expectEqual("the focused window determines the display", 2, visibilityChanges[1].displayId)
+expectEqual("reveal changes visibility without selecting a menu", true, visibilityChanges[1].visible)
+expectEqual("the menu bar remains visible for one second", 1, timers[2].delaySeconds)
+timers[2]:fire()
+expectEqual("the timer releases the native visibility override", false, visibilityChanges[2].visible)
 
 menuBarReveal.brieflyReveal()
-expectEqual("another reveal terminates the previous helper", true, tasks[1].terminated)
-timers[2]:fire()
-expectEqual("a replacement waits for the old override to be released", 1, #tasks)
+timers[3]:fire()
 focusedDisplayId = 3
 menuBarReveal.brieflyReveal()
-timers[3]:fire()
-tasks[1]:complete(15)
-expectEqual("rapid switches coalesce onto the latest display", "3", tasks[2].arguments[1])
-expectEqual("cancelling a helper does not report an error", 0, #reportedFailures)
-expectEqual("there is never more than one helper process", 1, maximumActiveTaskCount)
-tasks[2]:complete()
+expectEqual("another reveal cancels the old hide timer", true, timers[4].stopped)
+expectEqual("another reveal releases the old display", 2, visibilityChanges[4].displayId)
+expectEqual("the old display is no longer forced visible", false, visibilityChanges[4].visible)
+timers[5]:fire()
+expectEqual("the replacement reveal uses the new display", 3, visibilityChanges[5].displayId)
+timers[4]:fire()
+expectEqual("the stale timer cannot hide the new reveal", 5, #visibilityChanges)
+menuBarReveal.cancel()
+expectEqual("cancelling stops the active hide timer", true, timers[6].stopped)
+expectEqual("cancelling releases the active display", 3, visibilityChanges[6].displayId)
+expectEqual("cancelling removes the visibility override", false, visibilityChanges[6].visible)
+
+menuBarReveal.brieflyReveal()
+menuBarReveal.cancel()
+timers[7]:fire()
+expectEqual("cancellation before focus settles changes nothing", 6, #visibilityChanges)
 
 focusedDisplayId = nil
 menuBarReveal.brieflyReveal()
-timers[4]:fire()
-expectEqual("an empty workspace uses the main display", "1", tasks[3].arguments[1])
-menuBarReveal.brieflyReveal()
-timers[5]:fire()
-menuBarReveal.cancel()
-tasks[3]:complete(15)
-expectEqual("shutdown discards a queued reveal", 3, #tasks)
-
-menuBarReveal.brieflyReveal()
-menuBarReveal.cancel()
-timers[6]:fire()
-expectEqual("cancellation before focus settles launches nothing", 3, #tasks)
-
-taskStartSucceeds = false
-menuBarReveal.brieflyReveal()
-timers[7]:fire()
-expectEqual("failure to start is reported", 1, #reportedFailures)
-taskStartSucceeds = true
-menuBarReveal.brieflyReveal()
 timers[8]:fire()
-tasks[5]:complete(1)
-expectEqual("an unavailable visibility API is reported without selecting a menu", 2, #reportedFailures)
-menuBarReveal.brieflyReveal()
+expectEqual("an empty workspace uses the main display", 1, visibilityChanges[7].displayId)
 timers[9]:fire()
-tasks[6]:complete()
-expectEqual("a failed helper does not block later reveals", 0, activeTaskCount)
+
+mainDisplayId = nil
+menuBarReveal.brieflyReveal()
+timers[10]:fire()
+expectEqual("a missing display does not change visibility", 8, #visibilityChanges)
+mainDisplayId = 1
+
+scriptSucceeds = false
+menuBarReveal.brieflyReveal()
+timers[11]:fire()
+expectEqual("an unavailable API does not schedule a hide", 11, #timers)
+expectEqual("an unavailable API is reported without selecting a menu", 1, #reportedFailures)
+scriptSucceeds = true
+nativeResult = 1001
+menuBarReveal.brieflyReveal()
+timers[12]:fire()
+expectEqual("a rejected visibility override does not schedule a hide", 12, #timers)
+expectEqual("a native failure is reported", 2, #reportedFailures)
+nativeResult = 0
+menuBarReveal.brieflyReveal()
+timers[13]:fire()
+expectEqual("a failed reveal does not block later reveals", 14, #timers)
+nativeResult = 1002
+timers[14]:fire()
+expectEqual("a release failure is reported", 3, #reportedFailures)
 
 os.exit(failureCount == 0 and 0 or 1)
