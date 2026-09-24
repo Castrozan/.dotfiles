@@ -7,9 +7,9 @@
 let
   inherit (helpers) mkEvalCheck;
 
+  pluginBundle = "/test/agent-plugin-bundle";
   hermesConfigTemplate = import ../config.nix {
-    inherit pkgs;
-    pluginBundle = cfg.agentPlugins.bundle;
+    inherit pkgs pluginBundle;
   };
   hermesSoul = import ../soul.nix { inherit pkgs; };
   hermesSoulText = builtins.unsafeDiscardStringContext hermesSoul.text;
@@ -19,7 +19,7 @@ let
   hermesManagedMemoryText = "${hermesUserMemoryText}\n${hermesAgentMemoryText}";
   canonicalCore = builtins.readFile ../../../agent-instructions/core-rules/core.md;
   hermesIdentity = "You are Hermes Agent, an intelligent AI assistant created by Nous Research.";
-  hermesHookCommandPath = builtins.unsafeDiscardStringContext "${cfg.agentPlugins.bundle}/plugin/native/hermes/hook-bridge";
+  hermesHookCommandPath = "${pluginBundle}/plugin/native/hermes/hook-bridge";
 
   cfg = helpers.homeManagerTestConfiguration [ ../. ];
 
