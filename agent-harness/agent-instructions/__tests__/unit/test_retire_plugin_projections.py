@@ -67,8 +67,9 @@ def test_foreign_marketplace_is_not_removed(tmp_path):
     assert "/foreign" in config.read_text()
 
 
+@pytest.mark.parametrize("marketplace_present", [True, False])
 def test_codex_unregisters_only_owned_plugins_before_the_marketplace(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, marketplace_present
 ):
     bundle = replacement(tmp_path)
     config = tmp_path / ".codex/config.toml"
@@ -76,9 +77,13 @@ def test_codex_unregisters_only_owned_plugins_before_the_marketplace(
     root = config.parent / "claude-plugin-ports"
     root.mkdir()
     (root / "asset.bin").write_bytes(b"preserved")
-    config.write_text(
+    marketplace_configuration = (
         f'[marketplaces.claude-code-ports]\nsource_type="local"\nsource="{root}"\n'
-        '[plugins."old@claude-code-ports"]\nenabled=true\n'
+        if marketplace_present
+        else ""
+    )
+    config.write_text(
+        marketplace_configuration + '[plugins."old@claude-code-ports"]\nenabled=true\n'
         '[plugins."other@native"]\nenabled=true\n'
     )
     calls = []
@@ -88,9 +93,13 @@ def test_codex_unregisters_only_owned_plugins_before_the_marketplace(
         lambda arguments, **kwargs: calls.append(arguments),
     )
     RETIREMENT.retire("codex", tmp_path, bundle, "codex")
-    assert calls == [
+    expected = [
         ["codex", "plugin", "remove", "old@claude-code-ports", "--json"],
-        ["codex", "plugin", "marketplace", "remove", "claude-code-ports", "--json"],
     ]
+    if marketplace_present:
+        expected.append(
+            ["codex", "plugin", "marketplace", "remove", "claude-code-ports", "--json"]
+        )
+    assert calls == expected
     assert not root.exists()
     assert len(list(tmp_path.glob(".local/state/agent-plugins/**/asset.bin"))) == 1

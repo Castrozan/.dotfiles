@@ -26,25 +26,25 @@ def retire_codex(home: Path, archive: Path, binary: str) -> None:
     name = "claude-code-ports"
     root = codex_home / "claude-plugin-ports"
     marketplace = configuration.get("marketplaces", {}).get(name)
+    if marketplace and (
+        marketplace.get("source_type") != "local"
+        or Path(marketplace.get("source", "")).resolve() != root.resolve()
+    ):
+        raise ValueError("Retired marketplace name belongs to another source")
+    removals = [
+        ["remove", plugin, "--json"]
+        for plugin in configuration.get("plugins", {})
+        if plugin.endswith("@" + name)
+    ]
     if marketplace:
-        if (
-            marketplace.get("source_type") != "local"
-            or Path(marketplace.get("source", "")).resolve() != root.resolve()
-        ):
-            raise ValueError("Retired marketplace name belongs to another source")
-        removals = [
-            ["remove", plugin, "--json"]
-            for plugin in configuration.get("plugins", {})
-            if plugin.endswith("@" + name)
-        ]
         removals.append(["marketplace", "remove", name, "--json"])
-        for arguments in removals:
-            subprocess.run(
-                [binary, "plugin", *arguments],
-                env=os.environ | {"CODEX_HOME": str(codex_home)},
-                check=True,
-                timeout=60,
-            )
+    for arguments in removals:
+        subprocess.run(
+            [binary, "plugin", *arguments],
+            env=os.environ | {"CODEX_HOME": str(codex_home)},
+            check=True,
+            timeout=60,
+        )
     archive_projection(root, archive)
     archive_projection(codex_home / "plugins/cache" / name, archive)
 
