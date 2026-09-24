@@ -5,13 +5,10 @@ alwaysApply: true
 
 ### Orientation
 
-If you are reading this you are inside the dotfiles repo, the single declarative source of truth for every machine it
-configures. The live machine is a projection of this repo, so its whole configuration - packages, services, host and
-user settings, dotfiles, secrets, packaged scripts, even this instruction file - is produced by a nix module here and
-materialized by a rebuild.
+This repository is the declarative source of truth for every configured machine. Nix modules produce all packages,
+services, host and user settings, dotfiles, secrets, packaged scripts and agent instructions; rebuilds materialize them.
 
-A change made by hand on the running machine is drift the next rebuild erases; a change made here is the real thing,
-which is why most tasks reduce to finding the module that already owns what you are changing and editing that.
+Hand changes on the running machine are drift that rebuilds erase. Find and edit the module that owns the change.
 
 Before guessing where something lives, load the `nix` skill: it carries this repo's map - module layout, host split,
 secrets, script packaging, the "where does this belong" call.
@@ -54,8 +51,8 @@ or removed on purpose; bindings it lists as removed stay removed unless the owne
 ### Codex managed settings ownership
 
 Shared MCP servers belong to `agent-harness/agent-instructions/production-plugin/mcp-servers.nix` and travel in the
-complete plugin. Agent-only Claude servers remain in `agent-harness/harnesses/claude-code/mcps/default.nix`; private Codex
-servers remain in `agent-harness/harnesses/codex/config.nix`.
+complete plugin. Agent-only Claude servers remain in `agent-harness/harnesses/claude-code/mcps/default.nix`; private
+Codex servers remain in `agent-harness/harnesses/codex/config.nix`.
 
 Codex deploys an authoritative nix-source for managed settings, including `mcp_servers`, then seeds a mutable live
 config. The live model and entries in projects, marketplaces, and plugins survive rebuilds. The declarative source wins
