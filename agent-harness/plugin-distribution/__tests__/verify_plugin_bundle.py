@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -53,6 +54,12 @@ def verify_mcp(command, environment, directory=None):
 
 def verify_bundle(bundle, source):
     plugin = bundle / ".agents/plugins/distribution-probe"
+    assert (bundle / "plugin").resolve() == plugin
+    for path in source.rglob("*"):
+        if path.is_file():
+            assert (plugin / path.relative_to(source)).read_bytes() == path.read_bytes()
+    for target in ("pi", "hermes"):
+        assert (bundle / f".{target}/plugins/distribution-probe").resolve() == plugin
     for target in ("claude", "codex"):
         manifest = read_json(plugin / f".{target}-plugin/plugin.json")
         assert manifest["name"] == "distribution-probe"
@@ -92,10 +99,17 @@ def verify_bundle(bundle, source):
     server = read_json(bundle / ".opencode/opencode.jsonc")["mcp"][
         "plugin.distribution-probe.distribution-probe"
     ]
-    verify_mcp(server["command"], server["environment"], server["cwd"])
+    with tempfile.TemporaryDirectory() as state:
+        verify_mcp(
+            server["command"],
+            server["environment"] | {"XDG_STATE_HOME": state},
+            server["cwd"],
+        )
     for removed in ("input", ".git", "agents.toml", "agents.lock"):
         assert not (bundle / removed).exists()
-    print("Skills, references, catalogs and MCP calls verified for all three targets")
+    print(
+        "Complete packages for five targets and MCP calls through three native adapters verified"
+    )
 
 
 if __name__ == "__main__":

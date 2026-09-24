@@ -34,8 +34,13 @@ def write_claude_mcp(plugin: Path, shell: str) -> None:
             "PLUGIN_DATA": "${CLAUDE_PLUGIN_DATA}",
         }
     destination = plugin / ".claude-plugin"
-    (destination / "mcp.json").write_text(json.dumps(configuration, indent=2) + "\n")
+    adapter = destination / "mcp.json"
+    sequence = 0
+    while adapter.exists():
+        sequence += 1
+        adapter = destination / f"mcp.generated.{sequence}.json"
+    adapter.write_text(json.dumps(configuration, indent=2) + "\n")
     manifest_path = destination / "plugin.json"
     manifest = json.loads(manifest_path.read_text())
-    manifest["mcpServers"] = "./.claude-plugin/mcp.json"
+    manifest["mcpServers"] = "./" + str(adapter.relative_to(plugin))
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")

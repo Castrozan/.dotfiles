@@ -53,25 +53,43 @@ def verify_contract(fixture):
         assert snapshot(output) == first
         shutil.rmtree(output)
 
-        build(source, output, ("pi",), success=False)
-        assert not output.exists()
-        (source / "mcp.json").unlink()
-        build(source, output, ("pi",))
-        assert (output / ".agents/skills/distribution-probe/SKILL.md").is_file()
-        shutil.rmtree(output)
-
         manifest_path = source / "plugin.json"
         manifest = json.loads(manifest_path.read_text())
         manifest["extensions"] = {"com.example.client": {"hooks": "./hooks.json"}}
         manifest_path.write_text(json.dumps(manifest))
-        build(source, output, targets, success=False)
-        assert not output.exists()
-        manifest.pop("extensions")
-        manifest_path.write_text(json.dumps(manifest))
+        extension = source / "com.example.client"
+        extension.mkdir()
+        (extension / "hooks.json").write_text('{"hooks":{}}')
+        (source / "unknown-artifact.bin").write_bytes(bytes(range(256)))
+        original = snapshot(source)
+        for selected in ((), ("pi", "hermes"), targets):
+            build(source, output, selected)
+            delivered = snapshot(output / "plugin")
+            assert all(delivered[path] == content for path, content in original.items())
+            for target in {"pi", "hermes"} & set(selected):
+                assert (output / f".{target}/plugins/distribution-probe").resolve() == (
+                    output / "plugin"
+                ).resolve()
+            assert not (output / ".agents/skills/distribution-probe").exists()
+            shutil.rmtree(output)
+
+        native = source / ".claude-plugin"
+        native.mkdir()
+        authored = '{"name":"distribution-probe","hooks":"./com.openai/hooks.json"}'
+        (native / "plugin.json").write_text(authored)
+        build(source, output, targets)
+        assert (output / "plugin/.claude-plugin/plugin.json").read_text() == authored
+        shutil.rmtree(output)
+
         (source / "mcp.json").write_text('{"mcpServers":{"broken":{"type":"invalid"}}}')
-        build(source, output, targets, success=False)
-        assert not output.exists()
-    print("Reproducibility, collisions, Pi scope and failed-build cleanup verified")
+        build(source, output, targets)
+        assert (output / "plugin/mcp.json").read_bytes() == (
+            source / "mcp.json"
+        ).read_bytes()
+        assert (output / "dotagents-doctor.log").is_file()
+    print(
+        "Complete packages, loader directories, reproducibility and failure cleanup verified"
+    )
 
 
 if __name__ == "__main__":

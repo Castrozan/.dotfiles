@@ -21,39 +21,34 @@ def test_portable_plugin_accepts_all_complete_targets(source):
     )
 
 
-@pytest.mark.parametrize("targets", [("hermes",), ("typo",), ()])
+@pytest.mark.parametrize("targets", [("typo",)])
 def test_unsupported_targets_fail_before_building(source, targets):
     with pytest.raises(ValueError, match="Unsupported targets"):
         read_portable_plugin(source, targets)
 
 
-def test_pi_cannot_silently_drop_mcp(source):
-    with pytest.raises(ValueError, match="Pi projection supports skills only"):
-        read_portable_plugin(source, ("pi",))
-    (source / "mcp.json").unlink()
-    assert read_portable_plugin(source, ("pi",)) == "distribution-probe"
+@pytest.mark.parametrize("targets", [("pi",), ("hermes",), ()])
+def test_whole_package_loaders_accept_mcp(source, targets):
+    assert read_portable_plugin(source, targets) == "distribution-probe"
 
 
 @pytest.mark.parametrize("component", ["AGENTS.md", "commands", "hooks", "agents"])
-def test_native_components_require_an_adapter(source, component):
+def test_native_components_are_package_contents(source, component):
     (source / component).touch()
-    with pytest.raises(ValueError, match="explicit adapters"):
-        read_portable_plugin(source, ("claude",))
+    assert read_portable_plugin(source, ("claude",)) == "distribution-probe"
 
 
-def test_extension_is_not_silently_ignored(source):
+def test_extension_interpretation_belongs_to_the_loader(source):
     path = source / "plugin.json"
     manifest = json.loads(path.read_text())
     manifest["extensions"] = {"com.example.client": {"hooks": "./hook.json"}}
     path.write_text(json.dumps(manifest))
-    with pytest.raises(ValueError, match="explicit adapters"):
-        read_portable_plugin(source, ("codex",))
+    assert read_portable_plugin(source, ("codex",)) == "distribution-probe"
 
 
-def test_file_only_extension_is_not_silently_ignored(source):
+def test_file_only_extension_is_package_content(source):
     (source / "com.example.client").mkdir()
-    with pytest.raises(ValueError, match="explicit adapters"):
-        read_portable_plugin(source, ("codex",))
+    assert read_portable_plugin(source, ("codex",)) == "distribution-probe"
 
 
 @pytest.mark.parametrize("name", ["../escape", "two--hyphens", "", ["invalid"]])
@@ -80,11 +75,10 @@ def test_directory_symlink_cycle_is_rejected(source):
         read_portable_plugin(source, ("claude",))
 
 
-def test_opencode_writable_data_requirement_is_rejected(source):
+def test_persistent_data_does_not_restrict_package_delivery(source):
     path = source / "mcp.json"
     path.write_text(path.read_text().replace("${PLUGIN_ROOT}", "${PLUGIN_DATA}"))
-    with pytest.raises(ValueError, match="writable runtime directory"):
-        read_portable_plugin(source, ("opencode",))
+    assert read_portable_plugin(source, ("opencode",)) == "distribution-probe"
 
 
 @pytest.mark.parametrize("manifest", [{"name": "legacy"}, []])

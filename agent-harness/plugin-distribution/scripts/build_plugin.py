@@ -10,6 +10,7 @@ from itertools import chain
 from pathlib import Path
 
 from claude_mcp import write_claude_mcp
+from opencode_mcp import write_opencode_mcp
 from portable_plugin import read_portable_plugin
 
 
@@ -27,16 +28,24 @@ def run_dotagents(command: str, output: Path, environment: dict[str, str]) -> No
         check=False,
     )
     diagnostic = process.stdout + process.stderr
-    if process.returncode or "warn:" in diagnostic.lower():
+    if process.returncode and command != "doctor":
         raise ValueError(f"dotagents {command} failed:\n{diagnostic.strip()}")
+    if process.returncode or "warn:" in diagnostic.lower():
+        (output / f"dotagents-{command}.log").write_text(diagnostic)
+        print(diagnostic.strip(), file=sys.stderr)
+
+
+def copy_package(source: Path, destination: Path) -> None:
+    shutil.copytree(
+        source, destination, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".git")
+    )
+    for path in chain((destination,), destination.rglob("*")):
+        path.chmod(path.stat().st_mode | stat.S_IWUSR)
 
 
 def prepare_workspace(source: Path, output: Path, name: str, targets: tuple) -> None:
     (output / ".git").mkdir()
-    snapshot = output / "input"
-    shutil.copytree(source, snapshot, ignore=shutil.ignore_patterns(".git"))
-    for path in chain((snapshot,), snapshot.rglob("*")):
-        path.chmod(path.stat().st_mode | stat.S_IWUSR)
+    copy_package(source, output / "input")
     (output / ".gitignore").write_text("agents.lock\n.agents/.gitignore\n")
     (output / "agents.toml").write_text(
         f"version = 1\nagents = {json.dumps(targets)}\n\n"
@@ -51,6 +60,20 @@ def remove_build_inputs(output: Path) -> None:
         (output / name).unlink(missing_ok=True)
 
 
+def deliver_package(source: Path, output: Path, name: str, targets: tuple) -> Path:
+    plugin = output / ".agents/plugins" / name
+    copy_package(source, plugin)
+    (output / "plugin").symlink_to(plugin.relative_to(output), target_is_directory=True)
+    for target, directory in (("pi", ".pi/plugins"), ("hermes", ".hermes/plugins")):
+        if target in targets:
+            destination = output / directory / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.symlink_to(
+                os.path.relpath(plugin, destination.parent), target_is_directory=True
+            )
+    return plugin
+
+
 def build_plugin(source: Path, output: Path, targets: tuple[str, ...]) -> None:
     source = source.resolve(strict=True)
     output = output.absolute()
@@ -59,7 +82,11 @@ def build_plugin(source: Path, output: Path, targets: tuple[str, ...]) -> None:
         raise ValueError("Output must be outside the plugin source")
     output.mkdir()
     try:
-        prepare_workspace(source, output, name, targets)
+        adapters = tuple(target for target in targets if target not in {"pi", "hermes"})
+        if not adapters:
+            deliver_package(source, output, name, targets)
+            return
+        prepare_workspace(source, output, name, adapters)
         with tempfile.TemporaryDirectory(prefix="agent-plugin-build-") as state:
             environment = os.environ | {
                 "HOME": state,
@@ -68,13 +95,20 @@ def build_plugin(source: Path, output: Path, targets: tuple[str, ...]) -> None:
                 "XDG_STATE_HOME": state,
                 "NO_COLOR": "1",
             }
+            environment.pop("BASH_ENV", None)
             run_dotagents("install", output, environment)
             run_dotagents("doctor", output, environment)
-            if "claude" in targets:
+            plugin = deliver_package(source, output, name, targets)
+            if (
+                "claude" in targets
+                and not (source / ".claude-plugin/plugin.json").exists()
+            ):
                 write_claude_mcp(
-                    output / ".agents/plugins" / name,
+                    plugin,
                     environment["AGENT_PLUGIN_MCP_SHELL"],
                 )
+            if "opencode" in targets:
+                write_opencode_mcp(output, name)
         remove_build_inputs(output)
     except BaseException:
         shutil.rmtree(output)
@@ -83,11 +117,11 @@ def build_plugin(source: Path, output: Path, targets: tuple[str, ...]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Build native artifacts from one Agent Plugins v1 package."
+        description="Deliver a complete Agent Plugins v1 package with optional harness registration."
     )
     parser.add_argument("source", type=Path)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--target", action="append", required=True)
+    parser.add_argument("--target", action="append", default=[])
     arguments = parser.parse_args()
     try:
         build_plugin(arguments.source, arguments.output, tuple(arguments.target))

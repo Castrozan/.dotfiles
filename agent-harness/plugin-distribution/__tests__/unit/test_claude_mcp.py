@@ -72,3 +72,16 @@ def test_http_has_no_process_launcher(tmp_path):
 def test_skill_only_plugin_needs_no_mcp_adapter(tmp_path):
     write_claude_mcp(tmp_path, "unused-shell")
     assert list(tmp_path.iterdir()) == []
+
+
+def test_authored_mcp_file_is_not_overwritten(tmp_path):
+    native = tmp_path / ".claude-plugin"
+    native.mkdir()
+    (native / "plugin.json").write_text('{"name":"example"}')
+    authored = '{"mcpServers":{"native":{"command":"native-server"}}}'
+    (native / "mcp.json").write_text(authored)
+    (tmp_path / "mcp.json").write_text('{"mcpServers":{}}')
+    write_claude_mcp(tmp_path, "unused-shell")
+    assert (native / "mcp.json").read_text() == authored
+    manifest = json.loads((native / "plugin.json").read_text())
+    assert manifest["mcpServers"] == "./.claude-plugin/mcp.generated.1.json"

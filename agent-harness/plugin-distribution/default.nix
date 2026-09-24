@@ -11,6 +11,8 @@ in
         "claude"
         "codex"
         "opencode"
+        "pi"
+        "hermes"
       ],
     }:
     pkgs.runCommand "agent-plugin-bundle" { nativeBuildInputs = [ package ]; } ''

@@ -2,8 +2,16 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "distribution-probe",
   "version": "1.0.0",
-  "description": "Exercise skill discovery and a stateless MCP tool across harnesses.",
+  "description": "Exercise complete plugin delivery across harnesses.",
   "author": {
     "name": "Carmilla"
+  },
+  "extensions": {
+    "com.openai": {
+      "hooks": "./com.openai/hooks.json",
+      "interface": {
+        "displayName": "Complete Package Probe"
+      }
+    }
   }
 }
