@@ -1,10 +1,8 @@
 {
   pkgs,
   lib,
-  hostname,
   config,
   inputs,
-  isDarwin ? false,
   ...
 }:
 let
@@ -13,12 +11,8 @@ let
   };
 
   configTemplate = import ./config.nix {
-    inherit
-      pkgs
-      lib
-      hostname
-      isDarwin
-      ;
+    inherit pkgs;
+    pluginBundle = config.agentPlugins.bundle;
   };
   soul = import ./soul.nix { inherit pkgs; };
   migration = import ./migration.nix { inherit pkgs; };

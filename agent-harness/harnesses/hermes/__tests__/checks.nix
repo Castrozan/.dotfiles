@@ -7,14 +7,10 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  hermesModuleArguments = {
-    inherit pkgs lib;
-    hostname = "test";
-    isDarwin = false;
+  hermesConfigTemplate = import ../config.nix {
+    inherit pkgs;
+    pluginBundle = cfg.agentPlugins.bundle;
   };
-
-  hermesHooks = import ../../../hooks/integrations/hermes/hermes-hooks.nix hermesModuleArguments;
-  hermesConfigTemplate = import ../config.nix hermesModuleArguments;
   hermesSoul = import ../soul.nix { inherit pkgs; };
   hermesSoulText = builtins.unsafeDiscardStringContext hermesSoul.text;
   hermesMigration = import ../migration.nix { inherit pkgs; };
@@ -23,7 +19,7 @@ let
   hermesManagedMemoryText = "${hermesUserMemoryText}\n${hermesAgentMemoryText}";
   canonicalCore = builtins.readFile ../../../agent-instructions/core-rules/core.md;
   hermesIdentity = "You are Hermes Agent, an intelligent AI assistant created by Nous Research.";
-  hermesHookCommandPath = builtins.unsafeDiscardStringContext "${hermesHooks.hermesHookCommand}";
+  hermesHookCommandPath = builtins.unsafeDiscardStringContext "${cfg.agentPlugins.bundle}/plugin/native/hermes/hook-bridge";
 
   cfg = helpers.homeManagerTestConfiguration [ ../. ];
 

@@ -1,18 +1,9 @@
 {
   pkgs,
-  lib,
-  hostname,
-  isDarwin ? false,
+  pluginBundle,
 }:
 let
-  hermesHooks = import ../../hooks/integrations/hermes/hermes-hooks.nix {
-    inherit
-      pkgs
-      lib
-      hostname
-      isDarwin
-      ;
-  };
+  hookCommand = "${pluginBundle}/plugin/native/hermes/hook-bridge";
   projection = import ../../agent-instructions/instruction-projection.nix { inherit pkgs; };
   interactiveCommunication = import ./interactive-instructions.nix { inherit pkgs; };
   template = pkgs.writeText "hermes-config-template.yaml" ''
@@ -32,10 +23,10 @@ let
     hooks_auto_accept: true
     hooks:
       pre_tool_call:
-        - command: ${hermesHooks.hermesHookCommand}
+        - command: ${hookCommand}
           timeout: 10
       post_tool_call:
-        - command: ${hermesHooks.hermesHookCommand}
+        - command: ${hookCommand}
           timeout: 20
   '';
 in
