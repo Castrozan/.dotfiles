@@ -3,8 +3,10 @@
 Apply core [delegation](core.md#delegation) to choose the lightest safe execution shape, then map it to these
 Claude-specific tiers: direct answers touch no file and spawn no agent; patch changes one or two files alone; guided
 changes a handful with at most two agents; orchestrated is five or more files, or any auth, data, or public-interface
-change at any file count, and is the only tier that spends a third agent. Risk outranks counts, so a two-file auth
-change is orchestrated. A user request for `AIDP patch` or the lightest safe AIDP mode overrides the mapping.
+change at any file count, and is the only tier that spends a third agent.
+
+Risk outranks counts, so a two-file auth change is orchestrated. A user request for `AIDP patch` or the lightest safe AIDP
+mode overrides the mapping.
 
 ### How the ceiling holds
 
