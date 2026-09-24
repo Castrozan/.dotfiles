@@ -32,20 +32,12 @@ def test_configuration_keeps_prompt_literals_and_existing_settings(tmp_path):
     }
 
 
-def test_fresh_launch_and_relaunch_install_the_routed_humanize_reference(tmp_path):
+def test_launch_preserves_plugin_assets_and_uses_the_pinned_runtime(tmp_path):
     home = tmp_path / "custom-hermes-home"
-    binary = home / ".venv/bin/hermes"
+    binary = tmp_path / "runtime/bin/hermes"
     binary.parent.mkdir(parents=True)
     binary.write_text("#!/usr/bin/env bash\nexit 0\n")
     binary.chmod(0o755)
-    (home / ".venv/.hermes-installed-version-test").touch()
-    skill = tmp_path / "source-humanize"
-    (skill / "references").mkdir(parents=True)
-    (skill / "SKILL.md").write_text(
-        "### Scope\n\nRead [reference](references/interactive-communication.md).\n"
-    )
-    reference = skill / "references/interactive-communication.md"
-    reference.write_text("### Response shape\n\nPreserve the reply contract.\n")
     source = tmp_path / "source.md"
     source.write_text("### Evidence\n\nRead.\n")
     memory = tmp_path / "memory.md"
@@ -55,12 +47,10 @@ def test_fresh_launch_and_relaunch_install_the_routed_humanize_reference(tmp_pat
     environment = {
         **os.environ,
         "HERMES_HOME": str(home),
-        "HERMES_AGENT_VERSION": "test",
+        "HERMES_AGENT_BINARY": str(binary),
         "HERMES_AGENT_RUNTIME_PATH": os.environ["PATH"],
         "HERMES_AGENT_CONFIG_TEMPLATE": str(source),
         "HERMES_AGENT_SOUL": str(source),
-        "HERMES_AGENT_HUMANIZE_SKILL": str(skill / "SKILL.md"),
-        "HERMES_AGENT_DOCS_SKILL": str(source),
         "HERMES_AGENT_USER_MEMORY": str(memory),
         "HERMES_AGENT_AGENT_MEMORY": str(memory),
         "HERMES_AGENT_RETIRED_USER_MEMORY_ENTRY_PREFIXES": str(prefixes),
@@ -71,15 +61,19 @@ def test_fresh_launch_and_relaunch_install_the_routed_humanize_reference(tmp_pat
         ),
     }
     environment.pop("HERMES_AGENT_LAUNCH_SEEDED", None)
-    installed = home / "skills/humanize/references/interactive-communication.md"
-    for content in (reference.read_text(), "### Response shape\n\nUpdated contract.\n"):
-        reference.write_text(content)
+    installed = (
+        home
+        / "plugins/dotfiles/skills/humanize/references/interactive-communication.md"
+    )
+    installed.parent.mkdir(parents=True)
+    installed.write_text("Preserved package asset.")
+    for content in ("### Evidence\n\nRead.\n", "### Evidence\n\nVerify.\n"):
+        source.write_text(content)
         subprocess.run(
             ["bash", str(HERMES_DIRECTORY / "scripts/hermes-launch")],
             env=environment,
             check=True,
         )
-        assert installed.read_text() == content
-        assert (home / "skills/humanize/SKILL.md").read_text() == (
-            skill / "SKILL.md"
-        ).read_text()
+        assert installed.read_text() == "Preserved package asset."
+        assert not (home / "skills/humanize").exists()
+        assert (home / "SOUL.md").read_text() == content

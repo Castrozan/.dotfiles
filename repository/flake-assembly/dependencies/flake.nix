@@ -31,6 +31,8 @@
     clawde.url = "github:Castrozan/clawde/ebb80df78c41625797d8ca0d9d0f74a6cc7bc90f";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 
+    hermes.url = "github:NousResearch/hermes-agent/d337b736aa1e8ebecfab043842d13e4a2d2f48a3";
+
     # Tag-pinned — keep own nixpkgs (incompatible or untested with ours)
     tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";

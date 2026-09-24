@@ -1,49 +1,6 @@
+{ config, ... }:
 {
-  pkgs,
-  lib,
-  hostname,
-  isDarwin ? false,
-  ...
-}:
-let
-  agentHookScripts = import ../../flat-hook-scripts-directory.nix { inherit pkgs lib; };
-
-  privateConfigRoot = ../../../../private-configuration;
-
-  machinesRegistryFile = privateConfigRoot + "/machines.nix";
-  machineAllowedProhibitedWordsFile =
-    privateConfigRoot + "/machines/${hostname}/claude-prohibited-words-allowed.nix";
-  machineAllowedProhibitedWords =
-    if !(builtins.pathExists machinesRegistryFile) && isDarwin then
-      throw ''
-        private-configuration/machines.nix is missing from the flake source, so the per-machine
-        prohibited-words allowlist would silently degrade to empty and the guard would block
-        sessions that the machine allowlist is meant to exempt. Refusing to build the OpenCode
-        hook bridge; rebuild from a flake source that carries the private-configuration submodule
-        content (a git+file flake ref with ?submodules=1).
-      ''
-    else if builtins.pathExists machineAllowedProhibitedWordsFile then
-      import machineAllowedProhibitedWordsFile
-    else
-      [ ];
-
-  opencodeHookDispatcher = pkgs.writeShellScript "opencode-hook-dispatcher" ''
-    export PROHIBITED_WORDS_ALLOWED=${lib.escapeShellArg (lib.concatStringsSep "," machineAllowedProhibitedWords)}
-    exec ${agentHookScripts}/run-hook.sh "${agentHookScripts}/$1" --surface=opencode
-  '';
-
-  hookBridgeDispatcherInvocation = pkgs.replaceVars ./hook-bridge/dispatcher-invocation.js {
-    inherit opencodeHookDispatcher;
-  };
-
-  opencodeHookBridge = pkgs.runCommand "opencode-hook-bridge" { } ''
-    mkdir -p "$out"
-    cp ${./hook-bridge}/*.js "$out"/
-    chmod -R u+w "$out"
-    cp ${hookBridgeDispatcherInvocation} "$out"/dispatcher-invocation.js
-  '';
-in
-{
+  imports = [ ../../../agent-instructions/production-plugin/home-manager.nix ];
   home.file.".config/opencode/plugins/opencode-hook-bridge.js".source =
-    "${opencodeHookBridge}/opencode-hook-bridge.js";
+    "${config.agentPlugins.bundle}/plugin/native/opencode/hooks/opencode-hook-bridge.js";
 }

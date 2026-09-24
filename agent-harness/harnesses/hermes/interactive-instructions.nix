@@ -10,6 +10,6 @@ projection.instructionFile {
   deployed = "/.hermes/config.yaml";
   destinations = projection.interactiveDestinations {
     coreInstructionFile = "/.hermes/SOUL.md";
-    humanizeSkillDirectory = "/.hermes/skills/humanize";
+    humanizeSkillDirectory = "/.hermes/plugins/dotfiles/skills/humanize";
   };
 }

@@ -18,36 +18,31 @@ let
     chromePackage = latest.google-chrome;
   };
 
-  mcpServerDefinitions = {
-    sonarqube = {
-      command = "${
-        (import ../../../../machine-configuration/development/testing/sonarqube/sonarqube-tools.nix {
-          inherit pkgs;
-        }).mcp
-      }/bin/sonarqube-mcp";
+  mcpServerDefinitions =
+    (import ../../../agent-instructions/production-plugin/mcp-servers.nix {
+      inherit pkgs;
+      homeDirectory = homeDir;
+      chromePackage = latest.google-chrome;
+    })
+    // {
+      codex = {
+        command = "${homeDir}/.local/bin/codex";
+        args = [
+          "mcp-server"
+          "-c"
+          "approval_policy=never"
+          "-c"
+          "sandbox_mode=danger-full-access"
+        ];
+      };
     };
-    chrome-devtools = {
-      command = browserMcp.chromeDevtoolsMcpStdioCommand;
-      args = browserMcp.chromeDevtoolsMcpStdioArgs;
-    };
-    codex = {
-      command = "${homeDir}/.local/bin/codex";
-      args = [
-        "mcp-server"
-        "-c"
-        "approval_policy=never"
-        "-c"
-        "sandbox_mode=danger-full-access"
-      ];
-    };
-  };
 
   mcpServerInjectionPartition = import ./mcp-server-injection-partition.nix {
     inherit lib;
     allMcpServerNames = builtins.attrNames mcpServerDefinitions;
   };
 
-  interactivelyInjectedMcpServerDefinitions = removeAttrs mcpServerDefinitions mcpServerInjectionPartition.agentOnlyMcpServerNames;
+  interactivelyInjectedMcpServerDefinitions = { };
 
   selectClawdeAgentMcpServers = serverNames: lib.getAttrs serverNames mcpServerDefinitions;
 

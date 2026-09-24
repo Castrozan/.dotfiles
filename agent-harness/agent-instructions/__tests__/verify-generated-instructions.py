@@ -25,7 +25,8 @@ def verify_projections(manifest, filesystem_root: Path) -> None:
     for name, source in manifest["homeFiles"].items():
         copy_projection(Path(source), home / name)
     workflow = (
-        home / ".local/share/agent-skill-index/research/research-pulse.workflow.js"
+        home
+        / ".local/share/agent-plugins/dotfiles/plugin/skills/research/research-pulse.workflow.js"
     )
     subprocess.run(
         [

@@ -10,6 +10,6 @@ projection.instructionFile {
   ];
   destinations = projection.interactiveDestinations {
     coreInstructionFile = "${homeDirectory}/.config/opencode/AGENTS.md";
-    humanizeSkillDirectory = "${homeDirectory}/.config/opencode/skills/humanize";
+    humanizeSkillDirectory = "${homeDirectory}/.local/share/agent-plugins/dotfiles/plugin/skills/humanize";
   };
 }

@@ -40,7 +40,7 @@ in
       SONARQUBE_LOG_TO_FILE_DISABLED = "true";
     };
     text = ''
-      SONARQUBE_TOKEN="$(cat "$HOME/.secrets/sonarqube-token")"
+      SONARQUBE_TOKEN="$(cat "''${SONARQUBE_TOKEN_FILE:-$HOME/.secrets/sonarqube-token}")"
       export SONARQUBE_TOKEN
       export STORAGE_PATH="''${XDG_CACHE_HOME:-$HOME/.cache}/sonarqube-mcp"
       mkdir -p "$STORAGE_PATH"

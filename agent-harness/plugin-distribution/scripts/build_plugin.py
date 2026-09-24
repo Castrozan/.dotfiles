@@ -10,7 +10,7 @@ from itertools import chain
 from pathlib import Path
 
 from claude_mcp import write_claude_mcp
-from opencode_mcp import write_opencode_mcp
+from opencode_mcp import write_opencode_configuration
 from portable_plugin import read_portable_plugin
 
 
@@ -112,7 +112,7 @@ def build_plugin(source: Path, output: Path, targets: tuple[str, ...]) -> None:
                     environment["AGENT_PLUGIN_MCP_SHELL"],
                 )
             if "opencode" in targets:
-                write_opencode_mcp(output, name)
+                write_opencode_configuration(output, name)
         remove_build_inputs(output)
     except BaseException:
         shutil.rmtree(output)

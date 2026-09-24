@@ -5,6 +5,16 @@ file, including hooks, agents, commands, workflows, binaries, native manifests a
 Git metadata is excluded. Distribution does not maintain an artifact allowlist or reinterpret unfamiliar extensions.
 The receiving loader owns component discovery, execution and extension semantics.
 
+Production composition lives in `../agent-instructions/production-plugin`. Its inventory maps every selected source
+artifact to the complete package, including indexed and repository skills outside global discovery. Harness modules
+register that package and retain native bridges for capabilities their portable loaders do not execute. Native external
+marketplace selections and workspace enablement remain with their existing owners; cached plugins are not promoted into
+global scope. The old Claude-to-Codex and Claude-to-OpenCode component copiers are retired.
+
+Deployment archives retired mutable projections under `~/.local/state/agent-plugins/retired-projections` once per target,
+preserving local changes outside discovery. Home Manager removes its superseded immutable links. Autonomous agent skill
+sets and repository instruction surfaces retain their native scoped interfaces, with shared references into the package.
+
 `agent-plugin-build SOURCE --output DESTINATION` copies a resolved package into a new bundle. `DESTINATION/plugin`
 points to its complete root. A spec-capable loader can consume that directory directly. Source packages can come from
 an existing marketplace checkout, a pinned repository or a local directory; no registry service is required. The builder

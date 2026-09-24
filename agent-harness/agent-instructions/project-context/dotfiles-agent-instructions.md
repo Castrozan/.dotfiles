@@ -53,9 +53,10 @@ or removed on purpose; bindings it lists as removed stay removed unless the owne
 
 ### Codex managed settings ownership
 
-MCP servers are declared in nix at `agent-harness/harnesses/claude-code/mcps/default.nix` for Claude and
-`agent-harness/harnesses/codex/config.nix` for Codex. Codex deploys an authoritative nix-source for managed settings,
-including `mcp_servers`, then seeds a mutable live config. The live model and entries in projects, marketplaces, and
+Shared MCP servers belong to `agent-harness/agent-instructions/production-plugin/mcp-servers.nix` and travel in the
+complete plugin. Agent-only Claude servers remain in `agent-harness/harnesses/claude-code/mcps/default.nix`; private Codex
+servers remain in `agent-harness/harnesses/codex/config.nix`. Codex deploys an authoritative nix-source for managed
+settings, including `mcp_servers`, then seeds a mutable live config. The live model and entries in projects, marketplaces, and
 plugins survive rebuilds. The declarative source wins every other key collision, so an MCP dropped from its nix source
 disappears from the live config on the next rebuild.
 

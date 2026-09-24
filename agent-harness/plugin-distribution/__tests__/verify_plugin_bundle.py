@@ -96,9 +96,10 @@ def verify_bundle(bundle, source):
     assert (opencode_skill / "references/expected.md").read_bytes() == (
         source / "skills/distribution-probe/references/expected.md"
     ).read_bytes()
-    server = read_json(bundle / ".opencode/opencode.jsonc")["mcp"][
-        "plugin.distribution-probe.distribution-probe"
-    ]
+    opencode = read_json(bundle / ".opencode/opencode.jsonc")
+    assert opencode["$schema"] == "https://opencode.ai/config.json"
+    assert opencode["skills"]["paths"] == [str(plugin / "skills")]
+    server = opencode["mcp"]["plugin.distribution-probe.distribution-probe"]
     with tempfile.TemporaryDirectory() as state:
         verify_mcp(
             server["command"],

@@ -5,11 +5,19 @@ import sys
 from pathlib import Path
 
 
-def write_opencode_mcp(output: Path, name: str) -> None:
+def write_opencode_configuration(output: Path, name: str) -> None:
     configuration_path = output / ".opencode/opencode.jsonc"
-    if not configuration_path.exists():
-        return
-    configuration = json.loads(configuration_path.read_text())
+    configuration = (
+        json.loads(configuration_path.read_text())
+        if configuration_path.exists()
+        else {}
+    )
+    configuration["$schema"] = "https://opencode.ai/config.json"
+    skills = output / ".agents/plugins" / name / "skills"
+    if skills.is_dir():
+        paths = configuration.setdefault("skills", {}).setdefault("paths", [])
+        if str(skills) not in paths:
+            paths.append(str(skills))
     for server_name, server in configuration.get("mcp", {}).items():
         if server.get("type") != "local":
             continue
@@ -18,6 +26,7 @@ def write_opencode_mcp(output: Path, name: str) -> None:
             str(Path(__file__).resolve()),
             server_name.removeprefix(f"plugin.{name}."),
         ]
+    configuration_path.parent.mkdir(parents=True, exist_ok=True)
     configuration_path.write_text(json.dumps(configuration, indent=2) + "\n")
 
 

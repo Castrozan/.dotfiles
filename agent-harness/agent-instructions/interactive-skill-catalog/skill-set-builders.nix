@@ -1,4 +1,8 @@
-{ hostname, pkgs }:
+{
+  hostname,
+  pkgs,
+  defaultInteractiveSkillNames,
+}:
 let
   projection = import ../instruction-projection.nix { inherit pkgs; };
   publicSkillSourceDirectories = [
@@ -49,20 +53,12 @@ let
   deploymentDestinations =
     homeFileSkillsPrefix: skillNames:
     let
-      globalCorePrefix =
-        if
-          builtins.elem homeFileSkillsPrefix [
-            ".codex/skills"
-            ".config/opencode/skills"
-          ]
-        then
-          homeFileSkillsPrefix
-        else
-          ".claude/skills";
       indexed = builtins.listToAttrs (
         map (skillName: {
           name = toString skillSourceDirectoryByName.${skillName};
-          value = "/.local/share/agent-skill-index/${skillName}";
+          value = "/.local/share/agent-plugins/dotfiles/plugin/${
+            if builtins.elem skillName defaultInteractiveSkillNames then "skills" else "library/skills"
+          }/${skillName}";
         }) allSkillNames
       );
       selected = builtins.listToAttrs (
@@ -75,7 +71,8 @@ let
     indexed
     // selected
     // {
-      "${toString ../core-rules/core.md}" = "/${globalCorePrefix}/core/SKILL.md";
+      "${toString ../core-rules/core.md}" =
+        "/.local/share/agent-plugins/dotfiles/plugin/skills/core/SKILL.md";
     };
 
   deployedSkillDirectory =

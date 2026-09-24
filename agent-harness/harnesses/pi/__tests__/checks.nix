@@ -18,7 +18,7 @@ in
 {
   domain-pi-package =
     mkEvalCheck "domain-pi-package" (hasPackageMatching "pi")
-      "no machine imports this module today, so these checks guard the module in isolation: whoever re-imports it gets a pi on PATH rather than a half-wired harness";
+      "the Pi module must install its wrapped native executable";
 
   domain-pi-bin-wrapper =
     mkEvalCheck "domain-pi-bin-wrapper" (builtins.hasAttr ".local/bin/pi" cfg.home.file)

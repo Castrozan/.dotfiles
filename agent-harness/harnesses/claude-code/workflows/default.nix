@@ -1,11 +1,11 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
   workflowFilesFromInstall =
     install:
     builtins.listToAttrs (
       map (workflowFileName: {
         name = ".claude/workflows/${workflowFileName}";
-        value.source = install.workflowSources.${workflowFileName};
+        value.source = "${config.agentPlugins.bundle}/plugin/workflows/${workflowFileName}";
       }) (builtins.attrNames install.workflowSources)
     );
 
@@ -16,7 +16,7 @@ let
   localWorkflowFiles = builtins.listToAttrs (
     map (fileName: {
       name = ".claude/workflows/${fileName}";
-      value.source = localWorkflowsDirectory + "/${fileName}";
+      value.source = "${config.agentPlugins.bundle}/plugin/workflows/${fileName}";
     }) localWorkflowFileNames
   );
 

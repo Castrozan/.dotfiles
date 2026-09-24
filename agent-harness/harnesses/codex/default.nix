@@ -4,8 +4,7 @@
     ./package.nix
     ./config.nix
     ./rules.nix
-    ./skills.nix
-    ./claude-plugin-port.nix
+    ./plugins.nix
     ./global-instructions.nix
     ../../workspace-profiles
   ];

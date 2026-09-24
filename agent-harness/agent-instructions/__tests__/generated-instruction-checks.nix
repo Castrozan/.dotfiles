@@ -6,25 +6,28 @@ let
     inherit pkgs lib;
     hostname = "test";
     config.home.homeDirectory = homeDirectory;
+    config.agentPlugins.bundle = productionBundle;
   };
   moduleHomeFiles = map (module: (import module moduleArguments).home.file) [
-    ../interactive-skill-catalog/interactive-skill-index-home-manager.nix
     ../dotfiles-checkout-agent-surfaces/dotfiles-repo-skills-home-manager.nix
     ../dotfiles-checkout-agent-surfaces/dotfiles-repo-agent-instructions-home-manager.nix
-    ../../harnesses/claude-code/skills/global-skills-home-manager.nix
-    ../../harnesses/claude-code/subagents/default.nix
-    ../../harnesses/codex/skills.nix
-    ../../harnesses/opencode/skills.nix
     ../../harnesses/opencode/agents/subagents.nix
     ../../harnesses/codex/global-instructions.nix
     ../../harnesses/opencode/instructions/global-instructions.nix
     ../../harnesses/pi/global-instructions.nix
   ];
-  hermesSkills = import ../../harnesses/hermes/managed-skills.nix { inherit pkgs; };
+  productionSource = import ../production-plugin {
+    inherit pkgs lib homeDirectory;
+    hostname = "test";
+    chromePackage = pkgs.google-chrome;
+  };
+  productionBundle = (import ../../plugin-distribution { inherit pkgs; }).buildPlugin {
+    source = productionSource;
+  };
   homeFileDefinitions = builtins.foldl' (all: files: all // files) {
     ".hermes/SOUL.md".source = import ../../harnesses/hermes/soul.nix { inherit pkgs; };
-    ".hermes/skills/humanize".source = builtins.dirOf hermesSkills.humanize;
-    ".hermes/skills/docs".source = builtins.dirOf hermesSkills.docs;
+    ".hermes/plugins/dotfiles".source = productionSource;
+    ".local/share/agent-plugins/dotfiles/plugin".source = productionSource;
   } moduleHomeFiles;
   homeFiles = lib.mapAttrs (
     name: value: value.source or (pkgs.writeText (builtins.baseNameOf name) value.text)

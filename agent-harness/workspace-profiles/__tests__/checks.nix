@@ -57,7 +57,6 @@ let
 
   claudeConfiguration = helpers.homeManagerTestConfiguration [
     ../../harnesses/claude-code
-    ../../agent-instructions/interactive-skill-catalog/interactive-skill-index-home-manager.nix
     { claude.requiredOrganizationId = "test-organization-id"; }
   ];
   codexConfiguration = helpers.homeManagerTestConfiguration [ ../../harnesses/codex ];

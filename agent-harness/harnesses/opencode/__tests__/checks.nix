@@ -132,32 +132,21 @@ in
       (builtins.hasAttr ".config/opencode/agent" cfg.home.file)
       "the shared subagent definitions must be translated into opencode's agent directory";
 
-  domain-opencode-deploys-skills =
-    mkEvalCheck "domain-opencode-deploys-skills" (hasDeployedFilePrefix ".config/opencode/skills/")
-      "the shared skills must be deployed into opencode's skills directory";
-
-  domain-opencode-carries-the-shared-interactive-set =
-    mkEvalCheck "domain-opencode-carries-the-shared-interactive-set"
-      (builtins.all (
-        skillName: builtins.hasAttr ".config/opencode/skills/${skillName}" cfg.home.file
-      ) interactiveAgentSkills.defaultInteractiveSkillNames)
-      "every shared interactive skill must deploy into the OpenCode machine tier";
-
-  domain-opencode-core-skill =
-    mkEvalCheck "domain-opencode-core-skill"
-      (builtins.hasAttr ".config/opencode/skills/core/SKILL.md" cfg.home.file)
-      "core must deploy as a generated OpenCode skill as well as global instructions";
+  domain-opencode-loads-complete-plugin-skills =
+    mkEvalCheck "domain-opencode-loads-complete-plugin-skills"
+      (
+        deployedOpencodeSettings.skills.paths == [ "${cfg.agentPlugins.bundle}/plugin/skills" ]
+        && !(hasDeployedFilePrefix ".config/opencode/skills/")
+      )
+      "OpenCode must discover the immutable production package without duplicate global skill projections";
 
   domain-opencode-deploys-hook-bridge =
     mkEvalCheck "domain-opencode-deploys-hook-bridge"
       (
         deployedHookBridge ? source
-        && lib.hasInfix "pkgs.replaceVars" (
-          builtins.readFile ../../../../agent-harness/hooks/integrations/opencode/opencode-hooks-home-manager.nix
-        )
-        && lib.hasInfix "opencodeHookDispatcher" (
-          builtins.readFile ../../../../agent-harness/hooks/integrations/opencode/opencode-hooks-home-manager.nix
-        )
+        &&
+          deployedHookBridge.source
+          == "${cfg.agentPlugins.bundle}/plugin/native/opencode/hooks/opencode-hook-bridge.js"
       )
       "OpenCode must deploy the auto-discovered hook bridge and substitute its dispatcher path from Nix, so pre-tool guard denials and post-tool dispatchers run without depending on a shell-session environment variable";
 

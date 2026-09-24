@@ -11,7 +11,6 @@ let
 
   cfg = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.claude-code
-    ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-skill-index-home-manager.nix
   ];
 
   nativeClaudeHooks =

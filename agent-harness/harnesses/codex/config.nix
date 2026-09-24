@@ -8,11 +8,6 @@
 }:
 let
   homeDir = config.home.homeDirectory;
-  browserMcp = import ../../agent-instructions/skills/workstation/browser/install {
-    inherit pkgs homeDir;
-    nodejs = pkgs.nodejs_22;
-    chromePackage = latest.google-chrome;
-  };
   codexConfigTomlFormat = pkgs.formats.toml { };
   codexConfigSeedPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.tomli-w ]);
   mcpServerModule = {
@@ -113,13 +108,7 @@ let
       "${homeDir}".trust_level = "trusted";
       "${homeDir}/.dotfiles".trust_level = "trusted";
     };
-    mcp_servers = {
-      "chrome-devtools" = {
-        command = browserMcp.chromeDevtoolsMcpStdioCommand;
-        args = browserMcp.chromeDevtoolsMcpStdioArgs;
-      };
-    }
-    // configuredMcpServers;
+    mcp_servers = configuredMcpServers;
   };
 in
 {

@@ -11,9 +11,7 @@ let
   defaultOpencodeModel = "opencode/big-pickle";
   titleGenerationModel = "opencode-go/${opencodeGo.models.haiku}";
 
-  mcpServerDefinitions = import ./mcp-servers.nix {
-    inherit pkgs latest homeDir;
-  };
+  mcpServerDefinitions = import ./mcp-servers.nix { inherit pkgs latest homeDir; };
 
   opencodePythonLspEnvironment =
     import ../../../machine-configuration/development/testing/python-test-environment.nix
@@ -52,6 +50,8 @@ let
     subagent_depth = 2;
 
     instructions = [ "~/.config/opencode/AGENTS.md" ];
+
+    skills.paths = [ "${config.agentPlugins.bundle}/plugin/skills" ];
 
     permission = fullAccessPermissions;
 
@@ -106,6 +106,13 @@ let
   };
 in
 {
+  imports = [ ../../agent-instructions/production-plugin/home-manager.nix ];
+
+  home.activation.retireOpenCodePluginProjections = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    ${pkgs.python312}/bin/python3 ${../../agent-instructions/production-plugin/scripts/retire-projections.py} \
+      opencode "${config.home.homeDirectory}" ${config.agentPlugins.bundle}
+  '';
+
   home = {
     file = {
       ".config/opencode/.keep".text = "";

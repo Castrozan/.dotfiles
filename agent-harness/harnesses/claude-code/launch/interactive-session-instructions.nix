@@ -10,7 +10,7 @@ projection.instructionFile {
     ../../../agent-instructions/core-rules/servant-identity.md
   ];
   destinations = projection.interactiveDestinations {
-    coreInstructionFile = "${homeDirectory}/.claude/skills/core/SKILL.md";
-    humanizeSkillDirectory = "${homeDirectory}/.claude/skills/humanize";
+    coreInstructionFile = "${homeDirectory}/.local/share/agent-plugins/dotfiles/plugin/skills/core/SKILL.md";
+    humanizeSkillDirectory = "${homeDirectory}/.local/share/agent-plugins/dotfiles/plugin/skills/humanize";
   };
 }

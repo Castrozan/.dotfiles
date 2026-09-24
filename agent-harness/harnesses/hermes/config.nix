@@ -28,6 +28,7 @@ let
     plugins:
       enabled:
         - herdr-agent-state
+        - dotfiles
     hooks_auto_accept: true
     hooks:
       pre_tool_call:

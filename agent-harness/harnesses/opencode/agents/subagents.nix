@@ -1,14 +1,8 @@
-{ pkgs, ... }:
-let
-  opencodeAgentDefinitions = import ./translate-claude-agent-definitions.nix {
-    inherit pkgs;
-    derivationName = "opencode-agent-definitions";
-    claudeAgentDefinitionsDirectory = ../../../agent-instructions/subagents;
-  };
-in
+{ config, ... }:
 {
+  imports = [ ../../../agent-instructions/production-plugin/home-manager.nix ];
   home.file.".config/opencode/agent" = {
-    source = opencodeAgentDefinitions;
+    source = "${config.agentPlugins.bundle}/plugin/native/opencode/agents";
     recursive = true;
   };
 }

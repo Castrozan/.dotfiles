@@ -2,12 +2,15 @@
   pkgs,
   lib,
   hostname,
+  config,
+  inputs,
   isDarwin ? false,
   ...
 }:
 let
-  version = "0.19.0";
-  packageSpec = "hermes-agent[anthropic,cli]==${version}";
+  hermesRuntime = inputs.hermes.packages.${pkgs.stdenv.hostPlatform.system}.minimal.override {
+    extraDependencyGroups = [ "anthropic" ];
+  };
 
   configTemplate = import ./config.nix {
     inherit
@@ -19,7 +22,6 @@ let
   };
   soul = import ./soul.nix { inherit pkgs; };
   migration = import ./migration.nix { inherit pkgs; };
-  managedSkills = import ./managed-skills.nix { inherit pkgs; };
 
   runtimeDependencies = [
     pkgs.coreutils
@@ -32,14 +34,9 @@ let
     name = "hermes";
     bashOptions = [ ];
     runtimeEnv = {
-      HERMES_AGENT_VERSION = version;
-      HERMES_AGENT_PACKAGE_SPEC = packageSpec;
-      HERMES_AGENT_UV = "${pkgs.uv}/bin/uv";
-      HERMES_AGENT_PYTHON = "${pkgs.python311}/bin/python3.11";
+      HERMES_AGENT_BINARY = "${hermesRuntime}/bin/hermes";
       HERMES_AGENT_CONFIG_TEMPLATE = "${configTemplate}";
       HERMES_AGENT_SOUL = "${soul}";
-      HERMES_AGENT_HUMANIZE_SKILL = managedSkills.humanize;
-      HERMES_AGENT_DOCS_SKILL = managedSkills.docs;
       HERMES_AGENT_USER_MEMORY = "${migration.userMemory}";
       HERMES_AGENT_AGENT_MEMORY = "${migration.agentMemory}";
       HERMES_AGENT_RETIRED_USER_MEMORY_ENTRY_PREFIXES = "${migration.retiredUserMemoryEntryPrefixes}";
@@ -54,6 +51,15 @@ let
   };
 in
 {
+  imports = [ ../../agent-instructions/production-plugin/home-manager.nix ];
+
+  options.hermes.unwrappedPackage = lib.mkOption {
+    type = lib.types.package;
+    default = hermesRuntime;
+    readOnly = true;
+    description = "Pinned upstream Hermes runtime with its bundled assets and native plugin loader.";
+  };
+
   options.hermes.package = lib.mkOption {
     type = lib.types.package;
     default = hermes-agent;
@@ -62,10 +68,15 @@ in
   };
 
   config.home = {
+    activation.retireHermesPartialSkills = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      ${pkgs.python312}/bin/python3 ${../../agent-instructions/production-plugin/scripts/retire-projections.py} \
+        hermes "${config.home.homeDirectory}" ${config.agentPlugins.bundle}
+    '';
     packages = [ hermes-agent ];
     file.".local/bin/hermes" = {
       source = "${hermes-agent}/bin/hermes";
       force = true;
     };
+    file.".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin";
   };
 }

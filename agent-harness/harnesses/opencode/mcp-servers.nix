@@ -4,34 +4,16 @@
   homeDir,
 }:
 let
-  browserMcp = import ../../agent-instructions/skills/workstation/browser/install {
-    inherit pkgs homeDir;
-    nodejs = pkgs.nodejs_22;
+  servers = import ../../agent-instructions/production-plugin/mcp-servers.nix {
+    inherit pkgs;
+    homeDirectory = homeDir;
     chromePackage = latest.google-chrome;
   };
-
-  chromeDevtoolsStdioInvocation = [
-    "${browserMcp.chromeDevtoolsMcpStdioCommand}"
-  ]
-  ++ browserMcp.chromeDevtoolsMcpStdioArgs;
 in
-{
-  sonarqube = {
-    type = "local";
-    command = [
-      "${
-        (import ../../../machine-configuration/development/testing/sonarqube/sonarqube-tools.nix {
-          inherit pkgs;
-        }).mcp
-      }/bin/sonarqube-mcp"
-    ];
-    enabled = true;
-    timeout = 60000;
-  };
-  chrome-devtools = {
-    type = "local";
-    command = chromeDevtoolsStdioInvocation;
-    enabled = true;
-    timeout = 120000;
-  };
-}
+pkgs.lib.mapAttrs (name: server: {
+  type = "local";
+  command = [ server.command ] ++ (server.args or [ ]);
+  enabled = true;
+  environment = server.env or { };
+  timeout = if name == "chrome-devtools" then 120000 else 60000;
+}) servers

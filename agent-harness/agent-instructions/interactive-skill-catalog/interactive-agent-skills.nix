@@ -1,6 +1,8 @@
 { hostname, pkgs }:
 let
-  skillSetBuilders = import ./skill-set-builders.nix { inherit hostname pkgs; };
+  skillSetBuilders = import ./skill-set-builders.nix {
+    inherit hostname pkgs defaultInteractiveSkillNames;
+  };
 
   inherit (skillSetBuilders)
     allSkillNames

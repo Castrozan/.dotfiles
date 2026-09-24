@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from build_plugin import build_plugin, deliver_package
-from opencode_mcp import write_opencode_mcp
+from opencode_mcp import write_opencode_configuration
 
 
 FIXTURE = Path(__file__).parents[1] / "fixtures/portable-plugin"
@@ -98,7 +98,7 @@ def test_opencode_data_survives_bundle_updates_outside_package(tmp_path):
         configuration.write_text(
             json.dumps({"mcp": {"plugin.example.example": server}})
         )
-        write_opencode_mcp(output, "example")
+        write_opencode_configuration(output, "example")
         emitted = json.loads(configuration.read_text())["mcp"]["plugin.example.example"]
         result = subprocess.run(
             emitted["command"],
@@ -115,13 +115,22 @@ def test_opencode_data_survives_bundle_updates_outside_package(tmp_path):
 
 
 def test_opencode_adapter_leaves_remote_server_unchanged(tmp_path):
-    write_opencode_mcp(tmp_path, "example")
     path = tmp_path / ".opencode/opencode.jsonc"
     path.parent.mkdir()
     server = {"type": "remote", "url": "https://example.com/mcp"}
     path.write_text(json.dumps({"mcp": {"remote": server}}))
-    write_opencode_mcp(tmp_path, "example")
+    write_opencode_configuration(tmp_path, "example")
     assert json.loads(path.read_text())["mcp"]["remote"] == server
+
+
+def test_opencode_skill_only_package_has_immutable_discovery_configuration(tmp_path):
+    skills = tmp_path / ".agents/plugins/example/skills"
+    skills.mkdir(parents=True)
+    write_opencode_configuration(tmp_path, "example")
+    path = tmp_path / ".opencode/opencode.jsonc"
+    configuration = json.loads(path.read_text())
+    assert configuration["$schema"] == "https://opencode.ai/config.json"
+    assert configuration["skills"]["paths"] == [str(skills)]
 
 
 def test_opencode_launcher_expands_data_in_arguments_and_environment(

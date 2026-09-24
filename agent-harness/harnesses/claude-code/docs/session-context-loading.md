@@ -158,12 +158,10 @@ answer belongs in `agent-harness/knowledge.md` once someone hits it.
 
 ## Follow-up: the curated machine tier and the all-skills index
 
-The machine tier stopped carrying every skill. `agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix` now owns a shared curated list,
-`defaultInteractiveSkillNames`, and each harness module passes its own additions and removals through
-`effectiveInteractiveSkillNames`, so claude, codex and opencode each deploy only their effective set into their own
-skills directory. The `claude-machine-tier-carries-every-skill` check was replaced by three invariants: the curated set
-must all deploy, the generated `all-skills` index must deploy, and every skill excluded from the curated set must stay
-reachable at `~/.local/share/agent-skill-index/<name>`, deployed by `agent-harness/agent-instructions/interactive-skill-catalog/interactive-skill-index-home-manager.nix`.
+`agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix` owns the curated global list
+and indexed discovery policy. The complete production plugin carries the global set under `skills` and the remaining
+source trees under `library/skills`. Each native loader discovers the curated set; generated `all-skills` references
+resolve inside that same package. The retired per-harness global copies and shared skill-index mirror are unnecessary.
 
 The former `personal` umbrella skill was deleted and replaced by a nix-generated `all-skills` skill, built like `core`
 from `renderAllSkillsIndexSkill` in `interactive-agent-skills.nix`. Its frontmatter description names every skill not
@@ -175,16 +173,16 @@ skills: `agent-harness/agent-instructions/skills/knowledge/obsidian` and `agent-
 Curated and indexed were the only two states, so every skill on disk cost every session at least an index line. A skill
 that exists for one autonomous agent, or for one machine's hardware, earned none of that. `uninjectedSkillNames` in
 `interactive-agent-skills.nix` is the third state: named there, a skill deploys into no machine tier, appears in no
-`all-skills` index and gets no mirror under `~/.local/share/agent-skill-index`, so the only way to reach it is an agent
-naming its path through `skillDirectories`. `claude-uninjected-skills-reach-no-global-surface` asserts all three
-absences together, because any one of them alone would put the skill back in every session's budget.
+`all-skills` index. Its complete source tree still travels in the plugin library, and an autonomous agent can select it
+through `skillDirectories`. `claude-uninjected-skills-reach-no-global-surface` guards discovery scope independently of
+artifact delivery, so preserving assets does not add their descriptions to every session.
 
 A skill only one machine can act on belongs in that machine's private root rather than in the shared uninjected list:
 the catalog reads `private-configuration/machines/<hostname>/skills` under the building host's name, so it is absent from every
 other machine by construction instead of by a name someone has to keep listing.
 
 The knowledge tier still travels, with a change in reachability: a fact filed under an indexed skill's `knowledge.md`
-is not in the machine tier, but the index points at it and the mirror keeps the whole skill directory reachable, so the
+is not in the machine tier, but the index points at its complete packaged skill directory, so the
 promise of `agent-memory.md` holds through one index read. The 9471-byte always-on description figure is now the
 curated set's cost; the index description is the price of every other domain being reachable, and the per-harness
 description budgets are bounded by the curated list plus one line.

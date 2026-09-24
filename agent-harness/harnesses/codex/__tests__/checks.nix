@@ -28,7 +28,6 @@ let
   normalizedDotfilesAgentInstructions = lib.replaceStrings [ "\n" ] [ " " ] dotfilesAgentInstructions;
   codexConfigSeedActivationData = cfg.home.activation.seedCodexConfigAsMutableFile.data or "";
   codexConfigModule = builtins.readFile ../config.nix;
-  legacyCodexSkillDirectoriesScript = builtins.readFile ../scripts/replace-legacy-codex-skill-directories;
 in
 {
   codex-bin-wrapper =
@@ -50,45 +49,14 @@ in
       touch "$out"
     '';
 
-  codex-skills-directory =
-    mkEvalCheck "codex-skills-directory" (hasFilePrefix ".codex/skills/")
-      "skills directory entries should be in home.file";
-
-  codex-machine-tier-carries-the-shared-interactive-set =
-    mkEvalCheck "codex-machine-tier-carries-the-shared-interactive-set"
-      (builtins.all (
-        skillName: builtins.hasAttr ".codex/skills/${skillName}" cfg.home.file
-      ) interactiveAgentSkills.defaultInteractiveSkillNames)
-      "every shared interactive skill must deploy into the Codex machine tier";
-
-  codex-skills-only-deploy-complete-skills = mkEvalCheck "codex-skills-only-deploy-complete-skills" (
-    !(builtins.hasAttr ".codex/skills/page-composer" cfg.home.file)
-  ) "directories without SKILL.md should not be deployed as codex skills";
-
-  codex-all-skills-index-skill =
-    mkEvalCheck "codex-all-skills-index-skill"
-      (builtins.hasAttr ".codex/skills/all-skills" cfg.home.file)
-      "the generated all-skills index should be deployed for codex; research and every other non-curated skill stays reachable through it";
-
-  codex-core-skill =
-    mkEvalCheck "codex-core-skill" (builtins.hasAttr ".codex/skills/core" cfg.home.file)
-      "core skill should be generated for codex";
-
-  codex-replaces-legacy-generated-skill-directories =
-    mkEvalCheck "codex-replaces-legacy-generated-skill-directories"
+  codex-production-plugin-registration =
+    mkEvalCheck "codex-production-plugin-registration"
       (
-        builtins.hasAttr "removeLegacyCodexSkillDirectories" cfg.home.activation
-        && lib.hasInfix "replace-legacy-codex-skill-directories" cfg.home.activation.removeLegacyCodexSkillDirectories.data
+        builtins.hasAttr "installProductionCodexPlugin" cfg.home.activation
+        && builtins.hasAttr ".local/share/agent-plugins/dotfiles" cfg.home.file
+        && !(hasFilePrefix ".codex/skills/")
       )
-      "the generated core and all-skills directory links must replace their legacy leaf-symlink directories before Home Manager checks link targets";
-
-  codex-removes-the-retired-pinchtab-skill =
-    mkEvalCheck "codex-removes-the-retired-pinchtab-skill"
-      (
-        builtins.hasAttr "removeLegacyCodexSkillDirectories" cfg.home.activation
-        && lib.hasInfix "pinchtab" legacyCodexSkillDirectoriesScript
-      )
-      "activation must remove the unmanaged PinchTab skill so browser remains the sole browser instruction surface";
+      "Codex must register the complete production package without duplicate managed global skill projections";
 
   codex-global-agents-instructions =
     mkEvalCheck "codex-global-agents-instructions" (builtins.hasAttr ".codex/AGENTS.md" cfg.home.file)
@@ -134,10 +102,9 @@ in
       )
       "Codex instructions must describe the current authoritative source and mutable seed ownership model";
 
-  codex-claude-plugin-port-activation =
-    mkEvalCheck "codex-claude-plugin-port-activation"
-      (builtins.hasAttr "codexClaudePluginPort" cfg.home.activation)
-      "enabled third-party Claude Code plugins should be ported into Codex via an activation step";
+  codex-retired-plugin-port = mkEvalCheck "codex-retired-plugin-port" (
+    !(builtins.hasAttr "codexClaudePluginPort" cfg.home.activation)
+  ) "Codex must retain native complete packages without the retired skill-only Claude copier";
 
 }
 // import ./hook-registration-checks.nix {

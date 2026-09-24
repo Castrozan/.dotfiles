@@ -28,25 +28,6 @@ let
 
   dotfilesRepoSkillsStayOutOfEverySurface = builtins.all staysOffEveryGlobalSurface interactiveAgentSkills.dotfilesRepoSkillNames;
 
-  generatedMachineTierSkillNames = [
-    "all-skills"
-    "core"
-  ];
-
-  sortedAlphabetically = builtins.sort builtins.lessThan;
-
-  machineTierSkillNames = lib.unique (
-    map (fileName: builtins.head (lib.splitString "/" (lib.removePrefix ".claude/skills/" fileName))) (
-      builtins.filter (fileName: lib.hasPrefix ".claude/skills/" fileName) (
-        builtins.attrNames cfg.home.file
-      )
-    )
-  );
-
-  machineTierCarriesOnlyTheCuratedSet =
-    sortedAlphabetically machineTierSkillNames
-    == sortedAlphabetically (claudeInteractiveSkillNames ++ generatedMachineTierSkillNames);
-
   privateMachinesDirectory = ../../../../private-configuration/machines;
 
   privateMachineNames =
@@ -85,33 +66,18 @@ let
   ) privateMachineNames;
 in
 {
-  claude-skills-directory =
-    mkEvalCheck "claude-skills-directory" (hasFilePrefix ".claude/skills/")
-      "skills directory entries should be in home.file";
+  claude-production-plugin-registration =
+    mkEvalCheck "claude-production-plugin-registration"
+      (
+        builtins.hasAttr "installProductionClaudePlugin" cfg.home.activation
+        && builtins.hasAttr ".local/share/agent-plugins/dotfiles" cfg.home.file
+        && !(hasFilePrefix ".claude/skills/")
+      )
+      "Claude must register the complete production package without duplicate managed global skill projections";
 
-  claude-machine-tier-carries-the-curated-interactive-set =
-    mkEvalCheck "claude-machine-tier-carries-the-curated-interactive-set"
-      (builtins.all (
-        skillName: builtins.hasAttr ".claude/skills/${skillName}" cfg.home.file
-      ) claudeInteractiveSkillNames)
-      "every curated interactive skill must deploy into the machine tier at .claude/skills; a dropped skill silently vanishes from every interactive session";
-
-  claude-machine-tier-carries-nothing-beyond-the-curated-set =
-    mkEvalCheck "claude-machine-tier-carries-nothing-beyond-the-curated-set"
-      machineTierCarriesOnlyTheCuratedSet
-      "the machine tier at .claude/skills must hold exactly the curated set plus the generated core and all-skills entries; a second module injecting its own skills there bypasses the curated list and silently reinflates every session's system prompt";
-
-  claude-machine-tier-carries-the-generated-all-skills-index =
-    mkEvalCheck "claude-machine-tier-carries-the-generated-all-skills-index"
-      (builtins.hasAttr ".claude/skills/all-skills/SKILL.md" cfg.home.file)
-      "the generated all-skills index must deploy into the machine tier; it is the only reachability path for every non-curated skill, and a session without it cannot reach them";
-
-  claude-indexed-skills-stay-reachable-outside-the-machine-tier =
-    mkEvalCheck "claude-indexed-skills-stay-reachable-outside-the-machine-tier"
-      (builtins.all (
-        skillName: builtins.hasAttr ".local/share/agent-skill-index/${skillName}" cfg.home.file
-      ) (interactiveAgentSkills.indexedSkillNamesFor claudeInteractiveSkillNames))
-      "every skill excluded from the curated machine tier must stay reachable at .local/share/agent-skill-index, because the all-skills index points there; a skill that is neither curated nor mirrored is stranded on disk";
+  claude-retired-skill-mirror = mkEvalCheck "claude-retired-skill-mirror" (
+    !(hasFilePrefix ".local/share/agent-skill-index/")
+  ) "Indexed skills must resolve inside the complete package without a second source projection";
 
   claude-uninjected-skills-reach-no-global-surface =
     mkEvalCheck "claude-uninjected-skills-reach-no-global-surface" uninjectedSkillsStayOutOfEverySurface

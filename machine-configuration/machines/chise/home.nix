@@ -24,6 +24,8 @@ in
     ../../home-automation/home-assistant/home-assistant-home-manager.nix
     ../../desktop/desktop-environments/hyprland/hyprland-nixos.nix
     ../../../agent-harness/harnesses/opencode
+    ../../../agent-harness/harnesses/pi
+    ../../../agent-harness/harnesses/hermes
     ../../development/testing/testing-home-manager.nix
 
     ../../terminal/shell/bash/bash-home-manager.nix

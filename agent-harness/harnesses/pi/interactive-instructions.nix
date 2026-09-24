@@ -9,6 +9,6 @@ projection.instructionFile {
   ];
   destinations = projection.interactiveDestinations {
     coreInstructionFile = "${homeDirectory}/.pi/agent/AGENTS.md";
-    humanizeSkillDirectory = "${homeDirectory}/.local/share/agent-skill-index/humanize";
+    humanizeSkillDirectory = "${homeDirectory}/.local/share/agent-plugins/dotfiles/plugin/skills/humanize";
   };
 }
