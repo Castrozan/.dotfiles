@@ -120,7 +120,7 @@ readonly BACKEND_CONTRACT=(
 	source "$BACKENDS_SOURCE_DIRECTORY/nixos"
 	machine_local_entrypoint_flake_present() { return 0; }
 	run resolve_flake_reference chise
-	[ "$output" = "git+file:///home/zanoni/zanoni-system#chise" ]
+	[ "$output" = "git+file://${HOME}/zanoni-system#chise" ]
 }
 
 @test "a host without an entrypoint repository builds from bare dotfiles" {
