@@ -43,6 +43,21 @@ def test_authored_manifests_survive_renderer_changes(tmp_path):
     assert (generated / "plugin.json").read_text() == authored
 
 
+def test_renderer_file_links_are_materialized_on_source_restoration(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "asset").write_bytes(b"opaque")
+    (source / "link").symlink_to("asset")
+    output = tmp_path / "output"
+    generated = output / ".agents/plugins/example"
+    generated.mkdir(parents=True)
+    (generated / "asset").write_bytes(b"opaque")
+    (generated / "link").symlink_to("asset")
+    deliver_package(source, output, "example", ())
+    assert not (generated / "link").is_symlink()
+    assert (generated / "link").read_bytes() == b"opaque"
+
+
 def test_opencode_data_survives_bundle_updates_outside_package(tmp_path):
     state = tmp_path / "state"
     for revision in ("first", "second"):
