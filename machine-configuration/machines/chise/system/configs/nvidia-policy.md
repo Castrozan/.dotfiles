@@ -26,7 +26,7 @@ The kernel is pinned to `linuxPackages_6_1` (LTS 6.1.x). NVIDIA 550.x is built a
 
 ## Power Management
 
-Power management is explicitly disabled (`powerManagement.enable = false`, `finegrained = false`). NVIDIA power management on Linux uses D3cold (PCIe power gating) which requires BIOS ACPI cooperation. The Dell G15 5515 BIOS does not properly support runtime D3 for the dGPU — enabling it causes the GPU to fail to wake from suspend, requiring a hard reboot.
+The NixOS options `powerManagement.enable` and `powerManagement.finegrained` remain false. GPU clocks are not locked. The driver can lower clocks and suspend an idle GPU.
 
 
 ## Session Variables
