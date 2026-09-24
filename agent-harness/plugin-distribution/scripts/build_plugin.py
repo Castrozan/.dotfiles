@@ -36,6 +36,10 @@ def run_dotagents(command: str, output: Path, environment: dict[str, str]) -> No
 
 
 def copy_package(source: Path, destination: Path) -> None:
+    for path in source.rglob("*"):
+        copied = destination / path.relative_to(source)
+        if copied.is_symlink():
+            copied.unlink()
     shutil.copytree(
         source, destination, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".git")
     )
