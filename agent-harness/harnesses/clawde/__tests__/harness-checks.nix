@@ -64,16 +64,6 @@ in
       )
       "the exported clawde module must evaluate without the claude-code and codex modules when no agents require either harness";
 
-  clawde-machine-tier-carries-the-research-skill =
-    mkEvalCheck "clawde-machine-tier-carries-the-research-skill"
-      (builtins.hasAttr ".claude/skills/research" cfgWithBothHarnesses.home.file)
-      "every clawde agent on the claude harness takes its skills from the machine tier at .claude/skills rather than a per-agent --add-dir set; an empty machine tier leaves those agents with no skills at all";
-
-  clawde-steward-payload-is-not-in-the-machine-tier =
-    mkEvalCheck "clawde-steward-payload-is-not-in-the-machine-tier"
-      (!(builtins.hasAttr ".claude/skills/steward" cfgWithBothHarnesses.home.file))
-      "the privileged steward payload must not sit in the machine tier every session loads; it belongs to the steward agent type and is scoped to the steward instance";
-
   clawde-claude-harness-package-is-injected =
     mkEvalCheck "clawde-claude-harness-package-is-injected" (harnesses.claude.package != null)
       "clawde pins no harness itself, so agent-harness/harnesses/clawde/harnesses.nix must inject the claude package; a null package fails a clawde assertion the moment any agent runs on claude";
@@ -196,4 +186,7 @@ in
         ) (eligibleHarnessesOf "agent-on-codex")
       ))
       "the command builtin defeats the alias but still resolves the name through whatever PATH the pane inherits, so any stale binary sitting earlier on PATH quietly replaces the one the deployment pinned: a claude 2.1.72 left behind in /opt/homebrew/bin did exactly that and killed an agent at argument parsing every 300 seconds for two days while the configured 2.1.220 sat unused. Every launch command must therefore prepend its own harness-home binary directory, which holds nothing but the package this deployment built";
+}
+// import ./harness-plugin-checks.nix {
+  inherit pkgs mkEvalCheck cfgWithBothHarnesses;
 }

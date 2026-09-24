@@ -36,9 +36,8 @@ let
     extensions."com.openai".interface.displayName = "Dotfiles";
   };
   nativeManifest = {
-    name = manifest.name;
+    inherit (manifest) name description;
     inherit version;
-    description = manifest.description;
     skills = "./skills";
     mcpServers = "./.claude-plugin/mcp.json";
   };
