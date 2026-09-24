@@ -26,8 +26,8 @@ let
   };
   homeFileDefinitions = builtins.foldl' (all: files: all // files) {
     ".hermes/SOUL.md".source = import ../../harnesses/hermes/soul.nix { inherit pkgs; };
-    ".hermes/plugins/dotfiles".source = productionSource;
-    ".local/share/agent-plugins/dotfiles/plugin".source = productionSource;
+    ".hermes/plugins/dotfiles".source = "${productionBundle}/plugin";
+    ".local/share/agent-plugins/dotfiles/plugin".source = "${productionBundle}/plugin";
   } moduleHomeFiles;
   homeFiles = lib.mapAttrs (
     name: value: value.source or (pkgs.writeText (builtins.baseNameOf name) value.text)
@@ -78,6 +78,7 @@ let
   manifest = pkgs.writeText "generated-instruction-projections.json" (
     builtins.toJSON {
       inherit homeDirectory homeFiles;
+      bundle = productionBundle;
       promptFiles =
         interactivePromptFiles
         ++ stewardPromptFiles

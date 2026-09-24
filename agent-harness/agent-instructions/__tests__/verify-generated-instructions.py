@@ -21,9 +21,23 @@ def copy_projection(source: Path, target: Path) -> None:
 
 
 def verify_projections(manifest, filesystem_root: Path) -> None:
+    filesystem_root = filesystem_root.resolve()
     home = filesystem_root / manifest["homeDirectory"].lstrip("/")
+    bundle = Path(manifest["bundle"])
+    shutil.copytree(
+        bundle, filesystem_root / bundle.relative_to(bundle.anchor), symlinks=True
+    )
+    directories = [home]
     for name, source in manifest["homeFiles"].items():
-        copy_projection(Path(source), home / name)
+        source = Path(source)
+        target = home / name
+        materialized_source = filesystem_root / source.relative_to(source.anchor)
+        if source.is_dir() and materialized_source.is_dir():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.symlink_to(materialized_source, target_is_directory=True)
+            directories.append(target)
+        else:
+            copy_projection(source, target)
     workflow = (
         home
         / ".local/share/agent-plugins/dotfiles/plugin/skills/research/research-pulse.workflow.js"
@@ -44,28 +58,32 @@ def verify_projections(manifest, filesystem_root: Path) -> None:
     )
     assert "const ITEMS_SCHEMA =" in workflow.read_text()
     assert "const researchSourcePrompts =" in workflow.read_text()
-    instructions = [
-        path
-        for path in home.rglob("*.md")
-        if path.name in {"SKILL.md", "AGENTS.md", "CLAUDE.md", "SOUL.md"}
-        or "references" in path.parts
-        or path.is_relative_to(home / ".claude/agents")
-        or path.is_relative_to(home / ".config/opencode/agent")
-    ]
+    instructions = list(
+        {
+            path
+            for directory in directories
+            for path in directory.rglob("*.md")
+            if path.name in {"SKILL.md", "AGENTS.md", "CLAUDE.md", "SOUL.md"}
+            or "references" in path.parts
+            or path.is_relative_to(home / ".claude/agents")
+            or path.is_relative_to(home / ".config/opencode/agent")
+        }
+    )
     for prompt in manifest["promptFiles"]:
         target = filesystem_root / prompt["destination"].lstrip("/")
         copy_projection(Path(prompt["source"]), target)
         instructions.append(target)
     assert len(instructions) > 100, "generated fixture omitted the deployed skill trees"
     inspections = {
-        Path("/") / path.relative_to(filesystem_root): inspect_markdown_instruction(
+        Path("/")
+        / path.resolve().relative_to(filesystem_root): inspect_markdown_instruction(
             path.read_text()
         )
         for path in instructions
     }
     violations = []
     for path in instructions:
-        logical = Path("/") / path.relative_to(filesystem_root)
+        logical = Path("/") / path.resolve().relative_to(filesystem_root)
         inspected = inspections[logical]
         for violation in inspected.violations + instruction_link_violations(
             logical, inspected, inspections, filesystem_root
