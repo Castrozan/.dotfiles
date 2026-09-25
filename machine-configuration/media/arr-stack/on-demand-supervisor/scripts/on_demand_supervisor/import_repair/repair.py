@@ -187,5 +187,5 @@ def maybe_repair_blocked_imports(configuration, now_epoch, dry_run):
                 now_epoch,
                 dry_run,
             )
-        except (OSError, ValueError, ParseError, TimeoutError):
+        except (OSError, ValueError, ParseError):
             log(f"import-repair: {application} unavailable; deferring")
