@@ -22,16 +22,24 @@ def merge_runtime_preserved_configuration(
             merged_config[section_name] = current_section | source_section
         elif section_name not in nix_source:
             merged_config[section_name] = current_section
-    source_hooks = nix_source.get("hooks", {})
-    current_hooks = current_config.get("hooks", {})
-    if isinstance(source_hooks, dict) and isinstance(current_hooks, dict):
-        current_hook_state = current_hooks.get("state")
-        source_hook_state = source_hooks.get("state", {})
-        if isinstance(current_hook_state, dict) and isinstance(source_hook_state, dict):
-            merged_config["hooks"] = source_hooks | {
-                "state": current_hook_state | source_hook_state
-            }
+    preserve_runtime_hook_state(merged_config, current_config)
     return merged_config
+
+
+def preserve_runtime_hook_state(merged_config: dict, current_config: dict) -> None:
+    source_hooks = merged_config.get("hooks", {})
+    current_hooks = current_config.get("hooks", {})
+    if not isinstance(source_hooks, dict) or not isinstance(current_hooks, dict):
+        return
+    current_hook_state = current_hooks.get("state")
+    source_hook_state = source_hooks.get("state", {})
+    if not isinstance(current_hook_state, dict) or not isinstance(
+        source_hook_state, dict
+    ):
+        return
+    merged_config["hooks"] = source_hooks | {
+        "state": current_hook_state | source_hook_state
+    }
 
 
 def merge_plugin_policy(current_policy: dict, source_policy: dict) -> dict:
