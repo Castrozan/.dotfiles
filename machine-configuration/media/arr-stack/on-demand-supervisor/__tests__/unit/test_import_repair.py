@@ -85,7 +85,7 @@ def test_repair_submits_copy_without_search_or_delete(monkeypatch, download, can
     def request(base_url, api_key, path, payload=None):
         calls.append((path, payload))
         if path.startswith("queue?"):
-            return {"records": [download]}
+            return {"records": [download, dict(download, downloadId="def")]}
         if path.startswith("manualimport?"):
             return [candidate]
         if payload is None:

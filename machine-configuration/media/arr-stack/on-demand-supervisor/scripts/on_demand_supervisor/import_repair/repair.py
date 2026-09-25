@@ -156,6 +156,7 @@ def repair_application(application, base_url, api_key, now_epoch, dry_run):
         log(
             f"import-repair: {application} command {command.get('id')} submitted for {identity}"
         )
+        return
 
 
 def maybe_repair_blocked_imports(configuration, now_epoch, dry_run):
