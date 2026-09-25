@@ -28,7 +28,7 @@
       flake = false;
     };
 
-    clawde.url = "github:Castrozan/clawde/ebb80df78c41625797d8ca0d9d0f74a6cc7bc90f";
+    clawde.url = "github:Castrozan/clawde/1d239ff8f5c6b5619176f7d181ce456af3b8f39e";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 
     hermes.url = "github:NousResearch/hermes-agent/d337b736aa1e8ebecfab043842d13e4a2d2f48a3";
