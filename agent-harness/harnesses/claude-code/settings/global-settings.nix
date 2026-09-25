@@ -58,6 +58,7 @@ let
     teammateMode = "tmux";
     deniedMcpServers = [
       { serverName = "plugin:betha-desenvolvimento:chrome-devtools"; }
+      { serverName = "plugin:betha-chrome-devtools:chrome-devtools"; }
     ];
     permissions = {
       defaultMode = "bypassPermissions";

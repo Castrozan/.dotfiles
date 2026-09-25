@@ -111,6 +111,8 @@ let
     mcp_servers = configuredMcpServers;
     plugins."betha-desenvolvimento@betha-agent-marketplace".mcp_servers."chrome-devtools".enabled =
       false;
+    plugins."betha-chrome-devtools@betha-agent-marketplace".mcp_servers."chrome-devtools".enabled =
+      false;
   };
 in
 {
