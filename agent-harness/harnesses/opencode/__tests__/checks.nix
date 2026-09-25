@@ -14,7 +14,7 @@ let
         inherit pkgs;
       };
 
-  cfg = helpers.homeManagerTestConfiguration [ ../. ];
+  cfg = helpers.homeManagerTestConfigurationForEvaluatingSystem [ ../. ];
 
   packageNames = map (p: p.name or p.pname or "unknown") cfg.home.packages;
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
@@ -118,17 +118,16 @@ in
       (deployedOpencodeSettings.lsp.pyright.env.PYTHONPATH != "" && deployedOpencodeSettings.formatter)
       "opencode must enable its built-in LSP servers and formatters with the Python test environment available to Pyright";
 
-  domain-opencode-wires-the-browser-mcp = mkEvalCheck "domain-opencode-wires-the-browser-mcp" (
-    deployedOpencodeSettings.mcp ? chrome-devtools
-    && deployedOpencodeSettings.mcp.chrome-devtools.enabled
-  ) "opencode must wire the shared chrome-devtools MCP that Claude and Codex both wire";
-
-  domain-opencode-mcp-loads-emitted-package =
-    mkEvalCheck "domain-opencode-mcp-loads-emitted-package"
-      (builtins.all (
-        server: (server.environment.PLUGIN_ROOT or null) == "${cfg.agentPlugins.bundle}/plugin"
-      ) (builtins.attrValues deployedOpencodeSettings.mcp))
-      "OpenCode MCP execution must read the emitted package declarations";
+  domain-opencode-native-plugin-configuration =
+    pkgs.runCommand "domain-opencode-native-plugin-configuration" { }
+      ''
+        ${pkgs.python312}/bin/python3 ${./verify-native-plugin-configuration.py} \
+          ${cfg.opencode.unwrappedPackage}/bin/opencode \
+          ${cfg.home.file.".config/opencode/opencode.json".source} \
+          ${cfg.home.file.".config/opencode/opencode.jsonc".source} \
+          ${cfg.agentPlugins.bundle}
+        touch "$out"
+      '';
 
   domain-opencode-allows-nested-subagents = mkEvalCheck "domain-opencode-allows-nested-subagents" (
     deployedOpencodeSettings.subagent_depth >= 2
@@ -142,10 +141,12 @@ in
   domain-opencode-loads-complete-plugin-skills =
     mkEvalCheck "domain-opencode-loads-complete-plugin-skills"
       (
-        deployedOpencodeSettings.skills.paths == [ "${cfg.agentPlugins.bundle}/plugin/skills" ]
+        builtins.hasAttr ".config/opencode/opencode.jsonc" cfg.home.file
+        && !(deployedOpencodeSettings ? skills)
+        && !(deployedOpencodeSettings ? mcp)
         && !(hasDeployedFilePrefix ".config/opencode/skills/")
       )
-      "OpenCode must discover the immutable production package without duplicate global skill projections";
+      "OpenCode must natively compose emitted discovery settings without reconstructing skills or MCP declarations";
 
   domain-opencode-deploys-hook-bridge =
     mkEvalCheck "domain-opencode-deploys-hook-bridge"

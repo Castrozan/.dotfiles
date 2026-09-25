@@ -2,7 +2,6 @@
   pkgs,
   config,
   lib,
-  latest,
   ...
 }:
 let
@@ -12,10 +11,12 @@ let
   defaultOpencodeModel = "opencode/big-pickle";
   titleGenerationModel = "opencode-go/${opencodeGo.models.haiku}";
 
-  mcpServerDefinitions = import ./mcp-servers.nix {
-    inherit pkgs latest homeDir;
-    bundle = config.agentPlugins.bundle;
-  };
+  opencodePluginSettings = pkgs.runCommand "opencode-plugin-settings.json" { } ''
+    ${pkgs.jq}/bin/jq '
+      .mcp."plugin.dotfiles.chrome-devtools".timeout = 120000 |
+      .mcp."plugin.dotfiles.sonarqube".timeout = 60000
+    ' ${config.agentPlugins.bundle}/.opencode/opencode.jsonc > "$out"
+  '';
 
   opencodePythonLspEnvironment =
     import ../../../machine-configuration/development/testing/python-test-environment.nix
@@ -54,8 +55,6 @@ let
     subagent_depth = 2;
 
     instructions = [ "~/.config/opencode/AGENTS.md" ];
-
-    skills.paths = [ "${config.agentPlugins.bundle}/plugin/skills" ];
 
     permission = fullAccessPermissions;
 
@@ -105,8 +104,6 @@ let
         variant = "max";
       };
     };
-
-    mcp = mcpServerDefinitions;
   };
 in
 {
@@ -121,6 +118,7 @@ in
     file = {
       ".config/opencode/.keep".text = "";
       ".config/opencode/opencode.json".text = builtins.toJSON opencodeGlobalSettings;
+      ".config/opencode/opencode.jsonc".source = opencodePluginSettings;
     };
 
     sessionVariables = {
