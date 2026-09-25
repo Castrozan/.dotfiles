@@ -5,6 +5,7 @@ from xml.etree.ElementTree import ParseError
 
 from download_chain_control import read_last_active_epoch, write_last_active_epoch
 from http_client import http_request
+from import_repair.history import reprocess_from_history
 from runtime_environment import log, read_arr_api_key_from_config_xml
 
 REPAIR_INTERVAL_SECONDS = 900
@@ -131,6 +132,16 @@ def repair_application(application, base_url, api_key, now_epoch, dry_run):
             ),
         )
         selected = import_file(application, record, candidates)
+        if selected is None:
+            candidates = reprocess_from_history(
+                application,
+                record,
+                candidates,
+                lambda path, payload=None: request_json(
+                    base_url, api_key, path, payload
+                ),
+            )
+            selected = import_file(application, record, candidates)
         if selected is None:
             continue
         if dry_run:
