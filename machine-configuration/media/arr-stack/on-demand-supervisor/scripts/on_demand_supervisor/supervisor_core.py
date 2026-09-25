@@ -9,6 +9,7 @@ from download_chain_control import (
 )
 from jellyseerr_client import actionable_requests, retry_request
 from import_alerts import maybe_alert_blocked_imports
+from import_repair import maybe_repair_blocked_imports
 from missing_search_sweep import run_missing_search_sweep
 from mount_health_guard import enforce_data_mount_guard
 from runtime_environment import log, read_arr_api_key_from_config_xml
@@ -120,6 +121,8 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
     effective_services = [
         service for service in on_demand_services if service not in held_down_services
     ]
+    if not held_down_services:
+        maybe_repair_blocked_imports(configuration, now_epoch, dry_run)
 
     if configuration["keep_chain_always_on"]:
         running = running_on_demand_services(base_command, on_demand_services)
