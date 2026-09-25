@@ -109,6 +109,8 @@ let
       "${homeDir}/.dotfiles".trust_level = "trusted";
     };
     mcp_servers = configuredMcpServers;
+    plugins."betha-desenvolvimento@betha-agent-marketplace".mcp_servers."chrome-devtools".enabled =
+      false;
   };
 in
 {
@@ -154,7 +156,7 @@ in
             export NIX_SOURCE="$HOME/.codex/config.toml.nix-source"
             export CODEX_TRUSTED_PROJECT_PARENT_DIRECTORIES=${lib.escapeShellArg (lib.concatStringsSep "\n" trustedProjectParentDirectories)}
             export CODEX_MCP_SERVER_BEARER_TOKEN_FILES=${lib.escapeShellArg codexMcpServerBearerTokenFiles}
-            ${codexConfigSeedPython}/bin/python3 ${./config/seed_codex_config_mutable.py}
+            ${codexConfigSeedPython}/bin/python3 ${./config}/seed_codex_config_mutable.py
           '';
         };
       };

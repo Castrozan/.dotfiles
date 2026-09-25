@@ -1,6 +1,6 @@
 --- a/build/src/McpResponse.js
 +++ b/build/src/McpResponse.js
-@@ -698,7 +698,7 @@
+@@ -627,7 +627,7 @@
                      const contextLabel = isolatedContextName
                          ? ` isolatedContext=${isolatedContextName}`
                          : '';
@@ -9,7 +9,7 @@
                      const pageLabel = title
                          ? `${truncateTitle(title)} (${mcpPage.pptrPage.url()})`
                          : mcpPage.pptrPage.url();
-@@ -717,7 +717,7 @@
+@@ -646,7 +646,7 @@
                          const contextLabel = isolatedContextName
                              ? ` isolatedContext=${isolatedContextName}`
                              : '';
@@ -18,7 +18,7 @@
                          const pageLabel = title
                              ? `${truncateTitle(title)} (${mcpPage.pptrPage.url()})`
                              : mcpPage.pptrPage.url();
-@@ -1078,6 +1078,27 @@
+@@ -1069,6 +1069,27 @@
          new Promise(resolve => setTimeout(() => resolve(''), 1000)),
      ]);
  }

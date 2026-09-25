@@ -1,15 +1,15 @@
-diff -ruN a/build/src/McpPage.js b/build/src/McpPage.js
---- a/build/src/McpPage.js	2026-07-22 17:07:44
-+++ b/build/src/McpPage.js	2026-07-22 17:07:44
-@@ -32,6 +32,7 @@
+--- a/build/src/McpPage.js
++++ b/build/src/McpPage.js
+@@ -133,6 +133,8 @@
      // Metadata
      isolatedContextName;
      #devtoolsUniverse;
 +    #devtoolsUniverseInitPromise;
++    #disposed = false;
      // Dialog
      #dialog;
      #dialogHandler;
-@@ -67,7 +68,6 @@
+@@ -175,7 +177,6 @@
      }
      async init() {
          await Promise.allSettled([
@@ -17,23 +17,68 @@ diff -ruN a/build/src/McpPage.js b/build/src/McpPage.js
              this.#initFocusEmulationNoThrow(),
          ]);
      }
-@@ -89,6 +89,15 @@
+@@ -189,15 +190,36 @@
+         if (this.#devtoolsUniverse) {
+             return undefined;
+         }
++        let session;
+         try {
+-            const session = await this.pptrPage.createCDPSession();
+-            this.#devtoolsUniverse = await createTargetUniverse(session, {
++            session = await this.pptrPage.createCDPSession();
++            const devtoolsUniverse = await createTargetUniverse(session, {
+                 sourceMaps: this.#sourceMaps,
+             });
++            if (this.#disposed) {
++                devtoolsUniverse.universe.dispose();
++                await session.detach();
++                return;
++            }
++            this.#devtoolsUniverse = devtoolsUniverse;
+         }
+         catch (e) {
++            await session?.detach().catch(() => {});
              logger?.('Failed to initialize DevTools universe', e);
          }
-     }
-+    async ensureDevtoolsUniverse() {
-+        if (!this.#devtoolsUniverse) {
-+            if (!this.#devtoolsUniverseInitPromise) {
-+                this.#devtoolsUniverseInitPromise = this.#initDevToolsUniverseNoThrow();
-+            }
-+            await this.#devtoolsUniverseInitPromise;
-+        }
-+        return this.#devtoolsUniverse;
 +    }
++    async ensureDevtoolsUniverse() {
++        if (this.#disposed) {
++            return undefined;
++        }
++        if (!this.#devtoolsUniverse && !this.#devtoolsUniverseInitPromise) {
++            this.#devtoolsUniverseInitPromise = this.#initDevToolsUniverseNoThrow()
++                .finally(() => {
++                    this.#devtoolsUniverseInitPromise = undefined;
++                });
++        }
++        await this.#devtoolsUniverseInitPromise;
++        return this.#devtoolsUniverse;
+     }
      get devtoolsUniverse() {
          return this.#devtoolsUniverse;
+@@ -409,6 +431,7 @@
+         return helper.waitForEventsAfterAction(action, options);
      }
-@@ -412,7 +421,7 @@
+     dispose() {
++        this.#disposed = true;
+         this.#commentBridge?.dispose();
+         this.#commentBridge = undefined;
+         this.pptrPage.off('dialog', this.#dialogHandler);
+@@ -650,10 +673,11 @@
+         if (!isBackendNodeId(backendNodeId)) {
+             throw new Error(`Failed to resolve backend node ID for element with uid "${uid}".`);
+         }
+-        if (!this.#devtoolsUniverse) {
++        const devtoolsUniverse = await this.ensureDevtoolsUniverse();
++        if (!devtoolsUniverse) {
+             throw new Error(`DevTools universe is not available for page ${this.id ?? '?'}.`);
+         }
+-        const targetManager = this.#devtoolsUniverse.universe.context.get(DevTools.TargetManager);
++        const targetManager = devtoolsUniverse.universe.context.get(DevTools.TargetManager);
+         let domNode;
+         let cssModel = null;
+         for (const dom of targetManager.models(DevTools.DOMModel.DOMModel)) {
+@@ -736,7 +760,7 @@
              await page.emulateNetworkConditions(networkCondition);
              newSettings.networkConditions = options.networkConditions;
          }
@@ -42,24 +87,23 @@ diff -ruN a/build/src/McpPage.js b/build/src/McpPage.js
          if (!options.cpuThrottlingRate) {
              await page.emulateCPUThrottling(1);
              if (secondarySession) {
-diff -ruN a/build/src/McpResponse.js b/build/src/McpResponse.js
---- a/build/src/McpResponse.js	2026-07-22 17:07:44
-+++ b/build/src/McpResponse.js	2026-07-22 17:07:44
-@@ -447,7 +447,7 @@
-             const consoleMessageStableId = this.#attachedConsoleMessageId;
-             if ('args' in message || message instanceof UncaughtError) {
-                 const consoleMessage = message;
--                const devTools = this.#page.devtoolsUniverse;
-+                const devTools = await this.#page.ensureDevtoolsUniverse();
-                 detailedConsoleMessage = await ConsoleFormatter.from(consoleMessage, {
+--- a/build/src/McpResponse.js
++++ b/build/src/McpResponse.js
+@@ -343,7 +343,7 @@
+             return await ConsoleFormatter.from(consoleMessage, {
+                 id: consoleMessageStableId,
+                 fetchDetailedData: true,
+-                devTools: this.#page.devtoolsUniverse,
++                devTools: await this.#page.ensureDevtoolsUniverse(),
+             });
+         }
+         else if (message instanceof DevTools.AggregatedIssue) {
+@@ -413,7 +413,7 @@
                      id: consoleMessageStableId,
-                     fetchDetailedData: true,
-@@ -518,7 +518,7 @@
-                     return await ConsoleFormatter.from(consoleMessage, {
-                         id: consoleMessageStableId,
-                         fetchDetailedData: false,
--                        devTools: page ? page.devtoolsUniverse : undefined,
-+                        devTools: page ? await page.ensureDevtoolsUniverse() : undefined,
-                     });
-                 }
-                 if (item instanceof DevTools.AggregatedIssue) {
+                     fetchDetailedData: false,
+                     fetchStackTrace: this.#consoleDataOptions?.includeStackTraces,
+-                    devTools: page ? page.devtoolsUniverse : undefined,
++                    devTools: page ? await page.ensureDevtoolsUniverse() : undefined,
+                 });
+             }
+             if (item instanceof DevTools.AggregatedIssue) {

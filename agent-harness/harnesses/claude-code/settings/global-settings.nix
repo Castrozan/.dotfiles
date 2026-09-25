@@ -56,6 +56,9 @@ let
     showTurnDuration = true;
     awaySummaryEnabled = true;
     teammateMode = "tmux";
+    deniedMcpServers = [
+      { serverName = "plugin:betha-desenvolvimento:chrome-devtools"; }
+    ];
     permissions = {
       defaultMode = "bypassPermissions";
       allow = [ ];

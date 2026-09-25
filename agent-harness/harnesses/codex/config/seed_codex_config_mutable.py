@@ -7,10 +7,10 @@ import tomllib
 
 import tomli_w
 
+from runtime_configuration import merge_runtime_preserved_configuration
+
 
 legacy_profile_names = ("fast", "deep", "web")
-runtime_preserved_value_names = ("model",)
-runtime_preserved_section_names = ("projects", "marketplaces", "plugins")
 secret_file_wait_seconds = 10
 secret_file_retry_seconds = 0.1
 codex_config_path = pathlib.Path(
@@ -37,34 +37,6 @@ def read_optional_toml_document(document_path: pathlib.Path) -> dict | None:
             file=sys.stderr,
         )
         return None
-
-
-def merge_runtime_preserved_configuration(
-    nix_source: dict, current_config: dict
-) -> dict:
-    merged_config = dict(nix_source)
-    for value_name in runtime_preserved_value_names:
-        if value_name in current_config:
-            merged_config[value_name] = current_config[value_name]
-    for section_name in runtime_preserved_section_names:
-        current_section = current_config.get(section_name)
-        source_section = nix_source.get(section_name)
-        if not isinstance(current_section, dict):
-            continue
-        if isinstance(source_section, dict):
-            merged_config[section_name] = current_section | source_section
-        elif section_name not in nix_source:
-            merged_config[section_name] = current_section
-    source_hooks = nix_source.get("hooks", {})
-    current_hooks = current_config.get("hooks", {})
-    if isinstance(source_hooks, dict) and isinstance(current_hooks, dict):
-        current_hook_state = current_hooks.get("state")
-        source_hook_state = source_hooks.get("state", {})
-        if isinstance(current_hook_state, dict) and isinstance(source_hook_state, dict):
-            merged_config["hooks"] = source_hooks | {
-                "state": current_hook_state | source_hook_state
-            }
-    return merged_config
 
 
 def trusted_project_parent_directories() -> tuple[pathlib.Path, ...]:
