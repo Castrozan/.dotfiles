@@ -20,12 +20,15 @@ def write_claude_mcp(plugin: Path, shell: str) -> None:
         directory = server.pop("cwd", CLAUDE_PLUGIN_ROOT_VARIABLE)
         if not directory.startswith("${CLAUDE_PLUGIN_"):
             directory = CLAUDE_PLUGIN_ROOT_VARIABLE + "/" + directory
+        command = server["command"]
+        if command.startswith("./"):
+            command = CLAUDE_PLUGIN_ROOT_VARIABLE + command[1:]
         server["args"] = [
             "-c",
             'cd -- "$1" && shift && exec "$@"',
             "agent-plugin-mcp",
             directory,
-            server["command"],
+            command,
             *server.get("args", []),
         ]
         server["command"] = shell

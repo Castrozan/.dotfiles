@@ -85,3 +85,58 @@ def test_authored_mcp_file_is_not_overwritten(tmp_path):
     assert (native / "mcp.json").read_text() == authored
     manifest = json.loads((native / "plugin.json").read_text())
     assert manifest["mcpServers"] == "./.claude-plugin/mcp.generated.1.json"
+
+
+@pytest.mark.parametrize("working_directory", ["./working directory", "${PLUGIN_DATA}"])
+@pytest.mark.parametrize("shadow_command", [False, True])
+def test_relative_command_keeps_package_origin_after_changing_directory(
+    tmp_path, working_directory, shadow_command
+):
+    plugin = tmp_path / "package with spaces"
+    native = plugin / ".claude-plugin"
+    native.mkdir(parents=True)
+    (native / "plugin.json").write_text('{"name":"example"}')
+    executable = plugin / "bin/server"
+    executable.parent.mkdir()
+    executable.write_text('#!/bin/sh\nprintf "canonical\\n%s\\n%s\\n" "$PWD" "$1"\n')
+    executable.chmod(0o755)
+    data = tmp_path / "persistent data"
+    directory = (
+        data if working_directory == "${PLUGIN_DATA}" else plugin / working_directory
+    )
+    directory.mkdir()
+    if shadow_command:
+        shadow = directory / "bin/server"
+        shadow.parent.mkdir()
+        shadow.write_text('#!/bin/sh\nprintf "wrong-origin\\n"\n')
+        shadow.chmod(0o755)
+    portable = {
+        "mcpServers": {
+            "example": {
+                "type": "stdio",
+                "command": "./bin/server",
+                "args": ["$(exit 99)"],
+                "cwd": working_directory,
+            }
+        }
+    }
+    source = json.dumps(portable)
+    (plugin / "mcp.json").write_text(source)
+    write_claude_mcp(plugin, shutil.which("bash"))
+    emitted = json.loads(
+        (native / "mcp.json")
+        .read_text()
+        .replace("${CLAUDE_PLUGIN_ROOT}", str(plugin))
+        .replace("${CLAUDE_PLUGIN_DATA}", str(data))
+    )["mcpServers"]["example"]
+    result = subprocess.run(
+        [emitted["command"], *emitted["args"]],
+        cwd=tmp_path,
+        env=os.environ | emitted["env"],
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.splitlines() == ["canonical", str(directory), "$(exit 99)"]
+    assert (plugin / "mcp.json").read_text() == source
