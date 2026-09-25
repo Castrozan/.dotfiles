@@ -112,18 +112,18 @@ in
 {
   imports = [ ../../agent-instructions/production-plugin/home-manager.nix ];
 
-  home.activation.prepareOpenCodePluginData =
-    lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ]
-      ''
+  home = {
+    activation = {
+      prepareOpenCodePluginData = lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ] ''
         run ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.agentPlugins.opencodeDataRoot}/dotfiles"}
       '';
 
-  home.activation.retireOpenCodePluginProjections = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    ${pkgs.python312}/bin/python3 ${../../agent-instructions/production-plugin/scripts/retire-projections.py} \
-      opencode "${config.home.homeDirectory}" ${config.agentPlugins.bundle}
-  '';
+      retireOpenCodePluginProjections = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+        ${pkgs.python312}/bin/python3 ${../../agent-instructions/production-plugin/scripts/retire-projections.py} \
+          opencode "${config.home.homeDirectory}" ${config.agentPlugins.bundle}
+      '';
+    };
 
-  home = {
     file = {
       ".config/opencode/.keep".text = "";
       ".config/opencode/opencode.json".text = builtins.toJSON opencodeGlobalSettings;
