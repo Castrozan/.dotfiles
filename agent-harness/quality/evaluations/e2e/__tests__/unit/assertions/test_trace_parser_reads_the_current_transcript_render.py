@@ -1,7 +1,10 @@
 from e2e.assertions.e2e_assertions_skills_tools import (
     check_bash_command_not_contains_assertion,
 )
-from e2e.sessions.e2e_trace import build_terminal_session_trace
+from e2e.sessions.e2e_trace import (
+    build_terminal_session_trace,
+    extract_invoked_skill_names_from_trace,
+)
 
 MODERN_TRANSCRIPT = (
     "\n"
@@ -76,3 +79,16 @@ def test_a_negative_bash_assertion_still_passes_when_every_command_is_visible():
     )
     assert result.passed
     assert result.detail == "correctly absent"
+
+
+PLUGIN_NAMESPACED_SKILL_TRANSCRIPT = "⏺ Skill(dotfiles:coding)\n  ⎿  Loaded skill\n"
+
+
+def test_a_plugin_namespaced_skill_call_is_reported_by_its_bare_name():
+    invoked = extract_invoked_skill_names_from_trace(
+        trace_of(PLUGIN_NAMESPACED_SKILL_TRANSCRIPT)
+    )
+    assert invoked == ["coding"], (
+        "scenario yamls assert bare skill names, so a plugin-qualified call like "
+        f"'dotfiles:coding' must still match 'coding': got {invoked}"
+    )

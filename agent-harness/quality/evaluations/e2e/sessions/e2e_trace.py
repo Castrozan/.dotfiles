@@ -177,6 +177,7 @@ def extract_invoked_skill_names_from_trace(
             continue
         first_argument_token = tool_call.tool_arguments_text.split(",")[0].strip()
         normalized_skill_name = first_argument_token.strip("\"'").strip()
-        if normalized_skill_name:
-            invoked_skill_names.append(normalized_skill_name)
+        unqualified_skill_name = normalized_skill_name.rpartition(":")[2]
+        if unqualified_skill_name:
+            invoked_skill_names.append(unqualified_skill_name)
     return invoked_skill_names
