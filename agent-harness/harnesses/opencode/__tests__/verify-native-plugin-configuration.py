@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 
-def verify_configuration(executable, settings, plugin_settings, bundle):
+def verify_configuration(executable, settings, plugin_settings, bundle, data_root):
     global_configuration = json.loads(settings.read_text())
     emitted_configuration = json.loads(
         (bundle / ".opencode/opencode.jsonc").read_text()
@@ -20,6 +20,12 @@ def verify_configuration(executable, settings, plugin_settings, bundle):
     assert "skills" not in global_configuration
     for name, timeout in expected_timeouts.items():
         assert installed_configuration["mcp"][name].pop("timeout") == timeout
+        server = emitted_configuration["mcp"][name]
+        assert server["command"][0] == str(
+            bundle / ".agents/plugins/dotfiles/native/mcp" / name.split(".")[-1]
+        )
+        assert server["environment"]["PLUGIN_DATA"] == str(data_root / "dotfiles")
+        assert not (data_root / "dotfiles").is_relative_to(bundle)
     assert installed_configuration == emitted_configuration
 
     with tempfile.TemporaryDirectory(

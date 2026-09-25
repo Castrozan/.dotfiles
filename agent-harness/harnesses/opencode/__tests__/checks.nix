@@ -125,7 +125,7 @@ in
           ${cfg.opencode.unwrappedPackage}/bin/opencode \
           ${cfg.home.file.".config/opencode/opencode.json".source} \
           ${cfg.home.file.".config/opencode/opencode.jsonc".source} \
-          ${cfg.agentPlugins.bundle}
+          ${cfg.agentPlugins.bundle} ${lib.escapeShellArg cfg.agentPlugins.opencodeDataRoot}
         touch "$out"
       '';
 

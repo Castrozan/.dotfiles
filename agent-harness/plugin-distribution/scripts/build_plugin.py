@@ -62,6 +62,9 @@ def remove_build_inputs(output: Path) -> None:
         shutil.rmtree(output / name)
     for name in ("agents.toml", "agents.lock", ".gitignore", ".agents/.gitignore"):
         (output / name).unlink(missing_ok=True)
+    data = output / ".agents/plugin-data"
+    if data.exists():
+        shutil.rmtree(data)
 
 
 def deliver_package(source: Path, output: Path, name: str, targets: tuple) -> Path:
@@ -78,12 +81,19 @@ def deliver_package(source: Path, output: Path, name: str, targets: tuple) -> Pa
     return plugin
 
 
-def build_plugin(source: Path, output: Path, targets: tuple[str, ...]) -> None:
+def build_plugin(
+    source: Path,
+    output: Path,
+    targets: tuple[str, ...],
+    opencode_data_root: Path | None = None,
+) -> None:
     source = source.resolve(strict=True)
     output = output.absolute()
     name = read_portable_plugin(source, targets)
     if output.resolve().is_relative_to(source):
         raise ValueError("Output must be outside the plugin source")
+    if "opencode" in targets and opencode_data_root is None:
+        raise ValueError("OpenCode requires --opencode-data-root from its deployment")
     output.mkdir()
     try:
         adapters = tuple(target for target in targets if target not in {"pi", "hermes"})
@@ -112,7 +122,7 @@ def build_plugin(source: Path, output: Path, targets: tuple[str, ...]) -> None:
                     environment["AGENT_PLUGIN_MCP_SHELL"],
                 )
             if "opencode" in targets:
-                write_opencode_configuration(output, name)
+                write_opencode_configuration(output, name, opencode_data_root)
         remove_build_inputs(output)
     except BaseException:
         shutil.rmtree(output)
@@ -126,9 +136,15 @@ def main() -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--target", action="append", default=[])
+    parser.add_argument("--opencode-data-root", type=Path)
     arguments = parser.parse_args()
     try:
-        build_plugin(arguments.source, arguments.output, tuple(arguments.target))
+        build_plugin(
+            arguments.source,
+            arguments.output,
+            tuple(arguments.target),
+            arguments.opencode_data_root,
+        )
     except (OSError, ValueError, subprocess.TimeoutExpired) as error:
         parser.exit(1, f"agent-plugin-build: {error}\n")
     print(arguments.output)

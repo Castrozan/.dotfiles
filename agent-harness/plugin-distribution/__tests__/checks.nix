@@ -2,7 +2,10 @@
 let
   distribution = import ../. { inherit pkgs; };
   fixture = ./fixtures/portable-plugin;
-  bundle = distribution.buildPlugin { source = fixture; };
+  bundle = distribution.buildPlugin {
+    source = fixture;
+    opencodeDataRoot = "/tmp/agent-plugin-distribution-state";
+  };
 in
 {
   agent-plugin-distribution =

@@ -22,6 +22,8 @@ checks package identity and filesystem containment. The receiving loader validat
 
 Optional repeated `--target` arguments add harness discovery artifacts. Claude and Codex get native marketplace catalogs;
 OpenCode gets native configuration through the pinned public [dotagents CLI](https://github.com/getsentry/dotagents).
+Selecting OpenCode requires `--opencode-data-root ABSOLUTE_DIRECTORY` outside the bundle. Deployment must create
+`ABSOLUTE_DIRECTORY/NAME` before starting a plugin process that uses it.
 Pi gets `.pi/plugins/NAME`, and Hermes gets `.hermes/plugins/NAME`, both pointing to the complete package. There is no
 skills-only Pi projection. Authored files are restored after rendering, and authored Claude manifests remain authoritative.
 
@@ -36,14 +38,22 @@ workflows into every other client's runtime. New spec-capable clients can use th
 without adding another artifact adapter.
 
 The Nix entry point is `import ./default.nix { inherit pkgs; }`. Its `package` provides the CLI, and
-`buildPlugin { source = pinnedPluginDirectory; }` produces an immutable bundle with all five discovery targets. Set
+`buildPlugin { source = pinnedPluginDirectory; opencodeDataRoot = persistentStateDirectory; }` produces an immutable
+bundle with all five discovery targets. Set
 `targets = [];` for only the complete package. Home Manager installs the builder on Darwin and Linux. Nix owns fetching
 and pinning; builds use local inputs. Upstream rendering commands have a 30-second timeout. Outside a sandbox, upstream
 may attempt its bounded optional update check, which cannot change the pinned renderer.
 
-The Claude MCP bridge supplies native plugin variables and the portable working directory. OpenCode's launcher places
-persistent plugin data under `$XDG_STATE_HOME/agent-plugins/opencode/NAME`, defaulting to `~/.local/state`, independently
-of the bundle revision. Generated OpenCode paths bind a bundle to its destination; consume Nix outputs in place.
+The Claude MCP bridge supplies native plugin variables and the portable working directory. Relative executables resolve
+from the package root even when the working directory differs. OpenCode launches native command arrays with explicit
+working directories and environment variables. Its projection preserves opaque `{env:...}` and `{file:...}` values
+literally rather than interpreting them as OpenCode configuration substitutions.
+
+Home Manager selects `${config.xdg.stateHome}/agent-plugins/opencode` and creates each production plugin's data directory
+before installing the configuration. Data survives bundle revisions. Generated OpenCode paths bind the projection to its
+bundle destination and declared data root; runtime HOME or XDG overrides do not relocate it. Rebuild the projection when
+either location changes, and consume Nix outputs in place. Native OpenCode neither supplies a fallback for missing
+configuration substitutions nor creates arbitrary MCP data directories.
 
 Existing destinations are refused. Failed builds remove only their new output. Directory symlinks and links outside the
 package must be materialized before building. Contained file links are materialized. Upstream warnings are printed and retained in

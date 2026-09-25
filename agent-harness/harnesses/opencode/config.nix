@@ -12,9 +12,12 @@ let
   titleGenerationModel = "opencode-go/${opencodeGo.models.haiku}";
 
   opencodePluginSettings = pkgs.runCommand "opencode-plugin-settings.json" { } ''
-    ${pkgs.jq}/bin/jq '
+    ${pkgs.jq}/bin/jq -r '
       .mcp."plugin.dotfiles.chrome-devtools".timeout = 120000 |
-      .mcp."plugin.dotfiles.sonarqube".timeout = 60000
+      .mcp."plugin.dotfiles.sonarqube".timeout = 60000 |
+      tojson |
+      gsub("\\{env:"; "\\u007benv:") |
+      gsub("\\{file:"; "\\u007bfile:")
     ' ${config.agentPlugins.bundle}/.opencode/opencode.jsonc > "$out"
   '';
 
@@ -108,6 +111,12 @@ let
 in
 {
   imports = [ ../../agent-instructions/production-plugin/home-manager.nix ];
+
+  home.activation.prepareOpenCodePluginData =
+    lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ]
+      ''
+        run ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.agentPlugins.opencodeDataRoot}/dotfiles"}
+      '';
 
   home.activation.retireOpenCodePluginProjections = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     ${pkgs.python312}/bin/python3 ${../../agent-instructions/production-plugin/scripts/retire-projections.py} \

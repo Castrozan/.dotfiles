@@ -2,7 +2,6 @@ import json
 import os
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 
@@ -100,13 +99,18 @@ def verify_bundle(bundle, source):
     assert opencode["$schema"] == "https://opencode.ai/config.json"
     assert opencode["skills"]["paths"] == [str(plugin / "skills")]
     server = opencode["mcp"]["plugin.distribution-probe.distribution-probe"]
-    with tempfile.TemporaryDirectory() as state:
-        verify_mcp(
-            server["command"],
-            server["environment"] | {"XDG_STATE_HOME": state},
-            server["cwd"],
-        )
-    for removed in ("input", ".git", "agents.toml", "agents.lock"):
+    assert server["command"] == ["python3", str(plugin / "scripts/server.py")]
+    assert server["environment"]["PLUGIN_DATA"] == (
+        "/tmp/agent-plugin-distribution-state/distribution-probe"
+    )
+    verify_mcp(server["command"], server["environment"], server["cwd"])
+    for removed in (
+        "input",
+        ".git",
+        "agents.toml",
+        "agents.lock",
+        ".agents/plugin-data",
+    ):
         assert not (bundle / removed).exists()
     print(
         "Complete packages for five targets and MCP calls through three native adapters verified"

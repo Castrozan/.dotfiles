@@ -23,6 +23,7 @@ let
   };
   productionBundle = (import ../../plugin-distribution { inherit pkgs; }).buildPlugin {
     source = productionSource;
+    opencodeDataRoot = "${homeDirectory}/.local/state/agent-plugins/opencode";
   };
   homeFileDefinitions = builtins.foldl' (all: files: all // files) {
     ".hermes/SOUL.md".source = import ../../harnesses/hermes/soul.nix { inherit pkgs; };

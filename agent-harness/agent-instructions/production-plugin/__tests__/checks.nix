@@ -7,7 +7,10 @@ let
     chromePackage = pkgs.google-chrome;
     isDarwin = false;
   };
-  bundle = (import ../../../plugin-distribution { inherit pkgs; }).buildPlugin { inherit source; };
+  bundle = (import ../../../plugin-distribution { inherit pkgs; }).buildPlugin {
+    inherit source;
+    opencodeDataRoot = "/home/test/.local/state/agent-plugins/opencode";
+  };
 in
 {
   production-plugin-artifact-preservation =
