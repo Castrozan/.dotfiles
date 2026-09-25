@@ -2,6 +2,7 @@
   pkgs,
   lib,
   hostname,
+  isDarwin,
   config,
   latest,
   ...
@@ -9,7 +10,12 @@
 let
   distribution = import ../../plugin-distribution { inherit pkgs; };
   source = import ./. {
-    inherit pkgs lib hostname;
+    inherit
+      pkgs
+      lib
+      hostname
+      isDarwin
+      ;
     inherit (config.home) homeDirectory;
     chromePackage = latest.google-chrome;
   };
