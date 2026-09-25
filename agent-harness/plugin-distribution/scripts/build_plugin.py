@@ -88,7 +88,7 @@ def build_plugin(
     opencode_data_root: Path | None = None,
 ) -> None:
     source = source.resolve(strict=True)
-    output = output.absolute()
+    output = output.resolve()
     name = read_portable_plugin(source, targets)
     if output.resolve().is_relative_to(source):
         raise ValueError("Output must be outside the plugin source")

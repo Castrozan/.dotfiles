@@ -58,6 +58,28 @@ def verify_contract(fixture):
         assert snapshot(output) == first
         shutil.rmtree(output)
 
+        destination = root / "destination"
+        destination.mkdir()
+        alias = root / "alias"
+        alias.symlink_to(destination, target_is_directory=True)
+        aliased_output = alias / "bundle"
+        mcp_path = source / "mcp.json"
+        original_mcp = mcp_path.read_bytes()
+        mcp = json.loads(original_mcp)
+        mcp["mcpServers"]["distribution-probe"]["cwd"] = "${PLUGIN_DATA}"
+        mcp_path.write_text(json.dumps(mcp))
+        build(source, aliased_output, targets, data_root=data_root)
+        configuration = json.loads(
+            (aliased_output / ".opencode/opencode.jsonc").read_text()
+        )
+        server = configuration["mcp"]["plugin.distribution-probe.distribution-probe"]
+        assert server["environment"]["PLUGIN_DATA"] == str(
+            data_root / "distribution-probe"
+        )
+        assert server["cwd"] == server["environment"]["PLUGIN_DATA"]
+        mcp_path.write_bytes(original_mcp)
+        shutil.rmtree(aliased_output)
+
         manifest_path = source / "plugin.json"
         manifest = json.loads(manifest_path.read_text())
         manifest["extensions"] = {"com.example.client": {"hooks": "./hooks.json"}}
