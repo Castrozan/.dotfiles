@@ -29,3 +29,30 @@ JUnit and Cobertura inputs from the same producing run. A failed suite or missin
 artifact remains failed or missing evidence. The overall GitHub workflow verdict
 is separate from individual test outcomes. Consumers must preserve that distinction
 and bind downloaded artifacts to the exact completed run before publishing.
+
+## Published overview
+
+The existing reports deployment workflow also listens for completed `tests` runs
+from pushes to this repository's `main` branch. Its overview job selects artifacts
+by producing run, revision and attempt, including failed runs. Expired, ambiguous
+or missing artifacts remain explicit gaps. It imports four native JUnit tiers and
+Python Cobertura coverage beside the frozen package evidence. Swift, QML and Lua
+testcase import, Swift Sonar coverage import and mutation testing retain their
+specific unmeasured or unsupported status.
+
+The Python collector owns GitHub metadata and artifact selection. The JavaScript
+adapter calls the pinned portable Verdr schemas and report builder. The existing
+snapshot publisher owns authenticated ingestion. Neither report assembly nor
+publication runs a model, production MCP server or browser.
+
+Reports and unchanged raw inputs are stored under `reports/overview/RUN/ATTEMPT/`
+in the existing snapshots bucket. `snapshot.json` is written after the report and
+details are available. A retry reuses that completed receipt rather than replacing
+it. The job promotes an ingestion snapshot only while its source revision is the
+current `main` and its attempt is still current. Older reports remain attributable
+to their producing execution and do not overwrite the current snapshot.
+
+The `dotfiles-quality-overview` ingestion payload keeps the producing workflow's
+conclusion separate from the portable overview. Its source identifies the test
+run, not the later publisher run. Hosted viewers must recompute each measurement's
+freshness and retain its exact scope, validity, outcome and source links.

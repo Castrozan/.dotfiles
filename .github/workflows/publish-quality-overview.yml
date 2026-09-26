@@ -1,0 +1,101 @@
+name: Publish quality overview
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  overview:
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+      SOURCE_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+      REPORT_BUCKET: gs://zg-url-shortener-2026-dotfiles-usage-snapshots
+      PUBLISHING_SCRIPTS: agent-harness/measurement-and-reporting/quality-overview/publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+      - name: Bind the completed producing run and artifact attempt
+        id: context
+        run: |
+          mkdir -p .quality-results/downloads
+          artifact_ids=$(python3 "$PUBLISHING_SCRIPTS/workflow_context.py" "$GITHUB_EVENT_PATH" .quality-results/workflow-context.json)
+          echo "artifact_ids=$artifact_ids" >> "$GITHUB_OUTPUT"
+      - name: Download only artifacts produced by this attempt
+        if: ${{ steps.context.outputs.artifact_ids != '' }}
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+          artifact-ids: ${{ steps.context.outputs.artifact_ids }}
+          path: .quality-results/downloads
+      - uses: actions/checkout@v4
+        with:
+          repository: Castrozan/verdr
+          ref: 89ebee7bd551f60f7b90245411edff18bdfcfcb8
+          path: .quality-results/verdr
+      - name: Build the pinned portable report generator
+        working-directory: .quality-results/verdr
+        run: npm ci --ignore-scripts && npm run build
+      - name: Verify publisher failure and preservation controls
+        env:
+          VERDR_EVALUATOR_ROOT: ${{ github.workspace }}/.quality-results/verdr
+        run: node --test "$PUBLISHING_SCRIPTS/__tests__/snapshot.test.mjs" "$PUBLISHING_SCRIPTS/__tests__/artifact.test.mjs"
+      - name: Build overview without turning missing inputs into passes
+        run: |
+          node "$PUBLISHING_SCRIPTS/build_snapshot.mjs" "$PWD/.quality-results/verdr" \
+            .quality-results/workflow-context.json .quality-results/downloads .quality-results/overview
+      - name: Retain overview and source metadata
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotfiles-quality-overview
+          path: |
+            .quality-results/overview
+            .quality-results/workflow-context.json
+          include-hidden-files: true
+          if-no-files-found: error
+      - uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed
+        with:
+          workload_identity_provider: projects/933601426694/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: dotfiles-github-deployer@zg-url-shortener-2026.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f
+      - name: Publish the completed immutable report or reuse its stored receipt
+        if: ${{ vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
+        run: |
+          destination="$REPORT_BUCKET/reports/overview/$SOURCE_RUN_ID/$SOURCE_RUN_ATTEMPT"
+          if gcloud storage ls "$destination/snapshot.json" > /dev/null 2>&1; then
+            gcloud storage cp "$destination/snapshot.json" .quality-results/overview/payload.json
+          else
+            gcloud storage rsync .quality-results/overview/site "$destination" --recursive
+            gcloud storage cp .quality-results/overview/payload.json "$destination/snapshot.json" --if-generation-match=0
+          fi
+      - name: Check this snapshot still represents the current main run
+        if: ${{ vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
+        id: promotion
+        run: |
+          promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py")
+          echo "current=$promote" >> "$GITHUB_OUTPUT"
+      - name: Publish the current overview to the existing ingestion API
+        if: ${{ steps.promotion.outputs.current == 'true' && vars.INGEST_BASE_URL != '' }}
+        env:
+          INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
+          INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
+          INGEST_PRODUCER_LABEL: dotfiles-github-actions
+        run: |
+          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py
