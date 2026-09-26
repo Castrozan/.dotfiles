@@ -30,7 +30,7 @@ _run_pytest_tier() {
 		reportArguments=("--junitxml=${DOTFILES_TEST_REPORT_DIRECTORY}/pytest-${tierDirectoryName}.xml")
 	fi
 	local pytestExitCode=0
-	DOTFILES_TEST_REPORT_DIRECTORY= pytest "${reportArguments[@]}" "${testFiles[@]}" -q || pytestExitCode=$?
+	DOTFILES_TEST_REPORT_DIRECTORY='' pytest "${reportArguments[@]}" "${testFiles[@]}" -q || pytestExitCode=$?
 	echo ""
 	return "$pytestExitCode"
 }

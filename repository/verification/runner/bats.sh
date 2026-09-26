@@ -32,7 +32,7 @@ _run_bats_tier() {
 		reportArguments=(--report-formatter junit --output "$reportDirectory")
 	fi
 	local batsExitCode=0
-	DOTFILES_TEST_REPORT_DIRECTORY= bats "${reportArguments[@]}" "${testFiles[@]}" || batsExitCode=$?
+	DOTFILES_TEST_REPORT_DIRECTORY='' bats "${reportArguments[@]}" "${testFiles[@]}" || batsExitCode=$?
 	echo ""
 	return "$batsExitCode"
 }
