@@ -6,6 +6,7 @@
 .deep-work/
 .scannerwork/
 .sonar-reports/
+.quality-results/
 
 # Session heartbeat (local-only resume marker)
 HEARTBEAT.md

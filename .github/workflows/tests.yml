@@ -4,6 +4,9 @@ on:
     branches: [main]
   pull_request:
 
+env:
+  DOTFILES_TEST_REPORT_DIRECTORY: ${{ github.workspace }}/.quality-results
+
 jobs:
   quick-tests:
     runs-on: ubuntu-latest
@@ -15,6 +18,15 @@ jobs:
 
       - name: Run quick tests
         run: ./repository/verification/run.sh --ci
+
+      - name: Retain native Bats test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bats-junit
+          path: .quality-results/bats-*/report.xml
+          include-hidden-files: true
+          if-no-files-found: error
 
       - name: Enforce directory entry limits
         if: ${{ !cancelled() }}
@@ -71,6 +83,15 @@ jobs:
             _run_pytest_tier integration integration-scripts || integrationExitCode=$?
             exit $(( unitExitCode > integrationExitCode ? unitExitCode : integrationExitCode ))
           '
+
+      - name: Retain native Python test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-junit
+          path: .quality-results/pytest-*.xml
+          include-hidden-files: true
+          if-no-files-found: error
 
       - name: Run QML unit tests
         if: ${{ !cancelled() }}

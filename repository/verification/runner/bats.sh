@@ -25,8 +25,14 @@ _run_bats_tier() {
 	fi
 
 	echo "--- Bin Script Tests (${tierLabel}) ---"
+	local -a report_arguments=()
+	if [[ -n "${DOTFILES_TEST_REPORT_DIRECTORY:-}" ]]; then
+		local report_directory="${DOTFILES_TEST_REPORT_DIRECTORY}/bats-${tierDirectoryName}"
+		mkdir -p "$report_directory" || return
+		report_arguments=(--report-formatter junit --output "$report_directory")
+	fi
 	local batsExitCode=0
-	bats "${testFiles[@]}" || batsExitCode=$?
+	DOTFILES_TEST_REPORT_DIRECTORY='' bats "${report_arguments[@]}" "${testFiles[@]}" || batsExitCode=$?
 	echo ""
 	return "$batsExitCode"
 }

@@ -24,8 +24,13 @@ _run_pytest_tier() {
 	fi
 
 	echo "--- Python Tests (${tierLabel}) ---"
+	local -a report_arguments=()
+	if [[ -n "${DOTFILES_TEST_REPORT_DIRECTORY:-}" ]]; then
+		mkdir -p "$DOTFILES_TEST_REPORT_DIRECTORY" || return
+		report_arguments=("--junitxml=${DOTFILES_TEST_REPORT_DIRECTORY}/pytest-${tierDirectoryName}.xml")
+	fi
 	local pytestExitCode=0
-	pytest "${testFiles[@]}" -q || pytestExitCode=$?
+	DOTFILES_TEST_REPORT_DIRECTORY='' pytest "${report_arguments[@]}" "${testFiles[@]}" -q || pytestExitCode=$?
 	echo ""
 	return "$pytestExitCode"
 }
