@@ -1,0 +1,57 @@
+name: CI package evidence
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+      - name: Check out the verified Verdr evaluator
+        uses: actions/checkout@v4
+        with:
+          repository: Castrozan/verdr
+          ref: f1b68d04e8cfe44bb6b85e1046b61140d836bf06
+          path: .quality-results/verdr
+      - name: Build the pinned evaluator
+        working-directory: .quality-results/verdr
+        run: npm ci && npm run build
+      - name: Install the pinned Codex runtime
+        run: |
+          curl -fsSL --max-time 120 https://github.com/openai/codex/releases/download/rust-v0.155.1/codex-package-x86_64-unknown-linux-musl.tar.gz -o "$RUNNER_TEMP/codex.tar.gz"
+          echo "a65b895c6ac1a73629bbe4b864640c86133e94a43b4d67b3103044e1a306d5a2  $RUNNER_TEMP/codex.tar.gz" | sha256sum --check
+          mkdir "$RUNNER_TEMP/codex"
+          tar -xzf "$RUNNER_TEMP/codex.tar.gz" -C "$RUNNER_TEMP/codex"
+      - name: Prove discovery does not start configured servers
+        run: |
+          mkdir .quality-results/startup-controls
+          node agent-harness/measurement-and-reporting/quality-overview/discovery_startup_control.mjs \
+            "$PWD/.quality-results/verdr" "$PWD/.quality-results/startup-controls" "$RUNNER_TEMP/codex/bin/codex"
+      - name: Build and evaluate the complete public production package
+        run: |
+          bundle=$(nix build --impure --no-link --print-out-paths \
+            --file agent-harness/measurement-and-reporting/quality-overview/ci-bundle.nix --argstr repository "$PWD")
+          tar -czf .quality-results/complete-bundle.tar.gz -C "$bundle" .
+          nix shell nixpkgs#python312 --command node agent-harness/measurement-and-reporting/quality-overview/build_artifact_evidence.mjs \
+            "$PWD/.quality-results/verdr" "$bundle" "$PWD/.quality-results/artifact-evidence" \
+            python3 "$RUNNER_TEMP/codex/bin/codex"
+      - name: Retain package identity and independent evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdr-artifact-evidence
+          path: |
+            .quality-results/artifact-evidence
+            .quality-results/startup-controls
+            .quality-results/complete-bundle.tar.gz
+          include-hidden-files: true
+          if-no-files-found: error
