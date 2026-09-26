@@ -75,3 +75,17 @@ jobs:
 
       - name: ${{ matrix.name }}
         run: ${{ matrix.command }}
+
+  gate:
+    name: Nix Lint
+    needs: [lint, evaluate]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    permissions: {}
+    steps:
+      - name: Require all Nix checks to succeed
+        env:
+          LINT_RESULT: ${{ needs.lint.result }}
+          EVALUATION_RESULT: ${{ needs.evaluate.result }}
+        run: test "$LINT_RESULT" = success && test "$EVALUATION_RESULT" = success
