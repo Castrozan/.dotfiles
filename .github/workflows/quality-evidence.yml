@@ -24,10 +24,13 @@ jobs:
           path: .quality-results/verdr
       - name: Build the pinned evaluator
         working-directory: .quality-results/verdr
-        run: npm ci && npm run build
+        run: |
+          npm ci --ignore-scripts
+          node node_modules/opencode-ai/postinstall.mjs
+          npm run build
       - name: Install the pinned Codex runtime
         run: |
-          curl -fsSL --max-time 120 https://github.com/openai/codex/releases/download/rust-v0.155.1/codex-package-x86_64-unknown-linux-musl.tar.gz -o "$RUNNER_TEMP/codex.tar.gz"
+          curl -fsSL --proto '=https' --proto-redir '=https' --max-time 120 https://github.com/openai/codex/releases/download/rust-v0.155.1/codex-package-x86_64-unknown-linux-musl.tar.gz -o "$RUNNER_TEMP/codex.tar.gz"
           echo "a65b895c6ac1a73629bbe4b864640c86133e94a43b4d67b3103044e1a306d5a2  $RUNNER_TEMP/codex.tar.gz" | sha256sum --check
           mkdir "$RUNNER_TEMP/codex"
           tar -xzf "$RUNNER_TEMP/codex.tar.gz" -C "$RUNNER_TEMP/codex"
