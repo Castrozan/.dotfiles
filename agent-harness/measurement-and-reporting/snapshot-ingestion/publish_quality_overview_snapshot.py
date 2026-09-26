@@ -26,7 +26,7 @@ def producing_environment(payload, environment):
     if not re.fullmatch(r"[a-f0-9]{40}", revision) or subject["revision"] != revision:
         raise IngestionRefusedError("Overview revision differs from the producing run")
     if (
-        not re.fullmatch(r"[1-9][0-9]*", identifier)
+        not re.fullmatch(r"[1-9]\d*", identifier, flags=re.ASCII)
         or not isinstance(attempt, int)
         or attempt < 1
     ):
@@ -46,9 +46,9 @@ def producing_environment(payload, environment):
     }
 
 
-def main(arguments):
+def main():
     try:
-        payload = json.loads(Path(arguments[0]).read_text())
+        payload = json.loads(Path(".quality-results/overview/payload.json").read_text())
         environment = producing_environment(payload, os.environ)
         acknowledgement = publish_snapshot(
             TOPIC,
@@ -65,4 +65,4 @@ def main(arguments):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())

@@ -19,15 +19,21 @@ env:
 permissions:
   contents: read
   actions: read
-  id-token: write
 
 jobs:
   quality-overview:
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
     if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository }}
     uses: ./.github/workflows/publish-quality-overview.yml
     secrets: inherit
 
   deploy:
+    permissions:
+      contents: read
+      id-token: write
     if: ${{ github.event_name != 'workflow_run' }}
     runs-on: ubuntu-latest
     steps:

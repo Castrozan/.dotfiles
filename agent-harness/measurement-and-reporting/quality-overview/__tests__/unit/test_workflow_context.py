@@ -106,6 +106,25 @@ def test_changed_run_and_incomplete_pagination_are_rejected(run, monkeypatch):
         CONTEXT.complete_page({"total_count": 101, "jobs": []}, "jobs")
 
 
+@pytest.mark.parametrize(
+    "route",
+    [
+        "--hostname=foreign.test",
+        "https://foreign.test",
+        "repos/foreign/repository/commits/main",
+        "repos/Castrozan/.dotfiles/actions/runs/1/../../secrets",
+    ],
+)
+def test_github_routes_are_confined_before_execution(route, monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        CONTEXT.subprocess, "run", lambda *args, **kwargs: calls.append(args)
+    )
+    with pytest.raises(ValueError, match="approved"):
+        CONTEXT.github_document(route)
+    assert not calls
+
+
 def test_promotion_rejects_newer_main_and_rerun_attempt(run, monkeypatch):
     monkeypatch.syspath_prepend(str(MODULE_PATH.parent))
     import promote_snapshot
@@ -126,8 +145,10 @@ def test_stored_receipt_must_match_the_expected_report_location(
 
     expected = {"workflow": CONTEXT.workflow_identity(run)}
     foreign = {"workflow": CONTEXT.workflow_identity({**run, "id": 999})}
-    receipt_path = tmp_path / "payload.json"
-    context_path = tmp_path / "context.json"
+    monkeypatch.chdir(tmp_path)
+    receipt_path = tmp_path / ".quality-results/overview/payload.json"
+    context_path = tmp_path / ".quality-results/workflow-context.json"
+    receipt_path.parent.mkdir(parents=True)
     receipt_path.write_text(json.dumps(foreign))
     context_path.write_text(json.dumps(expected))
     monkeypatch.setattr(
@@ -136,4 +157,4 @@ def test_stored_receipt_must_match_the_expected_report_location(
         lambda route: pytest.fail("Foreign receipt queried GitHub"),
     )
     with pytest.raises(ValueError, match="Stored receipt"):
-        promote_snapshot.main([str(receipt_path), str(context_path)])
+        promote_snapshot.main()

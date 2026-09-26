@@ -6,10 +6,13 @@ on:
 permissions:
   contents: read
   actions: read
-  id-token: write
 
 jobs:
   overview:
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -86,7 +89,7 @@ jobs:
         if: ${{ vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
         id: promotion
         run: |
-          promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py" .quality-results/overview/payload.json .quality-results/workflow-context.json)
+          promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py")
           echo "current=$promote" >> "$GITHUB_OUTPUT"
       - name: Publish the current overview to the existing ingestion API
         if: ${{ steps.promotion.outputs.current == 'true' && vars.INGEST_BASE_URL != '' }}
@@ -95,5 +98,4 @@ jobs:
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
           INGEST_PRODUCER_LABEL: dotfiles-github-actions
         run: |
-          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py \
-            .quality-results/overview/payload.json
+          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py

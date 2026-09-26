@@ -21,6 +21,9 @@ const descriptors = [
   })),
 ];
 
+const compareEntries = (left, right) =>
+  JSON.stringify(left).localeCompare(JSON.stringify(right));
+
 function unavailableArtifacts(context, format, reason) {
   return {
     artifactDigest: undefined,
@@ -73,11 +76,13 @@ export async function artifactInputs(
     );
     const expectedGaps = unmeasuredCapabilities(artifactTargets, artifactScope);
     assert.deepEqual(
-      manifest.inputs.map((input) => [input.id, input.format]).sort(),
+      manifest.inputs
+        .map((input) => [input.id, input.format])
+        .sort(compareEntries),
       [
         ...descriptors.map((input) => [input.id, "verdr"]),
         ...expectedGaps.map((input) => [input.id, "unmeasured"]),
-      ].sort(),
+      ].sort(compareEntries),
       "Frozen inventory differs from the complete expected evidence inventory",
     );
     const inputs = manifest.inputs.map((input) => {

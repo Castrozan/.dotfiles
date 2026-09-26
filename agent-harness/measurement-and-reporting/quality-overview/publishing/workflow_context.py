@@ -94,8 +94,14 @@ def build_context(run, jobs, artifacts):
 
 
 def github_document(path):
+    approved_route = (
+        r"repos/Castrozan/\.dotfiles/(?:commits/main|actions/runs/[1-9]\d*"
+        r"(?:/attempts/[1-9]\d*)?(?:/(?:jobs|artifacts)\?per_page=100)?)"
+    )
+    if not re.fullmatch(approved_route, path, flags=re.ASCII):
+        raise ValueError("GitHub route is outside the approved producer metadata")
     result = subprocess.run(
-        ["gh", "api", "--method", "GET", path],
+        ["gh", "api", "--method", "GET", "--", path],
         capture_output=True,
         text=True,
         check=True,
@@ -115,7 +121,7 @@ def collect_context(event):
     run = event["workflow_run"]
     workflow_identity(run)
     identifier = str(run["id"])
-    if not re.fullmatch(r"[1-9][0-9]*", identifier):
+    if not re.fullmatch(r"[1-9]\d*", identifier, flags=re.ASCII):
         raise ValueError("Invalid GitHub workflow run identifier")
     route = f"repos/{REPOSITORY}/actions/runs/{identifier}"
     attempt = f"{route}/attempts/{run['run_attempt']}"
