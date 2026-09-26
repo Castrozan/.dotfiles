@@ -1,6 +1,7 @@
 import { mkdir, realpath, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { unmeasuredCapabilities } from "./unmeasured_capabilities.mjs";
 
 const [verdrLocation, bundleLocation, outputLocation, python, codex] =
   process.argv.slice(2);
@@ -143,7 +144,7 @@ await writeFile(
       schemaVersion: 1,
       name: "Dotfiles CI artifact evidence",
       subject,
-      inputs,
+      inputs: [...inputs, ...unmeasuredCapabilities(targets, scope)],
     },
     null,
     2,
