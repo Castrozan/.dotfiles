@@ -1,6 +1,11 @@
 { pkgs }:
 let
   hermesIdentity = "You are Hermes Agent, an intelligent AI assistant created by Nous Research.";
-  canonicalCore = builtins.readFile ../../agent-instructions/core-rules/core.md;
+  canonicalCore = "${
+    import ../../agent-instructions/rulesync { inherit pkgs; }
+  }/hermesagent/.hermes.md";
+  identity = pkgs.writeText "hermes-identity.md" "### Harness identity\n\n${hermesIdentity}\n\n";
 in
-pkgs.writeText "hermes-SOUL.md" "### Harness identity\n\n${hermesIdentity}\n\n${canonicalCore}"
+pkgs.runCommand "hermes-SOUL.md" { } ''
+  cat ${identity} ${canonicalCore} > "$out"
+''

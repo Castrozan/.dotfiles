@@ -1,0 +1,7 @@
+{
+  "name": "dotfiles-rulesync-runtime",
+  "private": true,
+  "dependencies": {
+    "rulesync": "21.0.0"
+  }
+}

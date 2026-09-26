@@ -8,6 +8,7 @@
 }:
 let
   projection = import ../instruction-projection.nix { inherit pkgs; };
+  rulesyncConfiguration = import ../rulesync { inherit pkgs; };
   skillCatalog = import ../interactive-skill-catalog/interactive-agent-skills.nix {
     inherit pkgs hostname;
   };
@@ -82,7 +83,27 @@ let
       }
       {
         name = "agents";
-        path = ../subagents;
+        path = "${rulesyncConfiguration}/claudecode/.claude/agents";
+      }
+      {
+        name = "configuration/rulesync";
+        path = rulesyncConfiguration.sources;
+      }
+      {
+        name = "native/claude/CLAUDE.md";
+        path = "${rulesyncConfiguration}/claudecode/CLAUDE.md";
+      }
+      {
+        name = "native/codex/AGENTS.md";
+        path = "${rulesyncConfiguration}/codexcli/AGENTS.md";
+      }
+      {
+        name = "native/opencode/AGENTS.md";
+        path = "${rulesyncConfiguration}/opencode/AGENTS.md";
+      }
+      {
+        name = "native/hermes/.hermes.md";
+        path = "${rulesyncConfiguration}/hermesagent/.hermes.md";
       }
       {
         name = "hooks";
@@ -101,11 +122,7 @@ let
       }
       {
         name = "native/opencode/agents";
-        path = import ../../harnesses/opencode/agents/translate-claude-agent-definitions.nix {
-          inherit pkgs;
-          derivationName = "dotfiles-opencode-agents";
-          claudeAgentDefinitionsDirectory = ../subagents;
-        };
+        path = "${rulesyncConfiguration}/opencode/.opencode/agents";
       }
       {
         name = "native/hermes/hook-bridge";

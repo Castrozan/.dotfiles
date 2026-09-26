@@ -1,9 +1,23 @@
 ---
+targets: [claudecode, opencode]
 name: software-engineer
 description: Writes code for an already-decided design inside the files the plan names. Use when architecture is settled and implementation and tests remain; it never chooses architecture, merges, or deploys.
-tools: Read, Edit, Write, Grep, Glob, Bash
-model: sonnet
-skills: coding
+claudecode:
+  tools: Read, Edit, Write, Grep, Glob, Bash
+  model: sonnet
+  skills: coding
+opencode:
+  mode: subagent
+  permission:
+    "*": deny
+    read: allow
+    edit: allow
+    grep: allow
+    glob: allow
+    bash: allow
+    skill: allow
+    todowrite: allow
+    question: allow
 ---
 
 ### Job

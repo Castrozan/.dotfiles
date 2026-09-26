@@ -1,18 +1,28 @@
+import yaml
+
 from instructions.instruction_surface_scanner import (
     REPO_ROOT,
-    frontmatter_key_values,
+    frontmatter_block,
     public_skill_definition_path,
     subagent_definition_files,
 )
 
-SUBAGENT_TREE = REPO_ROOT / "agents" / "subagents"
+SUBAGENT_TREE = (
+    REPO_ROOT
+    / "agent-harness"
+    / "agent-instructions"
+    / "rulesync"
+    / "sources"
+    / "subagents"
+)
 
 
 def subagent_frontmatter():
-    return [
-        (definition, frontmatter_key_values(definition.read_text()) or {})
-        for definition in subagent_definition_files()
-    ]
+    entries = []
+    for definition in subagent_definition_files():
+        metadata = yaml.safe_load(frontmatter_block(definition.read_text())) or {}
+        entries.append((definition, metadata | metadata.get("claudecode", {})))
+    return entries
 
 
 def label(definition):

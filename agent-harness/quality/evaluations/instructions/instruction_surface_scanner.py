@@ -80,7 +80,14 @@ def misplaced_skill_markdown_files() -> list[Path]:
 
 def subagent_definition_files() -> list[Path]:
     return sorted(
-        (REPO_ROOT / "agent-harness" / "agent-instructions" / "subagents").glob("*.md")
+        (
+            REPO_ROOT
+            / "agent-harness"
+            / "agent-instructions"
+            / "rulesync"
+            / "sources"
+            / "subagents"
+        ).glob("*.md")
     )
 
 

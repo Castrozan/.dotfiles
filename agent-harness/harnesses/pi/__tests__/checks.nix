@@ -13,7 +13,10 @@ let
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
 
   codexGlobalInstructions =
-    (import ../../codex/global-instructions.nix { }).home.file.".codex/AGENTS.md".text;
+    (import ../../codex/global-instructions.nix { config = cfg; }).home.file.".codex/AGENTS.md".source;
+  piGlobalInstructions =
+    pkgs.writeText "pi-global-instructions.md"
+      cfg.home.file.".pi/agent/AGENTS.md".text;
 in
 {
   domain-pi-native-plugin-registration = pkgs.runCommand "domain-pi-native-plugin-registration" { } ''
@@ -36,7 +39,9 @@ in
       "the upstream release unpacks to a directory of sidecar assets around a Bun executable and carries no bin/, so installing it raw would put nothing on PATH. Only the wrapper exposes a `pi` binary";
 
   domain-pi-global-instructions-carry-the-same-core-rules-as-every-other-harness =
-    mkEvalCheck "domain-pi-global-instructions-carry-the-same-core-rules-as-every-other-harness"
-      (cfg.home.file.".pi/agent/AGENTS.md".text == codexGlobalInstructions)
-      "pi discovers global instructions at ~/.pi/agent/AGENTS.md, so that is where the core rules have to land for pi to behave like claude, codex and opencode rather than like a stock install";
+    pkgs.runCommand "domain-pi-global-instructions-carry-the-same-core-rules-as-every-other-harness" { }
+      ''
+        cmp ${piGlobalInstructions} ${codexGlobalInstructions}
+        touch "$out"
+      '';
 }

@@ -1,9 +1,22 @@
 ---
+targets: [claudecode, opencode]
 name: quality-assurance
 description: Judges delivered work against the user's stated goal and the quality bar no test can measure; reports verdicts and never repairs. Use as the final judgment pass over finished work.
-tools: Read, Grep, Glob, Bash
-model: sonnet
-skills: review, coding
+claudecode:
+  tools: Read, Grep, Glob, Bash
+  model: sonnet
+  skills: review, coding
+opencode:
+  mode: subagent
+  permission:
+    "*": deny
+    read: allow
+    grep: allow
+    glob: allow
+    bash: allow
+    skill: allow
+    todowrite: allow
+    question: allow
 ---
 
 ### Job

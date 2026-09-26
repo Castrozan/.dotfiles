@@ -1,4 +1,4 @@
-_: {
-  home.file.".codex/AGENTS.md".text =
-    builtins.readFile ../../../agent-harness/agent-instructions/core-rules/core.md;
+{ config, ... }:
+{
+  home.file.".codex/AGENTS.md".source = "${config.agentPlugins.bundle}/plugin/native/codex/AGENTS.md";
 }

@@ -95,7 +95,6 @@ let
 
   claudeGlobalSettingsJson = builtins.toJSON claudeGlobalSettings;
 
-  claudeGlobalRules = builtins.readFile ../../../../agent-harness/agent-instructions/core-rules/core.md;
 in
 {
   imports = [
@@ -113,7 +112,7 @@ in
         ./statusline/statusline-command-json-segments.sh;
       ".claude/settings.json.nix-source".text = claudeGlobalSettingsJson;
       ".claude/keybindings.json".text = builtins.toJSON claudeKeybindings;
-      ".claude/CLAUDE.md".text = claudeGlobalRules;
+      ".claude/CLAUDE.md".source = "${config.agentPlugins.bundle}/plugin/native/claude/CLAUDE.md";
     };
   };
 }

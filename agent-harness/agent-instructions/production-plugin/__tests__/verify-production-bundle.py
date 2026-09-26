@@ -10,7 +10,7 @@ def identities(root: Path):
     return {
         str(path.relative_to(root)) if root.is_dir() else "": (
             hashlib.sha256(path.read_bytes()).hexdigest(),
-            bool(path.stat().st_mode & stat.S_IXUSR),
+            path.stat().st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH),
         )
         for path in paths
         if path.is_file()

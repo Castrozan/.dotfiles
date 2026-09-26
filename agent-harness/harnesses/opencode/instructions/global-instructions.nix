@@ -1,4 +1,5 @@
-_: {
-  home.file.".config/opencode/AGENTS.md".text =
-    builtins.readFile ../../../agent-instructions/core-rules/core.md;
+{ config, ... }:
+{
+  home.file.".config/opencode/AGENTS.md".source =
+    "${config.agentPlugins.bundle}/plugin/native/opencode/AGENTS.md";
 }

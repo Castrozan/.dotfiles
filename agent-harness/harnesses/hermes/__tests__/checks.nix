@@ -12,13 +12,13 @@ let
     inherit pkgs pluginBundle;
   };
   hermesSoul = import ../soul.nix { inherit pkgs; };
-  hermesSoulText = builtins.unsafeDiscardStringContext hermesSoul.text;
   hermesMigration = import ../migration.nix { inherit pkgs; };
   hermesUserMemoryText = builtins.unsafeDiscardStringContext hermesMigration.userMemory.text;
   hermesAgentMemoryText = builtins.unsafeDiscardStringContext hermesMigration.agentMemory.text;
   hermesManagedMemoryText = "${hermesUserMemoryText}\n${hermesAgentMemoryText}";
   canonicalCore = builtins.readFile ../../../agent-instructions/core-rules/core.md;
   hermesIdentity = "You are Hermes Agent, an intelligent AI assistant created by Nous Research.";
+  expectedHermesSoul = pkgs.writeText "expected-hermes-SOUL.md" "### Harness identity\n\n${hermesIdentity}\n\n${canonicalCore}";
   hermesHookCommandPath = "${pluginBundle}/plugin/native/hermes/hook-bridge";
 
   cfg = helpers.homeManagerTestConfiguration [ ../. ];
@@ -52,9 +52,11 @@ in
       '';
 
   domain-hermes-soul-carries-canonical-core =
-    mkEvalCheck "domain-hermes-soul-carries-canonical-core"
-      (hermesSoulText == "### Harness identity\n\n${hermesIdentity}\n\n${canonicalCore}")
-      "Hermes SOUL.md must preserve its harness identity and carry the exact canonical core as stable session-long authority";
+    pkgs.runCommand "domain-hermes-soul-carries-canonical-core" { }
+      ''
+        cmp ${hermesSoul} ${expectedHermesSoul}
+        touch "$out"
+      '';
 
   domain-hermes-memory-does-not-own-core =
     mkEvalCheck "domain-hermes-memory-does-not-own-core"

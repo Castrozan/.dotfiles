@@ -31,13 +31,13 @@ let
 
   deployedOpencodeSettings = parseDeployedJson cfg.home.file.".config/opencode/opencode.json".text;
   deployedTuiSettings = parseDeployedJson cfg.home.file.".config/opencode/tui.json".text;
-  deployedGlobalRules = cfg.home.file.".config/opencode/AGENTS.md".text;
+  deployedGlobalRules = cfg.home.file.".config/opencode/AGENTS.md".source;
   deployedHookBridge = cfg.home.file.".config/opencode/plugins/opencode-hook-bridge.js";
   opencodeWrapperSource = builtins.readFile ../opencode.nix;
   opencodeGoProvider = import ../go-provider.nix { inherit (cfg.home) homeDirectory; };
 
   codexGlobalInstructions =
-    (import ../../codex/global-instructions.nix { }).home.file.".codex/AGENTS.md".text;
+    (import ../../codex/global-instructions.nix { config = cfg; }).home.file.".codex/AGENTS.md".source;
 
   modelProviderOf = model: builtins.head (lib.splitString "/" model);
 
@@ -98,9 +98,11 @@ in
       "opencode's default build agent must be primary and run at max reasoning effort";
 
   domain-opencode-global-rules-match-the-codex-surface =
-    mkEvalCheck "domain-opencode-global-rules-match-the-codex-surface"
-      (deployedGlobalRules == codexGlobalInstructions)
-      "opencode's AGENTS.md must carry the same canonical plain core rules Claude and Codex deploy";
+    pkgs.runCommand "domain-opencode-global-rules-match-the-codex-surface" { }
+      ''
+        cmp ${deployedGlobalRules} ${codexGlobalInstructions}
+        touch "$out"
+      '';
 
   domain-opencode-loads-the-global-rules =
     mkEvalCheck "domain-opencode-loads-the-global-rules"
