@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 
 import yaml
+import pytest
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 TESTS_WORKFLOW = REPOSITORY_ROOT / ".github" / "workflows" / "tests.yml"
@@ -26,7 +27,10 @@ def jobs_invoking_a_pytest_tier():
     return {
         job_name: job
         for job_name, job in workflow["jobs"].items()
-        if any("_run_pytest_tier" in str(step.get("run", "")) for step in job["steps"])
+        if any(
+            "_run_pytest_tier" in str(step.get("run", ""))
+            for step in job.get("steps", [])
+        )
     }
 
 
@@ -87,3 +91,35 @@ def test_continuous_integration_checks_out_the_history_the_suite_reads():
         "skill dumps and greps real commits, so its integration tests fail on a "
         f"shallow checkout. Jobs needing fetch-depth 0: {jobs_checking_out_shallow}"
     )
+
+
+@pytest.mark.parametrize("fetch_depth", [0, 1])
+def test_history_guard_handles_reusable_jobs_without_accepting_shallow_history(
+    tmp_path, monkeypatch, fetch_depth
+):
+    workflow = tmp_path / "tests.yml"
+    workflow.write_text(
+        yaml.safe_dump(
+            {
+                "jobs": {
+                    "artifact": {"uses": "./.github/workflows/quality-evidence.yml"},
+                    "python": {
+                        "steps": [
+                            {
+                                "uses": "actions/checkout@v4",
+                                "with": {"fetch-depth": fetch_depth},
+                            },
+                            {"run": "_run_pytest_tier unit quick"},
+                        ]
+                    },
+                }
+            }
+        )
+    )
+    monkeypatch.setattr(__import__(__name__), "TESTS_WORKFLOW", workflow)
+    assert set(jobs_invoking_a_pytest_tier()) == {"python"}
+    if fetch_depth == 0:
+        test_continuous_integration_checks_out_the_history_the_suite_reads()
+    else:
+        with pytest.raises(AssertionError, match="shallow checkout"):
+            test_continuous_integration_checks_out_the_history_the_suite_reads()
