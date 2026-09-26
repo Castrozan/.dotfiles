@@ -31,7 +31,7 @@ def test_required_nix_check_covers_all_parallel_jobs():
 
 
 @pytest.mark.parametrize(
-    "lint_result,evaluation_result", itertools.product(RESULTS, repeat=2)
+    "lint_result,evaluation_result", list(itertools.product(RESULTS, repeat=2))
 )
 def test_required_nix_check_propagates_dependency_results(
     lint_result, evaluation_result
