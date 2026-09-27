@@ -7,11 +7,15 @@ import tomli_w
 
 
 def confined_path(value, label):
-    path = Path(value)
-    text = os.fspath(path)
-    if not os.path.isabs(text) or ".." in path.parts:
-        raise ValueError(f"{label} must be an absolute path without traversal segments")
-    return path
+    resolved = os.path.realpath(value)
+    allowed_bases = (os.path.realpath(os.getcwd()), "/nix/store")
+    if not any(
+        resolved == base or resolved.startswith(base + os.sep) for base in allowed_bases
+    ):
+        raise ValueError(
+            f"{label} must stay within the store or the invocation directory"
+        )
+    return Path(resolved)
 
 
 def main():
