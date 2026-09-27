@@ -32,6 +32,8 @@ let
     "suwayomi"
     "miwayomi"
     "flaresolverr"
+    "audiobookshelf"
+    "readmeabook"
   ];
   composeLines = lib.splitString "\n" composeText;
   publishedPortLines = builtins.filter (
@@ -73,12 +75,34 @@ let
   kavitaReadsMangaLibraryReadOnly = lib.hasInfix "\${ARR_DATA_ROOT}/manga/mangas:/manga:ro" composeText;
   mangaLibraryStaysOutOfJellyfinMediaRoot =
     !(lib.hasInfix "\${ARR_DATA_ROOT}/media/manga" composeText);
+  audiobookServicesShareTheDownloadFilesystem =
+    builtins.all
+      (
+        service:
+        let
+          body = lib.elemAt (lib.splitString "\n  ${service}:\n" composeText) 1;
+          serviceBody = lib.head (lib.splitString "\n  readmeabook:\n" body);
+        in
+        lib.hasInfix "\${ARR_DATA_ROOT}:/data" serviceBody
+      )
+      [
+        "audiobookshelf"
+        "readmeabook"
+      ];
+  audiobookLibraryStaysOutOfJellyfinMediaRoot =
+    !(lib.hasInfix "media/audiobooks" composeText)
+    && lib.hasInfix ''"audiobooks"'' (builtins.readFile ../arr-stack-home-manager.nix);
   composeHasNoVpnContainer =
     !(lib.hasInfix "gluetun" composeText) && !(lib.hasInfix "service:gluetun" composeText);
   qbittorrentPinnedToV4 = lib.hasInfix "qbittorrent:4" composeText;
   readmeDocumentsHostLevelVpn = lib.hasInfix "vpn-py" readmeText && lib.hasInfix "vpn-off" readmeText;
 in
 {
+  chise-arr-stack-audiobooks-share-download-filesystem =
+    mkEvalCheck "chise-arr-stack-audiobooks-share-download-filesystem"
+      (audiobookServicesShareTheDownloadFilesystem && audiobookLibraryStaysOutOfJellyfinMediaRoot)
+      "Audiobook requests, downloads and playback must share /data for imports, with a separate library outside Jellyfin's media root";
+
   chise-arr-stack-kavita-reads-manga-library-read-only =
     mkEvalCheck "chise-arr-stack-kavita-reads-manga-library-read-only" kavitaReadsMangaLibraryReadOnly
       "Kavita must mount the existing manga library read-only so the reader can never delete or rewrite a preserved CBZ file";

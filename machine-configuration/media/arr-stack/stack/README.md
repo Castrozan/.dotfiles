@@ -3,7 +3,7 @@
 Self-hosted media-automation stack, deployed declaratively to `~/arr-stack/` on
 host **chise** only, as a single docker-compose project. The always-on front ends
 and their sidecars (Jellyfin, Jellyseerr, Kavita, Suwayomi, Miwayomi, its gateway,
-and FlareSolverr) run under `restart: unless-stopped`, so they start on boot and
+FlareSolverr, Audiobookshelf, and ReadMeABook) run under `restart: unless-stopped`, so they start on boot and
 self-heal. The download chain (qBittorrent and the \*arr apps) stays
 `restart: "no"` and is driven by the on-demand supervisor
 (`arr-stack-on-demand-supervisor`): it comes up when a Jellyseerr request needs
@@ -32,10 +32,14 @@ from inside the tailnet: the plain port sends credentials in cleartext, which is
 also why a password manager holding the HTTPS origin refuses to fill a login form
 served over the other one.
 
-The stack carries only the libraries that get used. Music and books are gone and
-their \*arr apps are not coming back, Readarr having been archived upstream in
-mid-2025 with no maintained successor. Manga is carried, but by a separate path
-that shares none of the machinery below; see "Manga is a second pipeline".
+Audiobooks use ReadMeABook for requests and automated imports, and Audiobookshelf
+for listening, without reviving the retired Readarr. Reach them on the tailnet at
+`http://arr:3030` and `http://arr:13378`. Both mount the same `/data` tree as
+qBittorrent: downloads stay under `/data/torrents`, the library under
+`/data/audiobooks`, outside Jellyfin's media root. Their accounts are separate
+from Jellyfin/Jellyseerr. Neither service is publicly exposed.
+
+Manga uses a separate path; see "Manga is a second pipeline".
 
 Nothing in the stack speaks to a VPN and there is no per-container gateway to
 configure. Routing traffic through one is a host-level toggle that moves everything

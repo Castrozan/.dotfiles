@@ -56,6 +56,12 @@ let
     "miwayomi"
     "miwayomi-update-disabled"
     "flaresolverr"
+    "audiobookshelf"
+    "audiobookshelf-metadata"
+    "readmeabook/config"
+    "readmeabook/cache"
+    "readmeabook/pgdata"
+    "readmeabook/redis"
   ];
   dataDirectories = [
     "torrents"
@@ -64,6 +70,7 @@ let
     "media/tv-private"
     "media/movies-private"
     "manga/mangas"
+    "audiobooks"
   ];
   configDirectoriesToCreate = map (
     service: "${stackRoot}/config/${service}"

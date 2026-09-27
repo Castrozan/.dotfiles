@@ -329,3 +329,51 @@ services:
       <<: *arr-common-environment
     volumes:
       - ${ARR_CONFIG_ROOT}/flaresolverr:/config
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:2.36.1@sha256:3528a93b6442ffe54bd46771bbbab7c97084e1101071586d9dc2254f30bb4358
+    container_name: arr-audiobookshelf
+    restart: unless-stopped
+    <<: *media-768m
+    networks:
+      - arrnet
+    dns: *stable-public-dns
+    user: "${PUID}:${PGID}"
+    environment:
+      TZ: ${TZ}
+    ports:
+      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:13378:80"
+    volumes:
+      - ${ARR_CONFIG_ROOT}/audiobookshelf:/config
+      - ${ARR_CONFIG_ROOT}/audiobookshelf-metadata:/metadata
+      - ${ARR_DATA_ROOT}:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/ping"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+  readmeabook:
+    image: ghcr.io/kikootwo/readmeabook:1.2.3@sha256:a769c582af85cadb8b048ebd1069ee1946b4ff1930ba8da2978c9fef6fc29638
+    container_name: arr-readmeabook
+    restart: unless-stopped
+    <<: *media-2g
+    networks:
+      - arrnet
+    dns: *stable-public-dns
+    environment:
+      <<: *arr-common-environment
+      PUBLIC_URL: "http://arr:3030"
+    ports:
+      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:3030:3030"
+    volumes:
+      - ${ARR_CONFIG_ROOT}/readmeabook/config:/app/config
+      - ${ARR_CONFIG_ROOT}/readmeabook/cache:/app/cache
+      - ${ARR_CONFIG_ROOT}/readmeabook/pgdata:/var/lib/postgresql/data
+      - ${ARR_CONFIG_ROOT}/readmeabook/redis:/var/lib/redis
+      - ${ARR_DATA_ROOT}:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3030/api/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 3

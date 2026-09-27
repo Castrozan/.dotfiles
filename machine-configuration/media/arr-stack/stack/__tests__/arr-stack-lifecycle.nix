@@ -25,6 +25,8 @@ let
     "miwayomi"
     "miwayomi-gateway"
     "flaresolverr"
+    "audiobookshelf"
+    "readmeabook"
   ];
   serviceRestartPolicyBlock =
     service: policy: "container_name: arr-${service}\n    restart: ${policy}";

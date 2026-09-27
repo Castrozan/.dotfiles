@@ -75,8 +75,20 @@ let
     }
     {
       name = "flaresolverr";
+      nextName = "audiobookshelf";
       memoryLimit = "1536m";
       healthProbe = ''["CMD", "curl", "-fsS", "http://127.0.0.1:8191/"]'';
+    }
+    {
+      name = "audiobookshelf";
+      nextName = "readmeabook";
+      memoryLimit = "768m";
+      healthProbe = ''["CMD", "wget", "-qO-", "http://127.0.0.1:80/ping"]'';
+    }
+    {
+      name = "readmeabook";
+      memoryLimit = "2g";
+      healthProbe = ''["CMD", "curl", "-fsS", "http://127.0.0.1:3030/api/health"]'';
     }
   ];
   occurrenceCount = needle: (builtins.length (lib.splitString needle composeText)) - 1;
