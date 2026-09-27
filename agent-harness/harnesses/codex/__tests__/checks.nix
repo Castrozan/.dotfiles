@@ -34,6 +34,21 @@ in
     mkEvalCheck "codex-bin-wrapper" (builtins.hasAttr ".local/bin/codex" cfg.home.file)
       ".local/bin/codex should be in home.file";
 
+  codex-interactive-profile =
+    pkgs.runCommand "check-codex-interactive-profile" { nativeBuildInputs = [ pkgs.python312 ]; }
+      ''
+        python - ${cfg.home.file.".codex/dotfiles-interactive.config.toml".source} <<'PY'
+        from pathlib import Path
+        import sys
+        import tomllib
+        configuration = tomllib.loads(Path(sys.argv[1]).read_text())
+        assert set(configuration) == {"developer_instructions"}
+        assert "### Interactive session" in configuration["developer_instructions"]
+        assert "### Servant" in configuration["developer_instructions"]
+        PY
+        touch "$out"
+      '';
+
   codex-package-uses-upstream-binaries =
     assert lib.assertMsg
       (!(codexPackage.drvAttrs ? cargoDeps) && (codexPackage.drvAttrs.patches or [ ]) == [ ])

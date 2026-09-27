@@ -2,9 +2,9 @@
 
 A Claude Code transcript lives at `~/.claude/projects/<slug>/<session-id>.jsonl` where the slug replaces every
 non-alphanumeric character in the absolute cwd with a dash, not just the separators, so a dot in the username and a
-leading dot on the directory both become dashes and produce a double dash. Reproduce it with `re.sub(r"[^a-zA-Z0-9]",
-"-", path)`. Any code that reconstructs this path by replacing slashes alone will silently look in a directory that does
-not exist.
+leading dot on the directory both become dashes and produce a double dash. Reproduce it with
+`re.sub(r"[^a-zA-Z0-9]", "-", path)`. Any code that reconstructs this path by replacing slashes alone will silently look
+in a directory that does not exist.
 
 ### Anchor every command to an absolute path
 
@@ -68,11 +68,12 @@ Codex hooks mirror the Claude event vocabulary. Both configure command hook time
 only through a deny decision returned with a zero exit, never through a non-zero exit. Writes arrive as a
 patch-application tool rather than as a write tool, so a guard keyed on the Claude write tool name never fires.
 
-The on-PATH `codex` wrapper injects sandbox and approval flags plus the interactive developer instructions while leaving
-model selection to Codex's runtime-owned config. Spawn it bare in a pane; re-passing either flag makes it exit with a
-duplicate-argument error. A Codex session bridged over MCP has no interactive approval channel back to the caller, so it
-must never be launched with a sandbox or approval setting weaker than full access, or every escalation it needs is
-auto-rejected and it strands.
+The on-PATH `codex` wrapper injects sandbox and approval flags and selects a generated native profile for interactive
+developer instructions, leaving model selection to Codex's runtime-owned config. An explicit `--profile` selects the
+caller's profile instead. Spawn it bare in a pane; re-passing a sandbox or approval flag makes it exit with a
+duplicate-argument error. Generic `-c`, `--enable`, `--disable`, and `--search` overrides force embedded mode instead of
+the shared background server. A Codex session bridged over MCP has no interactive approval channel back to the caller,
+so a sandbox or approval setting weaker than full access auto-rejects escalations and strands it.
 
 ### Claude add dir skills need the nested layout
 

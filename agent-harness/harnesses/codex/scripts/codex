@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
 
 codexDeveloperInstructionsFile="$CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE"
+codexInteractiveProfile="dotfiles-interactive"
 workspaceProfileArguments=()
 interactivePreferencesArguments=()
 case "${1:-}" in
 "" | -* | resume | fork)
 	source "$CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
 	export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
-	interactivePreferencesArguments=(
-		-c "developer_instructions=$(cat "$codexDeveloperInstructionsFile")"
-	)
+	interactivePreferencesArguments=(--profile "$codexInteractiveProfile")
+	for argument in "$@"; do
+		case "$argument" in
+		--) break ;;
+		-p | -p?* | --profile | --profile=*) interactivePreferencesArguments=() ;;
+		esac
+	done
 	;;
 esac
 "$CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE" \
@@ -18,5 +23,4 @@ exec "$CODEX_LAUNCHER_BINARY" \
 	--sandbox "danger-full-access" \
 	--ask-for-approval "never" \
 	"${interactivePreferencesArguments[@]}" \
-	"${workspaceProfileArguments[@]}" \
 	"$@"
