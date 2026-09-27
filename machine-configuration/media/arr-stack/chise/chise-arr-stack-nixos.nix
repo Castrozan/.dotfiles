@@ -129,6 +129,12 @@
   systemd.services = {
     docker.unitConfig.RequiresMountsFor = [ "/home/zanoni/arr-stack/data" ];
 
+    arr-stack-front-ends-compose.restartTriggers = [
+      ../jellyseerr-notifications/Dockerfile
+      ../jellyseerr-notifications/scripts/available_media_email.js
+      ../jellyseerr-notifications/__tests__/test_available_media_email.cjs
+    ];
+
     jellyseerr-email-notifications.restartTriggers = [
       ../../../../secrets/credentials/media/jellyseerr-smtp-app-password.age
     ];

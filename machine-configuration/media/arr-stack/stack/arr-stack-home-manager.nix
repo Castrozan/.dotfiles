@@ -14,6 +14,12 @@ let
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
   chiseTailnetBindAddress = chiseMachineIdentity.tailscaleIp or "127.0.0.1";
+  jellyseerrBuildContext = pkgs.runCommand "jellyseerr-email-build-context" { } ''
+    mkdir -p "$out"
+    cp ${../jellyseerr-notifications/Dockerfile} "$out/Dockerfile"
+    cp ${../jellyseerr-notifications/scripts/available_media_email.js} "$out/available_media_email.js"
+    cp ${../jellyseerr-notifications/__tests__/test_available_media_email.cjs} "$out/test_available_media_email.cjs"
+  '';
   miwayomiWebCacheVersion = builtins.hashString "sha256" (
     builtins.readFile ./miwayomi-interface-artwork.patch
     + builtins.readFile ./miwayomi-subtitle-tracks.patch
@@ -32,6 +38,8 @@ let
     (lib.removeSuffix "\n" staticEnvironmentFileContents)
     + "\n"
     + "ARR_BIND_ADDR=${chiseTailnetBindAddress}\n"
+    + "JELLYSEERR_EMAIL_BUILD_CONTEXT=${jellyseerrBuildContext}\n"
+    + "JELLYSEERR_EMAIL_IMAGE_VERSION=${builtins.hashString "sha256" (toString jellyseerrBuildContext)}\n"
     + "MIWAYOMI_BUILD_CONTEXT=${miwayomiBuildContext}\n"
     + "MIWAYOMI_WEB_CACHE_VERSION=${miwayomiWebCacheVersion}\n"
     + "MIWAYOMI_GATEWAY_CONFIG_PATH=${./miwayomi-gateway.conf}\n";
