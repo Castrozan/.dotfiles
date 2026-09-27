@@ -72,10 +72,10 @@ launcher_arguments() {
 	[ "$status" -eq 0 ]
 }
 
-@test "starts codex without overriding its remembered model" {
+@test "selects isolated interactive mode without overriding its remembered model" {
 	run_codex
 	[ "$status" -eq 0 ]
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive>" ]
 }
 
 @test "exports the selected instruction path for interactive hooks" {
@@ -97,34 +97,34 @@ launcher_arguments() {
 	write_dispatch_file "codexDeveloperInstructionsFile=$PROFILE_INSTRUCTIONS_FILE" \
 		'codexInteractiveProfile=dotfiles-workspace-test'
 	run_codex
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-workspace-test>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-workspace-test>" ]
 	[ "${lines[1]}" = "AGENT_INTERACTIVE_PREFERENCES_PATH=<$PROFILE_INSTRUCTIONS_FILE>" ]
 }
 
 @test "lets an explicit caller profile replace the generated default" {
 	for profile_argument in '--profile=custom' '-pcustom'; do
 		run_codex "$profile_argument"
-		[ "${lines[0]}" = "argv: $(launcher_arguments) <$profile_argument>" ]
+		[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <$profile_argument>" ]
 	done
 	for profile_argument in --profile -p; do
 		run_codex "$profile_argument" custom
-		[ "${lines[0]}" = "argv: $(launcher_arguments) <$profile_argument> <custom>" ]
+		[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <$profile_argument> <custom>" ]
 	done
 }
 
 @test "passes caller arguments through after every injected argument" {
 	run_codex resume --last
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <resume> <--last>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <resume> <--last>" ]
 }
 
 @test "treats a leading flag as an interactive launch" {
 	run_codex --search
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <--search>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <--search>" ]
 }
 
 @test "treats fork as an interactive launch" {
 	run_codex fork
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <fork>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <fork>" ]
 }
 
 @test "leaves a subcommand launch without interactive preferences or profile activation" {
@@ -144,14 +144,21 @@ launcher_arguments() {
 		"workspaceProfileArguments+=(-c 'model_reasoning_effort=\"high\"')"
 	run_codex -C '/a project' resume --last
 	[ "$status" -eq 0 ]
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-workspace-test> <-C> </a project> <resume> <--last>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-workspace-test> <-C> </a project> <resume> <--last>" ]
 	run cat "$HOOK_TRUST_ARGUMENTS_FILE"
 	[ "$output" = $'<-c>\n<model_reasoning_effort="high">\n<-C>\n</a project>\n<resume>\n<--last>' ]
 }
 
 @test "does not mistake a positional prompt for an explicit profile flag" {
 	run_codex -- --profile=custom
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <--> <--profile=custom>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <--> <--profile=custom>" ]
+}
+
+@test "does not repeat an explicit embedded mode flag" {
+	run_codex --no-daemon
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <--no-daemon>" ]
+	run_codex --no-daemon --profile custom
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <custom>" ]
 }
 
 @test "does not start codex when hook approval fails" {

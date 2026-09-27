@@ -71,9 +71,13 @@ patch-application tool rather than as a write tool, so a guard keyed on the Clau
 The on-PATH `codex` wrapper injects sandbox and approval flags and selects a generated native profile for interactive
 developer instructions, leaving model selection to Codex's runtime-owned config. An explicit `--profile` selects the
 caller's profile instead. Spawn it bare in a pane; re-passing a sandbox or approval flag makes it exit with a
-duplicate-argument error. Generic `-c`, `--enable`, `--disable`, and `--search` overrides force embedded mode instead of
-the shared background server. A Codex session bridged over MCP has no interactive approval channel back to the caller,
-so a sandbox or approval setting weaker than full access auto-rejects escalations and strands it.
+duplicate-argument error.
+
+Interactive launches explicitly use `--no-daemon`: both native profiles and generic configuration overrides exclude the
+shared background server. The Nix package also lacks the complete package manifest required for daemon startup. Keep
+per-session instructions and hook environments isolated until both boundaries support shared-server operation. A Codex
+session bridged over MCP has no interactive approval channel back to the caller, so a sandbox or approval setting weaker
+than full access auto-rejects escalations and strands it.
 
 ### Claude add dir skills need the nested layout
 

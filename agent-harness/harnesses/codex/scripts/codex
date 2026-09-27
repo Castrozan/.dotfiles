@@ -4,14 +4,17 @@ codexDeveloperInstructionsFile="$CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE"
 codexInteractiveProfile="dotfiles-interactive"
 workspaceProfileArguments=()
 interactivePreferencesArguments=()
+interactiveModeArguments=()
 case "${1:-}" in
 "" | -* | resume | fork)
 	source "$CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
 	export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
 	interactivePreferencesArguments=(--profile "$codexInteractiveProfile")
+	interactiveModeArguments=(--no-daemon)
 	for argument in "$@"; do
 		case "$argument" in
 		--) break ;;
+		--no-daemon) interactiveModeArguments=() ;;
 		-p | -p?* | --profile | --profile=*) interactivePreferencesArguments=() ;;
 		esac
 	done
@@ -22,5 +25,6 @@ esac
 exec "$CODEX_LAUNCHER_BINARY" \
 	--sandbox "danger-full-access" \
 	--ask-for-approval "never" \
+	"${interactiveModeArguments[@]}" \
 	"${interactivePreferencesArguments[@]}" \
 	"$@"
