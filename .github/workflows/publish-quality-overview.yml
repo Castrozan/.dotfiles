@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Castrozan/verdr
-          ref: 89ebee7bd551f60f7b90245411edff18bdfcfcb8
+          ref: 39bfb94931f6903c9fa08a77984f9a492af80529
           path: .quality-results/verdr
       - name: Build the pinned portable report generator
         working-directory: .quality-results/verdr
