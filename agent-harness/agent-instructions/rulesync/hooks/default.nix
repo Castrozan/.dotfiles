@@ -20,6 +20,8 @@ let
   source = pkgs.writeText "rulesync-hooks.json" (builtins.toJSON canonical);
   builder = pkgs.replaceVars ./build_hooks.py {
     rulesyncExecutable = "${rulesync}/bin/rulesync";
+    runner = null;
+    surface = null;
   };
   runner = "${hookScripts}/run-hook.sh";
   opencodeRunner = "${runner} ${../../../hooks/integrations/opencode/policy-transport}/dispatch.py";
