@@ -13,6 +13,17 @@ let
 
 in
 {
+  domain-opencode-native-cli-configuration =
+    pkgs.runCommand "domain-opencode-native-cli-configuration" { }
+      ''
+        export PYTHONPATH=${./.}:${../../../agent-instructions/rulesync/__tests__}
+        ${pkgs.python312}/bin/python3 ${./.}/verify-native-cli-configuration.py \
+          ${cfg.opencode.unwrappedPackage}/bin/opencode \
+          ${cfg.home.file.".config/opencode/cli.json".source} \
+          ${generatedInstructions}/opencode/.opencode/agents
+        touch "$out"
+      '';
+
   domain-opencode-native-plugin-configuration =
     pkgs.runCommand "domain-opencode-native-plugin-configuration" { }
       ''

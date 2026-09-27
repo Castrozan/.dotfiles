@@ -13,6 +13,7 @@ let
   agent-eval = pkgs.writeShellScriptBin "agent-eval" ''
     export AGENT_EVAL_CLAUDE_BINARY="${pkgs.lib.getExe config.claude.unwrappedPackage}"
     export AGENT_EVAL_CODEX_BINARY="${pkgs.lib.getExe config.codex.unwrappedPackage}"
+    export AGENT_EVAL_OPENCODE_BINARY="${pkgs.lib.getExe config.opencode.unwrappedPackage}"
     export PATH="${
       pkgs.lib.makeBinPath [
         pythonEnv

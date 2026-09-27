@@ -70,6 +70,7 @@ let
   claudeWrapperText = wrapperText claudeConfiguration "claude";
   codexWrapperText = wrapperText codexConfiguration "codex";
   opencodeWrapperText = wrapperText opencodeConfiguration "opencode";
+  opencodeLauncherSource = builtins.readFile ../../harnesses/opencode/scripts/launch_opencode.sh;
 in
 {
   workspace-profile-routing-table-carries-every-declared-profile =
@@ -147,8 +148,12 @@ in
 
   opencode-applies-the-resolved-workspace-profile =
     mkEvalCheck "opencode-applies-the-resolved-workspace-profile"
-      (containsText opencodeWrapperText "opencodeConfigOverlayFile")
-      "opencode has no launch flag for this, so the profile can only arrive through the OPENCODE_CONFIG overlay the wrapper exports; hardcoding that export back to the base overlay disables routing for opencode alone";
+      (
+        containsText opencodeWrapperText "launch_opencode.sh"
+        && containsText opencodeLauncherSource "@workspaceProfileLaunchDispatch@"
+        && containsText opencodeLauncherSource ''export OPENCODE_CONFIG="$opencodeConfigOverlayFile"''
+      )
+      "OpenCode's packaged launcher must dispatch the resolved workspace profile and export its selected overlay before the authenticated launcher starts the standalone V2 session";
 
   every-harness-reads-the-same-workspace-profile-declarations =
     mkEvalCheck "every-harness-reads-the-same-workspace-profile-declarations"

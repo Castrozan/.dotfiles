@@ -62,10 +62,10 @@ export function createReplyGuard(context, workingDirectory) {
       if (event.type !== "session.execution.succeeded") return;
       try {
         await review(sessionID, state);
-      } catch (failure) {
+      } catch (error_) {
         state.reviewedMessageID = undefined;
         state.correctionMessageID = undefined;
-        console.error(failure.message);
+        console.error(error_.message);
       }
     },
     clear() {

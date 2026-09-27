@@ -9,6 +9,7 @@ import pytest
 LAUNCHER = Path(__file__).resolve().parents[2] / "scripts/launch_opencode.sh"
 
 
+@pytest.mark.parametrize("workspace_profile", [False, True])
 @pytest.mark.parametrize(
     ("arguments", "interactive", "expected"),
     [
@@ -27,7 +28,7 @@ LAUNCHER = Path(__file__).resolve().parents[2] / "scripts/launch_opencode.sh"
     ],
 )
 def test_launcher_isolates_interactive_configuration(
-    tmp_path, arguments, interactive, expected
+    tmp_path, arguments, interactive, expected, workspace_profile
 ):
     executable = tmp_path / "bin/opencode"
     executable.parent.mkdir()
@@ -40,7 +41,11 @@ def test_launcher_isolates_interactive_configuration(
     for key, value in {
         "interactiveSessionConfigOverlay": "/interactive.json",
         "interactivePreferencesFile": "/interactive.md",
-        "workspaceProfileLaunchDispatch": ":",
+        "workspaceProfileLaunchDispatch": (
+            'opencodeConfigOverlayFile="/workspace-profile.json"'
+            if workspace_profile
+            else ":"
+        ),
         "opencodeAuthenticated": str(tmp_path),
     }.items():
         source = source.replace(f"@{key}@", value)
@@ -61,9 +66,10 @@ def test_launcher_isolates_interactive_configuration(
     )
     actual = json.loads(result.stdout)
     assert actual["args"] == expected
-    assert actual["config"] == (
-        "/interactive.json" if interactive else "/autonomous.json"
+    selected_overlay = (
+        "/workspace-profile.json" if workspace_profile else "/interactive.json"
     )
+    assert actual["config"] == (selected_overlay if interactive else "/autonomous.json")
     assert actual["preferences"] == ("/interactive.md" if interactive else None)
 
 
