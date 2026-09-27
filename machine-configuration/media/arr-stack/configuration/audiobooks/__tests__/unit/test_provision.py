@@ -5,12 +5,14 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 import unittest
 import tempfile
+import sys
 
 spec = importlib.util.spec_from_file_location(
     "provision", Path(__file__).parents[2] / "scripts/provision.py"
 )
 provision = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(provision)
+with patch.object(sys, "path", [str(Path(__file__).parents[2] / "scripts"), *sys.path]):
+    spec.loader.exec_module(provision)
 
 
 class ProvisionTests(unittest.TestCase):

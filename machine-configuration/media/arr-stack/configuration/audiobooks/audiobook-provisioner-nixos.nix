@@ -67,7 +67,7 @@ in
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
-        ExecStart = "${pkgs.python3}/bin/python3 ${./scripts/provision.py}";
+        ExecStart = "${pkgs.python3}/bin/python3 ${./scripts}/provision.py";
         StateDirectory = "arr-audiobooks";
         StateDirectoryMode = "0700";
         UMask = "0077";
