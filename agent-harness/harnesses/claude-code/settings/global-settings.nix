@@ -3,14 +3,9 @@
   lib,
   config,
   hostname,
-  isDarwin ? false,
   ...
 }:
 let
-  hooksConfig =
-    import
-      ../../../../agent-harness/hooks/integrations/claude/event-registrations/claude-hook-event-registrations.nix
-      { inherit lib hostname isDarwin; };
   pluginsConfig = import ../plugins/language-server-packages.nix { inherit pkgs; };
 
   privateMarketplacePluginsPath =
@@ -76,8 +71,8 @@ let
     fileFiltering = {
       respectGitignore = true;
     };
-    hooks = hooksConfig // {
-      SessionStart = hooksConfig.SessionStart ++ [
+    hooks = {
+      SessionStart = [
         {
           matcher = "*";
           hooks = [
@@ -93,7 +88,18 @@ let
   }
   // privateMarketplacePlugins;
 
-  claudeGlobalSettingsJson = builtins.toJSON claudeGlobalSettings;
+  baseSettings = pkgs.writeText "claude-base-settings.json" (builtins.toJSON claudeGlobalSettings);
+  claudeGlobalSettingsJson =
+    pkgs.runCommand "claude-settings.json"
+      {
+        nativeBuildInputs = [ pkgs.jq ];
+        passthru = { inherit baseSettings; };
+      }
+      ''
+        jq -s '.[0] as $base | .[1] as $generated | $base * $generated |
+          .hooks.SessionStart = ($generated.hooks.SessionStart + $base.hooks.SessionStart)' \
+          ${baseSettings} ${config.agentPlugins.bundle}/plugin/native/claude/hooks.json > "$out"
+      '';
 
 in
 {
@@ -110,7 +116,7 @@ in
       ".claude/statusline-command-git-segment.sh".source = ./statusline/statusline-command-git-segment.sh;
       ".claude/statusline-command-json-segments.sh".source =
         ./statusline/statusline-command-json-segments.sh;
-      ".claude/settings.json.nix-source".text = claudeGlobalSettingsJson;
+      ".claude/settings.json.nix-source".source = claudeGlobalSettingsJson;
       ".claude/keybindings.json".text = builtins.toJSON claudeKeybindings;
       ".claude/CLAUDE.md".source = "${config.agentPlugins.bundle}/plugin/native/claude/CLAUDE.md";
     };

@@ -2,6 +2,6 @@
   "name": "dotfiles-rulesync-runtime",
   "private": true,
   "dependencies": {
-    "rulesync": "https://github.com/Castrozan/rulesync/releases/download/v21.0.0-castrozan.3/rulesync-21.0.0-castrozan.3.tgz"
+    "rulesync": "https://github.com/Castrozan/rulesync/releases/download/v21.0.0-castrozan.4/rulesync-21.0.0-castrozan.4.tgz"
   }
 }

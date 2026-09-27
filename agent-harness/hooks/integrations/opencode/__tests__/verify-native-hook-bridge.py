@@ -7,21 +7,19 @@ from pathlib import Path
 from native_model_server import native_model_server
 from native_opencode_profile import prepare_profile
 from native_opencode_server import native_server
-from unit.hook_bridge_test_support import (
-    write_hook_bridge_sources,
-    write_hook_dispatcher_launcher,
-)
+from native_hook_fixtures import generate_hook_plugin
 
 
 def main():
     executable = Path(sys.argv[1])
     sources = Path(sys.argv[2])
+    rulesync = Path(sys.argv[3])
     with tempfile.TemporaryDirectory(prefix="opencode-v2-hooks-") as temporary:
         root = Path(temporary)
         bridge = root / "bridge"
         bridge.mkdir()
         record = root / "dispatch.json"
-        write_hook_bridge_sources(bridge, write_hook_dispatcher_launcher(bridge))
+        plugin = generate_hook_plugin(bridge, rulesync)
         with native_model_server() as model:
             environment, workspace = prepare_profile(
                 root / "profile",
@@ -31,9 +29,7 @@ def main():
             configuration = Path(environment["OPENCODE_CONFIG_DIR"])
             configuration.chmod(0o755)
             (configuration / "plugins").mkdir()
-            (configuration / "plugins/dotfiles-hook-bridge").symlink_to(
-                bridge, target_is_directory=True
-            )
+            (configuration / "plugins/rulesync-hooks.js").symlink_to(plugin)
             configuration.chmod(0o555)
             environment.update(
                 {
@@ -63,7 +59,7 @@ def main():
                 with native_server(executable, environment, workspace) as server:
                     plugins = server.request("/api/plugin", location=True)["data"]
                     assert any(
-                        plugin["id"] == "dotfiles.hook-bridge"
+                        plugin["id"] == "rulesync.hooks"
                         and plugin["state"]["status"] == "active"
                         for plugin in plugins
                     ), [

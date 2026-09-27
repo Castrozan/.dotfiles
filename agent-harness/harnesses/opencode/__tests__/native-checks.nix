@@ -5,6 +5,7 @@
 }:
 let
   generatedInstructions = import ../../../agent-instructions/rulesync { inherit pkgs; };
+  rulesync = import ../../../agent-instructions/rulesync/package.nix { inherit pkgs; };
   evaluationRuntime =
     pkgs.callPackage ../../../quality/evaluations/node-provider-runtime/package.nix
       {
@@ -43,7 +44,7 @@ in
       ''
         export PYTHONPATH=${./.}:${../../../agent-instructions/rulesync/__tests__}
         python3 ${../../../hooks/integrations/opencode}/__tests__/verify-native-hook-bridge.py \
-          ${cfg.opencode.unwrappedPackage}/bin/opencode ${generatedInstructions}/opencode/.opencode/agents
+          ${cfg.opencode.unwrappedPackage}/bin/opencode ${generatedInstructions}/opencode/.opencode/agents ${rulesync}/bin/rulesync
         touch "$out"
       '';
 

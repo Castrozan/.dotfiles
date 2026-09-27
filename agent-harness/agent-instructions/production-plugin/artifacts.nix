@@ -8,7 +8,6 @@
 }:
 let
   projection = import ../instruction-projection.nix { inherit pkgs; };
-  rulesyncConfiguration = import ../rulesync { inherit pkgs; };
   skillCatalog = import ../interactive-skill-catalog/interactive-agent-skills.nix {
     inherit pkgs hostname;
   };
@@ -82,47 +81,8 @@ let
         };
       }
       {
-        name = "agents";
-        path = "${rulesyncConfiguration}/claudecode/.claude/agents";
-      }
-      {
-        name = "configuration/rulesync";
-        path = rulesyncConfiguration.sources;
-      }
-      {
-        name = "native/claude/CLAUDE.md";
-        path = "${rulesyncConfiguration}/claudecode/CLAUDE.md";
-      }
-      {
-        name = "native/codex/AGENTS.md";
-        path = "${rulesyncConfiguration}/codexcli/AGENTS.md";
-      }
-      {
-        name = "native/opencode/AGENTS.md";
-        path = "${rulesyncConfiguration}/opencode/AGENTS.md";
-      }
-      {
-        name = "native/hermes/.hermes.md";
-        path = "${rulesyncConfiguration}/hermesagent/.hermes.md";
-      }
-      {
         name = "hooks";
         path = import ../../hooks/flat-hook-scripts-directory.nix { inherit pkgs lib; };
-      }
-      {
-        name = "native/opencode/hooks";
-        path = import ../../hooks/integrations/opencode/hook-bridge {
-          inherit
-            pkgs
-            lib
-            hostname
-            isDarwin
-            ;
-        };
-      }
-      {
-        name = "native/opencode/agents";
-        path = "${rulesyncConfiguration}/opencode/.opencode/agents";
       }
       {
         name = "native/hermes/hook-bridge";
@@ -149,6 +109,14 @@ let
         path = ../core-rules;
       }
     ]
+    ++ (import ./configuration-artifacts.nix {
+      inherit
+        pkgs
+        lib
+        hostname
+        isDarwin
+        ;
+    })
     ++ (import ./mcp-artifacts.nix {
       inherit
         pkgs

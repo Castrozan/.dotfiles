@@ -31,7 +31,7 @@ let
   deployedOpencodeSettings = parseDeployedJson cfg.home.file.".config/opencode/opencode.json".text;
   deployedTuiSettings = parseDeployedJson cfg.home.file.".config/opencode/cli.json".text;
   deployedGlobalRules = cfg.home.file.".config/opencode/AGENTS.md".source;
-  deployedHookBridge = cfg.home.file.".config/opencode/plugins/dotfiles-hook-bridge";
+  deployedHookBridge = cfg.home.file.".config/opencode/plugins/rulesync-hooks.js";
   opencodeWrapperSource = builtins.readFile ../scripts/launch_opencode.sh;
   opencodeGoProvider = import ../go-provider.nix { inherit (cfg.home) homeDirectory; };
 
@@ -147,8 +147,9 @@ in
       (
         deployedHookBridge ? source
         && deployedHookBridge.source == "${cfg.agentPlugins.bundle}/plugin/native/opencode/hooks"
+        && !(cfg.home.file ? ".config/opencode/plugins/dotfiles-hook-bridge")
       )
-      "OpenCode must deploy the auto-discovered hook bridge and substitute its dispatcher path from Nix, so pre-tool guard denials and post-tool dispatchers run without depending on a shell-session environment variable";
+      "OpenCode must deploy one Rulesync-generated V2 hook plugin with Nix-resolved commands and remove the previous duplicate bridge";
 
   domain-opencode-marks-interactive-sessions =
     mkEvalCheck "domain-opencode-marks-interactive-sessions"

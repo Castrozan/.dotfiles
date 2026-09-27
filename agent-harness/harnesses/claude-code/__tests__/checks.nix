@@ -22,8 +22,6 @@ let
   hasFilePrefix =
     prefix: builtins.any (n: builtins.substring 0 (builtins.stringLength prefix) n == prefix) fileNames;
 
-  deployedSettings = builtins.fromJSON cfg.home.file.".claude/settings.json.nix-source".text;
-
   testMachinePrivateMarketplacePluginsFixture = ../../../../private-configuration/machines/test/claude-plugins.nix;
   testMachinePrivateMarketplacePluginsFixtureExists = builtins.pathExists testMachinePrivateMarketplacePluginsFixture;
   testMachinePrivateMarketplacePlugins =
@@ -31,13 +29,9 @@ let
       import testMachinePrivateMarketplacePluginsFixture
     else
       { };
-  privateMarketplacePluginsAreFoldedIntoSettings =
-    !testMachinePrivateMarketplacePluginsFixtureExists
-    || (
-      (deployedSettings.extraKnownMarketplaces or { })
-      == testMachinePrivateMarketplacePlugins.extraKnownMarketplaces
-      && (deployedSettings.enabledPlugins or { }) == testMachinePrivateMarketplacePlugins.enabledPlugins
-    );
+  expectedPrivateSettings = pkgs.writeText "claude-private-settings.json" (
+    builtins.toJSON testMachinePrivateMarketplacePlugins
+  );
   updateEnabledPluginsActivation = cfg.home.activation.updateEnabledClaudePlugins.data;
 
   workspaceProfilesDeclaringPlugins = lib.filter (
@@ -111,9 +105,12 @@ in
       "a2a-mcp-bridge.service must not exist; a2a is reached through the `a2a` command line tool over plain HTTP, so neither a bridge service nor an MCP server belongs here";
 
   claude-private-marketplace-plugins-folded-into-settings =
-    mkEvalCheck "claude-private-marketplace-plugins-folded-into-settings"
-      privateMarketplacePluginsAreFoldedIntoSettings
-      "when a private-configuration/machines/<hostname>/claude-plugins.nix exists, global-settings.nix must fold its extraKnownMarketplaces and enabledPlugins into the deployed settings.json.nix-source; a dropped `// privateMarketplacePlugins` would silently regress the only path that installs the per-machine plugin";
+    pkgs.runCommand "claude-private-marketplace-plugins-folded-into-settings" { }
+      ''
+        ${pkgs.python312}/bin/python3 ${./verify-private-settings.py} \
+          ${cfg.home.file.".claude/settings.json.nix-source".source} ${expectedPrivateSettings}
+        touch "$out"
+      '';
 
   claude-plugin-update-reads-every-enabled-plugin-source =
     mkEvalCheck "claude-plugin-update-reads-every-enabled-plugin-source"
@@ -150,6 +147,7 @@ in
 }
 // import ./hook-registration-checks.nix {
   inherit
+    pkgs
     lib
     mkEvalCheck
     cfg
