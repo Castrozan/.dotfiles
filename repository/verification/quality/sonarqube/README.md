@@ -36,8 +36,8 @@ sonar-scanner
 
 The [official CLI](https://github.com/SonarSource/sonarqube-cli) returns JSON for issue listings and API calls; quality-gate
 status requires `--format json`. Claude Code, Codex, and OpenCode
-also receive a read-only MCP server for issues, rules, gates, duplication, coverage, and metrics. The CLI and mcporter
-provide the same access from other harnesses. No IDE analysis toolset is enabled.
+also receive a read-only MCP server for issues, rules, gates, duplication, coverage, and metrics. The CLI provides the
+same access from other harnesses. No IDE analysis toolset is enabled.
 
 The local credential comes from agenix at `~/.secrets/sonarqube-token`. GitHub Actions uses a separate `SONAR_TOKEN`
 secret. Rotate both before the expiration recorded in the account's access-token settings. Sonar also revokes tokens

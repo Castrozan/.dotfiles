@@ -1,59 +1,12 @@
 { pkgs, config, ... }:
-let
-  nodejs = pkgs.nodejs_22;
-  mcporterNpmPrefix = "$HOME/.local/share/mcporter-npm";
-  mcporterServerConfig = {
-    mcpServers.sonarqube = {
-      command = "${
-        (import ../testing/sonarqube/sonarqube-tools.nix { inherit pkgs; }).mcp
-      }/bin/sonarqube-mcp";
-    };
-  };
-
-  mcporterWrapper = pkgs.writeShellScriptBin "mcporter" ''
-    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    exec "${mcporterNpmPrefix}/lib/node_modules/mcporter/dist/cli.js" "$@"
-  '';
-
-  installMcporterViaNpm = pkgs.writeShellScript "mcporter-install" ''
-    set -euo pipefail
-    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    export NPM_CONFIG_PREFIX="${mcporterNpmPrefix}"
-    BIN="${mcporterNpmPrefix}/bin/mcporter"
-
-    if [ -x "$BIN" ]; then
-      exit 0
-    fi
-
-    ${nodejs}/bin/npm install -g "mcporter@latest" \
-      --prefix "${mcporterNpmPrefix}" --no-audit --no-fund --loglevel=error
-  '';
-
-  restartMcporterDaemon = pkgs.writeShellScript "mcporter-daemon-restart" ''
-    set -euo pipefail
-    export PATH="${nodejs}/bin:''${PATH:+:$PATH}"
-    ${nodejs}/bin/node "${mcporterNpmPrefix}/lib/node_modules/mcporter/dist/cli.js" daemon restart || true
-  '';
-in
 {
-  home = {
-    packages = [
-      nodejs
-      mcporterWrapper
-    ];
-
-    file.".mcporter/mcporter.json".text = builtins.toJSON mcporterServerConfig;
-
-    activation = {
-      installMcporterViaNpm = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-        run ${pkgs.coreutils}/bin/timeout 300 ${installMcporterViaNpm} || true
-      '';
-
-      restartMcporterDaemonAfterConfigChanges =
-        config.lib.dag.entryAfter [ "installMcporterViaNpm" "linkGeneration" ]
-          ''
-            run ${restartMcporterDaemon}
-          '';
-    };
-  };
+  home.activation.removeMcporterInstallation = config.lib.dag.entryAfter [ "linkGeneration" ] ''
+    mcporterExecutable="${config.home.homeDirectory}/.local/share/mcporter-npm/lib/node_modules/mcporter/dist/cli.js"
+    if [ -f "$mcporterExecutable" ]; then
+      run ${pkgs.coreutils}/bin/timeout 30 ${pkgs.nodejs_22}/bin/node "$mcporterExecutable" daemon stop || true
+    fi
+    run ${pkgs.coreutils}/bin/rm -rf -- \
+      "${config.home.homeDirectory}/.local/share/mcporter-npm" \
+      "${config.home.homeDirectory}/.mcporter"
+  '';
 }
