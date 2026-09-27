@@ -11,7 +11,7 @@ red = int(hex_color[0:2], 16) / 255
 green = int(hex_color[2:4], 16) / 255
 blue = int(hex_color[4:6], 16) / 255
 
-hue_normalized, _, saturation = colorsys.rgb_to_hsv(red, green, blue)
+hue_normalized, saturation, _ = colorsys.rgb_to_hsv(red, green, blue)
 hue_degrees = hue_normalized * 360
 
 if saturation < 0.1:
