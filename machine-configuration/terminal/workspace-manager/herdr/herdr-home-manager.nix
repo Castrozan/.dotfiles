@@ -25,6 +25,7 @@ in
     ./herdr-pace-home-manager.nix
     ./herdr-config-mutable-home-manager.nix
     ./herdr-service-home-manager.nix
+    ./herdr-opencode-home-manager.nix
   ];
 
   home = {
@@ -50,7 +51,6 @@ in
           ]
           ''
             run ${herdrPackage}/bin/herdr integration install codex
-            run ${herdrPackage}/bin/herdr integration install opencode
             ${lib.optionalString (config ? hermes) ''
               run mkdir -p "$HOME/.hermes"
               run ${herdrPackage}/bin/herdr integration install hermes
