@@ -32,18 +32,6 @@ resource "google_service_account_iam_member" "github_deployer_workload_identity_
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/attribute.repository/${var.github_repository}"
 }
 
-resource "google_project_iam_member" "github_deployer_artifact_registry_writer" {
-  project = var.project_id
-  role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:${google_service_account.github_deployer.email}"
-}
-
-resource "google_project_iam_member" "github_deployer_run_admin" {
-  project = var.project_id
-  role    = "roles/run.admin"
-  member  = "serviceAccount:${google_service_account.github_deployer.email}"
-}
-
 resource "google_storage_bucket_iam_member" "github_deployer_publishes_reports_static_artifacts" {
   bucket = google_storage_bucket.usage_snapshots.name
   role   = "roles/storage.objectAdmin"
