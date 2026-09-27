@@ -66,14 +66,14 @@ def test_login_reuses_valid_session_and_refreshes_expired_session(
     module, client, cookies, _ = authentication
     cookies.parent.mkdir()
     cookies.write_text("{}")
-    asyncio.run(module.command_login(SimpleNamespace(totp=None)))
+    module.command_login(SimpleNamespace(totp=None))
     assert "Already authenticated as user user-1" in capsys.readouterr().out
     client.login.assert_not_awaited()
     client.user_id.side_effect = RuntimeError("expired")
     answers = iter(["reader", "reader@example.test"])
     monkeypatch.setattr("builtins.input", lambda prompt: next(answers))
     monkeypatch.setattr("getpass.getpass", lambda prompt: "test-password")
-    asyncio.run(module.command_login(SimpleNamespace(totp="test-totp")))
+    module.command_login(SimpleNamespace(totp="test-totp"))
     client.login.assert_awaited_once_with(
         auth_info_1="reader",
         auth_info_2="reader@example.test",
@@ -109,7 +109,7 @@ def test_interactive_prompts_leave_the_event_loop_and_hide_password(
 
     monkeypatch.setattr("builtins.input", answer)
     monkeypatch.setattr("getpass.getpass", lambda prompt: answer(prompt, secret=True))
-    asyncio.run(module.command_login(SimpleNamespace(totp=None)))
+    module.command_login(SimpleNamespace(totp=None))
     assert prompt_observations == [
         ("X username: ", False, False),
         ("X email: ", False, False),
