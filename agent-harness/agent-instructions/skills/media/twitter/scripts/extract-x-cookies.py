@@ -11,6 +11,7 @@ import sqlite3
 import sys
 import shutil
 import tempfile
+from contextlib import closing
 from pathlib import Path
 
 BROWSER_COOKIE_PATHS = [
@@ -40,31 +41,20 @@ def find_browser_cookies_database():
 
 def extract_x_cookies_from_database(database_path):
     """Extract X/Twitter cookies from a Chromium cookies database."""
-    temporary_copy = tempfile.mktemp(suffix=".db")
-    shutil.copy2(str(database_path), temporary_copy)
-
-    try:
-        connection = sqlite3.connect(temporary_copy)
-        cursor = connection.cursor()
-
+    with tempfile.NamedTemporaryFile(suffix=".db") as temporary_copy:
+        with Path(database_path).open("rb") as database:
+            shutil.copyfileobj(database, temporary_copy)
+        temporary_copy.flush()
         domain_conditions = " OR ".join(
             [f"host_key = '{domain}'" for domain in X_DOMAINS]
             + [f"host_key LIKE '%.{domain}'" for domain in X_DOMAINS]
         )
 
-        cursor.execute(
-            f"SELECT name, value, host_key FROM cookies WHERE {domain_conditions}"
-        )
-
-        cookies = {}
-        for name, value, host_key in cursor.fetchall():
-            if value:
-                cookies[name] = value
-
-        connection.close()
-        return cookies
-    finally:
-        os.unlink(temporary_copy)
+        with closing(sqlite3.connect(temporary_copy.name)) as connection:
+            cursor = connection.execute(
+                f"SELECT name, value, host_key FROM cookies WHERE {domain_conditions}"
+            )
+            return {name: value for name, value, host_key in cursor if value}
 
 
 def main():

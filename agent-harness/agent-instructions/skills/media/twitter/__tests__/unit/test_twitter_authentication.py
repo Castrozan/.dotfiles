@@ -70,8 +70,9 @@ def test_login_reuses_valid_session_and_refreshes_expired_session(
     assert "Already authenticated as user user-1" in capsys.readouterr().out
     client.login.assert_not_awaited()
     client.user_id.side_effect = RuntimeError("expired")
-    answers = iter(["reader", "reader@example.test", "test-password"])
+    answers = iter(["reader", "reader@example.test"])
     monkeypatch.setattr("builtins.input", lambda prompt: next(answers))
+    monkeypatch.setattr("getpass.getpass", lambda prompt: "test-password")
     asyncio.run(module.command_login(SimpleNamespace(totp="test-totp")))
     client.login.assert_awaited_once_with(
         auth_info_1="reader",
@@ -88,3 +89,35 @@ def test_login_reuses_valid_session_and_refreshes_expired_session(
 def test_secret_reader_tolerates_missing_path(twitter_modules, tmp_path):
     assert twitter_modules.serializers.read_secret_file("") is None
     assert twitter_modules.serializers.read_secret_file(tmp_path / "missing") is None
+
+
+def test_interactive_prompts_leave_the_event_loop_and_hide_password(
+    authentication, monkeypatch
+):
+    module, client, _, _ = authentication
+    answers = iter(["reader", "reader@example.test"])
+    prompt_observations = []
+
+    def answer(prompt, *, secret=False):
+        try:
+            asyncio.get_running_loop()
+            on_event_loop = True
+        except RuntimeError:
+            on_event_loop = False
+        prompt_observations.append((prompt, secret, on_event_loop))
+        return "test-password" if secret else next(answers)
+
+    monkeypatch.setattr("builtins.input", answer)
+    monkeypatch.setattr("getpass.getpass", lambda prompt: answer(prompt, secret=True))
+    asyncio.run(module.command_login(SimpleNamespace(totp=None)))
+    assert prompt_observations == [
+        ("X username: ", False, False),
+        ("X email: ", False, False),
+        ("X password: ", True, False),
+    ]
+    client.login.assert_awaited_once_with(
+        auth_info_1="reader",
+        auth_info_2="reader@example.test",
+        password="test-password",
+        totp_secret=None,
+    )

@@ -1,5 +1,7 @@
 """Cookie loading, credential-based login, and authenticated client construction."""
 
+import asyncio
+import getpass
 import json
 import os
 import sys
@@ -77,9 +79,9 @@ async def command_login(args):
 
     if not all([username, email, password]):
         print("No agenix secrets found, falling back to interactive login")
-        username = input("X username: ")
-        email = input("X email: ")
-        password = input("X password: ")
+        username = await asyncio.to_thread(input, "X username: ")
+        email = await asyncio.to_thread(input, "X email: ")
+        password = await asyncio.to_thread(getpass.getpass, "X password: ")
 
     totp_secret = None
     if args.totp:
