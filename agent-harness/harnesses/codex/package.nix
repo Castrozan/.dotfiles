@@ -9,13 +9,13 @@ let
     inherit pkgs;
   };
 
-  version = "0.155.1";
+  version = "0.157.1";
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      sha256 = "sha256-oO+LLevDv3R+B7GgOTVN4xMArA3MInZJi6KBRwtdkRU=";
-      codeModeHostSha256 = "sha256-n9CDdDr1W+gYrOs1HTcftRNvW2qjk48WcIc3PScGey0=";
+      sha256 = "sha256-6YwejgKOgTf6LSQVyC7Fjns3AaYn41VKrOWzyjFFSvI=";
+      codeModeHostSha256 = "sha256-NRb5uLvmvAbue9uSspOhfqsZSz8QubnqEMW4Oely1/w=";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -24,8 +24,8 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      sha256 = "sha256-XlpRRw3OJCP52WvRkdC7xMwOKEimgz31F46vR6B6N2g=";
-      codeModeHostSha256 = "sha256-6JVxCO69cJY7CQaFfOt/eitHfRlypxRwQcYl1AcbUIo=";
+      sha256 = "sha256-PEWxYrenb1EyUBWx0KgRLHMhm3qbWc1XYsN8m6VYlPo=";
+      codeModeHostSha256 = "sha256-KIMy0slw31xhyPvf6sZKi/cvsawZRZQtpFN+z2MTgxQ=";
       buildInputs = [ ];
     };
   };
