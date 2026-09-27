@@ -39,7 +39,9 @@ class HarnessProfile:
         )
         command = f"{self.executable_name} {arguments}".strip()
         if self.name == "opencode":
-            settings = shlex.quote(json.dumps({"model": model}))
+            settings = shlex.quote(
+                json.dumps({"model": model, "agents": {"build": {"model": model}}})
+            )
             return f"OPENCODE_CONFIG_CONTENT={settings} {command}"
         return command
 

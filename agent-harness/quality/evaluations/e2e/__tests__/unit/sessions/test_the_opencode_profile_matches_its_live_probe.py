@@ -37,7 +37,7 @@ def test_the_confirmation_marker_is_the_completion_line_not_the_palette_entry():
 def test_opencode_is_launched_with_the_model_it_is_given():
     assert (
         OPENCODE_PROFILE.launch_command("openai/gpt-5.4-mini", "/tmp/workspace")
-        == 'OPENCODE_CONFIG_CONTENT=\'{"model": "openai/gpt-5.4-mini"}\' opencode'
+        == 'OPENCODE_CONFIG_CONTENT=\'{"model": "openai/gpt-5.4-mini", "agents": {"build": {"model": "openai/gpt-5.4-mini"}}}\' opencode'
     )
 
 
