@@ -20,7 +20,9 @@ class ProvisionTests(unittest.TestCase):
             "name": "audio",
             "enable": True,
             "protocol": "torrent",
-            "capabilities": {"categories": [{"id": 3030}]},
+            "capabilities": {
+                "categories": [{"id": 3000, "subCategories": [{"id": 3030}]}]
+            },
         }
         candidates = [
             valid,
@@ -30,6 +32,7 @@ class ProvisionTests(unittest.TestCase):
         ]
         selected = provision.select_indexers(candidates)
         self.assertEqual([item["id"] for item in selected], [1])
+        self.assertTrue(provision.has_audiobooks([{"id": 3030}]))
         self.assertFalse(selected[0]["rssEnabled"])
         self.assertEqual(selected[0]["ebookCategories"], [])
         with self.assertRaises(RuntimeError):

@@ -51,13 +51,20 @@ class Client:
         self.headers["Authorization"] = f"Bearer {token}"
 
 
+def has_audiobooks(categories):
+    return any(
+        category.get("id") == 3030 or has_audiobooks(category.get("subCategories", []))
+        for category in categories
+    )
+
+
 def select_indexers(indexers):
     selected = []
     for indexer in indexers:
         categories = indexer.get("capabilities", {}).get("categories", [])
         if not indexer.get("enable") or indexer.get("protocol") != "torrent":
             continue
-        if not any(category.get("id") == 3030 for category in categories):
+        if not has_audiobooks(categories):
             continue
         selected.append(
             {

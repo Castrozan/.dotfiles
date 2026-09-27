@@ -40,11 +40,13 @@ in
       description = "Provision audiobook accounts, library and download integrations";
       after = [
         "arr-stack-front-ends-compose.service"
+        "arr-config-provisioner.service"
         "agenix.service"
         "network-online.target"
       ];
       wants = [
         "arr-stack-front-ends-compose.service"
+        "arr-config-provisioner.service"
         "network-online.target"
       ];
       wantedBy = [ "multi-user.target" ];
@@ -58,6 +60,7 @@ in
       };
       serviceConfig = {
         Type = "oneshot";
+        RemainAfterExit = true;
         ExecStart = "${pkgs.python3}/bin/python3 ${./scripts/provision.py}";
         StateDirectory = "arr-audiobooks";
         StateDirectoryMode = "0700";
