@@ -109,6 +109,7 @@ class ProvisionTests(unittest.TestCase):
             "token",
             "key",
             [],
+            "download-admin",
         )
         calls = client.call.call_args_list
         self.assertFalse(any(item.args[0] == "/api/setup/complete" for item in calls))
@@ -116,6 +117,9 @@ class ProvisionTests(unittest.TestCase):
             item for item in calls if item.args[0].endswith("download-clients/existing")
         ]
         self.assertEqual(updates[0].args[2], "PUT")
+        self.assertEqual(updates[0].args[1]["username"], "download-admin")
+        login = next(item for item in calls if item.args[0].endswith("/login"))
+        self.assertEqual(login.args[1]["username"], "owner")
         ebook = next(item.args[1] for item in calls if item.args[0].endswith("/ebook"))
         self.assertFalse(any(ebook.values()))
         registration = next(

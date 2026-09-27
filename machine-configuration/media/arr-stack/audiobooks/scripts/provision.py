@@ -144,14 +144,23 @@ def provision_abs(client, credentials, token_file):
     return library["id"], token
 
 
-def provision_rmab(client, credentials, library_id, abs_token, prowlarr_key, indexers):
+def provision_rmab(
+    client,
+    credentials,
+    library_id,
+    abs_token,
+    prowlarr_key,
+    indexers,
+    download_username,
+):
     download = {
         "id": "nix-qbittorrent",
         "name": "qBittorrent (Nix managed)",
         "type": "qbittorrent",
         "enabled": True,
         "url": "http://qbittorrent:8080",
-        **credentials,
+        "username": download_username,
+        "password": credentials["password"],
         "category": "readmeabook",
         "customPath": "/data/torrents/audiobooks",
         "remotePathMappingEnabled": False,
@@ -265,6 +274,7 @@ def main():
         token,
         key,
         indexers,
+        os.environ["QBITTORRENT_USERNAME"],
     )
 
 

@@ -12,7 +12,12 @@ in
     enable = lib.mkEnableOption "persistent audiobook account and integration provisioning";
     username = lib.mkOption {
       type = lib.types.str;
-      description = "Administrator login shared with the download client.";
+      description = "Administrator login for the audiobook applications.";
+    };
+    downloadUsername = lib.mkOption {
+      type = lib.types.str;
+      default = config.custom.arrConfigProvisioner.qbittorrentUsername;
+      description = "Existing download-client login, independent from audiobook app accounts.";
     };
     passwordFile = lib.mkOption {
       type = lib.types.str;
@@ -52,6 +57,7 @@ in
       wantedBy = [ "multi-user.target" ];
       environment = {
         AUDIOBOOK_USERNAME = cfg.username;
+        QBITTORRENT_USERNAME = cfg.downloadUsername;
         AUDIOBOOK_PASSWORD_FILE = cfg.passwordFile;
         PROWLARR_CONFIG_FILE = cfg.prowlarrConfigFile;
         PROWLARR_BASE_URL = cfg.prowlarrBaseUrl;
