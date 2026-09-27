@@ -1,7 +1,6 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { Codex } from "@openai/codex-sdk";
-import { createOpencode } from "@opencode-ai/sdk";
-import { createServer } from "node:net";
+import { startOpenCodeServer } from "./opencode-server.mjs";
 
 import {
   claudeQueryOptions,
@@ -12,27 +11,11 @@ import {
   normalizeRequestError,
   openCodeConfig,
   openCodeMessageOutcome,
-  openCodePromptBody,
-  openCodeToolSelection,
+  openCodeSessionInput,
 } from "./provider-adapters.mjs";
 
 function timeoutFor(invocation) {
   return (invocation.timeout ?? 120) * 1000;
-}
-
-function availableLoopbackPort() {
-  return new Promise((resolve, reject) => {
-    const socketServer = createServer();
-    socketServer.unref();
-    socketServer.once("error", reject);
-    socketServer.listen(0, "127.0.0.1", () => {
-      const address = socketServer.address();
-      socketServer.close((error) => {
-        if (error) reject(error);
-        else resolve(address.port);
-      });
-    });
-  });
 }
 
 async function runClaude(invocation) {
@@ -94,45 +77,26 @@ async function runOpenCode(invocation) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   let server;
   try {
-    const port = await availableLoopbackPort();
-    const opencode = await createOpencode({
-      config: openCodeConfig(invocation),
-      port,
-      signal: controller.signal,
-      timeout: timeoutMs,
-    });
-    server = opencode.server;
-    const toolIdentifiers = await opencode.client.tool.ids({
-      query: { directory: invocation.working_directory },
-      signal: controller.signal,
-    });
-    if (toolIdentifiers.error) {
-      return {
-        output: null,
-        error: normalizeRequestError(toolIdentifiers.error),
-      };
-    }
-    const tools = openCodeToolSelection(
-      toolIdentifiers.data,
-      invocation.no_tools,
+    server = await startOpenCodeServer(
+      invocation,
+      openCodeConfig(invocation),
+      controller.signal,
     );
-    const session = await opencode.client.session.create({
-      query: { directory: invocation.working_directory },
-      signal: controller.signal,
-    });
-    if (session.error) {
-      return { output: null, error: normalizeRequestError(session.error) };
-    }
-    const message = await opencode.client.session.prompt({
-      path: { id: session.data.id },
-      query: { directory: invocation.working_directory },
-      body: openCodePromptBody(invocation, tools),
-      signal: controller.signal,
-    });
-    if (message.error) {
-      return { output: null, error: normalizeRequestError(message.error) };
-    }
-    return openCodeMessageOutcome(message.data);
+    const options = { signal: controller.signal };
+    const session = await server.client.session.create(
+      openCodeSessionInput(invocation),
+      options,
+    );
+    await server.client.session.prompt(
+      { sessionID: session.id, text: invocation.prompt },
+      options,
+    );
+    await server.client.session.wait({ sessionID: session.id }, options);
+    const messages = await server.client.message.list(
+      { sessionID: session.id, order: "desc", type: "assistant", limit: 1 },
+      options,
+    );
+    return openCodeMessageOutcome(messages.data);
   } catch (error) {
     if (controller.signal.aborted) {
       return { output: null, error: `timeout after ${timeoutMs / 1000}s` };
@@ -140,7 +104,7 @@ async function runOpenCode(invocation) {
     return { output: null, error: normalizeRequestError(error) };
   } finally {
     clearTimeout(timer);
-    server?.close();
+    await server?.close();
   }
 }
 

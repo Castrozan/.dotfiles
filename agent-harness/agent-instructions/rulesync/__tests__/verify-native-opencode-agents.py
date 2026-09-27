@@ -4,11 +4,13 @@ import json
 import tempfile
 from pathlib import Path
 
-from native_opencode_profile import prepare_profile, run_native
+from native_model_server import native_model_server
+from native_opencode_profile import prepare_profile
+from native_opencode_server import native_server
 
 
 COMMON_PERMISSIONS = dict.fromkeys(
-    ("read", "grep", "glob", "bash", "skill", "todowrite", "question"), "allow"
+    ("read", "grep", "glob", "shell", "skill", "todowrite", "question"), "allow"
 )
 AGENT_PERMISSIONS = {
     "software-engineer": {"*": "deny", **COMMON_PERMISSIONS, "edit": "allow"},
@@ -17,105 +19,89 @@ AGENT_PERMISSIONS = {
 }
 
 
-def verify_agent(result, name, source, profile):
-    assert result.returncode == 0, result.stderr
-    agent = json.loads(result.stdout)
-    assert agent["name"] == name and agent["mode"] == "subagent", agent
-    assert agent["prompt"] == source.read_text().split("\n---\n", 1)[1].strip(), agent
+def verify_agent(agent, name, source):
+    assert agent["id"] == name and agent["mode"] == "subagent", agent
+    assert agent["system"] == source.read_text().split("\n---\n", 1)[1].strip(), agent
     expected = AGENT_PERMISSIONS[name]
-    rules = agent["permission"]
-    automatic = rules[-1]
-    assert (
-        automatic["permission"] == "external_directory"
-        and automatic["action"] == "allow"
-    ), automatic
-    assert automatic["pattern"] == str(profile / "data/opencode/tool-output/*"), (
-        automatic
-    )
-    rules = rules[-len(expected) - 1 : -1]
-    assert len(rules) == len(expected) and all(
-        rule["pattern"] == "*" for rule in rules
-    ), rules
-    assert rules[0] == {"permission": "*", "pattern": "*", "action": expected["*"]}, (
-        rules
-    )
-    assert {rule["permission"]: rule["action"] for rule in rules} == expected, rules
+    rules = agent["permissions"][-len(expected) :]
+    assert all(rule["resource"] == "*" for rule in rules), rules
+    assert {rule["action"]: rule["effect"] for rule in rules} == expected, rules
 
 
-def verify_tool(executable, environment, workspace, name, tool, arguments, allowed):
-    result = run_native(
-        executable,
-        environment,
-        workspace,
-        name,
-        "--tool",
-        tool,
-        "--params",
-        json.dumps(arguments),
+def verify_tool(server, name, tool, arguments, allowed):
+    session = server.request(
+        "/api/session",
+        {
+            "agent": name,
+            "title": "Native acceptance",
+            "model": {"providerID": "acceptance", "id": "fixture"},
+            "location": {"directory": server.directory},
+        },
+    )["data"]["id"]
+    server.request(
+        f"/api/session/{session}/prompt",
+        {"text": json.dumps({"tool": tool, "input": arguments})},
     )
-    if allowed:
-        assert result.returncode == 0, result.stderr
-        return json.loads(result.stdout)
-    assert result.returncode != 0 and "disabled for agent" in result.stderr, result
-    return None
+    server.request(f"/api/experimental/session/{session}/wait", {}, method="POST")
+    messages = server.request(f"/api/session/{session}/message")["data"]
+    calls = [
+        content
+        for message in messages
+        if message["type"] == "assistant"
+        for content in message["content"]
+        if content["type"] == "tool"
+    ]
+    assert calls, messages
+    status = calls[0]["state"]["status"]
+    assert status == ("completed" if allowed else "error"), calls
+    return calls[0]
 
 
 def verify_positive(executable, sources, root):
-    environment, workspace = prepare_profile(root, sources)
-    for name in AGENT_PERMISSIONS:
-        verify_agent(
-            run_native(executable, environment, workspace, name),
-            name,
-            sources / f"{name}.md",
-            root,
+    with native_model_server() as model:
+        environment, workspace = prepare_profile(
+            root, sources, model_url=f"http://127.0.0.1:{model.server_port}/v1"
         )
-    marker = workspace / "owned-marker.txt"
-    verify_tool(
-        executable,
-        environment,
-        workspace,
-        "software-engineer",
-        "write",
-        {"filePath": str(marker), "content": "native-write-control\n"},
-        True,
-    )
-    assert marker.read_text() == "native-write-control\n"
-    result = verify_tool(
-        executable,
-        environment,
-        workspace,
-        "software-engineer",
-        "read",
-        {"filePath": str(marker)},
-        True,
-    )
-    assert "native-write-control" in json.dumps(result)
-    for name in ("quality-assurance", "explore"):
-        absent_marker = workspace / f"{name}-forbidden.txt"
-        verify_tool(
-            executable,
-            environment,
-            workspace,
-            name,
-            "write",
-            {"filePath": str(absent_marker), "content": "forbidden\n"},
-            False,
-        )
-        assert not absent_marker.exists()
-        verify_tool(
-            executable,
-            environment,
-            workspace,
-            name,
-            "edit",
-            {
-                "filePath": str(marker),
-                "oldString": "native-write-control",
-                "newString": "forbidden",
-            },
-            False,
-        )
-        assert marker.read_text() == "native-write-control\n"
+        with native_server(executable, environment, workspace) as server:
+            for name in AGENT_PERMISSIONS:
+                agent = server.request(f"/api/agent/{name}", location=True)["data"]
+                verify_agent(agent, name, sources / f"{name}.md")
+            marker = workspace / "owned-marker.txt"
+            verify_tool(
+                server,
+                "software-engineer",
+                "write",
+                {"path": str(marker), "content": "native-write-control\n"},
+                True,
+            )
+            assert marker.read_text() == "native-write-control\n"
+            result = verify_tool(
+                server, "software-engineer", "read", {"path": str(marker)}, True
+            )
+            assert "native-write-control" in json.dumps(result)
+            for name in ("quality-assurance", "explore"):
+                absent_marker = workspace / f"{name}-forbidden.txt"
+                verify_tool(
+                    server,
+                    name,
+                    "write",
+                    {"path": str(absent_marker), "content": "forbidden\n"},
+                    False,
+                )
+                assert not absent_marker.exists()
+                verify_tool(
+                    server,
+                    name,
+                    "edit",
+                    {
+                        "path": str(marker),
+                        "oldString": "native-write-control",
+                        "newString": "forbidden",
+                    },
+                    False,
+                )
+                assert marker.read_text() == "native-write-control\n"
+            assert model.requests
 
 
 def verify_negative(executable, sources, root, name, corruption):
@@ -131,16 +117,12 @@ def verify_negative(executable, sources, root, name, corruption):
     environment, workspace = prepare_profile(
         root / "profile", altered_sources, ambient_names=AGENT_PERMISSIONS
     )
-    result = run_native(executable, environment, workspace, name)
-    if result.returncode == 0:
-        agent = json.loads(result.stdout)
-        assert agent["description"] == "Ambient control", agent
-        if not corruption:
-            assert agent["prompt"] == "AMBIENT_ONLY_AGENT", agent
-    try:
-        verify_agent(result, name, sources / f"{name}.md", root / "profile")
-    except AssertionError:
-        return
+    with native_server(executable, environment, workspace) as server:
+        try:
+            agent = server.request(f"/api/agent/{name}", location=True)["data"]
+            verify_agent(agent, name, sources / f"{name}.md")
+        except AssertionError:
+            return
     raise AssertionError(f"Invalid emitted {name} passed through ambient fallback")
 
 
@@ -179,7 +161,7 @@ def main():
                     directory.chmod(0o755)
     assert original == identities(sources)
     print(
-        "Verified 3 native agents, 6 native tool cases and 6 ambient-fallback controls"
+        "Verified 3 native V2 agents, 6 native tool cases and 6 ambient-fallback controls"
     )
 
 

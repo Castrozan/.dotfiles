@@ -13,9 +13,9 @@ def session_database_holding(tmp_path, sessions):
     session_database = tmp_path / "opencode.db"
     connection = sqlite3.connect(session_database)
     connection.execute(
-        "create table session (id text, directory text, time_updated int)"
+        "create table session_v2 (id text, directory text, time_updated int)"
     )
-    connection.executemany("insert into session values (?, ?, ?)", sessions)
+    connection.executemany("insert into session_v2 values (?, ?, ?)", sessions)
     connection.commit()
     connection.close()
     return session_database

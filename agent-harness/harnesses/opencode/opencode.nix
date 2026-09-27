@@ -34,43 +34,24 @@ let
     inherit (workspaceProfileActivation) activationShellStatementsForProfile;
   };
 
+  authenticatedLauncher = pkgs.replaceVars ./scripts/launch_authenticated_opencode.sh {
+    opencodeApiKeyFile = opencodeGo.apiKeyFile;
+    opencodeUnwrapped = opencode-unwrapped;
+  };
+
   opencode-authenticated = pkgs.writeShellScriptBin "opencode" ''
-    opencodeApiKeyFile="${opencodeGo.apiKeyFile}"
-    if [ -r "$opencodeApiKeyFile" ]; then
-      OPENCODE_API_KEY="$(cat "$opencodeApiKeyFile")"
-      export OPENCODE_API_KEY
-    fi
-    exec ${opencode-unwrapped}/bin/opencode "$@"
+    exec ${pkgs.bash}/bin/bash ${authenticatedLauncher} "$@"
   '';
+
+  interactiveLauncher = pkgs.replaceVars ./scripts/launch_opencode.sh {
+    inherit interactiveSessionConfigOverlay workspaceProfileLaunchDispatch interactivePreferencesFile;
+    opencodeAuthenticated = opencode-authenticated;
+  };
 
   opencode = pkgs.writeShellScriptBin "opencode" ''
-    opencodeConfigOverlayFile="${interactiveSessionConfigOverlay}"
-
-    applyInteractiveSessionOverlay() {
-      ${workspaceProfileLaunchDispatch}
-      export OPENCODE_CONFIG="$opencodeConfigOverlayFile"
-      export AGENT_INTERACTIVE_PREFERENCES_PATH="${interactivePreferencesFile}"
-    }
-
-    case "''${1:-}" in
-      acp | agent | attach | completion | db | debug | export | github | import | mcp | models | plugin | pr | providers | auth | serve | session | stats | uninstall | upgrade)
-        ;;
-      run)
-        for argument in "$@"; do
-          case "$argument" in
-            --mini | --mini=*)
-              applyInteractiveSessionOverlay
-              break
-              ;;
-          esac
-        done
-        ;;
-      *)
-        applyInteractiveSessionOverlay
-        ;;
-    esac
-    exec ${opencode-authenticated}/bin/opencode "$@"
+    exec ${pkgs.bash}/bin/bash ${interactiveLauncher} "$@"
   '';
+
 in
 {
   options.opencode.unwrappedPackage = lib.mkOption {

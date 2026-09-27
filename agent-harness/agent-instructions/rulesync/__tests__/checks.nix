@@ -17,6 +17,7 @@ in
   '';
 
   rulesync-native-opencode-agents = pkgs.runCommand "rulesync-native-opencode-agents" { } ''
+    export PYTHONPATH=${../../../harnesses/opencode/__tests__}
     ${pythonEnvironment}/bin/python3 ${./.}/verify-native-opencode-agents.py \
       ${opencode}/bin/opencode ${configuration}
     touch "$out"

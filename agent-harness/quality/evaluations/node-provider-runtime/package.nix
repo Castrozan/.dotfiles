@@ -9,6 +9,7 @@ let
     ./provider-runtime.mjs
     ./provider-adapters.mjs
     ./provider-runners.mjs
+    ./opencode-server.mjs
     ./provider-usage.mjs
     ./provider-adapters.test.mjs
     ./provider-usage.test.mjs
@@ -27,7 +28,7 @@ pkgs.buildNpmPackage {
     fileset = sourceFiles;
   };
 
-  npmDepsHash = "sha256-C7JMxnLavhFij7iHcZ9ikmQZgQTrGT8/CAgDSS3ck3I=";
+  npmDepsHash = "sha256-AQ4y0YIhyBv0lMP3gBX7qfI4etWBdU3o7ZpR4x1tc7E=";
 
   npmFlags = [
     "--ignore-scripts"

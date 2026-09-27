@@ -1,17 +1,20 @@
 const canonicalToolNames = {
-  bash: "Bash",
+  shell: "Bash",
   edit: "Edit",
   skill: "Skill",
-  task: "Agent",
+  subagent: "Agent",
+  patch: "apply_patch",
   webfetch: "WebFetch",
   write: "Write",
 };
 
 const opencodeArgumentNames = {
-  file_path: "filePath",
+  file_path: "path",
   new_string: "newString",
   old_string: "oldString",
   patch_text: "patchText",
+  subagent_type: "agent",
+  skill: "id",
 };
 
 export function isRecord(value) {
@@ -19,6 +22,7 @@ export function isRecord(value) {
 }
 
 function snakeCaseKey(key) {
+  if (key === "path") return "file_path";
   return key.replace(/[A-Z]/g, (character) => `_${character.toLowerCase()}`);
 }
 
@@ -65,15 +69,19 @@ function toolInputForDispatcher(toolName, toolInput) {
   ) {
     return normalizedInput.patch_text;
   }
+  if (canonicalToolName(toolName) === "Agent" && isRecord(normalizedInput)) {
+    const { agent, ...remainingInput } = normalizedInput;
+    return { ...remainingInput, subagent_type: agent };
+  }
   if (
     canonicalToolName(toolName) !== "Skill" ||
     !isRecord(normalizedInput) ||
-    typeof normalizedInput.name !== "string"
+    typeof normalizedInput.id !== "string"
   ) {
     return normalizedInput;
   }
-  const { name, ...remainingInput } = normalizedInput;
-  return { ...remainingInput, skill: name };
+  const { id, ...remainingInput } = normalizedInput;
+  return { ...remainingInput, skill: id };
 }
 
 export function hookPayload(

@@ -29,37 +29,28 @@ export function appendToolOutputMessage(toolOutput, dispatcherOutput) {
   if (messages.length === 0) {
     return;
   }
-  const existingOutput =
-    typeof toolOutput.output === "string" ? toolOutput.output : "";
-  toolOutput.output = [existingOutput, ...messages]
-    .filter(Boolean)
-    .join("\n\n");
-}
-
-export function appendPromptContext(parts, context) {
-  if (!context || !Array.isArray(parts)) {
+  if (typeof toolOutput.content === "string") {
+    toolOutput.content = [toolOutput.content, ...messages]
+      .filter(Boolean)
+      .join("\n\n");
     return;
   }
-  const textPart = parts.find(
-    (part) =>
-      isRecord(part) && part.type === "text" && typeof part.text === "string",
-  );
-  if (!textPart) {
-    return;
-  }
-  textPart.text = [textPart.text, context].filter(Boolean).join("\n\n");
+  toolOutput.content = [
+    ...(Array.isArray(toolOutput.content) ? toolOutput.content : []),
+    { type: "text", text: messages.join("\n\n") },
+  ];
 }
 
 export function applyUpdatedToolInput(toolOutput, updatedInput) {
   const translatedInput = opencodeToolInput(updatedInput);
-  if (!isRecord(toolOutput.args)) {
-    toolOutput.args = translatedInput;
+  if (!isRecord(toolOutput.input)) {
+    toolOutput.input = translatedInput;
     return;
   }
-  for (const key of Object.keys(toolOutput.args)) {
-    delete toolOutput.args[key];
+  for (const key of Object.keys(toolOutput.input)) {
+    delete toolOutput.input[key];
   }
-  Object.assign(toolOutput.args, translatedInput);
+  Object.assign(toolOutput.input, translatedInput);
 }
 
 export function preToolUseDenial(dispatcherOutput) {

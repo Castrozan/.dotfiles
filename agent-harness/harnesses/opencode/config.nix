@@ -27,39 +27,26 @@ let
         inherit pkgs;
       };
 
-  fullAccessPermissions = {
-    "*" = "allow";
-    read = "allow";
-    edit = "allow";
-    glob = "allow";
-    grep = "allow";
-    list = "allow";
-    bash = "allow";
-    task = "allow";
-    skill = "allow";
-    lsp = "allow";
-    todowrite = "allow";
-    question = "allow";
-    webfetch = "allow";
-    websearch = "allow";
-    external_directory = "allow";
-    doom_loop = "allow";
-  };
+  fullAccessPermissions = [
+    {
+      action = "*";
+      resource = "*";
+      effect = "allow";
+    }
+  ];
 
   opencodeGlobalSettings = {
-    "$schema" = "https://opencode.ai/config.json";
-    autoupdate = false;
+    "$schema" = "https://opencode.ai/v2/config.json";
+    update = "disable";
     share = "manual";
-    snapshot = true;
+    snapshots = true;
 
     model = defaultOpencodeModel;
-    small_model = titleGenerationModel;
     default_agent = "build";
-    subagent_depth = 2;
 
     instructions = [ "~/.config/opencode/AGENTS.md" ];
 
-    permission = fullAccessPermissions;
+    permissions = fullAccessPermissions;
 
     lsp = {
       pyright = {
@@ -76,7 +63,6 @@ let
 
     compaction = {
       auto = true;
-      prune = true;
     };
 
     watcher = {
@@ -91,21 +77,22 @@ let
     };
 
     experimental = {
-      batch_tool = true;
+      subagent_depth = 2;
     };
 
-    agent = {
+    agents = {
       build = {
         mode = "primary";
         description = "Full-access coding agent with all tools enabled";
-        variant = "max";
-        permission = fullAccessPermissions;
+        model = "${defaultOpencodeModel}#max";
+        permissions = fullAccessPermissions;
       };
       plan = {
         mode = "primary";
         description = "Read-only architect that designs a change without editing files";
-        variant = "max";
+        model = "${defaultOpencodeModel}#max";
       };
+      title.model = titleGenerationModel;
     };
   };
 in

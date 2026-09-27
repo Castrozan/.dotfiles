@@ -1,82 +1,78 @@
-from hook_bridge_test_support import invoke_hook_bridge, invoke_hook_bridge_sequence
+from hook_bridge_test_support import invoke_hook_bridge_sequence
 
 
-SESSION_MESSAGES = [
-    {
-        "info": {"id": "msg-user", "role": "user"},
-        "parts": [{"type": "text", "text": "summarize the result"}],
-    },
-    {
-        "info": {"id": "msg-assistant", "role": "assistant"},
-        "parts": [{"type": "text", "text": "Sure, here it is."}],
-    },
-]
-
-
-def idle_hook_call():
+def event(kind, **data):
     return {
         "hookName": "event",
-        "hookInput": {
-            "event": {
-                "type": "session.idle",
-                "properties": {"sessionID": "ses-5"},
-            }
-        },
-        "hookOutput": {},
+        "event": {"type": kind, "data": {"sessionID": "ses-1", **data}},
     }
 
 
-def test_session_idle_reviews_the_final_human_facing_reply(tmp_path):
-    reason = "Remove the sycophancy opener and answer directly."
-    result, records = invoke_hook_bridge(
-        tmp_path,
-        {"decision": "block", "reason": reason},
-        "event",
-        idle_hook_call()["hookInput"],
-        {},
-        session_messages=SESSION_MESSAGES,
+def prompt():
+    return {
+        "hookName": "session.prompt",
+        "event": {"sessionID": "ses-1", "prompt": {"text": "summarize"}},
+    }
+
+
+def reply(message_id, text):
+    return event(
+        "session.text.ended", assistantMessageID=message_id, ordinal=0, text=text
     )
 
-    assert "error" not in result
-    assert records == [
-        {
-            "dispatcher": "stop-dispatcher.py",
-            "payload": {
-                "hook_event_name": "Stop",
-                "session_id": "ses-5",
-                "cwd": "/workspace/project",
-                "user_request_text": "summarize the result",
-                "reply_text": "Sure, here it is.",
-            },
-        }
-    ]
-    assert result["promptAsyncCalls"] == [
-        {
-            "path": {"id": "ses-5"},
-            "query": {"directory": "/workspace/project"},
-            "body": {"system": reason, "parts": []},
-        }
-    ]
 
-
-def test_session_idle_allows_only_one_format_correction(tmp_path):
-    corrected_messages = [
-        *SESSION_MESSAGES,
-        {
-            "info": {"id": "msg-correction", "role": "assistant"},
-            "parts": [{"type": "text", "text": "The result is complete."}],
-        },
-    ]
-    correction_idle = idle_hook_call()
-    correction_idle["sessionMessages"] = corrected_messages
+def test_completion_reviews_the_reply_and_queues_one_synthetic_correction(tmp_path):
     results, records = invoke_hook_bridge_sequence(
         tmp_path,
-        {"decision": "block", "reason": "Rewrite the reply."},
-        [idle_hook_call(), idle_hook_call(), correction_idle],
-        session_messages=SESSION_MESSAGES,
+        {"decision": "block", "reason": "Rewrite."},
+        [
+            prompt(),
+            reply("msg-1", "Sure, done."),
+            event("session.execution.succeeded"),
+            event("session.execution.succeeded"),
+            reply("msg-2", "Done."),
+            event("session.execution.succeeded"),
+        ],
     )
+    stops = [
+        record for record in records if record["dispatcher"] == "stop-dispatcher.py"
+    ]
+    assert len(stops) == 2
+    assert stops[0]["payload"]["reply_text"] == "Sure, done."
+    assert stops[0]["payload"]["user_request_text"] == "summarize"
+    assert stops[1]["payload"]["stop_hook_active"] is True
+    assert results[-1]["syntheticCalls"] == [
+        {"sessionID": "ses-1", "text": "Rewrite.", "delivery": "queue", "resume": True}
+    ]
 
-    assert len(records) == 2
-    assert records[-1]["payload"]["reply_text"] == "The result is complete."
-    assert records[-1]["payload"]["stop_hook_active"] is True
-    assert len(results[-1]["promptAsyncCalls"]) == 1
+
+def test_unrelated_failed_and_deleted_sessions_do_not_trigger_reply_review(tmp_path):
+    _, records = invoke_hook_bridge_sequence(
+        tmp_path,
+        {},
+        [
+            event("session.execution.succeeded"),
+            prompt(),
+            reply("msg-1", "Partial"),
+            event("session.execution.failed"),
+            event("session.deleted"),
+            event("session.execution.succeeded"),
+        ],
+    )
+    assert all(record["dispatcher"] != "stop-dispatcher.py" for record in records)
+
+
+def test_new_user_turn_gets_its_own_correction_allowance(tmp_path):
+    results, _ = invoke_hook_bridge_sequence(
+        tmp_path,
+        {"decision": "block", "reason": "Rewrite."},
+        [
+            prompt(),
+            reply("msg-1", "First"),
+            event("session.execution.succeeded"),
+            prompt(),
+            reply("msg-2", "Second"),
+            event("session.execution.succeeded"),
+        ],
+    )
+    assert len(results[-1]["syntheticCalls"]) == 2

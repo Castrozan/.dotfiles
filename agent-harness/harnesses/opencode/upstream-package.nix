@@ -3,16 +3,16 @@ let
   fetchPrebuiltBinary = import ../../../repository/nix-library/fetch-prebuilt-binary.nix {
     inherit pkgs;
   };
-  version = "1.18.32";
+  version = "2.0.18";
   releases = {
     "x86_64-linux" = {
-      releaseAssetName = "opencode-linux-x64.tar.gz";
-      sha256 = "sha256-MEbgQE/cYPuAMH56R4JLoHR3NkF4pNCbqoVISW3W1Ds=";
+      platform = "linux-x64";
+      sha256 = "sha256-qkVdBzs6BzOmkS9HezcPPVDKevRHFbt8zEH6oTs8wus=";
       buildInputs = [ ];
     };
     "aarch64-darwin" = {
-      releaseAssetName = "opencode-darwin-arm64.zip";
-      sha256 = "sha256-+mQ/k0AcE1CNjVE3gOVM6cwBID1QERS+m4jWJAi4EB8=";
+      platform = "darwin-arm64";
+      sha256 = "sha256-QRoYFuQYIJIude+CAQP3pVB6vG1Mgo22SOziEnsQo68=";
       buildInputs = [ ];
     };
   };
@@ -21,8 +21,8 @@ in
 fetchPrebuiltBinary {
   pname = "opencode";
   inherit version;
-  url = "https://github.com/anomalyco/opencode/releases/download/v${version}/${release.releaseAssetName}";
+  url = "https://registry.npmjs.org/@opencode/cli-${release.platform}/-/cli-${release.platform}-${version}.tgz";
   inherit (release) sha256 buildInputs;
   binaryName = "opencode";
-  archiveBinaryPath = "opencode";
+  archiveBinaryPath = "package/bin/opencode";
 }
