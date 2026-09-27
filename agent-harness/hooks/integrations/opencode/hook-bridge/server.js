@@ -34,9 +34,9 @@ export default {
         hookPayload("SessionStart", event.sessionID, workingDirectory, {
           source: "startup",
         }),
-      ).catch((failure) => {
+      ).catch((error_) => {
         sessionsAlreadyStarted.delete(event.sessionID);
-        console.error(failure.message);
+        console.error(error_.message);
         return {};
       });
       const additional = additionalContext(dispatcherOutput);
@@ -85,8 +85,8 @@ export default {
         }
         await replyGuard.handleEvent(event);
       }
-    })().catch((failure) => {
-      if (!controller.signal.aborted) console.error(failure.message);
+    })().catch((error_) => {
+      if (!controller.signal.aborted) console.error(error_.message);
     });
 
     return async () => {

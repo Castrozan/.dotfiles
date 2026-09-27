@@ -2,12 +2,19 @@ import { OpenCode } from "@opencode/client";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
+import { isAbsolute } from "node:path";
 
 export async function startOpenCodeServer(invocation, configuration, signal) {
   signal.throwIfAborted();
+  const executable = process.env.AGENT_EVAL_OPENCODE_BINARY;
+  if (!executable || !isAbsolute(executable)) {
+    throw new Error(
+      "AGENT_EVAL_OPENCODE_BINARY must name an absolute executable",
+    );
+  }
   const password = randomUUID();
   const server = spawn(
-    "opencode",
+    executable,
     ["serve", "--hostname", "127.0.0.1", "--port", "0"],
     {
       cwd: invocation.working_directory,
@@ -57,8 +64,8 @@ export async function startOpenCodeServer(invocation, configuration, signal) {
         finish(new Error(`OpenCode server exited during startup: ${code}`));
       const receive = (chunk) => {
         output = (output + chunk.toString()).slice(-8192);
-        const address = output.match(
-          /server listening on (http:\/\/127\.0\.0\.1:\d+)/,
+        const address = /server listening on (http:\/\/127\.0\.0\.1:\d+)/.exec(
+          output,
         );
         if (address) finish(null, address[1]);
       };
@@ -84,7 +91,7 @@ export async function startOpenCodeServer(invocation, configuration, signal) {
       client: OpenCode.make({
         baseUrl,
         headers: {
-          Authorization: `Basic ${Buffer.from(`opencode:${password}`).toString("base64")}`,
+          Authorization: `Basic ${Buffer.from("opencode:" + password).toString("base64")}`,
         },
       }),
       close,

@@ -157,7 +157,7 @@ in
 
   domain-opencode-tui-matches-the-desktop-theme =
     mkEvalCheck "domain-opencode-tui-matches-the-desktop-theme"
-      (deployedTuiSettings.theme == "kanagawa" && deployedTuiSettings.attention.enabled)
-      "opencode's TUI must follow the machine's selected theme and chime when a turn finishes";
+      (deployedTuiSettings.theme.name == "kanagawa" && deployedTuiSettings.attention.notifications)
+      "opencode's TUI must follow the machine's selected theme and notify when a turn finishes";
 }
 // import ./native-checks.nix { inherit pkgs lib cfg; }

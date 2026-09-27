@@ -1,5 +1,4 @@
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -17,9 +16,7 @@ def main():
             environment, workspace = prepare_profile(
                 root, agents, model_url=f"http://127.0.0.1:{model.server_port}/v1"
             )
-            environment["PATH"] = (
-                str(executable.parent) + os.pathsep + environment["PATH"]
-            )
+            environment["AGENT_EVAL_OPENCODE_BINARY"] = str(executable.resolve())
             fixture = workspace / "fixture.txt"
             fixture.write_text("NATIVE_READ_MARKER")
             try:

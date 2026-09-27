@@ -47,6 +47,7 @@ def test_the_measured_subjects_bypass_the_interactive_wrappers():
         assert f"config.{harness}.unwrappedPackage" in agent_eval_definition
     assert "AGENT_EVAL_CLAUDE_BINARY" in agent_eval_definition
     assert "AGENT_EVAL_CODEX_BINARY" in agent_eval_definition
+    assert "AGENT_EVAL_OPENCODE_BINARY" in agent_eval_definition
     assert "config.claude.unwrappedPackage" in agent_eval_definition, (
         "the interactive wrapper appends the always-on reply-shape surface to every launch, "
         "including `-p --system-prompt` with the isolation variables stripped, so an eval that "

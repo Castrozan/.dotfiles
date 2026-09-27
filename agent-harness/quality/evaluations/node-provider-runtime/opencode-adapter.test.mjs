@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { startOpenCodeServer } from "./opencode-server.mjs";
 import {
   collectOpenCodeTextParts,
   openCodeConfig,
@@ -16,6 +17,24 @@ function invocation(overrides = {}) {
     ...overrides,
   };
 }
+
+test("the evaluation server requires an absolute pinned executable", async () => {
+  const previous = process.env.AGENT_EVAL_OPENCODE_BINARY;
+  try {
+    for (const executable of [undefined, "opencode"]) {
+      if (executable === undefined)
+        delete process.env.AGENT_EVAL_OPENCODE_BINARY;
+      else process.env.AGENT_EVAL_OPENCODE_BINARY = executable;
+      await assert.rejects(
+        startOpenCodeServer(invocation(), {}, new AbortController().signal),
+        /AGENT_EVAL_OPENCODE_BINARY must name an absolute executable/,
+      );
+    }
+  } finally {
+    if (previous === undefined) delete process.env.AGENT_EVAL_OPENCODE_BINARY;
+    else process.env.AGENT_EVAL_OPENCODE_BINARY = previous;
+  }
+});
 
 function decision(configuration, action) {
   return configuration.agents["agent-eval"].permissions.findLast(

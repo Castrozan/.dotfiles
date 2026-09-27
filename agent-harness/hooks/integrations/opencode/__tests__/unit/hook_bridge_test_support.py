@@ -2,6 +2,7 @@ import json
 import os
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -23,8 +24,8 @@ def write_hook_bridge_sources(tmp_path, launcher_path):
 def write_hook_dispatcher_launcher(tmp_path):
     launcher_path = tmp_path / "hook-dispatcher-launcher.py"
     launcher_path.write_text(
-        """#!/usr/bin/env python3
-import json
+        f"#!{sys.executable}\n"
+        """import json
 import os
 import sys
 from pathlib import Path

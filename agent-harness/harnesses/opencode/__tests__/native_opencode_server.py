@@ -16,6 +16,7 @@ from contextlib import contextmanager
 class NativeOpenCodeServer:
     def __init__(self, base_url, password, directory):
         self.base_url = base_url
+        self.password = password
         self.authorization = (
             "Basic " + base64.b64encode(f"opencode:{password}".encode()).decode()
         )
