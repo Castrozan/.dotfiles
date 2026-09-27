@@ -12,9 +12,26 @@ TARGETS = {
     "codexcli": ("codex", ".codex/hooks.json"),
     "opencode": ("opencode", ".opencode/plugins/rulesync-hooks.js"),
 }
+RULESYNC_EXECUTABLE = "@rulesyncExecutable@"
 
 
-def build_hooks(source, output, rulesync, runner, opencode_runner):
+def verify_generated_hooks(generated, target):
+    if not generated.is_file() or not generated.stat().st_size:
+        raise ValueError(f"Rulesync did not generate {target} hooks")
+    content = generated.read_text()
+    if target == "opencode":
+        if 'id: "rulesync.hooks"' not in content:
+            raise ValueError("Rulesync did not emit the OpenCode V2 plugin")
+        return
+    hooks = json.loads(content)["hooks"]
+    required = {"SessionStart", "PreToolUse", "PostToolUse", "Stop"}
+    if target == "claudecode":
+        required |= {"SubagentStop", "PermissionRequest"}
+    if set(hooks) != required or any(not hooks[event] for event in required):
+        raise ValueError(f"Rulesync changed the required {target} hook events")
+
+
+def build_hooks(source, output, runner, opencode_runner):
     output.mkdir()
     try:
         with tempfile.TemporaryDirectory(prefix="rulesync-hooks-") as temporary:
@@ -44,7 +61,7 @@ def build_hooks(source, output, rulesync, runner, opencode_runner):
                 destination = output / target
                 subprocess.run(
                     [
-                        str(rulesync),
+                        RULESYNC_EXECUTABLE,
                         "generate",
                         "--input-roots",
                         str(inputs),
@@ -60,22 +77,7 @@ def build_hooks(source, output, rulesync, runner, opencode_runner):
                     check=True,
                     timeout=30,
                 )
-                generated = destination / artifact
-                if not generated.is_file() or not generated.stat().st_size:
-                    raise ValueError(f"Rulesync did not generate {target} hooks")
-                if target != "opencode":
-                    hooks = json.loads(generated.read_text())["hooks"]
-                    required = {"SessionStart", "PreToolUse", "PostToolUse", "Stop"}
-                    if target == "claudecode":
-                        required |= {"SubagentStop", "PermissionRequest"}
-                    if set(hooks) != required or any(
-                        not hooks[event] for event in required
-                    ):
-                        raise ValueError(
-                            f"Rulesync changed the required {target} hook events"
-                        )
-                elif 'id: "rulesync.hooks"' not in generated.read_text():
-                    raise ValueError("Rulesync did not emit the OpenCode V2 plugin")
+                verify_generated_hooks(destination / artifact, target)
     except BaseException:
         shutil.rmtree(output)
         raise
@@ -85,14 +87,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--rulesync", required=True, type=Path)
     parser.add_argument("--runner", required=True)
     parser.add_argument("--opencode-runner", required=True)
     arguments = parser.parse_args()
     build_hooks(
         arguments.source,
         arguments.output,
-        arguments.rulesync,
         arguments.runner,
         arguments.opencode_runner,
     )

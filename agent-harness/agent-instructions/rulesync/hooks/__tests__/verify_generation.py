@@ -6,15 +6,13 @@ import tempfile
 from pathlib import Path
 
 
-def build(builder, source, output, rulesync, directory):
+def build(builder, source, output, directory):
     return subprocess.run(
         [
             sys.executable,
             str(builder),
             str(source),
             str(output),
-            "--rulesync",
-            str(rulesync),
             "--runner",
             "fixture-runner",
             "--opencode-runner",
@@ -29,15 +27,13 @@ def build(builder, source, output, rulesync, directory):
 
 
 def main():
-    builder, canonical, rulesync = (
-        Path(argument).resolve() for argument in sys.argv[1:]
-    )
+    builder, canonical = (Path(argument).resolve() for argument in sys.argv[1:])
     with tempfile.TemporaryDirectory(prefix="rulesync-hook-contract-") as temporary:
         directory = Path(temporary)
         marker = directory / "unrelated"
         marker.write_text("preserve")
         output = directory / "valid"
-        result = build(builder, canonical, output, rulesync, directory)
+        result = build(builder, canonical, output, directory)
         assert result.returncode == 0, result.stderr
         for target, artifact, surface in (
             ("claudecode", ".claude/settings.json", "claude"),
@@ -68,7 +64,7 @@ def main():
             malformed = directory / f"{name}.json"
             malformed.write_text(json.dumps(configuration | {"opencode": change}))
             rejected = directory / name
-            result = build(builder, malformed, rejected, rulesync, directory)
+            result = build(builder, malformed, rejected, directory)
             assert result.returncode != 0, name
             assert not rejected.exists(), f"Partial output retained: {name}"
         assert marker.read_text() == "preserve"

@@ -9,7 +9,6 @@ let
     inherit pkgs lib;
     hostname = "test";
   };
-  rulesync = import ../../package.nix { inherit pkgs; };
   missingPrivateConfiguration = builtins.tryEval (
     builtins.toJSON (
       import ../source.nix {
@@ -23,7 +22,7 @@ let
 in
 {
   rulesync-hook-generation-contract = pkgs.runCommand "rulesync-hook-generation-contract" { } ''
-    ${pkgs.python312}/bin/python3 ${./verify_generation.py} ${../build_hooks.py} ${hooks.source} ${rulesync}/bin/rulesync
+    ${pkgs.python312}/bin/python3 ${./verify_generation.py} ${hooks.builder} ${hooks.source}
     touch "$out"
   '';
   rulesync-hooks-require-darwin-private-allowlists =

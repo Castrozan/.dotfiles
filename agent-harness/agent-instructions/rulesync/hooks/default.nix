@@ -18,17 +18,19 @@ let
       ;
   };
   source = pkgs.writeText "rulesync-hooks.json" (builtins.toJSON canonical);
+  builder = pkgs.replaceVars ./build_hooks.py {
+    rulesyncExecutable = "${rulesync}/bin/rulesync";
+  };
   runner = "${hookScripts}/run-hook.sh";
   opencodeRunner = "${runner} ${../../../hooks/integrations/opencode/policy-transport}/dispatch.py";
 in
 pkgs.runCommand "rulesync-native-hooks"
   {
     nativeBuildInputs = [ pkgs.python312 ];
-    passthru = { inherit source canonical; };
+    passthru = { inherit source canonical builder; };
   }
   ''
-    python3 ${./build_hooks.py} ${source} "$out" \
-      --rulesync ${rulesync}/bin/rulesync \
+    python3 ${builder} ${source} "$out" \
       --runner ${lib.escapeShellArg runner} \
       --opencode-runner ${lib.escapeShellArg opencodeRunner}
   ''
