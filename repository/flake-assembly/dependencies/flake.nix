@@ -34,10 +34,8 @@
     hermes.url = "github:NousResearch/hermes-agent/d337b736aa1e8ebecfab043842d13e4a2d2f48a3";
 
     # Tag-pinned — keep own nixpkgs (incompatible or untested with ours)
-    tui-notifier.url = "github:castrozan/tui-notifier/1.0.1";
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";
     systemd-manager-tui.inputs.nixpkgs.follows = "nixpkgs";
-    readItNow-rc.url = "github:castrozan/readItNow-rc/1.1.0";
     devenv.url = "github:cachix/devenv/v2.2.1";
     bluetui.url = "github:castrozan/bluetui/v0.9.1";
     hyprland.url = "github:hyprwm/Hyprland/v0.55.2";
@@ -58,8 +56,6 @@
     lazygit.inputs.nixpkgs.follows = "nixpkgs";
     viu.url = "github:viu-media/viu";
     viu.inputs.nixpkgs.follows = "nixpkgs";
-    voice-pipeline.url = "github:castrozan/voice-pipeline";
-    voice-pipeline.inputs.nixpkgs.follows = "nixpkgs";
 
     # Well-maintained, nixpkgs-agnostic
     nixgl.url = "github:nix-community/nixGL";

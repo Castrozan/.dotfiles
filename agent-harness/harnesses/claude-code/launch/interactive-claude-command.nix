@@ -78,6 +78,12 @@ in
 
   config.home = {
     packages = [ claudePackage ];
+    activation.removeDanglingClaudeBackup = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      claudeBackup="${config.home.homeDirectory}/.local/bin/claude.bak"
+      if [ -L "$claudeBackup" ] && [ ! -e "$claudeBackup" ]; then
+        run ${pkgs.coreutils}/bin/rm -- "$claudeBackup"
+      fi
+    '';
     file.".local/bin/claude" = {
       source = "${claudePackage}/bin/claude";
       force = true;

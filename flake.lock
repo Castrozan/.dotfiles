@@ -4,10 +4,7 @@
       "inputs": {
         "darwin": "darwin",
         "home-manager": "home-manager",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ],
+        "nixpkgs": ["dependencies", "nixpkgs"],
         "systems": "systems"
       },
       "locked": {
@@ -26,26 +23,14 @@
     },
     "aquamarine": {
       "inputs": {
-        "hyprutils": [
-          "dependencies",
-          "hyprland",
-          "hyprutils"
-        ],
+        "hyprutils": ["dependencies", "hyprland", "hyprutils"],
         "hyprwayland-scanner": [
           "dependencies",
           "hyprland",
           "hyprwayland-scanner"
         ],
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1778620495,
@@ -152,20 +137,9 @@
     },
     "cachix": {
       "inputs": {
-        "devenv": [
-          "dependencies",
-          "devenv"
-        ],
-        "flake-compat": [
-          "dependencies",
-          "devenv",
-          "flake-compat"
-        ],
-        "git-hooks": [
-          "dependencies",
-          "devenv",
-          "git-hooks"
-        ],
+        "devenv": ["dependencies", "devenv"],
+        "flake-compat": ["dependencies", "devenv", "flake-compat"],
+        "git-hooks": ["dependencies", "devenv", "git-hooks"],
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
@@ -186,10 +160,7 @@
     "cbonsai": {
       "inputs": {
         "flake-utils": "flake-utils_2",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1762868389,
@@ -207,10 +178,7 @@
     },
     "clawde": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1790475482,
@@ -230,10 +198,7 @@
     "cmatrix": {
       "inputs": {
         "flake-utils": "flake-utils_3",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1781637146,
@@ -283,11 +248,7 @@
     },
     "darwin": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "agenix",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "agenix", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1744478979,
@@ -326,13 +287,10 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "private-config": "private-config",
         "quickshell": "quickshell",
-        "readItNow-rc": "readItNow-rc",
         "stylix": "stylix",
         "systemd-manager-tui": "systemd-manager-tui",
-        "tui-notifier": "tui-notifier",
         "tuisvn": "tuisvn",
         "viu": "viu",
-        "voice-pipeline": "voice-pipeline",
         "voxtype": "voxtype",
         "whisp-away": "whisp-away"
       },
@@ -438,11 +396,7 @@
     },
     "flake-parts": {
       "inputs": {
-        "nixpkgs-lib": [
-          "dependencies",
-          "devenv",
-          "nixpkgs"
-        ]
+        "nixpkgs-lib": ["dependencies", "devenv", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1778716662,
@@ -460,11 +414,7 @@
     },
     "flake-parts_2": {
       "inputs": {
-        "nixpkgs-lib": [
-          "dependencies",
-          "hermes",
-          "nixpkgs"
-        ]
+        "nixpkgs-lib": ["dependencies", "hermes", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1782949081,
@@ -500,11 +450,7 @@
     },
     "flake-parts_4": {
       "inputs": {
-        "nixpkgs-lib": [
-          "dependencies",
-          "stylix",
-          "nixpkgs"
-        ]
+        "nixpkgs-lib": ["dependencies", "stylix", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1767609335,
@@ -698,16 +644,8 @@
     },
     "git-hooks": {
       "inputs": {
-        "flake-compat": [
-          "dependencies",
-          "devenv",
-          "flake-compat"
-        ],
-        "nixpkgs": [
-          "dependencies",
-          "devenv",
-          "nixpkgs"
-        ]
+        "flake-compat": ["dependencies", "devenv", "flake-compat"],
+        "nixpkgs": ["dependencies", "devenv", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1782908218,
@@ -725,12 +663,7 @@
     },
     "gitignore": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "pre-commit-hooks",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "pre-commit-hooks", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1709087332,
@@ -787,10 +720,7 @@
     },
     "herdr-pace": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1789755212,
@@ -834,11 +764,7 @@
     },
     "home-manager": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "agenix",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "agenix", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1745494811,
@@ -856,11 +782,7 @@
     },
     "home-manager_2": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hermes",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "hermes", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1786487128,
@@ -878,10 +800,7 @@
     },
     "home-manager_3": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1775425411,
@@ -900,21 +819,9 @@
     },
     "hyprcursor": {
       "inputs": {
-        "hyprlang": [
-          "dependencies",
-          "hyprland",
-          "hyprlang"
-        ],
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "hyprlang": ["dependencies", "hyprland", "hyprlang"],
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1776511930,
@@ -932,21 +839,9 @@
     },
     "hyprgraphics": {
       "inputs": {
-        "hyprutils": [
-          "dependencies",
-          "hyprland",
-          "hyprutils"
-        ],
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "hyprutils": ["dependencies", "hyprland", "hyprutils"],
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1776426399,
@@ -995,42 +890,18 @@
     },
     "hyprland-guiutils": {
       "inputs": {
-        "aquamarine": [
-          "dependencies",
-          "hyprland",
-          "aquamarine"
-        ],
-        "hyprgraphics": [
-          "dependencies",
-          "hyprland",
-          "hyprgraphics"
-        ],
-        "hyprlang": [
-          "dependencies",
-          "hyprland",
-          "hyprlang"
-        ],
+        "aquamarine": ["dependencies", "hyprland", "aquamarine"],
+        "hyprgraphics": ["dependencies", "hyprland", "hyprgraphics"],
+        "hyprlang": ["dependencies", "hyprland", "hyprlang"],
         "hyprtoolkit": "hyprtoolkit",
-        "hyprutils": [
-          "dependencies",
-          "hyprland",
-          "hyprutils"
-        ],
+        "hyprutils": ["dependencies", "hyprland", "hyprutils"],
         "hyprwayland-scanner": [
           "dependencies",
           "hyprland",
           "hyprwayland-scanner"
         ],
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1776426575,
@@ -1048,16 +919,8 @@
     },
     "hyprland-protocols": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1772460177,
@@ -1075,21 +938,9 @@
     },
     "hyprlang": {
       "inputs": {
-        "hyprutils": [
-          "dependencies",
-          "hyprland",
-          "hyprutils"
-        ],
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "hyprutils": ["dependencies", "hyprland", "hyprutils"],
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1777320127,
@@ -1137,18 +988,8 @@
           "hyprland-guiutils",
           "hyprwayland-scanner"
         ],
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "hyprland-guiutils",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "hyprland-guiutils",
-          "systems"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "hyprland-guiutils", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "hyprland-guiutils", "systems"]
       },
       "locked": {
         "lastModified": 1772462885,
@@ -1166,16 +1007,8 @@
     },
     "hyprutils": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1778234770,
@@ -1193,16 +1026,8 @@
     },
     "hyprwayland-scanner": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1777159683,
@@ -1220,21 +1045,9 @@
     },
     "hyprwire": {
       "inputs": {
-        "hyprutils": [
-          "dependencies",
-          "hyprland",
-          "hyprutils"
-        ],
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "hyprutils": ["dependencies", "hyprland", "hyprutils"],
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1778410714,
@@ -1253,10 +1066,7 @@
     "install-nothing": {
       "inputs": {
         "flake-utils": "flake-utils_4",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1765388681,
@@ -1276,10 +1086,7 @@
       "inputs": {
         "flake-compat": "flake-compat_3",
         "flake-parts": "flake-parts_3",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ],
+        "nixpkgs": ["dependencies", "nixpkgs"],
         "systems": "systems_7",
         "treefmt-nix": "treefmt-nix_2"
       },
@@ -1299,34 +1106,12 @@
     },
     "nix": {
       "inputs": {
-        "flake-compat": [
-          "dependencies",
-          "devenv",
-          "flake-compat"
-        ],
-        "flake-parts": [
-          "dependencies",
-          "devenv",
-          "flake-parts"
-        ],
-        "git-hooks-nix": [
-          "dependencies",
-          "devenv",
-          "git-hooks"
-        ],
-        "nixpkgs": [
-          "dependencies",
-          "devenv",
-          "nixpkgs"
-        ],
-        "nixpkgs-23-11": [
-          "dependencies",
-          "devenv"
-        ],
-        "nixpkgs-regression": [
-          "dependencies",
-          "devenv"
-        ]
+        "flake-compat": ["dependencies", "devenv", "flake-compat"],
+        "flake-parts": ["dependencies", "devenv", "flake-parts"],
+        "git-hooks-nix": ["dependencies", "devenv", "git-hooks"],
+        "nixpkgs": ["dependencies", "devenv", "nixpkgs"],
+        "nixpkgs-23-11": ["dependencies", "devenv"],
+        "nixpkgs-regression": ["dependencies", "devenv"]
       },
       "locked": {
         "lastModified": 1785349663,
@@ -1345,10 +1130,7 @@
     },
     "nix-darwin": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1772129556,
@@ -1367,16 +1149,8 @@
     },
     "nixd": {
       "inputs": {
-        "flake-parts": [
-          "dependencies",
-          "devenv",
-          "flake-parts"
-        ],
-        "nixpkgs": [
-          "dependencies",
-          "devenv",
-          "nixpkgs"
-        ],
+        "flake-parts": ["dependencies", "devenv", "flake-parts"],
+        "nixpkgs": ["dependencies", "devenv", "nixpkgs"],
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
@@ -1396,10 +1170,7 @@
     "nixgl": {
       "inputs": {
         "flake-utils": "flake-utils_5",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1762090880,
@@ -1491,22 +1262,6 @@
       "original": {
         "owner": "nixos",
         "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_10": {
-      "locked": {
-        "lastModified": 1720535198,
-        "narHash": "sha256-zwVvxrdIzralnSbcpghA92tWu2DV2lwv89xZc8MTrbg=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "205fd4226592cc83fd4c0885a3e4c9c400efabb5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-23.11",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -1658,29 +1413,9 @@
         "type": "github"
       }
     },
-    "nixpkgs_9": {
-      "locked": {
-        "lastModified": 1755704039,
-        "narHash": "sha256-gKlP0LbyJ3qX0KObfIWcp5nbuHSb5EHwIvU6UcNBg2A=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "9cb344e96d5b6918e94e1bca2d9f3ea1e9615545",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-25.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "npm-lockfile-fix": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hermes",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "hermes", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1775903712,
@@ -1698,16 +1433,8 @@
     },
     "nur": {
       "inputs": {
-        "flake-parts": [
-          "dependencies",
-          "stylix",
-          "flake-parts"
-        ],
-        "nixpkgs": [
-          "dependencies",
-          "stylix",
-          "nixpkgs"
-        ]
+        "flake-parts": ["dependencies", "stylix", "flake-parts"],
+        "nixpkgs": ["dependencies", "stylix", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1767886815,
@@ -1727,11 +1454,7 @@
       "inputs": {
         "flake-compat": "flake-compat_2",
         "gitignore": "gitignore",
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1778507602,
@@ -1765,21 +1488,9 @@
     },
     "pyproject-build-systems": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hermes",
-          "nixpkgs"
-        ],
-        "pyproject-nix": [
-          "dependencies",
-          "hermes",
-          "pyproject-nix"
-        ],
-        "uv2nix": [
-          "dependencies",
-          "hermes",
-          "uv2nix"
-        ]
+        "nixpkgs": ["dependencies", "hermes", "nixpkgs"],
+        "pyproject-nix": ["dependencies", "hermes", "pyproject-nix"],
+        "uv2nix": ["dependencies", "hermes", "uv2nix"]
       },
       "locked": {
         "lastModified": 1785115949,
@@ -1797,11 +1508,7 @@
     },
     "pyproject-nix": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hermes",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "hermes", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1784591072,
@@ -1819,10 +1526,7 @@
     },
     "quickshell": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs-unstable"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs-unstable"]
       },
       "locked": {
         "lastModified": 1775720097,
@@ -1839,25 +1543,6 @@
         "url": "https://git.outfoxxed.me/quickshell/quickshell"
       }
     },
-    "readItNow-rc": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_9"
-      },
-      "locked": {
-        "lastModified": 1757707883,
-        "narHash": "sha256-ya919X7RktbUyWCDX9DFT1+KsF57snOdR17tAZ7jpK0=",
-        "owner": "castrozan",
-        "repo": "readItNow-rc",
-        "rev": "ab199114667489481ad5bed6b92ccfba4bf7748b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "castrozan",
-        "ref": "1.1.0",
-        "repo": "readItNow-rc",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "dependencies": "dependencies"
@@ -1865,11 +1550,7 @@
     },
     "rust-overlay": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "bluetui",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "bluetui", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1752115281,
@@ -1887,11 +1568,7 @@
     },
     "rust-overlay_2": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "devenv",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "devenv", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1782875958,
@@ -1909,11 +1586,7 @@
     },
     "rust-overlay_3": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "herdr",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "herdr", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1783577481,
@@ -1938,10 +1611,7 @@
         "firefox-gnome-theme": "firefox-gnome-theme",
         "flake-parts": "flake-parts_4",
         "gnome-shell": "gnome-shell",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ],
+        "nixpkgs": ["dependencies", "nixpkgs"],
         "nur": "nur",
         "systems": "systems_9",
         "tinted-foot": "tinted-foot",
@@ -1967,10 +1637,7 @@
     },
     "systemd-manager-tui": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1772388605,
@@ -2249,12 +1916,7 @@
     },
     "treefmt-nix": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "devenv",
-          "nixd",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "devenv", "nixd", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1780220602,
@@ -2288,32 +1950,10 @@
         "type": "github"
       }
     },
-    "tui-notifier": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_10"
-      },
-      "locked": {
-        "lastModified": 1755004924,
-        "narHash": "sha256-aiAvtUXwtUk7zyLGzBjTniue9O19giFN62VHGmgOc7Q=",
-        "owner": "castrozan",
-        "repo": "tui-notifier",
-        "rev": "cb6ab45f504c596c2f4259a86cd3e247c045f96b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "castrozan",
-        "ref": "1.0.1",
-        "repo": "tui-notifier",
-        "type": "github"
-      }
-    },
     "tuisvn": {
       "inputs": {
         "flake-utils": "flake-utils_6",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1762953472,
@@ -2331,16 +1971,8 @@
     },
     "uv2nix": {
       "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "hermes",
-          "nixpkgs"
-        ],
-        "pyproject-nix": [
-          "dependencies",
-          "hermes",
-          "pyproject-nix"
-        ]
+        "nixpkgs": ["dependencies", "hermes", "nixpkgs"],
+        "pyproject-nix": ["dependencies", "hermes", "pyproject-nix"]
       },
       "locked": {
         "lastModified": 1785277507,
@@ -2359,10 +1991,7 @@
     "viu": {
       "inputs": {
         "flake-utils": "flake-utils_7",
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["dependencies", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1775728248,
@@ -2375,27 +2004,6 @@
       "original": {
         "owner": "viu-media",
         "repo": "viu",
-        "type": "github"
-      }
-    },
-    "voice-pipeline": {
-      "inputs": {
-        "nixpkgs": [
-          "dependencies",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1772348273,
-        "narHash": "sha256-SRX5VKLxWn8ff0CyNR+Iv7AG/qXcjA+mn91jyYT1EQk=",
-        "owner": "castrozan",
-        "repo": "voice-pipeline",
-        "rev": "9c94a8407d43acd05d2522b9a9f928088759feb0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "castrozan",
-        "repo": "voice-pipeline",
         "type": "github"
       }
     },
@@ -2444,31 +2052,15 @@
           "hyprland",
           "hyprland-protocols"
         ],
-        "hyprlang": [
-          "dependencies",
-          "hyprland",
-          "hyprlang"
-        ],
-        "hyprutils": [
-          "dependencies",
-          "hyprland",
-          "hyprutils"
-        ],
+        "hyprlang": ["dependencies", "hyprland", "hyprlang"],
+        "hyprutils": ["dependencies", "hyprland", "hyprutils"],
         "hyprwayland-scanner": [
           "dependencies",
           "hyprland",
           "hyprwayland-scanner"
         ],
-        "nixpkgs": [
-          "dependencies",
-          "hyprland",
-          "nixpkgs"
-        ],
-        "systems": [
-          "dependencies",
-          "hyprland",
-          "systems"
-        ]
+        "nixpkgs": ["dependencies", "hyprland", "nixpkgs"],
+        "systems": ["dependencies", "hyprland", "systems"]
       },
       "locked": {
         "lastModified": 1778265244,
