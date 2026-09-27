@@ -49,6 +49,7 @@ def load_settings(settings_file):
 
 
 def write_settings_atomically(settings_file, settings):
+    existing_file_metadata = os.stat(settings_file)
     settings_directory = os.path.dirname(settings_file)
     temporary_handle = tempfile.NamedTemporaryFile(
         "w", encoding="utf-8", dir=settings_directory, delete=False
@@ -57,6 +58,11 @@ def write_settings_atomically(settings_file, settings):
         json.dump(settings, temporary_handle, indent=2)
         temporary_handle.write("\n")
     os.chmod(temporary_handle.name, 0o644)
+    os.chown(
+        temporary_handle.name,
+        existing_file_metadata.st_uid,
+        existing_file_metadata.st_gid,
+    )
     os.replace(temporary_handle.name, settings_file)
 
 

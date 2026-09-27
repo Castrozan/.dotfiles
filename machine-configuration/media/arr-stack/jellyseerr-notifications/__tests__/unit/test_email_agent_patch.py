@@ -1,6 +1,7 @@
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from jellyseerr_email_agent_test_support import (
     configuration_for,
@@ -16,6 +17,34 @@ import patch_jellyseerr_email_notifications as patcher
 
 def written_agents(settings_file):
     return json.loads(settings_file.read_text())["notifications"]["agents"]
+
+
+def test_atomic_replacement_preserves_container_file_ownership(tmp_path, monkeypatch):
+    settings_file = tmp_path / "settings.json"
+    write_json(settings_file, {})
+    original_stat = patcher.os.stat
+    ownership_changes = []
+
+    def file_metadata(path, *arguments, **keyword_arguments):
+        if str(path) == str(settings_file):
+            return SimpleNamespace(st_uid=1500, st_gid=1600)
+        return original_stat(path, *arguments, **keyword_arguments)
+
+    def change_owner(path, user_id, group_id):
+        ownership_changes.append((user_id, group_id))
+        assert json.loads(Path(path).read_text()) == {
+            "main": {"applicationTitle": "Test"}
+        }
+
+    monkeypatch.setattr(patcher.os, "stat", file_metadata)
+    monkeypatch.setattr(patcher.os, "chown", change_owner)
+    patcher.write_settings_atomically(
+        str(settings_file), {"main": {"applicationTitle": "Test"}}
+    )
+    assert ownership_changes == [(1500, 1600)]
+    assert json.loads(settings_file.read_text()) == {
+        "main": {"applicationTitle": "Test"}
+    }
 
 
 def test_real_password_enables_and_configures_email_agent(tmp_path, monkeypatch):
