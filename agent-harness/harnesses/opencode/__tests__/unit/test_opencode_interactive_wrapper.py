@@ -12,9 +12,15 @@ LAUNCHER = Path(__file__).resolve().parents[2] / "scripts/launch_opencode.sh"
 @pytest.mark.parametrize(
     ("arguments", "interactive", "expected"),
     [
-        ([], True, ["--standalone"]),
-        (["/workspace"], True, ["--standalone", "/workspace"]),
-        (["mini", "--continue"], True, ["mini", "--standalone", "--continue"]),
+        ([], True, []),
+        (
+            ["--server", "http://localhost:9000"],
+            True,
+            ["--server", "http://localhost:9000"],
+        ),
+        (["--standalone"], True, ["--standalone"]),
+        (["/workspace"], True, ["/workspace"]),
+        (["mini", "--continue"], True, ["mini", "--continue"]),
         (["run", "hello"], False, ["run", "hello"]),
         (["api", "get", "/api/agent"], False, ["api", "get", "/api/agent"]),
         (["service", "status"], False, ["service", "status"]),
