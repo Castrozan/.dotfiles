@@ -1,5 +1,7 @@
 """Cookie loading, credential-based login, and authenticated client construction."""
 
+import asyncio
+import getpass
 import json
 import os
 import sys
@@ -54,45 +56,42 @@ async def get_client():
     return client
 
 
-async def command_login(args):
+def command_login(args):
     from twikit import Client
 
-    client = Client("en-US")
+    with asyncio.Runner() as runner:
+        client = Client("en-US")
+        COOKIES_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-    COOKIES_PATH.parent.mkdir(parents=True, exist_ok=True)
+        if COOKIES_PATH.exists():
+            print(f"Loading existing cookies from {COOKIES_PATH}")
+            client.load_cookies(str(COOKIES_PATH))
+            try:
+                user_id = runner.run(client.user_id())
+                print(f"Already authenticated as user {user_id}")
+                return
+            except Exception:
+                print("Existing cookies expired, need fresh login")
 
-    if COOKIES_PATH.exists():
-        print(f"Loading existing cookies from {COOKIES_PATH}")
-        client.load_cookies(str(COOKIES_PATH))
-        try:
-            user_id = await client.user_id()
-            print(f"Already authenticated as user {user_id}")
-            return
-        except Exception:
-            print("Existing cookies expired, need fresh login")
+        username = read_secret_file(USERNAME_FILE)
+        email = read_secret_file(EMAIL_FILE)
+        password = read_secret_file(PASSWORD_FILE)
 
-    username = read_secret_file(USERNAME_FILE)
-    email = read_secret_file(EMAIL_FILE)
-    password = read_secret_file(PASSWORD_FILE)
+        if not all([username, email, password]):
+            print("No agenix secrets found, falling back to interactive login")
+            username = input("X username: ")
+            email = input("X email: ")
+            password = getpass.getpass("X password: ")
 
-    if not all([username, email, password]):
-        print("No agenix secrets found, falling back to interactive login")
-        username = input("X username: ")
-        email = input("X email: ")
-        password = input("X password: ")
-
-    totp_secret = None
-    if args.totp:
-        totp_secret = args.totp
-
-    print(f"Logging in as {username}...")
-
-    await client.login(
-        auth_info_1=username,
-        auth_info_2=email,
-        password=password,
-        totp_secret=totp_secret,
-    )
+        print(f"Logging in as {username}...")
+        runner.run(
+            client.login(
+                auth_info_1=username,
+                auth_info_2=email,
+                password=password,
+                totp_secret=args.totp or None,
+            )
+        )
 
     client.save_cookies(str(COOKIES_PATH))
     os.chmod(str(COOKIES_PATH), 0o600)

@@ -19,7 +19,7 @@ FETCH_EXTENSIONS_MUTATION = (
 
 
 def first_line_of(message):
-    return (message or "").splitlines()[0] if message else "no message"
+    return message.splitlines()[0] if message else "no message"
 
 
 def execute(graphql_url, query, variables=None, timeout_seconds=None):

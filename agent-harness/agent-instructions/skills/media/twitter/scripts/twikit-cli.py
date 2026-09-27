@@ -121,7 +121,6 @@ def build_argument_parser():
 
 def build_command_dispatch_table():
     return {
-        "login": command_login,
         "whoami": command_whoami,
         "search": command_search,
         "user": command_user,
@@ -145,6 +144,9 @@ def build_command_dispatch_table():
 def main():
     parser = build_argument_parser()
     args = parser.parse_args()
+    if args.command == "login":
+        command_login(args)
+        return
     dispatch_table = build_command_dispatch_table()
     asyncio.run(dispatch_table[args.command](args))
 
