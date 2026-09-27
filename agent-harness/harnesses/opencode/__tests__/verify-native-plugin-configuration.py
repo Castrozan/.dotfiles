@@ -43,8 +43,8 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
                 {
                     "instructions": ["native-configuration-overlay.md"],
                     "mcp": {
-                        name: {"enabled": False}
-                        for name in emitted_configuration["mcp"]
+                        name: server | {"enabled": False}
+                        for name, server in emitted_configuration["mcp"].items()
                     },
                 }
             )
