@@ -93,6 +93,7 @@ let
       status_line_use_colors = true;
       terminal_title = [
         "activity"
+        "thread-name"
         "project-name"
         "git-branch"
       ];
