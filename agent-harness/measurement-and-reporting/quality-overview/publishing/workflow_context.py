@@ -1,24 +1,12 @@
 import argparse
-from datetime import datetime
 import json
 from pathlib import Path
 import re
 import subprocess
 
+from artifact_selection import ARTIFACT_PRODUCERS, select_artifacts, timestamp
+
 REPOSITORY = "Castrozan/.dotfiles"
-ARTIFACT_NAMES = (
-    "bats-junit",
-    "python-junit",
-    "python-coverage",
-    "verdr-artifact-evidence",
-)
-
-
-def timestamp(value):
-    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    if parsed.utcoffset() is None:
-        raise ValueError("Workflow timestamps require a timezone")
-    return parsed
 
 
 def workflow_identity(run):
@@ -35,7 +23,7 @@ def workflow_identity(run):
             raise ValueError("Workflow repository differs from the approved producer")
     if not re.fullmatch(r"[a-f0-9]{40}", run["head_sha"]):
         raise ValueError("Workflow revision must be exact")
-    if not isinstance(run["run_attempt"], int) or run["run_attempt"] < 1:
+    if type(run["run_attempt"]) is not int or run["run_attempt"] < 1:
         raise ValueError("Workflow attempt must be positive")
     if timestamp(run["run_started_at"]) > timestamp(run["updated_at"]):
         raise ValueError("Workflow timestamps are reversed")
@@ -53,43 +41,14 @@ def workflow_identity(run):
     }
 
 
-def belongs_to_attempt(artifact, workflow):
-    origin = artifact.get("workflow_run", {})
-    return (
-        str(origin.get("id")) == workflow["runId"]
-        and origin.get("head_sha") == workflow["revision"]
-        and timestamp(workflow["startedAt"])
-        <= timestamp(artifact["created_at"])
-        <= timestamp(workflow["completedAt"])
-    )
-
-
-def select_artifacts(artifacts, workflow):
-    selected = {}
-    for name in ARTIFACT_NAMES:
-        candidates = [
-            artifact
-            for artifact in artifacts
-            if artifact["name"] == name and belongs_to_attempt(artifact, workflow)
-        ]
-        if len(candidates) != 1:
-            selected[name] = {
-                "id": None,
-                "reason": f"Expected one {name} artifact for this attempt; found {len(candidates)}",
-            }
-        elif candidates[0]["expired"]:
-            selected[name] = {"id": None, "reason": f"{name} artifact has expired"}
-        else:
-            selected[name] = {"id": candidates[0]["id"], "reason": None}
-    return selected
-
-
-def build_context(run, jobs, artifacts):
+def build_context(run, jobs, artifacts, attempts=None):
     workflow = workflow_identity(run)
     return {
         "workflow": workflow,
         "jobs": jobs,
-        "artifacts": select_artifacts(artifacts, workflow),
+        "artifacts": select_artifacts(
+            artifacts, workflow, jobs, attempts or [workflow]
+        ),
     }
 
 
@@ -117,6 +76,35 @@ def complete_page(document, key):
     return items
 
 
+def producing_attempts(workflow, jobs):
+    attempts = [workflow]
+    producer_names = {name for name, _ in ARTIFACT_PRODUCERS.values()}
+    oldest_job = min(
+        (
+            timestamp(job["started_at"])
+            for job in jobs
+            if job.get("name") in producer_names and job.get("started_at")
+        ),
+        default=timestamp(workflow["startedAt"]),
+    )
+    for number in range(workflow["runAttempt"] - 1, 0, -1):
+        if oldest_job >= timestamp(attempts[-1]["startedAt"]):
+            break
+        route = f"repos/{REPOSITORY}/actions/runs/{workflow['runId']}/attempts/{number}"
+        previous = workflow_identity(github_document(route))
+        if (
+            any(
+                previous[key] != workflow[key]
+                for key in ("repository", "revision", "runId")
+            )
+            or previous["runAttempt"] != number
+            or timestamp(previous["completedAt"]) > timestamp(attempts[-1]["startedAt"])
+        ):
+            raise ValueError("Producing attempt history differs from the current run")
+        attempts.append(previous)
+    return attempts
+
+
 def collect_context(event):
     run = event["workflow_run"]
     workflow_identity(run)
@@ -135,7 +123,9 @@ def collect_context(event):
     artifacts = complete_page(
         github_document(f"{route}/artifacts?per_page=100"), "artifacts"
     )
-    return build_context(confirmed, jobs, artifacts)
+    return build_context(
+        confirmed, jobs, artifacts, producing_attempts(actual_identity, jobs)
+    )
 
 
 def main():

@@ -90,3 +90,35 @@ test("missing XML after download remains missing despite a valid artifact select
   assert.equal(evidence.usable, false);
   assert.equal(evidence.measurement, null);
 });
+
+test("a partial retry retains original evidence times and attempt identity", async (context) => {
+  const input = await fixture(context, true);
+  input.context.workflow.runAttempt = 2;
+  input.context.workflow.startedAt = new Date(Date.now() - 5000).toISOString();
+  input.context.workflow.completedAt = new Date().toISOString();
+  const { payload } = await build(input);
+  const evidence = payload.overview.evidence.find(
+    (item) => item.id === "python-unit",
+  );
+  assert.equal(evidence.usable, true);
+  assert.equal(evidence.run.id, "1.1:python-unit");
+  assert.equal(
+    evidence.run.startedAt,
+    input.context.jobs[1].steps[0].started_at,
+  );
+  assert.equal(payload.workflow.runAttempt, 2);
+});
+
+test("required evidence completeness accepts failed tests but rejects missing measurements", async () => {
+  const { incompleteEvidence } = await import("../check_completeness.mjs");
+  const { requiredEvidenceIds } = await import("../evidence_inputs.mjs");
+  const evidence = requiredEvidenceIds.map((id) => ({
+    id,
+    usable: true,
+    outcome: "failed",
+  }));
+  assert.deepEqual(incompleteEvidence({ evidence }), []);
+  evidence[0].usable = false;
+  assert.deepEqual(incompleteEvidence({ evidence }), ["source-preservation"]);
+  assert.equal(incompleteEvidence({ evidence: [] }).length, 11);
+});
