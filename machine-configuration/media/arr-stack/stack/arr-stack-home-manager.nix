@@ -65,6 +65,7 @@ let
   ];
   dataDirectories = [
     "torrents"
+    "torrents/audiobooks"
     "media/tv"
     "media/movies"
     "media/tv-private"
