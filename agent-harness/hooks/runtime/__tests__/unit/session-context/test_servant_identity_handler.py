@@ -11,6 +11,7 @@ INTERACTIVE_SESSION_ENVIRONMENT = {
 @pytest.fixture(autouse=True)
 def keyboard_driven_session(monkeypatch):
     monkeypatch.delenv("CLAWDE_AGENT_NAME", raising=False)
+    monkeypatch.delenv("OPENCLAW_GATEWAY_PORT", raising=False)
     for name, value in INTERACTIVE_SESSION_ENVIRONMENT.items():
         monkeypatch.setenv(name, value)
 
@@ -58,6 +59,26 @@ class TestResumeKeepsOneServant:
 
 
 class TestSessionsThatGetNoServant:
+    @pytest.mark.parametrize("source", ["startup", "resume", "compact"])
+    @pytest.mark.parametrize(
+        "payload_key", ["session_id", "conversation_id", "thread_id"]
+    )
+    def test_openclaw_keeps_its_identity_in_any_project(
+        self, monkeypatch, tmp_path, source, payload_key
+    ):
+        monkeypatch.setenv("OPENCLAW_GATEWAY_PORT", "18789")
+        monkeypatch.chdir(tmp_path)
+        assert (
+            servant_identity_handler.handle(
+                {
+                    "hook_event_name": "SessionStart",
+                    payload_key: "openclaw-probe",
+                    "source": source,
+                }
+            )
+            is None
+        )
+
     def test_a_clawde_agent_keeps_the_identity_it_already_has(self, monkeypatch):
         monkeypatch.setenv("CLAWDE_AGENT_NAME", "steward")
         assert _handle("clawde-probe") is None

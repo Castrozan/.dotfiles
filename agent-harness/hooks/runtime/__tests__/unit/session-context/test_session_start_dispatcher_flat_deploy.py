@@ -27,6 +27,7 @@ def _injected_context(
             "HOME": str(tmp_path),
             "TMPDIR": str(tmp_path),
             INTERACTIVE_ENV_VAR: "/nix/store/preferences.md",
+            "OPENCLAW_GATEWAY_PORT": "",
             **(extra_environment or {}),
         },
         working_directory=working_directory,
@@ -41,6 +42,13 @@ def test_session_start_dispatcher_names_the_servant_after_flat_deploy(tmp_path):
     """The Servant reaches the session as a value here and as a rule in the appended
     system prompt, so the flat deploy has to reach the servants domain to name one."""
     assert "Servant: " in _injected_context(tmp_path, "servant-flat-probe")
+
+
+def test_openclaw_receives_no_servant_after_flat_deploy(tmp_path):
+    context = _injected_context(
+        tmp_path, "openclaw-flat-probe", {"OPENCLAW_GATEWAY_PORT": "18789"}
+    )
+    assert "Servant: " not in context
 
 
 def test_a_repeated_session_id_names_the_same_servant(tmp_path):
