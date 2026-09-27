@@ -52,6 +52,26 @@ let
     event: lib.length (deployedCommandsForEvent event) != 1
   ) hooksEventDefinition.inlineExceptionEvents;
 
+  expectedTimeoutSecondsByEvent = {
+    PreToolUse = 10;
+    PostToolUse = 15;
+    SessionStart = 5;
+    Stop = 5;
+    SubagentStop = 5;
+    PermissionRequest = 1;
+  };
+
+  eventsWithIncorrectTimeoutSeconds = lib.filter (
+    event:
+    let
+      registeredHooks = lib.concatMap (registration: registration.hooks or [ ]) (
+        deployedSettings.hooks.${event} or [ ]
+      );
+      dispatcherHooks = lib.filter (hook: hook.command != herdrSessionCommand) registeredHooks;
+    in
+    map (hook: hook.timeout or null) dispatcherHooks != [ expectedTimeoutSecondsByEvent.${event} ]
+  ) (lib.attrNames expectedTimeoutSecondsByEvent);
+
   registrationRefusesToDegradeWithoutPrivateConfig =
     let
       attempt = builtins.tryEval (
@@ -70,6 +90,13 @@ let
     !attempt.success;
 in
 {
+  hooks-claude-native-timeouts-use-seconds =
+    mkEvalCheck "hooks-claude-native-timeouts-use-seconds" (eventsWithIncorrectTimeoutSeconds == [ ])
+      (
+        "Claude command hook timeouts are seconds; incorrect dispatcher budgets: "
+        + lib.concatStringsSep ", " eventsWithIncorrectTimeoutSeconds
+      );
+
   hooks-claude-reports-its-session-to-herdr =
     mkEvalCheck "hooks-claude-reports-its-session-to-herdr"
       (

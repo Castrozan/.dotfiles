@@ -30,12 +30,12 @@ let
 
   hooksEventDefinition = import ../../../runtime/event-to-dispatcher-map.nix;
 
-  claudeEventTimeouts = {
-    PreToolUse = 10000;
-    PostToolUse = 15000;
-    SessionStart = 5000;
-    Stop = 5000;
-    SubagentStop = 5000;
+  claudeEventTimeoutSeconds = {
+    PreToolUse = 10;
+    PostToolUse = 15;
+    SessionStart = 5;
+    Stop = 5;
+    SubagentStop = 5;
   };
 
   claudeEventMatchers = {
@@ -57,7 +57,7 @@ let
               "${prohibitedWordsAllowedEnvironmentAssignment} ${runHook} ${hooksPath}/${dispatcher}"
             else
               "${runHook} ${hooksPath}/${dispatcher}";
-          timeout = claudeEventTimeouts.${event};
+          timeout = claudeEventTimeoutSeconds.${event};
         }
       ];
     }
@@ -77,7 +77,7 @@ let
             {
               type = "command";
               command = ''echo '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","permissionDecision":"allow","permissionDecisionReason":"auto-approved"}}' '';
-              timeout = 1000;
+              timeout = 1;
             }
           ];
         }

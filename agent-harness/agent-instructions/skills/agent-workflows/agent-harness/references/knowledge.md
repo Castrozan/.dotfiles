@@ -64,10 +64,9 @@ is a denied-server list in the system-level managed settings, deployed from the 
 
 ### Codex hooks and launch
 
-Codex hooks mirror the Claude event vocabulary but differ in two ways that break a straight port: the timeout is in
-seconds rather than milliseconds, and blocking works only through a deny decision returned with a zero exit, never
-through a non-zero exit. Writes arrive as a patch-application tool rather than as a write tool, so a guard keyed on the
-Claude write tool name never fires.
+Codex hooks mirror the Claude event vocabulary. Both configure command hook timeouts in seconds. Codex blocking works
+only through a deny decision returned with a zero exit, never through a non-zero exit. Writes arrive as a
+patch-application tool rather than as a write tool, so a guard keyed on the Claude write tool name never fires.
 
 The on-PATH `codex` wrapper injects sandbox and approval flags plus the interactive developer instructions while leaving
 model selection to Codex's runtime-owned config. Spawn it bare in a pane; re-passing either flag makes it exit with a
