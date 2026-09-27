@@ -34,8 +34,12 @@ and bind downloaded artifacts to the exact completed run before publishing.
 
 The existing reports deployment workflow also listens for completed `tests` runs
 from pushes to this repository's `main` branch. Its overview job selects artifacts
-by producing run, revision and attempt, including failed runs. Expired, ambiguous
-or missing artifacts remain explicit gaps. It imports four native JUnit tiers and
+by producing run, revision, job and successful upload interval, including failed
+runs. Partial retries retain evidence from jobs GitHub did not rerun, with their
+original attempt and timestamps verified against run history. A rerun job cannot
+fall back to its earlier output. Expired, ambiguous or missing artifacts remain
+explicit gaps. Exact artifact IDs are downloaded through the GitHub archive API
+and their SHA-256 digests are checked before bounded extraction. It imports four native JUnit tiers and
 Python Cobertura coverage beside the frozen package evidence. Swift, QML and Lua
 testcase import, Swift Sonar coverage import and mutation testing retain their
 specific unmeasured or unsupported status.
@@ -56,3 +60,9 @@ The `dotfiles-quality-overview` ingestion payload keeps the producing workflow's
 conclusion separate from the portable overview. Its source identifies the test
 run, not the later publisher run. Hosted viewers must recompute each measurement's
 freshness and retain its exact scope, validity, outcome and source links.
+
+After retaining and publishing the diagnostic report, the publisher requires all
+11 mandatory evidence items to be usable. Missing or malformed evidence makes the
+publication workflow fail. A valid report of failed tests remains usable evidence;
+the test workflow owns its execution verdict. Deliberately unmeasured capabilities
+and unsupported report formats keep their declared status.

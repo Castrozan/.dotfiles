@@ -30,24 +30,15 @@ jobs:
         with:
           node-version: 22.22.2
       - name: Bind the completed producing run and artifact attempt
-        id: context
         run: |
           mkdir -p .quality-results/downloads
-          artifact_ids=$(python3 "$PUBLISHING_SCRIPTS/workflow_context.py" "$GITHUB_EVENT_PATH" .quality-results/workflow-context.json)
-          echo "artifact_ids=$artifact_ids" >> "$GITHUB_OUTPUT"
-      - name: Download only artifacts produced by this attempt
-        if: ${{ steps.context.outputs.artifact_ids != '' }}
-        continue-on-error: true
-        uses: actions/download-artifact@v4
-        with:
-          github-token: ${{ github.token }}
-          run-id: ${{ github.event.workflow_run.id }}
-          artifact-ids: ${{ steps.context.outputs.artifact_ids }}
-          path: .quality-results/downloads
+          python3 "$PUBLISHING_SCRIPTS/workflow_context.py" "$GITHUB_EVENT_PATH" .quality-results/workflow-context.json
+      - name: Download verified artifacts by exact identifier
+        run: python3 "$PUBLISHING_SCRIPTS/download_artifacts.py" .quality-results/workflow-context.json .quality-results/downloads
       - uses: actions/checkout@v4
         with:
           repository: Castrozan/verdr
-          ref: 89ebee7bd551f60f7b90245411edff18bdfcfcb8
+          ref: 39bfb94931f6903c9fa08a77984f9a492af80529
           path: .quality-results/verdr
       - name: Build the pinned portable report generator
         working-directory: .quality-results/verdr
@@ -99,3 +90,5 @@ jobs:
           INGEST_PRODUCER_LABEL: dotfiles-github-actions
         run: |
           python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py
+      - name: Require complete evidence after retaining the diagnostic report
+        run: node "$PUBLISHING_SCRIPTS/check_completeness.mjs" < .quality-results/overview/payload.json

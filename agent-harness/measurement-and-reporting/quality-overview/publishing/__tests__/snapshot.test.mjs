@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { fixture, build, junit } from "./fixture.mjs";
 
 test("missing producer outputs retain all declared capabilities without a digest or pass", async (context) => {
@@ -89,4 +91,61 @@ test("missing XML after download remains missing despite a valid artifact select
   assert.equal(evidence.validity, "missing");
   assert.equal(evidence.usable, false);
   assert.equal(evidence.measurement, null);
+});
+
+test("a partial retry retains original evidence times and attempt identity", async (context) => {
+  const input = await fixture(context, true);
+  input.context.workflow.runAttempt = 2;
+  input.context.workflow.startedAt = new Date(Date.now() - 5000).toISOString();
+  input.context.workflow.completedAt = new Date().toISOString();
+  const { payload } = await build(input);
+  const evidence = payload.overview.evidence.find(
+    (item) => item.id === "python-unit",
+  );
+  assert.equal(evidence.usable, true);
+  assert.equal(evidence.run.id, "1.1:python-unit");
+  assert.equal(
+    evidence.run.startedAt,
+    input.context.jobs[1].steps[0].started_at,
+  );
+  assert.equal(payload.workflow.runAttempt, 2);
+});
+
+test("required evidence completeness accepts failed tests but rejects missing measurements", async () => {
+  const { incompleteEvidence } = await import("../check_completeness.mjs");
+  const { requiredEvidenceIds } = await import("../evidence_inputs.mjs");
+  const evidence = requiredEvidenceIds.map((id) => ({
+    id,
+    usable: true,
+    outcome: "failed",
+  }));
+  assert.deepEqual(incompleteEvidence({ evidence }), []);
+  evidence[0].usable = false;
+  assert.deepEqual(incompleteEvidence({ evidence }), ["source-preservation"]);
+  assert.equal(incompleteEvidence({ evidence: [] }).length, 11);
+});
+
+test("completeness CLI consumes standard input and preserves a failing verdict", async () => {
+  const { requiredEvidenceIds } = await import("../evidence_inputs.mjs");
+  const script = fileURLToPath(
+    new URL("../check_completeness.mjs", import.meta.url),
+  );
+  const evidence = requiredEvidenceIds.map((id) => ({ id, usable: true }));
+  const complete = spawnSync(process.execPath, [script], {
+    input: JSON.stringify({ overview: { evidence } }),
+    encoding: "utf8",
+    timeout: 5000,
+  });
+  assert.equal(complete.status, 0, complete.stderr);
+  assert.match(complete.stdout, /11\/11 required evidence items are usable/);
+  const missing = spawnSync(process.execPath, [script], {
+    input: JSON.stringify({ overview: { evidence: [] } }),
+    encoding: "utf8",
+    timeout: 5000,
+  });
+  assert.equal(missing.status, 1);
+  assert.match(
+    missing.stderr,
+    /Required evidence unavailable: source-preservation/,
+  );
 });

@@ -27,9 +27,10 @@ export function unavailableInput(descriptor, context, format, reason) {
   };
 }
 
-function producingStep(context, jobName, stepName) {
+function producingStep(context, jobName, stepName, producer) {
+  if (!producer || producer.jobName !== jobName) return null;
   const jobs = context.jobs.filter((job) => job.name === jobName);
-  if (jobs.length !== 1) return null;
+  if (jobs.length !== 1 || jobs[0].id !== producer.jobId) return null;
   const steps = jobs[0].steps.filter((step) => step.name === stepName);
   if (steps.length !== 1) return null;
   const step = steps[0];
@@ -42,9 +43,9 @@ function producingStep(context, jobName, stepName) {
   )
     return null;
   if (
-    started < Date.parse(context.workflow.startedAt) ||
+    started < Date.parse(producer.startedAt) ||
     completed < started ||
-    completed > Date.parse(context.workflow.completedAt)
+    completed > Date.parse(producer.completedAt)
   )
     return null;
   return step;
@@ -125,7 +126,7 @@ export function conventionalInputs(context, detailsBaseUrl) {
         "missing",
         selection?.reason ?? "Producer artifact was not selected",
       );
-    const step = producingStep(context, job, stepName);
+    const step = producingStep(context, job, stepName, selection.producer);
     if (!step)
       return unavailableInput(
         descriptor,
@@ -144,7 +145,7 @@ export function conventionalInputs(context, detailsBaseUrl) {
       path: `../${path}`,
       sourceUri: `${detailsBaseUrl}${path}`,
       run: {
-        id: `${context.workflow.runId}.${context.workflow.runAttempt}:${id}`,
+        id: `${context.workflow.runId}.${selection.producer.runAttempt}:${id}`,
         url: context.workflow.runUrl,
         startedAt: step.started_at,
         completedAt: step.completed_at,
@@ -152,3 +153,9 @@ export function conventionalInputs(context, detailsBaseUrl) {
     };
   });
 }
+
+export const requiredEvidenceIds = [
+  "source-preservation",
+  ...artifactTargets.map((target) => `${target}-artifact`),
+  ...testInputs.map(([id]) => id),
+];

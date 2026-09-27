@@ -36,6 +36,7 @@ export async function fixture(testContext, includeReports) {
     jobs: [
       {
         name: "quick-tests",
+        id: 101,
         steps: [
           {
             name: "Run quick tests",
@@ -47,6 +48,7 @@ export async function fixture(testContext, includeReports) {
       },
       {
         name: "qml-and-python-tests",
+        id: 102,
         steps: [
           {
             name: "Run Python tests",
@@ -68,6 +70,14 @@ export async function fixture(testContext, includeReports) {
         {
           id: includeReports && name !== "verdr-artifact-evidence" ? 1 : null,
           reason: "Owned absent artifact fixture",
+          producer: {
+            jobId: name === "bats-junit" ? 101 : 102,
+            jobName:
+              name === "bats-junit" ? "quick-tests" : "qml-and-python-tests",
+            runAttempt: 1,
+            startedAt,
+            completedAt,
+          },
         },
       ]),
     ),
