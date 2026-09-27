@@ -31,12 +31,13 @@ def test_only_opencode_needs_a_prelude_key():
 def test_the_confirmation_marker_is_the_completion_line_not_the_palette_entry():
     assert OPENCODE_PROFILE.compaction_confirmation_marker == "Compaction"
     assert "Compact session" not in OPENCODE_PROFILE.compaction_confirmation_marker
+    assert OPENCODE_PROFILE.compaction_refusal_marker == "✗ Compaction"
 
 
 def test_opencode_is_launched_with_the_model_it_is_given():
     assert (
         OPENCODE_PROFILE.launch_command("openai/gpt-5.4-mini", "/tmp/workspace")
-        == "opencode --model openai/gpt-5.4-mini"
+        == 'OPENCODE_CONFIG_CONTENT=\'{"model": "openai/gpt-5.4-mini"}\' opencode'
     )
 
 

@@ -13,7 +13,7 @@ const RUNTIME_ENTRY = fileURLToPath(
 const EXPECTED_PROVIDERS = [
   "claude:@anthropic-ai/claude-agent-sdk:function",
   "codex:@openai/codex-sdk:function",
-  "opencode:@opencode-ai/sdk:function",
+  "opencode:@opencode/client:function",
 ];
 
 function runCheckMode(workingDirectory) {

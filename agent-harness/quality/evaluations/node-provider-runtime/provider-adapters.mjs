@@ -7,31 +7,6 @@ const CLAUDE_READ_TOOLS = ["Read", "Glob", "Grep"];
 
 const OPENCODE_READ_TOOLS = ["read", "grep", "glob", "list"];
 
-const OPENCODE_TOOL_STATES = {
-  read: true,
-  grep: true,
-  glob: true,
-  list: true,
-  bash: false,
-  edit: false,
-  write: false,
-  patch: false,
-  todowrite: false,
-  todoread: false,
-  webfetch: false,
-  question: false,
-  skill: false,
-  lsp: false,
-};
-
-const OPENCODE_DENIED_PERMISSIONS = {
-  edit: "deny",
-  bash: "deny",
-  webfetch: "deny",
-  doom_loop: "deny",
-  external_directory: "deny",
-};
-
 const CODEX_NO_TOOLS_FEATURES = {
   apps: false,
   browser_use: false,
@@ -120,32 +95,20 @@ export function codexInput(invocation) {
 }
 
 export function openCodeConfig(invocation) {
-  const config = invocation.no_tools
-    ? {
-        tools: Object.fromEntries(
-          Object.keys(OPENCODE_TOOL_STATES).map((tool) => [tool, false]),
-        ),
-        permission: { ...OPENCODE_DENIED_PERMISSIONS },
-      }
-    : {
-        tools: { ...OPENCODE_TOOL_STATES },
-        permission: { ...OPENCODE_DENIED_PERMISSIONS },
-      };
-  if (invocation.max_turns) {
-    config.agent = {
-      "agent-eval": { mode: "primary", steps: invocation.max_turns },
-    };
+  const permissions = [{ action: "*", resource: "*", effect: "deny" }];
+  if (!invocation.no_tools) {
+    permissions.push(
+      ...OPENCODE_READ_TOOLS.map((action) => ({
+        action,
+        resource: "*",
+        effect: "allow",
+      })),
+    );
   }
-  return config;
-}
-
-export function openCodeToolSelection(availableTools, noTools) {
-  return Object.fromEntries(
-    availableTools.map((tool) => [
-      tool,
-      !noTools && OPENCODE_READ_TOOLS.includes(tool),
-    ]),
-  );
+  const agent = { mode: "primary", permissions };
+  if (invocation.system_prompt) agent.system = invocation.system_prompt;
+  if (invocation.max_turns) agent.steps = invocation.max_turns;
+  return { agents: { "agent-eval": agent } };
 }
 
 export function splitOpenCodeModel(model) {
@@ -153,21 +116,22 @@ export function splitOpenCodeModel(model) {
   if (separator <= 0 || separator === model.length - 1) {
     throw new Error(`openCode model "${model}" must be "provider/model"`);
   }
+  const [id, variant] = model.slice(separator + 1).split("#");
   return {
     providerID: model.slice(0, separator),
-    modelID: model.slice(separator + 1),
+    id,
+    ...(variant ? { variant } : {}),
   };
 }
 
-export function openCodePromptBody(invocation, tools) {
-  const body = {
-    parts: [{ type: "text", text: invocation.prompt }],
-    tools,
+export function openCodeSessionInput(invocation) {
+  return {
+    location: { directory: invocation.working_directory },
+    agent: "agent-eval",
+    ...(invocation.model
+      ? { model: splitOpenCodeModel(invocation.model) }
+      : {}),
   };
-  if (invocation.system_prompt) body.system = invocation.system_prompt;
-  if (invocation.model) body.model = splitOpenCodeModel(invocation.model);
-  if (invocation.max_turns) body.agent = "agent-eval";
-  return body;
 }
 
 export function collectOpenCodeTextParts(parts) {
@@ -177,11 +141,19 @@ export function collectOpenCodeTextParts(parts) {
     .join("\n");
 }
 
-export function openCodeMessageOutcome(message) {
+export function openCodeMessageOutcome(messages) {
+  const message = messages.findLast((item) => item.type === "assistant");
+  if (!message)
+    return {
+      output: null,
+      error: "opencode session ended without an assistant message",
+    };
+  if (message.error)
+    return { output: null, error: normalizeRequestError(message.error) };
   return {
-    output: collectOpenCodeTextParts(message.parts),
+    output: collectOpenCodeTextParts(message.content),
     error: null,
-    usage: normalizeOpenCodeUsage(message.info.tokens),
+    usage: normalizeOpenCodeUsage(message.tokens),
   };
 }
 

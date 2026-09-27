@@ -6,7 +6,6 @@ import {
   codexOptions,
   codexThreadOptions,
   openCodeConfig,
-  openCodePromptBody,
 } from "./provider-adapters.mjs";
 import { runSubjectInvocation } from "./provider-runtime.mjs";
 
@@ -15,7 +14,7 @@ const ALL_HARNESSES = ["claude", "codex", "opencode"];
 const SDK_SYMBOLS = {
   "@anthropic-ai/claude-agent-sdk": "query",
   "@openai/codex-sdk": "Codex",
-  "@opencode-ai/sdk": "createOpencode",
+  "@opencode/client": "OpenCode.make",
 };
 
 function representativeInvocation(harness) {
@@ -33,7 +32,12 @@ function representativeInvocation(harness) {
 for (const moduleName of Object.keys(SDK_SYMBOLS)) {
   test(`sdk module ${moduleName} imports without a model call`, async () => {
     const sdk = await import(moduleName);
-    assert.equal(typeof sdk[SDK_SYMBOLS[moduleName]], "function");
+    assert.equal(
+      typeof SDK_SYMBOLS[moduleName]
+        .split(".")
+        .reduce((value, key) => value[key], sdk),
+      "function",
+    );
   });
 }
 
@@ -45,9 +49,14 @@ for (const harness of ALL_HARNESSES) {
     } else if (harness === "codex") {
       assert.equal(codexThreadOptions(invocation).sandboxMode, "read-only");
     } else {
-      assert.equal(openCodeConfig(invocation).tools.read, true);
       assert.equal(
-        openCodePromptBody(invocation, {}).system,
+        openCodeConfig(invocation).agents["agent-eval"].permissions.find(
+          (rule) => rule.action === "read",
+        ).effect,
+        "allow",
+      );
+      assert.equal(
+        openCodeConfig(invocation).agents["agent-eval"].system,
         "base system prompt",
       );
     }

@@ -1,8 +1,9 @@
 import json
 import os
-import subprocess
 import sys
 import tempfile
+
+from native_opencode_server import native_server
 from pathlib import Path
 
 
@@ -61,31 +62,55 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
             "OPENCODE_DISABLE_MODELS_FETCH": "true",
             "OPENCODE_DISABLE_AUTOUPDATE": "true",
         }
-        result = subprocess.run(
-            [executable, "debug", "config"],
-            cwd=root,
-            env=environment,
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=True,
-        )
-        effective = json.loads(result.stdout)
-        assert effective["model"] == global_configuration["model"]
-        assert effective["permission"] == global_configuration["permission"]
-        assert effective["skills"] == emitted_configuration["skills"]
-        assert effective["instructions"] == global_configuration["instructions"] + [
-            "native-configuration-overlay.md"
-        ]
-        assert effective["mcp"].keys() == emitted_configuration["mcp"].keys()
-        for name, server in effective["mcp"].items():
-            assert server["enabled"] is False
-            assert server["timeout"] == expected_timeouts[name]
-            assert server["command"] == emitted_configuration["mcp"][name]["command"]
-            assert (
-                server["environment"]
-                == emitted_configuration["mcp"][name]["environment"]
-            )
+        with native_server(executable, environment, root) as server:
+            entries = server.request("/api/config", location=True)
+            documents = [
+                entry["info"] for entry in entries if entry["type"] == "document"
+            ]
+            declared = documents[0]
+            assert declared["model"] == {
+                "providerID": "opencode",
+                "model": "big-pickle",
+            }
+            assert declared["permissions"] == global_configuration["permissions"]
+            skills = server.request("/api/skill", location=True)["data"]
+            expected_skills = {
+                path.parent.name
+                for directory in emitted_configuration["skills"]["paths"]
+                for path in Path(directory).glob("*/SKILL.md")
+            }
+            assert expected_skills <= {skill["id"] for skill in skills}
+            instructions = [
+                item
+                for document in documents
+                for item in document.get("instructions", [])
+            ]
+            assert instructions == global_configuration["instructions"] + [
+                "native-configuration-overlay.md"
+            ]
+            mcp_documents = [
+                document["mcp"]["servers"]
+                for document in documents
+                if "mcp" in document
+            ]
+            merged_servers = {}
+            for servers in mcp_documents:
+                for name, settings in servers.items():
+                    merged_servers.setdefault(name, {}).update(settings)
+            assert merged_servers.keys() == emitted_configuration["mcp"].keys()
+            for name, settings in merged_servers.items():
+                assert settings["disabled"] is True
+                assert settings["timeout"] == {
+                    "catalog": expected_timeouts[name],
+                    "execution": expected_timeouts[name],
+                }
+                assert (
+                    settings["command"] == emitted_configuration["mcp"][name]["command"]
+                )
+                assert (
+                    settings["environment"]
+                    == emitted_configuration["mcp"][name]["environment"]
+                )
 
 
 if __name__ == "__main__":

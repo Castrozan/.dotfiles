@@ -1,3 +1,5 @@
+import json
+import shlex
 from dataclasses import dataclass
 from pathlib import Path
 from string import Template
@@ -35,7 +37,11 @@ class HarnessProfile:
         arguments = Template(self.launch_arguments_template).substitute(
             model=model, workspace_directory=workspace_directory
         )
-        return f"{self.executable_name} {arguments}".strip()
+        command = f"{self.executable_name} {arguments}".strip()
+        if self.name == "opencode":
+            settings = shlex.quote(json.dumps({"model": model}))
+            return f"OPENCODE_CONFIG_CONTENT={settings} {command}"
+        return command
 
 
 CLAUDE_PROFILE = HarnessProfile(
@@ -67,13 +73,13 @@ CODEX_PROFILE = HarnessProfile(
 OPENCODE_PROFILE = HarnessProfile(
     name="opencode",
     executable_name="opencode",
-    launch_arguments_template="--model $model",
+    launch_arguments_template="",
     project_instruction_filename="AGENTS.md",
     busy_marker="esc interrupt",
     supports_instruction_reference_import=False,
     compaction_directive="compact",
     compaction_confirmation_marker="Compaction",
-    compaction_refusal_marker="",
+    compaction_refusal_marker="✗ Compaction",
     compaction_prelude_keys=("ctrl+p",),
 )
 

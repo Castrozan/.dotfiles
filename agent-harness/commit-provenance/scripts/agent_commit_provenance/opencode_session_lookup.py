@@ -7,7 +7,7 @@ OPENCODE_SESSION_DATABASE = (
     Path.home() / ".local" / "share" / "opencode" / "opencode.db"
 )
 MOST_RECENTLY_UPDATED_SESSION_FOR_DIRECTORY = (
-    "select id from session where directory = ? order by time_updated desc limit 1"
+    "select id from session_v2 where directory = ? order by time_updated desc limit 1"
 )
 
 

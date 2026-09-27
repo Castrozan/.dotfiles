@@ -1,146 +1,99 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-
 import {
   collectOpenCodeTextParts,
   openCodeConfig,
   openCodeMessageOutcome,
-  openCodePromptBody,
-  openCodeToolSelection,
+  openCodeSessionInput,
   splitOpenCodeModel,
 } from "./provider-adapters.mjs";
 
 function invocation(overrides = {}) {
   return {
-    harness: "opencode",
     prompt: "respond",
-    model: null,
-    system_prompt: null,
     working_directory: "/tmp",
-    timeout: 120,
-    max_turns: null,
     no_tools: false,
     ...overrides,
   };
 }
 
-test("openCode config enables read tools and disables write, bash, and web tools", () => {
-  const config = openCodeConfig(invocation());
-  for (const readTool of ["read", "grep", "glob", "list"]) {
-    assert.equal(config.tools[readTool], true);
-  }
-  for (const writeTool of ["bash", "edit", "write", "patch", "webfetch"]) {
-    assert.equal(config.tools[writeTool], false);
-  }
-  assert.equal(config.permission.edit, "deny");
-  assert.equal(config.permission.bash, "deny");
-  assert.equal(config.permission.webfetch, "deny");
-});
+function decision(configuration, action) {
+  return configuration.agents["agent-eval"].permissions.findLast(
+    (rule) => rule.action === action || rule.action === "*",
+  ).effect;
+}
 
-test("openCode no_tools disables every tool", () => {
-  const config = openCodeConfig(invocation({ no_tools: true }));
+test("read-only evaluation permits reads and denies mutating and unknown tools", () => {
+  const configuration = openCodeConfig(invocation());
+  for (const tool of ["read", "grep", "glob", "list"])
+    assert.equal(decision(configuration, tool), "allow");
   for (const tool of [
-    "read",
-    "grep",
-    "glob",
-    "list",
-    "bash",
-    "edit",
+    "shell",
     "write",
+    "edit",
     "patch",
     "webfetch",
-  ]) {
-    assert.equal(config.tools[tool], false);
-  }
+    "future_write_tool",
+  ])
+    assert.equal(decision(configuration, tool), "deny");
 });
 
-test("openCode maps the turn limit onto a dedicated agent", () => {
-  const boundedInvocation = invocation({ max_turns: 3 });
-  const config = openCodeConfig(boundedInvocation);
-  const body = openCodePromptBody(boundedInvocation, {});
+test("no_tools denies all existing and future tools", () => {
+  const configuration = openCodeConfig(invocation({ no_tools: true }));
+  for (const tool of ["read", "shell", "future_tool"])
+    assert.equal(decision(configuration, tool), "deny");
+});
 
-  assert.deepEqual(config.agent, {
-    "agent-eval": { mode: "primary", steps: 3 },
+test("the dedicated agent carries the system prompt and turn bound", () => {
+  const request = invocation({ system_prompt: "SYSTEM", max_turns: 3 });
+  const agent = openCodeConfig(request).agents["agent-eval"];
+  assert.equal(agent.system, "SYSTEM");
+  assert.equal(agent.steps, 3);
+  assert.equal(openCodeSessionInput(request).agent, "agent-eval");
+});
+
+test("model selection preserves provider, nested model ID and reasoning variant", () => {
+  assert.deepEqual(splitOpenCodeModel("provider/model/name#max"), {
+    providerID: "provider",
+    id: "model/name",
+    variant: "max",
   });
-  assert.equal(body.agent, "agent-eval");
+  for (const model of ["model", "/model", "provider/"])
+    assert.throws(() => splitOpenCodeModel(model), /provider\/model/);
 });
 
-test("openCode splits the provider and model", () => {
-  assert.deepEqual(splitOpenCodeModel("anthropic/claude-2"), {
-    providerID: "anthropic",
-    modelID: "claude-2",
-  });
-  assert.throws(() => splitOpenCodeModel("claude-2"), /"provider\/model"/);
-  assert.throws(() => splitOpenCodeModel("/claude-2"), /"provider\/model"/);
-  assert.throws(() => splitOpenCodeModel("anthropic/"), /"provider\/model"/);
-});
-
-test("openCode prompt body carries the prompt, system prompt, and model split", () => {
-  const tools = { read: true, write: false };
-  const body = openCodePromptBody(
-    invocation({ system_prompt: "SYS", model: "anthropic/claude-2" }),
-    tools,
-  );
-  assert.deepEqual(body.parts, [{ type: "text", text: "respond" }]);
-  assert.equal(body.system, "SYS");
-  assert.deepEqual(body.model, {
-    providerID: "anthropic",
-    modelID: "claude-2",
-  });
-  assert.deepEqual(body.tools, tools);
-});
-
-test("openCode prompt body without inputs carries only the prompt", () => {
-  const body = openCodePromptBody(invocation(), {});
-  assert.equal(body.system, undefined);
-  assert.equal(body.model, undefined);
-  assert.deepEqual(body.parts, [{ type: "text", text: "respond" }]);
-});
-
-test("openCode capability selection denies unknown tools", () => {
-  const available = ["read", "grep", "bash", "future_write_tool"];
-  assert.deepEqual(openCodeToolSelection(available, false), {
-    read: true,
-    grep: true,
-    bash: false,
-    future_write_tool: false,
-  });
-  assert.deepEqual(openCodeToolSelection(available, true), {
-    read: false,
-    grep: false,
-    bash: false,
-    future_write_tool: false,
-  });
-});
-
-test("openCode text collection joins text parts and skips non-text parts", () => {
-  assert.equal(
-    collectOpenCodeTextParts([
-      { type: "text", text: "first" },
-      { type: "tool", tool: "bash" },
-      { type: "text", text: "second" },
-    ]),
-    "first\nsecond",
-  );
-  assert.equal(collectOpenCodeTextParts([]), "");
-});
-
-test("openCode normalizes message token usage", () => {
+test("session creation selects workspace, agent and optional model", () => {
   assert.deepEqual(
-    openCodeMessageOutcome({
-      info: {
+    openCodeSessionInput(invocation({ model: "anthropic/claude" })),
+    {
+      location: { directory: "/tmp" },
+      agent: "agent-eval",
+      model: { providerID: "anthropic", id: "claude" },
+    },
+  );
+  assert.equal(openCodeSessionInput(invocation()).model, undefined);
+});
+
+test("only the last assistant message contributes output and tokens", () => {
+  assert.deepEqual(
+    openCodeMessageOutcome([
+      { type: "assistant", content: [{ type: "text", text: "Earlier" }] },
+      { type: "user", text: "Request" },
+      {
+        type: "assistant",
         tokens: {
           input: 13,
           output: 7,
           reasoning: 2,
           cache: { read: 5, write: 3 },
         },
+        content: [
+          { type: "text", text: "first" },
+          { type: "tool" },
+          { type: "text", text: "second" },
+        ],
       },
-      parts: [
-        { type: "text", text: "first" },
-        { type: "text", text: "second" },
-      ],
-    }),
+    ]),
     {
       output: "first\nsecond",
       error: null,
@@ -152,5 +105,19 @@ test("openCode normalizes message token usage", () => {
         reasoning_output_tokens: 2,
       },
     },
+  );
+  assert.equal(collectOpenCodeTextParts([]), "");
+});
+
+test("failed or missing assistant messages fail the evaluation", () => {
+  assert.match(
+    openCodeMessageOutcome([]).error,
+    /without an assistant message/,
+  );
+  assert.deepEqual(
+    openCodeMessageOutcome([
+      { type: "assistant", error: { message: "provider failed" } },
+    ]),
+    { output: null, error: "provider failed" },
   );
 });

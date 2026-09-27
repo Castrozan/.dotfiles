@@ -15,7 +15,6 @@ let
       };
 
   cfg = helpers.homeManagerTestConfigurationForEvaluatingSystem [ ../. ];
-
   packageNames = map (p: p.name or p.pname or "unknown") cfg.home.packages;
   hasPackageMatching = pattern: builtins.any (n: builtins.match pattern n != null) packageNames;
 
@@ -30,10 +29,10 @@ let
     deployedText: builtins.fromJSON (builtins.unsafeDiscardStringContext deployedText);
 
   deployedOpencodeSettings = parseDeployedJson cfg.home.file.".config/opencode/opencode.json".text;
-  deployedTuiSettings = parseDeployedJson cfg.home.file.".config/opencode/tui.json".text;
+  deployedTuiSettings = parseDeployedJson cfg.home.file.".config/opencode/cli.json".text;
   deployedGlobalRules = cfg.home.file.".config/opencode/AGENTS.md".source;
-  deployedHookBridge = cfg.home.file.".config/opencode/plugins/opencode-hook-bridge.js";
-  opencodeWrapperSource = builtins.readFile ../opencode.nix;
+  deployedHookBridge = cfg.home.file.".config/opencode/plugins/dotfiles-hook-bridge";
+  opencodeWrapperSource = builtins.readFile ../scripts/launch_opencode.sh;
   opencodeGoProvider = import ../go-provider.nix { inherit (cfg.home) homeDirectory; };
 
   codexGlobalInstructions =
@@ -64,7 +63,7 @@ in
     mkEvalCheck "domain-opencode-default-model-resolves-against-an-authenticated-provider"
       (
         builtins.elem (modelProviderOf deployedOpencodeSettings.model) providersThisMachineCanAuthenticate
-        && builtins.elem (modelProviderOf deployedOpencodeSettings.small_model) providersThisMachineCanAuthenticate
+        && builtins.elem (modelProviderOf deployedOpencodeSettings.agents.title.model) providersThisMachineCanAuthenticate
       )
       "both defaults must resolve against a provider this machine can authenticate: `opencode-go` through the agenix key on the paid Go plan, or `opencode` through the logged-in OpenAI OAuth token, so opencode opens on a model it can actually call";
 
@@ -72,7 +71,7 @@ in
     mkEvalCheck "domain-opencode-default-models-use-the-shared-go-provider"
       (
         deployedOpencodeSettings.model == "opencode/big-pickle"
-        && deployedOpencodeSettings.small_model == "opencode-go/${opencodeGoProvider.models.haiku}"
+        && deployedOpencodeSettings.agents.title.model == "opencode-go/${opencodeGoProvider.models.haiku}"
       )
       "the interactive default runs opencode's big-pickle model while title generation stays on the shared Go provider's cheap haiku model";
 
@@ -92,8 +91,8 @@ in
   domain-opencode-default-agent-runs-at-max-effort =
     mkEvalCheck "domain-opencode-default-agent-runs-at-max-effort"
       (
-        deployedOpencodeSettings.agent.build.variant == "max"
-        && deployedOpencodeSettings.agent.build.mode == "primary"
+        deployedOpencodeSettings.agents.build.model == "opencode/big-pickle#max"
+        && deployedOpencodeSettings.agents.build.mode == "primary"
       )
       "opencode's default build agent must be primary and run at max reasoning effort";
 
@@ -110,9 +109,13 @@ in
       "opencode must load the deployed global rules through its instructions list";
 
   domain-opencode-runs-with-full-access = mkEvalCheck "domain-opencode-runs-with-full-access" (
-    deployedOpencodeSettings.permission."*" == "allow"
-    && deployedOpencodeSettings.permission.bash == "allow"
-    && deployedOpencodeSettings.permission.edit == "allow"
+    deployedOpencodeSettings.permissions == [
+      {
+        action = "*";
+        resource = "*";
+        effect = "allow";
+      }
+    ]
   ) "opencode must run without approval prompts, matching Claude's bypassPermissions posture";
 
   domain-opencode-enables-language-servers-and-formatters =
@@ -120,19 +123,8 @@ in
       (deployedOpencodeSettings.lsp.pyright.env.PYTHONPATH != "" && deployedOpencodeSettings.formatter)
       "opencode must enable its built-in LSP servers and formatters with the Python test environment available to Pyright";
 
-  domain-opencode-native-plugin-configuration =
-    pkgs.runCommand "domain-opencode-native-plugin-configuration" { }
-      ''
-        ${pkgs.python312}/bin/python3 ${./verify-native-plugin-configuration.py} \
-          ${cfg.opencode.unwrappedPackage}/bin/opencode \
-          ${cfg.home.file.".config/opencode/opencode.json".source} \
-          ${cfg.home.file.".config/opencode/opencode.jsonc".source} \
-          ${cfg.agentPlugins.bundle} ${lib.escapeShellArg cfg.agentPlugins.opencodeDataRoot}
-        touch "$out"
-      '';
-
   domain-opencode-allows-nested-subagents = mkEvalCheck "domain-opencode-allows-nested-subagents" (
-    deployedOpencodeSettings.subagent_depth >= 2
+    deployedOpencodeSettings.experimental.subagent_depth >= 2
   ) "opencode must let a subagent launch its own subagents, matching Claude's nesting";
 
   domain-opencode-deploys-subagent-definitions =
@@ -154,9 +146,7 @@ in
     mkEvalCheck "domain-opencode-deploys-hook-bridge"
       (
         deployedHookBridge ? source
-        &&
-          deployedHookBridge.source
-          == "${cfg.agentPlugins.bundle}/plugin/native/opencode/hooks/opencode-hook-bridge.js"
+        && deployedHookBridge.source == "${cfg.agentPlugins.bundle}/plugin/native/opencode/hooks"
       )
       "OpenCode must deploy the auto-discovered hook bridge and substitute its dispatcher path from Nix, so pre-tool guard denials and post-tool dispatchers run without depending on a shell-session environment variable";
 
@@ -170,3 +160,4 @@ in
       (deployedTuiSettings.theme == "kanagawa" && deployedTuiSettings.attention.enabled)
       "opencode's TUI must follow the machine's selected theme and chime when a turn finishes";
 }
+// import ./native-checks.nix { inherit pkgs lib cfg; }

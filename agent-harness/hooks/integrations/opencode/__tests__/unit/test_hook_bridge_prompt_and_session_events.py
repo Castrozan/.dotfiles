@@ -1,96 +1,43 @@
-from hook_bridge_test_support import (
-    invoke_hook_bridge,
-    invoke_hook_bridge_sequence,
-    only_dispatcher_record,
-)
+from hook_bridge_test_support import invoke_hook_bridge, invoke_hook_bridge_sequence
 
 
-def chat_message_call(session_id, prompt_text):
+def prompt(session_id, text):
     return {
-        "hookName": "chat.message",
-        "hookInput": {"sessionID": session_id},
-        "hookOutput": {"parts": [{"type": "text", "text": prompt_text}]},
+        "hookName": "session.prompt",
+        "event": {"sessionID": session_id, "prompt": {"text": text}},
     }
 
 
-def test_first_message_of_a_session_injects_the_session_start_context(tmp_path):
-    result, records = invoke_hook_bridge(
-        tmp_path,
-        {"hookSpecificOutput": {"additionalContext": "SESSION CONTEXT: branch main"}},
-        "chat.message",
-        {"sessionID": "ses-9"},
-        {"parts": [{"type": "text", "text": "fix the build"}]},
-    )
-
-    assert "error" not in result
-    assert result["hookOutput"]["parts"][0]["text"] == (
-        "fix the build\n\nSESSION CONTEXT: branch main"
-    )
-    record = only_dispatcher_record(records)
-    assert record == {
-        "dispatcher": "session-start-dispatcher.py",
-        "payload": {
-            "hook_event_name": "SessionStart",
-            "session_id": "ses-9",
-            "source": "startup",
-            "cwd": "/workspace/project",
-        },
-    }
-
-
-def test_session_start_fires_once_per_session_not_once_per_message(tmp_path):
+def test_session_start_injects_context_once_per_session(tmp_path):
     results, records = invoke_hook_bridge_sequence(
         tmp_path,
-        {"hookSpecificOutput": {"additionalContext": "SESSION CONTEXT: branch main"}},
-        [
-            chat_message_call("ses-9", "first"),
-            chat_message_call("ses-9", "second"),
-            chat_message_call("ses-10", "another session"),
-        ],
+        {"hookSpecificOutput": {"additionalContext": "SESSION CONTEXT"}},
+        [prompt("ses-1", "first"), prompt("ses-1", "second"), prompt("ses-2", "other")],
     )
-
-    assert [record["payload"]["session_id"] for record in records] == [
-        "ses-9",
-        "ses-10",
-    ]
-    assert results[1]["hookOutput"]["parts"][0]["text"] == "second"
+    assert results[0]["event"]["prompt"]["text"] == "first\n\nSESSION CONTEXT"
+    assert results[1]["event"]["prompt"]["text"] == "second"
+    assert [item["payload"]["session_id"] for item in records] == ["ses-1", "ses-2"]
+    assert all(item["payload"]["source"] == "startup" for item in records)
 
 
-def test_a_failing_session_start_dispatcher_never_blocks_the_message(tmp_path):
-    result, _ = invoke_hook_bridge(
-        tmp_path,
-        "not json at all",
-        "chat.message",
-        {"sessionID": "ses-11"},
-        {"parts": [{"type": "text", "text": "carry on"}]},
+def test_failed_startup_does_not_block_and_can_retry(tmp_path):
+    results, records = invoke_hook_bridge_sequence(
+        tmp_path, "invalid JSON", [prompt("ses-1", "first"), prompt("ses-1", "second")]
     )
+    assert all("error" not in result for result in results)
+    assert len(records) == 2
+    assert results[0]["event"]["prompt"]["text"] == "first"
 
-    assert "error" not in result
-    assert result["hookOutput"]["parts"][0]["text"] == "carry on"
 
-
-def test_compaction_hook_adds_dispatcher_context_to_the_compaction_prompt(tmp_path):
+def test_compaction_injects_recovery_into_model_system_context(tmp_path):
     result, records = invoke_hook_bridge(
         tmp_path,
-        {
-            "hookSpecificOutput": {
-                "additionalContext": "Re-read the active deep-work tracker."
-            }
-        },
-        "experimental.session.compacting",
-        {"sessionID": "ses-5"},
-        {"context": [], "prompt": None},
+        {"hookSpecificOutput": {"additionalContext": "Read the active tracker."}},
+        "session.compaction",
+        {"sessionID": "ses-1", "system": [{"type": "text", "text": "Summarize"}]},
     )
-
-    assert "error" not in result
-    assert result["hookOutput"]["context"] == ["Re-read the active deep-work tracker."]
-    record = only_dispatcher_record(records)
-    assert record == {
-        "dispatcher": "session-start-dispatcher.py",
-        "payload": {
-            "hook_event_name": "SessionStart",
-            "session_id": "ses-5",
-            "source": "compact",
-            "cwd": "/workspace/project",
-        },
-    }
+    assert result["event"]["system"] == [
+        {"type": "text", "text": "Summarize"},
+        {"type": "text", "text": "Read the active tracker."},
+    ]
+    assert records[0]["payload"]["source"] == "compact"

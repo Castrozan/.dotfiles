@@ -7,7 +7,7 @@ import { runnerFor } from "./provider-runners.mjs";
 const CHECK_RESOLUTIONS = [
   ["claude", "@anthropic-ai/claude-agent-sdk", "query"],
   ["codex", "@openai/codex-sdk", "Codex"],
-  ["opencode", "@opencode-ai/sdk", "createOpencode"],
+  ["opencode", "@opencode/client", "OpenCode.make"],
 ];
 
 const RUNTIME_DIRECTORY = dirname(fileURLToPath(import.meta.url));
@@ -30,7 +30,9 @@ export async function runResolutionCheck() {
   const providers = [];
   for (const [harness, moduleName, symbol] of CHECK_RESOLUTIONS) {
     const sdk = await import(moduleName);
-    providers.push(`${harness}:${moduleName}:${typeof sdk[symbol]}`);
+    providers.push(
+      `${harness}:${moduleName}:${typeof symbol.split(".").reduce((value, key) => value[key], sdk)}`,
+    );
   }
   return {
     providers,
