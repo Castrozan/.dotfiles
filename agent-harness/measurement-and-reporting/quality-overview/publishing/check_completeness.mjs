@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { requiredEvidenceIds } from "./evidence_inputs.mjs";
 
@@ -10,7 +10,7 @@ export function incompleteEvidence(overview) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const payload = JSON.parse(await readFile(process.argv[2], "utf8"));
+  const payload = JSON.parse(readFileSync(0, "utf8"));
   const missing = incompleteEvidence(payload.overview);
   if (missing.length) {
     console.error(`Required evidence unavailable: ${missing.join(", ")}`);

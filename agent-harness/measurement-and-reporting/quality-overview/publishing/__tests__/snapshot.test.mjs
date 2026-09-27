@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { fixture, build, junit } from "./fixture.mjs";
 
 test("missing producer outputs retain all declared capabilities without a digest or pass", async (context) => {
@@ -121,4 +123,29 @@ test("required evidence completeness accepts failed tests but rejects missing me
   evidence[0].usable = false;
   assert.deepEqual(incompleteEvidence({ evidence }), ["source-preservation"]);
   assert.equal(incompleteEvidence({ evidence: [] }).length, 11);
+});
+
+test("completeness CLI consumes standard input and preserves a failing verdict", async () => {
+  const { requiredEvidenceIds } = await import("../evidence_inputs.mjs");
+  const script = fileURLToPath(
+    new URL("../check_completeness.mjs", import.meta.url),
+  );
+  const evidence = requiredEvidenceIds.map((id) => ({ id, usable: true }));
+  const complete = spawnSync(process.execPath, [script], {
+    input: JSON.stringify({ overview: { evidence } }),
+    encoding: "utf8",
+    timeout: 5000,
+  });
+  assert.equal(complete.status, 0, complete.stderr);
+  assert.match(complete.stdout, /11\/11 required evidence items are usable/);
+  const missing = spawnSync(process.execPath, [script], {
+    input: JSON.stringify({ overview: { evidence: [] } }),
+    encoding: "utf8",
+    timeout: 5000,
+  });
+  assert.equal(missing.status, 1);
+  assert.match(
+    missing.stderr,
+    /Required evidence unavailable: source-preservation/,
+  );
 });

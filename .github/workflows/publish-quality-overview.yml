@@ -91,4 +91,4 @@ jobs:
         run: |
           python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py
       - name: Require complete evidence after retaining the diagnostic report
-        run: node "$PUBLISHING_SCRIPTS/check_completeness.mjs" .quality-results/overview/payload.json
+        run: node "$PUBLISHING_SCRIPTS/check_completeness.mjs" < .quality-results/overview/payload.json
