@@ -48,7 +48,9 @@ let
   );
   flaresolverrServiceText = lib.elemAt (lib.splitString "\n  flaresolverr:\n" composeText) 1;
   stackModuleText = builtins.readFile ../../stack/arr-stack-home-manager.nix;
-  chiseStackText = builtins.readFile ../../chise/chise-arr-stack-nixos.nix;
+  chiseStackText =
+    builtins.readFile ../../chise/chise-arr-stack-nixos.nix
+    + builtins.readFile ../../chise/chise-arr-stack-provisioners.nix;
   chiseSystemText = builtins.readFile ../../../../machines/chise/system/nixos-system.nix;
 
   miwayomiIsTailnetOnly =

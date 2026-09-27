@@ -11,7 +11,9 @@ let
   stackReadmeText = builtins.readFile ../../stack/README.md;
   composeText = builtins.readFile ../../stack/docker-compose.yml;
   stackHomeManagerText = builtins.readFile ../../stack/arr-stack-home-manager.nix;
-  chiseArrStackModuleText = builtins.readFile ../../chise/chise-arr-stack-nixos.nix;
+  chiseArrStackModuleText =
+    builtins.readFile ../../chise/chise-arr-stack-nixos.nix
+    + builtins.readFile ../../chise/chise-arr-stack-provisioners.nix;
   repositorySecretPath = ../../../../../secrets/credentials/media/suwayomi-extension-repositories.age;
   animeStreamingDirectory = ../../../anime-streaming;
 
