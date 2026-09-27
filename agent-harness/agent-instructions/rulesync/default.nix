@@ -2,23 +2,20 @@
 let
   rulesync = import ./package.nix { inherit pkgs; };
   coreInstructions = ../core-rules/core.md;
-  sources = pkgs.linkFarm "rulesync-configuration-sources" [
-    {
-      name = "rules/core.md";
-      path = pkgs.writeText "rulesync-core.md" ''
-        ---
-        root: true
-        targets: [claudecode, codexcli, opencode, hermesagent]
-        description: Shared agent instructions
-        ---
-        ${builtins.readFile coreInstructions}
-      '';
-    }
-    {
-      name = "subagents";
-      path = ./sources/subagents;
-    }
-  ];
+  coreSource = pkgs.writeText "rulesync-core.md" ''
+    ---
+    root: true
+    targets: [claudecode, codexcli, opencode, hermesagent]
+    description: Shared agent instructions
+    ---
+    ${builtins.readFile coreInstructions}
+  '';
+  sources = pkgs.runCommand "rulesync-configuration-sources" { } ''
+    mkdir -p "$out/rules"
+    cp ${coreSource} "$out/rules/core.md"
+    cp -r ${./sources/subagents} "$out/subagents"
+  '';
+
 in
 pkgs.runCommand "rulesync-agent-configuration"
   {
