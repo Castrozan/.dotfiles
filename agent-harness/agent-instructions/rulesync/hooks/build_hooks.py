@@ -31,53 +31,72 @@ def verify_generated_hooks(generated, target):
         raise ValueError(f"Rulesync changed the required {target} hook events")
 
 
+def _sandboxed_child(root, name):
+    child = (root / name).resolve()
+    if not child.is_relative_to(root.resolve()):
+        raise ValueError(f"{name} escapes the sandboxed root {root}")
+    return child
+
+
+def _serialized_target_configuration(source, runner, surface):
+    configuration = json.loads(source.read_text())
+    serialized = json.dumps(configuration)
+    replacements = {"@runner@": runner, "@surface@": surface}
+    for placeholder, value in replacements.items():
+        serialized = serialized.replace(placeholder, json.dumps(value)[1:-1])
+    return serialized
+
+
+def _target_build_environment(home):
+    return os.environ | {
+        "HOME": str(home),
+        "HOME_DIR": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "XDG_CACHE_HOME": str(home / ".cache"),
+        "XDG_STATE_HOME": str(home / ".local/state"),
+        "NO_COLOR": "1",
+    }
+
+
+def _materialize_target_hooks(target, surface, artifact, source, runner, state, output):
+    home = _sandboxed_child(state, target)
+    home.mkdir()
+    inputs = _sandboxed_child(home, "source")
+    inputs.mkdir()
+    inputs_file = _sandboxed_child(inputs, "hooks.json")
+    inputs_file.write_text(_serialized_target_configuration(source, runner, surface))
+    destination = _sandboxed_child(output, target)
+    subprocess.run(
+        [
+            RULESYNC_EXECUTABLE,
+            "generate",
+            "--input-roots",
+            str(inputs),
+            "--output-roots",
+            str(destination),
+            "--targets",
+            target,
+            "--features",
+            "hooks",
+        ],
+        cwd=home,
+        env=_target_build_environment(home),
+        check=True,
+        timeout=30,
+    )
+    verify_generated_hooks(destination / artifact, target)
+
+
 def build_hooks(source, output, runner, opencode_runner):
     output.mkdir()
     try:
         with tempfile.TemporaryDirectory(prefix="rulesync-hooks-") as temporary:
             state = Path(temporary)
             for target, (surface, artifact) in TARGETS.items():
-                home = state / target
-                home.mkdir()
-                inputs = home / "source"
-                inputs.mkdir()
                 selected_runner = opencode_runner if target == "opencode" else runner
-                configuration = json.loads(source.read_text())
-                serialized = json.dumps(configuration)
-                replacements = {"@runner@": selected_runner, "@surface@": surface}
-                for placeholder, value in replacements.items():
-                    serialized = serialized.replace(
-                        placeholder, json.dumps(value)[1:-1]
-                    )
-                (inputs / "hooks.json").write_text(serialized)
-                environment = os.environ | {
-                    "HOME": str(home),
-                    "HOME_DIR": str(home),
-                    "XDG_CONFIG_HOME": str(home / ".config"),
-                    "XDG_CACHE_HOME": str(home / ".cache"),
-                    "XDG_STATE_HOME": str(home / ".local/state"),
-                    "NO_COLOR": "1",
-                }
-                destination = output / target
-                subprocess.run(
-                    [
-                        RULESYNC_EXECUTABLE,
-                        "generate",
-                        "--input-roots",
-                        str(inputs),
-                        "--output-roots",
-                        str(destination),
-                        "--targets",
-                        target,
-                        "--features",
-                        "hooks",
-                    ],
-                    cwd=home,
-                    env=environment,
-                    check=True,
-                    timeout=30,
+                _materialize_target_hooks(
+                    target, surface, artifact, source, selected_runner, state, output
                 )
-                verify_generated_hooks(destination / artifact, target)
     except BaseException:
         shutil.rmtree(output)
         raise
