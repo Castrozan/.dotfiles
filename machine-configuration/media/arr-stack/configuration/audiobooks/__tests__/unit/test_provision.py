@@ -85,7 +85,7 @@ class ProvisionTests(unittest.TestCase):
             self.assertEqual(token.stat().st_mode & 0o777, 0o600)
             self.assertEqual(token.read_text(), "durable")
         key_request = client.call.call_args_list[-1].args
-        self.assertEqual(key_request[1]["isActive"], True)
+        self.assertTrue(key_request[1]["isActive"])
         self.assertNotIn("expiresIn", key_request[1])
 
     def test_completed_rmab_never_recreates_setup_or_download_client(self):

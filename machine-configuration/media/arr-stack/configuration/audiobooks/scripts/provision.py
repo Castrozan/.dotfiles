@@ -9,7 +9,10 @@ import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 
-from readmeabook import provision_rmab
+from readmeabook import AUDIOBOOK_DIRECTORY, provision_rmab
+
+
+LIBRARIES_ENDPOINT = "/api/libraries"
 
 
 class ApiError(RuntimeError):
@@ -94,12 +97,12 @@ def provision_abs(client, credentials, token_file):
         client.call("/init", {"newRoot": credentials})
     login = client.call("/login", credentials)["user"]
     client.authorize(login.get("accessToken") or login["token"])
-    libraries = client.call("/api/libraries")["libraries"]
+    libraries = client.call(LIBRARIES_ENDPOINT)["libraries"]
     matches = [
         library
         for library in libraries
         if any(
-            folder.get("fullPath", folder.get("path")) == "/data/audiobooks"
+            folder.get("fullPath", folder.get("path")) == AUDIOBOOK_DIRECTORY
             for folder in library["folders"]
         )
     ]
@@ -109,10 +112,10 @@ def provision_abs(client, credentials, token_file):
         matches[0]
         if matches
         else client.call(
-            "/api/libraries",
+            LIBRARIES_ENDPOINT,
             {
                 "name": "Audiobooks",
-                "folders": [{"fullPath": "/data/audiobooks"}],
+                "folders": [{"fullPath": AUDIOBOOK_DIRECTORY}],
                 "mediaType": "book",
                 "icon": "audiobooks",
             },
@@ -122,7 +125,7 @@ def provision_abs(client, credentials, token_file):
     if token:
         check = Client(client.base, {"Authorization": f"Bearer {token}"})
         try:
-            check.call("/api/libraries")
+            check.call(LIBRARIES_ENDPOINT)
         except ApiError as error:
             if error.status not in (401, 403):
                 raise
