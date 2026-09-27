@@ -1,5 +1,15 @@
-{ pkgs, cfg, ... }:
 {
+  pkgs,
+  cfg,
+  mkEvalCheck,
+  ...
+}:
+{
+  hooks-registration-verifies-the-active-settings-after-seeding =
+    mkEvalCheck "hooks-registration-verifies-the-active-settings-after-seeding"
+      (builtins.hasAttr "verifyDeployedProhibitedWordsAllowlist" cfg.home.activation)
+      "The activation must verify host allowlists in generated and active Claude settings and managed Codex requirements";
+
   hooks-claude-generated-native-registrations =
     pkgs.runCommand "hooks-claude-generated-native-registrations" { }
       ''
