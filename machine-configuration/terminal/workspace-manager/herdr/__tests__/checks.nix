@@ -88,9 +88,17 @@ in
         builtins.elem "linkGeneration" refresh.after
         && builtins.elem "seedCodexConfigAsMutableFile" refresh.after
         && lib.hasInfix "/bin/herdr integration install codex" refresh.data
-        && lib.hasInfix "/bin/herdr integration install opencode" refresh.data
+        && !(lib.hasInfix "/bin/herdr integration install opencode" refresh.data)
       ) integrationRefreshes)
-      "rebuild must refresh native Codex and OpenCode integrations after deploying their configuration";
+      "rebuild must refresh the mutable Codex integration without writing immutable OpenCode terminal configuration";
+
+  domain-terminal-herdr-deploys-native-opencode-terminal-plugin =
+    mkEvalCheck "domain-terminal-herdr-deploys-native-opencode-terminal-plugin"
+      (builtins.all (configuration: configuration.home.file ? ".config/opencode/herdr-session") [
+        linuxConfiguration
+        darwinConfiguration
+      ])
+      "Herdr's existing V2 terminal integration must deploy declaratively on Linux and Darwin";
 
   domain-terminal-herdr-refreshes-hermes-only-when-configured =
     mkEvalCheck "domain-terminal-herdr-refreshes-hermes-only-when-configured"
