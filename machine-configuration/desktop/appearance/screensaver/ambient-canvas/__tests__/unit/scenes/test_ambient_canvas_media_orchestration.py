@@ -1,4 +1,5 @@
 import ensure_ambient_canvas_screensaver as ensure
+from playback import player_processes
 from recording.recorded_loop_capture_target import RecordedLoopCaptureTarget
 
 PLAYER_BINARY_PATH = "/home/user/.local/bin/player"
@@ -150,7 +151,7 @@ def test_stale_loop_skips_render_while_a_record_pass_is_running(monkeypatch):
 
 def test_the_running_display_is_matched_by_the_manifest_it_was_launched_with():
     assert (
-        ensure.resolve_loop_display_process_marker(
+        player_processes.resolve_loop_display_process_marker(
             PLAYER_BINARY_PATH, "/state/loops/1660x1080"
         )
         == "/state/loops/1660x1080/loop.segments.json"
@@ -158,12 +159,12 @@ def test_the_running_display_is_matched_by_the_manifest_it_was_launched_with():
 
 
 def test_two_capture_geometries_produce_two_distinct_display_markers():
-    assert ensure.resolve_loop_display_process_marker(
+    assert player_processes.resolve_loop_display_process_marker(
         PLAYER_BINARY_PATH, "/state/loops/1660x1080"
-    ) != ensure.resolve_loop_display_process_marker(
+    ) != player_processes.resolve_loop_display_process_marker(
         PLAYER_BINARY_PATH, "/state/loops/1920x1080"
     )
 
 
 def test_stopping_the_display_matches_a_process_name_the_agent_cannot_carry():
-    assert ensure.resolve_display_process_name(PLAYER_BINARY_PATH) == "player"
+    assert player_processes.resolve_display_process_name(PLAYER_BINARY_PATH) == "player"
