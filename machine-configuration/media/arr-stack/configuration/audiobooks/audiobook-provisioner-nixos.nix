@@ -23,6 +23,11 @@ in
       type = lib.types.str;
       description = "Runtime agenix password file, never copied into the Nix store.";
     };
+    readmeabookPasswordFile = lib.mkOption {
+      type = lib.types.str;
+      default = cfg.passwordFile;
+      description = "Independent runtime agenix password file for the ReadMeABook account.";
+    };
     prowlarrConfigFile = lib.mkOption {
       type = lib.types.str;
       description = "Runtime Prowlarr config.xml containing its API key.";
@@ -59,6 +64,7 @@ in
         AUDIOBOOK_USERNAME = cfg.username;
         QBITTORRENT_USERNAME = cfg.downloadUsername;
         AUDIOBOOK_PASSWORD_FILE = cfg.passwordFile;
+        READMEABOOK_PASSWORD_FILE = cfg.readmeabookPasswordFile;
         PROWLARR_CONFIG_FILE = cfg.prowlarrConfigFile;
         PROWLARR_BASE_URL = cfg.prowlarrBaseUrl;
         AUDIOBOOKSHELF_BASE_URL = cfg.audiobookshelfBaseUrl;

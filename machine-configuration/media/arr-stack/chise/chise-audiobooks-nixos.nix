@@ -9,10 +9,12 @@
     prowlarrBaseUrl = "http://arr:9696";
     prowlarrConfigFile = "/home/zanoni/arr-stack/config/prowlarr/config.xml";
     passwordFile = config.age.secrets."arr-qbittorrent-password".path;
+    readmeabookPasswordFile = config.age.secrets."arr-readmeabook-password".path;
     username = "lucas";
   };
 
   systemd.services.arr-audiobook-provisioner.restartTriggers = [
     ../../../../secrets/credentials/media/arr-qbittorrent-password.age
+    ../../../../secrets/credentials/media/arr-readmeabook-password.age
   ];
 }

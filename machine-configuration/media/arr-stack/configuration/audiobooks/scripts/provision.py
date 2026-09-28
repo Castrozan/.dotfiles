@@ -168,14 +168,21 @@ def main():
         Path(os.environ.get("STATE_DIRECTORY", "/var/lib/arr-audiobooks"))
         / "audiobookshelf-api-token",
     )
+    readmeabook_credentials = {
+        **credentials,
+        "password": Path(os.environ["READMEABOOK_PASSWORD_FILE"]).read_text().strip(),
+    }
+    if not readmeabook_credentials["password"]:
+        raise RuntimeError("ReadMeABook password secret is empty")
     provision_rmab(
         Client(os.environ["READMEABOOK_BASE_URL"]),
-        credentials,
+        readmeabook_credentials,
         library_id,
         token,
         key,
         indexers,
         os.environ["QBITTORRENT_USERNAME"],
+        credentials["password"],
     )
 
 
