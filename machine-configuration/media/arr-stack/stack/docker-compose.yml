@@ -362,7 +362,7 @@ services:
     dns: *stable-public-dns
     environment:
       <<: *arr-common-environment
-      PUBLIC_URL: "http://arr:3030"
+      PUBLIC_URL: "https://readmeabook.lucaszanoni.com"
     ports:
       - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:3030:3030"
     volumes:

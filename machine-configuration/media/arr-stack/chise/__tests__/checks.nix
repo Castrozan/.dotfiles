@@ -53,6 +53,18 @@ let
       upstreamPort = 8080;
       loginLocationRegexes = [ "^/api/v2/auth/login$" ];
     }
+    {
+      hostname = "readmeabook.lucaszanoni.com";
+      proxyPort = 9454;
+      upstreamPort = 3030;
+      loginLocationRegexes = [ "^/api/auth/(local/login|admin/login|token/login|register)$" ];
+    }
+    {
+      hostname = "audiobookshelf.lucaszanoni.com";
+      proxyPort = 9455;
+      upstreamPort = 13378;
+      loginLocationRegexes = [ "^/login$" ];
+    }
   ];
   privateCloudflareApplicationsAreDeclared = builtins.all (
     application:
@@ -94,5 +106,5 @@ in
   chise-arr-private-cloudflare-applications-complete =
     mkEvalCheck "chise-arr-private-cloudflare-applications-complete"
       privateCloudflareApplicationsAreDeclared
-      "Miwayomi, Radarr, Sonarr, Prowlarr, Bazarr, Suwayomi, and qBittorrent must each have a dedicated owner-gated Cloudflare hostname routed through a loopback proxy to the existing tailnet-bound service";
+      "Miwayomi, Radarr, Sonarr, Prowlarr, Bazarr, Suwayomi, qBittorrent, ReadMeABook, and Audiobookshelf must each have a dedicated owner-gated Cloudflare hostname routed through a loopback proxy to the existing tailnet-bound service";
 }
