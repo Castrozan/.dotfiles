@@ -20,18 +20,6 @@ let
       upstreamUrl = "http://127.0.0.1:5000";
       loginLocationRegexes = [
         "^/api/Account/(login|register|forgot-password|reset-password|confirm-password-reset)"
-        {
-          hostname = "readmeabook.lucaszanoni.com";
-          proxyPort = 9454;
-          upstreamUrl = "http://${chiseTailnetBindAddress}:3030";
-          loginLocationRegexes = [ "^/api/auth/(local/login|admin/login|token/login|register)$" ];
-        }
-        {
-          hostname = "audiobookshelf.lucaszanoni.com";
-          proxyPort = 9455;
-          upstreamUrl = "http://${chiseTailnetBindAddress}:13378";
-          loginLocationRegexes = [ "^/login$" ];
-        }
       ];
     }
     {
@@ -75,6 +63,18 @@ let
       proxyPort = 9453;
       upstreamUrl = "http://${chiseTailnetBindAddress}:8080";
       loginLocationRegexes = [ "^/api/v2/auth/login$" ];
+    }
+    {
+      hostname = "readmeabook.lucaszanoni.com";
+      proxyPort = 9454;
+      upstreamUrl = "http://${chiseTailnetBindAddress}:3030";
+      loginLocationRegexes = [ "^/api/auth/(local/login|admin/login|token/login|register)$" ];
+    }
+    {
+      hostname = "audiobookshelf.lucaszanoni.com";
+      proxyPort = 9455;
+      upstreamUrl = "http://${chiseTailnetBindAddress}:13378";
+      loginLocationRegexes = [ "^/login$" ];
     }
   ];
 in
