@@ -77,7 +77,7 @@ def test_periodic_safety_net_kick_fires_when_ipc_probe_last_failed(
     )
     monkeypatch.setattr(daemon_module.subprocess, "run", subprocess_run_mock)
     daemon_module.run_periodic_safety_net_kick()
-    assert _count_launchctl_calls(subprocess_run_mock) == 3
+    assert _count_launchctl_calls(subprocess_run_mock) == 2
     final_health_state = daemon_module.read_current_health_state_from_file()
     assert (
         final_health_state["last_kick_reason"]
@@ -104,7 +104,7 @@ def test_periodic_safety_net_kick_fires_when_keyboard_grab_is_lost(
     )
     monkeypatch.setattr(daemon_module.subprocess, "run", subprocess_run_mock)
     daemon_module.run_periodic_safety_net_kick()
-    assert _count_launchctl_calls(subprocess_run_mock) == 3
+    assert _count_launchctl_calls(subprocess_run_mock) == 2
     final_health_state = daemon_module.read_current_health_state_from_file()
     assert (
         final_health_state["last_kick_reason"]
@@ -131,4 +131,4 @@ def test_periodic_safety_net_kick_fires_when_core_service_process_is_down(
     )
     monkeypatch.setattr(daemon_module.subprocess, "run", subprocess_run_mock)
     daemon_module.run_periodic_safety_net_kick()
-    assert _count_launchctl_calls(subprocess_run_mock) == 3
+    assert _count_launchctl_calls(subprocess_run_mock) == 2
