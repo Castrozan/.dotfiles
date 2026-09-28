@@ -12,6 +12,8 @@ pkgs.rustPlatform.buildRustPackage (finalAttributes: {
 
   cargoLock.lockFile = "${finalAttributes.src}/Cargo.lock";
 
+  patches = [ ./patches/validate-agent-resume-commands.patch ];
+
   postInstall = ''
     mkdir -p "$out/share/herdr/plugins/agent-resume/target/release"
     cp herdr-plugin.toml "$out/share/herdr/plugins/agent-resume/"
