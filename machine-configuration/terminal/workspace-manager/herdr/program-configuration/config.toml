@@ -52,6 +52,18 @@ edit_scrollback = ""
 toggle_sidebar = "prefix+shift+b"
 
 [[keys.command]]
+key = "prefix+y"
+type = "plugin_action"
+command = "angel-o.agent-resume.insert-resume"
+description = "insert the latest agent resume command"
+
+[[keys.command]]
+key = "prefix+ctrl+y"
+type = "plugin_action"
+command = "angel-o.agent-resume.insert-resume"
+description = "insert the latest agent resume command"
+
+[[keys.command]]
 key = "prefix+i"
 type = "pane"
 command = "lazygit"

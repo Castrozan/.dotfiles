@@ -21,6 +21,7 @@ let
 in
 {
   imports = [
+    ./herdr-agent-resume-home-manager.nix
     ./herdr-annotate-home-manager.nix
     ./herdr-pace-home-manager.nix
     ./herdr-config-mutable-home-manager.nix
