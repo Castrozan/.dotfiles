@@ -109,6 +109,10 @@
         file = ../../../../secrets/credentials/media/arr-readmeabook-password.age;
         mode = "400";
       };
+      "arr-audiobookshelf-password" = {
+        file = ../../../../secrets/credentials/media/arr-audiobookshelf-password.age;
+        mode = "400";
+      };
       "arr-radarr-password" = {
         file = ../../../../secrets/credentials/media/arr-radarr-password.age;
         mode = "400";

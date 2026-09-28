@@ -23,6 +23,11 @@ in
       type = lib.types.str;
       description = "Runtime agenix password file, never copied into the Nix store.";
     };
+    downloadPasswordFile = lib.mkOption {
+      type = lib.types.str;
+      default = cfg.passwordFile;
+      description = "Existing download-client password file, independent from audiobook app accounts.";
+    };
     readmeabookPasswordFile = lib.mkOption {
       type = lib.types.str;
       default = cfg.passwordFile;
@@ -63,6 +68,7 @@ in
       environment = {
         AUDIOBOOK_USERNAME = cfg.username;
         QBITTORRENT_USERNAME = cfg.downloadUsername;
+        QBITTORRENT_PASSWORD_FILE = cfg.downloadPasswordFile;
         AUDIOBOOK_PASSWORD_FILE = cfg.passwordFile;
         READMEABOOK_PASSWORD_FILE = cfg.readmeabookPasswordFile;
         PROWLARR_CONFIG_FILE = cfg.prowlarrConfigFile;

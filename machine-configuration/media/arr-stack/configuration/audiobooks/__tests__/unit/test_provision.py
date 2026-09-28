@@ -16,6 +16,41 @@ with patch.object(sys, "path", [str(Path(__file__).parents[2] / "scripts"), *sys
 
 
 class ProvisionTests(unittest.TestCase):
+    def test_main_keeps_all_three_passwords_independent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = {
+                "AUDIOBOOK_USERNAME": "lucas",
+                "QBITTORRENT_USERNAME": "download-admin",
+                "PROWLARR_CONFIG_FILE": str(root / "config.xml"),
+                "PROWLARR_BASE_URL": "http://prowlarr",
+                "AUDIOBOOKSHELF_BASE_URL": "http://abs",
+                "READMEABOOK_BASE_URL": "http://rmab",
+                "STATE_DIRECTORY": directory,
+            }
+            (root / "config.xml").write_text("<Config><ApiKey>key</ApiKey></Config>")
+            for name, value in [
+                ("AUDIOBOOK_PASSWORD_FILE", "abs-secret"),
+                ("READMEABOOK_PASSWORD_FILE", "rmab-secret"),
+                ("QBITTORRENT_PASSWORD_FILE", "download-secret"),
+            ]:
+                path = root / name
+                path.write_text(value)
+                env[name] = str(path)
+            with (
+                patch.dict(provision.os.environ, env),
+                patch.object(provision, "Client"),
+                patch.object(provision, "select_indexers", return_value=[]),
+                patch.object(
+                    provision, "provision_abs", return_value=("library", "token")
+                ) as abs_call,
+                patch.object(provision, "provision_rmab") as rmab_call,
+            ):
+                provision.main()
+            self.assertEqual(abs_call.call_args.args[1]["password"], "abs-secret")
+            self.assertEqual(rmab_call.call_args.args[1]["password"], "rmab-secret")
+            self.assertEqual(rmab_call.call_args.args[-1], "download-secret")
+
     def test_indexers_exclude_disabled_non_audio_and_unsupported_protocol(self):
         valid = {
             "id": 1,

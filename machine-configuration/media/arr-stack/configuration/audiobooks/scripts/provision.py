@@ -157,6 +157,11 @@ def main():
     }
     if not credentials["password"]:
         raise RuntimeError("Audiobook password secret is empty")
+    download_password = (
+        Path(os.environ["QBITTORRENT_PASSWORD_FILE"]).read_text().strip()
+    )
+    if not download_password:
+        raise RuntimeError("Download-client password secret is empty")
     key = ET.parse(os.environ["PROWLARR_CONFIG_FILE"]).findtext("ApiKey")
     if not key:
         raise RuntimeError("Prowlarr API key missing")
@@ -182,7 +187,7 @@ def main():
         key,
         indexers,
         os.environ["QBITTORRENT_USERNAME"],
-        credentials["password"],
+        download_password,
     )
 
 
