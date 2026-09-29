@@ -25,6 +25,11 @@ def installed_karabiner_version():
 
 def ensure_karabiner_version(minimum_version, homebrew_binary, homebrew_user):
     minimum_components = version_components(minimum_version)
+    if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]*", homebrew_user):
+        raise ValueError(f"Invalid Homebrew user: {homebrew_user!r}")
+    homebrew_path = Path(homebrew_binary)
+    if not homebrew_path.is_absolute() or homebrew_path.name != "brew":
+        raise ValueError(f"Invalid Homebrew executable: {homebrew_binary!r}")
     installed_version = installed_karabiner_version()
     if (
         installed_version
@@ -36,9 +41,9 @@ def ensure_karabiner_version(minimum_version, homebrew_binary, homebrew_user):
     subprocess.run(
         [
             "/usr/bin/sudo",
-            "--user",
-            homebrew_user,
+            f"--user={homebrew_user}",
             "--set-home",
+            "--",
             homebrew_binary,
             operation,
             "--cask",
