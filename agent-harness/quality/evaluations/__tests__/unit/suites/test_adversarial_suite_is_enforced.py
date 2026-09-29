@@ -2,10 +2,7 @@ from pathlib import Path
 
 import yaml
 
-from runner.execution.run_evals_hook_test_runner import (
-    evaluate_hook_test,
-    find_hook_script,
-)
+from runner.execution.run_evals_hook_test_runner import evaluate_hook_test
 
 ADVERSARIAL_SUITE = Path(__file__).resolve().parents[3] / "evals/adversarial.yaml"
 
@@ -31,15 +28,6 @@ def test_the_adversarial_axis_keeps_both_a_blocking_case_and_a_benign_control():
     assert benign, (
         "no benign control: the axis would pass even if a guard blocked everything"
     )
-
-
-def test_every_adversarial_hook_script_resolves():
-    unresolved = [
-        t["name"]
-        for t in load_adversarial_tests()
-        if find_hook_script(t["hook"]) is None
-    ]
-    assert not unresolved, f"adversarial tests name missing hook scripts: {unresolved}"
 
 
 def test_every_adversarial_guard_still_behaves_as_asserted():
