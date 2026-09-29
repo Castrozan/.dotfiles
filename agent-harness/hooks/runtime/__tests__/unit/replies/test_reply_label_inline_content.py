@@ -27,7 +27,8 @@ def test_long_reply_requires_inline_label_content(separator):
 
 
 @pytest.mark.parametrize(
-    "suffix", ["", " ", "  ", "\\\n", "\n| Result |\n| --- |\n| Passed |"]
+    "suffix",
+    ["", " ", "  ", "\\\n", "\n| # | Result |\n| --- | --- |\n| 1 | Passed |"],
 )
 def test_empty_label_lines_require_inline_content(suffix):
     assert template_violations_in_reply("**Done:**" + suffix)
@@ -55,7 +56,7 @@ def test_inline_content_and_later_continuations_are_allowed(content):
     [
         "```text\nDone:\nThe check passed.\n```",
         "> **Done:**\n> The check passed.",
-        "| Format |\n| --- |\n| Done: |\n| The check passed. |",
+        "| # | Format |\n| --- | --- |\n| 1 | Done: |\n| 2 | The check passed. |",
         "The example is `Done:` followed by a newline.",
     ],
 )

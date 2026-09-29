@@ -11,6 +11,30 @@ def reply_markdown_parser():
     return MarkdownIt("commonmark").enable(["table", "strikethrough"])
 
 
+def extract_table_first_columns(tokens):
+    columns = []
+    inside_table = False
+    first_cell = False
+    for token in tokens:
+        if token.type == "table_open":
+            columns.append([])
+            inside_table = True
+        elif token.type == "table_close":
+            inside_table = False
+        elif token.type == "tr_open":
+            first_cell = True
+        elif token.type == "inline" and inside_table and first_cell:
+            columns[-1].append(
+                "".join(
+                    child.content
+                    for child in token.children or []
+                    if child.type in ("text", "code_inline")
+                ).strip()
+            )
+            first_cell = False
+    return columns
+
+
 def visual_line_indices(tokens, source_lines, configuration):
     indices = {
         index
@@ -73,6 +97,7 @@ class ReplyMarkdownDocument:
         self.lists = extract_reply_lists(
             tokens, self.source_lines, self.prose_line_indices
         )
+        self.table_first_columns = extract_table_first_columns(tokens)
         self.content = ReplyMarkdownContent(tokens)
         self.labels = extract_reply_labels(
             self.source_lines,
