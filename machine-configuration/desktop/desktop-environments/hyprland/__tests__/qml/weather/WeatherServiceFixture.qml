@@ -7,8 +7,6 @@ Item {
     property QtObject weatherServiceLogic: QtObject {
         id: weatherServiceLogic
 
-        property string locationCoordinates: ""
-
         readonly property var weatherIconMap: WeatherCodes.weatherIconMap
 
         readonly property var weatherConditionMap: WeatherCodes.weatherConditionMap
@@ -25,19 +23,6 @@ Item {
 
         function celsiusToFahrenheit(celsius) {
             return celsius * 9 / 5 + 32;
-        }
-
-        function buildWeatherApiUrl() {
-            if (!locationCoordinates || locationCoordinates.indexOf(",") === -1)
-                return "";
-
-            var parts = locationCoordinates.split(",");
-            var latitude = parts[0];
-            var longitude = parts[1];
-            var baseUrl = "https://api.open-meteo.com/v1/forecast";
-            var queryParams = ["latitude=" + latitude, "longitude=" + longitude, "daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset", "current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m", "timezone=auto", "forecast_days=7"];
-
-            return baseUrl + "?" + queryParams.join("&");
         }
 
         property var currentConditions: null
