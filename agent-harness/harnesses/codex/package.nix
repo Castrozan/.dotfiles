@@ -9,12 +9,12 @@ let
     inherit pkgs;
   };
 
-  version = "0.158.0";
+  version = "0.159.1";
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      sha256 = "b33cd426c9acab9b34c5a93200ba4fe83c8e614c18ce5ef52b2bf36408b8e18c";
+      sha256 = "9a2dff8e1eb9bad83f52edb6f91175efeb5c68a316f880c95d7770f87a34fc5c";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -24,7 +24,7 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      sha256 = "09f2a9fde318fbcd384f15b4850c1b90930678f4805647b6bded196ccf32f590";
+      sha256 = "a8fc76ccb5230dd97fb6db01873fa9c12b5e1efdf32d13c2ba7f6e8489ccd893";
       buildInputs = [ ];
     };
   };
