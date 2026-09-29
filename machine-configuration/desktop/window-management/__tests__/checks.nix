@@ -7,7 +7,10 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  windowManagerConfig = import ../macos-window-manager-nix-darwin.nix;
+  windowManagerConfig = import ../macos-window-manager-nix-darwin.nix {
+    inherit lib pkgs;
+    config.system.primaryUser = "test-user";
+  };
   windowManager = windowManagerConfig.system.defaults.CustomUserPreferences."com.apple.WindowManager";
 in
 {
