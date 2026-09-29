@@ -7,7 +7,24 @@
 }:
 let
   fixtures = import ./harness-check-fixtures.nix { inherit helpers self; };
-  inherit (fixtures) bothHarnessModules parseDeployedJson;
+  inherit (fixtures) bothHarnessModules cfgWithBothHarnesses parseDeployedJson;
+
+  launchArgumentsForEffort = reasoningEffort: {
+    name = "effort-check";
+    agent = cfgWithBothHarnesses.clawde.agents.agent-on-claude // {
+      inherit reasoningEffort;
+    };
+    workspaceDirectory = "/tmp/effort-check";
+    instructionsFile = "/tmp/effort-check/instructions.md";
+    sessionArgvShellExpansion = "\${CLAWDE_SESSION_ARGV:-}";
+    channelLaunchFlags = "";
+  };
+
+  commandBuilders = [
+    "buildLaunchCommandFor"
+    "buildRunOnceCommandFor"
+    "buildOneShotTurnCommandFor"
+  ];
 
   stewardLaunchConfig =
     parseDeployedJson
@@ -15,6 +32,48 @@ let
       .home.file."clawde/launch-config/steward.json".text;
 in
 {
+  clawde-claude-effort-reaches-every-launch-mode =
+    mkEvalCheck "clawde-claude-effort-reaches-every-launch-mode"
+      (builtins.all
+        (
+          reasoningEffort:
+          builtins.all (
+            builderName:
+            pkgs.lib.hasPrefix "CLAUDE_CODE_EFFORT_LEVEL=${reasoningEffort} " (
+              cfgWithBothHarnesses.clawde.harnesses.claude.${builderName} (
+                launchArgumentsForEffort reasoningEffort
+              )
+            )
+          ) commandBuilders
+        )
+        [
+          "low"
+          "high"
+        ]
+      )
+      "Claude interactive, scheduled, and channel launches must receive the agent's explicit effort instead of inheriting the model or user's saved default";
+
+  clawde-claude-effort-does-not-change-other-harness-launches =
+    mkEvalCheck "clawde-claude-effort-does-not-change-other-harness-launches"
+      (builtins.all
+        (
+          harnessName:
+          builtins.all (
+            builderName:
+            !(pkgs.lib.hasInfix "CLAUDE_CODE_EFFORT_LEVEL" (
+              cfgWithBothHarnesses.clawde.harnesses.${harnessName}.${builderName} (
+                launchArgumentsForEffort "high"
+              )
+            ))
+          ) commandBuilders
+        )
+        [
+          "codex"
+          "opencode"
+        ]
+      )
+      "Claude's effort environment belongs only to Claude; Codex and OpenCode keep their native configuration paths";
+
   clawde-the-heartbeat-driver-carries-its-own-module-search-path =
     mkEvalCheck "clawde-the-heartbeat-driver-carries-its-own-module-search-path"
       (builtins.any (
