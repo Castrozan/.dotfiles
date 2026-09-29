@@ -26,6 +26,10 @@ from hook_event_output import emit_context_injection  # noqa: E402
 
 SESSION_START_HANDLERS = [
     HookHandler(
+        handler_module_name="codex_client_instructions_handler",
+        surfaces=(CODEX_SURFACE,),
+    ),
+    HookHandler(
         handler_module_name="session_context_handler", surfaces=(CLAUDE_SURFACE,)
     ),
     HookHandler(handler_module_name="compaction_context_recovery_handler"),

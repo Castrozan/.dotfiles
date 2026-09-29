@@ -25,6 +25,7 @@ in
 pkgs.runCommandLocal "agent-hook-scripts" { } ''
   mkdir -p "$out"
   ${lib.concatMapStringsSep "\n" installCommandForHookScript allHookScriptsAcrossSubdirectories}
+  install -m 0644 ${../harnesses/codex/scripts/shared_server/codex_client_context.py} "$out/codex_client_context.py"
   patchShebangs "$out/run-hook.sh"
   substituteInPlace "$out/run-hook.sh" \
     --replace-fail "@hookPythonInterpreter@" "${hookPythonInterpreter}"

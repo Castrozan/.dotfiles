@@ -59,10 +59,21 @@ in
       codexExecutableDirectory=$(dirname "$(readlink -f "$codexExecutable")")
       test "$codexExecutableDirectory" = "$(dirname "$codexExecutable")"
       test -x "$codexExecutableDirectory/codex-code-mode-host"
+      test -f "$codexExecutableDirectory/../codex-package.json"
+      test -x "$codexExecutableDirectory/../codex-path/rg"
       "$codexExecutable" --version >/dev/null 2>&1
       "$codexExecutableDirectory/codex-code-mode-host" --help >/dev/null
       touch "$out"
     '';
+
+  codex-daemon-is-declarative = mkEvalCheck "codex-daemon-is-declarative" (
+    let
+      settings = builtins.fromJSON cfg.home.file.".codex/app-server-daemon/settings.json".text;
+    in
+    cfg.home.file.".codex/packages/app-server-daemon/current".source == "${codexPackage}"
+    && !settings.remoteControlEnabled
+    && !settings.updater.autoUpdateEnabled
+  ) "Codex must select its Nix package and disable independent updates and remote control";
 
   codex-production-plugin-registration =
     mkEvalCheck "codex-production-plugin-registration"

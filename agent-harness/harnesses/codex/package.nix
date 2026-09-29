@@ -14,8 +14,7 @@ let
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      sha256 = "sha256-r59apuZmKsz51wfO8NnKCDiAoXOpwrbCKUftt4MOV3g=";
-      codeModeHostSha256 = "sha256-VFXGS+S6NxREcQiVr/bXTWU5haO/xFSot/5C1ubRHj0=";
+      sha256 = "b33cd426c9acab9b34c5a93200ba4fe83c8e614c18ce5ef52b2bf36408b8e18c";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -24,8 +23,7 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      sha256 = "sha256-NBxKCPnOGTWzAHN23Co9UKCokRKTDppHSuYTZyGPboo=";
-      codeModeHostSha256 = "sha256-GTY5GNp19dK4Bbb/+v2E6jyJduA+dRGSwErqW9cNSrQ=";
+      sha256 = "09f2a9fde318fbcd384f15b4850c1b90930678f4805647b6bded196ccf32f590";
       buildInputs = [ ];
     };
   };
@@ -36,33 +34,15 @@ let
     assetName:
     "https://github.com/openai/codex/releases/download/rust-v${version}/${assetName}-${currentHostSystem.releaseTargetTriple}.tar.gz";
 
-  codex-binary = fetchPrebuiltBinary {
+  codex-unwrapped = fetchPrebuiltBinary {
     pname = "codex";
     inherit version;
-    url = codexReleaseAssetUrl "codex";
+    url = codexReleaseAssetUrl "codex-package";
     inherit (currentHostSystem) sha256 buildInputs;
-    binaryName = "codex";
-    archiveBinaryPath = "codex-${currentHostSystem.releaseTargetTriple}";
+    archivePrefixToInstall = ".";
+    preserveCodeSignature = pkgs.stdenv.hostPlatform.isDarwin;
+    meta.mainProgram = "codex";
   };
-
-  codex-code-mode-host = fetchPrebuiltBinary {
-    pname = "codex-code-mode-host";
-    inherit version;
-    url = codexReleaseAssetUrl "codex-code-mode-host";
-    sha256 = currentHostSystem.codeModeHostSha256;
-    inherit (currentHostSystem) buildInputs;
-    binaryName = "codex-code-mode-host";
-    archiveBinaryPath = "codex-code-mode-host-${currentHostSystem.releaseTargetTriple}";
-  };
-
-  codex-unwrapped = codex-binary.overrideAttrs (previousAttributes: {
-    meta = (previousAttributes.meta or { }) // {
-      mainProgram = "codex";
-    };
-    postFixup = (previousAttributes.postFixup or "") + ''
-      ln -s ${codex-code-mode-host}/bin/codex-code-mode-host "$out/bin/codex-code-mode-host"
-    '';
-  });
 
   interactivePreferencesFile = import ./interactive-instructions.nix {
     inherit pkgs;
@@ -88,6 +68,11 @@ let
     exec ${pkgs.python312}/bin/python3 ${./scripts/hook_trust}/approve.py "$@"
   '';
 
+  sharedServerPython = pkgs.python312.withPackages (packages: [ packages.websockets ]);
+  sharedServerExecutable = pkgs.writeShellScript "codex-shared-client" ''
+    exec ${sharedServerPython}/bin/python3 ${./scripts/shared_server}/codex_client_launch.py "$@"
+  '';
+
   codex = pkgs.writeShellApplication {
     name = "codex";
     bashOptions = [ ];
@@ -98,6 +83,7 @@ let
       CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
       CODEX_LAUNCHER_BINARY = "${codex-unwrapped}/bin/codex";
       CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE = "${hookTrustExecutable}";
+      CODEX_LAUNCHER_SHARED_SERVER_EXECUTABLE = "${sharedServerExecutable}";
     };
     text = builtins.readFile ./scripts/codex;
   };
@@ -114,6 +100,12 @@ in
     packages = [ codex ];
     file = workspaceProfileActivation.profileFiles config.agentWorkspaceProfiles.profiles // {
       ".local/bin/codex".source = "${codex}/bin/codex";
+      ".codex/packages/app-server-daemon/current".source = codex-unwrapped;
+      ".codex/app-server-daemon/settings.json".text = builtins.toJSON {
+        remoteControlEnabled = false;
+        shutdownGraceSeconds = 60;
+        updater.autoUpdateEnabled = false;
+      };
     };
   };
 }

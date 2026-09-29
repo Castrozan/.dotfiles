@@ -27,6 +27,9 @@ def every_deployed_hook_script():
         and not any(
             excluded in candidate.parts for excluded in DIRECTORIES_EXCLUDED_FROM_DEPLOY
         )
+    ] + [
+        HOOKS_ROOT.parents[1]
+        / "harnesses/codex/scripts/shared_server/codex_client_context.py"
     ]
 
 
