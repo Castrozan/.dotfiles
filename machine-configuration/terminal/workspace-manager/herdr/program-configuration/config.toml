@@ -8,6 +8,7 @@ new_cwd = "follow"
 
 [ui]
 mouse_capture = true
+annotation_command = "prefix+n"
 accent = "@herdr_accent@"
 sidebar_start_collapsed = true
 navigator_collapse_workspaces = true

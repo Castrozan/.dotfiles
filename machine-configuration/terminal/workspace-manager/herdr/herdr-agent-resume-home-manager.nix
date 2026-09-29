@@ -6,7 +6,7 @@
 }:
 let
   agentResumePackage = import ./herdr-agent-resume-package.nix { inherit pkgs lib; };
-  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  herdrPackage = import ./herdr-package.nix { inherit pkgs inputs; };
 in
 {
   home.packages = [ agentResumePackage ];

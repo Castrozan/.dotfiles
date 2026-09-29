@@ -5,8 +5,8 @@
   ...
 }:
 let
-  annotatePackage = import ./herdr-annotate-package.nix { inherit pkgs lib; };
-  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  annotatePackage = import ./herdr-annotate-package.nix { inherit pkgs lib inputs; };
+  herdrPackage = import ./herdr-package.nix { inherit pkgs inputs; };
 in
 {
   home.packages = [ annotatePackage ];

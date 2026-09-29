@@ -1,0 +1,431 @@
+diff --git a/src/client/shell.rs b/src/client/shell.rs
+index 95ee5e78..c5322ab1 100644
+--- a/src/client/shell.rs
++++ b/src/client/shell.rs
+@@ -27,10 +27,11 @@ mod notification_policy;
+ mod notifications;
+ mod overlay_input;
+ mod preferences;
+ mod render;
+ mod scroll;
++mod selection_actions;
+ mod settings;
+ mod state;
+ mod surface_patch;
+ mod text_editor;
+ mod word_selection;
+diff --git a/src/client/shell/config.rs b/src/client/shell/config.rs
+index 1b591872..17bdea7e 100644
+--- a/src/client/shell/config.rs
++++ b/src/client/shell/config.rs
+@@ -128,10 +128,11 @@ impl ClientShellConfig {
+             sound_enabled: config.ui.sound.enabled,
+             toast_delivery: config.ui.toast.delivery,
+             toast_delay_seconds: config.ui.toast.delay_seconds,
+             toast_position: config.ui.toast.herdr.position,
+             copy_on_select: config.ui.copy_on_select,
++            annotation_command: config.ui.annotation_command.clone(),
+             navigator_collapse_workspaces: config.ui.navigator_collapse_workspaces,
+             clipboard_toast_enabled: config.ui.toast.clipboard.enabled,
+             clipboard_toast_position: config.ui.toast.clipboard.position,
+             theme_name: theme_runtime.manual_name.clone(),
+             theme_runtime,
+@@ -331,10 +332,11 @@ impl ClientShellConfig {
+                 self.sound_enabled = ui.sound.enabled;
+                 self.toast_delivery = ui.toast.delivery;
+                 self.toast_delay_seconds = ui.toast.delay_seconds;
+                 self.toast_position = ui.toast.herdr.position;
+                 self.copy_on_select = ui.copy_on_select;
++                self.annotation_command = ui.annotation_command.clone();
+                 self.navigator_collapse_workspaces = ui.navigator_collapse_workspaces;
+                 self.clipboard_toast_enabled = ui.toast.clipboard.enabled;
+                 self.clipboard_toast_position = ui.toast.clipboard.position;
+                 self.prompt_new_tab_name = ui.prompt_new_tab_name;
+                 self.prompt_new_workspace_name = ui.prompt_new_workspace_name;
+diff --git a/src/client/shell/copy_mode.rs b/src/client/shell/copy_mode.rs
+index e2e0e7c5..c9b0c029 100644
+--- a/src/client/shell/copy_mode.rs
++++ b/src/client/shell/copy_mode.rs
+@@ -858,11 +858,13 @@ impl ClientShellState {
+                 .as_ref()
+                 .is_some_and(crate::selection::Selection::is_visible)
+         {
+             // A visible explicit selection is live. If the fallback above supplied
+             // a search match, retain the revision that established its boundaries.
+-            self.request_selection_copy(outcome, live_selection);
++            if !self.request_selection_action(outcome, live_selection) {
++                self.request_selection_copy(outcome, live_selection);
++            }
+         }
+         self.selection = None;
+         self.selection_highlight_clear_deadline = None;
+         self.push_pane_scroll_offset(
+             copy_mode.pane_id,
+diff --git a/src/client/shell/mouse.rs b/src/client/shell/mouse.rs
+index 0b9326d0..eb192574 100644
+--- a/src/client/shell/mouse.rs
++++ b/src/client/shell/mouse.rs
+@@ -1709,11 +1709,16 @@ impl ClientShellState {
+             self.stop_selection_autoscroll();
+             let copied = self
+                 .selection
+                 .as_mut()
+                 .is_some_and(crate::selection::Selection::finish);
+-            if copied && self.config.copy_on_select {
++            if copied && self.request_selection_action(outcome, true) {
++                if self.copy_mode.is_some() {
++                    self.exit_copy_mode(false, outcome);
++                }
++                self.selection = None;
++            } else if copied && self.config.copy_on_select {
+                 self.request_selection_copy(outcome, true);
+                 self.selection = None;
+             } else if self
+                 .selection
+                 .as_ref()
+diff --git a/src/client/shell/render.rs b/src/client/shell/render.rs
+index 80387019..c93b7b7e 100644
+--- a/src/client/shell/render.rs
++++ b/src/client/shell/render.rs
+@@ -185,11 +185,11 @@ pub(super) fn render_mode_bar(
+                         ("n/N".to_owned(), key),
+                         (format!(" repeat{match_status}  "), base),
+                         ("v/space".to_owned(), key),
+                         (format!(" {select}  "), base),
+                         ("y/enter".to_owned(), key),
+-                        (" copy  ".to_owned(), base),
++                        (" finish  ".to_owned(), base),
+                         (exit_keys.to_owned(), key),
+                         (exit_label.to_owned(), base),
+                     ]);
+                 }
+             }
+diff --git a/src/client/shell/state.rs b/src/client/shell/state.rs
+index 8d81f3a0..1b6cc159 100644
+--- a/src/client/shell/state.rs
++++ b/src/client/shell/state.rs
+@@ -28,10 +28,11 @@ pub(crate) struct ClientShellConfig {
+     pub(super) sound_enabled: bool,
+     pub(super) toast_delivery: crate::config::ToastDelivery,
+     pub(super) toast_delay_seconds: u64,
+     pub(super) toast_position: crate::config::ToastHerdrPosition,
+     pub(super) copy_on_select: bool,
++    pub(super) annotation_command: Option<String>,
+     pub(super) navigator_collapse_workspaces: bool,
+     pub(super) clipboard_toast_enabled: bool,
+     pub(super) clipboard_toast_position: crate::config::ToastClipboardPosition,
+     pub(super) theme_name: String,
+     pub(super) theme_runtime: crate::app::state::ThemeRuntimeConfig,
+diff --git a/src/client/shell/tests/mouse_selection.rs b/src/client/shell/tests/mouse_selection.rs
+index ae4168c2..21a13d13 100644
+--- a/src/client/shell/tests/mouse_selection.rs
++++ b/src/client/shell/tests/mouse_selection.rs
+@@ -1157,5 +1157,175 @@ fn context_menu_keyboard_and_outside_click_are_client_owned() {
+             modifiers: KeyModifiers::empty(),
+         })]);
+     assert!(outside.repaint);
+     assert!(state.overlay.is_none());
+ }
++
++fn selection_annotation_snapshot() -> ClientShellSnapshot {
++    let mut snapshot = snapshot();
++    snapshot.commands.push(crate::protocol::ClientShellCommand {
++        command_id: "annotation-command".into(),
++        binding_label: "prefix+n".into(),
++        binding_labels: vec!["prefix+n".into()],
++        action: crate::protocol::ClientShellCommandAction::PluginAction,
++        description: None,
++    });
++    snapshot
++}
++
++fn selection_annotation_state() -> ClientShellState {
++    let config: Config = toml::from_str("[ui]\nannotation_command = 'prefix+n'\n").unwrap();
++    let mut state = ClientShellState::new(ClientShellConfig::from_config(&config));
++    state.set_snapshot(Box::new(selection_annotation_snapshot()));
++    let mut pane_surface = surface();
++    pane_surface.panes[0].scroll = Some(crate::protocol::PaneSurfaceScrollMetrics {
++        offset_from_bottom: 0,
++        max_offset_from_bottom: 20,
++        viewport_rows: 2,
++    });
++    state.set_pane_surface(pane_surface);
++    state.compose(106, 20).expect("pane frame");
++    state
++}
++
++fn selection_annotation_command(
++    actions: &[ClientShellAction],
++) -> Option<&crate::api::schema::CommandInvokeParams> {
++    actions.iter().find_map(|action| match action {
++        ClientShellAction::Endpoint { request, .. } => match &request.method {
++            crate::api::schema::Method::CommandInvoke(params) => Some(params),
++            _ => None,
++        },
++        _ => None,
++    })
++}
++
++#[test]
++fn selection_annotation_mouse_release_invokes_once_with_original_coordinates() {
++    let mut state = selection_annotation_state();
++    let pane = state.hits.panes[0].clone();
++    for kind in [
++        MouseEventKind::Down(MouseButton::Left),
++        MouseEventKind::Drag(MouseButton::Left),
++    ] {
++        let column = pane.inner_rect.x
++            + if matches!(kind, MouseEventKind::Drag(_)) {
++                2
++            } else {
++                0
++            };
++        let outcome = state.handle_raw_events(vec![RawInputEvent::Mouse(MouseEvent {
++            kind,
++            column,
++            row: pane.inner_rect.y,
++            modifiers: KeyModifiers::empty(),
++        })]);
++        assert!(selection_annotation_command(&outcome.actions).is_none());
++    }
++    let event = MouseEvent {
++        kind: MouseEventKind::Up(MouseButton::Left),
++        column: pane.inner_rect.x + 2,
++        row: pane.inner_rect.y,
++        modifiers: KeyModifiers::empty(),
++    };
++    let outcome = state.handle_raw_events(vec![RawInputEvent::Mouse(event)]);
++    let command = selection_annotation_command(&outcome.actions).expect("annotation command");
++    assert_eq!(outcome.actions.len(), 1);
++    assert_eq!(command.command_id, "annotation-command");
++    assert_eq!(command.pane_id.as_deref(), Some("pane_1"));
++    let selection = command.selection.as_ref().unwrap();
++    assert_eq!(selection.anchor.col, 0);
++    assert_eq!(selection.cursor.col, 2);
++    assert!(selection.content_revision.is_none());
++    assert!(state.selection.is_none());
++    assert!(selection_annotation_command(
++        &state
++            .handle_raw_events(vec![RawInputEvent::Mouse(event)])
++            .actions
++    )
++    .is_none());
++}
++
++#[test]
++fn selection_annotation_copy_mode_finishes_character_or_line_selection_with_enter_or_y() {
++    for (select, finish) in [
++        (KeyCode::Char('v'), KeyCode::Enter),
++        (KeyCode::Char('V'), KeyCode::Char('y')),
++    ] {
++        let mut state = selection_annotation_state();
++        assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++        let mut outcome = ClientShellInput::default();
++        for code in [select, KeyCode::Right, finish] {
++            state.route_copy_mode_key(
++                &crate::input::TerminalKey::new(code, KeyModifiers::empty()),
++                &mut outcome,
++            );
++        }
++        let command = selection_annotation_command(&outcome.actions).expect("annotation command");
++        assert_eq!(command.pane_id.as_deref(), Some("pane_1"));
++        assert!(command.selection.is_some());
++        assert!(state.copy_mode.is_none());
++        assert_eq!(state.mode, ClientShellMode::Terminal);
++    }
++}
++
++#[test]
++fn selection_annotation_double_click_waits_for_release_and_handles_delayed_text() {
++    for release_before_response in [false, true] {
++        let mut state = word_drag_state(true);
++        state.config.annotation_command = Some("prefix+n".into());
++        state.set_snapshot(Box::new(selection_annotation_snapshot()));
++        let initial = start_word_drag(&mut state);
++        if release_before_response {
++            assert!(
++                word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 8)
++                    .actions
++                    .is_empty()
++            );
++        }
++        let mut actions = word_row_reply(&mut state, &initial, "alpha bravo charlie");
++        if !release_before_response {
++            assert!(actions.is_empty());
++            actions =
++                word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 8).actions;
++        }
++        let command = selection_annotation_command(&actions).expect("annotation command");
++        let selection = command.selection.as_ref().unwrap();
++        assert_eq!(selection.anchor.col, 6);
++        assert_eq!(selection.cursor.col, 10);
++        assert!(
++            word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 8)
++                .actions
++                .is_empty()
++        );
++    }
++}
++
++#[test]
++fn selection_annotation_copy_mode_cancel_never_opens_an_editor() {
++    let mut state = selection_annotation_state();
++    assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++    let mut outcome = ClientShellInput::default();
++    for code in [KeyCode::Char('V'), KeyCode::Esc] {
++        state.route_copy_mode_key(
++            &crate::input::TerminalKey::new(code, KeyModifiers::empty()),
++            &mut outcome,
++        );
++    }
++    assert!(outcome.actions.is_empty());
++    assert!(state.selection.is_none());
++}
++
++#[test]
++fn selection_annotation_missing_plugin_binding_preserves_normal_copy() {
++    let mut state = selection_annotation_state();
++    state.set_snapshot(Box::new(snapshot()));
++    state.selection = Some(crate::selection::Selection::absolute_range(
++        "pane_1".into(),
++        (0, 0),
++        (0, 2),
++    ));
++    let mut outcome = ClientShellInput::default();
++    assert!(!state.request_selection_action(&mut outcome, true));
++    assert!(outcome.actions.is_empty());
++    assert!(state.selection.is_some());
++}
+diff --git a/src/client/shell/word_selection.rs b/src/client/shell/word_selection.rs
+index f4329ced..429891ef 100644
+--- a/src/client/shell/word_selection.rs
++++ b/src/client/shell/word_selection.rs
+@@ -144,11 +144,16 @@ impl ClientShellState {
+             let dragged = gesture.dragged;
+             if let Some(selection) = self.selection.as_mut() {
+                 selection.finish();
+             }
+             self.word_selection_gesture = None;
+-            if self.config.copy_on_select {
++            if self.request_selection_action(outcome, false) {
++                if self.copy_mode.is_some() {
++                    self.exit_copy_mode(false, outcome);
++                }
++                self.selection = None;
++            } else if self.config.copy_on_select {
+                 self.request_selection_copy(outcome, false);
+                 if dragged {
+                     self.selection = None;
+                 } else {
+                     self.selection_highlight_clear_deadline =
+diff --git a/src/config/model.rs b/src/config/model.rs
+index 69f24cd8..838d23e3 100644
+--- a/src/config/model.rs
++++ b/src/config/model.rs
+@@ -920,10 +920,11 @@ pub struct UiConfig {
+     pub mobile_width_threshold: u16,
+     /// Capture mouse input for Herdr's mouse UI. Default: true.
+     pub mouse_capture: bool,
+     /// Copy text selected with the mouse. Default: true.
+     pub copy_on_select: bool,
++    pub annotation_command: Option<String>,
+     pub navigator_collapse_workspaces: bool,
+     /// Host cursor policy. Default: auto.
+     pub host_cursor: HostCursorModeConfig,
+     /// Modifier that lets right-click gestures pass through to pane apps. Empty disables it.
+     pub right_click_passthrough_modifier: RightClickPassthroughModifierConfig,
+@@ -1172,10 +1173,11 @@ impl Default for UiConfig {
+             sidebar_start_collapsed: false,
+             sidebar_collapsed_mode: SidebarCollapsedModeConfig::Compact,
+             mobile_width_threshold: DEFAULT_MOBILE_WIDTH_THRESHOLD,
+             mouse_capture: true,
+             copy_on_select: true,
++            annotation_command: None,
+             navigator_collapse_workspaces: false,
+             host_cursor: HostCursorModeConfig::Auto,
+             right_click_passthrough_modifier: RightClickPassthroughModifierConfig::default(),
+             redraw_on_focus_gained: true,
+             mouse_scroll_lines: None,
+diff --git a/src/client/shell/selection_actions.rs b/src/client/shell/selection_actions.rs
+new file mode 100644
+index 00000000..396db8ff
+--- /dev/null
++++ b/src/client/shell/selection_actions.rs
+@@ -0,0 +1,77 @@
++use super::*;
++use crate::api::schema::{CommandInvokeParams, Method, PaneSelectionReadParams, PaneTextPoint};
++
++impl ClientShellState {
++    pub(super) fn request_selection_action(
++        &mut self,
++        outcome: &mut ClientShellInput,
++        live: bool,
++    ) -> bool {
++        let Some(binding) = self
++            .config
++            .annotation_command
++            .as_ref()
++            .filter(|binding| !binding.trim().is_empty())
++        else {
++            return false;
++        };
++        let Some(selection) = self
++            .selection
++            .as_ref()
++            .filter(|selection| selection.is_visible())
++        else {
++            return false;
++        };
++        let Some(snapshot) = self.snapshot.as_deref() else {
++            return false;
++        };
++        let Some(command) = snapshot.commands.iter().find(|command| {
++            command.action == crate::protocol::ClientShellCommandAction::PluginAction
++                && command.binding_labels.contains(binding)
++        }) else {
++            return false;
++        };
++        let Some(pane) = snapshot
++            .panes
++            .iter()
++            .find(|pane| pane.pane_id == selection.pane_id)
++        else {
++            return false;
++        };
++        let content_revision = self
++            .pane_surface
++            .as_ref()
++            .and_then(|surface| {
++                surface
++                    .panes
++                    .iter()
++                    .find(|pane| pane.pane_id == selection.pane_id)
++            })
++            .map(|pane| pane.content_revision)
++            .filter(|_| !live);
++        let (anchor, cursor) = selection.ordered_cells();
++        let params = CommandInvokeParams {
++            command_id: command.command_id.clone(),
++            workspace_id: Some(pane.workspace_id.clone()),
++            tab_id: Some(pane.tab_id.clone()),
++            pane_id: Some(pane.pane_id.clone()),
++            selection: Some(PaneSelectionReadParams {
++                pane_id: pane.pane_id.clone(),
++                anchor: PaneTextPoint {
++                    row: anchor.0,
++                    col: anchor.1,
++                },
++                cursor: PaneTextPoint {
++                    row: cursor.0,
++                    col: cursor.1,
++                },
++                content_revision,
++            }),
++        };
++        self.push_endpoint_method_with_kind(
++            Method::CommandInvoke(params),
++            PendingEndpointKind::Generic,
++            outcome,
++        )
++    }
++}
