@@ -1,5 +1,4 @@
 import os
-import time
 
 import theme_set
 
@@ -85,13 +84,16 @@ class TestTouchQuickshellBarThemeColorsIfPresent:
 
         monkeypatch.setattr(theme_set, "CURRENT_THEME_PATH", theme_path)
 
-        old_mtime = os.path.getmtime(colors_file)
-
-        time.sleep(0.01)
+        previous_timestamp = 1_600_000_000
+        os.utime(colors_file, (previous_timestamp, previous_timestamp))
+        previous_modification_time_nanoseconds = colors_file.stat().st_mtime_ns
         theme_set.touch_quickshell_bar_theme_colors_if_present()
 
-        new_mtime = os.path.getmtime(colors_file)
-        assert new_mtime >= old_mtime
+        current_modification_time_nanoseconds = colors_file.stat().st_mtime_ns
+        assert (
+            current_modification_time_nanoseconds
+            > previous_modification_time_nanoseconds
+        )
 
     def test_does_nothing_when_file_missing(self, tmp_path, monkeypatch):
         theme_path = tmp_path / "theme"
