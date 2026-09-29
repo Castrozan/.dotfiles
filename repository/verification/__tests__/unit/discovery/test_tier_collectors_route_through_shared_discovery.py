@@ -21,13 +21,6 @@ def runner_libraries_that_may_not_collect_by_hand():
     )
 
 
-def test_the_runner_libraries_are_discovered():
-    assert len(runner_libraries_that_may_not_collect_by_hand()) > 5, (
-        "the runner directory is empty, so the gate below would pass without "
-        "inspecting anything"
-    )
-
-
 def logical_lines(shell_source):
     joined = []
     continued = ""
@@ -46,8 +39,13 @@ def logical_lines(shell_source):
 
 
 def test_no_tier_collects_test_files_with_a_raw_find():
+    libraries = runner_libraries_that_may_not_collect_by_hand()
+    assert len(libraries) > 5, (
+        "the runner directory is empty, so the gate below would pass without "
+        "inspecting anything"
+    )
     offenders = []
-    for library in runner_libraries_that_may_not_collect_by_hand():
+    for library in libraries:
         for line_number, line in logical_lines(library.read_text()):
             if not RAW_FIND_PATTERN.search(line):
                 continue
