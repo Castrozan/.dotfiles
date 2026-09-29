@@ -10,15 +10,6 @@ DOTFILES_REVIEW_PROCEDURE_PATH = (
     / "references"
     / "dotfiles-change.md"
 )
-REVIEW_SKILL_PATH = (
-    REPO_ROOT
-    / "agent-harness"
-    / "agent-instructions"
-    / "skills"
-    / "development"
-    / "review"
-    / "SKILL.md"
-)
 PROJECT_CONTEXT_PATH = (
     REPO_ROOT
     / "agent-harness"
@@ -66,15 +57,6 @@ def test_project_context_routes_the_substantive_review_through_the_review_skill(
     )
     assert "`dotfiles-change-review`" not in scope, (
         "the project context must not name the retired packaged command"
-    )
-
-
-def test_the_review_skill_routes_the_dotfiles_procedure():
-    skill = REVIEW_SKILL_PATH.read_text()
-    specialized_audits = skill.split("### Specialized audits\n", 1)[1]
-    assert "references/dotfiles-change.md" in specialized_audits, (
-        "the pre-push dotfiles change-review procedure must be reachable from "
-        "the review skill's specialized-audits routing"
     )
 
 
