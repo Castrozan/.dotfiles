@@ -70,7 +70,7 @@ in
     let
       settings = builtins.fromJSON cfg.home.file.".codex/app-server-daemon/settings.json".text;
     in
-    cfg.home.file.".codex/packages/app-server-daemon/current".source == "${codexPackage}"
+    toString cfg.home.file.".codex/packages/app-server-daemon/current".source == "${codexPackage}"
     && !settings.remoteControlEnabled
     && !settings.updater.autoUpdateEnabled
   ) "Codex must select its Nix package and disable independent updates and remote control";
