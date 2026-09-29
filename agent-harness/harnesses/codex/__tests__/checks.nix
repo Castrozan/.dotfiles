@@ -15,7 +15,7 @@ let
         inherit pkgs;
       };
 
-  cfg = helpers.homeManagerTestConfiguration [ self.homeManagerModules.codex ];
+  cfg = helpers.homeManagerTestConfigurationForEvaluatingSystem [ self.homeManagerModules.codex ];
 
   codexPackage = cfg.codex.unwrappedPackage;
 
