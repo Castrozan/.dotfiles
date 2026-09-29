@@ -1,34 +1,37 @@
 local dockStartupGuard = {}
-local dockLaunchWatcher
+local startupRetryTimer
+local retryIntervalSeconds = 0.5
+local maximumRetryCount = 120
 
-local function stopDockLaunchWatcher()
-	if dockLaunchWatcher then
-		dockLaunchWatcher:stop()
-		dockLaunchWatcher = nil
+local function stopStartupRetryTimer()
+	if startupRetryTimer then
+		startupRetryTimer:stop()
+		startupRetryTimer = nil
 	end
 end
 
 function dockStartupGuard.allowStartup()
-	stopDockLaunchWatcher()
-	dockLaunchWatcher = hs.application.watcher.new(function(_, eventType, application)
-		if not dockLaunchWatcher or eventType ~= hs.application.watcher.launched or not application then
-			return
-		end
-		if application:bundleID() ~= "com.apple.dock" then
-			return
-		end
-		if not hs.application.applicationsForBundleID("com.apple.dock")[1] then
-			return
-		end
-		stopDockLaunchWatcher()
-		hs.reload()
-	end)
-	dockLaunchWatcher:start()
-	if not hs.application.applicationsForBundleID("com.apple.dock")[1] then
-		return false
+	stopStartupRetryTimer()
+	if hs.application.applicationsForBundleID("com.apple.dock")[1] then
+		return true
 	end
-	stopDockLaunchWatcher()
-	return true
+	local remainingRetries = maximumRetryCount
+	startupRetryTimer = hs.timer.doEvery(retryIntervalSeconds, function()
+		if not startupRetryTimer then
+			return
+		end
+		if hs.application.applicationsForBundleID("com.apple.dock")[1] then
+			stopStartupRetryTimer()
+			hs.reload()
+			return
+		end
+		remainingRetries = remainingRetries - 1
+		if remainingRetries == 0 then
+			stopStartupRetryTimer()
+			hs.logger.new("dock-startup"):e("Dock unavailable for 60 seconds; reload Hammerspoon after Dock starts")
+		end
+	end)
+	return false
 end
 
 return dockStartupGuard
