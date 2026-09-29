@@ -12,7 +12,7 @@
 
   clawde.agents.ril-watcher = {
     harness = "claude";
-    model = "haiku";
+    model = "claude-sonnet-5-5";
     reasoningEffort = "high";
     launchOnTrigger = true;
     launchGateIntervalSeconds = 1800;
