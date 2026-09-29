@@ -1,4 +1,3 @@
-import argparse
 import plistlib
 import re
 import subprocess
@@ -25,7 +24,7 @@ def installed_karabiner_version():
 
 def ensure_karabiner_version(minimum_version, homebrew_binary, homebrew_user):
     minimum_components = version_components(minimum_version)
-    if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]*", homebrew_user):
+    if not re.fullmatch(r"\w[\w.-]*", homebrew_user, flags=re.ASCII):
         raise ValueError(f"Invalid Homebrew user: {homebrew_user!r}")
     homebrew_path = Path(homebrew_binary)
     if not homebrew_path.is_absolute() or homebrew_path.name != "brew":
@@ -62,16 +61,9 @@ def ensure_karabiner_version(minimum_version, homebrew_binary, homebrew_user):
         )
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--minimum-version", required=True)
-    parser.add_argument("--homebrew-binary", required=True)
-    parser.add_argument("--homebrew-user", required=True)
-    arguments = parser.parse_args()
-    ensure_karabiner_version(
-        arguments.minimum_version, arguments.homebrew_binary, arguments.homebrew_user
-    )
-
-
 if __name__ == "__main__":
-    main()
+    ensure_karabiner_version(
+        "@MINIMUM_KARABINER_VERSION@",
+        "@HOMEBREW_BINARY@",
+        "@HOMEBREW_USER@",
+    )
