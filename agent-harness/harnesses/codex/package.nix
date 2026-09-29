@@ -19,6 +19,7 @@ let
         openssl
         libcap
         zlib
+        ncurses
       ];
     };
     "aarch64-darwin" = {
