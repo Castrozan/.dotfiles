@@ -93,10 +93,19 @@ in
     && !(builtins.hasAttr ".codex/config.toml" cfg.home.file)
   ) "Codex config must deploy an authoritative nix-source while leaving the live TOML mutable";
 
-  codex-config-uses-alternate-screen =
-    mkEvalCheck "codex-config-uses-alternate-screen"
-      (lib.hasInfix ''alternate_screen = "always";'' codexConfigModule)
-      "Interactive Codex sessions must use the TUI alternate screen instead of terminal scrollback";
+  codex-config-preserves-terminal-scrollback =
+    pkgs.runCommand "check-codex-config-preserves-terminal-scrollback"
+      { nativeBuildInputs = [ pkgs.python312 ]; }
+      ''
+        python - ${cfg.home.file.".codex/config.toml.nix-source".source} <<'PY'
+        from pathlib import Path
+        import sys
+        import tomllib
+        configuration = tomllib.loads(Path(sys.argv[1]).read_text())
+        assert configuration["tui"]["alternate_screen"] == "never"
+        PY
+        touch "$out"
+      '';
 
   codex-config-leaves-model-runtime-owned =
     mkEvalCheck "codex-config-leaves-model-runtime-owned" (!(lib.hasInfix "model = " codexConfigModule))
