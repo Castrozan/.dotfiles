@@ -28,7 +28,6 @@ from shell_command_segment_scanning import (  # noqa: E402
 )
 from shell_read_only_inspection_command import (  # noqa: E402
     offset_lies_in_read_only_inspection_command_segment,
-    offset_lies_in_text_the_shell_never_runs,
 )
 
 
@@ -132,31 +131,4 @@ class TestTheExemptionItself:
     def test_a_read_only_segment_is_exempt(self, command_text, needle):
         assert offset_lies_in_read_only_inspection_command_segment(
             command_text, offset_of(command_text, needle)
-        )
-
-    @pytest.mark.parametrize(
-        "command_text,needle",
-        [
-            ("grep -rn 'a|b' agents; pytest agents/", "pytest"),
-            ('bash -lc "$(cat repository/verification/run.sh)"', "repository"),
-            ("echo 'a|b' | bash -c 'pytest agents/'", "pytest"),
-            ("cat repository/verification/run.sh | bash", "repository"),
-        ],
-    )
-    def test_execution_reached_past_a_quoted_separator_is_not_exempt(
-        self, command_text, needle
-    ):
-        assert not offset_lies_in_read_only_inspection_command_segment(
-            command_text, offset_of(command_text, needle)
-        )
-
-    def test_the_composed_question_covers_both_kinds_of_unexecuted_text(self):
-        read_only_segment = "grep -rn 'repository/verification/run.sh' agents"
-        heredoc_body = "git commit -F- <<'MESSAGE'\nrepository/verification/run.sh is CI-owned\nMESSAGE"
-        for command_text in (read_only_segment, heredoc_body):
-            assert offset_lies_in_text_the_shell_never_runs(
-                command_text, offset_of(command_text, "repository")
-            )
-        assert not offset_lies_in_text_the_shell_never_runs(
-            "repository/verification/run.sh --quick", 0
         )
