@@ -41,7 +41,7 @@ def test_projection_expands_the_configuration_before_rebasing(configured_reply_f
     assert "37 prose words or fewer" in rendered
     assert "up to 2 items" in rendered
     assert "done 20 + 7 words" in rendered
-    assert "Every rendered Markdown table starts with a `#` index column" in rendered
+    assert "Every rendered table starts with a `#` index column" in rendered
     assert "skills/humanize/SKILL.md#representation-selection" in rendered
     assert "{{reply_format}}" not in rendered
 
@@ -92,7 +92,7 @@ def test_complete_interactive_instructions_fit_projection_limits():
         },
     )
 
-    assert "Every rendered Markdown table starts with a `#` index column" in rendered
+    assert "Every rendered table starts with a `#` index column" in rendered
     assert "{{reply_format}}" not in rendered
 
 
