@@ -72,6 +72,30 @@ def test_copied_skills_expand_the_same_configuration(
     )
 
 
+def test_complete_interactive_instructions_fit_projection_limits():
+    source = (
+        REPO_ROOT
+        / "agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md"
+    )
+    rendered = project_instruction_documents(
+        [{"source": str(source), "text": source.read_text()}],
+        PurePosixPath(
+            "/nix/store/00000000000000000000000000000000-interactive-instructions.md"
+        ),
+        {
+            PurePosixPath(source.parents[4] / "core-rules/core.md"): PurePosixPath(
+                "/home/agent/.claude/CLAUDE.md"
+            ),
+            PurePosixPath(source.parents[1]): PurePosixPath(
+                "/home/agent/.local/share/agent-plugins/dotfiles/plugin/skills/humanize"
+            ),
+        },
+    )
+
+    assert "Every rendered Markdown table starts with a `#` index column" in rendered
+    assert "{{reply_format}}" not in rendered
+
+
 def test_evaluation_loader_uses_the_worktree_configuration(
     tmp_path, monkeypatch, configured_reply_formats
 ):
