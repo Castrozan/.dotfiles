@@ -5,7 +5,7 @@
       lib.types.submodule (
         { name, ... }:
         {
-          options = lib.optionalAttrs (name == "claude") (
+          options =
             lib.genAttrs
               [
                 "buildLaunchCommandFor"
@@ -17,14 +17,13 @@
                 lib.mkOption {
                   apply =
                     buildCommand:
-                    if buildCommand == null then
-                      null
+                    if name != "claude" || buildCommand == null then
+                      buildCommand
                     else
                       arguments:
                       "CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${buildCommand arguments}";
                 }
-              )
-          );
+              );
         }
       )
     );

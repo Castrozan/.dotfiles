@@ -13,6 +13,9 @@ let
     name = "effort-check";
     agent = cfgWithBothHarnesses.clawde.agents.agent-on-claude // {
       inherit reasoningEffort;
+      model = "sonnet";
+      permissionMode = "default";
+      heartbeatPrompt = "Check the effort setting.";
     };
     workspaceDirectory = "/tmp/effort-check";
     instructionsFile = "/tmp/effort-check/instructions.md";
