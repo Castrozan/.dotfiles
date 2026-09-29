@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 
-from codex_client_control import control_directory
+from codex_client_control import control_directory, proxy_generation
 from codex_client_endpoint import ClientEndpoint
 
 
@@ -20,7 +20,7 @@ class ClientHost:
     async def respond(self, message):
         if message["method"] == "status":
             return {
-                "generation": str(Path(__file__).resolve().parent),
+                "generation": proxy_generation(os.environ["CODEX_LAUNCHER_BINARY"]),
                 "pid": os.getpid(),
             }
         if message["method"] == "shutdown":

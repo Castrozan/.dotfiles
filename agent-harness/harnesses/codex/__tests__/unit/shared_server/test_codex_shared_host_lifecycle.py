@@ -9,6 +9,36 @@ from codex_client_endpoint import ClientEndpoint
 from codex_client_host import ClientHost
 
 
+def test_binary_only_upgrade_requires_proxy_replacement(tmp_path, monkeypatch):
+    import codex_client_control
+
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path))
+    monkeypatch.setenv("CODEX_LAUNCHER_BINARY", "/old/codex")
+    host = ClientHost()
+    status = asyncio.run(host.respond({"method": "status"}))
+    requests = []
+
+    def request(socket_path, message):
+        requests.append(message["method"])
+        if message["method"] == "status":
+            return status
+        raise RuntimeError(
+            "Close attached Codex clients before activating the upgraded proxy"
+        )
+
+    monkeypatch.setattr(codex_client_control, "request", request)
+    try:
+        with pytest.raises(RuntimeError, match="Close attached Codex clients"):
+            codex_client_control.register_client(
+                {"CODEX_HOME": str(tmp_path), "CODEX_LAUNCHER_BINARY": "/new/codex"},
+                {},
+            )
+        assert requests == ["status", "shutdown"]
+    finally:
+        (host.directory / "startup.lock").unlink()
+        host.directory.rmdir()
+
+
 def test_upgrade_preserves_a_live_terminal_during_its_reconnect_gap(
     tmp_path, monkeypatch
 ):

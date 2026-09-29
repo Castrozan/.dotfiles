@@ -35,12 +35,16 @@ def request(socket_path, message):
         return result
 
 
+def proxy_generation(binary):
+    return [str(Path(__file__).resolve().parent), str(Path(binary).resolve())]
+
+
 def register_client(environment, configuration):
     environment = {**environment, "PWD": os.getcwd()}
     home = Path(environment.get("CODEX_HOME", Path.home() / ".codex")).resolve()
     directory = control_directory(home)
     socket_path = directory / "control.sock"
-    generation = str(Path(__file__).resolve().parent)
+    generation = proxy_generation(environment["CODEX_LAUNCHER_BINARY"])
     descriptor = os.open(directory / "startup.lock", os.O_CREAT | os.O_RDWR, 0o600)
     with os.fdopen(descriptor, "w") as startup:
         fcntl.flock(startup, fcntl.LOCK_EX)
