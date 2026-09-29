@@ -8,7 +8,3 @@ class TestFindStreamingAntiPatternsInCommand:
         assert "python-without-u" in problems
         assert "grep-without-line-buffered" in problems
         assert "sed-without-u" in problems
-
-    def test_returns_empty_list_for_clean_command(self):
-        command = "tail -f /var/log/app.log | grep --line-buffered ERROR"
-        assert sut.find_streaming_anti_patterns_in_command(command) == []

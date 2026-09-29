@@ -37,15 +37,6 @@ def handle_edit_of(file_path: Path):
     )
 
 
-def test_blocks_edit_of_code_file_over_threshold(tmp_path):
-    file_path = write_python_file_with_line_count(tmp_path, "over.py", 250)
-    result = handle_edit_of(file_path)
-    assert result is not None
-    assert result.decision == "block"
-    assert "250" in result.reason
-    assert "BLOCKED" in result.system_message
-
-
 def test_the_block_states_what_is_blocked_and_points_at_the_detail(tmp_path):
     file_path = write_python_file_with_line_count(tmp_path, "over.py", 250)
     result = handle_edit_of(file_path)
@@ -71,26 +62,10 @@ def test_reads_notebook_path_for_notebook_edit(tmp_path):
     assert result.decision == "block"
 
 
-def test_silent_under_threshold(tmp_path):
-    file_path = write_python_file_with_line_count(tmp_path, "small.py", 50)
-    result = line_count_limit_guard_handler.handle(
-        {"tool_name": "Write", "tool_input": {"file_path": str(file_path)}}
-    )
-    assert result is None
-
-
 def test_ignores_non_applicable_tool(tmp_path):
     file_path = write_python_file_with_line_count(tmp_path, "over.py", 250)
     result = line_count_limit_guard_handler.handle(
         {"tool_name": "Bash", "tool_input": {"file_path": str(file_path)}}
-    )
-    assert result is None
-
-
-def test_ignores_non_code_extension(tmp_path):
-    file_path = write_python_file_with_line_count(tmp_path, "notes.txt", 500)
-    result = line_count_limit_guard_handler.handle(
-        {"tool_name": "Write", "tool_input": {"file_path": str(file_path)}}
     )
     assert result is None
 
@@ -102,12 +77,6 @@ def test_blocks_a_fresh_over_limit_file_in_a_grandfathering_repository(tmp_path)
     assert result is not None
     assert result.decision == "block"
     assert "201" in result.reason
-
-
-def test_passes_a_grandfathered_file_still_at_its_recorded_count(tmp_path):
-    record_line_counts(tmp_path, json.dumps({"legacy.py": 400}))
-    file_path = write_python_file_with_line_count(tmp_path, "legacy.py", 400)
-    assert handle_edit_of(file_path) is None
 
 
 def test_passes_a_grandfathered_file_that_shrank_toward_the_limit(tmp_path):

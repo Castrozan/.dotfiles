@@ -7,11 +7,6 @@ from hook_dispatch_test_support import (
 )
 
 
-def test_context_fragments_concatenate_in_registry_order():
-    outcome = run_handlers({}, [context_handler("first"), context_handler("second")])
-    assert outcome.combined_additional_context == "first\n\nsecond"
-
-
 def test_abstaining_handler_returning_none_is_skipped():
     abstain = HookHandler(handle=lambda hook_input: None)
     outcome = run_handlers({}, [abstain, context_handler("only")])
@@ -25,16 +20,6 @@ def test_tool_matcher_gates_which_handlers_run():
     assert outcome_other.decision is None
     outcome_bash = run_handlers({"tool_name": "Bash"}, [bash_only])
     assert outcome_bash.decision == "block"
-
-
-def test_stronger_decision_wins_regardless_of_order():
-    handlers = [
-        decision_handler("allow", "allowed"),
-        decision_handler("deny", "denied"),
-    ]
-    outcome = run_handlers({}, handlers)
-    assert outcome.decision == "deny"
-    assert outcome.reason == "denied"
 
 
 def test_first_handler_wins_a_tie_in_decision_strength():

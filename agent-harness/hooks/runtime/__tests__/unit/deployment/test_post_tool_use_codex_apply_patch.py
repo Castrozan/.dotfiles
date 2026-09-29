@@ -1,4 +1,6 @@
+import json
 import os
+import sys
 
 from flat_deploy_test_support import (
     flatten_into_single_runtime_directory,
@@ -87,13 +89,35 @@ def test_nothing_is_recorded_when_no_nix_file_changed(tmp_path):
     assert recorded_ledger_contents(tmp_path) == ""
 
 
-def test_auto_format_runs_on_codex_apply_patch(tmp_path):
+def test_auto_format_receives_codex_apply_patch_target(tmp_path):
     edited_file = tmp_path / "sample.py"
     edited_file.write_text("value = 1\n")
+    formatter_directory = tmp_path / "formatters"
+    formatter_directory.mkdir()
+    formatter_arguments = tmp_path / "formatter-arguments.json"
+    formatter = formatter_directory / "ruff"
+    formatter.write_text(
+        f"#!{sys.executable}\n"
+        "import json\n"
+        "import sys\n"
+        "from pathlib import Path\n"
+        f"Path({str(formatter_arguments)!r}).write_text(json.dumps(sys.argv[1:]))\n"
+    )
+    formatter.chmod(0o755)
     patch = "*** Begin Patch\n*** Update File: sample.py\n*** End Patch"
     result = run_codex_post_tool_use_dispatcher(
-        tmp_path, apply_patch_payload(patch, tmp_path)
+        tmp_path,
+        apply_patch_payload(patch, tmp_path),
+        {
+            **os.environ,
+            "TMPDIR": str(tmp_path),
+            "PATH": str(formatter_directory) + os.pathsep + os.environ["PATH"],
+        },
     )
 
     assert result.returncode == 0
-    assert edited_file.exists()
+    assert json.loads(formatter_arguments.read_text()) == [
+        "format",
+        "--quiet",
+        str(edited_file),
+    ]
