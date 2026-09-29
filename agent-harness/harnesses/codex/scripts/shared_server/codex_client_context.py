@@ -155,8 +155,8 @@ class ClientContext:
         ownership.close()
 
     def close(self):
-        for identifier in list(self.ownerships):
-            self.release(identifier)
+        while self.ownerships:
+            self.release(next(iter(self.ownerships)))
 
 
 def restore_hook_context(payload):

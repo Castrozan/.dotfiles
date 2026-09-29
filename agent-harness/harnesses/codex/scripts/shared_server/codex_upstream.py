@@ -60,17 +60,9 @@ class Upstream:
                         return ThreadPreparation({}, reuse_loaded=True)
                 else:
                     await self.wait_until_unloaded(identifier)
-            directory = parameters.get("cwd")
-            if directory is None:
-                if method == "thread/start":
-                    directory = working_directory
-                else:
-                    directory = (
-                        await self.request(
-                            "thread/read",
-                            {"threadId": identifier, "includeTurns": False},
-                        )
-                    )["thread"]["cwd"]
+            directory = await self.thread_working_directory(
+                method, parameters, working_directory
+            )
             return ThreadPreparation(
                 (
                     await self.request(
@@ -87,6 +79,18 @@ class Upstream:
             if reserved:
                 context.release(identifier)
             raise
+
+    async def thread_working_directory(self, method, parameters, working_directory):
+        if parameters.get("cwd") is not None:
+            return parameters["cwd"]
+        if method == "thread/start":
+            return working_directory
+        return (
+            await self.request(
+                "thread/read",
+                {"threadId": parameters.get("threadId"), "includeTurns": False},
+            )
+        )["thread"]["cwd"]
 
     async def wait_until_unloaded(self, identifier):
         deadline = asyncio.get_running_loop().time() + 3

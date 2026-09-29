@@ -61,42 +61,7 @@ def register_client(environment, configuration):
         except (FileNotFoundError, ConnectionRefusedError):
             status = None
         if status is None:
-            daemon_environment = {
-                name: value
-                for name, value in environment.items()
-                if name in CORE_VARIABLES
-            }
-            daemon_environment.update(
-                CODEX_HOME=str(home),
-                CODEX_LAUNCHER_BINARY=environment["CODEX_LAUNCHER_BINARY"],
-            )
-            log_descriptor = os.open(
-                directory / "stderr.log", os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600
-            )
-            with os.fdopen(log_descriptor, "a") as log:
-                process = subprocess.Popen(
-                    [
-                        sys.executable,
-                        str(Path(__file__).with_name("codex_client_host.py")),
-                    ],
-                    env=daemon_environment,
-                    cwd=home,
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=log,
-                    start_new_session=True,
-                )
-            deadline = time.monotonic() + 5
-            while True:
-                try:
-                    request(socket_path, {"method": "status"})
-                    break
-                except (FileNotFoundError, ConnectionRefusedError):
-                    if process.poll() is not None or time.monotonic() >= deadline:
-                        raise RuntimeError(
-                            f"Codex proxy failed to start; see {directory / 'stderr.log'}"
-                        )
-                    time.sleep(0.05)
+            start_host(home, environment, directory, socket_path)
         return request(
             socket_path,
             {
@@ -106,3 +71,40 @@ def register_client(environment, configuration):
                 "processId": os.getpid(),
             },
         )["endpoint"]
+
+
+def start_host(home, environment, directory, socket_path):
+    daemon_environment = {
+        name: value for name, value in environment.items() if name in CORE_VARIABLES
+    }
+    daemon_environment.update(
+        CODEX_HOME=str(home),
+        CODEX_LAUNCHER_BINARY=environment["CODEX_LAUNCHER_BINARY"],
+    )
+    log_descriptor = os.open(
+        directory / "stderr.log", os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600
+    )
+    with os.fdopen(log_descriptor, "a") as log:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                str(Path(__file__).with_name("codex_client_host.py")),
+            ],
+            env=daemon_environment,
+            cwd=home,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=log,
+            start_new_session=True,
+        )
+    deadline = time.monotonic() + 5
+    while True:
+        try:
+            request(socket_path, {"method": "status"})
+            break
+        except (FileNotFoundError, ConnectionRefusedError):
+            if process.poll() is not None or time.monotonic() >= deadline:
+                raise RuntimeError(
+                    f"Codex proxy failed to start; see {directory / 'stderr.log'}"
+                )
+            time.sleep(0.05)

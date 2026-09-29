@@ -2,7 +2,7 @@ import asyncio
 import os
 from uuid import uuid4
 
-import websockets
+from websockets.asyncio.server import unix_serve
 
 from codex_client_context import ClientContext
 from codex_client_transport import MAXIMUM_MESSAGE_BYTES, forward_connection
@@ -39,7 +39,7 @@ class ClientEndpoint:
     async def start(self):
         try:
             await asyncio.to_thread(self.lease.ensure_running)
-            self.listener = await websockets.unix_serve(
+            self.listener = await unix_serve(
                 self.connect,
                 str(self.socket),
                 max_size=MAXIMUM_MESSAGE_BYTES,

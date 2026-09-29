@@ -48,17 +48,20 @@ class ClientProtocol:
             self.pending[message["id"]] = (method, identifier, claimed)
         elif method == "thread/unsubscribe":
             self.pending[message["id"]] = (method, identifier, False)
-        elif method in {
-            "turn/start",
-            "turn/steer",
-            "turn/interrupt",
-            "thread/compact/start",
-            "thread/shellCommand",
-        }:
-            if identifier not in self.threads | self.ephemeral_threads:
-                raise ContextConflict(
-                    "Attach this thread before sending a turn or command."
-                )
+        elif (
+            method
+            in {
+                "turn/start",
+                "turn/steer",
+                "turn/interrupt",
+                "thread/compact/start",
+                "thread/shellCommand",
+            }
+            and identifier not in self.threads | self.ephemeral_threads
+        ):
+            raise ContextConflict(
+                "Attach this thread before sending a turn or command."
+            )
         return message
 
     def response(self, message):

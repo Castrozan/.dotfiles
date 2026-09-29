@@ -83,9 +83,7 @@ class ClientHost:
                 socket.chmod(0o600)
                 await self.stopped.wait()
         finally:
-            await asyncio.gather(
-                *(endpoint.close() for endpoint in list(self.endpoints))
-            )
+            await asyncio.gather(*(endpoint.close() for endpoint in self.endpoints))
             socket.unlink(missing_ok=True)
 
 

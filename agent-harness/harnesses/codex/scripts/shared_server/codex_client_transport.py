@@ -1,7 +1,8 @@
 import asyncio
 import json
 
-import websockets
+from websockets.asyncio.client import unix_connect
+from websockets.exceptions import ConnectionClosed
 
 from codex_client_context import ContextConflict
 from codex_client_protocol import ClientProtocol, failure
@@ -16,7 +17,7 @@ async def forward_connection(
 ):
     protocol = ClientProtocol(context, configuration, environment)
     try:
-        async with websockets.unix_connect(
+        async with unix_connect(
             str(upstream_socket),
             uri="ws://localhost",
             max_size=MAXIMUM_MESSAGE_BYTES,
@@ -62,7 +63,7 @@ async def forward_connection(
                 for task in tasks:
                     task.cancel()
                 await asyncio.gather(*tasks, return_exceptions=True)
-    except (OSError, websockets.ConnectionClosed):
+    except (OSError, ConnectionClosed):
         await client.close(code=1011, reason="Shared Codex server disconnected")
     finally:
         protocol.close()

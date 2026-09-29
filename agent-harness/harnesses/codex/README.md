@@ -10,6 +10,10 @@ The launcher connects native terminals to one local app-server through one share
 native JSON-RPC boundary because upstream shares the daemon's environment across clients. Each terminal registers its
 environment and selected profile before the launcher replaces itself with the native CLI.
 
+The local socket directory must belong to the current user, have private permissions, and be a real directory. The
+launcher preserves the caller's native Codex options with `execv`; shell metacharacters remain literal arguments. These
+interfaces coordinate processes running as the same user.
+
 The proxy binds persistent thread replies to their terminal before forwarding them. Hooks resolve the native session ID
 against an exclusive attachment lock, restore named pane variables, and deliver the selected developer instructions as
 `SessionStart` context. This refreshes instructions on resume and compaction, where native developer-instruction overrides
