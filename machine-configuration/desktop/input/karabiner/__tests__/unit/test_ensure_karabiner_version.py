@@ -47,9 +47,9 @@ def test_minor_version_upgrade_targets_only_karabiner(version_installer):
     version_installer.subprocess.run.assert_called_once_with(
         [
             "/usr/bin/sudo",
-            "--user",
-            "alice",
+            "--user=alice",
             "--set-home",
+            "--",
             "/brew",
             "upgrade",
             "--cask",
@@ -93,4 +93,20 @@ def test_malformed_version_stops_before_installing(version_installer):
     write_installed_version(version_installer, "invalid")
     with pytest.raises(ValueError, match="Invalid Karabiner version"):
         version_installer.ensure_karabiner_version("16.3.0", "/brew", "alice")
+    version_installer.subprocess.run.assert_not_called()
+
+
+@pytest.mark.parametrize("homebrew_user", ["-root", "alice\n--help", "alice;id", ""])
+def test_invalid_user_stops_before_installing(version_installer, homebrew_user):
+    write_installed_version(version_installer, "16.0.0")
+    with pytest.raises(ValueError, match="Invalid Homebrew user"):
+        version_installer.ensure_karabiner_version("16.3.0", "/brew", homebrew_user)
+    version_installer.subprocess.run.assert_not_called()
+
+
+@pytest.mark.parametrize("homebrew_binary", ["--help", "brew", "/bin/sh"])
+def test_invalid_executable_stops_before_installing(version_installer, homebrew_binary):
+    write_installed_version(version_installer, "16.0.0")
+    with pytest.raises(ValueError, match="Invalid Homebrew executable"):
+        version_installer.ensure_karabiner_version("16.3.0", homebrew_binary, "alice")
     version_installer.subprocess.run.assert_not_called()
