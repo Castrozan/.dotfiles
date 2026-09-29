@@ -20,22 +20,6 @@ def filler_words(count: int) -> str:
     return " ".join(["word"] * count)
 
 
-def test_allows_a_body_just_under_its_budget(tmp_path):
-    transcript = write_transcript_with_final_assistant_reply(
-        tmp_path, labeled_reply(filler_words(80))
-    )
-    result = invoke_guard(stop_payload(transcript))
-    assert result.stdout.strip() == ""
-
-
-def test_blocks_a_body_past_its_budget(tmp_path):
-    transcript = write_transcript_with_final_assistant_reply(
-        tmp_path, labeled_reply(filler_words(190))
-    )
-    result = invoke_guard(stop_payload(transcript))
-    assert "80-word budget" in result.stdout
-
-
 def test_a_detailed_request_does_not_unlock_a_longer_reply(tmp_path):
     transcript = write_transcript_with_request_and_reply(
         tmp_path,

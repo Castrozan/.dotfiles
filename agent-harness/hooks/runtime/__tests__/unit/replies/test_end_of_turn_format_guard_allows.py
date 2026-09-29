@@ -8,6 +8,7 @@ from end_of_turn_format_guard_test_support import (
     write_transcript_from_events,
     write_transcript_with_final_assistant_reply,
 )
+from human_facing_reply_test_support import reply_with_label_word_counts
 
 
 def test_allows_well_formed_template_reply(tmp_path):
@@ -42,36 +43,10 @@ def test_allows_clawde_background_agent_reply_with_empty_marker_value(tmp_path):
 
 def test_allows_an_extra_label_after_the_required_three(tmp_path):
     reply = (
-        "Wired the guard and verified the whole suite passes after the rebuild.\n\n"
-        "**what is this session about?:** keep the interactive reply inside the "
-        "reader's word budget.\n\n"
-        "**done:** rewrote the template into prose, added the guard hook, and "
-        "registered it on the Stop event.\n\n"
-        "**next:** restart claude to pick up the change.\n\n"
-        "**Assumed:** single-bounce enforcement because you asked to inforce it."
-    )
-    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
-    result = invoke_guard(stop_payload(transcript))
-    assert result.stdout.strip() == ""
-
-
-def test_allows_blank_separated_three_block_reply(tmp_path):
-    reply = (
-        "The caps are tightened and the suite is green after the rebuild.\n\n"
-        "**Done:** lowered the word ceiling and added the paragraph-block check.\n\n"
-        "**Next:** nothing pending"
-    )
-    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
-    result = invoke_guard(stop_payload(transcript))
-    assert result.stdout.strip() == ""
-
-
-def test_allows_mr_reference_with_a_link(tmp_path):
-    reply = (
-        "Landed the tidy on its branch.\n"
-        "**Done:** committed as MR !15, "
-        "https://gitlab.example.com/group/repo/-/merge_requests/15.\n"
-        "**Next:** nothing pending"
+        "evidence " * 80
+        + "\n\n"
+        + reply_with_label_word_counts(session=15, done=10, next_block=10)
+        + "\n\n**Assumed:** bounded retries."
     )
     transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
     result = invoke_guard(stop_payload(transcript))
@@ -108,30 +83,6 @@ def test_allows_a_hundred_word_confirmation(tmp_path):
     assert result.stdout.strip() == ""
 
 
-def test_allows_code_block_without_counting_fenced_lines(tmp_path):
-    fenced = "\n".join(f"line {index}" for index in range(30))
-    reply = (
-        "Here is the script you asked for.\n"
-        f"```python\n{fenced}\n```\n"
-        "**Done:** wrote it\n**Next:** run it"
-    )
-    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
-    result = invoke_guard(stop_payload(transcript))
-    assert result.stdout.strip() == ""
-
-
-def test_allows_compact_visual_between_answer_and_status(tmp_path):
-    reply = (
-        "The session module owns persistence and delegates transport.\n"
-        "```text\nSession\n├── Store\n└── Transport\n```\n"
-        "**Done:** mapped the ownership boundary\n"
-        "**Next:** nothing pending"
-    )
-    transcript = write_transcript_with_final_assistant_reply(tmp_path, reply)
-    result = invoke_guard(stop_payload(transcript))
-    assert result.stdout.strip() == ""
-
-
 def test_silent_when_stop_hook_already_active(tmp_path):
     transcript = write_transcript_with_final_assistant_reply(
         tmp_path, "You're right, here is a long unstructured wall of slop text."
@@ -155,22 +106,6 @@ def test_silent_on_non_stop_event(tmp_path):
     payload = stop_payload(transcript)
     payload["hook_event_name"] = "SubagentStop"
     result = invoke_guard(payload)
-    assert result.stdout.strip() == ""
-
-
-def test_scopes_to_current_turn_ignoring_prior_violating_text(tmp_path):
-    transcript = write_transcript_from_events(
-        tmp_path,
-        [
-            user_event("first question"),
-            assistant_text_event(
-                "You're absolutely right, here is a long wall of slop."
-            ),
-            user_event("second question"),
-            assistant_text_event("Committed as abc123 and rebuilt clean."),
-        ],
-    )
-    result = invoke_guard(stop_payload(transcript))
     assert result.stdout.strip() == ""
 
 

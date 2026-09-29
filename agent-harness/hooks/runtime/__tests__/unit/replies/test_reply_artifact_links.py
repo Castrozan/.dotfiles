@@ -43,7 +43,7 @@ def test_each_numbered_artifact_needs_its_own_destination():
     assert template_violations_in_reply(reply)
 
 
-def test_a_quoted_url_does_not_link_an_artifact():
+def test_a_malformed_quoted_url_does_not_link_an_artifact():
     assert template_violations_in_reply(
         'PR #17 is ready. The input included "https://".'
     )

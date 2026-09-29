@@ -5,7 +5,7 @@ import pytest
 
 from human_facing_reply_test_support import (
     REPLY_RULE_MODULE_DIRECTORY,
-    labeled_reply_of,
+    reply_with_label_word_counts,
 )
 from reply_format_configuration import ReplyFormatConfiguration
 from reply_rule_catalog import template_violations_in_reply
@@ -37,7 +37,9 @@ def test_configured_list_exemption_and_item_grace_change_the_verdict(
         maximum_exempt_items=2, item={"maximum_words": 2, "grace_words": 1}
     )
     configuration = ReplyFormatConfiguration(configuration_document)
-    reply = "- one two\n- one two\n\n" + labeled_reply_of(80)
+    body = "evidence " * 88
+    labels = reply_with_label_word_counts(session=15, done=10, next_block=5)
+    reply = f"- one two\n- one two\n\n{body}\n\n{labels}"
 
     assert template_violations_in_reply(reply, configuration=configuration) == []
     violations = template_violations_in_reply(
@@ -46,6 +48,10 @@ def test_configured_list_exemption_and_item_grace_change_the_verdict(
     assert any(
         "2-word ceiling and its 1-word grace" in violation for violation in violations
     )
+    violations = template_violations_in_reply(
+        "- one two\n" + reply, configuration=configuration
+    )
+    assert any("spends 97 prose words" in violation for violation in violations)
 
 
 def test_configured_label_names_and_budgets_are_used(configuration_document):

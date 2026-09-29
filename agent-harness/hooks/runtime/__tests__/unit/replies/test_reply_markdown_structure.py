@@ -110,7 +110,11 @@ def test_visuals_preserve_the_body_and_label_boundaries():
 
 @pytest.mark.parametrize("newline", ["\n", "\r\n", "\r"])
 def test_source_line_mapping_preserves_commonmark_line_endings(newline):
-    reply = labeled_reply_of(90).replace("\n", newline)
+    reply = (
+        "evidence " * 80
+        + "\n\n"
+        + reply_with_label_word_counts(session=20, done=20, next_block=10)
+    ).replace("\n", newline)
 
     assert template_violations_in_reply(reply) == []
 

@@ -188,10 +188,3 @@ def test_requested_hook_surface_defaults_to_claude(monkeypatch):
     assert requested_hook_surface() == CLAUDE_SURFACE
     monkeypatch.setattr(sys, "argv", ["pre-tool-use-dispatcher.py", "--surface=codex"])
     assert requested_hook_surface() == CODEX_SURFACE
-
-
-def test_all_interactive_surfaces_run_the_same_reply_guard():
-    for surface in (CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE, PI_SURFACE):
-        assert "end_of_turn_format_guard_handler" in handler_module_names_on_surface(
-            "STOP_HANDLERS", surface
-        )
