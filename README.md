@@ -15,9 +15,7 @@ My personal computing environment, declared with **Nix**, **Home Manager** and *
 
 ## Take the tour
 
-[![Animated preview of the dotfiles presentation, showing the current Linux and macOS desktops](repository/showcase/preview.gif)](https://github.com/Castrozan/.dotfiles/releases/download/showcase-2026-09-30/dotfiles-demo.mp4)
-
-**[Download the 1:17 video](https://github.com/Castrozan/.dotfiles/releases/download/showcase-2026-09-30/dotfiles-demo.mp4)** · [English captions](https://github.com/Castrozan/.dotfiles/releases/download/showcase-2026-09-30/dotfiles-demo.en.srt) · [Poster](https://github.com/Castrozan/.dotfiles/releases/download/showcase-2026-09-30/dotfiles-poster.png)
+https://github.com/user-attachments/assets/65edec3b-1c2a-4a20-8bed-ee9ef6a4758b
 
 Fresh desktop captures and animated architecture, with English narration and an original electronic soundtrack. The rebuild and CI scenes illustrate the configuration workflow.
 
