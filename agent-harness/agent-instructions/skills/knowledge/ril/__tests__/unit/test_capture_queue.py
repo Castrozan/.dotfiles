@@ -136,7 +136,7 @@ def test_the_probe_fingerprint_names_the_queue_head(tmp_path, write_capture):
         captures.collect_pending_captures(tmp_path, 60, FIXED_NOW)
     )
 
-    assert fingerprint == "2026-07-04 10:00:00 Tweet from B (2026-07-04 10-00-00).md"
+    assert fingerprint == "Tweet from B (2026-07-04 10-00-00).md"
 
 
 def test_the_probe_fingerprint_ignores_captures_worked_below_the_head(

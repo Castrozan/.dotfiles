@@ -146,4 +146,4 @@ def newest_pending_capture_fingerprint(
 ) -> str:
     if not pending_captures:
         return ""
-    return f"{pending_captures[0]['captured']} {pending_captures[0]['name']}"
+    return str(pending_captures[0]["name"])
