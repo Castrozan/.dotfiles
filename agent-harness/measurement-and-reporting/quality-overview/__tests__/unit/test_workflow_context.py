@@ -71,6 +71,91 @@ def test_changed_run_and_incomplete_pagination_are_rejected(run, monkeypatch):
         CONTEXT.complete_page({"total_count": 101, "jobs": []}, "jobs")
 
 
+@pytest.mark.parametrize("metadata_state", ["pending", "in_progress", "empty", "job"])
+def test_completed_run_waits_for_producer_step_metadata(
+    run, artifact, jobs, monkeypatch, metadata_state
+):
+    jobs[0]["conclusion"] = "success"
+    jobs[0]["steps"][0]["status"] = "completed"
+    delayed = copy.deepcopy(jobs)
+    if metadata_state == "job":
+        delayed[0]["status"] = "in_progress"
+    elif metadata_state == "empty":
+        delayed[0]["steps"] = []
+    else:
+        delayed[0]["steps"][0].update(
+            status=metadata_state, conclusion=None, completed_at=None
+        )
+    route = f"repos/{CONTEXT.REPOSITORY}/actions/runs/{run['id']}"
+    inventories = iter([delayed, jobs])
+    calls = []
+    waits = []
+
+    def github_document(endpoint):
+        calls.append(endpoint)
+        if endpoint == f"{route}/attempts/2":
+            return run
+        if endpoint.endswith("/jobs?per_page=100"):
+            return {"total_count": 1, "jobs": next(inventories)}
+        return {"total_count": 1, "artifacts": [artifact]}
+
+    monkeypatch.setattr(CONTEXT, "github_document", github_document)
+    monkeypatch.setattr(CONTEXT, "sleep", waits.append, raising=False)
+    context = CONTEXT.collect_context({"workflow_run": run})
+    assert context["artifacts"]["bats-junit"]["id"] == artifact["id"]
+    assert len(waits) == 1
+    assert calls[-1] == f"{route}/artifacts?per_page=100"
+
+
+def test_persistent_stale_metadata_stops_before_artifacts_are_published(
+    run, jobs, monkeypatch
+):
+    jobs[0]["steps"][0]["status"] = "pending"
+    elapsed = [0]
+    requests = []
+
+    def github_document(endpoint):
+        requests.append(endpoint)
+        if endpoint.endswith("/attempts/2"):
+            return run
+        assert endpoint.endswith("/jobs?per_page=100")
+        return {"total_count": 1, "jobs": jobs}
+
+    def sleep(seconds):
+        elapsed[0] += seconds
+
+    monkeypatch.setattr(CONTEXT, "github_document", github_document)
+    monkeypatch.setattr(CONTEXT, "monotonic", lambda: elapsed[0], raising=False)
+    monkeypatch.setattr(CONTEXT, "sleep", sleep, raising=False)
+    with pytest.raises(ValueError, match="step metadata"):
+        CONTEXT.collect_context({"workflow_run": run})
+    assert elapsed[0] == 600
+    assert len(requests) <= 32
+    assert not any("/artifacts" in endpoint for endpoint in requests)
+
+
+def test_completed_failed_upload_is_diagnostic_evidence_without_retry(
+    run, jobs, monkeypatch
+):
+    jobs[0]["steps"][0].update(status="completed", conclusion="failure")
+    waits = []
+    route = f"repos/{CONTEXT.REPOSITORY}/actions/runs/{run['id']}"
+    documents = {
+        f"{route}/attempts/2": run,
+        f"{route}/attempts/2/jobs?per_page=100": {"total_count": 1, "jobs": jobs},
+        f"{route}/artifacts?per_page=100": {"total_count": 0, "artifacts": []},
+    }
+    monkeypatch.setattr(CONTEXT, "github_document", documents.__getitem__)
+    monkeypatch.setattr(CONTEXT, "sleep", waits.append, raising=False)
+    context = CONTEXT.collect_context({"workflow_run": run})
+    assert not waits
+    assert context["artifacts"]["bats-junit"]["id"] is None
+    assert (
+        "successful unique artifact upload"
+        in context["artifacts"]["bats-junit"]["reason"]
+    )
+
+
 @pytest.mark.parametrize(
     "route",
     [
