@@ -7,7 +7,7 @@ import tomllib
 
 import tomli_w
 
-from runtime_configuration import merge_runtime_preserved_configuration
+from codex_runtime_configuration import merge_runtime_preserved_configuration
 
 
 NIX_STORE = Path("/nix/store")
