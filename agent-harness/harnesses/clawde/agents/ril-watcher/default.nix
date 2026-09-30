@@ -11,8 +11,8 @@
   ];
 
   clawde.agents.ril-watcher = {
-    harness = "claude";
-    model = "claude-sonnet-5-5";
+    harness = "codex";
+    model = "gpt-5.6-sol";
     reasoningEffort = "high";
     launchOnTrigger = true;
     launchGateIntervalSeconds = 1800;
