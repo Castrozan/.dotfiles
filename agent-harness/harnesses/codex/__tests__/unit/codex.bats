@@ -137,6 +137,20 @@ launcher_arguments() {
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <fork>" ]
 }
 
+@test "treats a positional prompt as an embedded interactive launch" {
+	run_codex 'explain this code'
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <explain this code>" ]
+}
+
+@test "keeps native management commands outside the interactive launch" {
+	for command in plugin doctor queue; do
+		run_codex "$command" --help
+		[ "$status" -eq 0 ]
+		[ "${lines[0]}" = "argv: $(launcher_arguments) <$command> <--help>" ]
+	done
+}
+
 @test "leaves a subcommand launch without interactive preferences or profile activation" {
 	run_codex exec "do the thing"
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <exec> <do the thing>" ]
