@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-24T09:17:58.148641+00:00",
+  "generated_at": "2026-09-30T00:40:10.434905+00:00",
   "oldest_evidence_at": "2026-09-09T21:47:59.145048+00:00",
-  "git_commit": "3978bf0f7",
+  "git_commit": "c963173fe",
   "total_tests": 212,
   "total_passed": 198,
   "total_failed": 14,
@@ -501,45 +501,45 @@
         {
           "name": "active_waiting_backgrounds_long_operations",
           "passed": true,
-          "fingerprint": "94bcab2d5ab43488479d0e65c2c65e7f1d5b5f5b6b054ae48782d576debee922",
-          "generated_at": "2026-09-09T22:00:16.073715+00:00",
+          "fingerprint": "a9bf57e79237e25868535cc5e86578a390ecdfd5d1181f0079edb2decd06a165",
+          "generated_at": "2026-09-30T00:38:28.445408+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "c963173fe"
           }
         },
         {
           "name": "active_waiting_defines_conditions",
           "passed": true,
-          "fingerprint": "4cf4781f99e4e6391bdae768f4297150262081d7afc605981c24564e3683da60",
-          "generated_at": "2026-09-09T22:00:50.484847+00:00",
+          "fingerprint": "a0be3b21f5f8f86fa21499527af9b8762b7dedb4836cf8b7487ae4534bb40db7",
+          "generated_at": "2026-09-30T00:38:45.471195+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "c963173fe"
           }
         },
         {
           "name": "active_waiting_requires_loop_monitor",
           "passed": true,
-          "fingerprint": "aa2b474a70808a030b39cb3fbd8db21cb512d661f459623534655e49e01e1de9",
-          "generated_at": "2026-09-09T22:01:07.137564+00:00",
+          "fingerprint": "7aad68b52231f7bd22a3789c2849cbb430b623b846b2e6e7fb99506005d6a69e",
+          "generated_at": "2026-09-30T00:38:32.225053+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "c963173fe"
           }
         },
         {
           "name": "active_waiting_requires_readable_output",
           "passed": true,
-          "fingerprint": "d3bdc0e1cabe6a06556b62cce24a39911282eae0400d4f73edde861d20beefd7",
-          "generated_at": "2026-09-09T22:01:27.210609+00:00",
+          "fingerprint": "e2ba87a5797b5ae8d878d74e6c44c95c70fd26961653b1100e9c7140ecaeb834",
+          "generated_at": "2026-09-30T00:39:01.528537+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "c963173fe"
           }
         },
         {
@@ -2156,47 +2156,47 @@
       "failed": 0,
       "tests": [
         {
-          "name": "rebuild_background_execution",
+          "name": "rebuild_applies_configuration_directly",
           "passed": true,
-          "fingerprint": "b0ac165a580160bc64c20f00ff0b870d5a723d7a244cb1815ca53f9f51829b2a",
-          "generated_at": "2026-09-09T22:42:18.562547+00:00",
+          "fingerprint": "069c54701e997161301e1b64bcacfd44f6fed76c760c77bfa4e4f9af76dd15e5",
+          "generated_at": "2026-09-30T00:40:10.434905+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "c963173fe"
           }
         },
         {
-          "name": "rebuild_dry_run_validation",
+          "name": "rebuild_background_execution",
           "passed": true,
-          "fingerprint": "28cbdd8c7bd4a2fb2ad1971f004364ead77c30c15a3f780288e6dc285339d52e",
-          "generated_at": "2026-09-09T22:42:55.291064+00:00",
+          "fingerprint": "5c6c7a586ab17f6872dc36b14d461dce321568e1248edb28b332a2f9bb5a409f",
+          "generated_at": "2026-09-30T00:39:44.317728+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "c963173fe"
           }
         },
         {
           "name": "rebuild_output_to_file_not_pipe",
           "passed": true,
-          "fingerprint": "4535135464179e3c4527ea08eb98a4bb36c6304aca6faa3e0bf3d19477751fc9",
-          "generated_at": "2026-09-09T22:42:29.067988+00:00",
+          "fingerprint": "e10022e6085c2e1084130f504e13d27820d8f5babde5fb148e1203105c448711",
+          "generated_at": "2026-09-30T00:39:44.859949+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "c963173fe"
           }
         },
         {
           "name": "rebuild_stages_nix_files_first",
           "passed": true,
-          "fingerprint": "7a175763a3c5f162ff05e279b99d561345f9960ce120452003f8633c8651e073",
-          "generated_at": "2026-09-09T22:41:46.531458+00:00",
+          "fingerprint": "15e308417bb06220292550cd9053b09472089dd97af653cca4120ea70a972d47",
+          "generated_at": "2026-09-30T00:39:04.786217+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "c963173fe"
           }
         }
       ]
@@ -2564,8 +2564,8 @@
     }
   },
   "fingerprints": {
-    "suite": "08c64ea777e56e91486e485785ac078214c2e577c625220c9986f47ab3a7af5c",
-    "instructions": "5b98dbf5ba73219a112616111d7641e7192cdab113f1a2886c32b9b65350f653"
+    "suite": "edc2ff235108b389f688faf52ca2bb52cd268d8a3a5df290992ec4632670cdb3",
+    "instructions": "5e946d0c6e8e4871ca3454f61497a69c9547ca027fc3d81640c5818029d73398"
   },
   "execution_profile": {
     "subject": {
@@ -2632,24 +2632,24 @@
   "token_usage": {
     "subject": {
       "codex": {
-        "invocations": 316,
-        "measured_invocations": 316,
-        "input_tokens": 5037050,
-        "cached_input_tokens": 2741120,
+        "invocations": 324,
+        "measured_invocations": 324,
+        "input_tokens": 5287778,
+        "cached_input_tokens": 2901760,
         "cache_write_input_tokens": 0,
-        "output_tokens": 43652,
-        "reasoning_output_tokens": 22974
+        "output_tokens": 46762,
+        "reasoning_output_tokens": 24373
       }
     },
     "judge": {
       "codex": {
-        "invocations": 218,
-        "measured_invocations": 218,
-        "input_tokens": 2065048,
-        "cached_input_tokens": 1271040,
+        "invocations": 226,
+        "measured_invocations": 226,
+        "input_tokens": 2133351,
+        "cached_input_tokens": 1292544,
         "cache_write_input_tokens": 0,
-        "output_tokens": 23275,
-        "reasoning_output_tokens": 13563
+        "output_tokens": 23989,
+        "reasoning_output_tokens": 13909
       }
     }
   },
