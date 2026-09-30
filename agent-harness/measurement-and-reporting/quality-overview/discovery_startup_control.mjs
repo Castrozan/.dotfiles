@@ -20,11 +20,11 @@ const directory = await mkdtemp(join(output, "discovery-startup-"));
 const artifact = join(directory, "emitted");
 const packageRoot = join(artifact, ".agents/plugins/startup-control");
 const marker = join(directory, "server-started");
-for await (const path of [
-  join(packageRoot, "skills/probe"),
-  join(artifact, ".pi/plugins"),
-])
-  await mkdir(path, { recursive: true });
+await Promise.all(
+  [join(packageRoot, "skills/probe"), join(artifact, ".pi/plugins")].map(
+    (path) => mkdir(path, { recursive: true }),
+  ),
+);
 await symlink(".agents/plugins/startup-control", join(artifact, "plugin"));
 await symlink("../../plugin", join(artifact, ".pi/plugins/startup-control"));
 await writeFile(

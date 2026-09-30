@@ -1,9 +1,13 @@
+import json
+from pathlib import Path
 import stat
+import sys
 import tomllib
 
 import pytest
 
-from seed_interactive_profiles import seed_profile
+import seed_interactive_profiles
+from seed_interactive_profiles import main, seed_profile
 
 
 def test_profile_migration_replaces_the_symlink_without_changing_its_source(tmp_path):
@@ -64,3 +68,71 @@ def test_invalid_profile_is_preserved_and_fails_activation(tmp_path):
         seed_profile(source, profile)
 
     assert profile.read_text() == 'model = "unfinished'
+
+
+@pytest.fixture
+def profile_activation(tmp_path, monkeypatch):
+    directory = tmp_path / ".codex"
+    store = tmp_path / "store"
+    store.mkdir()
+    source = store / "profile.toml"
+    source.write_text('developer_instructions = "managed"\n')
+    manifest = store / "sources.json"
+    manifest.write_text(json.dumps({"dotfiles-interactive": str(source)}))
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    monkeypatch.setattr(seed_interactive_profiles, "NIX_STORE", store)
+    monkeypatch.setattr(sys, "argv", ["seed", str(directory), str(manifest)])
+    return directory, manifest, source
+
+
+def test_activation_reads_store_sources_into_the_managed_directory(profile_activation):
+    directory, _, source = profile_activation
+
+    main()
+
+    assert (
+        directory / "dotfiles-interactive.config.toml"
+    ).read_bytes() == source.read_bytes()
+
+
+def test_activation_rejects_an_unmanaged_destination(
+    profile_activation, tmp_path, monkeypatch
+):
+    _, manifest, _ = profile_activation
+    monkeypatch.setattr(sys, "argv", ["seed", str(tmp_path), str(manifest)])
+
+    with pytest.raises(ValueError, match="managed Codex directory"):
+        main()
+
+
+@pytest.mark.parametrize("source_kind", ["manifest", "source", "symlink"])
+def test_activation_rejects_sources_outside_the_store(
+    profile_activation, tmp_path, monkeypatch, source_kind
+):
+    directory, manifest, source = profile_activation
+    outside = tmp_path / "outside"
+    outside.write_text(source.read_text())
+    if source_kind == "manifest":
+        outside.write_text(manifest.read_text())
+        monkeypatch.setattr(sys, "argv", ["seed", str(directory), str(outside)])
+    else:
+        if source_kind == "symlink":
+            source.unlink()
+            source.symlink_to(outside)
+        else:
+            manifest.write_text(json.dumps({"dotfiles-interactive": str(outside)}))
+
+    with pytest.raises(ValueError, match="Nix store"):
+        main()
+
+    assert not directory.exists()
+
+
+def test_activation_rejects_profile_name_traversal(profile_activation):
+    directory, manifest, source = profile_activation
+    manifest.write_text(json.dumps({"../escaped": str(source)}))
+
+    with pytest.raises(ValueError, match="profile name"):
+        main()
+
+    assert not directory.exists()

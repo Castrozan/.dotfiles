@@ -1,10 +1,21 @@
 import json
 from pathlib import Path
+import re
 import sys
 import tempfile
 import tomllib
 
 import tomli_w
+
+
+NIX_STORE = Path("/nix/store")
+
+
+def nix_store_file(argument: str) -> Path:
+    path = Path(argument).resolve(strict=True)
+    if not path.is_relative_to(NIX_STORE) or not path.is_file():
+        raise ValueError("Profile sources must be files in the Nix store")
+    return path
 
 
 def seed_profile(source_path: Path, profile_path: Path) -> None:
@@ -36,10 +47,14 @@ def seed_profile(source_path: Path, profile_path: Path) -> None:
 
 
 def main() -> None:
-    directory = Path(sys.argv[1])
-    sources = json.loads(Path(sys.argv[2]).read_text())
+    directory = Path.home() / ".codex"
+    if Path(sys.argv[1]).resolve() != directory.resolve():
+        raise ValueError("Profiles must be written to the managed Codex directory")
+    sources = json.loads(nix_store_file(sys.argv[2]).read_text())
     for name, source in sources.items():
-        seed_profile(Path(source), directory / f"{name}.config.toml")
+        if not re.fullmatch(r"dotfiles-[A-Za-z0-9_-]+", name):
+            raise ValueError("Invalid managed Codex profile name")
+        seed_profile(nix_store_file(source), directory / f"{name}.config.toml")
 
 
 if __name__ == "__main__":

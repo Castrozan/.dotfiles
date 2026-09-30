@@ -107,7 +107,8 @@ for (const target of targets) {
   });
 }
 let failed = false;
-for await (const descriptor of suites) {
+await suites.reduce(async (previous, descriptor) => {
+  await previous;
   const suite = suiteSchema.parse({
     ...base,
     name: descriptor.label,
@@ -136,7 +137,7 @@ for await (const descriptor of suites) {
       target: descriptor.target,
     })),
   });
-}
+}, Promise.resolve());
 await writeFile(
   join(output, "manifest.json"),
   JSON.stringify(
@@ -151,7 +152,8 @@ await writeFile(
   ),
   { flag: "wx" },
 );
-for await (const descriptor of suites) {
+await suites.reduce(async (previous, descriptor) => {
+  await previous;
   const suite = suiteSchema.parse({
     ...base,
     name: descriptor.label,
@@ -159,5 +161,5 @@ for await (const descriptor of suites) {
   });
   const report = await runSuite(suite, join(output, descriptor.id));
   failed ||= report.gate !== "pass";
-}
+}, Promise.resolve());
 process.exitCode = failed ? 1 : 0;

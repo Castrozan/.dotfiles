@@ -38,26 +38,30 @@ const manifest = overviewManifestSchema.parse({
 });
 await mkdir(output);
 await mkdir(join(output, "raw"));
-for await (const [name, selection] of Object.entries(context.artifacts)) {
-  if (!selection.id) continue;
-  const source =
-    name === "verdr-artifact-evidence"
-      ? join(downloads, name, "artifact-evidence")
-      : join(downloads, name);
-  const target =
-    name === "verdr-artifact-evidence"
-      ? join(output, "raw", name, "artifact-evidence")
-      : join(output, "raw", name);
-  try {
-    await cp(source, target, {
-      recursive: true,
-      errorOnExist: true,
-      force: false,
-    });
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
-  }
-}
+await Object.entries(context.artifacts).reduce(
+  async (previous, [name, selection]) => {
+    await previous;
+    if (!selection.id) return;
+    const source =
+      name === "verdr-artifact-evidence"
+        ? join(downloads, name, "artifact-evidence")
+        : join(downloads, name);
+    const target =
+      name === "verdr-artifact-evidence"
+        ? join(output, "raw", name, "artifact-evidence")
+        : join(output, "raw", name);
+    try {
+      await cp(source, target, {
+        recursive: true,
+        errorOnExist: true,
+        force: false,
+      });
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  },
+  Promise.resolve(),
+);
 await mkdir(join(output, "configuration"));
 await writeFile(
   join(output, "configuration/manifest.json"),

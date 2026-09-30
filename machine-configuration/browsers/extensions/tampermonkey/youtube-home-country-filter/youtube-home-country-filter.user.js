@@ -40,21 +40,26 @@ const blockedCountries = new Set(["BR"]);
     return /^UC[\w-]{22}$/.test(identifier) ? identifier : null;
   }
 
-  async function drain() {
-    if (working) return;
-    working = true;
-    for await (const card of pending) {
-      if (!home || location.pathname !== "/") break;
-      pending.delete(card);
-      const identifier = channelId(card);
-      if (!identifier || !card.isConnected || !visible.has(card)) continue;
-      const country = await youtubeChannelCountries.lookup(identifier);
-      if (home?.contains(card) && channelId(card) === identifier) {
-        card.toggleAttribute(marker, blockedNames.has(country));
-      }
+  async function filterCard(card) {
+    const identifier = channelId(card);
+    if (!identifier || !card.isConnected || !visible.has(card)) return;
+    const country = await youtubeChannelCountries.lookup(identifier);
+    if (home?.contains(card) && channelId(card) === identifier) {
+      card.toggleAttribute(marker, blockedNames.has(country));
     }
-    working = false;
-    if (pending.size && home && location.pathname === "/") drain();
+  }
+
+  async function drain() {
+    if (working || !pending.size || !home || location.pathname !== "/") return;
+    working = true;
+    const card = pending.values().next().value;
+    pending.delete(card);
+    try {
+      await filterCard(card);
+    } finally {
+      working = false;
+      void drain();
+    }
   }
 
   const viewport = new IntersectionObserver(

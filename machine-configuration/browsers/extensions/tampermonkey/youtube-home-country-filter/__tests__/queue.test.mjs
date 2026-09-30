@@ -32,8 +32,8 @@ test("processes visible channel lookups serially", async () => {
   assert.equal(maximumActiveRequests, 1);
 });
 
-test("processes arrivals across queue completion", async () => {
-  for await (const delay of Array.from({ length: 30 }, (_, index) => index)) {
+for (const delay of Array.from({ length: 30 }, (_, index) => index)) {
+  test(`processes queue arrival after ${delay} microtasks`, async () => {
     const first = new Element(brazil);
     const second = new Element(unitedStates);
     const page = browser({ cards: [first, second] });
@@ -49,5 +49,5 @@ test("processes arrivals across queue completion", async () => {
       4,
       `Arrival delayed by ${delay} microtasks`,
     );
-  }
-});
+  });
+}
