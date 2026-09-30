@@ -4,18 +4,18 @@ codexDeveloperInstructionsFile="$CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE"
 codexInteractiveProfile="dotfiles-interactive"
 workspaceProfileArguments=()
 interactivePreferencesArguments=()
-codexLauncher="$CODEX_LAUNCHER_BINARY"
+interactiveModeArguments=()
 case "${1:-}" in
 "" | -* | resume | fork)
 	source "$CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
 	export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
 	interactivePreferencesArguments=(--profile "$codexInteractiveProfile")
-	codexLauncher="$CODEX_LAUNCHER_SHARED_SERVER_EXECUTABLE"
+	interactiveModeArguments=(--no-daemon)
 	for argument in "$@"; do
 		case "$argument" in
 		--) break ;;
 		--no-daemon | --remote | --remote=* | --help | -h | --version | -V)
-			codexLauncher="$CODEX_LAUNCHER_BINARY"
+			interactiveModeArguments=()
 			;;
 		-p | -p?* | --profile | --profile=*) interactivePreferencesArguments=() ;;
 		esac
@@ -24,11 +24,9 @@ case "${1:-}" in
 esac
 "$CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE" \
 	"${workspaceProfileArguments[@]}" "$@" || exit "$?"
-if [[ "$codexLauncher" == "$CODEX_LAUNCHER_SHARED_SERVER_EXECUTABLE" ]]; then
-	exec "$codexLauncher" "${interactivePreferencesArguments[@]}" "$@"
-fi
-exec "$codexLauncher" \
+exec "$CODEX_LAUNCHER_BINARY" \
 	--sandbox "danger-full-access" \
 	--ask-for-approval "never" \
+	"${interactiveModeArguments[@]}" \
 	"${interactivePreferencesArguments[@]}" \
 	"$@"

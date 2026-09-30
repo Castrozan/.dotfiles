@@ -37,7 +37,7 @@ in
   codex-interactive-profile =
     pkgs.runCommand "check-codex-interactive-profile" { nativeBuildInputs = [ pkgs.python312 ]; }
       ''
-        python - ${cfg.home.file.".codex/dotfiles-interactive.config.toml".source} <<'PY'
+        python - ${cfg.home.file.".codex/dotfiles-interactive.config.toml.nix-source".source} <<'PY'
         from pathlib import Path
         import sys
         import tomllib
@@ -48,6 +48,11 @@ in
         PY
         touch "$out"
       '';
+
+  codex-profiles-are-mutable = mkEvalCheck "codex-profiles-are-mutable" (
+    !(builtins.hasAttr ".codex/dotfiles-interactive.config.toml" cfg.home.file)
+    && builtins.elem "linkGeneration" cfg.home.activation.seedCodexProfilesAsMutableFiles.after
+  ) "Codex must seed writable profiles after removing the previous generation's symlinks";
 
   codex-package-uses-upstream-binaries =
     assert lib.assertMsg
@@ -66,14 +71,10 @@ in
       touch "$out"
     '';
 
-  codex-daemon-is-declarative = mkEvalCheck "codex-daemon-is-declarative" (
-    let
-      settings = builtins.fromJSON cfg.home.file.".codex/app-server-daemon/settings.json".text;
-    in
-    toString cfg.home.file.".codex/packages/app-server-daemon/current".source == "${codexPackage}"
-    && !settings.remoteControlEnabled
-    && !settings.updater.autoUpdateEnabled
-  ) "Codex must select its Nix package and disable independent updates and remote control";
+  codex-launcher-is-embedded = mkEvalCheck "codex-launcher-is-embedded" (
+    !(builtins.hasAttr ".codex/packages/app-server-daemon/current" cfg.home.file)
+    && !(builtins.hasAttr ".codex/app-server-daemon/settings.json" cfg.home.file)
+  ) "Codex interactive launches must not deploy a managed shared daemon";
 
   codex-production-plugin-registration =
     mkEvalCheck "codex-production-plugin-registration"
