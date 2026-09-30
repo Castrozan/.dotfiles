@@ -36,6 +36,12 @@
       "parent": "Sonar way comprehensive",
       "rules": [
         {
+          "key": "python:FunctionComplexity",
+          "parameters": {
+            "maximumFunctionComplexityThreshold": "15"
+          }
+        },
+        {
           "key": "python:S104",
           "parameters": {
             "maximum": "200"
@@ -49,6 +55,12 @@
       "parent": "Sonar way comprehensive",
       "rules": [
         {
+          "key": "javascript:S1541",
+          "parameters": {
+            "maximumFunctionComplexityThreshold": "10"
+          }
+        },
+        {
           "key": "javascript:S104",
           "parameters": {
             "maximum": "200"
@@ -61,6 +73,12 @@
       "name": "Dotfiles",
       "parent": "Sonar way comprehensive",
       "rules": [
+        {
+          "key": "typescript:S1541",
+          "parameters": {
+            "Threshold": "10"
+          }
+        },
         {
           "key": "typescript:S104",
           "parameters": {
