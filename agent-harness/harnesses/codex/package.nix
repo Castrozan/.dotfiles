@@ -9,12 +9,12 @@ let
     inherit pkgs;
   };
 
-  version = "0.158.0";
+  version = "0.159.1";
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      sha256 = "b33cd426c9acab9b34c5a93200ba4fe83c8e614c18ce5ef52b2bf36408b8e18c";
+      sha256 = "9a2dff8e1eb9bad83f52edb6f91175efeb5c68a316f880c95d7770f87a34fc5c";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -24,7 +24,7 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      sha256 = "09f2a9fde318fbcd384f15b4850c1b90930678f4805647b6bded196ccf32f590";
+      sha256 = "a8fc76ccb5230dd97fb6db01873fa9c12b5e1efdf32d13c2ba7f6e8489ccd893";
       buildInputs = [ ];
     };
   };
@@ -69,11 +69,6 @@ let
     exec ${pkgs.python312}/bin/python3 ${./scripts/hook_trust}/approve.py "$@"
   '';
 
-  sharedServerPython = pkgs.python312.withPackages (packages: [ packages.websockets ]);
-  sharedServerExecutable = pkgs.writeShellScript "codex-shared-client" ''
-    exec ${sharedServerPython}/bin/python3 ${./scripts/shared_server}/codex_client_launch.py "$@"
-  '';
-
   codex = pkgs.writeShellApplication {
     name = "codex";
     bashOptions = [ ];
@@ -84,7 +79,6 @@ let
       CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
       CODEX_LAUNCHER_BINARY = "${codex-unwrapped}/bin/codex";
       CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE = "${hookTrustExecutable}";
-      CODEX_LAUNCHER_SHARED_SERVER_EXECUTABLE = "${sharedServerExecutable}";
     };
     text = builtins.readFile ./scripts/codex;
   };
@@ -99,14 +93,11 @@ in
 
   config.home = {
     packages = [ codex ];
+    activation.seedCodexProfilesAsMutableFiles = lib.hm.dag.entryAfter [ "linkGeneration" ] (
+      workspaceProfileActivation.seedProfiles config.agentWorkspaceProfiles.profiles
+    );
     file = workspaceProfileActivation.profileFiles config.agentWorkspaceProfiles.profiles // {
       ".local/bin/codex".source = "${codex}/bin/codex";
-      ".codex/packages/app-server-daemon/current".source = codex-unwrapped;
-      ".codex/app-server-daemon/settings.json".text = builtins.toJSON {
-        remoteControlEnabled = false;
-        shutdownGraceSeconds = 60;
-        updater.autoUpdateEnabled = false;
-      };
     };
   };
 }

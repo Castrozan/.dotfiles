@@ -1,5 +1,9 @@
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import Mock
+
+import pytest
 
 from runner.baseline.run_evals_impact import (
     affected_test_keys,
@@ -11,6 +15,13 @@ EXECUTION_PROFILE = {
     "subject": {"harness": "codex", "model": "gpt-5.6-sol", "reasoning_effort": "high"},
     "judge": {"harness": "codex", "model": "gpt-5.6-luna", "reasoning_effort": "low"},
 }
+
+
+@pytest.fixture
+def fresh_baseline_clock(monkeypatch):
+    baseline_datetime = Mock(wraps=datetime)
+    baseline_datetime.now.return_value = datetime(2026, 9, 1, tzinfo=timezone.utc)
+    monkeypatch.setattr("runner.baseline.run_evals_impact.datetime", baseline_datetime)
 
 
 def evaluation_config():
@@ -97,7 +108,7 @@ def test_instruction_loading_order_invalidates_the_referencing_test():
         assert evaluation_test_fingerprints(config, root) != original
 
 
-def test_affected_selection_returns_only_missing_or_stale_tests():
+def test_affected_selection_returns_only_missing_or_stale_tests(fresh_baseline_clock):
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         create_instruction(root, "first", "first policy")
@@ -123,7 +134,9 @@ def test_affected_selection_returns_only_missing_or_stale_tests():
         assert affected_test_keys(config, baseline, root) == {"communication::second"}
 
 
-def test_execution_profile_change_preserves_independent_test_evidence():
+def test_execution_profile_change_preserves_independent_test_evidence(
+    fresh_baseline_clock,
+):
     config = evaluation_config()
     fingerprints = evaluation_test_fingerprints(config)
     generated_at = "2026-08-31T00:00:00+00:00"

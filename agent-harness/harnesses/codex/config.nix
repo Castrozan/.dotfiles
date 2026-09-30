@@ -70,7 +70,6 @@ let
   codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
     approval_policy = "never";
     check_for_update_on_startup = false;
-    thread_unload_delay_secs = 0;
     model_reasoning_effort = "xhigh";
     sandbox_mode = "danger-full-access";
     suppress_unstable_features_warning = true;
@@ -80,7 +79,7 @@ let
       multi_agent = true;
     };
     tui = {
-      alternate_screen = "always";
+      alternate_screen = "never";
       animations = false;
       session_picker_view = "dense";
       show_tooltips = false;

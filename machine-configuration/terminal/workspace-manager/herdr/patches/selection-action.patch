@@ -43,58 +43,103 @@ index 1b591872..17bdea7e 100644
                  self.prompt_new_tab_name = ui.prompt_new_tab_name;
                  self.prompt_new_workspace_name = ui.prompt_new_workspace_name;
 diff --git a/src/client/shell/copy_mode.rs b/src/client/shell/copy_mode.rs
-index e2e0e7c5..c9b0c029 100644
+index e2e0e7c5..dc0b799c 100644
 --- a/src/client/shell/copy_mode.rs
 +++ b/src/client/shell/copy_mode.rs
-@@ -858,11 +858,13 @@ impl ClientShellState {
-                 .as_ref()
-                 .is_some_and(crate::selection::Selection::is_visible)
-         {
-             // A visible explicit selection is live. If the fallback above supplied
-             // a search match, retain the revision that established its boundaries.
--            self.request_selection_copy(outcome, live_selection);
-+            if !self.request_selection_action(outcome, live_selection) {
-+                self.request_selection_copy(outcome, live_selection);
+@@ -148,13 +148,15 @@ impl ClientShellState {
+                 }
+                 outcome.repaint = true;
+                 return;
+             }
+             KeyCode::Enter => {
+-                if !self.defer_copy_until_search_result() {
+-                    self.exit_copy_mode(true, outcome);
++                if self.selection.is_none() {
++                    self.begin_copy_selection(false);
+                 }
++                self.sync_copy_selection();
++                outcome.repaint = true;
+                 return;
+             }
+             KeyCode::Left => {
+                 self.move_copy_cursor(0, -1, outcome);
+                 return;
+@@ -215,10 +217,15 @@ impl ClientShellState {
+         let Some(command) = crate::copy_mode::copy_mode_command_char(key.clone()) else {
+             return;
+         };
+         match command {
+             'q' => self.exit_copy_mode(false, outcome),
++            'a' => {
++                if self.request_selection_action(outcome, true) {
++                    self.exit_copy_mode(false, outcome);
++                }
 +            }
+             'y' => {
+                 if !self.defer_copy_until_search_result() {
+                     self.exit_copy_mode(true, outcome);
+                 }
+             }
+diff --git a/src/client/shell/input.rs b/src/client/shell/input.rs
+index 5d3c6863..c08ef78f 100644
+--- a/src/client/shell/input.rs
++++ b/src/client/shell/input.rs
+@@ -530,10 +530,13 @@ impl ClientShellState {
+             return None;
          }
-         self.selection = None;
-         self.selection_highlight_clear_deadline = None;
-         self.push_pane_scroll_offset(
-             copy_mode.pane_id,
+         if matches!(key.code, KeyCode::Modifier(_)) {
+             return None;
+         }
++        if self.handle_selection_annotation_shortcut(key, outcome) {
++            return None;
++        }
+         self.word_selection_gesture = None;
+         if self.mode != ClientShellMode::Copy
+             && self.copy_or_terminal_mode() != ClientShellMode::Copy
+             && !self.config.copy_on_select
+             && is_retained_selection_copy_key(key)
 diff --git a/src/client/shell/mouse.rs b/src/client/shell/mouse.rs
-index 0b9326d0..eb192574 100644
+index 0b9326d0..5781b8d0 100644
 --- a/src/client/shell/mouse.rs
 +++ b/src/client/shell/mouse.rs
-@@ -1709,11 +1709,16 @@ impl ClientShellState {
-             self.stop_selection_autoscroll();
-             let copied = self
+@@ -1711,11 +1711,10 @@ impl ClientShellState {
                  .selection
                  .as_mut()
                  .is_some_and(crate::selection::Selection::finish);
--            if copied && self.config.copy_on_select {
-+            if copied && self.request_selection_action(outcome, true) {
-+                if self.copy_mode.is_some() {
-+                    self.exit_copy_mode(false, outcome);
-+                }
-+                self.selection = None;
-+            } else if copied && self.config.copy_on_select {
+             if copied && self.config.copy_on_select {
                  self.request_selection_copy(outcome, true);
-                 self.selection = None;
+-                self.selection = None;
              } else if self
                  .selection
                  .as_ref()
+                 .is_some_and(crate::selection::Selection::is_just_click)
+             {
 diff --git a/src/client/shell/render.rs b/src/client/shell/render.rs
-index 80387019..c93b7b7e 100644
+index 80387019..5b42827c 100644
 --- a/src/client/shell/render.rs
 +++ b/src/client/shell/render.rs
-@@ -185,11 +185,11 @@ pub(super) fn render_mode_bar(
+@@ -176,20 +176,22 @@ pub(super) fn render_mode_bar(
+                             ("esc", " clear  q exit")
+                         };
+                     segments.extend([
+                         (" COPY ".to_owned(), mode_style),
+                         (" ".to_owned(), base),
++                        ("enter/v/space".to_owned(), key),
++                        (format!(" {select}  "), base),
++                        ("y".to_owned(), key),
++                        (" copy  ".to_owned(), base),
++                        ("a".to_owned(), key),
++                        (" annotate  ".to_owned(), base),
+                         ("h/j/k/l w/b/e { }".to_owned(), key),
+                         (" move  ".to_owned(), base),
+                         ("/ ?".to_owned(), key),
+                         (" search  ".to_owned(), base),
                          ("n/N".to_owned(), key),
                          (format!(" repeat{match_status}  "), base),
-                         ("v/space".to_owned(), key),
-                         (format!(" {select}  "), base),
-                         ("y/enter".to_owned(), key),
+-                        ("v/space".to_owned(), key),
+-                        (format!(" {select}  "), base),
+-                        ("y/enter".to_owned(), key),
 -                        (" copy  ".to_owned(), base),
-+                        (" finish  ".to_owned(), base),
                          (exit_keys.to_owned(), key),
                          (exit_label.to_owned(), base),
                      ]);
@@ -116,208 +161,81 @@ index 8d81f3a0..1b6cc159 100644
      pub(super) clipboard_toast_position: crate::config::ToastClipboardPosition,
      pub(super) theme_name: String,
      pub(super) theme_runtime: crate::app::state::ThemeRuntimeConfig,
+diff --git a/src/client/shell/tests/copy.rs b/src/client/shell/tests/copy.rs
+index 81c7b876..9a43de93 100644
+--- a/src/client/shell/tests/copy.rs
++++ b/src/client/shell/tests/copy.rs
+@@ -182,11 +182,12 @@ fn client_mouse_selection_highlights_and_copies_through_endpoint_extraction() {
+             kind: MouseEventKind::Up(MouseButton::Left),
+             column: pane.inner_rect.x + 2,
+             row: pane.inner_rect.y,
+             modifiers: KeyModifiers::empty(),
+         })]);
+-    assert!(state.selection.is_none());
++    assert!(state.selection.as_ref().unwrap().is_visible());
++    assert!(state.selection.as_ref().unwrap().is_finalized());
+     let [ClientShellAction::Endpoint { request, .. }] = &release.actions[..] else {
+         panic!("selection release should request endpoint extraction");
+     };
+     let request_id = request.id.clone();
+     assert!(matches!(
 diff --git a/src/client/shell/tests/mouse_selection.rs b/src/client/shell/tests/mouse_selection.rs
-index ae4168c2..21a13d13 100644
+index ae4168c2..0f84d7dc 100644
 --- a/src/client/shell/tests/mouse_selection.rs
 +++ b/src/client/shell/tests/mouse_selection.rs
-@@ -1157,5 +1157,175 @@ fn context_menu_keyboard_and_outside_click_are_client_owned() {
+@@ -338,12 +338,14 @@ fn client_double_click_selects_word_and_copies_only_after_release() {
+             );
+             let copied = word_row_reply(&mut state, &word_read_id(&actions), "bravo");
+             assert!(
+                 matches!(&copied[..], [ClientShellAction::ClipboardWrite(bytes)] if bytes == b"bravo")
+             );
+-            assert!(state.tick_copy_feedback(state.selection_highlight_clear_deadline.unwrap()));
+-            assert!(state.selection.is_none());
++            assert!(state.selection_highlight_clear_deadline.is_none());
++            state
++                .tick_copy_feedback(std::time::Instant::now() + std::time::Duration::from_secs(10));
++            assert!(state.selection.as_ref().unwrap().is_visible());
+         } else {
+             assert!(actions.is_empty(), "manual selection must not auto-copy");
+             state.tick_copy_feedback(std::time::Instant::now() + std::time::Duration::from_secs(1));
+             assert!(
+                 state.selection.is_some(),
+@@ -1157,5 +1159,7 @@ fn context_menu_keyboard_and_outside_click_are_client_owned() {
              modifiers: KeyModifiers::empty(),
          })]);
      assert!(outside.repaint);
      assert!(state.overlay.is_none());
  }
 +
-+fn selection_annotation_snapshot() -> ClientShellSnapshot {
-+    let mut snapshot = snapshot();
-+    snapshot.commands.push(crate::protocol::ClientShellCommand {
-+        command_id: "annotation-command".into(),
-+        binding_label: "prefix+n".into(),
-+        binding_labels: vec!["prefix+n".into()],
-+        action: crate::protocol::ClientShellCommandAction::PluginAction,
-+        description: None,
-+    });
-+    snapshot
-+}
-+
-+fn selection_annotation_state() -> ClientShellState {
-+    let config: Config = toml::from_str("[ui]\nannotation_command = 'prefix+n'\n").unwrap();
-+    let mut state = ClientShellState::new(ClientShellConfig::from_config(&config));
-+    state.set_snapshot(Box::new(selection_annotation_snapshot()));
-+    let mut pane_surface = surface();
-+    pane_surface.panes[0].scroll = Some(crate::protocol::PaneSurfaceScrollMetrics {
-+        offset_from_bottom: 0,
-+        max_offset_from_bottom: 20,
-+        viewport_rows: 2,
-+    });
-+    state.set_pane_surface(pane_surface);
-+    state.compose(106, 20).expect("pane frame");
-+    state
-+}
-+
-+fn selection_annotation_command(
-+    actions: &[ClientShellAction],
-+) -> Option<&crate::api::schema::CommandInvokeParams> {
-+    actions.iter().find_map(|action| match action {
-+        ClientShellAction::Endpoint { request, .. } => match &request.method {
-+            crate::api::schema::Method::CommandInvoke(params) => Some(params),
-+            _ => None,
-+        },
-+        _ => None,
-+    })
-+}
-+
-+#[test]
-+fn selection_annotation_mouse_release_invokes_once_with_original_coordinates() {
-+    let mut state = selection_annotation_state();
-+    let pane = state.hits.panes[0].clone();
-+    for kind in [
-+        MouseEventKind::Down(MouseButton::Left),
-+        MouseEventKind::Drag(MouseButton::Left),
-+    ] {
-+        let column = pane.inner_rect.x
-+            + if matches!(kind, MouseEventKind::Drag(_)) {
-+                2
-+            } else {
-+                0
-+            };
-+        let outcome = state.handle_raw_events(vec![RawInputEvent::Mouse(MouseEvent {
-+            kind,
-+            column,
-+            row: pane.inner_rect.y,
-+            modifiers: KeyModifiers::empty(),
-+        })]);
-+        assert!(selection_annotation_command(&outcome.actions).is_none());
-+    }
-+    let event = MouseEvent {
-+        kind: MouseEventKind::Up(MouseButton::Left),
-+        column: pane.inner_rect.x + 2,
-+        row: pane.inner_rect.y,
-+        modifiers: KeyModifiers::empty(),
-+    };
-+    let outcome = state.handle_raw_events(vec![RawInputEvent::Mouse(event)]);
-+    let command = selection_annotation_command(&outcome.actions).expect("annotation command");
-+    assert_eq!(outcome.actions.len(), 1);
-+    assert_eq!(command.command_id, "annotation-command");
-+    assert_eq!(command.pane_id.as_deref(), Some("pane_1"));
-+    let selection = command.selection.as_ref().unwrap();
-+    assert_eq!(selection.anchor.col, 0);
-+    assert_eq!(selection.cursor.col, 2);
-+    assert!(selection.content_revision.is_none());
-+    assert!(state.selection.is_none());
-+    assert!(selection_annotation_command(
-+        &state
-+            .handle_raw_events(vec![RawInputEvent::Mouse(event)])
-+            .actions
-+    )
-+    .is_none());
-+}
-+
-+#[test]
-+fn selection_annotation_copy_mode_finishes_character_or_line_selection_with_enter_or_y() {
-+    for (select, finish) in [
-+        (KeyCode::Char('v'), KeyCode::Enter),
-+        (KeyCode::Char('V'), KeyCode::Char('y')),
-+    ] {
-+        let mut state = selection_annotation_state();
-+        assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
-+        let mut outcome = ClientShellInput::default();
-+        for code in [select, KeyCode::Right, finish] {
-+            state.route_copy_mode_key(
-+                &crate::input::TerminalKey::new(code, KeyModifiers::empty()),
-+                &mut outcome,
-+            );
-+        }
-+        let command = selection_annotation_command(&outcome.actions).expect("annotation command");
-+        assert_eq!(command.pane_id.as_deref(), Some("pane_1"));
-+        assert!(command.selection.is_some());
-+        assert!(state.copy_mode.is_none());
-+        assert_eq!(state.mode, ClientShellMode::Terminal);
-+    }
-+}
-+
-+#[test]
-+fn selection_annotation_double_click_waits_for_release_and_handles_delayed_text() {
-+    for release_before_response in [false, true] {
-+        let mut state = word_drag_state(true);
-+        state.config.annotation_command = Some("prefix+n".into());
-+        state.set_snapshot(Box::new(selection_annotation_snapshot()));
-+        let initial = start_word_drag(&mut state);
-+        if release_before_response {
-+            assert!(
-+                word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 8)
-+                    .actions
-+                    .is_empty()
-+            );
-+        }
-+        let mut actions = word_row_reply(&mut state, &initial, "alpha bravo charlie");
-+        if !release_before_response {
-+            assert!(actions.is_empty());
-+            actions =
-+                word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 8).actions;
-+        }
-+        let command = selection_annotation_command(&actions).expect("annotation command");
-+        let selection = command.selection.as_ref().unwrap();
-+        assert_eq!(selection.anchor.col, 6);
-+        assert_eq!(selection.cursor.col, 10);
-+        assert!(
-+            word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 8)
-+                .actions
-+                .is_empty()
-+        );
-+    }
-+}
-+
-+#[test]
-+fn selection_annotation_copy_mode_cancel_never_opens_an_editor() {
-+    let mut state = selection_annotation_state();
-+    assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
-+    let mut outcome = ClientShellInput::default();
-+    for code in [KeyCode::Char('V'), KeyCode::Esc] {
-+        state.route_copy_mode_key(
-+            &crate::input::TerminalKey::new(code, KeyModifiers::empty()),
-+            &mut outcome,
-+        );
-+    }
-+    assert!(outcome.actions.is_empty());
-+    assert!(state.selection.is_none());
-+}
-+
-+#[test]
-+fn selection_annotation_missing_plugin_binding_preserves_normal_copy() {
-+    let mut state = selection_annotation_state();
-+    state.set_snapshot(Box::new(snapshot()));
-+    state.selection = Some(crate::selection::Selection::absolute_range(
-+        "pane_1".into(),
-+        (0, 0),
-+        (0, 2),
-+    ));
-+    let mut outcome = ClientShellInput::default();
-+    assert!(!state.request_selection_action(&mut outcome, true));
-+    assert!(outcome.actions.is_empty());
-+    assert!(state.selection.is_some());
-+}
++mod annotation;
 diff --git a/src/client/shell/word_selection.rs b/src/client/shell/word_selection.rs
-index f4329ced..429891ef 100644
+index f4329ced..b0e77ff1 100644
 --- a/src/client/shell/word_selection.rs
 +++ b/src/client/shell/word_selection.rs
-@@ -144,11 +144,16 @@ impl ClientShellState {
-             let dragged = gesture.dragged;
+@@ -139,23 +139,16 @@ impl ClientShellState {
+             gesture.pane_id.clone(),
+             start,
+             end,
+         ));
+         if gesture.released {
+-            let dragged = gesture.dragged;
              if let Some(selection) = self.selection.as_mut() {
                  selection.finish();
              }
              self.word_selection_gesture = None;
--            if self.config.copy_on_select {
-+            if self.request_selection_action(outcome, false) {
-+                if self.copy_mode.is_some() {
-+                    self.exit_copy_mode(false, outcome);
-+                }
-+                self.selection = None;
-+            } else if self.config.copy_on_select {
+             if self.config.copy_on_select {
                  self.request_selection_copy(outcome, false);
-                 if dragged {
-                     self.selection = None;
-                 } else {
-                     self.selection_highlight_clear_deadline =
+-                if dragged {
+-                    self.selection = None;
+-                } else {
+-                    self.selection_highlight_clear_deadline =
+-                        Some(std::time::Instant::now() + std::time::Duration::from_millis(500));
+-                }
+             }
+         }
+         outcome.repaint = true;
+     }
+
 diff --git a/src/config/model.rs b/src/config/model.rs
 index 69f24cd8..838d23e3 100644
 --- a/src/config/model.rs
@@ -348,14 +266,35 @@ index 69f24cd8..838d23e3 100644
              mouse_scroll_lines: None,
 diff --git a/src/client/shell/selection_actions.rs b/src/client/shell/selection_actions.rs
 new file mode 100644
-index 00000000..396db8ff
+index 00000000..d5f5ae8c
 --- /dev/null
 +++ b/src/client/shell/selection_actions.rs
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,98 @@
 +use super::*;
 +use crate::api::schema::{CommandInvokeParams, Method, PaneSelectionReadParams, PaneTextPoint};
 +
 +impl ClientShellState {
++    pub(super) fn handle_selection_annotation_shortcut(
++        &mut self,
++        key: &crate::input::TerminalKey,
++        outcome: &mut ClientShellInput,
++    ) -> bool {
++        if self.mode != ClientShellMode::Terminal
++            || self.copy_or_terminal_mode() == ClientShellMode::Copy
++            || !matches!(key.code, crossterm::event::KeyCode::Char('s' | 'S'))
++            || key.modifiers != crossterm::event::KeyModifiers::CONTROL
++            || !self.request_selection_action(outcome, true)
++        {
++            return false;
++        }
++        self.selection = None;
++        self.word_selection_gesture = None;
++        self.stop_selection_autoscroll();
++        self.selection_highlight_clear_deadline = None;
++        outcome.repaint = true;
++        true
++    }
++
 +    pub(super) fn request_selection_action(
 +        &mut self,
 +        outcome: &mut ClientShellInput,
@@ -428,4 +367,307 @@ index 00000000..396db8ff
 +            outcome,
 +        )
 +    }
++}
+diff --git a/src/client/shell/tests/mouse_selection/annotation.rs b/src/client/shell/tests/mouse_selection/annotation.rs
+new file mode 100644
+index 00000000..c3daf6a8
+--- /dev/null
++++ b/src/client/shell/tests/mouse_selection/annotation.rs
+@@ -0,0 +1,73 @@
++use super::*;
++
++mod copy_mode;
++mod mouse;
++
++fn selection_annotation_snapshot() -> ClientShellSnapshot {
++    let mut snapshot = snapshot();
++    snapshot.commands.push(crate::protocol::ClientShellCommand {
++        command_id: "annotation-command".into(),
++        binding_label: "prefix+n".into(),
++        binding_labels: vec!["prefix+n".into()],
++        action: crate::protocol::ClientShellCommandAction::PluginAction,
++        description: None,
++    });
++    snapshot
++}
++
++fn selection_annotation_state() -> ClientShellState {
++    let config: Config = toml::from_str("[ui]\nannotation_command = 'prefix+n'\n").unwrap();
++    let mut state = ClientShellState::new(ClientShellConfig::from_config(&config));
++    state.set_snapshot(Box::new(selection_annotation_snapshot()));
++    let mut pane_surface = surface();
++    pane_surface.panes[0].scroll = Some(crate::protocol::PaneSurfaceScrollMetrics {
++        offset_from_bottom: 0,
++        max_offset_from_bottom: 20,
++        viewport_rows: 2,
++    });
++    state.set_pane_surface(pane_surface);
++    state.compose(106, 20).expect("pane frame");
++    state
++}
++
++fn selection_annotation_command(
++    actions: &[ClientShellAction],
++) -> Option<&crate::api::schema::CommandInvokeParams> {
++    actions.iter().find_map(|action| match action {
++        ClientShellAction::Endpoint { request, .. } => match &request.method {
++            crate::api::schema::Method::CommandInvoke(params) => Some(params),
++            _ => None,
++        },
++        _ => None,
++    })
++}
++
++#[test]
++fn selection_annotation_copy_mode_cancel_never_opens_an_editor() {
++    let mut state = selection_annotation_state();
++    assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++    let mut outcome = ClientShellInput::default();
++    for code in [KeyCode::Char('V'), KeyCode::Esc] {
++        state.route_copy_mode_key(
++            &crate::input::TerminalKey::new(code, KeyModifiers::empty()),
++            &mut outcome,
++        );
++    }
++    assert!(outcome.actions.is_empty());
++    assert!(state.selection.is_none());
++}
++
++#[test]
++fn selection_annotation_missing_plugin_binding_preserves_normal_copy() {
++    let mut state = selection_annotation_state();
++    state.set_snapshot(Box::new(snapshot()));
++    state.selection = Some(crate::selection::Selection::absolute_range(
++        "pane_1".into(),
++        (0, 0),
++        (0, 2),
++    ));
++    let mut outcome = ClientShellInput::default();
++    assert!(!state.request_selection_action(&mut outcome, true));
++    assert!(outcome.actions.is_empty());
++    assert!(state.selection.is_some());
++}
+diff --git a/src/client/shell/tests/mouse_selection/annotation/copy_mode.rs b/src/client/shell/tests/mouse_selection/annotation/copy_mode.rs
+new file mode 100644
+index 00000000..f1284547
+--- /dev/null
++++ b/src/client/shell/tests/mouse_selection/annotation/copy_mode.rs
+@@ -0,0 +1,89 @@
++use super::*;
++
++#[test]
++fn selection_annotation_copy_mode_opens_only_on_a() {
++    for select in [KeyCode::Enter, KeyCode::Char('v'), KeyCode::Char('V')] {
++        let mut state = selection_annotation_state();
++        assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++        for code in [select, KeyCode::Right, KeyCode::Enter] {
++            let outcome = state.handle_raw_events(vec![RawInputEvent::Key(
++                crate::input::TerminalKey::new(code, KeyModifiers::empty()),
++            )]);
++            assert!(outcome.actions.is_empty());
++            assert_eq!(state.mode, ClientShellMode::Copy);
++        }
++        let expected = state.selection.as_ref().unwrap().ordered_cells();
++        let outcome = state.handle_raw_events(vec![RawInputEvent::Key(
++            crate::input::TerminalKey::new(KeyCode::Char('a'), KeyModifiers::empty()),
++        )]);
++        let command = selection_annotation_command(&outcome.actions).expect("annotation command");
++        assert_eq!(command.pane_id.as_deref(), Some("pane_1"));
++        let selection = command.selection.as_ref().unwrap();
++        assert_eq!((selection.anchor.row, selection.anchor.col), expected.0);
++        assert_eq!((selection.cursor.row, selection.cursor.col), expected.1);
++        assert!(state.copy_mode.is_none());
++        assert_eq!(state.mode, ClientShellMode::Terminal);
++    }
++}
++
++#[test]
++fn selection_annotation_copy_mode_y_copies_without_opening_editor() {
++    for select in [KeyCode::Enter, KeyCode::Char('v'), KeyCode::Char('V')] {
++        let mut state = selection_annotation_state();
++        assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++        for code in [select, KeyCode::Right] {
++            state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
++                code,
++                KeyModifiers::empty(),
++            ))]);
++        }
++        let outcome = state.handle_raw_events(vec![RawInputEvent::Key(
++            crate::input::TerminalKey::new(KeyCode::Char('y'), KeyModifiers::empty()),
++        )]);
++        assert!(selection_annotation_command(&outcome.actions).is_none());
++        assert!(outcome.actions.iter().any(|action| matches!(
++            action,
++            ClientShellAction::Endpoint { request, .. }
++                if matches!(&request.method, crate::api::schema::Method::PaneSelectionRead(_))
++        )));
++        assert_eq!(state.mode, ClientShellMode::Terminal);
++    }
++}
++
++#[test]
++fn selection_annotation_copy_mode_enter_highlights_current_character() {
++    let mut state = selection_annotation_state();
++    assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++    let outcome = state.handle_raw_events(vec![RawInputEvent::Key(
++        crate::input::TerminalKey::new(KeyCode::Enter, KeyModifiers::empty()),
++    )]);
++    assert!(outcome.actions.is_empty());
++    assert_eq!(state.mode, ClientShellMode::Copy);
++    assert!(state.selection.as_ref().unwrap().is_visible());
++}
++
++#[test]
++fn selection_annotation_copy_mode_a_without_selection_preserves_copy_mode() {
++    let mut state = selection_annotation_state();
++    assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++    let outcome = state.handle_raw_events(vec![RawInputEvent::Key(
++        crate::input::TerminalKey::new(KeyCode::Char('a'), KeyModifiers::empty()),
++    )]);
++    assert!(outcome.actions.is_empty());
++    assert_eq!(state.mode, ClientShellMode::Copy);
++}
++
++#[test]
++fn selection_annotation_copy_mode_unavailable_action_preserves_selection() {
++    let mut state = selection_annotation_state();
++    state.set_snapshot(Box::new(snapshot()));
++    assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++    for code in [KeyCode::Enter, KeyCode::Right, KeyCode::Char('a')] {
++        let outcome = state.handle_raw_events(vec![RawInputEvent::Key(
++            crate::input::TerminalKey::new(code, KeyModifiers::empty()),
++        )]);
++        assert!(outcome.actions.is_empty());
++    }
++    assert_eq!(state.mode, ClientShellMode::Copy);
++    assert!(state.selection.as_ref().unwrap().is_visible());
++}
+diff --git a/src/client/shell/tests/mouse_selection/annotation/mouse.rs b/src/client/shell/tests/mouse_selection/annotation/mouse.rs
+new file mode 100644
+index 00000000..6b0afc98
+--- /dev/null
++++ b/src/client/shell/tests/mouse_selection/annotation/mouse.rs
+@@ -0,0 +1,123 @@
++use super::*;
++
++fn retained_annotation_selection_state() -> ClientShellState {
++    let mut state = selection_annotation_state();
++    state.selection = Some(crate::selection::Selection::absolute_range(
++        "pane_1".into(),
++        (0, 0),
++        (0, 2),
++    ));
++    state
++}
++
++#[test]
++fn selection_annotation_mouse_release_copies_and_retains_highlight_until_ctrl_s() {
++    let mut state = selection_annotation_state();
++    for (kind, column) in [
++        (MouseEventKind::Down(MouseButton::Left), 0),
++        (MouseEventKind::Drag(MouseButton::Left), 2),
++    ] {
++        let outcome = word_drag_mouse(&mut state, kind, 0, column);
++        assert!(selection_annotation_command(&outcome.actions).is_none());
++    }
++    let release = word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 2);
++    assert!(selection_annotation_command(&release.actions).is_none());
++    let clipboard = word_row_reply(&mut state, &word_read_id(&release.actions), "abc");
++    assert!(
++        matches!(&clipboard[..], [ClientShellAction::ClipboardWrite(bytes)] if bytes == b"abc")
++    );
++    assert!(state.selection.as_ref().unwrap().is_visible());
++    assert!(state.selection.as_ref().unwrap().is_finalized());
++    assert!(
++        word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 2)
++            .actions
++            .is_empty()
++    );
++    let outcome = state.handle_input_bytes(b"\x13");
++    let command = selection_annotation_command(&outcome.actions).expect("annotation command");
++    assert_eq!(command.command_id, "annotation-command");
++    assert_eq!(command.pane_id.as_deref(), Some("pane_1"));
++    let selection = command.selection.as_ref().unwrap();
++    assert_eq!(selection.anchor.col, 0);
++    assert_eq!(selection.cursor.col, 2);
++    assert!(selection.content_revision.is_none());
++    assert!(outcome.requests.is_empty());
++    assert!(state.selection.is_none());
++}
++
++#[test]
++fn selection_annotation_double_click_copies_and_retains_delayed_selection() {
++    for release_before_response in [false, true] {
++        let mut state = word_drag_state(true);
++        state.config.annotation_command = Some("prefix+n".into());
++        state.set_snapshot(Box::new(selection_annotation_snapshot()));
++        let initial = start_word_drag(&mut state);
++        if release_before_response {
++            assert!(
++                word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 8)
++                    .actions
++                    .is_empty()
++            );
++        }
++        let mut actions = word_row_reply(&mut state, &initial, "alpha bravo charlie");
++        if !release_before_response {
++            assert!(actions.is_empty());
++            actions =
++                word_drag_mouse(&mut state, MouseEventKind::Up(MouseButton::Left), 0, 8).actions;
++        }
++        assert!(selection_annotation_command(&actions).is_none());
++        let clipboard = word_row_reply(&mut state, &word_read_id(&actions), "bravo");
++        assert!(
++            matches!(&clipboard[..], [ClientShellAction::ClipboardWrite(bytes)] if bytes == b"bravo")
++        );
++        assert!(state.selection_highlight_clear_deadline.is_none());
++        state.tick_copy_feedback(std::time::Instant::now() + std::time::Duration::from_secs(10));
++        assert!(state.selection.as_ref().unwrap().is_visible());
++        let outcome = state.handle_input_bytes(b"\x13");
++        let command = selection_annotation_command(&outcome.actions).expect("annotation command");
++        let selection = command.selection.as_ref().unwrap();
++        assert_eq!(selection.anchor.col, 6);
++        assert_eq!(selection.cursor.col, 10);
++        assert!(outcome.requests.is_empty());
++    }
++}
++
++#[test]
++fn selection_annotation_ctrl_s_without_selection_reaches_pane() {
++    let mut state = selection_annotation_state();
++    let outcome = state.handle_input_bytes(b"\x13");
++    assert!(selection_annotation_command(&outcome.actions).is_none());
++    assert_eq!(outcome.requests.len(), 1);
++}
++
++#[test]
++fn selection_annotation_ctrl_s_without_binding_reaches_pane() {
++    let mut state = retained_annotation_selection_state();
++    state.set_snapshot(Box::new(snapshot()));
++    let outcome = state.handle_input_bytes(b"\x13");
++    assert!(selection_annotation_command(&outcome.actions).is_none());
++    assert_eq!(outcome.requests.len(), 1);
++}
++
++#[test]
++fn selection_annotation_plain_a_clears_mouse_highlight_and_reaches_pane() {
++    let mut state = retained_annotation_selection_state();
++    let outcome = state.handle_input_bytes(b"a");
++    assert!(selection_annotation_command(&outcome.actions).is_none());
++    assert_eq!(outcome.requests.len(), 1);
++    assert!(state.selection.is_none());
++}
++
++#[test]
++fn selection_annotation_ctrl_s_does_not_replace_copy_mode_a() {
++    let mut state = selection_annotation_state();
++    assert!(state.enter_copy_mode(&mut ClientShellInput::default()));
++    state.handle_raw_events(vec![RawInputEvent::Key(crate::input::TerminalKey::new(
++        KeyCode::Enter,
++        KeyModifiers::empty(),
++    ))]);
++    let outcome = state.handle_input_bytes(b"\x13");
++    assert!(selection_annotation_command(&outcome.actions).is_none());
++    assert_eq!(state.mode, ClientShellMode::Copy);
++    assert!(state.selection.as_ref().unwrap().is_visible());
 +}
