@@ -49,7 +49,7 @@ No machine, skill, agent or script should change from this capture alone, but fo
 future comparison:
 
 - `agent-harness/agent-instructions/skills/workstation/avatar/scripts/control-server/speech/text-to-speech-generator.js:35-65`
-  generates the avatar's MP3 and animation timings with Edge TTS. It reads WebVTT-style subtitle blocks and
+  generates the avatar's MP3 and animation timings with Edge TTS. It reads timestamped subtitle blocks and
   `speech-timing-parser.js:61-79` spreads each block's duration evenly across its words. ElevenLabs' alignment
   endpoint could replace both the Edge TTS subprocess and that approximation if its measured latency and voice
   quality win.
@@ -68,7 +68,7 @@ There is no ElevenLabs secret today. The public secret inventory at
 `machine-configuration/machines/chise/system/secrets.nix:72-76` carry Gemini but no ElevenLabs key. An adoption
 would therefore add a vendor account and encrypted secret, provider and voice configuration, request and response
 handling, failure behavior, usage bounds and tests. It would replace one existing provider in one consumer, not
-add a fourth overlapping TTS path and not migrate all consumers at once.
+add ElevenLabs as a parallel option beside the incumbent provider or migrate all consumers at once.
 
 ## Reasoning
 
