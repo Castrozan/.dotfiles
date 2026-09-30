@@ -3,6 +3,7 @@
 </p>
 
 <p align="center">
+  <a href="#take-the-tour">Tour</a> ·
   <a href="#the-desktop">Desktop</a> ·
   <a href="#the-agents">Agents</a> ·
   <a href="#one-source-of-truth">Architecture</a> ·
@@ -11,6 +12,14 @@
 </p>
 
 My personal computing environment, declared with **Nix**, **Home Manager** and **nix-darwin**. Linux and macOS share the tools I use every day: a terminal workspace, an editor, a theme and an agent harness. Host modules supply what each machine needs.
+
+## Take the tour
+
+[![Animated preview of the dotfiles presentation, showing the current Linux and macOS desktops](repository/showcase/preview.gif)](https://github.com/Castrozan/.dotfiles/releases/download/showcase-2026-09-30/dotfiles-demo.mp4)
+
+**[Download the 1:17 video](https://github.com/Castrozan/.dotfiles/releases/download/showcase-2026-09-30/dotfiles-demo.mp4)** · [English captions](https://github.com/Castrozan/.dotfiles/releases/download/showcase-2026-09-30/dotfiles-demo.en.srt) · [Poster](https://github.com/Castrozan/.dotfiles/releases/download/showcase-2026-09-30/dotfiles-poster.png)
+
+Fresh desktop captures and animated architecture, with English narration and an original electronic soundtrack. The rebuild and CI scenes illustrate the configuration workflow.
 
 ## The desktop
 
