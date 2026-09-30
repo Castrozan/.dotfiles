@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 
@@ -88,6 +89,15 @@ def read_hook_input_or_exit() -> dict:
         sys.exit(0)
     if not isinstance(parsed_payload, dict):
         sys.exit(0)
+    if (
+        requested_hook_surface() == CODEX_SURFACE
+        and os.environ.get("DOTFILES_CODEX_SHARED_SERVER") == "1"
+    ):
+        from codex_client_context import restore_hook_context
+
+        parsed_payload["_codex_client_developer_instructions"] = restore_hook_context(
+            parsed_payload
+        )
     raw_apply_patch_input = parsed_payload.get(
         "tool_name"
     ) == "apply_patch" and isinstance(parsed_payload.get("tool_input"), str)

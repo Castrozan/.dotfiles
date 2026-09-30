@@ -71,10 +71,14 @@ in
       touch "$out"
     '';
 
-  codex-launcher-is-embedded = mkEvalCheck "codex-launcher-is-embedded" (
-    !(builtins.hasAttr ".codex/packages/app-server-daemon/current" cfg.home.file)
-    && !(builtins.hasAttr ".codex/app-server-daemon/settings.json" cfg.home.file)
-  ) "Codex interactive launches must not deploy a managed shared daemon";
+  codex-daemon-is-declarative = mkEvalCheck "codex-daemon-is-declarative" (
+    let
+      settings = builtins.fromJSON cfg.home.file.".codex/app-server-daemon/settings.json".text;
+    in
+    toString cfg.home.file.".codex/packages/app-server-daemon/current".source == "${codexPackage}"
+    && !settings.remoteControlEnabled
+    && !settings.updater.autoUpdateEnabled
+  ) "Codex must select its Nix package and disable independent updates and remote control";
 
   codex-production-plugin-registration =
     mkEvalCheck "codex-production-plugin-registration"

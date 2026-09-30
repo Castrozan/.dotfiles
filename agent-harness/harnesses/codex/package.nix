@@ -69,6 +69,11 @@ let
     exec ${pkgs.python312}/bin/python3 ${./scripts/hook_trust}/approve.py "$@"
   '';
 
+  sharedServerPython = pkgs.python312.withPackages (packages: [ packages.websockets ]);
+  sharedServerExecutable = pkgs.writeShellScript "codex-shared-client" ''
+    exec ${sharedServerPython}/bin/python3 ${./scripts/shared_server}/codex_client_launch.py "$@"
+  '';
+
   codex = pkgs.writeShellApplication {
     name = "codex";
     bashOptions = [ ];
@@ -79,6 +84,7 @@ let
       CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
       CODEX_LAUNCHER_BINARY = "${codex-unwrapped}/bin/codex";
       CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE = "${hookTrustExecutable}";
+      CODEX_LAUNCHER_SHARED_SERVER_EXECUTABLE = "${sharedServerExecutable}";
     };
     text = builtins.readFile ./scripts/codex;
   };
@@ -98,6 +104,12 @@ in
     );
     file = workspaceProfileActivation.profileFiles config.agentWorkspaceProfiles.profiles // {
       ".local/bin/codex".source = "${codex}/bin/codex";
+      ".codex/packages/app-server-daemon/current".source = codex-unwrapped;
+      ".codex/app-server-daemon/settings.json".text = builtins.toJSON {
+        remoteControlEnabled = false;
+        shutdownGraceSeconds = 60;
+        updater.autoUpdateEnabled = false;
+      };
     };
   };
 }
