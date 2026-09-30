@@ -20,7 +20,7 @@ const directory = await mkdtemp(join(output, "discovery-startup-"));
 const artifact = join(directory, "emitted");
 const packageRoot = join(artifact, ".agents/plugins/startup-control");
 const marker = join(directory, "server-started");
-for (const path of [
+for await (const path of [
   join(packageRoot, "skills/probe"),
   join(artifact, ".pi/plugins"),
 ])

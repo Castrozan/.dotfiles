@@ -107,7 +107,7 @@ for (const target of targets) {
   });
 }
 let failed = false;
-for (const descriptor of suites) {
+for await (const descriptor of suites) {
   const suite = suiteSchema.parse({
     ...base,
     name: descriptor.label,
@@ -151,7 +151,7 @@ await writeFile(
   ),
   { flag: "wx" },
 );
-for (const descriptor of suites) {
+for await (const descriptor of suites) {
   const suite = suiteSchema.parse({
     ...base,
     name: descriptor.label,

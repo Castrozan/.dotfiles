@@ -38,7 +38,7 @@ const manifest = overviewManifestSchema.parse({
 });
 await mkdir(output);
 await mkdir(join(output, "raw"));
-for (const [name, selection] of Object.entries(context.artifacts)) {
+for await (const [name, selection] of Object.entries(context.artifacts)) {
   if (!selection.id) continue;
   const source =
     name === "verdr-artifact-evidence"

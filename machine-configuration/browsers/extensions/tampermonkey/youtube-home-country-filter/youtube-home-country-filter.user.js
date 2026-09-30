@@ -43,9 +43,8 @@ const blockedCountries = new Set(["BR"]);
   async function drain() {
     if (working) return;
     working = true;
-    while (pending.size) {
+    for await (const card of pending) {
       if (!home || location.pathname !== "/") break;
-      const card = pending.values().next().value;
       pending.delete(card);
       const identifier = channelId(card);
       if (!identifier || !card.isConnected || !visible.has(card)) continue;
@@ -55,6 +54,7 @@ const blockedCountries = new Set(["BR"]);
       }
     }
     working = false;
+    if (pending.size && home && location.pathname === "/") drain();
   }
 
   const viewport = new IntersectionObserver(
