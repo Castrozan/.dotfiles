@@ -161,6 +161,24 @@ index 8d81f3a0..1b6cc159 100644
      pub(super) clipboard_toast_position: crate::config::ToastClipboardPosition,
      pub(super) theme_name: String,
      pub(super) theme_runtime: crate::app::state::ThemeRuntimeConfig,
+diff --git a/src/client/shell/tests/copy.rs b/src/client/shell/tests/copy.rs
+index 81c7b876..9a43de93 100644
+--- a/src/client/shell/tests/copy.rs
++++ b/src/client/shell/tests/copy.rs
+@@ -182,11 +182,12 @@ fn client_mouse_selection_highlights_and_copies_through_endpoint_extraction() {
+             kind: MouseEventKind::Up(MouseButton::Left),
+             column: pane.inner_rect.x + 2,
+             row: pane.inner_rect.y,
+             modifiers: KeyModifiers::empty(),
+         })]);
+-    assert!(state.selection.is_none());
++    assert!(state.selection.as_ref().unwrap().is_visible());
++    assert!(state.selection.as_ref().unwrap().is_finalized());
+     let [ClientShellAction::Endpoint { request, .. }] = &release.actions[..] else {
+         panic!("selection release should request endpoint extraction");
+     };
+     let request_id = request.id.clone();
+     assert!(matches!(
 diff --git a/src/client/shell/tests/mouse_selection.rs b/src/client/shell/tests/mouse_selection.rs
 index ae4168c2..0f84d7dc 100644
 --- a/src/client/shell/tests/mouse_selection.rs
