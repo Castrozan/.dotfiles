@@ -65,7 +65,7 @@ in
     }) (profileSources workspaceProfiles);
 
   seedProfiles = workspaceProfiles: ''
-    ${profilePython}/bin/python3 ${./scripts/seed_interactive_profiles.py} \
+    ${profilePython}/bin/python3 ${./config}/seed_interactive_profiles.py \
       "$HOME/.codex" ${pkgs.writeText "codex-profile-sources.json" (builtins.toJSON (profileSources workspaceProfiles))}
   '';
 

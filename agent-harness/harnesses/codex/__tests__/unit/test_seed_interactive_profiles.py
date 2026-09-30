@@ -58,6 +58,36 @@ def test_explicit_workspace_model_settings_remain_authoritative(tmp_path):
     assert profile.read_bytes() == source.read_bytes()
 
 
+def test_rebuild_preserves_native_profile_state_and_applies_managed_policy(tmp_path):
+    source = tmp_path / "profile.config.toml.nix-source"
+    source.write_text(
+        "[plugins.managed]\nenabled = true\n"
+        '[projects."/managed"]\ntrust_level = "untrusted"\n'
+    )
+    profile = tmp_path / "profile.config.toml"
+    profile.write_text(
+        '[projects."/workspace"]\ntrust_level = "trusted"\n'
+        '[projects."/managed"]\ntrust_level = "trusted"\n'
+        '[marketplaces.custom]\nsource = "local"\n'
+        "[plugins.managed]\nenabled = false\n"
+        "[plugins.managed.skills.helper]\nenabled = false\n"
+        "[hooks.state.known]\napproved = true\n"
+    )
+
+    seed_profile(source, profile)
+
+    configuration = tomllib.loads(profile.read_text())
+    assert configuration["projects"] == {
+        "/workspace": {"trust_level": "trusted"},
+        "/managed": {"trust_level": "untrusted"},
+    }
+    assert configuration["marketplaces"] == {"custom": {"source": "local"}}
+    assert configuration["plugins"] == {
+        "managed": {"enabled": True, "skills": {"helper": {"enabled": False}}}
+    }
+    assert configuration["hooks"] == {"state": {"known": {"approved": True}}}
+
+
 def test_invalid_profile_is_preserved_and_fails_activation(tmp_path):
     source = tmp_path / "profile.config.toml.nix-source"
     source.write_text('developer_instructions = "current"\n')

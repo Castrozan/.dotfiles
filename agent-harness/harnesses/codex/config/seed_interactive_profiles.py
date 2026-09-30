@@ -7,6 +7,8 @@ import tomllib
 
 import tomli_w
 
+from runtime_configuration import merge_runtime_preserved_configuration
+
 
 NIX_STORE = Path("/nix/store")
 
@@ -19,13 +21,18 @@ def nix_store_file(argument: str) -> Path:
 
 
 def seed_profile(source_path: Path, profile_path: Path) -> None:
-    configuration = tomllib.loads(source_path.read_text())
+    source_configuration = tomllib.loads(source_path.read_text())
     try:
         current_configuration = tomllib.loads(profile_path.read_text())
     except FileNotFoundError:
         current_configuration = {}
+    configuration = merge_runtime_preserved_configuration(
+        source_configuration, current_configuration
+    )
     for setting in ("model", "model_reasoning_effort"):
-        if setting not in configuration and setting in current_configuration:
+        if setting in source_configuration:
+            configuration[setting] = source_configuration[setting]
+        elif setting in current_configuration:
             configuration[setting] = current_configuration[setting]
     content = tomli_w.dumps(configuration).encode()
     if (
