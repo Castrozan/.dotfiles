@@ -15,6 +15,7 @@ def positive_integer(value):
 
 def arguments():
     parser = argparse.ArgumentParser(
+        prog="ci-watcher",
         description="Wait quietly for one GitHub Actions run, then retain its verdict and logs.",
         epilog="Exit codes: 0 passed, 1 failed, 2 watcher error, 124 timeout, 130 interrupted. Remote CI is never cancelled.",
     )
