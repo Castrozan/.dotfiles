@@ -41,24 +41,33 @@ let
         overrideKey: overrideValue: "-c ${lib.escapeShellArg "${overrideKey}=${toString overrideValue}"}"
       ) (workspaceProfile.codex.configOverrides or { })
     );
-in
-{
-  profileFiles =
+  profileSources =
     workspaceProfiles:
     {
-      ".codex/dotfiles-interactive.config.toml".source =
-        interactiveProfile "dotfiles-interactive" interactivePreferencesFile
-          { };
+      dotfiles-interactive = interactiveProfile "dotfiles-interactive" interactivePreferencesFile { };
     }
     // builtins.listToAttrs (
       map (workspaceProfile: {
-        name = ".codex/${workspaceProfileName workspaceProfile}.config.toml";
-        value.source =
+        name = workspaceProfileName workspaceProfile;
+        value =
           interactiveProfile (workspaceProfileName workspaceProfile)
             (developerInstructionsFile workspaceProfile)
             (workspaceProfile.codex.configOverrides or { });
       }) (builtins.filter hasCodexConfiguration workspaceProfiles)
     );
+in
+{
+  profileFiles =
+    workspaceProfiles:
+    lib.mapAttrs' (name: source: {
+      name = ".codex/${name}.config.toml.nix-source";
+      value = { inherit source; };
+    }) (profileSources workspaceProfiles);
+
+  seedProfiles = workspaceProfiles: ''
+    ${profilePython}/bin/python3 ${./config}/seed_interactive_profiles.py \
+      "$HOME/.codex" ${pkgs.writeText "codex-profile-sources.json" (builtins.toJSON (profileSources workspaceProfiles))}
+  '';
 
   activationShellStatementsForProfile =
     workspaceProfile:

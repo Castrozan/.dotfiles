@@ -28,7 +28,7 @@ def test_continuations_do_not_split_one_item_or_list_into_short_lists(reply):
 
 
 @pytest.mark.parametrize(
-    "separator", ["\n\n| Result |\n| --- |\n| passed |\n\n", "\n\n"]
+    "separator", ["\n\n| # | Result |\n| --- | --- |\n| 1 | passed |\n\n", "\n\n"]
 )
 def test_separate_markdown_lists_keep_separate_budgets(separator):
     bullets = "\n".join("- " + "evidence " * 19 for _ in range(3))
@@ -75,7 +75,7 @@ def test_commonmark_fenced_diffs_are_exempt(fence):
 
 
 def test_gfm_tables_without_outer_pipes_are_exempt():
-    reply = "Result | Details\n--- | ---\nPassed | " + "evidence " * 150
+    reply = "# | Result | Details\n--- | --- | ---\n1 | Passed | " + "evidence " * 150
 
     assert template_violations_in_reply(reply) == []
 

@@ -213,17 +213,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790475482,
-        "narHash": "sha256-WYlGYXhsBp0i8EJxLhdRqgy4+0dDwUW0TKAPrvNSsTw=",
+        "lastModified": 1790684993,
+        "narHash": "sha256-HhtgAIYQcFxOptEhNgkFuNp00DTvvslSBL+UGGjnw0k=",
         "owner": "Castrozan",
         "repo": "clawde",
-        "rev": "4e0f0a700303524bc393c2a147e5091f5e9b9167",
+        "rev": "0d2f1578c5dd9b5e9cbc97c669d1603ecb8455c0",
         "type": "github"
       },
       "original": {
         "owner": "Castrozan",
         "repo": "clawde",
-        "rev": "4e0f0a700303524bc393c2a147e5091f5e9b9167",
+        "rev": "0d2f1578c5dd9b5e9cbc97c669d1603ecb8455c0",
         "type": "github"
       }
     },
@@ -1492,23 +1492,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_11": {
-      "locked": {
-        "lastModified": 1767767207,
-        "narHash": "sha256-Mj3d3PfwltLmukFal5i3fFt27L6NiKXdBezC1EBuZs4=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "5912c1772a44e31bf1c63c0390b90501e5026886",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_12": {
+    "nixpkgs_10": {
       "locked": {
         "lastModified": 1759036355,
         "narHash": "sha256-0m27AKv6ka+q270dw48KflE0LwQYrO7Fm4/2//KCVWg=",
@@ -1635,6 +1619,22 @@
       "original": {
         "owner": "nixos",
         "ref": "nixos-25.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_9": {
+      "locked": {
+        "lastModified": 1767767207,
+        "narHash": "sha256-Mj3d3PfwltLmukFal5i3fFt27L6NiKXdBezC1EBuZs4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "5912c1772a44e31bf1c63c0390b90501e5026886",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -2308,7 +2308,7 @@
     "voxtype": {
       "inputs": {
         "flake-utils": "flake-utils_8",
-        "nixpkgs": "nixpkgs_11"
+        "nixpkgs": "nixpkgs_9"
       },
       "locked": {
         "lastModified": 1775048999,
@@ -2327,7 +2327,7 @@
     "whisp-away": {
       "inputs": {
         "crane": "crane",
-        "nixpkgs": "nixpkgs_12"
+        "nixpkgs": "nixpkgs_10"
       },
       "locked": {
         "lastModified": 1768913025,

@@ -1,237 +1,91 @@
-<h2 align="center"><a href="https://github.com/castrozan" target="_blank" rel="noopener noreferrer">Zanoni's</a> Desktop Configs</h2>
-
 <p align="center">
-  <img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/palette/macchiato.png" width="400" />
+  <img src="repository/showcase/hero.svg" alt="Zanoni's dotfiles — one home for machines, code and agents" width="100%" />
 </p>
 
 <p align="center">
-   <a href="https://github.com/Castrozan/.dotfiles/actions/workflows/tests.yml">
-      <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/castrozan/.dotfiles/tests.yml?style=for-the-badge&amp;logo=github-actions&amp;color=A6E3A1&amp;logoColor=D9E0EE&amp;labelColor=302D41&amp;label=CI">
-   </a>
-   <a href="https://castrozan.github.io/.dotfiles/">
-      <img alt="Coverage" src="https://img.shields.io/badge/Coverage-Report-informational.svg?style=for-the-badge&amp;logo=codecov&amp;color=89B4FA&amp;logoColor=D9E0EE&amp;labelColor=302D41">
-   </a>
-   <img alt="Stargazers" src="https://img.shields.io/github/stars/castrozan/.dotfiles?style=for-the-badge&amp;logo=starship&amp;color=C9CBFF&amp;logoColor=D9E0EE&amp;labelColor=302D41">
-   <a href="https://nixos.org/">
-      <img src="https://img.shields.io/badge/NixOS-25.11-informational.svg?style=for-the-badge&amp;logo=nixos&amp;color=F2CDCD&amp;logoColor=D9E0EE&amp;labelColor=302D41">
-   </a>
+  <a href="#take-the-tour">Tour</a> ·
+  <a href="#the-desktop">Desktop</a> ·
+  <a href="#the-agents">Agents</a> ·
+  <a href="#one-source-of-truth">Architecture</a> ·
+  <a href="#make-it-yours">Make it yours</a> ·
+  <a href="https://github.com/Castrozan/.dotfiles/actions/workflows/tests.yml">CI</a>
 </p>
 
-Welcome to my dotfiles! This repository contains my desktop environment setup for **NixOS** and **macOS** under one flake. Built with Nix Flakes, Home Manager, and nix-darwin.
+My personal computing environment, declared with **Nix**, **Home Manager** and **nix-darwin**. Linux and macOS share the tools I use every day: a terminal workspace, an editor, a theme and an agent harness. Host modules supply what each machine needs.
 
-**Linux**
+## Take the tour
 
-https://github.com/user-attachments/assets/c5959f36-6b7a-450c-a18c-f430d60fcafc
+https://github.com/user-attachments/assets/65edec3b-1c2a-4a20-8bed-ee9ef6a4758b
 
-**Mac**
+Fresh desktop captures and animated architecture, with English narration and an original electronic soundtrack. The rebuild and CI scenes illustrate the configuration workflow.
 
-https://github.com/user-attachments/assets/61732d66-f775-447a-a28e-ff007e6c994e
+## The desktop
 
-![macOS desktop running WezTerm, herdr and Neovim](https://github.com/user-attachments/assets/6b17231b-44e4-45c3-8d40-e801d9c9cb81)
+**NixOS / Hyprland** and **macOS / Hammerspoon**, with WezTerm, [Herdr](https://github.com/Castrozan/herdr), Neovim and Yazi at the center of the workflow. Herdr keeps terminal workspaces and agent sessions together; the shared appearance modules carry the theme across applications.
 
-## Desktop Showcase
+<p>
+  <a href="repository/showcase/linux.png"><img src="repository/showcase/linux.png" alt="NixOS capture: Hyprland sidebar, WezTerm, Herdr, Neovim and Yazi browsing the flake's host declarations" width="49%" /></a>
+  <a href="repository/showcase/macos.png"><img src="repository/showcase/macos.png" alt="macOS capture: WezTerm and Herdr with Neovim and Yazi browsing the same host declarations" width="49%" /></a>
+</p>
 
-### Kitty ᓚᘏᗢ + Tmux
+<p align="center"><sub>NixOS on the left, macOS on the right. Open either image for the full capture.</sub></p>
 
-<details>
-<summary>🪟 Panes</summary>
+The [terminal modules](machine-configuration/terminal), [Neovim configuration](machine-configuration/editors/neovim) and [appearance modules](machine-configuration/desktop/appearance) own the setup shown here. Desktop automation is declared in the [Hyprland](machine-configuration/desktop/desktop-environments/hyprland) and [Hammerspoon](machine-configuration/desktop/hammerspoon) modules.
 
-![panes](machine-configuration/terminal/multiplexer/tmux/showcase/showcase-panes.png)
+## The agents
 
-</details>
-<details>
-<summary>🪴 Screensaver</summary>
+**Claude Code, Codex, OpenCode, Pi and Hermes** share a maintained set of instructions and skills. Each harness receives the settings, hooks and integrations it supports. [Clawde](agent-harness/harnesses/clawde) adds persistent agents and supervision; a per-machine steward keeps this repository synchronized and verified.
 
-![screensaver](machine-configuration/terminal/multiplexer/tmux/showcase/showcase-screensaver.png)
+The harness includes:
 
-</details>
-<details>
-<summary>🔱 Sessions</summary>
+- **Shared skills and MCP integrations** distributed through a common production plugin.
+- **Session control and agent communication** for continuing work and coordinating across harnesses and machines.
+- **Servant identities** that give each session a character while preserving its technical responsibilities.
+- **Behavioral evaluations and package checks** that test instructions and the artifacts delivered to each harness.
 
-![sessions](machine-configuration/terminal/multiplexer/tmux/showcase/showcase-sessions.png)
+Start with the [shared instruction deployment](agent-harness/agent-instructions/agent-instructions-home-manager.nix), [harness modules](agent-harness/harnesses) or [evaluation suite](agent-harness/quality/evaluations).
 
-</details>
+## One source of truth
 
-### Neovim
+```mermaid
+flowchart LR
+    Flake["Nix flake"] --> NixOS["NixOS system"]
+    Flake --> Darwin["nix-darwin system"]
+    NixOS --> Home["Home Manager"]
+    Darwin --> Home
+    Home --> Desktop["Desktop and daily tools"]
+    Home --> Agents["Agent instructions and integrations"]
+```
 
-<details>
-<summary>:wq Editor</summary>
+Reusable modules are organized by capability. Machine entry points compose them, with platform guards for Linux and macOS. A configuration change belongs in its module; `rebuild` materializes it on the machine.
 
-![editor](machine-configuration/editors/neovim/showcase/showcase-editor.png)
+[Host outputs](repository/flake-assembly/outputs.nix) explicitly select each machine. The [dependencies flake](repository/flake-assembly/dependencies/flake.nix) owns upstream inputs; the root [flake](flake.nix) assembles them. Private configuration and encrypted secrets have separate ownership boundaries.
 
-</details>
-<details>
-<summary>🎯 Focused Editor</summary>
+## Make it yours
 
-![editor](machine-configuration/editors/neovim/showcase/showcase-focused-editor.png)
+This is a personal configuration, not an installer. The host declarations, hardware settings, user names and private dependencies belong to my machines. Borrow a module or adapt a host before activating it.
 
-</details>
-
----
-
-## Wanna use it?
-
-### The Declarative Way
-
-Got NixOS from the <a href="https://nixos.org/download.html" target="_blank" rel="noopener noreferrer">installer</a>? Perfect. Here's how to deploy this flake:
-
-<details>
-<summary>
-   <b>Quick Start for: ❄️ NixOS Users</b>
-</summary>
-
-#### 1. Clone the Repository
-
-```bash
-cd ~
-git clone https://github.com/castrozan/.dotfiles.git
+```sh
+git clone https://github.com/Castrozan/.dotfiles.git
 cd .dotfiles
 ```
 
-#### 2. Generate Hardware Configuration
+For a new machine, adapt a [host configuration](machine-configuration/machines) and register it in the [host outputs](repository/flake-assembly/outputs.nix). Review the [private dependencies](repository/flake-assembly/dependencies/flake.nix) and [private submodule](.gitmodules): a public clone does not grant access to either private repository.
 
-Pick a short alias for the machine (this repo uses anime names: `chise`, `rin`, `kira`). Then:
+Follow the upstream [NixOS](https://nixos.org/manual/nixos/stable/#sec-flakes) or [nix-darwin](https://github.com/nix-darwin/nix-darwin#installing) activation procedure for your platform. [Home Manager](https://nix-community.github.io/home-manager/) documents the user-level modules.
 
-```bash
-sudo nixos-generate-config --dir machine-configuration/machines/<alias>/system/configs
+On an already configured machine:
+
+```sh
+rebuild
 ```
 
-#### 3. Customize Your Configuration
+## Verification
 
-- Copy `machine-configuration/machines/chise/system/` (system config) and `machine-configuration/machines/chise/home.nix` plus `machine-configuration/machines/chise/home/` (per-user home-manager modules) as templates for the new alias
-- Add one explicit `nixosConfigurations.<alias> = nixosMachineFactory { ... };` call in `repository/flake-assembly/outputs.nix`
+Scripts and integrations have tests beside their owning modules. [CI](https://github.com/Castrozan/.dotfiles/actions) runs behavioral tests, validates Nix configuration and checks the emitted agent package. The [quality overview](agent-harness/measurement-and-reporting/quality-overview/README.md) explains exactly what its evidence establishes.
 
-#### 4. Deploy the Flake
+The development loop is a local rebuild and live verification, followed by a push and green CI. The [repository instructions](AGENTS.md) define that workflow.
 
-```bash
-sudo nixos-rebuild switch --flake .?submodules=1#<alias>
-```
+## Credits
 
-#### 5. Post-Deployment
-
-- Restart your system (recommended)
-- Enjoy your new setup! 🎉
-
-</details>
-
----
-
-### macOS (nix-darwin)
-
-For macOS, the flake composes nix-darwin with home-manager:
-
-<details>
-<summary>
-   <b>Quick Start for: 🍎 macOS</b>
-</summary>
-
-#### 1. Install Nix + nix-darwin
-
-```bash
-sh <(curl -L https://nixos.org/nix/install)
-nix run nix-darwin -- switch --flake .?submodules=1#<alias>
-```
-
-#### 2. Activate later rebuilds
-
-```bash
-sudo darwin-rebuild switch --flake .?submodules=1#<alias>
-```
-
-Use the host's alias (`rin`, `kira`, ...). The WezTerm cask is declared in `machine-configuration/terminal/emulators/wezterm/wezterm-nix-darwin.nix`.
-
-</details>
-</details>
-
----
-
-## 🏗️ Architecture Overview
-
-<details>
-<summary>📦 mermaid</summary>
-
-Here's how everything fits together:
-
-```mermaid
-graph TD
-    subgraph "repository/flake-assembly"
-        Flake["outputs.nix<br/>explicit host calls"]
-        NixOSMachine["nixos-machine-factory.nix<br/>builds one NixOS host per call"]
-        DarwinMachine["darwin-machine-factory.nix<br/>builds one Darwin host per call"]
-    end
-
-    subgraph "NixOS Configuration"
-        NixOS["nixosConfigurations.&lt;host&gt;"]
-        Host["machine-configuration/machines/&lt;alias&gt;/system/<br/>hardware config"]
-        UserNixOS["machine-configuration/machines/&lt;alias&gt;/system/nixos-system.nix<br/>+ machine-configuration/machines/&lt;alias&gt;/home.nix"]
-    end
-
-    subgraph "Darwin Configuration"
-        Darwin["darwinConfigurations.&lt;host&gt;"]
-        DarwinHost["machine-configuration/machines/&lt;alias&gt;/system/<br/>nix-darwin host config"]
-        DarwinHome["machine-configuration/machines/&lt;alias&gt;/home.nix"]
-    end
-
-    subgraph "Home Manager Configuration"
-        UserHome["machine-configuration/machines/&lt;alias&gt;/home.nix"]
-        Modules["machine-configuration/&lt;domain&gt;/&lt;capability&gt;/*<br/>platform-gated modules"]
-    end
-
-    subgraph "External Inputs"
-        Nixpkgs["nixpkgs-25.11"]
-        Unstable["nixpkgs-unstable"]
-        HM["home-manager"]
-        ND["nix-darwin"]
-    end
-
-    Flake --> NixOSMachine
-    Flake --> DarwinMachine
-    NixOSMachine --> NixOS
-    DarwinMachine --> Darwin
-
-    NixOS --> Host
-    NixOS --> UserNixOS
-    NixOS --> HM
-
-    Darwin --> DarwinHost
-    Darwin --> DarwinHome
-    Darwin --> ND
-
-    NixOS --> UserHome
-    UserHome --> Modules
-    DarwinHome --> Modules
-
-    Flake --> Nixpkgs
-    Flake --> Unstable
-
-    style Flake fill:#f38ba8,color:#1e1e2e
-    style NixOS fill:#a6e3a1,color:#1e1e2e
-    style Darwin fill:#fab387,color:#1e1e2e
-    style Nixpkgs fill:#f9e2af,color:#1e1e2e
-    style HM fill:#cba6f7,color:#1e1e2e
-    style ND fill:#fab387,color:#1e1e2e
-```
-
-</details>
-
----
-
-## 🔗 Inspiration & Credits
-
-This setup is inspired by and borrows from:
-
-- <a href="https://github.com/ryan4yin/nix-config" target="_blank" rel="noopener noreferrer">ryan4yin/nix-config</a> - Excellent complex Nix configurations
-- <a href="https://github.com/OfflineBot/nixos" target="_blank" rel="noopener noreferrer">OfflineBot/nixos</a> - Clean NixOS setup
-- The amazing NixOS and Home Manager communities
-- And countless other dotfiles repos I've stumbled upon at 3 AM 🌙
-
-## 📚 Resources
-
-- <a href="https://nixos.org/manual" target="_blank" rel="noopener noreferrer">NixOS Manual</a> - Official documentation
-- <a href="https://nix-community.github.io/home-manager/" target="_blank" rel="noopener noreferrer">Home Manager Manual</a> - Home Manager docs
-- <a href="https://nixos.org/guides/nix-pills/" target="_blank" rel="noopener noreferrer">Nix Pills</a> - Learn Nix the fun way
-- <a href="https://github.com/ryan4yin/nixos-and-flakes-book" target="_blank" rel="noopener noreferrer">NixOS & Flakes Book</a> - Comprehensive guide
-
----
-
-Enjoy ricing and happy hacking! If you like this setup, consider giving it a ⭐
+Built on NixOS, nix-darwin, Home Manager and the work of their communities. Early inspiration came from [ryan4yin/nix-config](https://github.com/ryan4yin/nix-config) and [OfflineBot/nixos](https://github.com/OfflineBot/nixos).

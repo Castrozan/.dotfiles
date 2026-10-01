@@ -23,6 +23,7 @@ REPLY_RESTRICTION_CONTRACTS = {
     ),
     "list_block_length": (set(), {"line_count", "maximum_lines"}),
     "list_line_words": (set(), {"word_count", "maximum_words", "grace_words"}),
+    "table_indexes": (set(), {"table_number"}),
     "sentence_dash": ({"characters"}, {"character_name"}),
     "reaction_opener": ({"pattern"}, set()),
     "narration_opener": ({"pattern"}, set()),

@@ -1,0 +1,108 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1600"
+  height="620"
+  viewBox="0 0 1600 620"
+  role="img"
+  aria-labelledby="title description"
+>
+  <title id="title">Zanoni's dotfiles</title>
+  <desc id="description">
+    One home for machines, code and agents. NixOS and macOS, declared with Nix,
+    Home Manager and nix-darwin.
+  </desc>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1">
+      <stop stop-color="#041c38" />
+      <stop offset="1" stop-color="#071323" />
+    </linearGradient>
+    <linearGradient id="accent">
+      <stop stop-color="#ed840b" />
+      <stop offset="1" stop-color="#e5b40e" />
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#707fec" stroke-opacity=".08" />
+    </pattern>
+  </defs>
+  <rect width="1600" height="620" rx="28" fill="url(#background)" />
+  <rect width="1600" height="620" rx="28" fill="url(#grid)" />
+  <g font-family="Arial, Helvetica, sans-serif">
+    <g
+      font-family="'SFMono-Regular', Consolas, monospace"
+      font-size="18"
+      letter-spacing="3"
+      fill="#93a9c2"
+    >
+      <text x="80" y="78">ZANONI / PERSONAL SYSTEM</text>
+      <text x="1265" y="78" fill="#14d19e">DECLARED IN NIX</text>
+    </g>
+    <rect x="80" y="128" width="62" height="6" rx="3" fill="url(#accent)" />
+    <text
+      x="76"
+      y="252"
+      font-size="118"
+      font-weight="700"
+      letter-spacing="-6"
+      fill="#f7f6f5"
+    >
+      .dotfiles
+    </text>
+    <g font-size="44" fill="#f7f6f5" letter-spacing="-1">
+      <text x="80" y="340">One home for machines,</text>
+      <text x="80" y="394">code and agents.</text>
+    </g>
+    <text x="80" y="458" font-size="21" fill="#93a9c2">
+      NixOS + macOS. Built around a terminal.
+    </text>
+    <g transform="translate(870 138)">
+      <rect width="650" height="334" rx="18" fill="#071b31" stroke="#34506c" />
+      <path d="M0 52H650" stroke="#34506c" />
+      <circle cx="25" cy="26" r="6" fill="#ed840b" />
+      <circle cx="45" cy="26" r="6" fill="#e5b40e" />
+      <circle cx="65" cy="26" r="6" fill="#14d19e" />
+      <text
+        x="90"
+        y="32"
+        font-family="Consolas, monospace"
+        font-size="16"
+        fill="#93a9c2"
+      >
+        one source of truth
+      </text>
+      <g
+        transform="translate(32 96)"
+        font-family="Consolas, monospace"
+        font-size="22"
+      >
+        <g font-size="13" letter-spacing="2" fill="#93a9c2">
+          <text y="0">SYSTEMS</text>
+          <text y="76">WORKSPACE</text>
+          <text y="152">AGENTS</text>
+        </g>
+        <text y="32" fill="#14d19e">NixOS + macOS</text>
+        <text y="108" fill="#e5b40e">Herdr / Neovim / Yazi</text>
+        <text y="184" fill="#707fec">Shared instructions. Native tools.</text>
+        <path
+          d="M370 25H555M470 25V105M470 105H555M470 105V180M470 180H555"
+          fill="none"
+          stroke="#34506c"
+        />
+        <g fill="#ed840b">
+          <circle cx="555" cy="25" r="5" />
+          <circle cx="555" cy="105" r="5" />
+          <circle cx="555" cy="180" r="5" />
+        </g>
+      </g>
+    </g>
+    <path d="M80 520H1520" stroke="#34506c" />
+    <g
+      font-family="'SFMono-Regular', Consolas, monospace"
+      font-size="16"
+      letter-spacing="1"
+      fill="#93a9c2"
+    >
+      <text x="80" y="566">NIX / HOME MANAGER / NIX-DARWIN</text>
+      <text x="1090" y="566">github.com/Castrozan/.dotfiles</text>
+    </g>
+  </g>
+</svg>

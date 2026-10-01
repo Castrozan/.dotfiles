@@ -11,7 +11,7 @@ let
       {
         inherit config lib pkgs;
       };
-  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  herdrPackage = import ./herdr-package.nix { inherit pkgs inputs; };
   herdrClientTools = import ./herdr-client-package.nix {
     inherit pkgs herdrPackage;
   };

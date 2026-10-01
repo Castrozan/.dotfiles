@@ -33,12 +33,12 @@ tests:
         - "looks good"
         - "correct approach"
 
-  - name: rebuild_dry_run_validation
+  - name: rebuild_applies_configuration_directly
     skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
     extra_skill_paths:
       - agent-harness/agent-instructions/skills/services/nix/references/rebuild.md
-    prompt: "How can I validate my nix configuration without applying it?"
+    prompt: "My configuration changes are committed. What command should I run to apply them? Is a dry run required first?"
     model: haiku
     assertions:
       llm_judge:
-        - "The response explains that the nix configuration can be validated without applying it by running rebuild with the `--dry-run` flag, which catches syntax errors, missing imports, and evaluation failures without modifying the system."
+        - "The response instructs running rebuild to apply the committed configuration and does not require a dry run first."

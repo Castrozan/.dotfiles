@@ -15,7 +15,7 @@ let
         inherit pkgs;
       };
 
-  cfg = helpers.homeManagerTestConfiguration [ self.homeManagerModules.codex ];
+  cfg = helpers.homeManagerTestConfigurationForEvaluatingSystem [ self.homeManagerModules.codex ];
 
   codexPackage = cfg.codex.unwrappedPackage;
 
@@ -37,7 +37,7 @@ in
   codex-interactive-profile =
     pkgs.runCommand "check-codex-interactive-profile" { nativeBuildInputs = [ pkgs.python312 ]; }
       ''
-        python - ${cfg.home.file.".codex/dotfiles-interactive.config.toml".source} <<'PY'
+        python - ${cfg.home.file.".codex/dotfiles-interactive.config.toml.nix-source".source} <<'PY'
         from pathlib import Path
         import sys
         import tomllib
@@ -49,6 +49,11 @@ in
         touch "$out"
       '';
 
+  codex-profiles-are-mutable = mkEvalCheck "codex-profiles-are-mutable" (
+    !(builtins.hasAttr ".codex/dotfiles-interactive.config.toml" cfg.home.file)
+    && builtins.elem "linkGeneration" cfg.home.activation.seedCodexProfilesAsMutableFiles.after
+  ) "Codex must seed writable profiles after removing the previous generation's symlinks";
+
   codex-package-uses-upstream-binaries =
     assert lib.assertMsg
       (!(codexPackage.drvAttrs ? cargoDeps) && (codexPackage.drvAttrs.patches or [ ]) == [ ])
@@ -59,10 +64,17 @@ in
       codexExecutableDirectory=$(dirname "$(readlink -f "$codexExecutable")")
       test "$codexExecutableDirectory" = "$(dirname "$codexExecutable")"
       test -x "$codexExecutableDirectory/codex-code-mode-host"
+      test -f "$codexExecutableDirectory/../codex-package.json"
+      test -x "$codexExecutableDirectory/../codex-path/rg"
       "$codexExecutable" --version >/dev/null 2>&1
       "$codexExecutableDirectory/codex-code-mode-host" --help >/dev/null
       touch "$out"
     '';
+
+  codex-launcher-is-embedded = mkEvalCheck "codex-launcher-is-embedded" (
+    !(builtins.hasAttr ".codex/packages/app-server-daemon/current" cfg.home.file)
+    && !(builtins.hasAttr ".codex/app-server-daemon/settings.json" cfg.home.file)
+  ) "Codex interactive launches must not deploy a managed shared daemon";
 
   codex-production-plugin-registration =
     mkEvalCheck "codex-production-plugin-registration"
@@ -82,10 +94,19 @@ in
     && !(builtins.hasAttr ".codex/config.toml" cfg.home.file)
   ) "Codex config must deploy an authoritative nix-source while leaving the live TOML mutable";
 
-  codex-config-uses-alternate-screen =
-    mkEvalCheck "codex-config-uses-alternate-screen"
-      (lib.hasInfix ''alternate_screen = "always";'' codexConfigModule)
-      "Interactive Codex sessions must use the TUI alternate screen instead of terminal scrollback";
+  codex-config-preserves-terminal-scrollback =
+    pkgs.runCommand "check-codex-config-preserves-terminal-scrollback"
+      { nativeBuildInputs = [ pkgs.python312 ]; }
+      ''
+        python - ${cfg.home.file.".codex/config.toml.nix-source".source} <<'PY'
+        from pathlib import Path
+        import sys
+        import tomllib
+        configuration = tomllib.loads(Path(sys.argv[1]).read_text())
+        assert configuration["tui"]["alternate_screen"] == "never"
+        PY
+        touch "$out"
+      '';
 
   codex-config-leaves-model-runtime-owned =
     mkEvalCheck "codex-config-leaves-model-runtime-owned" (!(lib.hasInfix "model = " codexConfigModule))
