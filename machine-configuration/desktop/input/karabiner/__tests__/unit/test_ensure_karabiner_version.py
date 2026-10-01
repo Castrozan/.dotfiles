@@ -29,84 +29,109 @@ def write_installed_version(version_installer, version):
         plistlib.dump({"CFBundleShortVersionString": version}, information_file)
 
 
+@pytest.fixture
+def installer_package(tmp_path):
+    package = tmp_path / "Karabiner-Elements.pkg"
+    package.write_bytes(b"package")
+    return package
+
+
 @pytest.mark.parametrize("installed_version", ["16.3.0", "16.10.0", "17.0.0"])
-def test_fixed_versions_do_not_launch_homebrew(version_installer, installed_version):
+def test_fixed_versions_do_not_launch_installer(version_installer, installed_version):
     write_installed_version(version_installer, installed_version)
-    version_installer.ensure_karabiner_version("16.3.0", "/brew", "alice")
+    version_installer.ensure_karabiner_version("16.3.0", "/unused.pkg")
     version_installer.subprocess.run.assert_not_called()
 
 
-def test_minor_version_upgrade_targets_only_karabiner(version_installer):
+def test_minor_version_upgrade_targets_only_karabiner(
+    version_installer, installer_package
+):
     write_installed_version(version_installer, "16.0.0")
     version_installer.subprocess.run.side_effect = (
         lambda *arguments, **keywords: write_installed_version(
             version_installer, "16.3.0"
         )
     )
-    version_installer.ensure_karabiner_version("16.3.0", "/brew", "alice")
+    version_installer.ensure_karabiner_version("16.3.0", installer_package)
     version_installer.subprocess.run.assert_called_once_with(
         [
-            "/usr/bin/sudo",
-            "--user=alice",
-            "--set-home",
-            "--",
-            "/brew",
-            "upgrade",
-            "--cask",
-            "--greedy",
-            "karabiner-elements",
+            "/usr/sbin/installer",
+            "-pkg",
+            str(installer_package),
+            "-target",
+            "/",
         ],
         check=True,
     )
     version_installer.subprocess.run.reset_mock()
-    version_installer.ensure_karabiner_version("16.3.0", "/brew", "alice")
+    version_installer.ensure_karabiner_version("16.3.0", installer_package)
     version_installer.subprocess.run.assert_not_called()
 
 
-def test_missing_application_is_installed(version_installer):
+def test_activation_keeps_installer_privileges(version_installer, installer_package):
+    write_installed_version(version_installer, "16.0.0")
+
+    def install_with_activation_privileges(command, **keywords):
+        assert command[0] == "/usr/sbin/installer"
+        write_installed_version(version_installer, "16.3.0")
+
+    version_installer.subprocess.run.side_effect = install_with_activation_privileges
+    version_installer.ensure_karabiner_version("16.3.0", installer_package)
+
+
+def test_missing_application_is_installed(version_installer, installer_package):
     version_installer.subprocess.run.side_effect = (
         lambda *arguments, **keywords: write_installed_version(
             version_installer, "16.3.0"
         )
     )
-    version_installer.ensure_karabiner_version("16.3.0", "/brew", "alice")
+    version_installer.ensure_karabiner_version("16.3.0", installer_package)
     command = version_installer.subprocess.run.call_args.args[0]
-    assert command[-3:] == ["install", "--cask", "karabiner-elements"]
+    assert command == [
+        "/usr/sbin/installer",
+        "-pkg",
+        str(installer_package),
+        "-target",
+        "/",
+    ]
 
 
-def test_unsuccessful_upgrade_stops_activation(version_installer):
+def test_unsuccessful_upgrade_stops_activation(version_installer, installer_package):
     write_installed_version(version_installer, "16.0.0")
     with pytest.raises(RuntimeError, match="installed: 16.0.0"):
-        version_installer.ensure_karabiner_version("16.3.0", "/brew", "alice")
+        version_installer.ensure_karabiner_version("16.3.0", installer_package)
 
 
-def test_installer_failure_stops_activation(version_installer):
+def test_installer_failure_stops_activation(version_installer, installer_package):
     write_installed_version(version_installer, "16.0.0")
     version_installer.subprocess.run.side_effect = subprocess.CalledProcessError(
-        1, ["/brew"]
+        1, ["/usr/sbin/installer"]
     )
     with pytest.raises(subprocess.CalledProcessError):
-        version_installer.ensure_karabiner_version("16.3.0", "/brew", "alice")
+        version_installer.ensure_karabiner_version("16.3.0", installer_package)
 
 
 def test_malformed_version_stops_before_installing(version_installer):
     write_installed_version(version_installer, "invalid")
     with pytest.raises(ValueError, match="Invalid Karabiner version"):
-        version_installer.ensure_karabiner_version("16.3.0", "/brew", "alice")
+        version_installer.ensure_karabiner_version("16.3.0", "/unused.pkg")
     version_installer.subprocess.run.assert_not_called()
 
 
-@pytest.mark.parametrize("homebrew_user", ["-root", "alice\n--help", "alice;id", ""])
-def test_invalid_user_stops_before_installing(version_installer, homebrew_user):
+@pytest.mark.parametrize(
+    "installer_package", ["--help", "relative.pkg", "/missing.pkg"]
+)
+def test_invalid_package_stops_before_installing(version_installer, installer_package):
     write_installed_version(version_installer, "16.0.0")
-    with pytest.raises(ValueError, match="Invalid Homebrew user"):
-        version_installer.ensure_karabiner_version("16.3.0", "/brew", homebrew_user)
+    with pytest.raises(ValueError, match="Invalid Karabiner installer package"):
+        version_installer.ensure_karabiner_version("16.3.0", installer_package)
     version_installer.subprocess.run.assert_not_called()
 
 
-@pytest.mark.parametrize("homebrew_binary", ["--help", "brew", "/bin/sh"])
-def test_invalid_executable_stops_before_installing(version_installer, homebrew_binary):
+def test_directory_is_not_an_installer_package(version_installer, tmp_path):
+    package = tmp_path / "directory.pkg"
+    package.mkdir()
     write_installed_version(version_installer, "16.0.0")
-    with pytest.raises(ValueError, match="Invalid Homebrew executable"):
-        version_installer.ensure_karabiner_version("16.3.0", homebrew_binary, "alice")
+    with pytest.raises(ValueError, match="Invalid Karabiner installer package"):
+        version_installer.ensure_karabiner_version("16.3.0", package)
     version_installer.subprocess.run.assert_not_called()

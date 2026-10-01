@@ -22,32 +22,31 @@ def installed_karabiner_version():
         return plistlib.load(information_file)["CFBundleShortVersionString"]
 
 
-def ensure_karabiner_version(minimum_version, homebrew_binary, homebrew_user):
+def ensure_karabiner_version(minimum_version, installer_package):
     minimum_components = version_components(minimum_version)
-    if not re.fullmatch(r"\w[\w.-]*", homebrew_user, flags=re.ASCII):
-        raise ValueError(f"Invalid Homebrew user: {homebrew_user!r}")
-    homebrew_path = Path(homebrew_binary)
-    if not homebrew_path.is_absolute() or homebrew_path.name != "brew":
-        raise ValueError(f"Invalid Homebrew executable: {homebrew_binary!r}")
     installed_version = installed_karabiner_version()
     if (
         installed_version
         and version_components(installed_version) >= minimum_components
     ):
         return
-    operation = "upgrade" if installed_version else "install"
-    print(f"Installing Karabiner >= {minimum_version} through Homebrew", flush=True)
+    package_path = Path(installer_package)
+    if (
+        not package_path.is_absolute()
+        or package_path.suffix != ".pkg"
+        or not package_path.is_file()
+    ):
+        raise ValueError(f"Invalid Karabiner installer package: {installer_package!r}")
+    print(
+        f"Installing Karabiner >= {minimum_version} from the vendor package", flush=True
+    )
     subprocess.run(
         [
-            "/usr/bin/sudo",
-            f"--user={homebrew_user}",
-            "--set-home",
-            "--",
-            homebrew_binary,
-            operation,
-            "--cask",
-            *(["--greedy"] if installed_version else []),
-            "karabiner-elements",
+            "/usr/sbin/installer",
+            "-pkg",
+            str(package_path),
+            "-target",
+            "/",
         ],
         check=True,
     )
@@ -64,6 +63,5 @@ def ensure_karabiner_version(minimum_version, homebrew_binary, homebrew_user):
 if __name__ == "__main__":
     ensure_karabiner_version(
         "@MINIMUM_KARABINER_VERSION@",
-        "@HOMEBREW_BINARY@",
-        "@HOMEBREW_USER@",
+        "@KARABINER_INSTALLER_PACKAGE@",
     )
