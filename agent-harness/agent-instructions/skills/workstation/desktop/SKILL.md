@@ -1,7 +1,14 @@
 ---
 name: desktop
-description: Automate desktop input, screenshots, clipboard, and media controls across Linux/Wayland and macOS. Use for non-browser GUI interaction or local media; keyboard and mouse are Linux/Wayland-only.
+description: Control native desktop apps, keyboard, mouse, screenshots, clipboard, and media on macOS and Linux/Wayland. Use for non-browser GUI interaction or local media.
 ---
+
+### Native app computer use
+
+Use the shared `desktop-computer-use` MCP for native app interaction. On macOS, start with `doctor` and inspect controls
+through `get_ui_tree`; on Hyprland, start with `desktop` and inspect controls through `ui`. Follow the server's tool
+descriptions for targeting and screenshot coordinates, and verify the visible result after an action. macOS requires
+Accessibility and Screen Recording grants for the terminal or agent host; installation alone cannot grant them.
 
 ### Cross platform capability routing
 
