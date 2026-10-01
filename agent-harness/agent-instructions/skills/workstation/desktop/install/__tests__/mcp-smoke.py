@@ -1,13 +1,17 @@
 import asyncio
 import sys
+from tempfile import TemporaryDirectory
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 
 async def verify_protocol(command, required_tools):
-    async with asyncio.timeout(30):
-        async with stdio_client(StdioServerParameters(command=command)) as streams:
+    with TemporaryDirectory(prefix="desktop-computer-use-") as runtime_directory:
+        parameters = StdioServerParameters(
+            command=command, env={"XDG_RUNTIME_DIR": runtime_directory}
+        )
+        async with asyncio.timeout(30), stdio_client(parameters) as streams:
             async with ClientSession(*streams) as session:
                 initialization = await session.initialize()
                 assert initialization.serverInfo.name
