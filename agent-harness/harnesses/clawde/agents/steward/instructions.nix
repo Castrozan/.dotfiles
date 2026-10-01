@@ -11,4 +11,7 @@
     )
   );
   repoCiToolingDirective = "\n" + builtins.readFile ./repository-ci-instructions.md;
+  repoActivationDirective = lib.optionalString (hostname == "rin") (
+    "\n" + builtins.readFile ./repository-activation-instructions.md
+  );
 }
