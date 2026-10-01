@@ -2,6 +2,9 @@
   lib,
   hostname,
   inputs,
+  pkgs,
+  config,
+  isDarwin,
   ...
 }:
 let
@@ -46,9 +49,29 @@ let
   effectivePersonality =
     personalityWithMachineIdentity
     + localInstructions.machineLocalWrapperDirective
-    + localInstructions.repoCiToolingDirective;
+    + localInstructions.repoCiToolingDirective
+    + localInstructions.repoActivationDirective;
+
+  configurationDirectory =
+    if localWrapperRepoPath != null then
+      localWrapperRepoPath
+    else
+      "${config.home.homeDirectory}/.dotfiles";
+  configurationAttribute =
+    if isDarwin then
+      "darwinConfigurations.${hostname}.system.outPath"
+    else
+      "nixosConfigurations.${hostname}.config.system.build.toplevel.outPath";
+  configurationReference = "git+file://${configurationDirectory}?submodules=1#${configurationAttribute}";
+
+  stewardRebuild = pkgs.writeShellScriptBin "steward-rebuild" ''
+    exec ${pkgs.python312}/bin/python3 ${../scripts/steward_rebuild.py} \
+      --configuration ${lib.escapeShellArg configurationReference} "$@"
+  '';
 in
 {
+  home.packages = [ stewardRebuild ];
+
   clawdeAgentSkillSets.steward = [
     "coding"
     "nix"
@@ -74,9 +97,13 @@ in
       codex = "gpt-5.6-terra";
       opencode = "opencode/ling-3.0-flash-fin-free";
     };
-    reasoningEffort = "none";
+    reasoningEffort = "high";
     personality = effectivePersonality;
     launchOnTrigger = false;
+    heartbeatGateCommand = lib.mkIf (hostname == "rin") ''
+      ${stewardRebuild}/bin/steward-rebuild --state-directory ${lib.escapeShellArg "${config.home.homeDirectory}/clawde/steward/state/rebuild"} >/dev/null
+      clawde-heartbeat-change-gate --label steward --retries-while-pending 2 --probe steward-heartbeat-probe
+    '';
     mcpServers = { };
     expose.a2a.agentDescriptionForCard = "keeps every machine's checkout synced, green and pushed";
   };

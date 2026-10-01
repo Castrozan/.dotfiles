@@ -9,23 +9,22 @@ let
     inherit pkgs;
   };
 
-  version = "0.157.1";
+  version = "0.159.1";
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      sha256 = "sha256-6YwejgKOgTf6LSQVyC7Fjns3AaYn41VKrOWzyjFFSvI=";
-      codeModeHostSha256 = "sha256-NRb5uLvmvAbue9uSspOhfqsZSz8QubnqEMW4Oely1/w=";
+      sha256 = "9a2dff8e1eb9bad83f52edb6f91175efeb5c68a316f880c95d7770f87a34fc5c";
       buildInputs = with pkgs; [
         openssl
         libcap
         zlib
+        ncurses
       ];
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      sha256 = "sha256-PEWxYrenb1EyUBWx0KgRLHMhm3qbWc1XYsN8m6VYlPo=";
-      codeModeHostSha256 = "sha256-KIMy0slw31xhyPvf6sZKi/cvsawZRZQtpFN+z2MTgxQ=";
+      sha256 = "a8fc76ccb5230dd97fb6db01873fa9c12b5e1efdf32d13c2ba7f6e8489ccd893";
       buildInputs = [ ];
     };
   };
@@ -36,33 +35,15 @@ let
     assetName:
     "https://github.com/openai/codex/releases/download/rust-v${version}/${assetName}-${currentHostSystem.releaseTargetTriple}.tar.gz";
 
-  codex-binary = fetchPrebuiltBinary {
+  codex-unwrapped = fetchPrebuiltBinary {
     pname = "codex";
     inherit version;
-    url = codexReleaseAssetUrl "codex";
+    url = codexReleaseAssetUrl "codex-package";
     inherit (currentHostSystem) sha256 buildInputs;
-    binaryName = "codex";
-    archiveBinaryPath = "codex-${currentHostSystem.releaseTargetTriple}";
+    archivePrefixToInstall = ".";
+    preserveCodeSignature = pkgs.stdenv.hostPlatform.isDarwin;
+    meta.mainProgram = "codex";
   };
-
-  codex-code-mode-host = fetchPrebuiltBinary {
-    pname = "codex-code-mode-host";
-    inherit version;
-    url = codexReleaseAssetUrl "codex-code-mode-host";
-    sha256 = currentHostSystem.codeModeHostSha256;
-    inherit (currentHostSystem) buildInputs;
-    binaryName = "codex-code-mode-host";
-    archiveBinaryPath = "codex-code-mode-host-${currentHostSystem.releaseTargetTriple}";
-  };
-
-  codex-unwrapped = codex-binary.overrideAttrs (previousAttributes: {
-    meta = (previousAttributes.meta or { }) // {
-      mainProgram = "codex";
-    };
-    postFixup = (previousAttributes.postFixup or "") + ''
-      ln -s ${codex-code-mode-host}/bin/codex-code-mode-host "$out/bin/codex-code-mode-host"
-    '';
-  });
 
   interactivePreferencesFile = import ./interactive-instructions.nix {
     inherit pkgs;
@@ -112,6 +93,9 @@ in
 
   config.home = {
     packages = [ codex ];
+    activation.seedCodexProfilesAsMutableFiles = lib.hm.dag.entryAfter [ "linkGeneration" ] (
+      workspaceProfileActivation.seedProfiles config.agentWorkspaceProfiles.profiles
+    );
     file = workspaceProfileActivation.profileFiles config.agentWorkspaceProfiles.profiles // {
       ".local/bin/codex".source = "${codex}/bin/codex";
     };

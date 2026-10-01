@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+from time import monotonic, sleep
 
 from artifact_selection import ARTIFACT_PRODUCERS, select_artifacts, timestamp
 
@@ -76,6 +77,33 @@ def complete_page(document, key):
     return items
 
 
+def completed_job_inventory(attempt):
+    deadline = monotonic() + 600
+    producer_names = {name for name, _ in ARTIFACT_PRODUCERS.values()}
+    while True:
+        jobs = complete_page(github_document(f"{attempt}/jobs?per_page=100"), "jobs")
+        incomplete = any(
+            job.get("name") in producer_names
+            and (
+                job.get("status") != "completed"
+                or (not job.get("steps") and job.get("conclusion") == "success")
+                or any(
+                    step.get("status") in {"pending", "in_progress"}
+                    for step in job.get("steps", [])
+                )
+            )
+            for job in jobs
+        )
+        if not incomplete:
+            return jobs
+        remaining = deadline - monotonic()
+        if remaining <= 0:
+            raise ValueError(
+                "Completed producing jobs still have incomplete step metadata"
+            )
+        sleep(min(20, remaining))
+
+
 def producing_attempts(workflow, jobs):
     attempts = [workflow]
     producer_names = {name for name, _ in ARTIFACT_PRODUCERS.values()}
@@ -119,7 +147,7 @@ def collect_context(event):
     identity_fields = ("repository", "revision", "runId", "runAttempt")
     if any(actual_identity[key] != event_identity[key] for key in identity_fields):
         raise ValueError("GitHub run identity changed after the completion event")
-    jobs = complete_page(github_document(f"{attempt}/jobs?per_page=100"), "jobs")
+    jobs = completed_job_inventory(attempt)
     artifacts = complete_page(
         github_document(f"{route}/artifacts?per_page=100"), "artifacts"
     )

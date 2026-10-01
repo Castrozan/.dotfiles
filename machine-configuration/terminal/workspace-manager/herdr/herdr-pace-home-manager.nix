@@ -6,7 +6,7 @@
 }:
 let
   pacePackage = inputs.herdr-pace.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  herdrPackage = import ./herdr-package.nix { inherit pkgs inputs; };
 in
 {
   home.packages = [ pacePackage ];

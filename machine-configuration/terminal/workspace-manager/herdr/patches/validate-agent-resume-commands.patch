@@ -1,0 +1,276 @@
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -6,0 +7,3 @@
++
++#[cfg(test)]
++mod resume_regression_tests;
+@@ -69 +72 @@
+-                "codex resume 019-found".to_string()
++                "codex resume 01a0e833-6882-7611-961d-255462362973".to_string()
+@@ -74 +77,4 @@
+-        assert_eq!(command.as_deref(), Some("codex resume 019-found"));
++        assert_eq!(
++            command.as_deref(),
++            Some("codex resume 01a0e833-6882-7611-961d-255462362973")
++        );
+--- a/src/resume.rs
++++ b/src/resume.rs
+@@ -26 +26,10 @@
+-        (session_len > 0).then(|| (start, &output[start..session_start + session_len]))
++        let session_end = session_start + session_len;
++        let session_id = &output[session_start..session_end];
++        if !command_starts_at_token_boundary(output, start)
++            || !command_ends_at_token_boundary(output, session_end)
++            || !valid_session_id(prefix, session_id)
++        {
++            return None;
++        }
++
++        Some((start, &output[start..session_end]))
+@@ -27,0 +37,38 @@
++}
++
++fn command_starts_at_token_boundary(output: &str, start: usize) -> bool {
++    start == 0
++        || output.as_bytes()[start - 1].is_ascii_whitespace()
++        || matches!(output.as_bytes()[start - 1], b'`' | b'\'' | b'"')
++}
++
++fn command_ends_at_token_boundary(output: &str, end: usize) -> bool {
++    let remainder = &output[end..];
++    remainder
++        .lines()
++        .next()
++        .unwrap_or_default()
++        .trim()
++        .is_empty()
++        || matches!(remainder.as_bytes().first(), Some(b'`' | b'\'' | b'"'))
++}
++
++fn valid_session_id(prefix: &str, session_id: &str) -> bool {
++    match prefix {
++        "codex resume " | "claude --resume " => valid_uuid(session_id),
++        "opencode -s ses_" => {
++            session_id.len() == 26 && session_id.bytes().all(|byte| byte.is_ascii_alphanumeric())
++        }
++        _ => !session_id.is_empty(),
++    }
++}
++
++fn valid_uuid(session_id: &str) -> bool {
++    session_id.len() == 36
++        && session_id.bytes().enumerate().all(|(index, byte)| {
++            if matches!(index, 8 | 13 | 18 | 23) {
++                byte == b'-'
++            } else {
++                byte.is_ascii_hexdigit()
++            }
++        })
+@@ -80,3 +127,6 @@
+-        let output = "codex resume 019-old\ntext\nopencode -s ses_second";
+-
+-        assert_eq!(latest_command(output), Some("opencode -s ses_second"));
++        let output = "codex resume 00000000-0000-4000-8000-000000000001\ntext\nopencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V";
++
++        assert_eq!(
++            latest_command(output),
++            Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
++        );
+@@ -87,3 +137,6 @@
+-        let output = "opencode -s ses_first\ntext\ncodex resume 019-new";
+-
+-        assert_eq!(latest_command(output), Some("codex resume 019-new"));
++        let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ntext\ncodex resume 00000000-0000-4000-8000-000000000002";
++
++        assert_eq!(
++            latest_command(output),
++            Some("codex resume 00000000-0000-4000-8000-000000000002")
++        );
+@@ -94,3 +147,6 @@
+-        let output = "opencode -s ses_first\ncodex resume 019-second\nclaude --resume claude-third";
+-
+-        assert_eq!(latest_command(output), Some("claude --resume claude-third"));
++        let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ncodex resume 00000000-0000-4000-8000-000000000003\nclaude --resume 00000000-0000-4000-8000-000000000004";
++
++        assert_eq!(
++            latest_command(output),
++            Some("claude --resume 00000000-0000-4000-8000-000000000004")
++        );
+@@ -101,2 +157 @@
+-        let output =
+-            "claude --resume claude-first\ncodex resume 019-second\ndroid --resume droid-third";
++        let output = "claude --resume 00000000-0000-4000-8000-000000000005\ncodex resume 00000000-0000-4000-8000-000000000003\ndroid --resume droid-third";
+@@ -109,3 +164,6 @@
+-        let output = "opencode -s ses_old\ntext\nopencode -s ses_new";
+-
+-        assert_eq!(latest_command(output), Some("opencode -s ses_new"));
++        let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ntext\nopencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V";
++
++        assert_eq!(
++            latest_command(output),
++            Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
++        );
+@@ -116,3 +174,6 @@
+-        let output = "codex resume 019-old\ntext\ncodex resume 019-new";
+-
+-        assert_eq!(latest_command(output), Some("codex resume 019-new"));
++        let output = "codex resume 00000000-0000-4000-8000-000000000001\ntext\ncodex resume 00000000-0000-4000-8000-000000000002";
++
++        assert_eq!(
++            latest_command(output),
++            Some("codex resume 00000000-0000-4000-8000-000000000002")
++        );
+@@ -123,3 +184,6 @@
+-        let output = "claude --resume claude-old\ntext\nclaude --resume claude-new";
+-
+-        assert_eq!(latest_command(output), Some("claude --resume claude-new"));
++        let output = "claude --resume 00000000-0000-4000-8000-000000000006\ntext\nclaude --resume 00000000-0000-4000-8000-000000000007";
++
++        assert_eq!(
++            latest_command(output),
++            Some("claude --resume 00000000-0000-4000-8000-000000000007")
++        );
+@@ -137,3 +201,6 @@
+-        let output = "Run `opencode -s ses_abc-123`, then continue.";
+-
+-        assert_eq!(latest_command(output), Some("opencode -s ses_abc-123"));
++        let output = "Run `opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V`, then continue.";
++
++        assert_eq!(
++            latest_command(output),
++            Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
++        );
+--- /dev/null
++++ b/src/resume_regression_tests.rs
+@@ -0,0 +1,131 @@
++use crate::resume::latest_command;
++
++const CODEX_SESSION: &str = "01a0e833-6882-7611-961d-255462362973";
++const CLAUDE_SESSION: &str = "d191299d-5dd8-449a-b7e7-44765ed87390";
++const OPENCODE_SESSION: &str = "ses_f171c2cd8ffeqeY5w248uZ0Y4V";
++
++#[test]
++fn codex_exit_footer_ignores_picker_hint_and_previous_bad_insertion() {
++    let output = format!(
++        "Token usage: total=173,394 input=144,455 (+ 10,012,288 cached) output=28,939 (reasoning 14,656)\n\
++         To continue this session, run:\n  codex resume {CODEX_SESSION}\n\
++         Or run codex resume and select Add resume keybind to herdr.\n\
++         lucas.zanoni ~/.dotfiles (main)$ codex resume and\n"
++    );
++    let expected = format!("codex resume {CODEX_SESSION}");
++    assert_eq!(latest_command(&output), Some(expected.as_str()));
++}
++
++#[test]
++fn every_supported_harness_ignores_trailing_help_prose() {
++    for (prefix, session) in [
++        ("codex resume ", CODEX_SESSION),
++        ("claude --resume ", CLAUDE_SESSION),
++        ("opencode -s ", OPENCODE_SESSION),
++        ("droid --resume ", "droid-session-123"),
++    ] {
++        let expected = format!("{prefix}{session}");
++        let output = format!(
++            "Resume this session with:\n{expected}\nOr run {prefix}and select a session.\n"
++        );
++        assert_eq!(latest_command(&output), Some(expected.as_str()), "{prefix}");
++    }
++}
++
++#[test]
++fn uuid_harnesses_reject_words_flags_and_malformed_session_ids() {
++    for prefix in ["codex resume ", "claude --resume "] {
++        for session in [
++            "and",
++            "latest",
++            "--last",
++            "session-id",
++            "019-old",
++            "01a0e833-6882-7611-961d-25546236297g",
++            "01a0e833-6882-7611-961d-255462362973-extra",
++            "01a0e833_6882-7611-961d-255462362973",
++        ] {
++            assert_eq!(
++                latest_command(&format!("{prefix}{session}")),
++                None,
++                "{prefix}{session}"
++            );
++        }
++    }
++}
++
++#[test]
++fn opencode_rejects_empty_placeholder_and_malformed_identifiers() {
++    for session in [
++        "ses_",
++        "ses_and",
++        "ses_ID",
++        "ses_f171c2cd8ffeqeY5w248uZ0Y4V_extra",
++    ] {
++        assert_eq!(
++            latest_command(&format!("opencode -s {session}")),
++            None,
++            "{session}"
++        );
++    }
++}
++
++#[test]
++fn real_claude_and_opencode_exit_footers_keep_the_exact_command() {
++    for output in [
++        format!("Resume this session with:\nclaude --resume {CLAUDE_SESSION}\n$ "),
++        format!(
++            "Session   Terminal resume smoke test\nContinue  opencode -s {OPENCODE_SESSION}\n$ "
++        ),
++    ] {
++        let expected = if output.contains("claude") {
++            format!("claude --resume {CLAUDE_SESSION}")
++        } else {
++            format!("opencode -s {OPENCODE_SESSION}")
++        };
++        assert_eq!(latest_command(&output), Some(expected.as_str()));
++    }
++}
++
++#[test]
++fn newest_valid_command_wins_across_mixed_harnesses() {
++    let commands = [
++        format!("codex resume {CODEX_SESSION}"),
++        format!("claude --resume {CLAUDE_SESSION}"),
++        format!("opencode -s {OPENCODE_SESSION}"),
++        "droid --resume droid-session-123".to_string(),
++    ];
++    for newest in &commands {
++        let output = format!(
++            "{}\n{newest}\nOr run codex resume and select a session.\n",
++            commands.join("\n")
++        );
++        assert_eq!(latest_command(&output), Some(newest.as_str()));
++    }
++}
++
++#[test]
++fn command_names_and_session_ids_are_complete_tokens() {
++    for prefix in ["codex resume ", "claude --resume "] {
++        for output in [
++            format!("not{prefix}{CODEX_SESSION}"),
++            format!("{prefix}{CODEX_SESSION}/extra"),
++            format!("{prefix}{CODEX_SESSION}.invalid"),
++        ] {
++            assert_eq!(latest_command(&output), None, "{output}");
++        }
++    }
++}
++
++#[test]
++fn quoted_commands_and_crlf_keep_valid_session_ids() {
++    for prefix in ["codex resume ", "claude --resume "] {
++        let expected = format!("{prefix}{CODEX_SESSION}");
++        for output in [
++            format!("Run `{expected}`, then continue."),
++            format!("  {expected}\r\n$ "),
++        ] {
++            assert_eq!(latest_command(&output), Some(expected.as_str()));
++        }
++    }
++}

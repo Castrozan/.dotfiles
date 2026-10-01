@@ -32,6 +32,10 @@ let
       ];
 in
 {
+  domain-terminal-herdr-agent-resume = import ../herdr-agent-resume-package.nix {
+    inherit pkgs lib;
+  };
+
   domain-terminal-herdr-server-is-owned-by-a-linux-user-service =
     mkEvalCheck "domain-terminal-herdr-server-is-owned-by-a-linux-user-service"
       (

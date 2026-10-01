@@ -1,6 +1,6 @@
-"""Reconcile ReadMeABook request settings and download integrations."""
+"""ReadMeABook setup completion, admin settings, and download-client wiring."""
 
-AUDIOBOOK_DIRECTORY = "/data/audiobooks"
+from constants import AUDIOBOOK_LIBRARY_PATH
 
 
 def provision_rmab(
@@ -49,7 +49,7 @@ def provision_rmab(
                 "downloadClient": [download],
                 "paths": {
                     "download_dir": "/data/torrents",
-                    "media_dir": AUDIOBOOK_DIRECTORY,
+                    "media_dir": AUDIOBOOK_LIBRARY_PATH,
                     "metadata_tagging_enabled": False,
                 },
             },
@@ -74,7 +74,7 @@ def provision_rmab(
         },
         "paths": {
             "downloadDir": "/data/torrents",
-            "mediaDir": AUDIOBOOK_DIRECTORY,
+            "mediaDir": AUDIOBOOK_LIBRARY_PATH,
             "metadataTaggingEnabled": False,
             "chapterMergingEnabled": False,
             "plexFormatCoercionEnabled": False,

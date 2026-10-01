@@ -1,18 +1,14 @@
 """API-level regression checks: repeat-safe bootstrap and scoped integrations."""
 
-import importlib.util
 from pathlib import Path
 from unittest.mock import Mock, patch
 import unittest
 import tempfile
-import sys
 
-spec = importlib.util.spec_from_file_location(
-    "provision", Path(__file__).parents[2] / "scripts/provision.py"
-)
-provision = importlib.util.module_from_spec(spec)
-with patch.object(sys, "path", [str(Path(__file__).parents[2] / "scripts"), *sys.path]):
-    spec.loader.exec_module(provision)
+import audiobookshelf
+import indexers
+import provision
+import readmeabook
 
 
 class ProvisionTests(unittest.TestCase):
@@ -67,13 +63,13 @@ class ProvisionTests(unittest.TestCase):
             {**valid, "protocol": "usenet"},
             {**valid, "capabilities": {"categories": [{"id": 7020}]}},
         ]
-        selected = provision.select_indexers(candidates)
+        selected = indexers.select_indexers(candidates)
         self.assertEqual([item["id"] for item in selected], [1])
-        self.assertTrue(provision.has_audiobooks([{"id": 3030}]))
+        self.assertTrue(indexers.has_audiobooks([{"id": 3030}]))
         self.assertFalse(selected[0]["rssEnabled"])
         self.assertEqual(selected[0]["ebookCategories"], [])
         with self.assertRaises(RuntimeError):
-            provision.select_indexers([])
+            indexers.select_indexers([])
 
     def test_abs_existing_library_and_valid_key_are_reused(self):
         client = Mock(base="http://abs")
@@ -88,11 +84,11 @@ class ProvisionTests(unittest.TestCase):
         ]
         with (
             tempfile.TemporaryDirectory() as directory,
-            patch.object(provision, "Client") as key_client,
+            patch.object(audiobookshelf, "Client") as key_client,
         ):
             token = Path(directory) / "key"
             token.write_text("persisted-token")
-            result = provision.provision_abs(
+            result = audiobookshelf.provision_abs(
                 client, {"username": "owner", "password": "secret"}, token
             )
             self.assertEqual(result, ("library", "persisted-token"))
@@ -112,7 +108,7 @@ class ProvisionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             token = Path(directory) / "key"
             self.assertEqual(
-                provision.provision_abs(
+                audiobookshelf.provision_abs(
                     client, {"username": "owner", "password": "secret"}, token
                 ),
                 ("library", "durable"),
@@ -139,7 +135,7 @@ class ProvisionTests(unittest.TestCase):
             return {}
 
         client.call.side_effect = call
-        provision.provision_rmab(
+        readmeabook.provision_rmab(
             client,
             {"username": "owner", "password": "secret"},
             "library",

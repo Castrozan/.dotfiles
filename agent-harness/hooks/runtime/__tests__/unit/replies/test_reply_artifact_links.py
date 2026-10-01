@@ -22,7 +22,7 @@ def test_artifact_references_need_a_matching_destination(destination):
     [
         "PR #17 is ready: https://github.com/example/repo/pull/17.",
         "[PR #17](https://github.com/example/repo/pull/17) is ready.",
-        "PR #17 is ready.\n\n| Review |\n| --- |\n| https://github.com/example/repo/pull/17 |",
+        "PR #17 is ready.\n\n| # | Review |\n| --- | --- |\n| 1 | https://github.com/example/repo/pull/17 |",
         "MR !17 is ready: https://gitlab.example.com/group/repo/-/merge_requests/17",
         "The pull request is ready: https://github.com/example/repo/pull/17",
     ],
@@ -32,7 +32,7 @@ def test_links_in_prose_and_tables_can_satisfy_artifact_references(reply):
 
 
 def test_an_artifact_named_in_a_table_needs_a_link():
-    reply = "| Artifact | Status |\n| --- | --- |\n| PR #17 | ready |"
+    reply = "| # | Artifact | Status |\n| --- | --- | --- |\n| 1 | PR #17 | ready |"
 
     assert template_violations_in_reply(reply)
 

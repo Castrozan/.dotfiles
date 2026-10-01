@@ -91,9 +91,12 @@ def test_one_label_inside_its_own_grace_passes():
 
 
 def test_a_table_is_exempt_from_the_word_count():
-    header = "| " + " | ".join(["Column"] * 8) + " |\n"
-    separator = "| " + " | ".join(["---"] * 8) + " |\n"
-    table_rows = "\n".join(["| " + " | ".join(["measured"] * 8) + " |"] * 40)
+    header = "| # | " + " | ".join(["Column"] * 8) + " |\n"
+    separator = "| " + " | ".join(["---"] * 9) + " |\n"
+    table_rows = "\n".join(
+        f"| {number} | " + " | ".join(["measured"] * 8) + " |"
+        for number in range(1, 41)
+    )
     reply = f"{LABELED_REPLY}\n\n{header}{separator}{table_rows}"
 
     assert template_violations_in_reply(reply) == []

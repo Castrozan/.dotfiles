@@ -1,0 +1,265 @@
+diff --git a/rust/src/cli.rs b/rust/src/cli.rs
+index 7322ea3..f47fb5a 100644
+--- a/rust/src/cli.rs
++++ b/rust/src/cli.rs
+@@ -65,10 +65,17 @@ fn invocation_context() -> Value {
+         .unwrap_or_else(|| Value::Object(serde_json::Map::new()))
+ }
+
+ fn capture() -> Result<(), String> {
+     let decoded = invocation_context();
++    if decoded
++        .get("selected_text")
++        .and_then(Value::as_str)
++        .is_some_and(|text| javascript_trim(text).is_empty())
++    {
++        return Ok(());
++    }
+     let context = parse_invocation_context(&decoded);
+     let mut selected_text = selected_text_from_invocation(&decoded);
+     let dir = state_dir().ok_or_else(|| "HERDR_PLUGIN_STATE_DIR is not set".to_owned())?;
+     let root = plugin_root().ok_or_else(|| "HERDR_PLUGIN_ROOT is not set".to_owned())?;
+     if selected_text.is_none() {
+diff --git a/rust/src/editor.rs b/rust/src/editor.rs
+index 8d56ff8..e1ac3c0 100644
+--- a/rust/src/editor.rs
++++ b/rust/src/editor.rs
+@@ -11,12 +11,14 @@ use ratatui::style::{Modifier, Style};
+ use ratatui::text::Line;
+ use ratatui::widgets::{Clear, Paragraph};
+ use serde_json::Value;
+ use uuid::Uuid;
+
++use crate::agent_delivery::{Delivery, deliver_to_agent};
+ use crate::edit_keys::{EditAction, line_end, line_start, resolve_edit_key, word_end, word_start};
+-use crate::format::{sanitize_terminal_text, wrap_text};
++use crate::format::{format_annotations, sanitize_terminal_text, wrap_text};
++use crate::herdr::{notify, run_herdr_output};
+ use crate::layout::layout_comment;
+ use crate::paths::state_dir;
+ use crate::store::{append_annotation, append_annotation_context_first};
+ use crate::termination::Termination;
+ use crate::types::{
+@@ -137,11 +139,11 @@ impl EditorApp {
+                 inner_width,
+                 Style::default(),
+             );
+         }
+         let footer = if self.status.is_empty() {
+-            "Ctrl+S save  ·  Esc cancel  ·  Enter new line"
++            "Ctrl+S add to prompt  ·  Esc cancel  ·  Enter new line"
+         } else {
+             &self.status
+         };
+         render_line(
+             frame,
+@@ -273,20 +275,20 @@ impl EditorApp {
+             next += 1;
+         }
+         self.cursor = next;
+     }
+
+-    fn save(&mut self, dir: Option<&Path>) -> bool {
++    fn save(&mut self, dir: Option<&Path>) -> Option<Annotation> {
+         let value = self.comment.iter().collect::<String>();
+         let value = javascript_trim(&value).to_owned();
+         if value.is_empty() {
+             "Write a comment before saving.".clone_into(&mut self.status);
+-            return false;
++            return None;
+         }
+         let Some(dir) = dir else {
+             "Plugin state directory is unavailable.".clone_into(&mut self.status);
+-            return false;
++            return None;
+         };
+         let annotation = Annotation::from_pending(
+             self.pending.clone(),
+             Uuid::new_v4().to_string(),
+             value,
+@@ -299,20 +301,36 @@ impl EditorApp {
+             }
+         };
+         match saved {
+             Ok(()) => {
+                 "Saved.".clone_into(&mut self.status);
+-                true
++                Some(annotation)
+             }
+             Err(message) => {
+                 self.status = message;
+-                false
++                None
+             }
+         }
+     }
+ }
+
++fn paste_saved_annotation(
++    annotation: &Annotation,
++    herdr: impl FnMut(&[String]) -> Result<String, String>,
++) -> Result<(), String> {
++    let text = format!(
++        "\n{}\n",
++        format_annotations(std::slice::from_ref(annotation))
++    );
++    deliver_to_agent(
++        Delivery::Paste,
++        annotation.context.focused_pane_id.as_deref(),
++        &text,
++        herdr,
++    )
++}
++
+ fn render_line(frame: &mut Frame<'_>, x: usize, y: usize, text: &str, width: usize, style: Style) {
+     let (Ok(x), Ok(y), Ok(width)) = (u16::try_from(x), u16::try_from(y), u16::try_from(width))
+     else {
+         return;
+     };
+@@ -387,12 +405,15 @@ pub fn run() -> Result<(), String> {
+                 break;
+             }
+             let event = event::read().map_err(|error| error.to_string())?;
+             if let Event::Key(key) = event
+                 && app.handle_key(key)
+-                && app.save(dir.as_deref())
++                && let Some(annotation) = app.save(dir.as_deref())
+             {
++                if let Err(message) = paste_saved_annotation(&annotation, run_herdr_output) {
++                    notify("Annotation saved; paste failed", Some(&message));
++                }
+                 terminal
+                     .draw(|frame| app.draw(frame))
+                     .map_err(|error| error.to_string())?;
+                 std::thread::sleep(Duration::from_millis(250));
+                 app.quit = true;
+@@ -446,11 +467,11 @@ mod tests {
+     fn headless_frame_contains_selection_editor_and_keys() {
+         let rows = draw(&app());
+         assert!(rows.iter().any(|row| row.contains("Selected text")));
+         assert!(rows.iter().any(|row| row.contains("first selected line")));
+         assert!(rows.iter().any(|row| row.contains("Comment")));
+-        assert!(rows.iter().any(|row| row.contains("Ctrl+S save")));
++        assert!(rows.iter().any(|row| row.contains("Ctrl+S add to prompt")));
+     }
+
+     #[test]
+     fn editing_keys_and_empty_save_match_the_typescript_editor() {
+         let mut editor = app();
+@@ -459,11 +480,11 @@ mod tests {
+         assert_eq!(editor.comment, ['한', 'a']);
+         editor.handle_key(KeyEvent::from(KeyCode::Left));
+         editor.handle_key(KeyEvent::from(KeyCode::Backspace));
+         assert_eq!(editor.comment, ['a']);
+         let mut empty = app();
+-        assert!(!empty.save(None));
++        assert!(empty.save(None).is_none());
+         assert_eq!(empty.status, "Write a comment before saving.");
+     }
+
+     #[test]
+     fn word_and_line_keys_match_the_typescript_editor() {
+@@ -546,18 +567,80 @@ mod tests {
+             SavedFieldOrder::ContextThenCapturedAt,
+         );
+         editor.comment = "comment".chars().collect();
+         editor.cursor = editor.comment.len();
+
+-        assert!(editor.save(Some(&dir)));
++        assert!(editor.save(Some(&dir)).is_some());
+         let saved = std::fs::read_to_string(dir.join("annotations.jsonl")).expect("saved record");
+         assert!(saved.starts_with(
+             "{\"selectedText\":\"selection\",\"context\":{},\"capturedAt\":\"captured\","
+         ));
+         let _ = std::fs::remove_dir_all(dir);
+     }
+
++    #[test]
++    fn saving_pastes_only_the_current_annotation_to_its_source_without_submitting() {
++        let annotation = Annotation::from_pending(
++            PendingAnnotation {
++                selected_text: "original selected output".into(),
++                context: InvocationContext {
++                    focused_pane_id: Some("source-pane".into()),
++                    ..InvocationContext::default()
++                },
++                captured_at: "captured".into(),
++            },
++            "id".into(),
++            "my note".into(),
++            "created".into(),
++        );
++        let mut calls = Vec::new();
++        let result = paste_saved_annotation(&annotation, |arguments| {
++            calls.push(arguments.to_vec());
++            Ok(r#"{"result":{"agent":{"agent":"codex","agent_status":"idle"}}}"#.into())
++        });
++        assert_eq!(result, Ok(()));
++        assert_eq!(calls.len(), 2);
++        assert_eq!(
++            calls.first().expect("read command"),
++            &["agent", "get", "source-pane"]
++        );
++        let paste_command = calls.get(1).expect("paste command");
++        assert_eq!(
++            paste_command.get(..3).expect("command target"),
++            &["pane", "send-text", "source-pane"]
++        );
++        let paste = paste_command.get(3).expect("paste content");
++        assert!(paste.starts_with("\x1b[200~\n"));
++        assert!(paste.ends_with("\n\x1b[201~"));
++        assert!(paste.contains("original selected output"));
++        assert!(paste.contains("my note"));
++    }
++
++    #[test]
++    fn saving_never_types_into_a_blocked_agent() {
++        let annotation = Annotation::from_pending(
++            PendingAnnotation {
++                selected_text: "text".into(),
++                context: InvocationContext {
++                    focused_pane_id: Some("source-pane".into()),
++                    ..InvocationContext::default()
++                },
++                captured_at: "captured".into(),
++            },
++            "id".into(),
++            "note".into(),
++            "created".into(),
++        );
++        let mut calls = 0;
++        let result = paste_saved_annotation(&annotation, |_| {
++            calls += 1;
++            Ok(r#"{"result":{"agent":{"agent":"codex","agent_status":"blocked"}}}"#.into())
++        });
++        assert!(result.is_err());
++        assert_eq!(calls, 1);
++    }
++
+     #[test]
+     fn pending_removal_is_forceful_like_typescript() {
+         let missing = std::env::temp_dir().join(format!(
+             "herdr-annotate-missing-pending-{}",
+             std::process::id()
+diff --git a/rust/tests/commands.rs b/rust/tests/commands.rs
+index 1238c6c..8d151dd 100644
+--- a/rust/tests/commands.rs
++++ b/rust/tests/commands.rs
+@@ -417,5 +417,17 @@ fn delivery_with_an_empty_store_says_there_is_nothing_to_deliver() {
+             )
+         );
+         let _ = fs::remove_dir_all(dir);
+     }
+ }
++
++#[test]
++fn capture_ignores_supplied_blank_selection_without_clipboard_fallback() {
++    let dir = directory();
++    let (mut command, log) = command(&dir, "capture");
++    command.env("HERDR_PLUGIN_CONTEXT_JSON", r#"{"selected_text":" \n"}"#);
++    let output = command.output().expect("run");
++    assert!(output.status.success(), "{output:?}");
++    assert!(!log.exists());
++    assert!(!dir.join("state").exists());
++    let _ = fs::remove_dir_all(dir);
++}

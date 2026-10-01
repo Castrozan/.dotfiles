@@ -1,5 +1,11 @@
 require("hs.ipc")
 
+require("karabiner_application_focus_variables").start()
+
+if not require("dock_startup_guard").allowStartup() then
+	return
+end
+
 -- Wiring only: bind the prior AeroSpace keybinds to the virtual-workspace grid
 -- defined in workspace_grid.lua, and feed it window create/focus events.
 local workspaceGrid = require("workspace_grid")
@@ -78,8 +84,6 @@ end
 -- cycle / release-to-commit), routed via karabiner; this module only feeds it the
 -- active workspace's windows and performs the focus it requests.
 require("switcher_bridge")
-
-require("karabiner_application_focus_variables").start()
 
 require("smart_home_media_key_control").start()
 

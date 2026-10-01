@@ -119,6 +119,18 @@ def reply_is_a_short_confirmation(reply: ReplyUnderReview) -> bool:
     )
 
 
+def table_indexes_violation(reply: ReplyUnderReview) -> str | None:
+    for table_number, column in enumerate(reply.table_first_columns, start=1):
+        if column[0] != "#" or any(
+            value != str(row_number)
+            for row_number, value in enumerate(column[1:], start=1)
+        ):
+            return reply.configuration.violation(
+                "table_indexes", table_number=table_number
+            )
+    return None
+
+
 def unemphasized_label_violation(reply: ReplyUnderReview) -> str | None:
     if reply_is_a_short_confirmation(reply):
         return None

@@ -162,7 +162,25 @@ def test_kick_restarts_every_user_agent_in_restart_order(
         for call in subprocess_run_mock.call_args_list
         if "launchctl" in call.args[0][0]
     ]
-    assert (
-        kickstarted_launchd_labels_in_call_order
-        == daemon_module.KARABINER_USER_AGENT_LAUNCHD_LABELS_TO_KICK_IN_RESTART_ORDER
+    assert kickstarted_launchd_labels_in_call_order == [
+        "org.pqrs.service.agent.Karabiner-Core-Service-rev2",
+        "org.pqrs.service.agent.Karabiner-Console-User-Server",
+    ]
+
+
+def test_console_user_server_probe_matches_current_application(
+    daemon_module_with_temporary_paths,
+    monkeypatch,
+    make_completed_process_with_exit_zero,
+):
+    daemon_module = daemon_module_with_temporary_paths
+    subprocess_run_mock = MagicMock(
+        return_value=make_completed_process_with_exit_zero()
+    )
+    monkeypatch.setattr(daemon_module.subprocess, "run", subprocess_run_mock)
+    assert daemon_module.is_karabiner_console_user_server_process_running()
+    subprocess_run_mock.assert_called_once_with(
+        ["/usr/bin/pgrep", "-x", "Karabiner-Console-User-Server"],
+        capture_output=True,
+        check=False,
     )

@@ -73,11 +73,10 @@ developer instructions, leaving model selection to Codex's runtime-owned config.
 caller's profile instead. Spawn it bare in a pane; re-passing a sandbox or approval flag makes it exit with a
 duplicate-argument error.
 
-Interactive launches explicitly use `--no-daemon`: both native profiles and generic configuration overrides exclude the
-shared background server. The Nix package also lacks the complete package manifest required for daemon startup. Keep
-per-session instructions and hook environments isolated until both boundaries support shared-server operation. A Codex
-session bridged over MCP has no interactive approval channel back to the caller, so a sandbox or approval setting weaker
-than full access auto-rejects escalations and strands it.
+Interactive launches explicitly use `--no-daemon`, keeping per-session instructions and hook environments in the owning
+terminal process. Native profiles are mutable files seeded from Nix sources so model changes can persist; a symlink to
+`/nix/store` makes Codex's profile writes fail. A Codex session bridged over MCP has no interactive approval channel
+back to the caller, so a sandbox or approval setting weaker than full access auto-rejects escalations and strands it.
 
 ### Claude add dir skills need the nested layout
 

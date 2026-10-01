@@ -25,6 +25,7 @@ class ReplyUnderReview:
         self.configuration = configuration
         document = ReplyMarkdownDocument(reply_text, configuration)
         self.list_blocks = document.lists
+        self.table_first_columns = document.table_first_columns
         self.label_lines = document.labels
         self.labels_present = {label.label for label in document.labels}
         counted_lines = set(document.prose_line_indices)

@@ -75,6 +75,7 @@ in
         PROWLARR_BASE_URL = cfg.prowlarrBaseUrl;
         AUDIOBOOKSHELF_BASE_URL = cfg.audiobookshelfBaseUrl;
         READMEABOOK_BASE_URL = cfg.readmeabookBaseUrl;
+        PYTHONPATH = "${./scripts/lib}";
       };
       serviceConfig = {
         Type = "oneshot";

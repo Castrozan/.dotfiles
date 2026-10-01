@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from commands import captures_without_an_open_pull_request
+from ril import build_parser
 from pull_requests import (
     PullRequestLookupUnavailable,
     branches_with_open_pull_request,
@@ -17,6 +18,25 @@ from pull_requests import (
 CAPTURE_NAME = "Tweet from A. L. Crego (2026-07-25 11-53-34).md"
 WATCHER_REPLY = {"id": "c2", "body": "answered that\n\n<!-- ril-watcher -->"}
 LUCAS_COMMENT = {"id": "c1", "body": "why not use the existing module?"}
+
+
+@pytest.mark.parametrize("capture_name", [CAPTURE_NAME, "An undated capture.md"])
+def test_the_probe_capture_reference_can_be_claimed(
+    tmp_path, write_capture, monkeypatch, capsys, capture_name
+):
+    capture_path = write_capture(tmp_path, capture_name, "body")
+    monkeypatch.setattr("commands.open_ril_pull_requests", lambda _: [])
+    parser = build_parser()
+    probe_arguments = parser.parse_args(["probe", "--inbox", str(tmp_path)])
+
+    assert probe_arguments.handler(probe_arguments) == 0
+    capture_reference = capsys.readouterr().out.removeprefix("capture ").strip()
+    claim_arguments = parser.parse_args(
+        ["claim", "--inbox", str(tmp_path), "--by", "ril-watcher", capture_reference]
+    )
+
+    assert claim_arguments.handler(claim_arguments) == 0
+    assert "claimed_by:: ril-watcher" in capture_path.read_text()
 
 
 def completed_process(stdout: str = "", stderr: str = "", returncode: int = 0):

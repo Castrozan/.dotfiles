@@ -20,11 +20,6 @@ progress and defines the process state or log evidence that means success and fa
 background; it buffers everything and produces empty output. Never poll with timeout `>` 60000ms: a single long poll
 eats the entire agent timeout budget and bricks the session.
 
-### Dry run
-
-Validate configuration before applying by running `rebuild` with `--dry-run`. Catches syntax errors, missing imports,
-and evaluation failures without modifying the system.
-
 ### Platform difference
 
 NixOS: Full system rebuild affecting services, kernel, boot. Home-manager is integrated as a module. Home-manager

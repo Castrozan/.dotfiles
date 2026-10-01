@@ -41,6 +41,7 @@ def test_projection_expands_the_configuration_before_rebasing(configured_reply_f
     assert "37 prose words or fewer" in rendered
     assert "up to 2 items" in rendered
     assert "done 20 + 7 words" in rendered
+    assert "Every rendered table starts with a `#` index column" in rendered
     assert "skills/humanize/SKILL.md#representation-selection" in rendered
     assert "{{reply_format}}" not in rendered
 
@@ -69,6 +70,30 @@ def test_copied_skills_expand_the_same_configuration(
     assert (
         "37 prose words or fewer" in (output / "references/interactive.md").read_text()
     )
+
+
+def test_complete_interactive_instructions_fit_projection_limits():
+    source = (
+        REPO_ROOT
+        / "agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md"
+    )
+    rendered = project_instruction_documents(
+        [{"source": str(source), "text": source.read_text()}],
+        PurePosixPath(
+            "/nix/store/00000000000000000000000000000000-interactive-instructions.md"
+        ),
+        {
+            PurePosixPath(source.parents[4] / "core-rules/core.md"): PurePosixPath(
+                "/home/agent/.claude/CLAUDE.md"
+            ),
+            PurePosixPath(source.parents[1]): PurePosixPath(
+                "/home/agent/.local/share/agent-plugins/dotfiles/plugin/skills/humanize"
+            ),
+        },
+    )
+
+    assert "Every rendered table starts with a `#` index column" in rendered
+    assert "{{reply_format}}" not in rendered
 
 
 def test_evaluation_loader_uses_the_worktree_configuration(

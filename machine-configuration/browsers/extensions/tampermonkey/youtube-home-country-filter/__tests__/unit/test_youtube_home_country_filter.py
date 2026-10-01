@@ -10,6 +10,7 @@ def test_youtube_home_country_filter_behavior():
             "--test",
             str(directory / "country-resolution.test.mjs"),
             str(directory / "homepage-filter.test.mjs"),
+            str(directory / "queue.test.mjs"),
         ],
         capture_output=True,
         text=True,

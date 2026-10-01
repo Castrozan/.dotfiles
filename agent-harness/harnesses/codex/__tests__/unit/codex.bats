@@ -11,6 +11,7 @@ setup() {
 	PROFILE_INSTRUCTIONS_FILE="$TEMPORARY_ROOT/profile-instructions.md"
 	DISPATCH_FILE="$TEMPORARY_ROOT/workspace-profile-dispatch"
 	DISPATCH_MARKER="$TEMPORARY_ROOT/dispatch-was-sourced"
+	SHARED_LAUNCH_MARKER="$TEMPORARY_ROOT/shared-launch"
 	HOOK_TRUST_ARGUMENTS_FILE="$TEMPORARY_ROOT/hook-trust-arguments"
 	mkdir -p "$FAKE_BINARY_DIRECTORY"
 	printf 'global instructions' >"$GLOBAL_INSTRUCTIONS_FILE"
@@ -32,6 +33,12 @@ setup() {
 		exit "${HOOK_TRUST_EXIT_STATUS:-0}"
 	FAKE_APPROVAL
 	chmod +x "$FAKE_BINARY_DIRECTORY/approve-hooks"
+	cat >"$FAKE_BINARY_DIRECTORY/shared-client" <<-'FAKE_SHARED'
+		#!/usr/bin/env bash
+		touch "$SHARED_LAUNCH_MARKER"
+		exec "$CODEX_LAUNCHER_BINARY" "$@"
+	FAKE_SHARED
+	chmod +x "$FAKE_BINARY_DIRECTORY/shared-client"
 	write_dispatch_file
 }
 
@@ -53,6 +60,8 @@ run_codex() {
 		NPM_CONFIG_PREFIX="/nonexistent" \
 		CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE="$GLOBAL_INSTRUCTIONS_FILE" \
 		CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE="$DISPATCH_FILE" \
+		SHARED_LAUNCH_MARKER="$SHARED_LAUNCH_MARKER" \
+		CODEX_LAUNCHER_SHARED_SERVER_EXECUTABLE="$FAKE_BINARY_DIRECTORY/shared-client" \
 		CODEX_LAUNCHER_BINARY="$FAKE_BINARY_DIRECTORY/codex" \
 		CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE="$FAKE_BINARY_DIRECTORY/approve-hooks" \
 		HOOK_TRUST_ARGUMENTS_FILE="$HOOK_TRUST_ARGUMENTS_FILE" \
@@ -72,9 +81,10 @@ launcher_arguments() {
 	[ "$status" -eq 0 ]
 }
 
-@test "selects isolated interactive mode without overriding its remembered model" {
+@test "selects embedded interactive mode without overriding its remembered model" {
 	run_codex
 	[ "$status" -eq 0 ]
+	[ ! -f "$SHARED_LAUNCH_MARKER" ]
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive>" ]
 }
 
@@ -127,6 +137,20 @@ launcher_arguments() {
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <fork>" ]
 }
 
+@test "treats a positional prompt as an embedded interactive launch" {
+	run_codex 'explain this code'
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <explain this code>" ]
+}
+
+@test "keeps native management commands outside the interactive launch" {
+	for command in plugin doctor queue; do
+		run_codex "$command" --help
+		[ "$status" -eq 0 ]
+		[ "${lines[0]}" = "argv: $(launcher_arguments) <$command> <--help>" ]
+	done
+}
+
 @test "leaves a subcommand launch without interactive preferences or profile activation" {
 	run_codex exec "do the thing"
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <exec> <do the thing>" ]
@@ -166,4 +190,13 @@ launcher_arguments() {
 	run_codex
 	[ "$status" -eq 7 ]
 	[ -z "$output" ]
+}
+
+@test "explicit endpoints and informational options bypass automatic embedded selection" {
+	for argument in --no-daemon '--remote=unix:///custom.sock' --help --version; do
+		run_codex "$argument"
+		[ "$status" -eq 0 ]
+		[ ! -f "$SHARED_LAUNCH_MARKER" ]
+		[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <$argument>" ]
+	done
 }
