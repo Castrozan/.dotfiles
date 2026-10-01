@@ -14,12 +14,17 @@ let
       {
         inherit pkgs;
       };
+  desktopComputerUse = import ../skills/workstation/desktop/install { inherit pkgs; };
 in
 {
   chrome-devtools = {
     type = "stdio";
     command = browser.chromeDevtoolsMcpStdioCommand;
     args = browser.chromeDevtoolsMcpStdioArgs;
+  };
+  desktop-computer-use = {
+    type = "stdio";
+    command = pkgs.lib.getExe desktopComputerUse;
   };
   sonarqube = {
     type = "stdio";
