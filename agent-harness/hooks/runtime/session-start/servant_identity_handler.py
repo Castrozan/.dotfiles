@@ -18,6 +18,7 @@ name arrives with nothing to bind it.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -65,11 +66,13 @@ def servant_context_line(servant: dict) -> str:
 def handle(hook_input: dict):
     """The Servant line for this session, or nothing when it has no identity to draw.
 
-    A clawde agent already carries a name and a personality of its own, so it is
+    Clawde and OpenClaw agents already carry their own identities, so they are
     left alone. A payload with no id would make every such session draw the same
     Servant, which is worse than staying silent and letting the rule find none.
     """
-    if is_clawde_background_agent_session():
+    # OpenClaw's gateway passes its port to the harness and its hook subprocesses.
+    # Unlike cwd, this marker survives an agent working in a different project.
+    if os.environ.get("OPENCLAW_GATEWAY_PORT") or is_clawde_background_agent_session():
         return None
     session_id = session_id_of(hook_input)
     if not session_id:

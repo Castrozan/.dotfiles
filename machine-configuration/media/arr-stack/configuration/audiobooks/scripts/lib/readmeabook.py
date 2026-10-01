@@ -11,6 +11,7 @@ def provision_rmab(
     prowlarr_key,
     indexers,
     download_username,
+    download_password,
 ):
     download = {
         "id": "nix-qbittorrent",
@@ -19,7 +20,7 @@ def provision_rmab(
         "enabled": True,
         "url": "http://qbittorrent:8080",
         "username": download_username,
-        "password": credentials["password"],
+        "password": download_password,
         "category": "readmeabook",
         "customPath": "/data/torrents/audiobooks",
         "remotePathMappingEnabled": False,

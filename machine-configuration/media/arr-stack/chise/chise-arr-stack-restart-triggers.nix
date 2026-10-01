@@ -31,10 +31,6 @@
       ../../../../secrets/credentials/media/arr-samaritano-indexer-apikey.age
     ];
 
-    arr-audiobook-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/media/arr-qbittorrent-password.age
-    ];
-
     bazarr-auth-provisioner.restartTriggers = [
       ../../../../secrets/credentials/media/arr-bazarr-password.age
     ];

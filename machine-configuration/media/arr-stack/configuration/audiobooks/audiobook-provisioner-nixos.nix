@@ -23,6 +23,16 @@ in
       type = lib.types.str;
       description = "Runtime agenix password file, never copied into the Nix store.";
     };
+    downloadPasswordFile = lib.mkOption {
+      type = lib.types.str;
+      default = cfg.passwordFile;
+      description = "Existing download-client password file, independent from audiobook app accounts.";
+    };
+    readmeabookPasswordFile = lib.mkOption {
+      type = lib.types.str;
+      default = cfg.passwordFile;
+      description = "Independent runtime agenix password file for the ReadMeABook account.";
+    };
     prowlarrConfigFile = lib.mkOption {
       type = lib.types.str;
       description = "Runtime Prowlarr config.xml containing its API key.";
@@ -58,7 +68,9 @@ in
       environment = {
         AUDIOBOOK_USERNAME = cfg.username;
         QBITTORRENT_USERNAME = cfg.downloadUsername;
+        QBITTORRENT_PASSWORD_FILE = cfg.downloadPasswordFile;
         AUDIOBOOK_PASSWORD_FILE = cfg.passwordFile;
+        READMEABOOK_PASSWORD_FILE = cfg.readmeabookPasswordFile;
         PROWLARR_CONFIG_FILE = cfg.prowlarrConfigFile;
         PROWLARR_BASE_URL = cfg.prowlarrBaseUrl;
         AUDIOBOOKSHELF_BASE_URL = cfg.audiobookshelfBaseUrl;
@@ -68,7 +80,7 @@ in
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
-        ExecStart = "${pkgs.python3}/bin/python3 ${./scripts/provision.py}";
+        ExecStart = "${pkgs.python3}/bin/python3 ${./scripts}/provision.py";
         StateDirectory = "arr-audiobooks";
         StateDirectoryMode = "0700";
         UMask = "0077";

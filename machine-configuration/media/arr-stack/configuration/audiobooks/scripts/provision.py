@@ -19,6 +19,11 @@ def main():
     }
     if not credentials["password"]:
         raise RuntimeError("Audiobook password secret is empty")
+    download_password = (
+        Path(os.environ["QBITTORRENT_PASSWORD_FILE"]).read_text().strip()
+    )
+    if not download_password:
+        raise RuntimeError("Download-client password secret is empty")
     key = ET.parse(os.environ["PROWLARR_CONFIG_FILE"]).findtext("ApiKey")
     if not key:
         raise RuntimeError("Prowlarr API key missing")
@@ -30,14 +35,21 @@ def main():
         Path(os.environ.get("STATE_DIRECTORY", "/var/lib/arr-audiobooks"))
         / "audiobookshelf-api-token",
     )
+    readmeabook_credentials = {
+        **credentials,
+        "password": Path(os.environ["READMEABOOK_PASSWORD_FILE"]).read_text().strip(),
+    }
+    if not readmeabook_credentials["password"]:
+        raise RuntimeError("ReadMeABook password secret is empty")
     provision_rmab(
         Client(os.environ["READMEABOOK_BASE_URL"]),
-        credentials,
+        readmeabook_credentials,
         library_id,
         token,
         key,
         indexers,
         os.environ["QBITTORRENT_USERNAME"],
+        download_password,
     )
 
 

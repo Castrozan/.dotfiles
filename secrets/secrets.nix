@@ -60,6 +60,8 @@ in
   "credentials/bitwarden/bitwarden-master-password.age".publicKeys = all_keys;
   "credentials/media/jellyseerr-smtp-app-password.age".publicKeys = all_keys;
   "credentials/media/arr-qbittorrent-password.age".publicKeys = all_keys;
+  "credentials/media/arr-readmeabook-password.age".publicKeys = all_keys;
+  "credentials/media/arr-audiobookshelf-password.age".publicKeys = all_keys;
   "credentials/media/arr-radarr-password.age".publicKeys = all_keys;
   "credentials/media/arr-sonarr-password.age".publicKeys = all_keys;
   "credentials/media/arr-prowlarr-password.age".publicKeys = all_keys;
