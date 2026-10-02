@@ -23,7 +23,7 @@ cx() {
 	ranker_process=$!
 	wait "$ranker_process" || return
 	for selected_command in "${ranked_commands[@]}"; do
-		if [[ -z $selected_command || $selected_command == cx || $selected_command == cx[[:space:]]* ]]; then
+		if [[ -z $selected_command || $selected_command == cx || $selected_command == cx[[:space:]]* || $selected_command == z || $selected_command == z[[:space:]]* ]]; then
 			continue
 		fi
 		printf '%s\n' "$selected_command" >&2

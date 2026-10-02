@@ -58,7 +58,7 @@ def test_multiline_command_is_executed_as_one_record(launcher_environment):
     assert result.stdout == "first\nsecond"
 
 
-@pytest.mark.parametrize("results", [[], ["cx vt test", "cx"]])
+@pytest.mark.parametrize("results", [[], ["cx vt test", "cx", "z vt test", "z"]])
 def test_empty_or_launcher_only_results_do_not_execute(launcher_environment, results):
     launcher_environment["HSTR_RESULTS"] = json.dumps(results)
     result = run_launcher(launcher_environment, "cx vt test")
@@ -77,7 +77,9 @@ def test_driver_failure_never_executes_partial_output(launcher_environment):
 
 
 def test_launcher_entries_are_skipped_before_executing(launcher_environment):
-    launcher_environment["HSTR_RESULTS"] = json.dumps(["cx vt test", "", "vt_test"])
+    launcher_environment["HSTR_RESULTS"] = json.dumps(
+        ["cx vt test", "z vt test", "", "vt_test"]
+    )
     result = run_launcher(
         launcher_environment, "alias vt_test='printf test'\ncx vt test"
     )

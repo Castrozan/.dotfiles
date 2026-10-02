@@ -98,6 +98,7 @@ in
         . ${commandLauncherScripts}/command-launcher.sh
         if [ -r "${zoxideBashInit}/zoxide-init.sh" ]; then
           . "${zoxideBashInit}/zoxide-init.sh"
+          . ${commandLauncherScripts}/z-command-launcher.sh
         fi
         if [ -r "${carapaceBashInit}/carapace-init.sh" ]; then
           . "${carapaceBashInit}/carapace-init.sh"
