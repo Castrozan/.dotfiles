@@ -8,11 +8,15 @@
 }:
 let
   containerSources = ./scripts;
-  runtimePackages = [ pkgs.docker-compose ] ++ lib.optional isDarwin latest.colima;
+  runtimePackages = [
+    pkgs.docker-compose
+    pkgs.git
+  ]
+  ++ lib.optional isDarwin latest.colima;
   containerPolicyContents = builtins.toJSON {
     workspace_root = "${config.home.homeDirectory}/repo";
     state_root = "${config.xdg.stateHome}/devenv-container";
-    image_directory = toString ./container;
+    image_directory = "${./container}";
     virtual_machine = isDarwin;
     virtual_machine_profile = "devenv";
     virtual_machine_cpus = 2;

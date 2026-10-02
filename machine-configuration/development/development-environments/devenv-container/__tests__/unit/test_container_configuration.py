@@ -36,7 +36,7 @@ def create_project(policy, name="project"):
 
 def test_limit_the_entire_container_without_swap_or_host_privileges(policy):
     project = create_project(policy)
-    configuration = compose_configuration(policy, project)
+    configuration = compose_configuration(policy, project, [])
     environment = configuration["services"]["environment"]
     assert environment["mem_limit"] == environment["memswap_limit"] == 3 * 1024**3
     assert environment["cpus"] == 2
@@ -50,7 +50,7 @@ def test_limit_the_entire_container_without_swap_or_host_privileges(policy):
 
 def test_only_bind_the_checkout_and_preserve_separate_installation_storage(policy):
     project = create_project(policy)
-    configuration = compose_configuration(policy, project)
+    configuration = compose_configuration(policy, project, [])
     volumes = configuration["services"]["environment"]["volumes"]
     bind_mounts = [volume for volume in volumes if volume["type"] == "bind"]
     assert bind_mounts == [
@@ -87,3 +87,11 @@ def test_reject_a_checkout_without_devenv_configuration(policy):
     directory.mkdir()
     with pytest.raises(ValueError, match="No devenv.nix"):
         policy.project(directory)
+
+
+def test_preserve_literal_dollar_signs_without_compose_environment_expansion(policy):
+    project = create_project(policy, "project-${HOME}")
+    configuration = compose_configuration(policy, project, [])
+    environment = configuration["services"]["environment"]
+    assert environment["working_dir"].endswith("project-$${HOME}")
+    assert environment["volumes"][0]["source"].endswith("project-$${HOME}")

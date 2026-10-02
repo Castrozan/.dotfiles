@@ -57,8 +57,8 @@ class ContainerProject:
         return self.state_directory / "compose.json"
 
 
-def compose_configuration(policy, project):
-    workspace = str(project.directory)
+def compose_configuration(policy, project, git_metadata):
+    workspace = str(project.directory).replace("$", "$$")
     volumes = {
         "home": "/home/devenv",
         "nix": "/nix",
@@ -104,6 +104,14 @@ def compose_configuration(policy, project):
                 "ports": ["127.0.0.1::8080"],
                 "volumes": [
                     {"type": "bind", "source": workspace, "target": workspace},
+                    *[
+                        {
+                            "type": "bind",
+                            "source": str(path).replace("$", "$$"),
+                            "target": str(path).replace("$", "$$"),
+                        }
+                        for path in git_metadata
+                    ],
                     *[
                         {"type": "volume", "source": name, "target": target}
                         for name, target in volumes.items()

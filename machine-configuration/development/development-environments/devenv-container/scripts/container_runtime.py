@@ -4,6 +4,7 @@ from pathlib import Path
 
 from container_commands import run_command
 from container_configuration import compose_configuration
+from container_source_control import shared_git_metadata
 
 
 class ContainerRuntime:
@@ -115,7 +116,10 @@ class ContainerRuntime:
         )
 
     def start_project(self, project):
-        configuration = json.dumps(compose_configuration(self.policy, project))
+        metadata = shared_git_metadata(project, self.policy.workspace_root, self.run)
+        configuration = json.dumps(
+            compose_configuration(self.policy, project, metadata)
+        )
         if (
             project.compose_path.exists()
             and project.compose_path.read_text() == configuration
