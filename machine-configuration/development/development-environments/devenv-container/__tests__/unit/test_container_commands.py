@@ -1,5 +1,7 @@
+import os
 import signal
 import subprocess
+import sys
 from unittest.mock import Mock
 
 import pytest
@@ -39,3 +41,29 @@ def test_interactive_command_keeps_its_controlling_terminal(monkeypatch):
     monkeypatch.setattr(container_commands.subprocess, "Popen", popen)
     container_commands.run_command(["command"], {}, interactive=True)
     assert popen.call_args.kwargs["start_new_session"] is False
+
+
+def test_deadline_reaps_a_nested_helper_that_ignores_termination(tmp_path):
+    marker = tmp_path / "child-process"
+    helper = (
+        "import os, signal, time; from pathlib import Path; "
+        "signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+        f"Path({str(marker)!r}).write_text(str(os.getpid())); time.sleep(60)"
+    )
+    parent = (
+        "import os, signal, sys; "
+        "from container_commands import interrupt_command, run_command; "
+        "signal.signal(signal.SIGTERM, interrupt_command); "
+        f"run_command([sys.executable, '-c', {helper!r}], os.environ.copy())"
+    )
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(container_commands.__file__.rsplit("/", 1)[0])
+    with pytest.raises(subprocess.TimeoutExpired):
+        container_commands.run_command(
+            [sys.executable, "-c", parent],
+            environment,
+            timeout=2,
+            termination_grace_seconds=15,
+        )
+    with pytest.raises(ProcessLookupError):
+        os.kill(int(marker.read_text()), 0)

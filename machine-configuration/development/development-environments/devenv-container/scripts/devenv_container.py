@@ -1,11 +1,13 @@
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 from pathlib import Path
 
 from container_cleanup_watch import ensure_cleanup_running, watch_cleanup
+from container_commands import interrupt_command
 from container_configuration import ContainerPolicy
 from container_leases import project_is_idle, project_lock, record_use, runtime_lock
 from container_runtime import ContainerRuntime
@@ -84,6 +86,7 @@ def execute(policy, runtime, project, command, timeout_seconds, interactive):
 
 
 def main():
+    signal.signal(signal.SIGTERM, interrupt_command)
     parser = argparse.ArgumentParser(
         description="Run a checkout's devenv inside a bounded, persistent container.",
     )

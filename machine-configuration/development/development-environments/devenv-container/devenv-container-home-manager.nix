@@ -55,6 +55,7 @@ in
       KeepAlive = true;
       RunAtLoad = true;
       ProcessType = "Standard";
+      ExitTimeOut = 20;
       StandardOutPath = "${config.xdg.stateHome}/devenv-container-cleanup.log";
       StandardErrorPath = "${config.xdg.stateHome}/devenv-container-cleanup.log";
     };

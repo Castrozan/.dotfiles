@@ -56,6 +56,7 @@ def watch_cleanup(policy):
                 ],
                 os.environ.copy(),
                 timeout=60,
+                termination_grace_seconds=15,
             )
         except (OSError, subprocess.SubprocessError) as error:
             print(f"devenv-container cleanup: {error}", file=sys.stderr, flush=True)

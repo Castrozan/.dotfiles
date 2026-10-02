@@ -5,7 +5,11 @@ import subprocess
 TERMINATION_GRACE_SECONDS = 5
 
 
-def terminate_command(process, interactive):
+def interrupt_command(_command_signal, _stack_frame):
+    raise KeyboardInterrupt
+
+
+def terminate_command(process, interactive, termination_grace_seconds):
     def send(command_signal):
         try:
             if interactive:
@@ -17,14 +21,21 @@ def terminate_command(process, interactive):
 
     send(signal.SIGTERM)
     try:
-        process.communicate(timeout=TERMINATION_GRACE_SECONDS)
+        process.communicate(timeout=termination_grace_seconds)
     except subprocess.TimeoutExpired:
         send(signal.SIGKILL)
         process.communicate(timeout=TERMINATION_GRACE_SECONDS)
 
 
 def run_command(
-    arguments, environment, *, capture=False, timeout=60, check=True, interactive=False
+    arguments,
+    environment,
+    *,
+    capture=False,
+    timeout=60,
+    check=True,
+    interactive=False,
+    termination_grace_seconds=TERMINATION_GRACE_SECONDS,
 ):
     process = subprocess.Popen(
         arguments,
@@ -37,7 +48,7 @@ def run_command(
     try:
         stdout, stderr = process.communicate(timeout=timeout)
     except (subprocess.TimeoutExpired, KeyboardInterrupt):
-        terminate_command(process, interactive)
+        terminate_command(process, interactive, termination_grace_seconds)
         raise
     result = subprocess.CompletedProcess(arguments, process.returncode, stdout, stderr)
     if check:
