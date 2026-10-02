@@ -45,6 +45,7 @@ def test_limit_the_entire_container_without_swap_or_host_privileges(policy):
     assert environment["security_opt"] == ["no-new-privileges:true"]
     assert environment["init"] is True
     assert environment["restart"] == "no"
+    assert "exec" in environment["tmpfs"][0].split(":", 1)[1].split(",")
     assert environment["command"][3] == "28800"
 
 

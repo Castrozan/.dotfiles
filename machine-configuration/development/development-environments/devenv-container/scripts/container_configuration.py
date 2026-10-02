@@ -119,7 +119,7 @@ def compose_configuration(policy, project, git_metadata):
                         for name, target in volumes.items()
                     ],
                 ],
-                "tmpfs": ["/tmp:size=268435456,mode=1777"],
+                "tmpfs": ["/tmp:size=268435456,mode=1777,exec"],
                 "logging": {
                     "driver": "json-file",
                     "options": {"max-size": "5m", "max-file": "2"},
