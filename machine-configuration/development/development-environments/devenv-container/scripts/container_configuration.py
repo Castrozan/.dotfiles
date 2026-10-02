@@ -74,9 +74,10 @@ def compose_configuration(policy, project, git_metadata):
                     "args": {
                         "workspace_uid": str(os.getuid()),
                         "workspace_gid": str(os.getgid()),
+                        "workspace_directory": workspace,
                     },
                 },
-                "image": f"dotfiles-devenv:{os.getuid()}-{os.getgid()}",
+                "image": f"dotfiles-devenv:{os.getuid()}-{os.getgid()}-{project.identity}",
                 "init": True,
                 "restart": "no",
                 "read_only": True,
@@ -89,6 +90,7 @@ def compose_configuration(policy, project, git_metadata):
                 "pids_limit": policy.container_process_limit,
                 "stop_grace_period": "10s",
                 "environment": {
+                    "DEVENV_CONTAINER_BIND_ADDRESS": "0.0.0.0",
                     "DEVENV_MAX_JOBS": "1",
                     "DEVENV_CORES": str(policy.container_cpus),
                     "NIX_CONFIG": f"max-jobs = 1\ncores = {policy.container_cpus}",

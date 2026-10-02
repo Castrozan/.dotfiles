@@ -39,6 +39,8 @@ let
   '';
 in
 {
+  imports = [ ./project-pilot-home-manager.nix ];
+
   home.packages = [ containerCommand ] ++ runtimePackages;
   xdg.configFile."devenv-container/policy.json".text = containerPolicyContents;
 
