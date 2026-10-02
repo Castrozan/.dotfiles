@@ -9,6 +9,7 @@
 let
   containerSources = ./scripts;
   runtimePackages = [
+    pkgs.docker-client
     pkgs.docker-compose
     pkgs.git
   ]

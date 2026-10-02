@@ -26,17 +26,27 @@ class ContainerRuntime:
             **options,
         )
 
+    def machine_instances(self):
+        result = self.run(
+            [
+                "colima",
+                "--profile",
+                self.policy.virtual_machine_profile,
+                "list",
+                "--json",
+            ],
+            capture=True,
+            timeout=30,
+        )
+        return [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
+
     def machine_running(self):
         if not self.policy.virtual_machine:
             return True
-        return (
-            self.run(
-                ["colima", "status", self.policy.virtual_machine_profile],
-                capture=True,
-                timeout=30,
-                check=False,
-            ).returncode
-            == 0
+        return any(
+            instance["name"] == self.policy.virtual_machine_profile
+            and instance["status"] == "Running"
+            for instance in self.machine_instances()
         )
 
     def start_machine(self):
@@ -71,20 +81,7 @@ class ContainerRuntime:
     def verify_machine_budget(self):
         if not self.policy.virtual_machine:
             return
-        result = self.run(
-            [
-                "colima",
-                "--profile",
-                self.policy.virtual_machine_profile,
-                "list",
-                "--json",
-            ],
-            capture=True,
-            timeout=30,
-        )
-        instances = [
-            json.loads(line) for line in result.stdout.splitlines() if line.strip()
-        ]
+        instances = self.machine_instances()
         if len(instances) != 1:
             raise ValueError("Cannot verify the development VM's resource budget")
         instance = instances[0]

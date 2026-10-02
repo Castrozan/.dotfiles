@@ -37,3 +37,22 @@ def test_accept_a_virtual_machine_within_the_budget():
         )
     )
     environment.verify_machine_budget()
+
+
+@pytest.mark.parametrize(
+    "instances,expected",
+    [
+        ([], False),
+        ([{"name": "devenv", "status": "Stopped"}], False),
+        ([{"name": "devenv", "status": "Running"}], True),
+        ([{"name": "another", "status": "Running"}], False),
+    ],
+)
+def test_detect_only_the_owned_running_machine(instances, expected):
+    environment = runtime()
+    environment.run = Mock(
+        return_value=SimpleNamespace(
+            stdout="\n".join(json.dumps(instance) for instance in instances)
+        )
+    )
+    assert environment.machine_running() is expected
