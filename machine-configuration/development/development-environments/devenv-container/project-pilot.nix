@@ -2,6 +2,11 @@
 {
   packages = [ pkgs.coreutils ];
 
+  languages.javascript = {
+    package = pkgs.nodejs_22;
+    npm.install.enable = true;
+  };
+
   scripts.project-lint.exec = ''
     exec ${pkgs.coreutils}/bin/timeout --kill-after=10s 10m node ./node_modules/eslint/bin/eslint.js "$@"
   '';
