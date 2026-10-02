@@ -65,6 +65,7 @@ in
       home.activation.setupGlabConfig = {
         after = [
           "writeBoundary"
+          "reloadSystemd"
           "disableAgenixLaunchdRestartLoop"
         ];
         before = [ ];
