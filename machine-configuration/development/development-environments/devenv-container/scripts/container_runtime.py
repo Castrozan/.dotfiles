@@ -33,7 +33,7 @@ class ContainerRuntime:
             self.run(
                 ["colima", "status", self.policy.virtual_machine_profile],
                 capture=True,
-                timeout=10,
+                timeout=30,
                 check=False,
             ).returncode
             == 0
@@ -80,7 +80,7 @@ class ContainerRuntime:
                 "--json",
             ],
             capture=True,
-            timeout=10,
+            timeout=30,
         )
         instances = [
             json.loads(line) for line in result.stdout.splitlines() if line.strip()
