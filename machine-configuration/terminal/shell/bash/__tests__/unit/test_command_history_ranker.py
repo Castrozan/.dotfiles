@@ -23,6 +23,8 @@ def test_ranker_preserves_history_records_and_backend_status(tmp_path, exit_stat
         f"#!{sys.executable}\n"
         "import os, sys\n"
         "from pathlib import Path\n"
+        "assert (Path(os.environ['HOME']) / '.hstr_blacklist').read_text() == ''\n"
+        "assert os.environ['HSTR_CONFIG'] == 'keywords-matching,blacklist'\n"
         f"Path({str(captured_history)!r}).write_bytes(Path(os.environ['HISTFILE']).read_bytes())\n"
         f"Path({str(captured_arguments)!r}).write_text('\\n'.join(sys.argv[1:]))\n"
         "sys.stdout.buffer.write(b'vt_test\\0')\n"
