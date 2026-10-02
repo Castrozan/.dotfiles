@@ -7,4 +7,4 @@ ARG workspace_directory
 RUN mkdir -p "${workspace_directory}/node_modules" "${workspace_directory}/.devenv" "${workspace_directory}/dist" && chown "${workspace_uid}:${workspace_gid}" "${workspace_directory}/node_modules" "${workspace_directory}/.devenv" "${workspace_directory}/dist"
 USER ${workspace_uid}:${workspace_gid}
 ENV HOME=/home/devenv NPM_CONFIG_PREFIX=/home/devenv/.local
-ENV PATH=/home/devenv/.local/bin:/home/devenv/.nix-profile/bin:${PATH}
+ENV PATH=/home/devenv/.local/state/nix/profile/bin:/home/devenv/.local/bin:/home/devenv/.nix-profile/bin:${PATH}
