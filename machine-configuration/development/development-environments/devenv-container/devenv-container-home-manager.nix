@@ -52,7 +52,8 @@ in
         "collect"
       ];
       StartInterval = 60;
-      ProcessType = "Background";
+      RunAtLoad = true;
+      ProcessType = "Standard";
       StandardOutPath = "${config.xdg.stateHome}/devenv-container-cleanup.log";
       StandardErrorPath = "${config.xdg.stateHome}/devenv-container-cleanup.log";
     };
