@@ -50,15 +50,21 @@ in
     config = {
       ProgramArguments = [
         "${containerCommand}/bin/devenv-container"
-        "collect"
+        "watch"
       ];
-      StartInterval = 60;
+      KeepAlive = true;
       RunAtLoad = true;
       ProcessType = "Standard";
       StandardOutPath = "${config.xdg.stateHome}/devenv-container-cleanup.log";
       StandardErrorPath = "${config.xdg.stateHome}/devenv-container-cleanup.log";
     };
   };
+
+  home.activation.startDevelopmentCleanup = lib.mkIf isDarwin (
+    lib.hm.dag.entryAfter [ "setupLaunchAgents" ] ''
+      run /bin/launchctl kickstart -p "gui/$(id -u)/org.nix-community.home.devenv-container-cleanup"
+    ''
+  );
 
   systemd.user.services.devenv-container-cleanup = lib.mkIf (!isDarwin) {
     Unit.Description = "Stop unused development containers";

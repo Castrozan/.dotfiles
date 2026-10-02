@@ -5,6 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from container_cleanup_watch import ensure_cleanup_running, watch_cleanup
 from container_configuration import ContainerPolicy
 from container_leases import project_is_idle, project_lock, record_use, runtime_lock
 from container_runtime import ContainerRuntime
@@ -94,9 +95,13 @@ def main():
             command_parser.add_argument("--timeout", type=int)
             command_parser.add_argument("command", nargs=argparse.REMAINDER)
     commands.add_parser("collect")
+    commands.add_parser("watch")
     arguments = parser.parse_args()
     policy = ContainerPolicy.load(os.environ["DEVENV_CONTAINER_POLICY"])
     runtime = ContainerRuntime(policy)
+    if arguments.action == "watch":
+        watch_cleanup(policy)
+        return 0
     if arguments.action == "collect":
         collect(policy, runtime)
         return 0
@@ -136,6 +141,7 @@ def main():
         if arguments.action == "exec":
             parser.error("exec requires a command after --")
         command = ["bash", "--noprofile", "--norc", "-i"]
+    ensure_cleanup_running(policy)
     return execute(policy, runtime, project, command, timeout_seconds, interactive)
 
 
