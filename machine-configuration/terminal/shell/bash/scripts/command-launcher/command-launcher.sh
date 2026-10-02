@@ -17,9 +17,6 @@ cx() {
 		printf 'cx: command history ranker is unavailable\n' >&2
 		return 1
 	fi
-	if [[ -o history ]]; then
-		builtin history -a || return
-	fi
 	local command_launcher_active=1 selected_command ranker_process
 	local -a ranked_commands
 	mapfile -d '' -t ranked_commands < <(HISTFILE="$HISTFILE" HSTR_CONFIG=keywords-matching command command-history-ranker --non-interactive "$@")

@@ -1,8 +1,9 @@
 import json
 import shlex
+import subprocess
 from pathlib import Path
 
-from command_launcher_support import run_launcher
+from command_launcher_support import BASH, HISTORY, LAUNCHER, run_launcher
 
 
 def test_history_preserves_repeat_executions_with_timestamps(launcher_environment):
@@ -55,3 +56,26 @@ def test_unrecorded_invocation_does_not_add_the_recalled_command(launcher_enviro
     assert result.returncode == 0
     saved_history = Path(launcher_environment["HISTFILE"]).read_text().splitlines()
     assert "vt_test" not in saved_history
+
+
+def test_interactive_recall_learns_once_and_respects_hidden_commands(
+    launcher_environment,
+):
+    launcher_environment["HSTR_RESULTS"] = json.dumps(["vt_test"])
+    result = subprocess.run(
+        [BASH, "--noprofile", "--norc", "-i"],
+        input=(
+            f". {shlex.quote(str(HISTORY))}\n"
+            f". {shlex.quote(str(LAUNCHER))}\n"
+            "alias vt_test='true'\nhistory -c\nvt_test\n"
+            "cx vt test\n cx vt test\nexit\n"
+        ),
+        env=launcher_environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0
+    saved_history = Path(launcher_environment["HISTFILE"]).read_text().splitlines()
+    assert saved_history.count("vt_test") == 2
+    assert saved_history.count("cx vt test") == 0
