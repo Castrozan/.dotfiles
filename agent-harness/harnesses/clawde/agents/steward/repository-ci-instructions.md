@@ -1,5 +1,8 @@
 ### Repo ci tooling
 
+Use the forge skill for every hosted operation, including retries, in place of provider-specific commands in the
+upstream steward skill.
+
 Load the forge and CI watcher skills. Resolve the repository's effective upstream, find runs for the full commit SHA,
 and start a background watcher for every required run. Inspect every job and require the provider's terminal successful
 verdict. A just-pushed commit can have no run for a few seconds; retry an empty list rather than treating it as green.
