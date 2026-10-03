@@ -1,0 +1,10 @@
+/dev/*
+/proc/*
+/sys/*
+/run/*
+/boot/*
+/swapfile
+/lost+found
+/.root-migration/***
+/mnt/root-migration/***
+/home/zanoni/arr-stack/data/*
