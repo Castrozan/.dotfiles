@@ -146,16 +146,16 @@ def referenced_instruction_paths(repo_root: Path, suite_paths: set[Path]) -> set
     for suite_path in suite_paths:
         document = yaml.safe_load(suite_path.read_text()) or {}
         for test in document.get("tests", []):
-            candidates = [test.get("skill_path")]
-            candidates.extend(test.get("extra_skill_paths") or [])
-            if test.get("agent"):
-                candidates.append(
-                    public_skill_definition_path(test["agent"], repo_root)
-                )
-            for candidate in candidates:
-                if candidate:
-                    paths.add(repo_root / candidate)
+            paths.update(_instruction_paths_for_test(repo_root, test))
     return {path for path in paths if path.is_file()}
+
+
+def _instruction_paths_for_test(repo_root: Path, test: dict) -> set[Path]:
+    candidates = [test.get("skill_path")]
+    candidates.extend(test.get("extra_skill_paths") or [])
+    if test.get("agent"):
+        candidates.append(public_skill_definition_path(test["agent"], repo_root))
+    return {repo_root / candidate for candidate in candidates if candidate}
 
 
 def evaluation_fingerprints(repo_root: Path = REPO_ROOT) -> dict[str, str]:
