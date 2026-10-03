@@ -2,6 +2,7 @@ import shutil
 import tempfile
 import time
 from pathlib import Path
+from typing import NamedTuple
 
 from e2e.sessions.e2e_harness_profiles import scenario_harness_profile
 from e2e.sessions.e2e_models import E2eScenarioResult, TerminalSessionTrace
@@ -26,6 +27,15 @@ from e2e.sessions.e2e_workspace import (
     sanitize_name_for_session,
     setup_e2e_scenario_workspace,
 )
+
+
+class E2eScenarioSession(NamedTuple):
+    scenario: dict
+    scenario_name: str
+    pane_id: str
+    workspace: Path
+    start_time: float
+    debug_capture: bool
 
 
 def run_e2e_scenario(
@@ -95,51 +105,38 @@ def _run_live_scenario(
 
         start_time = time.time()
 
-        return _run_e2e_session(
-            scenario,
-            scenario_name,
-            pane_id,
-            profile,
-            workspace,
-            start_time,
-            timeout,
-            debug_capture,
+        session = E2eScenarioSession(
+            scenario, scenario_name, pane_id, workspace, start_time, debug_capture
         )
+        return _run_e2e_session(session, profile, timeout)
     finally:
         if tab_handle:
             destroy_test_tab(tab_handle["tab_id"])
         shutil.rmtree(workspace, ignore_errors=True)
 
 
-def _run_e2e_session(
-    scenario,
-    scenario_name,
-    pane_id,
-    profile,
-    workspace,
-    start_time,
-    timeout,
-    debug_capture,
-):
-    for scenario_step in scenario_steps(scenario):
-        failure_reason = run_scenario_step(pane_id, scenario_step, profile, timeout)
+def _run_e2e_session(session: E2eScenarioSession, profile, timeout):
+    for scenario_step in scenario_steps(session.scenario):
+        failure_reason = run_scenario_step(
+            session.pane_id, scenario_step, profile, timeout
+        )
         if failure_reason:
             return failed_e2e_scenario_result(
-                scenario,
-                scenario_name,
-                pane_id,
-                workspace,
-                start_time,
+                session.scenario,
+                session.scenario_name,
+                session.pane_id,
+                session.workspace,
+                session.start_time,
                 failure_reason=failure_reason,
-                debug_capture=debug_capture,
+                debug_capture=session.debug_capture,
             )
     return successful_e2e_scenario_result(
-        scenario,
-        scenario_name,
-        pane_id,
-        workspace,
-        start_time,
-        debug_capture=debug_capture,
+        session.scenario,
+        session.scenario_name,
+        session.pane_id,
+        session.workspace,
+        session.start_time,
+        debug_capture=session.debug_capture,
     )
 
 
