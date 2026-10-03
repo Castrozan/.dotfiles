@@ -7,14 +7,7 @@ from markdown_it.token import Token
 
 from instructions.instruction_format_diagnostics import InstructionFormatViolation
 from instructions.instruction_markdown_frontmatter import parse_instruction_body
-from instructions.validation.instruction_block_validation import (
-    is_instruction_heading,
-    is_instruction_paragraph,
-    record_heading_transition,
-    report_empty_instruction_section,
-    report_unconsumed_instruction_lines,
-    valid_instruction_block,
-)
+from instructions.validation import instruction_block_validation
 
 MAXIMUM_INSTRUCTION_PROSE_LINES = 150
 MAXIMUM_SECTION_PROSE_LINES = 20
@@ -116,9 +109,13 @@ def _inspect_markdown_blocks(body, tokens, inspection):
         opening = tokens[index]
         following = tokens[index + 1 : index + 3]
         line_number = _instruction_block_line_number(body, opening)
-        heading = is_instruction_heading(opening)
-        paragraph = is_instruction_paragraph(opening, section_line_number)
-        if not valid_instruction_block(opening, following, heading, paragraph):
+        heading = instruction_block_validation.is_instruction_heading(opening)
+        paragraph = instruction_block_validation.is_instruction_paragraph(
+            opening, section_line_number
+        )
+        if not instruction_block_validation.valid_instruction_block(
+            opening, following, heading, paragraph
+        ):
             inspection.reject(
                 "instruction_section_structure",
                 line_number,
@@ -126,7 +123,7 @@ def _inspect_markdown_blocks(body, tokens, inspection):
             )
             return inspection
         if heading:
-            record_heading_transition(
+            instruction_block_validation.record_heading_transition(
                 inspection, section_line_number, section_prose_lines
             )
             section_line_number = line_number
@@ -141,7 +138,9 @@ def _inspect_markdown_blocks(body, tokens, inspection):
             )
         inspect_inline_prose(following[0], line_number, inspection)
         consumed_lines.update(range(*opening.map))
-    report_unconsumed_instruction_lines(body, consumed_lines, inspection)
+    instruction_block_validation.report_unconsumed_instruction_lines(
+        body, consumed_lines, inspection
+    )
     _report_final_prose_limits(
         body, section_line_number, section_prose_lines, total_prose_lines, inspection
     )
@@ -177,7 +176,7 @@ def _record_paragraph_prose(
 def _report_final_prose_limits(
     body, section_line_number, section_prose_lines, total_prose_lines, inspection
 ):
-    report_empty_instruction_section(
+    instruction_block_validation.report_empty_instruction_section(
         body, section_line_number, section_prose_lines, inspection
     )
     if total_prose_lines > MAXIMUM_INSTRUCTION_PROSE_LINES:

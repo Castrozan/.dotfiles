@@ -12,13 +12,7 @@ from instructions.instruction_surface_scanner import (
     skill_definition_files,
     skill_reference_files,
 )
-from instructions.validation.instruction_repository_validation import (
-    validate_duplicate_instruction_names,
-    validate_instruction_sources,
-    validate_misplaced_skill_markdown,
-    validate_noncanonical_skill_references,
-    validate_skill_reference_routes,
-)
+from instructions.validation import instruction_repository_validation
 
 MAXIMUM_INSTRUCTION_DESCRIPTION_WORDS = 35
 MAXIMUM_INSTRUCTION_DESCRIPTION_SENTENCES = 2
@@ -122,18 +116,20 @@ def repository_instruction_format_violations() -> dict[str, list[str]]:
         for path in paths
         if path != metadata_fragment
     }
-    validate_instruction_sources(inspections, metadata_fragment, add)
+    instruction_repository_validation.validate_instruction_sources(
+        inspections, metadata_fragment, add
+    )
     named_files = named_instruction_entrypoint_files()
     for path in named_files:
         for violation in instruction_identity_violations(path):
             add(path, violation)
-    validate_duplicate_instruction_names(add)
-    validate_misplaced_skill_markdown(add)
+    instruction_repository_validation.validate_duplicate_instruction_names(add)
+    instruction_repository_validation.validate_misplaced_skill_markdown(add)
     references = skill_reference_files()
-    validate_noncanonical_skill_references(
+    instruction_repository_validation.validate_noncanonical_skill_references(
         skill_definition_files() + references, inspections, add
     )
-    validate_skill_reference_routes(
+    instruction_repository_validation.validate_skill_reference_routes(
         references, inspections, add, INSTRUCTION_NAME.fullmatch
     )
     return dict(sorted(violations.items()))
