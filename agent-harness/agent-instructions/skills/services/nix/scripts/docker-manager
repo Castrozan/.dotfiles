@@ -221,7 +221,7 @@ cmd_remove() {
   # Remove
   local rm_flags="-v"
   [[ $remove_volumes -eq 0 ]] && rm_flags=""
-  docker remove "$container" $rm_flags 2>&1
+  docker container rm "$container" $rm_flags 2>&1
 }
 
 cmd_exec() {
