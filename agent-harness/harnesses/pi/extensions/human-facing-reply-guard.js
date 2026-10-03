@@ -45,6 +45,34 @@ function invokeReplyGuard(payload) {
   });
 }
 
+async function checkSettledReply(
+  pi,
+  correctedReply,
+  userRequestText,
+  replyText,
+  setCorrectionPending,
+) {
+  const output = await invokeReplyGuard({
+    hook_event_name: "Stop",
+    session_id: "pi-interactive-session",
+    user_request_text: userRequestText,
+    reply_text: replyText,
+    ...(correctedReply ? { stop_hook_active: true } : {}),
+  });
+  if (correctedReply) return;
+  const feedback = output.reason || output.systemMessage;
+  if (!feedback) return;
+  setCorrectionPending();
+  pi.sendMessage(
+    {
+      customType: "human-facing-reply-format-guard",
+      content: feedback,
+      display: false,
+    },
+    { triggerTurn: true, deliverAs: "followUp" },
+  );
+}
+
 export default function HumanFacingReplyGuard(pi) {
   let userRequestText = "";
   let replyText = "";
@@ -65,26 +93,15 @@ export default function HumanFacingReplyGuard(pi) {
     const correctedReply = correctionPending;
     correctionPending = false;
     if (!replyText) return;
-
     try {
-      const output = await invokeReplyGuard({
-        hook_event_name: "Stop",
-        session_id: "pi-interactive-session",
-        user_request_text: userRequestText,
-        reply_text: replyText,
-        ...(correctedReply ? { stop_hook_active: true } : {}),
-      });
-      if (correctedReply) return;
-      const feedback = output.reason || output.systemMessage;
-      if (!feedback) return;
-      correctionPending = true;
-      pi.sendMessage(
-        {
-          customType: "human-facing-reply-format-guard",
-          content: feedback,
-          display: false,
+      await checkSettledReply(
+        pi,
+        correctedReply,
+        userRequestText,
+        replyText,
+        () => {
+          correctionPending = true;
         },
-        { triggerTurn: true, deliverAs: "followUp" },
       );
     } catch (failure) {
       console.error(failure.message);
