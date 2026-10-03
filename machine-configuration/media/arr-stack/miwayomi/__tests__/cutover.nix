@@ -31,9 +31,7 @@ let
     && lib.hasInfix ":4568" cloudflareOriginsText;
   serviceBoundaryIsDocumented =
     lib.hasInfix "Suwayomi handles manga discovery, browser reading" stackReadmeText
-    && lib.hasInfix "Kavita-compatible CBZ files." stackReadmeText
-    && lib.hasInfix "Kavita serves the persisted CBZ library" stackReadmeText
-    && lib.hasInfix "read-only." stackReadmeText
+    && lib.hasInfix "downloads CBZ files." stackReadmeText
     && lib.hasInfix "Miwayomi handles instant anime playback." stackReadmeText
     && lib.hasInfix "Suwayomi and Miwayomi run in the Compose project." stackReadmeText;
   seanimeIsRemoved =
@@ -58,7 +56,7 @@ in
 
   chise-manga-and-anime-service-boundary-is-documented =
     mkEvalCheck "chise-manga-and-anime-service-boundary-is-documented" serviceBoundaryIsDocumented
-      "the stack must document Suwayomi for manga, Kavita for persisted CBZ files, and Miwayomi for instant anime";
+      "the stack must document Suwayomi for manga and CBZ downloads, and Miwayomi for instant anime";
 
   chise-seanime-is-removed =
     mkEvalCheck "chise-seanime-is-removed" seanimeIsRemoved

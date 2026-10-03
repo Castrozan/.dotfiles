@@ -34,7 +34,6 @@ def test_every_subcommand_has_a_handler():
         "list",
         "set-email",
         "sync",
-        "sync-kavita-access",
         "sync-request-routing",
         "sync-account-permissions",
     }

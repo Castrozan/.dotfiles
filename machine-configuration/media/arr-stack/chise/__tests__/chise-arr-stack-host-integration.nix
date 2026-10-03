@@ -133,7 +133,7 @@ in
         lib.hasInfix "tailscale funnel reset" arrMediaFunnelExecStart
         && !(lib.hasInfix "--https=" arrMediaFunnelExecStart)
       )
-      "chise must clear its obsolete media Funnel configuration without asserting replacement Funnel routes, so Jellyfin, Jellyseerr, and Kavita are public only through their owner-only Cloudflare Access hostnames";
+      "chise must clear its obsolete media Funnel configuration without asserting replacement Funnel routes, so Jellyfin and Jellyseerr are public only through their owner-only Cloudflare Access hostnames";
 
   chise-arr-media-ratelimit-nginx-enabled-on-chise =
     mkEvalCheck "chise-arr-media-ratelimit-nginx-enabled-on-chise" nixosCfg.services.nginx.enable

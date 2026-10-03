@@ -45,15 +45,9 @@ let
     }
     {
       name = "jellyseerr";
-      nextName = "kavita";
-      memoryLimit = "768m";
-      healthProbe = ''["CMD", "wget", "-qO-", "http://127.0.0.1:5055/api/v1/status"]'';
-    }
-    {
-      name = "kavita";
       nextName = "suwayomi";
       memoryLimit = "768m";
-      healthProbe = ''["CMD", "curl", "-fsS", "http://127.0.0.1:5000/api/health"]'';
+      healthProbe = ''["CMD", "wget", "-qO-", "http://127.0.0.1:5055/api/v1/status"]'';
     }
     {
       name = "suwayomi";

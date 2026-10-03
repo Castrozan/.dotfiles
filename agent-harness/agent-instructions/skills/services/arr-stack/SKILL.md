@@ -1,6 +1,6 @@
 ---
 name: arr-stack
-description: "Manage the chise media stack: Jellyfin friend accounts, Jellyseerr request and download status, and the separate Suwayomi and Kavita manga pipeline. Use for friends, media requests, Jellyfin users, or manga."
+description: "Manage the chise media stack: Jellyfin friend accounts, Jellyseerr request and download status, and the separate Suwayomi manga pipeline. Use for friends, media requests, Jellyfin users, or manga."
 ---
 
 ### Commands
@@ -52,23 +52,16 @@ root folder, so a title the stack already holds can make a new request for it fa
 
 Manga never touches Jellyseerr, Prowlarr, the \*arr apps or the torrent client. Jellyseerr descends from Overseerr and
 models only movies and television, so it has no media type for manga and no plugin adds one; never search for a way to
-request manga there, and answer that it cannot. Suwayomi acquires from its own scanlation-source extensions and Kavita
-serves what it wrote, both declared in the repo like the rest of the stack. `arr-status` and `arr-users` know nothing
-about either, so neither reports manga; Kavita holds its own accounts and the friend policy in the `arr_users` package
-does not reach them.
+request manga there, and answer that it cannot. Suwayomi acquires from its own scanlation-source extensions and serves
+manga in its browser reader. `arr-status` and `arr-users` do not report manga or manage its access.
 
 ### Manga traps
 
-Suwayomi's download format, download path, bind address and web interface source are forced as JVM system properties on
-every start, so a change made in its UI silently reverts on restart; edit the manga module in the repo instead. The web
-interface is pinned to the build inside the packaged server with its update check off, so an offer to update it never
-appears and never should: the version is the package's, and a newer interface arrives by bumping the package rather than
-by letting the server rewrite its own mutable copy.
-
-CBZ is forced rather than preferred because Kavita ingests archives and skips the loose per-chapter image folders
-Suwayomi writes by default, so a chapter downloaded before that setting took effect stays invisible in Kavita until it
-is downloaded again. Suwayomi ships no login and stays on the tailnet; Kavita has one and is published, so never publish
-Suwayomi to reach it from outside.
+Suwayomi's download format, download path, bind address and web interface source are declared by the Compose service, so
+a change made in its UI may revert on restart; edit the stack module in the repo instead. The web interface is pinned to
+the build inside the container image with its update check off. CBZ downloads persist on the shared data drive. Suwayomi
+ships no application login, so its public hostname requires owner authentication at Cloudflare Access; its plain HTTP
+port remains bound to the tailnet.
 
 ### Declarative boundary
 

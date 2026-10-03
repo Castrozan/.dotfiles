@@ -51,7 +51,6 @@ let
     "bazarr"
     "jellyfin"
     "jellyseerr"
-    "kavita"
     "suwayomi"
     "miwayomi"
     "miwayomi-update-disabled"

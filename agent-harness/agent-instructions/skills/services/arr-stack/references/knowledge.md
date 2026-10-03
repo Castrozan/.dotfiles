@@ -20,15 +20,6 @@ A password manager reporting nothing for these applications has, at least once, 
 rather than a missing entry: a global URI match set to exact silently kills autofill for every URL that carries a path,
 which is all of them here. Check the vault contents and the match mode before concluding a credential was never saved.
 
-### Kavita names series from the filename until the library reads embedded metadata
-
-Suwayomi names every archive after the scanlation group before the chapter, and Kavita parses a series name out of the
-filename ahead of the containing folder, so a library created with embedded metadata reading off shows each series named
-after the scanlation group instead of the title. Suwayomi exposes no setting for the download filename pattern, so do
-not hunt for one; it does write a correct `ComicInfo.xml` into every archive, and switching the library to read embedded
-metadata is what recovers the real titles. Delete the mis-parsed series before the forced rescan rather than trusting
-the rescan to rename it in place.
-
 ### Fetching additional data is ffmpeg lifting subtitles out of the container
 
 The spinner the Jellyfin player raises over its transport bar is the client waiting on one subtitle request and nothing
@@ -55,11 +46,3 @@ against two dozen libraries this machine keeps only in the store. Without a libr
 an UnsatisfiedLinkError for libglib and takes the WebView with it, while the rest of the server stays healthy and
 nothing but one startup stack trace says so. The manga module declares that path; when the WebView goes dark after an
 upstream Chromium bump, `ldd` the downloaded `libcef.so` for newly missing sonames rather than suspecting the server.
-
-### Kavita is the one stack app the repo provisions nothing for
-
-Nothing here declares Kavita's admin account, its libraries or its settings, so that state exists only inside its config
-volume and a wipe loses all of it. Its registration endpoint mints the first administrator on the first call carrying a
-valid body, so probing that endpoint creates a real admin rather than describing itself. Library create and update also
-require the file group list and the exclude patterns under field names the read response does not use, which is what
-makes an update assembled from a read fail validation.

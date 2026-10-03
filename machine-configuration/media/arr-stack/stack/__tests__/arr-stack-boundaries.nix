@@ -28,7 +28,6 @@ let
   persistentFrontEndServices = [
     "jellyfin"
     "jellyseerr"
-    "kavita"
     "suwayomi"
     "miwayomi"
     "flaresolverr"
@@ -43,7 +42,6 @@ let
   funnelLoopbackPublishes = [
     "127.0.0.1:8096:8096"
     "127.0.0.1:5055:5055"
-    "127.0.0.1:5000:5000"
   ];
   lineIsFunnelLoopbackPublish =
     line: builtins.any (publish: lib.hasInfix publish line) funnelLoopbackPublishes;
@@ -72,7 +70,6 @@ let
   jellyseerrUsesStablePublicDns =
     lib.hasInfix stablePublicDnsAnchor composeText
     && lib.hasInfix "container_name: arr-jellyseerr\n    restart: unless-stopped\n    networks:\n      - arrnet\n    dns: *stable-public-dns" composeText;
-  kavitaReadsMangaLibraryReadOnly = lib.hasInfix "\${ARR_DATA_ROOT}/manga/mangas:/manga:ro" composeText;
   mangaLibraryStaysOutOfJellyfinMediaRoot =
     !(lib.hasInfix "\${ARR_DATA_ROOT}/media/manga" composeText);
   audiobookServicesShareTheDownloadFilesystem =
@@ -103,10 +100,6 @@ in
       (audiobookServicesShareTheDownloadFilesystem && audiobookLibraryStaysOutOfJellyfinMediaRoot)
       "Audiobook requests, downloads and playback must share /data for imports, with a separate library outside Jellyfin's media root";
 
-  chise-arr-stack-kavita-reads-manga-library-read-only =
-    mkEvalCheck "chise-arr-stack-kavita-reads-manga-library-read-only" kavitaReadsMangaLibraryReadOnly
-      "Kavita must mount the existing manga library read-only so the reader can never delete or rewrite a preserved CBZ file";
-
   chise-arr-stack-manga-outside-jellyfin-media-root =
     mkEvalCheck "chise-arr-stack-manga-outside-jellyfin-media-root"
       mangaLibraryStaysOutOfJellyfinMediaRoot
@@ -135,7 +128,7 @@ in
         && !composeBindsAWildcardInterface
         && composeLoopbackPublishesOnlyFunnelTargets
       )
-      "every published port must bind chise's tailnet address through the \${ARR_BIND_ADDR} variable, except the Jellyfin 127.0.0.1:8096, Jellyseerr 127.0.0.1:5055 and Kavita 127.0.0.1:5000 loopback publishes the Tailscale Funnels proxy to reach the public internet; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but those funnel targets";
+      "every published port must bind chise's tailnet address through the \${ARR_BIND_ADDR} variable, except the Jellyfin 127.0.0.1:8096 and Jellyseerr 127.0.0.1:5055 loopback publishes the Cloudflare origin proxies use to reach the containers; no port may bind the 0.0.0.0 wildcard, and loopback may publish nothing but those funnel targets";
 
   chise-arr-stack-no-tailnet-ip-literal-in-public-sources =
     mkEvalCheck "chise-arr-stack-no-tailnet-ip-literal-in-public-sources"

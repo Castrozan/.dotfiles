@@ -41,7 +41,7 @@ in
         && builtins.elem "suwayomi" driveGuardFrontEndServices
         && !(chiseConfiguration.systemd.services ? suwayomi-server)
       )
-      "Suwayomi must be an ordinary always-on arr-stack Compose front end, restored by the same drive guard as Jellyfin, Kavita, and Miwayomi, with no parallel standalone container unit";
+      "Suwayomi must be an ordinary always-on arr-stack Compose front end, restored by the same drive guard as Jellyfin and Miwayomi, with no parallel standalone container unit";
 
   chise-suwayomi-is-tailnet-only-and-drive-guarded =
     mkEvalCheck "chise-suwayomi-is-tailnet-only-and-drive-guarded"
@@ -53,14 +53,14 @@ in
       )
       "the loginless server must publish only on chise's tailnet address, and its repository reconciler must wait for the Compose applicator that restores the front ends";
 
-  chise-suwayomi-preserves-state-and-kavita-downloads =
-    mkEvalCheck "chise-suwayomi-preserves-state-and-kavita-downloads"
+  chise-suwayomi-preserves-state-and-cbz-downloads =
+    mkEvalCheck "chise-suwayomi-preserves-state-and-cbz-downloads"
       (
         lib.hasInfix "\${ARR_CONFIG_ROOT}/suwayomi:/home/suwayomi/.local/share/Tachidesk" suwayomiServiceBody
         && lib.hasInfix "\${ARR_DATA_ROOT}/manga:/home/suwayomi/.local/share/Tachidesk/downloads" suwayomiServiceBody
         && lib.hasInfix "DOWNLOAD_AS_CBZ: \"true\"" suwayomiServiceBody
       )
-      "Suwayomi must keep its state under the arr-stack config root and write CBZ downloads into the shared manga tree Kavita reads";
+      "Suwayomi must keep its state under the arr-stack config root and write CBZ downloads into the shared manga tree";
 
   chise-suwayomi-keeps-webview-and-bundled-interface =
     mkEvalCheck "chise-suwayomi-keeps-webview-and-bundled-interface"

@@ -26,7 +26,6 @@
         frontEndServices = [
           "jellyfin"
           "jellyseerr"
-          "kavita"
           "suwayomi"
           "miwayomi"
           "miwayomi-gateway"
@@ -96,22 +95,6 @@
       jellyfinApiKeySecretFile = config.age.secrets."jellyfin-admin-api-key".path;
       jellyseerrSettingsFile = "/home/zanoni/arr-stack/config/jellyseerr/settings.json";
       rootFolderProviderUnits = [ "arr-config-provisioner.service" ];
-    };
-
-    kavitaLibraryAccessProvisioner = {
-      enable = true;
-      kavitaApiKeySecretFile = config.age.secrets."kavita-admin-api-key".path;
-      publicLibraryNames = [ "Manga" ];
-      privilegedAccountUsernames = [ "zanoni" ];
-      friendAccountUsernames = [
-        "joshen"
-        "rogerio"
-        "Xamitos"
-      ];
-      sourceFolderLibraryName = "Manga";
-      sourceRootHostPath = "/home/zanoni/arr-stack/data/manga/mangas";
-      sourceRootContainerPath = "/manga";
-      libraryPathProviderUnits = [ "docker.service" ];
     };
 
     bazarrAuthProvisioner = {
