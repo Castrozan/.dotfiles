@@ -43,14 +43,21 @@ def extract_text_from_assistant_message(
 
     text_parts = []
     for block in content_blocks:
-        if not isinstance(block, dict):
-            continue
-        if block.get("type") == "text":
-            text_content = block.get("text", "")
-            if text_content.strip():
-                text_parts.append(text_content)
+        text_content = _assistant_text_block_content(block)
+        if text_content is not None:
+            text_parts.append(text_content)
 
     return " ".join(text_parts) if text_parts else None
+
+
+def _assistant_text_block_content(block):
+    if not isinstance(block, dict):
+        return None
+    if block.get("type") == "text":
+        text_content = block.get("text", "")
+        if text_content.strip():
+            return text_content
+    return None
 
 
 def parse_stream_json_output(raw_output: str) -> SessionTrace:
@@ -64,22 +71,31 @@ def parse_stream_json_output(raw_output: str) -> SessionTrace:
         except json.JSONDecodeError:
             continue
 
-        event_type = event.get("type", "")
-
-        if event_type == "assistant":
-            tool_calls = extract_tool_calls_from_assistant_message(event)
-            trace.tool_calls.extend(tool_calls)
-
-            text_content = extract_text_from_assistant_message(event)
-            if text_content:
-                trace.assistant_messages.append(text_content)
-
-        if event_type == "result":
-            result_text = event.get("result", "")
-            if isinstance(result_text, str) and result_text.strip():
-                trace.assistant_messages.append(result_text)
+        _append_stream_event(trace, event)
 
     return trace
+
+
+def _append_stream_event(trace, event):
+    event_type = event.get("type", "")
+    if event_type == "assistant":
+        _append_assistant_stream_event(trace, event)
+    if event_type == "result":
+        _append_result_stream_event(trace, event)
+
+
+def _append_assistant_stream_event(trace, event):
+    tool_calls = extract_tool_calls_from_assistant_message(event)
+    trace.tool_calls.extend(tool_calls)
+    text_content = extract_text_from_assistant_message(event)
+    if text_content:
+        trace.assistant_messages.append(text_content)
+
+
+def _append_result_stream_event(trace, event):
+    result_text = event.get("result", "")
+    if isinstance(result_text, str) and result_text.strip():
+        trace.assistant_messages.append(result_text)
 
 
 def extract_tool_name_sequence(
