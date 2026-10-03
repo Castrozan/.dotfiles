@@ -85,22 +85,23 @@ def parse_set_command_arguments(arguments: list[str]) -> dict:
     attributes = {}
     index = 0
     while index < len(arguments):
-        if arguments[index] == "--temp" and index + 1 < len(arguments):
-            attributes["temperature"] = validate_temperature(arguments[index + 1])
-            index += 2
-        elif arguments[index] == "--fan" and index + 1 < len(arguments):
-            attributes["fan_mode"] = validate_fan_mode(arguments[index + 1])
-            index += 2
-        elif arguments[index] == "--swing" and index + 1 < len(arguments):
-            attributes["swing_mode"] = validate_swing_mode(arguments[index + 1])
-            index += 2
-        elif arguments[index] == "--mode" and index + 1 < len(arguments):
-            attributes["hvac_mode"] = validate_hvac_mode(arguments[index + 1])
-            index += 2
-        elif arguments[index] == "--preset" and index + 1 < len(arguments):
-            attributes["preset_mode"] = validate_preset_mode(arguments[index + 1])
-            index += 2
-        else:
-            print(f"Unknown option: {arguments[index]}", file=sys.stderr)
-            raise SystemExit(1)
+        attribute_name, attribute_value = parse_set_command_argument(arguments, index)
+        attributes[attribute_name] = attribute_value
+        index += 2
     return attributes
+
+
+def parse_set_command_argument(arguments: list[str], index: int) -> tuple[str, object]:
+    option_parsers = {
+        "--temp": ("temperature", validate_temperature),
+        "--fan": ("fan_mode", validate_fan_mode),
+        "--swing": ("swing_mode", validate_swing_mode),
+        "--mode": ("hvac_mode", validate_hvac_mode),
+        "--preset": ("preset_mode", validate_preset_mode),
+    }
+    option_parser = option_parsers.get(arguments[index])
+    if option_parser is None or index + 1 >= len(arguments):
+        print(f"Unknown option: {arguments[index]}", file=sys.stderr)
+        raise SystemExit(1)
+    attribute_name, validate_attribute_value = option_parser
+    return attribute_name, validate_attribute_value(arguments[index + 1])

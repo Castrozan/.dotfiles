@@ -25,11 +25,19 @@ def installed_karabiner_version():
 def ensure_karabiner_version(minimum_version, installer_package):
     minimum_components = version_components(minimum_version)
     installed_version = installed_karabiner_version()
-    if (
+    if installed_version_meets_minimum(installed_version, minimum_components):
+        return
+    install_karabiner_package(minimum_version, minimum_components, installer_package)
+
+
+def installed_version_meets_minimum(installed_version, minimum_components):
+    return (
         installed_version
         and version_components(installed_version) >= minimum_components
-    ):
-        return
+    )
+
+
+def install_karabiner_package(minimum_version, minimum_components, installer_package):
     package_path = Path(installer_package)
     if (
         not package_path.is_absolute()
@@ -51,10 +59,7 @@ def ensure_karabiner_version(minimum_version, installer_package):
         check=True,
     )
     installed_version = installed_karabiner_version()
-    if (
-        not installed_version
-        or version_components(installed_version) < minimum_components
-    ):
+    if not installed_version_meets_minimum(installed_version, minimum_components):
         raise RuntimeError(
             f"Karabiner >= {minimum_version} is required; installed: {installed_version}"
         )

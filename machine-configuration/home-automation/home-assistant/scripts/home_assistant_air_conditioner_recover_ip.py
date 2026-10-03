@@ -52,15 +52,7 @@ def reload_midea_integration(token: str, entry_id: str) -> bool:
         return False
 
 
-def main() -> None:
-    midea_entry = read_midea_config_entry()
-    configured_ip = midea_entry["data"]["ip_address"]
-    entry_id = midea_entry["entry_id"]
-
-    if midea_device_discovery.check_midea_port_open(configured_ip):
-        print("no recovery needed")
-        return
-
+def discover_replacement_midea_ip() -> str | None:
     local_networks = midea_device_discovery.discover_local_ipv4_networks()
     if not local_networks:
         print("no local IPv4 networks available to scan", file=sys.stderr)
@@ -85,9 +77,21 @@ def main() -> None:
             port_open_addresses
         )
     )
-    discovered_ip = midea_device_discovery.pick_best_midea_candidate_address(
+    return midea_device_discovery.pick_best_midea_candidate_address(
         confirmed_midea_addresses, port_open_addresses
     )
+
+
+def main() -> None:
+    midea_entry = read_midea_config_entry()
+    configured_ip = midea_entry["data"]["ip_address"]
+    entry_id = midea_entry["entry_id"]
+
+    if midea_device_discovery.check_midea_port_open(configured_ip):
+        print("no recovery needed")
+        return
+
+    discovered_ip = discover_replacement_midea_ip()
 
     if discovered_ip is None:
         print("device not found on any local subnet", file=sys.stderr)

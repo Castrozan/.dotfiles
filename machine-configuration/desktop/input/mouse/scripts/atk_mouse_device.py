@@ -88,34 +88,48 @@ def build_atk_command(
 def send_and_receive_atk_command(hidraw_path: str, command: bytes) -> bytes:
     fd = os.open(hidraw_path, os.O_RDWR | os.O_NONBLOCK)
     try:
-        while True:
-            ready, _, _ = select.select([fd], [], [], 0.02)
-            if not ready:
-                break
-            os.read(fd, 64)
-
+        discard_pending_hidraw_responses(fd)
         os.write(fd, command)
-
         deadline = time.monotonic() + 3.0
-        while time.monotonic() < deadline:
-            ready, _, _ = select.select([fd], [], [], 0.1)
-            if not ready:
-                continue
-            try:
-                while True:
-                    response = os.read(fd, 64)
-                    if (
-                        len(response) >= 2
-                        and response[0] == 0x08
-                        and response[1] in (0x07, 0x08)
-                    ):
-                        return response
-            except BlockingIOError:
-                pass
-
+        response = read_atk_response_until(fd, deadline)
+        if response is not None:
+            return response
         raise SystemExit("No response from device")
     finally:
         os.close(fd)
+
+
+def discard_pending_hidraw_responses(fd: int) -> None:
+    while True:
+        ready, _, _ = select.select([fd], [], [], 0.02)
+        if not ready:
+            return
+        os.read(fd, 64)
+
+
+def read_atk_response_until(fd: int, deadline: float) -> bytes | None:
+    while time.monotonic() < deadline:
+        ready, _, _ = select.select([fd], [], [], 0.1)
+        if not ready:
+            continue
+        try:
+            response = read_next_atk_response(fd)
+            if response is not None:
+                return response
+        except BlockingIOError:
+            pass
+    return None
+
+
+def read_next_atk_response(fd: int) -> bytes | None:
+    while True:
+        response = os.read(fd, 64)
+        if is_atk_response(response):
+            return response
+
+
+def is_atk_response(response: bytes) -> bool:
+    return len(response) >= 2 and response[0] == 0x08 and response[1] in (0x07, 0x08)
 
 
 def read_sysfs_attribute(path: Path, default: str = "unknown") -> str:

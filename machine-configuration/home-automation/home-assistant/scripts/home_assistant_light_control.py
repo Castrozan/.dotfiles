@@ -132,52 +132,62 @@ def parse_optional_attributes_from_arguments(arguments: list[str]) -> dict:
     return attributes
 
 
+def handle_light_mutation_command(command: str, token: str) -> bool:
+    if command in ("on", "off", "set"):
+        execute_light_mutation(command, token)
+        return True
+    return False
+
+
+def execute_light_mutation(command: str, token: str) -> None:
+    minimum_argument_count = 4 if command == "set" else 3
+    if len(sys.argv) < minimum_argument_count:
+        print_usage_and_exit()
+    entity_ids = resolve_target_entity_ids(sys.argv[2])
+    if command == "off":
+        turn_off_lights(token, entity_ids)
+        return
+
+    extra_attributes = parse_optional_attributes_from_arguments(sys.argv[3:])
+    require_light_mutation_attributes(command, extra_attributes)
+    turn_on_lights(token, entity_ids, extra_attributes)
+
+
+def require_light_mutation_attributes(command: str, attributes: dict) -> None:
+    if command == "set" and not attributes:
+        print(
+            "No attributes specified. Use --brightness and/or --temp",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+
+
+def handle_light_query_command(command: str, token: str) -> bool:
+    if command == "status":
+        target = sys.argv[2] if len(sys.argv) > 2 else "all"
+        entity_ids = resolve_target_entity_ids(target)
+        get_light_states(token, entity_ids)
+    elif command == "scene":
+        if len(sys.argv) < 3:
+            print_usage_and_exit()
+        activate_scene(token, sys.argv[2])
+    else:
+        return False
+    return True
+
+
 def main() -> None:
     if len(sys.argv) < 2:
         print_usage_and_exit()
 
     command = sys.argv[1]
     token = read_home_assistant_token()
-
-    if command == "on":
-        if len(sys.argv) < 3:
-            print_usage_and_exit()
-        entity_ids = resolve_target_entity_ids(sys.argv[2])
-        extra_attributes = parse_optional_attributes_from_arguments(sys.argv[3:])
-        turn_on_lights(token, entity_ids, extra_attributes)
-
-    elif command == "off":
-        if len(sys.argv) < 3:
-            print_usage_and_exit()
-        entity_ids = resolve_target_entity_ids(sys.argv[2])
-        turn_off_lights(token, entity_ids)
-
-    elif command == "set":
-        if len(sys.argv) < 4:
-            print_usage_and_exit()
-        entity_ids = resolve_target_entity_ids(sys.argv[2])
-        extra_attributes = parse_optional_attributes_from_arguments(sys.argv[3:])
-        if not extra_attributes:
-            print(
-                "No attributes specified. Use --brightness and/or --temp",
-                file=sys.stderr,
-            )
-            raise SystemExit(1)
-        turn_on_lights(token, entity_ids, extra_attributes)
-
-    elif command == "status":
-        target = sys.argv[2] if len(sys.argv) > 2 else "all"
-        entity_ids = resolve_target_entity_ids(target)
-        get_light_states(token, entity_ids)
-
-    elif command == "scene":
-        if len(sys.argv) < 3:
-            print_usage_and_exit()
-        activate_scene(token, sys.argv[2])
-
-    else:
-        print(f"Unknown command: {command}", file=sys.stderr)
-        print_usage_and_exit()
+    if handle_light_mutation_command(command, token):
+        return
+    if handle_light_query_command(command, token):
+        return
+    print(f"Unknown command: {command}", file=sys.stderr)
+    print_usage_and_exit()
 
 
 if __name__ == "__main__":
