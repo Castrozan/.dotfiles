@@ -1,3 +1,4 @@
+import importlib
 import json
 import sys
 from pathlib import Path
@@ -7,10 +8,35 @@ SUPERVISOR_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(SUPERVISOR_PACKAGE_DIRECTORY_PATH))
 
-import missing_search_sweep
-import missing_search_api
+missing_search_sweep = importlib.import_module("missing_search_sweep")
+missing_search_api = importlib.import_module("missing_search_api")
+sonarr_search_planning = importlib.import_module("sonarr_search_planning")
 
 SONARR_ENDPOINT = ("http://sonarr", "sonarr-key")
+
+
+def test_queued_item_ids_preserve_two_pass_generator_and_get_order():
+    access_order = []
+
+    class TrackingRecord(dict):
+        def get(self, field_name, default=None):
+            access_order.append(field_name)
+            return super().get(field_name, default)
+
+    generated_records = (
+        record for record in [TrackingRecord(seriesId=50, episodeId=10)]
+    )
+
+    assert sonarr_search_planning._queued_sonarr_item_ids(generated_records) == (
+        {50},
+        set(),
+    )
+    assert access_order == ["seriesId", "seriesId"]
+
+    access_order.clear()
+    record = TrackingRecord(seriesId=50, episodeId=10)
+    assert sonarr_search_planning._queued_sonarr_item_ids([record]) == ({50}, {10})
+    assert access_order == ["seriesId", "seriesId", "episodeId", "episodeId"]
 
 
 def build_http_router(responses, recorded_posts):

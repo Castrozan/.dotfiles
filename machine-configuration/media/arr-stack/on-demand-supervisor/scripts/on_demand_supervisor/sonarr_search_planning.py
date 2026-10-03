@@ -4,9 +4,9 @@ def season_key(record):
 
 def _is_complete_missing_season(statistics, missing_count):
     episode_count = _nonzero_season_statistic(statistics, "episodeCount")
+    episode_file_count = _nonzero_season_statistic(statistics, "episodeFileCount")
     if not episode_count > 1:
         return False
-    episode_file_count = _nonzero_season_statistic(statistics, "episodeFileCount")
     if episode_file_count != 0:
         return False
     if missing_count != episode_count:
@@ -39,15 +39,16 @@ def complete_missing_season_keys(missing_records, series):
 
 
 def _queued_sonarr_item_ids(downloads):
-    queued_series_ids = set()
-    queued_episode_ids = set()
-    for record in downloads:
-        series_id = record.get("seriesId")
-        if series_id is not None:
-            queued_series_ids.add(series_id)
-        episode_id = record.get("episodeId")
-        if episode_id is not None:
-            queued_episode_ids.add(episode_id)
+    queued_series_ids = {
+        record.get("seriesId")
+        for record in downloads
+        if record.get("seriesId") is not None
+    }
+    queued_episode_ids = {
+        record.get("episodeId")
+        for record in downloads
+        if record.get("episodeId") is not None
+    }
     return queued_series_ids, queued_episode_ids
 
 
