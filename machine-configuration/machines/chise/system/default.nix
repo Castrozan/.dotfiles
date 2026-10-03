@@ -13,7 +13,5 @@
     ../../../media/arr-stack/chise/chise-arr-stack-host-integration-nixos.nix
 
     ../../../browsers/brave/chise-brave-policy-nixos.nix
-
-    ../../../operating-system/root-migration/chise-root-migration-nixos.nix
   ];
 }
