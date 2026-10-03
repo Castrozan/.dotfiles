@@ -15,6 +15,32 @@ from workflow_context import REPOSITORY
 MAXIMUM_ARCHIVE_BYTES = 67108864
 MAXIMUM_EXTRACTED_BYTES = 268435456
 MAXIMUM_ENTRIES = 10000
+UNSAFE_ARCHIVE_ENTRY_MESSAGE = "Artifact contains an unsafe or duplicate path"
+
+
+def _archive_content_exceeds_limits(entries):
+    return (
+        len(entries) > MAXIMUM_ENTRIES
+        or sum(entry.file_size for entry in entries) > MAXIMUM_EXTRACTED_BYTES
+    )
+
+
+def _archive_path_has_unsafe_location(path, filename, paths):
+    return path.is_absolute() or ".." in path.parts or "\\" in filename or path in paths
+
+
+def _validate_archive_entry(entry, paths):
+    path = PurePosixPath(entry.filename)
+    mode = entry.external_attr >> 16
+    if _archive_path_has_unsafe_location(path, entry.filename, paths):
+        raise ValueError(UNSAFE_ARCHIVE_ENTRY_MESSAGE)
+    if stat.S_ISLNK(mode):
+        raise ValueError(UNSAFE_ARCHIVE_ENTRY_MESSAGE)
+    if stat.S_IFMT(mode) not in (0, stat.S_IFREG, stat.S_IFDIR):
+        raise ValueError(UNSAFE_ARCHIVE_ENTRY_MESSAGE)
+    if not path.parts:
+        raise ValueError(UNSAFE_ARCHIVE_ENTRY_MESSAGE)
+    return path
 
 
 def extract_archive(archive, destination, expected_digest):
@@ -26,25 +52,11 @@ def extract_archive(archive, destination, expected_digest):
         raise ValueError("Artifact archive digest differs from GitHub metadata")
     with ZipFile(archive) as bundle:
         entries = bundle.infolist()
-        if (
-            len(entries) > MAXIMUM_ENTRIES
-            or sum(entry.file_size for entry in entries) > MAXIMUM_EXTRACTED_BYTES
-        ):
+        if _archive_content_exceeds_limits(entries):
             raise ValueError("Artifact contents exceed extraction limits")
         paths = set()
         for entry in entries:
-            path = PurePosixPath(entry.filename)
-            mode = entry.external_attr >> 16
-            if (
-                path.is_absolute()
-                or ".." in path.parts
-                or "\\" in entry.filename
-                or path in paths
-                or stat.S_ISLNK(mode)
-                or (stat.S_IFMT(mode) not in (0, stat.S_IFREG, stat.S_IFDIR))
-                or not path.parts
-            ):
-                raise ValueError("Artifact contains an unsafe or duplicate path")
+            path = _validate_archive_entry(entry, paths)
             paths.add(path)
         bundle.extractall(destination)
 

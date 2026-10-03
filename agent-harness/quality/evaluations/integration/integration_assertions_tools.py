@@ -10,22 +10,8 @@ def check_tool_ordering_assertion(
     tool_that_must_come_after = assertion["before"]
     tool_sequence = extract_tool_name_sequence(trace)
 
-    first_index = next(
-        (
-            index
-            for index, name in enumerate(tool_sequence)
-            if name == tool_that_must_come_first
-        ),
-        None,
-    )
-    second_index = next(
-        (
-            index
-            for index, name in enumerate(tool_sequence)
-            if name == tool_that_must_come_after
-        ),
-        None,
-    )
+    first_index = _first_tool_index(tool_sequence, tool_that_must_come_first)
+    second_index = _first_tool_index(tool_sequence, tool_that_must_come_after)
 
     if first_index is None:
         return AssertionResult(
@@ -49,6 +35,13 @@ def check_tool_ordering_assertion(
             if passed
             else (f"order wrong ({first_index} >= {second_index})")
         ),
+    )
+
+
+def _first_tool_index(tool_sequence, tool_name):
+    return next(
+        (index for index, name in enumerate(tool_sequence) if name == tool_name),
+        None,
     )
 
 

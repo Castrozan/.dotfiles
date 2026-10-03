@@ -38,35 +38,52 @@ def effective_remote(directory):
 
 def parse_remote(remote):
     if "://" not in remote:
-        match = re.fullmatch(r"(?:[^@/:]+@)?([^/:]+):(.+)", remote)
-        if not match:
-            raise ValueError("Repository must have a full HTTPS or SSH Git URL")
-        hostname, project = match.groups()
+        hostname, project = _parse_scp_remote(remote)
     else:
-        parsed = urlsplit(remote)
-        if parsed.scheme not in {"https", "http", "ssh"} or not parsed.hostname:
-            raise ValueError("Repository must have a full HTTPS or SSH Git URL")
-        hostname, project = parsed.hostname, parsed.path.lstrip("/")
+        hostname, project = _parse_url_remote(remote)
+    project = _normalized_project(project)
+    return hostname.lower(), project
+
+
+def _parse_scp_remote(remote):
+    match = re.fullmatch(r"(?:[^@/:]+@)?([^/:]+):(.+)", remote)
+    if not match:
+        raise ValueError("Repository must have a full HTTPS or SSH Git URL")
+    return match.groups()
+
+
+def _parse_url_remote(remote):
+    parsed = urlsplit(remote)
+    if parsed.scheme not in {"https", "http", "ssh"} or not parsed.hostname:
+        raise ValueError("Repository must have a full HTTPS or SSH Git URL")
+    return parsed.hostname, parsed.path.lstrip("/")
+
+
+def _normalized_project(project):
     project = project.rstrip("/").removesuffix(".git")
     if len(project.split("/")) < 2 or any(
         part in {"", ".", ".."} for part in project.split("/")
     ):
         raise ValueError("Repository URL must include its namespace and project")
-    return hostname.lower(), project
+    return project
 
 
 def repository_location(remote, directory):
     hostname, project = parse_remote(remote)
     if "://" not in remote or remote.startswith("ssh://"):
-        configured = execute(["ssh", "-G", hostname], directory)
-        if configured.returncode != 0:
-            raise ValueError("Cannot resolve the SSH repository hostname")
-        for line in configured.stdout.splitlines():
-            key, _, value = line.partition(" ")
-            if key == "hostname":
-                return value.strip().lower(), project
-        raise ValueError("SSH configuration returned no repository hostname")
+        hostname = _resolved_ssh_hostname(hostname, directory)
     return hostname, project
+
+
+def _resolved_ssh_hostname(hostname, directory):
+    configured = execute(["ssh", "-G", hostname], directory)
+    if configured.returncode != 0:
+        raise ValueError("Cannot resolve the SSH repository hostname")
+    for line in configured.stdout.splitlines():
+        key, _, value = line.partition(" ")
+        if key == "hostname":
+            return value.strip().lower()
+    raise ValueError("SSH configuration returned no repository hostname")
 
 
 def provider_for_host(hostname, directory):
@@ -74,37 +91,59 @@ def provider_for_host(hostname, directory):
         return "github"
     if hostname == "gitlab.com":
         return "gitlab"
+    if _is_configured_gitlab_host(hostname, directory):
+        return "gitlab"
+    if _is_configured_github_host(hostname, directory):
+        return "github"
+    raise ValueError(
+        f"Unrecognized Git hosting provider for {hostname}; specify --provider"
+    )
+
+
+def _is_configured_gitlab_host(hostname, directory):
     configured = execute(
         ["glab", "config", "get", "api_host", "--host", hostname], directory
     )
-    if configured.returncode == 0 and configured.stdout.strip() == hostname:
-        return "gitlab"
+    return configured.returncode == 0 and configured.stdout.strip() == hostname
+
+
+def _is_configured_github_host(hostname, directory):
     configured = execute(
         ["gh", "auth", "status", "--hostname", hostname, "--json", "hosts"], directory
     )
     if configured.returncode == 0:
         import json
 
-        if hostname in json.loads(configured.stdout).get("hosts", {}):
-            return "github"
-    raise ValueError(
-        f"Unrecognized Git hosting provider for {hostname}; specify --provider"
-    )
+        return hostname in json.loads(configured.stdout).get("hosts", {})
+    return False
 
 
 def resolve_repository(directory=None, repository=None, provider=None):
     directory = Path(directory or Path.cwd())
     remote = repository or effective_remote(directory)
-    if "://" not in remote and ":" not in remote:
-        if repository is None:
-            raise ValueError("Git remote has no hostname")
-        if provider:
-            hostname = "github.com" if provider == "github" else "gitlab.com"
-        else:
-            hostname, _ = repository_location(effective_remote(directory), directory)
-        remote = f"https://{hostname}/{remote}"
+    remote = _expand_repository_reference(remote, repository, provider, directory)
     hostname, project = repository_location(remote, directory)
     provider = provider or provider_for_host(hostname, directory)
+    _validate_provider(provider)
+    return Repository(provider, hostname, project)
+
+
+def _expand_repository_reference(remote, repository, provider, directory):
+    if "://" in remote or ":" in remote:
+        return remote
+    if repository is None:
+        raise ValueError("Git remote has no hostname")
+    if provider:
+        hostname = _default_hostname_for_provider(provider)
+    else:
+        hostname, _ = repository_location(effective_remote(directory), directory)
+    return f"https://{hostname}/{remote}"
+
+
+def _default_hostname_for_provider(provider):
+    return "github.com" if provider == "github" else "gitlab.com"
+
+
+def _validate_provider(provider):
     if provider not in {"github", "gitlab"}:
         raise ValueError(f"Unsupported Git hosting provider: {provider}")
-    return Repository(provider, hostname, project)

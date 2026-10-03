@@ -5,17 +5,24 @@ import time
 from command_runner import resolve_executable_path, run_command_capturing_stdout
 
 
+def _herdr_server_pid_from_line(line):
+    line_parts = line.strip().split(None, 1)
+    if len(line_parts) != 2:
+        return None
+    process_pid, command_text = line_parts
+    command_tokens = command_text.split()
+    if not command_tokens:
+        return None
+    executable_base_name = command_tokens[0].split("/")[-1]
+    if executable_base_name == "herdr" and command_tokens[1:2] == ["server"]:
+        return process_pid
+    return None
+
+
 def find_herdr_server_pid(ps_output: str):
     for line in ps_output.splitlines():
-        line_parts = line.strip().split(None, 1)
-        if len(line_parts) != 2:
-            continue
-        process_pid, command_text = line_parts
-        command_tokens = command_text.split()
-        if not command_tokens:
-            continue
-        executable_base_name = command_tokens[0].split("/")[-1]
-        if executable_base_name == "herdr" and command_tokens[1:2] == ["server"]:
+        process_pid = _herdr_server_pid_from_line(line)
+        if process_pid is not None:
             return process_pid
     return None
 
@@ -80,6 +87,14 @@ def collect_herdr_control_plane_round_trip() -> list:
     ]
 
 
+def _running_herdr_text_path(lsof_output):
+    for line in lsof_output.splitlines():
+        lsof_fields = line.split()
+        if len(lsof_fields) >= 5 and lsof_fields[3] == "txt":
+            return lsof_fields[-1]
+    return None
+
+
 def collect_herdr_binary_staleness() -> list:
     ps_output = run_command_capturing_stdout(["ps", "-axo", "pid=,command="])
     herdr_server_pid = find_herdr_server_pid(ps_output)
@@ -88,12 +103,7 @@ def collect_herdr_binary_staleness() -> list:
         return []
     installed_real_path = os.path.realpath(installed_herdr_path)
     lsof_output = run_command_capturing_stdout(["lsof", "-p", herdr_server_pid])
-    running_text_path = None
-    for line in lsof_output.splitlines():
-        lsof_fields = line.split()
-        if len(lsof_fields) >= 5 and lsof_fields[3] == "txt":
-            running_text_path = lsof_fields[-1]
-            break
+    running_text_path = _running_herdr_text_path(lsof_output)
     if running_text_path is None:
         return []
     is_stale = os.path.realpath(running_text_path) != installed_real_path

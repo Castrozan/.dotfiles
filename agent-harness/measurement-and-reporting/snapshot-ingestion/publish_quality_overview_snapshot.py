@@ -15,16 +15,17 @@ REPORT_BASE_URL = (
 )
 
 
-def producing_environment(payload, environment):
-    workflow = payload["workflow"]
-    subject = payload["overview"]["subject"]
-    revision = workflow["revision"]
-    identifier = workflow["runId"]
-    attempt = workflow["runAttempt"]
+def _validate_producing_repository(workflow, subject):
     if workflow["repository"] != REPOSITORY or subject["repository"] != REPOSITORY:
         raise IngestionRefusedError("Overview repository differs from the producer")
+
+
+def _validate_producing_revision(subject, revision):
     if not re.fullmatch(r"[a-f0-9]{40}", revision) or subject["revision"] != revision:
         raise IngestionRefusedError("Overview revision differs from the producing run")
+
+
+def _validate_producing_attempt(identifier, attempt):
     if (
         not re.fullmatch(r"[1-9]\d*", identifier, flags=re.ASCII)
         or not isinstance(attempt, int)
@@ -33,6 +34,17 @@ def producing_environment(payload, environment):
         raise IngestionRefusedError(
             "Overview run and attempt must identify GitHub execution"
         )
+
+
+def producing_environment(payload, environment):
+    workflow = payload["workflow"]
+    subject = payload["overview"]["subject"]
+    revision = workflow["revision"]
+    identifier = workflow["runId"]
+    attempt = workflow["runAttempt"]
+    _validate_producing_repository(workflow, subject)
+    _validate_producing_revision(subject, revision)
+    _validate_producing_attempt(identifier, attempt)
     if payload["detailsBaseUrl"] != f"{REPORT_BASE_URL}/{identifier}/{attempt}/":
         raise IngestionRefusedError(
             "Overview details do not identify the producing attempt"

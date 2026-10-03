@@ -61,40 +61,41 @@ def print_usage() -> None:
     print("The configuration host comes from the nix packaging of this command.")
 
 
-def main() -> None:
+def exit_after_baseline_check() -> None:
     if "--check-baseline" in sys.argv:
         passed = rebuild_benchmarks.baseline.check_baseline(
             "--require-fresh" in sys.argv
         )
         raise SystemExit(0 if passed else 1)
 
-    results_file = get_results_file_path()
-    benchmark_core.ensure_results_file_exists(results_file, CSV_HEADER)
 
+def print_report_if_requested(results_file: pathlib.Path) -> bool:
     if sys.argv[1:2] == ["report"]:
         print_recent_results(results_file)
-        return
+        return True
+    return False
 
-    target = benchmark_core.required_benchmark_target()
-    benchmark_commands = rebuild_benchmarks.execution.get_benchmark_commands(target)
 
-    if "--save-baseline" in sys.argv:
-        if not rebuild_benchmarks.baseline.save_baseline(
-            benchmark_commands, target, results_file
-        ):
-            raise SystemExit(1)
-        return
-
-    command = sys.argv[1] if len(sys.argv) > 1 else "all"
-
-    if command == "all":
-        measured_types = ("eval", "dry-run")
-    elif command in benchmark_commands:
-        measured_types = (command,)
-    else:
-        print_usage()
+def save_baseline_if_requested(benchmark_commands, target, results_file) -> bool:
+    if "--save-baseline" not in sys.argv:
+        return False
+    if not rebuild_benchmarks.baseline.save_baseline(
+        benchmark_commands, target, results_file
+    ):
         raise SystemExit(1)
+    return True
 
+
+def measured_types_for_command(command, benchmark_commands) -> list[str]:
+    if command == "all":
+        return ["eval", "dry-run"]
+    if command in benchmark_commands:
+        return [command]
+    print_usage()
+    raise SystemExit(1)
+
+
+def run_benchmarks(measured_types, benchmark_commands, target, results_file) -> None:
     failed_types = [
         benchmark_type
         for benchmark_type in measured_types
@@ -107,6 +108,23 @@ def main() -> None:
     ]
     if failed_types:
         raise SystemExit(1)
+
+
+def main() -> None:
+    exit_after_baseline_check()
+    results_file = get_results_file_path()
+    benchmark_core.ensure_results_file_exists(results_file, CSV_HEADER)
+    if print_report_if_requested(results_file):
+        return
+
+    target = benchmark_core.required_benchmark_target()
+    benchmark_commands = rebuild_benchmarks.execution.get_benchmark_commands(target)
+    if save_baseline_if_requested(benchmark_commands, target, results_file):
+        return
+
+    command = sys.argv[1] if len(sys.argv) > 1 else "all"
+    measured_types = measured_types_for_command(command, benchmark_commands)
+    run_benchmarks(measured_types, benchmark_commands, target, results_file)
 
 
 if __name__ == "__main__":

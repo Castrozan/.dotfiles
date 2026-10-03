@@ -1,4 +1,6 @@
 import os
+import shutil
+from pathlib import Path
 
 import scene_source_digests as digests
 
@@ -58,6 +60,21 @@ def test_editing_a_nested_helper_changes_its_scene_digest(tmp_path):
     )
     after_edit = digests.build_scene_source_digests(str(tmp_path))
     assert after_edit["nested"] != before_edit["nested"]
+
+
+def test_editing_yuruyurau_setup_changes_its_scene_digest(tmp_path):
+    source_directory = Path(REAL_WEB_DIRECTORY) / "scenes" / "yuruyurau"
+    copied_directory = tmp_path / "scenes" / "yuruyurau"
+    copied_directory.mkdir(parents=True)
+    shutil.copy2(source_directory / "yuruyurau_scene.js", copied_directory)
+    setup_path = copied_directory / "yuruyurau_setup.js"
+    shutil.copy2(source_directory / setup_path.name, setup_path)
+
+    before_edit = digests.build_scene_source_digests(str(tmp_path))
+    setup_path.write_text(setup_path.read_text() + "\n")
+    after_edit = digests.build_scene_source_digests(str(tmp_path))
+
+    assert after_edit["yuruyurau"] != before_edit["yuruyurau"]
 
 
 def test_adding_a_scene_leaves_every_existing_digest_untouched(tmp_path):

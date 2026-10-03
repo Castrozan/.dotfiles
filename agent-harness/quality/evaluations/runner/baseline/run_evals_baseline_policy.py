@@ -57,6 +57,26 @@ def baseline_evidence_failures(
     expected_execution_profile: dict,
 ) -> list[str]:
     failures = []
+    _append_inventory_evidence_failures(
+        baseline,
+        current_test_fingerprints,
+        current_categories,
+        expected_execution_profile,
+        failures,
+    )
+    _append_required_category_failures(baseline, failures)
+    profile = baseline.get("evidence_profiles", {}).get(REQUIRED_HUMANIZE_PROFILE)
+    _append_humanize_profile_failures(profile, failures)
+    return failures
+
+
+def _append_inventory_evidence_failures(
+    baseline: dict,
+    current_test_fingerprints: dict[str, str],
+    current_categories: set[str],
+    expected_execution_profile: dict,
+    failures: list[str],
+) -> None:
     if baseline.get("execution_profile") != expected_execution_profile:
         failures.append(
             "Baseline execution profile does not match the expected profile"
@@ -80,6 +100,9 @@ def baseline_evidence_failures(
             "Baseline contains obsolete evaluation tests: "
             + ", ".join(sorted(evidence_status["obsolete"]))
         )
+
+
+def _append_required_category_failures(baseline: dict, failures: list[str]) -> None:
     present_required_categories = REQUIRED_BASELINE_CATEGORIES & set(
         baseline.get("categories", {})
     )
@@ -101,9 +124,12 @@ def baseline_evidence_failures(
             f"Communication pass rate is below {MINIMUM_COMMUNICATION_PASS_RATE:.0%}"
         )
 
-    profile = baseline.get("evidence_profiles", {}).get(REQUIRED_HUMANIZE_PROFILE)
+
+def _append_humanize_profile_failures(
+    profile: dict | None, failures: list[str]
+) -> None:
     if not profile:
-        return failures
+        return
     if profile.get("epochs", 0) < MINIMUM_HUMANIZE_PROFILE_EPOCHS:
         failures.append(
             "Humanize recovery profile needs at least "
@@ -111,8 +137,11 @@ def baseline_evidence_failures(
         )
     if profile.get("candidate_pass_rate", 0) < 0.9:
         failures.append("Humanize recovery candidate pass rate is below 90%")
+    _append_humanize_outcome_failures(profile, failures)
+
+
+def _append_humanize_outcome_failures(profile: dict, failures: list[str]) -> None:
     if profile.get("delta", -1) < 0:
         failures.append("Humanize recovery candidate trails its Git-ref control")
     if profile.get("candidate_hard_failures"):
         failures.append("Humanize recovery profile contains a hard-failed case")
-    return failures

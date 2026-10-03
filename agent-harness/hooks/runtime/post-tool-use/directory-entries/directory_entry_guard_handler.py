@@ -37,6 +37,38 @@ def affected_repository_directories(paths):
     return repositories
 
 
+def _paths_in_repositories(hook_input):
+    return [
+        path
+        for path in collect_changed_file_paths(hook_input)
+        if path_has_repository_ancestor(path)
+    ]
+
+
+def _repository_violation_result(
+    repositories,
+    excluded_repository_patterns,
+    directory_entry_violations,
+    repository_is_excluded,
+    directory_entry_ceilings,
+    repository_entry_counts,
+):
+    for repository_root, directories in repositories.items():
+        if repository_is_excluded(repository_root, excluded_repository_patterns):
+            continue
+        violations = directory_entry_violations(
+            repository_entry_counts(repository_root),
+            directory_entry_ceilings(repository_root),
+            directories,
+        )
+        if violations:
+            reason = f"Repository {repository_root}: " + violations[0].describe()
+            return HandlerResult(
+                decision="block", reason=reason, system_message=f"BLOCKED: {reason}"
+            )
+    return None
+
+
 def handle(hook_input):
     if hook_input.get("tool_name") not in {
         "Write",
@@ -46,11 +78,7 @@ def handle(hook_input):
         "apply_patch",
     }:
         return None
-    paths = [
-        path
-        for path in collect_changed_file_paths(hook_input)
-        if path_has_repository_ancestor(path)
-    ]
+    paths = _paths_in_repositories(hook_input)
     if not paths:
         return None
     import subprocess
@@ -68,19 +96,16 @@ def handle(hook_input):
     try:
         repositories = affected_repository_directories(paths)
         excluded_repository_patterns = load_excluded_repository_patterns()
-        for repository_root, directories in repositories.items():
-            if repository_is_excluded(repository_root, excluded_repository_patterns):
-                continue
-            violations = directory_entry_violations(
-                repository_entry_counts(repository_root),
-                directory_entry_ceilings(repository_root),
-                directories,
-            )
-            if violations:
-                reason = f"Repository {repository_root}: " + violations[0].describe()
-                return HandlerResult(
-                    decision="block", reason=reason, system_message=f"BLOCKED: {reason}"
-                )
+        violation_result = _repository_violation_result(
+            repositories,
+            excluded_repository_patterns,
+            directory_entry_violations,
+            repository_is_excluded,
+            directory_entry_ceilings,
+            repository_entry_counts,
+        )
+        if violation_result is not None:
+            return violation_result
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         reason = f"Directory entry check could not complete: {error}"
         return HandlerResult(decision="block", reason=reason, system_message=reason)

@@ -21,52 +21,76 @@
 
 const seen = new WeakSet();
 function patchDeep(obj, depth) {
-  if (!obj || typeof obj !== "object" || depth > 20) return;
-  if (seen.has(obj)) return;
-  try {
-    seen.add(obj);
-  } catch {
-    return;
-  }
-  if (obj === window || obj === document || obj instanceof Node) return;
+  if (!isWithinTraversalBounds(obj, depth)) return;
+  if (!markAsUnseen(obj)) return;
+  if (isPageHostObject(obj)) return;
 
   for (const key in obj) {
-    try {
-      const val = obj[key];
-
-      // The main gate: strip the blurred_image_interstitial from API responses
-      if (
-        key === "blurred_image_interstitial" &&
-        val &&
-        val.interstitial_action
-      ) {
-        obj[key] = null;
-        continue;
-      }
-
-      // Also null the parent container if present
-      if (
-        key === "mediaVisibilityResults" &&
-        val &&
-        val.blurred_image_interstitial
-      ) {
-        obj[key] = null;
-        continue;
-      }
-
-      // Feature flags that enable the gate
-      if (key === "rweb_age_assurance_flow_enabled" && val === true) {
-        obj[key] = false;
-      }
-      if (key === "age_verification_gate_enabled" && val === true) {
-        obj[key] = false;
-      }
-
-      if (val && typeof val === "object") {
-        patchDeep(val, depth + 1);
-      }
-    } catch {}
+    patchDeepProperty(obj, key, depth);
   }
+}
+
+function patchDeepProperty(obj, key, depth) {
+  try {
+    const val = obj[key];
+    if (patchVisibilityGate(obj, key, val)) return;
+    patchAgeFeatureFlag(obj, key, val);
+    recurseIntoObject(val, depth);
+  } catch {}
+}
+
+function isWithinTraversalBounds(obj, depth) {
+  if (!obj || typeof obj !== "object") return false;
+  if (depth > 20) return false;
+  return true;
+}
+
+function isPageHostObject(obj) {
+  return obj === window || obj === document || obj instanceof Node;
+}
+
+function markAsUnseen(obj) {
+  if (seen.has(obj)) return false;
+  try {
+    seen.add(obj);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function patchVisibilityGate(obj, key, val) {
+  if (patchBlurredInterstitial(obj, key, val)) return true;
+  return patchMediaVisibilityResults(obj, key, val);
+}
+
+function patchBlurredInterstitial(obj, key, val) {
+  // The main gate: strip the blurred_image_interstitial from API responses
+  if (key !== "blurred_image_interstitial") return false;
+  if (!val) return false;
+  if (!val.interstitial_action) return false;
+  obj[key] = null;
+  return true;
+}
+
+function patchMediaVisibilityResults(obj, key, val) {
+  // Also null the parent container if present
+  if (key !== "mediaVisibilityResults") return false;
+  if (!val) return false;
+  if (!val.blurred_image_interstitial) return false;
+  obj[key] = null;
+  return true;
+}
+
+function patchAgeFeatureFlag(obj, key, val) {
+  // Feature flags that enable the gate
+  if (val !== true) return;
+  if (key === "rweb_age_assurance_flow_enabled") obj[key] = false;
+  if (key === "age_verification_gate_enabled") obj[key] = false;
+}
+
+function recurseIntoObject(val, depth) {
+  if (val && typeof val === "object") patchDeep(val, depth + 1);
 }
 
 // Hook JSON.parse — catches all GraphQL API responses

@@ -64,6 +64,18 @@ def score_existing_quality_profile(
     return "updated"
 
 
+def _log_unknown_custom_formats(profile_name, desired, known_format_names):
+    unknown_formats = [
+        name
+        for name in desired.get("formatScores", {})
+        if name not in known_format_names
+    ]
+    if unknown_formats:
+        log(
+            f"qualityprofile '{profile_name}': unknown custom formats {unknown_formats}"
+        )
+
+
 def provision_quality_profiles(base_url, api_key, desired_profiles, dry_run):
     custom_formats = get_resource_list(base_url, api_key, "customformat")
     known_format_names = {custom_format["name"] for custom_format in custom_formats}
@@ -74,15 +86,7 @@ def provision_quality_profiles(base_url, api_key, desired_profiles, dry_run):
     outcomes = []
     for desired in desired_profiles:
         profile_name = desired["name"]
-        unknown_formats = [
-            name
-            for name in desired.get("formatScores", {})
-            if name not in known_format_names
-        ]
-        if unknown_formats:
-            log(
-                f"qualityprofile '{profile_name}': unknown custom formats {unknown_formats}"
-            )
+        _log_unknown_custom_formats(profile_name, desired, known_format_names)
         current_profile = profiles_by_name.get(profile_name)
         if current_profile is not None:
             outcomes.append(

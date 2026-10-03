@@ -60,16 +60,22 @@ def committed_baseline_pass_rates(execution_profile):
     pass_rates = []
     for commit_sha, _, baseline_path_at_commit in commits_touching_baseline():
         baseline = baseline_at_commit(commit_sha, baseline_path_at_commit)
-        if baseline is None:
-            continue
-        if baseline.get("total_tests") == RESET_PLACEHOLDER_TOTAL_TESTS:
-            continue
-        if baseline.get("execution_profile") != execution_profile:
-            continue
-        pass_rate = baseline.get("pass_rate")
-        if isinstance(pass_rate, (int, float)):
-            pass_rates.append(pass_rate)
+        if baseline is not None:
+            pass_rate = _matching_baseline_pass_rate(baseline, execution_profile)
+            if pass_rate is not None:
+                pass_rates.append(pass_rate)
     return pass_rates
+
+
+def _matching_baseline_pass_rate(baseline: dict, execution_profile: dict):
+    if baseline.get("total_tests") == RESET_PLACEHOLDER_TOTAL_TESTS:
+        return None
+    if baseline.get("execution_profile") != execution_profile:
+        return None
+    pass_rate = baseline.get("pass_rate")
+    if isinstance(pass_rate, (int, float)):
+        return pass_rate
+    return None
 
 
 def previous_committed_baseline_pass_rate(execution_profile) -> float | None:

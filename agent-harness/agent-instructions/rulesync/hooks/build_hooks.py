@@ -20,10 +20,18 @@ def verify_generated_hooks(generated, target):
         raise ValueError(f"Rulesync did not generate {target} hooks")
     content = generated.read_text()
     if target == "opencode":
-        if 'id: "rulesync.hooks"' not in content:
-            raise ValueError("Rulesync did not emit the OpenCode V2 plugin")
+        _verify_opencode_hook(content)
         return
     hooks = json.loads(content)["hooks"]
+    _verify_json_hooks(hooks, target)
+
+
+def _verify_opencode_hook(content):
+    if 'id: "rulesync.hooks"' not in content:
+        raise ValueError("Rulesync did not emit the OpenCode V2 plugin")
+
+
+def _verify_json_hooks(hooks, target):
     required = {"SessionStart", "PreToolUse", "PostToolUse", "Stop"}
     if target == "claudecode":
         required |= {"SubagentStop", "PermissionRequest"}

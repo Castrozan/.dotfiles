@@ -16,13 +16,20 @@ final class SocketCommandMainThreadDispatcher {
     }
 
     private func executeCommandOnMainThread(_ command: SocketCommand) {
+        if case .recordExternalFocus(let windowIdentifier) = command {
+            commandHandler.recordExternallyFocusedWindow(windowIdentifier)
+            return
+        }
+        executeNavigationCommand(command)
+    }
+
+    private func executeNavigationCommand(_ command: SocketCommand) {
         switch command {
         case .next: commandHandler.handleNextCommand()
         case .prev: commandHandler.handlePrevCommand()
         case .commit: commandHandler.handleCommitCommand()
         case .cancel: commandHandler.handleCancelCommand()
-        case .recordExternalFocus(let windowIdentifier):
-            commandHandler.recordExternallyFocusedWindow(windowIdentifier)
+        default: return
         }
     }
 }
@@ -55,16 +62,19 @@ final class CommandSocketServer {
     }
 
     private func runReceiveLoopUntilTerminated() {
-        guard let serverDescriptor = UnixSocketBinder.bindDatagramSocket(
-            atPath: socketPath,
-            fileMode: socketFileMode,
-            receiveBufferBytes: kernelReceiveBufferBytes
-        ) else { return }
+        guard
+            let serverDescriptor = UnixSocketBinder.bindDatagramSocket(
+                atPath: socketPath,
+                fileMode: socketFileMode,
+                receiveBufferBytes: kernelReceiveBufferBytes
+            )
+        else { return }
 
         var readBuffer = [UInt8](repeating: 0, count: datagramReadBufferSize)
         while true {
             let bytesRead = readBuffer.withUnsafeMutableBufferPointer { bufferPointer -> Int in
-                return Darwin.recvfrom(serverDescriptor, bufferPointer.baseAddress, bufferPointer.count, 0, nil, nil)
+                return Darwin.recvfrom(
+                    serverDescriptor, bufferPointer.baseAddress, bufferPointer.count, 0, nil, nil)
             }
             if bytesRead <= 0 { continue }
             let receivedData = Data(readBuffer.prefix(bytesRead))
@@ -79,7 +89,8 @@ final class CommandSocketServer {
 
     private func extractCommandFromKarabinerPayload(_ payload: String) -> String {
         guard let payloadData = payload.data(using: .utf8) else { return payload }
-        let jsonObject = try? JSONSerialization.jsonObject(with: payloadData, options: [.fragmentsAllowed])
+        let jsonObject = try? JSONSerialization.jsonObject(
+            with: payloadData, options: [.fragmentsAllowed])
         if let stringPayload = jsonObject as? String {
             return stringPayload.trimmingCharacters(in: .whitespacesAndNewlines)
         }

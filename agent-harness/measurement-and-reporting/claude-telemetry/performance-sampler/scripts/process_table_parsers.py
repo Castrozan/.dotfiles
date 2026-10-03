@@ -19,6 +19,14 @@ def sum_process_cpu_percent(ps_output: str, command_predicate) -> float:
     return round(total_cpu_percent, 1)
 
 
+def _add_matching_process_rss(
+    rss_kilobytes_by_key, command_text, process_rss_kilobytes, command_patterns
+):
+    for key, command_pattern in command_patterns.items():
+        if command_pattern in command_text:
+            rss_kilobytes_by_key[key] += process_rss_kilobytes
+
+
 def sum_process_rss_kilobytes_by_pattern(
     ps_output: str, command_patterns: dict, include_total: bool
 ) -> dict:
@@ -34,9 +42,12 @@ def sum_process_rss_kilobytes_by_pattern(
             continue
         command_text = line_parts[1]
         total_rss_kilobytes += process_rss_kilobytes
-        for key, command_pattern in command_patterns.items():
-            if command_pattern in command_text:
-                rss_kilobytes_by_key[key] += process_rss_kilobytes
+        _add_matching_process_rss(
+            rss_kilobytes_by_key,
+            command_text,
+            process_rss_kilobytes,
+            command_patterns,
+        )
     if include_total:
         rss_kilobytes_by_key["total"] = total_rss_kilobytes
     return rss_kilobytes_by_key

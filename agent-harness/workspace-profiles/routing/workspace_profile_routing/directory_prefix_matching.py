@@ -18,6 +18,12 @@ def directory_is_within_prefix(directory: Path, directory_prefix: Path) -> bool:
     return directory == directory_prefix or directory_prefix in directory.parents
 
 
+def _match_is_not_longer(canonical_prefix, longest_match):
+    return longest_match is not None and len(canonical_prefix.parts) <= len(
+        longest_match.directory_prefix.parts
+    )
+
+
 def match_longest_directory_prefix(
     profiles: tuple[WorkspaceProfileRoute, ...],
     working_directory: Path,
@@ -31,9 +37,7 @@ def match_longest_directory_prefix(
                 canonical_working_directory, canonical_prefix
             ):
                 continue
-            if longest_match is not None and len(canonical_prefix.parts) <= len(
-                longest_match.directory_prefix.parts
-            ):
+            if _match_is_not_longer(canonical_prefix, longest_match):
                 continue
             longest_match = DirectoryPrefixMatch(
                 profile=profile, directory_prefix=canonical_prefix

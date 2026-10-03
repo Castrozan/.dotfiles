@@ -65,41 +65,46 @@ def resolve_system_prompt_for_test(
     if "system_prompt" in test:
         return test["system_prompt"]
 
-    skill_path_value = test.get("skill_path")
-    if not skill_path_value:
-        agent_name = test.get("agent")
-        if agent_name:
-            skill_path = public_skill_definition_path(agent_name, REPO_ROOT)
-            if skill_path is None:
-                return None
-            skill_path_value = str(skill_path.relative_to(REPO_ROOT))
-        else:
-            return None
+    skill_path_value = _resolve_skill_path_value(test)
+    if skill_path_value is None:
+        return None
 
-    if instruction_ref:
-        primary_body = load_skill_body_from_git_ref(skill_path_value, instruction_ref)
-    else:
-        resolved_path = REPO_ROOT / skill_path_value
-        primary_body = load_skill_body_from_path(resolved_path)
+    primary_body = _load_skill_body(skill_path_value, instruction_ref)
     if primary_body is None:
         return None
 
-    extra_skill_path_values = test.get("extra_skill_paths") or []
-    extra_bodies = []
-    for extra_skill_path_value in extra_skill_path_values:
-        if instruction_ref:
-            extra_body = load_skill_body_from_git_ref(
-                extra_skill_path_value, instruction_ref
-            )
-        else:
-            extra_resolved_path = REPO_ROOT / extra_skill_path_value
-            extra_body = load_skill_body_from_path(extra_resolved_path)
-        if extra_body:
-            extra_bodies.append(extra_body)
-
+    extra_bodies = _load_extra_skill_bodies(test, instruction_ref)
     if not extra_bodies:
         return primary_body
     return primary_body + "\n\n" + "\n\n".join(extra_bodies)
+
+
+def _resolve_skill_path_value(test: dict) -> str | None:
+    skill_path_value = test.get("skill_path")
+    if skill_path_value:
+        return skill_path_value
+    agent_name = test.get("agent")
+    if not agent_name:
+        return None
+    skill_path = public_skill_definition_path(agent_name, REPO_ROOT)
+    if skill_path is None:
+        return None
+    return str(skill_path.relative_to(REPO_ROOT))
+
+
+def _load_skill_body(skill_path_value: str, instruction_ref: str | None):
+    if instruction_ref:
+        return load_skill_body_from_git_ref(skill_path_value, instruction_ref)
+    return load_skill_body_from_path(REPO_ROOT / skill_path_value)
+
+
+def _load_extra_skill_bodies(test: dict, instruction_ref: str | None) -> list[str]:
+    extra_bodies = []
+    for extra_skill_path_value in test.get("extra_skill_paths") or []:
+        extra_body = _load_skill_body(extra_skill_path_value, instruction_ref)
+        if extra_body:
+            extra_bodies.append(extra_body)
+    return extra_bodies
 
 
 def discover_skill_adjacent_eval_files(repo_root: Path) -> dict[str, list[dict]]:
@@ -135,7 +140,14 @@ def load_config(config_path: Path, repo_root: Path = REPO_ROOT) -> dict:
 
 def load_config_from_dir(config_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
     config = {"settings": {}, "tests": {}, "smoke_test": None}
+    _load_config_settings(config_dir, config)
+    _load_config_tests(config_dir, config)
+    skill_adjacent_tests = discover_skill_adjacent_eval_files(repo_root)
+    config["tests"].update(skill_adjacent_tests)
+    return config
 
+
+def _load_config_settings(config_dir: Path, config: dict) -> None:
     settings_file = config_dir / "settings.yaml"
     if settings_file.exists():
         with open(settings_file) as f:
@@ -144,6 +156,8 @@ def load_config_from_dir(config_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
             if "smoke_test" in data:
                 config["smoke_test"] = data["smoke_test"]
 
+
+def _load_config_tests(config_dir: Path, config: dict) -> None:
     for yaml_file in sorted(config_dir.rglob("*.yaml"), key=lambda path: path.name):
         if yaml_file.name == "settings.yaml":
             continue
@@ -152,8 +166,3 @@ def load_config_from_dir(config_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
             data = yaml.safe_load(f)
             if data and "tests" in data:
                 config["tests"][category_name] = data["tests"]
-
-    skill_adjacent_tests = discover_skill_adjacent_eval_files(repo_root)
-    config["tests"].update(skill_adjacent_tests)
-
-    return config

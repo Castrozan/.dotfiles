@@ -57,11 +57,29 @@ def discover_launch_request(arguments: list[str]) -> HookDiscoveryRequest | None
     parser.add_argument("--remote-auth-token-env")
     parser.add_argument("-h", "--help", "-V", "--version", action="store_true")
     options, remaining = parser.parse_known_args(arguments)
-    command = next(
+    command = _first_positional_argument(remaining)
+    if _is_configuration_launch(options, command):
+        return None
+    configuration_arguments = _configuration_arguments(options)
+    working_directory = Path(options.cd or Path.cwd()).expanduser().resolve()
+    return HookDiscoveryRequest(
+        working_directory,
+        tuple(configuration_arguments),
+        _includes_session_directories(command, options.cd),
+    )
+
+
+def _first_positional_argument(remaining: list[str]) -> str | None:
+    return next(
         (argument for argument in remaining if not argument.startswith("-")), None
     )
-    if options.help or options.remote or command in configuration_commands:
-        return None
+
+
+def _is_configuration_launch(options, command: str | None) -> bool:
+    return options.help or options.remote or command in configuration_commands
+
+
+def _configuration_arguments(options) -> list[str]:
     configuration_arguments = [
         argument for override in options.config for argument in ("-c", override)
     ]
@@ -69,9 +87,10 @@ def discover_launch_request(arguments: list[str]) -> HookDiscoveryRequest | None
         configuration_arguments.extend(("--enable", feature))
     for feature in options.disable:
         configuration_arguments.extend(("--disable", feature))
-    working_directory = Path(options.cd or Path.cwd()).expanduser().resolve()
-    return HookDiscoveryRequest(
-        working_directory,
-        tuple(configuration_arguments),
-        command in {"resume", "fork", "agents"} and options.cd is None,
-    )
+    return configuration_arguments
+
+
+def _includes_session_directories(
+    command: str | None, change_directory: str | None
+) -> bool:
+    return command in {"resume", "fork", "agents"} and change_directory is None

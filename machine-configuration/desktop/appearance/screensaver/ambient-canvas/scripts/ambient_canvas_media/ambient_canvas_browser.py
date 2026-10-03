@@ -28,10 +28,18 @@ def resolve_platform():
 
 def resolve_chromium_browser_application():
     if resolve_platform() == "darwin":
-        for application_name in CHROMIUM_BROWSER_CANDIDATES:
-            if os.path.isdir(f"/Applications/{application_name}.app"):
-                return application_name
-        return None
+        return resolve_darwin_chromium_application()
+    return resolve_linux_chromium_application()
+
+
+def resolve_darwin_chromium_application():
+    for application_name in CHROMIUM_BROWSER_CANDIDATES:
+        if os.path.isdir(f"/Applications/{application_name}.app"):
+            return application_name
+    return None
+
+
+def resolve_linux_chromium_application():
     for executable_name in LINUX_CHROMIUM_EXECUTABLE_CANDIDATES:
         executable_path = shutil.which(executable_name)
         if executable_path:
@@ -53,16 +61,22 @@ def parse_display_point_resolution(resolution_text):
 
 
 def select_main_display_entry(display_report):
-    attached_displays = [
-        screen
-        for graphics_device in display_report.get("SPDisplaysDataType", [])
-        for screen in graphics_device.get("spdisplays_ndrvs", [])
-        if DISPLAY_POINT_RESOLUTION_KEY in screen
-    ]
+    attached_displays = find_attached_displays(display_report)
     for screen in attached_displays:
         if screen.get("spdisplays_main") == MAIN_DISPLAY_FLAG_VALUE:
             return screen
-    return attached_displays[0] if attached_displays else None
+    if attached_displays:
+        return attached_displays[0]
+    return None
+
+
+def find_attached_displays(display_report):
+    attached_displays = []
+    for graphics_device in display_report.get("SPDisplaysDataType", []):
+        for screen in graphics_device.get("spdisplays_ndrvs", []):
+            if DISPLAY_POINT_RESOLUTION_KEY in screen:
+                attached_displays.append(screen)
+    return attached_displays
 
 
 def parse_screen_dimensions(display_report_json):
@@ -87,16 +101,26 @@ def parse_linux_monitor_dimensions(monitor_report_json):
         return None
     if not isinstance(monitors, list) or not monitors:
         return None
+    selected_monitor = find_monitor_with_geometry(monitors)
+    if selected_monitor is None:
+        return None
+    return selected_monitor["width"], selected_monitor["height"]
+
+
+def find_monitor_with_geometry(monitors):
     focused_monitors = [monitor for monitor in monitors if monitor.get("focused")]
-    monitors_with_geometry = [
+    monitors_with_geometry = find_monitors_with_geometry(focused_monitors or monitors)
+    if monitors_with_geometry:
+        return monitors_with_geometry[0]
+    return None
+
+
+def find_monitors_with_geometry(monitors):
+    return [
         monitor
-        for monitor in (focused_monitors or monitors)
+        for monitor in monitors
         if monitor.get("width") and monitor.get("height")
     ]
-    if not monitors_with_geometry:
-        return None
-    selected_monitor = monitors_with_geometry[0]
-    return selected_monitor["width"], selected_monitor["height"]
 
 
 def read_darwin_screen_dimensions():

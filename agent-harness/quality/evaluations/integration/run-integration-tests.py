@@ -7,14 +7,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-from integration_assertions_output import run_assertions
+import integration_scenario_execution
 from integration_models import ScenarioResult, SessionTrace
 from integration_reporting import print_scenario_results
-from integration_scoring import (
-    calculate_experience_score,
-    check_minimum_experience_score,
-)
-from integration_session import run_claude_session
 from integration_workspace import (
     SCENARIOS_DIR,
     discover_scenario_files,
@@ -64,58 +59,13 @@ def run_scenario(
                 error="Scenario missing 'prompt' field",
             )
 
-        trace = run_claude_session(
-            prompt=prompt,
-            workspace_directory=workspace_directory,
-            timeout_seconds=timeout,
-            model=model,
-        )
-
-        if trace.exit_code == 124:
-            return ScenarioResult(
-                scenario_name=scenario_name,
-                passed=False,
-                assertion_results=[],
-                trace=trace,
-                workspace_directory=workspace_directory,
-                duration_seconds=trace.duration_seconds,
-                error=f"Session timed out after {timeout}s",
-            )
-        if trace.exit_code != 0:
-            return ScenarioResult(
-                scenario_name=scenario_name,
-                passed=False,
-                assertion_results=[],
-                trace=trace,
-                workspace_directory=workspace_directory,
-                duration_seconds=trace.duration_seconds,
-                error=f"Claude session exited with code {trace.exit_code}",
-            )
-
-        assertion_results = run_assertions(
-            trace,
-            scenario.get("assertions", {}),
-            workspace_directory=workspace_directory,
-        )
-        experience_score = calculate_experience_score(trace, assertion_results)
-        if "minimum_experience_score" in scenario:
-            assertion_results.append(
-                check_minimum_experience_score(
-                    experience_score, scenario["minimum_experience_score"]
-                )
-            )
-        all_passed = all(
-            assertion_result.passed for assertion_result in assertion_results
-        )
-
-        return ScenarioResult(
-            scenario_name=scenario_name,
-            passed=all_passed,
-            assertion_results=assertion_results,
-            trace=trace,
-            workspace_directory=workspace_directory,
-            duration_seconds=trace.duration_seconds,
-            experience_score=experience_score,
+        return integration_scenario_execution.run_live_scenario(
+            scenario,
+            scenario_name,
+            prompt,
+            workspace_directory,
+            timeout,
+            model,
         )
 
     finally:
@@ -123,6 +73,21 @@ def run_scenario(
 
 
 def main():
+    args = _parse_arguments()
+    scenario_files = discover_scenario_files(args.scenarios_dir)
+    _require_scenario_files(scenario_files, args.scenarios_dir)
+    if args.list:
+        _print_available_scenarios(scenario_files)
+        sys.exit(0)
+    scenario_files = _filter_scenario_files(scenario_files, args.scenario)
+    if not args.dry_run:
+        _require_claude_cli()
+    results = _run_scenarios(scenario_files, args.model, args.dry_run)
+    all_passed = print_scenario_results(results)
+    sys.exit(0 if all_passed else 1)
+
+
+def _parse_arguments():
     parser = argparse.ArgumentParser(
         description=("Run Claude Code integration tests with real sessions")
     )
@@ -151,48 +116,53 @@ def main():
         type=Path,
         help="Directory containing scenario YAML files",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    scenario_files = discover_scenario_files(args.scenarios_dir)
 
+def _require_scenario_files(scenario_files, scenarios_directory):
     if not scenario_files:
-        print("No scenario files found in", args.scenarios_dir)
+        print("No scenario files found in", scenarios_directory)
         sys.exit(1)
 
-    if args.list:
-        print("Available integration test scenarios:")
-        for scenario_file in scenario_files:
-            scenario = load_scenario(scenario_file)
-            print(f"  {scenario['name']}: {scenario.get('description', '')}")
-        sys.exit(0)
 
-    if args.scenario:
-        scenario_files = [
-            scenario_file
-            for scenario_file in scenario_files
-            if load_scenario(scenario_file)["name"] == args.scenario
-        ]
-        if not scenario_files:
-            print(f"Scenario '{args.scenario}' not found")
-            sys.exit(1)
+def _print_available_scenarios(scenario_files):
+    print("Available integration test scenarios:")
+    for scenario_file in scenario_files:
+        scenario = load_scenario(scenario_file)
+        print(f"  {scenario['name']}: {scenario.get('description', '')}")
 
-    if not args.dry_run:
-        result = subprocess.run(["which", "claude"], capture_output=True)
-        if result.returncode != 0:
-            print("Error: claude CLI not found")
-            sys.exit(1)
 
+def _filter_scenario_files(scenario_files, scenario_name):
+    if not scenario_name:
+        return scenario_files
+    selected_scenario_files = [
+        scenario_file
+        for scenario_file in scenario_files
+        if load_scenario(scenario_file)["name"] == scenario_name
+    ]
+    if not selected_scenario_files:
+        print(f"Scenario '{scenario_name}' not found")
+        sys.exit(1)
+    return selected_scenario_files
+
+
+def _require_claude_cli():
+    result = subprocess.run(["which", "claude"], capture_output=True)
+    if result.returncode != 0:
+        print("Error: claude CLI not found")
+        sys.exit(1)
+
+
+def _run_scenarios(scenario_files, model, dry_run):
     results = []
     for scenario_file in scenario_files:
         result = run_scenario(
             scenario_file,
-            model=args.model,
-            dry_run=args.dry_run,
+            model=model,
+            dry_run=dry_run,
         )
         results.append(result)
-
-    all_passed = print_scenario_results(results)
-    sys.exit(0 if all_passed else 1)
+    return results
 
 
 if __name__ == "__main__":

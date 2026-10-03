@@ -38,26 +38,36 @@ def parse_local_ipv4_networks_from_ip_address_command_output(
     networks: list[ipaddress.IPv4Network] = []
     for line in ip_address_command_output.splitlines():
         tokens = line.split()
-        if len(tokens) < 4:
-            continue
-        interface_name = tokens[1]
-        if interface_name in INTERFACE_NAMES_TO_SKIP_DURING_SUBNET_SCAN:
-            continue
-        if tokens[2] != "inet":
-            continue
-        cidr_token = tokens[3]
-        try:
-            parsed_network = ipaddress.ip_network(cidr_token, strict=False)
-        except ValueError:
-            continue
-        if not isinstance(parsed_network, ipaddress.IPv4Network):
-            continue
-        if parsed_network.prefixlen < SMALLEST_IPV4_PREFIX_LENGTH_TO_SCAN:
-            continue
-        if parsed_network.num_addresses <= 1:
-            continue
-        networks.append(parsed_network)
+        parsed_network = _parse_local_ipv4_network_from_address_tokens(tokens)
+        if parsed_network is not None:
+            networks.append(parsed_network)
     return networks
+
+
+def _parse_local_ipv4_network_from_address_tokens(tokens):
+    if len(tokens) < 4:
+        return None
+    if tokens[1] in INTERFACE_NAMES_TO_SKIP_DURING_SUBNET_SCAN:
+        return None
+    if tokens[2] != "inet":
+        return None
+    try:
+        parsed_network = ipaddress.ip_network(tokens[3], strict=False)
+    except ValueError:
+        return None
+    if not _is_scannable_local_ipv4_network(parsed_network):
+        return None
+    return parsed_network
+
+
+def _is_scannable_local_ipv4_network(parsed_network):
+    if not isinstance(parsed_network, ipaddress.IPv4Network):
+        return False
+    if parsed_network.prefixlen < SMALLEST_IPV4_PREFIX_LENGTH_TO_SCAN:
+        return False
+    if parsed_network.num_addresses <= 1:
+        return False
+    return True
 
 
 def discover_local_ipv4_networks() -> list[ipaddress.IPv4Network]:

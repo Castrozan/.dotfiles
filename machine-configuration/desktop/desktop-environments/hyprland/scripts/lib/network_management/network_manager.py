@@ -43,23 +43,27 @@ def get_wifi_networks() -> list[dict[str, str]]:
     seen_ssids: set[str] = set()
     networks: list[dict[str, str]] = []
     for line in result.stdout.splitlines():
-        parts = line.split(":")
-        if len(parts) < 4 or not parts[0]:
-            continue
-        ssid = parts[0]
-        if ssid in seen_ssids:
-            continue
-        seen_ssids.add(ssid)
-        networks.append(
-            {
-                "ssid": ssid,
-                "signal": parts[1],
-                "security": parts[2],
-                "in_use": parts[3],
-            }
-        )
+        network = parse_wifi_network_line(line, seen_ssids)
+        if network is not None:
+            networks.append(network)
     networks.sort(key=lambda n: int(n["signal"] or "0"), reverse=True)
     return networks
+
+
+def parse_wifi_network_line(line: str, seen_ssids: set[str]) -> dict[str, str] | None:
+    parts = line.split(":")
+    if len(parts) < 4 or not parts[0]:
+        return None
+    ssid = parts[0]
+    if ssid in seen_ssids:
+        return None
+    seen_ssids.add(ssid)
+    return {
+        "ssid": ssid,
+        "signal": parts[1],
+        "security": parts[2],
+        "in_use": parts[3],
+    }
 
 
 def rescan_wifi() -> None:

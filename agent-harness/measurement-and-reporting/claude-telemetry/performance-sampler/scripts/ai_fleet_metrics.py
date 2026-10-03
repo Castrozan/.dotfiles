@@ -47,7 +47,7 @@ def parse_fleet_process_table(ps_output: str) -> dict:
     return {"counts": process_count_by_bucket, "rss_kilobytes": rss_kilobytes_by_bucket}
 
 
-def parse_claude_fanout(ps_output: str) -> dict:
+def _claude_process_relationships(ps_output):
     claude_session_pids = set()
     parent_pids = []
     for line in ps_output.splitlines():
@@ -58,12 +58,24 @@ def parse_claude_fanout(ps_output: str) -> dict:
         if CLAUDE_COMMAND_MARKER in command_text:
             claude_session_pids.add(process_pid)
         parent_pids.append(parent_pid)
+    return claude_session_pids, parent_pids
+
+
+def _children_count_by_claude_session(claude_session_pids, parent_pids):
     children_count_by_session = {}
     for parent_pid in parent_pids:
         if parent_pid in claude_session_pids:
             children_count_by_session[parent_pid] = (
                 children_count_by_session.get(parent_pid, 0) + 1
             )
+    return children_count_by_session
+
+
+def parse_claude_fanout(ps_output: str) -> dict:
+    claude_session_pids, parent_pids = _claude_process_relationships(ps_output)
+    children_count_by_session = _children_count_by_claude_session(
+        claude_session_pids, parent_pids
+    )
     if not children_count_by_session:
         return {"sessions": 0, "mean": 0.0, "max": 0}
     children_counts = list(children_count_by_session.values())

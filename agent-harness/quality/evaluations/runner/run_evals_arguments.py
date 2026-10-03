@@ -79,28 +79,62 @@ def parse_arguments():
         help="Agent harness to invoke as the rubric judge (default: codex)",
     )
     args = parser.parse_args()
+    _validate_ab_arguments(args, parser)
+    _validate_dry_run_evidence_arguments(args, parser)
+    _validate_all_tests_arguments(args, parser)
+    _validate_repeated_baseline_sampling(args, parser)
+    _validate_single_test_repeat(args, parser)
+    _validate_smoke_baseline_arguments(args, parser)
+    _validate_mode_arguments(args, parser)
+    _validate_evidence_harnesses(args, parser)
+    return args
+
+
+def _validate_ab_arguments(args, parser) -> None:
     if args.compare_ref and not args.ab:
         parser.error("--compare-ref requires --ab")
-    if args.save_ab_profile and not (
-        args.ab and args.compare_ref and args.category and args.epochs > 1
-    ):
+    if args.save_ab_profile and _ab_profile_arguments_are_invalid(args):
         parser.error(
             "--save-ab-profile requires --ab, --compare-ref, --category, and repeated epochs"
         )
+
+
+def _ab_profile_arguments_are_invalid(args) -> bool:
+    return not (args.ab and args.compare_ref and args.category and args.epochs > 1)
+
+
+def _validate_dry_run_evidence_arguments(args, parser) -> None:
     if args.dry_run and (args.save_baseline or args.save_ab_profile):
         parser.error("dry-run results cannot be saved as evidence")
+
+
+def _validate_all_tests_arguments(args, parser) -> None:
     if args.all_tests and not args.save_baseline:
         parser.error("--all-tests requires --save-baseline")
+
+
+def _validate_repeated_baseline_sampling(args, parser) -> None:
     if args.epochs > 1 and args.save_baseline and not args.all_tests:
         parser.error("repeated baseline sampling requires explicit --all-tests")
+
+
+def _validate_single_test_repeat(args, parser) -> None:
     if args.epochs > 1 and args.save_baseline and args.test:
         parser.error("a repeated baseline snapshot cannot contain only one test")
+
+
+def _validate_smoke_baseline_arguments(args, parser) -> None:
     if args.smoke and args.save_baseline:
         parser.error("smoke results cannot replace behavioral baseline evidence")
+
+
+def _validate_mode_arguments(args, parser) -> None:
     if args.list_affected and (args.save_baseline or args.save_ab_profile):
         parser.error("--list-affected cannot save evidence")
+
+
+def _validate_evidence_harnesses(args, parser) -> None:
     if (args.save_baseline or args.save_ab_profile) and (
         args.harness != "codex" or args.judge_harness != "codex"
     ):
         parser.error("committed baseline evidence requires Codex subject and judge")
-    return args

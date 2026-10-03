@@ -45,16 +45,28 @@ def hermes_response(dispatcher_output):
         return None
     if not isinstance(parsed_output, dict):
         return None
+    hook_specific_response = _hermes_hook_specific_response(parsed_output)
+    if hook_specific_response is not None:
+        return hook_specific_response
+    return _hermes_top_level_response(parsed_output)
+
+
+def _hermes_hook_specific_response(parsed_output):
     hook_specific_output = parsed_output.get("hookSpecificOutput")
-    if isinstance(hook_specific_output, dict):
-        permission_decision = hook_specific_output.get("permissionDecision")
-        if permission_decision in BLOCKING_DECISIONS:
-            return {
-                "decision": "block",
-                "reason": hook_specific_output.get("permissionDecisionReason")
-                or parsed_output.get("reason")
-                or "Blocked by the shared agent hook guard.",
-            }
+    if not isinstance(hook_specific_output, dict):
+        return None
+    permission_decision = hook_specific_output.get("permissionDecision")
+    if permission_decision in BLOCKING_DECISIONS:
+        return {
+            "decision": "block",
+            "reason": hook_specific_output.get("permissionDecisionReason")
+            or parsed_output.get("reason")
+            or "Blocked by the shared agent hook guard.",
+        }
+    return None
+
+
+def _hermes_top_level_response(parsed_output):
     if parsed_output.get("decision") in BLOCKING_DECISIONS:
         return {
             "decision": "block",
@@ -73,6 +85,12 @@ def main():
         return
     if not isinstance(hermes_payload, dict):
         return
+    response = dispatch_hermes_payload(dispatcher_launcher, hermes_payload)
+    if response is not None:
+        print(json.dumps(response))
+
+
+def dispatch_hermes_payload(dispatcher_launcher, hermes_payload):
     payload = dispatcher_payload(hermes_payload)
     if payload is None:
         return
@@ -86,8 +104,7 @@ def main():
         text=True,
     )
     response = hermes_response(completed_dispatch.stdout)
-    if response is not None:
-        print(json.dumps(response))
+    return response
 
 
 if __name__ == "__main__":

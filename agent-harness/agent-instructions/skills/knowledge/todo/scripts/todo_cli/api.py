@@ -45,14 +45,19 @@ def fetch_paginated(path, token, query=None):
     collected = []
     cursor = None
     while True:
-        page_query = dict(query or {})
-        if cursor:
-            page_query["cursor"] = cursor
+        page_query = _pagination_query(query, cursor)
         payload = send_request("GET", path, token, query=page_query or None)
         collected.extend(payload.get("results", []))
         cursor = payload.get("next_cursor")
         if not cursor:
             return collected
+
+
+def _pagination_query(query, cursor):
+    page_query = dict(query or {})
+    if cursor:
+        page_query["cursor"] = cursor
+    return page_query
 
 
 def resolve_project_id(project, token):

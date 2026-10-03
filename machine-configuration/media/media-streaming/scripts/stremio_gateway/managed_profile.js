@@ -104,7 +104,7 @@
     };
   };
 
-  const storeManagedProfile = (storedProfile, officialAddonEntries) => {
+  const managedProfileFromStored = (storedProfile, officialAddonEntries) => {
     const profile =
       storedProfile === null ||
       !Array.isArray(storedProfile.addons) ||
@@ -117,7 +117,7 @@
             settings: managedProfileConfiguration.defaultSettings,
           }
         : storedProfile;
-    const managedProfile = {
+    return {
       ...profile,
       addons: [...officialAddonEntries, ...managedAddonEntries],
       addonsLocked: true,
@@ -130,6 +130,13 @@
         streamingServerUrl: managedStreamingServerUrl,
       },
     };
+  };
+
+  const storeManagedProfile = (storedProfile, officialAddonEntries) => {
+    const managedProfile = managedProfileFromStored(
+      storedProfile,
+      officialAddonEntries,
+    );
     const serializedProfile = JSON.stringify(managedProfile);
     const serializedServerUrls = JSON.stringify(managedServerUrls());
     const profileChanged =
@@ -137,21 +144,23 @@
     const serverUrlsChanged =
       serializedServerUrls !==
       window.localStorage.getItem("streaming_server_urls");
-
-    if (profileChanged) {
-      window.localStorage.setItem("profile", serializedProfile);
-      window.localStorage.setItem(
-        "schema_version",
-        managedProfileConfiguration.schemaVersion,
-      );
-    }
-    if (serverUrlsChanged) {
-      window.localStorage.setItem(
-        "streaming_server_urls",
-        serializedServerUrls,
-      );
-    }
+    _storeChangedProfile(profileChanged, serializedProfile);
+    _storeChangedServerUrls(serverUrlsChanged, serializedServerUrls);
     return profileChanged || serverUrlsChanged;
+  };
+
+  const _storeChangedProfile = (profileChanged, serializedProfile) => {
+    if (!profileChanged) return;
+    window.localStorage.setItem("profile", serializedProfile);
+    window.localStorage.setItem(
+      "schema_version",
+      managedProfileConfiguration.schemaVersion,
+    );
+  };
+
+  const _storeChangedServerUrls = (serverUrlsChanged, serializedServerUrls) => {
+    if (!serverUrlsChanged) return;
+    window.localStorage.setItem("streaming_server_urls", serializedServerUrls);
   };
 
   const synchronizeManagedProfile = async () => {

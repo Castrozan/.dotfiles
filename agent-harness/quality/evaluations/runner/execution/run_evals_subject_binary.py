@@ -22,12 +22,9 @@ def resolve_subject_claude_binary() -> str:
     override = os.environ.get(SUBJECT_BINARY_OVERRIDE, "")
     if override:
         return override
-    for directory in os.environ.get("PATH", "").split(os.pathsep):
-        if not directory:
-            continue
-        candidate = shutil.which("claude", path=directory)
-        if candidate and not appends_the_interactive_surface(candidate):
-            return candidate
+    candidate = _first_unwrapped_claude_binary(os.environ.get("PATH", ""))
+    if candidate:
+        return candidate
     raise RuntimeError(
         "every claude on PATH is the interactive wrapper, which appends the always-on "
         "reply-shape surface to every launch even under `-p --system-prompt`, so each "
@@ -35,3 +32,13 @@ def resolve_subject_claude_binary() -> str:
         f"declares; run the packaged agent-eval command, or point {SUBJECT_BINARY_OVERRIDE} "
         "at the unwrapped claude"
     )
+
+
+def _first_unwrapped_claude_binary(path_value: str) -> str | None:
+    for directory in path_value.split(os.pathsep):
+        if not directory:
+            continue
+        candidate = shutil.which("claude", path=directory)
+        if candidate and not appends_the_interactive_surface(candidate):
+            return candidate
+    return None

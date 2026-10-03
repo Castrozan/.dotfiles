@@ -30,12 +30,20 @@ def synthesize_hook_event(trigger, hook_event_name):
 def hook_blocked(returncode, stdout_json):
     if returncode == 2:
         return True
+    return _hook_json_blocks(stdout_json)
+
+
+def _hook_json_blocks(stdout_json):
     if not isinstance(stdout_json, dict):
         return False
     if stdout_json.get("continue") is False:
         return True
     if stdout_json.get("decision") == "block":
         return True
+    return _hook_permission_denied(stdout_json)
+
+
+def _hook_permission_denied(stdout_json):
     hook_specific_output = stdout_json.get("hookSpecificOutput")
     if (
         isinstance(hook_specific_output, dict)
@@ -48,17 +56,26 @@ def hook_blocked(returncode, stdout_json):
 def hook_message(stdout, stderr, stdout_json):
     message_parts = [stderr]
     if isinstance(stdout_json, dict):
-        message_parts.append(stdout_json.get("systemMessage") or "")
-        message_parts.append(stdout_json.get("reason") or "")
-        hook_specific_output = stdout_json.get("hookSpecificOutput")
-        if isinstance(hook_specific_output, dict):
-            message_parts.append(hook_specific_output.get("additionalContext") or "")
-            message_parts.append(
-                hook_specific_output.get("permissionDecisionReason") or ""
-            )
+        message_parts.extend(_hook_json_message_parts(stdout_json))
     else:
         message_parts.append(stdout)
     return "\n".join(part for part in message_parts if part)
+
+
+def _hook_json_message_parts(stdout_json: dict) -> list[str]:
+    message_parts = _hook_json_primary_message_parts(stdout_json)
+    hook_specific_output = stdout_json.get("hookSpecificOutput")
+    if isinstance(hook_specific_output, dict):
+        message_parts.append(hook_specific_output.get("additionalContext") or "")
+        message_parts.append(hook_specific_output.get("permissionDecisionReason") or "")
+    return message_parts
+
+
+def _hook_json_primary_message_parts(stdout_json: dict) -> list[str]:
+    return [
+        stdout_json.get("systemMessage") or "",
+        stdout_json.get("reason") or "",
+    ]
 
 
 def interpret_hook_result(returncode, stdout, stderr, assertions):
@@ -70,11 +87,22 @@ def interpret_hook_result(returncode, stdout, stderr, assertions):
     blocked = hook_blocked(returncode, stdout_json)
     message = hook_message(stdout, stderr, stdout_json)
 
+    failures = _hook_block_assertion_failures(assertions, blocked)
+    failures.extend(_hook_message_assertion_failures(assertions, message))
+    return failures
+
+
+def _hook_block_assertion_failures(assertions, blocked):
     failures = []
     if "hook_blocks" in assertions and assertions["hook_blocks"] != blocked:
         failures.append(
             f"expected hook_blocks={assertions['hook_blocks']}, got {blocked}"
         )
+    return failures
+
+
+def _hook_message_assertion_failures(assertions, message):
+    failures = []
     expected_substring = assertions.get("message_contains")
     if expected_substring and expected_substring not in message:
         failures.append(f"hook message did not contain {expected_substring!r}")

@@ -10,18 +10,27 @@ def repair_wallpaper_links(theme_root: Path, wallpaper_roots: tuple[Path, ...]) 
     links.append(theme_root / "current/background")
     repaired = 0
     for link in links:
-        if not link.is_symlink() or link.exists():
-            continue
-        old_target = link.resolve()
-        if not any(old_target.is_relative_to(root) for root in wallpaper_roots):
-            continue
-        replacement = catalog / old_target.name
-        if not replacement.is_file():
+        replacement = find_wallpaper_replacement(link, catalog, wallpaper_roots)
+        if replacement is None:
             continue
         link.unlink()
         link.symlink_to(replacement)
         repaired += 1
     return repaired
+
+
+def find_wallpaper_replacement(
+    link: Path, catalog: Path, wallpaper_roots: tuple[Path, ...]
+) -> Path | None:
+    if not link.is_symlink() or link.exists():
+        return None
+    old_target = link.resolve()
+    if not any(old_target.is_relative_to(root) for root in wallpaper_roots):
+        return None
+    replacement = catalog / old_target.name
+    if not replacement.is_file():
+        return None
+    return replacement
 
 
 def main() -> None:

@@ -42,14 +42,23 @@ def dispatcher_payload(payload):
     if tool_name is None:
         return result
     arguments = map_keys(payload.get("tool_input", {}), canonical_key)
+    arguments = _normalize_tool_arguments(tool_name, arguments)
+    return result | {"tool_name": tool_name, "tool_input": arguments}
+
+
+def _normalize_tool_arguments(tool_name, arguments):
     if isinstance(arguments, dict):
-        if tool_name == "apply_patch" and isinstance(arguments.get("patch_text"), str):
-            arguments = arguments["patch_text"]
+        if _has_string_patch_payload(tool_name, arguments):
+            return arguments["patch_text"]
         elif tool_name == "Agent" and "agent" in arguments:
             arguments["subagent_type"] = arguments.pop("agent")
         elif tool_name == "Skill" and "id" in arguments:
             arguments["skill"] = arguments.pop("id")
-    return result | {"tool_name": tool_name, "tool_input": arguments}
+    return arguments
+
+
+def _has_string_patch_payload(tool_name, arguments):
+    return tool_name == "apply_patch" and isinstance(arguments.get("patch_text"), str)
 
 
 def native_output(output):

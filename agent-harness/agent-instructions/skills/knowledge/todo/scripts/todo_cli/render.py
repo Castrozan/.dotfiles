@@ -4,13 +4,28 @@ import json
 def format_task_line(task):
     identifier = task.get("id", "?")
     content = task.get("content", "")
-    due = task.get("due")
-    due_text = f"  [due {due.get('date') or due.get('string') or ''}]" if due else ""
-    labels = task.get("labels") or []
-    label_text = "  " + " ".join("@" + label for label in labels) if labels else ""
-    priority = task.get("priority", 1)
-    priority_text = f"  p{5 - priority}" if priority and priority > 1 else ""
+    due_text = _due_text(task.get("due"))
+    label_text = _label_text(task.get("labels"))
+    priority_text = _priority_text(task.get("priority", 1))
     return f"{identifier}  {content}{due_text}{label_text}{priority_text}"
+
+
+def _due_text(due):
+    if not due:
+        return ""
+    return f"  [due {due.get('date') or due.get('string') or ''}]"
+
+
+def _label_text(labels):
+    if not labels:
+        return ""
+    return "  " + " ".join("@" + label for label in labels)
+
+
+def _priority_text(priority):
+    if not priority or priority <= 1:
+        return ""
+    return f"  p{5 - priority}"
 
 
 def emit_object(arguments, obj, human_text):

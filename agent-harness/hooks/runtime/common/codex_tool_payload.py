@@ -20,6 +20,10 @@ def script_argument_of_shell_interpreter_invocation(command_argument_vector):
     interpreter_name = os.path.basename(str(command_argument_vector[0]))
     if interpreter_name not in _SHELL_INTERPRETER_NAMES:
         return None
+    return _script_argument_after_option(command_argument_vector)
+
+
+def _script_argument_after_option(command_argument_vector):
     for flag_index in range(1, len(command_argument_vector) - 1):
         flag = str(command_argument_vector[flag_index])
         if flag.startswith("-") and "c" in flag.lstrip("-"):
@@ -32,7 +36,10 @@ def normalize_codex_tool_payload(hook_input: dict) -> dict:
         return hook_input
     if hook_input.get("tool_name") != _CODEX_SHELL_TOOL_NAME:
         return hook_input
+    return _normalize_shell_tool_payload(hook_input)
 
+
+def _normalize_shell_tool_payload(hook_input: dict) -> dict:
     tool_input = hook_input.get("tool_input")
     if not isinstance(tool_input, dict):
         return hook_input
@@ -50,11 +57,15 @@ def normalize_codex_tool_payload(hook_input: dict) -> dict:
     interpreted_script = script_argument_of_shell_interpreter_invocation(
         command_argument_vector
     )
-    normalized_tool_input["command"] = (
-        interpreted_script
-        if interpreted_script is not None
-        else shlex.join(str(command_part) for command_part in command_argument_vector)
+    normalized_tool_input["command"] = _normalized_shell_command(
+        command_argument_vector, interpreted_script, shlex
     )
     normalized_hook_input["tool_name"] = "Bash"
     normalized_hook_input["tool_input"] = normalized_tool_input
     return normalized_hook_input
+
+
+def _normalized_shell_command(command_argument_vector, interpreted_script, shlex):
+    if interpreted_script is not None:
+        return interpreted_script
+    return shlex.join(str(command_part) for command_part in command_argument_vector)

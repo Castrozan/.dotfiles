@@ -3,6 +3,14 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import urlencode
 from xml.etree.ElementTree import ParseError
 
+from import_repair.candidate_validation import (
+    download_candidate_metadata_matches,
+    download_candidate_path_matches,
+    manual_import_is_active,
+    media_is_importable,
+    missing_episode_is_importable,
+    repairable_download_records,
+)
 from download_chain_control import read_last_active_epoch, write_last_active_epoch
 from http_client import http_request
 from import_repair.history import reprocess_from_history
@@ -27,17 +35,9 @@ def request_json(base_url, api_key, path, payload=None):
 
 def matches_download(record, candidate):
     path = PurePosixPath(candidate.get("path", ""))
-    if (
-        candidate.get("rejections")
-        or not candidate.get("quality")
-        or not candidate.get("languages")
-        or candidate.get("downloadId", "").lower() != record["downloadId"].lower()
-        or str(path) != record.get("outputPath")
-        or not path.is_relative_to("/data/torrents")
-        or ".." in path.parts
-    ):
+    if not download_candidate_metadata_matches(record, candidate):
         return False
-    return True
+    return download_candidate_path_matches(path, record.get("outputPath"))
 
 
 def missing_episode(candidate, series_id):
@@ -45,23 +45,24 @@ def missing_episode(candidate, series_id):
     if len(episodes) != 1:
         return None
     episode = episodes[0]
-    if (
-        not episode.get("id")
-        or episode.get("seriesId") != series_id
-        or not episode.get("monitored")
-        or episode.get("hasFile", True)
-    ):
+    if not missing_episode_is_importable(episode, series_id):
         return None
     return episode["id"]
 
 
 def import_file(application, record, candidates):
-    if len(candidates) != 1 or not matches_download(record, candidates[0]):
+    if len(candidates) != 1:
         return None
     candidate = candidates[0]
-    identity = "series" if application == "sonarr" else "movie"
+    if not matches_download(record, candidate):
+        return None
+    return _build_import_file(application, record, candidate)
+
+
+def _build_import_file(application, record, candidate):
+    identity = _media_identity_for_application(application)
     media = candidate.get(identity) or {}
-    if not media.get("id") or not media.get("monitored"):
+    if not media_is_importable(media):
         return None
     result = {
         "path": candidate["path"],
@@ -81,6 +82,10 @@ def import_file(application, record, candidates):
     return result
 
 
+def _media_identity_for_application(application):
+    return "series" if application == "sonarr" else "movie"
+
+
 def repair_application(application, base_url, api_key, now_epoch, dry_run):
     queue = request_json(
         base_url,
@@ -94,69 +99,60 @@ def repair_application(application, base_url, api_key, now_epoch, dry_run):
             }
         ),
     )
-    records = {
-        record["downloadId"]: record
-        for record in queue.get("records", [])
-        if record.get("downloadId")
-        and record.get("status") == "completed"
-        and record.get("trackedDownloadState") == "importBlocked"
-        and record.get("sizeleft") == 0
-        and record.get("outputPath")
-    }
+    records = repairable_download_records(queue.get("records", []))
     identities = sorted(records)
     if not identities:
         return
     commands = request_json(base_url, api_key, "command")
-    if any(
-        command.get("name") == "ManualImport"
-        and command.get("status") in ("queued", "started")
-        for command in commands
-    ):
+    if manual_import_is_active(commands):
         return
-    offset = (
-        int(now_epoch // REPAIR_INTERVAL_SECONDS) * MAX_DOWNLOADS_PER_APPLICATION
-    ) % len(identities)
+    repair_interval_number = int(now_epoch // REPAIR_INTERVAL_SECONDS)
+    offset = repair_interval_number * MAX_DOWNLOADS_PER_APPLICATION % len(identities)
     identities = identities[offset:] + identities[:offset]
     for identity in identities[:MAX_DOWNLOADS_PER_APPLICATION]:
-        record = records[identity]
-        candidates = request_json(
-            base_url,
-            api_key,
-            "manualimport?"
-            + urlencode(
-                {
-                    "downloadId": identity,
-                    "folder": record["outputPath"],
-                    "filterExistingFiles": "true",
-                }
-            ),
+        if _repair_download(
+            application, base_url, api_key, records[identity], identity, dry_run
+        ):
+            return
+
+
+def _repair_download(application, base_url, api_key, record, identity, dry_run):
+    candidates = request_json(
+        base_url,
+        api_key,
+        "manualimport?"
+        + urlencode(
+            {
+                "downloadId": identity,
+                "folder": record["outputPath"],
+                "filterExistingFiles": "true",
+            }
+        ),
+    )
+    selected = import_file(application, record, candidates)
+    if selected is None:
+        candidates = reprocess_from_history(
+            application,
+            record,
+            candidates,
+            lambda path, payload=None: request_json(base_url, api_key, path, payload),
         )
         selected = import_file(application, record, candidates)
-        if selected is None:
-            candidates = reprocess_from_history(
-                application,
-                record,
-                candidates,
-                lambda path, payload=None: request_json(
-                    base_url, api_key, path, payload
-                ),
-            )
-            selected = import_file(application, record, candidates)
-        if selected is None:
-            continue
-        if dry_run:
-            log(f"import-repair: would import {application} download {identity}")
-            continue
-        command = request_json(
-            base_url,
-            api_key,
-            "command",
-            {"name": "ManualImport", "importMode": "copy", "files": [selected]},
-        )
-        log(
-            f"import-repair: {application} command {command.get('id')} submitted for {identity}"
-        )
-        return
+    if selected is None:
+        return False
+    if dry_run:
+        log(f"import-repair: would import {application} download {identity}")
+        return False
+    command = request_json(
+        base_url,
+        api_key,
+        "command",
+        {"name": "ManualImport", "importMode": "copy", "files": [selected]},
+    )
+    log(
+        f"import-repair: {application} command {command.get('id')} submitted for {identity}"
+    )
+    return True
 
 
 def maybe_repair_blocked_imports(configuration, now_epoch, dry_run):
@@ -164,17 +160,7 @@ def maybe_repair_blocked_imports(configuration, now_epoch, dry_run):
     if not state_file:
         return
     state_path = str(Path(state_file).with_name("import-repair-epoch"))
-    try:
-        last_attempt = read_last_active_epoch(state_path)
-        if (
-            last_attempt is not None
-            and now_epoch - last_attempt < REPAIR_INTERVAL_SECONDS
-        ):
-            return
-        if not dry_run:
-            write_last_active_epoch(state_path, now_epoch)
-    except OSError:
-        log("import-repair: state unavailable; deferring")
+    if not _record_repair_attempt(state_path, now_epoch, dry_run):
         return
     for application in ("radarr", "sonarr"):
         try:
@@ -190,3 +176,24 @@ def maybe_repair_blocked_imports(configuration, now_epoch, dry_run):
             )
         except (OSError, ValueError, ParseError):
             log(f"import-repair: {application} unavailable; deferring")
+
+
+def maybe_repair_if_unblocked(held_down_services, repair_blocked_imports):
+    if not held_down_services:
+        repair_blocked_imports()
+
+
+def _record_repair_attempt(state_path, now_epoch, dry_run):
+    try:
+        last_attempt = read_last_active_epoch(state_path)
+        if (
+            last_attempt is not None
+            and now_epoch - last_attempt < REPAIR_INTERVAL_SECONDS
+        ):
+            return False
+        if not dry_run:
+            write_last_active_epoch(state_path, now_epoch)
+    except OSError:
+        log("import-repair: state unavailable; deferring")
+        return False
+    return True

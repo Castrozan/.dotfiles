@@ -96,13 +96,9 @@ def build_denial_reason(destination: str) -> str:
     )
 
 
-def handle(hook_input):
-    if hook_input.get("tool_name", "") != "Bash":
-        return None
-    command = (hook_input.get("tool_input", {}) or {}).get("command", "") or ""
-    if OUTSIDE_REPOSITORY_OVERRIDE_SENTINEL in command:
-        return None
-    for segment in worktree_creation_segments(command_text_the_shell_executes(command)):
+def _worktree_violation(command):
+    executed_command = command_text_the_shell_executes(command)
+    for segment in worktree_creation_segments(executed_command):
         destination = destination_argument_of(segment)
         if destination is None:
             continue
@@ -111,3 +107,12 @@ def handle(hook_input):
         reason = build_denial_reason(destination)
         return HandlerResult(decision="deny", reason=reason, system_message=reason)
     return None
+
+
+def handle(hook_input):
+    if hook_input.get("tool_name", "") != "Bash":
+        return None
+    command = (hook_input.get("tool_input", {}) or {}).get("command", "") or ""
+    if OUTSIDE_REPOSITORY_OVERRIDE_SENTINEL in command:
+        return None
+    return _worktree_violation(command)

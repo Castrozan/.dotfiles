@@ -1,5 +1,12 @@
 from disk_space_guard import enforce_disk_space_guard
 from download_activity import arr_download_queue_active, arr_service_reachable
+import download_chain_control
+import jellyseerr_client
+from import_alerts import maybe_alert_blocked_imports
+from import_repair.repair import maybe_repair_blocked_imports, maybe_repair_if_unblocked
+from missing_search_sweep import run_missing_search_sweep
+from mount_health_guard import enforce_data_mount_guard
+from runtime_environment import log, read_arr_api_key_from_config_xml
 from download_chain_control import (
     read_last_active_epoch,
     running_on_demand_services,
@@ -8,11 +15,6 @@ from download_chain_control import (
     write_last_active_epoch,
 )
 from jellyseerr_client import actionable_requests, retry_request
-from import_alerts import maybe_alert_blocked_imports
-from import_repair.repair import maybe_repair_blocked_imports
-from missing_search_sweep import run_missing_search_sweep
-from mount_health_guard import enforce_data_mount_guard
-from runtime_environment import log, read_arr_api_key_from_config_xml
 
 
 def held_down_services_from_disk_guard(configuration, base_command, now_epoch, dry_run):
@@ -63,15 +65,14 @@ def keep_chain_up_for_actionable_requests(
         )
         start_on_demand_services(base_command, on_demand_services, dry_run)
     write_last_active_epoch(state_file_path, now_epoch)
-    if failed_request_ids and arr_service_reachable(radarr_url):
-        for request_id in failed_request_ids:
-            if dry_run:
-                log(f"[dry-run] would retry failed request {request_id}")
-                continue
-            retry_status = retry_request(jellyseerr_url, jellyseerr_api_key, request_id)
-            log(f"retried failed request {request_id} -> {retry_status}")
-    elif failed_request_ids:
-        log("chain starting; deferring retry of failed requests until radarr is ready")
+    jellyseerr_client.retry_failed_request_ids(
+        (jellyseerr_url, jellyseerr_api_key),
+        failed_request_ids,
+        lambda: arr_service_reachable(radarr_url),
+        dry_run,
+        retry_request,
+        log,
+    )
 
 
 def stop_chain_when_idle_past_grace(
@@ -118,22 +119,24 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
     held_down_services = held_down_services_from_disk_guard(
         configuration, base_command, now_epoch, dry_run
     )
-    effective_services = [
-        service for service in on_demand_services if service not in held_down_services
-    ]
-    if not held_down_services:
-        maybe_repair_blocked_imports(configuration, now_epoch, dry_run)
+    effective_services = download_chain_control.services_not_held(
+        on_demand_services, held_down_services
+    )
+    maybe_repair_if_unblocked(
+        held_down_services,
+        lambda: maybe_repair_blocked_imports(configuration, now_epoch, dry_run),
+    )
 
     if configuration["keep_chain_always_on"]:
-        running = running_on_demand_services(base_command, on_demand_services)
-        missing_services = [
-            service for service in effective_services if service not in running
-        ]
-        if missing_services:
-            log(f"keep-chain-always-on: starting missing services {missing_services}")
-            start_on_demand_services(base_command, effective_services, dry_run)
-        else:
-            log("keep-chain-always-on: full chain up, holding")
+        download_chain_control.keep_always_on_services_running(
+            base_command,
+            on_demand_services,
+            effective_services,
+            dry_run,
+            running_on_demand_services,
+            start_on_demand_services,
+            log,
+        )
         maybe_alert_blocked_imports(configuration, now_epoch, dry_run)
         maybe_run_missing_search_sweep(configuration, now_epoch, dry_run)
         write_last_active_epoch(state_file_path, now_epoch)
@@ -145,9 +148,12 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
         now_epoch,
         configuration["recent_pending_window_seconds"],
     )
-    chain_should_be_up = bool(recent_pending_request_ids) or bool(failed_request_ids)
-    running = running_on_demand_services(base_command, on_demand_services)
-    radarr_running = "radarr" in running
+    chain_should_be_up = jellyseerr_client.has_actionable_request_ids(
+        recent_pending_request_ids, failed_request_ids
+    )
+    radarr_running = "radarr" in running_on_demand_services(
+        base_command, on_demand_services
+    )
 
     if chain_should_be_up:
         keep_chain_up_for_actionable_requests(

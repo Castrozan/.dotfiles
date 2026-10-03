@@ -59,9 +59,7 @@ def run_rebuild(state_directory, configuration):
         exit_code = 1
         result["error"] = str(error)
     system_after = current_system()
-    if exit_code == 0 and system_after != result["desired_system"]:
-        exit_code = 1
-        result["error"] = "live system differs from the evaluated configuration"
+    exit_code = _validate_activated_system(exit_code, system_after, result)
     result.update(
         status=(
             "unchanged"
@@ -76,6 +74,13 @@ def run_rebuild(state_directory, configuration):
     )
     write_result(state_directory, result)
     return exit_code
+
+
+def _validate_activated_system(exit_code, system_after, result):
+    if exit_code != 0 or system_after == result["desired_system"]:
+        return exit_code
+    result["error"] = "live system differs from the evaluated configuration"
+    return 1
 
 
 def launch_rebuild(state_directory, configuration):

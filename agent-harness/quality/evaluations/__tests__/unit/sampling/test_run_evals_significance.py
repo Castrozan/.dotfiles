@@ -1,8 +1,16 @@
 from runner.sampling.run_evals_significance import (
+    _paired_outcome,
     mcnemar_exact_p_value,
     paired_comparison,
     paired_hierarchical_bootstrap,
 )
+
+
+def test_paired_outcome_classifies_all_boolean_combinations():
+    assert _paired_outcome(True, True) == (1, 0, 0, 0)
+    assert _paired_outcome(True, False) == (0, 1, 0, 0)
+    assert _paired_outcome(False, True) == (0, 0, 1, 0)
+    assert _paired_outcome(False, False) == (0, 0, 0, 1)
 
 
 def test_no_discordant_pairs_is_not_significant():

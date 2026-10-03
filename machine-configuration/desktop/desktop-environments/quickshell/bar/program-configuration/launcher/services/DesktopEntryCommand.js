@@ -15,21 +15,7 @@ function detachedLaunchCommand(desktopEntry) {
       : desktopEntry.execString;
 
   if (desktopEntry.runInTerminal) {
-    let terminalCommand = ["wezterm", "start"];
-
-    if (desktopEntry.workingDirectory.length > 0) {
-      terminalCommand.push("--cwd", desktopEntry.workingDirectory);
-    }
-
-    terminalCommand.push("--");
-
-    if (desktopEntry.command.length > 0) {
-      terminalCommand = terminalCommand.concat(desktopEntry.command);
-    } else {
-      terminalCommand.push("sh", "-lc", desktopEntry.execString);
-    }
-
-    return joinShellArguments(terminalCommand);
+    return terminalLaunchCommand(desktopEntry);
   }
 
   if (desktopEntry.workingDirectory.length > 0) {
@@ -37,4 +23,22 @@ function detachedLaunchCommand(desktopEntry) {
   }
 
   return desktopEntryCommand;
+}
+
+function terminalLaunchCommand(desktopEntry) {
+  let terminalCommand = ["wezterm", "start"];
+
+  if (desktopEntry.workingDirectory.length > 0) {
+    terminalCommand.push("--cwd", desktopEntry.workingDirectory);
+  }
+
+  terminalCommand.push("--");
+
+  if (desktopEntry.command.length > 0) {
+    terminalCommand = terminalCommand.concat(desktopEntry.command);
+  } else {
+    terminalCommand.push("sh", "-lc", desktopEntry.execString);
+  }
+
+  return joinShellArguments(terminalCommand);
 }

@@ -44,11 +44,15 @@ def directory_entry_ceilings(repository_root: Path) -> dict[str, int]:
     if not baseline.exists():
         return {}
     ceilings = json.loads(baseline.read_text())
-    if not isinstance(ceilings, dict) or any(
+    if not isinstance(ceilings, dict) or _has_invalid_directory_ceilings(ceilings):
+        raise ValueError(f"Invalid directory entry baseline: {baseline}")
+    return ceilings
+
+
+def _has_invalid_directory_ceilings(ceilings: dict) -> bool:
+    return any(
         not isinstance(directory, str)
         or type(count) is not int
         or count <= DIRECTORY_ENTRY_LIMIT
         for directory, count in ceilings.items()
-    ):
-        raise ValueError(f"Invalid directory entry baseline: {baseline}")
-    return ceilings
+    )

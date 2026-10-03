@@ -70,8 +70,39 @@ window.AmbientCanvasAsciiInvaderGlyphField =
       const centreVertical = height * 0.5;
       const screenScale = Math.min(width, height) * SHELL_SCREEN_FRACTION;
       const baseGlyphPixels = Math.min(width, height) * BASE_GLYPH_FRACTION;
-      const projected = [];
+      const projected = projectShellPoints(
+        shellPoints,
+        elapsedSeconds,
+        centreHorizontal,
+        centreVertical,
+        screenScale,
+        baseGlyphPixels,
+      );
+      projected.sort((left, right) => left.depth - right.depth);
 
+      const cellWidth = baseGlyphPixels * MONOSPACE_ADVANCE_RATIO;
+      const occupiedCells = {};
+      context.font = Math.max(6, Math.round(baseGlyphPixels)) + "px monospace";
+      paintProjectedShellPoints(
+        context,
+        projected,
+        elapsedSeconds,
+        baseGlyphPixels,
+        cellWidth,
+        occupiedCells,
+      );
+      context.shadowBlur = 0;
+    }
+
+    function projectShellPoints(
+      shellPoints,
+      elapsedSeconds,
+      centreHorizontal,
+      centreVertical,
+      screenScale,
+      baseGlyphPixels,
+    ) {
+      const projected = [];
       for (
         let pointIndex = 0;
         pointIndex < shellPoints.length;
@@ -83,9 +114,7 @@ window.AmbientCanvasAsciiInvaderGlyphField =
           elapsedSeconds,
         );
         const depth = VIEWER_DISTANCE + tumbledZ;
-        if (depth <= 0.25) {
-          continue;
-        }
+        if (depth <= 0.25) continue;
         const perspective = PROJECTION_FOCAL_LENGTH / depth;
         const cellWidth = baseGlyphPixels * MONOSPACE_ADVANCE_RATIO;
         projected.push({
@@ -102,13 +131,17 @@ window.AmbientCanvasAsciiInvaderGlyphField =
           facing: (VIEWER_DISTANCE - depth + 1.0) / 2.0,
         });
       }
+      return projected;
+    }
 
-      projected.sort((left, right) => left.depth - right.depth);
-
-      const cellWidth = baseGlyphPixels * MONOSPACE_ADVANCE_RATIO;
-      const occupiedCells = {};
-      context.font = Math.max(6, Math.round(baseGlyphPixels)) + "px monospace";
-
+    function paintProjectedShellPoints(
+      context,
+      projected,
+      elapsedSeconds,
+      baseGlyphPixels,
+      cellWidth,
+      occupiedCells,
+    ) {
       for (let drawIndex = 0; drawIndex < projected.length; drawIndex += 1) {
         const entry = projected[drawIndex];
         const cellKey = entry.cellColumn + "," + entry.cellRow;
@@ -135,7 +168,6 @@ window.AmbientCanvasAsciiInvaderGlyphField =
           entry.cellRow * baseGlyphPixels,
         );
       }
-      context.shadowBlur = 0;
     }
 
     function paintGlyphField(

@@ -83,16 +83,7 @@ def build_deny_reason_message(
     return " ".join(sentences)
 
 
-def handle(hook_input):
-    tool_name = hook_input.get("tool_name")
-    tool_input = hook_input.get("tool_input", {})
-    if not command_runs_in_a_streamed_or_backgrounded_context(tool_name, tool_input):
-        return None
-
-    command_string = tool_input.get("command", "")
-    if not command_string:
-        return None
-
+def _handler_result_for_command(tool_name, command_string):
     executed_command_text = command_text_the_shell_executes(command_string)
     triggered_streaming_rules = find_streaming_anti_patterns_in_command(
         command_text_outside_inert_heredoc_bodies(command_string)
@@ -115,3 +106,15 @@ def handle(hook_input):
             streamed_execution_context_label_for_tool(tool_name),
         ),
     )
+
+
+def handle(hook_input):
+    tool_name = hook_input.get("tool_name")
+    tool_input = hook_input.get("tool_input", {})
+    if not command_runs_in_a_streamed_or_backgrounded_context(tool_name, tool_input):
+        return None
+
+    command_string = tool_input.get("command", "")
+    if not command_string:
+        return None
+    return _handler_result_for_command(tool_name, command_string)

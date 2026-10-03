@@ -12,25 +12,101 @@
       k.startsWith("__reactFiber$"),
     );
     if (!fiberKey) return null;
-    let fiber = canvas[fiberKey];
-    for (let i = 0; i < 60 && fiber; i++) {
-      if (fiber.dependencies && fiber.dependencies.firstContext) {
-        let ctx = fiber.dependencies.firstContext;
-        while (ctx) {
-          if (
-            ctx.context &&
-            ctx.context._currentValue &&
-            ctx.context._currentValue.viewer
-          ) {
-            window.__chatvrm_viewer = ctx.context._currentValue.viewer;
-            return window.__chatvrm_viewer;
-          }
-          ctx = ctx.next;
-        }
-      }
+    return _findViewerInFiber(canvas[fiberKey]);
+  }
+
+  function _findViewerInFiber(fiber) {
+    for (let depth = 0; depth < 60 && fiber; depth++) {
+      const viewer = _findViewerInFiberDependencies(fiber);
+      if (viewer) return viewer;
       fiber = fiber.return;
     }
     return null;
+  }
+
+  function _findViewerInFiberDependencies(fiber) {
+    if (fiber.dependencies && fiber.dependencies.firstContext) {
+      return _findViewerInDependencies(fiber.dependencies);
+    }
+    return null;
+  }
+
+  function _findViewerInDependencies(dependencies) {
+    let context = dependencies.firstContext;
+    while (context) {
+      const viewer = _findViewerInContext(context);
+      if (viewer) return viewer;
+      context = context.next;
+    }
+    return null;
+  }
+
+  function _findViewerInContext(context) {
+    if (!context.context) return null;
+    if (!context.context._currentValue) return null;
+    if (!context.context._currentValue.viewer) return null;
+    window.__chatvrm_viewer = context.context._currentValue.viewer;
+    return window.__chatvrm_viewer;
+  }
+
+  function _handleSpeechMessage(message, ws) {
+    const viewer = findViewer();
+    if (!viewer || !viewer.model) {
+      console.warn("[bridge] Viewer/model not ready, skipping speech");
+      return;
+    }
+
+    const audioUrl = HTTP_URL + message.audioUrl;
+    console.log(
+      "[bridge] Speaking:",
+      message.text?.substring(0, 50),
+      "emotion:",
+      message.emotion,
+    );
+
+    return _playSpeechOnViewer(viewer, message, audioUrl, ws);
+  }
+
+  async function _playSpeechOnViewer(viewer, message, audioUrl, ws) {
+    try {
+      // Resume AudioContext if suspended (Chrome blocks until user interaction)
+      if (viewer.model._lipSync?.audioContext?.state === "suspended") {
+        await viewer.model._lipSync.audioContext.resume();
+      }
+
+      const response = await fetch(audioUrl);
+      const audioBuffer = await response.arrayBuffer();
+      const screenplay = {
+        expression: message.emotion || "neutral",
+        talk: {
+          message: message.text,
+          speakerX: 0,
+          speakerY: 0,
+          style: "talk",
+        },
+      };
+      await viewer.model.speak(audioBuffer, screenplay);
+      console.log("[bridge] Speech complete");
+      ws.send(JSON.stringify({ type: "speechEnd", id: message.id }));
+    } catch (err) {
+      console.error("[bridge] Audio fetch/play failed:", err);
+    }
+  }
+
+  function _handleExpressionMessage(message) {
+    const model = findViewer()?.model;
+    if (model?.emoteController) {
+      model.emoteController.playEmotion(message.expression);
+    }
+  }
+
+  async function _handleControlMessage(message, ws) {
+    if (message.type === "startSpeaking") {
+      await _handleSpeechMessage(message, ws);
+    }
+    if (message.type === "updateExpression") {
+      _handleExpressionMessage(message);
+    }
   }
 
   function connectToControlServer() {
@@ -43,54 +119,7 @@
 
     ws.onmessage = async (event) => {
       try {
-        const msg = JSON.parse(event.data);
-
-        if (msg.type === "startSpeaking") {
-          const viewer = findViewer();
-          if (!viewer || !viewer.model) {
-            console.warn("[bridge] Viewer/model not ready, skipping speech");
-            return;
-          }
-
-          const audioUrl = HTTP_URL + msg.audioUrl;
-          console.log(
-            "[bridge] Speaking:",
-            msg.text?.substring(0, 50),
-            "emotion:",
-            msg.emotion,
-          );
-
-          try {
-            // Resume AudioContext if suspended (Chrome blocks until user interaction)
-            if (viewer.model._lipSync?.audioContext?.state === "suspended") {
-              await viewer.model._lipSync.audioContext.resume();
-            }
-
-            const response = await fetch(audioUrl);
-            const audioBuffer = await response.arrayBuffer();
-            const screenplay = {
-              expression: msg.emotion || "neutral",
-              talk: {
-                message: msg.text,
-                speakerX: 0,
-                speakerY: 0,
-                style: "talk",
-              },
-            };
-            await viewer.model.speak(audioBuffer, screenplay);
-            console.log("[bridge] Speech complete");
-            ws.send(JSON.stringify({ type: "speechEnd", id: msg.id }));
-          } catch (err) {
-            console.error("[bridge] Audio fetch/play failed:", err);
-          }
-        }
-
-        if (msg.type === "updateExpression") {
-          const viewer = findViewer();
-          if (viewer?.model?.emoteController) {
-            viewer.model.emoteController.playEmotion(msg.expression);
-          }
-        }
+        await _handleControlMessage(JSON.parse(event.data), ws);
       } catch (err) {
         console.error("[bridge] Message parse error:", err);
       }

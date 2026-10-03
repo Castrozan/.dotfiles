@@ -37,36 +37,75 @@ def capped_missing_records(base_url, records):
     return capped_records
 
 
+def _searchable_missing_records(missing_records, downloads, queue_id_field):
+    queued_item_ids = {record.get(queue_id_field) for record in downloads}
+    return [
+        record
+        for record in missing_records
+        if record.get("id") is not None and record.get("id") not in queued_item_ids
+    ]
+
+
+def _send_app_search(
+    base_url, api_key, command_name, payload_key, item_ids, active_count, dry_run
+):
+    payload = {"name": command_name, payload_key: item_ids}
+    if not trigger_search(base_url, api_key, payload, len(item_ids), dry_run):
+        return False
+    log(
+        f"missing-search sweep: {base_url} sent {command_name} for "
+        f"{len(item_ids)} monitored-missing items with "
+        f"{active_count} active indexers"
+    )
+    return True
+
+
+def _app_search_records(base_url, api_key):
+    missing_records = monitored_missing_records(base_url, api_key)
+    downloads = queued_records(base_url, api_key)
+    if missing_records is None or downloads is None:
+        return None
+    return missing_records, downloads
+
+
 def sweep_app(endpoint, command_name, payload_key, queue_id_field, now_epoch, dry_run):
     searchable = searchable_endpoint(endpoint, now_epoch)
     if searchable is None:
         return "deferred"
     base_url, api_key, active_count = searchable
-    missing_records = monitored_missing_records(base_url, api_key)
-    downloads = queued_records(base_url, api_key)
-    if missing_records is None or downloads is None:
+    search_records = _app_search_records(base_url, api_key)
+    if search_records is None:
         log(f"missing-search sweep: {base_url} state unavailable; deferring")
         return "deferred"
-    queued_item_ids = {record.get(queue_id_field) for record in downloads}
-    searchable_records = [
-        record
-        for record in missing_records
-        if record.get("id") is not None and record.get("id") not in queued_item_ids
-    ]
+    missing_records, downloads = search_records
+    searchable_records = _searchable_missing_records(
+        missing_records, downloads, queue_id_field
+    )
     capped_item_ids = [
         record["id"] for record in capped_missing_records(base_url, searchable_records)
     ]
     if not capped_item_ids:
         return "swept"
-    payload = {"name": command_name, payload_key: capped_item_ids}
-    if not trigger_search(base_url, api_key, payload, len(capped_item_ids), dry_run):
+    if not _send_app_search(
+        base_url,
+        api_key,
+        command_name,
+        payload_key,
+        capped_item_ids,
+        active_count,
+        dry_run,
+    ):
         return "deferred"
-    log(
-        f"missing-search sweep: {base_url} sent {command_name} for "
-        f"{len(capped_item_ids)} monitored-missing items with "
-        f"{active_count} active indexers"
-    )
     return "swept"
+
+
+def _sonarr_search_records(base_url, api_key):
+    missing_records = monitored_missing_records(base_url, api_key)
+    series = series_records(base_url, api_key)
+    downloads = queued_records(base_url, api_key)
+    if missing_records is None or series is None or downloads is None:
+        return None
+    return missing_records, series, downloads
 
 
 def sweep_sonarr(endpoint, now_epoch, dry_run):
@@ -74,16 +113,24 @@ def sweep_sonarr(endpoint, now_epoch, dry_run):
     if searchable is None:
         return "deferred"
     base_url, api_key, active_count = searchable
-    missing_records = monitored_missing_records(base_url, api_key)
-    series = series_records(base_url, api_key)
-    downloads = queued_records(base_url, api_key)
-    if missing_records is None or series is None or downloads is None:
+    search_records = _sonarr_search_records(base_url, api_key)
+    if search_records is None:
         log(f"missing-search sweep: {base_url} state unavailable; deferring")
         return "deferred"
+    missing_records, series, downloads = search_records
     capped_records = capped_missing_records(base_url, missing_records)
     season_targets, episode_ids = build_sonarr_search_plan(
         capped_records, series, downloads
     )
+    if not _trigger_season_searches(base_url, api_key, season_targets, dry_run):
+        return "deferred"
+    if not _trigger_episode_search(base_url, api_key, episode_ids, dry_run):
+        return "deferred"
+    _log_sonarr_search_plan(base_url, active_count, season_targets, episode_ids)
+    return "swept"
+
+
+def _trigger_season_searches(base_url, api_key, season_targets, dry_run):
     for series_id, season_number in season_targets:
         payload = {
             "name": "SeasonSearch",
@@ -91,11 +138,19 @@ def sweep_sonarr(endpoint, now_epoch, dry_run):
             "seasonNumber": season_number,
         }
         if not trigger_search(base_url, api_key, payload, 1, dry_run):
-            return "deferred"
+            return False
+    return True
+
+
+def _trigger_episode_search(base_url, api_key, episode_ids, dry_run):
     if episode_ids:
         payload = {"name": "EpisodeSearch", "episodeIds": episode_ids}
         if not trigger_search(base_url, api_key, payload, len(episode_ids), dry_run):
-            return "deferred"
+            return False
+    return True
+
+
+def _log_sonarr_search_plan(base_url, active_count, season_targets, episode_ids):
     if season_targets or episode_ids:
         log(
             f"missing-search sweep: {base_url} sent SeasonSearch for "
@@ -103,7 +158,6 @@ def sweep_sonarr(endpoint, now_epoch, dry_run):
             f"for {len(episode_ids)} monitored-missing items with "
             f"{active_count} active indexers"
         )
-    return "swept"
 
 
 def run_missing_search_sweep(radarr_endpoint, sonarr_endpoint, now_epoch, dry_run):

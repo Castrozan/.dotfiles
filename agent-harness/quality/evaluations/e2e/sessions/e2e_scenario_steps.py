@@ -48,6 +48,12 @@ def run_scenario_step(
         if compact_agent_session(pane_id, profile, timeout_seconds=timeout_seconds):
             return None
         return compaction_failure_reason(profile)
+    return _run_prompt_step(pane_id, scenario_step, profile, timeout_seconds)
+
+
+def _run_prompt_step(
+    pane_id: str, scenario_step: str, profile: HarnessProfile, timeout_seconds: float
+) -> str | None:
     if not send_prompt_to_agent_session(pane_id, scenario_step):
         return "prompt could not be delivered to the herdr pane"
     if wait_for_response_completion(

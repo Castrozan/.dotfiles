@@ -1,5 +1,4 @@
 import json
-import mimetypes
 import os
 import sys
 import urllib.parse
@@ -14,6 +13,7 @@ from managed_profile import (
 )
 from managed_service_worker import render_managed_service_worker
 from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
+import static_assets
 from stremio_protocol import addon_manifest, parse_stream_request
 
 
@@ -40,19 +40,9 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
 
     def _handle_request(self, include_body: bool):
         path = urllib.parse.urlsplit(self.path).path
-        if path == "/healthz":
-            self._send_json({"status": "ok"}, include_body)
+        if self._handle_fixed_request(path, include_body):
             return
-        if path == "/managed-profile.js":
-            self._send_managed_profile(include_body)
-            return
-        if path == "/service-worker.js":
-            self._send_managed_service_worker(include_body)
-            return
-        if path == "/prowlarr/manifest.json":
-            self._send_json(addon_manifest(), include_body)
-            return
-        if path == "/comet" or path.startswith("/comet/"):
+        if self._is_comet_route(path):
             self._send_comet(self.path.removeprefix("/comet") or "/", include_body)
             return
         stream_request = parse_stream_request(path)
@@ -65,6 +55,25 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             self._send_json({"streams": streams}, include_body)
             return
         self._send_static(path, include_body)
+
+    @staticmethod
+    def _is_comet_route(path: str) -> bool:
+        return path == "/comet" or path.startswith("/comet/")
+
+    def _handle_fixed_request(self, path: str, include_body: bool) -> bool:
+        if path == "/healthz":
+            self._send_json({"status": "ok"}, include_body)
+            return True
+        if path == "/managed-profile.js":
+            self._send_managed_profile(include_body)
+            return True
+        if path == "/service-worker.js":
+            self._send_managed_service_worker(include_body)
+            return True
+        if path == "/prowlarr/manifest.json":
+            self._send_json(addon_manifest(), include_body)
+            return True
+        return False
 
     def _send_comet(self, request_target: str, include_body: bool):
         try:
@@ -125,9 +134,8 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
 
     def _send_static(self, request_path: str, include_body: bool):
-        relative_path = urllib.parse.unquote(request_path).lstrip("/") or "index.html"
-        candidate = (self.static_root / relative_path).resolve()
-        if not candidate.is_relative_to(self.static_root) or not candidate.is_file():
+        candidate = static_assets.static_candidate(self.static_root, request_path)
+        if candidate is None:
             self.send_error(404)
             return
         body = candidate.read_bytes()
@@ -137,14 +145,9 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
         self._send_cors_headers()
         self.send_header(
             "Content-Type",
-            mimetypes.guess_type(candidate.name)[0] or "application/octet-stream",
+            static_assets.content_type(candidate),
         )
-        cache_control = (
-            "no-cache"
-            if candidate.name == "index.html"
-            else "public, max-age=31536000, immutable"
-        )
-        self.send_header("Cache-Control", cache_control)
+        self.send_header("Cache-Control", static_assets.cache_control(candidate))
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         if include_body:

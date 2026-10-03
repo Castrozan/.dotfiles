@@ -14,9 +14,7 @@ def has_nix_file_extension(path: str) -> bool:
 
 
 def enclosing_dotfiles_repository(path: str):
-    candidate = os.path.abspath(path)
-    if os.path.isfile(candidate):
-        candidate = os.path.dirname(candidate)
+    candidate = _starting_directory(path)
     while True:
         has_git_boundary = os.path.exists(os.path.join(candidate, ".git"))
         has_dotfiles_marker = os.path.exists(
@@ -28,6 +26,13 @@ def enclosing_dotfiles_repository(path: str):
         if parent == candidate:
             return None
         candidate = parent
+
+
+def _starting_directory(path: str) -> str:
+    candidate = os.path.abspath(path)
+    if os.path.isfile(candidate):
+        candidate = os.path.dirname(candidate)
+    return candidate
 
 
 def is_inside_dotfiles_repository(path: str) -> bool:

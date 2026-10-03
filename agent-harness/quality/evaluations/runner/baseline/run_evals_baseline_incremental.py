@@ -124,11 +124,8 @@ class BaselineCheckpoint:
         self.path = path
         self.execution_profile = execution_profile
         self.current_fingerprints = current_fingerprints
-        self.initial_usage = (
-            existing.get("token_usage", {})
-            if reset_test_keys != set(current_fingerprints)
-            and existing.get("execution_profile") == execution_profile
-            else {}
+        self.initial_usage = _initial_token_usage(
+            existing, reset_test_keys, current_fingerprints, execution_profile
         )
         if reset_test_keys:
             entries = recorded_test_entries(existing)
@@ -142,9 +139,8 @@ class BaselineCheckpoint:
                     }
                 ),
             }
-        self.prepared_baseline = bool(
-            set(recorded_test_entries(existing)) - set(current_fingerprints)
-            or existing.get("execution_profile") != execution_profile
+        self.prepared_baseline = _baseline_requires_preparation(
+            existing, current_fingerprints, execution_profile
         )
         if self.prepared_baseline:
             existing = merge_baseline_results(
@@ -182,3 +178,21 @@ class BaselineCheckpoint:
             print("Baseline already contains every selected current result.")
             return
         write_baseline_checkpoint(self.baseline, self.path, announce=True)
+
+
+def _initial_token_usage(
+    existing, reset_test_keys, current_fingerprints, execution_profile
+):
+    return (
+        existing.get("token_usage", {})
+        if reset_test_keys != set(current_fingerprints)
+        and existing.get("execution_profile") == execution_profile
+        else {}
+    )
+
+
+def _baseline_requires_preparation(existing, current_fingerprints, execution_profile):
+    return bool(
+        set(recorded_test_entries(existing)) - set(current_fingerprints)
+        or existing.get("execution_profile") != execution_profile
+    )

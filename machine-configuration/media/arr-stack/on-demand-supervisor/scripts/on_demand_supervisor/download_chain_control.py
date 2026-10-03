@@ -29,6 +29,32 @@ def running_on_demand_services(base_command, on_demand_services):
     return set(completed.stdout.split()) & set(on_demand_services)
 
 
+def services_not_held(services, held_services):
+    return [service for service in services if service not in held_services]
+
+
+def keep_always_on_services_running(
+    base_command,
+    on_demand_services,
+    effective_services,
+    dry_run,
+    running_services,
+    start_services,
+    log_message,
+):
+    running = running_services(base_command, on_demand_services)
+    missing_services = [
+        service for service in effective_services if service not in running
+    ]
+    if missing_services:
+        log_message(
+            f"keep-chain-always-on: starting missing services {missing_services}"
+        )
+        start_services(base_command, effective_services, dry_run)
+    else:
+        log_message("keep-chain-always-on: full chain up, holding")
+
+
 def start_on_demand_services(base_command, on_demand_services, dry_run):
     if dry_run:
         log(f"[dry-run] would start chain: {' '.join(on_demand_services)}")

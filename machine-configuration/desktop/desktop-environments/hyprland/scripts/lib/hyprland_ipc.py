@@ -72,12 +72,26 @@ def migrate_workspaces_from_disabled_monitors() -> None:
     if not target_monitor_name:
         return
     all_monitors = get_all_monitors(include_disabled=True)
-    disabled_monitor_names = {
+    disabled_monitor_names = find_disabled_monitor_names(all_monitors)
+    workspaces = get_all_workspaces()
+    batch_commands = build_disabled_workspace_migration_commands(
+        workspaces, disabled_monitor_names, target_monitor_name
+    )
+    if batch_commands:
+        run_hyprctl_batch("; ".join(batch_commands))
+
+
+def find_disabled_monitor_names(monitors: list[dict]) -> set[str]:
+    return {
         monitor.get("name", "")
-        for monitor in all_monitors
+        for monitor in monitors
         if monitor.get("disabled", False)
     }
-    workspaces = get_all_workspaces()
+
+
+def build_disabled_workspace_migration_commands(
+    workspaces: list[dict], disabled_monitor_names: set[str], target_monitor_name: str
+) -> list[str]:
     batch_commands = []
     for workspace in workspaces:
         if workspace.get("monitor", "") in disabled_monitor_names:
@@ -85,5 +99,4 @@ def migrate_workspaces_from_disabled_monitors() -> None:
             batch_commands.append(
                 f"dispatch moveworkspacetomonitor {workspace_id} {target_monitor_name}"
             )
-    if batch_commands:
-        run_hyprctl_batch("; ".join(batch_commands))
+    return batch_commands

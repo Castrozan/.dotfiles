@@ -20,9 +20,18 @@ class CometResponse:
 
 
 def normalize_stream(stream: dict) -> dict:
+    normalized_sources, seen_sources = _normalized_sources(stream.get("sources", []))
+    _append_dht_source(normalized_sources, seen_sources, stream.get("infoHash", ""))
+
+    normalized_stream = dict(stream)
+    normalized_stream["sources"] = normalized_sources
+    return normalized_stream
+
+
+def _normalized_sources(sources):
     normalized_sources = []
     seen_sources = set()
-    for source in stream.get("sources", []):
+    for source in sources:
         if not isinstance(source, str):
             continue
         if source.startswith(("tracker:", "dht:")):
@@ -34,16 +43,14 @@ def normalize_stream(stream: dict) -> dict:
         if normalized_source not in seen_sources:
             normalized_sources.append(normalized_source)
             seen_sources.add(normalized_source)
+    return normalized_sources, seen_sources
 
-    info_hash = stream.get("infoHash", "")
+
+def _append_dht_source(normalized_sources, seen_sources, info_hash):
     if isinstance(info_hash, str) and INFO_HASH.fullmatch(info_hash):
         dht_source = f"dht:{info_hash.lower()}"
         if dht_source not in seen_sources:
             normalized_sources.append(dht_source)
-
-    normalized_stream = dict(stream)
-    normalized_stream["sources"] = normalized_sources
-    return normalized_stream
 
 
 def normalize_stream_response(body: bytes) -> bytes:

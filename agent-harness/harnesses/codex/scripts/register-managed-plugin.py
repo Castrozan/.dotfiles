@@ -27,16 +27,25 @@ def register_plugin(bundle: Path, home: Path) -> None:
             timeout=60,
         )
 
-    if marketplace and marketplace.get("source") != str(bundle.resolve()):
-        previous = Path(marketplace["source"]) / ".agents/plugins/marketplace.json"
-        catalog = json.loads(previous.read_text())
-        if marketplace.get("source_type") != "local" or [
-            plugin["name"] for plugin in catalog["plugins"]
-        ] != ["dotfiles"]:
-            raise ValueError("The managed marketplace name belongs to another source")
-        run("marketplace", "remove", "--json", "--", marketplace_name)
+    _remove_previous_managed_marketplace(marketplace, bundle, marketplace_name, run)
     run("marketplace", "add", "--json", "--", str(bundle.resolve()))
     run("add", "--json", "--", f"dotfiles@{marketplace_name}")
+
+
+def _remove_previous_managed_marketplace(marketplace, bundle, marketplace_name, run):
+    if not marketplace or marketplace.get("source") == str(bundle.resolve()):
+        return
+    previous = Path(marketplace["source"]) / ".agents/plugins/marketplace.json"
+    catalog = json.loads(previous.read_text())
+    if not _is_dotfiles_marketplace(marketplace, catalog):
+        raise ValueError("The managed marketplace name belongs to another source")
+    run("marketplace", "remove", "--json", "--", marketplace_name)
+
+
+def _is_dotfiles_marketplace(marketplace, catalog):
+    return marketplace.get("source_type") == "local" and [
+        plugin["name"] for plugin in catalog["plugins"]
+    ] == ["dotfiles"]
 
 
 if __name__ == "__main__":

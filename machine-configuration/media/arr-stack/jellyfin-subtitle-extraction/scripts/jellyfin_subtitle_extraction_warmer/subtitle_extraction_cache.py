@@ -57,26 +57,46 @@ def unextracted_subtitle_streams_of_item(
     unextracted_streams = []
     for media_source in item.get("MediaSources") or []:
         media_source_identifier = media_source.get("Id") or item.get("Id")
-        for stream in embedded_text_subtitle_streams(media_source):
-            stream_index = stream.get("Index")
-            codec = stream.get("Codec")
-            if cache_path_exists(
-                extraction_cache_path(
-                    jellyfin_data_directory,
-                    media_source_identifier,
-                    stream_index,
-                    codec,
-                )
-            ):
-                continue
-            unextracted_streams.append(
-                {
-                    "itemIdentifier": item.get("Id"),
-                    "mediaSourceIdentifier": media_source_identifier,
-                    "streamIndex": stream_index,
-                    "requestedExtension": extraction_file_extension_for_codec(codec),
-                }
+        unextracted_streams.extend(
+            _unextracted_streams_of_media_source(
+                item,
+                media_source,
+                media_source_identifier,
+                jellyfin_data_directory,
+                cache_path_exists,
             )
+        )
+    return unextracted_streams
+
+
+def _unextracted_streams_of_media_source(
+    item,
+    media_source,
+    media_source_identifier,
+    jellyfin_data_directory,
+    cache_path_exists,
+):
+    unextracted_streams = []
+    for stream in embedded_text_subtitle_streams(media_source):
+        stream_index = stream.get("Index")
+        codec = stream.get("Codec")
+        if cache_path_exists(
+            extraction_cache_path(
+                jellyfin_data_directory,
+                media_source_identifier,
+                stream_index,
+                codec,
+            )
+        ):
+            continue
+        unextracted_streams.append(
+            {
+                "itemIdentifier": item.get("Id"),
+                "mediaSourceIdentifier": media_source_identifier,
+                "streamIndex": stream_index,
+                "requestedExtension": extraction_file_extension_for_codec(codec),
+            }
+        )
     return unextracted_streams
 
 

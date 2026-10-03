@@ -56,6 +56,13 @@ def main() -> None:
     if not selected_display:
         sys.exit(0)
 
+    if not reopen_selected_entry(entries, display_lines, selected_display):
+        sys.exit(1)
+
+
+def reopen_selected_entry(
+    entries: list[dict], display_lines: list[str], selected_display: str
+) -> bool:
     for index in range(len(entries) - 1, -1, -1):
         if display_lines[index] == selected_display:
             launch_command = entries[index].get("cmd")
@@ -68,9 +75,8 @@ def main() -> None:
                 "exec",
                 f"[workspace {target_workspace_id} silent] {launch_command}",
             )
-            return
-
-    sys.exit(1)
+            return True
+    return False
 
 
 if __name__ == "__main__":

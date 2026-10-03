@@ -62,34 +62,54 @@ def provision_sonarr_profiles(
     }
     outcomes = []
     for desired_route in desired_routes:
-        server_name = desired_route["name"]
-        current_server = next(
-            (server for server in current_servers if server.get("name") == server_name),
-            None,
+        outcomes.append(
+            _provision_sonarr_profile_route(
+                jellyseerr_base_url,
+                jellyseerr_api_key,
+                current_servers,
+                profiles_by_name,
+                desired_route,
+                dry_run,
+            )
         )
-        if current_server is None:
-            log(f"jellyseerr/sonarr '{server_name}': server absent")
-            outcomes.append("missing-server")
-            continue
-        desired_server = build_desired_server_settings(
-            current_server, desired_route, profiles_by_name
-        )
-        if desired_server is None:
-            log(f"jellyseerr/sonarr '{server_name}': profile absent")
-            outcomes.append("missing-profile")
-            continue
-        if managed_settings_match(current_server, desired_server):
-            outcomes.append("unchanged")
-            continue
-        if dry_run:
-            log(f"[dry-run] jellyseerr/sonarr '{server_name}': would update")
-            outcomes.append("would-update")
-            continue
-        request_json(
-            "PUT",
-            f"{jellyseerr_base_url}/api/v1/settings/sonarr/{current_server['id']}",
-            jellyseerr_api_key,
-            desired_server,
-        )
-        outcomes.append("updated")
     return outcomes
+
+
+def _provision_sonarr_profile_route(
+    jellyseerr_base_url,
+    jellyseerr_api_key,
+    current_servers,
+    profiles_by_name,
+    desired_route,
+    dry_run,
+):
+    server_name = desired_route["name"]
+    current_server = _find_current_sonarr_server(current_servers, server_name)
+    if current_server is None:
+        log(f"jellyseerr/sonarr '{server_name}': server absent")
+        return "missing-server"
+    desired_server = build_desired_server_settings(
+        current_server, desired_route, profiles_by_name
+    )
+    if desired_server is None:
+        log(f"jellyseerr/sonarr '{server_name}': profile absent")
+        return "missing-profile"
+    if managed_settings_match(current_server, desired_server):
+        return "unchanged"
+    if dry_run:
+        log(f"[dry-run] jellyseerr/sonarr '{server_name}': would update")
+        return "would-update"
+    request_json(
+        "PUT",
+        f"{jellyseerr_base_url}/api/v1/settings/sonarr/{current_server['id']}",
+        jellyseerr_api_key,
+        desired_server,
+    )
+    return "updated"
+
+
+def _find_current_sonarr_server(current_servers, server_name):
+    return next(
+        (server for server in current_servers if server.get("name") == server_name),
+        None,
+    )

@@ -37,33 +37,39 @@ def comment_is_a_tooling_directive(comment_text: str) -> bool:
 def python_comment_violations(source: str) -> list[tuple[int, str]]:
     violations = []
     for token in tokenize.generate_tokens(io.StringIO(source).readline):
-        if token.type != tokenize.COMMENT:
-            continue
-        if token.start[0] == 1 and token.string.startswith("#!"):
-            continue
-        if comment_is_a_tooling_directive(token.string):
+        if _is_ignored_python_comment(token):
             continue
         violations.append((token.start[0], f"comment on line {token.start[0]}"))
     return violations
 
 
+def _is_ignored_python_comment(token):
+    if token.type != tokenize.COMMENT:
+        return True
+    if token.start[0] == 1 and token.string.startswith("#!"):
+        return True
+    return comment_is_a_tooling_directive(token.string)
+
+
 def python_docstring_violations(parsed_module: ast.Module) -> list[tuple[int, str]]:
     violations = []
     for node in ast.walk(parsed_module):
-        if not isinstance(node, DOCSTRING_OWNING_NODE_TYPES):
+        if not _is_docstring_owner_with_docstring(node):
             continue
-        if not node.body:
-            continue
-        first_statement = node.body[0]
-        if not isinstance(first_statement, ast.Expr):
-            continue
-        if not isinstance(first_statement.value, ast.Constant):
-            continue
-        if not isinstance(first_statement.value.value, str):
-            continue
-        line_number = first_statement.lineno
+        line_number = node.body[0].lineno
         violations.append((line_number, f"docstring on line {line_number}"))
     return violations
+
+
+def _is_docstring_owner_with_docstring(node):
+    if not isinstance(node, DOCSTRING_OWNING_NODE_TYPES) or not node.body:
+        return False
+    first_statement = node.body[0]
+    if not isinstance(first_statement, ast.Expr):
+        return False
+    if not isinstance(first_statement.value, ast.Constant):
+        return False
+    return isinstance(first_statement.value.value, str)
 
 
 def check_python_source_has_no_comments(name: str, source: str) -> E2eAssertionResult:
@@ -93,16 +99,19 @@ def check_non_python_source_has_no_comments(
     if not found_comments:
         return E2eAssertionResult(name=name, passed=True, detail="no comments found")
 
-    shebang_only = (
-        found_comments == ["# "]
-        and content.startswith("#!")
-        and content.count("# ") == 1
-    )
-    if shebang_only:
+    if _contains_only_shebang_comment(found_comments, content):
         return E2eAssertionResult(name=name, passed=True, detail="only shebang line")
 
     return E2eAssertionResult(
         name=name, passed=False, detail=f"found: {found_comments}"
+    )
+
+
+def _contains_only_shebang_comment(found_comments, content):
+    return (
+        found_comments == ["# "]
+        and content.startswith("#!")
+        and content.count("# ") == 1
     )
 
 

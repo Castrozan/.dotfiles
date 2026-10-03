@@ -7,6 +7,7 @@ import {
   codexInput,
   codexOptions,
   codexThreadOptions,
+  normalizeRequestError,
 } from "./provider-adapters.mjs";
 
 function invocation(overrides = {}) {
@@ -87,6 +88,17 @@ test("claude returns successful result text as output", () => {
     }),
     { output: "OK", error: null },
   );
+});
+
+test("request errors preserve strings, error messages, object details, and JSON", () => {
+  assert.equal(normalizeRequestError("denied"), "denied");
+  assert.equal(normalizeRequestError(new Error("offline")), "offline");
+  assert.equal(
+    normalizeRequestError({ detail: "detail", message: "message" }),
+    "detail",
+  );
+  assert.equal(normalizeRequestError({ code: 7 }), '{"code":7}');
+  assert.equal(normalizeRequestError(null), "null");
 });
 
 const CODEX_NO_TOOLS_FEATURES = {

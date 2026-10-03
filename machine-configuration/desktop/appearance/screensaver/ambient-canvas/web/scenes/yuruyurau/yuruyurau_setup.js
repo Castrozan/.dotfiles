@@ -1,4 +1,4 @@
-(function registerYuruyurauScene() {
+window.AmbientCanvasYuruyurauSetup = (function buildYuruyurauSetup() {
   const sharedFragmentShaderSource = `
     precision mediump float;
     void main() {
@@ -79,17 +79,6 @@
     `,
   };
 
-  const figureExtentByVariant = {
-    twin: 150.0,
-    solo: 150.0,
-    swirl: 150.0,
-    petal: 130.0,
-  };
-
-  const YURUYURAU_POINT_COUNT = 20000;
-  const FIGURE_FILL_RATIO = 0.4;
-  const TIME_STEP_PER_SECOND = ((2.0 * Math.PI) / 45.0) * 15.0;
-
   function compileShader(gl, shaderType, shaderSource) {
     const shader = gl.createShader(shaderType);
     gl.shaderSource(shader, shaderSource);
@@ -103,22 +92,7 @@
     return shader;
   }
 
-  function createYuruyurauRenderer(canvasElement, options) {
-    const gl = canvasElement.getContext("webgl", {
-      antialias: true,
-      alpha: false,
-      preserveDrawingBuffer:
-        (options && options.preserveDrawingBuffer) || false,
-    });
-    if (!gl) {
-      console.error("ambient-canvas: WebGL unavailable for a yuruyurau pane");
-      return { render() {}, resize() {}, dispose() {} };
-    }
-    const variantNames = Object.keys(figureBodyByVariant);
-    const selectedVariant = (options && options.variant) || variantNames[0];
-    const figureExtent = figureExtentByVariant[selectedVariant];
-    const devicePixelRatio = (options && options.devicePixelRatio) || 1;
-
+  function createYuruyurauProgram(gl, selectedVariant) {
     const program = gl.createProgram();
     gl.attachShader(
       program,
@@ -139,59 +113,22 @@
           gl.getProgramInfoLog(program),
       );
     }
+    return program;
+  }
 
-    const pointIndices = new Float32Array(YURUYURAU_POINT_COUNT);
-    for (let position = 0; position < YURUYURAU_POINT_COUNT; position += 1) {
+  function createPointIndexBuffer(gl, pointCount) {
+    const pointIndices = new Float32Array(pointCount);
+    for (let position = 0; position < pointCount; position += 1) {
       pointIndices[position] = position + 1;
     }
     const pointIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, pointIndexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, pointIndices, gl.STATIC_DRAW);
-
-    const pointIndexAttribute = gl.getAttribLocation(program, "a_point_index");
-    const timeUniform = gl.getUniformLocation(program, "u_time");
-    const clipUniform = gl.getUniformLocation(program, "u_clip");
-    const pointSizeUniform = gl.getUniformLocation(program, "u_point_size");
-
-    gl.clearColor(...window.AmbientCanvasPalette.backgroundGlColor, 1.0);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    gl.viewport(0, 0, canvasElement.width, canvasElement.height);
-
-    return {
-      render(elapsedSeconds) {
-        const width = canvasElement.width;
-        const height = canvasElement.height;
-        const minimumDimension = Math.min(width, height);
-        const pixelScale =
-          (FIGURE_FILL_RATIO * minimumDimension) / figureExtent;
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.useProgram(program);
-        gl.bindBuffer(gl.ARRAY_BUFFER, pointIndexBuffer);
-        gl.enableVertexAttribArray(pointIndexAttribute);
-        gl.vertexAttribPointer(pointIndexAttribute, 1, gl.FLOAT, false, 0, 0);
-        gl.uniform1f(timeUniform, elapsedSeconds * TIME_STEP_PER_SECOND);
-        gl.uniform2f(
-          clipUniform,
-          pixelScale / (width / 2),
-          pixelScale / (height / 2),
-        );
-        gl.uniform1f(pointSizeUniform, Math.max(1.0, 1.6 * devicePixelRatio));
-        gl.drawArrays(gl.POINTS, 0, YURUYURAU_POINT_COUNT);
-      },
-      resize(pixelWidthDevice, pixelHeightDevice) {
-        gl.viewport(0, 0, pixelWidthDevice, pixelHeightDevice);
-      },
-      dispose() {
-        const loseContextExtension = gl.getExtension("WEBGL_lose_context");
-        if (loseContextExtension) {
-          loseContextExtension.loseContext();
-        }
-      },
-    };
+    return pointIndexBuffer;
   }
 
-  window.AMBIENT_CANVAS_SCENE_FACTORIES =
-    window.AMBIENT_CANVAS_SCENE_FACTORIES || {};
-  window.AMBIENT_CANVAS_SCENE_FACTORIES["yuruyurau"] = createYuruyurauRenderer;
+  return {
+    createProgram: createYuruyurauProgram,
+    createPointIndexBuffer,
+  };
 })();

@@ -43,7 +43,7 @@ def newest_modification_time(file_paths: list[str]) -> float | None:
 
 
 def outstanding_rebuild_obligation(changed_nix_files: list[str]):
-    existing_files = [path for path in changed_nix_files if os.path.exists(path)]
+    existing_files = _existing_nix_files(changed_nix_files)
     if not existing_files:
         return None
 
@@ -51,6 +51,14 @@ def outstanding_rebuild_obligation(changed_nix_files: list[str]):
     if repository_path is None:
         return None
 
+    return _repository_rebuild_obligation(repository_path, existing_files)
+
+
+def _existing_nix_files(changed_nix_files: list[str]) -> list[str]:
+    return [path for path in changed_nix_files if os.path.exists(path)]
+
+
+def _repository_rebuild_obligation(repository_path: str, existing_files: list[str]):
     uncommitted = paths_still_uncommitted(repository_path, existing_files)
     if uncommitted:
         return "uncommitted"

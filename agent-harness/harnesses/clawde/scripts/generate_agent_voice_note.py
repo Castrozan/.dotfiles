@@ -79,13 +79,20 @@ def request_speech(api_key, speech_prompt, voice):
 
 def decode_speech(reported):
     for candidate in reported.get("candidates") or []:
-        for part in candidate.get("content", {}).get("parts") or []:
-            inline = part.get("inlineData")
-            if inline and inline.get("data"):
-                return base64.b64decode(inline["data"]), sample_rate_of(
-                    inline.get("mimeType", "")
-                )
+        decoded_audio = _decode_candidate_audio(candidate)
+        if decoded_audio is not None:
+            return decoded_audio
     raise MediaRequestRefused("the speech provider returned no audio")
+
+
+def _decode_candidate_audio(candidate):
+    for part in candidate.get("content", {}).get("parts") or []:
+        inline = part.get("inlineData")
+        if inline and inline.get("data"):
+            return base64.b64decode(inline["data"]), sample_rate_of(
+                inline.get("mimeType", "")
+            )
+    return None
 
 
 def sample_rate_of(mime_type):

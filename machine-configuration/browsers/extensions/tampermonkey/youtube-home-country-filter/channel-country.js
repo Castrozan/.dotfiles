@@ -17,7 +17,11 @@ const youtubeChannelCountries = (() => {
   function findField(value, field) {
     if (!value || typeof value !== "object") return undefined;
     if (Object.hasOwn(value, field)) return value[field];
-    for (const child of Object.values(value)) {
+    return findFieldInChildren(Object.values(value), field);
+  }
+
+  function findFieldInChildren(children, field) {
+    for (const child of children) {
       const found = findField(child, field);
       if (found !== undefined) return found;
     }
@@ -73,27 +77,30 @@ const youtubeChannelCountries = (() => {
     if (country !== undefined) return country;
     if (retryAfter > Date.now()) return null;
     try {
-      const header = await browse(
-        { browseId: identifier },
-        "header/pageHeaderRenderer/content/pageHeaderViewModel/description",
-      );
-      const continuation = findField(header, "continuationCommand")?.token;
-      if (!continuation)
-        throw new Error("YouTube About continuation is missing");
-      const response = await browse(
-        { continuation },
-        "onResponseReceivedEndpoints/appendContinuationItemsAction/continuationItems/aboutChannelRenderer/metadata/aboutChannelViewModel(channelId,country)",
-      );
-      const about = findField(response, "aboutChannelViewModel");
-      if (about?.channelId !== identifier)
-        throw new Error("YouTube About channel does not match");
-      const resolved = typeof about.country === "string" ? about.country : null;
+      const resolved = await resolveCountry(identifier);
       remember(identifier, resolved, resolved ? 604800000 : 86400000);
       return resolved;
     } catch {
       remember(identifier, null, 300000);
       return null;
     }
+  }
+
+  async function resolveCountry(identifier) {
+    const header = await browse(
+      { browseId: identifier },
+      "header/pageHeaderRenderer/content/pageHeaderViewModel/description",
+    );
+    const continuation = findField(header, "continuationCommand")?.token;
+    if (!continuation) throw new Error("YouTube About continuation is missing");
+    const response = await browse(
+      { continuation },
+      "onResponseReceivedEndpoints/appendContinuationItemsAction/continuationItems/aboutChannelRenderer/metadata/aboutChannelViewModel(channelId,country)",
+    );
+    const about = findField(response, "aboutChannelViewModel");
+    if (about?.channelId !== identifier)
+      throw new Error("YouTube About channel does not match");
+    return typeof about.country === "string" ? about.country : null;
   }
   return { cached, lookup };
 })();

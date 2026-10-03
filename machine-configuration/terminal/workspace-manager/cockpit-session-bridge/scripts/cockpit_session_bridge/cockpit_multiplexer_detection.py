@@ -30,11 +30,15 @@ async def detect_cockpit_multiplexer(
             remote_ssh_host=socket_policy.remote_ssh_host,
         ),
     )
-    if tmux_sessions_result is not None and tmux_sessions_result.exit_code == 0:
+    if _reports_successful_tmux_probe(tmux_sessions_result):
         return build_tmux_multiplexer(settings, socket_policy, subprocess_runner)
     if herdr_status_result is not None:
         return build_herdr_multiplexer(settings, socket_policy, subprocess_runner)
     return build_tmux_multiplexer(settings, socket_policy, subprocess_runner)
+
+
+def _reports_successful_tmux_probe(tmux_sessions_result):
+    return tmux_sessions_result is not None and tmux_sessions_result.exit_code == 0
 
 
 def build_herdr_multiplexer(settings, socket_policy, subprocess_runner):
