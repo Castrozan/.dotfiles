@@ -36,6 +36,12 @@
       "parent": "Sonar way comprehensive",
       "rules": [
         {
+          "key": "python:FunctionComplexity",
+          "parameters": {
+            "maximumFunctionComplexityThreshold": "5"
+          }
+        },
+        {
           "key": "python:S104",
           "parameters": {
             "maximum": "200"
@@ -48,6 +54,12 @@
       "name": "Dotfiles",
       "parent": "Sonar way comprehensive",
       "rules": [
+        {
+          "key": "javascript:S1541",
+          "parameters": {
+            "maximumFunctionComplexityThreshold": "5"
+          }
+        },
         {
           "key": "javascript:S104",
           "parameters": {
@@ -62,9 +74,28 @@
       "parent": "Sonar way comprehensive",
       "rules": [
         {
+          "key": "typescript:S1541",
+          "parameters": {
+            "Threshold": "5"
+          }
+        },
+        {
           "key": "typescript:S104",
           "parameters": {
             "maximum": "200"
+          }
+        }
+      ]
+    },
+    {
+      "language": "swift",
+      "name": "Dotfiles",
+      "parent": "Sonar way core",
+      "rules": [
+        {
+          "key": "swift:S1541",
+          "parameters": {
+            "Threshold": "5"
           }
         }
       ]
