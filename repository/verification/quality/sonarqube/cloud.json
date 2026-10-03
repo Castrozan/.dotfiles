@@ -105,6 +105,19 @@
       "name": "Dotfiles",
       "parent": "Sonar way comprehensive",
       "rules": []
+    },
+    {
+      "language": "web",
+      "name": "Dotfiles",
+      "parent": "Sonar way core",
+      "rules": [
+        {
+          "key": "Web:ComplexityCheck",
+          "parameters": {
+            "max": "5"
+          }
+        }
+      ]
     }
   ],
   "settings": {
