@@ -93,10 +93,6 @@ in
           localServiceUrl = "http://127.0.0.1:9444";
         } cloudflareMediaIngress
         && builtins.elem {
-          hostname = "read.lucaszanoni.com";
-          localServiceUrl = "http://127.0.0.1:9445";
-        } cloudflareMediaIngress
-        && builtins.elem {
           hostname = "stream.lucaszanoni.com";
           localServiceUrl = "http://127.0.0.1:9446";
         } cloudflareMediaIngress

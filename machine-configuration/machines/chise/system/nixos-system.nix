@@ -42,7 +42,6 @@ in
     ../../../media/arr-stack/bazarr-auth/bazarr-auth-provisioner-nixos.nix
     ../../../media/arr-stack/library-access/jellyfin/jellyfin-library-access-provisioner-nixos.nix
     ../../../media/arr-stack/jellyfin-subtitle-extraction/jellyfin-subtitle-extraction-warmer-nixos.nix
-    ../../../media/arr-stack/library-access/kavita/kavita-library-access-provisioner-nixos.nix
     ../../../media/arr-stack/jellyseerr-account-permissions/jellyseerr-account-permission-provisioner-nixos.nix
     ../../../media/arr-stack/jellyseerr-private-request-routing/jellyseerr-private-request-routing-provisioner-nixos.nix
   ]

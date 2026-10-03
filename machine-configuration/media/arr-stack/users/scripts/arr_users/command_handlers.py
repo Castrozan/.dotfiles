@@ -1,5 +1,4 @@
 import account_permission_synchronization
-from kavita import kavita_access_synchronization
 import library_access_synchronization
 import private_request_routing
 import request_routing_synchronization
@@ -90,29 +89,6 @@ def run_sync(context, _arguments):
         )
 
 
-def run_sync_kavita_access(context, _arguments):
-    synchronized = kavita_access_synchronization.synchronize_kavita_library_access(
-        context
-    )
-    print(f"every account can read: {', '.join(synchronized['public_libraries'])}")
-    print(
-        "withheld from friends: "
-        f"{', '.join(synchronized['private_libraries']) or 'none'}"
-    )
-    print(
-        "only these accounts read them: "
-        f"{', '.join(synchronized['privileged_accounts']) or 'none'}"
-    )
-    print(f"repointed: {', '.join(synchronized['repointed_libraries']) or 'none'}")
-    print(f"reconciled: {', '.join(synchronized['reconciled_accounts']) or 'none'}")
-    undeclared_usernames = synchronized["undeclared_accounts"]
-    if undeclared_usernames:
-        print(
-            "registered without being declared, holding public access only: "
-            f"{', '.join(undeclared_usernames)}"
-        )
-
-
 def run_sync_request_routing(context, _arguments):
     synchronized = request_routing_synchronization.synchronize_request_routing(context)
     if synchronized["routed_account"] is None:
@@ -142,7 +118,6 @@ def run_sync_account_permissions(context, _arguments):
 COMMAND_HANDLERS = {
     "list": run_list,
     "sync": run_sync,
-    "sync-kavita-access": run_sync_kavita_access,
     "sync-request-routing": run_sync_request_routing,
     "sync-account-permissions": run_sync_account_permissions,
     "create": run_create,

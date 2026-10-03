@@ -138,11 +138,6 @@
         owner = "zanoni";
         mode = "400";
       };
-      "kavita-admin-api-key" = {
-        file = ../../../../secrets/credentials/media/kavita-admin-api-key.age;
-        owner = "zanoni";
-        mode = "400";
-      };
       "suwayomi-extension-repositories" = {
         file = ../../../../secrets/credentials/media/suwayomi-extension-repositories.age;
         owner = "zanoni";

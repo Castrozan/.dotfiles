@@ -39,10 +39,6 @@
       ../../../../secrets/credentials/media/jellyfin-admin-api-key.age
     ];
 
-    kavita-library-access-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/media/kavita-admin-api-key.age
-    ];
-
     miwayomi-extension-repositories.restartTriggers = [
       ../../../../secrets/credentials/media/suwayomi-extension-repositories.age
     ];
