@@ -1,5 +1,6 @@
 import pathlib
 import re
+import subprocess
 
 AMBIENT_CANVAS_WEB_DIRECTORY = pathlib.Path(__file__).resolve().parents[3] / "web"
 PLAYLIST_SOURCE = (AMBIENT_CANVAS_WEB_DIRECTORY / "panes.js").read_text()
@@ -74,6 +75,25 @@ def test_yuruyurau_setup_loads_before_its_scene():
     setup_script = 'src="scenes/yuruyurau/yuruyurau_setup.js"'
     scene_script = 'src="scenes/yuruyurau/yuruyurau_scene.js"'
     assert DOCUMENT_SOURCE.index(setup_script) < DOCUMENT_SOURCE.index(scene_script)
+
+
+def test_yuruyurau_setup_executes_before_scene_registration_in_a_vm():
+    setup_path = AMBIENT_CANVAS_WEB_DIRECTORY / "scenes/yuruyurau/yuruyurau_setup.js"
+    scene_path = AMBIENT_CANVAS_WEB_DIRECTORY / "scenes/yuruyurau/yuruyurau_scene.js"
+    probe = """
+      const fs = require("node:fs");
+      const vm = require("node:vm");
+      global.window = { AmbientCanvasPalette: { backgroundGlColor: [0, 0, 0] } };
+      vm.runInThisContext(fs.readFileSync(process.argv[1], "utf8"));
+      vm.runInThisContext(fs.readFileSync(process.argv[2], "utf8"));
+      if (typeof window.AMBIENT_CANVAS_SCENE_FACTORIES.yuruyurau !== "function") {
+        throw new Error("Yuruyurau scene factory was not registered");
+      }
+    """
+    subprocess.run(
+        ["node", "-e", probe, str(setup_path), str(scene_path)],
+        check=True,
+    )
 
 
 def test_every_webgl_scene_honours_the_recorder_drawing_buffer_override():

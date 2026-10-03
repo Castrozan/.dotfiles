@@ -92,6 +92,30 @@ window.AmbientCanvasYuruyurauSetup = (function buildYuruyurauSetup() {
     return shader;
   }
 
+  function createYuruyurauProgram(gl, selectedVariant) {
+    const program = gl.createProgram();
+    gl.attachShader(
+      program,
+      compileShader(
+        gl,
+        gl.VERTEX_SHADER,
+        yuruyurauVertexShader(figureBodyByVariant[selectedVariant]),
+      ),
+    );
+    gl.attachShader(
+      program,
+      compileShader(gl, gl.FRAGMENT_SHADER, sharedFragmentShaderSource),
+    );
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error(
+        "ambient-canvas yuruyurau program failed to link: " +
+          gl.getProgramInfoLog(program),
+      );
+    }
+    return program;
+  }
+
   function createPointIndexBuffer(gl, pointCount) {
     const pointIndices = new Float32Array(pointCount);
     for (let position = 0; position < pointCount; position += 1) {
