@@ -62,25 +62,58 @@ def identifier_is_language_mandated_dunder(identifier: str) -> bool:
 def bound_identifiers_in_module(parsed_module: ast.Module) -> set[str]:
     bound_identifiers = set()
     for node in ast.walk(parsed_module):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            bound_identifiers.add(node.name)
-        elif isinstance(node, ast.arg):
-            bound_identifiers.add(node.arg)
-        elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-            bound_identifiers.add(node.id)
-        elif isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Store):
-            bound_identifiers.add(node.attr)
-        elif isinstance(node, ast.ExceptHandler) and node.name is not None:
-            bound_identifiers.add(node.name)
-        elif isinstance(node, ast.alias) and node.asname is not None:
-            bound_identifiers.add(node.asname)
+        identifier = _bound_identifier_for_node(node)
+        if identifier is not None:
+            bound_identifiers.add(identifier)
     return {
         identifier
         for identifier in bound_identifiers
-        if identifier not in IDENTIFIERS_THE_AUTHOR_CANNOT_CHOOSE
+        if _is_author_chosen_identifier(identifier)
+    }
+
+
+def _bound_identifier_for_node(node):
+    identifier = _definition_or_argument_identifier(node)
+    if identifier is not None:
+        return identifier
+    return _other_bound_identifier(node)
+
+
+def _definition_or_argument_identifier(node):
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+        return node.name
+    elif isinstance(node, ast.arg):
+        return node.arg
+
+
+def _other_bound_identifier(node):
+    identifier = _stored_identifier(node, ast.Name, "id")
+    if identifier is not None:
+        return identifier
+    identifier = _stored_identifier(node, ast.Attribute, "attr")
+    if identifier is not None:
+        return identifier
+    return _exception_or_alias_identifier(node)
+
+
+def _stored_identifier(node, node_type, attribute):
+    if isinstance(node, node_type) and isinstance(node.ctx, ast.Store):
+        return getattr(node, attribute)
+
+
+def _exception_or_alias_identifier(node):
+    if isinstance(node, ast.ExceptHandler) and node.name is not None:
+        return node.name
+    elif isinstance(node, ast.alias) and node.asname is not None:
+        return node.asname
+
+
+def _is_author_chosen_identifier(identifier):
+    return (
+        identifier not in IDENTIFIERS_THE_AUTHOR_CANNOT_CHOOSE
         and not identifier_is_a_discard(identifier)
         and not identifier_is_language_mandated_dunder(identifier)
-    }
+    )
 
 
 def words_in_identifier(identifier: str) -> list[str]:

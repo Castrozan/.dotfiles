@@ -84,79 +84,73 @@ def run_coached_scenario(
             raise RuntimeError("herdr tab could not be created")
         worker_pane_id = worker_handle["pane_id"]
         launch_agent_in_herdr_pane(worker_pane_id, CLAUDE_PROFILE, model, workspace)
-
-        if not wait_for_agent_to_become_ready(worker_pane_id, CLAUDE_PROFILE):
-            return failed_coached_session(
-                scenario_name, time.time() - start_time, "Worker failed to start"
-            )
-
-        if not deliver_prompt_and_wait(
-            worker_pane_id, scenario.get("prompt", ""), timeout
-        ):
-            return failed_coached_session(
-                scenario_name,
-                time.time() - start_time,
-                "Worker never completed the initial prompt",
-            )
-
-        initial_tools = parse_tool_sequence(
-            capture_full_terminal_output(worker_pane_id)
-        )
-        initial_workspace_nps = calculate_nps_from_tool_sequence_and_workspace(
-            initial_tools,
-            workspace,
-            scenario,
-        )
-
-        compliance_body = load_compliance_skill_body()
-        coach_findings = review_tool_sequence_for_compliance(
-            compliance_body, initial_tools, workspace
-        )
-        initial_failure_count = count_compliance_failures(coach_findings)
-        initial_nps = nps_after_compliance_penalty(
-            initial_workspace_nps, initial_failure_count
-        )
-        has_failures = initial_failure_count > 0
-
-        if has_failures:
-            deliver_prompt_and_wait(
-                worker_pane_id,
-                CORRECTION_PROMPT_TEMPLATE.format(findings=coach_findings),
-                timeout,
-            )
-
-        coached_tools = parse_tool_sequence(
-            capture_full_terminal_output(worker_pane_id)
-        )
-        coached_workspace_nps = calculate_nps_from_tool_sequence_and_workspace(
-            coached_tools,
-            workspace,
-            scenario,
-        )
-
-        if has_failures:
-            coached_findings = review_tool_sequence_for_compliance(
-                compliance_body, coached_tools, workspace
-            )
-            coached_nps = nps_after_compliance_penalty(
-                coached_workspace_nps, count_compliance_failures(coached_findings)
-            )
-            coach_findings += "\n\n--- AFTER CORRECTION ---\n" + coached_findings
-        else:
-            coached_nps = coached_workspace_nps
-
-        return CoachedSessionResult(
-            scenario_name=scenario_name,
-            initial_nps=initial_nps,
-            coached_nps=coached_nps,
-            improvement=coached_nps - initial_nps,
-            initial_tool_sequence=initial_tools,
-            coached_tool_sequence=coached_tools,
-            coach_findings=coach_findings,
-            duration_seconds=time.time() - start_time,
+        return _complete_coached_scenario(
+            worker_pane_id, scenario, workspace, start_time, timeout, scenario_name
         )
 
     finally:
         if worker_handle:
             destroy_test_tab(worker_handle["tab_id"])
         shutil.rmtree(workspace, ignore_errors=True)
+
+
+def _complete_coached_scenario(
+    worker_pane_id, scenario, workspace, start_time, timeout, scenario_name
+):
+    if not wait_for_agent_to_become_ready(worker_pane_id, CLAUDE_PROFILE):
+        return failed_coached_session(
+            scenario_name, time.time() - start_time, "Worker failed to start"
+        )
+    if not deliver_prompt_and_wait(worker_pane_id, scenario.get("prompt", ""), timeout):
+        return failed_coached_session(
+            scenario_name,
+            time.time() - start_time,
+            "Worker never completed the initial prompt",
+        )
+
+    initial_tools = parse_tool_sequence(capture_full_terminal_output(worker_pane_id))
+    initial_workspace_nps = calculate_nps_from_tool_sequence_and_workspace(
+        initial_tools, workspace, scenario
+    )
+    compliance_body = load_compliance_skill_body()
+    coach_findings = review_tool_sequence_for_compliance(
+        compliance_body, initial_tools, workspace
+    )
+    initial_failure_count = count_compliance_failures(coach_findings)
+    initial_nps = nps_after_compliance_penalty(
+        initial_workspace_nps, initial_failure_count
+    )
+    has_failures = initial_failure_count > 0
+
+    if has_failures:
+        deliver_prompt_and_wait(
+            worker_pane_id,
+            CORRECTION_PROMPT_TEMPLATE.format(findings=coach_findings),
+            timeout,
+        )
+
+    coached_tools = parse_tool_sequence(capture_full_terminal_output(worker_pane_id))
+    coached_workspace_nps = calculate_nps_from_tool_sequence_and_workspace(
+        coached_tools, workspace, scenario
+    )
+    if has_failures:
+        coached_findings = review_tool_sequence_for_compliance(
+            compliance_body, coached_tools, workspace
+        )
+        coached_nps = nps_after_compliance_penalty(
+            coached_workspace_nps, count_compliance_failures(coached_findings)
+        )
+        coach_findings += "\n\n--- AFTER CORRECTION ---\n" + coached_findings
+    else:
+        coached_nps = coached_workspace_nps
+
+    return CoachedSessionResult(
+        scenario_name=scenario_name,
+        initial_nps=initial_nps,
+        coached_nps=coached_nps,
+        improvement=coached_nps - initial_nps,
+        initial_tool_sequence=initial_tools,
+        coached_tool_sequence=coached_tools,
+        coach_findings=coach_findings,
+        duration_seconds=time.time() - start_time,
+    )
