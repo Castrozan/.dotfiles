@@ -34,7 +34,7 @@
 
   fileSystems = lib.mkForce {
     "/" = {
-      device = "/dev/disk/by-label/nixos-root";
+      device = "/dev/disk/by-uuid/328f423f-3f0b-4a00-a4a9-71a0f6b645ca";
       fsType = "ext4";
     };
     "/boot" = {
