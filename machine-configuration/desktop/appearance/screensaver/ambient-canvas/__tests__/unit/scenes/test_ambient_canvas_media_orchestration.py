@@ -137,6 +137,18 @@ def test_stale_render_failure_falls_back_to_existing_loop(monkeypatch):
     assert calls == ["render", "stop", "wait", "launch"]
 
 
+def test_stale_render_failure_preserves_an_existing_running_display(monkeypatch):
+    result, calls = _run_ensure(
+        monkeypatch,
+        fresh=False,
+        render_result=None,
+        display_running=True,
+        loop_exists=True,
+    )
+    assert result == 0
+    assert calls == ["render"]
+
+
 def test_stale_loop_skips_render_while_a_record_pass_is_running(monkeypatch):
     result, calls = _run_ensure(
         monkeypatch,

@@ -61,6 +61,7 @@ function patchVisibilityGate(obj, key, val) {
 }
 
 function patchBlurredInterstitial(obj, key, val) {
+  // The main gate: strip the blurred_image_interstitial from API responses
   if (key !== "blurred_image_interstitial") return false;
   if (!val) return false;
   if (!val.interstitial_action) return false;
@@ -69,6 +70,7 @@ function patchBlurredInterstitial(obj, key, val) {
 }
 
 function patchMediaVisibilityResults(obj, key, val) {
+  // Also null the parent container if present
   if (key !== "mediaVisibilityResults") return false;
   if (!val) return false;
   if (!val.blurred_image_interstitial) return false;
@@ -77,6 +79,7 @@ function patchMediaVisibilityResults(obj, key, val) {
 }
 
 function patchAgeFeatureFlag(obj, key, val) {
+  // Feature flags that enable the gate
   if (val !== true) return;
   if (key === "rweb_age_assurance_flow_enabled") obj[key] = false;
   if (key === "age_verification_gate_enabled") obj[key] = false;

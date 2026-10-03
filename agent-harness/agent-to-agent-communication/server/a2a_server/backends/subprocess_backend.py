@@ -130,8 +130,6 @@ class SubprocessAgentBackend(AgentBackend):
 
     def _read_ready_output_chunk(self) -> bytes | None:
         try:
-            if self._process is None or self._process.stdout is None:
-                return None
             return os.read(self._process.stdout.fileno(), READ_CHUNK_SIZE_BYTES)
         except OSError:
             return None

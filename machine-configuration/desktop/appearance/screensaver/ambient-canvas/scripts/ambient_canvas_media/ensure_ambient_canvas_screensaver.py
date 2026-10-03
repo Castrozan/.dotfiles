@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import signal
 import sys
+from typing import NamedTuple
 
 from ambient_canvas_theme import (
     compose_theme_source_identifier,
@@ -42,6 +43,11 @@ from render_ambient_canvas_loop import (
 LOGGER = logging.getLogger("ambient_canvas.launcher")
 
 
+class RecordedLoopAttempt(NamedTuple):
+    exit_code: int | None
+    replaced: bool
+
+
 def recorded_loop_exists(loop_directory):
     return resolve_playable_segment_manifest_path(loop_directory) is not None
 
@@ -78,11 +84,9 @@ def ensure_screensaver(
             duration_seconds,
             frames_per_second,
         )
-        if recording_result is None:
-            return 0
-        if recording_result is False:
-            return 1
-        recorded_loop_was_replaced = recording_result
+        if recording_result.exit_code is not None:
+            return recording_result.exit_code
+        recorded_loop_was_replaced = recording_result.replaced
 
     if not recorded_loop_was_replaced and is_display_running_for_loop(
         player_binary_path, loop_directory
@@ -108,7 +112,7 @@ def record_stale_loop(
     loop_directory = capture_target.loop_directory
     if a_record_pass_is_running():
         LOGGER.info("recording_already_running")
-        return None
+        return RecordedLoopAttempt(0, False)
     LOGGER.info("recording_started loop=%s", loop_directory)
     rendered_manifest_path = render_recorded_loop(
         index_file_path,
@@ -120,10 +124,10 @@ def record_stale_loop(
     )
     if rendered_manifest_path is None and not recorded_loop_exists(loop_directory):
         LOGGER.error("recording_failed_no_playable_loop loop=%s", loop_directory)
-        return False
+        return RecordedLoopAttempt(1, False)
     recorded_loop_was_replaced = rendered_manifest_path is not None
     LOGGER.info("recording_finished replaced=%s", recorded_loop_was_replaced)
-    return recorded_loop_was_replaced
+    return RecordedLoopAttempt(None, recorded_loop_was_replaced)
 
 
 def main():

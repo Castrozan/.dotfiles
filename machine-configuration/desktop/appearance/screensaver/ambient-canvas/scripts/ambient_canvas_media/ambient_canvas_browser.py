@@ -109,10 +109,18 @@ def parse_linux_monitor_dimensions(monitor_report_json):
 
 def find_monitor_with_geometry(monitors):
     focused_monitors = [monitor for monitor in monitors if monitor.get("focused")]
-    for monitor in focused_monitors or monitors:
-        if monitor.get("width") and monitor.get("height"):
-            return monitor
+    monitors_with_geometry = find_monitors_with_geometry(focused_monitors or monitors)
+    if monitors_with_geometry:
+        return monitors_with_geometry[0]
     return None
+
+
+def find_monitors_with_geometry(monitors):
+    return [
+        monitor
+        for monitor in monitors
+        if monitor.get("width") and monitor.get("height")
+    ]
 
 
 def read_darwin_screen_dimensions():
