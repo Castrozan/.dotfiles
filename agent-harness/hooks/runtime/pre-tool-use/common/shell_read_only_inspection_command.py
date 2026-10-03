@@ -33,6 +33,19 @@ READ_ONLY_INSPECTION_SUBCOMMANDS_BY_COMMAND = {
 READ_ONLY_INSPECTION_FLAGS_BY_COMMAND = {"command": frozenset({"-v", "-V"})}
 
 
+def _has_allowed_subcommand(command_name, tokens):
+    allowed_subcommands = READ_ONLY_INSPECTION_SUBCOMMANDS_BY_COMMAND.get(command_name)
+    return (
+        allowed_subcommands is not None
+        and subcommand_after_global_options(tokens[1:]) in allowed_subcommands
+    )
+
+
+def _has_allowed_command_flag(command_name, tokens):
+    allowed_flags = READ_ONLY_INSPECTION_FLAGS_BY_COMMAND.get(command_name)
+    return allowed_flags is not None and len(tokens) > 1 and tokens[1] in allowed_flags
+
+
 def segment_is_read_only_inspection(segment_text):
     tokens = tokens_after_leading_variable_assignments(segment_text)
     command_name = leading_command_name(tokens)
@@ -40,13 +53,9 @@ def segment_is_read_only_inspection(segment_text):
         return False
     if command_name in READ_ONLY_INSPECTION_COMMANDS:
         return True
-    allowed_subcommands = READ_ONLY_INSPECTION_SUBCOMMANDS_BY_COMMAND.get(command_name)
-    if allowed_subcommands is not None:
-        return subcommand_after_global_options(tokens[1:]) in allowed_subcommands
-    allowed_flags = READ_ONLY_INSPECTION_FLAGS_BY_COMMAND.get(command_name)
-    if allowed_flags is not None:
-        return len(tokens) > 1 and tokens[1] in allowed_flags
-    return False
+    if _has_allowed_subcommand(command_name, tokens):
+        return True
+    return _has_allowed_command_flag(command_name, tokens)
 
 
 def offset_lies_in_read_only_inspection_command_segment(command_text, offset):
@@ -68,22 +77,29 @@ def offset_lies_in_text_the_shell_never_runs(command_text, offset):
     return offset_lies_in_read_only_inspection_command_segment(command_text, offset)
 
 
+def _segment_ends_at(command_text, offset, quote_states):
+    return offset == len(command_text) or offset_separates_segments(
+        command_text, offset, quote_states
+    )
+
+
+def _segment_is_inert(command_text, segment_start, segment_end):
+    return (
+        not offset_is_inside_command_substitution(command_text, segment_start)
+        and segment_is_read_only_inspection(command_text[segment_start:segment_end])
+        and not pipeline_downstream_executes_its_input(command_text, segment_end)
+    )
+
+
 def read_only_segment_bounds(command_text):
     quote_states = quote_state_by_offset(command_text)
     inert_bounds = []
     segment_start = 0
     for offset in range(len(command_text) + 1):
-        ends_the_segment = offset == len(command_text) or offset_separates_segments(
-            command_text, offset, quote_states
-        )
+        ends_the_segment = _segment_ends_at(command_text, offset, quote_states)
         if not ends_the_segment:
             continue
-        segment_is_inert = not offset_is_inside_command_substitution(
-            command_text, segment_start
-        ) and segment_is_read_only_inspection(command_text[segment_start:offset])
-        if segment_is_inert and not pipeline_downstream_executes_its_input(
-            command_text, offset
-        ):
+        if _segment_is_inert(command_text, segment_start, offset):
             inert_bounds.append((segment_start, offset))
         segment_start = offset + 1
     return inert_bounds
