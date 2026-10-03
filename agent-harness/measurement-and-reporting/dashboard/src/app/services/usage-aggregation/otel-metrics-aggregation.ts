@@ -1,13 +1,20 @@
 import { OtelMetrics } from '../../models/usage-snapshot.model';
 import { AggregatedOtelMetrics } from '../../models/account-view.model';
 
+function accumulateTokenUsage(
+  accumulated: Record<string, number>,
+  tokenUsageByType: Record<string, number>,
+): void {
+  for (const [tokenType, tokenCount] of Object.entries(tokenUsageByType)) {
+    accumulated[tokenType] = (accumulated[tokenType] ?? 0) + tokenCount;
+  }
+}
+
 export function sumOtelMetrics(otelMetricsList: OtelMetrics[]): AggregatedOtelMetrics {
   const tokenUsageByType: Record<string, number> = {};
   let totalCostUsd = 0;
   for (const otelMetrics of otelMetricsList) {
-    for (const [tokenType, tokenCount] of Object.entries(otelMetrics.token_usage_by_type ?? {})) {
-      tokenUsageByType[tokenType] = (tokenUsageByType[tokenType] ?? 0) + tokenCount;
-    }
+    accumulateTokenUsage(tokenUsageByType, otelMetrics.token_usage_by_type ?? {});
     totalCostUsd += otelMetrics.total_cost_usd ?? 0;
   }
   return {

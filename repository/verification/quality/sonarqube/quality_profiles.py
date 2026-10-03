@@ -1,27 +1,30 @@
 from sonar_api import request
 
 
+def _collect_rules(profile, inheritance):
+    actual_rules = {}
+    page = 1
+    while True:
+        response = request(
+            "get",
+            "/api/rules/search",
+            qprofile=profile["key"],
+            activation="true",
+            inheritance=inheritance,
+            ps=500,
+            p=page,
+        )
+        actual_rules.update({rule["key"]: inheritance for rule in response["rules"]})
+        if page * 500 >= response["total"]:
+            return actual_rules
+        page += 1
+
+
 def remove_undeclared_rules(profile, desired_rules):
     configured_rule_keys = {rule["key"] for rule in desired_rules}
     actual_rules = {}
     for inheritance in ("NONE", "OVERRIDES"):
-        page = 1
-        while True:
-            response = request(
-                "get",
-                "/api/rules/search",
-                qprofile=profile["key"],
-                activation="true",
-                inheritance=inheritance,
-                ps=500,
-                p=page,
-            )
-            actual_rules.update(
-                {rule["key"]: inheritance for rule in response["rules"]}
-            )
-            if page * 500 >= response["total"]:
-                break
-            page += 1
+        actual_rules.update(_collect_rules(profile, inheritance))
     for key in sorted(actual_rules.keys() - configured_rule_keys):
         if actual_rules[key] == "OVERRIDES":
             request(
@@ -40,6 +43,22 @@ def remove_undeclared_rules(profile, desired_rules):
             )
 
 
+def _find_or_create_profile(organization, desired, profiles):
+    profile = next(
+        (profile for profile in profiles if profile["name"] == desired["name"]),
+        None,
+    )
+    if profile is None:
+        return request(
+            "post",
+            "/api/qualityprofiles/create",
+            organization=organization,
+            language=desired["language"],
+            name=desired["name"],
+        )["profile"]
+    return profile
+
+
 def configure_quality_profiles(configuration):
     organization = configuration["organization"]
     for desired in configuration["qualityProfiles"]:
@@ -49,18 +68,7 @@ def configure_quality_profiles(configuration):
             organization=organization,
             language=desired["language"],
         )["profiles"]
-        profile = next(
-            (profile for profile in profiles if profile["name"] == desired["name"]),
-            None,
-        )
-        if profile is None:
-            profile = request(
-                "post",
-                "/api/qualityprofiles/create",
-                organization=organization,
-                language=desired["language"],
-                name=desired["name"],
-            )["profile"]
+        profile = _find_or_create_profile(organization, desired, profiles)
         parent = next(
             profile for profile in profiles if profile["name"] == desired["parent"]
         )
