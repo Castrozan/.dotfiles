@@ -26,34 +26,9 @@ def provision_rmab(
         "remotePathMappingEnabled": False,
         "disableSSLVerify": False,
     }
-    if not client.ready("/api/setup/status")["setupComplete"]:
-        client.call(
-            "/api/setup/complete",
-            {
-                "backendMode": "audiobookshelf",
-                "audibleRegion": "us",
-                "admin": credentials,
-                "authMethod": "manual",
-                "registration": {"require_admin_approval": True},
-                "audiobookshelf": {
-                    "server_url": "http://audiobookshelf:80",
-                    "api_token": abs_token,
-                    "library_id": library_id,
-                    "trigger_scan_after_import": True,
-                },
-                "prowlarr": {
-                    "url": "http://prowlarr:9696",
-                    "api_key": prowlarr_key,
-                    "indexers": indexers,
-                },
-                "downloadClient": [download],
-                "paths": {
-                    "download_dir": "/data/torrents",
-                    "media_dir": AUDIOBOOK_LIBRARY_PATH,
-                    "metadata_tagging_enabled": False,
-                },
-            },
-        )
+    _complete_setup_if_needed(
+        client, credentials, library_id, abs_token, prowlarr_key, indexers, download
+    )
     login = client.call("/api/auth/local/login", credentials)
     client.authorize(login["accessToken"])
     settings = {
@@ -82,8 +57,54 @@ def provision_rmab(
             "dirChmod": "775",
         },
     }
+    _apply_admin_settings(client, settings)
+    _reconcile_download_client(client, download)
+    _disable_ai_if_enabled(client)
+    print(
+        "Audiobook accounts, library and download integrations reconciled; ebook/AI features disabled."
+    )
+
+
+def _complete_setup_if_needed(
+    client, credentials, library_id, abs_token, prowlarr_key, indexers, download
+):
+    if client.ready("/api/setup/status")["setupComplete"]:
+        return
+    client.call(
+        "/api/setup/complete",
+        {
+            "backendMode": "audiobookshelf",
+            "audibleRegion": "us",
+            "admin": credentials,
+            "authMethod": "manual",
+            "registration": {"require_admin_approval": True},
+            "audiobookshelf": {
+                "server_url": "http://audiobookshelf:80",
+                "api_token": abs_token,
+                "library_id": library_id,
+                "trigger_scan_after_import": True,
+            },
+            "prowlarr": {
+                "url": "http://prowlarr:9696",
+                "api_key": prowlarr_key,
+                "indexers": indexers,
+            },
+            "downloadClient": [download],
+            "paths": {
+                "download_dir": "/data/torrents",
+                "media_dir": AUDIOBOOK_LIBRARY_PATH,
+                "metadata_tagging_enabled": False,
+            },
+        },
+    )
+
+
+def _apply_admin_settings(client, settings):
     for name, body in settings.items():
         client.call(f"/api/admin/settings/{name}", body, "PUT")
+
+
+def _reconcile_download_client(client, download):
     clients = client.call("/api/admin/settings/download-clients")["clients"]
     managed = next((item for item in clients if item["name"] == download["name"]), None)
     if managed:
@@ -92,6 +113,9 @@ def provision_rmab(
         )
     else:
         client.call("/api/admin/settings/download-clients", download)
+
+
+def _disable_ai_if_enabled(client):
     ai = client.call("/api/bookdate/config").get("config")
     if ai and ai.get("isEnabled"):
         client.call(
@@ -103,6 +127,3 @@ def provision_rmab(
                 "isEnabled": False,
             },
         )
-    print(
-        "Audiobook accounts, library and download integrations reconciled; ebook/AI features disabled."
-    )

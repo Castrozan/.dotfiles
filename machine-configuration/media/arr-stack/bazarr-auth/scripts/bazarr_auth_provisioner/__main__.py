@@ -60,6 +60,33 @@ def parse_owner(owner_value):
     return owner_uid, owner_gid
 
 
+def _authentication_matches_config(config_lines, username, password_hash):
+    return auth_already_matches(parse_auth_block(config_lines), username, password_hash)
+
+
+def _update_config_while_container_is_running(
+    config_file_path,
+    config_lines,
+    container_name,
+    username,
+    password_hash,
+    owner_uid,
+    owner_gid,
+):
+    was_running = container_is_running(container_name)
+    if was_running:
+        stop_container(container_name)
+        config_lines = load_config_lines(config_file_path) or config_lines
+    write_config_lines(
+        config_file_path,
+        apply_forms_login(config_lines, username, password_hash),
+        owner_uid,
+        owner_gid,
+    )
+    if was_running:
+        start_container(container_name)
+
+
 def main():
     config_file_path = os.environ["BAZARR_AUTH_CONFIG_FILE"]
     container_name = os.environ["BAZARR_AUTH_CONTAINER_NAME"]
@@ -76,21 +103,18 @@ def main():
     if config_lines is None:
         print("bazarr-auth: skipped, config file not present yet")
         return
-    if auth_already_matches(parse_auth_block(config_lines), username, password_hash):
+    if _authentication_matches_config(config_lines, username, password_hash):
         print("bazarr-auth: already up to date")
         return
-    was_running = container_is_running(container_name)
-    if was_running:
-        stop_container(container_name)
-        config_lines = load_config_lines(config_file_path) or config_lines
-    write_config_lines(
+    _update_config_while_container_is_running(
         config_file_path,
-        apply_forms_login(config_lines, username, password_hash),
+        config_lines,
+        container_name,
+        username,
+        password_hash,
         owner_uid,
         owner_gid,
     )
-    if was_running:
-        start_container(container_name)
     print(f"bazarr-auth: forms login set for '{username}'")
 
 

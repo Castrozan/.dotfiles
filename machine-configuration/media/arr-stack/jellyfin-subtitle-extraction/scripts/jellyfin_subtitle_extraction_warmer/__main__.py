@@ -110,6 +110,28 @@ def main():
     if not jellyfin_is_reachable(base_url, api_key):
         print(f"{LOG_PREFIX}: skipped, jellyfin is not reachable")
         return
+    _sweep_after_waiting(
+        base_url,
+        api_key,
+        jellyfin_data_directory,
+        item_budget,
+        busy_item_budget,
+        pause_seconds,
+        quiet_poll_seconds,
+        quiet_wait_seconds,
+    )
+
+
+def _sweep_after_waiting(
+    base_url,
+    api_key,
+    jellyfin_data_directory,
+    item_budget,
+    busy_item_budget,
+    pause_seconds,
+    quiet_poll_seconds,
+    quiet_wait_seconds,
+):
     try:
         server_went_quiet = wait_for_a_quiet_server(
             base_url, api_key, quiet_poll_seconds, quiet_wait_seconds

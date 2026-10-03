@@ -56,27 +56,15 @@ def apply_forms_login(config_lines, username, password_hash):
                 written_keys.add(key)
 
     for line in config_lines:
-        if AUTH_SECTION_HEADER.match(line):
-            inside_auth = True
-            result_lines.append(line)
-            continue
-        if inside_auth and TOP_LEVEL_KEY.match(line):
-            emit_missing_login_keys()
-            inside_auth = False
-            result_lines.append(line)
-            continue
-        if inside_auth:
-            match = AUTH_CHILD_KEY.match(line)
-            if match:
-                block_indent = match.group("indent")
-                key = match.group("key")
-                if key in desired_values:
-                    result_lines.append(f"{block_indent}{key}: {desired_values[key]}")
-                    written_keys.add(key)
-                    continue
-            result_lines.append(line)
-            continue
-        result_lines.append(line)
+        inside_auth, block_indent = _append_auth_config_line(
+            line,
+            desired_values,
+            result_lines,
+            written_keys,
+            block_indent,
+            inside_auth,
+            emit_missing_login_keys,
+        )
 
     if inside_auth:
         emit_missing_login_keys()
@@ -85,3 +73,45 @@ def apply_forms_login(config_lines, username, password_hash):
         for key in LOGIN_KEYS:
             result_lines.append(f"  {key}: {desired_values[key]}")
     return result_lines
+
+
+def _append_auth_config_line(
+    line,
+    desired_values,
+    result_lines,
+    written_keys,
+    block_indent,
+    inside_auth,
+    emit_missing_login_keys,
+):
+    if AUTH_SECTION_HEADER.match(line):
+        result_lines.append(line)
+        return True, block_indent
+    if not inside_auth:
+        result_lines.append(line)
+        return inside_auth, block_indent
+    if TOP_LEVEL_KEY.match(line):
+        emit_missing_login_keys()
+        result_lines.append(line)
+        return False, block_indent
+    block_indent = _append_auth_child_config_line(
+        line, desired_values, result_lines, written_keys, block_indent
+    )
+    return inside_auth, block_indent
+
+
+def _append_auth_child_config_line(
+    line, desired_values, result_lines, written_keys, block_indent
+):
+    match = AUTH_CHILD_KEY.match(line)
+    if not match:
+        result_lines.append(line)
+        return block_indent
+    block_indent = match.group("indent")
+    key = match.group("key")
+    if key not in desired_values:
+        result_lines.append(line)
+        return block_indent
+    result_lines.append(f"{block_indent}{key}: {desired_values[key]}")
+    written_keys.add(key)
+    return block_indent
