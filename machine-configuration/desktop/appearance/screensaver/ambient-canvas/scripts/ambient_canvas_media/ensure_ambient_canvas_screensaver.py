@@ -70,23 +70,19 @@ def ensure_screensaver(
         player_binary_path,
     )
     if not recorded_loop_is_fresh(loop_directory, source_identifier):
-        if a_record_pass_is_running():
-            LOGGER.info("recording_already_running")
-            return 0
-        LOGGER.info("recording_started loop=%s", loop_directory)
-        rendered_manifest_path = render_recorded_loop(
+        recording_result = record_stale_loop(
             index_file_path,
             capture_target,
             source_identifier,
+            theme_background_hex,
             duration_seconds,
             frames_per_second,
-            theme_background_hex,
         )
-        if rendered_manifest_path is None and not recorded_loop_exists(loop_directory):
-            LOGGER.error("recording_failed_no_playable_loop loop=%s", loop_directory)
+        if recording_result is None:
+            return 0
+        if recording_result is False:
             return 1
-        recorded_loop_was_replaced = rendered_manifest_path is not None
-        LOGGER.info("recording_finished replaced=%s", recorded_loop_was_replaced)
+        recorded_loop_was_replaced = recording_result
 
     if not recorded_loop_was_replaced and is_display_running_for_loop(
         player_binary_path, loop_directory
@@ -99,6 +95,35 @@ def ensure_screensaver(
     return launch_display(
         player_binary_path, loop_directory, capture_target.playback_dwell_override_path
     )
+
+
+def record_stale_loop(
+    index_file_path,
+    capture_target,
+    source_identifier,
+    theme_background_hex,
+    duration_seconds,
+    frames_per_second,
+):
+    loop_directory = capture_target.loop_directory
+    if a_record_pass_is_running():
+        LOGGER.info("recording_already_running")
+        return None
+    LOGGER.info("recording_started loop=%s", loop_directory)
+    rendered_manifest_path = render_recorded_loop(
+        index_file_path,
+        capture_target,
+        source_identifier,
+        duration_seconds,
+        frames_per_second,
+        theme_background_hex,
+    )
+    if rendered_manifest_path is None and not recorded_loop_exists(loop_directory):
+        LOGGER.error("recording_failed_no_playable_loop loop=%s", loop_directory)
+        return False
+    recorded_loop_was_replaced = rendered_manifest_path is not None
+    LOGGER.info("recording_finished replaced=%s", recorded_loop_was_replaced)
+    return recorded_loop_was_replaced
 
 
 def main():

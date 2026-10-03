@@ -21,21 +21,28 @@ def find_active_sink_name_or_default() -> str:
         text=True,
     ).stdout
 
+    if sink_is_running(sinks_output, default_sink_name):
+        return default_sink_name
+    running_sink_name = find_first_running_sink_name(sinks_output)
+    if running_sink_name:
+        return running_sink_name
+    return "@DEFAULT_SINK@"
+
+
+def sink_is_running(sinks_output: str, sink_name: str) -> bool:
     for line in sinks_output.splitlines():
         fields = line.split("\t")
-        if (
-            len(fields) >= 7
-            and fields[1] == default_sink_name
-            and fields[6] == "RUNNING"
-        ):
-            return default_sink_name
+        if len(fields) >= 7 and fields[1] == sink_name and fields[6] == "RUNNING":
+            return True
+    return False
 
+
+def find_first_running_sink_name(sinks_output: str) -> str | None:
     for line in sinks_output.splitlines():
         fields = line.split("\t")
         if len(fields) >= 7 and fields[6] == "RUNNING":
             return fields[1]
-
-    return "@DEFAULT_SINK@"
+    return None
 
 
 def get_volume_for_active_sink() -> int:

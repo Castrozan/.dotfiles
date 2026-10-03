@@ -82,6 +82,11 @@
       HTMLMediaElement.prototype.play = nativeMediaPlay;
     }
 
+    removeHoldObservers();
+    restoreHeldVideoPlayback();
+  }
+
+  function removeHoldObservers() {
     escapedVideoObserver?.disconnect();
 
     document.removeEventListener("play", catchEscapedPlayback, true);
@@ -90,7 +95,9 @@
     document.removeEventListener("prerenderingchange", foregroundSignal);
     window.removeEventListener("focus", foregroundSignal, true);
     window.removeEventListener("blur", foregroundSignal, true);
+  }
 
+  function restoreHeldVideoPlayback() {
     const video = heldVideo;
     heldVideo = null;
 

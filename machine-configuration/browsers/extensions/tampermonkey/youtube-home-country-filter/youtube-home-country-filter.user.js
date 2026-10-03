@@ -42,15 +42,26 @@ const blockedCountries = new Set(["BR"]);
 
   async function filterCard(card) {
     const identifier = channelId(card);
-    if (!identifier || !card.isConnected || !visible.has(card)) return;
+    if (!isFilterableCard(card, identifier)) return;
     const country = await youtubeChannelCountries.lookup(identifier);
-    if (home?.contains(card) && channelId(card) === identifier) {
+    if (cardStillMatchesIdentifier(card, identifier)) {
       card.toggleAttribute(marker, blockedNames.has(country));
     }
   }
 
+  function isFilterableCard(card, identifier) {
+    return Boolean(identifier && card.isConnected && visible.has(card));
+  }
+
+  function cardStillMatchesIdentifier(card, identifier) {
+    return home?.contains(card) && channelId(card) === identifier;
+  }
+
   async function drain() {
-    if (working || !pending.size || !home || location.pathname !== "/") return;
+    if (working) return;
+    if (!pending.size) return;
+    if (!home) return;
+    if (location.pathname !== "/") return;
     working = true;
     const card = pending.values().next().value;
     pending.delete(card);
@@ -81,12 +92,19 @@ const blockedCountries = new Set(["BR"]);
   function consider(card) {
     if (!home?.contains(card)) return;
     const identifier = channelId(card);
-    if (identities.get(card) !== identifier) {
-      identities.set(card, identifier);
-      card.removeAttribute(marker);
-      viewport.observe(card);
-    }
+    observeChangedCardIdentity(card, identifier);
     if (!identifier) return;
+    applyCachedCountryOrQueue(card, identifier);
+  }
+
+  function observeChangedCardIdentity(card, identifier) {
+    if (identities.get(card) === identifier) return;
+    identities.set(card, identifier);
+    card.removeAttribute(marker);
+    viewport.observe(card);
+  }
+
+  function applyCachedCountryOrQueue(card, identifier) {
     const country = youtubeChannelCountries.cached(identifier);
     if (country !== undefined) {
       card.toggleAttribute(marker, blockedNames.has(country));
@@ -117,6 +135,11 @@ const blockedCountries = new Set(["BR"]);
   }
 
   const changes = new MutationObserver((records) => {
+    processMutationRecords(records);
+    void drain();
+  });
+
+  function processMutationRecords(records) {
     const roots = new Set();
     for (const record of records) {
       const owner = record.target.closest?.(selector);
@@ -127,8 +150,7 @@ const blockedCountries = new Set(["BR"]);
       record.removedNodes.forEach(release);
     }
     roots.forEach(scan);
-    void drain();
-  });
+  }
 
   function navigate() {
     const next =

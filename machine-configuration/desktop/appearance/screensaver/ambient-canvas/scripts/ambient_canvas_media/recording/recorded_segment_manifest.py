@@ -24,15 +24,19 @@ def parse_uploaded_segment_manifest(uploaded_manifest_bytes):
     uploaded_segments = decoded_manifest.get("segments")
     if not isinstance(uploaded_segments, list) or not uploaded_segments:
         return None
-    if not all(
-        isinstance(uploaded_segment, dict)
-        and uploaded_segment.get("fingerprint")
-        and uploaded_segment.get("durationSeconds")
-        and segment_sequence_is_valid(uploaded_segment)
-        for uploaded_segment in uploaded_segments
-    ):
+    if not all(uploaded_segment_is_valid(segment) for segment in uploaded_segments):
         return None
     return uploaded_segments
+
+
+def uploaded_segment_is_valid(uploaded_segment):
+    if not isinstance(uploaded_segment, dict):
+        return False
+    if not uploaded_segment.get("fingerprint"):
+        return False
+    if not uploaded_segment.get("durationSeconds"):
+        return False
+    return segment_sequence_is_valid(uploaded_segment)
 
 
 def build_recorded_segment_manifest(uploaded_segments):
@@ -67,11 +71,14 @@ def parse_recorded_segment_manifest(manifest_bytes):
     recorded_segments = decoded_manifest.get("segments")
     if not isinstance(recorded_segments, list) or not recorded_segments:
         return None
-    if not all(
-        isinstance(recorded_segment, dict)
-        and recorded_segment.get("file")
-        and segment_sequence_is_valid(recorded_segment)
-        for recorded_segment in recorded_segments
-    ):
+    if not all(recorded_segment_is_valid(segment) for segment in recorded_segments):
         return None
     return decoded_manifest
+
+
+def recorded_segment_is_valid(recorded_segment):
+    if not isinstance(recorded_segment, dict):
+        return False
+    if not recorded_segment.get("file"):
+        return False
+    return segment_sequence_is_valid(recorded_segment)
