@@ -34,6 +34,12 @@ def extract_streams_of_item(base_url, api_key, item, unextracted_streams):
     return extracted_count
 
 
+def _playback_started(base_url, api_key, yield_to_playback):
+    return yield_to_playback and someone_is_watching(
+        list_active_sessions(base_url, api_key)
+    )
+
+
 def sweep(
     base_url,
     api_key,
@@ -53,9 +59,7 @@ def sweep(
         if extracted_items >= item_budget:
             print(f"{LOG_PREFIX}: sweep budget of {item_budget} items reached")
             break
-        if yield_to_playback and someone_is_watching(
-            list_active_sessions(base_url, api_key)
-        ):
+        if _playback_started(base_url, api_key, yield_to_playback):
             print(f"{LOG_PREFIX}: sweep stopped, playback started")
             break
         extracted_streams += extract_streams_of_item(
@@ -110,28 +114,6 @@ def main():
     if not jellyfin_is_reachable(base_url, api_key):
         print(f"{LOG_PREFIX}: skipped, jellyfin is not reachable")
         return
-    _sweep_after_waiting(
-        base_url,
-        api_key,
-        jellyfin_data_directory,
-        item_budget,
-        busy_item_budget,
-        pause_seconds,
-        quiet_poll_seconds,
-        quiet_wait_seconds,
-    )
-
-
-def _sweep_after_waiting(
-    base_url,
-    api_key,
-    jellyfin_data_directory,
-    item_budget,
-    busy_item_budget,
-    pause_seconds,
-    quiet_poll_seconds,
-    quiet_wait_seconds,
-):
     try:
         server_went_quiet = wait_for_a_quiet_server(
             base_url, api_key, quiet_poll_seconds, quiet_wait_seconds

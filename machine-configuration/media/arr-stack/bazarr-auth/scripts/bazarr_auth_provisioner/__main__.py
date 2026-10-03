@@ -1,6 +1,7 @@
 import os
 import subprocess
 import tempfile
+from dataclasses import dataclass
 
 from bazarr_auth_config import (
     apply_forms_login,
@@ -8,6 +9,17 @@ from bazarr_auth_config import (
     md5_hex,
     parse_auth_block,
 )
+
+
+@dataclass
+class AuthConfigUpdateRequest:
+    config_file_path: str
+    config_lines: list
+    container_name: str
+    username: str
+    password_hash: str
+    owner_uid: int
+    owner_gid: int
 
 
 def read_secret_value(secret_file_path):
@@ -64,27 +76,23 @@ def _authentication_matches_config(config_lines, username, password_hash):
     return auth_already_matches(parse_auth_block(config_lines), username, password_hash)
 
 
-def _update_config_while_container_is_running(
-    config_file_path,
-    config_lines,
-    container_name,
-    username,
-    password_hash,
-    owner_uid,
-    owner_gid,
-):
-    was_running = container_is_running(container_name)
+def _update_config_while_container_is_running(request):
+    was_running = container_is_running(request.container_name)
     if was_running:
-        stop_container(container_name)
-        config_lines = load_config_lines(config_file_path) or config_lines
+        stop_container(request.container_name)
+        request.config_lines = (
+            load_config_lines(request.config_file_path) or request.config_lines
+        )
     write_config_lines(
-        config_file_path,
-        apply_forms_login(config_lines, username, password_hash),
-        owner_uid,
-        owner_gid,
+        request.config_file_path,
+        apply_forms_login(
+            request.config_lines, request.username, request.password_hash
+        ),
+        request.owner_uid,
+        request.owner_gid,
     )
     if was_running:
-        start_container(container_name)
+        start_container(request.container_name)
 
 
 def main():
@@ -107,13 +115,15 @@ def main():
         print("bazarr-auth: already up to date")
         return
     _update_config_while_container_is_running(
-        config_file_path,
-        config_lines,
-        container_name,
-        username,
-        password_hash,
-        owner_uid,
-        owner_gid,
+        AuthConfigUpdateRequest(
+            config_file_path,
+            config_lines,
+            container_name,
+            username,
+            password_hash,
+            owner_uid,
+            owner_gid,
+        )
     )
     print(f"bazarr-auth: forms login set for '{username}'")
 
