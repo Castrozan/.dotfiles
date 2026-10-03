@@ -50,11 +50,22 @@ def retain_result(target, directory, watcher_status):
         check=True,
     )
     result = json.loads(response.stdout)
+    passed = _validate_watcher_result(result, watcher_status)
+    _retain_run_log(target, directory, result)
+    return {**result, "outcome": "passed" if passed else "failed"}, 0 if passed else 1
+
+
+def _validate_watcher_result(result, watcher_status):
     if result["status"] != "completed":
         raise RuntimeError(f"Watcher exited {watcher_status} before the run completed")
     passed = result["conclusion"] == "success"
     if passed and watcher_status != 0:
         raise RuntimeError(f"Watcher exited {watcher_status}; inspect watch.log")
+
+    return passed
+
+
+def _retain_run_log(target, directory, result):
     with (directory / "run.log").open("w") as output:
         subprocess.run(
             [
@@ -71,4 +82,3 @@ def retain_result(target, directory, watcher_status):
             timeout=120,
             check=True,
         )
-    return {**result, "outcome": "passed" if passed else "failed"}, 0 if passed else 1

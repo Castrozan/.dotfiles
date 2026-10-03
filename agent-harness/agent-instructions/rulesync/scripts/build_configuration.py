@@ -24,24 +24,30 @@ def validate_output(source: Path, output: Path, core_instructions: Path) -> None
     if not agent_files:
         raise ValueError("Canonical subagent definitions are missing")
     for target, rule_file in TARGET_RULE_FILES.items():
-        directory = output / target
-        expected = {rule_file}
-        if target in TARGET_AGENT_DIRECTORIES:
-            expected.update(
-                f"{TARGET_AGENT_DIRECTORIES[target]}/{name}" for name in agent_files
-            )
-        actual = {
-            path.relative_to(directory).as_posix()
-            for path in directory.rglob("*")
-            if path.is_file()
-        }
-        if actual != expected:
-            raise ValueError(
-                f"{target} output mismatch: missing={sorted(expected - actual)}, "
-                f"unexpected={sorted(actual - expected)}"
-            )
-        if (directory / rule_file).read_bytes() != core_instructions.read_bytes():
-            raise ValueError(f"{target} changed the shared core instructions")
+        _validate_target_output(
+            target, rule_file, agent_files, output, core_instructions
+        )
+
+
+def _validate_target_output(target, rule_file, agent_files, output, core_instructions):
+    directory = output / target
+    expected = {rule_file}
+    if target in TARGET_AGENT_DIRECTORIES:
+        expected.update(
+            f"{TARGET_AGENT_DIRECTORIES[target]}/{name}" for name in agent_files
+        )
+    actual = {
+        path.relative_to(directory).as_posix()
+        for path in directory.rglob("*")
+        if path.is_file()
+    }
+    if actual != expected:
+        raise ValueError(
+            f"{target} output mismatch: missing={sorted(expected - actual)}, "
+            f"unexpected={sorted(actual - expected)}"
+        )
+    if (directory / rule_file).read_bytes() != core_instructions.read_bytes():
+        raise ValueError(f"{target} changed the shared core instructions")
 
 
 def build_configuration(

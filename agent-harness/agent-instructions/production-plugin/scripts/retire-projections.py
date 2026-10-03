@@ -28,18 +28,8 @@ def retire_codex(home: Path, archive: Path) -> None:
     name = "claude-code-ports"
     root = codex_home / "claude-plugin-ports"
     marketplace = configuration.get("marketplaces", {}).get(name)
-    if marketplace and (
-        marketplace.get("source_type") != "local"
-        or Path(marketplace.get("source", "")).resolve() != root.resolve()
-    ):
-        raise ValueError("Retired marketplace name belongs to another source")
-    removals = [
-        ["remove", "--json", "--", plugin]
-        for plugin in configuration.get("plugins", {})
-        if plugin.endswith("@" + name)
-    ]
-    if marketplace:
-        removals.append(["marketplace", "remove", "--json", "--", name])
+    _validate_codex_marketplace(marketplace, root)
+    removals = _codex_removals(configuration, name, marketplace)
     for arguments in removals:
         subprocess.run(
             [CODEX_EXECUTABLE, "plugin", *arguments],
@@ -49,6 +39,25 @@ def retire_codex(home: Path, archive: Path) -> None:
         )
     archive_projection(root, archive)
     archive_projection(codex_home / "plugins/cache" / name, archive)
+
+
+def _validate_codex_marketplace(marketplace, root):
+    if marketplace and (
+        marketplace.get("source_type") != "local"
+        or Path(marketplace.get("source", "")).resolve() != root.resolve()
+    ):
+        raise ValueError("Retired marketplace name belongs to another source")
+
+
+def _codex_removals(configuration, name, marketplace):
+    removals = [
+        ["remove", "--json", "--", plugin]
+        for plugin in configuration.get("plugins", {})
+        if plugin.endswith("@" + name)
+    ]
+    if marketplace:
+        removals.append(["marketplace", "remove", "--json", "--", name])
+    return removals
 
 
 def retire_opencode(home: Path, archive: Path) -> None:
@@ -67,22 +76,26 @@ def retire_repository_backups(home: Path, bundle: Path, archive: Path) -> None:
     for harness in (".claude", ".opencode"):
         discovery = home / ".dotfiles" / harness / "skills"
         for name in inventory["discovery"]["repositorySkills"]:
-            backup = discovery / (name + ".backup")
-            if not backup.exists() and not backup.is_symlink():
-                continue
-            replacement = discovery / name
-            canonical = bundle / "plugin/library/skills" / name
-            if (
-                not (canonical / "SKILL.md").is_file()
-                or not replacement.is_symlink()
-                or replacement.resolve() != canonical.resolve()
-            ):
-                raise ValueError(
-                    "Repository skill has no installed canonical replacement"
-                )
-            backups.append(backup)
+            backup = _repository_backup_to_retire(discovery, name, bundle)
+            if backup is not None:
+                backups.append(backup)
     for backup in backups:
         archive_projection(backup, archive)
+
+
+def _repository_backup_to_retire(discovery, name, bundle):
+    backup = discovery / (name + ".backup")
+    if not backup.exists() and not backup.is_symlink():
+        return None
+    replacement = discovery / name
+    canonical = bundle / "plugin/library/skills" / name
+    if (
+        not (canonical / "SKILL.md").is_file()
+        or not replacement.is_symlink()
+        or replacement.resolve() != canonical.resolve()
+    ):
+        raise ValueError("Repository skill has no installed canonical replacement")
+    return backup
 
 
 def retire(target: str, home: Path, bundle: Path) -> None:
