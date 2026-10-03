@@ -1,7 +1,9 @@
 { helpers, ... }:
 let
   configuration = helpers.homeManagerTestConfiguration [ ../devenv-container-home-manager.nix ];
-  policy = builtins.fromJSON configuration.xdg.configFile."devenv-container/policy.json".text;
+  policy = builtins.fromJSON (
+    builtins.unsafeDiscardStringContext configuration.xdg.configFile."devenv-container/policy.json".text
+  );
 in
 helpers.mkEvalCheckGroup "domain-dev-devenv-container" {
   memory-budget = {
