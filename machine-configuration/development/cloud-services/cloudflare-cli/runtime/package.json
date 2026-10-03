@@ -1,0 +1,7 @@
+{
+  "name": "dotfiles-cloudflare-cli-runtime",
+  "private": true,
+  "dependencies": {
+    "cf": "1.0.0-beta.12"
+  }
+}
