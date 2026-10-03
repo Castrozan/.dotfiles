@@ -70,6 +70,12 @@ def test_every_scene_script_tag_points_at_a_file_that_exists():
     assert not absent, f"index.html loads absent scene files: {absent}"
 
 
+def test_yuruyurau_setup_loads_before_its_scene():
+    setup_script = 'src="scenes/yuruyurau/yuruyurau_setup.js"'
+    scene_script = 'src="scenes/yuruyurau/yuruyurau_scene.js"'
+    assert DOCUMENT_SOURCE.index(setup_script) < DOCUMENT_SOURCE.index(scene_script)
+
+
 def test_every_webgl_scene_honours_the_recorder_drawing_buffer_override():
     offenders = sorted(
         str(path.relative_to(AMBIENT_CANVAS_WEB_DIRECTORY))

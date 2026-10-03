@@ -95,22 +95,29 @@
       const glyphGrid = columnGlyphGrids[columnIndex];
       for (let trailDepth = 0; trailDepth < trailRowCount; trailDepth += 1) {
         const rowIndex = headRow - trailDepth;
-        if (rowIndex < 0 || rowIndex >= visibleRowCount) {
-          continue;
-        }
-        if (Math.random() < glyphRerollProbabilityPerFrame) {
-          glyphGrid[rowIndex] = pickRandomGlyphCharacter();
-        }
-        drawingContext.fillStyle =
-          trailDepth === 0
-            ? leadingGlyphFillStyle
-            : trailingGlyphFillStyleForDepth(trailDepth);
-        drawingContext.fillText(
-          glyphGrid[rowIndex],
-          horizontalPixel,
-          rowIndex * fontSizeInDevicePixels,
-        );
+        drawColumnGlyphRow(glyphGrid, rowIndex, trailDepth, horizontalPixel);
       }
+    }
+
+    function drawColumnGlyphRow(
+      glyphGrid,
+      rowIndex,
+      trailDepth,
+      horizontalPixel,
+    ) {
+      if (rowIndex < 0 || rowIndex >= visibleRowCount) return;
+      if (Math.random() < glyphRerollProbabilityPerFrame) {
+        glyphGrid[rowIndex] = pickRandomGlyphCharacter();
+      }
+      drawingContext.fillStyle =
+        trailDepth === 0
+          ? leadingGlyphFillStyle
+          : trailingGlyphFillStyleForDepth(trailDepth);
+      drawingContext.fillText(
+        glyphGrid[rowIndex],
+        horizontalPixel,
+        rowIndex * fontSizeInDevicePixels,
+      );
     }
 
     function advanceColumn(columnIndex, deltaSeconds) {

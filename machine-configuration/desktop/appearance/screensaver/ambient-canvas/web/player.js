@@ -82,35 +82,49 @@
         );
         continue;
       }
-      const canvasElement = document.createElement("canvas");
-      canvasElement.className = "ambient-canvas-pane";
-      if (paneConfiguration.area) {
-        canvasElement.style.gridArea = paneConfiguration.area;
-      }
-      grid.appendChild(canvasElement);
-      sizeCanvasToPane(canvasElement);
-      const rendererOptions = Object.assign(
-        { devicePixelRatio: currentDevicePixelRatio },
-        paneConfiguration.options || {},
-        window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES || {},
-        recordingOptionOverrides || {},
+      const activeRenderer = buildPaneRenderer(
+        paneConfiguration,
+        sceneFactory,
+        recordingOptionOverrides,
       );
-      try {
-        renderers.push({
-          canvasElement: canvasElement,
-          renderer: sceneFactory(canvasElement, rendererOptions),
-        });
-      } catch (sceneInitializationError) {
-        grid.removeChild(canvasElement);
-        console.error(
-          "ambient-canvas: scene " +
-            paneConfiguration.scene +
-            " failed to initialize: " +
-            sceneInitializationError,
-        );
-      }
+      if (activeRenderer) renderers.push(activeRenderer);
     }
     return { renderers: renderers, compositionIndex: compositionIndex };
+  }
+
+  function buildPaneRenderer(
+    paneConfiguration,
+    sceneFactory,
+    recordingOptionOverrides,
+  ) {
+    const canvasElement = document.createElement("canvas");
+    canvasElement.className = "ambient-canvas-pane";
+    if (paneConfiguration.area) {
+      canvasElement.style.gridArea = paneConfiguration.area;
+    }
+    grid.appendChild(canvasElement);
+    sizeCanvasToPane(canvasElement);
+    const rendererOptions = Object.assign(
+      { devicePixelRatio: currentDevicePixelRatio },
+      paneConfiguration.options || {},
+      window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES || {},
+      recordingOptionOverrides || {},
+    );
+    try {
+      return {
+        canvasElement: canvasElement,
+        renderer: sceneFactory(canvasElement, rendererOptions),
+      };
+    } catch (sceneInitializationError) {
+      grid.removeChild(canvasElement);
+      console.error(
+        "ambient-canvas: scene " +
+          paneConfiguration.scene +
+          " failed to initialize: " +
+          sceneInitializationError,
+      );
+      return null;
+    }
   }
 
   function destroySegment(segmentHandle) {

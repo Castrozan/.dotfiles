@@ -1,28 +1,13 @@
 import argparse
-import fcntl
 import hashlib
 import os
-import pty
-import select
-import signal
 import struct
 import sys
-import termios
-import time
 from pathlib import Path
 
+import precompute_loop_terminal
+
 CAST_FILE_MAGIC = b"PCL1"
-MAXIMUM_CHUNK_DELAY_SECONDS = 0.5
-TERMINAL_READ_BLOCK_SIZE = 65536
-CHILD_TERMINATION_GRACE_SECONDS = 0.5
-
-
-def resolve_terminal_size():
-    try:
-        size = os.get_terminal_size(sys.stdout.fileno())
-        return size.columns, size.lines
-    except OSError:
-        return 80, 24
 
 
 def resolve_cast_path(command, capture_seconds, columns, lines):
@@ -31,63 +16,6 @@ def resolve_cast_path(command, capture_seconds, columns, lines):
     cache_root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
     directory = cache_root / "precompute-loop" / f"{digest}-{columns}x{lines}"
     return directory / "cast.bin"
-
-
-def terminate_child(child_pid, master_fd):
-    try:
-        os.close(master_fd)
-    except OSError:
-        pass
-    for termination_signal in (signal.SIGTERM, signal.SIGKILL):
-        try:
-            os.kill(child_pid, termination_signal)
-        except ProcessLookupError:
-            return
-        deadline = time.monotonic() + CHILD_TERMINATION_GRACE_SECONDS
-        while time.monotonic() < deadline:
-            try:
-                waited_pid, _ = os.waitpid(child_pid, os.WNOHANG)
-            except ChildProcessError:
-                return
-            if waited_pid == child_pid:
-                return
-            time.sleep(0.02)
-
-
-def capture_command_chunks(command, capture_seconds, columns, lines, echo=True):
-    child_pid, master_fd = pty.fork()
-    if child_pid == 0:
-        os.environ.setdefault("TERM", "xterm-256color")
-        try:
-            os.execvp(command[0], command)
-        except OSError:
-            os._exit(127)
-    window_size = struct.pack("HHHH", lines, columns, 0, 0)
-    fcntl.ioctl(master_fd, termios.TIOCSWINSZ, window_size)
-    if echo:
-        sys.stdout.write("\033[?25l\033[2J\033[H")
-        sys.stdout.flush()
-    chunks = []
-    started_at = time.monotonic()
-    previous_at = started_at
-    while time.monotonic() - started_at < capture_seconds:
-        readable, _, _ = select.select([master_fd], [], [], 0.2)
-        if master_fd not in readable:
-            continue
-        try:
-            data = os.read(master_fd, TERMINAL_READ_BLOCK_SIZE)
-        except OSError:
-            break
-        if not data:
-            break
-        now = time.monotonic()
-        chunks.append((now - previous_at, data))
-        previous_at = now
-        if echo:
-            sys.stdout.buffer.write(data)
-            sys.stdout.buffer.flush()
-    terminate_child(child_pid, master_fd)
-    return chunks
 
 
 def write_cast_file(cast_path, chunks):
@@ -123,33 +51,6 @@ def load_cast_file(cast_path):
     return chunks
 
 
-def replay_chunks_forever(chunks):
-    output_stream = sys.stdout.buffer
-    stop_requested = {"value": False}
-
-    def request_stop(signal_number, frame):
-        stop_requested["value"] = True
-
-    for signal_number in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
-        signal.signal(signal_number, request_stop)
-    sys.stdout.write("\033[?25l\033[2J\033[H")
-    sys.stdout.flush()
-    try:
-        while not stop_requested["value"]:
-            for delay, data in chunks:
-                if stop_requested["value"]:
-                    break
-                if delay > 0:
-                    time.sleep(min(delay, MAXIMUM_CHUNK_DELAY_SECONDS))
-                output_stream.write(data)
-                output_stream.flush()
-            sys.stdout.write("\033[2J\033[H")
-            sys.stdout.flush()
-    finally:
-        sys.stdout.write("\033[?25h\033[0m")
-        sys.stdout.flush()
-
-
 def extract_command(raw_command):
     if raw_command and raw_command[0] == "--":
         return raw_command[1:]
@@ -166,8 +67,17 @@ def main():
     if not command:
         print("precompute-loop: no command given", file=sys.stderr)
         return 2
-    columns, lines = resolve_terminal_size()
+    columns, lines = precompute_loop_terminal.resolve_terminal_size()
     cast_path = resolve_cast_path(command, arguments.seconds, columns, lines)
+    chunks = load_or_capture_chunks(arguments, command, columns, lines, cast_path)
+    if not chunks:
+        print("precompute-loop: nothing captured", file=sys.stderr)
+        return 1
+    precompute_loop_terminal.replay_chunks_forever(chunks)
+    return 0
+
+
+def load_or_capture_chunks(arguments, command, columns, lines, cast_path):
     chunks = None
     if cast_path.exists() and not arguments.force:
         chunks = load_cast_file(cast_path)
@@ -177,14 +87,12 @@ def main():
             f"{command[0]} at {columns}x{lines}...\n"
         )
         sys.stderr.flush()
-        chunks = capture_command_chunks(command, arguments.seconds, columns, lines)
+        chunks = precompute_loop_terminal.capture_command_chunks(
+            command, arguments.seconds, columns, lines
+        )
         if chunks:
             write_cast_file(cast_path, chunks)
-    if not chunks:
-        print("precompute-loop: nothing captured", file=sys.stderr)
-        return 1
-    replay_chunks_forever(chunks)
-    return 0
+    return chunks
 
 
 if __name__ == "__main__":
