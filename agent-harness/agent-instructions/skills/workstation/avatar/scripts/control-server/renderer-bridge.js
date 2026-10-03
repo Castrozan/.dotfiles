@@ -17,11 +17,16 @@
 
   function _findViewerInFiber(fiber) {
     for (let depth = 0; depth < 60 && fiber; depth++) {
-      if (fiber.dependencies && fiber.dependencies.firstContext) {
-        const viewer = _findViewerInDependencies(fiber.dependencies);
-        if (viewer) return viewer;
-      }
+      const viewer = _findViewerInFiberDependencies(fiber);
+      if (viewer) return viewer;
       fiber = fiber.return;
+    }
+    return null;
+  }
+
+  function _findViewerInFiberDependencies(fiber) {
+    if (fiber.dependencies && fiber.dependencies.firstContext) {
+      return _findViewerInDependencies(fiber.dependencies);
     }
     return null;
   }
