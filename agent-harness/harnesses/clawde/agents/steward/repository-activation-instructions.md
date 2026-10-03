@@ -7,7 +7,7 @@ requires its separate explicit approval.
 
 ### Independent maintenance progress
 
-A dirty checkout, committed divergence, or unavailable GitHub access can block synchronization without blocking local
+A dirty checkout, committed divergence, or unavailable upstream access can block synchronization without blocking local
 evaluation and rebuilding. Preserve uncommitted work; never stage, stash, reset, or discard it to clear a maintenance
 gate. Build the available local configuration when it changes, and distinguish that result from being synchronized with
 the latest upstream revision. Attempt safe synchronization again when remote access returns.

@@ -27,8 +27,8 @@ prune`, first confirming its commits are ancestors of the upstream branch and it
 
 ### Traps
 
-PR commands must run from the main repo directory, not the worktree: `gh` and `glab` misdetect the repo context inside
-worktrees. Use `--head <branch>` to target the worktree branch.
+Run proposal commands with the explicitly resolved upstream repository and source branch. Provider CLI defaults can
+select another host or branch inside a worktree; inspect installed help for the provider's repository and branch flags.
 
 Never run `git checkout` or `git switch` in the main repo: the main repo stays on its current branch at all times. All
 branch work happens exclusively inside the worktree directory. Each worktree is bound to one branch; if you need a

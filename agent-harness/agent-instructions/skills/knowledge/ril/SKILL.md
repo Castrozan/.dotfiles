@@ -127,10 +127,9 @@ public-repository safeguard before writing it.
 
 ### The pull request conversation
 
-The user answers in an ordinary pull request comment written in plain language, with no keyword, prefix or syntax to
-remember, and the watcher reads the intent. Do not migrate this to GitHub review states: the watcher pushes under the
-user's own account, so every pull request it opens is self-authored and GitHub forbids approving or requesting changes
-on your own pull request, leaving the comment box as the only channel that exists.
+The user answers in an ordinary proposal comment written in plain language, with no keyword, prefix or syntax to
+remember, and the watcher reads the intent. Keep this channel independent of provider review states and self-review
+restrictions. Load the [forge skill](../../development/forge/SKILL.md) for the repository's native proposal operations.
 
 Read a comment as one of three things. Approval means execute the verdict as proposed: merge when there is a change to
 land, write the vault entry, `ril record`, and move on. Rejection means do not land it, so read what the user objected

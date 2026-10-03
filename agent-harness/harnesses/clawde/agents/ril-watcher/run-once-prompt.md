@@ -54,11 +54,11 @@ employer-identifying.
 
 ### Opening it
 
-Open from `~/.dotfiles` with `--head <branch>`, since `gh` misdetects the repo from inside a worktree, one capture per
-pull request so a bad idea reverts alone. The body carries the capture and its origin link, what the thing is, what it
-changes here by `path:line`, the cost and what it replaces or deletes, the commands you actually ran with their result,
-what only activation can prove, and your verdict. Do not merge it now and do not record the capture: the claim expiring
-on its own is how Lucas or another session takes it over, and your next wake handles his answer.
+Load the forge skill and open against the explicitly resolved upstream and source branch, one capture per proposal so a
+bad idea reverts alone. The body carries the capture and its origin link, what the thing is, what it changes here by
+`path:line`, the cost and what it replaces or deletes, the commands you actually ran with their result, what only
+activation can prove, and your verdict. Do not merge it now and do not record the capture: the claim expiring on its own
+is how Lucas or another session takes it over, and your next wake handles his answer.
 
 ### End of run
 

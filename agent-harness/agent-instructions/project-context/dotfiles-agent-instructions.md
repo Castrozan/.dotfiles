@@ -140,10 +140,9 @@ they are substantive (see [change review scope](#change-review-scope)); 5) rebui
 
 6\) push, which starts the run in the background; 7) do not block on the run: continue with the next independent piece
 of the task while CI works, and check the verdict only when other work is exhausted and a response to the user is due -
-`glab ci list --sha $(git rev-parse HEAD) --output json` finds pipelines, and
-`glab ci get --pipeline-id <id> --output json` reports their status; start a background watcher for every relevant
-pipeline and accept only terminal `success` as green; a short sha matches no pipeline and a just-pushed commit can have
-none for a few seconds, so use the full sha and retry an empty list rather than reading it as a verdict;
+load the forge and CI watcher skills, resolve the effective upstream and find runs for the full commit SHA; start a
+background watcher for every relevant run and accept only terminal success as green; a just-pushed commit can have no
+run for a few seconds, so retry an empty list rather than reading it as a verdict;
 
 8\) if the rebuild or CI fails: fix and repeat from 1; 9) only after a green rebuild and green CI: respond to user.
 Every CI job reports all of its failures rather than dying on the first, so read the whole run and fix the batch in one

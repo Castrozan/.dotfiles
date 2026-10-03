@@ -9,6 +9,7 @@
 }:
 let
   stewardPayloadRoot = inputs.clawde.stewardPayloadPath;
+  forgeTools = import ./steward/forge-tools.nix { inherit inputs pkgs lib; };
 
   machinesRegistryPath = ../../../../private-configuration/machines.nix;
   machinesRegistry =
@@ -70,10 +71,13 @@ let
   '';
 in
 {
-  home.packages = [ stewardRebuild ];
+  home.packages = [ stewardRebuild ] ++ forgeTools.profilePackages;
+  clawde.agentTypes.steward.packages = lib.mkForce forgeTools.packages;
 
   clawdeAgentSkillSets.steward = [
     "coding"
+    "forge"
+    "ci-watcher"
     "nix"
     "deep-work"
     "workspace"

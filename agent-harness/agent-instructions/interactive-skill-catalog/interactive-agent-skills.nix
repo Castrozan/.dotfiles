@@ -18,6 +18,7 @@ let
     "architecture"
     "browser"
     "coding"
+    "forge"
     "deep-work"
     "deliver"
     "devenv"

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 from pathlib import Path
 
+from forge.native import open_change_requests
+from forge.repository import resolve_repository
+
 RIL_BRANCH_PREFIX = "ril-"
 WATCHER_COMMENT_MARKER = "<!-- ril-watcher -->"
-PULL_REQUEST_QUERY_FIELDS = "number,headRefName,comments"
-PULL_REQUEST_QUERY_LIMIT = "100"
 NON_SLUG_CHARACTERS = re.compile(r"[^a-z0-9]+")
 
 
@@ -30,29 +30,11 @@ def capture_decision_path(capture_name: str) -> str:
 
 
 def open_ril_pull_requests(repository_directory: Path) -> list[dict]:
-    completed_process = subprocess.run(
-        [
-            "gh",
-            "pr",
-            "list",
-            "--state",
-            "open",
-            "--limit",
-            PULL_REQUEST_QUERY_LIMIT,
-            "--json",
-            PULL_REQUEST_QUERY_FIELDS,
-        ],
-        cwd=repository_directory,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if completed_process.returncode != 0:
-        raise PullRequestLookupUnavailable(completed_process.stderr.strip())
     try:
-        listed_pull_requests = json.loads(completed_process.stdout or "[]")
-    except json.JSONDecodeError as decode_error:
-        raise PullRequestLookupUnavailable(str(decode_error)) from decode_error
+        repository = resolve_repository(repository_directory)
+        listed_pull_requests = open_change_requests(repository, RIL_BRANCH_PREFIX)
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+        raise PullRequestLookupUnavailable(str(error)) from error
     return [
         pull_request
         for pull_request in listed_pull_requests

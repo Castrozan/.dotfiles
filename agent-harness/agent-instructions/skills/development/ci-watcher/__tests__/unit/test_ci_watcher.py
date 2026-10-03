@@ -4,7 +4,8 @@ from unittest.mock import Mock
 
 import pytest
 
-import ci_watcher
+from ci_watcher import watcher as ci_watcher
+from forge.repository import Repository
 
 
 @pytest.fixture
@@ -35,13 +36,19 @@ def github_run(monkeypatch, tmp_path):
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(ci_watcher.tempfile, "mkdtemp", lambda **options: str(tmp_path))
+    monkeypatch.setattr(
+        ci_watcher,
+        "resolve_repository",
+        lambda **options: Repository("github", "github.com", "owner/repository"),
+    )
     monkeypatch.setattr(ci_watcher.subprocess, "Popen", start)
     monkeypatch.setattr(ci_watcher.subprocess, "run", finish)
     return result, process, calls
 
 
 @pytest.mark.parametrize(
-    "conclusion,status", [("success", 0), ("failure", 1), ("cancelled", 1)]
+    "conclusion,status",
+    [("success", 0), ("failure", 1), ("cancelled", 1), ("skipped", 1), ("neutral", 1)],
 )
 def test_collects_one_terminal_verdict_and_all_job_logs(
     github_run, tmp_path, capsys, conclusion, status
@@ -65,7 +72,7 @@ def test_collects_one_terminal_verdict_and_all_job_logs(
         "watch",
         "42",
         "--repo",
-        "owner/repository",
+        "https://github.com/owner/repository",
         "--compact",
         "--exit-status",
         "--interval",
