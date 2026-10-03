@@ -11,29 +11,44 @@ from instructions.instruction_markdown_frontmatter import parse_instruction_body
 def capture_link_destination(state: StateInline, silent: bool) -> bool:
     source_position = state.pos
     token_count = len(state.tokens)
-    label_end = (
-        state.md.helpers.parseLinkLabel(state, source_position, True)
-        if state.src[source_position] == "["
-        else -1
-    )
+    label_end = _link_label_end(state, source_position)
     if not link(state, silent):
         return False
-    if silent or label_end < 0 or state.src[label_end + 1 : label_end + 2] != "(":
+    if not _link_destination_span_is_needed(state, silent, label_end):
         return True
-    destination_start = label_end + 2
-    while (
-        destination_start < len(state.src) and state.src[destination_start] in " \t\n"
-    ):
-        destination_start += 1
+    destination_start = _link_destination_start(state.src, label_end)
     destination = state.md.helpers.parseLinkDestination(
         state.src, destination_start, len(state.src)
     )
     if destination.ok:
-        opening = next(
-            token for token in state.tokens[token_count:] if token.type == "link_open"
+        _record_link_destination_span(
+            state.tokens[token_count:], destination_start, destination.pos
         )
-        opening.meta["destination_span"] = (destination_start, destination.pos)
     return True
+
+
+def _link_destination_start(source, label_end):
+    destination_start = label_end + 2
+    while destination_start < len(source) and source[destination_start] in " \t\n":
+        destination_start += 1
+    return destination_start
+
+
+def _record_link_destination_span(tokens, destination_start, destination_end):
+    opening = next(token for token in tokens if token.type == "link_open")
+    opening.meta["destination_span"] = (destination_start, destination_end)
+
+
+def _link_label_end(state: StateInline, source_position: int) -> int:
+    if state.src[source_position] == "[":
+        return state.md.helpers.parseLinkLabel(state, source_position, True)
+    return -1
+
+
+def _link_destination_span_is_needed(state: StateInline, silent: bool, label_end: int):
+    return not (
+        silent or label_end < 0 or state.src[label_end + 1 : label_end + 2] != "("
+    )
 
 
 LINK_SOURCE_PARSER = MarkdownIt("commonmark")
@@ -85,30 +100,78 @@ def rebase_instruction_links(
         line_offsets.append(line_offsets[-1] + len(line))
     replacements = []
     for token in LINK_SOURCE_PARSER.parse(body.text):
-        if token.type != "inline":
-            continue
-        content_lines = token.content.split("\n")
-        for child in token.children or []:
-            if child.type != "link_open" or "destination_span" not in child.meta:
-                continue
-            target = child.attrGet("href") or ""
-            replacement = deployed_link_target(target, source, deployed, destinations)
-            if replacement == target:
-                continue
-            start, end = child.meta["destination_span"]
-            preceding = token.content[:start]
-            row = preceding.count("\n")
-            column = len(preceding.rsplit("\n", 1)[-1])
-            source_row = body.first_line_number - 1 + token.map[0] + row
-            content_column = source_lines[source_row].find(content_lines[row])
-            if content_column < 0:
-                raise ValueError("cannot locate parsed link in its source line")
-            absolute_start = line_offsets[source_row] + content_column + column
-            if token.content[start:end].startswith("<"):
-                replacement = f"<{replacement}>"
-            replacements.append(
-                (absolute_start, absolute_start + end - start, replacement)
+        replacements.extend(
+            _link_replacements_for_token(
+                token, body, source, deployed, destinations, source_lines, line_offsets
             )
+        )
     for start, end, replacement in sorted(replacements, reverse=True):
         text = text[:start] + replacement + text[end:]
     return text
+
+
+def _link_replacements_for_token(
+    token, body, source, deployed, destinations, source_lines, line_offsets
+):
+    if token.type != "inline":
+        return []
+    content_lines = token.content.split("\n")
+    replacements = []
+    for child in token.children or []:
+        replacement = _link_replacement_for_child(
+            token,
+            child,
+            body,
+            source,
+            deployed,
+            destinations,
+            source_lines,
+            line_offsets,
+            content_lines,
+        )
+        if replacement is not None:
+            replacements.append(replacement)
+    return replacements
+
+
+def _link_replacement_for_child(
+    token,
+    child,
+    body,
+    source,
+    deployed,
+    destinations,
+    source_lines,
+    line_offsets,
+    content_lines,
+):
+    if not _has_link_destination_span(child):
+        return None
+    target = child.attrGet("href") or ""
+    replacement = deployed_link_target(target, source, deployed, destinations)
+    if replacement == target:
+        return None
+    start, end = child.meta["destination_span"]
+    source_offset = _link_source_offset(
+        token, body, source_lines, line_offsets, content_lines, start, end
+    )
+    if token.content[start:end].startswith("<"):
+        replacement = f"<{replacement}>"
+    return source_offset, source_offset + end - start, replacement
+
+
+def _has_link_destination_span(child):
+    return child.type == "link_open" and "destination_span" in child.meta
+
+
+def _link_source_offset(
+    token, body, source_lines, line_offsets, content_lines, start, end
+):
+    preceding = token.content[:start]
+    row = preceding.count("\n")
+    column = len(preceding.rsplit("\n", 1)[-1])
+    source_row = body.first_line_number - 1 + token.map[0] + row
+    content_column = source_lines[source_row].find(content_lines[row])
+    if content_column < 0:
+        raise ValueError("cannot locate parsed link in its source line")
+    return line_offsets[source_row] + content_column + column

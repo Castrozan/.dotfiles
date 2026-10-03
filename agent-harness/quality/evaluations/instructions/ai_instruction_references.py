@@ -74,15 +74,19 @@ def noncanonical_skill_reference_paths(
     ]
     for link in inspection.links:
         destination = urlsplit(link.target)
-        if "references" in Path(destination.path).parts and (
-            destination.scheme == "file"
-            or (
-                not destination.scheme
-                and destination.path.startswith(("/", *REPOSITORY_TOP_LEVEL_PREFIXES))
-            )
-        ):
+        if _is_noncanonical_reference_destination(destination):
             references.append(link.target)
     return references
+
+
+def _is_noncanonical_reference_destination(destination):
+    return "references" in Path(destination.path).parts and (
+        destination.scheme == "file"
+        or (
+            not destination.scheme
+            and destination.path.startswith(("/", *REPOSITORY_TOP_LEVEL_PREFIXES))
+        )
+    )
 
 
 def skill_relative_script_references(path: Path) -> list[str]:

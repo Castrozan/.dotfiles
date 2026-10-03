@@ -3,22 +3,21 @@ from pathlib import Path
 
 from instructions.ai_instruction_format import inspect_markdown_instruction
 from instructions.instruction_format_diagnostics import InstructionFormatViolation
-from instructions.instruction_link_targets import instruction_link_violations
-from instructions.instruction_markdown_frontmatter import parse_instruction_body
-from instructions.ai_instruction_references import (
-    noncanonical_skill_reference_paths,
-    owning_skill_directory,
-    skill_reference_references,
-)
 from instructions.instruction_surface_scanner import (
     REPO_ROOT,
     SOURCEBOT_SKILL_TREE,
     every_linted_markdown_file,
     frontmatter_key_values,
-    misplaced_skill_markdown_files,
     named_instruction_entrypoint_files,
     skill_definition_files,
     skill_reference_files,
+)
+from instructions.validation.instruction_repository_validation import (
+    validate_duplicate_instruction_names,
+    validate_instruction_sources,
+    validate_misplaced_skill_markdown,
+    validate_noncanonical_skill_references,
+    validate_skill_reference_routes,
 )
 
 MAXIMUM_INSTRUCTION_DESCRIPTION_WORDS = 35
@@ -30,6 +29,21 @@ def instruction_identity_violations(path: Path) -> list[InstructionFormatViolati
     key_values = frontmatter_key_values(path.read_text()) or {}
     name = key_values.get("name", "")
     description = key_values.get("description", "")
+    violations = _instruction_name_violations(name)
+    expected_name = _expected_instruction_name(path)
+    if name and name != expected_name:
+        violations.append(
+            InstructionFormatViolation(
+                "instruction_name",
+                None,
+                f"name '{name}' does not match '{expected_name}'",
+            )
+        )
+    violations.extend(_instruction_description_violations(description))
+    return violations
+
+
+def _instruction_name_violations(name):
     violations = []
     if not name:
         violations.append(
@@ -45,19 +59,20 @@ def instruction_identity_violations(path: Path) -> list[InstructionFormatViolati
                 f"name '{name}' must use lowercase kebab-case",
             )
         )
+    return violations
+
+
+def _expected_instruction_name(path):
     expected_name = path.parent.name if path.name == "SKILL.md" else path.stem
     if path.parent == SOURCEBOT_SKILL_TREE:
         expected_name = path.parent.parent.name
     if path.name == "core-skill-frontmatter.md":
         expected_name = "core"
-    if name and name != expected_name:
-        violations.append(
-            InstructionFormatViolation(
-                "instruction_name",
-                None,
-                f"name '{name}' does not match '{expected_name}'",
-            )
-        )
+    return expected_name
+
+
+def _instruction_description_violations(description):
+    violations = []
     if not description:
         violations.append(
             InstructionFormatViolation(
@@ -107,85 +122,18 @@ def repository_instruction_format_violations() -> dict[str, list[str]]:
         for path in paths
         if path != metadata_fragment
     }
-    for path, inspection in list(inspections.items()):
-        for violation in inspection.violations + instruction_link_violations(
-            path, inspection, inspections
-        ):
-            add(path, violation)
-    metadata = parse_instruction_body(metadata_fragment.read_text())
-    for violation in metadata.violations:
-        add(metadata_fragment, violation)
-    if metadata.text.strip():
-        add(
-            metadata_fragment,
-            InstructionFormatViolation(
-                "instruction_frontmatter",
-                metadata.first_line_number,
-                "expected metadata only in the core frontmatter fragment",
-            ),
-        )
+    validate_instruction_sources(inspections, metadata_fragment, add)
     named_files = named_instruction_entrypoint_files()
     for path in named_files:
         for violation in instruction_identity_violations(path):
             add(path, violation)
-    names_to_paths: dict[str, list[Path]] = {}
-    for path in skill_definition_files():
-        name = (frontmatter_key_values(path.read_text()) or {}).get("name", "")
-        names_to_paths.setdefault(name, []).append(path)
-    for name, name_paths in names_to_paths.items():
-        if name and len(name_paths) > 1:
-            for path in name_paths:
-                add(
-                    path,
-                    InstructionFormatViolation(
-                        "instruction_name",
-                        None,
-                        f"name '{name}' is not unique",
-                    ),
-                )
-    for path in misplaced_skill_markdown_files():
-        add(
-            path,
-            InstructionFormatViolation(
-                "skill_reference_location",
-                None,
-                "skill-owned instruction Markdown belongs under references/",
-            ),
-        )
+    validate_duplicate_instruction_names(add)
+    validate_misplaced_skill_markdown(add)
     references = skill_reference_files()
-    for path in skill_definition_files() + references:
-        for token in noncanonical_skill_reference_paths(path, inspections[path]):
-            add(
-                path,
-                InstructionFormatViolation(
-                    "skill_reference_path",
-                    None,
-                    f"'{token}' must be a relative Markdown link from the containing file",
-                ),
-            )
-    for reference_file in references:
-        if not INSTRUCTION_NAME.fullmatch(reference_file.stem):
-            add(
-                reference_file,
-                InstructionFormatViolation(
-                    "instruction_name",
-                    None,
-                    "reference filename must use lowercase kebab-case",
-                ),
-            )
-        skill_directory = owning_skill_directory(reference_file)
-        if skill_directory is None:
-            continue
-        relative_reference = reference_file.relative_to(skill_directory).as_posix()
-        if relative_reference not in skill_reference_references(
-            skill_directory / "SKILL.md", inspections[skill_directory / "SKILL.md"]
-        ):
-            add(
-                reference_file,
-                InstructionFormatViolation(
-                    "skill_reference_route",
-                    None,
-                    f"SKILL.md does not route '{relative_reference}'",
-                ),
-            )
+    validate_noncanonical_skill_references(
+        skill_definition_files() + references, inspections, add
+    )
+    validate_skill_reference_routes(
+        references, inspections, add, INSTRUCTION_NAME.fullmatch
+    )
     return dict(sorted(violations.items()))
