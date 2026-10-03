@@ -144,12 +144,16 @@ const blockedCountries = new Set(["BR"]);
     for (const record of records) {
       const owner = record.target.closest?.(selector);
       if (owner) roots.add(owner);
-      for (const node of record.addedNodes) {
-        if (node instanceof Element) roots.add(node.closest(selector) || node);
-      }
+      collectAddedNodeRoots(record.addedNodes, roots);
       record.removedNodes.forEach(release);
     }
     roots.forEach(scan);
+  }
+
+  function collectAddedNodeRoots(addedNodes, roots) {
+    for (const node of addedNodes) {
+      if (node instanceof Element) roots.add(node.closest(selector) || node);
+    }
   }
 
   function navigate() {

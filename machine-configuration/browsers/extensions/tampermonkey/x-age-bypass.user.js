@@ -26,13 +26,17 @@ function patchDeep(obj, depth) {
   if (isPageHostObject(obj)) return;
 
   for (const key in obj) {
-    try {
-      const val = obj[key];
-      if (patchVisibilityGate(obj, key, val)) continue;
-      patchAgeFeatureFlag(obj, key, val);
-      recurseIntoObject(val, depth);
-    } catch {}
+    patchDeepProperty(obj, key, depth);
   }
+}
+
+function patchDeepProperty(obj, key, depth) {
+  try {
+    const val = obj[key];
+    if (patchVisibilityGate(obj, key, val)) return;
+    patchAgeFeatureFlag(obj, key, val);
+    recurseIntoObject(val, depth);
+  } catch {}
 }
 
 function isWithinTraversalBounds(obj, depth) {
