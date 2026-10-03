@@ -13,6 +13,16 @@ def mcnemar_exact_p_value(discordant_a_only: int, discordant_b_only: int) -> flo
     return min(1.0, 2.0 * one_sided)
 
 
+def _paired_outcome(passed_under_a, passed_under_b):
+    if passed_under_a and passed_under_b:
+        return 1, 0, 0, 0
+    elif passed_under_a and not passed_under_b:
+        return 0, 1, 0, 0
+    elif not passed_under_a and passed_under_b:
+        return 0, 0, 1, 0
+    return 0, 0, 0, 1
+
+
 def paired_comparison(
     variant_a: dict[str, bool],
     variant_b: dict[str, bool],
@@ -26,14 +36,11 @@ def paired_comparison(
     for name in shared_names:
         passed_under_a = variant_a[name]
         passed_under_b = variant_b[name]
-        if passed_under_a and passed_under_b:
-            both_pass += 1
-        elif passed_under_a and not passed_under_b:
-            a_only_wins += 1
-        elif not passed_under_a and passed_under_b:
-            b_only_wins += 1
-        else:
-            both_fail += 1
+        outcome = _paired_outcome(passed_under_a, passed_under_b)
+        both_pass += outcome[0]
+        a_only_wins += outcome[1]
+        b_only_wins += outcome[2]
+        both_fail += outcome[3]
 
     n_paired = len(shared_names)
     variant_a_pass_rate = (both_pass + a_only_wins) / n_paired if n_paired else 0.0
@@ -62,6 +69,78 @@ def percentile(sorted_values: list[float], quantile: float) -> float:
     return sorted_values[index]
 
 
+def _validate_paired_generations(shared_names, variant_a, variant_b):
+    for name in shared_names:
+        if len(variant_a[name]) != len(variant_b[name]):
+            raise ValueError("paired variants need the same number of generations")
+        if not variant_a[name]:
+            raise ValueError("paired variants need at least one generation per case")
+
+
+def _empty_paired_bootstrap_result():
+    return {
+        "method": "paired_hierarchical_bootstrap",
+        "n_paired": 0,
+        "epochs": 0,
+        "sample_pairs": 0,
+        "variant_a_pass_rate": 0.0,
+        "variant_b_pass_rate": 0.0,
+        "delta": 0.0,
+        "lower_bound": 0.0,
+        "upper_bound": 0.0,
+        "significant": False,
+        "candidate_hard_failures": [],
+        "control_hard_failures": [],
+        "candidate_case_outcomes": {},
+        "control_case_outcomes": {},
+    }
+
+
+def _macro_pass_rate(samples, shared_names):
+    return sum(sum(samples[name]) / len(samples[name]) for name in shared_names) / len(
+        shared_names
+    )
+
+
+def _sampled_cases(random, shared_names):
+    return [random.choice(shared_names) for _ in shared_names]
+
+
+def _sampled_generations(random, generation_count):
+    return [random.randrange(generation_count) for _ in range(generation_count)]
+
+
+def _sample_case_delta(variant_a, variant_b, sampled_generations):
+    a_rate = sum(variant_a[index] for index in sampled_generations) / len(
+        sampled_generations
+    )
+    b_rate = sum(variant_b[index] for index in sampled_generations) / len(
+        sampled_generations
+    )
+    return a_rate - b_rate
+
+
+def _bootstrap_deltas(shared_names, variant_a, variant_b, iterations, random):
+    bootstrap_deltas = []
+    for _ in range(iterations):
+        sampled_cases = _sampled_cases(random, shared_names)
+        case_deltas = []
+        for name in sampled_cases:
+            generation_count = len(variant_a[name])
+            sampled_generations = _sampled_generations(random, generation_count)
+            case_deltas.append(
+                _sample_case_delta(
+                    variant_a[name], variant_b[name], sampled_generations
+                )
+            )
+        bootstrap_deltas.append(sum(case_deltas) / len(case_deltas))
+    return bootstrap_deltas
+
+
+def _hard_failure_cases(samples, shared_names):
+    return [name for name in shared_names if not any(samples[name])]
+
+
 def paired_hierarchical_bootstrap(
     variant_a: dict[str, list[bool]],
     variant_b: dict[str, list[bool]],
@@ -70,55 +149,17 @@ def paired_hierarchical_bootstrap(
     alpha: float = 0.05,
 ) -> dict:
     shared_names = sorted(set(variant_a) & set(variant_b))
-    for name in shared_names:
-        if len(variant_a[name]) != len(variant_b[name]):
-            raise ValueError("paired variants need the same number of generations")
-        if not variant_a[name]:
-            raise ValueError("paired variants need at least one generation per case")
+    _validate_paired_generations(shared_names, variant_a, variant_b)
 
     if not shared_names:
-        return {
-            "method": "paired_hierarchical_bootstrap",
-            "n_paired": 0,
-            "epochs": 0,
-            "sample_pairs": 0,
-            "variant_a_pass_rate": 0.0,
-            "variant_b_pass_rate": 0.0,
-            "delta": 0.0,
-            "lower_bound": 0.0,
-            "upper_bound": 0.0,
-            "significant": False,
-            "candidate_hard_failures": [],
-            "control_hard_failures": [],
-            "candidate_case_outcomes": {},
-            "control_case_outcomes": {},
-        }
+        return _empty_paired_bootstrap_result()
 
-    def macro_pass_rate(samples: dict[str, list[bool]]) -> float:
-        return sum(
-            sum(samples[name]) / len(samples[name]) for name in shared_names
-        ) / len(shared_names)
-
-    variant_a_pass_rate = macro_pass_rate(variant_a)
-    variant_b_pass_rate = macro_pass_rate(variant_b)
+    variant_a_pass_rate = _macro_pass_rate(variant_a, shared_names)
+    variant_b_pass_rate = _macro_pass_rate(variant_b, shared_names)
     random = Random(seed)
-    bootstrap_deltas = []
-    for _ in range(iterations):
-        sampled_cases = [random.choice(shared_names) for _ in shared_names]
-        case_deltas = []
-        for name in sampled_cases:
-            generation_count = len(variant_a[name])
-            sampled_generations = [
-                random.randrange(generation_count) for _ in range(generation_count)
-            ]
-            a_rate = sum(variant_a[name][index] for index in sampled_generations) / len(
-                sampled_generations
-            )
-            b_rate = sum(variant_b[name][index] for index in sampled_generations) / len(
-                sampled_generations
-            )
-            case_deltas.append(a_rate - b_rate)
-        bootstrap_deltas.append(sum(case_deltas) / len(case_deltas))
+    bootstrap_deltas = _bootstrap_deltas(
+        shared_names, variant_a, variant_b, iterations, random
+    )
 
     bootstrap_deltas.sort()
     lower_bound = percentile(bootstrap_deltas, alpha / 2)
@@ -134,12 +175,8 @@ def paired_hierarchical_bootstrap(
         "lower_bound": lower_bound,
         "upper_bound": upper_bound,
         "significant": lower_bound > 0 or upper_bound < 0,
-        "candidate_hard_failures": [
-            name for name in shared_names if not any(variant_a[name])
-        ],
-        "control_hard_failures": [
-            name for name in shared_names if not any(variant_b[name])
-        ],
+        "candidate_hard_failures": _hard_failure_cases(variant_a, shared_names),
+        "control_hard_failures": _hard_failure_cases(variant_b, shared_names),
         "candidate_case_outcomes": {name: variant_a[name] for name in shared_names},
         "control_case_outcomes": {name: variant_b[name] for name in shared_names},
     }

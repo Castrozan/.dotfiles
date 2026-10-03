@@ -37,6 +37,43 @@ def compile_test_binary(source_directory, entry_point, test_sources, binary):
     )
 
 
+def _compile_coverage_suite(suite, directory, binaries, index):
+    owner, entry_point, test_directory, segment_counts = suite
+    test_sources = sorted((REPOSITORY / owner / test_directory).rglob("*.swift"))
+    if not test_sources:
+        raise ValueError(f"No Swift tests found: {owner / test_directory}")
+    binary = directory / f"suite-{index}"
+    compile_test_binary(owner / "swift-sources", entry_point, test_sources, binary)
+    binaries.append(binary)
+    return binary, segment_counts
+
+
+def _run_coverage_segment(binary, segment_count, directory, environment):
+    arguments = []
+    if segment_count is not None:
+        manifest = directory / "loop.segments.json"
+        manifest.write_text(
+            json.dumps(
+                {
+                    "segments": [
+                        {
+                            "file": f"segment-{number}.mp4",
+                            "durationSeconds": 30,
+                        }
+                        for number in range(segment_count)
+                    ]
+                }
+            )
+        )
+        arguments.append(str(manifest))
+    subprocess.run([str(binary), *arguments], env=environment, check=True, timeout=30)
+
+
+def _run_coverage_suite(binary, segment_counts, directory, environment):
+    for segment_count in segment_counts or (None,):
+        _run_coverage_segment(binary, segment_count, directory, environment)
+
+
 def collect_coverage(output_directory):
     output_directory.mkdir(parents=True, exist_ok=True)
     suites = [
@@ -51,40 +88,14 @@ def collect_coverage(output_directory):
             os.environ, LLVM_PROFILE_FILE=str(directory / "%m-%p.profraw")
         )
         binaries = []
-        for index, (owner, entry_point, test_directory, segment_counts) in enumerate(
-            suites
-        ):
-            binary = directory / f"suite-{index}"
-            test_sources = sorted(
-                (REPOSITORY / owner / test_directory).rglob("*.swift")
+        for index, suite in enumerate(suites):
+            binary, segment_counts = _compile_coverage_suite(
+                suite,
+                directory,
+                binaries,
+                index,
             )
-            if not test_sources:
-                raise ValueError(f"No Swift tests found: {owner / test_directory}")
-            compile_test_binary(
-                owner / "swift-sources", entry_point, test_sources, binary
-            )
-            binaries.append(binary)
-            for segment_count in segment_counts or (None,):
-                arguments = []
-                if segment_count is not None:
-                    manifest = directory / "loop.segments.json"
-                    manifest.write_text(
-                        json.dumps(
-                            {
-                                "segments": [
-                                    {
-                                        "file": f"segment-{number}.mp4",
-                                        "durationSeconds": 30,
-                                    }
-                                    for number in range(segment_count)
-                                ]
-                            }
-                        )
-                    )
-                    arguments.append(str(manifest))
-                subprocess.run(
-                    [str(binary), *arguments], env=environment, check=True, timeout=30
-                )
+            _run_coverage_suite(binary, segment_counts, directory, environment)
         profile = directory / "coverage.profdata"
         subprocess.run(
             [

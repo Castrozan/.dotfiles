@@ -14,13 +14,7 @@ from repository_directory_entries import (  # noqa: E402
 )
 
 
-def main():
-    counts = repository_entry_counts(REPOSITORY_ROOT)
-    ceilings = directory_entry_ceilings(REPOSITORY_ROOT)
-    failures = [
-        violation.describe()
-        for violation in directory_entry_violations(counts, ceilings)
-    ]
+def _append_shrunk_ceiling_failures(failures, counts, ceilings):
     for directory, ceiling in sorted(ceilings.items()):
         if directory == ".":
             continue
@@ -32,6 +26,16 @@ def main():
                 else f"lower its ceiling to {count}"
             )
             failures.append(f"{directory} shrank from {ceiling} to {count}; {action}.")
+
+
+def main():
+    counts = repository_entry_counts(REPOSITORY_ROOT)
+    ceilings = directory_entry_ceilings(REPOSITORY_ROOT)
+    failures = [
+        violation.describe()
+        for violation in directory_entry_violations(counts, ceilings)
+    ]
+    _append_shrunk_ceiling_failures(failures, counts, ceilings)
     for failure in failures:
         print(failure, file=sys.stderr)
     if failures:
