@@ -20,11 +20,7 @@ def hide_all_workspace_windows_to_special_desktop(workspace_id: int) -> None:
     active_window = get_active_window()
     active_address = active_window.get("address") if active_window else None
 
-    window_addresses = [
-        client.get("address")
-        for client in get_all_clients()
-        if client.get("workspace", {}).get("id") == workspace_id
-    ]
+    window_addresses = find_workspace_window_addresses(workspace_id)
 
     if not window_addresses:
         return
@@ -38,6 +34,14 @@ def hide_all_workspace_windows_to_special_desktop(workspace_id: int) -> None:
         for addr in window_addresses
     )
     run_hyprctl_batch(hide_batch)
+
+
+def find_workspace_window_addresses(workspace_id: int) -> list[str | None]:
+    return [
+        client.get("address")
+        for client in get_all_clients()
+        if client.get("workspace", {}).get("id") == workspace_id
+    ]
 
 
 def restore_hidden_windows(workspace_id: int) -> None:
