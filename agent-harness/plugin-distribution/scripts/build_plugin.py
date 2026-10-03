@@ -81,6 +81,40 @@ def deliver_package(source: Path, output: Path, name: str, targets: tuple) -> Pa
     return plugin
 
 
+def _write_claude_configuration(source, plugin, targets, environment):
+    if "claude" in targets and not (source / ".claude-plugin/plugin.json").exists():
+        write_claude_mcp(plugin, environment["AGENT_PLUGIN_MCP_SHELL"])
+
+
+def _write_opencode_configuration(output, name, targets, opencode_data_root):
+    if "opencode" in targets:
+        write_opencode_configuration(output, name, opencode_data_root)
+
+
+def _build_adapted_plugin(source, output, name, targets, opencode_data_root):
+    adapters = tuple(target for target in targets if target not in {"pi", "hermes"})
+    if not adapters:
+        deliver_package(source, output, name, targets)
+        return False
+    prepare_workspace(source, output, name, adapters)
+    with tempfile.TemporaryDirectory(prefix="agent-plugin-build-") as state:
+        environment = os.environ | {
+            "HOME": state,
+            "XDG_CONFIG_HOME": state,
+            "XDG_CACHE_HOME": state,
+            "XDG_STATE_HOME": state,
+            "NO_COLOR": "1",
+        }
+        environment.pop("BASH_ENV", None)
+        run_dotagents("install", output, environment)
+        run_dotagents("doctor", output, environment)
+        plugin = deliver_package(source, output, name, targets)
+        _write_claude_configuration(source, plugin, targets, environment)
+        _write_opencode_configuration(output, name, targets, opencode_data_root)
+    remove_build_inputs(output)
+    return True
+
+
 def build_plugin(
     source: Path,
     output: Path,
@@ -96,34 +130,8 @@ def build_plugin(
         raise ValueError("OpenCode requires --opencode-data-root from its deployment")
     output.mkdir()
     try:
-        adapters = tuple(target for target in targets if target not in {"pi", "hermes"})
-        if not adapters:
-            deliver_package(source, output, name, targets)
+        if not _build_adapted_plugin(source, output, name, targets, opencode_data_root):
             return
-        prepare_workspace(source, output, name, adapters)
-        with tempfile.TemporaryDirectory(prefix="agent-plugin-build-") as state:
-            environment = os.environ | {
-                "HOME": state,
-                "XDG_CONFIG_HOME": state,
-                "XDG_CACHE_HOME": state,
-                "XDG_STATE_HOME": state,
-                "NO_COLOR": "1",
-            }
-            environment.pop("BASH_ENV", None)
-            run_dotagents("install", output, environment)
-            run_dotagents("doctor", output, environment)
-            plugin = deliver_package(source, output, name, targets)
-            if (
-                "claude" in targets
-                and not (source / ".claude-plugin/plugin.json").exists()
-            ):
-                write_claude_mcp(
-                    plugin,
-                    environment["AGENT_PLUGIN_MCP_SHELL"],
-                )
-            if "opencode" in targets:
-                write_opencode_configuration(output, name, opencode_data_root)
-        remove_build_inputs(output)
     except BaseException:
         shutil.rmtree(output)
         raise

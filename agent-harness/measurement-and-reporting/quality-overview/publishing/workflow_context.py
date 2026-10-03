@@ -6,30 +6,13 @@ import subprocess
 from time import monotonic, sleep
 
 from artifact_selection import ARTIFACT_PRODUCERS, select_artifacts, timestamp
+import workflow_identity_validation
 
 REPOSITORY = "Castrozan/.dotfiles"
 
 
 def workflow_identity(run):
-    expected = {
-        "event": "push",
-        "head_branch": "main",
-        "path": ".github/workflows/tests.yml",
-        "status": "completed",
-    }
-    if any(run.get(key) != value for key, value in expected.items()):
-        raise ValueError("Only completed main-push tests runs may publish evidence")
-    for field in ("repository", "head_repository"):
-        if run[field]["full_name"] != REPOSITORY:
-            raise ValueError("Workflow repository differs from the approved producer")
-    if not re.fullmatch(r"[a-f0-9]{40}", run["head_sha"]):
-        raise ValueError("Workflow revision must be exact")
-    if type(run["run_attempt"]) is not int or run["run_attempt"] < 1:
-        raise ValueError("Workflow attempt must be positive")
-    if timestamp(run["run_started_at"]) > timestamp(run["updated_at"]):
-        raise ValueError("Workflow timestamps are reversed")
-    if not run.get("conclusion"):
-        raise ValueError("Completed workflow has no conclusion")
+    workflow_identity_validation.validate_workflow_run(run, REPOSITORY)
     return {
         "repository": REPOSITORY,
         "revision": run["head_sha"],
@@ -77,37 +60,53 @@ def complete_page(document, key):
     return items
 
 
+def _producer_job_is_incomplete(job, producer_names):
+    if job.get("name") not in producer_names:
+        return False
+    if job.get("status") != "completed":
+        return True
+    if not job.get("steps") and job.get("conclusion") == "success":
+        return True
+    return any(
+        step.get("status") in {"pending", "in_progress"}
+        for step in job.get("steps", [])
+    )
+
+
+def _has_incomplete_producer(jobs, producer_names):
+    return any(_producer_job_is_incomplete(job, producer_names) for job in jobs)
+
+
+def _wait_for_job_steps(deadline):
+    remaining = deadline - monotonic()
+    if remaining <= 0:
+        raise ValueError("Completed producing jobs still have incomplete step metadata")
+    sleep(min(20, remaining))
+
+
 def completed_job_inventory(attempt):
     deadline = monotonic() + 600
     producer_names = {name for name, _ in ARTIFACT_PRODUCERS.values()}
     while True:
         jobs = complete_page(github_document(f"{attempt}/jobs?per_page=100"), "jobs")
-        incomplete = any(
-            job.get("name") in producer_names
-            and (
-                job.get("status") != "completed"
-                or (not job.get("steps") and job.get("conclusion") == "success")
-                or any(
-                    step.get("status") in {"pending", "in_progress"}
-                    for step in job.get("steps", [])
-                )
-            )
-            for job in jobs
-        )
-        if not incomplete:
+        if not _has_incomplete_producer(jobs, producer_names):
             return jobs
-        remaining = deadline - monotonic()
-        if remaining <= 0:
-            raise ValueError(
-                "Completed producing jobs still have incomplete step metadata"
-            )
-        sleep(min(20, remaining))
+        _wait_for_job_steps(deadline)
 
 
-def producing_attempts(workflow, jobs):
-    attempts = [workflow]
-    producer_names = {name for name, _ in ARTIFACT_PRODUCERS.values()}
-    oldest_job = min(
+def _attempt_differs_from_current(previous, workflow, number, prior_attempt):
+    return (
+        any(
+            previous[key] != workflow[key]
+            for key in ("repository", "revision", "runId")
+        )
+        or previous["runAttempt"] != number
+        or timestamp(previous["completedAt"]) > timestamp(prior_attempt["startedAt"])
+    )
+
+
+def _oldest_producing_job_start(jobs, producer_names, workflow):
+    return min(
         (
             timestamp(job["started_at"])
             for job in jobs
@@ -115,19 +114,18 @@ def producing_attempts(workflow, jobs):
         ),
         default=timestamp(workflow["startedAt"]),
     )
+
+
+def producing_attempts(workflow, jobs):
+    attempts = [workflow]
+    producer_names = {name for name, _ in ARTIFACT_PRODUCERS.values()}
+    oldest_job = _oldest_producing_job_start(jobs, producer_names, workflow)
     for number in range(workflow["runAttempt"] - 1, 0, -1):
         if oldest_job >= timestamp(attempts[-1]["startedAt"]):
             break
         route = f"repos/{REPOSITORY}/actions/runs/{workflow['runId']}/attempts/{number}"
         previous = workflow_identity(github_document(route))
-        if (
-            any(
-                previous[key] != workflow[key]
-                for key in ("repository", "revision", "runId")
-            )
-            or previous["runAttempt"] != number
-            or timestamp(previous["completedAt"]) > timestamp(attempts[-1]["startedAt"])
-        ):
+        if _attempt_differs_from_current(previous, workflow, number, attempts[-1]):
             raise ValueError("Producing attempt history differs from the current run")
         attempts.append(previous)
     return attempts
