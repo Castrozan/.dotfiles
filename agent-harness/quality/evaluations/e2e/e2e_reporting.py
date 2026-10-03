@@ -12,56 +12,71 @@ def print_e2e_results(
     all_passed = True
 
     for result in results:
-        status = "✓" if result.passed else "✗"
-        color = "\033[32m" if result.passed else "\033[31m"
-        score_color = (
-            "\033[32m"
-            if result.experience_score >= 75
-            else "\033[33m"
-            if result.experience_score >= 50
-            else "\033[31m"
-        )
-        reset = "\033[0m"
-
-        print(
-            f"{color}{status}{reset} "
-            f"{result.scenario_name} "
-            f"({result.duration_seconds:.1f}s) "
-            f"{score_color}NPS:{result.experience_score}"
-            f"{reset}"
-        )
-
-        if result.error:
-            print(f"    Error: {result.error}")
-
-        for assertion in result.assertion_results:
-            assertion_symbol = "✓" if assertion.passed else "✗"
-            assertion_color = "\033[32m" if assertion.passed else "\033[31m"
-            print(
-                f"    {assertion_color}{assertion_symbol}{reset} "
-                f"{assertion.name}: {assertion.detail}"
-            )
-
-        if not result.passed:
+        if not _print_e2e_result(result):
             all_passed = False
-            tool_sequence = extract_tool_name_sequence(result.trace)
-            if tool_sequence:
-                print(f"    Tools: {' -> '.join(tool_sequence)}")
 
+    _print_e2e_summary(results)
+
+    return all_passed
+
+
+def _print_e2e_result(result):
+    status, color = _scenario_status_color(result.passed)
+    score_color = _experience_score_color(result.experience_score)
+    reset = "\033[0m"
+    print(
+        f"{color}{status}{reset} "
+        f"{result.scenario_name} "
+        f"({result.duration_seconds:.1f}s) "
+        f"{score_color}NPS:{result.experience_score}"
+        f"{reset}"
+    )
+    if result.error:
+        print(f"    Error: {result.error}")
+    for assertion in result.assertion_results:
+        _print_assertion_result(assertion, reset)
+    if not result.passed:
+        _print_failed_tool_sequence(result)
+    return result.passed
+
+
+def _scenario_status_color(passed):
+    if passed:
+        return "✓", "\033[32m"
+    return "✗", "\033[31m"
+
+
+def _experience_score_color(score):
+    if score >= 75:
+        return "\033[32m"
+    if score >= 50:
+        return "\033[33m"
+    return "\033[31m"
+
+
+def _print_assertion_result(assertion, reset):
+    symbol, color = _scenario_status_color(assertion.passed)
+    print(f"    {color}{symbol}{reset} {assertion.name}: {assertion.detail}")
+
+
+def _print_failed_tool_sequence(result):
+    tool_sequence = extract_tool_name_sequence(result.trace)
+    if tool_sequence:
+        print(f"    Tools: {' -> '.join(tool_sequence)}")
+
+
+def _print_e2e_summary(results):
     scored = [result for result in results if result.experience_score > 0]
     avg_score = (
         sum(result.experience_score for result in scored) / len(scored) if scored else 0
     )
     passed_count = sum(1 for result in results if result.passed)
     total_time = sum(result.duration_seconds for result in results)
-
     print(f"\n{'=' * 60}")
     print(f"Passed: {passed_count}/{len(results)}")
     print(f"Experience Score: {avg_score:.0f}/100")
     print(f"Total time: {total_time:.1f}s")
     print(f"{'=' * 60}\n")
-
-    return all_passed
 
 
 def print_multi_run_pass_rate_summary(
@@ -77,17 +92,23 @@ def print_multi_run_pass_rate_summary(
     print(f"{'=' * 60}\n")
 
     for scenario_name, scenario_runs in grouped_results_by_scenario.items():
-        passed_runs = sum(1 for run in scenario_runs if run.passed)
-        total_runs = len(scenario_runs)
-        scored_runs = [run for run in scenario_runs if run.experience_score > 0]
-        avg_nps = (
-            sum(run.experience_score for run in scored_runs) / len(scored_runs)
-            if scored_runs
-            else 0
-        )
-        print(f"  {scenario_name}: {passed_runs}/{total_runs} (NPS avg {avg_nps:.0f})")
+        _print_scenario_pass_rate(scenario_name, scenario_runs)
 
     total_runs = len(results)
     total_passed = sum(1 for result in results if result.passed)
     print(f"\n  overall: {total_passed}/{total_runs}")
     print(f"{'=' * 60}\n")
+
+
+def _print_scenario_pass_rate(scenario_name, scenario_runs):
+    passed_runs = sum(1 for run in scenario_runs if run.passed)
+    total_runs = len(scenario_runs)
+    avg_nps = _average_experience_score(scenario_runs)
+    print(f"  {scenario_name}: {passed_runs}/{total_runs} (NPS avg {avg_nps:.0f})")
+
+
+def _average_experience_score(results):
+    scored = [result for result in results if result.experience_score > 0]
+    return (
+        sum(result.experience_score for result in scored) / len(scored) if scored else 0
+    )

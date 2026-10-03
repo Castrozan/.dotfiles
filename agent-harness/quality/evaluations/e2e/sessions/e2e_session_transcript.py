@@ -35,52 +35,71 @@ def tool_calls_from_session_transcript(
     if transcript is None:
         return []
 
-    tool_calls = []
-    for position, line in enumerate(transcript.read_text().splitlines()):
-        try:
-            entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        content = (entry.get("message") or {}).get("content")
-        if not isinstance(content, list):
-            continue
-        for block in content:
-            if not isinstance(block, dict) or block.get("type") != "tool_use":
-                continue
-            tool_name = block.get("name", "")
-            tool_calls.append(
-                TerminalToolCallEvent(
-                    tool_name=tool_name,
-                    tool_arguments_text=tool_call_argument_text(
-                        tool_name, block.get("input") or {}
-                    ),
-                    position_in_output=position,
-                )
-            )
-    return tool_calls
+    return [
+        tool_call
+        for position, line in enumerate(transcript.read_text().splitlines())
+        for tool_call in _tool_calls_from_transcript_line(line, position)
+    ]
+
+
+def _tool_calls_from_transcript_line(line: str, position: int):
+    try:
+        entry = json.loads(line)
+    except json.JSONDecodeError:
+        return []
+    content = (entry.get("message") or {}).get("content")
+    if not isinstance(content, list):
+        return []
+    return [
+        TerminalToolCallEvent(
+            tool_name=block.get("name", ""),
+            tool_arguments_text=tool_call_argument_text(
+                block.get("name", ""), block.get("input") or {}
+            ),
+            position_in_output=position,
+        )
+        for block in content
+        if _is_tool_use_block(block)
+    ]
+
+
+def _is_tool_use_block(block):
+    return isinstance(block, dict) and block.get("type") == "tool_use"
 
 
 def assistant_messages_from_session_transcript(workspace: Path) -> list[str]:
     transcript = newest_session_transcript_file(workspace)
     if transcript is None:
         return []
-    messages = []
-    for line in transcript.read_text().splitlines():
-        try:
-            entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        message = entry.get("message") or {}
-        if message.get("role") != "assistant":
-            continue
-        content = message.get("content")
-        if not isinstance(content, list):
-            continue
-        text = "".join(
-            block.get("text", "")
-            for block in content
-            if isinstance(block, dict) and block.get("type") == "text"
-        ).strip()
-        if text:
-            messages.append(text)
-    return messages
+    return [
+        message
+        for line in transcript.read_text().splitlines()
+        if (message := _assistant_message_from_transcript_line(line))
+    ]
+
+
+def _assistant_message_from_transcript_line(line: str) -> str:
+    try:
+        entry = json.loads(line)
+    except json.JSONDecodeError:
+        return ""
+    content = _assistant_content(entry)
+    return _assistant_text(content)
+
+
+def _assistant_content(entry):
+    message = entry.get("message") or {}
+    if message.get("role") != "assistant":
+        return None
+    content = message.get("content")
+    return content if isinstance(content, list) else None
+
+
+def _assistant_text(content):
+    if content is None:
+        return ""
+    return "".join(
+        block.get("text", "")
+        for block in content
+        if isinstance(block, dict) and block.get("type") == "text"
+    ).strip()

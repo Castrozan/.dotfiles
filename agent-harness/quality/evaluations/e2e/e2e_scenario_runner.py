@@ -3,13 +3,8 @@ import tempfile
 import time
 from pathlib import Path
 
-from e2e.assertions.e2e_assertions import run_e2e_assertions
 from e2e.sessions.e2e_harness_profiles import scenario_harness_profile
 from e2e.sessions.e2e_models import E2eScenarioResult, TerminalSessionTrace
-from e2e_scoring import (
-    calculate_e2e_experience_score,
-    check_minimum_e2e_experience_score,
-)
 from e2e.sessions.e2e_herdr import (
     E2E_TAB_LABEL_PREFIX,
     create_isolated_herdr_tab_for_test,
@@ -18,16 +13,17 @@ from e2e.sessions.e2e_herdr import (
     launch_agent_in_herdr_pane,
 )
 from e2e.sessions.e2e_herdr_io import (
-    capture_full_terminal_output,
     wait_for_agent_to_become_ready,
 )
+from e2e.sessions.e2e_scenario_results import (
+    failed_e2e_scenario_result,
+    successful_e2e_scenario_result,
+)
 from e2e.sessions.e2e_scenario_steps import run_scenario_step, scenario_steps
-from e2e.sessions.e2e_trace import build_terminal_session_trace
 from e2e.sessions.e2e_workspace import (
     E2E_WORKSPACE_PARENT,
     load_scenario,
     sanitize_name_for_session,
-    save_debug_capture,
     setup_e2e_scenario_workspace,
 )
 
@@ -44,25 +40,22 @@ def run_e2e_scenario(
     profile = scenario_harness_profile(scenario)
 
     if dry_run:
-        return E2eScenarioResult(
-            scenario_name=scenario_name,
-            passed=True,
-            assertion_results=[],
-            trace=TerminalSessionTrace(),
-            workspace_directory=None,
-            duration_seconds=0,
-        )
+        return _empty_e2e_result(scenario_name)
+    return _run_live_scenario(
+        scenario,
+        scenario_name,
+        profile,
+        model,
+        debug_capture,
+        instruction_placement_mode,
+    )
 
+
+def _run_live_scenario(
+    scenario, scenario_name, profile, model, debug_capture, instruction_placement_mode
+):
     if not herdr_server_is_reachable():
-        return E2eScenarioResult(
-            scenario_name=scenario_name,
-            passed=False,
-            assertion_results=[],
-            trace=TerminalSessionTrace(),
-            workspace_directory=None,
-            duration_seconds=0,
-            error="herdr server not reachable",
-        )
+        return _empty_e2e_result(scenario_name, "herdr server not reachable")
 
     sanitized = sanitize_name_for_session(scenario_name)
     timestamp = int(time.time())
@@ -84,14 +77,8 @@ def run_e2e_scenario(
 
         tab_handle = create_isolated_herdr_tab_for_test(tab_label, workspace)
         if not tab_handle:
-            return E2eScenarioResult(
-                scenario_name=scenario_name,
-                passed=False,
-                assertion_results=[],
-                trace=TerminalSessionTrace(),
-                workspace_directory=workspace,
-                duration_seconds=0,
-                error="herdr tab could not be created",
+            return _empty_e2e_result(
+                scenario_name, "herdr tab could not be created", workspace
             )
         pane_id = tab_handle["pane_id"]
 
@@ -100,87 +87,69 @@ def run_e2e_scenario(
         )
 
         if not wait_for_agent_to_become_ready(pane_id, profile):
-            return E2eScenarioResult(
-                scenario_name=scenario_name,
-                passed=False,
-                assertion_results=[],
-                trace=TerminalSessionTrace(),
-                workspace_directory=workspace,
-                duration_seconds=0,
-                error=f"{profile.name} never became ready to accept a prompt",
+            return _empty_e2e_result(
+                scenario_name,
+                f"{profile.name} never became ready to accept a prompt",
+                workspace,
             )
 
         start_time = time.time()
 
-        for scenario_step in scenario_steps(scenario):
-            failure_reason = run_scenario_step(pane_id, scenario_step, profile, timeout)
-            if failure_reason:
-                raw_output = capture_full_terminal_output(pane_id)
-                duration = time.time() - start_time
-                trace = build_terminal_session_trace(
-                    raw_output, duration, timed_out=True, workspace=workspace
-                )
-
-                if debug_capture:
-                    save_debug_capture(scenario_name, raw_output)
-
-                assertion_results = run_e2e_assertions(
-                    trace,
-                    scenario.get("assertions", {}),
-                    workspace,
-                )
-                experience_score = calculate_e2e_experience_score(
-                    trace, assertion_results, workspace
-                )
-
-                return E2eScenarioResult(
-                    scenario_name=scenario_name,
-                    passed=False,
-                    assertion_results=assertion_results,
-                    trace=trace,
-                    workspace_directory=workspace,
-                    duration_seconds=duration,
-                    experience_score=experience_score,
-                    error=failure_reason,
-                )
-
-        raw_output = capture_full_terminal_output(pane_id)
-        duration = time.time() - start_time
-
-        if debug_capture:
-            save_debug_capture(scenario_name, raw_output)
-
-        trace = build_terminal_session_trace(
-            raw_output, duration, timed_out=False, workspace=workspace
-        )
-
-        assertion_results = run_e2e_assertions(
-            trace,
-            scenario.get("assertions", {}),
+        return _run_e2e_session(
+            scenario,
+            scenario_name,
+            pane_id,
+            profile,
             workspace,
+            start_time,
+            timeout,
+            debug_capture,
         )
-        experience_score = calculate_e2e_experience_score(
-            trace, assertion_results, workspace
-        )
-        if "minimum_experience_score" in scenario:
-            assertion_results.append(
-                check_minimum_e2e_experience_score(
-                    experience_score, scenario["minimum_experience_score"]
-                )
-            )
-        all_passed = all(assertion.passed for assertion in assertion_results)
-
-        return E2eScenarioResult(
-            scenario_name=scenario_name,
-            passed=all_passed,
-            assertion_results=assertion_results,
-            trace=trace,
-            workspace_directory=workspace,
-            duration_seconds=duration,
-            experience_score=experience_score,
-        )
-
     finally:
         if tab_handle:
             destroy_test_tab(tab_handle["tab_id"])
         shutil.rmtree(workspace, ignore_errors=True)
+
+
+def _run_e2e_session(
+    scenario,
+    scenario_name,
+    pane_id,
+    profile,
+    workspace,
+    start_time,
+    timeout,
+    debug_capture,
+):
+    for scenario_step in scenario_steps(scenario):
+        failure_reason = run_scenario_step(pane_id, scenario_step, profile, timeout)
+        if failure_reason:
+            return failed_e2e_scenario_result(
+                scenario,
+                scenario_name,
+                pane_id,
+                workspace,
+                start_time,
+                failure_reason=failure_reason,
+                debug_capture=debug_capture,
+            )
+    return successful_e2e_scenario_result(
+        scenario,
+        scenario_name,
+        pane_id,
+        workspace,
+        start_time,
+        debug_capture=debug_capture,
+    )
+
+
+def _empty_e2e_result(scenario_name, error=None, workspace=None):
+    return E2eScenarioResult(
+        scenario_name=scenario_name,
+        passed=error is None,
+        assertion_results=[],
+        trace=TerminalSessionTrace(),
+        workspace_directory=workspace,
+        duration_seconds=0,
+        error=error,
+    )
