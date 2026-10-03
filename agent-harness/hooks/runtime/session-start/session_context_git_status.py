@@ -8,7 +8,7 @@ from session_context_command_runner import run_cmd
 from session_context_concurrent_gathering import gather_concurrently
 
 
-def parse_porcelain_v2_status(porcelain: str) -> Dict[str, Any]:
+def _porcelain_status_parts(porcelain):
     branch_headers = {}
     changed_entry_lines = []
     for line in porcelain.split("\n"):
@@ -17,27 +17,39 @@ def parse_porcelain_v2_status(porcelain: str) -> Dict[str, Any]:
             branch_headers[header_name] = header_value
         elif line.strip():
             changed_entry_lines.append(line)
+    return branch_headers, changed_entry_lines
 
-    if "branch.head" not in branch_headers:
-        return {}
 
-    status: Dict[str, Any] = {"is_repo": True}
+def _add_branch_status(status, branch_headers):
     branch = branch_headers["branch.head"]
     if branch != "(detached)":
         status["branch"] = branch
-
     ahead_behind = branch_headers.get("branch.ab", "").split()
     if len(ahead_behind) == 2:
         status["ahead"] = int(ahead_behind[0].lstrip("+"))
         status["behind"] = int(ahead_behind[1].lstrip("-"))
 
-    status["uncommitted"] = len(changed_entry_lines)
-    status["staged"] = sum(
-        1 for line in changed_entry_lines if line[:1] in ("1", "2") and line[2] != "."
-    )
-    status["untracked"] = sum(
-        1 for line in changed_entry_lines if line.startswith("? ")
-    )
+
+def _changed_entry_counts(changed_entry_lines):
+    return {
+        "uncommitted": len(changed_entry_lines),
+        "staged": sum(
+            1
+            for line in changed_entry_lines
+            if line[:1] in ("1", "2") and line[2] != "."
+        ),
+        "untracked": sum(1 for line in changed_entry_lines if line.startswith("? ")),
+    }
+
+
+def parse_porcelain_v2_status(porcelain: str) -> Dict[str, Any]:
+    branch_headers, changed_entry_lines = _porcelain_status_parts(porcelain)
+    if "branch.head" not in branch_headers:
+        return {}
+
+    status: Dict[str, Any] = {"is_repo": True}
+    _add_branch_status(status, branch_headers)
+    status.update(_changed_entry_counts(changed_entry_lines))
     return status
 
 

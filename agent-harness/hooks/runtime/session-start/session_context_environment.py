@@ -7,12 +7,16 @@ import os
 from session_context_command_runner import run_cmd
 
 
+def _tmux_environment_value():
+    code, session = run_cmd(["tmux", "display-message", "-p", "#S"])
+    return session if code == 0 else "active"
+
+
 def check_environment() -> dict:
     env = {}
 
     if os.environ.get("TMUX"):
-        code, session = run_cmd(["tmux", "display-message", "-p", "#S"])
-        env["tmux"] = session if code == 0 else "active"
+        env["tmux"] = _tmux_environment_value()
 
     if os.environ.get("IN_NIX_SHELL"):
         env["nix_shell"] = os.environ.get("name", "active")

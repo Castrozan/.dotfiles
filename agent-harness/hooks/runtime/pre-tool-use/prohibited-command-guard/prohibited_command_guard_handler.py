@@ -23,21 +23,29 @@ from hook_dispatch import HandlerResult  # noqa: E402
 from prohibited_command_patterns import PROHIBITED_PATTERNS_BY_TOOL  # noqa: E402
 
 
-def extract_inspectable_text(tool_name: str, tool_input: dict) -> str:
-    if tool_name == "Bash":
-        return tool_input.get("command", "") or ""
-    if tool_name == "apply_patch":
-        if isinstance(tool_input, str):
-            return tool_input
-        if isinstance(tool_input, dict):
-            return tool_input.get("patch_text", "") or ""
-        return ""
-    if tool_name in ("Write", "Edit"):
-        return tool_input.get("file_path", "") or ""
+def _extract_patch_text(tool_input):
+    if isinstance(tool_input, str):
+        return tool_input
+    if isinstance(tool_input, dict):
+        return tool_input.get("patch_text", "") or ""
+    return ""
+
+
+def _extract_file_path(tool_name, tool_input):
     if tool_name == "NotebookEdit":
         return (
             tool_input.get("notebook_path", "") or tool_input.get("file_path", "") or ""
         )
+    return tool_input.get("file_path", "") or ""
+
+
+def extract_inspectable_text(tool_name: str, tool_input: dict) -> str:
+    if tool_name == "Bash":
+        return tool_input.get("command", "") or ""
+    if tool_name == "apply_patch":
+        return _extract_patch_text(tool_input)
+    if tool_name in ("Write", "Edit", "NotebookEdit"):
+        return _extract_file_path(tool_name, tool_input)
     return ""
 
 
@@ -75,6 +83,60 @@ def pattern_matches_executed_command_group(
     return False
 
 
+def _matching_inspection_texts(pattern, candidate_texts):
+    return [
+        candidate_text
+        for candidate_text in candidate_texts
+        if re.search(pattern, candidate_text, re.IGNORECASE)
+    ]
+
+
+def _bash_rule_matches(
+    pattern, inspectable_text, matching_text, executed_command_group
+):
+    if executed_command_group:
+        return pattern_matches_executed_command_group(
+            pattern, inspectable_text, executed_command_group
+        )
+    return pattern_matches_outside_read_only_inspection(pattern, matching_text)
+
+
+def _violation_for_matching_text(
+    tool_name,
+    inspectable_text,
+    pattern,
+    reason,
+    override_sentinel,
+    executed_command_group,
+    matching_text,
+):
+    if tool_name == "Bash" and not _bash_rule_matches(
+        pattern, inspectable_text, matching_text, executed_command_group
+    ):
+        return None
+    if override_sentinel and override_sentinel in inspectable_text:
+        return None
+    return pattern, reason
+
+
+def _violation_for_rule(tool_name, inspectable_text, inspection_texts, rule):
+    pattern, reason = rule[0], rule[1]
+    override_sentinel = rule[2] if len(rule) > 2 else None
+    executed_command_group = rule[3] if len(rule) > 3 else None
+    matching_texts = _matching_inspection_texts(pattern, inspection_texts)
+    if not matching_texts:
+        return None
+    return _violation_for_matching_text(
+        tool_name,
+        inspectable_text,
+        pattern,
+        reason,
+        override_sentinel,
+        executed_command_group,
+        matching_texts[0],
+    )
+
+
 def find_first_violation(tool_name: str, inspectable_text: str, patterns_for_this_tool):
     if not inspectable_text:
         return None
@@ -93,29 +155,11 @@ def find_first_violation(tool_name: str, inspectable_text: str, patterns_for_thi
         )
 
     for rule in patterns_for_this_tool:
-        pattern, reason = rule[0], rule[1]
-        override_sentinel = rule[2] if len(rule) > 2 else None
-        executed_command_group = rule[3] if len(rule) > 3 else None
-        matching_texts_most_faithful_first = [
-            candidate_text
-            for candidate_text in inspection_texts_most_faithful_first
-            if re.search(pattern, candidate_text, re.IGNORECASE)
-        ]
-        if not matching_texts_most_faithful_first:
-            continue
-        if tool_name == "Bash":
-            if executed_command_group:
-                if not pattern_matches_executed_command_group(
-                    pattern, inspectable_text, executed_command_group
-                ):
-                    continue
-            elif not pattern_matches_outside_read_only_inspection(
-                pattern, matching_texts_most_faithful_first[0]
-            ):
-                continue
-        if override_sentinel and override_sentinel in inspectable_text:
-            continue
-        return pattern, reason
+        violation = _violation_for_rule(
+            tool_name, inspectable_text, inspection_texts_most_faithful_first, rule
+        )
+        if violation is not None:
+            return violation
     return None
 
 
