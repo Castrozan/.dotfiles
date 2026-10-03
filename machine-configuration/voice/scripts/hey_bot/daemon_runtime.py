@@ -58,16 +58,25 @@ class HeyBotDaemon:
         previous_recording = None
         previous_chunk_path = None
         while not self._stop_requested:
-            chunk_path = self._capture.create_chunk_file()
-            recording = self._capture.start_chunk_recording(chunk_path)
-            iteration_start = self._clock.monotonic_seconds()
-            if previous_recording is not None:
-                previous_recording.wait()
-            if previous_chunk_path is not None:
-                self.process_chunk(previous_chunk_path)
+            chunk_path, recording, iteration_start = self._record_next_chunk(
+                previous_recording, previous_chunk_path
+            )
             previous_recording = recording
             previous_chunk_path = chunk_path
             self._sleep_remaining_step(iteration_start)
+        self._clean_up_recording_loop(previous_recording, previous_chunk_path)
+
+    def _record_next_chunk(self, previous_recording, previous_chunk_path):
+        chunk_path = self._capture.create_chunk_file()
+        recording = self._capture.start_chunk_recording(chunk_path)
+        iteration_start = self._clock.monotonic_seconds()
+        if previous_recording is not None:
+            previous_recording.wait()
+        if previous_chunk_path is not None:
+            self.process_chunk(previous_chunk_path)
+        return chunk_path, recording, iteration_start
+
+    def _clean_up_recording_loop(self, previous_recording, previous_chunk_path):
         if previous_recording is not None:
             previous_recording.terminate()
         if previous_chunk_path is not None:

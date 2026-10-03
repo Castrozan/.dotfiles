@@ -90,23 +90,11 @@ def main() -> int:
     lock_path = Path(vault_path) / ".obsidian" / ".sync.lock"
 
     for attempt in range(1, SYNC_ATTEMPT_LIMIT + 1):
-        if another_sync_is_still_refreshing_the_lock(lock_path):
-            print("Another sync is actively refreshing the lock. Skipping this pass.")
-            return 0
-
-        discard_the_abandoned_lock(lock_path)
-        completed = run_one_sync_attempt(timeout_binary, str(ob_binary), vault_path)
-        relay_sync_output(completed)
-
-        if completed.returncode == 0:
-            return 0
-        if not lost_the_lock_verification_race(completed):
-            return completed.returncode
-
-        print(
-            f"Lock verification race lost on attempt {attempt} of "
-            f"{SYNC_ATTEMPT_LIMIT}; discarding the orphaned lock and retrying."
+        result = _run_sync_attempt(
+            attempt, lock_path, timeout_binary, str(ob_binary), vault_path
         )
+        if result is not None:
+            return result
 
     print(
         f"Gave up after {SYNC_ATTEMPT_LIMIT} attempts lost to the lock verification "
@@ -114,6 +102,33 @@ def main() -> int:
         file=sys.stderr,
     )
     return 1
+
+
+def _run_sync_attempt(
+    attempt: int,
+    lock_path: Path,
+    timeout_binary: str,
+    ob_binary: str,
+    vault_path: str,
+) -> int | None:
+    if another_sync_is_still_refreshing_the_lock(lock_path):
+        print("Another sync is actively refreshing the lock. Skipping this pass.")
+        return 0
+
+    discard_the_abandoned_lock(lock_path)
+    completed = run_one_sync_attempt(timeout_binary, ob_binary, vault_path)
+    relay_sync_output(completed)
+
+    if completed.returncode == 0:
+        return 0
+    if not lost_the_lock_verification_race(completed):
+        return completed.returncode
+
+    print(
+        f"Lock verification race lost on attempt {attempt} of "
+        f"{SYNC_ATTEMPT_LIMIT}; discarding the orphaned lock and retrying."
+    )
+    return None
 
 
 if __name__ == "__main__":

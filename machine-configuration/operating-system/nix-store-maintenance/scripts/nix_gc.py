@@ -19,11 +19,15 @@ def ensure_nix_in_path_or_source_daemon_profile() -> bool:
         text=True,
         check=True,
     )
-    for line in result.stdout.splitlines():
+    _update_path_from_environment_output(result.stdout)
+    return shutil.which("nix-collect-garbage") is not None
+
+
+def _update_path_from_environment_output(environment_output: str) -> None:
+    for line in environment_output.splitlines():
         key, separator, value = line.partition("=")
         if separator and key == "PATH":
             os.environ["PATH"] = value
-    return shutil.which("nix-collect-garbage") is not None
 
 
 def resolve_nix_collect_garbage_path() -> str:

@@ -4,6 +4,8 @@ import pathlib
 import subprocess
 import sys
 
+from herdr_client import selection
+
 
 INSTALLED_CLIENT_COMMANDS = frozenset(
     {
@@ -29,15 +31,9 @@ def run_command(*arguments):
 def command_requires_running_server_client(arguments):
     if not arguments or arguments[0].startswith("-"):
         return False
-    if arguments[0] in INSTALLED_CLIENT_COMMANDS:
-        return False
-    if arguments[0] == "api" and arguments[1:2] != ["snapshot"]:
-        return False
-    if arguments[0] == "server" and (
-        len(arguments) == 1 or arguments[1] in {"--help", "-h", "help", "live-handoff"}
-    ):
-        return False
-    return True
+    return not selection.command_does_not_need_server_client(
+        arguments, INSTALLED_CLIENT_COMMANDS
+    )
 
 
 def read_running_server_socket(installed_executable):
@@ -61,14 +57,7 @@ def read_running_server_socket(installed_executable):
         raise ServerClientSelectionError(
             "cannot identify the running Herdr server because status was invalid"
         )
-    if status.get("running") is not True:
-        return None
-    socket_path = status.get("socket")
-    if not isinstance(socket_path, str) or not socket_path:
-        raise ServerClientSelectionError(
-            "cannot identify the running Herdr server because status omitted its socket"
-        )
-    return pathlib.Path(socket_path)
+    return selection.socket_path_from_status(status, ServerClientSelectionError)
 
 
 def read_socket_owner_process_id(socket_path):
@@ -98,17 +87,8 @@ def read_process_executable(process_identifier):
         raise ServerClientSelectionError(
             f"cannot identify Herdr server process {process_identifier}"
         )
-    executable = None
-    for line in result.stdout.splitlines():
-        if line.startswith("n"):
-            executable = pathlib.Path(line[1:])
-            break
-    if (
-        executable is None
-        or not executable.is_absolute()
-        or not executable.is_file()
-        or not os.access(executable, os.X_OK)
-    ):
+    executable = selection.first_executable_path(result.stdout)
+    if not selection.is_executable_file(executable):
         raise ServerClientSelectionError(
             f"cannot identify Herdr server process {process_identifier} executable"
         )
@@ -175,6 +155,10 @@ def main(arguments=None):
         print(selected)
         return
     root_path = default_retention_root_path()
+    _handle_retention_operation(operation, installed_executable, root_path)
+
+
+def _handle_retention_operation(operation, installed_executable, root_path):
     if operation == "retain-installed":
         retain_executable_package(pathlib.Path(installed_executable), root_path)
         return

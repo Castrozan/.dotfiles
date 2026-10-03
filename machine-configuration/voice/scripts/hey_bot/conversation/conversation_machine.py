@@ -35,8 +35,25 @@ def advance(
 ) -> Transition:
     actions: list[ConversationAction] = []
     spoken_word_count = word_count(observation.transcription)
+    _append_logged_transcription(observation, spoken_word_count, settings, actions)
+    state = _apply_followup_signal(state, observation, settings, actions)
+    if state.mode is ConversationMode.COMMAND:
+        return collect_command_chunk(state, observation, settings, actions)
+    if state.mode is ConversationMode.FOLLOWUP:
+        return spend_followup_chunk(
+            state, observation, spoken_word_count, settings, actions
+        )
+    return _advance_listening_mode(
+        state, observation, spoken_word_count, settings, actions
+    )
+
+
+def _append_logged_transcription(observation, spoken_word_count, settings, actions):
     if observation.transcription and spoken_word_count >= settings.logged_word_count:
         actions.append(LogTranscriptionAction(observation.transcription))
+
+
+def _apply_followup_signal(state, observation, settings, actions):
     if observation.followup_signalled and state.mode is not ConversationMode.COMMAND:
         state = replace(
             state,
@@ -44,12 +61,10 @@ def advance(
             followup_chunks_remaining=settings.followup_window_chunks,
         )
         actions.append(AnnounceAction(FOLLOWUP_WINDOW_ACTIVE_MESSAGE))
-    if state.mode is ConversationMode.COMMAND:
-        return collect_command_chunk(state, observation, settings, actions)
-    if state.mode is ConversationMode.FOLLOWUP:
-        return spend_followup_chunk(
-            state, observation, spoken_word_count, settings, actions
-        )
+    return state
+
+
+def _advance_listening_mode(state, observation, spoken_word_count, settings, actions):
     if observation.keywords_disabled:
         return Transition(state, tuple(actions))
     if observation.transcription and matches_keywords(

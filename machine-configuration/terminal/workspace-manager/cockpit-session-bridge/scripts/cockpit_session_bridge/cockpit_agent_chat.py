@@ -11,19 +11,28 @@ AGENT_REPLY_TIMEOUT_SECONDS = 180
 def decode_agent_chat_request(raw_request_message):
     if not isinstance(raw_request_message, str):
         return None
-    try:
-        decoded_request = json.loads(raw_request_message)
-    except (ValueError, TypeError):
-        return None
+    decoded_request = _decode_request_json(raw_request_message)
     if not isinstance(decoded_request, dict):
         return None
     requested_text = decoded_request.get("text")
     if not isinstance(requested_text, str) or not requested_text.strip():
         return None
+    requested_session_key = _requested_session_key(decoded_request)
+    return {"text": requested_text.strip(), "sessionKey": requested_session_key}
+
+
+def _decode_request_json(raw_request_message):
+    try:
+        return json.loads(raw_request_message)
+    except (ValueError, TypeError):
+        return None
+
+
+def _requested_session_key(decoded_request):
     requested_session_key = decoded_request.get("sessionKey")
     if not isinstance(requested_session_key, str) or not requested_session_key:
-        requested_session_key = DEFAULT_SESSION_KEY
-    return {"text": requested_text.strip(), "sessionKey": requested_session_key}
+        return DEFAULT_SESSION_KEY
+    return requested_session_key
 
 
 def build_agent_chat_command(agent_chat_command, agent_chat_request):
@@ -44,11 +53,18 @@ def read_agent_reply_text(raw_agent_output):
     except (ValueError, TypeError):
         return decoded_output
     if isinstance(decoded_reply, dict):
-        for reply_field_name in ("text", "message", "reply", "content"):
-            reply_field = decoded_reply.get(reply_field_name)
-            if isinstance(reply_field, str) and reply_field:
-                return reply_field
+        reply_text = _reply_text_from_json(decoded_reply)
+        if reply_text is not None:
+            return reply_text
     return decoded_output
+
+
+def _reply_text_from_json(decoded_reply):
+    for reply_field_name in ("text", "message", "reply", "content"):
+        reply_field = decoded_reply.get(reply_field_name)
+        if isinstance(reply_field, str) and reply_field:
+            return reply_field
+    return None
 
 
 def decode_captured_stream(captured_stream):
