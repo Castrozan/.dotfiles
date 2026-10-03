@@ -51,32 +51,49 @@ def load_allowed_words_from_hook_events(hook_events: dict, source_file: Path) ->
     deployed_allowed_words = set()
     for hook_group in hook_events.get("PreToolUse", []):
         for hook in hook_group.get("hooks", []):
-            command = hook.get("command")
-            if not isinstance(command, str):
-                continue
-            command_tokens = shlex.split(command)
-            assignment_tokens = [
-                token
-                for token in command_tokens
-                if token.startswith("PROHIBITED_WORDS_ALLOWED=")
-            ]
-            if not assignment_tokens:
-                continue
-            if len(assignment_tokens) != 1 or command_tokens[0] != assignment_tokens[0]:
-                raise RuntimeError(
-                    f"{source_file} must register PROHIBITED_WORDS_ALLOWED exactly once as the first command token"
-                )
-            deployed_allowed_words.add(
-                assignment_tokens[0].removeprefix("PROHIBITED_WORDS_ALLOWED=")
-            )
+            _record_hook_allowlist_assignment(hook, source_file, deployed_allowed_words)
+    _validate_deployed_allowlist_count(deployed_allowed_words, source_file)
+    return deployed_allowed_words.pop()
 
-    if not deployed_allowed_words:
+
+def _record_hook_allowlist_assignment(
+    hook: dict, source_file: Path, values: set
+) -> None:
+    command = hook.get("command")
+    if not isinstance(command, str):
+        return
+    command_tokens = shlex.split(command)
+    assignment_tokens = _prohibited_word_assignment_tokens(command_tokens)
+    if not assignment_tokens:
+        return
+    if not _assignment_is_registered_first(command_tokens, assignment_tokens):
+        raise RuntimeError(
+            f"{source_file} must register PROHIBITED_WORDS_ALLOWED exactly once as the first command token"
+        )
+    values.add(assignment_tokens[0].removeprefix("PROHIBITED_WORDS_ALLOWED="))
+
+
+def _prohibited_word_assignment_tokens(command_tokens: list[str]) -> list[str]:
+    return [
+        token
+        for token in command_tokens
+        if token.startswith("PROHIBITED_WORDS_ALLOWED=")
+    ]
+
+
+def _assignment_is_registered_first(
+    command_tokens: list[str], assignment_tokens: list[str]
+) -> bool:
+    return len(assignment_tokens) == 1 and command_tokens[0] == assignment_tokens[0]
+
+
+def _validate_deployed_allowlist_count(values: set, source_file: Path) -> None:
+    if not values:
         raise RuntimeError(f"{source_file} does not register PROHIBITED_WORDS_ALLOWED")
-    if len(deployed_allowed_words) != 1:
+    if len(values) != 1:
         raise RuntimeError(
             f"{source_file} registers multiple prohibited-words allowlists"
         )
-    return deployed_allowed_words.pop()
 
 
 def load_claude_allowed_words(settings_file: Path) -> str:

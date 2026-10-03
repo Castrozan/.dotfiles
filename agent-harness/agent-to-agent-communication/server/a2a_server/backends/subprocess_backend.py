@@ -101,7 +101,7 @@ class SubprocessAgentBackend(AgentBackend):
     def _drain_output_until_the_reader_should_stop(
         self, selector: selectors.BaseSelector
     ) -> None:
-        if self._process is None or self._process.stdout is None:
+        if not self._process_has_output_stream():
             return
         while not self._reader_should_stop.is_set():
             if not self._is_process_alive():
@@ -109,6 +109,9 @@ class SubprocessAgentBackend(AgentBackend):
                 return
             if not self._drain_ready_output_chunk(selector):
                 return
+
+    def _process_has_output_stream(self) -> bool:
+        return self._process is not None and self._process.stdout is not None
 
     def _drain_ready_output_chunk(self, selector: selectors.BaseSelector) -> bool:
         if not selector.select(timeout=0.2):

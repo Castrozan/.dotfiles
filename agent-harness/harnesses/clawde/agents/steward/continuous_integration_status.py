@@ -13,6 +13,10 @@ def continuous_integration_status_for_revision(
     return_code, output = run_capturing(
         ["git-forge", "--commit", revision], repository, 45
     )
+    return _status_for_captured_runs(return_code, output, revision)
+
+
+def _status_for_captured_runs(return_code: int, output: str, revision: str) -> dict:
     if return_code != 0:
         return {
             "available": return_code != 127,
@@ -30,7 +34,7 @@ def continuous_integration_status_for_revision(
         failed_workflows = _failed_workflow_details(failing)
     except (ValueError, TypeError, KeyError):
         return {"available": True, "state": "pending", "parse_error": True}
-    state = "failing" if failing else "pending" if pending or not latest else "passing"
+    state = _state_for_workflows(failing, pending, latest)
     return {
         "available": True,
         "state": state,
@@ -39,6 +43,10 @@ def continuous_integration_status_for_revision(
         "failing": failed_workflows,
         "pending": [run["workflowName"] for run in pending],
     }
+
+
+def _state_for_workflows(failing: list, pending: list, latest: dict) -> str:
+    return "failing" if failing else "pending" if pending or not latest else "passing"
 
 
 def _latest_runs_for_revision(runs: list, revision: str) -> dict:

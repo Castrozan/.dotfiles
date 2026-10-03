@@ -146,10 +146,7 @@ class ActiveTaskCoordinator:
     ) -> None:
         if self._reset_dead_target_timer_if_alive(observation):
             return
-        if (
-            self._on_target_died_callback is None
-            or self._on_target_died_callback_already_fired
-        ):
+        if self._shutdown_callback_is_unavailable():
             return
         if self._target_first_observed_dead_at_epoch_seconds is None:
             self._target_first_observed_dead_at_epoch_seconds = time.time()
@@ -161,6 +158,12 @@ class ActiveTaskCoordinator:
             return
         self._on_target_died_callback_already_fired = True
         self._on_target_died_callback()
+
+    def _shutdown_callback_is_unavailable(self) -> bool:
+        return (
+            self._on_target_died_callback is None
+            or self._on_target_died_callback_already_fired
+        )
 
     def _reset_dead_target_timer_if_alive(
         self, observation: BackendObservation
