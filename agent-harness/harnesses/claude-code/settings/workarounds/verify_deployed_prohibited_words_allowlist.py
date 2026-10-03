@@ -105,6 +105,20 @@ def verify_deployed_allowed_words(
     if machine_allowed_words is None:
         return
 
+    _verify_deployed_targets_match(
+        machine_allowed_words,
+        settings_source_file,
+        settings_file,
+        codex_requirements_file,
+    )
+
+
+def _verify_deployed_targets_match(
+    machine_allowed_words: list[str],
+    settings_source_file: Path,
+    settings_file: Path,
+    codex_requirements_file: Path,
+) -> None:
     expected_allowed_words = ",".join(machine_allowed_words)
     deployed_allowed_words = {
         "the deployed Claude settings source": load_claude_allowed_words(

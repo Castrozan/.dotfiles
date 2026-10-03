@@ -72,14 +72,26 @@ def add_trusted_project_directories(
         except OSError:
             continue
         for child_directory in child_directories:
-            child_directory_path = str(child_directory)
-            if child_directory.name.startswith("."):
-                if child_directory_path not in source_project_paths and projects.get(
-                    child_directory_path
-                ) == {"trust_level": "trusted"}:
-                    projects.pop(child_directory_path)
-                continue
-            projects.setdefault(child_directory_path, {"trust_level": "trusted"})
+            _preserve_project_directory(projects, child_directory, source_project_paths)
+
+
+def _preserve_project_directory(projects, child_directory, source_project_paths):
+    child_directory_path = str(child_directory)
+    if child_directory.name.startswith("."):
+        _remove_runtime_hidden_project_if_absent_from_source(
+            projects, child_directory_path, source_project_paths
+        )
+        return
+    projects.setdefault(child_directory_path, {"trust_level": "trusted"})
+
+
+def _remove_runtime_hidden_project_if_absent_from_source(
+    projects, child_directory_path, source_project_paths
+):
+    if child_directory_path in source_project_paths:
+        return
+    if projects.get(child_directory_path) == {"trust_level": "trusted"}:
+        projects.pop(child_directory_path)
 
 
 def read_secret_file(secret_file_path: str) -> str:
@@ -107,16 +119,20 @@ def inject_mcp_server_bearer_token_files(config_data: dict) -> None:
     if not isinstance(mcp_servers, dict):
         return
     for server_name, token_file in server_name_to_token_file.items():
-        server_definition = mcp_servers.get(server_name)
-        if not isinstance(server_definition, dict):
-            continue
-        token = read_secret_file(token_file)
-        if not token:
-            mcp_servers.pop(server_name, None)
-            continue
-        server_definition.setdefault("http_headers", {})["Authorization"] = (
-            f"Bearer {token}"
-        )
+        _inject_server_bearer_token(mcp_servers, server_name, token_file)
+
+
+def _inject_server_bearer_token(mcp_servers, server_name, token_file):
+    server_definition = mcp_servers.get(server_name)
+    if not isinstance(server_definition, dict):
+        return
+    token = read_secret_file(token_file)
+    if not token:
+        mcp_servers.pop(server_name, None)
+        return
+    server_definition.setdefault("http_headers", {})["Authorization"] = (
+        f"Bearer {token}"
+    )
 
 
 def build_seeded_config_content() -> bytes | None:

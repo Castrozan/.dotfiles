@@ -99,6 +99,10 @@ def main(hook_arguments: list[str]) -> int:
         local_hook_status = run_repository_local_hook(local_hook_path, hook_arguments)
         if local_hook_status != 0:
             return local_hook_status
+    return _record_provenance_for_message(hook_arguments)
+
+
+def _record_provenance_for_message(hook_arguments: list[str]) -> int:
     message_source = hook_arguments[1] if len(hook_arguments) > 1 else ""
     if message_source in SKIPPED_MESSAGE_SOURCES:
         return 0

@@ -73,15 +73,28 @@ def harness_and_session_from_process_ancestry(
         return None
     harness_process_identifier, harness_name, command_line = agent_session
     session_identifier = session_identifier_from_command(harness_name, command_line)
-    if session_identifier is None and harness_name == "codex":
-        session_identifier = codex_session_identifier_for_working_directory(
-            working_directory
-        )
-    if session_identifier is None and harness_name == "opencode":
-        session_identifier = opencode_session_identifier_for_process(
-            harness_process_identifier
-        )
+    session_identifier = _resolve_missing_process_session_identifier(
+        harness_name,
+        session_identifier,
+        harness_process_identifier,
+        working_directory,
+    )
     return harness_name, session_identifier
+
+
+def _resolve_missing_process_session_identifier(
+    harness_name: str,
+    session_identifier: str | None,
+    harness_process_identifier: int,
+    working_directory: Path,
+) -> str | None:
+    if session_identifier is not None:
+        return session_identifier
+    if harness_name == "codex":
+        return codex_session_identifier_for_working_directory(working_directory)
+    if harness_name == "opencode":
+        return opencode_session_identifier_for_process(harness_process_identifier)
+    return None
 
 
 def resolve_agent_session_identity(
