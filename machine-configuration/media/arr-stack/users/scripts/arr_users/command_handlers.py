@@ -72,14 +72,12 @@ def run_sync(context, _arguments):
         f"created libraries: {', '.join(synchronized['created_libraries']) or 'none'}"
     )
     print(f"every account can see: {', '.join(synchronized['public_libraries'])}")
-    print(
-        f"private libraries: {', '.join(synchronized['private_libraries']) or 'none'}"
-    )
+    print(f"private libraries: {_join_or_none(synchronized['private_libraries'])}")
     print(
         "only these accounts see them: "
-        f"{', '.join(synchronized['private_library_accounts']) or 'none'}"
+        f"{_join_or_none(synchronized['private_library_accounts'])}"
     )
-    print(f"reconciled: {', '.join(synchronized['reconciled_accounts']) or 'none'}")
+    print(f"reconciled: {_join_or_none(synchronized['reconciled_accounts'])}")
     failed_library_names = synchronized["failed_libraries"]
     if failed_library_names:
         raise ValueError(
@@ -87,6 +85,10 @@ def run_sync(context, _arguments):
             f"{', '.join(failed_library_names)}; the usual cause is the backing "
             "media directory not existing yet"
         )
+
+
+def _join_or_none(values):
+    return ", ".join(values) or "none"
 
 
 def run_sync_request_routing(context, _arguments):

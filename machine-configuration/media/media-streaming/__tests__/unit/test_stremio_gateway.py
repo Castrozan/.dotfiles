@@ -1,6 +1,11 @@
 import importlib
+import importlib.util
+import threading
 import sys
+import urllib.error
 import urllib.parse
+import urllib.request
+from http.server import ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -13,6 +18,11 @@ sys.path.insert(0, str(PACKAGE_DIRECTORY_PATH))
 
 prowlarr_stream_provider = importlib.import_module("prowlarr_stream_provider")
 stremio_protocol = importlib.import_module("stremio_protocol")
+gateway_module_specification = importlib.util.spec_from_file_location(
+    "stremio_gateway_main", PACKAGE_DIRECTORY_PATH / "__main__.py"
+)
+gateway_main = importlib.util.module_from_spec(gateway_module_specification)
+gateway_module_specification.loader.exec_module(gateway_main)
 
 COMET_ENVIRONMENT_MODULE_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "stremio_comet_environment.py"
@@ -51,6 +61,46 @@ def test_parses_only_supported_stremio_stream_paths():
         )
         is None
     )
+
+
+def test_static_gateway_get_head_missing_and_traversal(tmp_path):
+    index_file = tmp_path / "index.html"
+    index_file.write_bytes(b'<script src="/app.js"></script>')
+    asset_file = tmp_path / "app.js"
+    asset_file.write_bytes(b"window.app = true")
+    outside_file = tmp_path.parent / "outside-secret.js"
+    outside_file.write_bytes(b"secret")
+    (tmp_path / "outside-link.js").symlink_to(outside_file)
+    gateway_main.StremioRequestHandler.static_root = tmp_path.resolve()
+    server = ThreadingHTTPServer(("127.0.0.1", 0), gateway_main.StremioRequestHandler)
+    thread = threading.Thread(target=server.serve_forever)
+    thread.start()
+    base_url = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urllib.request.urlopen(f"{base_url}/") as response:
+            assert response.status == 200
+            assert response.headers["Cache-Control"] == "no-cache"
+            assert b'<script src="/managed-profile.js"></script>' in response.read()
+        request = urllib.request.Request(f"{base_url}/app.js", method="HEAD")
+        with urllib.request.urlopen(request) as response:
+            assert response.status == 200
+            assert response.headers["Cache-Control"] == (
+                "public, max-age=31536000, immutable"
+            )
+            assert response.read() == b""
+        for request_path in (
+            "/missing.js",
+            "/outside-link.js",
+            "/%2e%2e/outside-secret.js",
+        ):
+            with pytest.raises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(f"{base_url}{request_path}")
+            assert error.value.code == 404
+            error.value.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
 
 
 def test_movie_search_uses_metadata_and_returns_ranked_single_movie_torrents():

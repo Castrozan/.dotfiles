@@ -20,16 +20,32 @@ def parse_stream_request(path: str) -> StreamRequest | None:
     if match is None:
         return None
     identifier_parts = match.group("identifier").split(":")
-    if match.group("media_type") == "movie" and len(identifier_parts) == 1:
-        return StreamRequest("movie", identifier_parts[0])
-    if match.group("media_type") == "series" and len(identifier_parts) == 3:
-        return StreamRequest(
-            "series",
-            identifier_parts[0],
-            int(identifier_parts[1]),
-            int(identifier_parts[2]),
-        )
+    if _is_movie_identifier(match.group("media_type"), identifier_parts):
+        return _movie_stream_request(identifier_parts)
+    if _is_series_identifier(match.group("media_type"), identifier_parts):
+        return _series_stream_request(identifier_parts)
     return None
+
+
+def _movie_stream_request(identifier_parts):
+    return StreamRequest("movie", identifier_parts[0])
+
+
+def _series_stream_request(identifier_parts):
+    return StreamRequest(
+        "series",
+        identifier_parts[0],
+        int(identifier_parts[1]),
+        int(identifier_parts[2]),
+    )
+
+
+def _is_movie_identifier(media_type, identifier_parts):
+    return media_type == "movie" and len(identifier_parts) == 1
+
+
+def _is_series_identifier(media_type, identifier_parts):
+    return media_type == "series" and len(identifier_parts) == 3
 
 
 def addon_manifest() -> dict:
