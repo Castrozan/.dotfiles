@@ -11,6 +11,7 @@
   ];
 
   clawde.agents.ril-watcher = {
+    enable = false;
     harness = "codex";
     model = "gpt-5.6-sol";
     reasoningEffort = "high";
