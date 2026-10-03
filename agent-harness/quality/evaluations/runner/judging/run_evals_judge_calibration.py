@@ -29,10 +29,9 @@ def cohens_kappa(n: int, agreements: int, judge_pass: int, human_pass: int) -> f
 
 
 def agreement_metrics(predictions: list[dict]) -> dict:
-    true_positive = sum(item["human"] and item["judge"] for item in predictions)
-    true_negative = sum(not item["human"] and not item["judge"] for item in predictions)
-    false_positive = sum(not item["human"] and item["judge"] for item in predictions)
-    false_negative = sum(item["human"] and not item["judge"] for item in predictions)
+    true_positive, true_negative, false_positive, false_negative = _confusion_counts(
+        predictions
+    )
     pass_total = true_positive + false_negative
     fail_total = true_negative + false_positive
     pass_recall = true_positive / pass_total if pass_total else 1.0
@@ -59,12 +58,28 @@ def agreement_metrics(predictions: list[dict]) -> dict:
             "fp": false_positive,
             "fn": false_negative,
         },
-        "meets_gate": (
-            balanced_accuracy >= MINIMUM_BALANCED_ACCURACY
-            and failed_case_recall >= MINIMUM_FAILED_CASE_RECALL
-            and kappa >= MINIMUM_COHENS_KAPPA
+        "meets_gate": _meets_agreement_gate(
+            balanced_accuracy, failed_case_recall, kappa
         ),
     }
+
+
+def _confusion_counts(predictions: list[dict]) -> tuple[int, int, int, int]:
+    true_positive = sum(item["human"] and item["judge"] for item in predictions)
+    true_negative = sum(not item["human"] and not item["judge"] for item in predictions)
+    false_positive = sum(not item["human"] and item["judge"] for item in predictions)
+    false_negative = sum(item["human"] and not item["judge"] for item in predictions)
+    return true_positive, true_negative, false_positive, false_negative
+
+
+def _meets_agreement_gate(
+    balanced_accuracy: float, failed_case_recall: float, kappa: float
+) -> bool:
+    return (
+        balanced_accuracy >= MINIMUM_BALANCED_ACCURACY
+        and failed_case_recall >= MINIMUM_FAILED_CASE_RECALL
+        and kappa >= MINIMUM_COHENS_KAPPA
+    )
 
 
 def judge_agreement(labeled_cases: list[dict], judge, max_workers: int = 4) -> dict:

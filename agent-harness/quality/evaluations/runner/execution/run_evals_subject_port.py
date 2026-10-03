@@ -1,24 +1,20 @@
 import json
 import os
 import shutil
-import subprocess
 import tempfile
 import time
 from pathlib import Path
 
 from runner import run_evals_worktree_and_environment as evaluation_environment
-from runner.execution.run_evals_provider_usage import (
-    record_provider_invocation,
-    record_provider_usage,
-)
+from runner.execution import run_evals_subject_runtime as subject_runtime
+
+subprocess = subject_runtime.subprocess
 
 NODE_RUNTIME_OVERRIDE = "AGENT_EVAL_NODE_RUNTIME"
 NODE_RUNTIME_BINARY = "agent-eval-provider"
 
 ALLOWED_HARNESSES = ("claude", "codex", "opencode")
 
-TRANSIENT_RETRY_ATTEMPTS = 2
-TRANSIENT_RETRY_BACKOFF_SECONDS = 3
 NON_RETRYABLE_FAILURE_MARKERS = (
     "session limit",
     "usage limit",
@@ -27,7 +23,6 @@ NON_RETRYABLE_FAILURE_MARKERS = (
 )
 RESULT_WRITE_POLL_INTERVAL_SECONDS = 0.05
 RESULT_WRITE_TIMEOUT_SECONDS = 5
-RUNTIME_CLEANUP_GRACE_SECONDS = 5
 
 
 def build_provider_invoker(
@@ -158,41 +153,12 @@ def invoke_subject(
             working_directory=working_directory,
             result_file=str(result_file_path),
         )
-        last_transient_failure = ""
-        for attempt in range(TRANSIENT_RETRY_ATTEMPTS + 1):
-            result_file_path.unlink(missing_ok=True)
-            record_provider_invocation(invocation_role, harness)
-            try:
-                subprocess.run(
-                    [runtime_command],
-                    input=json.dumps(invocation),
-                    capture_output=True,
-                    text=True,
-                    timeout=timeout + RUNTIME_CLEANUP_GRACE_SECONDS,
-                    cwd=invocation["working_directory"],
-                    env=evaluation_environment.build_filtered_environment(),
-                )
-            except subprocess.TimeoutExpired:
-                last_transient_failure = f"timeout after {timeout}s"
-            except FileNotFoundError:
-                return "the node provider runtime was not found on PATH", False
-            except Exception as error:
-                return str(error), False
-            else:
-                result = read_result_file(result_file_path)
-                record_provider_usage(invocation_role, harness, result.get("usage"))
-                error_text = result.get("error")
-                output_text = result.get("output")
-                if error_text is None:
-                    normalized_output = "" if output_text is None else str(output_text)
-                    if normalized_output.strip():
-                        return normalized_output, True
-                    error_text = "the provider runtime produced empty output"
-                if not is_retryable_failure(error_text):
-                    return error_text, False
-                last_transient_failure = error_text
-
-            if attempt < TRANSIENT_RETRY_ATTEMPTS:
-                time.sleep(TRANSIENT_RETRY_BACKOFF_SECONDS * (attempt + 1))
-
-        return last_transient_failure, False
+        return subject_runtime.invoke_prepared_subject(
+            invocation,
+            runtime_command,
+            invocation_role,
+            harness,
+            read_result_file,
+            is_retryable_failure,
+            evaluation_environment.build_filtered_environment,
+        )

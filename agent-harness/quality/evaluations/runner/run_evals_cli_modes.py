@@ -129,30 +129,11 @@ def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
 
 
 def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
-    checkpoint = None
-    selected_test_keys = None
-    if args.save_baseline:
-        current_fingerprints = evaluation_test_fingerprints(config)
-        selected_test_keys = (
-            selected_test_keys_for_filters(
-                current_fingerprints, args.category, args.test
-            )
-            if args.all_tests
-            else affected_test_keys(
-                config,
-                read_baseline(),
-                category=args.category,
-                test_name=args.test,
-            )
-        )
-        checkpoint = BaselineCheckpoint(
-            execution_profile,
-            current_fingerprints,
-            reset_test_keys=selected_test_keys if args.all_tests else None,
-        )
-        if not selected_test_keys:
-            checkpoint.announce()
-            return 0
+    checkpoint, selected_test_keys, should_run = _prepare_baseline_checkpoint(
+        config, args, execution_profile
+    )
+    if not should_run:
+        return 0
     with temporary_eval_worktree():
         results = run_tests(
             config,
@@ -172,3 +153,28 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
         raise_for_evaluation_errors(results, "baseline evidence")
         checkpoint.announce()
     return 0 if all_passed else 1
+
+
+def _prepare_baseline_checkpoint(config: dict, args, execution_profile: dict):
+    if not args.save_baseline:
+        return None, None, True
+    current_fingerprints = evaluation_test_fingerprints(config)
+    selected_test_keys = (
+        selected_test_keys_for_filters(current_fingerprints, args.category, args.test)
+        if args.all_tests
+        else affected_test_keys(
+            config,
+            read_baseline(),
+            category=args.category,
+            test_name=args.test,
+        )
+    )
+    checkpoint = BaselineCheckpoint(
+        execution_profile,
+        current_fingerprints,
+        reset_test_keys=selected_test_keys if args.all_tests else None,
+    )
+    if not selected_test_keys:
+        checkpoint.announce()
+        return checkpoint, selected_test_keys, False
+    return checkpoint, selected_test_keys, True

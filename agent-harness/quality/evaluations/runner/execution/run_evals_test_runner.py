@@ -37,53 +37,20 @@ def run_test(
     model_reasoning_effort = settings.get("subject_reasoning_efforts", {}).get(harness)
     timeout = settings.get("timeout_seconds", 120)
 
-    if test.get("type") == "hook_test":
-        hook_start_time = time.time()
-        hook_failures = evaluate_hook_test(test)
-        return TestResult(
-            name=name,
-            passed=len(hook_failures) == 0,
-            duration=time.time() - hook_start_time,
-            output="[hook_test]",
-            assertions_failed=hook_failures,
-            category=authored_category,
-        )
-
-    prompt = test.get("prompt")
-    if not prompt:
-        return TestResult(
-            name=name,
-            passed=False,
-            duration=0,
-            output="",
-            assertions_failed=[],
-            error="Test missing 'prompt' field",
-            category=authored_category,
-        )
-
-    if dry_run:
-        return TestResult(
-            name=name,
-            passed=True,
-            duration=0,
-            output="[DRY RUN]",
-            assertions_failed=[],
-            category=authored_category,
-        )
+    prompt, preflight_result = _preflight_test_result(
+        test, name, dry_run, authored_category
+    )
+    if preflight_result is not None:
+        return preflight_result
 
     start_time = time.time()
 
     resolved_system_prompt = resolve_system_prompt_for_test(test, instruction_ref)
-    if instruction_ref and test.get("skill_path") and resolved_system_prompt is None:
-        return TestResult(
-            name=name,
-            passed=False,
-            duration=0,
-            output="",
-            assertions_failed=[],
-            error=f"instruction surface not found at Git ref {instruction_ref}",
-            category=authored_category,
-        )
+    missing_instruction_result = _missing_instruction_result(
+        test, instruction_ref, resolved_system_prompt, name, authored_category
+    )
+    if missing_instruction_result is not None:
+        return missing_instruction_result
 
     output, success = subject_port.invoke_subject(
         harness,
@@ -141,5 +108,64 @@ def run_test(
         duration=duration,
         output=output[:500],
         assertions_failed=failures,
+        category=authored_category,
+    )
+
+
+def _preflight_test_result(
+    test: dict, name: str, dry_run: bool, authored_category: str
+):
+    if test.get("type") == "hook_test":
+        hook_start_time = time.time()
+        hook_failures = evaluate_hook_test(test)
+        return None, TestResult(
+            name=name,
+            passed=len(hook_failures) == 0,
+            duration=time.time() - hook_start_time,
+            output="[hook_test]",
+            assertions_failed=hook_failures,
+            category=authored_category,
+        )
+    prompt = test.get("prompt")
+    if not prompt:
+        return prompt, TestResult(
+            name=name,
+            passed=False,
+            duration=0,
+            output="",
+            assertions_failed=[],
+            error="Test missing 'prompt' field",
+            category=authored_category,
+        )
+    if dry_run:
+        return prompt, TestResult(
+            name=name,
+            passed=True,
+            duration=0,
+            output="[DRY RUN]",
+            assertions_failed=[],
+            category=authored_category,
+        )
+    return prompt, None
+
+
+def _missing_instruction_result(
+    test: dict,
+    instruction_ref: str | None,
+    resolved_system_prompt: str | None,
+    name: str,
+    authored_category: str,
+):
+    if not (
+        instruction_ref and test.get("skill_path") and resolved_system_prompt is None
+    ):
+        return None
+    return TestResult(
+        name=name,
+        passed=False,
+        duration=0,
+        output="",
+        assertions_failed=[],
+        error=f"instruction surface not found at Git ref {instruction_ref}",
         category=authored_category,
     )
