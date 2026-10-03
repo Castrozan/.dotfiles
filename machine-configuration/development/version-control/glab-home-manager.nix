@@ -73,6 +73,9 @@ in
         before = [ ];
         data = ''
           ${pkgs.python312}/bin/python3 ${./scripts/write_glab_configuration.py} ${initialGlabConfig} ${lib.escapeShellArg glabConfigFile}
+          if [ -d ${lib.escapeShellArg "${config.home.homeDirectory}/.dotfiles/.git"} ]; then
+            (cd ${lib.escapeShellArg "${config.home.homeDirectory}/.dotfiles"} && ${pkgs.glab}/bin/glab config set host gitlab.com)
+          fi
         '';
       };
 
