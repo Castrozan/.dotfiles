@@ -29,32 +29,49 @@ def untracked_download_lines(snapshot, media_type):
     seen = set()
     lines = []
     for record in snapshot.records:
-        if record.get(record_id_field) in library_ids:
-            continue
-        identity = record.get("downloadId") or record.get("id") or record.get("title")
-        if identity in seen:
-            continue
-        seen.add(identity)
-        reasons = [
-            message
-            for status in record.get("statusMessages", [])
-            for message in status.get("messages", [])
-        ]
-        size = (record.get("size") or 0) / 1024**3
-        stage = f"untracked download | {size:.1f} GiB | "
-        stage += "; ".join(reasons) or record.get("status", "unknown")
-        lines.append(
-            MediaStatusLine(
-                title=record.get("title") or "Unknown release",
-                year=None,
-                media_type=media_type,
-                requested_by="not linked",
-                stage=stage,
-                progress=None,
-                arr_reachable=snapshot.reachable,
-            )
+        line = _untracked_download_line(
+            snapshot, record, media_type, record_id_field, library_ids, seen
         )
+        if line is not None:
+            lines.append(line)
     return lines
+
+
+def _untracked_download_line(
+    snapshot, record, media_type, record_id_field, library_ids, seen
+):
+    if record.get(record_id_field) in library_ids:
+        return None
+    identity = _untracked_download_identity(record)
+    if identity in seen:
+        return None
+    seen.add(identity)
+    stage = _untracked_download_stage(record)
+    return MediaStatusLine(
+        title=record.get("title") or "Unknown release",
+        year=None,
+        media_type=media_type,
+        requested_by="not linked",
+        stage=stage,
+        progress=None,
+        arr_reachable=snapshot.reachable,
+    )
+
+
+def _untracked_download_identity(record):
+    return record.get("downloadId") or record.get("id") or record.get("title")
+
+
+def _untracked_download_stage(record):
+    reasons = [
+        message
+        for status in record.get("statusMessages", [])
+        for message in status.get("messages", [])
+    ]
+    size = (record.get("size") or 0) / 1024**3
+    stage = f"untracked download | {size:.1f} GiB | "
+    stage += "; ".join(reasons) or record.get("status", "unknown")
+    return stage
 
 
 def snapshot_radarr(endpoint):
