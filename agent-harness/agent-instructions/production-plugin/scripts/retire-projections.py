@@ -87,6 +87,11 @@ def _repository_backup_to_retire(discovery, name, bundle):
     backup = discovery / (name + ".backup")
     if not backup.exists() and not backup.is_symlink():
         return None
+    _validate_repository_backup_replacement(discovery, name, bundle)
+    return backup
+
+
+def _validate_repository_backup_replacement(discovery, name, bundle):
     replacement = discovery / name
     canonical = bundle / "plugin/library/skills" / name
     if (
@@ -95,7 +100,6 @@ def _repository_backup_to_retire(discovery, name, bundle):
         or replacement.resolve() != canonical.resolve()
     ):
         raise ValueError("Repository skill has no installed canonical replacement")
-    return backup
 
 
 def retire(target: str, home: Path, bundle: Path) -> None:

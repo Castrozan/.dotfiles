@@ -80,13 +80,17 @@ def _complete_gitlab_watch(
     for job in jobs:
         if job["id"] not in retained_jobs:
             retain_gitlab_trace(repository, directory, job, deadline)
-    with (directory / "run.log").open("w") as output:
-        for job in jobs:
-            output.write(f"{job['name']} {job['status']} {job['web_url']}\n")
-            output.write((directory / f"job-{job['id']}.log").read_text())
+    _write_gitlab_run_log(directory, jobs)
     passed = result["conclusion"] == "success"
     return {
         **result,
         "jobs": jobs,
         "outcome": "passed" if passed else "failed",
     }, 0 if passed else 1
+
+
+def _write_gitlab_run_log(directory, jobs):
+    with (directory / "run.log").open("w") as output:
+        for job in jobs:
+            output.write(f"{job['name']} {job['status']} {job['web_url']}\n")
+            output.write((directory / f"job-{job['id']}.log").read_text())

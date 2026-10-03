@@ -134,10 +134,14 @@ def _expand_repository_reference(remote, repository, provider, directory):
     if repository is None:
         raise ValueError("Git remote has no hostname")
     if provider:
-        hostname = "github.com" if provider == "github" else "gitlab.com"
+        hostname = _default_hostname_for_provider(provider)
     else:
         hostname, _ = repository_location(effective_remote(directory), directory)
     return f"https://{hostname}/{remote}"
+
+
+def _default_hostname_for_provider(provider):
+    return "github.com" if provider == "github" else "gitlab.com"
 
 
 def _validate_provider(provider):
