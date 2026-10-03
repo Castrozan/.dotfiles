@@ -5,7 +5,7 @@ def season_key(record):
 def _is_complete_missing_season(statistics, missing_count):
     episode_count = _nonzero_season_statistic(statistics, "episodeCount")
     episode_file_count = _nonzero_season_statistic(statistics, "episodeFileCount")
-    if not episode_count > 1:
+    if episode_count <= 1:
         return False
     if episode_file_count != 0:
         return False

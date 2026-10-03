@@ -24,9 +24,8 @@ def _grabbed_identities(application, download_id, records):
 
 
 def _record_identity(application, record):
-    if application == "sonarr":
-        return record.get("seriesId"), record.get("episodeId")
-    return (record.get("movieId"),)
+    field_names = ["seriesId", "episodeId"] if application == "sonarr" else ["movieId"]
+    return tuple(record.get(field_name) for field_name in field_names)
 
 
 def _candidate_rejections_are_title_only(candidate, record, reasons):

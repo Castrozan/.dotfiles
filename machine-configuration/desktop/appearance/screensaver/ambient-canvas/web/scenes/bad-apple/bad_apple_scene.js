@@ -33,7 +33,7 @@
   }
 
   function resolveAppearanceOption(options, optionName, defaultValue) {
-    return (options && options[optionName]) || defaultValue;
+    return options?.[optionName] || defaultValue;
   }
 
   function createBadAppleRenderer(canvasElement, options) {
@@ -45,8 +45,8 @@
     const videoSource =
       window.AmbientCanvasSeekableVideoSource.createSeekableVideoSource(
         VIDEO_DIRECTORY_URL + "/" + options.videoId + ".mp4",
-        (options && options.startSeconds) || 0,
-        Boolean(options && options.deterministicPlayback),
+        options?.startSeconds || 0,
+        Boolean(options?.deterministicPlayback),
       );
 
     return {

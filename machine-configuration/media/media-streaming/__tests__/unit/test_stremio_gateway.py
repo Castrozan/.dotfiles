@@ -63,7 +63,7 @@ def test_parses_only_supported_stremio_stream_paths():
     )
 
 
-def test_static_gateway_get_head_missing_and_traversal(tmp_path):
+def test_static_gateway_get_head_missing_and_traversal(tmp_path, monkeypatch):
     index_file = tmp_path / "index.html"
     index_file.write_bytes(b'<script src="/app.js"></script>')
     asset_file = tmp_path / "app.js"
@@ -71,7 +71,12 @@ def test_static_gateway_get_head_missing_and_traversal(tmp_path):
     outside_file = tmp_path.parent / "outside-secret.js"
     outside_file.write_bytes(b"secret")
     (tmp_path / "outside-link.js").symlink_to(outside_file)
-    gateway_main.StremioRequestHandler.static_root = tmp_path.resolve()
+    monkeypatch.setattr(
+        gateway_main.StremioRequestHandler,
+        "static_root",
+        tmp_path.resolve(),
+        raising=False,
+    )
     server = ThreadingHTTPServer(("127.0.0.1", 0), gateway_main.StremioRequestHandler)
     thread = threading.Thread(target=server.serve_forever)
     thread.start()

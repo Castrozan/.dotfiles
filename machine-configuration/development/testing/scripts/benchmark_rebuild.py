@@ -86,11 +86,11 @@ def save_baseline_if_requested(benchmark_commands, target, results_file) -> bool
     return True
 
 
-def measured_types_for_command(command, benchmark_commands) -> tuple[str, ...]:
+def measured_types_for_command(command, benchmark_commands) -> list[str]:
     if command == "all":
-        return "eval", "dry-run"
+        return ["eval", "dry-run"]
     if command in benchmark_commands:
-        return (command,)
+        return [command]
     print_usage()
     raise SystemExit(1)
 

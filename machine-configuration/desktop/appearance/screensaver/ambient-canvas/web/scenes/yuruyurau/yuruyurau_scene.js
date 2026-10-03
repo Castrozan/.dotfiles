@@ -16,8 +16,7 @@
     const gl = canvasElement.getContext("webgl", {
       antialias: true,
       alpha: false,
-      preserveDrawingBuffer:
-        (options && options.preserveDrawingBuffer) || false,
+      preserveDrawingBuffer: options?.preserveDrawingBuffer || false,
     });
     if (!gl) {
       console.error("ambient-canvas: WebGL unavailable for a yuruyurau pane");
@@ -78,11 +77,11 @@
   }
 
   function resolveSelectedVariant(options, variantNames) {
-    return (options && options.variant) || variantNames[0];
+    return options?.variant || variantNames[0];
   }
 
   function resolveDevicePixelRatio(options) {
-    return (options && options.devicePixelRatio) || 1;
+    return options?.devicePixelRatio || 1;
   }
 
   window.AMBIENT_CANVAS_SCENE_FACTORIES =

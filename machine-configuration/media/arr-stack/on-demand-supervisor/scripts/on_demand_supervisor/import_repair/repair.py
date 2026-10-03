@@ -106,9 +106,8 @@ def repair_application(application, base_url, api_key, now_epoch, dry_run):
     commands = request_json(base_url, api_key, "command")
     if manual_import_is_active(commands):
         return
-    offset = (
-        int(now_epoch // REPAIR_INTERVAL_SECONDS) * MAX_DOWNLOADS_PER_APPLICATION
-    ) % len(identities)
+    repair_interval_number = int(now_epoch // REPAIR_INTERVAL_SECONDS)
+    offset = repair_interval_number * MAX_DOWNLOADS_PER_APPLICATION % len(identities)
     identities = identities[offset:] + identities[:offset]
     for identity in identities[:MAX_DOWNLOADS_PER_APPLICATION]:
         if _repair_download(

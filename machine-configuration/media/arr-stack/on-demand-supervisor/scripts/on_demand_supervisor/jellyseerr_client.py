@@ -84,14 +84,14 @@ def has_actionable_request_ids(recent_pending_request_ids, failed_request_ids):
 
 
 def retry_failed_request_ids(
-    jellyseerr_url,
-    jellyseerr_api_key,
+    jellyseerr_endpoint,
     failed_request_ids,
     is_radarr_reachable,
     dry_run,
     retry_request_call,
     log_message,
 ):
+    jellyseerr_url, jellyseerr_api_key = jellyseerr_endpoint
     if failed_request_ids and is_radarr_reachable():
         for request_id in failed_request_ids:
             if dry_run:

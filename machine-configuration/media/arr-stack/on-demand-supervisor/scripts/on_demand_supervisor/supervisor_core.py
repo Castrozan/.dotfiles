@@ -66,8 +66,7 @@ def keep_chain_up_for_actionable_requests(
         start_on_demand_services(base_command, on_demand_services, dry_run)
     write_last_active_epoch(state_file_path, now_epoch)
     jellyseerr_client.retry_failed_request_ids(
-        jellyseerr_url,
-        jellyseerr_api_key,
+        (jellyseerr_url, jellyseerr_api_key),
         failed_request_ids,
         lambda: arr_service_reachable(radarr_url),
         dry_run,
