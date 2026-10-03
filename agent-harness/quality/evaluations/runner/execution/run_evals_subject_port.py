@@ -1,14 +1,13 @@
 import json
 import os
 import shutil
+import subprocess
 import tempfile
 import time
 from pathlib import Path
 
 from runner import run_evals_worktree_and_environment as evaluation_environment
 from runner.execution import run_evals_subject_runtime as subject_runtime
-
-subprocess = subject_runtime.subprocess
 
 NODE_RUNTIME_OVERRIDE = "AGENT_EVAL_NODE_RUNTIME"
 NODE_RUNTIME_BINARY = "agent-eval-provider"
@@ -153,12 +152,16 @@ def invoke_subject(
             working_directory=working_directory,
             result_file=str(result_file_path),
         )
-        return subject_runtime.invoke_prepared_subject(
-            invocation,
+        runtime_options = subject_runtime.SubjectRuntimeOptions(
             runtime_command,
             invocation_role,
             harness,
+            evaluation_environment.build_filtered_environment,
+            subprocess,
+        )
+        return subject_runtime.invoke_prepared_subject(
+            invocation,
+            runtime_options,
             read_result_file,
             is_retryable_failure,
-            evaluation_environment.build_filtered_environment,
         )
