@@ -62,6 +62,8 @@ in
       '';
     in
     {
+      home.packages = [ pkgs.glab ];
+
       home.activation.setupGlabConfig = {
         after = [
           "writeBoundary"

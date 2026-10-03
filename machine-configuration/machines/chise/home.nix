@@ -56,6 +56,7 @@ in
     ../../development/development-environments/devenv-home-manager.nix
     ../../development/source-code-search/sourcebot/sourcebot-home-manager.nix
     ../../development/version-control/lazygit-home-manager.nix
+    ../../development/version-control/glab-home-manager.nix
     ../../development/model-context-protocol/mcporter-home-manager.nix
     ../../development/version-control/git-fzf-home-manager.nix
 

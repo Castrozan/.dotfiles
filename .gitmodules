@@ -1,3 +1,3 @@
 [submodule "private-configuration"]
 	path = private-configuration
-	url = git@github.com:Castrozan/dotfiles-private.git
+	url = https://gitlab.com/Castrozan/dotfiles-private.git

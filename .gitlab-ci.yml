@@ -12,6 +12,9 @@ gitlab-credentials:
     - >-
       nix shell nixpkgs#nixfmt --command nixfmt --check
       machine-configuration/development/version-control/glab-home-manager.nix
+      machine-configuration/development/version-control/git-home-manager.nix
+      machine-configuration/machines/chise/home.nix
+      machine-configuration/machines/user-packages-lucas-zanoni-home-manager.nix
       machine-configuration/security/secrets/public-secret-sources.nix
       secrets/secrets.nix
     - >-
