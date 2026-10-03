@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from types import ModuleType
 import time
 from pathlib import Path
-from typing import Callable
+from typing import Callable, NamedTuple
 
 from runner.execution.run_evals_provider_usage import (
     record_provider_invocation,
@@ -22,6 +22,12 @@ class SubjectRuntimeOptions:
     harness: str
     read_environment: Callable
     subprocess_module: ModuleType
+
+
+class SubjectRuntimeAttempt(NamedTuple):
+    output_text: str
+    succeeded: bool
+    retryable: bool
 
 
 def invoke_prepared_subject(
@@ -57,12 +63,12 @@ def invoke_prepared_subject(
             record_provider_usage(
                 options.invocation_role, options.harness, result.get("usage")
             )
-            normalized_output, error_text = _normalize_runtime_result(result)
-            if error_text is None:
-                return normalized_output, True
-            if not is_retryable_failure(error_text):
-                return error_text, False
-            last_transient_failure = error_text
+            attempt_result = _classify_successful_process_result(
+                result, is_retryable_failure
+            )
+            if not attempt_result.retryable:
+                return attempt_result.output_text, attempt_result.succeeded
+            last_transient_failure = attempt_result.output_text
 
         if attempt < TRANSIENT_RETRY_ATTEMPTS:
             time.sleep(TRANSIENT_RETRY_BACKOFF_SECONDS * (attempt + 1))
@@ -79,3 +85,14 @@ def _normalize_runtime_result(result: dict) -> tuple[str, str | None]:
     if normalized_output.strip():
         return normalized_output, None
     return "", "the provider runtime produced empty output"
+
+
+def _classify_successful_process_result(
+    result: dict, is_retryable_failure
+) -> SubjectRuntimeAttempt:
+    normalized_output, error_text = _normalize_runtime_result(result)
+    if error_text is None:
+        return SubjectRuntimeAttempt(normalized_output, True, False)
+    if is_retryable_failure(error_text):
+        return SubjectRuntimeAttempt(error_text, False, True)
+    return SubjectRuntimeAttempt(error_text, False, False)

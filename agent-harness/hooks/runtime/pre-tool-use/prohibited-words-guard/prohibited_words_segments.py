@@ -6,6 +6,7 @@ import re
 from changed_file_paths import apply_patch_added_content, collect_changed_file_paths
 
 PRIVATE_REPOSITORY_PATH_SEGMENT = "private-configuration"
+WRITTEN_FILE_CONTENTS_LABEL = "file contents"
 
 PUBLISHING_COMMAND_PATTERNS = [
     r"\bgit\b[^\n|;&]*\bcommit\b",
@@ -40,7 +41,7 @@ def command_publishes_text_to_shared_history(command: str) -> bool:
 def _collect_multi_edit_segments(tool_input):
     edits = tool_input.get("edits", []) or []
     return [
-        ("file contents", edit.get("new_string", "") or "")
+        (WRITTEN_FILE_CONTENTS_LABEL, edit.get("new_string", "") or "")
         for edit in edits
         if isinstance(edit, dict)
     ]
@@ -65,7 +66,12 @@ def collect_written_content_segments(
     if tool_name == "MultiEdit":
         return _collect_multi_edit_segments(tool_input)
     if tool_name in ("Write", "Edit", "NotebookEdit"):
-        return [("file contents", _single_written_content(tool_name, tool_input))]
+        return [
+            (
+                WRITTEN_FILE_CONTENTS_LABEL,
+                _single_written_content(tool_name, tool_input),
+            )
+        ]
     return []
 
 
@@ -80,7 +86,7 @@ def _public_patch_target_paths(payload_view):
 def _append_patch_content_segment(segments, payload_view):
     added_content = apply_patch_added_content(payload_view)
     if added_content:
-        segments.append(("file contents", added_content))
+        segments.append((WRITTEN_FILE_CONTENTS_LABEL, added_content))
 
 
 def collect_apply_patch_segments(

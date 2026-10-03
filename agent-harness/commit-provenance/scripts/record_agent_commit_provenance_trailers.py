@@ -99,21 +99,21 @@ def main(hook_arguments: list[str]) -> int:
         local_hook_status = run_repository_local_hook(local_hook_path, hook_arguments)
         if local_hook_status != 0:
             return local_hook_status
-    return _record_provenance_for_message(hook_arguments)
+    _record_provenance_for_message(hook_arguments)
+    return 0
 
 
-def _record_provenance_for_message(hook_arguments: list[str]) -> int:
+def _record_provenance_for_message(hook_arguments: list[str]) -> None:
     message_source = hook_arguments[1] if len(hook_arguments) > 1 else ""
     if message_source in SKIPPED_MESSAGE_SOURCES:
-        return 0
+        return
     provenance_is_enabled, comment_character = repository_provenance_configuration()
     if not provenance_is_enabled:
-        return 0
+        return
     message_file_path = Path(hook_arguments[0])
     if not message_file_carries_a_message(message_file_path, comment_character):
-        return 0
+        return
     write_trailers_without_blocking_the_commit(message_file_path)
-    return 0
 
 
 if __name__ == "__main__":

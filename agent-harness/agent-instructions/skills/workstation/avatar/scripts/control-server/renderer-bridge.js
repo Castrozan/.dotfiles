@@ -42,15 +42,11 @@
   }
 
   function _findViewerInContext(context) {
-    if (
-      context.context &&
-      context.context._currentValue &&
-      context.context._currentValue.viewer
-    ) {
-      window.__chatvrm_viewer = context.context._currentValue.viewer;
-      return window.__chatvrm_viewer;
-    }
-    return null;
+    if (!context.context) return null;
+    if (!context.context._currentValue) return null;
+    if (!context.context._currentValue.viewer) return null;
+    window.__chatvrm_viewer = context.context._currentValue.viewer;
+    return window.__chatvrm_viewer;
   }
 
   function _handleSpeechMessage(message, ws) {

@@ -15,6 +15,7 @@ from workflow_context import REPOSITORY
 MAXIMUM_ARCHIVE_BYTES = 67108864
 MAXIMUM_EXTRACTED_BYTES = 268435456
 MAXIMUM_ENTRIES = 10000
+UNSAFE_ARCHIVE_ENTRY_MESSAGE = "Artifact contains an unsafe or duplicate path"
 
 
 def _archive_content_exceeds_limits(entries):
@@ -32,13 +33,13 @@ def _validate_archive_entry(entry, paths):
     path = PurePosixPath(entry.filename)
     mode = entry.external_attr >> 16
     if _archive_path_has_unsafe_location(path, entry.filename, paths):
-        raise ValueError("Artifact contains an unsafe or duplicate path")
+        raise ValueError(UNSAFE_ARCHIVE_ENTRY_MESSAGE)
     if stat.S_ISLNK(mode):
-        raise ValueError("Artifact contains an unsafe or duplicate path")
+        raise ValueError(UNSAFE_ARCHIVE_ENTRY_MESSAGE)
     if stat.S_IFMT(mode) not in (0, stat.S_IFREG, stat.S_IFDIR):
-        raise ValueError("Artifact contains an unsafe or duplicate path")
+        raise ValueError(UNSAFE_ARCHIVE_ENTRY_MESSAGE)
     if not path.parts:
-        raise ValueError("Artifact contains an unsafe or duplicate path")
+        raise ValueError(UNSAFE_ARCHIVE_ENTRY_MESSAGE)
     return path
 
 

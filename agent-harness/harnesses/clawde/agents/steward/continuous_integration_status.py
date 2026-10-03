@@ -46,7 +46,11 @@ def _status_for_captured_runs(return_code: int, output: str, revision: str) -> d
 
 
 def _state_for_workflows(failing: list, pending: list, latest: dict) -> str:
-    return "failing" if failing else "pending" if pending or not latest else "passing"
+    if failing:
+        return "failing"
+    if pending or not latest:
+        return "pending"
+    return "passing"
 
 
 def _latest_runs_for_revision(runs: list, revision: str) -> dict:
