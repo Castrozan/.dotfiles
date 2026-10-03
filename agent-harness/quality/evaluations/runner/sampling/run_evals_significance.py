@@ -16,9 +16,9 @@ def mcnemar_exact_p_value(discordant_a_only: int, discordant_b_only: int) -> flo
 def _paired_outcome(passed_under_a, passed_under_b):
     if passed_under_a and passed_under_b:
         return 1, 0, 0, 0
-    elif passed_under_a and not passed_under_b:
+    if passed_under_a:
         return 0, 1, 0, 0
-    elif not passed_under_a and passed_under_b:
+    if passed_under_b:
         return 0, 0, 1, 0
     return 0, 0, 0, 1
 

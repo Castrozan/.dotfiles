@@ -16,7 +16,8 @@ from instructions.instruction_surface_scanner import (
 
 
 def validate_instruction_sources(inspections, metadata_fragment, add):
-    for path, inspection in list(inspections.items()):
+    source_inspections = list(inspections.items())
+    for path, inspection in source_inspections:
         for violation in inspection.violations + instruction_link_violations(
             path, inspection, inspections
         ):

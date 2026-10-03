@@ -1,5 +1,9 @@
 from e2e.coaching.coached_models import CoachedSessionResult, failed_coached_session
-from e2e.coaching.coached_reporting import print_coached_results
+from e2e.coaching.coached_reporting import (
+    _improvement_color,
+    _nps_color,
+    print_coached_results,
+)
 from integration.comparisons.ab_test_models import (
     AbTestResult,
     InstructionFollowingMetrics,
@@ -52,3 +56,13 @@ def test_coached_report_retains_failures_and_aggregate_improvement(capsys):
         assert fragment in output
     print_coached_results([])
     assert "Initial: 0" in capsys.readouterr().out
+
+
+def test_coached_report_colors_preserve_improvement_and_nps_thresholds():
+    assert _improvement_color(1) == "\033[32m"
+    assert _improvement_color(0) == "\033[33m"
+    assert _improvement_color(-1) == "\033[31m"
+    assert _nps_color(75) == "\033[32m"
+    assert _nps_color(74) == "\033[33m"
+    assert _nps_color(50) == "\033[33m"
+    assert _nps_color(49) == "\033[31m"

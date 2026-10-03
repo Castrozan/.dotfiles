@@ -54,14 +54,16 @@ def _print_coach_findings(coach_findings):
 
 
 def _improvement_color(improvement):
-    return (
-        "\033[32m"
-        if improvement > 0
-        else "\033[33m"
-        if improvement == 0
-        else "\033[31m"
-    )
+    if improvement > 0:
+        return "\033[32m"
+    if improvement == 0:
+        return "\033[33m"
+    return "\033[31m"
 
 
 def _nps_color(nps):
-    return "\033[32m" if nps >= 75 else "\033[33m" if nps >= 50 else "\033[31m"
+    if nps >= 75:
+        return "\033[32m"
+    if nps >= 50:
+        return "\033[33m"
+    return "\033[31m"
