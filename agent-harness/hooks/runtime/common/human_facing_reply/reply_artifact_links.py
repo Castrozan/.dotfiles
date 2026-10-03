@@ -4,9 +4,9 @@ from urllib.parse import urlsplit
 def artifact_destination(destination, required_pattern):
     try:
         parsed = urlsplit(destination.rstrip(".,;:!?)]}"))
-        if parsed.scheme.lower() not in ("http", "https") or not parsed.hostname:
+        if not _has_http_scheme_and_host(parsed):
             return None
-        if parsed.port is not None and not 0 < parsed.port < 65536:
+        if not _has_valid_destination_port(parsed):
             return None
     except ValueError:
         return None
@@ -14,6 +14,14 @@ def artifact_destination(destination, required_pattern):
     if match is None:
         return None
     return match["kind"].casefold(), match["number"].lstrip("0") or "0"
+
+
+def _has_http_scheme_and_host(parsed) -> bool:
+    return parsed.scheme.lower() in ("http", "https") and bool(parsed.hostname)
+
+
+def _has_valid_destination_port(parsed) -> bool:
+    return parsed.port is None or 0 < parsed.port < 65536
 
 
 def artifact_destinations_in_reply(inline_blocks, patterns):

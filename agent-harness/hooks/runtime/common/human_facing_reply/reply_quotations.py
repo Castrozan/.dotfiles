@@ -13,17 +13,43 @@ def text_outside_quotations(text, quotation_pairs):
     quotation_start = None
     closing_character = None
     for index, character in enumerate(text):
-        if character in ("'", "’") and is_apostrophe(text, index):
+        if _is_apostrophe_character(text, index, character):
             continue
-        if closing_character is not None:
-            if character == closing_character:
-                segments.append(text[retained_start:quotation_start])
-                segments.append(" ")
-                retained_start = index + 1
-                closing_character = None
+        consumed, retained_start, closing_character = _consume_active_quotation(
+            text,
+            index,
+            character,
+            segments,
+            retained_start,
+            quotation_start,
+            closing_character,
+        )
+        if consumed:
             continue
         if character in quotation_pairs:
             quotation_start = index
             closing_character = quotation_pairs[character]
     segments.append(text[retained_start:])
     return "".join(segments)
+
+
+def _is_apostrophe_character(text, index, character):
+    return character in ("'", "’") and is_apostrophe(text, index)
+
+
+def _consume_active_quotation(
+    text,
+    index,
+    character,
+    segments,
+    retained_start,
+    quotation_start,
+    closing_character,
+):
+    if closing_character is None:
+        return False, retained_start, closing_character
+    if character != closing_character:
+        return True, retained_start, closing_character
+    segments.append(text[retained_start:quotation_start])
+    segments.append(" ")
+    return True, index + 1, None

@@ -16,23 +16,32 @@ def extract_table_first_columns(tokens):
     inside_table = False
     first_cell = False
     for token in tokens:
-        if token.type == "table_open":
-            columns.append([])
-            inside_table = True
-        elif token.type == "table_close":
-            inside_table = False
-        elif token.type == "tr_open":
-            first_cell = True
-        elif token.type == "inline" and inside_table and first_cell:
-            columns[-1].append(
-                "".join(
-                    child.content
-                    for child in token.children or []
-                    if child.type in ("text", "code_inline")
-                ).strip()
-            )
+        inside_table, first_cell = _update_table_context(
+            token.type, columns, inside_table, first_cell
+        )
+        if token.type == "inline" and inside_table and first_cell:
+            columns[-1].append(_first_column_cell_text(token.children))
             first_cell = False
     return columns
+
+
+def _update_table_context(token_type, columns, inside_table, first_cell):
+    if token_type == "table_open":
+        columns.append([])
+        inside_table = True
+    elif token_type == "table_close":
+        inside_table = False
+    elif token_type == "tr_open":
+        first_cell = True
+    return inside_table, first_cell
+
+
+def _first_column_cell_text(children):
+    return "".join(
+        child.content
+        for child in children or []
+        if child.type in ("text", "code_inline")
+    ).strip()
 
 
 def visual_line_indices(tokens, source_lines, configuration):
@@ -74,13 +83,25 @@ class ReplyMarkdownContent:
                 continue
             content = ReplyInlineContent(token.children or [])
             self.inline_blocks.append(content)
-            if not quote_depth:
-                self.style_blocks.append(content.outside_code)
-            if not opening_seen:
-                self.opening_text = content.outside_code.lstrip()
-                opening_seen = True
-            if not (quote_depth or list_depth or table_depth):
-                self.label_line_indices.update(range(*token.map))
+            opening_seen = self._record_inline_content(
+                content, token.map, quote_depth, list_depth, table_depth, opening_seen
+            )
+
+    def _record_inline_content(
+        self, content, source_map, quote_depth, list_depth, table_depth, opening_seen
+    ):
+        if not quote_depth:
+            self.style_blocks.append(content.outside_code)
+        if not opening_seen:
+            self.opening_text = content.outside_code.lstrip()
+            opening_seen = True
+        if _is_outside_markdown_structure(quote_depth, list_depth, table_depth):
+            self.label_line_indices.update(range(*source_map))
+        return opening_seen
+
+
+def _is_outside_markdown_structure(quote_depth, list_depth, table_depth):
+    return not (quote_depth or list_depth or table_depth)
 
 
 class ReplyMarkdownDocument:

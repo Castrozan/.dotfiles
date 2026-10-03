@@ -53,6 +53,19 @@ def emit_post_tool_use_outcome(outcome) -> None:
 
 
 def emit_pretooluse_decision(outcome) -> None:
+    hook_specific_output = _pretooluse_hook_specific_output(outcome)
+    payload: dict = {}
+    system_message = outcome.combined_system_message
+    if system_message:
+        payload["systemMessage"] = system_message
+    if len(hook_specific_output) > 1:
+        payload["hookSpecificOutput"] = hook_specific_output
+    if payload:
+        payload["continue"] = True
+        print(json.dumps(payload))
+
+
+def _pretooluse_hook_specific_output(outcome) -> dict:
     hook_specific_output: dict = {"hookEventName": "PreToolUse"}
     if outcome.decision is not None:
         hook_specific_output["permissionDecision"] = outcome.decision
@@ -63,12 +76,4 @@ def emit_pretooluse_decision(outcome) -> None:
     combined_context = outcome.combined_additional_context
     if combined_context:
         hook_specific_output["additionalContext"] = combined_context
-    payload: dict = {}
-    system_message = outcome.combined_system_message
-    if system_message:
-        payload["systemMessage"] = system_message
-    if len(hook_specific_output) > 1:
-        payload["hookSpecificOutput"] = hook_specific_output
-    if payload:
-        payload["continue"] = True
-        print(json.dumps(payload))
+    return hook_specific_output
