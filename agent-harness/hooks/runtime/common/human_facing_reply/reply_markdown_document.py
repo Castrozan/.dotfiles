@@ -1,10 +1,6 @@
 from functools import cache
 
-from reply_markdown_inline import (
-    ReplyInlineContent,
-    extract_reply_labels,
-    html_has_formatted_links,
-)
+from reply_markdown_inline import ReplyInlineContent, extract_reply_labels
 from reply_markdown_lists import extract_reply_lists
 
 
@@ -69,7 +65,6 @@ class ReplyMarkdownContent:
         self.style_blocks = []
         self.label_line_indices = set()
         self.opening_text = ""
-        self.has_formatted_links = False
         opening_seen = False
         quote_depth = 0
         list_depth = 0
@@ -84,13 +79,9 @@ class ReplyMarkdownContent:
             table_depth += (token.type == "table_open") - (token.type == "table_close")
             if token.type in ("fence", "code_block", "table_open", "blockquote_open"):
                 opening_seen = True
-            if token.type == "html_block" and not quote_depth:
-                self.has_formatted_links |= html_has_formatted_links(token.content)
             if token.type != "inline":
                 continue
             content = ReplyInlineContent(token.children or [])
-            if not quote_depth:
-                self.has_formatted_links |= content.has_formatted_links
             self.inline_blocks.append(content)
             opening_seen = self._record_inline_content(
                 content, token.map, quote_depth, list_depth, table_depth, opening_seen
@@ -117,6 +108,7 @@ class ReplyMarkdownDocument:
     def __init__(self, text, configuration):
         parser = reply_markdown_parser()
         tokens = parser.parse(text)
+        self.tokens = tokens
         self.source_lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
         visual_lines = visual_line_indices(tokens, self.source_lines, configuration)
         self.prose_line_indices = {

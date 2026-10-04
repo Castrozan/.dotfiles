@@ -1,6 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from reply_artifact_links import reply_has_unlinked_artifacts
-from reply_format_configuration import exceeds_word_budget
-from reply_text_metrics import ReplyUnderReview
+from reply_word_budget import exceeds_word_budget
+
+if TYPE_CHECKING:
+    from reply_text_metrics import ReplyUnderReview
 
 
 def sentence_dash_violation(reply: ReplyUnderReview) -> str | None:
@@ -53,12 +59,6 @@ def missing_required_labels_violation(reply: ReplyUnderReview) -> str | None:
         maximum_words=configuration.formats["confirmation"]["maximum_words"],
         missing_labels="/".join(f"{label}:" for label in missing_labels),
     )
-
-
-def formatted_link_violation(reply: ReplyUnderReview) -> str | None:
-    if reply.has_formatted_links:
-        return reply.configuration.violation("formatted_link")
-    return None
 
 
 def labeled_section_ceiling_violation(reply: ReplyUnderReview) -> str | None:

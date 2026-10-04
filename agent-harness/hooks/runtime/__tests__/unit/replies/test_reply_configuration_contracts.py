@@ -99,3 +99,57 @@ def test_instruction_templates_are_validated_with_the_configuration(
 
     with pytest.raises(ValueError):
         ReplyFormatConfiguration(configuration_document)
+
+
+def test_one_rule_definition_controls_its_schema_and_evaluation(
+    configuration_document, monkeypatch
+):
+    from reply_restriction_contracts import REPLY_RESTRICTIONS, ReplyRestriction
+    from reply_rule_catalog import template_violations_in_reply
+
+    def forbidden_word_violation(reply):
+        word = reply.configuration.restrictions["forbidden_word"]["word"]
+        if any(
+            word in child.content
+            for token in reply.document.tokens
+            for child in token.children or []
+            if child.type == "text"
+        ):
+            return reply.configuration.violation("forbidden_word", word=word)
+        return None
+
+    monkeypatch.setitem(
+        REPLY_RESTRICTIONS,
+        "forbidden_word",
+        ReplyRestriction(
+            evaluate=forbidden_word_violation,
+            parameters=frozenset({"word"}),
+            placeholders=frozenset({"word"}),
+        ),
+    )
+    restriction = {
+        "name": "forbidden_word",
+        "word": "blocked",
+        "message": "Contains {word}",
+    }
+    configuration_document["restrictions"] = [restriction]
+    configuration = ReplyFormatConfiguration(configuration_document)
+
+    assert template_violations_in_reply(
+        "This word is blocked.", configuration=configuration
+    ) == ["Contains blocked"]
+    assert (
+        template_violations_in_reply(
+            "Literal `blocked` is allowed.", configuration=configuration
+        )
+        == []
+    )
+
+    restriction.pop("word")
+    with pytest.raises(ValueError, match="must contain exactly"):
+        ReplyFormatConfiguration(configuration_document)
+
+    restriction["word"] = "blocked"
+    restriction["message"] = "Contains {unknown}"
+    with pytest.raises(ValueError, match="unsupported placeholder"):
+        ReplyFormatConfiguration(configuration_document)

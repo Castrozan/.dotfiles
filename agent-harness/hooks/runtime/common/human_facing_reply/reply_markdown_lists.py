@@ -1,4 +1,4 @@
-from reply_format_configuration import exceeds_word_budget
+from reply_word_budget import exceeds_word_budget
 
 
 class ReplyListItem:

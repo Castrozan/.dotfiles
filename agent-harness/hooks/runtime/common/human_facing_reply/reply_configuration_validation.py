@@ -1,7 +1,7 @@
 import re
 from string import Formatter
 
-from reply_restriction_contracts import REPLY_RESTRICTION_CONTRACTS
+from reply_restriction_contracts import REPLY_RESTRICTIONS
 
 
 def require_fields(value, fields, location):
@@ -115,10 +115,10 @@ def validate_restriction(restriction):
 
 def _restriction_contract(restriction):
     name = restriction.get("name")
-    if not isinstance(name, str) or name not in REPLY_RESTRICTION_CONTRACTS:
+    if not isinstance(name, str) or name not in REPLY_RESTRICTIONS:
         raise ValueError(f"unknown reply restriction: {name}")
-    parameters, placeholders = REPLY_RESTRICTION_CONTRACTS[name]
-    return name, parameters, placeholders
+    definition = REPLY_RESTRICTIONS[name]
+    return name, definition.parameters, definition.placeholders
 
 
 def _validate_restriction_specific_fields(name, restriction, patterns) -> None:
