@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Globoplay Clean Player
-// @version      1.0.0
+// @version      1.0.1
 // @description  Strip Globoplay live channels down to the bare video filling the window: no site header, no media control bar, no channel carousel and its black fade, no Extras side panel, no skip buttons, no ad overlay. Click still toggles play, double click still toggles fullscreen, and keyboard shortcuts keep working. Every other Globoplay page keeps its layout.
 // @author       zanoni
 // @match        https://globoplay.globo.com/*
@@ -20,6 +20,7 @@
     ".side-panel-live",
     ".top-navigation",
     ".live-navigation__panel-area",
+    ".live-navigation__navigation-area",
     "#chatbot-area",
     ".dfp-ad-overlay",
   ];
