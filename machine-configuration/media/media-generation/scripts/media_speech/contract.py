@@ -2,11 +2,26 @@ import math
 from dataclasses import dataclass
 from typing import Protocol
 
+SUPPORTED_LANGUAGES = ("en-us", "pt-br")
+MAXIMUM_TEXT_CHARACTERS = 4000
+
 
 class SpeechError(Exception):
     def __init__(self, category: str):
         self.category = category
         super().__init__(category)
+
+
+def validate_voice_identifier(voice: str):
+    if (
+        not isinstance(voice, str)
+        or not voice
+        or len(voice) > 100
+        or not voice.isascii()
+    ):
+        raise SpeechError("invalid_voice")
+    if not all(character.isalnum() or character == "_" for character in voice):
+        raise SpeechError("invalid_voice")
 
 
 @dataclass(frozen=True)
@@ -16,18 +31,15 @@ class SpeechRequest:
     language: str
 
     def __post_init__(self):
-        if not self.text.strip() or len(self.text) > 4000:
+        if not self.text.strip() or len(self.text) > MAXIMUM_TEXT_CHARACTERS:
             raise SpeechError("invalid_text")
         if any(
             ord(character) < 32 and character not in "\n\t" for character in self.text
         ):
             raise SpeechError("invalid_text")
-        if self.language not in {"en-us", "pt-br"}:
+        if self.language not in SUPPORTED_LANGUAGES:
             raise SpeechError("unsupported_language")
-        if not self.voice or len(self.voice) > 100 or not self.voice.isascii():
-            raise SpeechError("invalid_voice")
-        if not all(character.isalnum() or character == "_" for character in self.voice):
-            raise SpeechError("invalid_voice")
+        validate_voice_identifier(self.voice)
 
 
 @dataclass(frozen=True)
