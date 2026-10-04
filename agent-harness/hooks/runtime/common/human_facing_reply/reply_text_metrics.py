@@ -40,6 +40,7 @@ class ReplyUnderReview:
         )
         self.labeled_section_word_count = sum(self.per_label_word_counts.values())
         self.inline_blocks = document.content.inline_blocks
+        self.has_formatted_links = document.content.has_formatted_links
         self.opening_text = document.content.opening_text.translate(
             str.maketrans(
                 dict.fromkeys(configuration.syntax["apostrophe_characters"], "'")

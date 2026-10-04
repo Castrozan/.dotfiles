@@ -31,6 +31,7 @@ let
     "orchestrate"
     "research"
     "review"
+    "url-shortener"
     "workspace"
   ];
 

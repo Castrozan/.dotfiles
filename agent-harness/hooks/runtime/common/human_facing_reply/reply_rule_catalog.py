@@ -5,6 +5,7 @@ from __future__ import annotations
 from reply_format_configuration import REPLY_FORMAT_CONFIGURATION
 from reply_rule_violations import (
     duplicate_label_violation,
+    formatted_link_violation,
     label_inline_content_violation,
     label_order_violation,
     labeled_section_ceiling_violation,
@@ -26,6 +27,7 @@ from reply_text_metrics import ReplyUnderReview
 
 REPLY_RESTRICTION_VALIDATORS = {
     "unlinked_artifact": unlinked_artifact_violation,
+    "formatted_link": formatted_link_violation,
     "required_labels": missing_required_labels_violation,
     "label_emphasis": unemphasized_label_violation,
     "label_separation": unseparated_label_violation,

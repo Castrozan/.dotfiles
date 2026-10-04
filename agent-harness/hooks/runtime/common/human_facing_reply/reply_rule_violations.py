@@ -55,6 +55,12 @@ def missing_required_labels_violation(reply: ReplyUnderReview) -> str | None:
     )
 
 
+def formatted_link_violation(reply: ReplyUnderReview) -> str | None:
+    if reply.has_formatted_links:
+        return reply.configuration.violation("formatted_link")
+    return None
+
+
 def labeled_section_ceiling_violation(reply: ReplyUnderReview) -> str | None:
     budget = reply.configuration.formats["labeled_reply"]["combined_labels"]
     if exceeds_word_budget(reply.labeled_section_word_count, budget):

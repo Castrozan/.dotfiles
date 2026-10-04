@@ -1,10 +1,39 @@
 import re
+from html.parser import HTMLParser
+
+
+class ReplyHtmlLinkDetector(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.has_link = False
+
+    def handle_starttag(self, tag, attributes):
+        if tag in ("a", "area") and any(name == "href" for name, _ in attributes):
+            self.has_link = True
+
+
+def html_has_formatted_links(text):
+    if "\x1b]8;" in text:
+        return True
+    detector = ReplyHtmlLinkDetector()
+    detector.feed(text)
+    return detector.has_link
+
+
+def inline_has_formatted_links(children):
+    return any(
+        child.type == "link_open"
+        or (child.type == "html_inline" and html_has_formatted_links(child.content))
+        or (child.type == "text" and "\x1b]8;" in child.content)
+        for child in children
+    )
 
 
 class ReplyInlineContent:
     def __init__(self, children):
         outside_code = []
         self.destinations = []
+        self.has_formatted_links = inline_has_formatted_links(children)
         for child in children:
             if child.type == "link_open":
                 self.destinations.append(child.attrGet("href"))

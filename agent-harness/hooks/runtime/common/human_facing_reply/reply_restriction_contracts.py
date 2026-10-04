@@ -4,6 +4,7 @@ REPLY_RESTRICTION_CONTRACTS = {
         set(),
     ),
     "required_labels": (set(), {"word_count", "maximum_words", "missing_labels"}),
+    "formatted_link": (set(), set()),
     "label_emphasis": (set(), {"label"}),
     "label_separation": (set(), {"label"}),
     "label_inline_content": (set(), {"label"}),
