@@ -35,6 +35,17 @@ def build_parser():
     return parser
 
 
+def read_elevenlabs_api_key():
+    environment_key = os.environ.get("ELEVENLABS_API_KEY")
+    if environment_key:
+        return environment_key
+    credential_path = Path.home() / ".secrets" / "elevenlabs-api-key"
+    try:
+        return credential_path.read_text(encoding="utf-8").strip() or None
+    except FileNotFoundError:
+        return None
+
+
 def main(arguments=None):
     args = build_parser().parse_args(arguments)
     service = SpeechService(args.state_directory.expanduser().absolute())
@@ -48,9 +59,7 @@ def main(arguments=None):
                     text = input_file.read(4001)
             request = SpeechRequest(text, args.voice, args.language)
             if args.provider == "elevenlabs":
-                provider = ElevenLabsSpeechProvider(
-                    os.environ.get("ELEVENLABS_API_KEY")
-                )
+                provider = ElevenLabsSpeechProvider(read_elevenlabs_api_key())
             else:
                 provider = KokoroSpeechProvider(
                     Path(os.environ["MEDIA_KOKORO_MODEL"]),
