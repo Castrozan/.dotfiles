@@ -4,6 +4,7 @@
   [
     pythonPackages.pytest
     pythonPackages.pytest-cov
+    pythonPackages.elevenlabs
     pythonPackages.numpy
     pythonPackages.tomli-w
     pythonPackages.websockets
