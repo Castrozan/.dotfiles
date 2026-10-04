@@ -1,13 +1,11 @@
 import base64
 import json
 
+import httpx
 import pytest
-
+from elevenlabs.client import ElevenLabs
 from media_speech.contract import SpeechError, SpeechRequest
 from media_speech.elevenlabs_provider import ElevenLabsSpeechProvider
-
-httpx = pytest.importorskip("httpx")
-elevenlabs_client = pytest.importorskip("elevenlabs.client")
 
 
 def test_sdk_serializes_the_contract_and_preserves_usage_and_alignment():
@@ -30,9 +28,7 @@ def test_sdk_serializes_the_contract_and_preserves_usage_and_alignment():
         )
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as transport:
-        client = elevenlabs_client.ElevenLabs(
-            api_key="test-only", httpx_client=transport
-        )
+        client = ElevenLabs(api_key="test-only", httpx_client=transport)
         result = ElevenLabsSpeechProvider("test-only", client).synthesize(
             SpeechRequest("Hi", "voice", "en-us")
         )
@@ -64,9 +60,7 @@ def test_paid_errors_never_retry_or_expose_provider_bodies(status, category):
         return httpx.Response(status, json={"detail": "secret provider body"})
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as transport:
-        client = elevenlabs_client.ElevenLabs(
-            api_key="test-only", httpx_client=transport
-        )
+        client = ElevenLabs(api_key="test-only", httpx_client=transport)
         with pytest.raises(SpeechError, match=category) as error:
             ElevenLabsSpeechProvider("test-only", client).synthesize(
                 SpeechRequest("Hi", "voice", "en-us")
@@ -87,9 +81,7 @@ def test_absent_alignment_and_usage_are_explicitly_absent():
         )
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as transport:
-        client = elevenlabs_client.ElevenLabs(
-            api_key="test-only", httpx_client=transport
-        )
+        client = ElevenLabs(api_key="test-only", httpx_client=transport)
         result = ElevenLabsSpeechProvider("test-only", client).synthesize(
             SpeechRequest("Hi", "voice", "en-us")
         )

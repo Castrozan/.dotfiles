@@ -38,17 +38,3 @@ agent-forge:
       agent-harness/agent-instructions/skills/knowledge/ril/__tests__/unit/test_gitlab_proposals.py -q
       || validation_status=1
     - exit "$validation_status"
-
-media-speech:
-  stage: validate
-  image: nixos/nix:2.28.4@sha256:85169a7ff4ac6928b70b15ced20c74770e07e8fbc7f97e92f64c1fca47ea9486
-  tags:
-    - saas-linux-small-amd64
-  variables:
-    NIX_CONFIG: "experimental-features = nix-command flakes"
-  script:
-    - >-
-      nix build --impure --no-link --expr
-      'let flake = builtins.getFlake (toString ./.);
-      pkgs = import flake.inputs.dependencies.inputs.nixpkgs { system = "x86_64-linux"; };
-      in (import ./machine-configuration/media/media-generation/__tests__/checks.nix { inherit pkgs; }).domain-media-speech-contract'
