@@ -65,6 +65,7 @@
     ../network/cloudflare-tunnel-connector/cloudflare-tunnel-connector-home-manager.nix
 
     ../media/obsidian/obsidian-home-manager.nix
+    ../media/media-generation/media-generation-home-manager.nix
     ../media/zathura/zathura-home-manager.nix
 
     "${inputs.private-config}/sb-toolkit"
