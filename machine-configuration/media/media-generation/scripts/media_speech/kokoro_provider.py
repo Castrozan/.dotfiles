@@ -1,12 +1,62 @@
 from pathlib import Path
 
 from media_speech.contract import SpeechError, SpeechRequest, SynthesizedSpeech
+from media_speech.discovery import (
+    SpeechCapabilities,
+    SpeechVoice,
+    SpeechVoicePage,
+    VoiceQuery,
+)
+
+KOKORO_VOICES = (
+    SpeechVoice("af_heart", "Heart", "en-us"),
+    SpeechVoice("af_bella", "Bella", "en-us"),
+    SpeechVoice("am_adam", "Adam", "en-us"),
+    SpeechVoice("pf_dora", "Dora", "pt-br"),
+    SpeechVoice("pm_alex", "Alex", "pt-br"),
+    SpeechVoice("pm_santa", "Santa", "pt-br"),
+)
+
+
+class KokoroVoiceCatalog:
+    def list_voices(self, query: VoiceQuery):
+        voices = tuple(
+            voice
+            for voice in KOKORO_VOICES
+            if query.search is None
+            or query.search.casefold() in voice.name.casefold()
+            or query.search.casefold() in voice.voice_id.casefold()
+        )
+        start = 0
+        if query.page_token is not None:
+            if not query.page_token.isascii() or not query.page_token.isdecimal():
+                raise SpeechError("invalid_page_token")
+            start = int(query.page_token)
+            if start >= len(voices):
+                raise SpeechError("invalid_page_token")
+        end = start + query.page_size
+        return SpeechVoicePage(
+            voices[start:end], str(end) if end < len(voices) else None
+        )
 
 
 class KokoroSpeechProvider:
     name = "kokoro"
     model = "kokoro-v1.0-int8-model-files-v1.0"
     requires_payment = False
+
+    @classmethod
+    def describe(cls):
+        return SpeechCapabilities(
+            cls.name,
+            cls.model,
+            "local",
+            cls.requires_payment,
+            False,
+            "unavailable",
+            True,
+            "bundled",
+        )
 
     def __init__(
         self, model: Path, voices: Path, espeak_library: Path, espeak_data: Path
@@ -17,11 +67,10 @@ class KokoroSpeechProvider:
         self.espeak_data = espeak_data
 
     def preflight(self, request: SpeechRequest):
-        supported_voices = {
-            "en-us": {"af_heart", "af_bella", "am_adam"},
-            "pt-br": {"pf_dora", "pm_alex", "pm_santa"},
-        }
-        if request.voice not in supported_voices[request.language]:
+        if not any(
+            voice.voice_id == request.voice and voice.language == request.language
+            for voice in KOKORO_VOICES
+        ):
             raise SpeechError("unsupported_voice")
         if (
             not all(

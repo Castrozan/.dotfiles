@@ -13,8 +13,10 @@ in
     cd source
     ${testPython}/bin/python3 -m pytest -q -p no:cacheprovider \
       __tests__/unit/test_speech_contract.py \
+      __tests__/unit/test_speech_discovery.py \
       __tests__/unit/test_speech_service.py \
-      __tests__/integration/test_elevenlabs_adapter.py
+      __tests__/integration/test_elevenlabs_adapter.py \
+      __tests__/integration/test_elevenlabs_voice_catalog.py
     touch "$out"
   '';
 }
