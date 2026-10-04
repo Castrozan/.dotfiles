@@ -29,10 +29,15 @@ end
 
 wezterm.on("open-uri", function(window, pane, uri)
 	if is_darwin then
+		local modifiers = window:keyboard_modifiers()
+		local chrome_profile_launcher = "summon-chrome-work-profile"
+		if modifiers:find("CTRL", 1, true) and modifiers:find("SUPER", 1, true) then
+			chrome_profile_launcher = "summon-chrome-personal-profile"
+		end
 		wezterm.background_child_process({
 			"/run/current-system/sw/bin/bash",
 			"-lc",
-			'exec summon-chrome-work-profile "$1"',
+			"exec " .. chrome_profile_launcher .. ' "$1"',
 			"wezterm-open-uri",
 			uri,
 		})
@@ -102,6 +107,28 @@ local config = {
 		{
 			event = { Down = { streak = 1, button = "Left" } },
 			mods = "CTRL",
+			action = wezterm.action.Nop,
+			mouse_reporting = true,
+		},
+		{
+			event = { Up = { streak = 1, button = "Left" } },
+			mods = "CTRL|SUPER",
+			action = wezterm.action.OpenLinkAtMouseCursor,
+		},
+		{
+			event = { Down = { streak = 1, button = "Left" } },
+			mods = "CTRL|SUPER",
+			action = wezterm.action.Nop,
+		},
+		{
+			event = { Up = { streak = 1, button = "Left" } },
+			mods = "CTRL|SUPER",
+			action = wezterm.action.OpenLinkAtMouseCursor,
+			mouse_reporting = true,
+		},
+		{
+			event = { Down = { streak = 1, button = "Left" } },
+			mods = "CTRL|SUPER",
 			action = wezterm.action.Nop,
 			mouse_reporting = true,
 		},

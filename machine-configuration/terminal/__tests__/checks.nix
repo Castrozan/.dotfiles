@@ -119,8 +119,8 @@ in
       noHardcodedLinuxBrowserBinary = !(lib.hasInfix "{ \"brave\", uri }" weztermConfig);
       opensLinkAtMouseCursor = lib.hasInfix "OpenLinkAtMouseCursor" weztermConfig;
       hasPlainCtrlMods = lib.hasInfix "mods = \"CTRL\"" weztermConfig;
-      noPersonalProfileRouting = !(lib.hasInfix "summon-chrome-personal-profile" weztermConfig);
-      noSuperMouseBinding = !(lib.hasInfix "mods = \"CTRL|SUPER\"" weztermConfig);
+      routesToPersonalChrome = lib.hasInfix "summon-chrome-personal-profile" weztermConfig;
+      hasSuperMouseBinding = lib.hasInfix "mods = \"CTRL|SUPER\"" weztermConfig;
     in
     mkEvalCheck "domain-terminal-wezterm-ctrl-click-opens-configured-default-browser"
       (
@@ -130,10 +130,10 @@ in
         && noHardcodedLinuxBrowserBinary
         && opensLinkAtMouseCursor
         && hasPlainCtrlMods
-        && noPersonalProfileRouting
-        && noSuperMouseBinding
+        && routesToPersonalChrome
+        && hasSuperMouseBinding
       )
-      "wezterm ctrl+click must open the hovered link in the browser the machine already declares as default, never in a second browser the lua names on its own: the open-uri handler returns false so wezterm never falls through to its own launcher, which makes that handler the only thing deciding where a link lands. On darwin it runs summon-chrome-work-profile because the work profile is the intended target there, and on linux it must hand the uri to xdg-open so the xdg default (chrome-global.desktop) stays the single source of truth and a browser switch needs no lua edit. A hardcoded linux browser binary is what this check exists to catch: it silently outranks xdg-settings, xdg-mime and gio all agreeing on a different browser. The binding stays a plain CTRL mouse binding using OpenLinkAtMouseCursor, with no personal-profile routing and no ctrl+super mouse binding";
+      "wezterm ctrl+click must open links in the work Chrome profile on darwin, while ctrl+super+click selects the personal profile. Both gestures must work inside applications with mouse reporting. Linux must route both gestures through xdg-open so the configured default browser remains authoritative. The open-uri handler must suppress wezterm's fallback launcher";
 
   domain-terminal-wezterm-binds-reload-configuration =
     mkEvalCheck "domain-terminal-wezterm-binds-reload-configuration"
