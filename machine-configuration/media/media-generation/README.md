@@ -1,4 +1,4 @@
-# File speech
+# Private media generation
 
 `media-speech` generates narration through the same request contract using local Kokoro or ElevenLabs. It runs on demand and writes a mono, 24 kHz, 16-bit PCM WAV plus a JSON receipt under `$XDG_STATE_HOME/media-speech` (default `~/.local/state/media-speech`). The Python `SpeechService` consumes the domain-owned `SpeechProvider` protocol; provider SDKs and runtimes stay in adapters.
 
@@ -30,4 +30,40 @@ Kokoro runs the optimized INT8 export from [model-files-v1.0](https://github.com
 
 The text limit is 4,000 characters. Omitting `--operation-id` creates a new UUID, printed before dispatch and included in the result. Supply `--operation-id` with a UUID to reuse a successful operation without generating again. The receipt verifies the audio checksum before replay. Changed requests conflict; interrupted or failed operations never dispatch again under that UUID. Inspect their receipts before starting another operation.
 
-Receipts record measured audio metadata, provider identity, execution time, peak process memory and available usage evidence. ElevenLabs character alignment carries the provider's text and whether it matches the input. Kokoro reports alignment unavailable; caption timing needs a separate aligner. A local provider charge of zero excludes electricity and hardware. Cloud charges remain unknown, including on failure; reported character usage is not a dollar quote. This pilot does not enforce episode budgets or implement charge reconciliation, image/video generation, streaming or Shorts publishing.
+Receipts record measured audio metadata, provider identity, execution time, peak process memory and available usage evidence. ElevenLabs character alignment carries the provider's text and whether it matches the input. Kokoro reports alignment unavailable; caption timing needs a separate aligner. A local provider charge of zero excludes electricity and hardware. Cloud charges remain unknown, including on failure; reported character usage is not a dollar quote. The speech API does not enforce episode budgets or implement charge reconciliation, streaming or Shorts publishing.
+
+## Native video recipes
+
+`media-video` renders a trusted, precompiled fframes recipe on demand. Nix supplies Python and FFmpeg for verification; the consumer supplies the native executable, source and assets. The `VideoService` library consumes the domain-owned `VideoRenderProvider` protocol, and `FframesRenderer` adapts the native executable. There is no network listener, recipe compiler or generative provider call.
+
+```sh
+media-video render --request-file /absolute/private/request.json
+media-video inspect OPERATION_UUID
+media-video --state-directory /absolute/private/state inspect OPERATION_UUID
+```
+
+State lives under `$XDG_STATE_HOME/media-video`, default `~/.local/state/media-video`. Each canonical UUID claims one private operation directory. The API retains request and registration JSON, checksum-verified input copies, the executable, process logs, MP4, PNG thumbnail and receipt. Receipts move from `dispatching` to `succeeded` or `failed`; successful replay verifies retained inputs and artifacts before returning the same receipt. Changed requests conflict. Failed, interrupted or incomplete operations cannot redispatch under their UUID. Inspect first, then explicitly choose a new UUID if another render is wanted.
+
+The request JSON contains these fields; replace the paths and attribution with the consumer's values:
+
+```json
+{
+  "operation_id": "1af70da8-a31b-4aeb-acb7-3418993c15bc",
+  "recipe_registration": "/absolute/private/registration.json",
+  "experiment_id": "shorts",
+  "episode_id": "ice-cream",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "frames": 1800,
+  "deadline_seconds": 600
+}
+```
+
+The supported output is a 60-second vertical MP4: 1080 by 1920 pixels, 30 fps, exactly 1800 frames, with audio. The finite deadline covers preflight, input retention, rendering and verification and cannot exceed 600 seconds. Verification checks every frame timestamp, fully decodes audio and video, and checks thumbnail dimensions before syncing artifacts and atomically publishing a successful receipt. Container duration may exceed the 60-second video stream by at most 100 ms.
+
+Registration JSON contains exactly `recipe_id`, `recipe_directory`, `renderer_version`, `binary` and `source_assets_manifest`. The recipe ID accepts letters, digits, hyphens and underscores, up to 100 characters. `renderer_version` identifies the consumer's compiled version. Both pinned file fields contain an absolute `path` and lowercase 64-character `sha256`. The source/assets manifest contains exactly `files`, a list of 1 to 512 entries with canonical relative `path` and `sha256`. Include every source and runtime asset needed by the executable. Combined binary, manifest and asset size is limited to 2 GiB.
+
+Registration and manifest files require private modes, and their containing directories and the recipe directory require mode 0700. Inputs must be owned regular files with canonical paths; symlinks, traversal, duplicate JSON keys and duplicate manifest paths are refused. The native executable must be owned, executable and checksum-pinned. It must accept `render -o ABSOLUTE_OUTPUT_MP4` from the retained recipe working directory and use the copied assets there. An executable's native header and checksum establish its recorded identity, not a sandbox: register only trusted recipes. The consumer must supply a binary compatible with the target host and its runtime libraries. The service does not install or build fframes, fonts or recipes.
+
+Rendering and verification run without a shell, with private bounded logs and process-group cleanup on timeout or interruption. Source/assets remain with the consumer; editorial timing, image generation, voice selection and browser publishing stay outside the renderer. Receipts report zero generative calls for the local render and leave compute cost unknown. They do not include previous image or narration charges.
