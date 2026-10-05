@@ -6,6 +6,8 @@
 media-speech providers
 media-speech voices --provider kokoro
 media-speech voices --provider elevenlabs --search Sarah
+media-speech usage --provider kokoro
+media-speech usage --provider elevenlabs
 media-speech generate --help
 media-speech generate --provider kokoro --language pt-br --voice pf_dora \
   --text-file narration.txt
@@ -14,7 +16,11 @@ media-speech generate --provider elevenlabs --language pt-br --voice YOUR_VOICE_
 media-speech inspect OPERATION_UUID
 ```
 
-`providers` returns the configured model, languages, text limit, payment and credential requirements, alignment capability and language enforcement as JSON without loading an inference runtime or reading credentials. `voices` returns `voice_id`, name, known local language and any provider preview URL. Use the returned `voice_id` as `--voice`; the display name is not an identifier. `inspect` reads a local operation receipt.
+`providers` returns the configured model, languages, text limit, payment and credential requirements, alignment capability, language enforcement and usage capabilities as JSON without loading an inference runtime or reading credentials. Usage capabilities name the status, scope and reported metrics. `voices` returns `voice_id`, name, known local language and any provider preview URL. Use the returned `voice_id` as `--voice`; the display name is not an identifier. `inspect` reads a local operation receipt.
+
+`usage` calls the public `ProviderUsageService`, which consumes the domain-owned `ProviderUsageReader` port. Adapters translate vendor responses into the same snapshot contract; consumers use this API rather than provider SDKs. Each quota includes its name, unit, used amount, limit, remaining amount and reset time. Unknown values stay null, and `unavailable` differs from `not_applicable`. Snapshots include their observation time and account scope; they do not attribute account usage to this CLI or a particular machine.
+
+ElevenLabs usage wraps the SDK's [Get user subscription API](https://elevenlabs.io/docs/api-reference/user/subscription/get), with a 30-second timeout and no retries. It reports credits, voice slots, plan/status and available overage charge/settings. Account quota is separate from an API key's configured spending cap; this query does not report that key cap. Kokoro reports `not_applicable` for subscription usage without reading credentials, loading model files or inferring zero compute cost. Neither usage query generates audio, creates operation state, changes account settings, reserves budget or checks balance before generation.
 
 Voice discovery generates no audio and creates no operation receipt. Kokoro lists the bundled voices without model files. ElevenLabs reads the authenticated account catalog through the SDK's [List voices API](https://elevenlabs.io/docs/api-reference/voices/search), with a 30-second timeout and no retries. Each call reads one page; pass a returned `next_page_token` through `--page-token` with the same `--search` to continue. `--page-size` requests 1–100 results, default 20; ElevenLabs can include additional default voices on the first page. A cloud voice's `language` is null because the catalog does not establish language enforcement. Catalog membership is not a price quote or permission to use a particular voice.
 
