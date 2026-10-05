@@ -94,26 +94,7 @@ in
   # is writing to it, so it goes before the agent comes back up.
   home.activation.disableAgenixLaunchdRestartLoop = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
     lib.hm.dag.entryAfter [ "setupLaunchAgents" ] ''
-      plistPath="$HOME/Library/LaunchAgents/org.nix-community.home.activate-agenix.plist"
-      if [ -f "$plistPath" ]; then
-        $DRY_RUN_CMD /bin/chmod u+w "$plistPath"
-        $DRY_RUN_CMD /usr/libexec/PlistBuddy -c "Delete :KeepAlive" "$plistPath" 2>/dev/null || true
-        $DRY_RUN_CMD /usr/libexec/PlistBuddy -c "Add :KeepAlive bool false" "$plistPath"
-        $DRY_RUN_CMD /bin/chmod 0444 "$plistPath"
-        launchAgentDomain="gui/$(/usr/bin/id -u)"
-        $DRY_RUN_CMD /bin/launchctl bootout "$launchAgentDomain/org.nix-community.home.activate-agenix" 2>/dev/null || true
-
-        temporaryRoot="$(/usr/bin/getconf DARWIN_USER_TEMP_DIR)"
-        liveGeneration="$(basename "$(readlink "$temporaryRoot/agenix" || echo none)")"
-        for generation in "$temporaryRoot/agenix.d"/*; do
-          if [ -d "$generation" ] && [ "$(basename "$generation")" != "$liveGeneration" ]; then
-            $DRY_RUN_CMD /bin/chmod -R u+w "$generation" || true
-            $DRY_RUN_CMD rm -rf "$generation" || true
-          fi
-        done
-
-        $DRY_RUN_CMD /bin/launchctl bootstrap "$launchAgentDomain" "$plistPath"
-      fi
+      $DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${./scripts/restart_agenix_launch_agent.py} ${lib.escapeShellArg config.home.homeDirectory}
     ''
   );
 }
