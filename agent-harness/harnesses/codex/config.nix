@@ -84,6 +84,7 @@ let
       session_picker_view = "dense";
       show_tooltips = false;
       status_line = [
+        "thread-name"
         "git-branch"
         "model-with-reasoning"
         "context-used"

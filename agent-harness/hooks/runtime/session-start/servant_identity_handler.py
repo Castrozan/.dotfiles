@@ -63,7 +63,7 @@ def servant_context_line(servant: dict) -> str:
     return f"Servant: {servant['name']} - {servant['personality']}"
 
 
-def handle(hook_input: dict):
+def servant_for_hook_input(hook_input: dict) -> dict | None:
     """The Servant line for this session, or nothing when it has no identity to draw.
 
     Clawde and OpenClaw agents already carry their own identities, so they are
@@ -77,6 +77,11 @@ def handle(hook_input: dict):
     session_id = session_id_of(hook_input)
     if not session_id:
         return None
-    return HandlerResult(
-        additional_context=servant_context_line(select_servant_for_session(session_id))
-    )
+    return select_servant_for_session(session_id)
+
+
+def handle(hook_input: dict):
+    servant = servant_for_hook_input(hook_input)
+    if servant is None:
+        return None
+    return HandlerResult(additional_context=servant_context_line(servant))

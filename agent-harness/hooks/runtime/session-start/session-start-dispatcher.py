@@ -36,6 +36,9 @@ SESSION_START_HANDLERS = [
         handler_module_name="servant_identity_handler",
         surfaces=(CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE),
     ),
+    HookHandler(
+        handler_module_name="codex_servant_status_handler", surfaces=(CODEX_SURFACE,)
+    ),
 ]
 
 

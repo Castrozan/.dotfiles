@@ -71,7 +71,7 @@ in
       touch "$out"
     '';
 
-  codex-launcher-is-embedded = mkEvalCheck "codex-launcher-is-embedded" (
+  codex-launcher-has-no-shared-daemon = mkEvalCheck "codex-launcher-has-no-shared-daemon" (
     !(builtins.hasAttr ".codex/packages/app-server-daemon/current" cfg.home.file)
     && !(builtins.hasAttr ".codex/app-server-daemon/settings.json" cfg.home.file)
   ) "Codex interactive launches must not deploy a managed shared daemon";
@@ -104,6 +104,7 @@ in
         import tomllib
         configuration = tomllib.loads(Path(sys.argv[1]).read_text())
         assert configuration["tui"]["alternate_screen"] == "never"
+        assert "thread-name" in configuration["tui"]["status_line"]
         PY
         touch "$out"
       '';
