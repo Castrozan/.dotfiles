@@ -7,6 +7,7 @@ import tomllib
 import pytest
 from websockets.sync.client import unix_connect
 from websockets.sync.server import unix_serve
+from websockets.exceptions import ConnectionClosedOK
 
 from profile_connection import profile_connection_path
 
@@ -65,6 +66,19 @@ def test_profile_connection_relays_large_responses_and_routes_runtime_writes(
     finally:
         server.shutdown()
         thread.join(timeout=1)
+
+
+def test_missing_upstream_closes_profile_connection_without_server_error(
+    tmp_path, socket_directory
+):
+    profile_path = tmp_path / "interactive.config.toml"
+    profile_path.write_text('model_reasoning_effort = "high"\n')
+    with profile_connection_path(
+        socket_directory / "missing.sock", profile_path
+    ) as client_path:
+        with unix_connect(str(client_path), uri="ws://localhost") as client:
+            with pytest.raises(ConnectionClosedOK):
+                client.recv(timeout=1)
 
 
 def test_session_without_profile_keeps_native_socket(tmp_path):

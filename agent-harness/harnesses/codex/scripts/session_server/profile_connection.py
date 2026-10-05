@@ -23,15 +23,20 @@ def relay_server_responses(upstream, downstream, adapter) -> None:
 
 
 def relay_profile_connection(downstream, server_path: Path, profile_path: Path) -> None:
-    with unix_connect(
-        str(server_path),
-        uri="ws://localhost",
-        open_timeout=1.0,
-        close_timeout=0.1,
-        max_size=MAXIMUM_MESSAGE_BYTES,
-        max_queue=1,
-        compression=None,
-    ) as upstream:
+    try:
+        upstream = unix_connect(
+            str(server_path),
+            uri="ws://localhost",
+            open_timeout=1.0,
+            close_timeout=0.1,
+            max_size=MAXIMUM_MESSAGE_BYTES,
+            max_queue=1,
+            compression=None,
+        )
+    except OSError:
+        downstream.close()
+        return
+    with upstream:
         adapter = CodexProfileWriteAdapter(profile_path)
         response_thread = threading.Thread(
             target=relay_server_responses,
