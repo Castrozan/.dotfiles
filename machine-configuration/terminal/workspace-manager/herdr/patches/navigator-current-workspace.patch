@@ -1,0 +1,136 @@
+diff --git a/src/client/shell/overlay_input.rs b/src/client/shell/overlay_input.rs
+--- a/src/client/shell/overlay_input.rs
++++ b/src/client/shell/overlay_input.rs
+@@ -215,6 +215,19 @@
+         navigator.selected = rows
+             .iter()
+             .find(|row| row.current)
++            .or_else(|| {
++                let workspace_id = self.snapshot.as_deref()?.focused_workspace_id.as_deref()?;
++                rows.iter().find(|row| {
++                    matches!(
++                        &row.target,
++                        ClientNavigatorTarget::Workspace {
++                            endpoint_id,
++                            workspace_id: target_workspace_id,
++                        } if endpoint_id == &self.active_endpoint_id
++                            && target_workspace_id == workspace_id
++                    )
++                })
++            })
+             .map(|row| row.target.clone());
+         self.overlay = Some(ClientShellOverlay::Navigator(navigator));
+     }
+diff --git a/src/client/shell/tests/copy.rs b/src/client/shell/tests/copy.rs
+--- a/src/client/shell/tests/copy.rs
++++ b/src/client/shell/tests/copy.rs
+@@ -1610,3 +1610,75 @@
+         .as_ref()
+         .is_some_and(crate::selection::Selection::is_visible));
+ }
++
++#[test]
++fn navigator_collapsed_opens_at_current_workspace_and_keeps_it_visible() {
++    let mut config = Config::default();
++    config.ui.navigator_collapse_workspaces = true;
++    let mut state = ClientShellState::new(ClientShellConfig::from_config(&config));
++    for current in [0, 12, 24] {
++        let mut projection = snapshot();
++        projection.workspaces = (0..25)
++            .map(|index| {
++                let mut workspace = projection.workspaces[0].clone();
++                workspace.workspace_id = format!("workspace_{index}");
++                workspace.label = format!("workspace {index}");
++                workspace.number = index + 1;
++                workspace.focused = index == current;
++                workspace
++            })
++            .collect();
++        let workspace_id = format!("workspace_{current}");
++        projection.focused_workspace_id = Some(workspace_id.clone());
++        projection.tabs[0].workspace_id = workspace_id.clone();
++        projection.panes[0].workspace_id = workspace_id.clone();
++        state.set_snapshot(Box::new(projection));
++        state.set_pane_surface(surface());
++        state.record_binding(
++            crate::input::KeybindMatch::Action(crate::input::KeybindAction::OpenNavigator),
++            &mut ClientShellInput::default(),
++        );
++        let ClientShellOverlay::Navigator(navigator) = state.overlay.as_ref().expect("navigator")
++        else {
++            panic!("expected navigator");
++        };
++        let target = ClientNavigatorTarget::Workspace {
++            endpoint_id: state.active_endpoint_id.clone(),
++            workspace_id,
++        };
++        let rows =
++            render::client_navigator_rows(&state.endpoints, &state.active_endpoint_id, navigator);
++        assert_eq!(
++            super::super::aggregate_navigation::selected_navigator_target(&rows, navigator),
++            Some(target.clone())
++        );
++        state.compose(106, 20).expect("navigator frame");
++        assert!(state
++            .hits
++            .navigator_rows
++            .iter()
++            .any(|(_, row)| row == &target));
++    }
++}
++
++#[test]
++fn navigator_expanded_keeps_the_current_pane_selection() {
++    let mut config = Config::default();
++    config.ui.navigator_collapse_workspaces = false;
++    let mut state = ClientShellState::new(ClientShellConfig::from_config(&config));
++    state.set_snapshot(Box::new(snapshot()));
++    state.open_navigator_overlay();
++    let ClientShellOverlay::Navigator(navigator) = state.overlay.as_ref().expect("navigator")
++    else {
++        panic!("expected navigator");
++    };
++    let rows =
++        render::client_navigator_rows(&state.endpoints, &state.active_endpoint_id, navigator);
++    assert_eq!(
++        super::super::aggregate_navigation::selected_navigator_target(&rows, navigator),
++        Some(ClientNavigatorTarget::Pane {
++            endpoint_id: state.active_endpoint_id.clone(),
++            pane_id: "pane_1".into(),
++        })
++    );
++}
+diff --git a/src/client/shell/tests/endpoints.rs b/src/client/shell/tests/endpoints.rs
+--- a/src/client/shell/tests/endpoints.rs
++++ b/src/client/shell/tests/endpoints.rs
+@@ -2387,3 +2387,30 @@
+         }] if activated == &endpoint_id && tab_id == "tab_1"
+     ));
+ }
++
++#[test]
++fn navigator_collapsed_selects_the_active_endpoint_workspace() {
++    let (mut state, remote_endpoint_id) = state_with_remote();
++    state.config.navigator_collapse_workspaces = true;
++    for endpoint_id in [
++        ClientEndpointId::Local,
++        remote_endpoint_id,
++        ClientEndpointId::Local,
++    ] {
++        assert!(state.activate_endpoint_projection(&endpoint_id));
++        state.open_navigator_overlay();
++        let ClientShellOverlay::Navigator(navigator) = state.overlay.as_ref().expect("navigator")
++        else {
++            panic!("expected navigator");
++        };
++        let rows =
++            render::client_navigator_rows(&state.endpoints, &state.active_endpoint_id, navigator);
++        assert_eq!(
++            super::super::aggregate_navigation::selected_navigator_target(&rows, navigator),
++            Some(ClientNavigatorTarget::Workspace {
++                endpoint_id,
++                workspace_id: "ws_1".into(),
++            })
++        );
++    }
++}
