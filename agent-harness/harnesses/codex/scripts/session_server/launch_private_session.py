@@ -76,7 +76,25 @@ def stop_client_when_server_exits(server, client) -> None:
 
 
 def run_private_session(arguments: list[str]) -> int:
-    configuration = server_configuration_for(arguments)
+    managed_permission_arguments = [
+        "--sandbox",
+        "danger-full-access",
+        "--ask-for-approval",
+        "never",
+    ]
+    managed_permissions = arguments[:4] == managed_permission_arguments
+    client_arguments = arguments[4:] if managed_permissions else arguments
+    configuration = server_configuration_for(client_arguments)
+    server_arguments = list(configuration.arguments)
+    if managed_permissions:
+        server_arguments.extend(
+            [
+                "-c",
+                'sandbox_mode="danger-full-access"',
+                "-c",
+                'approval_policy="never"',
+            ]
+        )
     binary = os.environ["CODEX_LAUNCHER_BINARY"]
     with tempfile.TemporaryDirectory(prefix="codex-session-", dir="/tmp") as directory:
         socket_path = Path(directory) / "server.sock"
@@ -88,7 +106,7 @@ def run_private_session(arguments: list[str]) -> int:
         client = None
         try:
             server = subprocess.Popen(
-                [binary, *configuration.arguments, "app-server", "--listen", endpoint],
+                [binary, *server_arguments, "app-server", "--listen", endpoint],
                 cwd=configuration.working_directory,
                 env=environment,
                 stdin=subprocess.DEVNULL,
@@ -100,7 +118,7 @@ def run_private_session(arguments: list[str]) -> int:
                 socket_path, configuration.profile_path
             ) as client_path:
                 client = subprocess.Popen(
-                    [binary, "--remote", f"unix://{client_path}", *arguments],
+                    [binary, "--remote", f"unix://{client_path}", *client_arguments],
                     env=environment,
                 )
                 threading.Thread(

@@ -60,6 +60,30 @@ def test_failed_startup_never_opens_client_and_reaps_server(private_launch):
     server.wait.assert_called_once_with(timeout=1.0)
 
 
+def test_managed_permissions_apply_on_server_without_remote_resume_overrides(
+    private_launch,
+):
+    _, _, processes, _, _ = private_launch
+    launcher.run_private_session(
+        [
+            "--sandbox",
+            "danger-full-access",
+            "--ask-for-approval",
+            "never",
+            "resume",
+            "thread-123",
+        ]
+    )
+    server_call, client_call = processes.call_args_list
+    assert server_call.args[0][1:5] == [
+        "-c",
+        'sandbox_mode="danger-full-access"',
+        "-c",
+        'approval_policy="never"',
+    ]
+    assert client_call.args[0][3:] == ["resume", "thread-123"]
+
+
 def test_signal_exit_status_retains_native_signal(private_launch):
     _, client, _, _, _ = private_launch
     client.wait.return_value = -signal.SIGTERM
