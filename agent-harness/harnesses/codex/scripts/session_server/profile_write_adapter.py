@@ -10,10 +10,28 @@ import time
 import tomlkit
 
 
+BATCH_WRITE_METHOD = "config/batchWrite"
+
+
 @dataclass(frozen=True)
 class PendingProfileWrite:
     settings: dict[str, str | None]
     profile_only: bool
+
+
+def partition_profile_edits(edits):
+    settings = {}
+    native_edits = []
+    for edit in edits:
+        if (
+            edit.get("keyPath") in {"model", "model_reasoning_effort"}
+            and (edit.get("value") is None or isinstance(edit.get("value"), str))
+            and edit.get("mergeStrategy") in {"replace", "upsert"}
+        ):
+            settings[edit["keyPath"]] = edit.get("value")
+        else:
+            native_edits.append(edit)
+    return settings, native_edits
 
 
 def save_profile_settings(profile_path: Path, settings: dict[str, str | None]) -> None:
@@ -59,7 +77,7 @@ class CodexProfileWriteAdapter:
         except ValueError:
             return frame
         if not isinstance(request, dict) or request.get("method") not in {
-            "config/batchWrite",
+            BATCH_WRITE_METHOD,
             "config/value/write",
         }:
             return frame
@@ -72,27 +90,17 @@ class CodexProfileWriteAdapter:
             return frame
         edits = (
             parameters.get("edits", [])
-            if request["method"] == "config/batchWrite"
+            if request["method"] == BATCH_WRITE_METHOD
             else [parameters]
         )
-        settings = {}
-        native_edits = []
-        for edit in edits:
-            if (
-                edit.get("keyPath") in {"model", "model_reasoning_effort"}
-                and (edit.get("value") is None or isinstance(edit.get("value"), str))
-                and edit.get("mergeStrategy") in {"replace", "upsert"}
-            ):
-                settings[edit["keyPath"]] = edit.get("value")
-            else:
-                native_edits.append(edit)
+        settings, native_edits = partition_profile_edits(edits)
         if not settings:
             return frame
         with self.pending_lock:
             self.pending_writes[request["id"]] = PendingProfileWrite(
                 settings, not native_edits
             )
-        request["method"] = "config/batchWrite"
+        request["method"] = BATCH_WRITE_METHOD
         request["params"] = {
             key: value
             for key, value in parameters.items()

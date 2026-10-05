@@ -13,6 +13,9 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
         (bundle / ".opencode/opencode.jsonc").read_text()
     )
     installed_configuration = json.loads(plugin_settings.read_text())
+    installed_servers = {
+        name: server.copy() for name, server in installed_configuration["mcp"].items()
+    }
     expected_timeouts = {
         "plugin.dotfiles.chrome-devtools": 120000,
         "plugin.dotfiles.sonarqube": 60000,
@@ -44,7 +47,7 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
                     "instructions": ["native-configuration-overlay.md"],
                     "mcp": {
                         name: server | {"enabled": False}
-                        for name, server in emitted_configuration["mcp"].items()
+                        for name, server in installed_servers.items()
                     },
                 }
             )
@@ -100,10 +103,13 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
             assert merged_servers.keys() == emitted_configuration["mcp"].keys()
             for name, settings in merged_servers.items():
                 assert settings["disabled"] is True
-                assert settings["timeout"] == {
-                    "catalog": expected_timeouts[name],
-                    "execution": expected_timeouts[name],
-                }
+                if name in expected_timeouts:
+                    assert settings["timeout"] == {
+                        "catalog": expected_timeouts[name],
+                        "execution": expected_timeouts[name],
+                    }
+                else:
+                    assert "timeout" not in settings
                 assert (
                     settings["command"] == emitted_configuration["mcp"][name]["command"]
                 )

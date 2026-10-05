@@ -55,11 +55,11 @@ def test_setting_a_name_uses_the_loaded_thread_identifier(connection):
 
 
 def test_rpc_failure_closes_the_connection(connection):
-    with pytest.raises(CodexAppServerError, match="thread unavailable"):
-        with CodexAppServerClient("/private/socket") as client:
-            connection.recv.side_effect = [
-                json.dumps({"id": 2, "error": {"message": "thread unavailable"}})
-            ]
+    with CodexAppServerClient("/private/socket") as client:
+        connection.recv.side_effect = [
+            json.dumps({"id": 2, "error": {"message": "thread unavailable"}})
+        ]
+        with pytest.raises(CodexAppServerError, match="thread unavailable"):
             client.thread_name("thread-123")
     connection.close.assert_called_once()
 
@@ -76,10 +76,10 @@ def test_failed_initialization_releases_the_socket(connection):
 def test_notification_stream_cannot_extend_the_naming_deadline(connection, monkeypatch):
     clock = Mock(side_effect=[0.0, 0.1, 0.2, 0.8, 1.1])
     monkeypatch.setattr("codex_app_server_client.time.monotonic", clock)
-    with pytest.raises(TimeoutError):
-        with CodexAppServerClient("/private/socket", timeout_seconds=1.0) as client:
-            connection.recv.side_effect = [
-                json.dumps({"method": "thread/status/changed", "params": {}})
-            ] * 4
+    with CodexAppServerClient("/private/socket", timeout_seconds=1.0) as client:
+        connection.recv.side_effect = [
+            json.dumps({"method": "thread/status/changed", "params": {}})
+        ] * 4
+        with pytest.raises(TimeoutError):
             client.thread_name("thread-123")
     connection.close.assert_called_once()

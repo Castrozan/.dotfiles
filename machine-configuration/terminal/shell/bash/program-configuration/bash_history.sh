@@ -25,12 +25,13 @@ trim_and_save_history() {
 }
 
 record_recalled_command() {
+	local recalled_command="${1-}"
 	if [[ -o history ]]; then
 		local history_entry
 		history_entry=$(HISTTIMEFORMAT='' builtin history 1)
 		[[ "$history_entry" =~ ^[[:space:]]*([0-9]+)[[:space:]]+ ]] || return 0
 		if [[ "${BASH_REMATCH[1]}" != "$_last_trimmed_histcmd" ]]; then
-			builtin history -s "$1"
+			builtin history -s "$recalled_command"
 		fi
 	fi
 }

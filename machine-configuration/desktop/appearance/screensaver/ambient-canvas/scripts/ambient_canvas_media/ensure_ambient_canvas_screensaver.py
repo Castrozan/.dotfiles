@@ -88,9 +88,7 @@ def ensure_screensaver(
             return recording_result.exit_code
         recorded_loop_was_replaced = recording_result.replaced
 
-    if not recorded_loop_was_replaced and is_display_running_for_loop(
-        player_binary_path, loop_directory
-    ):
+    if not recorded_loop_was_replaced and is_display_running_for_loop(loop_directory):
         LOGGER.info("player_already_running loop=%s", loop_directory)
         return 0
     LOGGER.info("player_replacement_started loop=%s", loop_directory)

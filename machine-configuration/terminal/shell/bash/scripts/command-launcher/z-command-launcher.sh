@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 z() {
-	if [[ $# -eq 0 || $1 == -* || ($# -eq 1 && -d $1) || ${*: -1} == "${__zoxide_z_prefix?}"?* ]]; then
+	local first_directory_argument="${1-}"
+	if [[ $# -eq 0 || $first_directory_argument == -* || ($# -eq 1 && -d $first_directory_argument) || ${*: -1} == "${__zoxide_z_prefix?}"?* ]]; then
 		__zoxide_z "$@"
 		return $?
 	fi

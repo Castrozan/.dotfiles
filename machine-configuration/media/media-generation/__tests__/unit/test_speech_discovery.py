@@ -57,8 +57,9 @@ def test_local_voice_pages_cover_exactly_the_generation_contract(tmp_path):
     for voice in voices:
         provider.preflight(SpeechRequest("Hello", voice.voice_id, voice.language))
         other_language = "pt-br" if voice.language == "en-us" else "en-us"
+        request = SpeechRequest("Hello", voice.voice_id, other_language)
         with pytest.raises(SpeechError, match="unsupported_voice"):
-            provider.preflight(SpeechRequest("Hello", voice.voice_id, other_language))
+            provider.preflight(request)
 
 
 @pytest.mark.parametrize(
@@ -94,8 +95,10 @@ def test_local_voice_search_is_read_only_without_model_files(
 
 @pytest.mark.parametrize("token", ["-1", "not-a-token", "6", "1" * 4096])
 def test_invalid_local_page_tokens_are_categorized(token):
+    catalog = KokoroVoiceCatalog()
+    query = VoiceQuery(page_token=token)
     with pytest.raises(SpeechError, match="invalid_page_token"):
-        KokoroVoiceCatalog().list_voices(VoiceQuery(page_token=token))
+        catalog.list_voices(query)
 
 
 @pytest.mark.parametrize(

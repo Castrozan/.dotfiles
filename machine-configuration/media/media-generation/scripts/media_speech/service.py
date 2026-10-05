@@ -12,6 +12,9 @@ from pathlib import Path
 from media_speech.contract import SpeechError, SpeechProvider, SpeechRequest
 
 
+RECEIPT_FILENAME = "receipt.json"
+
+
 def write_receipt(directory: Path, receipt: dict):
     temporary_path = directory / "receipt.pending"
     with temporary_path.open("w", encoding="utf-8") as output:
@@ -19,7 +22,7 @@ def write_receipt(directory: Path, receipt: dict):
         output.write("\n")
         output.flush()
         os.fsync(output.fileno())
-    os.replace(temporary_path, directory / "receipt.json")
+    os.replace(temporary_path, directory / RECEIPT_FILENAME)
     directory_descriptor = os.open(directory, os.O_RDONLY)
     try:
         os.fsync(directory_descriptor)
@@ -43,7 +46,7 @@ class SpeechService:
         directory = self.operation_directory(operation_id)
         try:
             receipt = json.loads(
-                (directory / "receipt.json").read_text(encoding="utf-8")
+                (directory / RECEIPT_FILENAME).read_text(encoding="utf-8")
             )
         except FileNotFoundError:
             raise SpeechError("operation_unavailable") from None
@@ -106,7 +109,7 @@ class SpeechService:
                 if provider.requires_payment
                 else "no_provider_charge",
             },
-            "receipt_path": str(directory / "receipt.json"),
+            "receipt_path": str(directory / RECEIPT_FILENAME),
         }
         write_receipt(directory, receipt)
         started = time.monotonic()

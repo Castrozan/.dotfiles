@@ -27,22 +27,46 @@ def read_elevenlabs_api_key():
         return None
 
 
+def describe_speech_providers():
+    return {
+        "providers": [
+            {
+                **asdict(provider.describe()),
+                "usage": asdict(ProviderUsageService(reader).capabilities()),
+            }
+            for provider, reader in (
+                (KokoroSpeechProvider, KokoroUsageReader()),
+                (ElevenLabsSpeechProvider, ElevenLabsUsageReader(None)),
+            )
+        ]
+    }
+
+
+def generate_speech(args, service):
+    text = args.text
+    if args.text_file is not None:
+        with args.text_file.open(encoding="utf-8") as input_file:
+            text = input_file.read(MAXIMUM_TEXT_CHARACTERS + 1)
+    request = SpeechRequest(text, args.voice, args.language)
+    if args.provider == "elevenlabs":
+        provider = ElevenLabsSpeechProvider(read_elevenlabs_api_key())
+    else:
+        provider = KokoroSpeechProvider(
+            Path(os.environ["MEDIA_KOKORO_MODEL"]),
+            Path(os.environ["MEDIA_KOKORO_VOICES"]),
+            Path(os.environ["MEDIA_ESPEAK_LIBRARY"]),
+            Path(os.environ["MEDIA_ESPEAK_DATA"]),
+        )
+    operation_id = args.operation_id or str(uuid.uuid4())
+    print(json.dumps({"operation_id": operation_id}), file=sys.stderr, flush=True)
+    return service.generate(operation_id, request, provider)
+
+
 def main(arguments=None):
     args = build_parser().parse_args(arguments)
     try:
         if args.command == "providers":
-            result = {
-                "providers": [
-                    {
-                        **asdict(provider.describe()),
-                        "usage": asdict(ProviderUsageService(reader).capabilities()),
-                    }
-                    for provider, reader in (
-                        (KokoroSpeechProvider, KokoroUsageReader()),
-                        (ElevenLabsSpeechProvider, ElevenLabsUsageReader(None)),
-                    )
-                ]
-            }
+            result = describe_speech_providers()
             print(json.dumps(result, ensure_ascii=False, allow_nan=False, indent=2))
             return 0
         if args.command == "voices":
@@ -68,25 +92,7 @@ def main(arguments=None):
         if args.command == "inspect":
             receipt = service.inspect(args.operation_id)
         else:
-            text = args.text
-            if args.text_file is not None:
-                with args.text_file.open(encoding="utf-8") as input_file:
-                    text = input_file.read(MAXIMUM_TEXT_CHARACTERS + 1)
-            request = SpeechRequest(text, args.voice, args.language)
-            if args.provider == "elevenlabs":
-                provider = ElevenLabsSpeechProvider(read_elevenlabs_api_key())
-            else:
-                provider = KokoroSpeechProvider(
-                    Path(os.environ["MEDIA_KOKORO_MODEL"]),
-                    Path(os.environ["MEDIA_KOKORO_VOICES"]),
-                    Path(os.environ["MEDIA_ESPEAK_LIBRARY"]),
-                    Path(os.environ["MEDIA_ESPEAK_DATA"]),
-                )
-            operation_id = args.operation_id or str(uuid.uuid4())
-            print(
-                json.dumps({"operation_id": operation_id}), file=sys.stderr, flush=True
-            )
-            receipt = service.generate(operation_id, request, provider)
+            receipt = generate_speech(args, service)
         print(json.dumps(receipt, ensure_ascii=False, allow_nan=False, indent=2))
         return 0
     except SpeechError as error:

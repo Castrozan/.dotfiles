@@ -39,18 +39,20 @@ in
         dark = true;
       };
       diff.context = 5;
-      url."git@github.com:Castrozan/.dotfiles.git".insteadOf = [
-        "git@gitlab.com:Castrozan/dotfiles.git"
-        "https://gitlab.com/Castrozan/dotfiles.git"
-      ];
-      url."git@github.com:Castrozan/dotfiles-private.git".insteadOf = [
-        "git@gitlab.com:Castrozan/dotfiles-private.git"
-        "https://gitlab.com/Castrozan/dotfiles-private.git"
-      ];
-      url."git@github.com:Castrozan/zanoni-system.git".insteadOf = [
-        "git@gitlab.com:Castrozan/zanoni-system.git"
-        "https://gitlab.com/Castrozan/zanoni-system.git"
-      ];
+      url = {
+        "git@github.com:Castrozan/.dotfiles.git".insteadOf = [
+          "git@gitlab.com:Castrozan/dotfiles.git"
+          "https://gitlab.com/Castrozan/dotfiles.git"
+        ];
+        "git@github.com:Castrozan/dotfiles-private.git".insteadOf = [
+          "git@gitlab.com:Castrozan/dotfiles-private.git"
+          "https://gitlab.com/Castrozan/dotfiles-private.git"
+        ];
+        "git@github.com:Castrozan/zanoni-system.git".insteadOf = [
+          "git@gitlab.com:Castrozan/zanoni-system.git"
+          "https://gitlab.com/Castrozan/zanoni-system.git"
+        ];
+      };
     };
   };
 }

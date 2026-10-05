@@ -93,7 +93,7 @@ def read_json(path, private=False):
             raise VideoError("private_registration_required")
     try:
         value = json.loads(path.read_bytes(), object_pairs_hook=unique_json_pairs)
-    except (ValueError, UnicodeError):
+    except ValueError:
         raise VideoError("invalid_json") from None
     if not isinstance(value, dict):
         raise VideoError("invalid_json")

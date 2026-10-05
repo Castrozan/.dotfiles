@@ -10,7 +10,7 @@ def resolve_display_process_name(player_binary_path):
     return os.path.basename(player_binary_path)
 
 
-def resolve_loop_display_process_marker(player_binary_path, loop_directory):
+def resolve_loop_display_process_marker(loop_directory):
     return resolve_recorded_segment_manifest_path(loop_directory)
 
 
@@ -31,9 +31,9 @@ def any_display_is_running(player_binary_path):
     return a_process_matches(["-x", resolve_display_process_name(player_binary_path)])
 
 
-def is_display_running_for_loop(player_binary_path, loop_directory):
+def is_display_running_for_loop(loop_directory):
     return a_process_matches(
-        ["-f", resolve_loop_display_process_marker(player_binary_path, loop_directory)]
+        ["-f", resolve_loop_display_process_marker(loop_directory)]
     )
 
 

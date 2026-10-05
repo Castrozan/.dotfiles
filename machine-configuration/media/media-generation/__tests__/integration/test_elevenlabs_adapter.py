@@ -61,10 +61,10 @@ def test_paid_errors_never_retry_or_expose_provider_bodies(status, category):
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as transport:
         client = ElevenLabs(api_key="test-only", httpx_client=transport)
+        provider = ElevenLabsSpeechProvider("test-only", client)
+        request = SpeechRequest("Hi", "voice", "en-us")
         with pytest.raises(SpeechError, match=category) as error:
-            ElevenLabsSpeechProvider("test-only", client).synthesize(
-                SpeechRequest("Hi", "voice", "en-us")
-            )
+            provider.synthesize(request)
     assert len(calls) == 1
     assert "secret" not in str(error.value)
 

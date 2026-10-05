@@ -1,5 +1,4 @@
 import base64
-import binascii
 
 from media_speech.contract import (
     CharacterAlignment,
@@ -143,7 +142,7 @@ class ElevenLabsSpeechProvider:
                 response.headers.get("request-id"),
                 billed_characters,
             )
-        except (binascii.Error, ValueError, AttributeError):
+        except (ValueError, AttributeError):
             raise SpeechError("invalid_provider_response") from None
         finally:
             response.close()

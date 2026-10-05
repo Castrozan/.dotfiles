@@ -21,6 +21,30 @@ from media_video.files import (
 from media_video.inputs import preserve_inputs, request_digest, verify_retained_inputs
 
 
+RECEIPT_FILENAME = "receipt.json"
+
+
+def verify_video_asset(directory, asset, filename):
+    path = directory / filename
+    if not isinstance(asset, dict) or asset.get("path") != str(path):
+        raise VideoError("invalid_receipt")
+    try:
+        if file_digest(path) != asset.get("sha256"):
+            raise VideoError("asset_checksum_mismatch")
+    except FileNotFoundError:
+        raise VideoError("asset_unavailable") from None
+
+
+def verify_video_receipt_assets(directory, assets):
+    if not isinstance(assets, dict) or set(assets) != {"video", "thumbnail"}:
+        raise VideoError("invalid_receipt")
+    for name, filename in (
+        ("video", "render.mp4"),
+        ("thumbnail", "thumbnail.png"),
+    ):
+        verify_video_asset(directory, assets[name], filename)
+
+
 class VideoService:
     def __init__(self, state_directory: Path):
         self.state_directory = state_directory
@@ -33,7 +57,7 @@ class VideoService:
         try:
             private_directory(self.state_directory)
             private_directory(directory)
-            receipt = read_json(directory / "receipt.json", private=True)
+            receipt = read_json(directory / RECEIPT_FILENAME, private=True)
         except FileNotFoundError:
             if directory.exists():
                 raise VideoError("operation_incomplete") from None
@@ -47,22 +71,7 @@ class VideoService:
             raise VideoError("invalid_receipt")
         if receipt["status"] == "succeeded":
             verify_retained_inputs(directory, receipt.get("retained_inputs"))
-            assets = receipt.get("assets")
-            if not isinstance(assets, dict) or set(assets) != {"video", "thumbnail"}:
-                raise VideoError("invalid_receipt")
-            for name, filename in (
-                ("video", "render.mp4"),
-                ("thumbnail", "thumbnail.png"),
-            ):
-                asset = assets[name]
-                path = directory / filename
-                if not isinstance(asset, dict) or asset.get("path") != str(path):
-                    raise VideoError("invalid_receipt")
-                try:
-                    if file_digest(path) != asset.get("sha256"):
-                        raise VideoError("asset_checksum_mismatch")
-                except FileNotFoundError:
-                    raise VideoError("asset_unavailable") from None
+            verify_video_receipt_assets(directory, receipt.get("assets"))
         return receipt
 
     def completed_operation(self, operation_id, digest):
@@ -97,7 +106,7 @@ class VideoService:
             "renderer": renderer.name,
             "renderer_version": recipe.renderer_version,
             "adapter_version": renderer.adapter_version,
-            "receipt_path": str(directory / "receipt.json"),
+            "receipt_path": str(directory / RECEIPT_FILENAME),
             "retained_inputs": [],
             "logs_directory": str(directory / "logs"),
             "cost": {
@@ -108,7 +117,7 @@ class VideoService:
                 "compute_cost_status": "not_measured",
             },
         }
-        atomic_json(directory / "receipt.json", receipt)
+        atomic_json(directory / RECEIPT_FILENAME, receipt)
         try:
             atomic_json(
                 directory / "request.json",
@@ -116,7 +125,7 @@ class VideoService:
             )
             prepared, retained = preserve_inputs(recipe, directory, deadline)
             receipt["retained_inputs"] = retained
-            atomic_json(directory / "receipt.json", receipt)
+            atomic_json(directory / RECEIPT_FILENAME, receipt)
             result = renderer.render(request, prepared, directory, deadline)
             verify_retained_inputs(directory, retained, deadline)
             assets = {}
@@ -140,7 +149,7 @@ class VideoService:
                 assets=assets,
                 elapsed_seconds=deadline.elapsed(),
             )
-            atomic_json(directory / "receipt.json", receipt)
+            atomic_json(directory / RECEIPT_FILENAME, receipt)
         except BaseException as error:
             category = (
                 error.category if isinstance(error, VideoError) else "render_failed"
@@ -148,7 +157,7 @@ class VideoService:
             receipt.update(
                 status="failed", error=category, elapsed_seconds=deadline.elapsed()
             )
-            atomic_json(directory / "receipt.json", receipt)
+            atomic_json(directory / RECEIPT_FILENAME, receipt)
             if isinstance(error, (KeyboardInterrupt, SystemExit)):
                 raise
             raise VideoError(category) from None

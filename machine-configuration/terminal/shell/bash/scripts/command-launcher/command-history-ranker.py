@@ -9,7 +9,7 @@ from pathlib import Path
 def normalize_history(source, destination):
     timestamp_seen = False
     for line in source:
-        if re.fullmatch(r"#[0-9]+\n?", line):
+        if re.fullmatch(r"#\d+\n?", line, flags=re.ASCII):
             timestamp_seen = True
         if not timestamp_seen:
             destination.write("#0\n")

@@ -13,7 +13,7 @@ def read_probe(path):
         result = json.loads(path.read_bytes())
         if not isinstance(result, dict):
             raise ValueError
-    except (ValueError, UnicodeError):
+    except ValueError:
         raise VideoError("invalid_media_probe") from None
     return result
 

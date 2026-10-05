@@ -36,8 +36,9 @@ def test_invalid_audio_never_becomes_a_success(
     tmp_path, speech_request, operation_id, speech, provider_factory
 ):
     service = SpeechService(tmp_path)
+    provider = provider_factory(speech)
     with pytest.raises(SpeechError):
-        service.generate(operation_id, speech_request, provider_factory(speech))
+        service.generate(operation_id, speech_request, provider)
     assert service.inspect(operation_id)["status"] == "failed"
     assert not (tmp_path / operation_id / "speech.wav").exists()
 
@@ -56,8 +57,9 @@ def test_invalid_alignment_never_becomes_caption_evidence(
 ):
     service = SpeechService(tmp_path)
     speech = SynthesizedSpeech(b"\x00\x01" * 24000, 24000, alignment)
+    provider = provider_factory(speech)
     with pytest.raises(SpeechError, match="invalid_alignment"):
-        service.generate(operation_id, speech_request, provider_factory(speech))
+        service.generate(operation_id, speech_request, provider)
 
 
 def test_missing_cloud_credentials_fail_before_dispatch(tmp_path, monkeypatch, capsys):
@@ -155,5 +157,6 @@ def test_empty_deployed_credentials_fail_before_dispatch(tmp_path, monkeypatch, 
 
 
 def test_operation_id_cannot_escape_state_directory(tmp_path):
+    service = SpeechService(tmp_path)
     with pytest.raises(SpeechError, match="invalid_operation_id"):
-        SpeechService(tmp_path).inspect("../outside")
+        service.inspect("../outside")

@@ -60,14 +60,11 @@ def run_rebuild(state_directory, configuration):
         result["error"] = str(error)
     system_after = current_system()
     exit_code = _validate_activated_system(exit_code, system_after, result)
+    status = "succeeded" if exit_code == 0 else "failed"
+    if result["status"] == "unchanged" and exit_code == 0:
+        status = "unchanged"
     result.update(
-        status=(
-            "unchanged"
-            if result["status"] == "unchanged" and exit_code == 0
-            else "succeeded"
-            if exit_code == 0
-            else "failed"
-        ),
+        status=status,
         exit_code=exit_code,
         completed_at=datetime.now(timezone.utc).isoformat(),
         system_after=system_after,

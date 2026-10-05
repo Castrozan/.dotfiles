@@ -103,10 +103,9 @@ def test_usage_errors_never_retry_or_expose_provider_details(status, category):
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as transport:
         client = ElevenLabs(api_key="test-only", httpx_client=transport)
+        usage_service = ProviderUsageService(ElevenLabsUsageReader("test-only", client))
         with pytest.raises(SpeechError, match=category) as error:
-            ProviderUsageService(
-                ElevenLabsUsageReader("test-only", client)
-            ).read_usage()
+            usage_service.read_usage()
     assert len(requests) == 1
     assert "private" not in str(error.value)
 
@@ -117,10 +116,9 @@ def test_usage_network_failure_is_categorized_without_details():
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as transport:
         client = ElevenLabs(api_key="test-only", httpx_client=transport)
+        usage_service = ProviderUsageService(ElevenLabsUsageReader("test-only", client))
         with pytest.raises(SpeechError, match="provider_unavailable"):
-            ProviderUsageService(
-                ElevenLabsUsageReader("test-only", client)
-            ).read_usage()
+            usage_service.read_usage()
 
 
 @pytest.mark.parametrize(
@@ -141,10 +139,9 @@ def test_invalid_account_usage_never_becomes_a_snapshot(changes):
         )
     ) as transport:
         client = ElevenLabs(api_key="test-only", httpx_client=transport)
+        usage_service = ProviderUsageService(ElevenLabsUsageReader("test-only", client))
         with pytest.raises(SpeechError, match="invalid_provider_response"):
-            ProviderUsageService(
-                ElevenLabsUsageReader("test-only", client)
-            ).read_usage()
+            usage_service.read_usage()
 
 
 def test_absent_overage_evidence_remains_unknown():

@@ -22,9 +22,7 @@ def pinned_file(value, relative_path, deadline):
     return RegisteredFile(path, relative_path, actual_digest)
 
 
-def load_recipe_registration(path, deadline):
-    registration_digest = file_digest(path, deadline)
-    document = read_json(path, private=True)
+def validate_registration_document(document):
     if set(document) != {
         "recipe_id",
         "recipe_directory",
@@ -45,20 +43,10 @@ def load_recipe_registration(path, deadline):
         or "\x00" in document["recipe_directory"]
     ):
         raise VideoError("invalid_registration")
-    recipe_directory = Path(document["recipe_directory"])
-    private_directory(recipe_directory)
-    manifest = pinned_file(
-        document["source_assets_manifest"], "manifest.json", deadline
-    )
-    manifest_document = read_json(manifest.source_path, private=True)
-    if file_digest(manifest.source_path, deadline) != manifest.sha256:
-        raise VideoError("registered_input_changed")
-    if set(manifest_document) != {"files"}:
-        raise VideoError("invalid_manifest")
-    entries = manifest_document["files"]
-    if not isinstance(entries, list) or not 1 <= len(entries) <= 512:
-        raise VideoError("invalid_manifest")
-    binary = pinned_file(document["binary"], "renderer", deadline)
+
+
+def load_registered_binary(value, deadline):
+    binary = pinned_file(value, "renderer", deadline)
     if not os.access(binary.source_path, os.X_OK):
         raise VideoError("binary_not_executable")
     with binary.source_path.open("rb") as input_file:
@@ -75,6 +63,10 @@ def load_recipe_registration(path, deadline):
         b"\xbf\xba\xfe\xca",
     }:
         raise VideoError("native_binary_required")
+    return binary
+
+
+def load_registered_assets(entries, recipe_directory, manifest, binary, deadline):
     files = []
     seen_paths = set()
     total_bytes = (
@@ -112,6 +104,30 @@ def load_recipe_registration(path, deadline):
         for second in seen_paths
     ):
         raise VideoError("invalid_manifest_path")
+    return tuple(sorted(files, key=lambda item: item.relative_path))
+
+
+def load_recipe_registration(path, deadline):
+    registration_digest = file_digest(path, deadline)
+    document = read_json(path, private=True)
+    validate_registration_document(document)
+    recipe_directory = Path(document["recipe_directory"])
+    private_directory(recipe_directory)
+    manifest = pinned_file(
+        document["source_assets_manifest"], "manifest.json", deadline
+    )
+    manifest_document = read_json(manifest.source_path, private=True)
+    if file_digest(manifest.source_path, deadline) != manifest.sha256:
+        raise VideoError("registered_input_changed")
+    if set(manifest_document) != {"files"}:
+        raise VideoError("invalid_manifest")
+    entries = manifest_document["files"]
+    if not isinstance(entries, list) or not 1 <= len(entries) <= 512:
+        raise VideoError("invalid_manifest")
+    binary = load_registered_binary(document["binary"], deadline)
+    files = load_registered_assets(
+        entries, recipe_directory, manifest, binary, deadline
+    )
     deadline.remaining()
     if file_digest(path, deadline) != registration_digest:
         raise VideoError("registered_input_changed")
@@ -122,5 +138,5 @@ def load_recipe_registration(path, deadline):
         RegisteredFile(path, "registration.json", registration_digest),
         manifest,
         binary,
-        tuple(sorted(files, key=lambda item: item.relative_path)),
+        files,
     )

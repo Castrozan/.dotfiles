@@ -37,36 +37,38 @@ def process_group_exists(process_identifier: int) -> bool:
     return True
 
 
+def signal_process_group(process_identifier: int, signal_number: int) -> None:
+    try:
+        os.killpg(process_identifier, signal_number)
+    except ProcessLookupError:
+        return
+
+
+def wait_for_process_exit(process, process_group: bool) -> None:
+    try:
+        process.wait(timeout=1.0)
+    except subprocess.TimeoutExpired:
+        if process_group:
+            signal_process_group(process.pid, signal.SIGKILL)
+        else:
+            process.kill()
+        process.wait()
+
+
 def stop_process(process, *, process_group: bool = False) -> None:
     if process is None:
         return
     deadline = time.monotonic() + 1.0
     if process_group:
-        try:
-            os.killpg(process.pid, signal.SIGTERM)
-        except ProcessLookupError:
-            pass
+        signal_process_group(process.pid, signal.SIGTERM)
     elif process.poll() is None:
         process.terminate()
-    try:
-        process.wait(timeout=1.0)
-    except subprocess.TimeoutExpired:
-        if process_group:
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        else:
-            process.kill()
-        process.wait()
+    wait_for_process_exit(process, process_group)
     if process_group:
         while time.monotonic() < deadline and process_group_exists(process.pid):
             time.sleep(0.05)
         if process_group_exists(process.pid):
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
+            signal_process_group(process.pid, signal.SIGKILL)
 
 
 def stop_client_when_server_exits(server, client) -> None:
@@ -136,7 +138,7 @@ def run_private_session(arguments: list[str]) -> int:
 
 
 def keep_interrupt_with_terminal_client(signal_number, frame) -> None:
-    pass
+    return None
 
 
 def exit_on_shutdown(signal_number, frame) -> None:
@@ -153,7 +155,7 @@ def main() -> int:
     signal.signal(signal.SIGHUP, exit_on_shutdown)
     try:
         return run_private_session(sys.argv[1:])
-    except (OSError, ValueError, RuntimeError, TimeoutError) as error:
+    except (OSError, ValueError, RuntimeError) as error:
         print(str(error), file=sys.stderr)
         return 1
     finally:

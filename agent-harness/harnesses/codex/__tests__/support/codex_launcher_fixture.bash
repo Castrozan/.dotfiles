@@ -37,10 +37,12 @@ setup() {
 	FAKE_PRIVATE
 	chmod +x "$FAKE_BINARY_DIRECTORY/private-session"
 	write_dispatch_file
+	return $?
 }
 
 teardown() {
 	rm -rf "$TEMPORARY_ROOT"
+	return $?
 }
 
 write_dispatch_file() {
@@ -48,6 +50,7 @@ write_dispatch_file() {
 		printf 'touch "$DISPATCH_MARKER"\n'
 		printf '%s\n' "$@"
 	} >"$DISPATCH_FILE"
+	return $?
 }
 
 run_codex() {
@@ -65,8 +68,10 @@ run_codex() {
 		HOOK_TRUST_ARGUMENTS_FILE="$HOOK_TRUST_ARGUMENTS_FILE" \
 		HOOK_TRUST_EXIT_STATUS="${HOOK_TRUST_EXIT_STATUS:-0}" \
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
+	return $?
 }
 
 launcher_arguments() {
 	echo '<--sandbox> <danger-full-access> <--ask-for-approval> <never>'
+	return $?
 }

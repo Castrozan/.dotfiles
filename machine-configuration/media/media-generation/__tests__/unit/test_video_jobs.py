@@ -35,10 +35,11 @@ class VideoJobTests(unittest.TestCase):
 
     def test_attribution_conflict_does_not_dispatch(self):
         self.render()
+        conflicting_request = replace(self.fixture.request, episode_id="other")
         with self.assertRaisesRegex(VideoError, "operation_conflict"):
             self.service.render(
                 self.operation_id,
-                replace(self.fixture.request, episode_id="other"),
+                conflicting_request,
                 self.fixture.renderer,
             )
         self.assertEqual(len(self.fixture.commands.calls), 4)

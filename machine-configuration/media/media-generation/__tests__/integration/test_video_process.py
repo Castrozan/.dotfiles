@@ -16,6 +16,8 @@ class ProcessBoundaryTests(unittest.TestCase):
         self.runner = CommandRunner()
 
     def test_process_failure_retains_both_logs(self):
+        logs_directory = self.fixture.root / "logs"
+        deadline = ExecutionDeadline(2)
         with self.assertRaisesRegex(VideoError, "render_failed"):
             self.runner.run(
                 "render",
@@ -25,8 +27,8 @@ class ProcessBoundaryTests(unittest.TestCase):
                     "import sys\nprint('partial output')\nprint('private error',file=sys.stderr)\nsys.exit(7)",
                 ],
                 self.fixture.recipe,
-                self.fixture.root / "logs",
-                ExecutionDeadline(2),
+                logs_directory,
+                deadline,
             )
         self.assertIn(
             "partial output", (self.fixture.root / "logs/render.stdout.log").read_text()
@@ -44,13 +46,15 @@ class ProcessBoundaryTests(unittest.TestCase):
             "print('parent ready',flush=True)\ntime.sleep(30)"
         )
         started = time.monotonic()
+        logs_directory = self.fixture.root / "logs"
+        deadline = ExecutionDeadline(0.6)
         with self.assertRaisesRegex(VideoError, "deadline_exceeded"):
             self.runner.run(
                 "render",
                 [sys.executable, "-c", program],
                 self.fixture.recipe,
-                self.fixture.root / "logs",
-                ExecutionDeadline(0.6),
+                logs_directory,
+                deadline,
             )
         self.assertLess(time.monotonic() - started, 2)
         child_pid = (self.fixture.recipe / "child.pid").read_text()

@@ -38,8 +38,9 @@ def test_interruption_before_first_receipt_cannot_dispatch_again(
 ):
     (tmp_path / operation_id).mkdir()
     provider = provider_factory()
+    service = SpeechService(tmp_path)
     with pytest.raises(SpeechError, match="operation_incomplete"):
-        SpeechService(tmp_path).generate(operation_id, speech_request, provider)
+        service.generate(operation_id, speech_request, provider)
     assert provider.calls == 0
 
 
@@ -48,8 +49,9 @@ def test_invalid_receipt_is_reported_consistently(tmp_path, operation_id, conten
     directory = tmp_path / operation_id
     directory.mkdir()
     (directory / "receipt.json").write_text(contents)
+    service = SpeechService(tmp_path)
     with pytest.raises(SpeechError, match="invalid_receipt"):
-        SpeechService(tmp_path).inspect(operation_id)
+        service.inspect(operation_id)
 
 
 def test_same_operation_with_different_text_is_a_conflict(
@@ -58,10 +60,9 @@ def test_same_operation_with_different_text_is_a_conflict(
     service = SpeechService(tmp_path)
     provider = provider_factory()
     service.generate(operation_id, speech_request, provider)
+    conflicting_request = replace(speech_request, text="Different")
     with pytest.raises(SpeechError, match="operation_conflict"):
-        service.generate(
-            operation_id, replace(speech_request, text="Different"), provider
-        )
+        service.generate(operation_id, conflicting_request, provider)
     assert provider.calls == 1
 
 

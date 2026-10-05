@@ -46,8 +46,9 @@ def test_usage_service_rejects_identity_or_capability_mismatch():
     snapshot = reader.read_usage()
     reader.name = "different-provider"
     reader.read_usage = lambda: snapshot
+    usage_service = ProviderUsageService(reader)
     with pytest.raises(SpeechError, match="invalid_provider_response"):
-        ProviderUsageService(reader).read_usage()
+        usage_service.read_usage()
 
 
 def test_unknown_and_exhausted_quota_are_distinct():
@@ -67,8 +68,9 @@ def test_unknown_and_exhausted_quota_are_distinct():
 def test_snapshot_must_match_discovered_usage_capabilities(capabilities):
     reader = TokenUsageReader()
     reader.capabilities = capabilities
+    usage_service = ProviderUsageService(reader)
     with pytest.raises(SpeechError, match="invalid_provider_response"):
-        ProviderUsageService(reader).read_usage()
+        usage_service.read_usage()
 
 
 @pytest.mark.parametrize("used", [-1, True, float("inf"), float("nan"), "25"])
@@ -162,11 +164,12 @@ def test_unavailable_provider_usage_does_not_claim_an_unlimited_quota():
     snapshot = ProviderUsage("unsupported-meter", "unavailable", "account", 1000)
     assert capabilities.metrics == ()
     assert snapshot.quotas == ()
+    quota = UsageQuota("credits", "credits", 0, None)
     with pytest.raises(SpeechError, match="invalid_usage"):
         ProviderUsage(
             "unsupported-meter",
             "unavailable",
             "account",
             1000,
-            (UsageQuota("credits", "credits", 0, None),),
+            (quota,),
         )

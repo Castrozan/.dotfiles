@@ -10,6 +10,7 @@ from recording.recorded_loop_capture_target import resolve_recorded_loop_capture
 from recording.recorded_segment_store import resolve_playable_segment_manifest_path
 
 DEFAULT_PLAYER_BINARY_PATH = os.path.expanduser("~/.local/bin/ᓚᘏᗢ")
+LAUNCHER_LOGGER_NAME = "ambient_canvas.launcher"
 
 
 def build_player_process_arguments(
@@ -20,7 +21,7 @@ def build_player_process_arguments(
 
 def launch_display(player_binary_path, loop_directory, playback_dwell_override_path):
     if not os.path.isfile(player_binary_path):
-        logging.getLogger("ambient_canvas.launcher").error(
+        logging.getLogger(LAUNCHER_LOGGER_NAME).error(
             "player_binary_missing path=%s", player_binary_path
         )
         print(
@@ -30,7 +31,7 @@ def launch_display(player_binary_path, loop_directory, playback_dwell_override_p
         return 1
     segment_manifest_path = resolve_playable_segment_manifest_path(loop_directory)
     if segment_manifest_path is None:
-        logging.getLogger("ambient_canvas.launcher").error(
+        logging.getLogger(LAUNCHER_LOGGER_NAME).error(
             "playable_loop_missing directory=%s", loop_directory
         )
         print("display-ambient-canvas-loop: no recorded loop to play", file=sys.stderr)
@@ -54,7 +55,7 @@ def launch_display(player_binary_path, loop_directory, playback_dwell_override_p
             stderr=subprocess.STDOUT,
             start_new_session=True,
         )
-    logging.getLogger("ambient_canvas.launcher").info(
+    logging.getLogger(LAUNCHER_LOGGER_NAME).info(
         "player_supervisor_started pid=%s report=%s",
         supervisor_process.pid,
         run_directory / "report.json",

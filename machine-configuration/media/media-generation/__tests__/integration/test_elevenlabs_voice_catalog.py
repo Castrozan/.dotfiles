@@ -96,8 +96,10 @@ def test_catalog_errors_never_retry_or_expose_provider_bodies(status, category):
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as transport:
         client = ElevenLabs(api_key="test-only", httpx_client=transport)
+        catalog = ElevenLabsSpeechProvider("test-only", client)
+        query = VoiceQuery()
         with pytest.raises(SpeechError, match=category) as error:
-            ElevenLabsSpeechProvider("test-only", client).list_voices(VoiceQuery())
+            catalog.list_voices(query)
     assert len(calls) == 1
     assert "secret" not in str(error.value)
 
@@ -111,8 +113,10 @@ def test_catalog_network_errors_are_categorized_without_request_details():
 
     with httpx.Client(transport=httpx.MockTransport(respond)) as transport:
         client = ElevenLabs(api_key="test-only", httpx_client=transport)
+        catalog = ElevenLabsSpeechProvider("test-only", client)
+        query = VoiceQuery()
         with pytest.raises(SpeechError, match="provider_unavailable") as error:
-            ElevenLabsSpeechProvider("test-only", client).list_voices(VoiceQuery())
+            catalog.list_voices(query)
     assert len(calls) == 1
     assert "secret" not in str(error.value)
 
@@ -135,8 +139,10 @@ def test_incomplete_catalog_responses_do_not_claim_a_complete_page(response):
         )
     ) as transport:
         client = ElevenLabs(api_key="test-only", httpx_client=transport)
+        catalog = ElevenLabsSpeechProvider("test-only", client)
+        query = VoiceQuery()
         with pytest.raises(SpeechError, match="invalid_provider_response"):
-            ElevenLabsSpeechProvider("test-only", client).list_voices(VoiceQuery())
+            catalog.list_voices(query)
 
 
 def test_empty_final_catalog_page_is_valid():
