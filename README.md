@@ -17,7 +17,7 @@ My personal computing environment, declared with **Nix**, **Home Manager** and *
 
 https://github.com/user-attachments/assets/324ad864-2e86-454c-8695-3c1f0f38aea8
 
-A narrated tour of the Linux and macOS desktops, shared tools and configuration workflow.
+An animated tour of the Linux and macOS desktops, shared modules and configuration workflow.
 
 ## The desktop
 
