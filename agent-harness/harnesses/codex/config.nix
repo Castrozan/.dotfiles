@@ -84,11 +84,11 @@ let
       session_picker_view = "dense";
       show_tooltips = false;
       status_line = [
-        "thread-name"
         "git-branch"
         "model-with-reasoning"
         "context-used"
         "weekly-limit"
+        "thread-name"
         "thread-id"
       ];
       status_line_use_colors = true;
