@@ -33,11 +33,13 @@ def test_profile_connection_relays_large_responses_and_routes_runtime_writes(
             request = json.loads(frame)
             received.append(request)
             result = (
-                {"value": "x" * (1024 * 1024 + 1)}
+                {"value": "x" * (1024 * 1024 + 1) + "👻"}
                 if request["method"] == "probe"
                 else {"filePath": str(tmp_path / "config.toml")}
             )
-            connection.send(json.dumps({"id": request["id"], "result": result}))
+            connection.send(
+                json.dumps({"id": request["id"], "result": result}, ensure_ascii=False)
+            )
 
     server = unix_serve(handle, str(server_path))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -48,10 +50,11 @@ def test_profile_connection_relays_large_responses_and_routes_runtime_writes(
                 str(client_path), uri="ws://localhost", max_size=2 * 1024 * 1024
             ) as client:
                 client.send('{"id":1,"method":"probe","params":{}}')
-                assert (
-                    len(json.loads(client.recv(timeout=1))["result"]["value"])
-                    > 1024 * 1024
-                )
+                response = client.recv(timeout=1)
+                assert isinstance(response, str)
+                value = json.loads(response)["result"]["value"]
+                assert len(value) > 1024 * 1024
+                assert value.endswith("👻")
                 client.send(
                     '{"id":2,"method":"config/batchWrite","params":{"edits":[{"keyPath":"model_reasoning_effort","value":"medium","mergeStrategy":"upsert"}]}}'
                 )

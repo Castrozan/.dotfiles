@@ -14,8 +14,9 @@ MAXIMUM_MESSAGE_BYTES = 64 * 1024 * 1024
 
 def relay_server_responses(upstream, downstream, adapter) -> None:
     try:
-        for frame in upstream:
-            downstream.send(adapter.finish_response(frame))
+        while True:
+            frame = upstream.recv(decode=False)
+            downstream.send(adapter.finish_response(frame), text=True)
     except (ConnectionClosed, OSError):
         pass
     finally:
@@ -45,8 +46,9 @@ def relay_profile_connection(downstream, server_path: Path, profile_path: Path) 
         )
         response_thread.start()
         try:
-            for frame in downstream:
-                upstream.send(adapter.prepare_request(frame))
+            while True:
+                frame = downstream.recv(decode=False)
+                upstream.send(adapter.prepare_request(frame), text=True)
         except (ConnectionClosed, OSError):
             pass
         finally:
