@@ -3,7 +3,12 @@
 _build_model_segment_from_json_input() {
 	local json_input="$1"
 	local model_display_name
-	model_display_name=$(echo "$json_input" | jq -r '.model.display_name // empty')
+	model_display_name=$(echo "$json_input" | jq -r '
+		(.model.display_name // empty) as $model_display_name |
+		select($model_display_name != "") |
+		[$model_display_name, (.effort.level // empty | select(. != ""))] |
+		join(" ")
+	')
 	[ -z "$model_display_name" ] && return 0
 	printf "${COLOR_CYAN}%s${COLOR_RESET}" "$model_display_name"
 }

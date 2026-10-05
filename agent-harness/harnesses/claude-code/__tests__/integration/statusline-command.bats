@@ -135,6 +135,47 @@ _full_json_input() {
 	[[ "$stripped" == *"Opus 4.7"* ]]
 }
 
+@test "live reasoning effort appears beside the model in Codex format" {
+	local effort_level json_input stripped
+	for effort_level in low medium high xhigh max; do
+		json_input=$(echo "$(_minimal_json_input)" | jq -c --arg effort "$effort_level" '.effort.level = $effort')
+		_run_statusline_with_json "$json_input"
+		[ "$status" -eq 0 ]
+		stripped=$(echo "$output" | _strip_ansi_escape_codes)
+		[[ "$stripped" == "Opus 4.7 $effort_level │ "* ]]
+	done
+}
+
+@test "live reasoning effort takes precedence over the launch environment" {
+	local json_input stripped
+	json_input=$(echo "$(_minimal_json_input)" | jq -c '.effort.level = "high"')
+	run bash -c "echo '$json_input' | CLAUDE_CODE_EFFORT_LEVEL=low bash '$SCRIPT_UNDER_TEST'"
+	[ "$status" -eq 0 ]
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == "Opus 4.7 high │ "* ]]
+}
+
+@test "unavailable reasoning effort leaves the model display unchanged" {
+	local effort_value json_input stripped
+	for effort_value in null '""'; do
+		json_input=$(echo "$(_minimal_json_input)" | jq -c --argjson effort "$effort_value" '.effort.level = $effort')
+		_run_statusline_with_json "$json_input"
+		[ "$status" -eq 0 ]
+		stripped=$(echo "$output" | _strip_ansi_escape_codes)
+		[[ "$stripped" == "Opus 4.7 │ "* ]]
+	done
+}
+
+@test "reasoning effort without a model does not create a model segment" {
+	local json_input stripped
+	json_input=$(echo "$(_minimal_json_input)" | jq -c 'del(.model) | .effort.level = "max"')
+	_run_statusline_with_json "$json_input"
+	[ "$status" -eq 0 ]
+	stripped=$(echo "$output" | _strip_ansi_escape_codes)
+	[[ "$stripped" == "ctx 10% │ "* ]]
+	[[ "$stripped" != *"max"* ]]
+}
+
 @test "full session id uuid is displayed" {
 	_run_statusline_with_json "$(_minimal_json_input)"
 	local stripped
