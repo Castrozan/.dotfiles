@@ -25,6 +25,7 @@ def private_launch(monkeypatch):
     monkeypatch.setattr(launcher, "wait_for_session_server", ready)
     kill_group = Mock()
     monkeypatch.setattr(launcher.os, "killpg", kill_group)
+    monkeypatch.setattr(launcher, "process_group_exists", lambda identifier: False)
     return server, client, processes, ready, kill_group
 
 
@@ -70,7 +71,23 @@ def test_stuck_server_gets_bounded_shutdown_then_group_kill(monkeypatch):
     process.wait.side_effect = [subprocess.TimeoutExpired("codex", 1), 0]
     kill_group = Mock()
     monkeypatch.setattr(launcher.os, "killpg", kill_group)
+    monkeypatch.setattr(launcher, "process_group_exists", lambda identifier: False)
     launcher.stop_process(process, process_group=True)
+    assert [call.args for call in kill_group.call_args_list] == [
+        (789, signal.SIGTERM),
+        (789, signal.SIGKILL),
+    ]
+
+
+def test_cleanup_kills_remaining_children_after_server_has_exited(monkeypatch):
+    server = Mock(pid=789)
+    server.wait.return_value = 0
+    kill_group = Mock()
+    monkeypatch.setattr(launcher.os, "killpg", kill_group)
+    monkeypatch.setattr(launcher, "process_group_exists", lambda identifier: True)
+    monkeypatch.setattr(launcher.time, "monotonic", Mock(side_effect=[0, 0, 2]))
+    monkeypatch.setattr(launcher.time, "sleep", Mock())
+    launcher.stop_process(server, process_group=True)
     assert [call.args for call in kill_group.call_args_list] == [
         (789, signal.SIGTERM),
         (789, signal.SIGKILL),

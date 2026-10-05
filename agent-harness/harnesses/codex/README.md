@@ -9,7 +9,7 @@ client exits. Package upgrades apply to new launches without requiring existing 
 connections and `--no-daemon` retain their native behavior; noninteractive commands and autonomous callers use the
 upstream launch path.
 
-After the first prompt creates the session, SessionStart derives its Servant from the thread ID and sets the native
+On the first prompt, SessionStart derives the session's Servant from the thread ID and sets the native
 thread name through that terminal's server. The footer displays the name. Existing titles retain their text with the
 Servant prefixed in brackets; resume and compaction keep the same identity, while forks derive one from their new ID.
 

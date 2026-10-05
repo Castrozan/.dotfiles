@@ -28,9 +28,18 @@ def wait_for_session_server(server, socket_path: Path) -> None:
     raise TimeoutError("Codex private session server did not become ready within 5s")
 
 
+def process_group_exists(process_identifier: int) -> bool:
+    try:
+        os.killpg(process_identifier, 0)
+    except ProcessLookupError:
+        return False
+    return True
+
+
 def stop_process(process, *, process_group: bool = False) -> None:
     if process is None:
         return
+    deadline = time.monotonic() + 1.0
     if process_group:
         try:
             os.killpg(process.pid, signal.SIGTERM)
@@ -49,6 +58,14 @@ def stop_process(process, *, process_group: bool = False) -> None:
         else:
             process.kill()
         process.wait()
+    if process_group:
+        while time.monotonic() < deadline and process_group_exists(process.pid):
+            time.sleep(0.05)
+        if process_group_exists(process.pid):
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
 
 
 def stop_client_when_server_exits(server, client) -> None:
