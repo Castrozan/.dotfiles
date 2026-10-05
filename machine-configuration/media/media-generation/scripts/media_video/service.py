@@ -40,6 +40,7 @@ class VideoService:
             raise VideoError("operation_unavailable") from None
         if (
             receipt.get("operation_id") != operation_id
+            or not isinstance(receipt.get("status"), str)
             or receipt.get("status") not in {"dispatching", "succeeded", "failed"}
             or not valid_digest(receipt.get("request_sha256"))
         ):

@@ -93,6 +93,21 @@ class JsonCliTests(unittest.TestCase):
         self.assertEqual(json.loads(stderr), {"error": "invalid_request"})
         self.assertEqual(self.fixture.commands.calls, [])
 
+    def test_malformed_receipt_status_returns_bounded_json(self):
+        VideoService(self.fixture.state).render(
+            self.operation_id, self.fixture.request, self.fixture.renderer
+        )
+        receipt_path = self.fixture.state / self.operation_id / "receipt.json"
+        document = json.loads(receipt_path.read_bytes())
+        for status in ([], {}, None, 0):
+            document["status"] = status
+            write_json(receipt_path, document)
+            code, stdout, stderr = self.invoke(["inspect", self.operation_id])
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, "")
+            self.assertEqual(json.loads(stderr), {"error": "invalid_receipt"})
+        self.assertEqual(len(self.fixture.commands.calls), 4)
+
     def test_separate_process_inspect_runs_without_any_adapter(self):
         expected = VideoService(self.fixture.state).render(
             self.operation_id, self.fixture.request, self.fixture.renderer
