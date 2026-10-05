@@ -28,7 +28,9 @@ def test_footer_name_matches_injected_servant_for_minted_thread(session_client):
     assert status_handler.handle(payload) is None
     connection.assert_called_once_with("/tmp/private.sock")
     client.thread_name.assert_called_once_with("codex-name-probe")
-    client.set_thread_name.assert_called_once_with("codex-name-probe", identity["name"])
+    client.set_thread_name.assert_called_once_with(
+        "codex-name-probe", f"[{identity['name']}]"
+    )
 
 
 @pytest.mark.parametrize("source", ["resume", "compact"])
@@ -44,10 +46,12 @@ def test_repeated_session_does_not_rename_again(session_client, source):
 @pytest.mark.parametrize(
     "title,expected",
     [
-        (None, "BB"),
-        ("", "BB"),
-        ("BB", "BB"),
-        ("Bedivere", "BB"),
+        (None, "[BB]"),
+        ("", "[BB]"),
+        ("BB", "[BB] BB"),
+        ("Bedivere", "[BB] Bedivere"),
+        ("[BB]", "[BB]"),
+        ("[Bedivere]", "[BB]"),
         ("Human title", "[BB] Human title"),
         ("[Bedivere] Human title", "[BB] Human title"),
         ("[BB] Human title", "[BB] Human title"),

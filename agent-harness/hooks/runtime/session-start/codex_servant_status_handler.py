@@ -12,14 +12,14 @@ def servant_thread_name(thread_name: str | None, servant_name: str) -> str:
     title = thread_name or ""
     for servant in SERVANT_CATALOG:
         name = servant["name"]
-        if title == name:
+        if title == f"[{name}]":
             title = ""
             break
         prefix = f"[{name}] "
         if title.startswith(prefix):
             title = title[len(prefix) :]
             break
-    return f"[{servant_name}] {title}" if title else servant_name
+    return f"[{servant_name}] {title}" if title else f"[{servant_name}]"
 
 
 def handle(hook_input: dict):

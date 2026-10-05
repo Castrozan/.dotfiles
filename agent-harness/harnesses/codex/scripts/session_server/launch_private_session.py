@@ -101,6 +101,8 @@ def run_private_session(arguments: list[str]) -> int:
         endpoint = f"unix://{socket_path}"
         environment = os.environ.copy()
         environment.pop("CODEX_THREAD_ID", None)
+        if environment.get("CODEX_HOME"):
+            environment["CODEX_HOME"] = str(Path(environment["CODEX_HOME"]).resolve())
         environment["CODEX_SESSION_SOCKET_PATH"] = str(socket_path)
         server = None
         client = None

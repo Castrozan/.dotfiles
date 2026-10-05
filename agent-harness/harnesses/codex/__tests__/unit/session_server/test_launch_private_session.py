@@ -84,6 +84,20 @@ def test_managed_permissions_apply_on_server_without_remote_resume_overrides(
     assert client_call.args[0][3:] == ["resume", "thread-123"]
 
 
+def test_relative_codex_home_keeps_caller_location_when_server_changes_directory(
+    private_launch, monkeypatch, tmp_path
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("CODEX_HOME", "agent-home")
+    _, _, processes, _, _ = private_launch
+    launcher.run_private_session(["-C", str(tmp_path / "project")])
+    server_call, client_call = processes.call_args_list
+    assert server_call.kwargs["cwd"] == tmp_path / "project"
+    expected_home = str(tmp_path / "agent-home")
+    assert server_call.kwargs["env"]["CODEX_HOME"] == expected_home
+    assert client_call.kwargs["env"]["CODEX_HOME"] == expected_home
+
+
 def test_signal_exit_status_retains_native_signal(private_launch):
     _, client, _, _, _ = private_launch
     client.wait.return_value = -signal.SIGTERM
