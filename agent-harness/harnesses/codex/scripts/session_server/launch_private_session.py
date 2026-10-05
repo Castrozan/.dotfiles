@@ -8,6 +8,7 @@ import threading
 import time
 
 from codex_app_server_client import CodexAppServerClient
+from profile_connection import profile_connection_path
 from session_server_configuration import server_configuration_for
 
 
@@ -95,16 +96,20 @@ def run_private_session(arguments: list[str]) -> int:
                 start_new_session=True,
             )
             wait_for_session_server(server, socket_path)
-            client = subprocess.Popen(
-                [binary, "--remote", endpoint, *arguments], env=environment
-            )
-            threading.Thread(
-                target=stop_client_when_server_exits,
-                args=(server, client),
-                daemon=True,
-            ).start()
-            exit_status = client.wait()
-            return exit_status if exit_status >= 0 else 128 - exit_status
+            with profile_connection_path(
+                socket_path, configuration.profile_path
+            ) as client_path:
+                client = subprocess.Popen(
+                    [binary, "--remote", f"unix://{client_path}", *arguments],
+                    env=environment,
+                )
+                threading.Thread(
+                    target=stop_client_when_server_exits,
+                    args=(server, client),
+                    daemon=True,
+                ).start()
+                exit_status = client.wait()
+                return exit_status if exit_status >= 0 else 128 - exit_status
         finally:
             stop_process(client)
             stop_process(server, process_group=True)

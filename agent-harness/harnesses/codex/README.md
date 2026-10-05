@@ -18,3 +18,7 @@ and seeds writable profile files during activation. Codex can save model and rea
 rebuilds preserve those selections unless the workspace explicitly declares the corresponding setting. Instructions and
 other workspace settings remain declarative. Profiles reuse the main configuration's merge policy for project trust,
 marketplaces, plugins, and hook approvals. Malformed profile files fail activation without overwriting the file.
+
+The remote app-server accepts configuration writes only to the base user config. The private connection adapter saves
+model and reasoning selections to the selected profile after a successful native acknowledgement, preserving the base
+settings. Other requests retain their native behavior.

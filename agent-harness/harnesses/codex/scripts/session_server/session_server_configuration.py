@@ -11,6 +11,7 @@ import tomlkit
 class CodexServerConfiguration:
     arguments: tuple[str, ...]
     working_directory: Path
+    profile_path: Path | None
 
 
 def toml_configuration_value(value):
@@ -27,13 +28,18 @@ def toml_configuration_value(value):
     return tomlkit.item(value)
 
 
-def profile_configuration_arguments(profile: str | None) -> list[str]:
+def profile_path_for(profile: str | None) -> Path | None:
     if profile is None:
-        return []
+        return None
     if Path(profile).name != profile or profile in {".", ".."}:
         raise ValueError("Codex profile must be a name")
     codex_directory = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
-    profile_path = codex_directory / f"{profile}.config.toml"
+    return (codex_directory / f"{profile}.config.toml").resolve()
+
+
+def profile_configuration_arguments(profile_path: Path | None) -> list[str]:
+    if profile_path is None:
+        return []
     configuration = tomllib.loads(profile_path.read_text())
     arguments = []
     for key, value in configuration.items():
@@ -55,7 +61,8 @@ def server_configuration_for(arguments: list[str]) -> CodexServerConfiguration:
     parser.add_argument("--disable", action="append", default=[])
     parser.add_argument("--strict-config", action="store_true")
     options, _ = parser.parse_known_args(arguments)
-    server_arguments = profile_configuration_arguments(options.profile)
+    profile_path = profile_path_for(options.profile)
+    server_arguments = profile_configuration_arguments(profile_path)
     for override in options.config:
         server_arguments.extend(("-c", override))
     for feature in options.enable:
@@ -65,4 +72,6 @@ def server_configuration_for(arguments: list[str]) -> CodexServerConfiguration:
     if options.strict_config:
         server_arguments.append("--strict-config")
     working_directory = Path(options.cd or Path.cwd()).expanduser().resolve()
-    return CodexServerConfiguration(tuple(server_arguments), working_directory)
+    return CodexServerConfiguration(
+        tuple(server_arguments), working_directory, profile_path
+    )
