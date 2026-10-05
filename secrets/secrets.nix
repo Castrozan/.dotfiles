@@ -45,6 +45,7 @@ in
   "api-keys/sonarqube-token.age".publicKeys = all_keys;
   "credentials/glab-token.age".publicKeys = all_keys;
   "credentials/gitlab-com-token.age".publicKeys = all_keys;
+  "credentials/github-com-token.age".publicKeys = all_keys;
   "credentials/x/x-username.age".publicKeys = all_keys;
   "credentials/x/x-email.age".publicKeys = all_keys;
   "credentials/x/x-password.age".publicKeys = all_keys;

@@ -5,10 +5,12 @@ let
   );
 in
 {
-  imports = [ ../../../agent-harness/commit-provenance/commit-provenance-home-manager.nix ];
+  imports = [
+    ../../../agent-harness/commit-provenance/commit-provenance-home-manager.nix
+    ./github-home-manager.nix
+  ];
 
   home.packages = with pkgs; [
-    gh
     delta
   ];
 
@@ -37,17 +39,17 @@ in
         dark = true;
       };
       diff.context = 5;
-      url."https://gitlab.com/Castrozan/dotfiles.git".insteadOf = [
-        "git@github.com:Castrozan/.dotfiles.git"
-        "https://github.com/Castrozan/.dotfiles.git"
+      url."git@github.com:Castrozan/.dotfiles.git".insteadOf = [
+        "git@gitlab.com:Castrozan/dotfiles.git"
+        "https://gitlab.com/Castrozan/dotfiles.git"
       ];
-      url."https://gitlab.com/Castrozan/dotfiles-private.git".insteadOf = [
-        "git@github.com:Castrozan/dotfiles-private.git"
-        "https://github.com/Castrozan/dotfiles-private.git"
+      url."git@github.com:Castrozan/dotfiles-private.git".insteadOf = [
+        "git@gitlab.com:Castrozan/dotfiles-private.git"
+        "https://gitlab.com/Castrozan/dotfiles-private.git"
       ];
-      url."https://gitlab.com/Castrozan/zanoni-system.git".insteadOf = [
-        "git@github.com:Castrozan/zanoni-system.git"
-        "https://github.com/Castrozan/zanoni-system.git"
+      url."git@github.com:Castrozan/zanoni-system.git".insteadOf = [
+        "git@gitlab.com:Castrozan/zanoni-system.git"
+        "https://gitlab.com/Castrozan/zanoni-system.git"
       ];
     };
   };

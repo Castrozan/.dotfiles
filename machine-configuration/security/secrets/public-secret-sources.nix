@@ -4,6 +4,7 @@ in
 [
   (secret "credentials/glab-token" ../../../secrets/credentials/glab-token.age)
   (secret "credentials/gitlab-com-token" ../../../secrets/credentials/gitlab-com-token.age)
+  (secret "credentials/github-com-token" ../../../secrets/credentials/github-com-token.age)
   (secret "credentials/jira-api-token" ../../../secrets/credentials/jira-api-token.age)
   (secret "api-keys/sonarqube-token" ../../../secrets/api-keys/sonarqube-token.age)
   (secret "api-keys/brave-api-key" ../../../secrets/api-keys/brave-api-key.age)
