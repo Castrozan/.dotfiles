@@ -17,7 +17,7 @@ My personal computing environment, declared with **Nix**, **Home Manager** and *
 
 https://github.com/user-attachments/assets/65edec3b-1c2a-4a20-8bed-ee9ef6a4758b
 
-Fresh desktop captures and animated architecture, with English narration and an original electronic soundtrack. The rebuild and CI scenes illustrate the configuration workflow.
+A narrated tour of the Linux and macOS desktops, shared tools and configuration workflow.
 
 ## The desktop
 
