@@ -44,24 +44,31 @@ def describe_speech_providers():
     }
 
 
-def generate_speech(args, service):
+def read_speech_request(args):
     text = args.text
     if args.text_file is not None:
         with args.text_file.open(encoding="utf-8") as input_file:
             text = input_file.read(MAXIMUM_TEXT_CHARACTERS + 1)
     text = direct_speech_text(text, args.provider, args.model, args.directions)
-    request = SpeechRequest(text, args.voice, args.language)
+    return SpeechRequest(text, args.voice, args.language)
+
+
+def create_speech_provider(args):
     if args.provider == "elevenlabs":
-        provider = ElevenLabsSpeechProvider(read_elevenlabs_api_key(), model=args.model)
-    else:
-        if args.model is not None and args.model != KokoroSpeechProvider.model:
-            raise SpeechError("unsupported_model")
-        provider = KokoroSpeechProvider(
-            Path(os.environ["MEDIA_KOKORO_MODEL"]),
-            Path(os.environ["MEDIA_KOKORO_VOICES"]),
-            Path(os.environ["MEDIA_ESPEAK_LIBRARY"]),
-            Path(os.environ["MEDIA_ESPEAK_DATA"]),
-        )
+        return ElevenLabsSpeechProvider(read_elevenlabs_api_key(), model=args.model)
+    if args.model is not None and args.model != KokoroSpeechProvider.model:
+        raise SpeechError("unsupported_model")
+    return KokoroSpeechProvider(
+        Path(os.environ["MEDIA_KOKORO_MODEL"]),
+        Path(os.environ["MEDIA_KOKORO_VOICES"]),
+        Path(os.environ["MEDIA_ESPEAK_LIBRARY"]),
+        Path(os.environ["MEDIA_ESPEAK_DATA"]),
+    )
+
+
+def generate_speech(args, service):
+    request = read_speech_request(args)
+    provider = create_speech_provider(args)
     if args.command == "validate":
         provider.preflight(request)
         return {"status": "valid", "provider": provider.name, "model": provider.model}

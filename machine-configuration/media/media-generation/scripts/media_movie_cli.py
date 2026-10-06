@@ -72,23 +72,27 @@ def execute_movie_command(args):
             args.operation_id,
         )
     else:
-        state_directory = args.state_directory.expanduser().absolute()
-        assembler = FfmpegMovieAssembler(
-            os.environ["MEDIA_MOVIE_FFMPEG"], os.environ["MEDIA_MOVIE_FFPROBE"]
-        )
-        assets = MovieAssetGateway(
-            os.environ["MEDIA_IMAGE_COMMAND"],
-            os.environ["MEDIA_SPEECH_COMMAND"],
-            args.image_state_directory.expanduser().absolute(),
-            args.speech_state_directory.expanduser().absolute(),
-        )
-        service = MovieService(state_directory, assets, assembler)
-        document = read_json(args.request_file.expanduser().absolute())
-        request = read_movie_request(document)
-        operation_id = document.get("operation_id") or str(uuid.uuid4())
-        print(json.dumps({"operation_id": operation_id}), file=sys.stderr, flush=True)
-        result = service.generate(operation_id, request)
+        result = generate_movie(args)
     return result
+
+
+def generate_movie(args):
+    state_directory = args.state_directory.expanduser().absolute()
+    assembler = FfmpegMovieAssembler(
+        os.environ["MEDIA_MOVIE_FFMPEG"], os.environ["MEDIA_MOVIE_FFPROBE"]
+    )
+    assets = MovieAssetGateway(
+        os.environ["MEDIA_IMAGE_COMMAND"],
+        os.environ["MEDIA_SPEECH_COMMAND"],
+        args.image_state_directory.expanduser().absolute(),
+        args.speech_state_directory.expanduser().absolute(),
+    )
+    service = MovieService(state_directory, assets, assembler)
+    document = read_json(args.request_file.expanduser().absolute())
+    request = read_movie_request(document)
+    operation_id = document.get("operation_id") or str(uuid.uuid4())
+    print(json.dumps({"operation_id": operation_id}), file=sys.stderr, flush=True)
+    return service.generate(operation_id, request)
 
 
 def main(arguments=None):
