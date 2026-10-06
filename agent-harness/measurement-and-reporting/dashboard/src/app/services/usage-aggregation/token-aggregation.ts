@@ -1,4 +1,8 @@
-import { DailyModelTokens, ModelUsageTotals } from '../../models/usage-snapshot.model';
+import {
+  DailyModelTokens,
+  ModelTokenTotals,
+  ModelUsageTotals,
+} from '../../models/usage-snapshot.model';
 import { TokenTotals } from '../../models/account-view.model';
 
 export const AGGREGATE_TOKEN_FIELDS: (keyof TokenTotals)[] = [
@@ -9,15 +13,22 @@ export const AGGREGATE_TOKEN_FIELDS: (keyof TokenTotals)[] = [
   'cost_usd',
 ];
 
+function accumulateModelTokenTotals(
+  accumulated: ModelTokenTotals,
+  modelTotals: ModelTokenTotals,
+): void {
+  for (const [fieldName, fieldValue] of Object.entries(modelTotals)) {
+    const key = fieldName as keyof ModelTokenTotals;
+    accumulated[key] = (accumulated[key] ?? 0) + (fieldValue ?? 0);
+  }
+}
+
 export function sumModelUsageTotals(modelUsageTotalsList: ModelUsageTotals[]): ModelUsageTotals {
   const summed: ModelUsageTotals = {};
   for (const modelUsageTotals of modelUsageTotalsList) {
     for (const [modelName, modelTotals] of Object.entries(modelUsageTotals)) {
       const accumulated = (summed[modelName] ??= {});
-      for (const [fieldName, fieldValue] of Object.entries(modelTotals)) {
-        const key = fieldName as keyof typeof accumulated;
-        accumulated[key] = (accumulated[key] ?? 0) + (fieldValue ?? 0);
-      }
+      accumulateModelTokenTotals(accumulated, modelTotals);
     }
   }
   return summed;
@@ -39,6 +50,18 @@ export function aggregateTokenFields(modelUsageTotals: ModelUsageTotals): TokenT
   };
 }
 
+function accumulateDailyTokenTotal(
+  dailyTotalTokens: Record<string, number>,
+  dailyEntry: DailyModelTokens,
+  entryDate: string,
+): void {
+  const dayTokenSum = Object.values(dailyEntry.tokens_by_model ?? {}).reduce(
+    (runningTotal, tokenCount) => runningTotal + tokenCount,
+    0,
+  );
+  dailyTotalTokens[entryDate] = (dailyTotalTokens[entryDate] ?? 0) + dayTokenSum;
+}
+
 export function combineDailyTotalTokens(
   dailyModelTokensList: DailyModelTokens[][],
 ): Record<string, number> {
@@ -49,11 +72,7 @@ export function combineDailyTotalTokens(
       if (!entryDate) {
         continue;
       }
-      const dayTokenSum = Object.values(dailyEntry.tokens_by_model ?? {}).reduce(
-        (runningTotal, tokenCount) => runningTotal + tokenCount,
-        0,
-      );
-      dailyTotalTokens[entryDate] = (dailyTotalTokens[entryDate] ?? 0) + dayTokenSum;
+      accumulateDailyTokenTotal(dailyTotalTokens, dailyEntry, entryDate);
     }
   }
   return dailyTotalTokens;

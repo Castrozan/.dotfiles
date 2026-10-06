@@ -115,10 +115,14 @@ def compare_latest_to_baseline(results_file: pathlib.Path) -> bool:
         gated.document, measured_values, "max_allowed_ms"
     )
 
+    return report_latest_comparison(comparison, gated.document, measured_values)
+
+
+def report_latest_comparison(comparison, baseline_document, measured_values) -> bool:
     for name in comparison.missing_names:
         print(f"  MISSING  {name}: the latest run measured nothing")
     for name in comparison.exceeded_names:
-        ceiling_ms = gated.document["measurements"][name]["max_allowed_ms"]
+        ceiling_ms = baseline_document["measurements"][name]["max_allowed_ms"]
         print(
             f"  SLOWER   {name}: {desktop_benchmarks.results.format_ms(measured_values[name])} exceeds "
             f"max {desktop_benchmarks.results.format_ms(ceiling_ms)}"

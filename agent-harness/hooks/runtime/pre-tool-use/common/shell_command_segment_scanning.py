@@ -57,25 +57,48 @@ def subcommand_after_global_options(tokens):
     return ""
 
 
+def _mark_escaped_character(
+    command_text, quote_states, scan_index, open_quote_character
+):
+    if (
+        command_text[scan_index] == "\\"
+        and open_quote_character != LITERAL_QUOTE_CHARACTER
+    ):
+        quote_states[scan_index] = LITERAL_QUOTE_CHARACTER
+        if scan_index + 1 < len(command_text):
+            quote_states[scan_index + 1] = LITERAL_QUOTE_CHARACTER
+        return scan_index + 2
+    return None
+
+
+def _quote_state_after_character(
+    command_text, quote_states, scan_index, open_quote_character
+):
+    character = command_text[scan_index]
+    if open_quote_character:
+        quote_states[scan_index] = open_quote_character
+        if character == open_quote_character:
+            return UNQUOTED_STATE
+    elif character in SHELL_QUOTE_CHARACTERS:
+        quote_states[scan_index] = character
+        return character
+    return open_quote_character
+
+
 def quote_state_by_offset(command_text):
     quote_states = [UNQUOTED_STATE] * len(command_text)
     open_quote_character = UNQUOTED_STATE
     scan_index = 0
     while scan_index < len(command_text):
-        character = command_text[scan_index]
-        if character == "\\" and open_quote_character != LITERAL_QUOTE_CHARACTER:
-            quote_states[scan_index] = LITERAL_QUOTE_CHARACTER
-            if scan_index + 1 < len(command_text):
-                quote_states[scan_index + 1] = LITERAL_QUOTE_CHARACTER
-            scan_index += 2
+        escaped_scan_end = _mark_escaped_character(
+            command_text, quote_states, scan_index, open_quote_character
+        )
+        if escaped_scan_end is not None:
+            scan_index = escaped_scan_end
             continue
-        if open_quote_character:
-            quote_states[scan_index] = open_quote_character
-            if character == open_quote_character:
-                open_quote_character = UNQUOTED_STATE
-        elif character in SHELL_QUOTE_CHARACTERS:
-            quote_states[scan_index] = character
-            open_quote_character = character
+        open_quote_character = _quote_state_after_character(
+            command_text, quote_states, scan_index, open_quote_character
+        )
         scan_index += 1
     return quote_states
 
@@ -137,6 +160,15 @@ def offset_is_inside_command_substitution(command_text, offset):
     ) > substitution_characters_in_force.count(")")
 
 
+def _downstream_pipeline_segment_end(command_text, start, quote_states):
+    end = start
+    while end < len(command_text) and not offset_separates_segments(
+        command_text, end, quote_states
+    ):
+        end += 1
+    return end
+
+
 def pipeline_downstream_executes_its_input(command_text, segment_end):
     quote_states = quote_state_by_offset(command_text)
     scan_index = segment_end
@@ -144,11 +176,9 @@ def pipeline_downstream_executes_its_input(command_text, segment_end):
         if command_text.startswith("||", scan_index):
             return False
         downstream_start = scan_index + 1
-        downstream_end = downstream_start
-        while downstream_end < len(command_text) and not offset_separates_segments(
-            command_text, downstream_end, quote_states
-        ):
-            downstream_end += 1
+        downstream_end = _downstream_pipeline_segment_end(
+            command_text, downstream_start, quote_states
+        )
         downstream_command_name = leading_command_name(
             tokens_after_leading_variable_assignments(
                 command_text[downstream_start:downstream_end]

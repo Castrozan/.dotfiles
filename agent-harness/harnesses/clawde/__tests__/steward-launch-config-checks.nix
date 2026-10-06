@@ -33,8 +33,38 @@ let
     parseDeployedJson
       (helpers.homeManagerTestConfiguration (bothHarnessModules ++ [ ../agents/steward.nix ]))
       .home.file."clawde/launch-config/steward.json".text;
+
+  stewardPersonalityForHost =
+    hostname:
+    (helpers.homeManagerTestConfigurationForLinuxHost hostname (
+      bothHarnessModules ++ [ ../agents/steward.nix ]
+    )).clawde.agents.steward.personality;
+
+  rinStewardLaunchConfig =
+    parseDeployedJson
+      (helpers.homeManagerTestConfigurationForLinuxHost "rin" (
+        bothHarnessModules ++ [ ../agents/steward.nix ]
+      )).home.file."clawde/launch-config/steward.json".text;
 in
 {
+  clawde-rin-steward-checks-activation-before-its-model-gate =
+    mkEvalCheck "clawde-rin-steward-checks-activation-before-its-model-gate"
+      (builtins.any (
+        argument:
+        builtins.isString argument
+        && builtins.match ".*steward-rebuild.*clawde-heartbeat-change-gate.*" argument != null
+      ) rinStewardLaunchConfig.heartbeat_driver_argv)
+      "a dirty or unreachable upstream must not suppress local activation when the heartbeat suppresses repeated model turns";
+
+  clawde-steward-standing-activation-permission-is-scoped-to-rin =
+    mkEvalCheck "clawde-steward-standing-activation-permission-is-scoped-to-rin"
+      (
+        pkgs.lib.hasInfix "### Standing activation permission" (stewardPersonalityForHost "rin")
+        && !(pkgs.lib.hasInfix "### Standing activation permission" (stewardPersonalityForHost "kira"))
+        && !(pkgs.lib.hasInfix "### Standing activation permission" (stewardPersonalityForHost "chise"))
+      )
+      "rin's standing operator approval must reach its steward without authorizing activation during active use on other hosts";
+
   clawde-claude-effort-reaches-every-launch-mode =
     mkEvalCheck "clawde-claude-effort-reaches-every-launch-mode"
       (builtins.all

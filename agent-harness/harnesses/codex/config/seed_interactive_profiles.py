@@ -29,11 +29,9 @@ def seed_profile(source_path: Path, profile_path: Path) -> None:
     configuration = merge_runtime_preserved_configuration(
         source_configuration, current_configuration
     )
-    for setting in ("model", "model_reasoning_effort"):
-        if setting in source_configuration:
-            configuration[setting] = source_configuration[setting]
-        elif setting in current_configuration:
-            configuration[setting] = current_configuration[setting]
+    _preserve_profile_model_settings(
+        configuration, source_configuration, current_configuration
+    )
     content = tomli_w.dumps(configuration).encode()
     if (
         not profile_path.is_symlink()
@@ -51,6 +49,16 @@ def seed_profile(source_path: Path, profile_path: Path) -> None:
             temporary_path.replace(profile_path)
         finally:
             temporary_path.unlink(missing_ok=True)
+
+
+def _preserve_profile_model_settings(
+    configuration: dict, source_configuration: dict, current_configuration: dict
+) -> None:
+    for setting in ("model", "model_reasoning_effort"):
+        if setting in source_configuration:
+            configuration[setting] = source_configuration[setting]
+        elif setting in current_configuration:
+            configuration[setting] = current_configuration[setting]
 
 
 def main() -> None:

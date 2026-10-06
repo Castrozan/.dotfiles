@@ -46,6 +46,10 @@ def read_arr_bind_address() -> str | None:
     env_file = stack_home_directory() / ".env"
     if not env_file.is_file():
         return None
+    return _bind_address_from_environment_file(env_file)
+
+
+def _bind_address_from_environment_file(env_file):
     for line in env_file.read_text(encoding="utf-8").splitlines():
         if line.startswith("ARR_BIND_ADDR="):
             return line.split("=", 1)[1].strip() or None

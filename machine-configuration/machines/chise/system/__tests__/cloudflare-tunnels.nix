@@ -45,10 +45,6 @@ let
         localServiceUrl = "http://127.0.0.1:9444";
       }
       {
-        hostname = "read.lucaszanoni.com";
-        localServiceUrl = "http://127.0.0.1:9445";
-      }
-      {
         hostname = "stream.lucaszanoni.com";
         localServiceUrl = "http://127.0.0.1:9446";
       }
@@ -83,7 +79,6 @@ in
         && cloudflareTunnelConnectorEnabledTunnel.ingress."watch.lucaszanoni.com" == "http://127.0.0.1:9443"
         &&
           cloudflareTunnelConnectorEnabledTunnel.ingress."request.lucaszanoni.com" == "http://127.0.0.1:9444"
-        && cloudflareTunnelConnectorEnabledTunnel.ingress."read.lucaszanoni.com" == "http://127.0.0.1:9445"
         &&
           cloudflareTunnelConnectorEnabledTunnel.ingress."stream.lucaszanoni.com" == "http://127.0.0.1:9446"
       )

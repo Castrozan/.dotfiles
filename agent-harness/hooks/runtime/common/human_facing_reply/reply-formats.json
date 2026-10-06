@@ -69,6 +69,10 @@
       }
     },
     {
+      "name": "formatted_link",
+      "message": "uses formatted links; write bare URLs or local paths so WezTerm can detect them, except literal code and blockquotes"
+    },
+    {
       "name": "required_labels",
       "message": "runs {word_count} prose words, past the {maximum_words}-word confirmation, but omits the {missing_labels} label"
     },

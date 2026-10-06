@@ -261,11 +261,24 @@ playlist's, because the record pass is incremental: see Refresh.
   per-scene and pipeline digests the fingerprint is built from), `recorded_loop_upload_server`
   (stdlib HTTP receiver, and the only thing that answers the browser's fingerprint queries),
   `render_ambient_canvas_loop` (drives a throwaway Chrome record window),
-  `display_ambient_canvas_loop` (spawns the native player binary detached), and
+  `display_ambient_canvas_loop` (starts the player through a detached supervisor), and
   `ensure_ambient_canvas_screensaver` (the launchd entry: regenerate if stale, then keep the
   window alive), plus `byte_range_request_handler` (HTTP Range support) and `scene_video_cache`
   (yt-dlp fetches for video-backed scenes). No external encoder is used, because the nixpkgs
   `ffmpeg` is AMFI-killed on the M-series host; the browser encodes the H.264 segments itself.
+
+Diagnostics live under `~/.local/state/ambient-canvas/`. `launcher.log` records health checks,
+recording decisions, player replacements and launcher failures. Each launch creates a
+`player-runs/<run>/` directory containing `player.log`, `supervisor.log` and `report.json`.
+The report records the command, process IDs and start time before playback, then adds the
+exit code, signal, elapsed time and last 64 KiB of output when the player exits. A report
+left in `running` state after both processes disappear means the supervisor did not record
+the exit. These process-exit reports complement macOS stack traces in
+`~/Library/Logs/DiagnosticReports/`; a signal alone does not identify who sent it.
+
+Player and launcher logs rotate at 1 MiB with two backups. The next launch retains the ten
+most recent inactive runs and preserves runs whose supervisor is still alive. The supervisor
+blocks waiting for the player and its output; it does not poll the desktop or network.
 
 ### bad-apple (video-backed scene)
 

@@ -2,7 +2,7 @@
 
 Self-hosted media-automation stack, deployed declaratively to `~/arr-stack/` on
 host **chise** only, as a single docker-compose project. The always-on front ends
-and their sidecars (Jellyfin, Jellyseerr, Kavita, Suwayomi, Miwayomi, its gateway,
+and their sidecars (Jellyfin, Jellyseerr, Suwayomi, Miwayomi, its gateway,
 FlareSolverr, Audiobookshelf, and ReadMeABook) run under `restart: unless-stopped`, so they start on boot and
 self-heal. The download chain (qBittorrent and the \*arr apps) stays
 `restart: "no"` and is driven by the on-demand supervisor
@@ -148,12 +148,9 @@ descends from Overseerr and models only movies and television, so books and mang
 have no media type there and no plugin adds one. Wanting a title is therefore
 something you act on in the manga reader, not something anyone approves.
 
-Suwayomi handles manga discovery, browser reading, and downloads
-Kavita-compatible CBZ files. Its library, extension state, reading progress, and
-browser state persist in the arr-stack config root, while its downloads persist on
-the shared data drive. Kavita serves the persisted CBZ library read-only. Its source
-directory is a publisher and each title directory beneath it is a series, a nesting
-Kavita documents as supported.
+Suwayomi handles manga discovery, browser reading, and downloads CBZ files. Its
+library, extension state, reading progress, and browser state persist in the
+arr-stack config root, while its downloads persist on the shared data drive.
 
 Miwayomi handles instant anime playback. Its extension state, favorites, and watch
 progress persist in the arr-stack config root.
@@ -161,13 +158,11 @@ progress persist in the arr-stack config root.
 Suwayomi and Miwayomi run in the Compose project. They share its FlareSolverr
 sidecar.
 
-Two boundaries are easy to erase by accident. The manga tree sits beside the Jellyfin
-media root rather than inside it, because Jellyfin bind-mounts that whole root while
-the per-account allowlist reasons only about declared Jellyfin libraries, so anything
-else living there is content Jellyfin serves paths into and no allowlist covers. And
-who may read what is Kavita's own account model, not the friend policy in the
-`arr_users` package, which knows only Jellyfin and Jellyseerr. Kavita carries a login
-and is published behind the login rate-limiting proxy like the other front ends.
+The manga tree sits beside the Jellyfin media root rather than inside it, because
+Jellyfin bind-mounts that whole root while the per-account allowlist reasons only
+about declared Jellyfin libraries. Anything else living there is content Jellyfin
+serves paths into and no allowlist covers.
+
 Miwayomi and Suwayomi carry no application authentication, so their public hostnames
 require owner authentication at Cloudflare Access. Their plain HTTP ports remain
 bound to chise's tailnet address for direct local access.

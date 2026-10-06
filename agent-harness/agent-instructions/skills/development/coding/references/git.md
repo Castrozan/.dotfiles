@@ -1,5 +1,8 @@
 ### Context gathering
 
+Load the [forge skill](../../forge/SKILL.md) for pull requests, merge requests, reviews or hosted CI. Resolve the actual
+upstream before choosing a hosting CLI; the checkout's origin and a CLI's default host need not agree.
+
 Before a Git mutation, establish the intended repository and inspect status, staged and unstaged diffs, and enough
 recent history to understand the local commit convention. Read actual diffs; filenames and summaries are not sufficient
 evidence of what a commit contains. Keep every operation scoped to the intended repository even when the shell or

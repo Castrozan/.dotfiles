@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from forge.repository import Repository
 from commands import captures_without_an_open_pull_request
 from ril import build_parser
 from pull_requests import (
@@ -62,6 +63,10 @@ def test_the_slug_survives_punctuation_and_non_ascii():
 
 def test_only_ril_branches_count_as_the_watchers_pull_requests(monkeypatch):
     monkeypatch.setattr(
+        "pull_requests.resolve_repository",
+        lambda _: Repository("github", "github.com", "owner/repository"),
+    )
+    monkeypatch.setattr(
         subprocess,
         "run",
         lambda *_, **__: completed_process(
@@ -77,12 +82,16 @@ def test_only_ril_branches_count_as_the_watchers_pull_requests(monkeypatch):
 
 def test_a_failed_lookup_raises_rather_than_reporting_no_pull_requests(monkeypatch):
     monkeypatch.setattr(
-        subprocess,
-        "run",
-        lambda *_, **__: completed_process(
-            stderr="gh: not authenticated", returncode=1
-        ),
+        "pull_requests.resolve_repository",
+        lambda _: Repository("github", "github.com", "owner/repository"),
     )
+
+    def unavailable(*arguments, **options):
+        raise subprocess.CalledProcessError(
+            1, arguments, stderr="gh: not authenticated"
+        )
+
+    monkeypatch.setattr(subprocess, "run", unavailable)
 
     with pytest.raises(PullRequestLookupUnavailable):
         open_ril_pull_requests(Path("/repo"))

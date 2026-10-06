@@ -44,21 +44,20 @@ def parse_load_average(loadavg_output: str) -> list:
     return [float(token) for token in cleaned_tokens[:3]]
 
 
-def parse_vm_stat_interval_deltas(vm_stat_output: str, wanted_column_names) -> dict:
-    non_empty_lines = [line for line in vm_stat_output.splitlines() if line.strip()]
-    header_line_index = None
+def _vm_stat_header_line_index(non_empty_lines):
     for line_index, line in enumerate(non_empty_lines):
         if "comprs" in line.split():
-            header_line_index = line_index
-            break
-    if header_line_index is None:
-        return {}
-    header_tokens = non_empty_lines[header_line_index].split()
-    data_rows = [line.split() for line in non_empty_lines[header_line_index + 1 :]]
-    aligned_data_rows = [row for row in data_rows if len(row) == len(header_tokens)]
-    if len(aligned_data_rows) < 2:
-        return {}
-    interval_delta_row = aligned_data_rows[-1]
+            return line_index
+    return None
+
+
+def _aligned_vm_stat_data_rows(data_rows, header_width):
+    return [row for row in data_rows if len(row) == header_width]
+
+
+def _wanted_vm_stat_interval_deltas(
+    header_tokens, interval_delta_row, wanted_column_names
+):
     interval_deltas = {}
     for column_name in wanted_column_names:
         if column_name not in header_tokens:
@@ -69,6 +68,22 @@ def parse_vm_stat_interval_deltas(vm_stat_output: str, wanted_column_names) -> d
         except ValueError:
             continue
     return interval_deltas
+
+
+def parse_vm_stat_interval_deltas(vm_stat_output: str, wanted_column_names) -> dict:
+    non_empty_lines = [line for line in vm_stat_output.splitlines() if line.strip()]
+    header_line_index = _vm_stat_header_line_index(non_empty_lines)
+    if header_line_index is None:
+        return {}
+    header_tokens = non_empty_lines[header_line_index].split()
+    data_rows = [line.split() for line in non_empty_lines[header_line_index + 1 :]]
+    aligned_data_rows = _aligned_vm_stat_data_rows(data_rows, len(header_tokens))
+    if len(aligned_data_rows) < 2:
+        return {}
+    interval_delta_row = aligned_data_rows[-1]
+    return _wanted_vm_stat_interval_deltas(
+        header_tokens, interval_delta_row, wanted_column_names
+    )
 
 
 def collect_memory_pressure_level() -> list:

@@ -59,6 +59,12 @@ def collect_changed_file_paths(hook_input: dict) -> list[str]:
         unresolved_paths.extend(_paths_declared_in_apply_patch_markers(hook_input))
 
     working_directory = hook_input.get("cwd") or os.getcwd()
+    return _resolve_unique_paths(unresolved_paths, working_directory)
+
+
+def _resolve_unique_paths(
+    unresolved_paths: list[str], working_directory: str
+) -> list[str]:
     resolved_paths = []
     already_resolved = set()
     for unresolved_path in unresolved_paths:

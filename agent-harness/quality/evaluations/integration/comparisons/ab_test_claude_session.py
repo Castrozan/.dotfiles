@@ -23,35 +23,48 @@ def parse_stream_json_output(
             event = json.loads(line)
         except json.JSONDecodeError:
             continue
-
-        event_type = event.get("type", "")
-
-        if event_type == "assistant":
-            message = event.get("message", event)
-            content_blocks = message.get("content", [])
-            if not isinstance(content_blocks, list):
-                continue
-            for block in content_blocks:
-                if not isinstance(block, dict):
-                    continue
-                if block.get("type") == "tool_use":
-                    trace.tool_calls.append(
-                        ToolCallEvent(
-                            tool_name=block.get("name", ""),
-                            tool_input=block.get("input", {}),
-                        )
-                    )
-                if block.get("type") == "text":
-                    text = block.get("text", "")
-                    if text.strip():
-                        trace.assistant_messages.append(text)
-
-        if event_type == "result":
-            result_text = event.get("result", "")
-            if isinstance(result_text, str):
-                trace.assistant_messages.append(result_text)
+        _append_stream_event(trace, event)
 
     return trace
+
+
+def _append_stream_event(trace, event):
+    event_type = event.get("type", "")
+    if event_type == "assistant":
+        _append_assistant_event(trace, event)
+    if event_type == "result":
+        _append_result_event(trace, event)
+
+
+def _append_assistant_event(trace, event):
+    message = event.get("message", event)
+    content_blocks = message.get("content", [])
+    if not isinstance(content_blocks, list):
+        return
+    for block in content_blocks:
+        _append_assistant_content_block(trace, block)
+
+
+def _append_assistant_content_block(trace, block):
+    if not isinstance(block, dict):
+        return
+    if block.get("type") == "tool_use":
+        trace.tool_calls.append(
+            ToolCallEvent(
+                tool_name=block.get("name", ""),
+                tool_input=block.get("input", {}),
+            )
+        )
+    if block.get("type") == "text":
+        text = block.get("text", "")
+        if text.strip():
+            trace.assistant_messages.append(text)
+
+
+def _append_result_event(trace, event):
+    result_text = event.get("result", "")
+    if isinstance(result_text, str):
+        trace.assistant_messages.append(result_text)
 
 
 def run_claude_session_without_system_prompt(

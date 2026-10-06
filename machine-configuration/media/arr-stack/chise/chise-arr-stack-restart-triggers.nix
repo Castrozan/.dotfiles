@@ -31,20 +31,12 @@
       ../../../../secrets/credentials/media/arr-samaritano-indexer-apikey.age
     ];
 
-    arr-audiobook-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/media/arr-qbittorrent-password.age
-    ];
-
     bazarr-auth-provisioner.restartTriggers = [
       ../../../../secrets/credentials/media/arr-bazarr-password.age
     ];
 
     jellyfin-library-access-provisioner.restartTriggers = [
       ../../../../secrets/credentials/media/jellyfin-admin-api-key.age
-    ];
-
-    kavita-library-access-provisioner.restartTriggers = [
-      ../../../../secrets/credentials/media/kavita-admin-api-key.age
     ];
 
     miwayomi-extension-repositories.restartTriggers = [

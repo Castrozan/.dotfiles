@@ -106,21 +106,29 @@ def run_workflow(
     )
 
 
+def _invalid_workflow_output_message(completed_workflow):
+    return (
+        completed_workflow.stdout.strip()
+        or completed_workflow.stderr.strip()
+        or "the workflow returned no output"
+    )
+
+
+def _workflow_failure_message(result_envelope, report):
+    return (
+        report
+        or f"the workflow failed: {result_envelope.get('subtype', 'unknown error')}"
+    )
+
+
 def extract_report(completed_workflow: subprocess.CompletedProcess) -> str:
     try:
         result_envelope = json.loads(completed_workflow.stdout)
     except json.JSONDecodeError:
-        raise SystemExit(
-            completed_workflow.stdout.strip()
-            or completed_workflow.stderr.strip()
-            or "the workflow returned no output"
-        )
+        raise SystemExit(_invalid_workflow_output_message(completed_workflow))
     report = result_envelope.get("result", "")
     if result_envelope.get("is_error") or not report:
-        raise SystemExit(
-            report
-            or f"the workflow failed: {result_envelope.get('subtype', 'unknown error')}"
-        )
+        raise SystemExit(_workflow_failure_message(result_envelope, report))
     return report
 
 

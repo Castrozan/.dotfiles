@@ -10,20 +10,27 @@ def merge_runtime_preserved_configuration(
         if value_name in current_config:
             merged_config[value_name] = current_config[value_name]
     for section_name in runtime_preserved_section_names:
-        current_section = current_config.get(section_name)
-        source_section = nix_source.get(section_name)
-        if not isinstance(current_section, dict):
-            continue
-        if section_name == "plugins" and isinstance(source_section, dict):
-            merged_config[section_name] = merge_plugin_policy(
-                current_section, source_section
-            )
-        elif isinstance(source_section, dict):
-            merged_config[section_name] = current_section | source_section
-        elif section_name not in nix_source:
-            merged_config[section_name] = current_section
+        _preserve_runtime_section(
+            merged_config, current_config, nix_source, section_name
+        )
     preserve_runtime_hook_state(merged_config, current_config)
     return merged_config
+
+
+def _preserve_runtime_section(merged_config, current_config, nix_source, section_name):
+    current_section = current_config.get(section_name)
+    source_section = nix_source.get(section_name)
+    if not isinstance(current_section, dict):
+        return
+    if section_name == "plugins" and isinstance(source_section, dict):
+        merged_config[section_name] = merge_plugin_policy(
+            current_section, source_section
+        )
+        return
+    if isinstance(source_section, dict):
+        merged_config[section_name] = current_section | source_section
+    elif section_name not in nix_source:
+        merged_config[section_name] = current_section
 
 
 def preserve_runtime_hook_state(merged_config: dict, current_config: dict) -> None:

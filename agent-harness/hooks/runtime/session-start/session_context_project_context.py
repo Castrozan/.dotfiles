@@ -8,6 +8,26 @@ from session_context_command_runner import run_cmd
 from session_context_concurrent_gathering import gather_concurrently
 
 
+def _append_instruction_context(context_files, cwd):
+    for project_instruction_filename in ("CLAUDE.md", "AGENTS.md"):
+        if os.path.exists(os.path.join(cwd, project_instruction_filename)):
+            context_files.append(
+                f"{project_instruction_filename} (project instructions)"
+            )
+
+
+def _append_git_context(context_files, probes):
+    code, worktrees = probes["worktrees"]
+    if code == 0:
+        worktree_count = worktrees.count("worktree ") - 1
+        if worktree_count > 0:
+            context_files.append(f"{worktree_count} active worktree(s)")
+
+    code, todos = probes["wip_commits"]
+    if code == 0 and todos:
+        context_files.append("Recent WIP/TODO commits detected")
+
+
 def check_project_context() -> list[str]:
     context_files = []
     cwd = os.getcwd()
@@ -21,23 +41,8 @@ def check_project_context() -> list[str]:
         }
     )
 
-    for project_instruction_filename in ("CLAUDE.md", "AGENTS.md"):
-        if os.path.exists(os.path.join(cwd, project_instruction_filename)):
-            context_files.append(
-                f"{project_instruction_filename} (project instructions)"
-            )
-
+    _append_instruction_context(context_files, cwd)
     if os.path.exists(os.path.join(cwd, ".claude", "settings.json")):
         context_files.append(".claude/settings.json (project hooks)")
-
-    code, worktrees = probes["worktrees"]
-    if code == 0:
-        worktree_count = worktrees.count("worktree ") - 1
-        if worktree_count > 0:
-            context_files.append(f"{worktree_count} active worktree(s)")
-
-    code, todos = probes["wip_commits"]
-    if code == 0 and todos:
-        context_files.append("Recent WIP/TODO commits detected")
-
+    _append_git_context(context_files, probes)
     return context_files

@@ -128,6 +128,32 @@ def build_foreground_ci_polling_loop_deny_reason():
     )
 
 
+def _foreground_ci_wait_result(executed_command_text):
+    if command_waits_on_ci_in_the_foreground(executed_command_text):
+        return HandlerResult(
+            decision="deny", reason=build_foreground_ci_wait_deny_reason()
+        )
+    if command_polls_ci_in_a_foreground_loop(executed_command_text):
+        return HandlerResult(
+            decision="deny", reason=build_foreground_ci_polling_loop_deny_reason()
+        )
+    return None
+
+
+def _background_command_result(executed_command_text):
+    triggered_rule_names = find_background_bash_anti_patterns_in_command(
+        executed_command_text
+    )
+    if triggered_rule_names:
+        return HandlerResult(
+            decision="deny", reason=build_deny_reason_message(triggered_rule_names)
+        )
+    if command_starts_a_lingering_daemon_or_service(executed_command_text):
+        deny_reason = build_lingering_daemon_deny_reason()
+        return HandlerResult(decision="deny", reason=deny_reason)
+    return None
+
+
 def handle(hook_input):
     if hook_input.get("tool_name") != "Bash":
         return None
@@ -140,26 +166,5 @@ def handle(hook_input):
     executed_command_text = command_text_the_shell_executes(command_string)
 
     if not tool_input.get("run_in_background", False):
-        if command_waits_on_ci_in_the_foreground(executed_command_text):
-            return HandlerResult(
-                decision="deny", reason=build_foreground_ci_wait_deny_reason()
-            )
-        if command_polls_ci_in_a_foreground_loop(executed_command_text):
-            return HandlerResult(
-                decision="deny", reason=build_foreground_ci_polling_loop_deny_reason()
-            )
-        return None
-
-    triggered_rule_names = find_background_bash_anti_patterns_in_command(
-        executed_command_text
-    )
-    if triggered_rule_names:
-        return HandlerResult(
-            decision="deny", reason=build_deny_reason_message(triggered_rule_names)
-        )
-
-    if command_starts_a_lingering_daemon_or_service(executed_command_text):
-        deny_reason = build_lingering_daemon_deny_reason()
-        return HandlerResult(decision="deny", reason=deny_reason)
-
-    return None
+        return _foreground_ci_wait_result(executed_command_text)
+    return _background_command_result(executed_command_text)

@@ -4,12 +4,21 @@ Keep customization in supported configuration, hooks, and the launcher. </prebui
 
 ## Interactive sessions
 
-The launcher selects embedded mode with `--no-daemon`, so each terminal owns its Codex process and environment. Package
-upgrades apply to new launches without requiring existing terminals to close. Explicit remote connections retain their
-native behavior; noninteractive commands and autonomous callers use the upstream launch path.
+The launcher starts a private app-server on a Unix socket for each interactive terminal and stops it when the terminal
+client exits. Package upgrades apply to new launches without requiring existing terminals to close. Explicit remote
+connections and `--no-daemon` retain their native behavior; noninteractive commands and autonomous callers use the
+upstream launch path.
+
+On the first prompt, SessionStart derives the session's Servant from the thread ID and sets the native
+thread name through that terminal's server. The footer displays the name. Existing titles retain their text with the
+Servant prefixed in brackets; resume and compaction keep the same identity, while forks derive one from their new ID.
 
 Native profiles carry interactive instructions and workspace overrides. Nix deploys their immutable sources separately
 and seeds writable profile files during activation. Codex can save model and reasoning selections into those files;
 rebuilds preserve those selections unless the workspace explicitly declares the corresponding setting. Instructions and
 other workspace settings remain declarative. Profiles reuse the main configuration's merge policy for project trust,
 marketplaces, plugins, and hook approvals. Malformed profile files fail activation without overwriting the file.
+
+The remote app-server accepts configuration writes only to the base user config. The private connection adapter saves
+model and reasoning selections to the selected profile after a successful native acknowledgement, preserving the base
+settings. Other requests retain their native behavior.

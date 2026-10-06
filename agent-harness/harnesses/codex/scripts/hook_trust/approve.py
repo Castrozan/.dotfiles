@@ -51,10 +51,7 @@ async def approve_discovered_hooks(
                 ]
             },
         )
-        for entry in response["data"]:
-            for hook in entry["hooks"]:
-                if hook["trustStatus"] in {"untrusted", "modified"}:
-                    trust_updates[hook["key"]] = {"trusted_hash": hook["currentHash"]}
+        _collect_untrusted_hook_updates(response["data"], trust_updates)
     if trust_updates:
         await client.request(
             "config/batchWrite",
@@ -69,6 +66,13 @@ async def approve_discovered_hooks(
                 "reloadUserConfig": True,
             },
         )
+
+
+def _collect_untrusted_hook_updates(entries: list[dict], trust_updates: dict) -> None:
+    for entry in entries:
+        for hook in entry["hooks"]:
+            if hook["trustStatus"] in {"untrusted", "modified"}:
+                trust_updates[hook["key"]] = {"trusted_hash": hook["currentHash"]}
 
 
 async def approve_launch_hooks(binary: str, discovery: HookDiscoveryRequest) -> None:

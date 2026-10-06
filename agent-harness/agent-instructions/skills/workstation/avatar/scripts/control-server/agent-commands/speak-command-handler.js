@@ -47,6 +47,36 @@ function scheduleReturnToIdle(avatarState, durationSeconds) {
   );
 }
 
+function playGeneratedSpeech(
+  speech,
+  output,
+  clientRegistry,
+  speakerSinkName,
+  id,
+  emotion,
+  text,
+) {
+  if (clientRegistry.hasRenderer()) {
+    forwardSpeechToRenderer(clientRegistry, {
+      id,
+      timing: speech.timing,
+      emotion,
+      text,
+    });
+    if (output === "mic" || output === "both") {
+      playAudioFileToSink(speech.audioPath, MIC_SINK_NAME);
+      console.log(`🔊 Playing audio to: ${MIC_SINK_NAME} (virtual mic)`);
+    }
+    return;
+  }
+
+  const sinks = resolveRequestedSinks(output, speakerSinkName);
+  for (const sinkName of sinks) {
+    playAudioFileToSink(speech.audioPath, sinkName);
+  }
+  console.log(`🔊 Playing audio to: ${sinks.join(", ")}`);
+}
+
 async function handleSpeakCommand(command, connection, context) {
   const {
     text,
@@ -73,24 +103,15 @@ async function handleSpeakCommand(command, connection, context) {
   try {
     const speech = await textToSpeechGenerator.generate(text, id, voice);
 
-    if (clientRegistry.hasRenderer()) {
-      forwardSpeechToRenderer(clientRegistry, {
-        id,
-        timing: speech.timing,
-        emotion,
-        text,
-      });
-      if (output === "mic" || output === "both") {
-        playAudioFileToSink(speech.audioPath, MIC_SINK_NAME);
-        console.log(`🔊 Playing audio to: ${MIC_SINK_NAME} (virtual mic)`);
-      }
-    } else {
-      const sinks = resolveRequestedSinks(output, speakerSinkName);
-      for (const sinkName of sinks) {
-        playAudioFileToSink(speech.audioPath, sinkName);
-      }
-      console.log(`🔊 Playing audio to: ${sinks.join(", ")}`);
-    }
+    playGeneratedSpeech(
+      speech,
+      output,
+      clientRegistry,
+      speakerSinkName,
+      id,
+      emotion,
+      text,
+    );
 
     sendResponse(connection, {
       type: "speakAck",

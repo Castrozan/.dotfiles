@@ -89,20 +89,22 @@ def build_permission_map(frontmatter_fields):
     )
 
     if allowed_tool_names and allowed_tool_names != ["*"]:
-        permission_map = {"*": "deny"}
-        for permission_key in translate_tool_names_to_permission_keys(
-            allowed_tool_names
-        ):
-            permission_map[permission_key] = "allow"
-        for permission_key in ALWAYS_PERMITTED_OPENCODE_TOOLS:
-            permission_map.setdefault(permission_key, "allow")
-        return permission_map
+        return _permission_map_for_allowed_tools(allowed_tool_names)
 
     permission_map = {"*": "allow"}
     for permission_key in translate_tool_names_to_permission_keys(
         disallowed_tool_names
     ):
         permission_map[permission_key] = "deny"
+    return permission_map
+
+
+def _permission_map_for_allowed_tools(allowed_tool_names):
+    permission_map = {"*": "deny"}
+    for permission_key in translate_tool_names_to_permission_keys(allowed_tool_names):
+        permission_map[permission_key] = "allow"
+    for permission_key in ALWAYS_PERMITTED_OPENCODE_TOOLS:
+        permission_map.setdefault(permission_key, "allow")
     return permission_map
 
 

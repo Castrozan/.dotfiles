@@ -24,6 +24,7 @@ class ReplyUnderReview:
     def __init__(self, reply_text: str, configuration=REPLY_FORMAT_CONFIGURATION):
         self.configuration = configuration
         document = ReplyMarkdownDocument(reply_text, configuration)
+        self.document = document
         self.list_blocks = document.lists
         self.table_first_columns = document.table_first_columns
         self.label_lines = document.labels

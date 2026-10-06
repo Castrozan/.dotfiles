@@ -19,10 +19,18 @@ def fetch_requests(base_url, api_key):
 
 def resolve_media_title(base_url, api_key, media_type, tmdb_id):
     if media_type == "movie":
-        detail = arr_http.get_json(base_url, api_key, f"/api/v1/movie/{tmdb_id}")
-        return (detail or {}).get("title"), year_from_date(
-            (detail or {}).get("releaseDate")
-        )
+        return _movie_title_and_year(base_url, api_key, tmdb_id)
+    return _series_title_and_year(base_url, api_key, tmdb_id)
+
+
+def _movie_title_and_year(base_url, api_key, tmdb_id):
+    detail = arr_http.get_json(base_url, api_key, f"/api/v1/movie/{tmdb_id}")
+    return (detail or {}).get("title"), year_from_date(
+        (detail or {}).get("releaseDate")
+    )
+
+
+def _series_title_and_year(base_url, api_key, tmdb_id):
     detail = arr_http.get_json(base_url, api_key, f"/api/v1/tv/{tmdb_id}")
     return (detail or {}).get("name"), year_from_date(
         (detail or {}).get("firstAirDate")

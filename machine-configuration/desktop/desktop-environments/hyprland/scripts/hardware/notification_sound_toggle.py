@@ -37,12 +37,7 @@ def mute_notification_sink_inputs() -> None:
         stripped = line.strip()
         if stripped.startswith("Sink Input #"):
             current_index = stripped.split("#")[1]
-        elif current_index and (
-            'media.role = "event"' in stripped
-            or 'media.role = "notification"' in stripped
-            or 'media.role = "alert"' in stripped
-            or "anberra" in stripped
-        ):
+        elif current_index and is_notification_sink_input(stripped):
             subprocess.run(
                 [
                     "pactl",
@@ -53,6 +48,15 @@ def mute_notification_sink_inputs() -> None:
                 capture_output=True,
             )
             current_index = None
+
+
+def is_notification_sink_input(properties: str) -> bool:
+    return (
+        'media.role = "event"' in properties
+        or 'media.role = "notification"' in properties
+        or 'media.role = "alert"' in properties
+        or "anberra" in properties
+    )
 
 
 def start_notification_sound_monitor() -> None:

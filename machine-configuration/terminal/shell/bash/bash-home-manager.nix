@@ -1,5 +1,28 @@
 { pkgs, ... }:
 let
+  commandLauncherScripts = ./scripts/command-launcher;
+
+  commandHistoryRankerBackend = pkgs.hstr.overrideAttrs (previous: {
+    pname = "command-history-ranker-backend";
+    env = (previous.env or { }) // {
+      NIX_CFLAGS_COMPILE = "${previous.env.NIX_CFLAGS_COMPILE or ""} -DDEBUG_NO_TIOCSTI";
+    };
+    postPatch = (previous.postPatch or "") + ''
+      substituteInPlace src/hstr_history.c \
+        --replace-fail 'using_history();' "using_history(); history_multiline_entries = 1; history_comment_char = '#';"
+      substituteInPlace src/hstr.c \
+        --replace-fail 'printf("%s\n",hstr->selection[i]);' 'printf("%s%c",hstr->selection[i],0);'
+    '';
+  });
+
+  commandHistoryRanker = pkgs.writeScriptBin "command-history-ranker" ''
+    #!${pkgs.python312}/bin/python3 -I
+    import runpy
+    import sys
+    sys.argv.insert(1, "${commandHistoryRankerBackend}/bin/hstr")
+    runpy.run_path("${commandLauncherScripts}/command-history-ranker.py", run_name="__main__")
+  '';
+
   flylineVersion = "1.7.1";
 
   flylineReleaseAssetForSystem = {
@@ -56,6 +79,7 @@ let
 in
 {
   home.sessionVariables.BASH_ENV = shellAliasesForNonInteractiveBash;
+  home.packages = [ commandHistoryRanker ];
 
   programs = {
     bash = {
@@ -71,8 +95,10 @@ in
         if [ -r "${interactiveBashConfiguration}" ]; then
           . "${interactiveBashConfiguration}"
         fi
+        . ${commandLauncherScripts}/command-launcher.sh
         if [ -r "${zoxideBashInit}/zoxide-init.sh" ]; then
           . "${zoxideBashInit}/zoxide-init.sh"
+          . ${commandLauncherScripts}/z-command-launcher.sh
         fi
         if [ -r "${carapaceBashInit}/carapace-init.sh" ]; then
           . "${carapaceBashInit}/carapace-init.sh"

@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   wallpaperSources = import ../../../appearance/theming/wallpaper-sources.nix;
   dotfilesThemingWallpapersPath = "${config.home.homeDirectory}/.dotfiles/machine-configuration/desktop/appearance/theming/wallpapers";
@@ -57,6 +57,8 @@ in
           ''ln -sf "${dotfilesThemingWallpapersPath}/${wallpaperSources.${file}}" "$HOME/.config/hypr-theme/wallpapers/${file}"''
         ) wallpaperFiles
       )}
+
+      ${pkgs.python3}/bin/python3 ${../scripts/theme/repair_wallpaper_links.py}
     '';
   };
 }

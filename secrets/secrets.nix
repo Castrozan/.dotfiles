@@ -30,6 +30,7 @@ in
 
   "api-keys/brave-api-key.age".publicKeys = all_keys;
   "api-keys/deepgram-api-key.age".publicKeys = all_keys;
+  "api-keys/elevenlabs-api-key.age".publicKeys = all_keys;
   "api-keys/gemini-api-key.age".publicKeys = all_keys;
   "api-keys/klipy-api-key.age".publicKeys = all_keys;
   "api-keys/nvidia-api-key.age".publicKeys = all_keys;
@@ -43,6 +44,8 @@ in
   "credentials/jira-api-token.age".publicKeys = all_keys;
   "api-keys/sonarqube-token.age".publicKeys = all_keys;
   "credentials/glab-token.age".publicKeys = all_keys;
+  "credentials/gitlab-com-token.age".publicKeys = all_keys;
+  "credentials/github-com-token.age".publicKeys = all_keys;
   "credentials/x/x-username.age".publicKeys = all_keys;
   "credentials/x/x-email.age".publicKeys = all_keys;
   "credentials/x/x-password.age".publicKeys = all_keys;
@@ -60,13 +63,14 @@ in
   "credentials/bitwarden/bitwarden-master-password.age".publicKeys = all_keys;
   "credentials/media/jellyseerr-smtp-app-password.age".publicKeys = all_keys;
   "credentials/media/arr-qbittorrent-password.age".publicKeys = all_keys;
+  "credentials/media/arr-readmeabook-password.age".publicKeys = all_keys;
+  "credentials/media/arr-audiobookshelf-password.age".publicKeys = all_keys;
   "credentials/media/arr-radarr-password.age".publicKeys = all_keys;
   "credentials/media/arr-sonarr-password.age".publicKeys = all_keys;
   "credentials/media/arr-prowlarr-password.age".publicKeys = all_keys;
   "credentials/media/arr-bazarr-password.age".publicKeys = all_keys;
   "credentials/media/arr-samaritano-indexer-apikey.age".publicKeys = all_keys;
   "credentials/media/jellyfin-admin-api-key.age".publicKeys = all_keys;
-  "credentials/media/kavita-admin-api-key.age".publicKeys = all_keys;
   "credentials/media/suwayomi-extension-repositories.age".publicKeys = all_keys;
   "credentials/proton-vpn/proton-openvpn-credentials.age".publicKeys = all_keys;
   "credentials/proton-vpn/proton-paraguay-openvpn-config.age".publicKeys = all_keys;

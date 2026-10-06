@@ -56,14 +56,18 @@ def is_agent_directed_instruction_file(file_path):
     file_name = os.path.basename(file_path).lower()
     if file_name in INSTRUCTION_FILENAMES_THAT_ARE_ALWAYS_AGENT_DIRECTED:
         return True
-    if any(
-        file_path == relative_path or file_path.endswith("/" + relative_path)
-        for relative_path in AGENT_DIRECTED_INSTRUCTION_RELATIVE_PATHS
-    ):
+    if _matches_explicit_instruction_path(file_path):
         return True
     if os.path.splitext(file_path)[1].lower() != ".md":
         return False
     return any(part.lower() == "skills" for part in path_parts)
+
+
+def _matches_explicit_instruction_path(file_path):
+    return any(
+        file_path == relative_path or file_path.endswith("/" + relative_path)
+        for relative_path in AGENT_DIRECTED_INSTRUCTION_RELATIVE_PATHS
+    )
 
 
 def handle(hook_input):

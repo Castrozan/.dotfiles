@@ -3,16 +3,19 @@ function audioDeviceListsAreEqual(oldList, newList) {
   for (let i = 0; i < oldList.length; i++) {
     const oldItem = oldList[i];
     const newItem = newList[i];
-    if (
-      oldItem.name !== newItem.name ||
-      oldItem.volume !== newItem.volume ||
-      oldItem.mute !== newItem.mute ||
-      oldItem.state !== newItem.state ||
-      oldItem.description !== newItem.description
-    )
-      return false;
+    if (!audioDeviceItemsAreEqual(oldItem, newItem)) return false;
   }
   return true;
+}
+
+function audioDeviceItemsAreEqual(oldItem, newItem) {
+  return (
+    oldItem.name === newItem.name &&
+    oldItem.volume === newItem.volume &&
+    oldItem.mute === newItem.mute &&
+    oldItem.state === newItem.state &&
+    oldItem.description === newItem.description
+  );
 }
 
 function extractVolumePercent(volumeObject) {
@@ -25,7 +28,11 @@ function extractVolumePercent(volumeObject) {
 
 function extractPortType(ports, activePortName) {
   if (!ports || !activePortName) return "";
-  for (const port of ports)
-    if (port.name === activePortName) return port.type ?? "";
-  return "";
+  const activePort = findActivePort(ports, activePortName);
+  return activePort ? (activePort.type ?? "") : "";
+}
+
+function findActivePort(ports, activePortName) {
+  for (const port of ports) if (port.name === activePortName) return port;
+  return null;
 }

@@ -20,7 +20,6 @@ let
   alwaysOnServices = [
     "jellyfin"
     "jellyseerr"
-    "kavita"
     "suwayomi"
     "miwayomi"
     "miwayomi-gateway"

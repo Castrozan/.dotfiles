@@ -161,6 +161,12 @@ def _measurement_failures(
     if not measurements:
         return ["Baseline has no measurements."]
 
+    return _collect_measurement_failures(measurements, value_key, ceiling_key)
+
+
+def _collect_measurement_failures(
+    measurements: dict, value_key: str, ceiling_key: str
+) -> list[str]:
     failures: list[str] = []
     for name, data in measurements.items():
         if not isinstance(data, dict):

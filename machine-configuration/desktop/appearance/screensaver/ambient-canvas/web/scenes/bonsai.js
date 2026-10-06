@@ -41,19 +41,34 @@
       return "|";
     }
     function chooseGrowthDelta(branchType, remainingLife) {
-      let columnDelta = Math.floor(Math.random() * 3) - 1;
-      let rowDelta = 0;
+      const columnDelta = Math.floor(Math.random() * 3) - 1;
+      return resolveBranchGrowthDelta(branchType, remainingLife, columnDelta);
+    }
+    function resolveBranchGrowthDelta(branchType, remainingLife, columnDelta) {
       if (branchType === "trunk") {
-        if (remainingLife > 3) rowDelta = Math.random() < 0.7 ? -1 : 0;
-      } else if (branchType === "shootLeft") {
-        columnDelta = Math.random() < 0.7 ? -1 : 0;
-        rowDelta = Math.random() < 0.5 ? -1 : 0;
-      } else if (branchType === "shootRight") {
-        columnDelta = Math.random() < 0.7 ? 1 : 0;
-        rowDelta = Math.random() < 0.5 ? -1 : 0;
-      } else {
-        rowDelta = Math.random() < 0.3 ? -1 : 0;
+        return resolveTrunkGrowthDelta(columnDelta, remainingLife);
       }
+      if (branchType === "shootLeft") return resolveLeftShootGrowthDelta();
+      if (branchType === "shootRight") return resolveRightShootGrowthDelta();
+      return resolveDefaultGrowthDelta(columnDelta);
+    }
+    function resolveTrunkGrowthDelta(columnDelta, remainingLife) {
+      let rowDelta = 0;
+      if (remainingLife > 3) rowDelta = Math.random() < 0.7 ? -1 : 0;
+      return { columnDelta, rowDelta };
+    }
+    function resolveLeftShootGrowthDelta() {
+      const columnDelta = Math.random() < 0.7 ? -1 : 0;
+      const rowDelta = Math.random() < 0.5 ? -1 : 0;
+      return { columnDelta, rowDelta };
+    }
+    function resolveRightShootGrowthDelta() {
+      const columnDelta = Math.random() < 0.7 ? 1 : 0;
+      const rowDelta = Math.random() < 0.5 ? -1 : 0;
+      return { columnDelta, rowDelta };
+    }
+    function resolveDefaultGrowthDelta(columnDelta) {
+      const rowDelta = Math.random() < 0.3 ? -1 : 0;
       return { columnDelta, rowDelta };
     }
     function appendLeafCluster(centerColumn, centerRow) {
@@ -72,22 +87,32 @@
       while (remainingLife > 0) {
         remainingLife -= 1;
         const delta = chooseGrowthDelta(branchType, remainingLife);
-        const canSpawnShoot = branchType === "trunk" && remainingLife > 4;
-        if (canSpawnShoot && Math.random() < 0.14) {
-          const shootType = Math.random() < 0.5 ? "shootLeft" : "shootRight";
-          const shootLife = Math.floor(remainingLife * 0.5) + 2;
-          growBranch(columnIndex, rowIndex, shootType, shootLife);
-        }
+        growShootIfReady(columnIndex, rowIndex, branchType, remainingLife);
         columnIndex += delta.columnDelta;
         rowIndex += delta.rowDelta;
         if (!isInsideGrid(columnIndex, rowIndex)) break;
-        if (remainingLife < 3) {
-          appendLeafCluster(columnIndex, rowIndex);
-        } else {
-          const glyph = chooseWoodGlyph(delta.columnDelta, delta.rowDelta);
-          pushCell(columnIndex, rowIndex, glyph, woodColorHex);
-        }
+        appendBranchCell(columnIndex, rowIndex, remainingLife, delta);
       }
+    }
+    function growShootIfReady(
+      columnIndex,
+      rowIndex,
+      branchType,
+      remainingLife,
+    ) {
+      const canSpawnShoot = branchType === "trunk" && remainingLife > 4;
+      if (!canSpawnShoot || Math.random() >= 0.14) return;
+      const shootType = Math.random() < 0.5 ? "shootLeft" : "shootRight";
+      const shootLife = Math.floor(remainingLife * 0.5) + 2;
+      growBranch(columnIndex, rowIndex, shootType, shootLife);
+    }
+    function appendBranchCell(columnIndex, rowIndex, remainingLife, delta) {
+      if (remainingLife < 3) {
+        appendLeafCluster(columnIndex, rowIndex);
+        return;
+      }
+      const glyph = chooseWoodGlyph(delta.columnDelta, delta.rowDelta);
+      pushCell(columnIndex, rowIndex, glyph, woodColorHex);
     }
     function appendPot(rootColumn) {
       const potHalfWidth = 4;

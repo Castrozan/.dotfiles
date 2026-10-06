@@ -1,9 +1,11 @@
 ### Repo ci tooling
 
-Watch CI with `gh`: `gh run list --commit $(git rev-parse HEAD) --json databaseId,name,conclusion` gives the run ids for
-a commit and `gh run watch <id> --exit-status` blocks on each until it finishes and exits non-zero when it ends red. A
-short sha matches no run and a just-pushed commit has none for a few seconds, so pass the full sha and retry an empty
-list rather than reading it as a verdict.
+Use the forge skill for every hosted operation, including retries, in place of provider-specific commands in the
+upstream steward skill.
+
+Load the forge and CI watcher skills. Resolve the repository's effective upstream, find runs for the full commit SHA,
+and start a background watcher for every required run. Inspect every job and require the provider's terminal successful
+verdict. A just-pushed commit can have no run for a few seconds; retry an empty list rather than treating it as green.
 
 The integration and runtime tiers need the live machine, so a nightly 03:00 job owns them and no tick of yours ever runs
 them; a red night is repo breakage you fix like a red CI. It reaches you as an inbox message from `nightly-deep-tiers`

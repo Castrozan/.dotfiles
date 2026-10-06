@@ -26,12 +26,16 @@ def find_chrome_devtools_mcp_processes():
             process_name = process.info["name"] or ""
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
-        if (
-            CHROME_DEVTOOLS_MCP_PROCESS_MATCH_TOKEN in joined_command_line
-            or CHROME_DEVTOOLS_MCP_PROCESS_MATCH_TOKEN in process_name
-        ):
+        if _is_chrome_devtools_mcp_process(joined_command_line, process_name):
             matched_processes.append(process)
     return matched_processes
+
+
+def _is_chrome_devtools_mcp_process(joined_command_line, process_name):
+    return (
+        CHROME_DEVTOOLS_MCP_PROCESS_MATCH_TOKEN in joined_command_line
+        or CHROME_DEVTOOLS_MCP_PROCESS_MATCH_TOKEN in process_name
+    )
 
 
 def measure_cpu_percent_per_process(processes, sample_interval_seconds):

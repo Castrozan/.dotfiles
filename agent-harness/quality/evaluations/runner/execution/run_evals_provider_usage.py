@@ -52,5 +52,9 @@ def merge_provider_usage(first: dict, second: dict) -> dict:
         for harness, usage in harnesses.items():
             bucket = merged.setdefault(role, {}).setdefault(harness, {})
             for field, value in usage.items():
-                bucket[field] = int(bucket.get(field) or 0) + int(value or 0)
+                _merge_usage_field(bucket, field, value)
     return merged
+
+
+def _merge_usage_field(bucket: dict, field: str, value) -> None:
+    bucket[field] = int(bucket.get(field) or 0) + int(value or 0)

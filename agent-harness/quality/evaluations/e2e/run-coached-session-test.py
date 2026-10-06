@@ -32,18 +32,10 @@ def main():
     )
 
     if args.list:
-        print("Available scenarios:")
-        for scenario_file in scenario_files:
-            scenario = yaml.safe_load(scenario_file.read_text())
-            print(f"  {scenario['name']}: {scenario.get('description', '')}")
+        _print_available_scenarios(scenario_files)
         sys.exit(0)
 
-    if args.scenario:
-        scenario_files = [
-            sf
-            for sf in scenario_files
-            if yaml.safe_load(sf.read_text())["name"] == args.scenario
-        ]
+    scenario_files = _filter_scenarios(scenario_files, args.scenario)
 
     results = []
     for sf in scenario_files:
@@ -53,6 +45,24 @@ def main():
         results.append(result)
 
     print_coached_results(results)
+
+
+def _print_available_scenarios(scenario_files):
+    print("Available scenarios:")
+    for scenario_file in scenario_files:
+        scenario = yaml.safe_load(scenario_file.read_text())
+        print(f"  {scenario['name']}: {scenario.get('description', '')}")
+
+
+def _filter_scenarios(scenario_files, selected_scenario):
+    if not selected_scenario:
+        return scenario_files
+    selected_files = [
+        scenario_file
+        for scenario_file in scenario_files
+        if yaml.safe_load(scenario_file.read_text())["name"] == selected_scenario
+    ]
+    return selected_files
 
 
 if __name__ == "__main__":

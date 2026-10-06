@@ -18,6 +18,7 @@ let
     "architecture"
     "browser"
     "coding"
+    "forge"
     "deep-work"
     "deliver"
     "devenv"
@@ -30,6 +31,7 @@ let
     "orchestrate"
     "research"
     "review"
+    "url-shortener"
     "workspace"
   ];
 

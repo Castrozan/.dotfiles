@@ -29,28 +29,34 @@ export function claudeQueryOptions(invocation) {
   };
   const binary = process.env.AGENT_EVAL_CLAUDE_BINARY;
   if (binary) options.pathToClaudeCodeExecutable = binary;
+  _addClaudeOptionalOptions(options, invocation);
+  return options;
+}
+
+function _addClaudeOptionalOptions(options, invocation) {
   if (invocation.model) options.model = invocation.model;
   if (invocation.max_turns) options.maxTurns = invocation.max_turns;
   if (invocation.system_prompt) options.systemPrompt = invocation.system_prompt;
-  return options;
 }
 
 export function claudeResultOutcome(message) {
   const errors = (message.errors ?? []).join("\n");
   const usage = normalizeClaudeModelUsage(message.modelUsage);
-  if (message.is_error === true) {
-    const outcome = {
-      output: null,
-      error:
-        errors ||
-        message.result ||
-        message.subtype ||
-        "claude query returned an error result",
-    };
-    if (usage) outcome.usage = usage;
-    return outcome;
-  }
+  if (message.is_error === true) return _claudeErrorOutcome(message, errors, usage);
   const outcome = { output: message.result, error: null };
+  if (usage) outcome.usage = usage;
+  return outcome;
+}
+
+function _claudeErrorOutcome(message, errors, usage) {
+  const outcome = {
+    output: null,
+    error:
+      errors ||
+      message.result ||
+      message.subtype ||
+      "claude query returned an error result",
+  };
   if (usage) outcome.usage = usage;
   return outcome;
 }
@@ -160,10 +166,12 @@ export function openCodeMessageOutcome(messages) {
 export function normalizeRequestError(error) {
   if (typeof error === "string") return error;
   if (error instanceof Error) return error.message;
-  if (error && typeof error === "object") {
-    const detail = error.detail ?? error.message ?? error.title;
-    if (detail) return String(detail);
-    return JSON.stringify(error);
-  }
+  if (error && typeof error === "object") return _normalizeObjectRequestError(error);
   return String(error);
+}
+
+function _normalizeObjectRequestError(error) {
+  const detail = error.detail ?? error.message ?? error.title;
+  if (detail) return String(detail);
+  return JSON.stringify(error);
 }

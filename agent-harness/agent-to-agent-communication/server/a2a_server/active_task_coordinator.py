@@ -87,21 +87,14 @@ class ActiveTaskCoordinator:
             return
         if self._task_store.is_task_in_terminal_state(active_task_id):
             return
-        if observation.raw_output_since_last_call:
-            self._task_store.append_task_output(
-                active_task_id, observation.raw_output_since_last_call
-            )
+        self._append_observed_output(active_task_id, observation)
+        self._apply_completion_rules(active_task_id, observation)
+
+    def _apply_completion_rules(
+        self, active_task_id: str, observation: BackendObservation
+    ) -> None:
         if not observation.is_alive:
-            terminal_state_for_dead_backend = (
-                self._classify_terminal_state_for_dead_backend(observation)
-            )
-            if terminal_state_for_dead_backend == "failed":
-                self._task_store.mark_task_failed_with_error_message(
-                    active_task_id,
-                    f"backend exited with code {observation.exit_code}",
-                )
-            else:
-                self._task_store.transition_task_state(active_task_id, "completed")
+            self._apply_dead_backend_observation(active_task_id, observation)
             return
         if self._reported_agent_status_says_the_turn_is_over(observation):
             self._task_store.transition_task_state(active_task_id, "completed")
@@ -109,6 +102,26 @@ class ActiveTaskCoordinator:
         idle_for_seconds = time.time() - observation.last_activity_at_epoch_seconds
         if idle_for_seconds >= self._auto_complete_idle_timeout_seconds:
             self._task_store.transition_task_state(active_task_id, "completed")
+
+    def _append_observed_output(
+        self, active_task_id: str, observation: BackendObservation
+    ) -> None:
+        if observation.raw_output_since_last_call:
+            self._task_store.append_task_output(
+                active_task_id, observation.raw_output_since_last_call
+            )
+
+    def _apply_dead_backend_observation(
+        self, active_task_id: str, observation: BackendObservation
+    ) -> None:
+        terminal_state = self._classify_terminal_state_for_dead_backend(observation)
+        if terminal_state == "failed":
+            self._task_store.mark_task_failed_with_error_message(
+                active_task_id,
+                f"backend exited with code {observation.exit_code}",
+            )
+            return
+        self._task_store.transition_task_state(active_task_id, "completed")
 
     def _reported_agent_status_says_the_turn_is_over(
         self, observation: BackendObservation
@@ -131,13 +144,9 @@ class ActiveTaskCoordinator:
     def _fire_shutdown_callback_when_target_has_been_dead_long_enough(
         self, observation: BackendObservation
     ) -> None:
-        if observation.is_alive:
-            self._target_first_observed_dead_at_epoch_seconds = None
+        if self._reset_dead_target_timer_if_alive(observation):
             return
-        if (
-            self._on_target_died_callback is None
-            or self._on_target_died_callback_already_fired
-        ):
+        if self._shutdown_callback_is_unavailable():
             return
         if self._target_first_observed_dead_at_epoch_seconds is None:
             self._target_first_observed_dead_at_epoch_seconds = time.time()
@@ -149,3 +158,17 @@ class ActiveTaskCoordinator:
             return
         self._on_target_died_callback_already_fired = True
         self._on_target_died_callback()
+
+    def _shutdown_callback_is_unavailable(self) -> bool:
+        return (
+            self._on_target_died_callback is None
+            or self._on_target_died_callback_already_fired
+        )
+
+    def _reset_dead_target_timer_if_alive(
+        self, observation: BackendObservation
+    ) -> bool:
+        if not observation.is_alive:
+            return False
+        self._target_first_observed_dead_at_epoch_seconds = None
+        return True

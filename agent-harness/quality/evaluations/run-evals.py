@@ -35,9 +35,15 @@ def main():
         settings, args.harness, args.judge_harness
     )
 
+    _handle_early_arguments(args, config, canonical_execution_profile)
+
+    _run_selected_evaluation(args, config, execution_profile)
+
+
+def _handle_early_arguments(args, config, canonical_execution_profile):
     if args.check_baseline:
         passed = check_baseline_for_regression(canonical_execution_profile, config)
-        sys.exit(0 if passed else 1)
+        _exit_with_baseline_status(passed)
     if args.list:
         list_categories(config)
         sys.exit(0)
@@ -48,11 +54,21 @@ def main():
             category=args.category,
             test_name=args.test,
         )
-        print(f"Affected evaluations: {len(affected)}")
-        for key in sorted(affected):
-            print(f"  {key}")
+        _print_affected_evaluations(affected)
         sys.exit(0)
 
+
+def _exit_with_baseline_status(passed):
+    sys.exit(0 if passed else 1)
+
+
+def _print_affected_evaluations(affected):
+    print(f"Affected evaluations: {len(affected)}")
+    for key in sorted(affected):
+        print(f"  {key}")
+
+
+def _run_selected_evaluation(args, config, execution_profile):
     reset_provider_usage()
     if not args.dry_run:
         try:

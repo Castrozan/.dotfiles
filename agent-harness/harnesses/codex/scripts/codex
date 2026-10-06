@@ -4,19 +4,20 @@ codexDeveloperInstructionsFile="$CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE"
 codexInteractiveProfile="dotfiles-interactive"
 workspaceProfileArguments=()
 interactivePreferencesArguments=()
-interactiveModeArguments=()
+codexLaunchExecutable="$CODEX_LAUNCHER_BINARY"
+unset CODEX_SESSION_SOCKET_PATH
 case "${1:-}" in
 agents | exec | e | review | login | logout | mcp | plugin | app-server | remote-control | app | completion | update | doctor | sandbox | debug | apply | a | queue | archive | delete | migrate-rollouts | unarchive | cloud | exec-server | features | help) ;;
 *)
 	source "$CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
 	export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
 	interactivePreferencesArguments=(--profile "$codexInteractiveProfile")
-	interactiveModeArguments=(--no-daemon)
+	codexLaunchExecutable="$CODEX_LAUNCHER_SESSION_EXECUTABLE"
 	for argument in "$@"; do
 		case "$argument" in
 		--) break ;;
 		--no-daemon | --remote | --remote=* | --help | -h | --version | -V)
-			interactiveModeArguments=()
+			codexLaunchExecutable="$CODEX_LAUNCHER_BINARY"
 			;;
 		-p | -p?* | --profile | --profile=*) interactivePreferencesArguments=() ;;
 		esac
@@ -25,9 +26,8 @@ agents | exec | e | review | login | logout | mcp | plugin | app-server | remote
 esac
 "$CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE" \
 	"${workspaceProfileArguments[@]}" "$@" || exit "$?"
-exec "$CODEX_LAUNCHER_BINARY" \
+exec "$codexLaunchExecutable" \
 	--sandbox "danger-full-access" \
 	--ask-for-approval "never" \
-	"${interactiveModeArguments[@]}" \
 	"${interactivePreferencesArguments[@]}" \
 	"$@"

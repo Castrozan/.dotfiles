@@ -69,22 +69,31 @@ def wait_for_pane_quiescence(
     while time.monotonic() < deadline:
         time.sleep(RESPONSE_POLL_INTERVAL_SECONDS)
         current_output = capture_visible_screen(pane_id)
-        if busy_marker and busy_marker in current_output:
-            the_pane_ever_changed = True
-            unchanged_samples = 0
-            previous_output = current_output
-            continue
-        if current_output != previous_output:
+        if _pane_output_is_active(current_output, previous_output, busy_marker):
             the_pane_ever_changed = True
             unchanged_samples = 0
             previous_output = current_output
             continue
         unchanged_samples += 1
-        if unchanged_samples < RESPONSE_QUIESCENCE_SAMPLES:
-            continue
-        if the_pane_ever_changed or not require_change:
+        if _response_quiescence_reached(
+            unchanged_samples, the_pane_ever_changed, require_change
+        ):
             return True
     return False
+
+
+def _pane_output_is_active(current_output, previous_output, busy_marker):
+    return (busy_marker and busy_marker in current_output) or (
+        current_output != previous_output
+    )
+
+
+def _response_quiescence_reached(
+    unchanged_samples, the_pane_ever_changed, require_change
+):
+    return unchanged_samples >= RESPONSE_QUIESCENCE_SAMPLES and (
+        the_pane_ever_changed or not require_change
+    )
 
 
 def wait_for_response_completion(
@@ -168,9 +177,13 @@ def compact_agent_session(
     ):
         return False
     output_after_compaction = capture_screen_and_scrollback(pane_id)
-    if (
-        profile.compaction_refusal_marker
-        and profile.compaction_refusal_marker in output_after_compaction
-    ):
+    if _compaction_was_refused(profile, output_after_compaction):
         return False
     return profile.compaction_confirmation_marker in output_after_compaction
+
+
+def _compaction_was_refused(profile: HarnessProfile, output: str) -> bool:
+    return bool(
+        profile.compaction_refusal_marker
+        and profile.compaction_refusal_marker in output
+    )

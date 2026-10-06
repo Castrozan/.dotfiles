@@ -97,13 +97,7 @@ class ProwlarrStreamProvider:
         query = self._search_query(stream_request, metadata)
         results = self._search(query)
         candidates = [
-            result
-            for result in results
-            if result.get("protocol") == "torrent"
-            and result.get("title")
-            and result_info_hash(result)
-            and result_matches_media_type(result, stream_request.media_type)
-            and release_matches_request(result, stream_request)
+            result for result in results if _is_stream_candidate(result, stream_request)
         ]
         candidates.sort(
             key=lambda result: (
@@ -140,3 +134,15 @@ class ProwlarrStreamProvider:
             {"X-Api-Key": self.prowlarr_api_key, "Accept": "application/json"},
         )
         return response if isinstance(response, list) else []
+
+
+def _is_stream_candidate(result, stream_request):
+    if result.get("protocol") != "torrent":
+        return False
+    if not result.get("title"):
+        return False
+    if not result_info_hash(result):
+        return False
+    if not result_matches_media_type(result, stream_request.media_type):
+        return False
+    return release_matches_request(result, stream_request)

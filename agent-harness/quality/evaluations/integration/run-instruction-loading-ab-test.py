@@ -107,16 +107,7 @@ def main():
         print("Error: claude CLI not found")
         sys.exit(1)
 
-    scenarios_to_run = UNPROMPTED_SCENARIOS
-    if args.scenario:
-        scenarios_to_run = [
-            scenario
-            for scenario in UNPROMPTED_SCENARIOS
-            if scenario["name"] == args.scenario
-        ]
-        if not scenarios_to_run:
-            print(f"Scenario '{args.scenario}' not found")
-            sys.exit(1)
+    scenarios_to_run = _scenarios_to_run(args.scenario)
 
     all_results = []
     for scenario in scenarios_to_run:
@@ -129,6 +120,20 @@ def main():
         all_results.extend(results)
 
     print_ab_test_results(all_results, args.configurations)
+
+
+def _scenarios_to_run(scenario_name):
+    if not scenario_name:
+        return UNPROMPTED_SCENARIOS
+    scenarios = [
+        scenario
+        for scenario in UNPROMPTED_SCENARIOS
+        if scenario["name"] == scenario_name
+    ]
+    if not scenarios:
+        print(f"Scenario '{scenario_name}' not found")
+        sys.exit(1)
+    return scenarios
 
 
 if __name__ == "__main__":

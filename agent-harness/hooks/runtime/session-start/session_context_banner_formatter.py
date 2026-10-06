@@ -6,9 +6,12 @@ from datetime import datetime
 from typing import Any, Dict
 
 
-def format_git_section(git: Dict[str, Any]) -> str | None:
-    if not git.get("is_repo"):
-        return None
+def _append_last_commit_line(git: Dict[str, Any], git_lines: list[str]) -> None:
+    if git.get("last_commit"):
+        git_lines.append(f"Last: {git['last_commit']}")
+
+
+def _git_status_lines(git: Dict[str, Any]) -> list[str]:
     git_lines = []
     if git.get("branch"):
         git_lines.append(f"Branch: {git['branch']}")
@@ -18,8 +21,14 @@ def format_git_section(git: Dict[str, Any]) -> str | None:
         git_lines.append(f"Behind by {git['behind']} commit(s)")
     if git.get("uncommitted", 0) > 0:
         git_lines.append(f"Uncommitted: {git['uncommitted']} file(s)")
-    if git.get("last_commit"):
-        git_lines.append(f"Last: {git['last_commit']}")
+    _append_last_commit_line(git, git_lines)
+    return git_lines
+
+
+def format_git_section(git: Dict[str, Any]) -> str | None:
+    if not git.get("is_repo"):
+        return None
+    git_lines = _git_status_lines(git)
     if not git_lines:
         return None
     return "Git: " + " | ".join(git_lines)

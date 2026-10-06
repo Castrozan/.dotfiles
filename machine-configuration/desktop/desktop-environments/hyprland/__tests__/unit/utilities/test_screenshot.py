@@ -148,3 +148,25 @@ class TestMain:
                     assert False, "Should have raised SystemExit"
                 except SystemExit as e:
                     assert e.code == 1
+
+    def test_annotate_mode_returns_when_selection_is_cancelled(self, tmp_path):
+        with patch("screenshot.capture_and_annotate_screenshot", return_value=None):
+            with patch("screenshot.copy_screenshot_to_clipboard_and_notify") as copy:
+                with patch("screenshot.sys.argv", ["cmd", "annotate"]):
+                    with patch(
+                        "screenshot.get_screenshots_directory",
+                        return_value=tmp_path,
+                    ):
+                        screenshot.main()
+        copy.assert_not_called()
+
+    def test_clipboard_annotate_mode_returns_when_clipboard_is_empty(self, tmp_path):
+        with patch("screenshot.annotate_clipboard_image", return_value=None):
+            with patch("screenshot.copy_screenshot_to_clipboard_and_notify") as copy:
+                with patch("screenshot.sys.argv", ["cmd", "clipboard-annotate"]):
+                    with patch(
+                        "screenshot.get_screenshots_directory",
+                        return_value=tmp_path,
+                    ):
+                        screenshot.main()
+        copy.assert_not_called()

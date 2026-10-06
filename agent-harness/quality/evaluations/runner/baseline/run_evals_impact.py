@@ -19,12 +19,17 @@ def test_key(category: str, test_name: str) -> str:
 
 
 def instruction_paths_for_test(repo_root: Path, test: dict) -> list[Path]:
+    path_values = _instruction_path_values(repo_root, test)
+    return [path for value in path_values if (path := repo_root / value).is_file()]
+
+
+def _instruction_path_values(repo_root: Path, test: dict) -> list[str]:
     primary_path = test.get("skill_path")
     if not primary_path and test.get("agent"):
         primary_path = public_skill_definition_path(test["agent"], repo_root)
     path_values = [primary_path] if primary_path else []
     path_values.extend(test.get("extra_skill_paths") or [])
-    return [path for value in path_values if (path := repo_root / value).is_file()]
+    return path_values
 
 
 def evaluation_test_fingerprints(

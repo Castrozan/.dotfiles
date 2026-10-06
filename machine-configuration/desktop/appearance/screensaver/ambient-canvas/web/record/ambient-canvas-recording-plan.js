@@ -27,11 +27,7 @@ window.AmbientCanvasRecordingPlan = (function buildRecordingPlan() {
     if (!recordingSource) {
       return [{ startSeconds: 0, durationSeconds: chunkDurationSeconds }];
     }
-    if (
-      !recordingSource.sequence ||
-      !Number.isFinite(recordingSource.durationSeconds) ||
-      recordingSource.durationSeconds <= 0
-    ) {
+    if (!hasPlayableRecordingSource(recordingSource)) {
       throw new Error("recording source has no playable duration");
     }
     const recordingRanges = [];
@@ -52,6 +48,14 @@ window.AmbientCanvasRecordingPlan = (function buildRecordingPlan() {
       });
     }
     return recordingRanges;
+  }
+
+  function hasPlayableRecordingSource(recordingSource) {
+    return (
+      recordingSource.sequence &&
+      Number.isFinite(recordingSource.durationSeconds) &&
+      recordingSource.durationSeconds > 0
+    );
   }
 
   async function resolveCompositionRecordingRanges(

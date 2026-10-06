@@ -33,28 +33,16 @@ def synchronize_extension_repositories(server=None):
             "rewritten": False,
             "extensions_offered": None,
         }
-    if not repository_server.client.wait_until_ready(repository_server.url):
-        raise ValueError(
-            f"{repository_server.name} at {repository_server.url} never became reachable; "
-            "its extension repositories were left as they already are"
-        )
-    current_repository_urls = repository_server.client.read_extension_repository_urls(
-        repository_server.url
-    )
+    current_repository_urls = _read_current_repository_urls(repository_server)
     if current_repository_urls == declared_repository_urls:
         return {
             "repositories": current_repository_urls,
             "rewritten": False,
             "extensions_offered": None,
         }
-    written_repository_urls = repository_server.client.write_extension_repository_urls(
-        repository_server.url, declared_repository_urls
+    written_repository_urls = _write_declared_repository_urls(
+        repository_server, declared_repository_urls
     )
-    if written_repository_urls != declared_repository_urls:
-        raise ValueError(
-            f"{repository_server.name} accepted the settings write but reports a list "
-            "that is not the declared repository list"
-        )
     extensions_offered = (
         repository_server.client.count_extensions_offered(repository_server.url)
         if repository_server.reports_extension_count
@@ -65,3 +53,26 @@ def synchronize_extension_repositories(server=None):
         "rewritten": True,
         "extensions_offered": extensions_offered,
     }
+
+
+def _read_current_repository_urls(repository_server):
+    if not repository_server.client.wait_until_ready(repository_server.url):
+        raise ValueError(
+            f"{repository_server.name} at {repository_server.url} never became reachable; "
+            "its extension repositories were left as they already are"
+        )
+    return repository_server.client.read_extension_repository_urls(
+        repository_server.url
+    )
+
+
+def _write_declared_repository_urls(repository_server, declared_repository_urls):
+    written_repository_urls = repository_server.client.write_extension_repository_urls(
+        repository_server.url, declared_repository_urls
+    )
+    if written_repository_urls != declared_repository_urls:
+        raise ValueError(
+            f"{repository_server.name} accepted the settings write but reports a list "
+            "that is not the declared repository list"
+        )
+    return written_repository_urls

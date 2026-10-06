@@ -78,34 +78,57 @@ def main():
     )
     args = parser.parse_args()
 
-    if args.runs < 1:
+    _require_positive_run_count(args.runs)
+    scenario_files = _discover_scenario_files(args.scenarios_dir)
+
+    if args.list:
+        _print_available_scenarios(scenario_files)
+        sys.exit(0)
+
+    scenario_files = _filter_scenario_files(scenario_files, args.scenario)
+    scenario_files = _require_installed_harnesses(scenario_files, args.dry_run)
+    results = _run_scenario_files(args, scenario_files)
+    all_passed = print_e2e_results(results)
+    _exit_with_results(args.runs, results, all_passed)
+
+
+def _require_positive_run_count(runs):
+    if runs < 1:
         print("Error: --runs must be >= 1")
         sys.exit(1)
 
-    scenario_files = discover_scenario_files(args.scenarios_dir)
 
+def _discover_scenario_files(scenarios_directory):
+    scenario_files = discover_scenario_files(scenarios_directory)
     if not scenario_files:
-        print("No scenarios found in", args.scenarios_dir)
+        print("No scenarios found in", scenarios_directory)
         sys.exit(1)
+    return scenario_files
 
-    if args.list:
-        print("Available E2E scenarios:")
-        for scenario_file in scenario_files:
-            scenario = load_scenario(scenario_file)
-            print(f"  {scenario['name']}: {scenario.get('description', '')}")
-        sys.exit(0)
 
-    if args.scenario:
-        scenario_files = [
-            scenario_file
-            for scenario_file in scenario_files
-            if load_scenario(scenario_file)["name"] == args.scenario
-        ]
-        if not scenario_files:
-            print(f"Scenario '{args.scenario}' not found")
-            sys.exit(1)
+def _print_available_scenarios(scenario_files):
+    print("Available E2E scenarios:")
+    for scenario_file in scenario_files:
+        scenario = load_scenario(scenario_file)
+        print(f"  {scenario['name']}: {scenario.get('description', '')}")
 
-    if not args.dry_run:
+
+def _filter_scenario_files(scenario_files, selected_scenario):
+    if not selected_scenario:
+        return scenario_files
+    selected_files = [
+        scenario_file
+        for scenario_file in scenario_files
+        if load_scenario(scenario_file)["name"] == selected_scenario
+    ]
+    if not selected_files:
+        print(f"Scenario '{selected_scenario}' not found")
+        sys.exit(1)
+    return selected_files
+
+
+def _require_installed_harnesses(scenario_files, dry_run):
+    if not dry_run:
         if not executable_is_installed("herdr"):
             print("Error: herdr not found")
             sys.exit(1)
@@ -113,7 +136,10 @@ def main():
         if not scenario_files:
             print("Error: no selected scenario has its harness installed")
             sys.exit(1)
+    return scenario_files
 
+
+def _run_scenario_files(args, scenario_files):
     def run_one_scenario_file(scenario_file):
         scenario = load_scenario(scenario_file)
         print(f"Running: {scenario['name']}...", flush=True)
@@ -137,11 +163,12 @@ def main():
         with ThreadPoolExecutor(max_workers=args.workers) as executor:
             for result in executor.map(run_one_scenario_file, execution_units):
                 results.append(result)
+    return results
 
-    all_passed = print_e2e_results(results)
 
-    if args.runs > 1:
-        print_multi_run_pass_rate_summary(results, args.runs)
+def _exit_with_results(runs_per_scenario, results, all_passed):
+    if runs_per_scenario > 1:
+        print_multi_run_pass_rate_summary(results, runs_per_scenario)
         total_runs = len(results)
         total_passed = sum(1 for result in results if result.passed)
         sys.exit(0 if total_passed == total_runs else 1)

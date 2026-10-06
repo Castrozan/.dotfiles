@@ -124,15 +124,17 @@ window.AmbientCanvasAsciiPlotterTraces = (function buildAsciiPlotterTraces() {
     const rowInSegment = sourceRow - segmentIndex * segmentRows;
     const column = traceColumnAtSegment(traceIndex, segmentIndex);
 
-    if (rowInSegment === 0 && segmentIndex > 0) {
-      const previousColumn = traceColumnAtSegment(traceIndex, segmentIndex - 1);
-      if (previousColumn === column) {
-        pushMarkWithinField(marks, column, "│", STRUCTURE_WEIGHT, columnCount);
-        return;
-      }
-      pushJogMarks(marks, previousColumn, column, columnCount);
+    if (
+      pushSegmentTransitionMark(
+        marks,
+        traceIndex,
+        segmentIndex,
+        rowInSegment,
+        column,
+        columnCount,
+      )
+    )
       return;
-    }
 
     const componentColumns = componentBarAtRow(
       traceIndex,
@@ -153,6 +155,24 @@ window.AmbientCanvasAsciiPlotterTraces = (function buildAsciiPlotterTraces() {
       return;
     }
     pushMarkWithinField(marks, column, "│", STRUCTURE_WEIGHT, columnCount);
+  }
+
+  function pushSegmentTransitionMark(
+    marks,
+    traceIndex,
+    segmentIndex,
+    rowInSegment,
+    column,
+    columnCount,
+  ) {
+    if (rowInSegment !== 0 || segmentIndex <= 0) return false;
+    const previousColumn = traceColumnAtSegment(traceIndex, segmentIndex - 1);
+    if (previousColumn === column) {
+      pushMarkWithinField(marks, column, "│", STRUCTURE_WEIGHT, columnCount);
+      return true;
+    }
+    pushJogMarks(marks, previousColumn, column, columnCount);
+    return true;
   }
 
   return {

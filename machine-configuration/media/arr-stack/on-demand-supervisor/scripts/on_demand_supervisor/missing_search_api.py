@@ -23,21 +23,29 @@ def active_indexer_count(base_url, api_key, now_epoch):
     indexers = get_json(base_url, api_key, "/api/v3/indexer")
     if indexers is None:
         return None
-    searchable_indexer_ids = {
+    searchable_indexer_ids = _searchable_indexer_ids(indexers)
+    if not searchable_indexer_ids:
+        return 0
+    indexer_statuses = get_json(base_url, api_key, "/api/v3/indexerstatus") or []
+    disabled_indexer_ids = _currently_disabled_indexer_ids(indexer_statuses, now_epoch)
+    return len(searchable_indexer_ids - disabled_indexer_ids)
+
+
+def _searchable_indexer_ids(indexers):
+    return {
         indexer.get("id")
         for indexer in indexers
         if indexer.get("enableAutomaticSearch")
     }
-    if not searchable_indexer_ids:
-        return 0
-    indexer_statuses = get_json(base_url, api_key, "/api/v3/indexerstatus") or []
-    disabled_indexer_ids = {
+
+
+def _currently_disabled_indexer_ids(indexer_statuses, now_epoch):
+    return {
         status.get("indexerId")
         for status in indexer_statuses
         if status.get("disabledTill")
         and parse_iso8601_to_epoch(status["disabledTill"]) > now_epoch
     }
-    return len(searchable_indexer_ids - disabled_indexer_ids)
 
 
 def monitored_missing_records(base_url, api_key):

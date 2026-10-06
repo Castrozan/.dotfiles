@@ -1,14 +1,18 @@
 { pkgs, ... }:
 let
+  personalRepositoryForge = "github";
+  personalRepositoryRouting = import ./personal-repository-routing.nix personalRepositoryForge;
   gitMessageEditor = pkgs.writeShellScript "git-message-editor" (
     builtins.readFile ./scripts/git-message-editor
   );
 in
 {
-  imports = [ ../../../agent-harness/commit-provenance/commit-provenance-home-manager.nix ];
+  imports = [
+    ../../../agent-harness/commit-provenance/commit-provenance-home-manager.nix
+    ./github-home-manager.nix
+  ];
 
   home.packages = with pkgs; [
-    gh
     delta
   ];
 
@@ -37,6 +41,7 @@ in
         dark = true;
       };
       diff.context = 5;
+      url = personalRepositoryRouting;
     };
   };
 }

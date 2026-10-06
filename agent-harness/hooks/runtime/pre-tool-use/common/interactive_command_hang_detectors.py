@@ -75,42 +75,51 @@ def command_launches_interactive_full_screen_program(command_string):
     return False
 
 
-def command_runs_git_subcommand_that_opens_an_editor(command_string):
+def _git_commit_opens_editor(command_string):
     commit_match = re.search(
         r"(?<![-\w])git\b[^|;&\n]*?(?<![-\w])commit\b([^|;&\n]*)", command_string
     )
-    if commit_match:
-        commit_arguments = commit_match.group(1)
-        commit_has_message_source = any(
-            re.search(flag, commit_arguments)
-            for flag in GIT_COMMIT_MESSAGE_SOURCE_FLAGS
-        )
-        if not commit_has_message_source:
-            return True
+    if not commit_match:
+        return False
+    commit_arguments = commit_match.group(1)
+    commit_has_message_source = any(
+        re.search(flag, commit_arguments) for flag in GIT_COMMIT_MESSAGE_SOURCE_FLAGS
+    )
+    return not commit_has_message_source
 
-    rebase_opens_todo_editor = bool(
+
+def _git_rebase_opens_todo_editor(command_string):
+    return bool(
         re.search(
             r"(?<![-\w])git\b[^|;&\n]*?(?<![-\w])rebase\b[^|;&\n]*?(?:-i\b|--interactive\b)",
             command_string,
         )
     )
-    if rebase_opens_todo_editor:
-        return True
 
+
+def _git_tag_opens_editor(command_string):
     tag_match = re.search(
         r"(?<![-\w])git\b[^|;&\n]*?(?<![-\w])tag\b([^|;&\n]*)", command_string
     )
-    if tag_match:
-        tag_arguments = tag_match.group(1)
-        tag_opens_editor = bool(
-            re.search(r"(?<!\w)-[A-Za-z]*[as]\b|--annotate\b|--sign\b", tag_arguments)
-        )
-        tag_has_message_source = any(
-            re.search(flag, tag_arguments) for flag in GIT_TAG_MESSAGE_SOURCE_FLAGS
-        )
-        if tag_opens_editor and not tag_has_message_source:
-            return True
+    if not tag_match:
+        return False
+    tag_arguments = tag_match.group(1)
+    tag_opens_editor = bool(
+        re.search(r"(?<!\w)-[A-Za-z]*[as]\b|--annotate\b|--sign\b", tag_arguments)
+    )
+    tag_has_message_source = any(
+        re.search(flag, tag_arguments) for flag in GIT_TAG_MESSAGE_SOURCE_FLAGS
+    )
+    return tag_opens_editor and not tag_has_message_source
 
+
+def command_runs_git_subcommand_that_opens_an_editor(command_string):
+    if _git_commit_opens_editor(command_string):
+        return True
+    if _git_rebase_opens_todo_editor(command_string):
+        return True
+    if _git_tag_opens_editor(command_string):
+        return True
     return False
 
 

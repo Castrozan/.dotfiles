@@ -148,7 +148,7 @@ def describe_handler(handler) -> str:
 
 def run_handlers(hook_input: dict, handlers, surface=CLAUDE_SURFACE):
     outcome = MergedHookOutcome()
-    tool_name = hook_input.get("tool_name", "") or ""
+    tool_name = _normalized_tool_name(hook_input)
     for handler in handlers:
         if not handler_runs_on_surface(handler, surface):
             continue
@@ -164,13 +164,25 @@ def run_handlers(hook_input: dict, handlers, surface=CLAUDE_SURFACE):
             continue
         if result is None:
             continue
-        if result.additional_context:
-            outcome.additional_context_fragments.append(result.additional_context)
-        if result.system_message:
-            outcome.system_message_fragments.append(result.system_message)
-        if candidate_decision_is_stronger(result.decision, outcome.decision):
-            outcome.decision = result.decision
-            outcome.reason = result.reason
-        if result.updated_input is not None and outcome.updated_input is None:
-            outcome.updated_input = result.updated_input
+        _merge_handler_result(outcome, result)
     return outcome
+
+
+def _normalized_tool_name(hook_input: dict) -> str:
+    return hook_input.get("tool_name", "") or ""
+
+
+def _merge_handler_result(outcome, result) -> None:
+    _append_handler_messages(outcome, result)
+    if candidate_decision_is_stronger(result.decision, outcome.decision):
+        outcome.decision = result.decision
+        outcome.reason = result.reason
+    if result.updated_input is not None and outcome.updated_input is None:
+        outcome.updated_input = result.updated_input
+
+
+def _append_handler_messages(outcome, result) -> None:
+    if result.additional_context:
+        outcome.additional_context_fragments.append(result.additional_context)
+    if result.system_message:
+        outcome.system_message_fragments.append(result.system_message)

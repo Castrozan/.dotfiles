@@ -27,11 +27,16 @@ Do not rely on the user reading work-in-progress updates. Assume the user reads 
 work is done; updates do not create a second decision or stopping threshold. Carry every result the user needs into the
 final reply.
 
+### Link format
+
+Use bare URLs or local paths so WezTerm can detect them. Preserve link syntax only in code and blockquotes. Use
+`url-shortener` for long public references; keep artifact URLs direct.
+
 ### Artifact links
 
-Give a browser link with the full direct URL for every merge request, pull request, CI run, report, or artifact the user
-must inspect. Publish local artifacts to an authorized remote before returning. Put each URL on the Done line, and never
-substitute a local path, commit SHA, issue or ticket key, change description, or another shorthand reference.
+Give a raw browser link with the full direct URL for every merge request, pull request, CI run, report, or artifact the
+user must inspect. Publish local artifacts to an authorized remote before returning. Put each URL on the Done line, and
+never substitute a local path, commit SHA, issue or ticket key, change description, or another shorthand reference.
 
 ### Exhaust before returning
 

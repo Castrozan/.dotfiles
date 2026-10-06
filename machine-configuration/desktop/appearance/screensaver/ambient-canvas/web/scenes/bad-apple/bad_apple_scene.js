@@ -8,15 +8,32 @@
 
   function resolveAppearance(options) {
     return {
-      characterRows:
-        (options && options.characterRows) || DEFAULT_CHARACTER_ROWS,
-      luminanceThreshold:
-        (options && options.luminanceThreshold) || DEFAULT_LUMINANCE_THRESHOLD,
-      glyphColor: (options && options.glyphColor) || DEFAULT_GLYPH_COLOR,
-      glyphFontFamily:
-        (options && options.glyphFontFamily) || DEFAULT_GLYPH_FONT_FAMILY,
+      characterRows: resolveAppearanceOption(
+        options,
+        "characterRows",
+        DEFAULT_CHARACTER_ROWS,
+      ),
+      luminanceThreshold: resolveAppearanceOption(
+        options,
+        "luminanceThreshold",
+        DEFAULT_LUMINANCE_THRESHOLD,
+      ),
+      glyphColor: resolveAppearanceOption(
+        options,
+        "glyphColor",
+        DEFAULT_GLYPH_COLOR,
+      ),
+      glyphFontFamily: resolveAppearanceOption(
+        options,
+        "glyphFontFamily",
+        DEFAULT_GLYPH_FONT_FAMILY,
+      ),
       backgroundFillStyle: BACKGROUND_FILL_STYLE,
     };
+  }
+
+  function resolveAppearanceOption(options, optionName, defaultValue) {
+    return options?.[optionName] || defaultValue;
   }
 
   function createBadAppleRenderer(canvasElement, options) {
@@ -28,8 +45,8 @@
     const videoSource =
       window.AmbientCanvasSeekableVideoSource.createSeekableVideoSource(
         VIDEO_DIRECTORY_URL + "/" + options.videoId + ".mp4",
-        (options && options.startSeconds) || 0,
-        Boolean(options && options.deterministicPlayback),
+        options?.startSeconds || 0,
+        Boolean(options?.deterministicPlayback),
       );
 
     return {

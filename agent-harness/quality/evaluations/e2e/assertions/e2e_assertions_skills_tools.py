@@ -69,22 +69,8 @@ def check_terminal_tool_ordering_assertion(
     second_tool = assertion["before"]
     tool_names = extract_tool_name_sequence(trace)
 
-    first_index = next(
-        (
-            position
-            for position, tool_name in enumerate(tool_names)
-            if tool_name == first_tool
-        ),
-        None,
-    )
-    second_index = next(
-        (
-            position
-            for position, tool_name in enumerate(tool_names)
-            if tool_name == second_tool
-        ),
-        None,
-    )
+    first_index = _first_tool_position(tool_names, first_tool)
+    second_index = _first_tool_position(tool_names, second_tool)
 
     if first_index is None:
         return E2eAssertionResult(
@@ -108,6 +94,17 @@ def check_terminal_tool_ordering_assertion(
             if passed
             else f"wrong order ({first_index} >= {second_index})"
         ),
+    )
+
+
+def _first_tool_position(tool_names, tool):
+    return next(
+        (
+            position
+            for position, tool_name in enumerate(tool_names)
+            if tool_name == tool
+        ),
+        None,
     )
 
 

@@ -1,9 +1,13 @@
 import importlib.util
 import pathlib
+import shutil
+import subprocess
+import sys
 
 SCRIPT_PATH = (
     pathlib.Path(__file__).resolve().parents[2] / "scripts" / "precompute_loop.py"
 )
+TERMINAL_SCRIPT_PATH = SCRIPT_PATH.with_name("precompute_loop_terminal.py")
 
 
 def _load_precompute_loop_module():
@@ -13,6 +17,12 @@ def _load_precompute_loop_module():
     return module
 
 
+terminal_module_spec = importlib.util.spec_from_file_location(
+    "precompute_loop_terminal", TERMINAL_SCRIPT_PATH
+)
+precompute_loop_terminal = importlib.util.module_from_spec(terminal_module_spec)
+sys.modules[terminal_module_spec.name] = precompute_loop_terminal
+terminal_module_spec.loader.exec_module(precompute_loop_terminal)
 precompute_loop = _load_precompute_loop_module()
 
 
@@ -38,35 +48,43 @@ def test_cast_path_varies_with_size_command_and_seconds():
 def test_terminate_child_closes_master_before_escalating_signals(monkeypatch):
     call_order = []
     monkeypatch.setattr(
-        precompute_loop.os, "close", lambda fd: call_order.append("close")
+        precompute_loop_terminal.os, "close", lambda fd: call_order.append("close")
     )
     monkeypatch.setattr(
-        precompute_loop.os, "kill", lambda pid, number: call_order.append(number)
+        precompute_loop_terminal.os,
+        "kill",
+        lambda pid, number: call_order.append(number),
     )
-    monkeypatch.setattr(precompute_loop.os, "waitpid", lambda pid, flags: (0, 0))
+    monkeypatch.setattr(
+        precompute_loop_terminal.os, "waitpid", lambda pid, flags: (0, 0)
+    )
     ticks = iter([0.0, 0.1, 0.6, 0.6, 0.7, 1.2])
-    monkeypatch.setattr(precompute_loop.time, "monotonic", lambda: next(ticks))
-    monkeypatch.setattr(precompute_loop.time, "sleep", lambda seconds: None)
-    precompute_loop.terminate_child(4242, 9)
+    monkeypatch.setattr(precompute_loop_terminal.time, "monotonic", lambda: next(ticks))
+    monkeypatch.setattr(precompute_loop_terminal.time, "sleep", lambda seconds: None)
+    precompute_loop_terminal.terminate_child(4242, 9)
     assert call_order == [
         "close",
-        precompute_loop.signal.SIGTERM,
-        precompute_loop.signal.SIGKILL,
+        precompute_loop_terminal.signal.SIGTERM,
+        precompute_loop_terminal.signal.SIGKILL,
     ]
 
 
 def test_terminate_child_stops_at_sigterm_when_child_exits(monkeypatch):
     signals_sent = []
     monkeypatch.setattr(
-        precompute_loop.os, "kill", lambda pid, number: signals_sent.append(number)
+        precompute_loop_terminal.os,
+        "kill",
+        lambda pid, number: signals_sent.append(number),
     )
-    monkeypatch.setattr(precompute_loop.os, "waitpid", lambda pid, flags: (pid, 0))
-    monkeypatch.setattr(precompute_loop.os, "close", lambda fd: None)
+    monkeypatch.setattr(
+        precompute_loop_terminal.os, "waitpid", lambda pid, flags: (pid, 0)
+    )
+    monkeypatch.setattr(precompute_loop_terminal.os, "close", lambda fd: None)
     ticks = iter([0.0, 0.1])
-    monkeypatch.setattr(precompute_loop.time, "monotonic", lambda: next(ticks))
-    monkeypatch.setattr(precompute_loop.time, "sleep", lambda seconds: None)
-    precompute_loop.terminate_child(4242, 9)
-    assert signals_sent == [precompute_loop.signal.SIGTERM]
+    monkeypatch.setattr(precompute_loop_terminal.time, "monotonic", lambda: next(ticks))
+    monkeypatch.setattr(precompute_loop_terminal.time, "sleep", lambda seconds: None)
+    precompute_loop_terminal.terminate_child(4242, 9)
+    assert signals_sent == [precompute_loop_terminal.signal.SIGTERM]
 
 
 def test_cast_file_round_trips_chunks(tmp_path):
@@ -80,3 +98,17 @@ def test_load_cast_file_rejects_foreign_content(tmp_path):
     cast_path = tmp_path / "cast.bin"
     cast_path.write_bytes(b"not a cast file")
     assert precompute_loop.load_cast_file(cast_path) is None
+
+
+def test_copied_source_bundle_imports_sibling_terminal_module(tmp_path):
+    shutil.copy2(SCRIPT_PATH, tmp_path / SCRIPT_PATH.name)
+    shutil.copy2(TERMINAL_SCRIPT_PATH, tmp_path / TERMINAL_SCRIPT_PATH.name)
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import precompute_loop; import precompute_loop_terminal",
+        ],
+        cwd=tmp_path,
+        check=True,
+    )

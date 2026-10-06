@@ -76,6 +76,18 @@ def show_connections() -> None:
         return
 
     active_names = network_manager.get_active_connection_names()
+    formatted_lines = format_saved_connections(connections, active_names)
+
+    formatted = "\n".join(formatted_lines)
+    lines = min(len(formatted_lines), 8)
+
+    selection = network_prompts.show_fuzzel_menu("Connections", formatted, lines)
+    handle_connection_selection(selection)
+
+    show_main_menu()
+
+
+def format_saved_connections(connections, active_names):
     formatted_lines = []
     for conn in connections:
         icon = network_display.connection_type_icon(conn["type"])
@@ -83,19 +95,17 @@ def show_connections() -> None:
             formatted_lines.append(f"{icon}  {conn['name']} (active)")
         else:
             formatted_lines.append(f"{icon}  {conn['name']}")
+    return formatted_lines
 
-    formatted = "\n".join(formatted_lines)
-    lines = min(len(formatted_lines), 8)
 
-    selection = network_prompts.show_fuzzel_menu("Connections", formatted, lines)
-    if selection:
-        name = network_display.extract_connection_name_from_selection(selection)
-        if "(active)" in selection:
-            show_active_connection_actions(name)
-        else:
-            show_inactive_connection_actions(name)
-
-    show_main_menu()
+def handle_connection_selection(selection):
+    if not selection:
+        return
+    name = network_display.extract_connection_name_from_selection(selection)
+    if "(active)" in selection:
+        show_active_connection_actions(name)
+    else:
+        show_inactive_connection_actions(name)
 
 
 def show_main_menu() -> None:

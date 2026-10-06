@@ -17,14 +17,16 @@ let
     )
   );
 
-  healthCheckSource = pkgs.writeText "health-check-source.py" (
-    builtins.readFile ./scripts/health_check.py
-  );
+  healthCheckSources = pkgs.runCommand "health-check-python-sources" { } ''
+    mkdir -p "$out/health_probes"
+    cp ${./scripts/health_check.py} "$out/health_check.py"
+    cp ${./scripts/health_probes/probe_execution.py} "$out/health_probes/probe_execution.py"
+  '';
 in
 pkgs.writeShellApplication {
   name = "health-check";
   runtimeInputs = with pkgs; [ coreutils ];
   text = ''
-    exec ${pkgs.python312}/bin/python3 ${healthCheckSource} ${probeDefinitions} "$@"
+    exec ${pkgs.python312}/bin/python3 ${healthCheckSources}/health_check.py ${probeDefinitions} "$@"
   '';
 }

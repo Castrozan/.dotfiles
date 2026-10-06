@@ -189,29 +189,6 @@ services:
         start_period: 60s,
         retries: 3,
       }
-  kavita:
-    image: lscr.io/linuxserver/kavita:v0.9.0.2-ls119@sha256:08bc0679401c5370e32373a9a7fa43ed4aa800388e04dcb2015500c09ead8ddb
-    container_name: arr-kavita
-    restart: unless-stopped
-    <<: *media-768m
-    networks:
-      - arrnet
-    ports:
-      - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:5000:5000"
-      - "127.0.0.1:5000:5000"
-    environment:
-      <<: *arr-common-environment
-    volumes:
-      - ${ARR_CONFIG_ROOT}/kavita:/config
-      - ${ARR_DATA_ROOT}/manga/mangas:/manga:ro
-    healthcheck:
-      {
-        test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5000/api/health"],
-        interval: 30s,
-        timeout: 5s,
-        start_period: 60s,
-        retries: 3,
-      }
   suwayomi:
     image: ghcr.io/suwayomi/suwayomi-server:v2.3.2243-preview@sha256:2b95476844614748285ecba0deef97cb8eabd17c6ccb58d136f829ec20b8040f
     container_name: arr-suwayomi
@@ -362,7 +339,7 @@ services:
     dns: *stable-public-dns
     environment:
       <<: *arr-common-environment
-      PUBLIC_URL: "http://arr:3030"
+      PUBLIC_URL: "https://readmeabook.lucaszanoni.com"
     ports:
       - "${ARR_BIND_ADDR:?set in ~/arr-stack/.env}:3030:3030"
     volumes:

@@ -37,27 +37,39 @@ def tool_calls_from_session_transcript(
 
     tool_calls = []
     for position, line in enumerate(transcript.read_text().splitlines()):
-        try:
-            entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        content = (entry.get("message") or {}).get("content")
-        if not isinstance(content, list):
-            continue
-        for block in content:
-            if not isinstance(block, dict) or block.get("type") != "tool_use":
-                continue
-            tool_name = block.get("name", "")
-            tool_calls.append(
-                TerminalToolCallEvent(
-                    tool_name=tool_name,
-                    tool_arguments_text=tool_call_argument_text(
-                        tool_name, block.get("input") or {}
-                    ),
-                    position_in_output=position,
-                )
-            )
+        tool_calls.extend(_tool_calls_from_transcript_line(line, position))
     return tool_calls
+
+
+def _tool_calls_from_transcript_line(line: str, position: int):
+    try:
+        entry = json.loads(line)
+    except json.JSONDecodeError:
+        return []
+    content = (entry.get("message") or {}).get("content")
+    if not isinstance(content, list):
+        return []
+    tool_calls = []
+    for block in content:
+        if not _is_tool_use_block(block):
+            continue
+        tool_calls.append(_tool_call_from_transcript_block(block, position))
+    return tool_calls
+
+
+def _is_tool_use_block(block):
+    return isinstance(block, dict) and block.get("type") == "tool_use"
+
+
+def _tool_call_from_transcript_block(block, position):
+    tool_name = block.get("name", "")
+    return TerminalToolCallEvent(
+        tool_name=tool_name,
+        tool_arguments_text=tool_call_argument_text(
+            tool_name, block.get("input") or {}
+        ),
+        position_in_output=position,
+    )
 
 
 def assistant_messages_from_session_transcript(workspace: Path) -> list[str]:
@@ -66,21 +78,31 @@ def assistant_messages_from_session_transcript(workspace: Path) -> list[str]:
         return []
     messages = []
     for line in transcript.read_text().splitlines():
-        try:
-            entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        message = entry.get("message") or {}
-        if message.get("role") != "assistant":
-            continue
-        content = message.get("content")
-        if not isinstance(content, list):
-            continue
-        text = "".join(
-            block.get("text", "")
-            for block in content
-            if isinstance(block, dict) and block.get("type") == "text"
-        ).strip()
-        if text:
-            messages.append(text)
+        message = _assistant_message_from_transcript_line(line)
+        if message:
+            messages.append(message)
     return messages
+
+
+def _assistant_message_from_transcript_line(line: str) -> str:
+    try:
+        entry = json.loads(line)
+    except json.JSONDecodeError:
+        return ""
+    message = entry.get("message") or {}
+    if message.get("role") != "assistant":
+        return ""
+    content = message.get("content")
+    if not isinstance(content, list):
+        return ""
+    return _assistant_text(content)
+
+
+def _assistant_text(content):
+    return "".join(
+        block.get("text", "") for block in content if _is_text_block(block)
+    ).strip()
+
+
+def _is_text_block(block):
+    return isinstance(block, dict) and block.get("type") == "text"

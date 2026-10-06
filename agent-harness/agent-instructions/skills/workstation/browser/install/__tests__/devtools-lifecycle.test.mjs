@@ -12,6 +12,9 @@ const { McpPage } = await import(
 const { BrowserManager } = await import(
   pathToFileURL(`${sourceDirectory}/BrowserManager.js`)
 );
+const { McpContext } = await import(
+  pathToFileURL(`${sourceDirectory}/McpContext.js`)
+);
 const { DevTools, puppeteer } = await import(
   pathToFileURL(`${sourceDirectory}/third_party/index.js`)
 );
@@ -27,7 +30,7 @@ function createPage() {
   const page = new EventEmitter();
   const frame = new EventEmitter();
   const session = new EventEmitter();
-  const calls = { created: 0, detached: 0 };
+  const calls = { created: 0, detached: 0, focusOverrides: [] };
   session.id = () => "test-session";
   session.target = () => ({ _targetId: "test-target" });
   session.connection = () => ({ session: () => session });
@@ -39,7 +42,9 @@ function createPage() {
   };
   page.mainFrame = () => frame;
   page._client = () => session;
-  page.emulateFocusedPage = async () => {};
+  page.emulateFocusedPage = async (enabled) => {
+    calls.focusOverrides.push(enabled);
+  };
   page.createCDPSession = async () => {
     calls.created++;
     return session;
@@ -47,13 +52,30 @@ function createPage() {
   return { page, session, calls };
 }
 
-test("enumerating fifteen pages creates no DevTools sessions", async () => {
-  for (let index = 0; index < 15; index++) {
-    const { page, calls } = createPage();
-    const managedPage = new McpPage(page, index, {});
-    await managedPage.init();
-    assert.equal(calls.created, 0);
-    managedPage.dispose();
+test("enumerating fifteen pages preserves background throttling", async () => {
+  const fixtures = Array.from({ length: 15 }, createPage);
+  const browserContext = {};
+  for (const { page } of fixtures) {
+    page.url = () => "https://example.com";
+    page.browserContext = () => browserContext;
+    page.isClosed = () => false;
+    page.setDefaultTimeout = () => {};
+    page.setDefaultNavigationTimeout = () => {};
+  }
+  const browser = new EventEmitter();
+  browser.pages = async () => fixtures.map(({ page }) => page);
+  browser.defaultBrowserContext = () => browserContext;
+  browser.browserContexts = () => [browserContext];
+  const context = new McpContext(browser, undefined, {});
+  try {
+    assert.equal((await context.createPagesSnapshot()).length, 15);
+    assert.equal((await context.createPagesSnapshot()).length, 15);
+    for (const { calls } of fixtures) {
+      assert.equal(calls.created, 0);
+      assert.deepEqual(calls.focusOverrides, []);
+    }
+  } finally {
+    context.dispose();
   }
 });
 

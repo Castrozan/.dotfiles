@@ -102,6 +102,10 @@ def apply_air_conditioner_attributes(token: str, attributes: dict) -> None:
         set_air_conditioner_hvac_mode(token, attributes["hvac_mode"])
     if "temperature" in attributes:
         set_air_conditioner_temperature(token, attributes["temperature"])
+    apply_additional_air_conditioner_attributes(token, attributes)
+
+
+def apply_additional_air_conditioner_attributes(token: str, attributes: dict) -> None:
     if "fan_mode" in attributes:
         set_air_conditioner_fan_mode(token, attributes["fan_mode"])
     if "swing_mode" in attributes:
@@ -110,61 +114,77 @@ def apply_air_conditioner_attributes(token: str, attributes: dict) -> None:
         set_air_conditioner_preset_mode(token, attributes["preset_mode"])
 
 
+def handle_basic_air_conditioner_command(command: str, token: str) -> bool:
+    if command == "on":
+        turn_on_air_conditioner(token)
+    elif command == "off":
+        turn_off_air_conditioner(token)
+    elif command == "status":
+        get_air_conditioner_status(token)
+    else:
+        return False
+    return True
+
+
+def required_command_argument() -> str:
+    if len(sys.argv) < 3:
+        air_conditioner_arguments.print_usage_and_exit()
+    return sys.argv[2]
+
+
+def handle_attribute_command(command: str, token: str) -> bool:
+    if command == "mode":
+        hvac_mode = air_conditioner_arguments.validate_hvac_mode(
+            required_command_argument()
+        )
+        set_air_conditioner_hvac_mode(token, hvac_mode)
+    elif command == "temp":
+        temperature = air_conditioner_arguments.validate_temperature(
+            required_command_argument()
+        )
+        set_air_conditioner_temperature(token, temperature)
+    elif command == "fan":
+        fan_mode = air_conditioner_arguments.validate_fan_mode(
+            required_command_argument()
+        )
+        set_air_conditioner_fan_mode(token, fan_mode)
+    elif command == "swing":
+        swing_mode = air_conditioner_arguments.validate_swing_mode(
+            required_command_argument()
+        )
+        set_air_conditioner_swing_mode(token, swing_mode)
+    elif command == "preset":
+        preset_mode = air_conditioner_arguments.validate_preset_mode(
+            required_command_argument()
+        )
+        set_air_conditioner_preset_mode(token, preset_mode)
+    else:
+        return False
+    return True
+
+
+def handle_set_command(token: str) -> None:
+    if len(sys.argv) < 4:
+        air_conditioner_arguments.print_usage_and_exit()
+    attributes = air_conditioner_arguments.parse_set_command_arguments(sys.argv[2:])
+    if not attributes:
+        print("No attributes specified.", file=sys.stderr)
+        raise SystemExit(1)
+    apply_air_conditioner_attributes(token, attributes)
+
+
 def main() -> None:
     if len(sys.argv) < 2:
         air_conditioner_arguments.print_usage_and_exit()
 
     command = sys.argv[1]
     token = read_home_assistant_token()
-
-    if command == "on":
-        turn_on_air_conditioner(token)
-
-    elif command == "off":
-        turn_off_air_conditioner(token)
-
-    elif command == "status":
-        get_air_conditioner_status(token)
-
-    elif command == "mode":
-        if len(sys.argv) < 3:
-            air_conditioner_arguments.print_usage_and_exit()
-        hvac_mode = air_conditioner_arguments.validate_hvac_mode(sys.argv[2])
-        set_air_conditioner_hvac_mode(token, hvac_mode)
-
-    elif command == "temp":
-        if len(sys.argv) < 3:
-            air_conditioner_arguments.print_usage_and_exit()
-        temperature = air_conditioner_arguments.validate_temperature(sys.argv[2])
-        set_air_conditioner_temperature(token, temperature)
-
-    elif command == "fan":
-        if len(sys.argv) < 3:
-            air_conditioner_arguments.print_usage_and_exit()
-        fan_mode = air_conditioner_arguments.validate_fan_mode(sys.argv[2])
-        set_air_conditioner_fan_mode(token, fan_mode)
-
-    elif command == "swing":
-        if len(sys.argv) < 3:
-            air_conditioner_arguments.print_usage_and_exit()
-        swing_mode = air_conditioner_arguments.validate_swing_mode(sys.argv[2])
-        set_air_conditioner_swing_mode(token, swing_mode)
-
-    elif command == "preset":
-        if len(sys.argv) < 3:
-            air_conditioner_arguments.print_usage_and_exit()
-        preset_mode = air_conditioner_arguments.validate_preset_mode(sys.argv[2])
-        set_air_conditioner_preset_mode(token, preset_mode)
-
-    elif command == "set":
-        if len(sys.argv) < 4:
-            air_conditioner_arguments.print_usage_and_exit()
-        attributes = air_conditioner_arguments.parse_set_command_arguments(sys.argv[2:])
-        if not attributes:
-            print("No attributes specified.", file=sys.stderr)
-            raise SystemExit(1)
-        apply_air_conditioner_attributes(token, attributes)
-
+    if handle_basic_air_conditioner_command(command, token):
+        return
+    if handle_attribute_command(command, token):
+        return
+    if command == "set":
+        handle_set_command(token)
     else:
         print(f"Unknown command: {command}", file=sys.stderr)
         air_conditioner_arguments.print_usage_and_exit()

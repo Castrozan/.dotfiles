@@ -5,6 +5,8 @@ import re
 import subprocess
 from dataclasses import dataclass
 
+from helpers import suite_summary_formatting
+
 REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parents[2]
 TESTS_DIRECTORY_NAME = "__tests__"
 TIER_DIRECTORY_NAMES = ["unit", "integration", "e2e"]
@@ -131,24 +133,23 @@ def owning_module_label(tests_directory):
 def format_summary_lines(summary):
     lines = []
     for tier_directory_name in TIER_DIRECTORY_NAMES:
-        tier_summary = summary["tiers"].get(tier_directory_name)
-        if tier_summary is None:
-            continue
-        parts = []
-        if tier_summary["bats_blocks"]:
-            parts.append(f"{tier_summary['bats_blocks']} bats @test")
-        if tier_summary["pytest_functions"]:
-            parts.append(f"{tier_summary['pytest_functions']} pytest fn")
-        lines.append(f"    {tier_directory_name}: {', '.join(parts)}")
-    if summary["lua_test_file_count"]:
-        lines.append(f"    lua: {summary['lua_test_file_count']} suite")
-    if summary["has_qml_runner"]:
-        lines.append("    qml: 1 suite")
-    if summary["eval_yaml_count"]:
-        lines.append(f"    evals: {summary['eval_yaml_count']} yaml")
-    if summary["has_checks_nix"]:
-        lines.append("    checks.nix: registered")
+        tier_line = suite_summary_formatting.format_tier_summary_line(
+            tier_directory_name, summary["tiers"].get(tier_directory_name)
+        )
+        if tier_line is not None:
+            lines.append(tier_line)
+    lines.extend(suite_summary_formatting.format_optional_summary_lines(summary))
     return lines
+
+
+def _accumulate_summary_totals(totals, summary):
+    totals["modules"] += 1
+    for tier_summary in summary["tiers"].values():
+        totals["bats_blocks"] += tier_summary["bats_blocks"]
+        totals["pytest_functions"] += tier_summary["pytest_functions"]
+    totals["lua_suites"] += summary["lua_test_file_count"]
+    totals["qml_suites"] += 1 if summary["has_qml_runner"] else 0
+    totals["eval_yamls"] += summary["eval_yaml_count"]
 
 
 def main():
@@ -169,27 +170,16 @@ def main():
         summary_lines = format_summary_lines(summary)
         if not summary_lines:
             continue
-        totals["modules"] += 1
-        for tier_summary in summary["tiers"].values():
-            totals["bats_blocks"] += tier_summary["bats_blocks"]
-            totals["pytest_functions"] += tier_summary["pytest_functions"]
-        totals["lua_suites"] += summary["lua_test_file_count"]
-        totals["qml_suites"] += 1 if summary["has_qml_runner"] else 0
-        totals["eval_yamls"] += summary["eval_yaml_count"]
+        _accumulate_summary_totals(totals, summary)
 
         print(owning_module_label(tests_directory))
         for line in summary_lines:
             print(line)
 
     print(
-        "\n=== Totals ===\n"
-        f"  modules with tests: {totals['modules']}\n"
-        f"  bats @test blocks:  {totals['bats_blocks']}\n"
-        f"  pytest functions:   {totals['pytest_functions']}\n"
-        f"  lua suites:         {totals['lua_suites']}\n"
-        f"  qml suites:         {totals['qml_suites']}\n"
-        f"  eval yamls:         {totals['eval_yamls']}\n"
-        f"  nix checks:         {format_nix_check_total(nix_check_inventory)}"
+        suite_summary_formatting.format_totals_footer(
+            totals, format_nix_check_total(nix_check_inventory)
+        )
     )
 
 

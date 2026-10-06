@@ -6,14 +6,16 @@ from render import emit_object, emit_tasks, render_digest_section
 
 def command_add(arguments, token):
     body = {"content": arguments.content}
-    if arguments.due:
-        body["due_string"] = arguments.due
-    if arguments.priority:
-        body["priority"] = arguments.priority
-    if arguments.label:
-        body["labels"] = arguments.label
-    if arguments.description:
-        body["description"] = arguments.description
+    _add_truthy_fields(
+        body,
+        arguments,
+        {
+            "due": "due_string",
+            "priority": "priority",
+            "label": "labels",
+            "description": "description",
+        },
+    )
     if arguments.project:
         body["project_id"] = resolve_project_id(arguments.project, token)
     task = send_request("POST", "/tasks", token, body=body)
@@ -60,20 +62,29 @@ def command_delete(arguments, token):
 
 def command_update(arguments, token):
     body = {}
-    if arguments.content:
-        body["content"] = arguments.content
-    if arguments.due:
-        body["due_string"] = arguments.due
-    if arguments.priority:
-        body["priority"] = arguments.priority
-    if arguments.label:
-        body["labels"] = arguments.label
+    _add_truthy_fields(
+        body,
+        arguments,
+        {
+            "content": "content",
+            "due": "due_string",
+            "priority": "priority",
+            "label": "labels",
+        },
+    )
     if arguments.description is not None:
         body["description"] = arguments.description
     if not body:
         raise SystemExit("update needs at least one field to change")
     task = send_request("POST", f"/tasks/{arguments.id}", token, body=body)
     emit_object(arguments, task or {"id": arguments.id}, f"updated {arguments.id}")
+
+
+def _add_truthy_fields(body, arguments, fields):
+    for attribute, field in fields.items():
+        value = getattr(arguments, attribute)
+        if value:
+            body[field] = value
 
 
 def command_projects(arguments, token):

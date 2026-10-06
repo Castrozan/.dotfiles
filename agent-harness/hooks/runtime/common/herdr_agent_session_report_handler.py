@@ -34,6 +34,14 @@ def reportable_agent_session_identifier(
     hook_session_identifier = non_empty_string_or_none(hook_input.get("session_id"))
     if hook_session_identifier is None or agent_name != CODEX_AGENT_NAME:
         return hook_session_identifier
+    return _reportable_codex_session_identifier(
+        hook_session_identifier, agent_session_path
+    )
+
+
+def _reportable_codex_session_identifier(
+    hook_session_identifier: str, agent_session_path: str | None
+) -> str | None:
     if agent_session_path is None:
         return None
     inherited_session_identifier = non_empty_string_or_none(

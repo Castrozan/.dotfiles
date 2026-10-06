@@ -64,50 +64,58 @@ def setup_e2e_scenario_workspace(
         )
 
     for file_def in setup.get("files", []):
-        relative_path = file_def["path"]
-        if os.path.isabs(relative_path) or ".." in relative_path:
-            raise ValueError(f"path must be relative: {relative_path}")
-        file_path = workspace_directory / relative_path
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.write_text(file_def["content"])
+        _write_scenario_setup_file(file_def, workspace_directory)
 
     if setup.get("git_init", False):
-        git_env = {
-            **os.environ,
-            "GIT_AUTHOR_NAME": "test",
-            "GIT_AUTHOR_EMAIL": "test@test",
-            "GIT_COMMITTER_NAME": "test",
-            "GIT_COMMITTER_EMAIL": "test@test",
-        }
-        subprocess.run(
-            ["git", "init"],
-            cwd=workspace_directory,
-            capture_output=True,
-            check=True,
-            timeout=10,
-        )
-        subprocess.run(
-            ["git", "config", "core.hooksPath", "/dev/null"],
-            cwd=workspace_directory,
-            capture_output=True,
-            check=True,
-            timeout=10,
-        )
-        subprocess.run(
-            ["git", "add", "."],
-            cwd=workspace_directory,
-            capture_output=True,
-            check=True,
-            timeout=10,
-        )
-        subprocess.run(
-            ["git", "commit", "-m", "initial"],
-            cwd=workspace_directory,
-            capture_output=True,
-            check=True,
-            timeout=10,
-            env=git_env,
-        )
+        _initialize_scenario_git_repository(workspace_directory)
+
+
+def _write_scenario_setup_file(file_def: dict, workspace_directory: Path) -> None:
+    relative_path = file_def["path"]
+    if os.path.isabs(relative_path) or ".." in relative_path:
+        raise ValueError(f"path must be relative: {relative_path}")
+    file_path = workspace_directory / relative_path
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(file_def["content"])
+
+
+def _initialize_scenario_git_repository(workspace_directory: Path) -> None:
+    git_env = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "test",
+        "GIT_AUTHOR_EMAIL": "test@test",
+        "GIT_COMMITTER_NAME": "test",
+        "GIT_COMMITTER_EMAIL": "test@test",
+    }
+    subprocess.run(
+        ["git", "init"],
+        cwd=workspace_directory,
+        capture_output=True,
+        check=True,
+        timeout=10,
+    )
+    subprocess.run(
+        ["git", "config", "core.hooksPath", "/dev/null"],
+        cwd=workspace_directory,
+        capture_output=True,
+        check=True,
+        timeout=10,
+    )
+    subprocess.run(
+        ["git", "add", "."],
+        cwd=workspace_directory,
+        capture_output=True,
+        check=True,
+        timeout=10,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "initial"],
+        cwd=workspace_directory,
+        capture_output=True,
+        check=True,
+        timeout=10,
+        env=git_env,
+    )
 
 
 def load_scenario(scenario_path: Path) -> dict:

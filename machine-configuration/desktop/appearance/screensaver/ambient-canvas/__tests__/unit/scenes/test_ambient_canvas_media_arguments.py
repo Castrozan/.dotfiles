@@ -1,5 +1,5 @@
 import ambient_canvas_browser as browser
-import display_ambient_canvas_loop as display
+from playback import display_ambient_canvas_loop as display
 from recording import recorded_loop_capture_plan as capture_plan
 import render_ambient_canvas_loop as render
 

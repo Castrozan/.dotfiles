@@ -3,6 +3,7 @@
   lib,
   hostname,
   healthCheckLib,
+  pkgs,
   ...
 }:
 let
@@ -25,61 +26,78 @@ in
     let
       glabConfigDir = "${config.home.homeDirectory}/.config/glab-cli";
       glabConfigFile = "${glabConfigDir}/config.yml";
-
-      hostsSection =
-        if config.glab.gitlabHost == null then
-          ""
-        else
-          ''
-
-            hosts:
-              ${config.glab.gitlabHost}:
-                api_host: ${config.glab.gitlabHost}
-                git_protocol: ssh
-          '';
-
-      initialGlabConfig = ''
-        git_protocol: ssh
-        editor: vim
-        browser: ""
-        glamour_style: dark
-        pager: ""
-        check_update: false
-        no_prompt: false
-      ''
-      + hostsSection;
-
-      decryptedTokenFilePath = "${config.home.homeDirectory}/.secrets/glab-token";
-      appendHostTokenCommand =
-        if config.glab.gitlabHost == null then
-          ""
-        else
-          ''
-            if [ -s "${decryptedTokenFilePath}" ]; then
-              printf '    token: %s\n' "$(cat "${decryptedTokenFilePath}")" >> "${glabConfigFile}"
-            fi
-          '';
+      personalTokenFile = "${config.home.homeDirectory}/.secrets/gitlab-com-token";
+      personalCredentialEnabled = config.age.secrets ? "credentials/gitlab-com-token";
+      initialGlabConfig = pkgs.writeText "glab-configuration.json" (
+        builtins.toJSON {
+          git_protocol = "ssh";
+          editor = "vim";
+          browser = "";
+          glamour_style = "dark";
+          pager = "";
+          check_update = false;
+          no_prompt = false;
+          hosts =
+            lib.optionalAttrs (config.glab.gitlabHost != null) {
+              ${config.glab.gitlabHost} = {
+                api_host = config.glab.gitlabHost;
+                git_protocol = "ssh";
+                token_file = "${config.home.homeDirectory}/.secrets/glab-token";
+              };
+            }
+            // lib.optionalAttrs personalCredentialEnabled {
+              "gitlab.com" = {
+                api_host = "gitlab.com";
+                git_protocol = "https";
+                token_file = personalTokenFile;
+              };
+            };
+        }
+      );
+      personalGitCredentialHelper = pkgs.writeShellScript "gitlab-com-credential-helper" ''
+        if [ "$1" = get ] && [ -s ${lib.escapeShellArg personalTokenFile} ]; then
+          printf 'username=oauth2\n'
+          printf 'password=%s\n' "$(cat ${lib.escapeShellArg personalTokenFile})"
+        fi
+      '';
     in
     {
+      home.packages = [ pkgs.glab ];
+
       home.activation.setupGlabConfig = {
-        after = [ "writeBoundary" ];
+        after = [
+          "writeBoundary"
+          "reloadSystemd"
+          "disableAgenixLaunchdRestartLoop"
+        ];
         before = [ ];
         data = ''
-                mkdir -p "${glabConfigDir}"
-                rm -f "${glabConfigFile}"
-                cat > "${glabConfigFile}" << 'GLAB_CONFIG_EOF'
-          ${initialGlabConfig}
-          GLAB_CONFIG_EOF
-                ${appendHostTokenCommand}
-                chmod 600 "${glabConfigFile}"
+          ${pkgs.python312}/bin/python3 ${./scripts/write_glab_configuration.py} ${initialGlabConfig} ${lib.escapeShellArg glabConfigFile}
+          if [ -d ${lib.escapeShellArg "${config.home.homeDirectory}/.dotfiles/.git"} ]; then
+            (cd ${lib.escapeShellArg "${config.home.homeDirectory}/.dotfiles"} && ${pkgs.glab}/bin/glab config set host gitlab.com)
+          fi
         '';
       };
 
-      healthCheck.probes = lib.optionals (config.glab.gitlabHost != null) [
-        (healthCheckLib.mkBinaryProbe {
-          name = "glab config holds a token for ${config.glab.gitlabHost}";
-          command = "glab config get token --host ${config.glab.gitlabHost} | grep -q .";
-        })
-      ];
+      programs.git.settings.credential."https://gitlab.com" = lib.mkIf personalCredentialEnabled {
+        helper = [
+          ""
+          "!${personalGitCredentialHelper}"
+        ];
+      };
+
+      healthCheck.probes =
+        map
+          (
+            gitlabHost:
+            healthCheckLib.mkBinaryProbe {
+              name = "glab config holds a token for ${gitlabHost}";
+              command = "glab config get token --host ${gitlabHost} | grep -q .";
+            }
+          )
+          (
+            lib.optional (config.glab.gitlabHost != null) config.glab.gitlabHost
+            ++ lib.optional personalCredentialEnabled "gitlab.com"
+          );
     };
 }

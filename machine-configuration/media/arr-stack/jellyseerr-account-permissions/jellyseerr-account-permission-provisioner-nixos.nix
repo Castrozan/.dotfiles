@@ -51,6 +51,8 @@ in
       before = accountPermissionConfig.orderedBeforeUnits;
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
+      startLimitIntervalSec = 600;
+      startLimitBurst = 6;
       environment = {
         ARR_USERS_JELLYFIN_BASE_URL = accountPermissionConfig.jellyfinBaseUrl;
         ARR_USERS_JELLYFIN_API_KEY_FILE = accountPermissionConfig.jellyfinApiKeySecretFile;
@@ -60,6 +62,9 @@ in
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${pkgs.python3}/bin/python3 ${arrUsersPackageDirectory} sync-account-permissions";
+        TimeoutStartSec = 60;
+        Restart = "on-failure";
+        RestartSec = 10;
       };
     };
   };

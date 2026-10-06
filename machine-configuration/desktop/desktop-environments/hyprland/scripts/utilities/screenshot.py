@@ -127,18 +127,11 @@ def copy_screenshot_to_clipboard_and_notify(save_path: Path) -> None:
     )
 
 
-def main() -> None:
-    mode = sys.argv[1] if len(sys.argv) > 1 else "region"
-    screenshots_dir = get_screenshots_directory()
-    screenshots_dir.mkdir(parents=True, exist_ok=True)
-    save_path = screenshots_dir / generate_screenshot_filename()
-
-    should_copy_to_clipboard = True
-
+def capture_unannotated_mode(mode: str, save_path: Path) -> tuple[Path, bool] | None:
     match mode:
         case "region":
             if not capture_region_screenshot(save_path):
-                return
+                return None
         case "window":
             if not capture_active_window_screenshot(save_path):
                 raise SystemExit(1)
@@ -147,23 +140,39 @@ def main() -> None:
                 raise SystemExit(1)
         case "screen":
             capture_full_screen_screenshot(save_path)
-        case "annotate":
-            should_copy_to_clipboard = False
-            result_path = capture_and_annotate_screenshot(save_path)
-            if result_path is None:
-                return
-            save_path = result_path
-        case "clipboard-annotate":
-            result_path = annotate_clipboard_image(save_path)
-            if result_path is None:
-                return
-            save_path = result_path
-        case _:
-            print(
-                "Usage: hypr-screenshot [region|window|output|screen|annotate|clipboard-annotate]",
-                file=sys.stderr,
-            )
-            raise SystemExit(1)
+    return save_path, True
+
+
+def capture_annotated_mode(mode: str, save_path: Path) -> tuple[Path, bool] | None:
+    result_path = (
+        capture_and_annotate_screenshot(save_path)
+        if mode == "annotate"
+        else annotate_clipboard_image(save_path)
+    )
+    if result_path is None:
+        return None
+    return result_path, mode != "annotate"
+
+
+def main() -> None:
+    mode = sys.argv[1] if len(sys.argv) > 1 else "region"
+    screenshots_dir = get_screenshots_directory()
+    screenshots_dir.mkdir(parents=True, exist_ok=True)
+    save_path = screenshots_dir / generate_screenshot_filename()
+
+    if mode in {"region", "window", "output", "monitor", "screen"}:
+        capture_result = capture_unannotated_mode(mode, save_path)
+    elif mode in {"annotate", "clipboard-annotate"}:
+        capture_result = capture_annotated_mode(mode, save_path)
+    else:
+        print(
+            "Usage: hypr-screenshot [region|window|output|screen|annotate|clipboard-annotate]",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    if capture_result is None:
+        return
+    save_path, should_copy_to_clipboard = capture_result
 
     if should_copy_to_clipboard:
         copy_screenshot_to_clipboard_and_notify(save_path)

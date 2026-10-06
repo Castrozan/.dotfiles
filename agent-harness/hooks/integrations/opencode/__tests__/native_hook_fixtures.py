@@ -11,12 +11,16 @@ def write_hook_dispatcher_launcher(directory):
     launcher = directory / "hook-dispatcher-launcher.py"
     launcher.write_text(
         f"#!{sys.executable}\n"
-        "import json, os, sys\nfrom pathlib import Path\n"
+        "import fcntl, json, os, sys\nfrom pathlib import Path\n"
         "payload = json.load(sys.stdin)\n"
         'record = Path(os.environ["OPENCODE_HOOK_RECORD"])\n'
-        "records = json.loads(record.read_text()) if record.exists() else []\n"
-        'records.append({"dispatcher": sys.argv[1], "payload": payload})\n'
-        "record.write_text(json.dumps(records))\n"
+        'with record.with_suffix(".lock").open("a") as lock:\n'
+        "    fcntl.flock(lock, fcntl.LOCK_EX)\n"
+        "    records = json.loads(record.read_text()) if record.exists() else []\n"
+        '    records.append({"dispatcher": sys.argv[1], "payload": payload})\n'
+        '    pending_record = record.with_name(f".{record.name}.{os.getpid()}")\n'
+        "    pending_record.write_text(json.dumps(records))\n"
+        "    pending_record.replace(record)\n"
         'responses = json.loads(os.environ["OPENCODE_HOOK_RESPONSES"])\n'
         'response = responses.get(sys.argv[1], "")\n'
         "if response: print(response if isinstance(response, str) else json.dumps(response))\n"

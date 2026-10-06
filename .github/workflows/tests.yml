@@ -43,7 +43,7 @@ jobs:
         uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
       - name: Run Swift tests with native coverage
         run: |
-          nix shell --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake "nixpkgs").legacyPackages; in pkgs.python312.withPackages (packages: [ packages.coverage ])' --command bash -e -c '
+          nix shell --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in pkgs.python312.withPackages (packages: [ packages.coverage ])' --command bash -e -c '
             mkdir -p .sonar-reports
             python3 -m coverage run --rcfile=repository/verification/quality/sonarqube/coverage.ini repository/verification/cover/swift-coverage.py
             python3 -m coverage combine --rcfile=repository/verification/quality/sonarqube/coverage.ini
@@ -73,7 +73,7 @@ jobs:
       - name: Run Python tests
         if: ${{ !cancelled() }}
         run: |
-          nix shell --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash -c '
+          nix shell --impure --expr 'let pkgs = (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages.${builtins.currentSystem}; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash -c '
             export REPO_DIR="$PWD"
             mkdir -p .sonar-reports
             export COVERAGE_PROCESS_START="$PWD/repository/verification/quality/sonarqube/coverage.ini"
@@ -124,7 +124,7 @@ jobs:
         env:
           SONARQUBE_CLI_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          sonarPackage=$(nix build --no-link --print-out-paths --impure --expr 'let pkgs = (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; in (import ./machine-configuration/development/testing/sonarqube/sonarqube-tools.nix { inherit pkgs; }).configure')
+          sonarPackage=$(nix build --no-link --print-out-paths --impure --expr 'let pkgs = (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages.${builtins.currentSystem}; in (import ./machine-configuration/development/testing/sonarqube/sonarqube-tools.nix { inherit pkgs; }).configure')
           "$sonarPackage/bin/sonar-configure"
 
       - name: Analyze with SonarQube and enforce the quality gate

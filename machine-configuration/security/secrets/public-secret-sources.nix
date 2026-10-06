@@ -3,10 +3,13 @@ let
 in
 [
   (secret "credentials/glab-token" ../../../secrets/credentials/glab-token.age)
+  (secret "credentials/gitlab-com-token" ../../../secrets/credentials/gitlab-com-token.age)
+  (secret "credentials/github-com-token" ../../../secrets/credentials/github-com-token.age)
   (secret "credentials/jira-api-token" ../../../secrets/credentials/jira-api-token.age)
   (secret "api-keys/sonarqube-token" ../../../secrets/api-keys/sonarqube-token.age)
   (secret "api-keys/brave-api-key" ../../../secrets/api-keys/brave-api-key.age)
   (secret "api-keys/deepgram-api-key" ../../../secrets/api-keys/deepgram-api-key.age)
+  (secret "api-keys/elevenlabs-api-key" ../../../secrets/api-keys/elevenlabs-api-key.age)
   (secret "api-keys/gemini-api-key" ../../../secrets/api-keys/gemini-api-key.age)
   (secret "api-keys/klipy-api-key" ../../../secrets/api-keys/klipy-api-key.age)
   (secret "api-keys/nvidia-api-key" ../../../secrets/api-keys/nvidia-api-key.age)

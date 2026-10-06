@@ -87,7 +87,20 @@ def run_assertions(
     workspace_directory: Path | None = None,
 ) -> list[AssertionResult]:
     results = []
+    _append_tool_assertions(trace, assertions, results)
+    _append_output_assertions(trace, assertions, results)
+    _append_written_code_assertions(trace, assertions, results)
+    if workspace_directory:
+        _append_workspace_assertions(workspace_directory, assertions, results)
+    if "read_to_edit_ratio" in assertions:
+        results.append(
+            check_read_to_edit_ratio_assertion(trace, assertions["read_to_edit_ratio"])
+        )
+    _append_minimum_tool_count_assertions(trace, assertions, results)
+    return results
 
+
+def _append_tool_assertions(trace, assertions, results):
     for ordering in assertions.get("tool_order", []):
         results.append(check_tool_ordering_assertion(trace, ordering))
 
@@ -97,6 +110,8 @@ def run_assertions(
     for forbidden_tool in assertions.get("tool_absence", []):
         results.append(check_tool_absence_assertion(trace, forbidden_tool))
 
+
+def _append_output_assertions(trace, assertions, results):
     for expected in assertions.get("output_contains", []):
         results.append(check_output_contains_assertion(trace, expected))
 
@@ -110,29 +125,29 @@ def run_assertions(
             )
         )
 
+
+def _append_written_code_assertions(trace, assertions, results):
     for forbidden in assertions.get("written_code_not_contains", []):
         results.append(check_written_code_not_contains_assertion(trace, forbidden))
 
-    if workspace_directory:
-        for file_check in assertions.get("file_not_contains", []):
-            results.append(
-                check_workspace_file_not_contains_assertion(
-                    workspace_directory,
-                    file_check["file"],
-                    file_check["pattern"],
-                )
-            )
 
-        for file_path in assertions.get("file_changed", []):
-            results.append(
-                check_workspace_file_changed_assertion(workspace_directory, file_path)
-            )
-
-    if "read_to_edit_ratio" in assertions:
+def _append_workspace_assertions(workspace_directory, assertions, results):
+    for file_check in assertions.get("file_not_contains", []):
         results.append(
-            check_read_to_edit_ratio_assertion(trace, assertions["read_to_edit_ratio"])
+            check_workspace_file_not_contains_assertion(
+                workspace_directory,
+                file_check["file"],
+                file_check["pattern"],
+            )
         )
 
+    for file_path in assertions.get("file_changed", []):
+        results.append(
+            check_workspace_file_changed_assertion(workspace_directory, file_path)
+        )
+
+
+def _append_minimum_tool_count_assertions(trace, assertions, results):
     for tool_count in assertions.get("minimum_tool_count", []):
         results.append(
             check_minimum_tool_count_assertion(
@@ -141,5 +156,3 @@ def run_assertions(
                 tool_count["count"],
             )
         )
-
-    return results

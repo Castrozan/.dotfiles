@@ -66,59 +66,100 @@ def find_agent_session(
     return None
 
 
+def _session_flags(harness_name):
+    if harness_name == "claude":
+        return {"--resume", "--session-id", "-r"}
+    if harness_name == "opencode":
+        return {"--session", "-s"}
+    return set()
+
+
+def _valid_session_identifier(candidate):
+    if not candidate.startswith("-"):
+        return candidate
+    return None
+
+
+def _separate_session_identifier(word, next_word, session_flags):
+    if word in session_flags and next_word is not None:
+        return _valid_session_identifier(next_word)
+    return None
+
+
+def _equals_session_identifier(word, session_flags):
+    for session_flag in session_flags:
+        if word.startswith(f"{session_flag}="):
+            candidate_session_identifier = word.removeprefix(f"{session_flag}=")
+            return _valid_session_identifier(candidate_session_identifier)
+    return None
+
+
+def _session_identifier_for_word(word, next_word, session_flags):
+    candidate = _separate_session_identifier(word, next_word, session_flags)
+    if candidate is not None:
+        return candidate
+    candidate = _equals_session_identifier(word, session_flags)
+    if candidate is not None:
+        return candidate
+    return None
+
+
 def session_identifier_from_command(harness_name: str, command_line: str) -> str | None:
     words = command_words(command_line)
-    if harness_name == "claude":
-        session_flags = {"--resume", "--session-id", "-r"}
-    elif harness_name == "opencode":
-        session_flags = {"--session", "-s"}
-    else:
-        session_flags = set()
+    session_flags = _session_flags(harness_name)
     for index, word in enumerate(words):
-        if word in session_flags and index + 1 < len(words):
-            candidate_session_identifier = words[index + 1]
-            if not candidate_session_identifier.startswith("-"):
-                return candidate_session_identifier
-        for session_flag in session_flags:
-            if word.startswith(f"{session_flag}="):
-                candidate_session_identifier = word.removeprefix(f"{session_flag}=")
-                if not candidate_session_identifier.startswith("-"):
-                    return candidate_session_identifier
+        next_word = words[index + 1] if index + 1 < len(words) else None
+        candidate = _session_identifier_for_word(word, next_word, session_flags)
+        if candidate is not None:
+            return candidate
     if harness_name == "codex":
         return codex_session_identifier_from_command_words(words)
     return None
 
 
 def codex_resume_arguments(words: list[str]) -> list[str] | None:
-    word_index = 1
-    while word_index < len(words):
-        word = words[word_index]
-        if word == "resume":
-            return words[word_index + 1 :]
-        if word == "--":
-            return None
-        if word in CODEX_OPTIONS_WITH_VALUES:
-            word_index += 2
-            continue
-        if word.startswith("-"):
-            word_index += 1
-            continue
+    word_index = _codex_resume_word_index(words)
+    if word_index is None:
         return None
+    return words[word_index + 1 :]
+
+
+def _scan_codex_resume_argument(words, word_index):
+    word = words[word_index]
+    if word == "resume":
+        return True, word_index
+    if word == "--":
+        return None
+    if word in CODEX_OPTIONS_WITH_VALUES:
+        return False, word_index + 2
+    if word.startswith("-"):
+        return False, word_index + 1
     return None
 
 
-def codex_session_identifier_from_command_words(words: list[str]) -> str | None:
-    resume_arguments = codex_resume_arguments(words)
-    if resume_arguments is None or "--last" in resume_arguments:
-        return None
-    if any(
+def _codex_resume_word_index(words):
+    word_index = 1
+    while word_index < len(words):
+        scan_result = _scan_codex_resume_argument(words, word_index)
+        if scan_result is None:
+            return None
+        is_resume_command, next_index = scan_result
+        if is_resume_command:
+            return next_index
+        word_index = next_index
+    return None
+
+
+def _is_codex_image_option(word):
+    return (
         word == "--image"
         or word.startswith("--image=")
         or word == "-i"
         or (word.startswith("-i") and len(word) > 2)
-        for word in resume_arguments
-    ):
-        return None
+    )
+
+
+def _first_codex_positional_argument(resume_arguments):
     skip_next_word = False
     for word in resume_arguments:
         if skip_next_word:
@@ -131,6 +172,15 @@ def codex_session_identifier_from_command_words(words: list[str]) -> str | None:
             continue
         return word
     return None
+
+
+def codex_session_identifier_from_command_words(words: list[str]) -> str | None:
+    resume_arguments = codex_resume_arguments(words)
+    if resume_arguments is None or "--last" in resume_arguments:
+        return None
+    if any(_is_codex_image_option(word) for word in resume_arguments):
+        return None
+    return _first_codex_positional_argument(resume_arguments)
 
 
 def resume_command_for(harness_name: str, session_identifier: str) -> list[str]:

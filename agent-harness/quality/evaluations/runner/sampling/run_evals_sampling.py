@@ -45,6 +45,53 @@ def suite_pass_at_k(per_test, k):
     return sum(pass_at_k(t["total"], t["passes"], k) for t in per_test) / len(per_test)
 
 
+def _append_enriched_test(
+    test,
+    categories,
+    test_fingerprints,
+    generated_at,
+    execution_profile_id,
+    git_commit,
+):
+    bucket = categories.setdefault(
+        test["category"], {"passed": 0, "failed": 0, "tests": []}
+    )
+    majority_passed = test["passes"] * 2 >= test["total"]
+    bucket["tests"].append(
+        {
+            "name": test["name"],
+            "passed": majority_passed,
+            "passes": test["passes"],
+            "samples": test["total"],
+            "lower": round(test["lower"], 4),
+            "upper": round(test["upper"], 4),
+            "fingerprint": test_fingerprints[f"{test['category']}::{test['name']}"],
+            "generated_at": generated_at,
+            "execution_profile_id": execution_profile_id,
+            "run_source": {
+                "kind": "repeated_sampling",
+                "git_commit": git_commit,
+            },
+        }
+    )
+    bucket["passed" if majority_passed else "failed"] += 1
+
+
+def _sampling_metadata(epochs, total_samples, total_sample_passes, per_test):
+    return {
+        "epochs": epochs,
+        "total_samples": total_samples,
+        "sample_pass_rate": (
+            round(total_sample_passes / total_samples, 4) if total_samples else 0
+        ),
+        "suite_pass_at_1": round(suite_pass_at_k(per_test, 1), 4),
+        "suite_pass_at_2": (
+            round(suite_pass_at_k(per_test, 2), 4) if epochs >= 2 else None
+        ),
+        "flaky_tests": [test["name"] for test in per_test if test["flaky"]],
+    }
+
+
 def build_epoch_enriched_baseline(
     per_test,
     epochs,
@@ -63,28 +110,14 @@ def build_epoch_enriched_baseline(
     total_samples = 0
     total_sample_passes = 0
     for test in per_test:
-        bucket = categories.setdefault(
-            test["category"], {"passed": 0, "failed": 0, "tests": []}
+        _append_enriched_test(
+            test,
+            categories,
+            test_fingerprints,
+            generated_at,
+            execution_profile_id,
+            git_commit,
         )
-        majority_passed = test["passes"] * 2 >= test["total"]
-        bucket["tests"].append(
-            {
-                "name": test["name"],
-                "passed": majority_passed,
-                "passes": test["passes"],
-                "samples": test["total"],
-                "lower": round(test["lower"], 4),
-                "upper": round(test["upper"], 4),
-                "fingerprint": test_fingerprints[f"{test['category']}::{test['name']}"],
-                "generated_at": generated_at,
-                "execution_profile_id": execution_profile_id,
-                "run_source": {
-                    "kind": "repeated_sampling",
-                    "git_commit": git_commit,
-                },
-            }
-        )
-        bucket["passed" if majority_passed else "failed"] += 1
         total_samples += test["total"]
         total_sample_passes += test["passes"]
 
@@ -108,16 +141,7 @@ def build_epoch_enriched_baseline(
         },
         "token_usage": token_usage,
         "evidence_profiles": preserved_evidence_profiles(existing_baseline),
-        "sampling": {
-            "epochs": epochs,
-            "total_samples": total_samples,
-            "sample_pass_rate": (
-                round(total_sample_passes / total_samples, 4) if total_samples else 0
-            ),
-            "suite_pass_at_1": round(suite_pass_at_k(per_test, 1), 4),
-            "suite_pass_at_2": (
-                round(suite_pass_at_k(per_test, 2), 4) if epochs >= 2 else None
-            ),
-            "flaky_tests": [test["name"] for test in per_test if test["flaky"]],
-        },
+        "sampling": _sampling_metadata(
+            epochs, total_samples, total_sample_passes, per_test
+        ),
     }

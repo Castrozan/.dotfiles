@@ -101,28 +101,38 @@ class SubprocessAgentBackend(AgentBackend):
     def _drain_output_until_the_reader_should_stop(
         self, selector: selectors.BaseSelector
     ) -> None:
-        if self._process is None or self._process.stdout is None:
+        if not self._process_has_output_stream():
             return
         while not self._reader_should_stop.is_set():
             if not self._is_process_alive():
                 self._drain_remaining_output_after_exit()
                 return
-            ready_events = selector.select(timeout=0.2)
-            if not ready_events:
-                continue
-            try:
-                raw_chunk_bytes = os.read(
-                    self._process.stdout.fileno(), READ_CHUNK_SIZE_BYTES
-                )
-            except OSError:
+            if not self._drain_ready_output_chunk(selector):
                 return
-            if not raw_chunk_bytes:
-                self._drain_remaining_output_after_exit()
-                return
-            decoded_chunk = raw_chunk_bytes.decode("utf-8", errors="replace")
-            with self._output_buffer_lock:
-                self._unread_output_buffer += decoded_chunk
-            self._last_activity_at_epoch_seconds = time.time()
+
+    def _process_has_output_stream(self) -> bool:
+        return self._process is not None and self._process.stdout is not None
+
+    def _drain_ready_output_chunk(self, selector: selectors.BaseSelector) -> bool:
+        if not selector.select(timeout=0.2):
+            return True
+        raw_chunk_bytes = self._read_ready_output_chunk()
+        if raw_chunk_bytes is None:
+            return False
+        if not raw_chunk_bytes:
+            self._drain_remaining_output_after_exit()
+            return False
+        decoded_chunk = raw_chunk_bytes.decode("utf-8", errors="replace")
+        with self._output_buffer_lock:
+            self._unread_output_buffer += decoded_chunk
+        self._last_activity_at_epoch_seconds = time.time()
+        return True
+
+    def _read_ready_output_chunk(self) -> bytes | None:
+        try:
+            return os.read(self._process.stdout.fileno(), READ_CHUNK_SIZE_BYTES)
+        except OSError:
+            return None
 
     def _drain_remaining_output_after_exit(self) -> None:
         if self._process is None or self._process.stdout is None:

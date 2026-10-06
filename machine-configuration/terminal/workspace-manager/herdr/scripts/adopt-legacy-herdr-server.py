@@ -120,6 +120,14 @@ def adopt_legacy_server():
         raise RuntimeError(f"{target_unit} is not active")
     coordinator_process_id = int(unit_property(target_unit, "MainPID"))
     os.kill(coordinator_process_id, signal.SIGSTOP)
+    handoff_legacy_server(coordinator_process_id)
+    if not herdr_server_is_running():
+        raise RuntimeError("herdr server is unavailable after legacy adoption")
+    if not wait_for_legacy_unit_stop(legacy_unit):
+        raise RuntimeError(f"{legacy_unit} remained active after legacy adoption")
+
+
+def handoff_legacy_server(coordinator_process_id):
     try:
         run_command(
             os.environ["HERDR_EXECUTABLE"],
@@ -133,10 +141,6 @@ def adopt_legacy_server():
     finally:
         if process_exists(coordinator_process_id):
             os.kill(coordinator_process_id, signal.SIGCONT)
-    if not herdr_server_is_running():
-        raise RuntimeError("herdr server is unavailable after legacy adoption")
-    if not wait_for_legacy_unit_stop(legacy_unit):
-        raise RuntimeError(f"{legacy_unit} remained active after legacy adoption")
 
 
 def main():

@@ -17,6 +17,7 @@ pkgs.stdenv.mkDerivation {
   patches = [
     ./chrome-devtools-mcp-patches/lazy-devtools-universe.patch
     ./chrome-devtools-mcp-patches/nonblocking-page-titles.patch
+    ./chrome-devtools-mcp-patches/preserve-background-throttling.patch
   ];
 
   nativeBuildInputs = [ pkgs.makeWrapper ];
@@ -48,7 +49,7 @@ pkgs.stdenv.mkDerivation {
   '';
 
   meta = {
-    description = "Chrome DevTools MCP with upstream retention fixes, on-demand DevTools sessions, and nonblocking page titles";
+    description = "Chrome DevTools MCP with bounded retention, on-demand DevTools sessions, and native background throttling";
     homepage = "https://github.com/ChromeDevTools/chrome-devtools-mcp";
   };
 }

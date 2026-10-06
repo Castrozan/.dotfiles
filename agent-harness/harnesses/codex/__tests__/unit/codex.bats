@@ -2,76 +2,7 @@
 
 load '../../../../../repository/verification/helpers/bash-script-assertions'
 
-setup() {
-	SCRIPT_UNDER_TEST="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)/scripts/codex"
-	WRAPPER_SHELL="$BASH"
-	TEMPORARY_ROOT="$(mktemp -d)"
-	FAKE_BINARY_DIRECTORY="$TEMPORARY_ROOT/bin"
-	GLOBAL_INSTRUCTIONS_FILE="$TEMPORARY_ROOT/global-instructions.md"
-	PROFILE_INSTRUCTIONS_FILE="$TEMPORARY_ROOT/profile-instructions.md"
-	DISPATCH_FILE="$TEMPORARY_ROOT/workspace-profile-dispatch"
-	DISPATCH_MARKER="$TEMPORARY_ROOT/dispatch-was-sourced"
-	SHARED_LAUNCH_MARKER="$TEMPORARY_ROOT/shared-launch"
-	HOOK_TRUST_ARGUMENTS_FILE="$TEMPORARY_ROOT/hook-trust-arguments"
-	mkdir -p "$FAKE_BINARY_DIRECTORY"
-	printf 'global instructions' >"$GLOBAL_INSTRUCTIONS_FILE"
-	printf 'profile instructions' >"$PROFILE_INSTRUCTIONS_FILE"
-
-	cat >"$FAKE_BINARY_DIRECTORY/codex" <<-'FAKE_CODEX'
-		#!/usr/bin/env bash
-		printf 'argv:'
-		printf ' <%s>' "$@"
-		printf '\n'
-		printf 'AGENT_INTERACTIVE_PREFERENCES_PATH=<%s>\n' "${AGENT_INTERACTIVE_PREFERENCES_PATH-unset}"
-		printf 'NPM_CONFIG_PREFIX=<%s>\n' "${NPM_CONFIG_PREFIX-unset}"
-	FAKE_CODEX
-
-	chmod +x "$FAKE_BINARY_DIRECTORY/codex"
-	cat >"$FAKE_BINARY_DIRECTORY/approve-hooks" <<-'FAKE_APPROVAL'
-		#!/usr/bin/env bash
-		printf '<%s>\n' "$@" >"$HOOK_TRUST_ARGUMENTS_FILE"
-		exit "${HOOK_TRUST_EXIT_STATUS:-0}"
-	FAKE_APPROVAL
-	chmod +x "$FAKE_BINARY_DIRECTORY/approve-hooks"
-	cat >"$FAKE_BINARY_DIRECTORY/shared-client" <<-'FAKE_SHARED'
-		#!/usr/bin/env bash
-		touch "$SHARED_LAUNCH_MARKER"
-		exec "$CODEX_LAUNCHER_BINARY" "$@"
-	FAKE_SHARED
-	chmod +x "$FAKE_BINARY_DIRECTORY/shared-client"
-	write_dispatch_file
-}
-
-teardown() {
-	rm -rf "$TEMPORARY_ROOT"
-}
-
-write_dispatch_file() {
-	{
-		printf 'touch "$DISPATCH_MARKER"\n'
-		printf '%s\n' "$@"
-	} >"$DISPATCH_FILE"
-}
-
-run_codex() {
-	run env -i \
-		PATH="$FAKE_BINARY_DIRECTORY:$PATH" \
-		DISPATCH_MARKER="$DISPATCH_MARKER" \
-		NPM_CONFIG_PREFIX="/nonexistent" \
-		CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE="$GLOBAL_INSTRUCTIONS_FILE" \
-		CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE="$DISPATCH_FILE" \
-		SHARED_LAUNCH_MARKER="$SHARED_LAUNCH_MARKER" \
-		CODEX_LAUNCHER_SHARED_SERVER_EXECUTABLE="$FAKE_BINARY_DIRECTORY/shared-client" \
-		CODEX_LAUNCHER_BINARY="$FAKE_BINARY_DIRECTORY/codex" \
-		CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE="$FAKE_BINARY_DIRECTORY/approve-hooks" \
-		HOOK_TRUST_ARGUMENTS_FILE="$HOOK_TRUST_ARGUMENTS_FILE" \
-		HOOK_TRUST_EXIT_STATUS="${HOOK_TRUST_EXIT_STATUS:-0}" \
-		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
-}
-
-launcher_arguments() {
-	echo '<--sandbox> <danger-full-access> <--ask-for-approval> <never>'
-}
+load '../support/codex_launcher_fixture'
 
 @test "passes shellcheck apart from the dispatch file it sources by path" {
 	if ! command -v shellcheck &>/dev/null; then
@@ -81,11 +12,11 @@ launcher_arguments() {
 	[ "$status" -eq 0 ]
 }
 
-@test "selects embedded interactive mode without overriding its remembered model" {
+@test "selects a private interactive server without overriding its remembered model" {
 	run_codex
 	[ "$status" -eq 0 ]
-	[ ! -f "$SHARED_LAUNCH_MARKER" ]
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive>" ]
+	[ -f "$PRIVATE_LAUNCH_MARKER" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive>" ]
 }
 
 @test "exports the selected instruction path for interactive hooks" {
@@ -107,40 +38,40 @@ launcher_arguments() {
 	write_dispatch_file "codexDeveloperInstructionsFile=$PROFILE_INSTRUCTIONS_FILE" \
 		'codexInteractiveProfile=dotfiles-workspace-test'
 	run_codex
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-workspace-test>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-workspace-test>" ]
 	[ "${lines[1]}" = "AGENT_INTERACTIVE_PREFERENCES_PATH=<$PROFILE_INSTRUCTIONS_FILE>" ]
 }
 
 @test "lets an explicit caller profile replace the generated default" {
 	for profile_argument in '--profile=custom' '-pcustom'; do
 		run_codex "$profile_argument"
-		[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <$profile_argument>" ]
+		[ "${lines[0]}" = "argv: $(launcher_arguments) <$profile_argument>" ]
 	done
 	for profile_argument in --profile -p; do
 		run_codex "$profile_argument" custom
-		[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <$profile_argument> <custom>" ]
+		[ "${lines[0]}" = "argv: $(launcher_arguments) <$profile_argument> <custom>" ]
 	done
 }
 
 @test "passes caller arguments through after every injected argument" {
 	run_codex resume --last
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <resume> <--last>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <resume> <--last>" ]
 }
 
 @test "treats a leading flag as an interactive launch" {
 	run_codex --search
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <--search>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <--search>" ]
 }
 
 @test "treats fork as an interactive launch" {
 	run_codex fork
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <fork>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <fork>" ]
 }
 
-@test "treats a positional prompt as an embedded interactive launch" {
+@test "treats a positional prompt as a private interactive launch" {
 	run_codex 'explain this code'
 	[ "$status" -eq 0 ]
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <explain this code>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <explain this code>" ]
 }
 
 @test "keeps native management commands outside the interactive launch" {
@@ -168,14 +99,14 @@ launcher_arguments() {
 		"workspaceProfileArguments+=(-c 'model_reasoning_effort=\"high\"')"
 	run_codex -C '/a project' resume --last
 	[ "$status" -eq 0 ]
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-workspace-test> <-C> </a project> <resume> <--last>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-workspace-test> <-C> </a project> <resume> <--last>" ]
 	run cat "$HOOK_TRUST_ARGUMENTS_FILE"
 	[ "$output" = $'<-c>\n<model_reasoning_effort="high">\n<-C>\n</a project>\n<resume>\n<--last>' ]
 }
 
 @test "does not mistake a positional prompt for an explicit profile flag" {
 	run_codex -- --profile=custom
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--no-daemon> <--profile> <dotfiles-interactive> <--> <--profile=custom>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <--> <--profile=custom>" ]
 }
 
 @test "does not repeat an explicit embedded mode flag" {
@@ -192,11 +123,19 @@ launcher_arguments() {
 	[ -z "$output" ]
 }
 
-@test "explicit endpoints and informational options bypass automatic embedded selection" {
+@test "explicit endpoints and informational options bypass automatic private server selection" {
 	for argument in --no-daemon '--remote=unix:///custom.sock' --help --version; do
 		run_codex "$argument"
 		[ "$status" -eq 0 ]
-		[ ! -f "$SHARED_LAUNCH_MARKER" ]
+		[ ! -f "$PRIVATE_LAUNCH_MARKER" ]
 		[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <$argument>" ]
+	done
+}
+
+@test "native launches do not inherit another interactive server socket" {
+	for argument in exec --no-daemon '--remote=unix:///custom.sock'; do
+		run_codex "$argument"
+		[ "$status" -eq 0 ]
+		[ "${lines[3]}" = 'CODEX_SESSION_SOCKET_PATH=<unset>' ]
 	done
 }

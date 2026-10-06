@@ -32,21 +32,21 @@ def search_videos(query, max_results=10):
     for line in result.stdout.strip().split("\n"):
         if not line:
             continue
-        data = json.loads(line)
-        videos.append(
-            {
-                "id": data.get("id"),
-                "title": data.get("title"),
-                "url": data.get("url")
-                or f"https://www.youtube.com/watch?v={data.get('id')}",
-                "channel": data.get("channel") or data.get("uploader"),
-                "duration": data.get("duration"),
-                "view_count": data.get("view_count"),
-                "description": (data.get("description") or "")[:200],
-            }
-        )
+        videos.append(_video_from_search_result(json.loads(line)))
 
     print(json.dumps(videos, indent=2))
+
+
+def _video_from_search_result(data):
+    return {
+        "id": data.get("id"),
+        "title": data.get("title"),
+        "url": data.get("url") or f"https://www.youtube.com/watch?v={data.get('id')}",
+        "channel": data.get("channel") or data.get("uploader"),
+        "duration": data.get("duration"),
+        "view_count": data.get("view_count"),
+        "description": (data.get("description") or "")[:200],
+    }
 
 
 def video_info(video_ids):

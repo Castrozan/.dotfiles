@@ -42,11 +42,7 @@ def merge_baseline_categories(
     ):
         raise ValueError("existing baseline execution profile does not match")
     current_categories = evaluation_category_names()
-    categories = {
-        name: bucket
-        for name, bucket in existing_baseline.get("categories", {}).items()
-        if name in current_categories
-    }
+    categories = _retained_baseline_categories(existing_baseline, current_categories)
     categories.update(replacements)
     total_passed = sum(bucket["passed"] for bucket in categories.values())
     total_tests = sum(
@@ -54,12 +50,7 @@ def merge_baseline_categories(
     )
     execution_profile_id = execution_profile_identifier(execution_profile)
     generated_at = datetime.now(timezone.utc).isoformat()
-    evidence_timestamps = [
-        entry["generated_at"]
-        for bucket in categories.values()
-        for entry in bucket.get("tests", [])
-        if entry.get("generated_at")
-    ]
+    evidence_timestamps = _category_evidence_timestamps(categories)
     existing_test_keys = {
         f"{category}::{entry['name']}"
         for category, bucket in existing_baseline.get("categories", {}).items()
@@ -94,6 +85,25 @@ def merge_baseline_categories(
         "token_usage": token_usage,
         "evidence_profiles": preserved_evidence_profiles(existing_baseline),
     }
+
+
+def _retained_baseline_categories(
+    existing_baseline: dict, current_categories: set[str]
+) -> dict:
+    return {
+        name: bucket
+        for name, bucket in existing_baseline.get("categories", {}).items()
+        if name in current_categories
+    }
+
+
+def _category_evidence_timestamps(categories: dict) -> list[str]:
+    return [
+        entry["generated_at"]
+        for bucket in categories.values()
+        for entry in bucket.get("tests", [])
+        if entry.get("generated_at")
+    ]
 
 
 def repeated_outcomes_category_bucket(

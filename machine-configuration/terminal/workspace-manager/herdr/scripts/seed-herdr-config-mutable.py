@@ -50,17 +50,11 @@ def inject_preserved_ui_values_into_nix_source(nix_source_text, preserved_ui_val
     )
     if ui_header_index is None:
         raise SystemExit("herdr nix-source config has no [ui] section to seed into")
-    ui_section_end_index = len(lines)
-    for index in range(ui_header_index + 1, len(lines)):
-        if lines[index].lstrip().startswith("["):
-            ui_section_end_index = index
-            break
+    ui_section_end_index = _ui_section_end_index(lines, ui_header_index)
     preserved_keys = set(preserved_ui_values)
-    kept_ui_body_lines = [
-        line
-        for line in lines[ui_header_index + 1 : ui_section_end_index]
-        if assignment_key_of_line(line) not in preserved_keys
-    ]
+    kept_ui_body_lines = _kept_ui_body_lines(
+        lines, ui_header_index, ui_section_end_index, preserved_keys
+    )
     injected_ui_lines = [
         f"{key} = {format_toml_scalar(value)}"
         for key, value in preserved_ui_values.items()
@@ -72,6 +66,21 @@ def inject_preserved_ui_values_into_nix_source(nix_source_text, preserved_ui_val
         + lines[ui_section_end_index:]
     )
     return "\n".join(merged_lines) + "\n"
+
+
+def _ui_section_end_index(lines, ui_header_index):
+    for index in range(ui_header_index + 1, len(lines)):
+        if lines[index].lstrip().startswith("["):
+            return index
+    return len(lines)
+
+
+def _kept_ui_body_lines(lines, ui_header_index, ui_section_end_index, preserved_keys):
+    return [
+        line
+        for line in lines[ui_header_index + 1 : ui_section_end_index]
+        if assignment_key_of_line(line) not in preserved_keys
+    ]
 
 
 def write_when_changed(target_path, desired_text):

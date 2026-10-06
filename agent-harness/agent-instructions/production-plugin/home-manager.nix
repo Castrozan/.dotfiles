@@ -9,6 +9,7 @@
 }:
 let
   distribution = import ../../plugin-distribution { inherit pkgs; };
+  desktopComputerUse = import ../skills/workstation/desktop/install { inherit pkgs; };
   source = import ./. {
     inherit
       pkgs
@@ -39,5 +40,8 @@ in
     };
   };
 
-  config.home.file.".local/share/agent-plugins/dotfiles".source = config.agentPlugins.bundle;
+  config.home = {
+    packages = [ desktopComputerUse ];
+    file.".local/share/agent-plugins/dotfiles".source = config.agentPlugins.bundle;
+  };
 }

@@ -137,3 +137,4 @@ how its conclusion, supporting context, and headings serve distinct reader needs
 
 Interactive harnesses inject [interactive communication](references/interactive-communication.md) separately because its
 response contract must remain available before Humanize is selected. Do not reload it during ordinary Humanize use.
+Follow its [link format](references/interactive-communication.md#link-format) when writing interactive replies.

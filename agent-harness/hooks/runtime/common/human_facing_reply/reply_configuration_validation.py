@@ -1,7 +1,7 @@
 import re
 from string import Formatter
 
-from reply_restriction_contracts import REPLY_RESTRICTION_CONTRACTS
+from reply_restriction_contracts import REPLY_RESTRICTIONS
 
 
 def require_fields(value, fields, location):
@@ -38,18 +38,26 @@ def validate_reply_labels(configured_labels):
         raise ValueError("labeled replies require at least one label")
     labels = {}
     for label in configured_labels:
-        require_fields(
-            label, ("name", "maximum_words", "grace_words", "instruction"), "label"
-        )
-        name = label["name"]
-        require_nonempty_text(name, "label name")
-        if name.casefold() in {existing.casefold() for existing in labels}:
-            raise ValueError("reply labels must have distinct nonempty names")
-        require_nonempty_text(label["instruction"], f"{name}.instruction")
-        for field in ("maximum_words", "grace_words"):
-            require_nonnegative_integer(label[field], f"{name}.{field}")
-        labels[name] = label
+        _validate_reply_label(label, labels)
     return labels
+
+
+def _validate_reply_label(label: dict, labels: dict) -> None:
+    require_fields(
+        label, ("name", "maximum_words", "grace_words", "instruction"), "label"
+    )
+    name = label["name"]
+    require_nonempty_text(name, "label name")
+    if _label_name_is_already_configured(name, labels):
+        raise ValueError("reply labels must have distinct nonempty names")
+    require_nonempty_text(label["instruction"], f"{name}.instruction")
+    for field in ("maximum_words", "grace_words"):
+        require_nonnegative_integer(label[field], f"{name}.{field}")
+    labels[name] = label
+
+
+def _label_name_is_already_configured(name: str, labels: dict) -> bool:
+    return name.casefold() in {existing.casefold() for existing in labels}
 
 
 def compile_reply_pattern(value, location):
@@ -63,10 +71,18 @@ def compile_reply_pattern(value, location):
 def validate_message_template(message, placeholders, location):
     require_nonempty_text(message, location)
     for _, field, specification, conversion in Formatter().parse(message):
-        if field is not None and (
-            field not in placeholders or specification or conversion
+        if not _template_field_is_supported(
+            field, specification, conversion, placeholders
         ):
             raise ValueError(f"{location} has an unsupported placeholder: {field}")
+
+
+def _template_field_is_supported(
+    field, specification, conversion, placeholders
+) -> bool:
+    return field is None or (
+        field in placeholders and not specification and not conversion
+    )
 
 
 def validate_artifact_patterns(restriction, patterns):
@@ -85,10 +101,7 @@ def validate_artifact_patterns(restriction, patterns):
 def validate_restriction(restriction):
     if not isinstance(restriction, dict):
         raise ValueError("reply restrictions must be objects")
-    name = restriction.get("name")
-    if not isinstance(name, str) or name not in REPLY_RESTRICTION_CONTRACTS:
-        raise ValueError(f"unknown reply restriction: {name}")
-    parameters, placeholders = REPLY_RESTRICTION_CONTRACTS[name]
+    name, parameters, placeholders = _restriction_contract(restriction)
     require_fields(restriction, {"name", "message"} | parameters, name)
     validate_message_template(restriction["message"], placeholders, f"{name}.message")
     patterns = {
@@ -96,13 +109,25 @@ def validate_restriction(restriction):
         for field in parameters
         if field.endswith("pattern")
     }
+    _validate_restriction_specific_fields(name, restriction, patterns)
+    return patterns
+
+
+def _restriction_contract(restriction):
+    name = restriction.get("name")
+    if not isinstance(name, str) or name not in REPLY_RESTRICTIONS:
+        raise ValueError(f"unknown reply restriction: {name}")
+    definition = REPLY_RESTRICTIONS[name]
+    return name, definition.parameters, definition.placeholders
+
+
+def _validate_restriction_specific_fields(name, restriction, patterns) -> None:
     if name == "unlinked_artifact":
         validate_artifact_patterns(restriction, patterns)
     if name == "sentence_dash":
         require_text_mapping(restriction["characters"], "sentence dash characters")
         if any(len(character) != 1 for character in restriction["characters"]):
             raise ValueError("sentence dash keys must be single characters")
-    return patterns
 
 
 def validate_instruction_templates(document):

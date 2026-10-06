@@ -3,4 +3,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts" / "hook_trust"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "scripts" / "session_server"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "config"))
+sys.path.insert(0, str(Path(__file__).parents[3] / "hooks" / "runtime" / "common"))

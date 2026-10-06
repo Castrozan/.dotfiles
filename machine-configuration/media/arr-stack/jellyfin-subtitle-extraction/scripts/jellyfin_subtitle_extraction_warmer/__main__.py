@@ -34,6 +34,12 @@ def extract_streams_of_item(base_url, api_key, item, unextracted_streams):
     return extracted_count
 
 
+def _playback_started(base_url, api_key, yield_to_playback):
+    return yield_to_playback and someone_is_watching(
+        list_active_sessions(base_url, api_key)
+    )
+
+
 def sweep(
     base_url,
     api_key,
@@ -53,9 +59,7 @@ def sweep(
         if extracted_items >= item_budget:
             print(f"{LOG_PREFIX}: sweep budget of {item_budget} items reached")
             break
-        if yield_to_playback and someone_is_watching(
-            list_active_sessions(base_url, api_key)
-        ):
+        if _playback_started(base_url, api_key, yield_to_playback):
             print(f"{LOG_PREFIX}: sweep stopped, playback started")
             break
         extracted_streams += extract_streams_of_item(

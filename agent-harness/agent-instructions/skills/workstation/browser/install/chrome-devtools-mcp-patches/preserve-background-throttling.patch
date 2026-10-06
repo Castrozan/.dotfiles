@@ -1,0 +1,30 @@
+--- a/build/src/McpPage.js
++++ b/build/src/McpPage.js
+@@ -175,17 +175,6 @@
+             };
+         });
+     }
+-    async init() {
+-        await Promise.allSettled([
+-            this.#initFocusEmulationNoThrow(),
+-        ]);
+-    }
+-    async #initFocusEmulationNoThrow() {
+-        // We emulate a focused page for all pages to support multi-agent workflows.
+-        void this.pptrPage.emulateFocusedPage(true).catch(error => {
+-            logger?.('Error turning on focused page emulation', error);
+-        });
+-    }
+     async #initDevToolsUniverseNoThrow() {
+         if (this.#devtoolsUniverse) {
+             return undefined;
+--- a/build/src/McpContext.js
++++ b/build/src/McpContext.js
+@@ -399,7 +399,6 @@
+                 onNotification: this.#options.onNotification,
+             });
+             this.#mcpPages.set(page, mcpPage);
+-            await mcpPage.init();
+         }
+         return mcpPage;
+     }

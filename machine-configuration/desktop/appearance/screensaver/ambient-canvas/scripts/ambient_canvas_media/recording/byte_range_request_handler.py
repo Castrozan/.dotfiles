@@ -30,6 +30,12 @@ def resolve_requested_byte_range(range_header, total_size):
     if matched_range is None:
         return None
     first_text, last_text = matched_range.groups()
+    return validated_byte_range(
+        requested_byte_range_bounds(first_text, last_text, total_size), total_size
+    )
+
+
+def requested_byte_range_bounds(first_text, last_text, total_size):
     if first_text:
         first_byte = int(first_text)
         last_byte = int(last_text) if last_text else total_size - 1
@@ -38,6 +44,13 @@ def resolve_requested_byte_range(range_header, total_size):
             return None
         first_byte = max(0, total_size - int(last_text))
         last_byte = total_size - 1
+    return first_byte, last_byte
+
+
+def validated_byte_range(requested_bounds, total_size):
+    if requested_bounds is None:
+        return None
+    first_byte, last_byte = requested_bounds
     last_byte = min(last_byte, total_size - 1)
     if first_byte > last_byte or first_byte >= total_size:
         return None
@@ -46,18 +59,22 @@ def resolve_requested_byte_range(range_header, total_size):
 
 class ByteRangeRequestHandler(http.server.SimpleHTTPRequestHandler):
     def send_head(self):
-        if self.headers.get("Range") is None:
+        range_header = self.headers.get("Range")
+        if range_header is None:
             return super().send_head()
         requested_path = self.translate_path(self.path)
         if not os.path.isfile(requested_path):
             return super().send_head()
         total_size = os.path.getsize(requested_path)
-        requested_range = resolve_requested_byte_range(
-            self.headers.get("Range"), total_size
-        )
+        requested_range = resolve_requested_byte_range(range_header, total_size)
         if requested_range is None:
             return super().send_head()
         first_byte, last_byte = requested_range
+        return self.send_partial_content(
+            requested_path, total_size, first_byte, last_byte
+        )
+
+    def send_partial_content(self, requested_path, total_size, first_byte, last_byte):
         opened_file = open(requested_path, "rb")
         opened_file.seek(first_byte)
         self.send_response(206)

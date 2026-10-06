@@ -40,7 +40,7 @@ def test_empty_label_lines_require_inline_content(suffix):
         "The check passed.",
         "**The check passed.**",
         "`verified`",
-        "[proof](https://example.org/result)",
+        "https://example.org/result",
         "![proof](https://example.org/result.png)",
         "![](https://example.org/result.png)",
         "The check\npassed.",

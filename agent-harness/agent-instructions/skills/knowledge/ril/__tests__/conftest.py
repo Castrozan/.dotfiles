@@ -4,6 +4,9 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts" / "ril_cli"))
+sys.path.insert(
+    0, str(Path(__file__).resolve().parents[3] / "development" / "forge" / "scripts")
+)
 
 
 @pytest.fixture

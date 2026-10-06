@@ -51,12 +51,7 @@ def move_all_playing_streams_to_sink(target_sink_name: str) -> None:
         capture_output=True,
         text=True,
     )
-    target_sink_index = None
-    for line in sinks_output.stdout.splitlines():
-        fields = line.split("\t")
-        if len(fields) >= 2 and fields[1] == target_sink_name:
-            target_sink_index = fields[0]
-            break
+    target_sink_index = find_sink_index(sinks_output.stdout, target_sink_name)
 
     if target_sink_index is None:
         return
@@ -66,13 +61,26 @@ def move_all_playing_streams_to_sink(target_sink_name: str) -> None:
         capture_output=True,
         text=True,
     )
-    for line in inputs_output.stdout.splitlines():
+    move_sink_inputs(inputs_output.stdout, target_sink_index)
+
+
+def find_sink_index(sinks_output: str, target_sink_name: str) -> str | None:
+    for line in sinks_output.splitlines():
         fields = line.split("\t")
-        if fields:
-            subprocess.run(
-                ["pactl", "move-sink-input", fields[0], target_sink_index],
-                capture_output=True,
-            )
+        if len(fields) >= 2 and fields[1] == target_sink_name:
+            return fields[0]
+    return None
+
+
+def move_sink_inputs(inputs_output: str, target_sink_index: str) -> None:
+    for line in inputs_output.splitlines():
+        fields = line.split("\t")
+        if not fields:
+            continue
+        subprocess.run(
+            ["pactl", "move-sink-input", fields[0], target_sink_index],
+            capture_output=True,
+        )
 
 
 def get_sink_human_readable_description(sink_name: str) -> str:

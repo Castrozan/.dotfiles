@@ -161,6 +161,11 @@ def frontmatter_key_values(text: str) -> dict[str, str] | None:
     block = frontmatter_block(text)
     if block is None:
         return None
+    key_values = _parse_frontmatter_key_values(block)
+    return {key: _unquote_frontmatter_value(value) for key, value in key_values.items()}
+
+
+def _parse_frontmatter_key_values(block: str) -> dict[str, str]:
     key_values = {}
     current_key = None
     for line in block.splitlines():
@@ -168,14 +173,24 @@ def frontmatter_key_values(text: str) -> dict[str, str] | None:
         if matched:
             current_key = matched.group(1)
             value = matched.group(2).strip()
-            key_values[current_key] = "" if value in {"|", ">", "|-", ">-"} else value
-        elif current_key and line.strip():
-            key_values[current_key] = " ".join(
-                part for part in (key_values[current_key], line.strip()) if part
-            )
-    return {
-        key: value[1:-1]
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}
-        else value
-        for key, value in key_values.items()
-    }
+            key_values[current_key] = _frontmatter_line_value(value)
+        else:
+            _append_frontmatter_continuation(key_values, current_key, line)
+    return key_values
+
+
+def _frontmatter_line_value(value: str) -> str:
+    return "" if value in {"|", ">", "|-", ">-"} else value
+
+
+def _append_frontmatter_continuation(key_values, current_key, line):
+    if current_key and line.strip():
+        key_values[current_key] = " ".join(
+            part for part in (key_values[current_key], line.strip()) if part
+        )
+
+
+def _unquote_frontmatter_value(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        return value[1:-1]
+    return value

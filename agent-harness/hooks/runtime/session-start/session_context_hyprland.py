@@ -20,71 +20,88 @@ def extract_vscode_project_name_from_title(window_title: str) -> str:
     return parts[-1] if len(parts) > 1 else parts[0]
 
 
+def _append_workspace_window_summary(
+    client, summaries, terminal_classes, vscode_classes, browser_classes
+):
+    window_class = client.get("class", "")
+    window_title = client.get("title", "")
+    if window_class in terminal_classes:
+        return True
+    if window_class in vscode_classes:
+        project_name = extract_vscode_project_name_from_title(window_title)
+        summaries.append(f"code: {project_name}")
+    elif window_class in browser_classes:
+        short_class = window_class.split("-")[0]
+        short_title = window_title[:50] if window_title else "untitled"
+        summaries.append(f"{short_class}: {short_title}")
+    elif window_class:
+        summaries.append(window_class)
+    return False
+
+
+def _append_terminal_summary(summaries, terminal_count):
+    if terminal_count == 1:
+        summaries.append("wezterm")
+    elif terminal_count > 1:
+        summaries.append(f"wezterm (x{terminal_count})")
+
+
 def summarize_workspace_windows(clients: list[dict], workspace_id: int) -> list[str]:
     workspace_clients = [
         client
         for client in clients
         if client.get("workspace", {}).get("id") == workspace_id
     ]
-
     terminal_classes = {"org.wezfurlong.wezterm", "kitty", "Alacritty", "foot"}
     vscode_classes = {"code", "code-url-handler", "Code"}
     browser_classes = {"brave-browser", "chrome-global", "firefox", "chromium-browser"}
-
     summaries = []
     terminal_count = 0
-
     for client in workspace_clients:
-        window_class = client.get("class", "")
-        window_title = client.get("title", "")
-
-        if window_class in terminal_classes:
+        if _append_workspace_window_summary(
+            client, summaries, terminal_classes, vscode_classes, browser_classes
+        ):
             terminal_count += 1
-        elif window_class in vscode_classes:
-            project_name = extract_vscode_project_name_from_title(window_title)
-            summaries.append(f"code: {project_name}")
-        elif window_class in browser_classes:
-            short_class = window_class.split("-")[0]
-            short_title = window_title[:50] if window_title else "untitled"
-            summaries.append(f"{short_class}: {short_title}")
-        elif window_class:
-            summaries.append(window_class)
-
-    if terminal_count == 1:
-        summaries.append("wezterm")
-    elif terminal_count > 1:
-        summaries.append(f"wezterm (x{terminal_count})")
-
+    _append_terminal_summary(summaries, terminal_count)
     return summaries
 
 
-def detect_hyprland_workspace_context() -> dict:
+def _active_workspace_data():
     code, workspace_json = run_command_with_timeout(
         ["hyprctl", "activeworkspace", "-j"]
     )
     if code != 0 or not workspace_json:
-        return {}
-
+        return False, None
     try:
         workspace = json.loads(workspace_json)
     except json.JSONDecodeError:
-        return {}
+        return False, None
+    if workspace.get("id") is None:
+        return False, None
+    return True, workspace
 
-    workspace_id = workspace.get("id")
-    if workspace_id is None:
-        return {}
 
-    context = {"id": workspace_id, "monitor": workspace.get("monitor", "")}
-
+def _workspace_client_data():
     code, clients_json = run_command_with_timeout(["hyprctl", "clients", "-j"])
     if code != 0 or not clients_json:
-        return context
-
+        return False, None
     try:
         clients = json.loads(clients_json)
     except json.JSONDecodeError:
-        return context
+        return False, None
+    return True, clients
 
+
+def detect_hyprland_workspace_context() -> dict:
+    workspace_available, workspace = _active_workspace_data()
+    if not workspace_available:
+        return {}
+    workspace_id = workspace.get("id")
+    context = {"id": workspace_id, "monitor": workspace.get("monitor", "")}
+
+    clients_available, clients = _workspace_client_data()
+    if not clients_available:
+        return context
     context["windows"] = summarize_workspace_windows(clients, workspace_id)
     return context
 

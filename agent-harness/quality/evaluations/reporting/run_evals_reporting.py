@@ -22,13 +22,7 @@ def print_results(results: list[TestResult], harness: str = "claude") -> bool:
 
         print(f"{color}{status}{reset} {result.name} ({result.duration:.1f}s)")
 
-        if result.error:
-            print(f"    Error: {result.error}")
-        elif result.assertions_failed:
-            for failure in result.assertions_failed:
-                print(f"    - {failure}")
-            if result.output:
-                print(f"    Output: {result.output}")
+        _print_result_details(result)
 
         if result.passed:
             passed += 1
@@ -45,21 +39,26 @@ def print_results(results: list[TestResult], harness: str = "claude") -> bool:
     return failed == 0
 
 
+def _print_result_details(result: TestResult) -> None:
+    if result.error:
+        print(f"    Error: {result.error}")
+    elif result.assertions_failed:
+        for failure in result.assertions_failed:
+            print(f"    - {failure}")
+        if result.output:
+            print(f"    Output: {result.output}")
+
+
 def print_epoch_summary(per_test: list[dict], epochs: int) -> bool:
     print("\n" + "=" * 60)
     print(f"REPEATED-SAMPLING SUMMARY ({epochs} epochs)")
     print("=" * 60 + "\n")
 
-    flaky_tests = [test for test in per_test if test["flaky"]]
-    hard_failed_tests = [test for test in per_test if test["passes"] == 0]
+    flaky_tests = _flaky_tests(per_test)
+    hard_failed_tests = _hard_failed_tests(per_test)
 
     for test in per_test:
-        rate = test["passes"] / test["total"] if test["total"] else 0.0
-        marker = "FLAKY" if test["flaky"] else ("FAIL" if test["passes"] == 0 else "ok")
-        print(
-            f"  [{marker}] {test['name']}: {test['passes']}/{test['total']} "
-            f"({rate:.0%}, 95% CI {test['lower']:.0%} to {test['upper']:.0%})"
-        )
+        _print_epoch_test(test)
 
     print(f"\n  suite pass@1: {suite_pass_at_k(per_test, 1):.1%}")
     if epochs >= 2:
@@ -68,6 +67,23 @@ def print_epoch_summary(per_test: list[dict], epochs: int) -> bool:
     print("-" * 60 + "\n")
 
     return len(hard_failed_tests) == 0
+
+
+def _flaky_tests(per_test: list[dict]) -> list[dict]:
+    return [test for test in per_test if test["flaky"]]
+
+
+def _hard_failed_tests(per_test: list[dict]) -> list[dict]:
+    return [test for test in per_test if test["passes"] == 0]
+
+
+def _print_epoch_test(test: dict) -> None:
+    rate = test["passes"] / test["total"] if test["total"] else 0.0
+    marker = "FLAKY" if test["flaky"] else ("FAIL" if test["passes"] == 0 else "ok")
+    print(
+        f"  [{marker}] {test['name']}: {test['passes']}/{test['total']} "
+        f"({rate:.0%}, 95% CI {test['lower']:.0%} to {test['upper']:.0%})"
+    )
 
 
 def print_ab_summary(comparison: dict) -> bool:
@@ -128,16 +144,20 @@ def print_calibration_summary(agreement: dict) -> bool:
         )
     if agreement["disagreements"]:
         print("  Disagreements:")
-        for disagreement in agreement["disagreements"]:
-            human = "PASS" if disagreement["human"] else "FAIL"
-            judged = "PASS" if disagreement["judge"] else "FAIL"
-            print(
-                f"    - {disagreement['name']}: "
-                f"human={human} judge={judged} ({disagreement['reason']})"
-            )
+        _print_disagreements(agreement["disagreements"])
     print("-" * 60 + "\n")
 
     return agreement["meets_gate"]
+
+
+def _print_disagreements(disagreements: list[dict]) -> None:
+    for disagreement in disagreements:
+        human = "PASS" if disagreement["human"] else "FAIL"
+        judged = "PASS" if disagreement["judge"] else "FAIL"
+        print(
+            f"    - {disagreement['name']}: "
+            f"human={human} judge={judged} ({disagreement['reason']})"
+        )
 
 
 def print_provider_usage(usage: dict) -> None:

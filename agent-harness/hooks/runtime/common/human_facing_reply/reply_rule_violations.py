@@ -1,6 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from reply_artifact_links import reply_has_unlinked_artifacts
-from reply_format_configuration import exceeds_word_budget
-from reply_text_metrics import ReplyUnderReview
+from reply_word_budget import exceeds_word_budget
+
+if TYPE_CHECKING:
+    from reply_text_metrics import ReplyUnderReview
 
 
 def sentence_dash_violation(reply: ReplyUnderReview) -> str | None:

@@ -5,10 +5,15 @@ enum SocketCommandParser {
 
     static func parseTrimmedCommand(_ trimmedCommand: String) -> SocketCommand? {
         if trimmedCommand.hasPrefix(externalFocusCommandPrefix) {
-            let identifierString = String(trimmedCommand.dropFirst(externalFocusCommandPrefix.count))
+            let identifierString = String(
+                trimmedCommand.dropFirst(externalFocusCommandPrefix.count))
             guard let identifier = Int(identifierString) else { return nil }
             return .recordExternalFocus(windowIdentifier: identifier)
         }
+        return parseNavigationCommand(trimmedCommand)
+    }
+
+    private static func parseNavigationCommand(_ trimmedCommand: String) -> SocketCommand? {
         switch trimmedCommand {
         case "next": return .next
         case "prev": return .prev

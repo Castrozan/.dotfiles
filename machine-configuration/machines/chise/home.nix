@@ -48,6 +48,7 @@ in
     ../../desktop/appearance/fonts/fonts-home-manager.nix
     ../../desktop/appearance/screensaver/screensaver-home-manager.nix
     ../../desktop/applications/launcher/fuzzel-home-manager.nix
+    ../../desktop/applications/chatgpt/chatgpt-home-manager.nix
     ../../desktop/screen-capture/screen-capture-command-packages-home-manager.nix
 
     ../../development/cost-monitoring/ccost-home-manager.nix
@@ -55,6 +56,7 @@ in
     ../../development/development-environments/devenv-home-manager.nix
     ../../development/source-code-search/sourcebot/sourcebot-home-manager.nix
     ../../development/version-control/lazygit-home-manager.nix
+    ../../development/version-control/glab-home-manager.nix
     ../../development/model-context-protocol/mcporter-home-manager.nix
     ../../development/version-control/git-fzf-home-manager.nix
 
@@ -62,6 +64,7 @@ in
     ../../media/media-streaming/stremio-home-manager.nix
     ../../terminal/visual-effects/bad-apple/bad-apple-chise-home-manager.nix
     ../../media/media-command-packages-home-manager.nix
+    ../../media/media-generation/media-generation-home-manager.nix
     ../../media/arr-stack/stack/arr-stack-home-manager.nix
 
     ../../operating-system/system-command-packages-home-manager.nix

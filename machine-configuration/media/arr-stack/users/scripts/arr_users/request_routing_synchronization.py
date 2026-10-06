@@ -45,29 +45,14 @@ def apply_desired_override_rules(context, desired_override_rules):
     }
     created_rules, updated_rules, desired_slots = [], [], set()
     for desired_override_rule in desired_override_rules:
-        slot = private_request_routing.override_rule_slot(desired_override_rule)
-        desired_slots.add(slot)
-        existing_override_rule = existing_private_rules.get(slot)
-        description = private_request_routing.describe_override_rule(
-            desired_override_rule
+        _apply_desired_override_rule(
+            context,
+            desired_override_rule,
+            existing_private_rules,
+            desired_slots,
+            created_rules,
+            updated_rules,
         )
-        if existing_override_rule is None:
-            jellyseerr_api_client.create_override_rule(
-                context.jellyseerr_base_url,
-                context.jellyseerr_api_key,
-                desired_override_rule,
-            )
-            created_rules.append(description)
-        elif not private_request_routing.override_rule_already_applied(
-            existing_override_rule, desired_override_rule
-        ):
-            jellyseerr_api_client.update_override_rule(
-                context.jellyseerr_base_url,
-                context.jellyseerr_api_key,
-                existing_override_rule["id"],
-                desired_override_rule,
-            )
-            updated_rules.append(description)
     removed_rules = []
     for slot, existing_override_rule in existing_private_rules.items():
         if slot in desired_slots:
@@ -81,6 +66,37 @@ def apply_desired_override_rules(context, desired_override_rules):
             private_request_routing.describe_override_rule(existing_override_rule)
         )
     return created_rules, updated_rules, removed_rules
+
+
+def _apply_desired_override_rule(
+    context,
+    desired_override_rule,
+    existing_private_rules,
+    desired_slots,
+    created_rules,
+    updated_rules,
+):
+    slot = private_request_routing.override_rule_slot(desired_override_rule)
+    desired_slots.add(slot)
+    existing_override_rule = existing_private_rules.get(slot)
+    description = private_request_routing.describe_override_rule(desired_override_rule)
+    if existing_override_rule is None:
+        jellyseerr_api_client.create_override_rule(
+            context.jellyseerr_base_url,
+            context.jellyseerr_api_key,
+            desired_override_rule,
+        )
+        created_rules.append(description)
+    elif not private_request_routing.override_rule_already_applied(
+        existing_override_rule, desired_override_rule
+    ):
+        jellyseerr_api_client.update_override_rule(
+            context.jellyseerr_base_url,
+            context.jellyseerr_api_key,
+            existing_override_rule["id"],
+            desired_override_rule,
+        )
+        updated_rules.append(description)
 
 
 def synchronize_request_routing(context):

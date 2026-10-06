@@ -14,7 +14,10 @@ let
     + "${hooksRootDirectory + "/${entry.relativePathToHooksRoot}"} "
     + ''"$out/${entry.flatDeploymentFilename}"'';
 
-  hookPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.markdown-it-py ]);
+  hookPython = pkgs.python312.withPackages (pythonPackages: [
+    pythonPackages.markdown-it-py
+    pythonPackages.websockets
+  ]);
   hookPythonInterpreter = "${hookPython}/bin/python3";
 
   # The servant handler imports the servants domain rather than being flattened

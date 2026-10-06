@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-30T02:25:13.559266+00:00",
+  "generated_at": "2026-10-05T23:03:08.413138+00:00",
   "oldest_evidence_at": "2026-09-09T21:47:59.145048+00:00",
-  "git_commit": "a6e1d582e",
+  "git_commit": "4859a269c",
   "total_tests": 212,
   "total_passed": 199,
   "total_failed": 13,
@@ -192,12 +192,12 @@
         {
           "name": "worktrees_knows_builtin_flag",
           "passed": true,
-          "fingerprint": "841be61c90ad35a43dcafcb6da4b8282a76259e1b2c3a57cc65280511f71c989",
-          "generated_at": "2026-09-09T21:50:59.555345+00:00",
+          "fingerprint": "b82b1741e4bb6ccf84fdba56a256fe3252e84c77c84c7fc092727eaf4f38bc8e",
+          "generated_at": "2026-10-05T22:50:53.725715+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -209,237 +209,177 @@
         {
           "name": "communication_compression_preserves_material_meaning",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "14687179d9975b0100b1b9e8606ff56c60e8c63e06d180b7c5aa7d30209699e3",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "825daf5a1b6255653631161e047ab7cd2f8f97121c303da1a34345fb721034db",
+          "generated_at": "2026-10-05T22:51:51.879857+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "communication_removes_inflation_without_deleting_the_fact",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "765b49e371d2d971245afc91f44a87852e9bc001388ee5fee0b0f2c12767c5d0",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "e38b3342db38686bfdc63a2e4c11be4eb6297644f0af942da91dd28ccc7ec21c",
+          "generated_at": "2026-10-05T22:52:05.740826+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "communication_separates_evidence_inference_and_decision",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "841cd1fb7a73032a91314b63b80315047a76ea264f0bb42ba2a62de03ed2a15a",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "1b8dfc105939e490402b940c093605300850e9a482c3edf70621e5ee8a78bff4",
+          "generated_at": "2026-10-05T22:52:12.987627+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "communication_uses_one_defined_term_per_referent",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "eaff507c44f8a1ef95328de068b251f7cd8a2ebc73b2a76901a745fe4637f540",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "d18effb3d0e03e68e8aba8e3683abc2e12818428e9f07905a5f55c5b084ab146",
+          "generated_at": "2026-10-05T22:51:54.549497+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "controlled_language_decides_by_tradeoff",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "6caa583c084eeafd073a62090fb5348c5ab0cd1d3b9c56db9db7f5354f73b892",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "be72fee8ee57e3dbfd13e888e84956710731dd23802e594f8f5a834713c98b47",
+          "generated_at": "2026-10-05T22:52:42.088433+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "controlled_language_explains_by_contrast",
           "passed": true,
-          "passes": 2,
-          "samples": 3,
-          "lower": 0.2077,
-          "upper": 0.9385,
-          "fingerprint": "180a98aebc69294861537a4892372a258d70c841358a5735fed3a22f0b85290e",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "10b4381863c9bfacb68fa43794643c7401914d10dcbdd092ab4297acdb1b1fcf",
+          "generated_at": "2026-10-05T22:52:23.982274+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "controlled_language_preserves_warning_conditions",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "ab9af4be0a1e33f62a688db0cb18f65297492f086719dbff55bf67e6d917a729",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "c31380adcef89de8d918f17522d117aa98556cae4f163be0e856cb2c3747b048",
+          "generated_at": "2026-10-05T22:52:44.571870+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "controlled_language_reports_measured_change",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "afe57847cb963935a0fa0df6a248fa9da9fe8a5d478d3d314ab93cc5b3030601",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "235ce9a49ba3859ad576c8d3fb629e2c790109c3a4f79fce0606af9335af27da",
+          "generated_at": "2026-10-05T22:52:57.376200+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "controlled_language_separates_diagnosis_from_evidence",
           "passed": true,
-          "fingerprint": "42c11dd13753bcfb86c87dfccd726a020bae847805b515dce9995a2bc760b974",
-          "generated_at": "2026-09-09T23:53:50.405511+00:00",
+          "fingerprint": "6ddc3c6f3c9aafdc01a5066ceec69b1439c994e0a5fd462caf57869d9e8f1068",
+          "generated_at": "2026-10-05T22:52:28.616958+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "be922d23"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "controlled_language_summarizes_for_action",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "b9d19f04297346c2122c21bfef2492051f429e496370476306f93841b30bf66f",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "06b02f8d2b258e7507bff8459c97d4819f7eca22a2dc5f57464ccbdfcb9ab4fd",
+          "generated_at": "2026-10-05T22:52:58.161531+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "representation_behavior_uses_state_model",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "63dfa259c8352e3bc340bbaa2c3e50ad9b4161db8ef182d740bf47de6b1dfcc1",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "7cb7b6a4f66bd002aaa7810fd2c0365feac952eb7c216c555074f5f38965eacf",
+          "generated_at": "2026-10-05T22:51:24.775624+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "representation_change_uses_focused_diff",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "692cbf825b6ecb0fd2dad43787a555ee2c30a546be0283c646fafd7752cb53f8",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "f80e0efb59b357566f9163b73fa7328577996cb01b039c4a31185a6e40dc36f1",
+          "generated_at": "2026-10-05T22:51:38.797082+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "representation_choices_use_table",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "bbf1ef5c4df335dcf732e20a405af38b80ac6d0f29b27c76f949ab994981fe72",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "4606272517792599328c99af292fcc6b39ff4f6a7abc559fe0652c678b2c7790",
+          "generated_at": "2026-10-05T22:51:21.179928+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "representation_ordering_and_failure_uses_sequence",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "944f93f38bfa3f66826cd1975c217533e4bde1d40b51d0a74bde14f8a8c3db6b",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "a43bcec710d89cd79bc62ab112b3faefdfa68acf90ab9820838b87f95b3a7c85",
+          "generated_at": "2026-10-05T22:51:09.060536+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "representation_ownership_uses_tree",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "d3f5de45b8c500d0b04ad91c45df6d3433f9c770159a0dc040f84dd118a6ede2",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "25f27e3ee786651f7524ee97bf93f604a00e0c0e06b3cee0e2ec8914a0dbcb8d",
+          "generated_at": "2026-10-05T22:50:37.352513+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "representation_single_answer_stays_prose",
           "passed": true,
-          "passes": 3,
-          "samples": 3,
-          "lower": 0.4385,
-          "upper": 1.0,
-          "fingerprint": "5d11bfcef8338c7c42f30c2cf5ed12ce49235128b299e37d3a6a054c03f71171",
-          "generated_at": "2026-09-09T23:44:59.022506+00:00",
+          "fingerprint": "01de0427714204eac4254b1301c344b80bd8a3130ad2ad1a15db8cedc294eefd",
+          "generated_at": "2026-10-05T22:51:37.708521+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
-            "kind": "repeated_sampling",
-            "git_commit": "eb6abacc"
+            "kind": "checkpoint",
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -567,23 +507,23 @@
         {
           "name": "delegates_to_skill",
           "passed": true,
-          "fingerprint": "e91859cc0e8bf2d61c16dd30d46d0a105baa2785785374eb98f94e2c4b572e4e",
-          "generated_at": "2026-09-24T09:12:57.326871+00:00",
+          "fingerprint": "69418dba52b8f539414bb721ac4143c4a5a6778c6e54852b48d17a46ffde3514",
+          "generated_at": "2026-10-05T22:53:13.307304+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "follows_git_rules",
           "passed": true,
-          "fingerprint": "e892665cbc35b61d0896ee44e1023845384ed985c0d3631d27edf1bc5a40b265",
-          "generated_at": "2026-09-09T21:59:35.991898+00:00",
+          "fingerprint": "37ae27755990f3aed3109274b221d8da03f03942a42025bffa9437f7b5abcb60",
+          "generated_at": "2026-10-05T22:53:47.553363+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
@@ -694,12 +634,12 @@
         {
           "name": "instruction_changes_check_baseline_without_resaving",
           "passed": true,
-          "fingerprint": "4c0ceac313857dd9f3da0c483ab627c2fbb8f3619d2c33c312cb370e251b5156",
-          "generated_at": "2026-09-24T09:13:18.330941+00:00",
+          "fingerprint": "9bfe02287c90581101a65157305f6793a148030d0d0f69850c930f4d0e6dbf7a",
+          "generated_at": "2026-10-05T22:53:28.927994+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -761,12 +701,12 @@
         {
           "name": "formatting_after_edits",
           "passed": true,
-          "fingerprint": "2530d071b90bfcc87af530361631d079c2d0fe3eb58f72b0f763eafc50716f8b",
-          "generated_at": "2026-09-24T09:14:09.917288+00:00",
+          "fingerprint": "a47265070d8a81b962d96ef34e575d20c4b9da75d68c31e3d2e1abfa3d08b660",
+          "generated_at": "2026-10-05T22:54:33.713364+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
@@ -805,23 +745,23 @@
         {
           "name": "python_default_over_bash",
           "passed": true,
-          "fingerprint": "dac192218820e39c0513b57bb384ecc6df2117cdb45ed87864383118b5bf7a37",
-          "generated_at": "2026-09-24T09:13:34.525886+00:00",
+          "fingerprint": "2bcaf63ffd11ffce963d67e658bee46f52f07f24f24c61adefcc6a7bdd872679",
+          "generated_at": "2026-10-05T22:53:44.217867+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "specific_file_staging",
           "passed": true,
-          "fingerprint": "ec0d4e560119e6cf0c4b9cb81386f0fd32a2ebf5f2cdda0c9bab311d6acbdae6",
-          "generated_at": "2026-09-09T22:09:48.472797+00:00",
+          "fingerprint": "aa1c4052bcce1bb5ef9f050512a28ede9a3fa4732eefdf04f3d539ac2d5f6daf",
+          "generated_at": "2026-10-05T22:54:19.986178+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
@@ -938,45 +878,45 @@
         {
           "name": "rebuild_and_ci_both_gate_response",
           "passed": true,
-          "fingerprint": "54b1d958aca015c4d2f157faf71591a318680a94d85391d53b79c066704dcaad",
-          "generated_at": "2026-09-24T09:15:22.177346+00:00",
+          "fingerprint": "c7c7958e4bfad84b4f17cdcdacb0eac3d4bd3c295b3ef74cd6b413d93338fc7c",
+          "generated_at": "2026-10-05T22:55:01.846793+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "rebuild_commit_then_rebuild_then_push_then_ci",
           "passed": true,
-          "fingerprint": "7c01bbd8fca82e009f7ff2090ef2e96875bb32bb9e05fcd1ededd32005c87a35",
-          "generated_at": "2026-09-24T09:15:07.382501+00:00",
+          "fingerprint": "0e2c821a2b25f215a3318067f8ab0e27a203a1faeed8216ea10e19e63987b0ae",
+          "generated_at": "2026-10-05T22:54:48.019519+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "rebuild_is_primary_verification",
           "passed": true,
-          "fingerprint": "5162af9809ba45b75923e3750f709a21c2b5fdabb0e63a82235a184d18d84e23",
-          "generated_at": "2026-09-24T09:14:52.111050+00:00",
+          "fingerprint": "808120a4265d9df03a8d2bcac9e6b49865b08d21b6df605a2cbd9ace2a9526ef",
+          "generated_at": "2026-10-05T22:55:05.465878+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "rebuild_untested_is_hypothesis",
           "passed": true,
-          "fingerprint": "04a55f6c876ec3b70164157fa963cdd9daac6d7530b118b6062f6a0dd3881197",
-          "generated_at": "2026-09-24T09:15:38.132321+00:00",
+          "fingerprint": "69340e115387560290bf0a3dd5df0b7b771c9a4a31d850bf88e618156dfb1f9c",
+          "generated_at": "2026-10-05T22:55:17.280952+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -1699,78 +1639,78 @@
         {
           "name": "commit_matches_repository_convention",
           "passed": true,
-          "fingerprint": "2d0d724f90ff1b337f7c7a435241c8e2c8897c279d5dd0ba78acb64f548cb11b",
-          "generated_at": "2026-09-09T22:31:08.797618+00:00",
+          "fingerprint": "fb19374fabb99240f43222b86ed8f16527a15c415ffe1caf653b2b6d6d3169ad",
+          "generated_at": "2026-10-05T22:57:28.869232+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "commit_reads_diff_first",
           "passed": false,
-          "fingerprint": "d6675029f2b25b5c037d0ce218a7db037332b7d6643861d135657efa50adb000",
-          "generated_at": "2026-09-09T22:30:30.520141+00:00",
+          "fingerprint": "814b59241ab068e3f79246ee9dda50d8aaf9f53fe54119071339fc0ec914e4de",
+          "generated_at": "2026-10-05T22:57:00.163074+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "commit_uses_specific_staging",
           "passed": false,
-          "fingerprint": "ceae4681ee64e51c73321be040aaead1459c107ed2acef5091e8cac3f0d038c0",
-          "generated_at": "2026-09-09T22:30:08.758207+00:00",
+          "fingerprint": "8c41ba8b632591e2c4a1ab2005596179bb056f0645f9545086e290875ff83ee5",
+          "generated_at": "2026-10-05T22:56:40.049575+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "git_history_cache_invalidation",
           "passed": true,
-          "fingerprint": "11ba704b87d593b0bb4bd0b02e2e5e33fac81db0dffcdd027e09fe5d86544465",
-          "generated_at": "2026-09-09T22:32:40.913014+00:00",
+          "fingerprint": "7677e119c34601efa3be82dad97763b1ecbb765bedc00281483e4e7099993b5a",
+          "generated_at": "2026-10-05T22:58:17.533860+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "git_history_file_paths_are_high_signal",
           "passed": true,
-          "fingerprint": "fab9c4abc447a0553d673d28924a8189d44b6e7b7f5f96c43800c9ddc8b7049b",
-          "generated_at": "2026-09-09T22:31:40.471949+00:00",
+          "fingerprint": "b4b13d69a76a154110f8d30d39af3d8524ce26d9db37512bc5a0a0c05dac4b3c",
+          "generated_at": "2026-10-05T22:57:43.809831+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "git_history_knows_when_not_to_use",
           "passed": true,
-          "fingerprint": "7e16320bbe009a609448a4c921c05837b7ab3be1a12a6f167aac9184695b9c95",
-          "generated_at": "2026-09-09T22:32:15.752692+00:00",
+          "fingerprint": "e1e43ce28b2a8fdb5e590e171bc74d568d5a54a81e1d46770ca44f59bef1ee86",
+          "generated_at": "2026-10-05T22:57:55.041930+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "git_history_never_uses_repeated_grep",
           "passed": true,
-          "fingerprint": "12e62c27f2e78b87a76dd7290ddd0fe4f8e92669c65dd4185fad785f6b923c1c",
-          "generated_at": "2026-09-09T22:31:37.758562+00:00",
+          "fingerprint": "5e1e597f82ae0be117e675d9d271c7fd3afab7319e24ba7fc58d427b1dfff247",
+          "generated_at": "2026-10-05T22:57:33.795734+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -1815,29 +1755,29 @@
       ]
     },
     "skills/coding/worktrees": {
-      "passed": 2,
-      "failed": 0,
+      "passed": 1,
+      "failed": 1,
       "tests": [
         {
           "name": "worktrees_never_checkout_main",
           "passed": true,
-          "fingerprint": "a18747d9da6d5e07df0da261c2db4f2e2598ecf6cf0fb3ccbd67db6acea2768e",
-          "generated_at": "2026-09-09T22:33:55.807245+00:00",
+          "fingerprint": "b7eba9137fb97800dcac4313c9c1e268543ccf265906849ec54d118412229bcf",
+          "generated_at": "2026-10-05T22:58:10.039108+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "worktrees_pr_from_main_directory",
-          "passed": true,
-          "fingerprint": "d30817b14a589c82216bbca8c87bc3990271d116545010c8843dbe897237430e",
-          "generated_at": "2026-09-09T22:34:14.402631+00:00",
+          "passed": false,
+          "fingerprint": "3aab3978e7b74f826a734ad47f2c14f20ccbfb66d62f7491b87e7abe2bc35a8f",
+          "generated_at": "2026-10-05T22:58:29.787733+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -1849,304 +1789,304 @@
         {
           "name": "desktop_routes_to_clipboard",
           "passed": true,
-          "fingerprint": "40c325bc8a2ae529df6efda24369aa82c8129c611e2c8463ee77c7914852ac4d",
-          "generated_at": "2026-09-09T22:59:51.278762+00:00",
+          "fingerprint": "623b34814545747178193ef79461e4c662fd9b264de4596cffedbf497a99ae37",
+          "generated_at": "2026-10-05T22:58:40.127848+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "7b4582b8"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "desktop_routes_to_keyboard",
           "passed": true,
-          "fingerprint": "ba8db3b60e09961f0fa3c4f85577698b64f8ff396297ddbd800d4bb5e83b6f40",
-          "generated_at": "2026-09-09T22:59:19.612919+00:00",
+          "fingerprint": "f71966f4dc7616750b813d6fba60d46d1ab091e5a49e764cbb1f9dadfa2e44b3",
+          "generated_at": "2026-10-05T22:58:24.592828+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "7b4582b8"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "desktop_routes_to_media_control",
           "passed": true,
-          "fingerprint": "f6c235278979186cdadd25abdebc9c1835a7f2dac565dc5de1d9b367ca9dc04d",
-          "generated_at": "2026-09-09T23:00:02.500411+00:00",
+          "fingerprint": "ddc18b30da51500d0953c78834168dc65b677a4646ccc78a756a4dd03865bef0",
+          "generated_at": "2026-10-05T22:58:54.737185+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "7b4582b8"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "desktop_routes_to_mouse",
           "passed": true,
-          "fingerprint": "89d9ade34d6f2971bd114ee5b15a89c98bf5399ceb15bc5bd963a1ea72540ceb",
-          "generated_at": "2026-09-09T22:59:35.737791+00:00",
+          "fingerprint": "9aa3ccf9ae36a428dda4a7aed6e2179a30d980a1ea19e52a6a9d7ec72a6e65ab",
+          "generated_at": "2026-10-05T22:58:31.239212+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "7b4582b8"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "desktop_routes_to_screenshot",
           "passed": true,
-          "fingerprint": "1a8a7d02d76a7bd640e99f49a50515e3b99b7a7794679efd8ec0c45c334572b2",
-          "generated_at": "2026-09-09T22:59:46.581149+00:00",
+          "fingerprint": "e1d5ce4ba04e41416951ed5e3e9f8255e555383b2cb978882df166a131227c78",
+          "generated_at": "2026-10-05T22:58:36.691745+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "7b4582b8"
+            "git_commit": "4859a269c"
           }
         }
       ]
     },
     "skills/humanize/reader_recovery": {
-      "passed": 22,
-      "failed": 0,
+      "passed": 21,
+      "failed": 1,
       "tests": [
         {
           "name": "channel_explains_without_padding_the_reply",
           "passed": true,
-          "fingerprint": "6d5d934e9ac41a8b2799f303cf487d53a58f599ed27d78420b7d722133a5dc7a",
-          "generated_at": "2026-09-22T16:29:34.249460+00:00",
+          "fingerprint": "c533e125771e52eb5b48b13e9015432ef3b625b62369bd94128ba3e10dd72731",
+          "generated_at": "2026-10-05T23:01:37.870879+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "channel_preserves_source_punctuation_when_quoting",
           "passed": true,
-          "fingerprint": "e2c6dffcd8d69a60d585db30b069c9db789928225c6bda330c9b7afd0a3666d2",
-          "generated_at": "2026-09-22T16:29:18.146401+00:00",
+          "fingerprint": "6e67ccdebe9ef226d33b3b4d7ced334e814f7b2a4615c51333a54b4447458e28",
+          "generated_at": "2026-10-05T23:01:56.996107+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "channel_uses_numbered_steps_for_an_ordered_procedure",
           "passed": true,
-          "fingerprint": "faadfc316a68e55b57680f4168492d873e1b817dc32295ef944f7d242c54fc67",
-          "generated_at": "2026-09-22T16:29:00.774777+00:00",
+          "fingerprint": "227e31f29a1e9420faa2f0f1cdde287489c0cf8e7142d0cb6e1241db93b1b544",
+          "generated_at": "2026-10-05T23:01:20.764208+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "channel_uses_requested_headings_for_distinct_reader_needs",
           "passed": true,
-          "fingerprint": "273f36c78fe1afb5bd712803e7acfee75ec61245effee69bf51111e7c344f24e",
-          "generated_at": "2026-09-22T16:29:00.165899+00:00",
+          "fingerprint": "2f48de9754bf2655406553d2b9738373a3728b7ec0b616a5d3b4b9205b28f65f",
+          "generated_at": "2026-10-05T23:01:38.169743+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_answers_a_small_question_at_small_scale",
           "passed": true,
-          "fingerprint": "aab765718008a9de7ce9936b66fd581b577f4649dab6d442ecace9864a80ad2a",
-          "generated_at": "2026-09-22T16:28:01.502222+00:00",
+          "fingerprint": "8c7864f405ce7b375a9c424cb8f0391e94f076a1afb6c896e1c38de851357b8f",
+          "generated_at": "2026-10-05T23:00:26.338251+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_answers_the_user_visible_outcome_first",
           "passed": true,
-          "fingerprint": "72b282928e3637dc747354111c7e4145d21a739e4fafd927f65aa32365e36ab1",
-          "generated_at": "2026-09-22T16:26:20.432820+00:00",
+          "fingerprint": "bbf4e9f1e09989e71c655514f86e3c672ad08a1d815a5eaf5c5a904e6b90ab7b",
+          "generated_at": "2026-10-05T22:58:53.357414+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_distinguishes_operational_anger_from_a_language_failure",
           "passed": true,
-          "fingerprint": "8c4240dc37e62820c2b8f9b4e1b9c42abbae1b18886c1aa699ef1ca2960dca31",
-          "generated_at": "2026-09-22T16:28:26.063246+00:00",
+          "fingerprint": "ca132781dbbd397a13ebfd98062d31f620f4e20547c99cc35af2123d05c5ec5e",
+          "generated_at": "2026-10-05T23:01:05.451654+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_establishes_that_the_cache_exists",
           "passed": true,
-          "fingerprint": "ee5220d61a16db8272a5db028098e4c6638fee40dd311e16922159e7caf458d7",
-          "generated_at": "2026-09-22T16:26:58.283135+00:00",
+          "fingerprint": "eb5442aa90a6bbb9ac7362e3d7edf94eae3440f6796fe871862a26f7662f0f3a",
+          "generated_at": "2026-10-05T22:59:36.383559+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_explains_an_unresolved_choice_in_concrete_behavior",
           "passed": true,
-          "fingerprint": "cabd55dc5caee23f3d128e81b94dc365c56e6cc45e0d8d15fd7a20d5bf37a866",
-          "generated_at": "2026-09-22T16:26:40.501419+00:00",
+          "fingerprint": "1fc49e3f1e41af91c5858c930704ee3c9e21012edd51d1a38e1986d12272e49a",
+          "generated_at": "2026-10-05T22:59:11.778782+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_honors_a_tldr_size_constraint",
           "passed": true,
-          "fingerprint": "fe310f256c5f58d0992b55f46820e4232e4422748521da13eb146cee573059e6",
-          "generated_at": "2026-09-22T16:27:45.726842+00:00",
+          "fingerprint": "87c521336997a53c103b4ac1ff65d74a04610cd08c2a98498a03bd71b83af3e1",
+          "generated_at": "2026-10-05T23:00:14.154405+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_keeps_a_successful_diagram_when_relationships_need_it",
           "passed": true,
-          "fingerprint": "6d29c1a9cd3b22064ad74300f403ecab375386f768bae07b96c7ebf1f45254b2",
-          "generated_at": "2026-09-22T16:28:42.976060+00:00",
+          "fingerprint": "c52eb1524e0cdc9ce281af3d7afe8cb8ffa5f25c7be4d388e66d78bb85508334",
+          "generated_at": "2026-10-05T23:01:20.541327+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_names_the_exact_repository_owner",
           "passed": true,
-          "fingerprint": "5efb1c8f49fe0bd4fbd432cc6d09d6c35498387b2dad4f602141a4e3e18d3c81",
-          "generated_at": "2026-09-22T16:26:50.927753+00:00",
+          "fingerprint": "7b42708660d48c9b471a7af39969aecd82683ecf82565c9c32f27599796d8a88",
+          "generated_at": "2026-10-05T22:59:29.142829+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_preserves_and_defines_a_legitimate_statistical_term",
           "passed": true,
-          "fingerprint": "b9e2362dd686af178360f964545c83c7d5f8352fbd7a698a1cf13059587b3d6f",
-          "generated_at": "2026-09-22T16:27:29.558407+00:00",
+          "fingerprint": "ab03447736f7ded8b9ecac8a639fe6fddd63e19ed22b6c8393f6ecdc6f490474",
+          "generated_at": "2026-10-05T22:59:57.610401+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_preserves_exact_identifiers_despite_jargon_concern",
           "passed": true,
-          "fingerprint": "4c6f88bf7306864468292c37de75925e32d228650d4be4b2411c094c5ac1fdf6",
-          "generated_at": "2026-09-22T16:28:43.138079+00:00",
+          "fingerprint": "2c50396f6a7fdfda64b7283f94419b556a9edef9c28be7b002a8f24036a7881d",
+          "generated_at": "2026-10-05T23:00:59.160608+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_rejects_a_table_that_preserves_undefined_concepts",
           "passed": true,
-          "fingerprint": "d3a110610a73e8f45eb18045632675e083b65580cce9c876294f2520bbc1bc4e",
-          "generated_at": "2026-09-22T16:28:09.226439+00:00",
+          "fingerprint": "3f2d43bccc14806ada000bb403fbf9b202cc319703325ea0dbf2f9944d26c68e",
+          "generated_at": "2026-10-05T23:00:35.105871+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_reports_current_state_instead_of_process_history",
           "passed": true,
-          "fingerprint": "f57bd09f0ecee0c46029d431d2b62f12795ef1d8bd7628e8d69f25a94b206254",
-          "generated_at": "2026-09-22T16:26:35.665703+00:00",
+          "fingerprint": "01547f9a7e3b4f40bc57191846aad6d94a8d269b82a2d10ff67ece8044998080",
+          "generated_at": "2026-10-05T22:59:20.260172+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_resolves_pronouns_and_dependencies",
           "passed": true,
-          "fingerprint": "98e58658fe664de1da065d2459e7289ca9f26aab4b28f316c5d6beccafe52376",
-          "generated_at": "2026-09-22T16:27:10.228725+00:00",
+          "fingerprint": "c0291fc9a860b4fa718bef3a05b47b6993ce2665596e5f1752c330e87f15a6aa",
+          "generated_at": "2026-10-05T22:59:43.886358+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_stops_repeating_completed_history",
           "passed": true,
-          "fingerprint": "a2cbccd79806f6ab128526eb2eabf9cefac682ee9e06d0d510680d2423553b13",
-          "generated_at": "2026-09-22T16:27:54.070677+00:00",
+          "fingerprint": "ccfabbecbf2521f9eaf9dde4a7ce80d7dd0f412ca6884be4aa98ab1264c8eab6",
+          "generated_at": "2026-10-05T23:00:21.879185+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_surfaces_the_requested_decision",
-          "passed": true,
-          "fingerprint": "8aab5d72dbdd7810af5411d880c4663c373e0be3596f19a482f6f7d627aa06f0",
-          "generated_at": "2026-09-22T16:26:17.324584+00:00",
+          "passed": false,
+          "fingerprint": "de933490d78020a76a4864efca37c7581e382dd1a09709a0864811fa7adfeb27",
+          "generated_at": "2026-10-05T22:59:08.823798+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_unpacks_an_opaque_noun_stack",
           "passed": true,
-          "fingerprint": "4d5e43ddd381a2b2d374417baa30f337a6e288eeea619aefb428296cfe398533",
-          "generated_at": "2026-09-22T16:27:37.145818+00:00",
+          "fingerprint": "716ed9513bbac84f1b52a8f1607ef0dd0c1e864d650caf8e427969c8f93ca827",
+          "generated_at": "2026-10-05T23:00:08.396295+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_unpacks_the_test_delivery_flow",
           "passed": true,
-          "fingerprint": "97322bb6598d533909711946a0a1f360a6065e5674297dfae75c014d5dce080b",
-          "generated_at": "2026-09-22T16:27:21.285573+00:00",
+          "fingerprint": "d3356209e21db2a4665aa999eb748adbe3289d11f4322248dd066ed666f457c4",
+          "generated_at": "2026-10-05T22:59:51.376555+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "recovery_uses_a_table_when_exact_mapping_is_the_need",
           "passed": true,
-          "fingerprint": "bf672496d515f01275f90e38024a4f630061cb7bf9de388f4f6986ac56b21f56",
-          "generated_at": "2026-09-22T16:28:17.840320+00:00",
+          "fingerprint": "7a60fcdf94443af05b76e8034092e011254645cd46e01ee01ab9787f75893507",
+          "generated_at": "2026-10-05T23:00:39.893225+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "b73b52d59"
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -2352,84 +2292,84 @@
       ]
     },
     "skills/ril/ril": {
-      "passed": 5,
-      "failed": 2,
+      "passed": 6,
+      "failed": 1,
       "tests": [
         {
           "name": "ril_claim_collision_stops_the_run",
           "passed": true,
-          "fingerprint": "9676a8f0a9b7e72e12986f38e007ab655dd4d5cc21a6edb50e43e7504cf57420",
-          "generated_at": "2026-09-09T22:48:01.669850+00:00",
+          "fingerprint": "7768ae3d14511f8487c650816e0608a3b5ab31fab76e808ebc81fe2c28a7ff71",
+          "generated_at": "2026-10-05T23:02:13.253192+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "ril_completed_capture_is_not_a_claim_collision",
           "passed": true,
-          "fingerprint": "3a70073644fb272f74e85fb016f3e3b938017ef4651cfaa68b5432def3262a22",
-          "generated_at": "2026-09-09T22:48:30.017550+00:00",
+          "fingerprint": "83b02584a4fcaea9055c89e5f3b2b4dbe952384d517ca5b459efa8e2b5c19151",
+          "generated_at": "2026-10-05T23:02:18.494683+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "ril_marks_done_only_through_the_cli",
           "passed": true,
-          "fingerprint": "bae20ac10fef55849d077e67098c4c8a781b88d294f79aa142a3b5c025e87326",
-          "generated_at": "2026-09-09T22:47:52.691252+00:00",
+          "fingerprint": "3e8071c06512711962ed9212253a711252bbdc55c143e65d0dbbc7cc21251fbe",
+          "generated_at": "2026-10-05T23:01:54.013580+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "ril_never_annotates_a_capture",
-          "passed": false,
-          "fingerprint": "dab5ac082e1e9e01c494f6d4e5bbd1764684b9c46b7ebf8b2017d130a216530e",
-          "generated_at": "2026-09-09T22:48:43.329558+00:00",
+          "passed": true,
+          "fingerprint": "15acbefe309ad00ded92fd21beee28d2b98620515ca05872ed357af1a6eea4ec",
+          "generated_at": "2026-10-05T23:02:36.695839+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "ril_proves_an_adopt_before_proposing_it",
           "passed": true,
-          "fingerprint": "e5b92f08d1d0d7c73df76e2c75021476fd9574dfb05e785e2373487d50d32763",
-          "generated_at": "2026-09-09T22:49:55.938566+00:00",
+          "fingerprint": "b8a3cae16dd4e64e457dde617099c97020dbfc3aa0d7ce8b6ab97f4c00679790",
+          "generated_at": "2026-10-05T23:03:08.413138+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "ril_resolves_the_capture_origin",
           "passed": false,
-          "fingerprint": "2651592c52cf9705fe0ab1cdb99eb887a187ca693fbc393bea9e58c2eb78ee5a",
-          "generated_at": "2026-09-09T22:49:08.489235+00:00",
+          "fingerprint": "71203b79a8310197421027b74b1ff0540086af48807945023958d91cc6bc5183",
+          "generated_at": "2026-10-05T23:02:35.736975+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "ril_verdict_belongs_to_the_user",
           "passed": true,
-          "fingerprint": "7abeab899253853412f36896331ac107421bdc958680a462257a0f89aabac9c3",
-          "generated_at": "2026-09-09T23:07:12.361212+00:00",
+          "fingerprint": "da0bb3c899e9a72aa59f6b4da4b02b8600a2181a95c7f5c68e77f5334abb923c",
+          "generated_at": "2026-10-05T23:02:56.693895+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "7b4582b8"
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -2441,12 +2381,12 @@
         {
           "name": "commit_skill_matches_repository_conventions",
           "passed": true,
-          "fingerprint": "b27f241afed652179608dfa5bbf4691e480d9fbb4a5dc312f25769ca18aa7c17",
-          "generated_at": "2026-09-09T22:25:34.077045+00:00",
+          "fingerprint": "fa89f251482d0a0150d31fc4a8f65ca94bca60023dbad3131f068a4c4e8816ef",
+          "generated_at": "2026-10-05T22:55:41.824692+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "14382b41"
+            "git_commit": "4859a269c"
           }
         }
       ]
@@ -2469,29 +2409,29 @@
       ]
     },
     "workflow_compliance": {
-      "passed": 6,
-      "failed": 2,
+      "passed": 7,
+      "failed": 1,
       "tests": [
         {
           "name": "workflow_change_review_classifies_semantic_risk",
           "passed": true,
-          "fingerprint": "5042cdc29a666b3b472998f9204f8fe8cbbc0d384988ca6c1e97e5709c72e4bf",
-          "generated_at": "2026-09-24T09:17:58.148641+00:00",
+          "fingerprint": "0c37f161223343d15116e73b270a78cbd4819aec17b2ab4a2991d9fbd3320701",
+          "generated_at": "2026-10-05T22:56:50.040255+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "3978bf0f7"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "workflow_fix_before_responding",
           "passed": true,
-          "fingerprint": "d3f8fd9df8690db8202c902fd91dbb9f6d5b2b79759eb5fb24de57ff455ea296",
-          "generated_at": "2026-09-24T09:17:13.920601+00:00",
+          "fingerprint": "b3a15fff0f1bdd7f3c84c031ef095e5c3b95b7eb3925ff4ed1513d16296aab7f",
+          "generated_at": "2026-10-05T22:56:22.920934+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "3978bf0f7"
+            "git_commit": "4859a269c"
           }
         },
         {
@@ -2508,45 +2448,45 @@
         {
           "name": "workflow_knows_full_sequence",
           "passed": true,
-          "fingerprint": "fd5bec4ee231fd66664a8220470f3388f6d651c1875014f9f4f15c77e1b5eb9d",
-          "generated_at": "2026-09-24T09:15:58.651735+00:00",
+          "fingerprint": "475651a6f09e80f94311174bb93b4106e1f2384528d2dd6c29e012e6b52be4c7",
+          "generated_at": "2026-10-05T22:55:38.245009+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "workflow_never_skip_rebuild",
           "passed": true,
-          "fingerprint": "f573030c6cb7b154570207df52998c4102601170d5943ffccab20163b1a63be7",
-          "generated_at": "2026-09-24T09:16:41.971375+00:00",
+          "fingerprint": "13421055a98cba84cb33055faebf830c28c83d312f4901119b8961940fe51eb4",
+          "generated_at": "2026-10-05T22:55:56.164733+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "workflow_rebuild_not_just_nix",
-          "passed": false,
-          "fingerprint": "ed87675fd215aef5657cfce168cd9e01bc9696c5bd18cebfcc25b26d547dabcd",
-          "generated_at": "2026-09-24T09:16:27.422865+00:00",
+          "passed": true,
+          "fingerprint": "31b759355f3ef51f7f783cbb60009dce8ffc544fc3b49ce6e607bcf577cab1b0",
+          "generated_at": "2026-10-05T22:55:53.547183+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
           "name": "workflow_respond_only_after_pass",
           "passed": true,
-          "fingerprint": "93a8ae6a39de4de34620dca80500e881971e7c245c73fea14f42d9061b049ba0",
-          "generated_at": "2026-09-24T09:16:57.104114+00:00",
+          "fingerprint": "471b0fdf6efb821acdab3fbb0e93ddf48c187a2e15017b572ef173adab7b70d8",
+          "generated_at": "2026-10-05T22:56:07.982258+00:00",
           "execution_profile_id": "ccf2358c69cb",
           "run_source": {
             "kind": "checkpoint",
-            "git_commit": "66d284e33"
+            "git_commit": "4859a269c"
           }
         },
         {
@@ -2564,8 +2504,8 @@
     }
   },
   "fingerprints": {
-    "suite": "6aa50278d0382cc0e8ece86d6562878e0b596012c4c841852201f10003974417",
-    "instructions": "5e946d0c6e8e4871ca3454f61497a69c9547ca027fc3d81640c5818029d73398"
+    "suite": "b9fd0c35c482e0332323ed5291179f34c5320835e565c82f552099524117db80",
+    "instructions": "a1db65ced4f6b0f4ce80f5c0112e66356c0d08c238794c05adea212982cb7202"
   },
   "execution_profile": {
     "subject": {
@@ -2632,24 +2572,24 @@
   "token_usage": {
     "subject": {
       "codex": {
-        "invocations": 376,
-        "measured_invocations": 376,
-        "input_tokens": 5839961,
-        "cached_input_tokens": 3205760,
+        "invocations": 453,
+        "measured_invocations": 453,
+        "input_tokens": 7694109,
+        "cached_input_tokens": 4397952,
         "cache_write_input_tokens": 0,
-        "output_tokens": 49182,
-        "reasoning_output_tokens": 26379
+        "output_tokens": 70139,
+        "reasoning_output_tokens": 35026
       }
     },
     "judge": {
       "codex": {
-        "invocations": 226,
-        "measured_invocations": 226,
-        "input_tokens": 2133351,
-        "cached_input_tokens": 1292544,
+        "invocations": 301,
+        "measured_invocations": 301,
+        "input_tokens": 2774526,
+        "cached_input_tokens": 1655552,
         "cache_write_input_tokens": 0,
-        "output_tokens": 23989,
-        "reasoning_output_tokens": 13909
+        "output_tokens": 32006,
+        "reasoning_output_tokens": 18533
       }
     }
   },

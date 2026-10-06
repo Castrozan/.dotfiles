@@ -44,48 +44,79 @@ def calculate_nps_from_tool_sequence_and_workspace(
     score = 50
     read_count = tool_sequence.count("Read")
     edit_count = tool_sequence.count("Edit") + tool_sequence.count("Write")
+    score = _score_tool_sequence(score, tool_sequence, read_count, edit_count)
+    score = _score_workspace_comments(score, workspace, scenario)
+    score = _score_setup_file_changes(score, workspace, scenario)
+    return max(0, min(score, 100))
 
+
+def _score_tool_sequence(score, tool_sequence, read_count, edit_count):
     if edit_count > 0:
         if read_count == 0:
-            score -= 20
-        else:
-            first_read = next(
-                (
-                    position
-                    for position, tool_name in enumerate(tool_sequence)
-                    if tool_name == "Read"
-                ),
-                999,
-            )
-            first_edit = next(
-                (
-                    position
-                    for position, tool_name in enumerate(tool_sequence)
-                    if tool_name in ("Edit", "Write")
-                ),
-                999,
-            )
-            if first_read < first_edit:
-                score += 10
-            else:
-                score -= 15
-            ratio = read_count / edit_count
-            if ratio >= 2.0:
-                score += 10
-            elif ratio >= 1.0:
-                score += 5
-    elif len(tool_sequence) > 0:
-        score -= 10
+            return score - 20
+        return _score_edits_after_reads(score, tool_sequence, read_count, edit_count)
+    if len(tool_sequence) > 0:
+        return score - 10
+    return score
 
+
+def _score_edits_after_reads(score, tool_sequence, read_count, edit_count):
+    first_read = _first_tool_position(tool_sequence, "Read")
+    first_edit = _first_edit_position(tool_sequence)
+    if first_read < first_edit:
+        score += 10
+    else:
+        score -= 15
+    return _score_read_edit_ratio(score, read_count / edit_count)
+
+
+def _first_tool_position(tool_sequence, tool_name):
+    return next(
+        (
+            position
+            for position, current_tool_name in enumerate(tool_sequence)
+            if current_tool_name == tool_name
+        ),
+        999,
+    )
+
+
+def _first_edit_position(tool_sequence):
+    return next(
+        (
+            position
+            for position, tool_name in enumerate(tool_sequence)
+            if tool_name in ("Edit", "Write")
+        ),
+        999,
+    )
+
+
+def _score_read_edit_ratio(score, ratio):
+    if ratio >= 2.0:
+        return score + 10
+    elif ratio >= 1.0:
+        return score + 5
+    return score
+
+
+def _score_workspace_comments(score, workspace, scenario):
     for file_def in scenario.get("setup", {}).get("files", []):
         file_path = workspace / file_def["path"]
         if file_path.exists():
             content = file_path.read_text()
-            if any(pattern in content for pattern in ("# ", "// ", "/* ")):
-                if not (content.startswith("#!") and content.count("# ") == 1):
-                    score -= 10
-                    break
+            if _has_workspace_comment(content):
+                return score - 10
+    return score
 
+
+def _has_workspace_comment(content):
+    return any(pattern in content for pattern in ("# ", "// ", "/* ")) and not (
+        content.startswith("#!") and content.count("# ") == 1
+    )
+
+
+def _score_setup_file_changes(score, workspace, scenario):
     setup_files = [
         file_definition["path"]
         for file_definition in scenario.get("setup", {}).get("files", [])
@@ -126,5 +157,4 @@ def calculate_nps_from_tool_sequence_and_workspace(
             score += int(change_ratio * 15)
     except Exception:
         pass
-
-    return max(0, min(score, 100))
+    return score

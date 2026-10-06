@@ -71,6 +71,19 @@ def find_prohibited_word_in_segments(
     return None
 
 
+def _denial_for_violation(tool_name, violation):
+    if violation is None:
+        return None
+    word, label = violation
+    block_message = (
+        f"BLOCKED ({tool_name}): the word '{word}' must not appear in {label} "
+        f"outside private repositories. Move it into private-configuration, or remove it."
+    )
+    return HandlerResult(
+        decision="deny", reason=block_message, system_message=block_message
+    )
+
+
 def handle(hook_input):
     prohibited_words = load_prohibited_words()
     machine_allowed_words = load_machine_allowed_words()
@@ -88,14 +101,4 @@ def handle(hook_input):
         tool_name, tool_input, current_working_directory
     )
     violation = find_prohibited_word_in_segments(enforced_prohibited_words, segments)
-    if violation is None:
-        return None
-
-    word, label = violation
-    block_message = (
-        f"BLOCKED ({tool_name}): the word '{word}' must not appear in {label} "
-        f"outside private repositories. Move it into private-configuration, or remove it."
-    )
-    return HandlerResult(
-        decision="deny", reason=block_message, system_message=block_message
-    )
+    return _denial_for_violation(tool_name, violation)
