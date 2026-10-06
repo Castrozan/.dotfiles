@@ -10,6 +10,7 @@ from media_image.contract import (
     SUPPORTED_ASPECT_RATIOS,
     ImageError,
     ImageRequest,
+    validate_operation_id,
 )
 from media_image.discovery import describe_image_providers
 from media_image.provider_factory import create_image_provider
@@ -75,6 +76,16 @@ def build_parser():
     return parser
 
 
+def read_image_request(args):
+    if args.operation_id is not None:
+        validate_operation_id(args.operation_id)
+    prompt = args.prompt
+    if args.prompt_file is not None:
+        with args.prompt_file.open(encoding="utf-8") as source:
+            prompt = source.read(MAXIMUM_PROMPT_CHARACTERS + 1)
+    return ImageRequest(prompt, args.model, args.aspect_ratio, args.quality, args.seed)
+
+
 def execute_image_command(args):
     if args.command == "providers":
         result = describe_image_providers()
@@ -83,13 +94,7 @@ def execute_image_command(args):
         if args.command == "inspect":
             result = service.inspect(args.operation_id)
         else:
-            prompt = args.prompt
-            if args.prompt_file is not None:
-                with args.prompt_file.open(encoding="utf-8") as source:
-                    prompt = source.read(MAXIMUM_PROMPT_CHARACTERS + 1)
-            request = ImageRequest(
-                prompt, args.model, args.aspect_ratio, args.quality, args.seed
-            )
+            request = read_image_request(args)
             provider = create_image_provider(args.provider)
             if args.command == "validate":
                 provider.preflight(request)
@@ -99,7 +104,11 @@ def execute_image_command(args):
                     "model": request.model,
                 }
             else:
-                operation_id = args.operation_id or str(uuid.uuid4())
+                operation_id = (
+                    str(uuid.uuid4())
+                    if args.operation_id is None
+                    else args.operation_id
+                )
                 print(
                     json.dumps({"operation_id": operation_id}),
                     file=sys.stderr,

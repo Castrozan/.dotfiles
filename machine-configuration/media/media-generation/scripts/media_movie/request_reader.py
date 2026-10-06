@@ -1,4 +1,4 @@
-from media_image.contract import ImageRequest
+from media_image.contract import ImageRequest, validate_operation_id
 from media_movie.contract import (
     ImageSelection,
     MovieError,
@@ -23,6 +23,8 @@ def read_movie_request(document):
         ("experiment_id", "episode_id", "width", "height", "fps", "scenes"),
         ("operation_id",),
     )
+    if "operation_id" in document:
+        validate_operation_id(document["operation_id"])
     if (
         not isinstance(document["scenes"], list)
         or not 1 <= len(document["scenes"]) <= 24
