@@ -15,9 +15,9 @@ My personal computing environment, declared with **Nix**, **Home Manager** and *
 
 ## Take the tour
 
-https://github.com/user-attachments/assets/58a552fe-fac4-43f7-a069-60d6895eedc9
+https://github.com/user-attachments/assets/65edec3b-1c2a-4a20-8bed-ee9ef6a4758b
 
-Follow one Yazi setting from its [Home Manager module](machine-configuration/terminal/file-manager/yazi/yazi-home-manager.nix) through a Nix build to a visible result. The video uses an isolated preview, then shows how hosts and agent instructions are declared.
+Fresh desktop captures and animated architecture, with English narration and an original electronic soundtrack. The rebuild and CI scenes illustrate the configuration workflow.
 
 ## The desktop
 
