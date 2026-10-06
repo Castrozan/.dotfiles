@@ -145,7 +145,7 @@ def verify_video(request, directory, runner, ffmpeg, ffprobe, deadline):
             "-xerror",
             "-n",
             "-ss",
-            "1",
+            str(min(1, (request.frames - 1) / request.fps)),
             "-i",
             video_path,
             "-frames:v",

@@ -1,11 +1,36 @@
 { pkgs, ... }:
 let
-  testPython = pkgs.python312.withPackages (pythonPackages: [
-    pythonPackages.pytest
-    pythonPackages.elevenlabs
-  ]);
+  testPython = pkgs.python312.withPackages (
+    pythonPackages:
+    [
+      pythonPackages.pytest
+      pythonPackages.elevenlabs
+      pythonPackages.jsonschema
+    ]
+    ++ (import ../image-python-packages.nix pythonPackages)
+  );
+  ffmpegPackage = import ../video-ffmpeg-package.nix { inherit pkgs; };
 in
 {
+  domain-media-image-movie-contract = pkgs.runCommand "domain-media-image-movie-contract" { } ''
+    export PYTHONDONTWRITEBYTECODE=1
+    export MEDIA_MOVIE_FFMPEG=${ffmpegPackage}/bin/ffmpeg
+    export MEDIA_MOVIE_FFPROBE=${ffmpegPackage}/bin/ffprobe
+    cp -R ${../.} source
+    chmod -R u+w source
+    cd source
+    ${testPython}/bin/python3 -m pytest -q -p no:cacheprovider \
+      __tests__/unit/test_image_contract.py \
+      __tests__/unit/test_movie_contract.py \
+      __tests__/unit/test_movie_jobs.py \
+      __tests__/unit/test_media_discovery_cli.py \
+      __tests__/integration/test_image_providers.py \
+      __tests__/integration/test_replicate_lifecycle.py \
+      __tests__/integration/test_movie_render.py \
+      __tests__/integration/test_movie_cli.py \
+      __tests__/integration/test_speech_delivery.py
+    touch "$out"
+  '';
   domain-media-video-contract =
     pkgs.runCommand "domain-media-video-contract"
       {

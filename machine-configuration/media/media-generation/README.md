@@ -24,7 +24,7 @@ ElevenLabs usage wraps the SDK's [Get user subscription API](https://elevenlabs.
 
 Voice discovery generates no audio and creates no operation receipt. Kokoro lists the bundled voices without model files. ElevenLabs reads the authenticated account catalog through the SDK's [List voices API](https://elevenlabs.io/docs/api-reference/voices/search), with a 30-second timeout and no retries. Each call reads one page; pass a returned `next_page_token` through `--page-token` with the same `--search` to continue. `--page-size` requests 1–100 results, default 20; ElevenLabs can include additional default voices on the first page. A cloud voice's `language` is null because the catalog does not establish language enforcement. Catalog membership is not a price quote or permission to use a particular voice.
 
-ElevenLabs reads an explicit `ELEVENLABS_API_KEY` environment value first, then the agenix-deployed `~/.secrets/elevenlabs-api-key` file. The shared secret declaration encrypts the credential for every configured host; plaintext stays outside the Nix store and repository. Obtain a voice available to your account; voice rights and account pricing require separate verification. Requests use Multilingual v2 and the [timestamp endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech/convert-with-timestamps) with `pcm_24000`; automatic retries are disabled. Multilingual v2 does not support language enforcement through `language_code`, so verify the generated narration's language.
+ElevenLabs reads an explicit `ELEVENLABS_API_KEY` environment value first, then the agenix-deployed `~/.secrets/elevenlabs-api-key` file. The shared secret declaration encrypts the credential for every configured host; plaintext stays outside the Nix store and repository. Obtain a voice available to your account; voice rights and account pricing require separate verification. Requests default to Multilingual v2; select a discovered model with `--model`. Both use the [timestamp endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech/convert-with-timestamps) with `pcm_24000`; automatic retries are disabled. Multilingual v2 does not support language enforcement through `language_code`, so verify the generated narration's language.
 
 Kokoro runs the optimized INT8 export from [model-files-v1.0](https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0) with two CPU inference threads. The v1.1 release’s INT8 export uses a ConvInteger operator unsupported by the pinned CPU runtime; the model and voices are fetched independently with fixed hashes. Supported voices are `pf_dora`, `pm_alex`, `pm_santa` for `pt-br`, and `af_heart`, `af_bella`, `am_adam` for `en-us`. [Kokoro's model card](https://huggingface.co/hexgrad/Kokoro-82M) documents Apache-2.0 weights; the runtime and phonemizer have their own licenses. Nix supplies Python, ONNX Runtime, model files and eSpeak. The package uses Phonemizer 3.4; its Darwin-only dlinfo override excludes Linux filesystem tests that assume shared-cache system libraries exist as files. Imports and real synthesis validate the actual Darwin path.
 
@@ -67,3 +67,45 @@ Registration JSON contains exactly `recipe_id`, `recipe_directory`, `renderer_ve
 Registration and manifest files require private modes, and their containing directories and the recipe directory require mode 0700. Inputs must be owned regular files with canonical paths; symlinks, traversal, duplicate JSON keys and duplicate manifest paths are refused. The native executable must be owned, executable and checksum-pinned. It must accept `render -o ABSOLUTE_OUTPUT_MP4` from the retained recipe working directory and use the copied assets there. An executable's native header and checksum establish its recorded identity, not a sandbox: register only trusted recipes. The consumer must supply a binary compatible with the target host and its runtime libraries. The service does not install or build fframes, fonts or recipes.
 
 Rendering and verification run without a shell, with private bounded logs and process-group cleanup on timeout or interruption. Source/assets remain with the consumer; editorial timing, image generation, voice selection and browser publishing stay outside the renderer. Receipts report zero generative calls for the local render and leave compute cost unknown. They do not include previous image or narration charges.
+
+
+## Images and model discovery
+
+`media-image` wraps the official OpenAI and Replicate Python SDKs behind `ImageGenerationProvider`. Use `providers` to discover exact model IDs, aspect ratios, quality levels, seed support, credential sources and usage capabilities. Controls are checked before dispatch. [OpenAI image generation](https://developers.openai.com/api/docs/guides/image-generation) and [Replicate FLUX Schnell](https://replicate.com/black-forest-labs/flux-schnell) document upstream behavior and prices; the API does not claim a fixed price or enforce a budget reservation.
+
+```sh
+media-image providers
+media-image generate --help
+media-image validate --provider openai --model gpt-image-2.5-flare \
+  --aspect-ratio 1:1 --quality low --prompt-file image.txt
+media-image generate --provider replicate --model black-forest-labs/flux-schnell \
+  --aspect-ratio 9:16 --quality standard --seed 42 --prompt-file image.txt
+media-image inspect OPERATION_UUID
+```
+
+OpenAI reads `OPENAI_API_KEY` or `~/.secrets/openai-api-key`; Replicate reads `REPLICATE_API_TOKEN` or `~/.secrets/replicate-api-token`. Secret files must be provisioned separately. Existing agent subscriptions do not supply these API credentials. Discovery and local inspection require no credential. `validate` checks controls and credential presence without making a provider call or creating a job; it cannot establish account/model access or available balance.
+
+State defaults to `$XDG_STATE_HOME/media-image`. Successful receipts retain the fully decoded PNG, measured dimensions, checksum, provider request ID and available token or prediction-time usage. Account usage is explicitly unavailable. A canonical UUID owns one operation: same-request success replays with checksum verification; changed requests conflict, and incomplete jobs never redispatch under that UUID. OpenAI submission retries are disabled; Replicate submission is not retried, and prediction polling/download have a 180-second total deadline. PNG size is capped at 32 MiB and 20 million pixels. Cloud charge remains unknown even after a failed request.
+
+## Directed narration and finished movies
+
+Select ElevenLabs `eleven_v4` to carry delivery instructions as [audio tags](https://elevenlabs.io/docs/help-center/product/core-capabilities/text-to-speech/how-do-audio-tags-work-with-eleven-v3-and-v4). `--directions` prefixes a cue; per-line audio tags can also live in the narration file. Other models reject this control. Tags count toward the existing narration character limit. The provider's alignment may contain tags and normalized text, so inspect its match evidence before captioning.
+
+```sh
+media-speech generate --provider elevenlabs --model eleven_v4 \
+  --voice YOUR_VOICE_ID --language en-us --directions 'curious, then whispers' \
+  --text-file narration.txt
+media-movie providers
+media-movie schema
+media-movie example > movie.json
+media-movie generate --request-file movie.json
+media-movie inspect OPERATION_UUID
+```
+
+Replace the example's voice ID using `media-speech voices`, and supply your actual scenes before generating. Each scene contains an image prompt/provider/model, narration text/voice/model and optional delivery cue, duration and motion. The schema describes structure; provider discovery describes supported model/control combinations. Explicit scene duration must accommodate its generated narration; omitted duration follows measured narration and rounds up to a whole frame.
+
+`MovieService` consumes the domain-owned `MovieAssetGenerator` and `MovieAssembler` ports. The asset adapter calls only the public image/speech CLIs. FFmpeg assembles retained scene images and WAV files into an H.264/AAC MP4, with stereo 48 kHz audio and a PNG thumbnail. The directing pipeline supplies scripts and editorial choices; this API produces the artifact rather than a plan. The native `media-video` interface remains available for compiled compositions.
+
+State defaults to `$XDG_STATE_HOME/media-movie`. Every scene is preflighted before any asset generation. A durable parent receipt records deterministic child UUIDs before dispatch and retains checksum-verified scene assets, logs and output. Successful replay verifies every retained file without dispatch or rendering. Failed or interrupted parents cannot resume under the same UUID. Inspect the child receipts before starting a new parent, which can generate and charge for those assets again.
+
+Assembly supports even dimensions from 16 through 1920, 24/25/30 fps, up to 24 scenes, 8,000 total narration characters and 600 seconds. Motions are static or zoom-in. Assembly and verification have a 600-second deadline, separate from bounded child jobs. Every frame timestamp, full audio/video decode and thumbnail dimensions must pass before success. Captions, music, generated video shots, automatic scripting and dollar-budget reservations are not assembled by this interface. Character alignment availability remains model-specific; requested feelings still require listening to the output.

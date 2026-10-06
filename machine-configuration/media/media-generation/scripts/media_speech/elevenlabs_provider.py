@@ -32,11 +32,14 @@ class ElevenLabsSpeechProvider:
             "account",
         )
 
-    def __init__(self, api_key: str | None, client=None):
+    def __init__(self, api_key: str | None, client=None, model=None):
         self.api_key = api_key
         self.client = client
+        self.model = model or type(self).model
 
     def preflight(self, request: SpeechRequest):
+        if self.model not in ("eleven_multilingual_v2", "eleven_v4"):
+            raise SpeechError("unsupported_model")
         if not self.api_key:
             raise SpeechError("missing_credentials")
 

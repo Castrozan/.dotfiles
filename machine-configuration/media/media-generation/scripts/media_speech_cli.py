@@ -14,6 +14,7 @@ from media_speech.kokoro_provider import KokoroSpeechProvider, KokoroVoiceCatalo
 from media_speech.kokoro_usage import KokoroUsageReader
 from media_speech.service import SpeechService
 from media_speech.usage import ProviderUsageService
+from media_speech.delivery import direct_speech_text, speech_model_capabilities
 
 
 def read_elevenlabs_api_key():
@@ -32,6 +33,7 @@ def describe_speech_providers():
         "providers": [
             {
                 **asdict(provider.describe()),
+                "models": speech_model_capabilities(provider.name),
                 "usage": asdict(ProviderUsageService(reader).capabilities()),
             }
             for provider, reader in (
@@ -47,52 +49,59 @@ def generate_speech(args, service):
     if args.text_file is not None:
         with args.text_file.open(encoding="utf-8") as input_file:
             text = input_file.read(MAXIMUM_TEXT_CHARACTERS + 1)
+    text = direct_speech_text(text, args.provider, args.model, args.directions)
     request = SpeechRequest(text, args.voice, args.language)
     if args.provider == "elevenlabs":
-        provider = ElevenLabsSpeechProvider(read_elevenlabs_api_key())
+        provider = ElevenLabsSpeechProvider(read_elevenlabs_api_key(), model=args.model)
     else:
+        if args.model is not None and args.model != KokoroSpeechProvider.model:
+            raise SpeechError("unsupported_model")
         provider = KokoroSpeechProvider(
             Path(os.environ["MEDIA_KOKORO_MODEL"]),
             Path(os.environ["MEDIA_KOKORO_VOICES"]),
             Path(os.environ["MEDIA_ESPEAK_LIBRARY"]),
             Path(os.environ["MEDIA_ESPEAK_DATA"]),
         )
+    if args.command == "validate":
+        provider.preflight(request)
+        return {"status": "valid", "provider": provider.name, "model": provider.model}
     operation_id = args.operation_id or str(uuid.uuid4())
     print(json.dumps({"operation_id": operation_id}), file=sys.stderr, flush=True)
     return service.generate(operation_id, request, provider)
 
 
+def execute_speech_command(args):
+    if args.command == "providers":
+        result = describe_speech_providers()
+        return result
+    if args.command == "voices":
+        query = VoiceQuery(args.page_size, args.page_token, args.search)
+        catalog: SpeechVoiceCatalog = (
+            ElevenLabsSpeechProvider(read_elevenlabs_api_key())
+            if args.provider == "elevenlabs"
+            else KokoroVoiceCatalog()
+        )
+        result = {"provider": args.provider, **asdict(catalog.list_voices(query))}
+        return result
+    if args.command == "usage":
+        reader = (
+            ElevenLabsUsageReader(read_elevenlabs_api_key())
+            if args.provider == "elevenlabs"
+            else KokoroUsageReader()
+        )
+        result = asdict(ProviderUsageService(reader).read_usage())
+        return result
+    service = SpeechService(args.state_directory.expanduser().absolute())
+    if args.command == "inspect":
+        return service.inspect(args.operation_id)
+    else:
+        return generate_speech(args, service)
+
+
 def main(arguments=None):
     args = build_parser().parse_args(arguments)
     try:
-        if args.command == "providers":
-            result = describe_speech_providers()
-            print(json.dumps(result, ensure_ascii=False, allow_nan=False, indent=2))
-            return 0
-        if args.command == "voices":
-            query = VoiceQuery(args.page_size, args.page_token, args.search)
-            catalog: SpeechVoiceCatalog = (
-                ElevenLabsSpeechProvider(read_elevenlabs_api_key())
-                if args.provider == "elevenlabs"
-                else KokoroVoiceCatalog()
-            )
-            result = {"provider": args.provider, **asdict(catalog.list_voices(query))}
-            print(json.dumps(result, ensure_ascii=False, allow_nan=False, indent=2))
-            return 0
-        if args.command == "usage":
-            reader = (
-                ElevenLabsUsageReader(read_elevenlabs_api_key())
-                if args.provider == "elevenlabs"
-                else KokoroUsageReader()
-            )
-            result = asdict(ProviderUsageService(reader).read_usage())
-            print(json.dumps(result, ensure_ascii=False, allow_nan=False, indent=2))
-            return 0
-        service = SpeechService(args.state_directory.expanduser().absolute())
-        if args.command == "inspect":
-            receipt = service.inspect(args.operation_id)
-        else:
-            receipt = generate_speech(args, service)
+        receipt = execute_speech_command(args)
         print(json.dumps(receipt, ensure_ascii=False, allow_nan=False, indent=2))
         return 0
     except SpeechError as error:

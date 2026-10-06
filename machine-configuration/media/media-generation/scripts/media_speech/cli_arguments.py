@@ -48,6 +48,14 @@ def build_parser():
     )
     generate.add_argument("--provider", required=True, choices=["kokoro", "elevenlabs"])
     generate.add_argument(
+        "--model",
+        help="Optional model ID from providers; the provider's existing default is used when omitted.",
+    )
+    generate.add_argument(
+        "--directions",
+        help="A delivery cue such as 'curious, then whispers'; requires ElevenLabs eleven_v4. Inline audio tags can also be placed in --text-file.",
+    )
+    generate.add_argument(
         "--language",
         required=True,
         choices=SUPPORTED_LANGUAGES,
@@ -72,6 +80,12 @@ def build_parser():
         "--text-file",
         type=Path,
         help="Read narration from a UTF-8 file with the same character limit.",
+    )
+    subcommands.add_parser(
+        "validate",
+        parents=[generate],
+        add_help=False,
+        help="Validate narration, supported delivery controls and credential presence without synthesis or job state.",
     )
     inspect = subcommands.add_parser(
         "inspect",

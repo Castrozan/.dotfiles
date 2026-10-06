@@ -9,8 +9,10 @@
     pythonPackages.tomlkit
     pythonPackages.tomli-w
     pythonPackages.websockets
+    pythonPackages.jsonschema
   ]
   ++ import ../../../agent-harness/quality/evaluations/instructions/python-packages.nix pythonPackages
+  ++ import ../../media/media-generation/image-python-packages.nix pythonPackages
 )).overrideAttrs
   (previous: {
     postBuild = (previous.postBuild or "") + ''

@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Personal media movie request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "experiment_id",
+    "episode_id",
+    "width",
+    "height",
+    "fps",
+    "scenes"
+  ],
+  "properties": {
+    "operation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "experiment_id": {
+      "$ref": "#/$defs/attribution"
+    },
+    "episode_id": {
+      "$ref": "#/$defs/attribution"
+    },
+    "width": {
+      "$ref": "#/$defs/dimension"
+    },
+    "height": {
+      "$ref": "#/$defs/dimension"
+    },
+    "fps": {
+      "enum": [
+        24,
+        25,
+        30
+      ]
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "items": {
+        "$ref": "#/$defs/scene"
+      }
+    }
+  },
+  "$defs": {
+    "attribution": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[^\\u0000-\\u001f]*\\S[^\\u0000-\\u001f]*$"
+    },
+    "dimension": {
+      "type": "integer",
+      "minimum": 16,
+      "maximum": 1920,
+      "multipleOf": 2
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image",
+        "narration"
+      ],
+      "properties": {
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "narration": {
+          "$ref": "#/$defs/narration"
+        },
+        "duration_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 600
+        },
+        "motion": {
+          "enum": [
+            "static",
+            "zoom_in"
+          ]
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model",
+        "prompt",
+        "aspect_ratio",
+        "quality"
+      ],
+      "properties": {
+        "provider": {
+          "enum": [
+            "openai",
+            "replicate"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "aspect_ratio": {
+          "enum": [
+            "1:1",
+            "2:3",
+            "3:2",
+            "9:16",
+            "16:9"
+          ]
+        },
+        "quality": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "narration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model",
+        "text",
+        "voice",
+        "language"
+      ],
+      "properties": {
+        "provider": {
+          "enum": [
+            "elevenlabs",
+            "kokoro"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "voice": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "enum": [
+            "en-us",
+            "pt-br"
+          ]
+        },
+        "directions": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[^\\[\\]\\u0000-\\u001f]+$"
+        }
+      }
+    }
+  }
+}
