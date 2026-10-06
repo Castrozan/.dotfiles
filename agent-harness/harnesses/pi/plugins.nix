@@ -25,6 +25,10 @@ in
       inherit defaultMode;
       modes = {
         ask = {
+          instructions = ''
+            Answer from the conversation. Chat mode blocks file, shell, and MCP tools.
+            For repository inspection, use /mode plan or /mode review; for changes, use /mode build.
+          '';
           bash = "deny";
           blockTools = [
             "read"
