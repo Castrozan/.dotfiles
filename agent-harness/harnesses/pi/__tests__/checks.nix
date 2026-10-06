@@ -24,7 +24,6 @@ in
     ${pkgs.nodejs_22}/bin/node ${./verify-workflow-extensions.mjs} \
       ${loaders}/node_modules \
       ${cfg.home.file.".pi/agent/extensions/loop-guard".source} \
-      ${cfg.home.file.".pi/agent/modes.config.json".source} \
       ${cfg.home.file.".pi/loop-guard.json".source}
     touch "$out"
   '';

@@ -4,8 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const [modules, loopGuard, modesConfiguration, guardConfiguration] =
-  process.argv.slice(2);
+const [modules, loopGuard, guardConfiguration] = process.argv.slice(2);
 const root = mkdtempSync(join(tmpdir(), "pi-workflow-check-"));
 const profile = join(root, "agent");
 process.env.HOME = root;
@@ -13,12 +12,7 @@ process.env.PI_AGENT_DIR = profile;
 process.env.PI_CODING_AGENT_DIR = profile;
 mkdirSync(join(profile, "extensions"), { recursive: true });
 mkdirSync(join(root, ".pi"));
-symlinkSync(
-  join(modules, "pi-agent-modes"),
-  join(profile, "extensions/agent-modes"),
-);
 symlinkSync(loopGuard, join(profile, "extensions/loop-guard"));
-copyFileSync(modesConfiguration, join(profile, "modes.config.json"));
 copyFileSync(guardConfiguration, join(root, ".pi/loop-guard.json"));
 const { createAgentSession, SessionManager } = await import(
   pathToFileURL(join(modules, "@earendil-works/pi-coding-agent/dist/index.js"))
@@ -35,7 +29,7 @@ try {
   const commands = runner
     .getRegisteredCommands()
     .map((command) => command.name);
-  assert(commands.includes("mode"));
+  assert(!commands.includes("mode"));
   assert(commands.includes("loop-guard"));
   const call = (toolName, input) =>
     runner.emitToolCall({
@@ -44,36 +38,14 @@ try {
       toolName,
       input,
     });
-  await session.prompt("/mode ask");
-  for (const tool of [
-    "read",
-    "write",
-    "edit",
-    "bash",
-    "grep",
-    "find",
-    "ls",
-    "mcp",
-    "mcpScript",
-  ]) {
+  for (const tool of ["read", "write", "edit", "bash"]) {
+    assert(session.getActiveToolNames().includes(tool));
     assert.equal(
-      (await call(tool, { path: "private", command: "pwd" }))?.block,
-      true,
+      (await call(tool, { path: "source.py", command: "pwd" }))?.block,
+      undefined,
       tool,
     );
   }
-  await session.prompt("/mode plan");
-  assert.equal((await call("read", { path: "source.py" }))?.block, undefined);
-  assert.equal((await call("write", { path: "source.py" }))?.block, true);
-  assert.equal(
-    (await call("bash", { command: "python -c 'print(1)'" }))?.block,
-    true,
-  );
-  assert.equal((await call("mcpScript", { code: "anything" }))?.block, true);
-  await session.prompt("/mode review");
-  assert.equal((await call("edit", { path: "source.py" }))?.block, true);
-  await session.prompt("/mode build");
-  assert(session.getActiveToolNames().includes("write"));
   await runner.emit({ type: "agent_start" });
   for (let index = 0; index < 4; index++) {
     assert.equal(
@@ -102,7 +74,7 @@ try {
   assert.equal((await call("bash", { command: "false" }))?.block, undefined);
   await runner.emit({ type: "agent_settled" });
   console.log(
-    "Mode boundaries, productive edit/test cycles, repetition stop and reset passed",
+    "Native tools, productive edit/test cycles, repetition stop and reset passed",
   );
 } finally {
   await session.extensionRunner.emit({ type: "session_shutdown" });

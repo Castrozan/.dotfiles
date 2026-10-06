@@ -42,10 +42,6 @@ in
   domain-local-agent-workflow-configurations =
     pkgs.runCommand "domain-local-agent-workflow-configurations" { }
       ''
-        ${pkgs.jq}/bin/jq -se 'length == 1 and .[0].defaultMode == "build"' \
-          ${localModel.home.file.".pi/agent/modes.config.json".source}
-        ${pkgs.jq}/bin/jq -se 'length == 1 and .[0].defaultMode == "ask"' \
-          ${localModel.home.file.".local/share/pi-local/modes.config.json".source}
         ${pkgs.jq}/bin/jq -se 'length == 1 and .[0].repeatFrequencyThreshold == 6' \
           ${localModel.home.file.".pi/loop-guard.json".source}
         touch "$out"
