@@ -21,7 +21,7 @@ in
     "${profileDirectory}/extensions/mcp-adapter".source = "${loaders}/node_modules/pi-mcp-adapter";
     "${profileDirectory}/extensions/agent-modes".source = "${loaders}/node_modules/pi-agent-modes";
     "${profileDirectory}/extensions/loop-guard".source = loopGuard;
-    "${profileDirectory}/modes.config.json".text = builtins.toJSON {
+    "${profileDirectory}/modes.config.json".source = (pkgs.formats.json { }).generate "pi-modes.json" {
       inherit defaultMode;
       modes = {
         ask = {
