@@ -116,6 +116,8 @@ def test_tables_can_precede_reply_labels(table):
         "Use `left | right`.",
         "Use a | b in the expression.",
         "See https://example.org/result.",
+        "Verified.\n\n```text\n┌────────┐\n│ Client │\n└────────┘\n```",
+        "Verified.\n\n```text\n+--------+\n| Client |\n+--------+\n```",
     ),
 )
 def test_label_prose_and_inline_code_remain_allowed(content):

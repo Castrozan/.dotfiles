@@ -9,6 +9,7 @@ BOXED_TABLE_BORDER_PATTERN = re.compile(
     r"^[ \t>]*(?:\+(?:[-=]+\+)+|[┌┏╔├┣╠└┗╚][─━═]+"
     r"(?:[┬┳╦┼╋╬┴┻╩][─━═]+)*[┐┓╗┤┫╣┘┛╝])[ \t]*$"
 )
+BOXED_TABLE_ROW_PATTERN = re.compile(r"^[ \t>]*[|│┃║].*[|│┃║][ \t]*$")
 
 
 @cache
@@ -121,11 +122,22 @@ def label_containing_table(document):
     for index in range(first_label_line, len(document.source_lines)):
         if index in labels_by_line:
             current_label = labels_by_line[index]
-        if index in table_lines or BOXED_TABLE_BORDER_PATTERN.fullmatch(
-            document.source_lines[index]
-        ):
+        if index in table_lines or is_boxed_table_border(document.source_lines, index):
             return current_label
     return None
+
+
+def is_boxed_table_border(source_lines, index):
+    line = source_lines[index]
+    if not BOXED_TABLE_BORDER_PATTERN.fullmatch(line):
+        return False
+    if line.count("+") > 2 or any(join in line for join in "┬┳╦┼╋╬┴┻╩"):
+        return True
+    return (
+        0 < index < len(source_lines) - 1
+        and BOXED_TABLE_ROW_PATTERN.fullmatch(source_lines[index - 1])
+        and BOXED_TABLE_ROW_PATTERN.fullmatch(source_lines[index + 1])
+    )
 
 
 def table_start_line_indices(tokens, first_label_line):
