@@ -27,6 +27,7 @@ in
     ../../../agent-harness/harnesses/pi
     ../../../agent-harness/harnesses/hermes
     ../../development/testing/testing-home-manager.nix
+    ../../development/local-language-models/llama-cpp-home-manager.nix
 
     ../../terminal/shell/bash/bash-home-manager.nix
     ../../terminal/emulators/kitty/kitty-home-manager.nix
