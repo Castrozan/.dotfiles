@@ -1,6 +1,5 @@
 import os
 import subprocess
-from types import SimpleNamespace
 
 import pytest
 
@@ -12,6 +11,9 @@ def test_replaces_stale_native_credentials_without_exposing_token(
 ):
     token_file = tmp_path / "github-token"
     token_file.write_text("deployed-secret\n")
+    credential_file = tmp_path / "gh" / "hosts.yml"
+    credential_file.parent.mkdir()
+    credential_file.write_text("github.com:\n  oauth_token: stale-token\n")
     monkeypatch.setenv("GH_TOKEN", "temporary-token")
     monkeypatch.setenv("GITHUB_TOKEN", "temporary-github-token")
     monkeypatch.setenv("GH_ENTERPRISE_TOKEN", "enterprise-token")
@@ -19,13 +21,15 @@ def test_replaces_stale_native_credentials_without_exposing_token(
 
     def run(command, **options):
         calls.append((command, options))
-        return SimpleNamespace(returncode=0, stdout="stale-token\n")
 
     monkeypatch.setattr(subprocess, "run", run)
 
-    deploy_github_authentication.deploy_github_authentication("gh", token_file)
+    deploy_github_authentication.deploy_github_authentication(
+        "gh", token_file, credential_file
+    )
 
-    command, options = calls[1]
+    assert len(calls) == 1
+    command, options = calls[0]
     assert command == [
         "gh",
         "auth",
@@ -35,6 +39,7 @@ def test_replaces_stale_native_credentials_without_exposing_token(
         "--git-protocol",
         "ssh",
         "--skip-ssh-key",
+        "--insecure-storage",
         "--with-token",
     ]
     assert options["input"] == "deployed-secret\n"
@@ -43,24 +48,53 @@ def test_replaces_stale_native_credentials_without_exposing_token(
     assert "GH_TOKEN" not in options["env"]
     assert "GITHUB_TOKEN" not in options["env"]
     assert options["env"]["GH_ENTERPRISE_TOKEN"] == "enterprise-token"
+    assert options["env"]["GH_CONFIG_DIR"] == str(credential_file.parent)
     assert os.environ["GH_TOKEN"] == "temporary-token"
     assert "secret" not in capsys.readouterr().out
 
 
-def test_matching_native_credential_skips_login(tmp_path, monkeypatch):
+def test_matching_native_file_credential_skips_login(tmp_path, monkeypatch):
     token_file = tmp_path / "github-token"
     token_file.write_text("deployed-secret\n")
+    credential_file = tmp_path / "hosts.yml"
+    credential_file.write_text("github.com:\n  oauth_token: deployed-secret\n")
+    credential_modified_at = credential_file.stat().st_mtime_ns
     calls = []
 
     def run(command, **options):
         calls.append(command)
-        return SimpleNamespace(returncode=0, stdout="deployed-secret\n")
 
     monkeypatch.setattr(subprocess, "run", run)
 
-    deploy_github_authentication.deploy_github_authentication("gh", token_file)
+    deploy_github_authentication.deploy_github_authentication(
+        "gh", token_file, credential_file
+    )
 
-    assert calls == [["gh", "auth", "token", "--hostname", "github.com"]]
+    assert calls == []
+    assert credential_file.stat().st_mtime_ns == credential_modified_at
+
+
+def test_matching_keyring_credential_is_migrated_for_headless_access(
+    tmp_path, monkeypatch, capsys
+):
+    token_file = tmp_path / "github-token"
+    token_file.write_text("deployed-secret\n")
+    credential_file = tmp_path / "hosts.yml"
+    credential_file.write_text("github.com:\n  user: Castrozan\n  git_protocol: ssh\n")
+    calls = []
+
+    def run(command, **options):
+        calls.append(command)
+
+    monkeypatch.setattr(subprocess, "run", run)
+
+    deploy_github_authentication.deploy_github_authentication(
+        "gh", token_file, credential_file
+    )
+
+    assert len(calls) == 1
+    assert "--insecure-storage" in calls[0]
+    assert "deployed-secret" not in capsys.readouterr().out
 
 
 def test_missing_secret_fails_after_bounded_wait_before_native_auth(
@@ -75,7 +109,7 @@ def test_missing_secret_fails_after_bounded_wait_before_native_auth(
 
     with pytest.raises(TimeoutError, match="GitHub credential did not materialize"):
         deploy_github_authentication.deploy_github_authentication(
-            "gh", tmp_path / "missing"
+            "gh", tmp_path / "missing", tmp_path / "hosts.yml"
         )
 
     assert calls == []
@@ -88,13 +122,41 @@ def test_login_failure_is_reported_without_retry(tmp_path, monkeypatch):
 
     def run(command, **options):
         calls.append(command)
-        if command[2] == "login":
-            raise subprocess.CalledProcessError(1, command)
-        return SimpleNamespace(returncode=1, stdout="")
+        raise subprocess.CalledProcessError(1, command)
 
     monkeypatch.setattr(subprocess, "run", run)
 
     with pytest.raises(subprocess.CalledProcessError):
-        deploy_github_authentication.deploy_github_authentication("gh", token_file)
+        deploy_github_authentication.deploy_github_authentication(
+            "gh", token_file, tmp_path / "hosts.yml"
+        )
 
-    assert len(calls) == 2
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize(
+    "configuration",
+    [
+        "github.com:\n  oauth_token: sensitive-value:\n",
+        "[sensitive-value]\n",
+        "github.com: [sensitive-value]\n",
+    ],
+)
+def test_malformed_credentials_fail_without_disclosing_or_overwriting_content(
+    tmp_path, monkeypatch, configuration
+):
+    token_file = tmp_path / "github-token"
+    token_file.write_text("deployed-secret\n")
+    credential_file = tmp_path / "hosts.yml"
+    credential_file.write_text(configuration)
+    calls = []
+    monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: calls.append(args))
+
+    with pytest.raises(ValueError) as exception:
+        deploy_github_authentication.deploy_github_authentication(
+            "gh", token_file, credential_file
+        )
+
+    assert str(exception.value) == "GitHub CLI authentication file is malformed"
+    assert credential_file.read_text() == configuration
+    assert calls == []
