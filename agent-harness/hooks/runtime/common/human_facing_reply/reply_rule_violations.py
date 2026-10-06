@@ -168,6 +168,13 @@ def label_inline_content_violation(reply: ReplyUnderReview) -> str | None:
     return None
 
 
+def label_table_violation(reply: ReplyUnderReview) -> str | None:
+    label = reply.document.label_containing_table
+    if label:
+        return reply.configuration.violation("label_table", label=label)
+    return None
+
+
 def duplicate_label_violation(reply: ReplyUnderReview) -> str | None:
     if reply_is_a_short_confirmation(reply):
         return None

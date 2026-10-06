@@ -9,6 +9,7 @@ from reply_rule_violations import (
     duplicate_label_violation,
     label_inline_content_violation,
     label_order_violation,
+    label_table_violation,
     labeled_section_ceiling_violation,
     list_block_length_violation,
     list_line_word_violation,
@@ -53,6 +54,9 @@ REPLY_RESTRICTIONS = {
     ),
     "label_inline_content": ReplyRestriction(
         label_inline_content_violation, placeholders=frozenset({"label"})
+    ),
+    "label_table": ReplyRestriction(
+        label_table_violation, placeholders=frozenset({"label"})
     ),
     "label_order": ReplyRestriction(
         label_order_violation, placeholders=frozenset({"expected_labels"})

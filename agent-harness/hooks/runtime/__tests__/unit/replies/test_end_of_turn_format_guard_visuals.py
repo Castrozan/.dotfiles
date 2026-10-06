@@ -24,7 +24,7 @@ def test_allows_every_humanize_visual_representation(tmp_path):
 
     for visual in visual_representations:
         transcript = write_transcript_with_final_assistant_reply(
-            tmp_path, f"{WELL_FORMED_REPLY}\n{visual}"
+            tmp_path, f"{visual}\n\n{WELL_FORMED_REPLY}"
         )
         result = invoke_guard(stop_payload(transcript))
         assert result.stdout.strip() == ""

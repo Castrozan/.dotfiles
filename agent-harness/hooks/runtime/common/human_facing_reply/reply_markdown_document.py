@@ -1,7 +1,14 @@
+import re
 from functools import cache
 
 from reply_markdown_inline import ReplyInlineContent, extract_reply_labels
 from reply_markdown_lists import extract_reply_lists
+
+
+BOXED_TABLE_BORDER_PATTERN = re.compile(
+    r"^[ \t>]*(?:\+(?:[-=]+\+)+|[┌┏╔├┣╠└┗╚][─━═]+"
+    r"(?:[┬┳╦┼╋╬┴┻╩][─━═]+)*[┐┓╗┤┫╣┘┛╝])[ \t]*$"
+)
 
 
 @cache
@@ -104,6 +111,39 @@ def _is_outside_markdown_structure(quote_depth, list_depth, table_depth):
     return not (quote_depth or list_depth or table_depth)
 
 
+def label_containing_table(document):
+    if not document.labels:
+        return None
+    first_label_line = document.labels[0].line_index
+    table_lines = table_start_line_indices(document.tokens, first_label_line)
+    labels_by_line = {label.line_index: label.label for label in document.labels}
+    current_label = None
+    for index in range(first_label_line, len(document.source_lines)):
+        if index in labels_by_line:
+            current_label = labels_by_line[index]
+        if index in table_lines or BOXED_TABLE_BORDER_PATTERN.fullmatch(
+            document.source_lines[index]
+        ):
+            return current_label
+    return None
+
+
+def table_start_line_indices(tokens, first_label_line):
+    indices = set()
+    for token in tokens:
+        if not token.map or token.map[0] < first_label_line:
+            continue
+        if token.type == "table_open" or (
+            token.type in ("fence", "code_block")
+            and any(
+                content.type == "table_open"
+                for content in reply_markdown_parser().parse(token.content)
+            )
+        ):
+            indices.add(token.map[0])
+    return indices
+
+
 class ReplyMarkdownDocument:
     def __init__(self, text, configuration):
         parser = reply_markdown_parser()
@@ -127,3 +167,4 @@ class ReplyMarkdownDocument:
             configuration,
             parser,
         )
+        self.label_containing_table = label_containing_table(self)
