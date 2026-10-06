@@ -8,7 +8,7 @@
 }:
 let
   modelId = "qwen3.5-4b-uncensored";
-  contextWindow = 16384;
+  contextWindow = 24576;
   listenPort = 8081;
   inferencePackage = latest.llama-cpp.override { vulkanSupport = true; };
   model = pkgs.fetchurl {

@@ -51,9 +51,10 @@ in
   domain-local-agent-model-contract = mkEvalCheck "domain-local-agent-model-contract" (
     localAgentModels.providers.chise.baseUrl == "http://127.0.0.1:8081/v1"
     && (builtins.head localAgentModels.providers.chise.models).id == "qwen3.5-4b-uncensored"
-    && (builtins.head localAgentModels.providers.chise.models).contextWindow == 16384
-    && localAgentSettings.compaction.reserveTokens < 16384
-    && localAgentSettings.compaction.keepRecentTokens < 16384
+    && (builtins.head localAgentModels.providers.chise.models).contextWindow == 24576
+    && lib.hasInfix "--ctx-size 24576" (lib.concatStringsSep " " localModelService.ExecStart)
+    && localAgentSettings.compaction.reserveTokens < 24576
+    && localAgentSettings.compaction.keepRecentTokens < 24576
   ) "the local agent must use the local endpoint and fit its context budget";
 
   domain-local-agent-shared-assets = mkEvalCheck "domain-local-agent-shared-assets" (
