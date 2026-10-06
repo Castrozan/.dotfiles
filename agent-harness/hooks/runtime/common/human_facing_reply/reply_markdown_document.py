@@ -120,8 +120,7 @@ def label_containing_table(document):
     labels_by_line = {label.line_index: label.label for label in document.labels}
     current_label = None
     for index in range(first_label_line, len(document.source_lines)):
-        if index in labels_by_line:
-            current_label = labels_by_line[index]
+        current_label = labels_by_line.get(index, current_label)
         if index in table_lines or is_boxed_table_border(document.source_lines, index):
             return current_label
     return None
@@ -131,13 +130,18 @@ def is_boxed_table_border(source_lines, index):
     line = source_lines[index]
     if not BOXED_TABLE_BORDER_PATTERN.fullmatch(line):
         return False
-    if line.count("+") > 2 or any(join in line for join in "┬┳╦┼╋╬┴┻╩"):
+    if boxed_table_border_has_columns(line):
         return True
-    return (
-        0 < index < len(source_lines) - 1
-        and BOXED_TABLE_ROW_PATTERN.fullmatch(source_lines[index - 1])
-        and BOXED_TABLE_ROW_PATTERN.fullmatch(source_lines[index + 1])
+    if not 0 < index < len(source_lines) - 1:
+        return False
+    return all(
+        BOXED_TABLE_ROW_PATTERN.fullmatch(source_lines[neighbor])
+        for neighbor in (index - 1, index + 1)
     )
+
+
+def boxed_table_border_has_columns(line):
+    return line.count("+") > 2 or any(join in line for join in "┬┳╦┼╋╬┴┻╩")
 
 
 def table_start_line_indices(tokens, first_label_line):
@@ -145,15 +149,20 @@ def table_start_line_indices(tokens, first_label_line):
     for token in tokens:
         if not token.map or token.map[0] < first_label_line:
             continue
-        if token.type == "table_open" or (
-            token.type in ("fence", "code_block")
-            and any(
-                content.type == "table_open"
-                for content in reply_markdown_parser().parse(token.content)
-            )
-        ):
+        if token_contains_table(token):
             indices.add(token.map[0])
     return indices
+
+
+def token_contains_table(token):
+    if token.type == "table_open":
+        return True
+    if token.type not in ("fence", "code_block"):
+        return False
+    return any(
+        content.type == "table_open"
+        for content in reply_markdown_parser().parse(token.content)
+    )
 
 
 class ReplyMarkdownDocument:

@@ -97,7 +97,7 @@ def test_a_table_is_exempt_from_the_word_count():
         f"| {number} | " + " | ".join(["measured"] * 8) + " |"
         for number in range(1, 41)
     )
-    reply = f"{LABELED_REPLY}\n\n{header}{separator}{table_rows}"
+    reply = f"{header}{separator}{table_rows}\n\n{LABELED_REPLY}"
 
     assert template_violations_in_reply(reply) == []
 
