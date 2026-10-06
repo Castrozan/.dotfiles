@@ -39,8 +39,9 @@ def test_movie_request_carries_real_scene_and_delivery_inputs():
     [(0, 1920, 30), (1081, 1920, 30), (1080, 1920, 0), (4096, 4096, 30)],
 )
 def test_unsupported_movie_format_fails_before_generation(width, height, fps):
+    scenes = (movie_scene(),)
     with pytest.raises(MovieError, match="unsupported_movie_format"):
-        MovieRequest("shorts", "example", width, height, fps, (movie_scene(),))
+        MovieRequest("shorts", "example", width, height, fps, scenes)
 
 
 def test_empty_movie_is_rejected():

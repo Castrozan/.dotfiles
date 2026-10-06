@@ -44,7 +44,7 @@ class RecordingAssembler:
     def __init__(self):
         self.calls = 0
 
-    def preflight(self, movie_request):
+    def preflight(self):
         pass
 
     def assemble(self, movie_request, scenes, directory):
@@ -69,8 +69,9 @@ def test_replay_and_changed_request_never_dispatch(tmp_path, operation_id):
     receipt = service.generate(operation_id, movie_request)
     calls = list(assets.calls)
     assert service.generate(operation_id, movie_request) == receipt
+    changed_request = replace(movie_request, episode_id="other")
     with pytest.raises(MovieError, match="operation_conflict"):
-        service.generate(operation_id, replace(movie_request, episode_id="other"))
+        service.generate(operation_id, changed_request)
     assert assembler.calls == 1
     assert assets.calls == calls
     assert len(receipt["child_operations"]) == 1
@@ -82,8 +83,9 @@ def test_all_scene_preflights_run_before_any_paid_generation(tmp_path, operation
     bad_scene = replace(movie_scene(), motion="static")
     assets.invalid_scene = bad_scene
     service = MovieService(tmp_path / "state", assets, RecordingAssembler())
+    request = request_with(movie_scene(), bad_scene)
     with pytest.raises(SpeechError, match="unsupported_model"):
-        service.generate(operation_id, request_with(movie_scene(), bad_scene))
+        service.generate(operation_id, request)
     assert assets.calls == ["preflight", "preflight"]
     assert not service.state_directory.exists()
 
@@ -93,14 +95,15 @@ def test_partial_failure_retains_inputs_and_child_ids_without_redispatch(
 ):
     assets = RecordingAssets(tmp_path, fail=True)
     service = MovieService(tmp_path / "state", assets, RecordingAssembler())
+    request = request_with()
     with pytest.raises(SpeechError, match="provider_failed"):
-        service.generate(operation_id, request_with())
+        service.generate(operation_id, request)
     receipt = service.inspect(operation_id)
     assert receipt["status"] == "failed"
     assert len(receipt["child_operations"]) == 1
     assert len(receipt["retained_inputs"]) == 1
     with pytest.raises(MovieError, match="operation_incomplete"):
-        service.generate(operation_id, request_with())
+        service.generate(operation_id, request)
     assert assets.calls == ["preflight", "image", "narration"]
 
 

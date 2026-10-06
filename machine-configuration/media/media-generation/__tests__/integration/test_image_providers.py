@@ -53,7 +53,8 @@ def test_official_openai_sdk_preserves_controls_receipt_and_usage():
         "output_format": "png",
         "n": 1,
     }
-    assert result.width == 64 and result.height == 96
+    assert result.width == 64
+    assert result.height == 96
     assert result.usage == {"input_tokens": 10, "output_tokens": 20, "total_tokens": 30}
     assert submitted == ["openai-receipt"]
 
@@ -81,11 +82,10 @@ def test_openai_error_does_not_submit_twice(status, category):
         with OpenAI(
             api_key="synthetic-only", max_retries=0, http_client=transport
         ) as client:
+            provider = OpenAIImageProvider("synthetic-only", client)
+            request = ImageRequest("Apple", "gpt-image-1-mini", "1:1", "low")
             with pytest.raises(ImageError, match=category):
-                OpenAIImageProvider("synthetic-only", client).generate(
-                    ImageRequest("Apple", "gpt-image-1-mini", "1:1", "low"),
-                    lambda _: None,
-                )
+                provider.generate(request, lambda _: None)
     assert len(requests) == 1
 
 

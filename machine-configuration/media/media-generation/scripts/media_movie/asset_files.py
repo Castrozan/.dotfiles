@@ -8,18 +8,11 @@ from media_video.files import sync_file
 
 def retain_movie_asset(directory, filename, asset):
     descriptor = os.open(asset.path, os.O_RDONLY | os.O_NOFOLLOW)
-    metadata = os.fstat(descriptor)
-    if (
-        not stat.S_ISREG(metadata.st_mode)
-        or metadata.st_uid != os.getuid()
-        or not 0 < metadata.st_size <= 64 * 1024 * 1024
-    ):
-        os.close(descriptor)
-        raise MovieError("invalid_scene_asset")
     destination = directory / filename
     digest = hashlib.sha256()
     copied = 0
     with os.fdopen(descriptor, "rb") as source:
+        validate_scene_asset_metadata(os.fstat(source.fileno()))
         target_descriptor = os.open(
             destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
         )
@@ -35,6 +28,15 @@ def retain_movie_asset(directory, filename, asset):
     if digest.hexdigest() != asset.sha256:
         raise MovieError("scene_asset_checksum_mismatch")
     return MovieAsset(destination, asset.sha256, asset.duration_seconds)
+
+
+def validate_scene_asset_metadata(metadata):
+    if (
+        not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_uid != os.getuid()
+        or not 0 < metadata.st_size <= 64 * 1024 * 1024
+    ):
+        raise MovieError("invalid_scene_asset")
 
 
 def asset_checksum(path):

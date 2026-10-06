@@ -15,6 +15,9 @@ from media_image.receipts import inspect_image_receipt
 from media_video.files import atomic_json, create_private_directory
 
 
+IMAGE_RECEIPT_FILENAME = "receipt.json"
+
+
 class ImageService:
     def __init__(self, state_directory: Path):
         self.state_directory = state_directory.expanduser().absolute()
@@ -75,9 +78,9 @@ class ImageService:
                 "status": "unknown",
                 "budget_reserved": False,
             },
-            "receipt_path": str(directory / "receipt.json"),
+            "receipt_path": str(directory / IMAGE_RECEIPT_FILENAME),
         }
-        atomic_json(directory / "receipt.json", receipt)
+        atomic_json(directory / IMAGE_RECEIPT_FILENAME, receipt)
 
         try:
             image = provider.generate(
@@ -110,14 +113,14 @@ class ImageService:
                 },
                 elapsed_seconds=time.monotonic() - started,
             )
-            atomic_json(directory / "receipt.json", receipt)
+            atomic_json(directory / IMAGE_RECEIPT_FILENAME, receipt)
         except BaseException as error:
             receipt.update(
                 status="failed",
                 error=getattr(error, "category", "generation_failed"),
                 elapsed_seconds=time.monotonic() - started,
             )
-            atomic_json(directory / "receipt.json", receipt)
+            atomic_json(directory / IMAGE_RECEIPT_FILENAME, receipt)
             raise
         return receipt
 
@@ -129,4 +132,4 @@ def record_image_submission(directory, receipt, provider_request_id):
     ):
         raise ImageError("invalid_provider_response")
     receipt["provider_request_id"] = provider_request_id
-    atomic_json(directory / "receipt.json", receipt)
+    atomic_json(directory / IMAGE_RECEIPT_FILENAME, receipt)

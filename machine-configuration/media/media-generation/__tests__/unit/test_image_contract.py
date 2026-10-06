@@ -57,10 +57,9 @@ def test_changed_request_conflicts(tmp_path):
     service.generate(
         operation_id, ImageRequest("Apple", "fixture", "1:1", "standard"), provider
     )
+    changed_request = ImageRequest("Pear", "fixture", "1:1", "standard")
     with pytest.raises(ImageError, match="operation_conflict"):
-        service.generate(
-            operation_id, ImageRequest("Pear", "fixture", "1:1", "standard"), provider
-        )
+        service.generate(operation_id, changed_request, provider)
     assert provider.calls == 1
 
 
@@ -94,8 +93,8 @@ def test_tampered_image_is_not_replayed(tmp_path):
 )
 def test_invalid_operation_id_does_not_dispatch(tmp_path, operation_id):
     provider = ImageFixtureProvider()
+    service = ImageService(tmp_path)
+    request = ImageRequest("Apple", "fixture", "1:1", "standard")
     with pytest.raises(ImageError, match="invalid_operation_id"):
-        ImageService(tmp_path).generate(
-            operation_id, ImageRequest("Apple", "fixture", "1:1", "standard"), provider
-        )
+        service.generate(operation_id, request, provider)
     assert provider.calls == 0

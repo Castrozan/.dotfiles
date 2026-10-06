@@ -103,7 +103,7 @@ def main(arguments=None):
     except KeyError:
         print(json.dumps({"error": "movie_runtime_unavailable"}), file=sys.stderr)
         return 1
-    except (OSError, UnicodeError, ValueError):
+    except (OSError, ValueError):
         print(json.dumps({"error": "storage_failed"}), file=sys.stderr)
         return 1
     except KeyboardInterrupt:

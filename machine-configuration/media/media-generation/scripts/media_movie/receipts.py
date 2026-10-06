@@ -39,17 +39,10 @@ def validate_movie_receipt(receipt, operation_id):
 
 
 def verify_scene_manifest(directory, inputs, scenes):
-    if not isinstance(inputs, list) or not isinstance(scenes, list):
-        raise MovieError("invalid_receipt")
-    if not 1 <= len(scenes) <= 24 or not 2 <= len(inputs) <= 48:
-        raise MovieError("invalid_receipt")
+    validate_scene_manifest_shape(inputs, scenes)
     for asset in inputs:
         verify_scene_asset(directory, asset)
-    expected = {
-        f"scene-{index:02}.{suffix}"
-        for index in range(len(scenes))
-        for suffix in ("image.png", "narration.wav")
-    }
+    expected = expected_scene_filenames(len(scenes))
     if (
         len(inputs) != len(expected)
         or {asset["filename"] for asset in inputs} != expected
@@ -57,11 +50,26 @@ def verify_scene_manifest(directory, inputs, scenes):
         raise MovieError("invalid_receipt")
 
 
+def validate_scene_manifest_shape(inputs, scenes):
+    if not isinstance(inputs, list) or not isinstance(scenes, list):
+        raise MovieError("invalid_receipt")
+    if not 1 <= len(scenes) <= 24 or not 2 <= len(inputs) <= 48:
+        raise MovieError("invalid_receipt")
+
+
+def expected_scene_filenames(scene_count):
+    return {
+        f"scene-{index:02}.{suffix}"
+        for index in range(scene_count)
+        for suffix in ("image.png", "narration.wav")
+    }
+
+
 def verify_scene_asset(directory, asset):
     if not isinstance(asset, dict) or not isinstance(asset.get("filename"), str):
         raise MovieError("invalid_receipt")
     if not re.fullmatch(
-        r"scene-[0-9]{2}\.(image\.png|narration\.wav)", asset["filename"]
+        r"scene-\d{2}\.(image\.png|narration\.wav)", asset["filename"], re.ASCII
     ):
         raise MovieError("invalid_receipt")
     verify_asset(directory, asset["filename"], asset)

@@ -50,12 +50,7 @@ class MovieScene:
         ):
             raise MovieError("invalid_scene")
         self.narration.speech_request()
-        if self.duration_seconds is not None and (
-            type(self.duration_seconds) not in (int, float)
-            or not math.isfinite(self.duration_seconds)
-            or not 0 < self.duration_seconds <= 600
-        ):
-            raise MovieError("invalid_scene_duration")
+        validate_scene_duration(self.duration_seconds)
         if self.motion not in ("static", "zoom_in"):
             raise MovieError("unsupported_motion")
 
@@ -73,19 +68,37 @@ class MovieRequest:
         validate_movie_attribution(self.experiment_id)
         validate_movie_attribution(self.episode_id)
         validate_movie_format(self.width, self.height, self.fps)
-        if (
-            not isinstance(self.scenes, tuple)
-            or not 1 <= len(self.scenes) <= 24
-            or any(not isinstance(scene, MovieScene) for scene in self.scenes)
-        ):
-            raise MovieError("invalid_scenes")
-        if sum(scene.duration_seconds or 0 for scene in self.scenes) > 600:
-            raise MovieError("movie_duration_limit_exceeded")
-        if (
-            sum(len(scene.narration.speech_request().text) for scene in self.scenes)
-            > 8000
-        ):
-            raise MovieError("movie_script_limit_exceeded")
+        validate_movie_scenes(self.scenes)
+        validate_movie_duration(self.scenes)
+        validate_movie_script(self.scenes)
+
+
+def validate_scene_duration(duration_seconds):
+    if duration_seconds is None:
+        return
+    if type(duration_seconds) not in (int, float):
+        raise MovieError("invalid_scene_duration")
+    if not math.isfinite(duration_seconds) or not 0 < duration_seconds <= 600:
+        raise MovieError("invalid_scene_duration")
+
+
+def validate_movie_scenes(scenes):
+    if not isinstance(scenes, tuple):
+        raise MovieError("invalid_scenes")
+    if not 1 <= len(scenes) <= 24:
+        raise MovieError("invalid_scenes")
+    if any(not isinstance(scene, MovieScene) for scene in scenes):
+        raise MovieError("invalid_scenes")
+
+
+def validate_movie_duration(scenes):
+    if sum(scene.duration_seconds or 0 for scene in scenes) > 600:
+        raise MovieError("movie_duration_limit_exceeded")
+
+
+def validate_movie_script(scenes):
+    if sum(len(scene.narration.speech_request().text) for scene in scenes) > 8000:
+        raise MovieError("movie_script_limit_exceeded")
 
 
 def validate_movie_attribution(value):
@@ -146,7 +159,7 @@ class MovieAssetGenerator(Protocol):
 class MovieAssembler(Protocol):
     name: str
 
-    def preflight(self, request: MovieRequest) -> None: ...
+    def preflight(self) -> None: ...
 
     def assemble(
         self,

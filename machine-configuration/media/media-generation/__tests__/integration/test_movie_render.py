@@ -72,7 +72,8 @@ def fixture_movie(fps):
 def test_movie_produces_decodable_mp4_with_exact_timestamps_and_replay(tmp_path, fps):
     ffmpeg = os.environ.get("MEDIA_MOVIE_FFMPEG") or shutil.which("ffmpeg")
     ffprobe = os.environ.get("MEDIA_MOVIE_FFPROBE") or shutil.which("ffprobe")
-    assert ffmpeg and ffprobe
+    assert ffmpeg
+    assert ffprobe
     assets = FixtureAssets(tmp_path)
     service = MovieService(
         tmp_path / "state", assets, FfmpegMovieAssembler(ffmpeg, ffprobe)

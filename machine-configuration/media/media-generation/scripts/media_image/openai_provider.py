@@ -1,5 +1,4 @@
 import base64
-import binascii
 from contextlib import ExitStack
 
 from media_image.contract import MAXIMUM_IMAGE_BYTES, ImageError
@@ -9,24 +8,37 @@ from media_image.image_decoder import decode_generated_image
 
 def decode_openai_document(document, provider_request_id):
     try:
-        if len(document.data or []) != 1:
-            raise ImageError("invalid_provider_response")
-        encoded_image = document.data[0].b64_json
-        if not isinstance(encoded_image, str) or len(encoded_image) > 4 * (
-            (MAXIMUM_IMAGE_BYTES + 2) // 3
-        ):
-            raise ImageError("invalid_provider_response")
-        image_bytes = base64.b64decode(encoded_image, validate=True)
-        reported_usage = getattr(document, "usage", None)
-        reported = {} if reported_usage is None else reported_usage.model_dump()
-        usage = {
-            key: reported[key]
-            for key in ("input_tokens", "output_tokens", "total_tokens")
-            if reported.get(key) is not None
-        }
-        return decode_generated_image(image_bytes, provider_request_id, usage or None)
-    except (binascii.Error, ValueError, TypeError, AttributeError):
+        image_bytes = read_openai_image_bytes(document)
+        usage = read_openai_image_usage(document)
+        return decode_generated_image(image_bytes, provider_request_id, usage)
+    except (ValueError, TypeError, AttributeError):
         raise ImageError("invalid_provider_response") from None
+
+
+def read_openai_image_bytes(document):
+    if len(document.data or []) != 1:
+        raise ImageError("invalid_provider_response")
+    encoded_image = document.data[0].b64_json
+    return decode_openai_base64_image(encoded_image)
+
+
+def decode_openai_base64_image(encoded_image):
+    if not isinstance(encoded_image, str) or len(encoded_image) > 4 * (
+        (MAXIMUM_IMAGE_BYTES + 2) // 3
+    ):
+        raise ImageError("invalid_provider_response")
+    return base64.b64decode(encoded_image, validate=True)
+
+
+def read_openai_image_usage(document):
+    reported_usage = getattr(document, "usage", None)
+    reported = {} if reported_usage is None else reported_usage.model_dump()
+    usage = {
+        key: reported[key]
+        for key in ("input_tokens", "output_tokens", "total_tokens")
+        if reported.get(key) is not None
+    }
+    return usage or None
 
 
 def request_openai_image(client, request, record_submission):

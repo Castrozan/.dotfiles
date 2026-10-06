@@ -33,12 +33,10 @@ class ImageRequest:
     def __post_init__(self):
         validate_prompt(self.prompt)
         validate_seed(self.seed)
-        if not isinstance(self.model, str) or not 1 <= len(self.model) <= 100:
-            raise ImageError("invalid_model")
+        validate_image_model(self.model)
         if self.aspect_ratio not in SUPPORTED_ASPECT_RATIOS:
             raise ImageError("unsupported_aspect_ratio")
-        if not isinstance(self.quality, str) or not 1 <= len(self.quality) <= 20:
-            raise ImageError("invalid_quality")
+        validate_image_quality(self.quality)
 
 
 @dataclass(frozen=True)
@@ -51,17 +49,9 @@ class GeneratedImage:
     usage: dict | None = None
 
     def __post_init__(self):
-        if (
-            not isinstance(self.image_bytes, bytes)
-            or not 1 <= len(self.image_bytes) <= MAXIMUM_IMAGE_BYTES
-        ):
-            raise ImageError("invalid_image")
-        if any(
-            type(value) is not int or not 1 <= value <= 8192
-            for value in (self.width, self.height)
-        ):
-            raise ImageError("invalid_image_dimensions")
-        if self.width * self.height > 20_000_000 or self.color_mode not in (
+        validate_image_bytes(self.image_bytes)
+        validate_image_dimensions(self.width, self.height)
+        if self.color_mode not in (
             "RGB",
             "RGBA",
             "L",
@@ -72,11 +62,42 @@ class GeneratedImage:
         validate_usage(self.usage)
 
 
+def validate_image_model(model):
+    if not isinstance(model, str) or not 1 <= len(model) <= 100:
+        raise ImageError("invalid_model")
+
+
+def validate_image_quality(quality):
+    if not isinstance(quality, str) or not 1 <= len(quality) <= 20:
+        raise ImageError("invalid_quality")
+
+
+def validate_image_bytes(image_bytes):
+    if (
+        not isinstance(image_bytes, bytes)
+        or not 1 <= len(image_bytes) <= MAXIMUM_IMAGE_BYTES
+    ):
+        raise ImageError("invalid_image")
+
+
+def validate_image_dimensions(width, height):
+    if any(
+        type(value) is not int or not 1 <= value <= 8192 for value in (width, height)
+    ):
+        raise ImageError("invalid_image_dimensions")
+    if width * height > 20_000_000:
+        raise ImageError("invalid_image")
+
+
 def validate_prompt(prompt):
     if not isinstance(prompt, str):
         raise ImageError("invalid_prompt")
     if not prompt.strip() or len(prompt) > MAXIMUM_PROMPT_CHARACTERS:
         raise ImageError("invalid_prompt")
+    validate_prompt_characters(prompt)
+
+
+def validate_prompt_characters(prompt):
     if any(ord(character) < 32 and character not in "\n\t" for character in prompt):
         raise ImageError("invalid_prompt")
 

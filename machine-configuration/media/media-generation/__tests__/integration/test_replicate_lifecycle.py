@@ -34,13 +34,11 @@ def test_replicate_paid_submission_is_never_retried(status, category):
                 api_token="fixture-only", transport=httpx.MockTransport(respond)
             )
             provider = ReplicateImageProvider("fixture-only", client, downloads)
+            request = ImageRequest(
+                "Mountain", "black-forest-labs/flux-schnell", "1:1", "standard"
+            )
             with pytest.raises(ImageError, match=category):
-                await provider.generate_async(
-                    ImageRequest(
-                        "Mountain", "black-forest-labs/flux-schnell", "1:1", "standard"
-                    ),
-                    lambda identifier: None,
-                )
+                await provider.generate_async(request, lambda identifier: None)
             await client._async_client.aclose()
 
     asyncio.run(exercise())
@@ -94,13 +92,11 @@ def test_failed_prediction_keeps_its_remote_id_without_asset_download():
                 api_token="fixture-only", transport=httpx.MockTransport(respond)
             )
             provider = ReplicateImageProvider("fixture-only", client, downloads)
+            request = ImageRequest(
+                "Mountain", "black-forest-labs/flux-schnell", "1:1", "standard"
+            )
             with pytest.raises(ImageError, match="provider_failed"):
-                await provider.generate_async(
-                    ImageRequest(
-                        "Mountain", "black-forest-labs/flux-schnell", "1:1", "standard"
-                    ),
-                    submitted.append,
-                )
+                await provider.generate_async(request, submitted.append)
             await client._async_client.aclose()
 
     asyncio.run(exercise())

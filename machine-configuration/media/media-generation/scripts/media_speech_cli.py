@@ -70,32 +70,36 @@ def generate_speech(args, service):
     return service.generate(operation_id, request, provider)
 
 
+def list_speech_voices(args):
+    query = VoiceQuery(args.page_size, args.page_token, args.search)
+    catalog: SpeechVoiceCatalog = (
+        ElevenLabsSpeechProvider(read_elevenlabs_api_key())
+        if args.provider == "elevenlabs"
+        else KokoroVoiceCatalog()
+    )
+    return {"provider": args.provider, **asdict(catalog.list_voices(query))}
+
+
+def read_speech_usage(provider_name):
+    reader = (
+        ElevenLabsUsageReader(read_elevenlabs_api_key())
+        if provider_name == "elevenlabs"
+        else KokoroUsageReader()
+    )
+    return asdict(ProviderUsageService(reader).read_usage())
+
+
 def execute_speech_command(args):
     if args.command == "providers":
-        result = describe_speech_providers()
-        return result
+        return describe_speech_providers()
     if args.command == "voices":
-        query = VoiceQuery(args.page_size, args.page_token, args.search)
-        catalog: SpeechVoiceCatalog = (
-            ElevenLabsSpeechProvider(read_elevenlabs_api_key())
-            if args.provider == "elevenlabs"
-            else KokoroVoiceCatalog()
-        )
-        result = {"provider": args.provider, **asdict(catalog.list_voices(query))}
-        return result
+        return list_speech_voices(args)
     if args.command == "usage":
-        reader = (
-            ElevenLabsUsageReader(read_elevenlabs_api_key())
-            if args.provider == "elevenlabs"
-            else KokoroUsageReader()
-        )
-        result = asdict(ProviderUsageService(reader).read_usage())
-        return result
+        return read_speech_usage(args.provider)
     service = SpeechService(args.state_directory.expanduser().absolute())
     if args.command == "inspect":
         return service.inspect(args.operation_id)
-    else:
-        return generate_speech(args, service)
+    return generate_speech(args, service)
 
 
 def main(arguments=None):

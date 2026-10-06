@@ -8,17 +8,20 @@ def validate_replicate_asset_url(url):
         raise ImageError("invalid_provider_response")
     try:
         parsed = urlsplit(url)
-        invalid = any(
-            (
-                parsed.scheme != "https",
-                bool(parsed.username),
-                bool(parsed.password),
-                parsed.port not in (None, 443),
-            )
-        )
+        validate_replicate_asset_origin(parsed)
     except ValueError:
         raise ImageError("invalid_asset_url") from None
-    if invalid:
+
+
+def validate_replicate_asset_origin(parsed):
+    if any(
+        (
+            parsed.scheme != "https",
+            bool(parsed.username),
+            bool(parsed.password),
+            parsed.port not in (None, 443),
+        )
+    ):
         raise ImageError("invalid_asset_url")
     hostname = parsed.hostname or ""
     if hostname != "replicate.delivery" and not hostname.endswith(

@@ -84,7 +84,7 @@ class FfmpegMovieAssembler:
         self.ffmpeg = ffmpeg
         self.ffprobe = ffprobe
 
-    def preflight(self, request):
+    def preflight(self):
         if any(
             not Path(binary).is_file() or not os.access(binary, os.X_OK)
             for binary in (self.ffmpeg, self.ffprobe)

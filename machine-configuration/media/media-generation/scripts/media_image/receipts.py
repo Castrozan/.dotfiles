@@ -34,19 +34,22 @@ def validate_image_receipt(receipt, operation_id):
     ):
         raise ImageError("invalid_receipt")
     digest = receipt.get("request_sha256")
-    if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
-        raise ImageError("invalid_receipt")
+    validate_image_digest(digest)
 
 
 def verify_retained_image(directory, image):
     if not isinstance(image, dict):
         raise ImageError("invalid_receipt")
     digest = image.get("sha256")
-    if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
-        raise ImageError("invalid_receipt")
+    validate_image_digest(digest)
     path = directory / "image.png"
     verify_image_checksum(path, digest)
     if image.get("path") != str(path) or image.get("size_bytes") != path.stat().st_size:
+        raise ImageError("invalid_receipt")
+
+
+def validate_image_digest(digest):
+    if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
         raise ImageError("invalid_receipt")
 
 

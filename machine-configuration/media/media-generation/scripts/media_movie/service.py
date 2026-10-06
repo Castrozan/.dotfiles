@@ -15,6 +15,9 @@ from media_movie.receipts import inspect_movie_receipt
 from media_video.files import atomic_json, create_private_directory
 
 
+MOVIE_RECEIPT_FILENAME = "receipt.json"
+
+
 class MovieService:
     def __init__(
         self, state_directory, assets: MovieAssetGenerator, assembler: MovieAssembler
@@ -52,7 +55,7 @@ class MovieService:
         ).hexdigest()
         if directory.exists():
             return self.completed_operation(operation_id, digest)
-        self.assembler.preflight(request)
+        self.assembler.preflight()
         for scene in request.scenes:
             self.assets.preflight(scene)
         create_private_directory(self.state_directory)
@@ -69,7 +72,7 @@ class MovieService:
             "assembler": self.assembler.name,
             "child_operations": [],
             "retained_inputs": [],
-            "receipt_path": str(directory / "receipt.json"),
+            "receipt_path": str(directory / MOVIE_RECEIPT_FILENAME),
             "cost": {
                 "currency": "USD",
                 "provider_charge_usd": None,
@@ -77,7 +80,7 @@ class MovieService:
                 "budget_reserved": False,
             },
         }
-        atomic_json(directory / "receipt.json", receipt)
+        atomic_json(directory / MOVIE_RECEIPT_FILENAME, receipt)
         try:
             scenes = prepare_movie_scenes(
                 operation_id, request, directory, receipt, self.assets
@@ -91,7 +94,7 @@ class MovieService:
                 assets=assets,
                 elapsed_seconds=time.monotonic() - started,
             )
-            atomic_json(directory / "receipt.json", receipt)
+            atomic_json(directory / MOVIE_RECEIPT_FILENAME, receipt)
             receipt = self.inspect(operation_id)
         except BaseException as error:
             receipt.update(
@@ -99,6 +102,6 @@ class MovieService:
                 error=getattr(error, "category", "movie_failed"),
                 elapsed_seconds=time.monotonic() - started,
             )
-            atomic_json(directory / "receipt.json", receipt)
+            atomic_json(directory / MOVIE_RECEIPT_FILENAME, receipt)
             raise
         return receipt
