@@ -54,8 +54,8 @@ in
         defaultThinkingLevel = "off";
         compaction = {
           enabled = true;
-          reserveTokens = 3072;
-          keepRecentTokens = 4096;
+          reserveTokens = 7168;
+          keepRecentTokens = 1024;
         };
       };
     };

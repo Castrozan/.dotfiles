@@ -60,4 +60,12 @@ in
     !(builtins.hasAttr "local-language-model" darwinLocalModel.systemd.user.services)
     && !(builtins.hasAttr ".local/bin/local-agent" darwinLocalModel.home.file)
   ) "the Chise inference service and launcher must not deploy on Darwin";
+
+  domain-local-agent-compacts-before-output-starvation =
+    mkEvalCheck "domain-local-agent-compacts-before-output-starvation"
+      (
+        localAgentSettings.compaction.reserveTokens
+        >= 4096 + (builtins.head localAgentModels.providers.chise.models).maxTokens + 1024
+      )
+      "compaction must leave Pi's safety margin, the full response budget, and room for the next message";
 }
