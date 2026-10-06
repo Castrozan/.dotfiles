@@ -10,15 +10,19 @@
   ...
 }:
 let
-  profileDirectory = "${config.home.homeDirectory}/.local/share/pi-local";
+  profileDirectory = ".local/share/pi-local";
   launcher = pkgs.writeShellScriptBin "local-agent" ''
-    export PI_CODING_AGENT_DIR=${lib.escapeShellArg profileDirectory}
+    export PI_CODING_AGENT_DIR=${lib.escapeShellArg "${config.home.homeDirectory}/${profileDirectory}"}
+    export PI_AGENT_DIR="$PI_CODING_AGENT_DIR"
     ${pkgs.systemd}/bin/systemctl --user start local-language-model.service || exit "$?"
-    exec ${config.pi.package}/bin/pi --offline --provider chise --model ${lib.escapeShellArg modelId} --thinking off --no-extensions --no-skills --no-prompt-templates "$@"
+    exec ${config.pi.package}/bin/pi --offline --provider chise --model ${lib.escapeShellArg modelId} --thinking off "$@"
   '';
 in
 {
-  imports = [ ./default.nix ];
+  imports = [
+    ./default.nix
+    (import ./plugins.nix { inherit profileDirectory; })
+  ];
 
   config = {
     home.packages = [ launcher ];

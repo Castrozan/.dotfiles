@@ -56,6 +56,22 @@ in
     && localAgentSettings.compaction.keepRecentTokens < 16384
   ) "the local agent must use the local endpoint and fit its context budget";
 
+  domain-local-agent-shared-assets = mkEvalCheck "domain-local-agent-shared-assets" (
+    builtins.all
+      (
+        path:
+        localModel.home.file.".local/share/pi-local/${path}".source
+        == localModel.home.file.".pi/agent/${path}".source
+      )
+      [
+        "plugins/dotfiles"
+        "extensions/agent-plugins"
+        "extensions/mcp-adapter"
+      ]
+    && builtins.hasAttr "registerProductionPiPlugin-.local/share/pi-local" localModel.home.activation
+    && builtins.hasAttr "registerProductionPiPlugin-.pi/agent" localModel.home.activation
+  ) "both Pi profiles must receive and register the same shared plugin and native loaders";
+
   domain-local-model-linux-only = mkEvalCheck "domain-local-model-linux-only" (
     !(builtins.hasAttr "local-language-model" darwinLocalModel.systemd.user.services)
     && !(builtins.hasAttr ".local/bin/local-agent" darwinLocalModel.home.file)

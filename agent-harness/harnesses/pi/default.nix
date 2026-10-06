@@ -3,6 +3,6 @@
   imports = [
     ./package.nix
     ./global-instructions.nix
-    ./plugins.nix
+    (import ./plugins.nix { profileDirectory = ".pi/agent"; })
   ];
 }
