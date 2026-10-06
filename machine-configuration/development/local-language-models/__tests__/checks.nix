@@ -1,6 +1,5 @@
 {
   helpers,
-  pkgs,
   lib,
   ...
 }:
@@ -11,19 +10,22 @@ let
 
   localModelModule =
     isNixOS:
-    arguments@{
+    {
       pkgs,
       config,
       latest,
       lib,
       ...
     }:
-    import ../llama-cpp-home-manager.nix (
-      arguments
-      // {
-        inherit isNixOS;
-      }
-    );
+    import ../llama-cpp-home-manager.nix {
+      inherit
+        pkgs
+        config
+        latest
+        lib
+        isNixOS
+        ;
+    };
   localModel = helpers.homeManagerTestConfiguration [ (localModelModule true) ];
   darwinLocalModel = helpers.homeManagerTestConfigurationForDarwin [ (localModelModule false) ];
   localModelService = localModel.systemd.user.services.local-language-model.Service;
