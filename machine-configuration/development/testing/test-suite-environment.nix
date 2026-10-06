@@ -6,6 +6,7 @@ pkgs.buildEnv {
   name = "dotfiles-test-suite-environment";
   paths = [
     pythonTestEnvironment
+    (import ../../media/media-generation/video-ffmpeg-package.nix { inherit pkgs; })
     pkgs.neovim
     pkgs.nodejs_22
     pkgs.pyright

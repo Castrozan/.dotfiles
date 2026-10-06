@@ -100,8 +100,9 @@ def test_cloud_cli_loads_credentials_without_disclosing_them(
         monkeypatch.setenv("ELEVENLABS_API_KEY", environment_key)
     expected_key = environment_key or "deployed-file-key"
 
-    def create_provider(api_key):
+    def create_provider(api_key, model=None):
         assert api_key == expected_key
+        assert model is None
         return provider_factory()
 
     monkeypatch.setattr(media_speech_cli, "ElevenLabsSpeechProvider", create_provider)

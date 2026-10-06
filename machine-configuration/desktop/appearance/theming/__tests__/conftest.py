@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 from types import ModuleType
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -10,15 +10,23 @@ sys.path.insert(0, str(COLOR_GENERATION_DIRECTORY))
 
 colorthief_module_stub = ModuleType("colorthief")
 colorthief_module_stub.ColorThief = MagicMock
-sys.modules.setdefault("colorthief", colorthief_module_stub)
 
 pil_module_stub = ModuleType("PIL")
 pil_image_module_stub = ModuleType("PIL.Image")
 pil_module_stub.Image = pil_image_module_stub
-sys.modules.setdefault("PIL", pil_module_stub)
-sys.modules.setdefault("PIL.Image", pil_image_module_stub)
+with patch.dict(
+    sys.modules,
+    {
+        "colorthief": colorthief_module_stub,
+        "PIL": pil_module_stub,
+        "PIL.Image": pil_image_module_stub,
+    },
+):
+    import regenerate_wallpaper_derived_colors as orchestrator
+    import theme_generate_from_wallpaper as theme_generator
 
-import regenerate_wallpaper_derived_colors as orchestrator
+sys.modules[orchestrator.__name__] = orchestrator
+sys.modules[theme_generator.__name__] = theme_generator
 
 
 @pytest.fixture

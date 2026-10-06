@@ -1,21 +1,23 @@
 import sys
 from types import ModuleType
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
+import wallpaper_color_math as color_math
 
 colorthief_mock = ModuleType("colorthief")
 colorthief_mock.ColorThief = MagicMock
-sys.modules.setdefault("colorthief", colorthief_mock)
 
 pil_mock = ModuleType("PIL")
 pil_image_mock = ModuleType("PIL.Image")
 pil_mock.Image = pil_image_mock
-sys.modules.setdefault("PIL", pil_mock)
-sys.modules.setdefault("PIL.Image", pil_image_mock)
+with patch.dict(
+    sys.modules,
+    {"colorthief": colorthief_mock, "PIL": pil_mock, "PIL.Image": pil_image_mock},
+):
+    import theme_generate_from_wallpaper as generator
 
-import theme_generate_from_wallpaper as generator
-import wallpaper_color_math as color_math
+sys.modules[generator.__name__] = generator
 
 DARK_BLUE_DOMINANT_PALETTE = [
     (5, 7, 14),
