@@ -21,7 +21,10 @@ in
 {
   imports = [
     ./default.nix
-    (import ./plugins.nix { inherit profileDirectory; })
+    (import ./plugins.nix {
+      inherit profileDirectory;
+      defaultMode = "ask";
+    })
   ];
 
   config = {

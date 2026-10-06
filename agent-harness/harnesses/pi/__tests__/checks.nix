@@ -17,8 +17,18 @@ let
   piGlobalInstructions =
     pkgs.writeText "pi-global-instructions.md"
       cfg.home.file.".pi/agent/AGENTS.md".text;
+  loaders = import ../plugin-loaders { inherit pkgs; };
 in
 {
+  domain-pi-workflow-extensions = pkgs.runCommand "domain-pi-workflow-extensions" { } ''
+    ${pkgs.nodejs_22}/bin/node ${./verify-workflow-extensions.mjs} \
+      ${loaders}/node_modules \
+      ${cfg.home.file.".pi/agent/extensions/loop-guard".source} \
+      ${pkgs.writeText "pi-modes.json" cfg.home.file.".pi/agent/modes.config.json".text} \
+      ${pkgs.writeText "pi-loop-guard.json" cfg.home.file.".pi/loop-guard.json".text}
+    touch "$out"
+  '';
+
   domain-pi-native-plugin-registration = pkgs.runCommand "domain-pi-native-plugin-registration" { } ''
     ${pkgs.nodejs_22}/bin/node ${./verify-registration.mjs} \
       ${import ../plugin-loaders { inherit pkgs; }}/node_modules \

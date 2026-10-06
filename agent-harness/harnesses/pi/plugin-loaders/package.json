@@ -5,6 +5,8 @@
     "@earendil-works/pi-ai": "0.84.1",
     "@earendil-works/pi-coding-agent": "0.84.1",
     "@earendil-works/pi-tui": "0.84.1",
+    "@wkqco33/pi-loop-guard": "0.2.0",
+    "pi-agent-modes": "0.3.0",
     "pi-agent-plugins": "0.1.8",
     "pi-mcp-adapter": "2.34.0"
   }

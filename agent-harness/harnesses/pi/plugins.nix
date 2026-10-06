@@ -1,4 +1,7 @@
-{ profileDirectory }:
+{
+  profileDirectory,
+  defaultMode ? "build",
+}:
 {
   pkgs,
   config,
@@ -7,6 +10,7 @@
 }:
 let
   loaders = import ./plugin-loaders { inherit pkgs; };
+  loopGuard = import ./plugin-loaders/loop-guard.nix { inherit pkgs loaders; };
 in
 {
   imports = [ ../../agent-instructions/production-plugin/home-manager.nix ];
@@ -15,6 +19,26 @@ in
     "${profileDirectory}/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin";
     "${profileDirectory}/extensions/agent-plugins".source = "${loaders}/node_modules/pi-agent-plugins";
     "${profileDirectory}/extensions/mcp-adapter".source = "${loaders}/node_modules/pi-mcp-adapter";
+    "${profileDirectory}/extensions/agent-modes".source = "${loaders}/node_modules/pi-agent-modes";
+    "${profileDirectory}/extensions/loop-guard".source = loopGuard;
+    "${profileDirectory}/modes.config.json".text = builtins.toJSON {
+      inherit defaultMode;
+      modes = {
+        ask = {
+          bash = "deny";
+          blockTools = [
+            "read"
+            "grep"
+            "find"
+            "ls"
+          ];
+          thinkingLevel = null;
+        };
+        plan.thinkingLevel = null;
+        review.thinkingLevel = null;
+        debug.thinkingLevel = null;
+      };
+    };
   };
   home.activation."registerProductionPiPlugin-${profileDirectory}" =
     lib.hm.dag.entryAfter [ "linkGeneration" ]
