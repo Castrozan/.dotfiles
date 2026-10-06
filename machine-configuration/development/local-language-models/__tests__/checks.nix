@@ -1,6 +1,7 @@
 {
   helpers,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -38,6 +39,18 @@ let
   hasService = name: builtins.hasAttr name cfg.systemd.user.services;
 in
 {
+  domain-local-agent-workflow-configurations =
+    pkgs.runCommand "domain-local-agent-workflow-configurations" { }
+      ''
+        ${pkgs.jq}/bin/jq -se 'length == 1 and .[0].defaultMode == "build"' \
+          ${localModel.home.file.".pi/agent/modes.config.json".source}
+        ${pkgs.jq}/bin/jq -se 'length == 1 and .[0].defaultMode == "ask"' \
+          ${localModel.home.file.".local/share/pi-local/modes.config.json".source}
+        ${pkgs.jq}/bin/jq -se 'length == 1 and .[0].repeatFrequencyThreshold == 6' \
+          ${localModel.home.file.".pi/loop-guard.json".source}
+        touch "$out"
+      '';
+
   domain-ollama-service-binary = mkEvalCheck "domain-ollama-service-binary" (
     hasService "ollama" && hasFile ".local/bin/ollama"
   ) "ollama should have service and binary";
