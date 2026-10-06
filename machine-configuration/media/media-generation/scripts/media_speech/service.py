@@ -9,25 +9,8 @@ import wave
 from dataclasses import asdict
 from pathlib import Path
 
+from media_speech import receipts
 from media_speech.contract import SpeechError, SpeechProvider, SpeechRequest
-
-
-RECEIPT_FILENAME = "receipt.json"
-
-
-def write_receipt(directory: Path, receipt: dict):
-    temporary_path = directory / "receipt.pending"
-    with temporary_path.open("w", encoding="utf-8") as output:
-        json.dump(receipt, output, ensure_ascii=False, allow_nan=False, indent=2)
-        output.write("\n")
-        output.flush()
-        os.fsync(output.fileno())
-    os.replace(temporary_path, directory / RECEIPT_FILENAME)
-    directory_descriptor = os.open(directory, os.O_RDONLY)
-    try:
-        os.fsync(directory_descriptor)
-    finally:
-        os.close(directory_descriptor)
 
 
 class SpeechService:
@@ -46,7 +29,7 @@ class SpeechService:
         directory = self.operation_directory(operation_id)
         try:
             receipt = json.loads(
-                (directory / RECEIPT_FILENAME).read_text(encoding="utf-8")
+                (directory / receipts.RECEIPT_FILENAME).read_text(encoding="utf-8")
             )
         except FileNotFoundError:
             raise SpeechError("operation_unavailable") from None
@@ -109,9 +92,9 @@ class SpeechService:
                 if provider.requires_payment
                 else "no_provider_charge",
             },
-            "receipt_path": str(directory / RECEIPT_FILENAME),
+            "receipt_path": str(directory / receipts.RECEIPT_FILENAME),
         }
-        write_receipt(directory, receipt)
+        receipts.write_receipt(directory, receipt)
         started = time.monotonic()
         try:
             speech = provider.synthesize(request)
@@ -168,7 +151,7 @@ class SpeechService:
                 ).ru_maxrss
                 * (1 if sys.platform == "darwin" else 1024),
             )
-            write_receipt(directory, receipt)
+            receipts.write_receipt(directory, receipt)
         except BaseException as error:
             category = (
                 error.category
@@ -180,7 +163,7 @@ class SpeechService:
                 error=category,
                 elapsed_seconds=time.monotonic() - started,
             )
-            write_receipt(directory, receipt)
+            receipts.write_receipt(directory, receipt)
             if isinstance(error, (KeyboardInterrupt, SystemExit)):
                 raise
             raise SpeechError(category) from None

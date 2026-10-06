@@ -10,6 +10,7 @@ from pathlib import Path
 
 LAUNCH_AGENT_LABEL = "org.nix-community.home.activate-agenix"
 LAUNCH_AGENT_TIMEOUT_SECONDS = 10.0
+LAUNCHCTL_COMMAND_PATH = "/bin/launchctl"
 
 
 def disable_restart_loop(plist_path: Path) -> None:
@@ -25,7 +26,7 @@ def disable_restart_loop(plist_path: Path) -> None:
 def stop_launch_agent(domain: str) -> None:
     service_target = f"{domain}/{LAUNCH_AGENT_LABEL}"
     subprocess.run(
-        ["/bin/launchctl", "bootout", service_target],
+        [LAUNCHCTL_COMMAND_PATH, "bootout", service_target],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         timeout=2,
@@ -34,7 +35,7 @@ def stop_launch_agent(domain: str) -> None:
     deadline = time.monotonic() + LAUNCH_AGENT_TIMEOUT_SECONDS
     while True:
         result = subprocess.run(
-            ["/bin/launchctl", "print", service_target],
+            [LAUNCHCTL_COMMAND_PATH, "print", service_target],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             timeout=2,
@@ -68,7 +69,7 @@ def bootstrap_launch_agent(domain: str, plist_path: Path) -> None:
     deadline = time.monotonic() + LAUNCH_AGENT_TIMEOUT_SECONDS
     while True:
         result = subprocess.run(
-            ["/bin/launchctl", "bootstrap", domain, str(plist_path)],
+            [LAUNCHCTL_COMMAND_PATH, "bootstrap", domain, str(plist_path)],
             capture_output=True,
             text=True,
             timeout=2,

@@ -5,7 +5,7 @@ import re
 import subprocess
 from dataclasses import dataclass
 
-from helpers import test_suite_summary_formatting
+from helpers import suite_summary_formatting
 
 REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parents[2]
 TESTS_DIRECTORY_NAME = "__tests__"
@@ -133,12 +133,12 @@ def owning_module_label(tests_directory):
 def format_summary_lines(summary):
     lines = []
     for tier_directory_name in TIER_DIRECTORY_NAMES:
-        tier_line = test_suite_summary_formatting.format_tier_summary_line(
+        tier_line = suite_summary_formatting.format_tier_summary_line(
             tier_directory_name, summary["tiers"].get(tier_directory_name)
         )
         if tier_line is not None:
             lines.append(tier_line)
-    lines.extend(test_suite_summary_formatting.format_optional_summary_lines(summary))
+    lines.extend(suite_summary_formatting.format_optional_summary_lines(summary))
     return lines
 
 
@@ -177,7 +177,7 @@ def main():
             print(line)
 
     print(
-        test_suite_summary_formatting.format_totals_footer(
+        suite_summary_formatting.format_totals_footer(
             totals, format_nix_check_total(nix_check_inventory)
         )
     )
