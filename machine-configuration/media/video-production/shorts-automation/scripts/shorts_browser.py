@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 from shorts_store import read_document
+from shorts_browser_upload import upload_video
 
 
 BROWSER_COMMANDS = frozenset(
@@ -60,6 +61,9 @@ def browser_arguments(arguments, configuration):
 def main():
     configuration = read_document(os.environ["SHORTS_CONFIGURATION"])
     arguments = browser_arguments(sys.argv[1:], configuration)
+    if sys.argv[1] == "upload":
+        print(json.dumps(upload_video(sys.argv[2:], arguments[2])))
+        return
     os.execv(arguments[0], arguments)
 
 
