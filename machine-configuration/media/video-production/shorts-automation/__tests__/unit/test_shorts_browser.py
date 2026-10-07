@@ -7,6 +7,7 @@ import pytest
 
 from shorts_browser import browser_arguments
 import shorts_browser_server
+from shorts_browser_start import start_profile
 
 
 def browser_configuration():
@@ -81,3 +82,27 @@ def test_invalid_configuration_cannot_start_a_default_browser(monkeypatch):
         shorts_browser_server.main()
     execute.assert_not_called()
     assert validate.call_args.args[0] == ["/bin/pinchtab", "config", "validate"]
+
+
+@pytest.mark.parametrize("exists", [True, False])
+def test_startup_uses_only_existing_authorized_profile(monkeypatch, exists):
+    profile = {"id": "authorized-profile", "name": "shorts", "pathExists": exists}
+    run = Mock(return_value=SimpleNamespace(stdout=json.dumps([profile])))
+    monkeypatch.setattr("shorts_browser_start.subprocess.run", run)
+    if not exists:
+        with pytest.raises(ValueError, match="existing Shorts profile"):
+            start_profile(browser_configuration(), "/bin/pinchtab")
+        assert run.call_count == 1
+        return
+    start_profile(browser_configuration(), "/bin/pinchtab")
+    assert run.call_args.args[0] == [
+        "/bin/pinchtab",
+        "instance",
+        "start",
+        "--profile",
+        "shorts",
+        "--mode",
+        "headed",
+        "--port",
+        "9868",
+    ]

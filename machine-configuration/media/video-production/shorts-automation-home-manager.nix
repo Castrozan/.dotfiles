@@ -42,10 +42,10 @@ let
       instanceDefaults.mode = "headed";
       profiles = {
         baseDir = "${config.home.homeDirectory}/.pinchtab/profiles";
-        defaultProfile = "shorts";
+        defaultProfile = "default";
       };
       multiInstance = {
-        strategy = "always-on";
+        strategy = "explicit";
         instancePortStart = 9868;
         instancePortEnd = 9968;
       };
@@ -72,11 +72,9 @@ let
     exec ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_browser_server.py
   '';
   browserReady = pkgs.writeShellScript "shorts-browser-ready" ''
-    for attempt in {1..30}; do
-      if ${browser}/bin/shorts-browser health >/dev/null 2>&1; then exit 0; fi
-      ${pkgs.coreutils}/bin/sleep 1
-    done
-    exit 1
+    export SHORTS_PINCHTAB=${pinchtab}/bin/pinchtab
+    export SHORTS_CONFIGURATION=${configuration}
+    exec ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_browser_start.py
   '';
   production = pkgs.writeShellScriptBin "shorts-production" ''
     export PATH=${
