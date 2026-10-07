@@ -16,6 +16,28 @@ function needsOutputTail(truncation, maximumBytes) {
   );
 }
 
+function outputDetails(event) {
+  const details = event.details ?? {};
+  if (details.truncation) return details;
+  const content = event.content
+    .filter((block) => block.type === "text")
+    .map((block) => block.text)
+    .join("\n");
+  const outputBytes = Buffer.byteLength(content);
+  const outputLines =
+    content.split("\n").length - Number(content.endsWith("\n"));
+  return {
+    ...details,
+    truncation: {
+      content,
+      totalBytes: outputBytes,
+      totalLines: outputLines,
+      outputBytes,
+      outputLines,
+    },
+  };
+}
+
 async function completeOutputPath(details) {
   if (typeof details.fullOutputPath === "string") return details.fullOutputPath;
   const fullOutputPath = join(tmpdir(), `pi-bash-${randomUUID()}.log`);
@@ -87,7 +109,7 @@ export default function bashOutputRecovery(pi) {
   pi.on("tool_result", (event, context) => {
     if (event.toolName !== "bash" || event.isError) return;
     return recoverOutputTail(
-      event.details ?? {},
+      outputDetails(event),
       outputByteLimit(context.model),
     );
   });

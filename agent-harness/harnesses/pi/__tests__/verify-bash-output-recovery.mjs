@@ -63,9 +63,12 @@ for (const model of [smallModel, largeModel]) {
       const context = { model };
       repaired = await recover(event, context);
       const maximumOutputBytes = Math.min(51200, model.contextWindow / 2);
+      const outputBytes =
+        result.details?.truncation?.outputBytes ??
+        Buffer.byteLength(result.content[0].text);
       if (
-        result.details?.truncation.outputBytes === 0 ||
-        result.details?.truncation.outputBytes > maximumOutputBytes
+        outputBytes > maximumOutputBytes ||
+        (outputBytes === 0 && result.details?.truncation?.totalBytes > 0)
       ) {
         assert(input.includes("TAIL_MARKER"));
         assert(repaired, "oversized Bash output must leave room for the reply");
@@ -74,10 +77,7 @@ for (const model of [smallModel, largeModel]) {
         assert(!repaired.content[0].text.includes("\ufffd"));
         assert(repaired.details.truncation.outputBytes <= maximumOutputBytes);
         assert(repaired.details.truncation.outputLines >= 1);
-        if (
-          model === smallModel &&
-          result.details.truncation.outputBytes > 40000
-        ) {
+        if (model === smallModel && outputBytes > 40000) {
           const requestContext = (content) => ({
             systemPrompt: "p".repeat(40000),
             messages: [
@@ -108,7 +108,7 @@ for (const model of [smallModel, largeModel]) {
             model.maxTokens,
           );
         }
-        if (result.details.fullOutputPath) {
+        if (result.details?.fullOutputPath) {
           assert.equal(
             repaired.details.fullOutputPath,
             result.details.fullOutputPath,
