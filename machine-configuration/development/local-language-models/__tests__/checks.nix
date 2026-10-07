@@ -33,6 +33,10 @@ let
   localInferencePackage = lib.findFirst (
     package: (package.pname or "") == "llama-cpp"
   ) (throw "local inference package is missing") localModel.home.packages;
+  localTokenizerPackage = localInferencePackage.override {
+    cudaSupport = false;
+    blasSupport = false;
+  };
   tokenizerVocabulary = pkgs.fetchurl {
     url = "https://raw.githubusercontent.com/ggml-org/llama.cpp/42532afff43910e619a650c1704525b3acbbec5a/models/ggml-vocab-qwen35.gguf";
     hash = "sha256-Y+2VL/M4mWzwvfJKexABUSQnP3XG3Ju0JzVqo/Z+xiw=";
@@ -107,7 +111,7 @@ in
     pkgs.runCommand "domain-local-model-tokenizer-long-input" { }
       ''
         ${pkgs.python3}/bin/python ${./verify-tokenizer.py} \
-          ${localInferencePackage}/bin/llama-tokenize \
+          ${localTokenizerPackage}/bin/llama-tokenize \
           ${tokenizerVocabulary}
         touch "$out"
       '';
