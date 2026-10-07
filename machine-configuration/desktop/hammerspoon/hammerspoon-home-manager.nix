@@ -8,6 +8,8 @@
     file = {
       ".hammerspoon/init.lua".source = ./init.lua;
       ".hammerspoon/dock_startup_guard.lua".source = ./dock_startup_guard.lua;
+      ".hammerspoon/application_watcher_element_cache.lua".source =
+        ./application_watcher_element_cache.lua;
       ".hammerspoon/workspace_grid.lua".source = ./workspaces/workspace_grid.lua;
       ".hammerspoon/workspace_grid_menu_bar_reveal.lua".source =
         ./menu-bar/workspace_grid_menu_bar_reveal.lua;

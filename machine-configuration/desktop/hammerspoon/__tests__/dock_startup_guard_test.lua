@@ -6,6 +6,7 @@ local dockApplications = {}
 local startupTimer
 local reloadCount = 0
 local focusWatcherStartCount = 0
+local applicationWatcherCacheInstallationCount = 0
 local windowSetupCount = 0
 local warningCount = 0
 local dockLookupCount = 0
@@ -62,6 +63,13 @@ require = function(moduleName)
 		windowSetupCount = windowSetupCount + 1
 		error(windowSetupReached)
 	end
+	if moduleName == "application_watcher_element_cache" then
+		return {
+			install = function()
+				applicationWatcherCacheInstallationCount = applicationWatcherCacheInstallationCount + 1
+			end,
+		}
+	end
 	return originalRequire(moduleName)
 end
 
@@ -69,6 +77,7 @@ local startupSucceeded = pcall(dofile, moduleDirectory .. "init.lua")
 assert(startupSucceeded, "startup must defer window setup when Dock is absent")
 assert(focusWatcherStartCount == 1, "Karabiner focus updates must start while Dock is absent")
 assert(windowSetupCount == 0, "no window setup may run before Dock is available")
+assert(applicationWatcherCacheInstallationCount == 0, "window watcher setup must also wait for Dock")
 assert(startupTimer and startupTimer.running, "Dock recovery must not depend on application launch notifications")
 startupTimer.callback()
 assert(reloadCount == 0, "an unavailable Dock must not reload")
@@ -83,6 +92,7 @@ assert(reloadCount == 1, "queued callbacks must not reload twice")
 local readyStartupSucceeded, startupResult = pcall(dofile, moduleDirectory .. "init.lua")
 assert(not readyStartupSucceeded and startupResult == windowSetupReached, "a running Dock must allow normal startup")
 assert(windowSetupCount == 1, "window setup must run once when Dock is available")
+assert(applicationWatcherCacheInstallationCount == 1, "window watcher caching must install once Dock is available")
 assert(focusWatcherStartCount == 2, "Karabiner focus updates must also start with Dock available")
 assert(not startupTimer.running, "normal startup must retain no running timer")
 

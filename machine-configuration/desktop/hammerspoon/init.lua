@@ -6,6 +6,8 @@ if not require("dock_startup_guard").allowStartup() then
 	return
 end
 
+require("application_watcher_element_cache").install()
+
 -- Wiring only: bind the prior AeroSpace keybinds to the virtual-workspace grid
 -- defined in workspace_grid.lua, and feed it window create/focus events.
 local workspaceGrid = require("workspace_grid")
