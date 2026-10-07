@@ -51,7 +51,7 @@ let
     "--cache-ram"
     "0"
     "--ctx-checkpoints"
-    "4"
+    "16"
     "--threads"
     "4"
     "--threads-http"
