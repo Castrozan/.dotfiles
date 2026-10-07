@@ -29,6 +29,9 @@ narration; tags, timestamps and a passing transcript do not prove an entertainin
 
 ### Editorial and media acceptance
 
+Keep the final video at or below 25 MiB, PinchTab's per-file upload ceiling. Re-encode before verification if necessary;
+the quality gate rejects oversized files before publication dispatch.
+
 Write `episode.json` with `topic_key`, `title`, specific `summary`, relative `video`, three `candidates`, `sources` and
 `references`. Each source/reference contains `url` and substantive `finding`; factual primary sources set `primary` to
 true. Supply 6 to 24 `beats`, each with an inspected relative `frame` file. Align readable mobile captions and visuals

@@ -70,6 +70,8 @@ def validate_review(run_directory, episode):
 
 def verify_episode(run_directory, episode):
     video = validate_review(run_directory, episode)
+    if video.stat().st_size > 25 * 1024 * 1024:
+        raise ValueError("Final video exceeds the browser's 25 MiB upload limit")
     media = json.loads(
         command(
             [

@@ -19,6 +19,18 @@ def test_evidence_cannot_escape_run_directory(tmp_path):
         shorts_quality.inside_run(run, "../other.txt")
 
 
+def test_oversized_video_is_rejected_before_probe_or_dispatch(tmp_path, monkeypatch):
+    video = tmp_path / "video.mp4"
+    with video.open("wb") as output:
+        output.truncate(25 * 1024 * 1024 + 1)
+    monkeypatch.setattr(shorts_quality, "validate_review", Mock(return_value=video))
+    probe = Mock()
+    monkeypatch.setattr(shorts_quality, "command", probe)
+    with pytest.raises(ValueError, match="25 MiB"):
+        shorts_quality.verify_episode(tmp_path, {})
+    probe.assert_not_called()
+
+
 @pytest.mark.parametrize(
     "channel,visibility", [("wrong-channel", "public"), ("expected", "private")]
 )
