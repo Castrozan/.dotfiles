@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 function outputByteLimit(model) {
   const contextWindow = model?.contextWindow;
-  if (!(contextWindow > 0)) return 50 * 1024;
+  if (!Number.isFinite(contextWindow) || contextWindow <= 0) return 50 * 1024;
   return Math.min(50 * 1024, Math.max(1, Math.floor(contextWindow / 2)));
 }
 
