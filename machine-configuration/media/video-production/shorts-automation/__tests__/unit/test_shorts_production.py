@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 import shorts_production
+import shorts_runner
 from shorts_store import TopicStore, write_document
 
 
@@ -27,22 +28,26 @@ def configuration():
 
 
 def test_previous_topics_cannot_be_reserved(tmp_path):
+    store = TopicStore(tmp_path)
+    document = proposal("military-bat-bombs")
     with pytest.raises(ValueError, match="already used"):
-        TopicStore(tmp_path).reserve(proposal("military-bat-bombs"), "slot")
+        store.reserve(document, "slot")
 
 
 def test_topic_reservations_are_unique_across_connections(tmp_path):
     first, second = TopicStore(tmp_path), TopicStore(tmp_path)
     first.reserve(proposal(), "morning")
+    document = proposal()
     with pytest.raises(ValueError, match="already used"):
-        second.reserve(proposal(), "afternoon")
+        second.reserve(document, "afternoon")
 
 
 def test_one_run_cannot_reserve_multiple_topics(tmp_path):
     store = TopicStore(tmp_path)
     store.reserve(proposal(), "morning")
+    document = proposal("venus-day-length")
     with pytest.raises(sqlite3.IntegrityError):
-        store.reserve(proposal("venus-day-length"), "morning")
+        store.reserve(document, "morning")
 
 
 def test_unowned_topic_cannot_be_dispatched(tmp_path, monkeypatch):
@@ -112,8 +117,8 @@ def agent_launcher(tmp_path, monkeypatch, returncode):
     process = Mock()
     process.wait.return_value = returncode
     start = Mock(return_value=process)
-    monkeypatch.setattr(shorts_production.subprocess, "Popen", start)
-    monkeypatch.setattr(shorts_production, "browser_instance", lambda configuration: {})
+    monkeypatch.setattr(shorts_runner.subprocess, "Popen", start)
+    monkeypatch.setattr(shorts_runner, "browser_instance", lambda configuration: {})
     return start
 
 
@@ -122,13 +127,13 @@ def test_unverified_publisher_cannot_launch_or_claim_slot(
     tmp_path, monkeypatch, channel
 ):
     start = Mock()
-    monkeypatch.setattr(shorts_production.subprocess, "Popen", start)
+    monkeypatch.setattr(shorts_runner.subprocess, "Popen", start)
     if channel:
         write_document(
             tmp_path / "publisher-ready.json",
             {"status": "ready", "channel_id": channel, "browser_profile": "shorts"},
         )
-    result = shorts_production.start_run(tmp_path, 9, configuration())
+    result = shorts_runner.start_run(tmp_path, 9, configuration())
     assert result["status"] == "skipped"
     assert "Publisher" in result["reason"]
     assert not (tmp_path / "runs").exists()
@@ -138,15 +143,14 @@ def test_unverified_publisher_cannot_launch_or_claim_slot(
 def test_same_slot_launches_only_one_fresh_agent(tmp_path, monkeypatch):
     start = agent_launcher(tmp_path, monkeypatch, 0)
     assert (
-        shorts_production.start_run(tmp_path, 9, configuration())["status"]
+        shorts_runner.start_run(tmp_path, 9, configuration())["status"]
         == "agent_finished"
     )
-    assert (
-        shorts_production.start_run(tmp_path, 9, configuration())["status"] == "skipped"
-    )
+    assert shorts_runner.start_run(tmp_path, 9, configuration())["status"] == "skipped"
     assert start.call_count == 1
     arguments = start.call_args.args[0]
     assert "resume" not in arguments
+    assert arguments[-2:] == ["--", "Produce exactly one video"]
     assert "gpt-6.1-sol" in arguments
     assert "mcp_servers.chrome-devtools.enabled=false" not in arguments
     assert start.call_args.kwargs["env"]["CLAWDE_AGENT_NAME"] == "shorts-production"
@@ -155,23 +159,31 @@ def test_same_slot_launches_only_one_fresh_agent(tmp_path, monkeypatch):
 def test_failed_agent_leaves_claimed_slot_for_inspection(tmp_path, monkeypatch):
     agent_launcher(tmp_path, monkeypatch, 1)
     assert (
-        shorts_production.start_run(tmp_path, 15, configuration())["status"]
+        shorts_runner.start_run(tmp_path, 15, configuration())["status"]
         == "needs_inspection"
     )
-    assert (
-        shorts_production.start_run(tmp_path, 15, configuration())["status"]
-        == "skipped"
-    )
+    assert shorts_runner.start_run(tmp_path, 15, configuration())["status"] == "skipped"
 
 
 def test_unavailable_browser_does_not_spend_a_production_session(tmp_path, monkeypatch):
     start = agent_launcher(tmp_path, monkeypatch, 0)
     monkeypatch.setattr(
-        shorts_production,
+        shorts_runner,
         "browser_instance",
         Mock(side_effect=ValueError("Shorts browser unavailable")),
     )
-    result = shorts_production.start_run(tmp_path, 15, configuration())
+    result = shorts_runner.start_run(tmp_path, 15, configuration())
     assert result == {"status": "skipped", "reason": "Shorts browser unavailable"}
     start.assert_not_called()
     assert not (tmp_path / "runs").exists()
+
+
+def test_episode_document_must_be_inside_its_run(tmp_path, monkeypatch):
+    directory = tmp_path / "runs" / "slot"
+    directory.mkdir(parents=True)
+    monkeypatch.chdir(directory)
+    outside = tmp_path / "outside.json"
+    write_document(outside, proposal())
+    with pytest.raises(ValueError, match="Evidence must exist inside"):
+        shorts_production.episode_command("reserve", tmp_path, outside)
+    assert not (tmp_path / "topics.sqlite").exists()

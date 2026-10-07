@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from shorts_browser_upload import upload_video
+from shorts_browser_upload import profile_upload_sandbox, upload_video
 
 
 def upload_environment(monkeypatch, tmp_path):
@@ -13,7 +13,7 @@ def upload_environment(monkeypatch, tmp_path):
     configuration = tmp_path / ".pinchtab/config.json"
     configuration.parent.mkdir()
     configuration.write_text(json.dumps({"server": {"token": "fixture-credential"}}))
-    state = tmp_path / ".pinchtab/profiles/authorized-profile/.pinchtab-state"
+    state = tmp_path / ".pinchtab/profiles/prof_12345678/.pinchtab-state"
     state.mkdir(parents=True)
     (state / "config.json").write_text(json.dumps({"server": {"stateDir": str(state)}}))
     video = tmp_path / "final.mp4"
@@ -28,7 +28,7 @@ def test_upload_retains_mp4_extension_and_explicit_tab(monkeypatch, tmp_path):
     result = upload_video(
         [str(video), "--tab", "own-tab", "--selector", "#upload"],
         "http://127.0.0.1:9868",
-        "authorized-profile",
+        "prof_12345678",
     )
     request = transport.call_args.args[0]
     assert request.full_url == "http://127.0.0.1:9868/upload?tabId=own-tab"
@@ -36,7 +36,7 @@ def test_upload_retains_mp4_extension_and_explicit_tab(monkeypatch, tmp_path):
     assert payload["selector"] == "#upload"
     staged = (
         tmp_path
-        / ".pinchtab/profiles/authorized-profile/.pinchtab-state/uploads"
+        / ".pinchtab/profiles/prof_12345678/.pinchtab-state/uploads"
         / payload["paths"][0]
     )
     assert staged.suffix == ".mp4"
@@ -48,7 +48,7 @@ def test_upload_retains_mp4_extension_and_explicit_tab(monkeypatch, tmp_path):
 def test_upload_requires_explicit_tab(monkeypatch, tmp_path):
     video, transport = upload_environment(monkeypatch, tmp_path)
     with pytest.raises(SystemExit):
-        upload_video([str(video)], "http://127.0.0.1:9868", "authorized-profile")
+        upload_video([str(video)], "http://127.0.0.1:9868", "prof_12345678")
     transport.assert_not_called()
 
 
@@ -64,17 +64,17 @@ def test_invalid_video_is_rejected_before_transport(monkeypatch, tmp_path, inval
         upload_video(
             [str(video), "--tab", "own-tab"],
             "http://127.0.0.1:9868",
-            "authorized-profile",
+            "prof_12345678",
         )
     transport.assert_not_called()
     assert not (
-        tmp_path / ".pinchtab/profiles/authorized-profile/.pinchtab-state/uploads"
+        tmp_path / ".pinchtab/profiles/prof_12345678/.pinchtab-state/uploads"
     ).exists()
 
 
 def test_ambiguous_upload_retains_video_for_lazy_browser_reads(monkeypatch, tmp_path):
     video, transport = upload_environment(monkeypatch, tmp_path)
-    sandbox = tmp_path / ".pinchtab/profiles/authorized-profile/.pinchtab-state/uploads"
+    sandbox = tmp_path / ".pinchtab/profiles/prof_12345678/.pinchtab-state/uploads"
     sandbox.mkdir()
     preserved = sandbox / "existing.mp4"
     preserved.write_bytes(b"existing")
@@ -83,7 +83,7 @@ def test_ambiguous_upload_retains_video_for_lazy_browser_reads(monkeypatch, tmp_
         upload_video(
             [str(video), "--tab", "own-tab"],
             "http://127.0.0.1:9868",
-            "authorized-profile",
+            "prof_12345678",
         )
     assert preserved.read_bytes() == b"existing"
     staged = list(sandbox.glob("pinchtab-upload-shorts-*/video.mp4"))
@@ -93,14 +93,20 @@ def test_ambiguous_upload_retains_video_for_lazy_browser_reads(monkeypatch, tmp_
 
 def test_upload_refuses_runtime_state_outside_authorized_profile(monkeypatch, tmp_path):
     video, transport = upload_environment(monkeypatch, tmp_path)
-    runtime = (
-        tmp_path / ".pinchtab/profiles/authorized-profile/.pinchtab-state/config.json"
-    )
+    runtime = tmp_path / ".pinchtab/profiles/prof_12345678/.pinchtab-state/config.json"
     runtime.write_text(json.dumps({"server": {"stateDir": str(tmp_path)}}))
     with pytest.raises(ValueError, match="authorized profile"):
         upload_video(
             [str(video), "--tab", "own-tab"],
             "http://127.0.0.1:9868",
-            "authorized-profile",
+            "prof_12345678",
         )
     transport.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "profile_id", ["../other", "--option", "prof_12345678/../../other"]
+)
+def test_profile_identifier_cannot_traverse_filesystem(profile_id):
+    with pytest.raises(ValueError, match="registered profile ID"):
+        profile_upload_sandbox(profile_id)

@@ -37,21 +37,36 @@ def inside_run(run_directory, value):
     return path
 
 
-def validate_review(run_directory, episode):
+def validate_research_counts(episode):
     for field, minimum in (("sources", 2), ("references", 3), ("candidates", 3)):
         if len(episode.get(field, [])) < minimum:
             raise ValueError(f"Missing research: {field}")
+
+
+def validate_research_urls(episode):
     for field in ("sources", "references"):
         if len({source["url"] for source in episode[field]}) != len(episode[field]):
             raise ValueError("Research URLs must be distinct")
+
+
+def validate_source_findings(episode):
     for source in episode["sources"] + episode["references"]:
         if (
             urlparse(source["url"]).scheme != "https"
             or len(source["finding"].strip()) < 20
         ):
             raise ValueError("Research requires HTTPS sources and substantive findings")
+
+
+def validate_research(episode):
+    validate_research_counts(episode)
+    validate_research_urls(episode)
+    validate_source_findings(episode)
     if not any(source.get("primary") is True for source in episode["sources"]):
         raise ValueError("At least one primary factual source is required")
+
+
+def validate_review_findings(run_directory, episode):
     for dimension in REVIEW_DIMENSIONS:
         review = episode.get("review", {}).get(dimension, {})
         if (
@@ -60,12 +75,44 @@ def validate_review(run_directory, episode):
         ):
             raise ValueError(f"Quality review incomplete: {dimension}")
         inside_run(run_directory, review["evidence"])
+
+
+def validate_beats(run_directory, episode):
     beats = episode.get("beats", [])
     if not 6 <= len(beats) <= 24:
         raise ValueError("A visual narrative requires 6 to 24 inspected beats")
     for beat in beats:
         inside_run(run_directory, beat["frame"])
+
+
+def validate_review(run_directory, episode):
+    validate_research(episode)
+    validate_review_findings(run_directory, episode)
+    validate_beats(run_directory, episode)
     return inside_run(run_directory, episode["video"])
+
+
+def single_stream(media, kind):
+    streams = [stream for stream in media["streams"] if stream["codec_type"] == kind]
+    if len(streams) != 1:
+        raise ValueError("Expected one video and one audio stream")
+    return streams[0]
+
+
+def validate_picture(picture):
+    numerator, denominator = map(int, picture["avg_frame_rate"].split("/"))
+    if (
+        (picture["width"], picture["height"], picture["codec_name"], picture["pix_fmt"])
+        != (1080, 1920, "h264", "yuv420p")
+        or denominator == 0
+        or numerator / denominator != 30
+    ):
+        raise ValueError("Expected 1080x1920 H264/yuv420p at 30 fps")
+
+
+def validate_audio(audio):
+    if audio["codec_name"] != "aac" or int(audio["sample_rate"]) != 48000:
+        raise ValueError("Expected AAC at 48 kHz")
 
 
 def verify_episode(run_directory, episode):
@@ -87,24 +134,12 @@ def verify_episode(run_directory, episode):
             ]
         )
     )
-    videos = [stream for stream in media["streams"] if stream["codec_type"] == "video"]
-    audios = [stream for stream in media["streams"] if stream["codec_type"] == "audio"]
-    if len(videos) != 1 or len(audios) != 1:
-        raise ValueError("Expected one video and one audio stream")
-    picture, audio = videos[0], audios[0]
+    picture, audio = single_stream(media, "video"), single_stream(media, "audio")
+    validate_picture(picture)
+    validate_audio(audio)
     duration = float(media["format"]["duration"])
-    numerator, denominator = map(int, picture["avg_frame_rate"].split("/"))
-    if (
-        (picture["width"], picture["height"], picture["codec_name"], picture["pix_fmt"])
-        != (1080, 1920, "h264", "yuv420p")
-        or denominator == 0
-        or numerator / denominator != 30
-    ):
-        raise ValueError("Expected 1080x1920 H264/yuv420p at 30 fps")
     if not math.isfinite(duration) or not 20 <= duration <= 180:
         raise ValueError("Short duration must be between 20 and 180 seconds")
-    if audio["codec_name"] != "aac" or int(audio["sample_rate"]) != 48000:
-        raise ValueError("Expected AAC at 48 kHz")
     if abs(int(picture["nb_read_frames"]) - duration * 30) > 2:
         raise ValueError("Unexpected decoded frame count")
     command(["ffmpeg", "-v", "error", "-xerror", "-i", str(video), "-f", "null", "-"])

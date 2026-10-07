@@ -1,5 +1,6 @@
 import argparse
 import json
+import re
 import shutil
 import tempfile
 from pathlib import Path
@@ -7,6 +8,16 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from shorts_store import read_document
+
+
+def profile_upload_sandbox(profile_id):
+    if not re.fullmatch(r"prof_[a-f0-9]{8}", profile_id):
+        raise ValueError("Upload requires a registered profile ID")
+    profile_state = Path.home() / ".pinchtab/profiles" / profile_id / ".pinchtab-state"
+    runtime = read_document(profile_state / "config.json")
+    if Path(runtime["server"]["stateDir"]).resolve() != profile_state.resolve():
+        raise ValueError("Upload staging must use the authorized profile's state")
+    return profile_state / "uploads"
 
 
 def upload_video(arguments, server, profile_id):
@@ -21,11 +32,7 @@ def upload_video(arguments, server, profile_id):
     if video.stat().st_size > 25 * 1024 * 1024:
         raise ValueError("The video exceeds PinchTab's 25 MiB upload limit")
     configuration = read_document(Path.home() / ".pinchtab/config.json")
-    profile_state = Path.home() / ".pinchtab/profiles" / profile_id / ".pinchtab-state"
-    runtime = read_document(profile_state / "config.json")
-    if Path(runtime["server"]["stateDir"]).resolve() != profile_state.resolve():
-        raise ValueError("Upload staging must use the authorized profile's state")
-    sandbox = profile_state / "uploads"
+    sandbox = profile_upload_sandbox(profile_id)
     sandbox.mkdir(parents=True, exist_ok=True, mode=0o700)
     directory = Path(tempfile.mkdtemp(prefix="pinchtab-upload-shorts-", dir=sandbox))
     destination = directory / "video.mp4"

@@ -14,6 +14,16 @@ BROWSER_COMMANDS = frozenset(
 )
 
 
+def authorized_instance(instance, configuration):
+    expected = {
+        "profileId": configuration["browser_profile_id"],
+        "profileName": configuration["browser_profile"],
+        "status": "running",
+        "url": "http://127.0.0.1:9868",
+    }
+    return all(instance.get(field) == value for field, value in expected.items())
+
+
 def browser_instance(configuration):
     result = subprocess.run(
         [
@@ -33,10 +43,7 @@ def browser_instance(configuration):
     matches = [
         instance
         for instance in instances
-        if instance.get("profileId") == configuration["browser_profile_id"]
-        and instance.get("profileName") == configuration["browser_profile"]
-        and instance.get("status") == "running"
-        and instance.get("url") == "http://127.0.0.1:9868"
+        if authorized_instance(instance, configuration)
     ]
     if len(matches) != 1:
         raise ValueError("The exact logged-in Shorts profile is not running")

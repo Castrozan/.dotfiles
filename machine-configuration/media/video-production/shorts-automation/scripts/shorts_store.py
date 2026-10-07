@@ -5,6 +5,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+RUN_STATUS_FILENAME = "status.json"
+PUBLICATION_FILENAME = "publication.json"
+
+
 PREVIOUS_TOPICS = (
     ("military-bat-bombs", "Military bat bombs", "WE83gO4lIfs"),
     ("dead-salmon-brain-scan", "Dead salmon brain scan", "mTuwisp5jr8"),
@@ -74,17 +78,21 @@ class TopicStore:
         summary = proposal["summary"].strip()
         if not title or len(summary) < 30:
             raise ValueError("A title and specific topic summary are required")
-        for previous in self.history():
-            if previous["topic_key"] == key or topic_key(
-                previous["title"]
-            ) == topic_key(title):
-                raise ValueError("Topic already used or reserved")
+        if self.topic_exists(key, title):
+            raise ValueError("Topic already used or reserved")
         with self.connection:
             self.connection.execute(
                 "INSERT INTO topics VALUES (?, ?, ?, ?, 'reserved', NULL, ?)",
                 (key, title, summary, run_id, timestamp()),
             )
         return key
+
+    def topic_exists(self, key, title):
+        return any(
+            previous["topic_key"] == key
+            or topic_key(previous["title"]) == topic_key(title)
+            for previous in self.history()
+        )
 
     def reservation(self, run_id, key):
         row = self.connection.execute(

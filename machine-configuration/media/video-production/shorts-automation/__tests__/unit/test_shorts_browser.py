@@ -49,8 +49,9 @@ def test_browser_action_uses_exact_persistent_profile(monkeypatch):
     [["instance", "start"], ["profiles"], ["nav", "--server=http://other"], []],
 )
 def test_profile_changes_and_transport_override_are_rejected(arguments):
+    configuration = browser_configuration()
     with pytest.raises(ValueError, match="profile cannot be changed"):
-        browser_arguments(arguments, browser_configuration())
+        browser_arguments(arguments, configuration)
 
 
 @pytest.mark.parametrize(
@@ -62,8 +63,9 @@ def test_profile_changes_and_transport_override_are_rejected(arguments):
 )
 def test_wrong_profile_or_endpoint_cannot_receive_action(monkeypatch, profile, url):
     browser_process(monkeypatch, profile, url)
+    configuration = browser_configuration()
     with pytest.raises(ValueError, match="exact logged-in"):
-        browser_arguments(["upload", "video.mp4"], browser_configuration())
+        browser_arguments(["upload", "video.mp4"], configuration)
 
 
 def test_invalid_configuration_cannot_start_a_default_browser(monkeypatch):
@@ -89,9 +91,10 @@ def test_startup_uses_only_existing_authorized_profile(monkeypatch, exists):
     profile = {"id": "authorized-profile", "name": "shorts", "pathExists": exists}
     run = Mock(return_value=SimpleNamespace(stdout=json.dumps([profile])))
     monkeypatch.setattr("shorts_browser_start.subprocess.run", run)
+    configuration = browser_configuration()
     if not exists:
         with pytest.raises(ValueError, match="existing Shorts profile"):
-            start_profile(browser_configuration(), "/bin/pinchtab")
+            start_profile(configuration, "/bin/pinchtab")
         assert run.call_count == 1
         return
     start_profile(browser_configuration(), "/bin/pinchtab")
@@ -99,8 +102,7 @@ def test_startup_uses_only_existing_authorized_profile(monkeypatch, exists):
         "/bin/pinchtab",
         "instance",
         "start",
-        "--profile",
-        "shorts",
+        "--profile=shorts",
         "--mode",
         "headed",
         "--port",
