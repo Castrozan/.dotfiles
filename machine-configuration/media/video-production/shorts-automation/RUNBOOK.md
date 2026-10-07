@@ -24,8 +24,10 @@ CPU renderer with an MPEG4 intermediate, then encode the final H264/yuv420p vide
 
 Discover the live voice contract using `media-speech providers`, `voices` and `usage`. Direct an expressive American
 ElevenLabs performance with curiosity, surprise, tension and humor where earned. Save usage before and after and the
-operation receipt. Do not enable overage or retry before inspecting an incomplete operation. Listen to the complete
-narration; tags, timestamps and a passing transcript do not prove an entertaining voice.
+operation receipt. Do not enable overage or retry before inspecting an incomplete operation. Review the complete
+narration using available listening, transcript, timing and acoustic evidence. Record which checks actually ran;
+claim direct listening only when an audio-capable tool supplied audio you inspected. Tags and a passing transcript
+alone do not prove an entertaining voice; distinguish measured delivery from subjective quality that remains unknown.
 
 ### Editorial and media acceptance
 
@@ -39,7 +41,8 @@ to the narration; keep claims synchronized with their demonstrations.
 
 Supply `review` entries for `novel_topic`, `factual_accuracy`, `opening`, `payoff`, `visual_storytelling`,
 `voice_performance`, `caption_readability`, `sound_mix` and `full_playback`. Each has `passed`, substantive `finding` and
-relative `evidence`. Save actual inspection, listening and browser-playback observations including duration and errors.
+relative `evidence`. Save actual frame inspection, narration review and browser-playback observations with their limits.
+Record playback duration and errors.
 Repair a failure or hold. Run `shorts-production verify --episode-file episode.json` and preserve its final video hash.
 
 ### Publishing boundary

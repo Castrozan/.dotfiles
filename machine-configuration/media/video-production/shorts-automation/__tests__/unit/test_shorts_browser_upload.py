@@ -67,7 +67,9 @@ def test_invalid_video_is_rejected_before_transport(monkeypatch, tmp_path, inval
             "authorized-profile",
         )
     transport.assert_not_called()
-    assert not (tmp_path / ".pinchtab/uploads").exists()
+    assert not (
+        tmp_path / ".pinchtab/profiles/authorized-profile/.pinchtab-state/uploads"
+    ).exists()
 
 
 def test_ambiguous_upload_retains_video_for_lazy_browser_reads(monkeypatch, tmp_path):
