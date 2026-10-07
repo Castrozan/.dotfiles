@@ -1,9 +1,12 @@
 import json
+import subprocess
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 
 from shorts_browser import browser_arguments
+import shorts_browser_server
 
 
 def browser_configuration():
@@ -60,3 +63,21 @@ def test_wrong_profile_or_endpoint_cannot_receive_action(monkeypatch, profile, u
     browser_process(monkeypatch, profile, url)
     with pytest.raises(ValueError, match="exact logged-in"):
         browser_arguments(["upload", "video.mp4"], browser_configuration())
+
+
+def test_invalid_configuration_cannot_start_a_default_browser(monkeypatch):
+    monkeypatch.setenv("SHORTS_PINCHTAB", "/bin/pinchtab")
+    monkeypatch.setenv("SHORTS_BROWSER_CONFIGURATION", "/owned/browser.json")
+    monkeypatch.setattr(
+        shorts_browser_server,
+        "read_document",
+        lambda path: {"server": {"token": "fixture-credential"}},
+    )
+    validate = Mock(side_effect=subprocess.CalledProcessError(1, "pinchtab"))
+    execute = Mock()
+    monkeypatch.setattr(shorts_browser_server.subprocess, "run", validate)
+    monkeypatch.setattr(shorts_browser_server.os, "execve", execute)
+    with pytest.raises(subprocess.CalledProcessError):
+        shorts_browser_server.main()
+    execute.assert_not_called()
+    assert validate.call_args.args[0] == ["/bin/pinchtab", "config", "validate"]

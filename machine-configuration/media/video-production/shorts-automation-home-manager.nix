@@ -54,9 +54,9 @@ let
         allowScreencast = true;
         allowDownload = true;
         allowUpload = true;
-        uploadMaxRequestBytes = 268435456;
-        uploadMaxFileBytes = 268435456;
-        uploadMaxTotalBytes = 268435456;
+        uploadMaxRequestBytes = 104857600;
+        uploadMaxFileBytes = 26214400;
+        uploadMaxTotalBytes = 104857600;
       };
       autoSolver.enabled = false;
     }
@@ -70,6 +70,13 @@ let
     export SHORTS_PINCHTAB=${pinchtab}/bin/pinchtab
     export SHORTS_BROWSER_CONFIGURATION=${browserConfiguration}
     exec ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_browser_server.py
+  '';
+  browserReady = pkgs.writeShellScript "shorts-browser-ready" ''
+    for attempt in {1..30}; do
+      if ${browser}/bin/shorts-browser health >/dev/null 2>&1; then exit 0; fi
+      ${pkgs.coreutils}/bin/sleep 1
+    done
+    exit 1
   '';
   production = pkgs.writeShellScriptBin "shorts-production" ''
     export PATH=${
@@ -102,6 +109,8 @@ in
       };
       Service = {
         ExecStart = browserServer;
+        ExecStartPost = browserReady;
+        TimeoutStartSec = 60;
         Restart = "on-failure";
         RestartSec = 5;
         KillMode = "control-group";
