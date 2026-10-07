@@ -66,19 +66,12 @@ in
 
   domain-local-agent-model-contract = mkEvalCheck "domain-local-agent-model-contract" (
     localAgentModels.providers.chise.baseUrl == "http://127.0.0.1:8081/v1"
-    && (builtins.head localAgentModels.providers.chise.models).id == "rhea-4b-coding-max"
+    && (builtins.head localAgentModels.providers.chise.models).id == "qwen3.5-4b-uncensored"
     && (builtins.head localAgentModels.providers.chise.models).contextWindow == 24576
     && lib.hasInfix "--ctx-size 24576" (lib.concatStringsSep " " localModelService.ExecStart)
     && localAgentSettings.compaction.reserveTokens < 24576
     && localAgentSettings.compaction.keepRecentTokens < 24576
   ) "the local agent must use the local endpoint and fit its context budget";
-
-  domain-local-model-gpu-budget = mkEvalCheck "domain-local-model-gpu-budget" (
-    lib.hasInfix "--gpu-layers all" (lib.concatStringsSep " " localModelService.ExecStart)
-    && lib.hasInfix "--cache-type-k q4_0" (lib.concatStringsSep " " localModelService.ExecStart)
-    && lib.hasInfix "--cache-type-v q4_0" (lib.concatStringsSep " " localModelService.ExecStart)
-    && lib.hasInfix "--reasoning-budget 256" (lib.concatStringsSep " " localModelService.ExecStart)
-  ) "Rhea must fit Chise's GPU and keep reasoning bounded";
 
   domain-local-agent-shared-assets = mkEvalCheck "domain-local-agent-shared-assets" (
     builtins.all
@@ -110,16 +103,6 @@ in
       "compaction must leave Pi's safety margin, the full response budget, and room for the next message";
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-  domain-local-model-rhea-metadata =
-    let
-      modelPython = pkgs.python312.withPackages (packages: [ packages.gguf ]);
-    in
-    pkgs.runCommand "domain-local-model-rhea-metadata" { } ''
-      ${modelPython}/bin/python ${./verify-rhea-model.py} \
-        ${../scripts/materialize_rhea_model.py}
-      touch "$out"
-    '';
-
   domain-local-model-tokenizer-long-input =
     pkgs.runCommand "domain-local-model-tokenizer-long-input" { }
       ''

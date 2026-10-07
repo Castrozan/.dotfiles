@@ -7,8 +7,7 @@
   ...
 }:
 let
-  modelId = "rhea-4b-coding-max";
-  modelName = "Rhea 4B Coding Max (Chise)";
+  modelId = "qwen3.5-4b-uncensored";
   contextWindow = 24576;
   listenPort = 8081;
   inferencePackage = (latest.llama-cpp.override { vulkanSupport = true; }).overrideAttrs (previous: {
@@ -20,20 +19,11 @@ let
       })
     ];
   });
-  modelWeights = pkgs.fetchurl {
-    name = "rhea-4b-coding-max-q4_k_m.gguf";
-    url = "https://huggingface.co/mradermacher/Rhea-4B-Coding-max-i1-GGUF/resolve/071e023294b73363aaacda8d0f9abad41ff7d334/Rhea-4B-Coding-max.i1-Q4_K_M.gguf";
-    sha256 = "724d850de5666f7dead176a3c617afa6dcd175fc36cc04be1a3dda3e5564d99d";
+  model = pkgs.fetchurl {
+    name = "qwen3.5-4b-uncensored-q4_k_m.gguf";
+    url = "https://huggingface.co/HauhauCS/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive/resolve/c09cdbcdb1fefad6d335809d445621b5f5ba0c6e/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf";
+    sha256 = "79e28ecacf84e75b6056cf4059636d435aa9eb67795780f7b7dbc7d32a962741";
   };
-  tokenizerConfiguration = pkgs.fetchurl {
-    url = "https://huggingface.co/Qwen/Qwen3-4B-Thinking-2507/resolve/768f209d9ea81521153ed38c47d515654e938aea/tokenizer_config.json";
-    sha256 = "60adcfc35f5f251e19a196ec977b4ca0fcfb534852911b3196d68d5e3b146aa0";
-  };
-  modelPython = pkgs.python312.withPackages (packages: [ packages.gguf ]);
-  model = pkgs.runCommand "rhea-4b-coding-max-agent.gguf" { } ''
-    ${modelPython}/bin/python ${./scripts/materialize_rhea_model.py} \
-      ${modelWeights} ${tokenizerConfiguration} "$out"
-  '';
   serverArguments = [
     "--model"
     "${model}"
@@ -53,6 +43,8 @@ let
     "1"
     "--cache-ram"
     "0"
+    "--ctx-checkpoints"
+    "4"
     "--threads"
     "4"
     "--threads-http"
@@ -64,16 +56,14 @@ let
     "--flash-attn"
     "on"
     "--cache-type-k"
-    "q4_0"
+    "q8_0"
     "--cache-type-v"
-    "q4_0"
+    "q8_0"
     "--jinja"
     "--reasoning"
-    "on"
-    "--reasoning-budget"
-    "256"
+    "off"
     "--temp"
-    "0.4"
+    "0.7"
     "--top-p"
     "0.8"
     "--top-k"
@@ -87,7 +77,7 @@ in
 {
   imports = lib.optionals isNixOS [
     (import ../../../agent-harness/harnesses/pi/local-model.nix {
-      inherit modelId modelName contextWindow;
+      inherit modelId contextWindow;
       baseUrl = "http://127.0.0.1:${toString listenPort}/v1";
     })
   ];
@@ -97,7 +87,7 @@ in
 
     systemd.user.services.local-language-model = {
       Unit = {
-        Description = "Local Rhea 4B uncensored coding inference";
+        Description = "Local Qwen3.5-4B uncensored inference";
         StartLimitIntervalSec = 300;
         StartLimitBurst = 3;
       };
