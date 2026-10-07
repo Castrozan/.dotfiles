@@ -17,6 +17,8 @@ in
     "${profileDirectory}/extensions/agent-plugins".source = "${loaders}/node_modules/pi-agent-plugins";
     "${profileDirectory}/extensions/mcp-adapter".source = "${loaders}/node_modules/pi-mcp-adapter";
     "${profileDirectory}/extensions/loop-guard".source = loopGuard;
+    "${profileDirectory}/extensions/bash-output-recovery.js".source =
+      ./extensions/bash-output-recovery.js;
   };
   home.activation."registerProductionPiPlugin-${profileDirectory}" =
     lib.hm.dag.entryAfter [ "linkGeneration" ]

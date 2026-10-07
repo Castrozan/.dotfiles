@@ -20,6 +20,13 @@ let
   loaders = import ../plugin-loaders { inherit pkgs; };
 in
 {
+  domain-pi-bash-output-recovery = pkgs.runCommand "domain-pi-bash-output-recovery" { } ''
+    ${pkgs.nodejs_22}/bin/node ${./verify-bash-output-recovery.mjs} \
+      ${loaders}/node_modules \
+      ${cfg.home.file.".pi/agent/extensions/bash-output-recovery.js".source}
+    touch "$out"
+  '';
+
   domain-pi-workflow-extensions = pkgs.runCommand "domain-pi-workflow-extensions" { } ''
     ${pkgs.nodejs_22}/bin/node ${./verify-workflow-extensions.mjs} \
       ${loaders}/node_modules \
