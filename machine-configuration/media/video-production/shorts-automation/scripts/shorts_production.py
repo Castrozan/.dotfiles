@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from shorts_browser import browser_instance
 from shorts_quality import digest, inside_run, verify_episode, verify_publication
 from shorts_store import TopicStore, read_document, timestamp, write_document
 
@@ -25,6 +26,17 @@ def run_directory(root):
 
 def start_run(root, slot, configuration):
     root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    readiness = root / "publisher-ready.json"
+    publisher = read_document(readiness) if readiness.is_file() else {}
+    if publisher.get("status") != "ready" or any(
+        publisher.get(field) != configuration[field]
+        for field in ("channel_id", "browser_profile", "browser_profile_id")
+    ):
+        return {"status": "skipped", "reason": "Publisher setup is not verified"}
+    try:
+        browser_instance(configuration)
+    except (ValueError, subprocess.TimeoutExpired) as error:
+        return {"status": "skipped", "reason": str(error)}
     with (root / "production.lock").open("w") as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -80,6 +92,7 @@ def start_run(root, slot, configuration):
                 stdout=output,
                 stderr=subprocess.STDOUT,
                 start_new_session=True,
+                env=dict(os.environ, CLAWDE_AGENT_NAME="shorts-production"),
             )
             try:
                 returncode = process.wait(timeout=7200)

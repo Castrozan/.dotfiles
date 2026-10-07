@@ -18,6 +18,10 @@ changes of scale that advance the story. Use original vector/code animation or a
 and video calls are disabled until a separate measured budget is authorized. Use the private `media-video` interface for
 registered native compositions; inspect installed help and contract. Compile native compositions for Linux on Chise.
 
+Chise's prepared SDK and native example are under `~/clawde/shorts/native-kit`. Read the example's Cargo manifest,
+source and registration before creating a composition in this run. Keep the pinned SDK unchanged. Use its built-in
+CPU renderer with an MPEG4 intermediate, then encode the final H264/yuv420p video with installed FFmpeg.
+
 Discover the live voice contract using `media-speech providers`, `voices` and `usage`. Direct an expressive American
 ElevenLabs performance with curiosity, surprise, tension and humor where earned. Save usage before and after and the
 operation receipt. Do not enable overage or retry before inspecting an incomplete operation. Listen to the complete
@@ -37,17 +41,21 @@ Repair a failure or hold. Run `shorts-production verify --episode-file episode.j
 
 ### Publishing boundary
 
-Use YouTube Studio in Chise's separate persistent PinchTab profile named by `browser_profile` in `config.json`. Select
-only its own instance; leave the default profile and other browser instances untouched. It must be signed in and its active channel must
-exactly match `config.json` before upload. Read the browser skill's unattended procedure and current `pinchtab help`;
-use fresh snapshots and its file-upload command. Never copy shared Chrome cookies or change another person's open tab.
+Use `shorts-browser` for YouTube Studio; it binds every action to the existing headed profile identified by
+`browser_profile` and `browser_profile_id` in `config.json`. It refuses profile management and endpoint overrides.
+Its active channel must exactly match `config.json` before upload. Read the browser skill's unattended procedure;
+use fresh snapshots and file upload. Never copy shared Chrome cookies or change another person's open tab.
 Check publisher access before generating assets. If sign-in is needed, write the precise hold reason.
+
+The launcher requires `~/clawde/shorts/publisher-ready.json` with `status` set to `ready` and matching `channel_id` and
+`browser_profile` and `browser_profile_id`. Setup writes this record after verifying channel, upload and analytics UI.
+Scheduled production agents must not create or change it; each still checks live access before generation and upload.
 
 Run `shorts-production dispatch --episode-file episode.json` before uploading. An existing journal forbids an automatic
 second dispatch. Complete Studio checks, source description and truthful audience/synthetic-content declarations before
-publishing. Save the displayed direct video URL as `url` in `episode.json`, then run `shorts-production complete
---episode-file episode.json`; anonymous metadata must prove exact channel and public visibility. Inspect Studio and the
-journal after a timeout or ambiguous result before doing anything further.
+publishing. Save the displayed direct video URL as `url` in `episode.json`.
+Run `shorts-production complete --episode-file episode.json`; anonymous metadata must prove exact channel and public
+visibility. Inspect Studio and the journal after a timeout or ambiguous result before doing anything further.
 
 ### Failure and handoff
 
