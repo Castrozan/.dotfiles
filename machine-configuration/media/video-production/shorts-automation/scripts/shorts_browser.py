@@ -62,7 +62,13 @@ def main():
     configuration = read_document(os.environ["SHORTS_CONFIGURATION"])
     arguments = browser_arguments(sys.argv[1:], configuration)
     if sys.argv[1] == "upload":
-        print(json.dumps(upload_video(sys.argv[2:], arguments[2])))
+        print(
+            json.dumps(
+                upload_video(
+                    sys.argv[2:], arguments[2], configuration["browser_profile_id"]
+                )
+            )
+        )
         return
     os.execv(arguments[0], arguments)
 
