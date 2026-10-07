@@ -1,5 +1,6 @@
 {
   modelId,
+  modelName,
   contextWindow,
   baseUrl,
 }:
@@ -43,7 +44,7 @@ in
           models = [
             {
               id = modelId;
-              name = "Qwen3.5-4B Uncensored (Chise)";
+              name = modelName;
               inherit contextWindow;
               maxTokens = 2048;
               reasoning = false;
