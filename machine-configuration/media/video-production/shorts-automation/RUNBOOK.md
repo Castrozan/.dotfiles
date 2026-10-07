@@ -37,10 +37,11 @@ Repair a failure or hold. Run `shorts-production verify --episode-file episode.j
 
 ### Publishing boundary
 
-Use YouTube Studio in Chise's separate persistent PinchTab browser. It must be signed in and its active channel must
+Use YouTube Studio in Chise's separate persistent PinchTab profile named by `browser_profile` in `config.json`. Select
+only its own instance; leave the default profile and other browser instances untouched. It must be signed in and its active channel must
 exactly match `config.json` before upload. Read the browser skill's unattended procedure and current `pinchtab help`;
 use fresh snapshots and its file-upload command. Never copy shared Chrome cookies or change another person's open tab.
-If sign-in is needed, write the precise hold reason.
+Check publisher access before generating assets. If sign-in is needed, write the precise hold reason.
 
 Run `shorts-production dispatch --episode-file episode.json` before uploading. An existing journal forbids an automatic
 second dispatch. Complete Studio checks, source description and truthful audience/synthetic-content declarations before

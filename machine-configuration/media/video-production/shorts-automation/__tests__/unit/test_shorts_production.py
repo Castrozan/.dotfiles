@@ -117,6 +117,7 @@ def test_same_slot_launches_only_one_fresh_agent(tmp_path, monkeypatch):
     arguments = start.call_args.args[0]
     assert "resume" not in arguments
     assert "gpt-6.1-sol" in arguments
+    assert "mcp_servers.chrome-devtools.enabled=false" not in arguments
 
 
 def test_failed_agent_leaves_claimed_slot_for_inspection(tmp_path, monkeypatch):

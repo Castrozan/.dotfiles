@@ -62,8 +62,6 @@ def start_run(root, slot, configuration):
             "-c",
             'web_search="live"',
             "-c",
-            "mcp_servers.chrome-devtools.enabled=false",
-            "-c",
             'plugins."betha-chrome-devtools@betha-agent-marketplace".mcp_servers.chrome-devtools.enabled=false',
             "-c",
             'plugins."betha-desenvolvimento@betha-agent-marketplace".mcp_servers.chrome-devtools.enabled=false',

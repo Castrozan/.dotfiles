@@ -19,6 +19,7 @@ let
       ];
       model = "gpt-6.1-sol";
       publisher = "youtube-studio";
+      browser_profile = "shorts";
       paid_image_generation = false;
       provider_overage = false;
     }
