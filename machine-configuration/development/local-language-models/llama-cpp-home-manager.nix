@@ -10,7 +10,15 @@ let
   modelId = "qwen3.5-4b-uncensored";
   contextWindow = 24576;
   listenPort = 8081;
-  inferencePackage = latest.llama-cpp.override { vulkanSupport = true; };
+  inferencePackage = (latest.llama-cpp.override { vulkanSupport = true; }).overrideAttrs (previous: {
+    patches = (previous.patches or [ ]) ++ [
+      (pkgs.fetchpatch {
+        url = "https://github.com/ggml-org/llama.cpp/commit/42532afff43910e619a650c1704525b3acbbec5a.patch";
+        includes = [ "src/unicode.cpp" ];
+        hash = "sha256-jOqh65x8gZy0QBi+ZX1JQVSpLMm2RNaIX0BPO1/GQ+k=";
+      })
+    ];
+  });
   model = pkgs.fetchurl {
     name = "qwen3.5-4b-uncensored-q4_k_m.gguf";
     url = "https://huggingface.co/HauhauCS/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive/resolve/c09cdbcdb1fefad6d335809d445621b5f5ba0c6e/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf";

@@ -30,6 +30,13 @@ let
   localModel = helpers.homeManagerTestConfiguration [ (localModelModule true) ];
   darwinLocalModel = helpers.homeManagerTestConfigurationForDarwin [ (localModelModule false) ];
   localModelService = localModel.systemd.user.services.local-language-model.Service;
+  localInferencePackage = lib.findFirst (
+    package: (package.pname or "") == "llama-cpp"
+  ) (throw "local inference package is missing") localModel.home.packages;
+  tokenizerVocabulary = pkgs.fetchurl {
+    url = "https://raw.githubusercontent.com/ggml-org/llama.cpp/42532afff43910e619a650c1704525b3acbbec5a/models/ggml-vocab-qwen35.gguf";
+    hash = "sha256-Y+2VL/M4mWzwvfJKexABUSQnP3XG3Ju0JzVqo/Z+xiw=";
+  };
   localAgentModels = builtins.fromJSON localModel.home.file.".local/share/pi-local/models.json".text;
   localAgentSettings =
     builtins.fromJSON
@@ -94,4 +101,14 @@ in
         >= 4096 + (builtins.head localAgentModels.providers.chise.models).maxTokens + 1024
       )
       "compaction must leave Pi's safety margin, the full response budget, and room for the next message";
+}
+// lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+  domain-local-model-tokenizer-long-input =
+    pkgs.runCommand "domain-local-model-tokenizer-long-input" { }
+      ''
+        ${pkgs.python3}/bin/python ${./verify-tokenizer.py} \
+          ${localInferencePackage}/bin/llama-tokenize \
+          ${tokenizerVocabulary}
+        touch "$out"
+      '';
 }
