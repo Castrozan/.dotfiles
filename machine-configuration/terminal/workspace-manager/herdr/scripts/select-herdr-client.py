@@ -61,7 +61,9 @@ def read_running_server_socket(installed_executable):
 
 
 def read_socket_owner_process_id(socket_path):
-    result = run_command("lsof", "-n", "-t", "--", str(socket_path))
+    result = run_command(
+        "lsof", "-n", "-t", "-a", "-c", "herdr", "--", str(socket_path)
+    )
     process_identifiers = {
         int(line) for line in result.stdout.splitlines() if line.strip().isdigit()
     }
