@@ -76,7 +76,7 @@ def test_running_server_client_is_selected_by_socket_owner(tmp_path, monkeypatch
     def run_command(*arguments):
         if arguments[0] == str(installed_executable):
             return _result(payload={"running": True, "socket": str(socket_path)})
-        if arguments[:4] == ("lsof", "-n", "-t", "--"):
+        if "-t" in arguments:
             return _result(stdout="4242\n")
         return _result(
             stdout=(
@@ -91,6 +91,20 @@ def test_running_server_client_is_selected_by_socket_owner(tmp_path, monkeypatch
     )
 
     assert selected == running_executable
+
+
+def test_socket_owner_lookup_excludes_unrelated_process_files(tmp_path, monkeypatch):
+    socket_path = tmp_path / "herdr.sock"
+
+    def run_command(*arguments):
+        assert "-a" in arguments, "socket and command selections must intersect"
+        assert "-c" in arguments, "socket discovery must scope process file queries"
+        assert arguments[arguments.index("-c") + 1] == "herdr"
+        return _result(stdout="4242\n")
+
+    monkeypatch.setattr(select_herdr_client, "run_command", run_command)
+
+    assert select_herdr_client.read_socket_owner_process_id(socket_path) == 4242
 
 
 def test_installed_client_is_selected_when_no_server_is_running(tmp_path, monkeypatch):
