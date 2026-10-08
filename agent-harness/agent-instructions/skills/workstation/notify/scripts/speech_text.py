@@ -15,6 +15,9 @@ SENSITIVE_PATTERNS = (
     re.compile(r"[A-Za-z0-9_+/=-]{32,}"),
 )
 
+
+CODE_FENCE_MARKERS = ("```", "~~~")
+
 SPOKEN_PUNCTUATION = (
     (">=", " greater than or equal to "),
     ("<=", " less than or equal to "),
@@ -35,6 +38,13 @@ def replace_punctuation_with_words(text: str) -> str:
     return text
 
 
+def blank_code_fence_lines(text: str) -> str:
+    return "\n".join(
+        " " if line.lstrip(" \t").startswith(CODE_FENCE_MARKERS) else line
+        for line in text.split("\n")
+    )
+
+
 def keep_speakable_characters(text: str) -> str:
     return "".join(
         character if character.isalnum() or character in ".,!?;: " else " "
@@ -46,7 +56,7 @@ def sanitize_speech(message: str) -> str | None:
     text = unicodedata.normalize("NFKC", html.unescape(message))
     if contains_sensitive_text(text):
         return None
-    text = re.sub(r"(?m)^[ \t]*(?:`{3,}|~{3,})[^\n]*$", " ", text)
+    text = blank_code_fence_lines(text)
     text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
     text = re.sub(r"https?://\S+|\b\S+@\S+\b", " ", text)
     text = re.sub(r"<(?=[A-Za-z/!])[^>]*>", " ", text)
