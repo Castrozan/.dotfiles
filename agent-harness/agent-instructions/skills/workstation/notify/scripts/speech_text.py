@@ -3,13 +3,17 @@ import re
 import unicodedata
 
 
-SENSITIVE_TEXT = re.compile(
-    r"(?i)(?:\b(?:password|passphrase|secret|bearer|authorization|credential|"
-    r"(?:api|access|refresh|session|id)[_ -]?(?:key|token)|token)\b|"
-    r"-----BEGIN [^-]*PRIVATE KEY|\b(?:sk|ghp|gho|ghu|ghs|ghr)[-_][A-Za-z0-9]|"
-    r"\bAKIA[A-Z0-9]{16}\b|\beyJ[A-Za-z0-9_-]+\.|[A-Za-z0-9_+/=-]{32,})"
+SENSITIVE_PATTERNS = (
+    re.compile(
+        r"(?i)\b(?:password|passphrase|secret|bearer|authorization|credential|token)\b"
+    ),
+    re.compile(r"(?i)\b(?:api|access|refresh|session|id)[_ -]?(?:key|token)\b"),
+    re.compile(r"-----BEGIN [^-]*PRIVATE KEY"),
+    re.compile(r"\b(?:sk|ghp|gho|ghu|ghs|ghr)[-_][A-Za-z0-9]"),
+    re.compile(r"\bAKIA[A-Z0-9]{16}\b"),
+    re.compile(r"\beyJ[A-Za-z0-9_-]+\."),
+    re.compile(r"[A-Za-z0-9_+/=-]{32,}"),
 )
-
 
 SPOKEN_PUNCTUATION = (
     (">=", " greater than or equal to "),
@@ -19,6 +23,10 @@ SPOKEN_PUNCTUATION = (
     ("&", " and "),
     ("%", " percent "),
 )
+
+
+def contains_sensitive_text(text: str) -> bool:
+    return any(pattern.search(text) for pattern in SENSITIVE_PATTERNS)
 
 
 def replace_punctuation_with_words(text: str) -> str:
@@ -36,7 +44,7 @@ def keep_speakable_characters(text: str) -> str:
 
 def sanitize_speech(message: str) -> str | None:
     text = unicodedata.normalize("NFKC", html.unescape(message))
-    if SENSITIVE_TEXT.search(text):
+    if contains_sensitive_text(text):
         return None
     text = re.sub(r"(?m)^[ \t]*(?:`{3,}|~{3,})[^\n]*$", " ", text)
     text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
