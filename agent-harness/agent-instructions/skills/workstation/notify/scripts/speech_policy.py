@@ -3,6 +3,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from speech_text import sanitize_speech
 
+SPEAKABLE_FLAGS = (True, True, False, False)
+
 
 def quiet_hours(now: datetime | None = None) -> bool:
     try:
@@ -26,8 +28,9 @@ def prepare_spoken_notification(
 ) -> str | None:
     if quiet_hours(now):
         return None
-    if critical is not True or all_stewards_unable is not True:
-        return None
-    if work_in_progress is not False or duplicate is not False:
+    flags = (critical, all_stewards_unable, work_in_progress, duplicate)
+    if not all(
+        flag is required for flag, required in zip(flags, SPEAKABLE_FLAGS, strict=True)
+    ):
         return None
     return sanitize_speech(message)
