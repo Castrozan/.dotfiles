@@ -56,23 +56,25 @@ class ProcessBoundaryTests(unittest.TestCase):
                 logs_directory,
                 deadline,
             )
-        self.assertLess(time.monotonic() - started, 2)
         child_pid = (self.fixture.recipe / "child.pid").read_text()
-        process = subprocess.run(
-            [
-                "/bin/ps" if sys.platform == "darwin" else "ps",
-                "-o",
-                "stat=",
-                "-p",
-                child_pid,
-            ],
-            capture_output=True,
-            text=True,
-            timeout=1,
-        )
-        self.assertTrue(
-            process.returncode != 0 or process.stdout.strip().startswith("Z")
-        )
+        while time.monotonic() - started < 2:
+            process = subprocess.run(
+                [
+                    "/bin/ps" if sys.platform == "darwin" else "ps",
+                    "-o",
+                    "stat=",
+                    "-p",
+                    child_pid,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=1,
+            )
+            if process.returncode != 0 or process.stdout.strip().startswith("Z"):
+                break
+            time.sleep(0.02)
+        else:
+            self.fail("timed out waiting for the descendant process to terminate")
         self.assertTrue((self.fixture.root / "logs/render.stdout.log").is_file())
 
     def test_expired_deadline_never_starts_process(self):
