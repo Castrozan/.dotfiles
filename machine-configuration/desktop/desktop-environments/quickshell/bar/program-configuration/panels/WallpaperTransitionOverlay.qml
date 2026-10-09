@@ -39,7 +39,7 @@ PanelWindow {
             Image {
                 id: previousWallpaperImage
                 anchors.fill: parent
-                source: `file://${wallpaperTransitionOverlayRoot.previousWallpaperPath}`
+                source: wallpaperTransitionOverlayRoot.previousWallpaperPath !== "" ? `file://${wallpaperTransitionOverlayRoot.previousWallpaperPath}` : ""
                 sourceSize: Qt.size(Math.ceil(wallpaperTransitionOverlayRoot.width * Screen.devicePixelRatio), Math.ceil(wallpaperTransitionOverlayRoot.height * Screen.devicePixelRatio))
                 fillMode: Image.PreserveAspectCrop
                 visible: false
