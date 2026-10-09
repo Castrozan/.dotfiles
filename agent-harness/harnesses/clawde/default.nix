@@ -2,7 +2,8 @@
 {
   imports = [
     inputs.clawde.homeManagerModules.default
-    ./herdr-service-consumer.nix
+    ./peer-transport/a2a-home-manager.nix
+    ./peer-transport/herdr-service-consumer.nix
     ./wiring.nix
     ./agent-enable.nix
     ./harnesses.nix
