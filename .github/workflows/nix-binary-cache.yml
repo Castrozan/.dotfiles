@@ -1,0 +1,124 @@
+name: Nix binary cache
+
+on:
+  push:
+    paths:
+      - flake.lock
+      - repository/flake-assembly/**
+      - machine-configuration/terminal/workspace-manager/herdr/**
+      - machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+      - .github/workflows/nix-binary-cache.yml
+      - .github/actions/nix-setup/**
+  workflow_dispatch: {}
+
+concurrency:
+  group: nix-binary-cache-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: ${{ github.repository == 'Castrozan/.dotfiles' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache-key: binary-cache
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure the signed binary cache
+        run: |
+          cache_configuration=machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+          cache_url=$(jq -er .url "$cache_configuration")
+          cache_public_key=$(jq -er .publicKey "$cache_configuration")
+          mkdir -p "$HOME/.config/nix"
+          printf 'extra-substituters = %s\nextra-trusted-public-keys = %s\n' \
+            "$cache_url" "$cache_public_key" >> "$HOME/.config/nix/nix.conf"
+
+      - name: Verify the exported derivations match the deployed packages
+        run: |
+          nix eval --json .#packages.x86_64-linux \
+            --apply 'packages: builtins.mapAttrs (_: package: package.drvPath) packages' \
+            > exported-derivations.json
+          nix eval --json .#nixosConfigurations.chise.config.home-manager.users.zanoni \
+            --apply 'home: builtins.attrNames (builtins.getContext home.home.activation.linkHerdrAnnotate.data) ++ map (package: package.drvPath) home.home.packages' \
+            > deployed-derivations.json
+          jq -e --slurp '([.[0][]] - .[1]) == []' \
+            exported-derivations.json deployed-derivations.json
+
+      - name: Build the patched packages and run their checks
+        run: |
+          nix build .#herdr .#herdr-agent-resume .#herdr-annotate \
+            --no-link --print-build-logs --json > binary-cache-packages.json
+
+      - name: Upload the package identities
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-cache-packages
+          path: |
+            binary-cache-packages.json
+            exported-derivations.json
+            deployed-derivations.json
+
+      - name: Sign the binary cache
+        env:
+          NIX_CACHE_SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+        run: |
+          umask 077
+          cache_key_file="$RUNNER_TEMP/nix-cache-signing-key"
+          trap 'rm -f "$cache_key_file"' EXIT
+          printf '%s\n' "$NIX_CACHE_SIGNING_KEY" > "$cache_key_file"
+          expected_public_key=$(jq -er .publicKey machine-configuration/machines/chise/system/configs/nix-binary-cache.json)
+          test "$(nix key convert-secret-to-public < "$cache_key_file")" = "$expected_public_key"
+          mapfile -t package_outputs < <(jq -r '.[].outputs[]' binary-cache-packages.json)
+          nix copy --to "file://$RUNNER_TEMP/nix-binary-cache?secret-key=$cache_key_file&compression=zstd" \
+            "${package_outputs[@]}"
+
+      - uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed
+        with:
+          workload_identity_provider: projects/933601426694/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: dotfiles-github-deployer@zg-url-shortener-2026.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f
+
+      - name: Publish NARs before signed metadata
+        run: |
+          cache_bucket=$(jq -er .bucketUri machine-configuration/machines/chise/system/configs/nix-binary-cache.json)
+          gcloud storage rsync "$RUNNER_TEMP/nix-binary-cache/nar" "$cache_bucket/nar" --recursive
+          gcloud storage rsync "$RUNNER_TEMP/nix-binary-cache" "$cache_bucket" --exclude='^nar/'
+
+  substitute:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - name: Realize the packages from signed substitutes on a fresh runner
+        run: |
+          cache_configuration=machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+          cache_url=$(jq -er .url "$cache_configuration")
+          cache_public_key=$(jq -er .publicKey "$cache_configuration")
+          nix build .#herdr .#herdr-agent-resume .#herdr-annotate \
+            --no-link --print-build-logs --json --max-jobs 0 \
+            --option substituters "$cache_url https://cache.nixos.org" \
+            --extra-trusted-public-keys "$cache_public_key" > binary-cache-substitutions.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary-cache-substitutions
+          path: binary-cache-substitutions.json
