@@ -27,9 +27,12 @@ public enum UnixDatagramCommandReceiver {
     guard bytesRead > 0,
       let payload = String(bytes: readBuffer.prefix(bytesRead), encoding: .utf8)
     else { return nil }
+    let trimmedPayload = payload.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmedPayload.isEmpty else { return nil }
     let object = try? JSONSerialization.jsonObject(
-      with: Data(payload.utf8), options: [.fragmentsAllowed])
-    let command = (object as? String ?? payload).trimmingCharacters(in: .whitespacesAndNewlines)
+      with: Data(trimmedPayload.utf8), options: [.fragmentsAllowed])
+    let command = (object as? String ?? trimmedPayload).trimmingCharacters(
+      in: .whitespacesAndNewlines)
     return command.isEmpty ? nil : command
   }
 }

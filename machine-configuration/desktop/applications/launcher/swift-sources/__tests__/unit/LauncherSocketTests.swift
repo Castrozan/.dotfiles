@@ -47,6 +47,7 @@ enum LauncherSocketTests {
     for payload in [
       Data([0xff]), Data(), Data("  ".utf8), Data("\" \"".utf8), Data(" show\n".utf8),
       Data("\" dismiss \"".utf8),
+      Data("\u{00A0}\" show \"\u{00A0}".utf8),
     ] {
       let sent = payload.withUnsafeBytes { bytes in
         withUnsafePointer(to: &address) { pointer in
@@ -61,8 +62,9 @@ enum LauncherSocketTests {
     }
     precondition(received.wait(timeout: .now() + 3) == .success)
     precondition(received.wait(timeout: .now() + 3) == .success)
+    precondition(received.wait(timeout: .now() + 3) == .success)
     lock.lock()
-    precondition(commands == ["show", "dismiss"])
+    precondition(commands == ["show", "dismiss", "show"])
     lock.unlock()
     withExtendedLifetime(server) {}
   }

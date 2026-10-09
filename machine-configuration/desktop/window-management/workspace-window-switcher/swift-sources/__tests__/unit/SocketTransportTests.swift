@@ -69,6 +69,7 @@ enum SocketTransportTests {
     for payload in [
       Data([0xff]), Data(), Data("   ".utf8), Data("\"  \"".utf8), Data(" next\n".utf8),
       Data("\" prev \"".utf8),
+      Data("\u{00A0}\" commit \"\u{00A0}".utf8),
     ] {
       let sent = payload.withUnsafeBytes { bytes in
         withUnsafePointer(to: &address) { pointer in
@@ -79,8 +80,8 @@ enum SocketTransportTests {
       }
       precondition(sent == payload.count)
     }
-    TestMainRunLoop.until { recorder.commands.count == 7 }
-    precondition(Array(recorder.commands.suffix(2)) == ["next", "prev"])
+    TestMainRunLoop.until { recorder.commands.count == 8 }
+    precondition(Array(recorder.commands.suffix(3)) == ["next", "prev", "commit"])
     withExtendedLifetime(server) {}
   }
 }
