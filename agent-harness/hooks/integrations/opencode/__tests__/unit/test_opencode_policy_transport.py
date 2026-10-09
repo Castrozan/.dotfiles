@@ -2,6 +2,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -27,18 +28,29 @@ spec.loader.exec_module(payload)
         ),
         (
             "edit",
-            {"path": "x", "oldString": "a", "newString": "b"},
+            {"path": "x", "oldString": "a", "newString": "b", "replaceAll": True},
             "Edit",
-            {"file_path": "x", "old_string": "a", "new_string": "b"},
+            {
+                "file_path": "x",
+                "old_string": "a",
+                "new_string": "b",
+                "replace_all": True,
+            },
         ),
         ("skill", {"id": "coding"}, "Skill", {"skill": "coding"}),
         (
             "subagent",
-            {"agent": "explore", "prompt": "find"},
+            {"agent": "explore", "prompt": "find", "sessionID": "child"},
             "Agent",
-            {"subagent_type": "explore", "prompt": "find"},
+            {"subagent_type": "explore", "prompt": "find", "sessionID": "child"},
         ),
         ("patch", {"patchText": "patch"}, "apply_patch", "patch"),
+        (
+            "webfetch",
+            {"url": "https://example.com"},
+            "WebFetch",
+            {"url": "https://example.com"},
+        ),
     ],
 )
 def test_native_tools_preserve_the_existing_policy_contract(
@@ -55,16 +67,41 @@ def test_native_tools_preserve_the_existing_policy_contract(
         "tool_input": expected,
     }
     assert incoming["tool_name"] == native
+    assert incoming["tool_input"] == arguments
 
 
-def test_updated_input_uses_native_argument_names():
-    decision = {
-        "hookSpecificOutput": {"updatedInput": {"file_path": "x", "new_string": "b"}}
+@pytest.mark.parametrize("tool_name", ["mcp__provider__lookup", "custom", "Read"])
+def test_unknown_tool_arguments_preserve_opaque_provider_schema(tool_name):
+    incoming = {
+        "tool_name": tool_name,
+        "tool_input": {
+            "path": "opaque",
+            "filePath": "provider-field",
+            "newString": "provider-value",
+            "sessionID": "provider-session",
+            "nestedData": [{"path": "nested", "oldString": "provider-nested"}],
+        },
     }
-    assert payload.native_output(decision)["hookSpecificOutput"]["updatedInput"] == {
-        "path": "x",
-        "newString": "b",
+    original = deepcopy(incoming)
+
+    assert payload.dispatcher_payload(incoming) == original
+    assert incoming == original
+
+
+@pytest.mark.parametrize(
+    "tool_name", ["shell", "edit", "write", "skill", "subagent", "patch", "webfetch"]
+)
+def test_known_tool_arguments_preserve_unknown_fields_and_nested_values(tool_name):
+    arguments = {
+        "queryText": "opaque",
+        "metadata": {"path": "nested", "newString": "opaque", "file_path": "opaque"},
+        "values": [{"oldString": "opaque"}],
     }
+    incoming = {"tool_name": tool_name, "tool_input": arguments}
+    original = deepcopy(incoming)
+
+    assert payload.dispatcher_payload(incoming)["tool_input"] == arguments
+    assert incoming == original
 
 
 def run_dispatcher(tmp_path, script, incoming):
@@ -97,6 +134,46 @@ def test_dispatcher_receives_normalized_input_and_returns_native_input(tmp_path)
     assert json.loads(result.stdout)["hookSpecificOutput"]["updatedInput"] == {
         "path": "x",
         "newString": "b",
+    }
+
+
+@pytest.mark.parametrize(
+    ("tool_name", "arguments"),
+    [
+        (
+            "mcp__provider__lookup",
+            {"path": "opaque", "newString": "opaque", "file_path": "provider"},
+        ),
+        (
+            "shell",
+            {"command": "true", "metadata": {"path": "opaque", "new_string": "opaque"}},
+        ),
+        ("edit", {"path": "x", "oldString": "a", "newString": "b", "replaceAll": True}),
+        ("write", {"path": "x", "content": "data"}),
+        ("skill", {"id": "coding"}),
+        ("subagent", {"agent": "explore", "sessionID": "child", "prompt": "find"}),
+        ("patch", {"patchText": "patch"}),
+    ],
+)
+def test_dispatcher_roundtrip_preserves_the_native_tool_schema(
+    tmp_path, tool_name, arguments
+):
+    result = run_dispatcher(
+        tmp_path,
+        "import json,sys\nreceived=json.load(sys.stdin)\n"
+        'print(json.dumps({"continue": True, "systemMessage": "feedback", "hookSpecificOutput": {"permissionDecision": "allow", "additionalContext": "context", "updatedInput": received["tool_input"]}}))\n',
+        {"tool_name": tool_name, "tool_input": arguments},
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {
+        "continue": True,
+        "systemMessage": "feedback",
+        "hookSpecificOutput": {
+            "permissionDecision": "allow",
+            "additionalContext": "context",
+            "updatedInput": arguments,
+        },
     }
 
 

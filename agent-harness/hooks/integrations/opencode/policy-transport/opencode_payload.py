@@ -1,6 +1,3 @@
-import re
-
-
 TOOL_NAMES = {
     "shell": "Bash",
     "edit": "Edit",
@@ -10,61 +7,51 @@ TOOL_NAMES = {
     "webfetch": "WebFetch",
     "write": "Write",
 }
-NATIVE_ARGUMENT_NAMES = {
-    "file_path": "path",
-    "new_string": "newString",
-    "old_string": "oldString",
-    "patch_text": "patchText",
-    "subagent_type": "agent",
-    "skill": "id",
+CANONICAL_ARGUMENT_NAMES = {
+    "edit": {
+        "path": "file_path",
+        "newString": "new_string",
+        "oldString": "old_string",
+        "replaceAll": "replace_all",
+    },
+    "write": {"path": "file_path"},
+    "patch": {"patchText": "patch_text"},
+    "subagent": {"agent": "subagent_type"},
+    "skill": {"id": "skill"},
 }
-
-
-def canonical_key(key):
-    if key == "path":
-        return "file_path"
-    return re.sub(r"[A-Z]", lambda match: "_" + match[0].lower(), key)
-
-
-def map_keys(value, key_mapper):
-    if isinstance(value, list):
-        return [map_keys(child, key_mapper) for child in value]
-    if not isinstance(value, dict):
-        return value
-    return {
-        key_mapper(key): map_keys(child, key_mapper) for key, child in value.items()
-    }
 
 
 def dispatcher_payload(payload):
     result = dict(payload)
-    tool_name = TOOL_NAMES.get(payload.get("tool_name"), payload.get("tool_name"))
-    if tool_name is None:
+    native_tool_name = payload.get("tool_name")
+    if native_tool_name not in TOOL_NAMES:
         return result
-    arguments = map_keys(payload.get("tool_input", {}), canonical_key)
-    arguments = _normalize_tool_arguments(tool_name, arguments)
-    return result | {"tool_name": tool_name, "tool_input": arguments}
-
-
-def _normalize_tool_arguments(tool_name, arguments):
+    arguments = payload.get("tool_input", {})
     if isinstance(arguments, dict):
-        if _has_string_patch_payload(tool_name, arguments):
-            return arguments["patch_text"]
-        elif tool_name == "Agent" and "agent" in arguments:
-            arguments["subagent_type"] = arguments.pop("agent")
-        elif tool_name == "Skill" and "id" in arguments:
-            arguments["skill"] = arguments.pop("id")
-    return arguments
+        names = CANONICAL_ARGUMENT_NAMES.get(native_tool_name, {})
+        arguments = {names.get(key, key): value for key, value in arguments.items()}
+        if native_tool_name == "patch" and isinstance(arguments.get("patch_text"), str):
+            arguments = arguments["patch_text"]
+    return result | {"tool_name": TOOL_NAMES[native_tool_name], "tool_input": arguments}
 
 
-def _has_string_patch_payload(tool_name, arguments):
-    return tool_name == "apply_patch" and isinstance(arguments.get("patch_text"), str)
-
-
-def native_output(output):
+def native_output(output, native_tool_name):
     specific = output.get("hookSpecificOutput")
-    if isinstance(specific, dict) and isinstance(specific.get("updatedInput"), dict):
-        specific["updatedInput"] = map_keys(
-            specific["updatedInput"], lambda key: NATIVE_ARGUMENT_NAMES.get(key, key)
-        )
-    return output
+    if native_tool_name not in TOOL_NAMES or not isinstance(specific, dict):
+        return dict(output)
+    updated_input = specific.get("updatedInput")
+    if native_tool_name == "patch" and isinstance(updated_input, str):
+        updated_input = {"patchText": updated_input}
+    elif isinstance(updated_input, dict):
+        names = {
+            canonical: native
+            for native, canonical in CANONICAL_ARGUMENT_NAMES.get(
+                native_tool_name, {}
+            ).items()
+        }
+        updated_input = {
+            names.get(key, key): value for key, value in updated_input.items()
+        }
+    else:
+        return dict(output)
+    return output | {"hookSpecificOutput": specific | {"updatedInput": updated_input}}

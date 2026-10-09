@@ -36,7 +36,7 @@ def main():
         output = json.loads(captured.getvalue())
         if not isinstance(output, dict):
             raise ValueError("OpenCode hook decision must be an object")
-        print(json.dumps(native_output(output)))
+        print(json.dumps(native_output(output, payload.get("tool_name"))))
 
 
 if __name__ == "__main__":
