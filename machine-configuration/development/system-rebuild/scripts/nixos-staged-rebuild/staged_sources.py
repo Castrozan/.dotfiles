@@ -64,7 +64,7 @@ def archive_source(reference, flags, phase):
 
 
 def archived_store_paths(archive):
-    paths = {validate_store_path(archive["path"])}
+    paths = {validate_store_path(archive["path"])} if "path" in archive else set()
     for archived_input in archive.get("inputs", {}).values():
         paths.update(archived_store_paths(archived_input))
     return paths
@@ -74,13 +74,14 @@ def archived_input_overrides(archive, parent_input=()):
     overrides = []
     for name, archived_input in archive.get("inputs", {}).items():
         input_path = (*parent_input, name)
-        overrides.extend(
-            [
-                "--override-input",
-                "/".join(input_path),
-                "path:" + validate_store_path(archived_input["path"]),
-            ]
-        )
+        if "path" in archived_input:
+            overrides.extend(
+                [
+                    "--override-input",
+                    "/".join(input_path),
+                    "path:" + validate_store_path(archived_input["path"]),
+                ]
+            )
         overrides.extend(archived_input_overrides(archived_input, input_path))
     return overrides
 
