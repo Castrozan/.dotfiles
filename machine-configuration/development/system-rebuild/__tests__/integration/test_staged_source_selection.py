@@ -14,9 +14,8 @@ from test_staged_sources import prefetch_environment, run_prefetch
 
 
 @pytest.mark.parametrize("entrypoint_flag", [None, "--flake", "--flake="])
-@pytest.mark.parametrize("input_flag", ["--override-input", "--override-input="])
 def test_prefetch_preserves_selected_public_worktree_and_committed_revisions(
-    managed_rebuild_environment, tmp_path, entrypoint_flag, input_flag
+    managed_rebuild_environment, tmp_path, entrypoint_flag
 ):
     environment = prefetch_environment(managed_rebuild_environment, tmp_path)
     public_directory = tmp_path / "dotfiles-repair"
@@ -26,15 +25,10 @@ def test_prefetch_preserves_selected_public_worktree_and_committed_revisions(
         "--override-input",
         "dotfiles",
         "github:owner/retired-source",
+        "--override-input",
+        "dotfiles",
+        f"git+file://{public_directory}?rev={public_revision}&submodules=1",
     ]
-    arguments.extend(
-        [input_flag, "dotfiles"]
-        if input_flag == "--override-input"
-        else [input_flag + "dotfiles"]
-    )
-    arguments.append(
-        f"git+file://{public_directory}?rev={public_revision}&submodules=1"
-    )
     if entrypoint_flag:
         private_reference = (
             f"git+file://{tmp_path}/private?rev={private_revision}#chise"
@@ -78,6 +72,22 @@ def test_prefetch_preserves_selected_public_worktree_and_committed_revisions(
     activated = run_staged(environment, "switch", tmp_path / "request.json")
     assert activated.returncode == 0, activated.stderr
     assert read_events(tmp_path, "native-events")[-1]["action"] == "switch"
+
+
+def test_invalid_native_override_syntax_fails_before_source_archive_or_handoff(
+    managed_rebuild_environment, tmp_path
+):
+    environment = prefetch_environment(managed_rebuild_environment, tmp_path)
+    completed = run_prefetch(
+        environment,
+        tmp_path,
+        "--override-input=dotfiles",
+        f"git+file://{tmp_path}/dotfiles-repair",
+    )
+    assert completed.returncode == 2
+    assert "expected 2 arguments" in completed.stderr
+    assert not read_events(tmp_path)
+    assert not (tmp_path / "request.json").exists()
 
 
 def test_missing_selected_revision_fails_before_source_archive_or_handoff(
