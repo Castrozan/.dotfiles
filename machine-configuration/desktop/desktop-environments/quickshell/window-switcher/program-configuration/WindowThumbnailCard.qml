@@ -5,7 +5,7 @@ import QtQuick
 Item {
     id: thumbnailCard
 
-    signal clicked()
+    signal clicked
 
     required property var toplevelHandle
     required property string windowTitle
@@ -66,7 +66,6 @@ Item {
 
                     onHasContentChanged: {
                         if (hasContent) {
-                            captureFrame();
                             captureRetryTimer.stop();
                         }
                     }
