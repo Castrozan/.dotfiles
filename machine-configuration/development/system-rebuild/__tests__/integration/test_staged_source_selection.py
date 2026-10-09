@@ -3,7 +3,12 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from staged_rebuild_support import PRIVATE_PATH, SOURCE_PATH, read_events
+from staged_rebuild_support import (
+    PRIVATE_PATH,
+    SOURCE_PATH,
+    read_events,
+    write_prepared_request,
+)
 from test_staged_rebuild import run_staged
 from test_staged_sources import prefetch_environment, run_prefetch
 
@@ -125,3 +130,35 @@ def test_public_entrypoint_uses_its_selected_revision_with_one_archive(
     prepared = json.loads((tmp_path / "request.json").read_text())
     assert prepared["arguments"][2] == f"path:{SOURCE_PATH}#host"
     assert PRIVATE_PATH not in prepared["sources"]
+
+
+@pytest.mark.parametrize(
+    "field,value,error",
+    [
+        ("arguments", ["switch", 7], "arguments are invalid"),
+        ("sources", ["invalid"], "immutable store path"),
+        (
+            "arguments",
+            ["switch", "--flake", f"path:{PRIVATE_PATH}#chise", "--override-input"],
+            "input override is incomplete",
+        ),
+        (
+            "arguments",
+            ["switch", "--flake", "git+file:///private#chise"],
+            "source was not prefetched",
+        ),
+    ],
+)
+def test_malformed_source_handoff_fails_before_any_privileged_client(
+    managed_rebuild_environment, tmp_path, field, value, error
+):
+    environment = prefetch_environment(managed_rebuild_environment, tmp_path)
+    request = write_prepared_request(tmp_path)
+    prepared = json.loads(request.read_text())
+    prepared[field] = value
+    request.write_text(json.dumps(prepared))
+    completed = run_staged(environment, "switch", request)
+    assert completed.returncode == 1
+    assert error in completed.stderr
+    assert not read_events(tmp_path)
+    assert not read_events(tmp_path, "native-events")
