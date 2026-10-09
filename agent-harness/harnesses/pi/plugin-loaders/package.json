@@ -2,11 +2,11 @@
   "name": "dotfiles-pi-plugin-loaders",
   "private": true,
   "dependencies": {
-    "@earendil-works/pi-ai": "0.84.1",
-    "@earendil-works/pi-coding-agent": "0.84.1",
-    "@earendil-works/pi-tui": "0.84.1",
+    "@earendil-works/pi-ai": "1.1.0",
+    "@earendil-works/pi-coding-agent": "1.1.0",
+    "@earendil-works/pi-tui": "1.1.0",
     "@wkqco33/pi-loop-guard": "0.2.0",
     "pi-agent-plugins": "0.1.8",
-    "pi-mcp-adapter": "2.34.0"
+    "pi-mcp-adapter": "5.1.0"
   }
 }
