@@ -23,7 +23,10 @@ def verify_agent(agent, name, source):
     assert agent["id"] == name and agent["mode"] == "subagent", agent
     assert agent["system"] == source.read_text().split("\n---\n", 1)[1].strip(), agent
     expected = AGENT_PERMISSIONS[name]
-    rules = agent["permissions"][-len(expected) :]
+    configured_rules = [
+        rule for rule in agent["permissions"] if rule["action"] != "browser"
+    ]
+    rules = configured_rules[-len(expected) :]
     assert all(rule["resource"] == "*" for rule in rules), rules
     assert {rule["action"]: rule["effect"] for rule in rules} == expected, rules
 
