@@ -32,6 +32,10 @@
       device = "/swapfile-additional";
       size = 4096;
     }
+    {
+      device = "/swapfile-overflow";
+      size = 4096;
+    }
   ];
 
   services.earlyoom = {
