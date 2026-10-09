@@ -18,10 +18,15 @@ def prefetch_environment(managed_environment, directory):
     git = directory / "git"
     git.write_text(
         f"""#!{sys.executable}
+import json
 import os
 import sys
+from pathlib import Path
+with (Path(os.environ["TEST_PHASE_DIRECTORY"]) / "git-commands").open("a") as events:
+    events.write(json.dumps({{"arguments": sys.argv[1:]}}) + "\\n")
 if "rev-parse" in sys.argv:
-    print("a" * 40)
+    selected_revision = sys.argv[-1].removesuffix("^{{commit}}")
+    print("a" * 40 if selected_revision == "HEAD" else selected_revision)
 elif "status" in sys.argv:
     print(" M flake.nix" if os.environ.get("TEST_DIRTY_SOURCE") == "1" else "", end="")
 else:

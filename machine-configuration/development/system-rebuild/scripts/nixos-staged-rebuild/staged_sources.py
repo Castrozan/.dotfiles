@@ -24,8 +24,20 @@ def local_source_directory(reference):
 def pin_local_source(reference, phase):
     source = urlsplit(reference.split("#", 1)[0])
     directory = local_source_directory(reference)
+    query = dict(parse_qsl(source.query))
+    selected_revision = query.get("rev", "HEAD")
     revision = run_command(
-        f"{phase}_revision", ["git", "-C", directory, "rev-parse", "HEAD"], True
+        f"{phase}_revision",
+        [
+            "git",
+            "-C",
+            directory,
+            "rev-parse",
+            "--verify",
+            "--end-of-options",
+            f"{selected_revision}^{{commit}}",
+        ],
+        True,
     )
     if not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", revision):
         raise ValueError("source revision is not immutable")
@@ -36,7 +48,6 @@ def pin_local_source(reference, phase):
     )
     if dirty:
         raise ValueError("refusing to prefetch a dirty rebuild source")
-    query = dict(parse_qsl(source.query))
     query["rev"] = revision
     return urlunsplit(("git+file", "", quote(str(directory)), urlencode(query), ""))
 
@@ -86,49 +97,73 @@ def archived_input_overrides(archive, parent_input=()):
     return overrides
 
 
-def without_input_overrides(arguments):
+def without_source_overrides(arguments):
+    source_override_argument_counts = {"--override-input": 3, "--flake": 2}
     remaining = []
     position = 0
     while position < len(arguments):
         argument = arguments[position]
-        if argument == "--override-input":
-            position += 3
-        elif argument.startswith("--override-input="):
-            position += 2
+        option_name, assignment, _ = argument.partition("=")
+        argument_count = source_override_argument_counts.get(option_name, 0)
+        if argument_count:
+            position += argument_count - bool(assignment)
         else:
             remaining.append(argument)
             position += 1
     return remaining
 
 
-def read_prepared_request(request_path, action):
-    request = json.loads(Path(request_path).read_text())
-    arguments = request["arguments"]
+def validate_prepared_argument_values(arguments):
     if not isinstance(arguments, list) or not all(
         isinstance(value, str) for value in arguments
     ):
         raise ValueError("prepared rebuild arguments are invalid")
+
+
+def validate_prepared_action(arguments, action):
     if not arguments or arguments[0] != action:
         raise ValueError("prepared rebuild action does not match the guarded action")
-    sources = request["sources"]
+
+
+def validate_prepared_sources(sources):
     if not isinstance(sources, list) or not sources:
         raise ValueError("prepared rebuild sources are missing")
     for source in sources:
         validate_store_path(source)
+
+
+def prepared_input_sources(arguments):
+    for index, argument in enumerate(arguments):
+        if argument != "--override-input":
+            continue
+        if index + 2 >= len(arguments):
+            raise ValueError("prepared rebuild input override is incomplete")
+        yield arguments[index + 2]
+
+
+def prepared_source_references(arguments):
     if len(arguments) < 3 or arguments[1] != "--flake":
         raise ValueError("prepared rebuild source is missing")
-    required_sources = [arguments[2].split("#", 1)[0]]
-    for index, argument in enumerate(arguments):
-        if argument == "--override-input":
-            if index + 2 >= len(arguments):
-                raise ValueError("prepared rebuild input override is incomplete")
-            required_sources.append(arguments[index + 2])
+    return [arguments[2].split("#", 1)[0], *prepared_input_sources(arguments)]
+
+
+def validate_prefetched_sources(required_sources, sources):
     for source in required_sources:
         if (
             not source.startswith("path:")
             or source.removeprefix("path:") not in sources
         ):
             raise ValueError("prepared rebuild source was not prefetched")
+
+
+def read_prepared_request(request_path, action):
+    request = json.loads(Path(request_path).read_text())
+    arguments = request["arguments"]
+    validate_prepared_argument_values(arguments)
+    validate_prepared_action(arguments, action)
+    sources = request["sources"]
+    validate_prepared_sources(sources)
+    validate_prefetched_sources(prepared_source_references(arguments), sources)
     return arguments, sources
 
 
