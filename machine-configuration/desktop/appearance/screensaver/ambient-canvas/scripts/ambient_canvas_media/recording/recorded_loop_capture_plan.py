@@ -58,7 +58,7 @@ def build_record_browser_arguments(
 ):
     window_width, window_height, window_left, window_top = geometry
     platform_arguments = (
-        ["--disable-accelerated-video-decode"]
+        ["--use-angle=gl-egl", "--disable-accelerated-video-decode"]
         if not ambient_canvas_browser.resolve_platform().startswith("darwin")
         else []
     )
@@ -66,6 +66,8 @@ def build_record_browser_arguments(
         browser_executable_path,
         f"--app={record_index_url}",
         f"--user-data-dir={throwaway_profile_directory}",
+        "--headless",
+        "--enable-gpu",
         f"--window-size={window_width},{window_height}",
         f"--window-position={window_left},{window_top}",
         "--no-first-run",

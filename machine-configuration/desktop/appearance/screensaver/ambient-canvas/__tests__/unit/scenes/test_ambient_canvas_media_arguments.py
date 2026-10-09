@@ -121,7 +121,10 @@ def test_build_record_browser_arguments_use_throwaway_profile_and_gl(monkeypatch
     assert "--app=file:///store/index.html?record=1" in arguments
     assert "--user-data-dir=/tmp/throwaway" in arguments
     assert "--window-size=1440,720" in arguments
+    assert "--headless" in arguments
+    assert "--enable-gpu" in arguments
     assert "--use-gl=angle" in arguments
+    assert "--use-angle=gl-egl" in arguments
     assert "--disable-accelerated-video-decode" in arguments
     assert "--disable-background-timer-throttling" in arguments
     assert "--disable-backgrounding-occluded-windows" in arguments
@@ -139,7 +142,10 @@ def test_build_record_browser_arguments_on_darwin_keep_hardware_video_decode(
         "/tmp/throwaway",
         (1440, 720, 280, 140),
     )
+    assert "--headless" in arguments
+    assert "--enable-gpu" in arguments
     assert "--use-gl=angle" in arguments
+    assert "--use-angle=gl-egl" not in arguments
     assert "--disable-accelerated-video-decode" not in arguments
 
 
