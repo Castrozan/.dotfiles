@@ -37,6 +37,10 @@ def build_argument_parser() -> argparse.ArgumentParser:
     )
     send_parser.add_argument("agent")
     send_parser.add_argument("text")
+    send_parser.add_argument(
+        "--sender",
+        help="current Servant or session name; supply it when calling over ssh",
+    )
     send_parser.set_defaults(handler=command_send)
 
     ask_parser = subcommands.add_parser(
@@ -44,6 +48,10 @@ def build_argument_parser() -> argparse.ArgumentParser:
     )
     ask_parser.add_argument("agent")
     ask_parser.add_argument("text")
+    ask_parser.add_argument(
+        "--sender",
+        help="current Servant or session name; supply it when calling over ssh",
+    )
     ask_parser.add_argument(
         "--timeout-seconds", type=float, default=DEFAULT_ANSWER_TIMEOUT_SECONDS
     )
