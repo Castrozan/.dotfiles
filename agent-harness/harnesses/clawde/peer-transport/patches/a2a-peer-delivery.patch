@@ -1,26 +1,42 @@
+--- a/a2a_server/backends/base.py
++++ b/a2a_server/backends/base.py
+@@ -11,0 +12,4 @@
++
++
++class AgentBusyError(RuntimeError):
++    pass
 --- a/a2a_server/backends/herdr_backend.py
 +++ b/a2a_server/backends/herdr_backend.py
 @@ -6,0 +7 @@
 +from ..herdr_prompt_adapter import HerdrPromptAdapter
 @@ -9 +9,0 @@
 -DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS = 0.25
-@@ -38,3 +38 @@
+@@ -38,3 +38,4 @@
 -        herdr_pane_resolution.send_text_to_pane(self._pane_id, text)
 -        time.sleep(DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS)
 -        herdr_pane_resolution.send_key_to_pane(self._pane_id, "Enter")
++        self._meaningful_line_tracker.adopt_capture_as_baseline(
++            self._capture_agent_pane_text()
++        )
 +        HerdrPromptAdapter(self._pane_id).submit(text)
 --- a/a2a_server/active_task_coordinator.py
 +++ b/a2a_server/active_task_coordinator.py
+@@ -4 +4 @@
+-from .backends.base import AgentBackend, BackendObservation
++from .backends.base import AgentBackend, AgentBusyError, BackendObservation
 @@ -22,0 +23 @@
 +        self._active_task_delivery_is_pending = False
 @@ -41,0 +43 @@
 +            self._active_task_delivery_is_pending = True
-@@ -43 +45,12 @@
+@@ -43,2 +45,15 @@
 -        self._agent_backend.send_input_text(input_text)
+-        return new_task, True
 +        delivery_error_message = None
++        delivery_was_accepted = True
 +        try:
 +            self._agent_backend.send_input_text(input_text)
 +        except Exception as delivery_failure:
++            delivery_was_accepted = not isinstance(delivery_failure, AgentBusyError)
 +            delivery_error_message = f"delivery failed: {delivery_failure}"
 +        finally:
 +            with self._lock:
@@ -29,10 +45,11 @@
 +                        new_task.id, delivery_error_message
 +                    )
 +                self._active_task_delivery_is_pending = False
-@@ -73,0 +87,2 @@
++        return new_task, delivery_was_accepted
+@@ -73,0 +89,2 @@
 +            if self._active_task_delivery_is_pending:
 +                return
-@@ -90 +105,8 @@
+@@ -90 +107,8 @@
 -        idle_for_seconds = time.time() - observation.last_activity_at_epoch_seconds
 +        if observation.agent_is_busy is True:
 +            return

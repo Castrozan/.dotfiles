@@ -5,35 +5,24 @@ import pytest
 from a2a_test_client import request_json
 
 
-@pytest.mark.parametrize("status", ["idle", "working"])
 @pytest.mark.parametrize(
     "content", ["short", "a" * 1025 + "\nsecond\tline", "x" * 8192]
 )
-def test_codex_submission_flushes_paste_and_uses_the_harness_submission_key(
-    owned_fleet, status, content
-):
-    owned_fleet.target.status = status
+def test_native_prompt_submits_codex_input_exactly_once(owned_fleet, content):
     response_status, task = request_json(
         owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": content}
     )
     assert response_status == 201
     target = owned_fleet.target
-    delivered = target.queued if status == "working" else target.submitted
+    delivered = target.submitted
     assert len(delivered) == 1
     assert json.loads(delivered[0].split("\n", 1)[1])["content"] == content
     assert target.draft == target.paste_buffer == ""
-    assert not target.submitted if status == "working" else not target.queued
-    assert [
-        command for command in target.commands if command[:2] == ["agent", "send-keys"]
-    ] == [
-        [
-            "agent",
-            "send-keys",
-            "owned-pane",
-            "Right",
-            "Tab",
-        ]
-    ]
+    assert not target.queued
+    assert not any(
+        command[:2] in (["pane", "send-text"], ["agent", "send-keys"])
+        for command in target.commands
+    )
     assert task["state"] == "working"
 
 
@@ -56,9 +45,11 @@ def test_existing_human_draft_fails_before_any_terminal_input(
     response_status, task = request_json(
         owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": "peer work"}
     )
-    assert response_status == 502
+    assert response_status == (409 if status == "working" else 502)
     assert task["state"] == "failed"
-    assert "composer_occupied" in task["errorMessage"]
+    assert ("target_busy" if status == "working" else "composer_occupied") in task[
+        "errorMessage"
+    ]
     assert target.draft == draft
     assert all(
         command[:2] in (["pane", "get"], ["pane", "read"])
@@ -66,7 +57,7 @@ def test_existing_human_draft_fails_before_any_terminal_input(
     )
 
 
-def test_successful_key_write_without_submission_is_a_terminal_failure(
+def test_successful_native_prompt_without_submission_is_a_terminal_failure(
     owned_fleet, transport_package, monkeypatch
 ):
     monkeypatch.setattr(
@@ -93,7 +84,8 @@ def test_unready_target_fails_before_paste(owned_fleet, status):
     assert task["state"] == "failed"
     assert not owned_fleet.target.paste_buffer
     assert all(
-        command[:2] == ["pane", "get"] for command in owned_fleet.target.commands
+        command[:2] in (["pane", "get"], ["pane", "read"])
+        for command in owned_fleet.target.commands
     )
 
 

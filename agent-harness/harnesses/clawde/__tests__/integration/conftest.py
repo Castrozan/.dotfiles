@@ -12,6 +12,10 @@ from types import SimpleNamespace
 import pytest
 
 
+class OwnedFleetHTTPServer(http.server.ThreadingHTTPServer):
+    request_queue_size = 32
+
+
 @pytest.fixture(scope="module")
 def transport_package():
     source = os.environ.get("CLAWDE_A2A_TRANSPORT_SOURCE")
@@ -58,7 +62,7 @@ def transport_package():
 @pytest.fixture
 def owned_fleet(transport_package, monkeypatch):
     target = SimpleNamespace(
-        status="working",
+        status="idle",
         harness="codex",
         draft="",
         paste_buffer="",
@@ -114,14 +118,16 @@ def owned_fleet(transport_package, monkeypatch):
                     )
                     collection.append(target.draft)
                     target.draft = ""
+                    target.status = "working"
             return subprocess.CompletedProcess(arguments, 0, "", "")
         if arguments[:2] == ["agent", "prompt"]:
             if target.fail_submission:
                 return subprocess.CompletedProcess(arguments, 1, "", "agent_blocked")
-            if target.harness == "codex":
-                target.paste_buffer += arguments[3] + "\n"
+            if target.ignore_submission:
+                target.draft += arguments[3]
             else:
                 target.submitted.append(arguments[3])
+                target.status = "working"
             return subprocess.CompletedProcess(arguments, 0, "", "")
         pytest.fail(f"unexpected terminal input: {arguments}")
 
@@ -130,15 +136,13 @@ def owned_fleet(transport_package, monkeypatch):
     )
     registry = transport_package.registry(transport_package.metadata({}), "")
     router = transport_package.router(registry)
-    server = http.server.ThreadingHTTPServer(
+    server = OwnedFleetHTTPServer(
         ("127.0.0.1", 0),
         transport_package.http.build_http_request_handler_class(router),
     )
     endpoint = f"http://127.0.0.1:{server.server_address[1]}"
     registry._daemon_base_url = endpoint
-    pane = transport_package.pane(
-        "owned-pane", "owned-tab", "codex", "working", "/owned"
-    )
+    pane = transport_package.pane("owned-pane", "owned-tab", "codex", "idle", "/owned")
     registry.reconcile_against_the_live_fleet([pane], {"owned-tab": "owned-peer"})
     target.commands.clear()
     worker = threading.Thread(target=server.serve_forever, daemon=True)

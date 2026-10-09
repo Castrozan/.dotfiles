@@ -54,6 +54,7 @@ in
           ${harnessTests}/integration/test_harness_aware_submission.py \
           ${harnessTests}/integration/test_submission_observation.py \
           ${harnessTests}/integration/test_a2a_work_delivery.py \
+          ${harnessTests}/integration/test_busy_work_rejection.py \
           ${harnessTests}/integration/test_task_non_regression.py \
           ${harnessTests}/integration/test_a2a_mailbox_delivery.py \
           ${harnessTests}/integration/test_a2a_notification_requests.py \

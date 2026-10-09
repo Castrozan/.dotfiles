@@ -14,9 +14,9 @@ def test_work_dispatch_and_a_busy_target_keep_one_task(owned_fleet):
     invocation = next(
         command
         for command in owned_fleet.target.commands
-        if command[:2] == ["pane", "send-text"]
+        if command[:2] == ["agent", "prompt"]
     )
-    assert invocation[:3] == ["pane", "send-text", "owned-pane"]
+    assert invocation[:3] == ["agent", "prompt", "owned-pane"]
     frame = json.loads(invocation[3].split("\n", 1)[1])
     assert frame["content"] == "Enter\nC-c"
     assert frame["trust"] == "untrusted_peer_data"
@@ -36,9 +36,21 @@ def test_work_dispatch_and_a_busy_target_keep_one_task(owned_fleet):
     assert session.task_store.get_task(first["id"]).state == "completed"
 
 
-def test_failed_delivery_preserves_partial_input_and_releases_the_task(
-    owned_fleet,
+def test_failed_native_prompt_preserves_partial_input_and_releases_the_task(
+    owned_fleet, transport_package, monkeypatch
 ):
+    drive = transport_package.resolution.run_herdr_command
+
+    def fail_after_partial_native_delivery(arguments):
+        if arguments[:2] == ["agent", "prompt"] and owned_fleet.target.fail_submission:
+            owned_fleet.target.draft = arguments[3]
+        return drive(arguments)
+
+    monkeypatch.setattr(
+        transport_package.resolution,
+        "run_herdr_command",
+        fail_after_partial_native_delivery,
+    )
     owned_fleet.target.fail_submission = True
     status, failed = request_json(
         owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": "rejected"}
