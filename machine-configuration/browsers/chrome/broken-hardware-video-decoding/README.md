@@ -20,15 +20,14 @@ Wrapping the Chrome package rather than editing a launcher is what makes the fla
 than one entry point here, and each resolves the binary its own way, so a flag added to one launcher silently misses
 the others. The wrapper covers every caller that resolves `google-chrome-stable`.
 
-Repairing VA-API instead was measured across eleven driver and flag combinations, and none of them work, because the
-conflict is the GPU topology rather than a misconfiguration. PRIME sync routes all rendering through the NVIDIA card
-while the display hangs off the AMD one, and Chrome refuses NVIDIA for VA-API on principle, so decode and presentation
-land on different devices. Forcing the NVIDIA driver anyway still fails the frame pool even with the device skip lifted.
-Forcing the AMD driver clears the frame pool error and reaches a real decoder, and then the GPU process crashes on
-`CreateSharedImage: could not create backing` because the decoded AMD frames cannot be handed to the NVIDIA renderer.
-The machine-wide `LIBVA_DRIVER_NAME` and `GBM_BACKEND` overrides that steer this live with the NVIDIA configuration for
-this host and exist for other consumers, so do not repoint them for Chrome's sake.
+Earlier testing on this host covered eleven driver and flag combinations with the previous PRIME-sync configuration.
+NVIDIA attempts failed to initialize the frame pool. Forcing AMD reached a decoder, but the GPU process then failed
+with `CreateSharedImage: could not create backing`. Those observations do not establish the cause or predict behavior
+with a different kernel, driver, or compositor renderer.
 
-Delete this directory once Chrome initializes a VA-API frame pool on this hardware, once a flag suppresses the H.265
-claim without disabling the whole decode path, or once this host stops rendering through PRIME sync. To retest, remove
-the wrapper and play an HEVC file in Jellyfin, then read `error.message` off the video element.
+The host GPU module owns device routing. Changing that routing does not by itself prove Chrome hardware decoding
+works, so retain this wrapper until playback is tested with the deployed GPU configuration.
+
+To retest, remove the wrapper in a separate reviewed change, play an HEVC file in Jellyfin, and inspect both the video
+element's `error.message` and Chrome's actual decoder. Remove this directory when hardware decoding succeeds or a
+narrower workaround withdraws the unsupported H.265 capability without disabling the whole decode path.
