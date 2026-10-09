@@ -161,12 +161,12 @@ readonly BACKEND_CONTRACT=(
 
 @test "the entrypoint owner builds the repository without a persistent lock" {
 	grep -q 'lock_flags+=(--no-write-lock-file)' "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	grep -q 'nixos-rebuild "$rebuild_action" --flake.*"${lock_flags\[@\]}"' "$BACKENDS_SOURCE_DIRECTORY/nixos"
+	grep -q '"$rebuild_action" --flake.*"${lock_flags\[@\]}"' "$BACKENDS_SOURCE_DIRECTORY/nixos"
 }
 
 @test "nixos-rebuild is invoked with the rebuild-wrapper sentinel" {
 	grep -q 'DOTFILES_REBUILD_WRAPPER=1' "$BACKENDS_SOURCE_DIRECTORY/nixos"
-	grep -q 'nixos-rebuild "$rebuild_action" --flake' "$BACKENDS_SOURCE_DIRECTORY/nixos"
+	grep -q '"$NIXOS_STAGED_REBUILD" "$rebuild_action"' "$BACKENDS_SOURCE_DIRECTORY/nixos"
 }
 
 @test "the entrypoint initializes git submodules before switching" {

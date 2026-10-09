@@ -5,7 +5,14 @@ from pathlib import Path
 
 import pytest
 
+from rebuild_boot_fixture import build_rebuild_boot_environment
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+
+
+@pytest.fixture
+def rebuild_boot_environment(managed_rebuild_environment, tmp_path):
+    return build_rebuild_boot_environment(managed_rebuild_environment, tmp_path)
 
 
 @pytest.fixture
