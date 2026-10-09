@@ -35,7 +35,7 @@ file_types = ["shell"]
 environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
 
 [plugins.definitions.native-shellcheck.drivers.lint]
-script = "shellcheck --format=json -- ${target}"
+script = "shellcheck --external-sources --source-path=SCRIPTDIR --format=json -- ${target}"
 success_codes = [0, 1]
 output_format = "shellcheck"
 batch = true
