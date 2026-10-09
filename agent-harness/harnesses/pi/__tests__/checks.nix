@@ -20,6 +20,13 @@ let
   loaders = import ../plugin-loaders { inherit pkgs; };
 in
 {
+  domain-pi-native-reply-guard = pkgs.runCommand "domain-pi-native-reply-guard" { } ''
+    ${pkgs.nodejs_22}/bin/node ${./verify-native-reply-guard.mjs} \
+      ${loaders}/node_modules \
+      ${cfg.agentPlugins.bundle}/plugin/native/pi/human-facing-reply-guard.js
+    touch "$out"
+  '';
+
   domain-pi-bash-output-recovery = pkgs.runCommand "domain-pi-bash-output-recovery" { } ''
     ${pkgs.nodejs_22}/bin/node ${./verify-bash-output-recovery.mjs} \
       ${loaders}/node_modules \
