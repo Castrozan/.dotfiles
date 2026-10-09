@@ -15,7 +15,11 @@ PANE_REQUEST_TIMEOUT_SECONDS = 1.0
 def session_identifier_from_pane_response(response_text: str) -> str | None:
     try:
         session = json.loads(response_text)["result"]["pane"]["agent_session"]
-        if session.get("kind") != "id":
+        if (session.get("kind"), session.get("agent")) not in (
+            ("id", "claude"),
+            ("id", "codex"),
+            ("id", "opencode"),
+        ):
             return None
         session_identifier = session.get("value")
         return (

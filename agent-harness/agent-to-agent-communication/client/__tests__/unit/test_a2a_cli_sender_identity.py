@@ -39,7 +39,7 @@ def test_codex_uses_its_native_thread_identity_without_a_pane_request(monkeypatc
     )
 
 
-@pytest.mark.parametrize("harness", ["claude", "opencode", "pi", "hermes"])
+@pytest.mark.parametrize("harness", ["claude", "codex", "opencode"])
 def test_other_harnesses_use_the_session_reported_for_the_sending_pane(
     harness, monkeypatch
 ):
@@ -81,6 +81,24 @@ def test_a_background_agent_keeps_its_name_despite_an_inherited_thread(monkeypat
     assert sender_identity.resolve_sender_name({}) == "steward"
 
 
+@pytest.mark.parametrize("harness", ["pi", "hermes", "unassigned"])
+def test_harnesses_without_servants_use_their_session_name(harness, monkeypatch):
+    monkeypatch.setenv("HERDR_PANE_ID", "w1:p2")
+    session_metadata = {"agent": harness, "kind": "id", "value": "unassigned-session"}
+    response_text = json.dumps(
+        {"result": {"pane": {"agent_session": session_metadata}}}
+    )
+    monkeypatch.setattr(
+        sender_identity.subprocess,
+        "run",
+        lambda *arguments, **options: subprocess.CompletedProcess(
+            arguments, 0, response_text
+        ),
+    )
+
+    assert sender_identity.resolve_sender_name(SENDER_DIRECTORY) == "sender-session"
+
+
 @pytest.mark.parametrize("marker", ["OPENCLAW_GATEWAY_PORT", "CLAWDE_AGENT_NAME"])
 def test_agents_without_a_servant_use_their_own_directory_name(marker, monkeypatch):
     monkeypatch.setenv(marker, "1234" if marker == "OPENCLAW_GATEWAY_PORT" else "")
@@ -111,9 +129,9 @@ def test_a_clawde_workspace_has_no_servant_without_an_environment_marker(
         "[]",
         "{}",
         '{"result": {"pane": {"agent_session": null}}}',
-        '{"result": {"pane": {"agent_session": {"kind": "path", "value": "file"}}}}',
-        '{"result": {"pane": {"agent_session": {"kind": "id", "value": ""}}}}',
-        '{"result": {"pane": {"agent_session": {"kind": "id", "value": 12}}}}',
+        '{"result": {"pane": {"agent_session": {"agent": "claude", "kind": "path", "value": "file"}}}}',
+        '{"result": {"pane": {"agent_session": {"agent": "claude", "kind": "id", "value": ""}}}}',
+        '{"result": {"pane": {"agent_session": {"agent": "claude", "kind": "id", "value": 12}}}}',
     ],
 )
 def test_unusable_pane_identity_falls_back_to_the_sending_session_name(
