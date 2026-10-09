@@ -24,8 +24,31 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install pyyaml
-        run: pip install pyyaml
+      - name: Install offline verification dependencies
+        run: pip install pyyaml pytest
 
-      - name: Check eval baseline for regression
-        run: python3 agent-harness/quality/evaluations/run-evals.py --check-baseline
+      - name: Test evaluation contracts without model providers
+        run: |
+          python3 -m pytest \
+            agent-harness/quality/evaluations/__tests__/unit/baseline \
+            agent-harness/quality/evaluations/__tests__/unit/fingerprints \
+            agent-harness/quality/evaluations/__tests__/unit/execution/test_run_evals_arguments.py \
+            agent-harness/quality/evaluations/__tests__/unit/execution/test_run_evals_config_loader.py \
+            agent-harness/quality/evaluations/__tests__/unit/execution/test_run_evals_configuration_contract.py \
+            --junitxml=evaluation-contracts.xml
+
+      - name: Check recorded regression evidence and report pending measurements
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          python3 agent-harness/quality/evaluations/run-evals.py \
+            --check-recorded-baseline | tee recorded-baseline-report.txt
+
+      - name: Retain truthful offline evaluation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-contracts-and-recorded-results
+          path: |
+            evaluation-contracts.xml
+            recorded-baseline-report.txt

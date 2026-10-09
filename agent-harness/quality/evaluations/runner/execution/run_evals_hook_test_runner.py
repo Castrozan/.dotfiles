@@ -5,6 +5,9 @@ import sys
 from runner.run_evals_worktree_and_environment import REPO_ROOT
 
 HOOK_SCRIPT_SEARCH_ROOT = REPO_ROOT / "agent-harness" / "hooks" / "runtime"
+HOOK_ASSERTION_NAMES = frozenset(
+    {"hook_blocks", "message_contains", "message_does_not_contain"}
+)
 
 
 def find_hook_script(hook_filename):

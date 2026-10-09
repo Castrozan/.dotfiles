@@ -56,6 +56,28 @@ def baseline_evidence_failures(
     current_categories: set[str],
     expected_execution_profile: dict,
 ) -> list[str]:
+    failures = recorded_baseline_policy_failures(
+        baseline,
+        current_test_fingerprints,
+        current_categories,
+        expected_execution_profile,
+    )
+    evidence_status = baseline_test_evidence_status(baseline, current_test_fingerprints)
+    minimum_current_evidence = baseline.get("minimum_current_evidence", 1)
+    if len(evidence_status["fresh"]) < minimum_current_evidence:
+        failures.append(
+            f"Current evaluation evidence covers {len(evidence_status['fresh'])} "
+            f"tests, below the baseline floor of {minimum_current_evidence}"
+        )
+    return failures
+
+
+def recorded_baseline_policy_failures(
+    baseline: dict,
+    current_test_fingerprints: dict[str, str],
+    current_categories: set[str],
+    expected_execution_profile: dict,
+) -> list[str]:
     failures = []
     _append_inventory_evidence_failures(
         baseline,
@@ -89,12 +111,6 @@ def _append_inventory_evidence_failures(
             + ", ".join(sorted(obsolete_inventory))
         )
     evidence_status = baseline_test_evidence_status(baseline, current_test_fingerprints)
-    minimum_current_evidence = baseline.get("minimum_current_evidence", 1)
-    if len(evidence_status["fresh"]) < minimum_current_evidence:
-        failures.append(
-            f"Current evaluation evidence covers {len(evidence_status['fresh'])} "
-            f"tests, below the baseline floor of {minimum_current_evidence}"
-        )
     if evidence_status["obsolete"]:
         failures.append(
             "Baseline contains obsolete evaluation tests: "

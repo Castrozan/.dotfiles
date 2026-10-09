@@ -1,5 +1,18 @@
 import re
 
+OUTPUT_ASSERTION_NAMES = frozenset(
+    {
+        "output_contains",
+        "output_not_contains",
+        "output_contains_any",
+        "output_equals",
+        "output_matches_regex",
+        "output_not_matches_regex",
+        "output_contains_ordered",
+        "llm_judge",
+    }
+)
+
 
 def check_assertions(output: str, assertions: dict, judge=None) -> list[str]:
     failures = _check_output_contains(output, assertions)

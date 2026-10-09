@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from runner.run_evals_arguments import parse_arguments  # noqa: E402
 from runner.baseline.run_evals_baseline import check_baseline_for_regression  # noqa: E402
 from runner.baseline.run_evals_baseline_store import read_baseline  # noqa: E402
+from runner.baseline.run_evals_recorded_baseline import check_recorded_baseline  # noqa: E402
 from runner.run_evals_cli_modes import (  # noqa: E402
     run_ab_evaluation,
     run_judge_calibration,
@@ -41,6 +42,9 @@ def main():
 
 
 def _handle_early_arguments(args, config, canonical_execution_profile):
+    if args.check_recorded_baseline:
+        passed = check_recorded_baseline(canonical_execution_profile, config)
+        _exit_with_baseline_status(passed)
     if args.check_baseline:
         passed = check_baseline_for_regression(canonical_execution_profile, config)
         _exit_with_baseline_status(passed)

@@ -33,6 +33,11 @@ def parse_arguments():
         help="Check committed baseline for regression without model calls",
     )
     parser.add_argument(
+        "--check-recorded-baseline",
+        action="store_true",
+        help="Validate recorded results and suite contracts without measuring model behavior",
+    )
+    parser.add_argument(
         "--config", default=Path(__file__).resolve().parents[1] / "evals"
     )
     parser.add_argument(
@@ -87,7 +92,20 @@ def parse_arguments():
     _validate_smoke_baseline_arguments(args, parser)
     _validate_mode_arguments(args, parser)
     _validate_evidence_harnesses(args, parser)
+    _validate_recorded_check_arguments(args, parser)
     return args
+
+
+def _validate_recorded_check_arguments(args, parser) -> None:
+    measurement_modes = (
+        args.save_baseline,
+        args.save_ab_profile,
+        args.ab,
+        args.calibrate_judge,
+        args.check_baseline,
+    )
+    if args.check_recorded_baseline and any(measurement_modes):
+        parser.error("--check-recorded-baseline cannot invoke or save measurements")
 
 
 def _validate_ab_arguments(args, parser) -> None:
