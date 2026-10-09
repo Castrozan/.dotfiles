@@ -15,10 +15,12 @@ let
     "x86_64-linux" = {
       releaseAssetName = "pi-linux-x64.tar.gz";
       sha256 = "sha256-P6qUZmzThJ03rzIP90lAfQJxsHqblPQgyH4whm4Q4ok=";
+      buildInputs = [ pkgs.xorg.libxcb ];
     };
     "aarch64-darwin" = {
       releaseAssetName = "pi-darwin-arm64.tar.gz";
       sha256 = "sha256-NFWxPeNcFaWJPN68kiZ4GZ6Qp86ZsGy8I/N4YOkNY8c=";
+      buildInputs = [ ];
     };
   };
 
@@ -28,7 +30,7 @@ let
     pname = "pi-coding-agent";
     inherit version;
     url = "https://github.com/earendil-works/pi/releases/download/v${version}/${currentHostSystem.releaseAssetName}";
-    inherit (currentHostSystem) sha256;
+    inherit (currentHostSystem) sha256 buildInputs;
     binaryName = "pi";
     archivePrefixToInstall = "pi";
   };
