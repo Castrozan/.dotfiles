@@ -14,6 +14,7 @@ from .peer_transport import (
     resolve_peer_endpoint,
     submit_task_to_peer,
 )
+from .sender_identity import signed_input_text
 
 
 def command_list(arguments: argparse.Namespace, agent_directory: dict) -> int:
@@ -42,7 +43,8 @@ def command_list(arguments: argparse.Namespace, agent_directory: dict) -> int:
 
 def command_send(arguments: argparse.Namespace, agent_directory: dict) -> int:
     endpoint = resolve_peer_endpoint(agent_directory, arguments.agent)
-    print(submit_task_to_peer(endpoint, arguments.text)["id"])
+    input_text = signed_input_text(arguments.text, arguments.sender, agent_directory)
+    print(submit_task_to_peer(endpoint, input_text)["id"])
     return 0
 
 
@@ -70,7 +72,8 @@ def command_acknowledge(arguments: argparse.Namespace, agent_directory: dict) ->
 
 def command_ask(arguments: argparse.Namespace, agent_directory: dict) -> int:
     endpoint = resolve_peer_endpoint(agent_directory, arguments.agent)
-    submitted_task = submit_task_to_peer(endpoint, arguments.text)
+    input_text = signed_input_text(arguments.text, arguments.sender, agent_directory)
+    submitted_task = submit_task_to_peer(endpoint, input_text)
     finished_task = poll_task_until_terminal(
         endpoint, submitted_task["id"], arguments.timeout_seconds
     )
