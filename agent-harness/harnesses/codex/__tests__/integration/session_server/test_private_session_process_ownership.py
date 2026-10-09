@@ -7,7 +7,7 @@ import time
 
 import pytest
 
-from conftest import OWNED_ROLES, process_is_alive, wait_until
+from private_session_process_fixture import OWNED_ROLES, process_is_alive, wait_until
 
 
 def test_private_backend_and_worker_groups_remain_in_terminal_session(
