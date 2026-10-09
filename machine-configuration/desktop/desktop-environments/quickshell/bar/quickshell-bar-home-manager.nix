@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   inputs,
   isNixOS,
@@ -39,7 +38,7 @@ in
 
     Service = {
       Type = "simple";
-      ExecStart = "${quickshellPackage}/bin/quickshell --path ${config.home.homeDirectory}/.dotfiles/machine-configuration/desktop/desktop-environments/quickshell/bar/program-configuration";
+      ExecStart = "${quickshellPackage}/bin/quickshell -c bar";
       Environment = [
         "QML_IMPORT_PATH=${pkgs.qt6Packages.qt5compat}/lib/qt-6/qml"
         "QT_QPA_PLATFORM=wayland"

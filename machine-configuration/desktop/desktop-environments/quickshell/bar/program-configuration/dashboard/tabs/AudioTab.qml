@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import "audio"
+import "../components"
 import "../services"
 import ".."
 import QtQuick
@@ -16,16 +17,9 @@ Item {
     implicitWidth: Math.max(800, audioContentColumn.implicitWidth)
     implicitHeight: Math.min(maximumTabHeight, audioContentColumn.implicitHeight)
 
-    onDashboardIsActiveChanged: {
-        if (dashboardIsActive)
-            AudioService.refCount++;
-        else
-            AudioService.refCount--;
-    }
-
-    Component.onDestruction: {
-        if (audioTabRoot.dashboardIsActive)
-            AudioService.refCount--;
+    ServiceActivity {
+        service: AudioService
+        active: audioTabRoot.dashboardIsActive
     }
 
     function ensureItemVisible(item: var): void {

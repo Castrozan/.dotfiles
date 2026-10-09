@@ -4,6 +4,7 @@ import json
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import quote
 
 DEFAULT_DAEMON_ENDPOINT = "http://127.0.0.1:7000"
 TERMINAL_TASK_STATES = frozenset({"completed", "canceled", "failed"})
@@ -55,14 +56,52 @@ def read_agent_directory(daemon_endpoint: str) -> dict:
     return {entry["name"]: entry for entry in document.get("agents", [])}
 
 
-def resolve_peer_endpoint(agent_directory: dict, agent_name: str) -> str:
-    agent = agent_directory.get(agent_name)
+def resolve_peer_endpoint(agent_directory: dict, agent_target: str) -> str:
+    agent = next(
+        (
+            entry
+            for entry in agent_directory.values()
+            if entry.get("paneId") == agent_target
+        ),
+        agent_directory.get(agent_target),
+    )
     if agent is None:
         attached_agent_names = ", ".join(sorted(agent_directory)) or "none attached"
         raise PeerRequestFailure(
-            f"unknown agent {agent_name!r}; attached agents: {attached_agent_names}"
+            f"unknown agent {agent_target!r}; attached agents: {attached_agent_names}"
         )
     return agent["endpoint"].rstrip("/")
+
+
+def notify_peer(endpoint: str, claimed_sender: str, content: str) -> dict:
+    status_code, receipt = request_peer_json(
+        "POST",
+        f"{endpoint}/messages",
+        {"claimedSender": claimed_sender, "content": content},
+    )
+    if status_code != 202:
+        raise PeerRequestFailure(
+            f"peer refused the notification with status {status_code}: {receipt}"
+        )
+    return receipt
+
+
+def read_peer_inbox(endpoint: str) -> dict:
+    status_code, inbox = request_peer_json("GET", f"{endpoint}/messages")
+    if status_code != 200:
+        raise PeerRequestFailure(f"peer inbox returned status {status_code}: {inbox}")
+    return inbox
+
+
+def acknowledge_peer_notification(endpoint: str, notification_identifier: str) -> dict:
+    status_code, receipt = request_peer_json(
+        "POST", f"{endpoint}/messages/{quote(notification_identifier, safe='')}/ack"
+    )
+    if status_code != 200:
+        raise PeerRequestFailure(
+            f"peer refused acknowledgement with status {status_code}: {receipt}"
+        )
+    return receipt
 
 
 def submit_task_to_peer(endpoint: str, input_text: str) -> dict:

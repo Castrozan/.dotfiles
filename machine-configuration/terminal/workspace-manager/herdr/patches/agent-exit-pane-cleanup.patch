@@ -1,0 +1,106 @@
+diff --git a/src/app/api/agent_lifecycle.rs b/src/app/api/agent_lifecycle.rs
+--- a/src/app/api/agent_lifecycle.rs
++++ b/src/app/api/agent_lifecycle.rs
+@@ -1,4 +1,4 @@
+-use crate::api::schema::{AgentRestartParams, AgentTarget, ResponseResult};
++use crate::api::schema::{AgentRestartParams, AgentTarget, PaneTarget, ResponseResult};
+ use crate::app::App;
+
+ use super::responses::{encode_error, encode_error_body, encode_success};
+@@ -86,7 +86,7 @@
+         else {
+             return agent_not_found(id, &target.target);
+         };
+-        let Some(terminal) = self.state.terminals.get_mut(&terminal_id) else {
++        let Some(terminal) = self.state.terminals.get(&terminal_id) else {
+             return agent_not_found(id, &target.target);
+         };
+         if terminal.managed_agent_kind().is_some() {
+@@ -106,11 +106,13 @@
+             );
+         }
+
+-        terminal.clear_agent_runtime_identity_after_respawn();
+-        terminal.respawn_shell_on_exit = true;
++        let Some(pane_id) = self.public_pane_id(resolved.ws_idx, resolved.pane_id) else {
++            return agent_not_found(id, &target.target);
++        };
++        if let Err(response) = self.close_pane(id.clone(), &PaneTarget { pane_id }) {
++            return response;
++        }
+         self.pending_agent_continuations.remove(&terminal_id);
+-        self.state.terminal_runtime_shutdowns.push(terminal_id);
+-        self.schedule_session_save();
+
+         encode_success(id, ResponseResult::Ok {})
+     }
+diff --git a/src/app/api/agent_lifecycle/tests.rs b/src/app/api/agent_lifecycle/tests.rs
+--- a/src/app/api/agent_lifecycle/tests.rs
++++ b/src/app/api/agent_lifecycle/tests.rs
+@@ -77,8 +77,18 @@
+ }
+
+ #[tokio::test]
+-async fn exit_queues_shell_respawn_in_the_same_pane() {
++async fn exit_removes_its_pane_and_preserves_peer_runtimes() {
+     let (mut app, terminal_id) = app_with_codex(true);
++    let pane_id = app.state.workspaces[0].tabs[0].root_pane;
++    let peer_workspace = crate::workspace::Workspace::test_new("peer");
++    let peer_pane_id = peer_workspace.tabs[0].root_pane;
++    let peer_terminal_id = peer_workspace.terminal_id(peer_pane_id).cloned().unwrap();
++    app.state.workspaces.push(peer_workspace);
++    app.state.ensure_test_terminals();
++    let (runtime, _receiver) = crate::terminal::TerminalRuntime::test_with_channel(80, 24);
++    app.terminal_runtimes
++        .insert(peer_terminal_id.clone(), runtime);
++    app.queue_agent_continuation(terminal_id.clone(), Agent::Codex, "continue".into());
+
+     let response = app.handle_agent_exit(
+         "req".into(),
+@@ -89,10 +99,35 @@
+
+     let success: SuccessResponse = serde_json::from_str(&response).unwrap();
+     assert!(matches!(success.result, ResponseResult::Ok {}));
+-    let terminal = app.state.terminals.get(&terminal_id).unwrap();
+-    assert!(terminal.respawn_shell_on_exit);
+-    assert_eq!(terminal.state, AgentState::Unknown);
+-    assert_eq!(app.state.terminal_runtime_shutdowns, [terminal_id]);
++    assert!(app.find_pane(pane_id).is_none());
++    assert!(!app.state.terminals.contains_key(&terminal_id));
++    assert!(app.terminal_runtimes.get(&terminal_id).is_none());
++    assert!(!app.pending_agent_continuations.contains_key(&terminal_id));
++    assert!(app.find_pane(peer_pane_id).is_some());
++    assert!(app.state.terminals.contains_key(&peer_terminal_id));
++    assert!(app.terminal_runtimes.get(&peer_terminal_id).is_some());
++    assert_eq!(app.state.workspaces.len(), 1);
++}
++
++#[tokio::test]
++async fn exit_refuses_a_pending_lifecycle_without_removing_the_pane() {
++    let (mut app, terminal_id) = app_with_codex(true);
++    let pane_id = app.state.workspaces[0].tabs[0].root_pane;
++    app.state
++        .terminal_runtime_shutdowns
++        .push(terminal_id.clone());
++
++    let response = app.handle_agent_exit(
++        "req".into(),
++        AgentTarget {
++            target: "codex".into(),
++        },
++    );
++    let error: ErrorResponse = serde_json::from_str(&response).unwrap();
++
++    assert_eq!(error.error.code, "agent_lifecycle_in_progress");
++    assert!(app.find_pane(pane_id).is_some());
++    assert!(app.terminal_runtimes.get(&terminal_id).is_some());
+ }
+
+ #[tokio::test]
+@@ -129,4 +164,6 @@
+         assert_eq!(error.error.code, "managed_agent_lifecycle_unavailable");
+     }
+     assert!(app.state.terminal_runtime_shutdowns.is_empty());
++    assert!(app.state.terminals.contains_key(&terminal_id));
++    assert!(app.terminal_runtimes.get(&terminal_id).is_some());
+ }

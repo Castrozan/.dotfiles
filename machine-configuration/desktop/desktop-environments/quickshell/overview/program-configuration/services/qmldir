@@ -1,3 +1,4 @@
 singleton HyprlandData 1.0 HyprlandData.qml
 singleton GlobalStates 1.0 GlobalStates.qml
 HyprlandEventUpdates 1.0 HyprlandEventUpdates.qml
+HyprlandQueryProcesses 1.0 hyprland-data/HyprlandQueryProcesses.qml

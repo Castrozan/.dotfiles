@@ -5,7 +5,12 @@ set -Eeuo pipefail
 readonly DOTFILES_DIRECTORY="${HOME}/.dotfiles"
 readonly MACHINE_ALIAS="@machineAlias@"
 readonly BACKENDS_DIRECTORY="@backendsDirectory@"
-readonly EXCLUSIVE_RUN_LOCK_HELPER="${DOTFILES_DIRECTORY}/agent-harness/session-control/exclusive-run-lock.sh"
+readonly EXCLUSIVE_RUN_LOCK_HELPER="@exclusiveRunLockHelper@"
+readonly EXCLUSIVE_RUN_SCOPE_PYTHON="@exclusiveRunScopePython@"
+readonly NIXOS_REBUILD_PREFETCH="@nixosRebuildPrefetch@"
+readonly NIXOS_STAGED_REBUILD="@nixosStagedRebuild@"
+export NIXOS_REBUILD_PREFETCH NIXOS_STAGED_REBUILD
+export EXCLUSIVE_RUN_SCOPE_PYTHON
 readonly TYPICAL_REBUILD_DURATION_SECONDS=420
 readonly NIX_DAEMON_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 
@@ -50,10 +55,13 @@ ensure_nix_is_on_the_path() {
 	. "$NIX_DAEMON_PROFILE"
 }
 
-hold_exclusive_rebuild_lock() {
-	[ -f "$EXCLUSIVE_RUN_LOCK_HELPER" ] || return 0
+prepare_exclusive_rebuild_lock() {
+	[ -f "$EXCLUSIVE_RUN_LOCK_HELPER" ] || fail "exclusive rebuild lock helper not found at ${EXCLUSIVE_RUN_LOCK_HELPER}"
+	[ -f "${EXCLUSIVE_RUN_LOCK_HELPER%/*}/exclusive_run_scope.py" ] || fail "exclusive rebuild lock scope is missing"
+	[ -f "${EXCLUSIVE_RUN_LOCK_HELPER%/*}/exclusive_run_lock.py" ] || fail "exclusive rebuild lock driver is missing"
 	# shellcheck disable=SC1090
 	. "$EXCLUSIVE_RUN_LOCK_HELPER"
+	[ "$(detect_backend_name)" = "home-manager" ] || return 0
 	acquire_exclusive_run_lock_or_emit_retry_instructions \
 		"rebuild" "$TYPICAL_REBUILD_DURATION_SECONDS" "$REBUILD_SWITCH_LOG_PATH"
 }
@@ -69,13 +77,26 @@ nudge_clawde_agents_to_redeploy_on_continued_sessions() {
 }
 
 main() {
+	local rebuild_action="switch"
+	if [ "${1:-}" = "boot" ]; then
+		[ "$(detect_backend_name)" = "nixos" ] || fail "rebuild boot is supported only on NixOS"
+		rebuild_action="boot"
+		shift
+	fi
+
 	ensure_dotfiles_directory_exists
 	ensure_nix_is_on_the_path
 	source_backend_for_this_platform
 
 	backend_prepare_environment
-	hold_exclusive_rebuild_lock
+	prepare_exclusive_rebuild_lock
 	initialize_git_submodules
+
+	if [ "$rebuild_action" = "boot" ]; then
+		backend_boot "$@"
+		echo ":: Boot generation staged on ${MACHINE_ALIAS}; reboot to activate."
+		return 0
+	fi
 
 	backend_switch "$@"
 	backend_verify_switch_landed

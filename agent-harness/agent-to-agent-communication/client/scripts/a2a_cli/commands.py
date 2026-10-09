@@ -5,8 +5,11 @@ import json
 import sys
 
 from .peer_transport import (
+    acknowledge_peer_notification,
     cancel_task_on_peer,
+    notify_peer,
     poll_task_until_terminal,
+    read_peer_inbox,
     read_task_from_peer,
     resolve_peer_endpoint,
     submit_task_to_peer,
@@ -40,6 +43,28 @@ def command_list(arguments: argparse.Namespace, agent_directory: dict) -> int:
 def command_send(arguments: argparse.Namespace, agent_directory: dict) -> int:
     endpoint = resolve_peer_endpoint(agent_directory, arguments.agent)
     print(submit_task_to_peer(endpoint, arguments.text)["id"])
+    return 0
+
+
+def command_notify(arguments: argparse.Namespace, agent_directory: dict) -> int:
+    endpoint = resolve_peer_endpoint(agent_directory, arguments.agent)
+    print(json.dumps(notify_peer(endpoint, arguments.sender, arguments.text), indent=2))
+    return 0
+
+
+def command_inbox(arguments: argparse.Namespace, agent_directory: dict) -> int:
+    endpoint = resolve_peer_endpoint(agent_directory, arguments.agent)
+    print(json.dumps(read_peer_inbox(endpoint), indent=2))
+    return 0
+
+
+def command_acknowledge(arguments: argparse.Namespace, agent_directory: dict) -> int:
+    endpoint = resolve_peer_endpoint(agent_directory, arguments.agent)
+    print(
+        json.dumps(
+            acknowledge_peer_notification(endpoint, arguments.notification_id), indent=2
+        )
+    )
     return 0
 
 

@@ -3,6 +3,7 @@ inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (
   patches = (previous.patches or [ ]) ++ [
     ./patches/selection-action.patch
     ./patches/navigator-current-workspace.patch
+    ./patches/agent-exit-pane-cleanup.patch
   ];
   postPatch = (previous.postPatch or "") + ''
     mkdir -p tests
@@ -15,4 +16,9 @@ inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (
     "herdr"
     "navigator"
   ];
+  postCheck = (previous.postCheck or "") + ''
+    cargo test --offline --locked --release --jobs 1 \
+      --target ${pkgs.stdenv.hostPlatform.rust.rustcTarget} \
+      --bin herdr app::api::agent_lifecycle::tests -- --test-threads=1
+  '';
 })

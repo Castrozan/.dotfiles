@@ -35,10 +35,10 @@ rustPlatform.buildRustPackage {
   version = "0.7.0";
 
   src = source;
-  patches = [ ./patches/annotation-save-to-prompt.patch ];
+  patches = [ ../patches/annotation-save-to-prompt.patch ];
   cargoRoot = "rust";
   buildAndTestSubdir = "rust";
-  cargoLock.lockFile = source + "/rust/Cargo.lock";
+  cargoLock.lockFile = ../cargo-locks/herdr-annotate/Cargo.lock;
 
   reviewRuntime = pkgs.fetchurl {
     url = "https://github.com/plannotator/plannotator-tui/releases/download/v0.9.4/plannotator-tui-${platformRelease.target}";
@@ -59,7 +59,7 @@ rustPlatform.buildRustPackage {
   );
 
   dontStrip = true;
-  postInstall = builtins.readFile ./scripts/install-herdr-annotate.sh;
+  postInstall = builtins.readFile ../scripts/install-herdr-annotate.sh;
 
   doInstallCheck = true;
   installCheckPhase = ''

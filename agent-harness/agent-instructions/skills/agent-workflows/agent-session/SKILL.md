@@ -31,6 +31,6 @@ work around either boundary with manual signals or a harness's most-recent-sessi
 ### Exit
 
 Run `agent-session exit` only once every task is finished, changes are committed where that applies, and you have
-summarized what you accomplished, because that summary is the last thing the human reads. It reports the harness it
-found and asks Herdr to stop it while preserving the pane as an idle shell. `agent-session exit --print-target` reports
+summarized what you accomplished, because that summary is the last thing the human reads. It asks Herdr to stop the
+agent and remove its enclosing pane. `agent-session exit --print-target` reports
 the enclosing Herdr pane without stopping it.

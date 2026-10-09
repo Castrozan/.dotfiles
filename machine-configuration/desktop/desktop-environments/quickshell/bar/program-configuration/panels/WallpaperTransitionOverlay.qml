@@ -31,37 +31,44 @@ PanelWindow {
     color: "transparent"
     surfaceFormat.opaque: false
 
-    Image {
-        id: previousWallpaperImage
+    Loader {
         anchors.fill: parent
-        source: wallpaperTransitionOverlayRoot.previousWallpaperPath !== ""
-            ? `file://${wallpaperTransitionOverlayRoot.previousWallpaperPath}`
-            : ""
-        fillMode: Image.PreserveAspectCrop
-        visible: false
-        layer.enabled: true
-    }
+        active: wallpaperTransitionOverlayRoot.transitionActive
 
-    Item {
-        id: circleShrinkMask
-        anchors.fill: parent
-        visible: false
-        layer.enabled: true
+        sourceComponent: Item {
+            Image {
+                id: previousWallpaperImage
+                anchors.fill: parent
+                source: wallpaperTransitionOverlayRoot.previousWallpaperPath !== "" ? `file://${wallpaperTransitionOverlayRoot.previousWallpaperPath}` : ""
+                sourceSize: Qt.size(Math.ceil(wallpaperTransitionOverlayRoot.width * Screen.devicePixelRatio), Math.ceil(wallpaperTransitionOverlayRoot.height * Screen.devicePixelRatio))
+                fillMode: Image.PreserveAspectCrop
+                visible: false
+                layer.enabled: true
+                cache: false
+            }
 
-        Rectangle {
-            anchors.centerIn: parent
-            width: wallpaperTransitionOverlayRoot.circleDiameter
-            height: wallpaperTransitionOverlayRoot.circleDiameter
-            radius: wallpaperTransitionOverlayRoot.circleDiameter / 2
-            color: "white"
-            antialiasing: true
+            Item {
+                id: circleShrinkMask
+                anchors.fill: parent
+                visible: false
+                layer.enabled: true
+
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: wallpaperTransitionOverlayRoot.circleDiameter
+                    height: wallpaperTransitionOverlayRoot.circleDiameter
+                    radius: wallpaperTransitionOverlayRoot.circleDiameter / 2
+                    color: "white"
+                    antialiasing: true
+                }
+            }
+
+            OpacityMask {
+                anchors.fill: parent
+                source: previousWallpaperImage
+                maskSource: circleShrinkMask
+            }
         }
-    }
-
-    OpacityMask {
-        anchors.fill: parent
-        source: previousWallpaperImage
-        maskSource: circleShrinkMask
     }
 
     NumberAnimation {
@@ -75,6 +82,7 @@ PanelWindow {
 
         onFinished: {
             wallpaperTransitionOverlayRoot.transitionActive = false;
+            wallpaperTransitionOverlayRoot.previousWallpaperPath = "";
         }
     }
 

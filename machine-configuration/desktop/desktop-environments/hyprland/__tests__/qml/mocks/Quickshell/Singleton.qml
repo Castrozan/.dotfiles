@@ -1,3 +1,5 @@
 import QtQuick
 
-QtObject {}
+QtObject {
+    default property list<QtObject> children
+}

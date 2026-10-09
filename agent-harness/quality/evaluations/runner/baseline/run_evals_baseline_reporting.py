@@ -63,7 +63,17 @@ def print_baseline_summary(summary: BaselineCheckSummary) -> None:
         f"  Pending evidence: {len(summary.evidence_status['stale'])} stale, "
         f"{len(summary.evidence_status['missing'])} missing"
     )
+    _print_pending_evidence(summary)
     _print_sampling_summary(baseline.get("sampling"))
+
+
+def _print_pending_evidence(summary: BaselineCheckSummary) -> None:
+    for status in ("stale", "missing"):
+        for test_key in sorted(summary.evidence_status[status]):
+            print(
+                f"  {status.title()} evidence: {test_key} "
+                f"(current fingerprint {summary.current_test_fingerprints[test_key]})"
+            )
 
 
 def _print_compliance_interval(compliance_passed: int, compliance_total: int) -> None:

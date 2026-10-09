@@ -65,8 +65,12 @@ backend_prepare_environment() {
 	take_ownership_of_the_agenix_identity_key
 }
 
-backend_switch() {
+run_nixos_rebuild() (
+	local rebuild_action="$1"
+	shift
 	refuse_to_deploy_the_entrypoint_owner_from_bare_dotfiles "$MACHINE_ALIAS"
+	[ -x "$NIXOS_REBUILD_PREFETCH" ] || fail "NixOS rebuild prefetch infrastructure is missing"
+	[ -x "$NIXOS_STAGED_REBUILD" ] || fail "NixOS staged rebuild infrastructure is missing"
 
 	local flake_reference
 	flake_reference="$(resolve_flake_reference "$MACHINE_ALIAS")"
@@ -77,12 +81,25 @@ backend_switch() {
 	fi
 
 	echo ":: Rebuilding NixOS from ${flake_reference}..."
+	local preparation_directory
+	preparation_directory="$(mktemp -d -t dotfiles-rebuild-prefetch.XXXXXXXX)"
+	trap 'rm -rf -- "$preparation_directory"' EXIT
+	"$NIXOS_REBUILD_PREFETCH" "${preparation_directory}/request.json" "$DOTFILES_DIRECTORY" \
+		"$rebuild_action" --flake "$flake_reference" "${lock_flags[@]}" "$@"
 	run_privileged env \
 		"PATH=${SETUID_WRAPPERS_DIRECTORY}:${PATH}" \
 		NIXPKGS_ALLOW_UNFREE=1 \
 		DOTFILES_REBUILD_WRAPPER=1 \
 		"${LOW_PRIORITY_COMMAND_PREFIX[@]}" \
-		nixos-rebuild switch --flake "$flake_reference" "${lock_flags[@]}" "$@"
+		"$NIXOS_STAGED_REBUILD" "$rebuild_action" "${preparation_directory}/request.json"
+)
+
+backend_boot() {
+	run_nixos_rebuild boot "$@"
+}
+
+backend_switch() {
+	run_nixos_rebuild switch "$@"
 }
 
 backend_verify_switch_landed() {
