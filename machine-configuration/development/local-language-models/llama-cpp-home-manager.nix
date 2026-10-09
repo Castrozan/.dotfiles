@@ -10,6 +10,7 @@ let
   modelId = "qwen3.5-4b-uncensored";
   contextWindow = 24576;
   listenPort = 8081;
+  backendPort = 8082;
   inferencePackage =
     (latest.llama-cpp.override {
       cudaSupport = true;
@@ -39,7 +40,7 @@ let
     "--host"
     "127.0.0.1"
     "--port"
-    (toString listenPort)
+    (toString backendPort)
     "--device"
     "CUDA0"
     "--gpu-layers"
@@ -86,6 +87,7 @@ in
     (import ../../../agent-harness/harnesses/pi/local-model.nix {
       inherit modelId contextWindow;
       baseUrl = "http://127.0.0.1:${toString listenPort}/v1";
+      healthUrl = "http://127.0.0.1:${toString listenPort}/health";
     })
   ];
 
@@ -97,14 +99,16 @@ in
         Description = "Local Qwen3.5-4B uncensored inference";
         StartLimitIntervalSec = 300;
         StartLimitBurst = 3;
+        StopWhenUnneeded = true;
       };
       Service = {
         Type = "exec";
         ExecStart = "${inferencePackage}/bin/llama-server ${lib.escapeShellArgs serverArguments}";
-        ExecStartPost = "${pkgs.curl}/bin/curl --fail --silent --retry 60 --retry-all-errors --retry-delay 1 --max-time 2 http://127.0.0.1:${toString listenPort}/health";
+        ExecStartPost = "${pkgs.curl}/bin/curl --fail --silent --retry 60 --retry-all-errors --retry-delay 1 --max-time 2 http://127.0.0.1:${toString backendPort}/health";
         Restart = "on-failure";
         RestartSec = 10;
         TimeoutStartSec = 180;
+        TimeoutStopSec = 30;
         MemoryHigh = "4G";
         MemoryMax = "6G";
         CPUQuota = "400%";
@@ -112,7 +116,36 @@ in
         NoNewPrivileges = true;
         WorkingDirectory = config.home.homeDirectory;
       };
-      Install.WantedBy = [ "default.target" ];
+    };
+
+    systemd.user.sockets.local-language-model = {
+      Unit.Description = "Local inference on-demand listener";
+      Socket = {
+        ListenStream = "127.0.0.1:${toString listenPort}";
+        Service = "local-language-model-proxy.service";
+        NoDelay = true;
+      };
+      Install.WantedBy = [ "sockets.target" ];
+    };
+
+    systemd.user.services.local-language-model-proxy = {
+      Unit = {
+        Description = "Local inference demand and idle shutdown";
+        Requires = [
+          "local-language-model.service"
+          "local-language-model.socket"
+        ];
+        After = [
+          "local-language-model.service"
+          "local-language-model.socket"
+        ];
+      };
+      Service = {
+        Type = "notify";
+        Sockets = [ "local-language-model.socket" ];
+        ExecStart = "${pkgs.systemd}/lib/systemd/systemd-socket-proxyd --exit-idle-time=300 127.0.0.1:${toString backendPort}";
+        NoNewPrivileges = true;
+      };
     };
   };
 }
