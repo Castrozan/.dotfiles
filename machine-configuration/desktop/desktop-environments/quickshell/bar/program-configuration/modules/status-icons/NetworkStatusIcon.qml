@@ -14,8 +14,10 @@ StatusIcon {
     readonly property var wifiSignalIcons: ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"]
 
     iconText: {
-        if (connectionState === "ethernet") return "󰀂";
-        if (connectionState === "disconnected") return "󰤮";
+        if (connectionState === "ethernet")
+            return "󰀂";
+        if (connectionState === "disconnected")
+            return "󰤮";
         let tier = Math.min(Math.floor(signalStrength / 25), 4);
         return wifiSignalIcons[tier];
     }
@@ -38,9 +40,11 @@ StatusIcon {
             onRead: data => {
                 let lines = data.trim().split("\n");
                 let foundWifi = false;
+                networkIcon.connectionState = "disconnected";
                 for (let i = 0; i < lines.length; i++) {
                     let parts = lines[i].split(":");
-                    if (parts.length < 3) continue;
+                    if (parts.length < 3)
+                        continue;
                     let deviceType = parts[0];
                     let deviceState = parts[1];
 
@@ -53,16 +57,15 @@ StatusIcon {
                         foundWifi = true;
                     }
                 }
-                if (!foundWifi && networkIcon.connectionState !== "ethernet") {
-                    networkIcon.connectionState = "disconnected";
-                }
+                if (foundWifi)
+                    networkSignalStrengthProcess.running = true;
             }
         }
     }
 
     Process {
         id: networkSignalStrengthProcess
-        command: ["nmcli", "-t", "-f", "SIGNAL,IN-USE", "device", "wifi", "list"]
+        command: ["nmcli", "-t", "-f", "SIGNAL,IN-USE", "device", "wifi", "list", "--rescan", "no"]
         running: false
         stdout: SplitParser {
             splitMarker: ""
@@ -86,7 +89,6 @@ StatusIcon {
         triggeredOnStart: true
         onTriggered: {
             networkDeviceStatusProcess.running = true;
-            networkSignalStrengthProcess.running = true;
         }
     }
 }

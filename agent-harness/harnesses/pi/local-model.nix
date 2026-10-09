@@ -2,6 +2,7 @@
   modelId,
   contextWindow,
   baseUrl,
+  healthUrl,
 }:
 {
   config,
@@ -11,12 +12,26 @@
 }:
 let
   profileDirectory = ".local/share/pi-local";
-  launcher = pkgs.writeShellScriptBin "local-agent" ''
-    export PI_CODING_AGENT_DIR=${lib.escapeShellArg "${config.home.homeDirectory}/${profileDirectory}"}
-    export PI_AGENT_DIR="$PI_CODING_AGENT_DIR"
-    ${pkgs.systemd}/bin/systemctl --user start local-language-model.service || exit "$?"
-    exec ${config.pi.package}/bin/pi --offline --provider chise --model ${lib.escapeShellArg modelId} --thinking off "$@"
-  '';
+  launcher = pkgs.writeShellScriptBin "local-agent" (
+    lib.replaceStrings
+      [
+        "@profileDirectory@"
+        "@systemctl@"
+        "@curl@"
+        "@pi@"
+        "@modelId@"
+        "@healthUrl@"
+      ]
+      [
+        (lib.escapeShellArg "${config.home.homeDirectory}/${profileDirectory}")
+        "${pkgs.systemd}/bin/systemctl"
+        "${pkgs.curl}/bin/curl"
+        "${config.pi.package}/bin/pi"
+        (lib.escapeShellArg modelId)
+        (lib.escapeShellArg healthUrl)
+      ]
+      (builtins.readFile ./scripts/local-agent.sh)
+  );
 in
 {
   imports = [

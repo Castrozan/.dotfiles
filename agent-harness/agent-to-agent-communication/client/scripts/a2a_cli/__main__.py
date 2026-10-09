@@ -4,9 +4,12 @@ import argparse
 import sys
 
 from .commands import (
+    command_acknowledge,
     command_ask,
     command_cancel,
+    command_inbox,
     command_list,
+    command_notify,
     command_send,
     command_status,
 )
@@ -58,6 +61,31 @@ def build_argument_parser() -> argparse.ArgumentParser:
     cancel_parser.add_argument("agent")
     cancel_parser.add_argument("task_id")
     cancel_parser.set_defaults(handler=command_cancel)
+
+    notify_parser = subcommands.add_parser(
+        "notify",
+        help="queue untrusted peer data without typing or starting a work task",
+    )
+    notify_parser.add_argument("agent", help="current peer name or stable paneId")
+    notify_parser.add_argument("text")
+    notify_parser.add_argument(
+        "--sender", required=True, help="unauthenticated sender claim"
+    )
+    notify_parser.set_defaults(handler=command_notify)
+
+    inbox_parser = subcommands.add_parser(
+        "inbox", help="read unread peer data without consuming or submitting it"
+    )
+    inbox_parser.add_argument("agent", help="current peer name or stable paneId")
+    inbox_parser.set_defaults(handler=command_inbox)
+
+    acknowledge_parser = subcommands.add_parser(
+        "ack",
+        help="explicitly acknowledge a notification; repeated acknowledgement is safe",
+    )
+    acknowledge_parser.add_argument("agent", help="current peer name or stable paneId")
+    acknowledge_parser.add_argument("notification_id")
+    acknowledge_parser.set_defaults(handler=command_acknowledge)
     return parser
 
 

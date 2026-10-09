@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+export GC_INITIAL_HEAP_SIZE=67108864
+export GC_FREE_SPACE_DIVISOR=8
+exec "$NIXOS_STAGED_REBUILD_PYTHON" "$NIXOS_STAGED_REBUILD_SCRIPTS/staged_rebuild.py" "$@"

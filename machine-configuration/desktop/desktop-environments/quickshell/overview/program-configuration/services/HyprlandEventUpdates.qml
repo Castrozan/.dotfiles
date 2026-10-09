@@ -11,12 +11,17 @@ Connections {
         if (["openlayer", "closelayer", "screencast"].includes(eventName))
             return;
 
-        if (eventName === "openwindow" || eventName === "closewindow" || eventName === "movewindow" || eventName === "movewindowv2" || eventName === "windowtitle") {
+        if (eventName === "windowtitle" || eventName === "windowtitlev2") {
+            updatesRequested(true, false, false, false, false);
+            return;
+        }
+
+        if (["openwindow", "closewindow", "movewindow", "movewindowv2", "fullscreen", "changefloatingmode", "pin", "urgent"].includes(eventName)) {
             updatesRequested(true, false, false, true, false);
             return;
         }
 
-        if (eventName === "workspace" || eventName === "workspacev2" || eventName === "focusedmon" || eventName === "focusedmonv2" || eventName === "activewindow" || eventName === "activewindowv2") {
+        if (["workspace", "workspacev2", "focusedmon", "focusedmonv2", "activewindow", "activewindowv2", "createworkspace", "createworkspacev2", "destroyworkspace", "destroyworkspacev2", "activespecial", "activespecialv2"].includes(eventName)) {
             updatesRequested(false, false, false, true, true);
             return;
         }

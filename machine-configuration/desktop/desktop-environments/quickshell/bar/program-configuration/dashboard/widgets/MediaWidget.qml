@@ -9,6 +9,8 @@ import QtQuick
 Item {
     id: mediaWidgetRoot
 
+    property bool dashboardIsActive: false
+
     property real playerProgress: {
         const activePlayer = PlayersService.active;
         return activePlayer?.length ? activePlayer.position / activePlayer.length : 0;
@@ -19,13 +21,14 @@ Item {
     implicitWidth: DashboardConfig.sizes.mediaCoverArtSize + Appearance.padding.large * 2
 
     Behavior on playerProgress {
+        enabled: mediaWidgetRoot.dashboardIsActive
         Anim {
             duration: Appearance.anim.durations.large
         }
     }
 
     Timer {
-        running: PlayersService.active?.isPlaying ?? false
+        running: mediaWidgetRoot.dashboardIsActive && (PlayersService.active?.isPlaying ?? false)
         interval: DashboardConfig.mediaUpdateInterval
         triggeredOnStart: true
         repeat: true

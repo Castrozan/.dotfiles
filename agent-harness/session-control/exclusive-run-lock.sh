@@ -5,34 +5,33 @@ acquire_exclusive_run_lock_or_emit_retry_instructions() {
 	local typicalDurationSeconds="$2"
 	local optionalInProgressLogPath="${3:-}"
 
-	if [[ "${DOTFILES_BYPASS_EXCLUSIVE_RUN_LOCK:-0}" == "1" ]]; then
-		return 0
+	if [[ ! "$lockHumanName" =~ ^[a-zA-Z0-9][a-zA-Z0-9-]*$ ]] || [[ ! "$typicalDurationSeconds" =~ ^[0-9]{1,9}$ ]]; then
+		echo "error: invalid exclusive run lock name or duration" >&2
+		exit 1
 	fi
 
-	local lockDirectoryPath="/tmp/dotfiles-${lockHumanName}.lock.d"
-	local lockOwnerMetadataPath="${lockDirectoryPath}/owner"
-
-	if _try_create_lock_directory_atomically "$lockDirectoryPath"; then
-		_write_lock_owner_metadata "$lockOwnerMetadataPath" "$lockHumanName" "$typicalDurationSeconds" "$optionalInProgressLogPath"
-		_register_lock_release_trap "$lockDirectoryPath"
-		return 0
+	local lockOwnerMetadataPath="/tmp/dotfiles-${lockHumanName}.lock"
+	local lockDriverPath="${BASH_SOURCE[0]%/*}/exclusive_run_lock.py"
+	if ! python3 "$lockDriverPath" prepare "$lockOwnerMetadataPath"; then
+		exit 1
+	fi
+	if ! exec {DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR}<"$lockOwnerMetadataPath"; then
+		echo "error: cannot open exclusive run lock" >&2
+		exit 1
 	fi
 
-	if _remove_lock_directory_if_owning_process_is_dead "$lockDirectoryPath" "$lockOwnerMetadataPath"; then
-		if _try_create_lock_directory_atomically "$lockDirectoryPath"; then
-			_write_lock_owner_metadata "$lockOwnerMetadataPath" "$lockHumanName" "$typicalDurationSeconds" "$optionalInProgressLogPath"
-			_register_lock_release_trap "$lockDirectoryPath"
-			return 0
+	local acquisitionStatus=0
+	python3 "$lockDriverPath" acquire "$lockOwnerMetadataPath" "$DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR" || acquisitionStatus=$?
+	if [[ "$acquisitionStatus" -ne 0 ]]; then
+		exec {DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR}<&-
+		if [[ "$acquisitionStatus" -eq 99 ]]; then
+			_emit_concurrent_run_contention_retry_instructions_to_stderr "$lockHumanName" "$lockOwnerMetadataPath"
 		fi
+		exit "$acquisitionStatus"
 	fi
-
-	_emit_concurrent_run_contention_retry_instructions_to_stderr "$lockHumanName" "$lockOwnerMetadataPath"
-	exit 99
-}
-
-_try_create_lock_directory_atomically() {
-	local lockDirectoryPath="$1"
-	mkdir "$lockDirectoryPath" 2>/dev/null
+	if ! _write_lock_owner_metadata "$lockOwnerMetadataPath" "$lockHumanName" "$typicalDurationSeconds" "$optionalInProgressLogPath"; then
+		exit 1
+	fi
 }
 
 _write_lock_owner_metadata() {
@@ -47,38 +46,7 @@ _write_lock_owner_metadata() {
 		echo "script=${lockHumanName}"
 		echo "typical_duration_seconds=${typicalDurationSeconds}"
 		echo "log_path=${optionalInProgressLogPath}"
-	} >"$lockOwnerMetadataPath"
-}
-
-_register_lock_release_trap() {
-	local lockDirectoryPath="$1"
-	DOTFILES_EXCLUSIVE_RUN_LOCK_DIRECTORY_TO_RELEASE_ON_EXIT="$lockDirectoryPath"
-	trap _release_registered_exclusive_run_lock_on_exit EXIT
-}
-
-_release_registered_exclusive_run_lock_on_exit() {
-	if [[ -n "${DOTFILES_EXCLUSIVE_RUN_LOCK_DIRECTORY_TO_RELEASE_ON_EXIT:-}" ]]; then
-		rm -rf "$DOTFILES_EXCLUSIVE_RUN_LOCK_DIRECTORY_TO_RELEASE_ON_EXIT"
-	fi
-}
-
-_remove_lock_directory_if_owning_process_is_dead() {
-	local lockDirectoryPath="$1"
-	local lockOwnerMetadataPath="$2"
-
-	if [[ ! -f "$lockOwnerMetadataPath" ]]; then
-		rm -rf "$lockDirectoryPath"
-		return 0
-	fi
-
-	local owningProcessId
-	owningProcessId=$(_read_lock_metadata_value "$lockOwnerMetadataPath" "pid")
-
-	if [[ -z "$owningProcessId" ]] || ! kill -0 "$owningProcessId" 2>/dev/null; then
-		rm -rf "$lockDirectoryPath"
-		return 0
-	fi
-	return 1
+	} | python3 "${BASH_SOURCE[0]%/*}/exclusive_run_lock.py" write "$lockOwnerMetadataPath" "$DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR"
 }
 
 _read_lock_metadata_value() {
@@ -108,14 +76,17 @@ _emit_concurrent_run_contention_retry_instructions_to_stderr() {
 		startedAtEpoch=$(_read_lock_metadata_value "$lockOwnerMetadataPath" "started_epoch")
 		typicalDurationSeconds=$(_read_lock_metadata_value "$lockOwnerMetadataPath" "typical_duration_seconds")
 		inProgressLogPath=$(_read_lock_metadata_value "$lockOwnerMetadataPath" "log_path")
-		[[ -z "$owningProcessId" ]] && owningProcessId="unknown"
-		[[ -z "$startedAtEpoch" ]] && startedAtEpoch=0
-		[[ -z "$typicalDurationSeconds" ]] && typicalDurationSeconds=0
+		[[ "$owningProcessId" =~ ^[1-9][0-9]{0,9}$ ]] || owningProcessId="unknown"
+		[[ "$startedAtEpoch" =~ ^[0-9]{1,10}$ ]] || startedAtEpoch=0
+		[[ "$typicalDurationSeconds" =~ ^[0-9]{1,9}$ ]] || typicalDurationSeconds=0
 	fi
+	startedAtEpoch=$((10#$startedAtEpoch))
+	typicalDurationSeconds=$((10#$typicalDurationSeconds))
 
 	local currentEpoch
 	currentEpoch=$(date +%s)
 	local elapsedSeconds=$((currentEpoch - startedAtEpoch))
+	[[ "$elapsedSeconds" -lt 0 ]] && elapsedSeconds=0
 	local estimatedRemainingSeconds=$((typicalDurationSeconds - elapsedSeconds))
 	if [[ $estimatedRemainingSeconds -lt 0 ]]; then
 		estimatedRemainingSeconds=0
@@ -136,7 +107,8 @@ _emit_concurrent_run_contention_retry_instructions_to_stderr() {
 		fi
 		echo ""
 		echo "Contention from a parallel agent. Do not retry in a tight loop."
-		echo "Wait for PID ${owningProcessId} to finish before re-executing '${lockHumanName}'."
+		echo "Wait for the owning run and its children to finish before re-executing '${lockHumanName}'."
+		echo "The lock can remain held after metadata PID ${owningProcessId} exits."
 		echo ""
 		echo "Recommended wait: at least ${recommendedWaitSeconds}s."
 		echo ""

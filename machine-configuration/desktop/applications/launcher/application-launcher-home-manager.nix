@@ -6,6 +6,13 @@
   ...
 }:
 let
+  applicationLauncherDaemonSourcesDirectory = pkgs.symlinkJoin {
+    name = "application-launcher-daemon-swift-sources";
+    paths = [
+      ./swift-sources
+      ../../input/command-sockets/swift-sources
+    ];
+  };
   applicationLauncherDaemonBinaryPath = "${config.home.homeDirectory}/.local/bin/application-launcher-daemon";
   applicationLauncherDaemonLaunchdLabel = "com.dotfiles.application-launcher-daemon";
   applicationLauncherDaemonSocketPath = "/tmp/application-launcher.sock";
@@ -23,7 +30,7 @@ in
 
   home.activation.compileApplicationLauncherDaemon = config.lib.dag.entryAfter [ "writeBoundary" ] ''
     export SWIFT_BINARY_PATH=${lib.escapeShellArg applicationLauncherDaemonBinaryPath}
-    export SWIFT_SOURCES_DIR=${./swift-sources}
+    export SWIFT_SOURCES_DIR=${applicationLauncherDaemonSourcesDirectory}
     export OWNER_USERNAME=${lib.escapeShellArg config.home.username}
     export LAUNCHD_LABEL=${lib.escapeShellArg applicationLauncherDaemonLaunchdLabel}
     export SWIFT_COMPILE_RECIPE_HASH=${builtins.hashFile "sha256" ./compile.sh}

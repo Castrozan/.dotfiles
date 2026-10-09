@@ -89,6 +89,7 @@ GridLayout {
 
         MediaWidget {
             id: mediaWidget
+            dashboardIsActive: dashboardTabRoot.dashboardIsActive
         }
     }
 
