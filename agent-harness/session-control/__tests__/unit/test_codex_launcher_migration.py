@@ -74,6 +74,7 @@ class FixtureCommands:
 
 @pytest.fixture
 def prepared_migration(tmp_path, monkeypatch):
+    monkeypatch.setattr("sys.platform", "linux")
     clock = FixtureClock()
     monkeypatch.setattr(migration.time, "monotonic", clock.monotonic)
     monkeypatch.setattr(migration.time, "sleep", clock.sleep)
