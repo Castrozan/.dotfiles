@@ -4,6 +4,9 @@ setup() {
 	REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../../../.." && pwd)"
 	source "$REPO_ROOT/repository/verification/helpers/bash-script-assertions.bash"
 	SCRIPT_UNDER_TEST="$REPO_ROOT/machine-configuration/development/system-rebuild/scripts/nixos-rebuild-guard"
+	export SYSTEM_REBUILD_LOCK_GUARD="$BATS_TEST_TMPDIR/system-rebuild-lock"
+	printf '#!/usr/bin/env bash\nexec "$@"\n' >"$SYSTEM_REBUILD_LOCK_GUARD"
+	chmod +x "$SYSTEM_REBUILD_LOCK_GUARD"
 }
 
 @test "nixos-rebuild guard is executable" {

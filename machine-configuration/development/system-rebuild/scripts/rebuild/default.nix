@@ -1,4 +1,11 @@
 { pkgs, hostname }:
+let
+  exclusiveRunLock =
+    import ../../../../../agent-harness/session-control/exclusive-run-lock-package.nix
+      {
+        inherit pkgs;
+      };
+in
 pkgs.runCommand "rebuild" { } ''
   mkdir -p $out/bin $out/libexec/rebuild/backends
 
@@ -9,5 +16,10 @@ pkgs.runCommand "rebuild" { } ''
 
   substituteInPlace $out/bin/rebuild \
     --replace-fail '@machineAlias@' '${hostname}' \
+    --replace-fail '@exclusiveRunLockHelper@' '${exclusiveRunLock}/libexec/exclusive-run-lock/exclusive-run-lock.sh' \
+    --replace-fail '@exclusiveRunScopePython@' '${pkgs.python3}/bin/python3' \
     --replace-fail '@backendsDirectory@' "$out/libexec/rebuild/backends"
+
+  substituteInPlace $out/bin/rebuild \
+    --replace-fail '#!/usr/bin/env bash' '#!${pkgs.bash}/bin/bash'
 ''

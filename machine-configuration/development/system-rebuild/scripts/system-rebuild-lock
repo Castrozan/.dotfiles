@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ "$#" -eq 2 ]]; then
+	case "$2" in
+	-h | --help | --version) exec "$@" ;;
+	esac
+fi
+
+[[ -f "$EXCLUSIVE_RUN_LOCK_HELPER" ]] || {
+	echo "error: exclusive rebuild lock helper is missing" >&2
+	exit 1
+}
+# shellcheck disable=SC1090
+source "$EXCLUSIVE_RUN_LOCK_HELPER"
+acquire_exclusive_run_lock_or_emit_retry_instructions "rebuild" 420
+exec "$EXCLUSIVE_RUN_SCOPE_PYTHON" \
+	"${EXCLUSIVE_RUN_LOCK_HELPER%/*}/exclusive_run_scope.py" \
+	"$DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR" "$@"
