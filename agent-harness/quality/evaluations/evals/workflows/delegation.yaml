@@ -65,4 +65,4 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Says to run `agent-eval --check-baseline`, not to run `agent-eval --save-baseline` proactively, and to save a new baseline only when the check fails for regression or staleness or when deliberately recording a meaningful improvement."
+        - "Uses `agent-eval --check-recorded-baseline` for required credential-free CI, distinguishes `agent-eval --check-baseline` as a separate strict current-fingerprint and age check, and does not claim recorded results measure current model behavior. Avoids proactive `agent-eval --save-baseline`; a genuine refresh uses an existing authorized model route for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement."

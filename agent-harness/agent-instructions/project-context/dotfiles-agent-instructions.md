@@ -170,15 +170,17 @@ touching any agent, supervisor or heartbeat behavior.
 
 ### Agent instructions
 
-The eval baseline (`agent-harness/quality/evaluations/baseline.json`) is a committed snapshot that CI guards via
-`agent-eval --check-baseline` against absolute pass-rate floors and a relative regression gate that fails when the
-overall pass rate drops more than a fixed margin below the previous committed baseline, and a freshness gate that fails
-once the recorded `generated_at` is older than the window in `run_evals_baseline.py`.
+Required CI validates evaluation contracts and the committed baseline (`agent-harness/quality/evaluations/baseline.json`)
+with `agent-eval --check-recorded-baseline`, preserving quality floors and the relative regression limit without model
+credentials. Stale or missing model evidence remains explicitly unmeasured.
 
-Do not re-run `agent-eval --save-baseline` after editing agent instructions; the full suite is a slow LLM run whose
-routing evals flake, so a proactive re-save bakes transient failures into the committed baseline. Re-save only when
-`--check-baseline` fails CI, whether on a genuine pass-rate regression or on staleness, or to deliberately record a
-meaningfully improved instruction surface.
+Use `agent-eval --check-baseline` for a separate strict check of current fingerprints and measurement age. Passing the
+recorded-results check does not prove current model behavior.
+
+Do not proactively run `agent-eval --save-baseline` after instruction edits: the full model suite is slow and routing
+evals flake, so re-saving can commit transient failures. Refresh through an existing authorized model route only for an
+explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement; ordinary CI
+does not require a refresh.
 
 ### Herdr server restart
 
