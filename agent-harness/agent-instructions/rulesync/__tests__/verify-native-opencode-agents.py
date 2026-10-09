@@ -22,7 +22,7 @@ AGENT_PERMISSIONS = {
 def verify_agent(agent, name, source):
     assert agent["id"] == name and agent["mode"] == "subagent", agent
     assert agent["system"] == source.read_text().split("\n---\n", 1)[1].strip(), agent
-    expected = AGENT_PERMISSIONS[name]
+    expected = AGENT_PERMISSIONS[name] | {"browser": "deny"}
     effective_rules = {
         rule["action"]: rule["effect"]
         for rule in agent["permissions"]
