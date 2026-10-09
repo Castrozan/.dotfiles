@@ -8,6 +8,7 @@ from native_model_server import native_model_server
 from native_opencode_profile import prepare_profile
 from native_opencode_server import native_server
 from native_hook_fixtures import generate_hook_plugin
+from native_tool_outcomes import verify_native_tool_outcomes
 
 
 def main():
@@ -56,6 +57,9 @@ def main():
                 }
             )
             try:
+                verify_native_tool_outcomes(
+                    executable, environment, workspace, model, record
+                )
                 with native_server(executable, environment, workspace) as server:
                     plugins = server.request("/api/plugin", location=True)["data"]
                     assert any(
@@ -140,7 +144,7 @@ def main():
                     if directory.is_dir() and not directory.is_symlink():
                         directory.chmod(0o755)
     print(
-        "Verified V2 plugin load, startup injection, shell denial, bounded reply correction and compaction"
+        "Verified V2 plugin load, input rewrite, post-tool context, startup injection, shell denial, bounded reply correction and compaction"
     )
 
 

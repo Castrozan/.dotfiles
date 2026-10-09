@@ -64,9 +64,11 @@ is a denied-server list in the system-level managed settings, deployed from the 
 
 ### Codex hooks and launch
 
-Codex hooks mirror the Claude event vocabulary. Both configure command hook timeouts in seconds. Codex blocking works
-only through a deny decision returned with a zero exit, never through a non-zero exit. Writes arrive as a
-patch-application tool rather than as a write tool, so a guard keyed on the Claude write tool name never fires.
+Codex hooks mirror the Claude event vocabulary. Both configure command hook timeouts in seconds. Codex accepts a JSON
+deny decision with exit zero or a blocking reason on stderr with exit two. Input rewrites require an explicit allow;
+combining a rewrite with deny produces an invalid response. Writes report `apply_patch`, whose matchers also accept
+`Edit` and `Write`. Follow the [native hook protocol](https://learn.chatgpt.com/docs/hooks) rather than inferring
+runtime support from Claude's schema.
 
 The on-PATH `codex` wrapper injects sandbox and approval flags and selects a generated native profile for interactive
 developer instructions, leaving model selection to Codex's runtime-owned config. An explicit `--profile` selects the

@@ -71,7 +71,7 @@ def _pretooluse_hook_specific_output(outcome) -> dict:
         hook_specific_output["permissionDecision"] = outcome.decision
         if outcome.reason:
             hook_specific_output["permissionDecisionReason"] = outcome.reason
-    if outcome.updated_input is not None:
+    if outcome.decision == "allow" and outcome.updated_input is not None:
         hook_specific_output["updatedInput"] = outcome.updated_input
     combined_context = outcome.combined_additional_context
     if combined_context:

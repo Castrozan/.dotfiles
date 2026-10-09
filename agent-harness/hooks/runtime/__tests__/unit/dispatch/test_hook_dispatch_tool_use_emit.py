@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from hook_dispatch_test_support import (
     HookHandler,
     block_and_system_message_handler,
@@ -120,17 +122,24 @@ def test_emit_pretooluse_decision_carries_allow_with_updated_input(capsys):
     }
 
 
-def test_emit_pretooluse_decision_deny_wins_but_updated_input_survives(capsys):
+@pytest.mark.parametrize("decision", ["deny", "ask", "block"])
+@pytest.mark.parametrize("decision_first", [False, True])
+def test_emit_pretooluse_decision_discards_rewrites_without_allow(
+    capsys, decision, decision_first
+):
+    handlers = [
+        updated_input_handler({"command": "cd /x && ls"}),
+        decision_handler(decision, "blocked"),
+    ]
+    if decision_first:
+        handlers.reverse()
     outcome = run_handlers(
         {},
-        [
-            updated_input_handler({"command": "cd /x && ls"}),
-            decision_handler("deny", "blocked"),
-        ],
+        handlers,
     )
     emit_pretooluse_decision(outcome)
     payload = json.loads(capsys.readouterr().out)
-    assert payload["hookSpecificOutput"]["permissionDecision"] == "deny"
+    assert payload["hookSpecificOutput"]["permissionDecision"] == decision
     assert payload["hookSpecificOutput"]["permissionDecisionReason"] == "blocked"
-    assert payload["hookSpecificOutput"]["updatedInput"] == {"command": "cd /x && ls"}
+    assert "updatedInput" not in payload["hookSpecificOutput"]
     assert payload["continue"] is True
