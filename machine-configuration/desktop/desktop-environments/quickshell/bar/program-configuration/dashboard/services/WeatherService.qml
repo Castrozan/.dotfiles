@@ -105,7 +105,7 @@ Singleton {
     Process {
         id: fetchLocationProcess
 
-        command: ["curl", "-sf", "https://ipinfo.io/json"]
+        command: ["curl", "-sf", "--connect-timeout", "5", "--max-time", "15", "https://ipinfo.io/json"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
@@ -125,7 +125,7 @@ Singleton {
 
         command: {
             const url = weatherServiceRoot.buildWeatherApiUrl();
-            return url ? ["curl", "-sf", url] : ["echo"];
+            return url ? ["curl", "-sf", "--connect-timeout", "5", "--max-time", "15", url] : ["echo"];
         }
         stdout: SplitParser {
             splitMarker: ""
