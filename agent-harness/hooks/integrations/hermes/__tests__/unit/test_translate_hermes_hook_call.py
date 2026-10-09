@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 import translate_hermes_hook_call as translator
 
 
@@ -46,7 +48,8 @@ def test_a_pre_tool_use_denial_becomes_a_hermes_block():
                     "permissionDecisionReason": "git add -A is prohibited",
                 }
             }
-        )
+        ),
+        "terminal",
     )
 
     assert response == {"decision": "block", "reason": "git add -A is prohibited"}
@@ -54,7 +57,8 @@ def test_a_pre_tool_use_denial_becomes_a_hermes_block():
 
 def test_a_post_tool_use_block_becomes_a_hermes_block():
     response = translator.hermes_response(
-        json.dumps({"decision": "block", "reason": "the turn review refused this"})
+        json.dumps({"decision": "block", "reason": "the turn review refused this"}),
+        "terminal",
     )
 
     assert response == {
@@ -64,11 +68,98 @@ def test_a_post_tool_use_block_becomes_a_hermes_block():
 
 
 def test_an_allowing_dispatcher_answers_nothing_at_all():
-    assert translator.hermes_response("") is None
-    assert translator.hermes_response("{}") is None
+    assert translator.hermes_response("", "terminal") is None
+    assert translator.hermes_response("{}", "terminal") is None
     assert (
         translator.hermes_response(
-            json.dumps({"hookSpecificOutput": {"permissionDecision": "allow"}})
+            json.dumps({"hookSpecificOutput": {"permissionDecision": "allow"}}),
+            "terminal",
         )
         is None
     )
+
+
+def test_allowed_updated_input_becomes_a_native_argument_modification():
+    updated_input = {"command": "printf safe", "opaque": {"keep": [1, 2]}}
+    response = translator.hermes_response(
+        json.dumps(
+            {
+                "hookSpecificOutput": {
+                    "permissionDecision": "allow",
+                    "updatedInput": updated_input,
+                }
+            }
+        ),
+        "terminal",
+    )
+
+    assert response == {"action": "modify", "args": updated_input}
+
+
+@pytest.mark.parametrize("decision", ["deny", "block"])
+def test_permission_denial_wins_over_accidental_updated_input(decision):
+    response = translator.hermes_response(
+        json.dumps(
+            {
+                "hookSpecificOutput": {
+                    "permissionDecision": decision,
+                    "permissionDecisionReason": "forbidden",
+                    "updatedInput": {"command": "rewritten"},
+                }
+            }
+        ),
+        "terminal",
+    )
+    assert response == {"decision": "block", "reason": "forbidden"}
+
+
+@pytest.mark.parametrize("decision", ["deny", "block"])
+def test_top_level_denial_wins_over_allowed_updated_input(decision):
+    response = translator.hermes_response(
+        json.dumps(
+            {
+                "decision": decision,
+                "reason": "forbidden",
+                "hookSpecificOutput": {
+                    "permissionDecision": "allow",
+                    "updatedInput": {"command": "rewritten"},
+                },
+            }
+        ),
+        "terminal",
+    )
+    assert response == {"decision": "block", "reason": "forbidden"}
+
+
+@pytest.mark.parametrize("updated_input", [None, [], "command", True, 7])
+def test_allow_with_non_dictionary_updated_input_is_ignored(updated_input):
+    assert (
+        translator.hermes_response(
+            json.dumps(
+                {
+                    "hookSpecificOutput": {
+                        "permissionDecision": "allow",
+                        "updatedInput": updated_input,
+                    }
+                }
+            ),
+            "terminal",
+        )
+        is None
+    )
+
+
+def test_unknown_tool_updated_input_preserves_opaque_fields():
+    updated_input = {"file_path": "opaque", "path": "another", "values": [1, 2]}
+    response = translator.hermes_response(
+        json.dumps(
+            {
+                "hookSpecificOutput": {
+                    "permissionDecision": "allow",
+                    "updatedInput": updated_input,
+                }
+            }
+        ),
+        "unknown_tool",
+    )
+    assert response == {"action": "modify", "args": updated_input}
