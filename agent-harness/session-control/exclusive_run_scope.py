@@ -10,12 +10,15 @@ from contextlib import contextmanager
 def foreground_process_group(process_group):
     previous_process_group = None
     previous_stop_handler = signal.getsignal(signal.SIGTTOU)
-    if os.isatty(0) and os.tcgetpgrp(0) == os.getpgrp():
-        previous_process_group = os.getpgrp()
-        signal.signal(signal.SIGTTOU, signal.SIG_IGN)
-        os.tcsetpgrp(0, process_group)
-        os.killpg(process_group, signal.SIGCONT)
     try:
+        if os.isatty(0) and os.tcgetpgrp(0) == os.getpgrp():
+            previous_process_group = os.getpgrp()
+            signal.signal(signal.SIGTTOU, signal.SIG_IGN)
+            try:
+                os.tcsetpgrp(0, process_group)
+                os.killpg(process_group, signal.SIGCONT)
+            except ProcessLookupError:
+                pass
         yield
     finally:
         if previous_process_group is not None:
