@@ -348,3 +348,11 @@ def test_managed_session_is_refused(prepared_migration, monkeypatch):
         migration.migrate(plan, commands, directory / "managed")["status"] == "failed"
     )
     assert not commands.calls
+
+
+def test_linux_procfs_is_required_before_any_command(prepared_migration, monkeypatch):
+    plan, commands, directory, clock = prepared_migration
+    monkeypatch.setattr("sys.platform", "darwin")
+    result = migration.migrate(plan, commands, directory / "unsupported-platform")
+    assert result["status"] == "failed"
+    assert not commands.calls

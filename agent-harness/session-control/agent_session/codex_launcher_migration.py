@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import shlex
+import sys
 import time
 from uuid import UUID
 
@@ -107,6 +108,7 @@ def validate_package(plan):
 
 
 def validate_plan(plan):
+    require(sys.platform == "linux", "launcher migration requires Linux procfs")
     require(
         plan["pane_identifier"] == os.environ.get("HERDR_PANE_ID"),
         "migration must target enclosing pane",
