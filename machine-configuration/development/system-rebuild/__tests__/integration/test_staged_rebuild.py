@@ -43,11 +43,7 @@ def test_staged_clients_exit_before_realization_and_use_native_activation(
     assert events[0]["pid"] != events[1]["pid"]
     assert all(event["gc"] == ["67108864", "8"] for event in events)
     assert "--offline" in events[0]["arguments"]
-    assert events[0]["arguments"][-4:-1] == [
-        "--option",
-        "allow-import-from-derivation",
-        "false",
-    ]
+    assert "allow-import-from-derivation" not in events[0]["arguments"]
     activation = read_events(tmp_path, "native-events")
     assert [event["phase"] for event in activation] == ["profile", "activate"]
     assert activation[1]["action"] == action
@@ -166,3 +162,47 @@ def test_switch_preserves_native_profile_specialisation_and_bootloader_options(
     assert native[0]["profile"] == "custom"
     assert native[1]["specialisation"] == "desktop"
     assert native[1]["install_bootloader"] is True
+
+
+@pytest.mark.parametrize("action", ["switch", "boot"])
+@pytest.mark.parametrize("native_policy", ["true", "false"])
+@pytest.mark.parametrize("caller_policy", [None, "true", "false"])
+def test_evaluation_inherits_native_ifd_policy_and_preserves_caller_override(
+    managed_rebuild_environment, tmp_path, action, native_policy, caller_policy
+):
+    environment = build_staged_environment(managed_rebuild_environment, tmp_path)
+    environment["TEST_NATIVE_IFD_POLICY"] = native_policy
+    arguments = (
+        []
+        if caller_policy is None
+        else ["--option", "allow-import-from-derivation", caller_policy]
+    )
+    request = write_prepared_request(tmp_path, action, arguments)
+    completed = run_staged(environment, action, request)
+    effective_policy = native_policy if caller_policy is None else caller_policy
+    assert completed.returncode == (0 if effective_policy == "true" else 42)
+    evaluation_arguments = next(
+        event["arguments"]
+        for event in read_events(tmp_path)
+        if "eval" in event["arguments"]
+    )
+    evaluation_policies = [
+        evaluation_arguments[position + 2]
+        for position, argument in enumerate(evaluation_arguments)
+        if argument == "--option"
+        and evaluation_arguments[position + 1] == "allow-import-from-derivation"
+    ]
+    assert evaluation_policies == ([] if caller_policy is None else [caller_policy])
+    activation = read_events(tmp_path, "native-events")
+    if effective_policy == "true":
+        assert [event["phase"] for event in activation] == ["profile", "activate"]
+        assert activation[-1]["action"] == action
+    else:
+        assert not activation
+        assert not any(
+            "--realise" in event["arguments"]
+            and event["arguments"][event["arguments"].index("--realise") + 1].endswith(
+                ".drv"
+            )
+            for event in read_events(tmp_path)
+        )

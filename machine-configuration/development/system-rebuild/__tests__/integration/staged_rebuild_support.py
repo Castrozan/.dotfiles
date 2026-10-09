@@ -51,6 +51,13 @@ elif "eval" in arguments:
     if os.environ.get("TEST_EVAL_HOLD") == "1":
         worker = "import os, signal, time; from pathlib import Path; signal.signal(signal.SIGTERM, signal.SIG_IGN); directory=Path(os.environ['TEST_PHASE_DIRECTORY']); (directory/'descendant-started').touch(); " + "\\nwhile not (directory/'release-descendant').exists(): time.sleep(0.01)"
         subprocess.run([sys.executable, "-c", worker], close_fds=True)
+    if os.environ.get("TEST_NATIVE_IFD_POLICY"):
+        policy = os.environ["TEST_NATIVE_IFD_POLICY"]
+        for position, argument in enumerate(arguments):
+            if argument == "--option" and arguments[position + 1] == "allow-import-from-derivation":
+                policy = arguments[position + 2]
+        if policy == "false":
+            raise SystemExit(42)
     if os.environ.get("TEST_EVAL_FAILURE"):
         raise SystemExit(int(os.environ["TEST_EVAL_FAILURE"]))
     print("/nix/store/44444444444444444444444444444444-system.drv")
