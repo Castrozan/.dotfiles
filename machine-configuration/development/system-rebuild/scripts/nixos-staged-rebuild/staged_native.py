@@ -13,6 +13,7 @@ class NativeRebuildOptions:
     profile_name: str
     specialisation: str | None
     install_bootloader: bool
+    input_overrides: tuple[tuple[str, str], ...]
     archive_flags: tuple[str, ...]
     evaluation_flags: tuple[str, ...]
     realization_flags: tuple[str, ...]
@@ -64,6 +65,10 @@ def parse_native_options(arguments):
         profile_name=parsed.profile_name,
         specialisation=parsed.specialisation,
         install_bootloader=parsed.install_bootloader,
+        input_overrides=tuple(
+            tuple(override)
+            for override in grouped.flake_common_flags.get("override_input") or ()
+        ),
         archive_flags=tuple(archive_flags),
         evaluation_flags=tuple(evaluation_flags),
         realization_flags=tuple(dict_to_flags(realization_flags)),

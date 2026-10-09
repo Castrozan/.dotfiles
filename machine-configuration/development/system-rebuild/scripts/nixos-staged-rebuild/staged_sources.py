@@ -24,8 +24,20 @@ def local_source_directory(reference):
 def pin_local_source(reference, phase):
     source = urlsplit(reference.split("#", 1)[0])
     directory = local_source_directory(reference)
+    query = dict(parse_qsl(source.query))
+    selected_revision = query.get("rev", "HEAD")
     revision = run_command(
-        f"{phase}_revision", ["git", "-C", directory, "rev-parse", "HEAD"], True
+        f"{phase}_revision",
+        [
+            "git",
+            "-C",
+            directory,
+            "rev-parse",
+            "--verify",
+            "--end-of-options",
+            f"{selected_revision}^{{commit}}",
+        ],
+        True,
     )
     if not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", revision):
         raise ValueError("source revision is not immutable")
@@ -36,7 +48,6 @@ def pin_local_source(reference, phase):
     )
     if dirty:
         raise ValueError("refusing to prefetch a dirty rebuild source")
-    query = dict(parse_qsl(source.query))
     query["rev"] = revision
     return urlunsplit(("git+file", "", quote(str(directory)), urlencode(query), ""))
 
@@ -86,15 +97,19 @@ def archived_input_overrides(archive, parent_input=()):
     return overrides
 
 
-def without_input_overrides(arguments):
+def without_source_overrides(arguments):
     remaining = []
     position = 0
     while position < len(arguments):
         argument = arguments[position]
         if argument == "--override-input":
             position += 3
+        elif argument == "--flake":
+            position += 2
         elif argument.startswith("--override-input="):
             position += 2
+        elif argument.startswith("--flake="):
+            position += 1
         else:
             remaining.append(argument)
             position += 1
