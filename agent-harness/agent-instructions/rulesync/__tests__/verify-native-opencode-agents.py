@@ -22,13 +22,13 @@ AGENT_PERMISSIONS = {
 def verify_agent(agent, name, source):
     assert agent["id"] == name and agent["mode"] == "subagent", agent
     assert agent["system"] == source.read_text().split("\n---\n", 1)[1].strip(), agent
-    expected = AGENT_PERMISSIONS[name]
-    configured_rules = [
-        rule for rule in agent["permissions"] if rule["action"] != "browser"
-    ]
-    rules = configured_rules[-len(expected) :]
-    assert all(rule["resource"] == "*" for rule in rules), rules
-    assert {rule["action"]: rule["effect"] for rule in rules} == expected, rules
+    expected = AGENT_PERMISSIONS[name] | {"browser": "deny"}
+    effective_rules = {
+        rule["action"]: rule["effect"]
+        for rule in agent["permissions"]
+        if rule["resource"] == "*" and rule["action"] in expected
+    }
+    assert effective_rules == expected, agent["permissions"]
 
 
 def verify_tool(server, name, tool, arguments, allowed):
