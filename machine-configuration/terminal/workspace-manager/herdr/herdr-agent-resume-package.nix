@@ -1,5 +1,5 @@
 { pkgs, lib }:
-pkgs.rustPlatform.buildRustPackage (finalAttributes: {
+pkgs.rustPlatform.buildRustPackage {
   pname = "herdr-agent-resume";
   version = "0.1.1-unstable-2026-09-17";
 
@@ -10,7 +10,7 @@ pkgs.rustPlatform.buildRustPackage (finalAttributes: {
     hash = "sha256-TClh+l0+2XT04NLQD9ZEq1cny1LuSENyxDLy62OKEaQ=";
   };
 
-  cargoLock.lockFile = "${finalAttributes.src}/Cargo.lock";
+  cargoLock.lockFile = ./cargo-locks/herdr-agent-resume/Cargo.lock;
 
   patches = [ ./patches/validate-agent-resume-commands.patch ];
 
@@ -27,4 +27,4 @@ pkgs.rustPlatform.buildRustPackage (finalAttributes: {
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "herdr-agent-resume";
   };
-})
+}

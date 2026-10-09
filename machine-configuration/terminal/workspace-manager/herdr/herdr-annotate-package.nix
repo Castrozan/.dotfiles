@@ -38,7 +38,7 @@ rustPlatform.buildRustPackage {
   patches = [ ./patches/annotation-save-to-prompt.patch ];
   cargoRoot = "rust";
   buildAndTestSubdir = "rust";
-  cargoLock.lockFile = source + "/rust/Cargo.lock";
+  cargoLock.lockFile = ./cargo-locks/herdr-annotate/Cargo.lock;
 
   reviewRuntime = pkgs.fetchurl {
     url = "https://github.com/plannotator/plannotator-tui/releases/download/v0.9.4/plannotator-tui-${platformRelease.target}";
