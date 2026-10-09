@@ -170,9 +170,10 @@ touching any agent, supervisor or heartbeat behavior.
 
 ### Agent instructions
 
-Required CI validates evaluation contracts and the committed baseline (`agent-harness/quality/evaluations/baseline.json`)
-with `agent-eval --check-recorded-baseline`, preserving quality floors and the relative regression limit without model
-credentials. Stale or missing model evidence remains explicitly unmeasured.
+Required CI validates evaluation contracts and the committed baseline
+(`agent-harness/quality/evaluations/baseline.json`) with `agent-eval --check-recorded-baseline`, preserving quality floors
+and the relative regression limit without model credentials. Stale or missing model evidence remains explicitly
+unmeasured.
 
 Use `agent-eval --check-baseline` for a separate strict check of current fingerprints and measurement age. Passing the
 recorded-results check does not prove current model behavior.
