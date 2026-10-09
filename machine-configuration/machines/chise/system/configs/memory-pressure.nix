@@ -28,6 +28,10 @@
       device = "/swapfile";
       size = 4096;
     }
+    {
+      device = "/swapfile-additional";
+      size = 4096;
+    }
   ];
 
   services.earlyoom = {
