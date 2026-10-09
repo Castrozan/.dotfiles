@@ -120,7 +120,7 @@ def run_private_session(arguments: list[str]) -> int:
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,
                 stderr=diagnostics.stderr_descriptor,
-                start_new_session=True,
+                process_group=0,
             )
             diagnostics.close_stderr_descriptor()
             try:
