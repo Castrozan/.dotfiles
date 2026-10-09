@@ -102,3 +102,26 @@ def test_remote_public_source_override_is_rejected_before_any_nix_client(
     assert completed.returncode == 1
     assert "local flake" in completed.stderr
     assert not read_events(tmp_path)
+
+
+def test_public_entrypoint_uses_its_selected_revision_with_one_archive(
+    managed_rebuild_environment, tmp_path
+):
+    environment = prefetch_environment(managed_rebuild_environment, tmp_path)
+    revision = "d" * 40
+    completed = run_prefetch(
+        environment,
+        tmp_path,
+        "--flake",
+        f"git+file://{tmp_path}/dotfiles?rev={revision}&submodules=1#host",
+    )
+    assert completed.returncode == 0, completed.stderr
+    archives = [
+        event for event in read_events(tmp_path) if "archive" in event["arguments"]
+    ]
+    assert len(archives) == 1
+    reference = urlsplit(archives[0]["arguments"][-1])
+    assert parse_qs(reference.query)["rev"] == [revision]
+    prepared = json.loads((tmp_path / "request.json").read_text())
+    assert prepared["arguments"][2] == f"path:{SOURCE_PATH}#host"
+    assert PRIVATE_PATH not in prepared["sources"]

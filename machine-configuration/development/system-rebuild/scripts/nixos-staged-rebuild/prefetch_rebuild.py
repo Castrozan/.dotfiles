@@ -20,11 +20,16 @@ def prepare_rebuild_sources(request_path, public_directory, arguments):
     options = parse_native_options(arguments)
     if len(arguments) < 3 or arguments[1] != "--flake":
         raise ValueError("rebuild source must remain the machine-local entrypoint")
-    public_reference = str(Path(public_directory)) + "?submodules=1"
+    root_reference, configuration_name = options.flake_reference.split("#", 1)
+    root_directory = local_source_directory(root_reference)
+    public_reference = (
+        root_reference
+        if root_directory == Path(public_directory).resolve()
+        else str(Path(public_directory)) + "?submodules=1"
+    )
     for name, reference in options.input_overrides:
         if name == "dotfiles":
             public_reference = reference
-    public_directory = local_source_directory(public_reference)
     public_reference = pin_local_source(public_reference, "public")
     public_archive = archive_source(
         public_reference, options.archive_flags, "prefetch_public"
@@ -33,10 +38,8 @@ def prepare_rebuild_sources(request_path, public_directory, arguments):
     public_retention = Path(request_path).parent / "prefetch-public"
     public_retention.mkdir()
     retain_source_roots(sorted(sources), public_retention, "prefetch_public_retention")
-    root_reference, configuration_name = options.flake_reference.split("#", 1)
-    root_directory = local_source_directory(root_reference)
     root_reference = pin_local_source(root_reference, "entrypoint")
-    if root_directory == Path(public_directory).resolve():
+    if root_reference == public_reference:
         root_archive = public_archive
         immutable_override = []
     else:
