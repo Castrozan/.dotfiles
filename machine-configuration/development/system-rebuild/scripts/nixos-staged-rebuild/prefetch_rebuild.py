@@ -12,21 +12,20 @@ from staged_sources import (
     local_source_directory,
     pin_local_source,
     retain_source_roots,
-    without_input_overrides,
+    without_source_overrides,
 )
 
 
 def prepare_rebuild_sources(request_path, public_directory, arguments):
     options = parse_native_options(arguments)
-    if (
-        len(arguments) < 3
-        or arguments[1] != "--flake"
-        or options.flake_reference != arguments[2]
-    ):
+    if len(arguments) < 3 or arguments[1] != "--flake":
         raise ValueError("rebuild source must remain the machine-local entrypoint")
-    public_reference = pin_local_source(
-        str(Path(public_directory)) + "?submodules=1", "public"
-    )
+    public_reference = str(Path(public_directory)) + "?submodules=1"
+    for name, reference in options.input_overrides:
+        if name == "dotfiles":
+            public_reference = reference
+    public_directory = local_source_directory(public_reference)
+    public_reference = pin_local_source(public_reference, "public")
     public_archive = archive_source(
         public_reference, options.archive_flags, "prefetch_public"
     )
@@ -59,7 +58,7 @@ def prepare_rebuild_sources(request_path, public_directory, arguments):
         options.action,
         "--flake",
         f"path:{root_archive['path']}#{configuration_name}",
-        *without_input_overrides(arguments[3:]),
+        *without_source_overrides(arguments[3:]),
         *archived_input_overrides(root_archive),
     ]
     Path(request_path).write_text(
