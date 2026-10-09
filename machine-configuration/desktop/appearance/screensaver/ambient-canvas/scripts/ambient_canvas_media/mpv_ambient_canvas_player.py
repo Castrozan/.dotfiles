@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import subprocess
 import tempfile
 import time
@@ -18,6 +19,9 @@ from recording.recorded_segment_store import (
 )
 
 TARGET_WORKSPACE_ID = 11
+MPV_INPUT_CONFIGURATION_PATH = (
+    Path(__file__).parent / "playback" / "ambient_canvas_mpv_input.conf"
+)
 
 
 def build_mpv_environment(environment):
@@ -49,6 +53,7 @@ def build_mpv_arguments(socket_path):
         "--title=ambient-canvas-gpu-screensaver",
         "--no-osc",
         "--no-input-default-bindings",
+        f"--input-conf={MPV_INPUT_CONFIGURATION_PATH}",
         "--idle",
         "--loop-file=no",
     ]

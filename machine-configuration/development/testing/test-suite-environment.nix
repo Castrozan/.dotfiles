@@ -7,6 +7,7 @@ pkgs.buildEnv {
   paths = [
     pythonTestEnvironment
     (import ../../media/media-generation/video-ffmpeg-package.nix { inherit pkgs; })
+    pkgs.mpv
     pkgs.neovim
     pkgs.nodejs_22
     pkgs.pyright
