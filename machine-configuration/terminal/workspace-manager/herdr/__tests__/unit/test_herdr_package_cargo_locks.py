@@ -9,12 +9,14 @@ import pytest
 HERDR_DIRECTORY = Path(__file__).resolve().parents[2]
 PACKAGE_IDENTITIES = {
     "herdr-agent-resume": {
+        "recipe_path": "herdr-agent-resume-package.nix",
         "owner": "Angel-O",
         "revision": "dcd6417ac87b5d73e8b32e12486a4838850e8b1a",
         "source_hash": "sha256-TClh+l0+2XT04NLQD9ZEq1cny1LuSENyxDLy62OKEaQ=",
         "lock_hash": "5f3403ac35f92c840a38e7f46abbd70617fa6f5ddc3c62cde60d758331e9cbea",
     },
     "herdr-annotate": {
+        "recipe_path": "annotation/herdr-annotate-package.nix",
         "owner": "plannotator",
         "revision": "663b45a420f00882f7196bf893b341cddd37a530",
         "source_hash": "sha256-MLHF21wqghawj3rk+UsyFdaGqIgVYXVG7UH2H+q0/lE=",
@@ -23,13 +25,18 @@ PACKAGE_IDENTITIES = {
 }
 
 
+def package_recipe(package_name):
+    return HERDR_DIRECTORY / PACKAGE_IDENTITIES[package_name]["recipe_path"]
+
+
 def local_cargo_lock(package_name):
-    recipe = (HERDR_DIRECTORY / (package_name + "-package.nix")).read_text()
-    assignment = re.search(r"cargoLock\.lockFile\s*=\s*(\./[^\s;]+)\s*;", recipe)
+    recipe_path = package_recipe(package_name)
+    recipe = recipe_path.read_text()
+    assignment = re.search(r"cargoLock\.lockFile\s*=\s*(\.\.?/[^\s;]+)\s*;", recipe)
     assert assignment, (
         "Cargo lock must be a local source path without derivation context"
     )
-    lock = HERDR_DIRECTORY / assignment.group(1).removeprefix("./")
+    lock = recipe_path.parent / assignment.group(1)
     assert lock.is_file(), "Declared local Cargo lock must exist in repository source"
     return lock
 
@@ -52,7 +59,7 @@ def test_local_lock_preserves_exact_pinned_upstream_dependencies(
 
 @pytest.mark.parametrize("package_name,identity", PACKAGE_IDENTITIES.items())
 def test_local_lock_remains_bound_to_declared_upstream_pin(package_name, identity):
-    recipe = (HERDR_DIRECTORY / (package_name + "-package.nix")).read_text()
+    recipe = package_recipe(package_name).read_text()
     source = recipe.split("pkgs.fetchFromGitHub", 1)[1].split("\n  };", 1)[0]
     assert re.search(r'\bowner\s*=\s*"' + identity["owner"] + '";', source)
     assert re.search(r'\brepo\s*=\s*"' + package_name + '";', source)
