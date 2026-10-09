@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -35,27 +36,26 @@ class BaselineDrift:
     recorded_line_count: int | None
 
 
-def list_tracked_file_paths() -> list[Path]:
+def list_repository_file_paths() -> list[Path]:
     completed_process = subprocess.run(
-        ["git", "ls-files"],
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
         check=True,
         capture_output=True,
-        text=True,
         cwd=REPOSITORY_ROOT,
     )
-    tracked_file_paths = []
-    for relative_path_text in completed_process.stdout.splitlines():
-        if not relative_path_text.strip():
+    repository_file_paths = []
+    for relative_path_bytes in completed_process.stdout.split(b"\0"):
+        if not relative_path_bytes:
             continue
-        absolute_path = REPOSITORY_ROOT / relative_path_text
+        absolute_path = REPOSITORY_ROOT / os.fsdecode(relative_path_bytes)
         if absolute_path.is_file():
-            tracked_file_paths.append(absolute_path)
-    return tracked_file_paths
+            repository_file_paths.append(absolute_path)
+    return repository_file_paths
 
 
 def line_count_per_over_limit_file() -> dict[str, int]:
     over_limit_files = {}
-    for absolute_path in list_tracked_file_paths():
+    for absolute_path in list_repository_file_paths():
         violation = line_count_violation(
             str(absolute_path), LINE_COUNT_BLOCKING_THRESHOLD
         )
@@ -97,7 +97,7 @@ def describe_drift(drift: BaselineDrift) -> str:
         )
     if drift.current_line_count is None:
         return (
-            f"grandfathered at {drift.recorded_line_count}, no longer a tracked "
+            f"grandfathered at {drift.recorded_line_count}, no longer a repository "
             f"file over the limit; drop the entry"
         )
     if drift.current_line_count > drift.recorded_line_count:

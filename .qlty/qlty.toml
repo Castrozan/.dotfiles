@@ -1,0 +1,114 @@
+config_version = "0"
+exclude_patterns = ["**/node_modules/**", "**/vendor/**", "**/dist/**", "**/fixtures/**", "private-configuration/**"]
+test_patterns = ["**/__tests__/**", "**/conftest.py", "**/*.test.*", "**/*.spec.*"]
+
+[file_types.nix]
+globs = ["**/*.nix"]
+
+[plugins.definitions.native-ruff]
+known_good_version = "1.0.0"
+file_types = ["python"]
+environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
+
+[plugins.definitions.native-ruff.drivers.lint]
+script = "ruff check --config .qlty/ruff.toml --exit-zero --output-format json -- ${target}"
+success_codes = [0]
+output_format = "ruff"
+batch = true
+config_files = [".qlty/ruff.toml"]
+
+[plugins.definitions.native-biome]
+known_good_version = "1.0.0"
+file_types = ["javascript", "typescript", "jsx", "tsx"]
+environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
+
+[plugins.definitions.native-biome.drivers.lint]
+script = "biome lint --config-path=.qlty --reporter=json --max-diagnostics=none -- ${target}"
+success_codes = [0, 1]
+output_format = "biome"
+batch = true
+config_files = [".qlty/biome.json"]
+
+[plugins.definitions.native-shellcheck]
+known_good_version = "1.0.0"
+file_types = ["shell"]
+environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
+
+[plugins.definitions.native-shellcheck.drivers.lint]
+script = "shellcheck --format=json -- ${target}"
+success_codes = [0, 1]
+output_format = "shellcheck"
+batch = true
+
+[plugins.definitions.native-markdownlint]
+known_good_version = "1.0.0"
+file_types = ["markdown"]
+environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
+
+[plugins.definitions.native-markdownlint.drivers.lint]
+script = "markdownlint --config .qlty/markdownlint.json --json -- ${target}"
+success_codes = [0, 1]
+output = "stderr"
+output_format = "markdownlint"
+output_missing = "parse"
+config_files = [".qlty/markdownlint.json"]
+batch = true
+
+[plugins.definitions.native-ast-grep]
+known_good_version = "1.0.0"
+file_types = ["ALL"]
+environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
+
+[plugins.definitions.native-ast-grep.drivers.lint]
+script = "ast-grep scan --config .qlty/sgconfig.yml --threads=1 --json -- ${target}"
+success_codes = [0, 1]
+output_format = "ast-grep"
+config_files = [".qlty/sgconfig.yml", ".qlty/rules/policy.yml"]
+batch = true
+
+[plugins.definitions.native-nix]
+known_good_version = "1.0.0"
+file_types = ["nix"]
+environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
+
+[plugins.definitions.native-nix.drivers.statix]
+script = "dotfiles-nix-findings statix ${target}"
+success_codes = [0]
+output_format = "rdjson"
+
+[plugins.definitions.native-nix.drivers.deadnix]
+script = "dotfiles-nix-findings deadnix ${target}"
+success_codes = [0]
+output_format = "rdjson"
+batch = true
+
+[plugins.definitions.native-gitleaks]
+known_good_version = "1.0.0"
+file_types = ["ALL"]
+environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
+
+[plugins.definitions.native-gitleaks.drivers.lint]
+script = "gitleaks dir --redact --no-banner --config .qlty/gitleaks.toml --report-format=sarif --report-path=${tmpfile} ${target}"
+success_codes = [0, 1]
+output = "tmpfile"
+output_format = "sarif"
+config_files = [".qlty/gitleaks.toml"]
+target = { type = "literal", path = "." }
+
+[[plugin]]
+name = "native-ruff"
+[[plugin]]
+name = "native-biome"
+[[plugin]]
+name = "native-shellcheck"
+[[plugin]]
+name = "native-markdownlint"
+[[plugin]]
+name = "native-ast-grep"
+[[plugin]]
+name = "native-nix"
+[[plugin]]
+name = "native-gitleaks"
+
+[smells]
+mode = "block"

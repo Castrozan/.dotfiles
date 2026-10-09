@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 CHECKER_RELATIVE_PATH = "repository/verification/check-line-counts.py"
 BASELINE_RELATIVE_PATH = "repository/verification/line-count-baseline.json"
@@ -76,7 +78,7 @@ def test_fails_when_a_recorded_file_dropped_back_under_the_limit(tmp_path):
     checkout = make_checkout(tmp_path, {"legacy.py": 150}, {"legacy.py": 300})
     result = run_checker(checkout)
     assert result.returncode == 1
-    assert "no longer a tracked file over the limit" in result.stderr
+    assert "no longer a repository file over the limit" in result.stderr
 
 
 def test_fails_when_a_grandfathered_file_shrank_but_stays_over_the_limit(tmp_path):
@@ -105,3 +107,22 @@ def test_update_baseline_drops_stale_entries_and_records_the_lower_count(tmp_pat
         "legacy.py": 250
     }
     assert run_checker(checkout).returncode == 0
+
+
+@pytest.mark.parametrize("filename", ["untracked.py", "line\nbreak.py"])
+@pytest.mark.parametrize("line_count, expected_status", [(200, 0), (201, 1)])
+def test_untracked_code_uses_the_same_physical_line_limit(
+    tmp_path, filename, line_count, expected_status
+):
+    checkout = make_checkout(tmp_path, {"tracked.py": 1}, {})
+    write_file_with_line_count(checkout / filename, line_count)
+    result = run_checker(checkout)
+    assert result.returncode == expected_status, result.stderr
+
+
+def test_ignored_untracked_code_is_excluded(tmp_path):
+    checkout = make_checkout(tmp_path, {"tracked.py": 1}, {})
+    (checkout / ".gitignore").write_text("ignored.py\n")
+    write_file_with_line_count(checkout / "ignored.py", 201)
+    result = run_checker(checkout)
+    assert result.returncode == 0, result.stderr

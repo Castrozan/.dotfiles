@@ -27,8 +27,8 @@ export function remainingGaps(context) {
       "swift-coverage",
       "Swift coverage",
       "coverage",
-      "The producer emits Sonar coverage XML; the current portable importer supports Cobertura.",
-      "unsupported",
+      "Native Swift Cobertura coverage is produced but is not imported by this overview.",
+      "unmeasured",
     ],
     [
       "mutation",

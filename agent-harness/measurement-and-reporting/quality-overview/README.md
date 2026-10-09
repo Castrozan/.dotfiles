@@ -41,8 +41,8 @@ fall back to its earlier output. Expired, ambiguous or missing artifacts remain
 explicit gaps. Exact artifact IDs are downloaded through the GitHub archive API
 and their SHA-256 digests are checked before bounded extraction. It imports four native JUnit tiers and
 Python Cobertura coverage beside the frozen package evidence. Swift, QML and Lua
-testcase import, Swift Sonar coverage import and mutation testing retain their
-specific unmeasured or unsupported status.
+testcase import, Swift coverage import and mutation testing retain their
+specific unmeasured status.
 
 The Python collector owns GitHub metadata and artifact selection. The JavaScript
 adapter calls the pinned portable Verdr schemas and report builder. The existing

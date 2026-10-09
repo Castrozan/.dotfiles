@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 
-from swift_coverage_report import sonar_coverage_xml
+from swift_coverage_report import cobertura_coverage_xml
 
 
 REPOSITORY = Path(__file__).resolve().parents[3]
@@ -126,7 +126,7 @@ def collect_coverage(output_directory):
             command, check=True, capture_output=True, text=True, timeout=60
         ).stdout
         (output_directory / "swift-coverage.xml").write_text(
-            sonar_coverage_xml(report, REPOSITORY) + "\n"
+            cobertura_coverage_xml(report, REPOSITORY) + "\n"
         )
         subprocess.run(
             [
@@ -143,4 +143,4 @@ def collect_coverage(output_directory):
 
 
 if __name__ == "__main__":
-    collect_coverage(REPOSITORY / ".sonar-reports")
+    collect_coverage(REPOSITORY / ".coverage-reports")

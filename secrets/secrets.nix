@@ -42,7 +42,6 @@ in
   "api-keys/todoist-api-token.age".publicKeys = all_keys;
 
   "credentials/jira-api-token.age".publicKeys = all_keys;
-  "api-keys/sonarqube-token.age".publicKeys = all_keys;
   "credentials/glab-token.age".publicKeys = all_keys;
   "credentials/gitlab-com-token.age".publicKeys = all_keys;
   "credentials/github-com-token.age".publicKeys = all_keys;

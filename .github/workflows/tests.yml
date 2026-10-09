@@ -11,6 +11,29 @@ jobs:
   quality-evidence:
     uses: ./.github/workflows/quality-evidence.yml
 
+  local-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache-key: local-lint
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run the same local quality gate used by agents
+        run: |
+          lintPackage=$(nix build --no-link --print-out-paths --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in (import ./machine-configuration/development/testing/local-lint/local-lint-tools.nix { inherit pkgs; }).lint')
+          "$lintPackage/bin/dotfiles-lint" --all --output .quality-results/local-lint.json
+      - name: Retain local lint findings
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-lint
+          path: .quality-results/local-lint.json
+          include-hidden-files: true
+          if-no-files-found: error
+
   quick-tests:
     runs-on: ubuntu-latest
     steps:
@@ -44,18 +67,18 @@ jobs:
       - name: Run Swift tests with native coverage
         run: |
           nix shell --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in pkgs.python312.withPackages (packages: [ packages.coverage ])' --command bash -e -c '
-            mkdir -p .sonar-reports
-            python3 -m coverage run --rcfile=repository/verification/quality/sonarqube/coverage.ini repository/verification/cover/swift-coverage.py
-            python3 -m coverage combine --rcfile=repository/verification/quality/sonarqube/coverage.ini
-            python3 -m coverage xml --rcfile=repository/verification/quality/sonarqube/coverage.ini -o .sonar-reports/swift-runner-coverage.xml
+            mkdir -p .coverage-reports
+            python3 -m coverage run --rcfile=repository/verification/cover/coverage.ini repository/verification/cover/swift-coverage.py
+            python3 -m coverage combine --rcfile=repository/verification/cover/coverage.ini
+            python3 -m coverage xml --rcfile=repository/verification/cover/coverage.ini -o .coverage-reports/swift-runner-coverage.xml
           '
       - name: Upload Swift coverage
         uses: actions/upload-artifact@v4
         with:
           name: swift-coverage
           path: |
-            .sonar-reports/swift-coverage.xml
-            .sonar-reports/swift-runner-coverage.xml
+            .coverage-reports/swift-coverage.xml
+            .coverage-reports/swift-runner-coverage.xml
           if-no-files-found: error
 
   qml-and-python-tests:
@@ -75,9 +98,9 @@ jobs:
         run: |
           nix shell --impure --expr 'let pkgs = (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages.${builtins.currentSystem}; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash -c '
             export REPO_DIR="$PWD"
-            mkdir -p .sonar-reports
-            export COVERAGE_PROCESS_START="$PWD/repository/verification/quality/sonarqube/coverage.ini"
-            export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/quality/sonarqube/coverage.ini --cov-report=xml"
+            mkdir -p .coverage-reports
+            export COVERAGE_PROCESS_START="$PWD/repository/verification/cover/coverage.ini"
+            export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/cover/coverage.ini --cov-report=xml"
             source repository/verification/runner/discovery.sh
             source repository/verification/runner/pytest.sh
             unitExitCode=0
@@ -109,7 +132,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-coverage
-          path: .sonar-reports/python-coverage.xml
+          path: .coverage-reports/python-coverage.xml
           if-no-files-found: error
 
       - name: Download Swift coverage
@@ -117,21 +140,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: swift-coverage
-          path: .sonar-reports
+          path: .coverage-reports
 
-      - name: Apply SonarQube policy from Git
-        if: ${{ !cancelled() && github.event_name == 'push' }}
+      - name: Enforce local coverage of changed lines
+        if: ${{ !cancelled() }}
         env:
-          SONARQUBE_CLI_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          COVERAGE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
-          sonarPackage=$(nix build --no-link --print-out-paths --impure --expr 'let pkgs = (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages.${builtins.currentSystem}; in (import ./machine-configuration/development/testing/sonarqube/sonarqube-tools.nix { inherit pkgs; }).configure')
-          "$sonarPackage/bin/sonar-configure"
-
-      - name: Analyze with SonarQube and enforce the quality gate
-        if: ${{ !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
-        uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          coveragePackage=$(nix build --no-link --print-out-paths --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in (import ./machine-configuration/development/testing/local-lint/local-lint-tools.nix { inherit pkgs; }).coverage')
+          "$coveragePackage/bin/dotfiles-coverage-check" .coverage-reports/python-coverage.xml .coverage-reports/swift-runner-coverage.xml .coverage-reports/swift-coverage.xml --compare-branch "$COVERAGE_BASE"
 
       - name: Run QML lint
         if: ${{ !cancelled() }}

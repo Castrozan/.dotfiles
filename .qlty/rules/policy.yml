@@ -1,0 +1,38 @@
+id: nix-declarative-platform-detection
+language: Nix
+severity: error
+message: Use the injected isNixOS argument for platform detection.
+rule:
+  pattern: builtins.pathExists /etc/NIXOS
+---
+id: python-dynamic-evaluation
+language: Python
+severity: error
+message: Parse data with a format-specific parser instead of executing it.
+rule:
+  any:
+    - pattern: eval($$$ARGUMENTS)
+    - pattern: exec($$$ARGUMENTS)
+---
+id: javascript-dynamic-evaluation
+language: JavaScript
+severity: error
+message: Parse data with a format-specific parser instead of executing it.
+rule:
+  pattern: eval($$$ARGUMENTS)
+---
+id: typescript-dynamic-evaluation
+language: TypeScript
+severity: error
+message: Parse data with a format-specific parser instead of executing it.
+rule:
+  pattern: eval($$$ARGUMENTS)
+---
+id: lua-dynamic-evaluation
+language: Lua
+severity: error
+message: Parse data with a format-specific parser instead of executing it.
+rule:
+  any:
+    - pattern: load($$$ARGUMENTS)
+    - pattern: loadstring($$$ARGUMENTS)

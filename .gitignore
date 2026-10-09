@@ -5,7 +5,11 @@
 # Deep-work context workspaces (local-only session artifacts)
 .deep-work/
 .scannerwork/
-.sonar-reports/
+.coverage-reports/
+.qlty/logs/
+.qlty/cache/
+.qlty/tmp/
+.qlty/out/
 .quality-results/
 
 # Session heartbeat (local-only resume marker)

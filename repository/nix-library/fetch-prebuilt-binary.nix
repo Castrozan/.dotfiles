@@ -21,6 +21,7 @@ let
     ".tar.gz"
     ".tgz"
     ".tar.zst"
+    ".tar.xz"
   ];
 
   isZipArchive = pkgs.lib.hasSuffix ".zip" url;

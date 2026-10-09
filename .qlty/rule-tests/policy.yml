@@ -1,0 +1,31 @@
+id: nix-declarative-platform-detection
+valid:
+  - "{ isNixOS, ... }: if isNixOS then {} else {}"
+invalid:
+  - "builtins.pathExists /etc/NIXOS"
+---
+id: python-dynamic-evaluation
+valid:
+  - "json.loads(content)"
+invalid:
+  - "eval(content)"
+  - "exec(content)"
+---
+id: javascript-dynamic-evaluation
+valid:
+  - "JSON.parse(content)"
+invalid:
+  - "eval(content)"
+---
+id: typescript-dynamic-evaluation
+valid:
+  - "JSON.parse(content)"
+invalid:
+  - "eval(content)"
+---
+id: lua-dynamic-evaluation
+valid:
+  - "vim.json.decode(content)"
+invalid:
+  - "load(content)"
+  - "loadstring(content)"
