@@ -65,7 +65,9 @@ backend_prepare_environment() {
 	take_ownership_of_the_agenix_identity_key
 }
 
-backend_switch() {
+run_nixos_rebuild() {
+	local rebuild_action="$1"
+	shift
 	refuse_to_deploy_the_entrypoint_owner_from_bare_dotfiles "$MACHINE_ALIAS"
 
 	local flake_reference
@@ -82,7 +84,15 @@ backend_switch() {
 		NIXPKGS_ALLOW_UNFREE=1 \
 		DOTFILES_REBUILD_WRAPPER=1 \
 		"${LOW_PRIORITY_COMMAND_PREFIX[@]}" \
-		nixos-rebuild switch --flake "$flake_reference" "${lock_flags[@]}" "$@"
+		nixos-rebuild "$rebuild_action" --flake "$flake_reference" "${lock_flags[@]}" "$@"
+}
+
+backend_boot() {
+	run_nixos_rebuild boot "$@"
+}
+
+backend_switch() {
+	run_nixos_rebuild switch "$@"
 }
 
 backend_verify_switch_landed() {

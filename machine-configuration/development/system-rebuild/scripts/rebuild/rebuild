@@ -74,6 +74,13 @@ nudge_clawde_agents_to_redeploy_on_continued_sessions() {
 }
 
 main() {
+	local rebuild_action="switch"
+	if [ "${1:-}" = "boot" ]; then
+		[ "$(detect_backend_name)" = "nixos" ] || fail "rebuild boot is supported only on NixOS"
+		rebuild_action="boot"
+		shift
+	fi
+
 	ensure_dotfiles_directory_exists
 	ensure_nix_is_on_the_path
 	source_backend_for_this_platform
@@ -81,6 +88,12 @@ main() {
 	backend_prepare_environment
 	prepare_exclusive_rebuild_lock
 	initialize_git_submodules
+
+	if [ "$rebuild_action" = "boot" ]; then
+		backend_boot "$@"
+		echo ":: Boot generation staged on ${MACHINE_ALIAS}; reboot to activate."
+		return 0
+	fi
 
 	backend_switch "$@"
 	backend_verify_switch_landed
