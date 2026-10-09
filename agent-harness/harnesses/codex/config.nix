@@ -95,8 +95,6 @@ let
       terminal_title = [
         "activity"
         "thread-name"
-        "project-name"
-        "git-branch"
       ];
     };
     notice = {
