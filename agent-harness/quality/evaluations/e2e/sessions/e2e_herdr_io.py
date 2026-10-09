@@ -35,9 +35,20 @@ def pane_hosts_a_live_agent(pane_id: str) -> bool:
     return bool(payload.get("agent", {}).get("agent"))
 
 
+def wait_for_pane_to_host_a_live_agent(pane_id: str, timeout_seconds: float) -> bool:
+    deadline = time.monotonic() + timeout_seconds
+    while not pane_hosts_a_live_agent(pane_id):
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(RESPONSE_POLL_INTERVAL_SECONDS)
+    return True
+
+
 def wait_for_agent_to_become_ready(
     pane_id: str, profile: HarnessProfile, timeout_seconds: float = 90
 ) -> bool:
+    if not wait_for_pane_to_host_a_live_agent(pane_id, timeout_seconds):
+        return False
     if not wait_for_agent_status(pane_id, "idle", timeout_seconds):
         return False
     if not wait_for_startup_output_to_settle(pane_id, profile.busy_marker):
