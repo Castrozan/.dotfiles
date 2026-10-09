@@ -7,6 +7,9 @@ readonly MACHINE_ALIAS="@machineAlias@"
 readonly BACKENDS_DIRECTORY="@backendsDirectory@"
 readonly EXCLUSIVE_RUN_LOCK_HELPER="@exclusiveRunLockHelper@"
 readonly EXCLUSIVE_RUN_SCOPE_PYTHON="@exclusiveRunScopePython@"
+readonly NIXOS_REBUILD_PREFETCH="@nixosRebuildPrefetch@"
+readonly NIXOS_STAGED_REBUILD="@nixosStagedRebuild@"
+export NIXOS_REBUILD_PREFETCH NIXOS_STAGED_REBUILD
 export EXCLUSIVE_RUN_SCOPE_PYTHON
 readonly TYPICAL_REBUILD_DURATION_SECONDS=420
 readonly NIX_DAEMON_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"

@@ -1,74 +1,9 @@
 import subprocess
+import re
 import time
 from pathlib import Path
 
 import pytest
-
-
-@pytest.fixture
-def rebuild_boot_environment(managed_rebuild_environment, tmp_path):
-    scripts = Path(__file__).resolve().parents[2] / "scripts"
-    backends = tmp_path / "backends"
-    backends.mkdir()
-    home = tmp_path / "home"
-    (home / ".dotfiles").mkdir(parents=True)
-    private_entrypoint = home / "zanoni-system"
-    private_entrypoint.mkdir()
-    (private_entrypoint / "flake.nix").touch()
-    entrypoint = tmp_path / "rebuild"
-    substitutions = {
-        "@machineAlias@": "chise",
-        "@backendsDirectory@": str(backends),
-        "@exclusiveRunLockHelper@": managed_rebuild_environment[
-            "EXCLUSIVE_RUN_LOCK_HELPER"
-        ],
-        "@exclusiveRunScopePython@": managed_rebuild_environment[
-            "EXCLUSIVE_RUN_SCOPE_PYTHON"
-        ],
-    }
-    source = (scripts / "rebuild/rebuild").read_text()
-    for placeholder, value in substitutions.items():
-        source = source.replace(placeholder, value)
-    entrypoint.write_text(source)
-    events = tmp_path / "events"
-    (backends / "nixos").write_text(
-        f'''source "{scripts}/rebuild/backends/nixos"
-run_privileged() {{
-    printf '%s\\n' "$@" > "{tmp_path}/privileged-arguments"
-    while [[ "$1" != nixos-rebuild ]]; do
-        if [[ "$1" == DOTFILES_REBUILD_WRAPPER=1 ]]; then export DOTFILES_REBUILD_WRAPPER=1; fi
-        shift
-    done
-    shift
-    "{scripts}/nixos-rebuild-guard" "$@"
-}}
-backend_verify_switch_landed() {{ echo verify >> "{events}"; }}
-backend_after_switch() {{ echo desktop >> "{events}"; }}
-'''
-    )
-    native = tmp_path / "native"
-    native.write_text(
-        f'''#!/usr/bin/env bash
-printf '%s\\n' "$@" > "{tmp_path}/native-arguments"
-[[ "${{TEST_NATIVE_STATUS:-0}}" == 0 ]] || exit "$TEST_NATIVE_STATUS"
-case "$1" in
-boot) echo staged > "{tmp_path}/next-generation" ;;
-switch) echo active > "{tmp_path}/current-generation"; touch "{tmp_path}/activated" ;;
-esac
-'''
-    )
-    native.chmod(0o755)
-    (tmp_path / "current-generation").write_text("previous\n")
-    return {
-        **managed_rebuild_environment,
-        "BASH_ENV": "/dev/null",
-        "HOME": str(home),
-        "MACHINE_LOCAL_ENTRYPOINT_DIRECTORY": str(private_entrypoint),
-        "REAL_NIXOS_REBUILD": str(native),
-        "TEST_REBUILD_ENTRYPOINT": str(entrypoint),
-        "TEST_REBUILD_PLATFORM": "nixos",
-        "TEST_EVENTS": str(events),
-    }
 
 
 def run_rebuild(environment, *arguments):
@@ -110,7 +45,12 @@ def test_boot_stages_native_generation_without_live_or_post_switch_effects(
     assert (tmp_path / "next-generation").read_text() == "staged\n"
     assert (tmp_path / "current-generation").read_text() == "previous\n"
     assert not (tmp_path / "activated").exists()
-    assert (tmp_path / "events").read_text().splitlines() == ["nix-ready", "git-ready"]
+    assert (tmp_path / "events").read_text().splitlines() == [
+        "nix-ready",
+        "git-ready",
+        "prefetch",
+        "privileged",
+    ]
     assert "reboot to activate" in completed.stdout
 
 
@@ -125,6 +65,8 @@ def test_default_switch_preserves_live_activation_and_post_switch_effects(
     assert (tmp_path / "events").read_text().splitlines() == [
         "nix-ready",
         "git-ready",
+        "prefetch",
+        "privileged",
         "verify",
         "desktop",
         "fleet",
@@ -161,7 +103,27 @@ def test_failed_boot_preserves_native_status_and_skips_post_switch_effects(
     assert completed.returncode == 42
     assert (tmp_path / "current-generation").read_text() == "previous\n"
     assert not (tmp_path / "next-generation").exists()
-    assert (tmp_path / "events").read_text().splitlines() == ["nix-ready", "git-ready"]
+    assert (tmp_path / "events").read_text().splitlines() == [
+        "nix-ready",
+        "git-ready",
+        "prefetch",
+        "privileged",
+    ]
+
+
+def test_prefetch_failure_prevents_privilege_handoff(
+    rebuild_boot_environment, tmp_path
+):
+    completed = run_rebuild(
+        {**rebuild_boot_environment, "TEST_PREFETCH_STATUS": "42"}, "boot"
+    )
+    assert completed.returncode == 42
+    assert not (tmp_path / "privileged-arguments").exists()
+    assert (tmp_path / "events").read_text().splitlines() == [
+        "nix-ready",
+        "git-ready",
+        "prefetch",
+    ]
 
 
 def test_boot_contends_with_an_existing_managed_rebuild(
@@ -190,3 +152,24 @@ def test_boot_contends_with_an_existing_managed_rebuild(
     finally:
         holder.terminate()
         holder.wait(timeout=5)
+
+
+@pytest.mark.parametrize(
+    "capability", ["NIXOS_REBUILD_PREFETCH", "NIXOS_STAGED_REBUILD"]
+)
+def test_missing_staged_infrastructure_fails_before_prefetch_or_sudo(
+    rebuild_boot_environment, tmp_path, capability
+):
+    entrypoint = Path(rebuild_boot_environment["TEST_REBUILD_ENTRYPOINT"])
+    entrypoint.write_text(
+        re.sub(
+            rf"readonly {capability}=.*",
+            f'readonly {capability}="{tmp_path}/absent"',
+            entrypoint.read_text(),
+        )
+    )
+    completed = run_rebuild(rebuild_boot_environment, "boot")
+    assert completed.returncode == 1
+    assert "infrastructure is missing" in completed.stderr
+    assert not (tmp_path / "prefetch-arguments").exists()
+    assert not (tmp_path / "privileged-arguments").exists()
