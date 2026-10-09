@@ -116,7 +116,7 @@ Item {
                     asynchronous: dashboardContentRoot.currentTabIndex !== 0
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: DashboardTab {
-                        dashboardIsActive: dashboardContentRoot.dashboardIsActive
+                        dashboardIsActive: dashboardContentRoot.dashboardIsActive && dashboardContentRoot.currentTabIndex === 0
                     }
                 }
 
@@ -126,7 +126,7 @@ Item {
                     asynchronous: dashboardContentRoot.currentTabIndex !== 1
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: MediaTab {
-                        dashboardIsActive: dashboardContentRoot.dashboardIsActive
+                        dashboardIsActive: dashboardContentRoot.dashboardIsActive && dashboardContentRoot.currentTabIndex === 1
                     }
                 }
 
@@ -136,7 +136,7 @@ Item {
                     asynchronous: dashboardContentRoot.currentTabIndex !== 2
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: PerformanceTab {
-                        dashboardIsActive: dashboardContentRoot.dashboardIsActive
+                        dashboardIsActive: dashboardContentRoot.dashboardIsActive && dashboardContentRoot.currentTabIndex === 2
                     }
                 }
 
@@ -154,7 +154,7 @@ Item {
                     asynchronous: dashboardContentRoot.currentTabIndex !== 4
                     Layout.alignment: Qt.AlignTop
                     sourceComponent: AudioTab {
-                        dashboardIsActive: dashboardContentRoot.dashboardIsActive
+                        dashboardIsActive: dashboardContentRoot.dashboardIsActive && dashboardContentRoot.currentTabIndex === 4
                     }
                 }
             }

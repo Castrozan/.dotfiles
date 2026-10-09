@@ -25,6 +25,7 @@ Item {
     implicitHeight: 320
 
     Behavior on playerProgress {
+        enabled: mediaTabRoot.dashboardIsActive
         Anim {
             duration: Appearance.anim.durations.large
         }
@@ -38,6 +39,11 @@ Item {
         onTriggered: PlayersService.active?.positionChanged()
     }
 
+    ServiceActivity {
+        service: CavaService
+        active: mediaTabRoot.dashboardIsActive
+    }
+
     Item {
         id: cavaVisualiserContainer
 
@@ -46,21 +52,6 @@ Item {
 
         implicitWidth: 180
         implicitHeight: 280
-
-        Component.onDestruction: {
-            if (mediaTabRoot.dashboardIsActive)
-                CavaService.refCount--;
-        }
-
-        Connections {
-            target: mediaTabRoot
-            function onDashboardIsActiveChanged() {
-                if (mediaTabRoot.dashboardIsActive)
-                    CavaService.refCount++;
-                else
-                    CavaService.refCount--;
-            }
-        }
 
         Row {
             anchors.bottom: parent.bottom
@@ -134,7 +125,7 @@ Item {
             width: parent.width * 0.75
             height: parent.height * 0.75
 
-            playing: mediaTabRoot.isCurrentlyPlaying
+            playing: mediaTabRoot.dashboardIsActive && mediaTabRoot.isCurrentlyPlaying
             speed: DashboardConfig.bongoCatGifSpeed
             source: Qt.resolvedUrl("../../assets/bongocat.gif")
             asynchronous: true
