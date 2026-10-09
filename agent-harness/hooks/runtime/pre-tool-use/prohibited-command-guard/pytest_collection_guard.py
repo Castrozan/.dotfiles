@@ -22,7 +22,8 @@ PYTEST_INFORMATION_OPTIONS = frozenset(
         "--cache-show",
     }
 )
-PYTEST_OPTIONS_TAKING_A_VALUE = frozenset(
+PYTEST_OPTIONS_WITH_AN_OPTIONAL_VALUE = frozenset({"--debug", "--cov"})
+PYTEST_OPTIONS_REQUIRING_A_VALUE = frozenset(
     (
         "-k -m -c -p -o -r -W -n --maxfail --pdbcls --capture --lfnf "
         "--last-failed-no-failures --durations --durations-min --verbosity --tb "
@@ -33,21 +34,23 @@ PYTEST_OPTIONS_TAKING_A_VALUE = frozenset(
         "--log-format --log-date-format --log-cli-level --log-cli-format "
         "--log-cli-date-format --log-file --log-file-mode --log-file-level "
         "--log-file-format --log-file-date-format --log-auto-indent --log-disable "
-        "--debug --cov --cov-report --cov-config --cov-fail-under --cov-precision "
+        "--cov-report --cov-config --cov-fail-under --cov-precision "
         "--cov-context --numprocesses --maxprocesses --max-worker-restart --dist "
         "--tx --rsyncdir --rsyncignore"
     ).split()
 )
 PYTEST_SHORT_OPTIONS_TAKING_A_VALUE = frozenset(
-    option[1:] for option in PYTEST_OPTIONS_TAKING_A_VALUE if len(option) == 2
+    option[1:] for option in PYTEST_OPTIONS_REQUIRING_A_VALUE if len(option) == 2
 )
 
 
-def _option_takes_a_separate_value(argument):
+def _option_takes_a_separate_value(argument, following_argument):
     if "=" in argument:
         return False
-    if argument in PYTEST_OPTIONS_TAKING_A_VALUE:
+    if argument in PYTEST_OPTIONS_REQUIRING_A_VALUE:
         return True
+    if argument in PYTEST_OPTIONS_WITH_AN_OPTIONAL_VALUE:
+        return following_argument is not None and not following_argument.startswith("-")
     if argument.startswith("--"):
         return False
     for offset, character in enumerate(argument[1:], 1):
@@ -68,7 +71,14 @@ def _collection_paths(argument_vector):
         if option in PYTEST_INFORMATION_OPTIONS:
             return None
         if argument.startswith("-"):
-            argument_index += 2 if _option_takes_a_separate_value(argument) else 1
+            following_argument = (
+                arguments[argument_index + 1]
+                if argument_index + 1 < len(arguments)
+                else None
+            )
+            argument_index += (
+                2 if _option_takes_a_separate_value(argument, following_argument) else 1
+            )
             continue
         paths.append(argument)
         argument_index += 1
