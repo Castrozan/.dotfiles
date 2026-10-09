@@ -18,7 +18,6 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
     }
     expected_timeouts = {
         "plugin.dotfiles.chrome-devtools": 120000,
-        "plugin.dotfiles.sonarqube": 60000,
     }
     assert "mcp" not in global_configuration
     assert "skills" not in global_configuration
