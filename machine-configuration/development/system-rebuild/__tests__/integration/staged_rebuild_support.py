@@ -28,6 +28,10 @@ directory = Path(os.environ["TEST_PHASE_DIRECTORY"])
 with (directory / "commands").open("a") as events:
     events.write(json.dumps({{"command": Path(sys.argv[0]).name, "arguments": arguments, "pid": os.getpid(), "gc": [os.environ.get("GC_INITIAL_HEAP_SIZE"), os.environ.get("GC_FREE_SPACE_DIVISOR")]}}) + "\\n")
 if "archive" in arguments:
+    if os.environ.get("TEST_ARCHIVE_HOLD") == "1":
+        (directory / "archive-pid").write_text(str(os.getpid()))
+        worker = "import os, signal, time; from pathlib import Path; signal.signal(signal.SIGTERM, signal.SIG_IGN); directory=Path(os.environ['TEST_PHASE_DIRECTORY']); (directory/'archive-descendant-started').touch(); " + "\\nwhile not (directory/'release-descendant').exists(): time.sleep(0.01)"
+        subprocess.run([sys.executable, "-c", worker], close_fds=True)
     reference = arguments[-1]
     if "dotfiles" in reference:
         nested = {{"path": "/nix/store/33333333333333333333333333333333-nested-source", "inputs": {{}}}}

@@ -13,7 +13,8 @@ let
     mkdir -p $out
     install -m 0644 ${./scripts/nixos-staged-rebuild}/*.py $out/
     install -m 0755 ${./scripts/nixos-staged-rebuild/staged-rebuild} $out/staged-rebuild
-    substituteInPlace $out/staged-rebuild \
+    install -m 0755 ${./scripts/nixos-staged-rebuild/prefetch-rebuild} $out/prefetch-rebuild
+    substituteInPlace $out/staged-rebuild $out/prefetch-rebuild \
       --replace-fail '#!/usr/bin/env bash' '#!${pkgs.bash}/bin/bash' \
       --replace-fail '$NIXOS_STAGED_REBUILD_PYTHON' '${pkgs.python3}/bin/python3' \
       --replace-fail '$NIXOS_STAGED_REBUILD_SCRIPTS' "$out"
@@ -30,18 +31,22 @@ let
     export PYTHONNOUSERSITE=true
     export REBUILD_COMMAND_TIME=${pkgs.time}/bin/time
   '';
+  lockingEnvironment = ''
+    export SYSTEM_REBUILD_LOCK_GUARD=${systemRebuildLockGuard}
+    export EXCLUSIVE_RUN_LOCK_HELPER=${exclusiveRunLock}/libexec/exclusive-run-lock/exclusive-run-lock.sh
+    export EXCLUSIVE_RUN_SCOPE_PYTHON=${pkgs.python3}/bin/python3
+  '';
 in
 {
   prefetch = pkgs.writeShellScript "nixos-rebuild-prefetch" ''
     ${runtimeEnvironment}
-    exec ${pkgs.python3}/bin/python3 ${stagedScripts}/prefetch_rebuild.py "$@"
+    ${lockingEnvironment}
+    exec ${stagedScripts}/prefetch-rebuild "$@"
   '';
   rebuild = pkgs.writeShellScript "nixos-staged-rebuild" ''
     ${runtimeEnvironment}
+    ${lockingEnvironment}
     export REAL_NIXOS_REBUILD=${stagedScripts}/staged-rebuild
-    export SYSTEM_REBUILD_LOCK_GUARD=${systemRebuildLockGuard}
-    export EXCLUSIVE_RUN_LOCK_HELPER=${exclusiveRunLock}/libexec/exclusive-run-lock/exclusive-run-lock.sh
-    export EXCLUSIVE_RUN_SCOPE_PYTHON=${pkgs.python3}/bin/python3
     exec ${sentinelGuard} "$@"
   '';
 }

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+exec "$SYSTEM_REBUILD_LOCK_GUARD" \
+	"$NIXOS_STAGED_REBUILD_PYTHON" "$NIXOS_STAGED_REBUILD_SCRIPTS/prefetch_rebuild.py" "$@"
