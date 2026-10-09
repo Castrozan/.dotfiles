@@ -16,19 +16,9 @@ Row {
     padding: Appearance.padding.large
     spacing: Appearance.spacing.normal
 
-    Component.onDestruction: {
-        if (resourcesWidgetRoot.dashboardIsActive)
-            SystemUsageService.refCount--;
-    }
-
-    Connections {
-        target: resourcesWidgetRoot
-        function onDashboardIsActiveChanged() {
-            if (resourcesWidgetRoot.dashboardIsActive)
-                SystemUsageService.refCount++;
-            else
-                SystemUsageService.refCount--;
-        }
+    ServiceActivity {
+        service: SystemUsageService
+        active: resourcesWidgetRoot.dashboardIsActive
     }
 
     ResourceBar {

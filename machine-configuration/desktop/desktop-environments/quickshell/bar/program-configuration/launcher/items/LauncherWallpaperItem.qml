@@ -36,6 +36,7 @@ StyledClippingRect {
                 source: `file://${launcherWallpaperItemRoot.wallpaperData.path}`
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
+                sourceSize: Qt.size(Math.ceil(LauncherConfig.wallpaperThumbnailSize * Screen.devicePixelRatio), Math.ceil(LauncherConfig.wallpaperThumbnailSize * 0.65 * Screen.devicePixelRatio))
             }
 
             Rectangle {

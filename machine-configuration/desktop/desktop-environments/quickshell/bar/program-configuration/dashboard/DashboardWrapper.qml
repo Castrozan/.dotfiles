@@ -8,10 +8,11 @@ Item {
     id: dashboardWrapperRoot
 
     property bool dashboardVisible: false
+    property int currentTabIndex: 0
     readonly property real contentHeight: dashboardContentLoader.item?.nonAnimatedHeight ?? 0
     readonly property int tabCount: dashboardContentLoader.item?.tabCount ?? 0
 
-    signal closeRequested()
+    signal closeRequested
 
     visible: height > 0
     width: implicitWidth
@@ -79,10 +80,12 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
 
-        active: true
+        active: dashboardWrapperRoot.dashboardVisible || dashboardWrapperRoot.visible
 
         sourceComponent: DashboardContent {
             dashboardIsActive: dashboardWrapperRoot.dashboardVisible
+            currentTabIndex: dashboardWrapperRoot.currentTabIndex
+            onCurrentTabIndexChanged: dashboardWrapperRoot.currentTabIndex = currentTabIndex
         }
     }
 }

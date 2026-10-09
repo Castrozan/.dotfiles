@@ -10,7 +10,7 @@ Item {
     property bool launcherVisible: false
     readonly property real contentWidth: launcherContentLoader.item?.implicitWidth ?? 0
 
-    signal launcherCloseRequested()
+    signal launcherCloseRequested
 
     visible: height > 0
     width: implicitWidth
@@ -58,7 +58,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
 
-        active: true
+        active: launcherWrapperRoot.launcherVisible || launcherWrapperRoot.visible
 
         sourceComponent: LauncherContent {
             launcherVisible: launcherWrapperRoot.launcherVisible

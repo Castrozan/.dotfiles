@@ -20,6 +20,11 @@ Item {
     implicitWidth: performanceContentRow.implicitWidth
     implicitHeight: performanceContentRow.implicitHeight
 
+    ServiceActivity {
+        service: SystemUsageService
+        active: performanceTabRoot.dashboardIsActive
+    }
+
     StyledRect {
         id: noWidgetsPlaceholder
 
@@ -57,21 +62,6 @@ Item {
         anchors.right: parent.right
         spacing: Appearance.spacing.normal
         visible: !noWidgetsPlaceholder.visible
-
-        Component.onDestruction: {
-            if (performanceTabRoot.dashboardIsActive)
-                SystemUsageService.refCount--;
-        }
-
-        Connections {
-            target: performanceTabRoot
-            function onDashboardIsActiveChanged() {
-                if (performanceTabRoot.dashboardIsActive)
-                    SystemUsageService.refCount++;
-                else
-                    SystemUsageService.refCount--;
-            }
-        }
 
         ColumnLayout {
             id: performanceMainColumn
