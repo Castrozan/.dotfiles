@@ -11,6 +11,8 @@ const profile = join(root, "agent");
 process.env.HOME = root;
 process.env.PI_AGENT_DIR = profile;
 process.env.PI_CODING_AGENT_DIR = profile;
+process.env.AGENT_INTERACTIVE_PREFERENCES_PATH = join(root, "interactive.md");
+delete process.env.CLAWDE_AGENT_NAME;
 mkdirSync(join(profile, "extensions"), { recursive: true });
 symlinkSync(extension, join(profile, "extensions/human-facing-reply-guard.js"));
 const requests = [];
