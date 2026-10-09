@@ -10,6 +10,7 @@ import time
 from codex_app_server_client import CodexAppServerClient
 from profile_connection import profile_connection_path
 from session_server_configuration import server_configuration_for
+from session_server_diagnostics import SessionServerDiagnostics
 
 
 def wait_for_session_server(server, socket_path: Path) -> None:
@@ -98,7 +99,10 @@ def run_private_session(arguments: list[str]) -> int:
             ]
         )
     binary = os.environ["CODEX_LAUNCHER_BINARY"]
-    with tempfile.TemporaryDirectory(prefix="codex-session-", dir="/tmp") as directory:
+    with (
+        tempfile.TemporaryDirectory(prefix="codex-session-", dir="/tmp") as directory,
+        SessionServerDiagnostics(Path(directory)) as diagnostics,
+    ):
         socket_path = Path(directory) / "server.sock"
         endpoint = f"unix://{socket_path}"
         environment = os.environ.copy()
@@ -115,9 +119,20 @@ def run_private_session(arguments: list[str]) -> int:
                 env=environment,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,
+                stderr=diagnostics.stderr_descriptor,
                 start_new_session=True,
             )
-            wait_for_session_server(server, socket_path)
+            diagnostics.close_stderr_descriptor()
+            try:
+                wait_for_session_server(server, socket_path)
+            except (OSError, RuntimeError) as error:
+                stop_process(server, process_group=True)
+                server = None
+                diagnostics.close()
+                details = diagnostics.startup_failure_details()
+                if details:
+                    raise RuntimeError(f"{error}\n{details}") from error
+                raise
             with profile_connection_path(
                 socket_path, configuration.profile_path
             ) as client_path:
