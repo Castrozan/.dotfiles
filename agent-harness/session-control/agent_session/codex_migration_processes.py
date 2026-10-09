@@ -158,7 +158,10 @@ def inspect_new_processes(process_info, pane, package, plan):
     connection = inspect_private_connection(server_arguments, client_arguments)
     require(
         all(
-            process_birth(identifier) == births[name]
+            (observed := process_birth(identifier))
+            and observed["start_ticks"] == births[name]["start_ticks"]
+            and observed["parent"] == births[name]["parent"]
+            and observed["state"] != "Z"
             for name, identifier in identities.items()
         ),
         "replacement birth changed during inspection",

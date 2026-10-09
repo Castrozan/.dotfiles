@@ -87,3 +87,19 @@ def test_changed_birth_during_inspection_is_refused(process_inspection, monkeypa
     monkeypatch.setattr(processes, "process_birth", changing_birth)
     with pytest.raises(ValueError, match="birth changed"):
         inspect_runtime(process_inspection)
+
+
+def test_cpu_state_change_during_inspection_preserves_process_identity(
+    process_inspection, monkeypatch
+):
+    original = processes.process_birth
+    inspections = 0
+
+    def running_birth(identifier):
+        nonlocal inspections
+        inspections += 1
+        birth = original(identifier)
+        return {**birth, "state": "R"} if inspections > 3 else birth
+
+    monkeypatch.setattr(processes, "process_birth", running_birth)
+    assert inspect_runtime(process_inspection)["pids"]["client"] == 32
