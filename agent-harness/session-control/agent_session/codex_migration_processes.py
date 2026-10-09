@@ -3,6 +3,7 @@ from pathlib import Path
 import re
 
 from agent_session.codex_migration_contract import require, resume_arguments
+from agent_session.codex_migration_connections import inspect_private_connection
 
 
 def process_birth(process_identifier):
@@ -146,21 +147,15 @@ def inspect_new_processes(process_info, pane, package, plan):
         and os.readlink(f"/proc/{client_identifier}/fd/1") == client_stderr,
         "terminal client descriptors do not share its PTY",
     )
-    endpoint = server_arguments[server_arguments.index("--listen") + 1]
-    require(
-        endpoint.startswith("unix:///tmp/codex-session-"),
-        "private socket endpoint mismatch",
+    client_arguments = (
+        Path(f"/proc/{client_identifier}/cmdline")
+        .read_bytes()
+        .decode()
+        .strip("\0")
+        .split("\0")
     )
-    socket_path = Path(endpoint.removeprefix("unix://"))
-    require(socket_path.is_socket(), "private server socket unavailable")
-    sizes = {}
-    for name in ("server-stderr.log", "server-stderr.previous.log"):
-        path = socket_path.parent / name
-        sizes[name] = path.stat().st_size if path.exists() else 0
-        require(sizes[name] <= 1024 * 1024, "diagnostic file exceeded 1 MiB")
-    require(
-        sum(sizes.values()) <= 2 * 1024 * 1024, "session diagnostics exceeded 2 MiB"
-    )
+    require(client_arguments == clients[0]["argv"], "new client arguments changed")
+    connection = inspect_private_connection(server_arguments, client_arguments)
     require(
         all(
             process_birth(identifier) == births[name]
@@ -175,6 +170,5 @@ def inspect_new_processes(process_info, pane, package, plan):
         "births": births,
         "server_stderr": server_stderr,
         "client_stderr": client_stderr,
-        "socket_directory": str(socket_path.parent),
-        "diagnostic_sizes": sizes,
+        **connection,
     }

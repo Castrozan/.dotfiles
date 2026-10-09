@@ -99,7 +99,11 @@ def prepare_process_inspection(tmp_path, monkeypatch):
             (tmp_path / "proc/31/cmdline").write_bytes(
                 "\0".join(arguments).encode() + b"\0"
             )
-            (tmp_path / "proc/32/cmdline").write_bytes(str(upstream).encode() + b"\0")
+            client_arguments = information["foreground_processes"][1]["argv"]
+            client_arguments[2] = "unix://" + str(socket_path)
+            (tmp_path / "proc/32/cmdline").write_bytes(
+                "\0".join(client_arguments).encode() + b"\0"
+            )
             yield SimpleNamespace(
                 plan=plan,
                 package=package,
