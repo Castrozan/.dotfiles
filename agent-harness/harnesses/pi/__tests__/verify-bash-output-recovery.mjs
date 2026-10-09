@@ -10,10 +10,7 @@ const { createBashTool } = await import(
 );
 const { clampMaxTokensToContext } = await import(
   pathToFileURL(
-    join(
-      modules,
-      "@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/api/simple-options.js",
-    ),
+    join(modules, "@earendil-works/pi-ai/dist/api/simple-options.js"),
   )
 );
 const smallModel = { contextWindow: 24576, maxTokens: 2048 };
