@@ -6,14 +6,19 @@ from pathlib import Path
 
 
 def test_cli_notify_inbox_and_acknowledgement_use_the_stable_pane(owned_fleet):
+    agent_harness_directory = Path(__file__).resolve().parents[4]
     script_directory = (
-        Path(__file__).resolve().parents[4]
-        / "agent-to-agent-communication"
-        / "client"
-        / "scripts"
+        agent_harness_directory / "agent-to-agent-communication" / "client" / "scripts"
     )
     environment = os.environ.copy()
-    environment["PYTHONPATH"] = str(script_directory)
+    environment["PYTHONPATH"] = os.pathsep.join(
+        str(directory)
+        for directory in (
+            script_directory,
+            agent_harness_directory / "servants",
+            agent_harness_directory / "hooks" / "runtime" / "common",
+        )
+    )
 
     def invoke(*arguments):
         result = subprocess.run(
