@@ -9,9 +9,10 @@ client exits. Package upgrades apply to new launches without requiring existing 
 connections and `--no-daemon` retain their native behavior; noninteractive commands and autonomous callers use the
 upstream launch path.
 
-On the first prompt, SessionStart derives the session's Servant from the thread ID and sets the native
-thread name through that terminal's server. The footer displays the name. Existing titles retain their text with the
-Servant prefixed in brackets; resume and compaction keep the same identity, while forks derive one from their new ID.
+On the first prompt, SessionStart derives the session's Servant from the thread ID and sets the native thread name to
+`Servant | session name` through that terminal's server. Existing names retain their text; unnamed sessions use Codex's
+stored first-prompt preview when available. The footer and terminal title display that name. Resume and compaction keep
+the same identity, while forks derive one from their new ID.
 
 Native profiles carry interactive instructions and workspace overrides. Nix deploys their immutable sources separately
 and seeds writable profile files during activation. Codex can save model and reasoning selections into those files;

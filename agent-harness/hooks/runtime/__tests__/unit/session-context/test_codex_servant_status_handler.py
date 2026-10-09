@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 import codex_servant_status_handler as status_handler
+from codex_app_server_client import CodexThreadTitle
 import servant_identity_handler
 from hook_dispatch import CODEX_SURFACE, HookHandler, run_handlers
 
@@ -13,7 +14,7 @@ def session_client(monkeypatch):
     monkeypatch.delenv("OPENCLAW_GATEWAY_PORT", raising=False)
     monkeypatch.setenv("CODEX_SESSION_SOCKET_PATH", "/tmp/private.sock")
     client = Mock()
-    client.thread_name.return_value = None
+    client.thread_title.return_value = CodexThreadTitle(None, "Fix terminal title")
     connection = Mock()
     connection.return_value.__enter__ = Mock(return_value=client)
     connection.return_value.__exit__ = Mock(return_value=False)
@@ -27,9 +28,9 @@ def test_footer_name_matches_injected_servant_for_minted_thread(session_client):
     identity = servant_identity_handler.servant_for_hook_input(payload)
     assert status_handler.handle(payload) is None
     connection.assert_called_once_with("/tmp/private.sock")
-    client.thread_name.assert_called_once_with("codex-name-probe")
+    client.thread_title.assert_called_once_with("codex-name-probe")
     client.set_thread_name.assert_called_once_with(
-        "codex-name-probe", f"[{identity['name']}]"
+        "codex-name-probe", f"{identity['name']} | Fix terminal title"
     )
 
 
@@ -38,7 +39,9 @@ def test_repeated_session_does_not_rename_again(session_client, source):
     client, _ = session_client
     payload = {"thread_id": "same-session", "source": source}
     servant = servant_identity_handler.servant_for_hook_input(payload)
-    client.thread_name.return_value = f"[{servant['name']}] Keep this title"
+    client.thread_title.return_value = CodexThreadTitle(
+        f"{servant['name']} | Keep this title", "Original first prompt"
+    )
     status_handler.handle(payload)
     client.set_thread_name.assert_not_called()
 
@@ -48,18 +51,32 @@ def test_repeated_session_does_not_rename_again(session_client, source):
     [
         (None, "[BB]"),
         ("", "[BB]"),
-        ("BB", "[BB] BB"),
-        ("Bedivere", "[BB] Bedivere"),
+        ("BB", "BB | BB"),
+        ("Bedivere", "BB | Bedivere"),
         ("[BB]", "[BB]"),
         ("[Bedivere]", "[BB]"),
-        ("Human title", "[BB] Human title"),
-        ("[Bedivere] Human title", "[BB] Human title"),
-        ("[BB] Human title", "[BB] Human title"),
-        ("[draft] Human title", "[BB] [draft] Human title"),
+        ("Human title", "BB | Human title"),
+        ("[Bedivere] Human title", "BB | Human title"),
+        ("[BB] Human title", "BB | Human title"),
+        ("Bedivere | Human title", "BB | Human title"),
+        ("BB | Human title", "BB | Human title"),
+        ("[draft] Human title", "BB | [draft] Human title"),
     ],
 )
 def test_titles_survive_servant_prefix_replacement(title, expected):
-    assert status_handler.servant_thread_name(title, "BB") == expected
+    assert (
+        status_handler.servant_thread_name(CodexThreadTitle(title, ""), "BB")
+        == expected
+    )
+
+
+@pytest.mark.parametrize("title", [None, "", "[BB]", "[Bedivere]"])
+def test_servant_only_names_recover_the_native_session_preview(title):
+    thread_title = CodexThreadTitle(title, "Fix terminal title")
+    assert (
+        status_handler.servant_thread_name(thread_title, "BB")
+        == "BB | Fix terminal title"
+    )
 
 
 @pytest.mark.parametrize(

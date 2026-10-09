@@ -5,7 +5,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from codex_app_server_client import CodexAppServerClient, CodexAppServerError
+from codex_app_server_client import (
+    CodexAppServerClient,
+    CodexAppServerError,
+    CodexThreadTitle,
+)
 
 
 @pytest.fixture
@@ -29,9 +33,21 @@ def test_connection_initializes_and_reads_a_thread_without_loading_its_turns(
         connection.recv.side_effect = [
             json.dumps({"method": "thread/status/changed", "params": {}}),
             json.dumps({"id": 900, "result": {}}),
-            json.dumps({"id": 2, "result": {"thread": {"name": "Fix footer"}}}),
+            json.dumps(
+                {
+                    "id": 2,
+                    "result": {
+                        "thread": {
+                            "name": "Fix footer",
+                            "preview": "Fix terminal title",
+                        }
+                    },
+                }
+            ),
         ]
-        assert client.thread_name("thread-123") == "Fix footer"
+        assert client.thread_title("thread-123") == CodexThreadTitle(
+            "Fix footer", "Fix terminal title"
+        )
     messages = sent_messages(connection)
     assert messages[0]["method"] == "initialize"
     assert messages[1] == {"method": "initialized", "params": {}}
@@ -46,11 +62,11 @@ def test_connection_initializes_and_reads_a_thread_without_loading_its_turns(
 def test_setting_a_name_uses_the_loaded_thread_identifier(connection):
     with CodexAppServerClient("/private/socket") as client:
         connection.recv.side_effect = [json.dumps({"id": 2, "result": {}})]
-        client.set_thread_name("thread-123", "[BB] Fix footer")
+        client.set_thread_name("thread-123", "BB | Fix footer")
     assert sent_messages(connection)[-1] == {
         "id": 2,
         "method": "thread/name/set",
-        "params": {"threadId": "thread-123", "name": "[BB] Fix footer"},
+        "params": {"threadId": "thread-123", "name": "BB | Fix footer"},
     }
 
 
@@ -60,7 +76,7 @@ def test_rpc_failure_closes_the_connection(connection):
             json.dumps({"id": 2, "error": {"message": "thread unavailable"}})
         ]
         with pytest.raises(CodexAppServerError, match="thread unavailable"):
-            client.thread_name("thread-123")
+            client.thread_title("thread-123")
     connection.close.assert_called_once()
 
 
@@ -81,5 +97,22 @@ def test_notification_stream_cannot_extend_the_naming_deadline(connection, monke
             json.dumps({"method": "thread/status/changed", "params": {}})
         ] * 4
         with pytest.raises(TimeoutError):
-            client.thread_name("thread-123")
+            client.thread_title("thread-123")
+    connection.close.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "thread,error",
+    [
+        ({"name": 123, "preview": "Title"}, "invalid thread name"),
+        ({"name": None, "preview": None}, "invalid thread preview"),
+    ],
+)
+def test_invalid_thread_title_is_rejected(connection, thread, error):
+    with CodexAppServerClient("/private/socket") as client:
+        connection.recv.side_effect = [
+            json.dumps({"id": 2, "result": {"thread": thread}})
+        ]
+        with pytest.raises(CodexAppServerError, match=error):
+            client.thread_title("thread-123")
     connection.close.assert_called_once()

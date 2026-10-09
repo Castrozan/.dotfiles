@@ -2,24 +2,32 @@ from __future__ import annotations
 
 import os
 
-from codex_app_server_client import CodexAppServerClient
+from codex_app_server_client import CodexAppServerClient, CodexThreadTitle
 from herdr_pane_client import belongs_to_a_subagent
 from servant_identity_handler import servant_for_hook_input, session_id_of
 from catalog import SERVANT_CATALOG
 
 
-def servant_thread_name(thread_name: str | None, servant_name: str) -> str:
-    title = thread_name or ""
+def servant_thread_name(thread_title: CodexThreadTitle, servant_name: str) -> str:
+    title = thread_title.name or ""
     for servant in SERVANT_CATALOG:
         name = servant["name"]
         if title == f"[{name}]":
             title = ""
             break
-        prefix = f"[{name}] "
-        if title.startswith(prefix):
+        prefix = next(
+            (
+                prefix
+                for prefix in (f"[{name}] ", f"{name} | ")
+                if title.startswith(prefix)
+            ),
+            None,
+        )
+        if prefix is not None:
             title = title[len(prefix) :]
             break
-    return f"[{servant_name}] {title}" if title else f"[{servant_name}]"
+    title = title or thread_title.preview
+    return f"{servant_name} | {title}" if title else f"[{servant_name}]"
 
 
 def handle(hook_input: dict):
@@ -31,8 +39,8 @@ def handle(hook_input: dict):
         return None
     thread_identifier = session_id_of(hook_input)
     with CodexAppServerClient(socket_path) as client:
-        existing_name = client.thread_name(thread_identifier)
-        name = servant_thread_name(existing_name, servant["name"])
-        if name != existing_name:
+        title = client.thread_title(thread_identifier)
+        name = servant_thread_name(title, servant["name"])
+        if name != title.name:
             client.set_thread_name(thread_identifier, name)
     return None

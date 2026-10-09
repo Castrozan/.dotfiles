@@ -1,9 +1,16 @@
+from dataclasses import dataclass
 import json
 import time
 
 
 class CodexAppServerError(RuntimeError):
     pass
+
+
+@dataclass(frozen=True)
+class CodexThreadTitle:
+    name: str | None
+    preview: str
 
 
 class CodexAppServerClient:
@@ -66,14 +73,17 @@ class CodexAppServerClient:
                 raise CodexAppServerError(f"{method}: invalid response")
             return result
 
-    def thread_name(self, thread_identifier: str) -> str | None:
+    def thread_title(self, thread_identifier: str) -> CodexThreadTitle:
         result = self.request(
             "thread/read", {"threadId": thread_identifier, "includeTurns": False}
         )
         name = result["thread"].get("name")
         if name is not None and not isinstance(name, str):
             raise CodexAppServerError("thread/read: invalid thread name")
-        return name
+        preview = result["thread"].get("preview", "")
+        if not isinstance(preview, str):
+            raise CodexAppServerError("thread/read: invalid thread preview")
+        return CodexThreadTitle(name, preview)
 
     def set_thread_name(self, thread_identifier: str, name: str) -> None:
         self.request("thread/name/set", {"threadId": thread_identifier, "name": name})
