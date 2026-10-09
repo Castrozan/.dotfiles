@@ -23,27 +23,17 @@ TEST_RUNNER_DENIAL_REASON = (
     "repository/verification/run.sh belongs to CI after push. Run the affected "
     "test file directly instead."
 )
-PYTEST_INVOCATION_PREFIX = r"(?:python3? -m )?pytest\b"
-PYTEST_WHOLE_TIER_PATH_TERMINATOR = r"(?:/[*?[]|[\s;&|]|$)"
+PYTEST_WHOLE_TIER_PATH_TERMINATOR = r"(?:/[*?[]|$)"
 PYTEST_CI_OWNED_TREE_ROOT_PATTERN = (
     rf"(?:{TEST_DIRECTORY_PATTERN}|agent-harness/quality/evaluations)"
 )
 PYTEST_WHOLE_CI_OWNED_TIER_DIRECTORY_PATTERN = (
-    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?{PYTEST_CI_OWNED_TREE_ROOT_PATTERN}/"
+    rf"{PYTEST_CI_OWNED_TREE_ROOT_PATTERN}/"
     rf"(?:unit|integration)/*{PYTEST_WHOLE_TIER_PATH_TERMINATOR}"
 )
 PYTEST_WHOLE_TESTS_TREE_PATTERN = (
-    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?{PYTEST_CI_OWNED_TREE_ROOT_PATTERN}/"
+    rf"{PYTEST_CI_OWNED_TREE_ROOT_PATTERN}/"
     rf"*{PYTEST_WHOLE_TIER_PATH_TERMINATOR}"
-)
-PYTEST_NO_PATH_PATTERN = (
-    rf"{PYTEST_INVOCATION_PREFIX}(?!\s+--?(?:version|help|fixtures)\b)(?!\s+-h\b)"
-    rf"(?:\s+(?:-\S+(?:\s+\S+)?|\S+=\S+))*\s*(?:[;&|]|$)"
-)
-PYTEST_DOT_PATH_PATTERN = rf"{PYTEST_INVOCATION_PREFIX}\s+\.(?:/\.|/)?(?:\s|$|[;&|])"
-PYTEST_AGENTS_TREE_PATTERN = (
-    rf"{PYTEST_INVOCATION_PREFIX}[^;&|\n]*?\bagents\b/?"
-    rf"(?:\s+-\S+(?:\s+\S+)?)*\s*(?:[;&|]|$)"
 )
 PYTEST_CI_OWNED_TIER_DENIAL_REASON = (
     "pytest over a whole CI-owned tier belongs to CI after push. Name a specific "
@@ -62,16 +52,22 @@ NIX_FLAKE_CHECK_DENIAL_REASON = (
     "Read the nix skill for more information."
 )
 
+
+def command_may_invoke_pytest(command_text):
+    return "pytest" in (
+        command_text.replace("\\\n", "")
+        .replace("\\", "")
+        .replace("'", "")
+        .replace('"', "")
+        .lower()
+    )
+
+
 CI_OWNED_BASH_COMMAND_PATTERNS = [
     (TEST_RUNNER_PATH_PATTERN, TEST_RUNNER_DENIAL_REASON),
-    (PYTEST_WHOLE_CI_OWNED_TIER_DIRECTORY_PATTERN, PYTEST_CI_OWNED_TIER_DENIAL_REASON),
-    (PYTEST_WHOLE_TESTS_TREE_PATTERN, PYTEST_WHOLE_COLLECTION_DENIAL_REASON),
     (TEST_RUNNER_DYNAMIC_PATH_PATTERN, TEST_RUNNER_DENIAL_REASON),
     (TEST_RUNNER_VARIABLE_PATH_PATTERN, TEST_RUNNER_DENIAL_REASON),
     (TEST_RUNNER_TEMPLATE_PATH_PATTERN, TEST_RUNNER_DENIAL_REASON),
     (TEST_RUNNER_AFTER_DIRECTORY_CHANGE_PATTERN, TEST_RUNNER_DENIAL_REASON),
-    (PYTEST_NO_PATH_PATTERN, PYTEST_WHOLE_COLLECTION_DENIAL_REASON),
-    (PYTEST_DOT_PATH_PATTERN, PYTEST_WHOLE_COLLECTION_DENIAL_REASON),
-    (PYTEST_AGENTS_TREE_PATTERN, PYTEST_WHOLE_COLLECTION_DENIAL_REASON),
     (NIX_FLAKE_CHECK_PATTERN, NIX_FLAKE_CHECK_DENIAL_REASON),
 ]

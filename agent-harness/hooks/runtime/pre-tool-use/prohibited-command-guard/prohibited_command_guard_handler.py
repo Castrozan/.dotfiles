@@ -19,7 +19,7 @@ for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
     ):
         sys.path.insert(0, _shared_module_candidate_directory)
 
-from hook_dispatch import HandlerResult  # noqa: E402
+from ci_owned_command_patterns import command_may_invoke_pytest  # noqa: E402
 from prohibited_command_patterns import PROHIBITED_PATTERNS_BY_TOOL  # noqa: E402
 
 
@@ -171,21 +171,26 @@ def denial_for_first_violation(hook_input, patterns_for_this_tool):
     violation = find_first_violation(
         tool_name, inspectable_text, patterns_for_this_tool
     )
-
     if violation is None:
         return None
+    from prohibited_command_denial import denial_for_violation
 
-    _pattern, reason = violation
-    block_message = (
-        f"BLOCKED ({tool_name}): {reason}\nOffending input: {inspectable_text.strip()}"
-    )
-    return HandlerResult(
-        decision="deny", reason=block_message, system_message=block_message
-    )
+    return denial_for_violation(tool_name, inspectable_text, violation)
 
 
 def handle(hook_input):
     tool_name = hook_input.get("tool_name", "")
+    inspectable_text = extract_inspectable_text(
+        tool_name, hook_input.get("tool_input", {}) or {}
+    )
+    if tool_name == "Bash" and command_may_invoke_pytest(inspectable_text):
+        from pytest_collection_guard import find_first_pytest_collection_violation
+
+        violation = find_first_pytest_collection_violation(inspectable_text)
+        if violation is not None:
+            from prohibited_command_denial import denial_for_violation
+
+            return denial_for_violation(tool_name, inspectable_text, violation)
     return denial_for_first_violation(
         hook_input, PROHIBITED_PATTERNS_BY_TOOL.get(tool_name, [])
     )
