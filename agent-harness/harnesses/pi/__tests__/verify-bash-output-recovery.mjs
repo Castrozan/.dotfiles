@@ -76,8 +76,12 @@ for (const model of [smallModel, largeModel]) {
         assert(repaired.details.truncation.outputLines >= 1);
         if (model === smallModel && outputBytes > 40000) {
           const requestContext = (content) => ({
-            systemPrompt: "p".repeat(40000),
             messages: [
+              {
+                role: "system",
+                content: "p".repeat(40000),
+                timestamp: Date.now(),
+              },
               {
                 role: "toolResult",
                 toolCallId: "probe",
