@@ -1,8 +1,10 @@
+import importlib.util
 import os
 import pty
 import select
 import shlex
 import signal
+import subprocess
 import sys
 import time
 
@@ -62,4 +64,38 @@ exec {command} "$DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR" {native_command}
             except ProcessLookupError:
                 pass
             os.waitpid(child, 0)
+        os.close(terminal)
+
+
+def test_native_exit_before_terminal_handoff_preserves_status(tmp_path, monkeypatch):
+    scope_path = EXCLUSIVE_RUN_LOCK_HELPER_PATH.with_name("exclusive_run_scope.py")
+    module_specification = importlib.util.spec_from_file_location("scope", scope_path)
+    scope = importlib.util.module_from_spec(module_specification)
+    module_specification.loader.exec_module(scope)
+    original_process_constructor = subprocess.Popen
+
+    def finish_native_before_handoff(*arguments, **keyword_arguments):
+        native = original_process_constructor(*arguments, **keyword_arguments)
+        native.wait(timeout=5)
+        return native
+
+    monkeypatch.setattr(scope.subprocess, "Popen", finish_native_before_handoff)
+    child, terminal = pty.fork()
+    if child == 0:
+        descriptor = os.open(tmp_path / "lock", os.O_RDONLY | os.O_CREAT, 0o600)
+        sys.argv = ["scope", str(descriptor), "bash", "-c", "exit 42"]
+        os._exit(scope.main())
+    output = b""
+    try:
+        while True:
+            try:
+                data = os.read(terminal, 4096)
+            except OSError:
+                break
+            if not data:
+                break
+            output += data
+        _, exit_status = os.waitpid(child, 0)
+        assert os.waitstatus_to_exitcode(exit_status) == 42, output.decode()
+    finally:
         os.close(terminal)
