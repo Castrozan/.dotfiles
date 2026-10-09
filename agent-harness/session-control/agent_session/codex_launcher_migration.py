@@ -10,21 +10,30 @@ from agent_session.codex_migration_processes import process_birth
 def wait_for_owned_exit(plan, journal):
     deadline = time.monotonic() + 30.0
     while True:
-        remaining = []
-        for process in plan["old_processes"]:
-            observed = process_birth(process["pid"])
-            if (
-                observed
-                and observed["start_ticks"] == process["start_ticks"]
-                and observed["state"] != "Z"
-            ):
-                remaining.append({**process, "observed": observed})
+        remaining = _remaining_owned_processes(plan["old_processes"])
         journal.result["remaining_old_processes"] = remaining
         if not remaining:
             return
         if time.monotonic() >= deadline:
             raise TimeoutError("owned process births remain after30s")
         time.sleep(min(0.2, deadline - time.monotonic()))
+
+
+def _remaining_owned_processes(processes):
+    remaining = []
+    for process in processes:
+        observed = process_birth(process["pid"])
+        if _owned_process_is_alive(process, observed):
+            remaining.append({**process, "observed": observed})
+    return remaining
+
+
+def _owned_process_is_alive(process, observed):
+    return (
+        observed
+        and observed["start_ticks"] == process["start_ticks"]
+        and observed["state"] != "Z"
+    )
 
 
 def migrate(plan, commands, directory):

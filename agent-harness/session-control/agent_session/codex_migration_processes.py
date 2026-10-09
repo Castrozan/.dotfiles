@@ -1,9 +1,11 @@
-import os
 from pathlib import Path
-import re
 
 from agent_session.codex_migration_contract import require, resume_arguments
 from agent_session.codex_migration_connections import inspect_private_connection
+from agent_session.codex_migration_terminal import (
+    inspect_process_groups,
+    inspect_terminal_descriptors,
+)
 
 
 def process_birth(process_identifier):
@@ -24,6 +26,41 @@ def process_birth(process_identifier):
 
 
 def inspect_new_processes(process_info, pane, package, plan):
+    _validate_resumed_pane(process_info, pane, plan)
+    foreground = process_info["foreground_processes"]
+    launcher = _matching_launcher(foreground, package, plan)
+    client = _matching_client(foreground, plan)
+    server_identifier, server_arguments = _private_server_process(launcher["pid"], plan)
+    identities = {
+        "launcher": launcher["pid"],
+        "client": client["pid"],
+        "server": server_identifier,
+    }
+    births = _inspect_owned_births(identities)
+    _validate_process_executables(identities, package, plan)
+    launcher_session, process_groups = inspect_process_groups(process_info, identities)
+    descriptors = inspect_terminal_descriptors(server_identifier, client["pid"])
+    client_arguments = (
+        Path(f"/proc/{client['pid']}/cmdline")
+        .read_bytes()
+        .decode()
+        .strip("\0")
+        .split("\0")
+    )
+    require(client_arguments == client["argv"], "new client arguments changed")
+    connection = inspect_private_connection(server_arguments, client_arguments)
+    _validate_replacement_births(identities, births)
+    return {
+        "session_id": launcher_session,
+        "process_groups": process_groups,
+        "pids": identities,
+        "births": births,
+        **descriptors,
+        **connection,
+    }
+
+
+def _validate_resumed_pane(process_info, pane, plan):
     require(
         process_info["pane_id"] == plan["pane_identifier"]
         and pane["pane_id"] == plan["pane_identifier"],
@@ -37,24 +74,38 @@ def inspect_new_processes(process_info, pane, package, plan):
         and session.get("agent") == "codex",
         "resumed thread mismatch",
     )
-    foreground = process_info["foreground_processes"]
-    launchers = [
-        process
-        for process in foreground
-        if process.get("argv", [])
-        == [package["python"], package["launch_script"], *resume_arguments(plan)]
-    ]
-    clients = [
-        process
-        for process in foreground
-        if process.get("argv", [])[:2] == [plan["upstream_binary"], "--remote"]
-        and process["argv"][3:] == resume_arguments(plan)[4:]
-    ]
-    if len(launchers) != 1 or len(clients) != 1:
+
+
+def _matching_launcher(foreground, package, plan):
+    expected = [package["python"], package["launch_script"], *resume_arguments(plan)]
+    return _unique_foreground_process(
+        [process for process in foreground if process.get("argv", []) == expected]
+    )
+
+
+def _matching_client(foreground, plan):
+    return _unique_foreground_process(
+        [process for process in foreground if _client_matches_resume(process, plan)]
+    )
+
+
+def _client_matches_resume(process, plan):
+    arguments = process.get("argv", [])
+    return (
+        arguments[:2] == [plan["upstream_binary"], "--remote"]
+        and arguments[3:] == resume_arguments(plan)[4:]
+    )
+
+
+def _unique_foreground_process(processes):
+    if len(processes) != 1:
         raise LookupError(
             "exact new launcher and resumed terminal client are not available"
         )
-    launcher_identifier, client_identifier = launchers[0]["pid"], clients[0]["pid"]
+    return processes[0]
+
+
+def _private_server_process(launcher_identifier, plan):
     children = (
         Path(f"/proc/{launcher_identifier}/task/{launcher_identifier}/children")
         .read_text()
@@ -62,30 +113,28 @@ def inspect_new_processes(process_info, pane, package, plan):
     )
     servers = []
     for child in children:
-        try:
-            arguments = (
-                Path(f"/proc/{child}/cmdline")
-                .read_bytes()
-                .decode()
-                .strip("\0")
-                .split("\0")
-            )
-        except FileNotFoundError:
-            continue
-        if (
-            arguments
-            and arguments[0] == plan["upstream_binary"]
-            and "app-server" in arguments
-        ):
+        arguments = _read_child_arguments(child)
+        if _is_private_server(arguments, plan["upstream_binary"]):
             servers.append((int(child), arguments))
     if len(servers) != 1:
         raise LookupError("unique direct-child private server is not available")
-    server_identifier, server_arguments = servers[0]
-    identities = {
-        "launcher": launcher_identifier,
-        "client": client_identifier,
-        "server": server_identifier,
-    }
+    return servers[0]
+
+
+def _read_child_arguments(child):
+    try:
+        return (
+            Path(f"/proc/{child}/cmdline").read_bytes().decode().strip("\0").split("\0")
+        )
+    except FileNotFoundError:
+        return None
+
+
+def _is_private_server(arguments, upstream_binary):
+    return arguments and arguments[0] == upstream_binary and "app-server" in arguments
+
+
+def _inspect_owned_births(identities):
     births = {
         name: process_birth(identifier) for name, identifier in identities.items()
     }
@@ -94,68 +143,28 @@ def inspect_new_processes(process_info, pane, package, plan):
         "new process disappeared",
     )
     require(
-        births["server"]["parent"] == launcher_identifier
-        and births["client"]["parent"] == launcher_identifier,
+        births["server"]["parent"] == identities["launcher"]
+        and births["client"]["parent"] == identities["launcher"],
         "new child ownership mismatch",
     )
-    for identifier in (server_identifier, client_identifier):
+    return births
+
+
+def _validate_process_executables(identities, package, plan):
+    for identifier in (identities["server"], identities["client"]):
         require(
             Path(f"/proc/{identifier}/exe").resolve()
             == Path(plan["upstream_binary"]).resolve(),
             "new upstream executable mismatch",
         )
     require(
-        Path(f"/proc/{launcher_identifier}/exe").resolve()
+        Path(f"/proc/{identities['launcher']}/exe").resolve()
         == Path(package["python"]).resolve(),
         "new launcher executable mismatch",
     )
-    launcher_session = os.getsid(launcher_identifier)
-    process_groups = {
-        name: os.getpgid(identifier) for name, identifier in identities.items()
-    }
-    require(
-        launcher_session == os.getsid(process_info["shell_pid"])
-        and process_groups["launcher"] == process_info["foreground_process_group_id"],
-        "replacement is not in its pane foreground session",
-    )
-    require(
-        os.getsid(server_identifier) == launcher_session
-        and os.getsid(client_identifier) == launcher_session,
-        "replacement escaped pane session",
-    )
-    require(
-        process_groups["server"] == server_identifier
-        and process_groups["server"] != process_groups["launcher"],
-        "replacement backend process group mismatch",
-    )
-    require(
-        process_groups["client"] == process_groups["launcher"],
-        "replacement client foreground group mismatch",
-    )
-    server_stderr = os.readlink(f"/proc/{server_identifier}/fd/2")
-    client_stderr = os.readlink(f"/proc/{client_identifier}/fd/2")
-    require(
-        re.fullmatch(r"pipe:\[\d+\]", server_stderr),
-        "private server stderr is not a pipe",
-    )
-    require(
-        re.fullmatch(r"/dev/pts/\d+", client_stderr),
-        "terminal client stderr is not its PTY",
-    )
-    require(
-        os.readlink(f"/proc/{client_identifier}/fd/0") == client_stderr
-        and os.readlink(f"/proc/{client_identifier}/fd/1") == client_stderr,
-        "terminal client descriptors do not share its PTY",
-    )
-    client_arguments = (
-        Path(f"/proc/{client_identifier}/cmdline")
-        .read_bytes()
-        .decode()
-        .strip("\0")
-        .split("\0")
-    )
-    require(client_arguments == clients[0]["argv"], "new client arguments changed")
-    connection = inspect_private_connection(server_arguments, client_arguments)
+
+
+def _validate_replacement_births(identities, births):
     require(
         all(
             (observed := process_birth(identifier))
@@ -166,12 +175,3 @@ def inspect_new_processes(process_info, pane, package, plan):
         ),
         "replacement birth changed during inspection",
     )
-    return {
-        "session_id": launcher_session,
-        "process_groups": process_groups,
-        "pids": identities,
-        "births": births,
-        "server_stderr": server_stderr,
-        "client_stderr": client_stderr,
-        **connection,
-    }

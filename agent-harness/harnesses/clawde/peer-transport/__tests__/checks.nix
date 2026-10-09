@@ -8,6 +8,14 @@
 }:
 let
   transportSource = import ../a2a-source.nix { inherit pkgs inputs; };
+  linuxTransportSource = import ../a2a-source.nix {
+    pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+    inherit inputs;
+  };
+  darwinTransportSource = import ../a2a-source.nix {
+    pkgs = inputs.nixpkgs.legacyPackages.aarch64-darwin;
+    inherit inputs;
+  };
   agentModules = [
     self.homeManagerModules.clawde
     self.homeManagerModules.claude-code
@@ -29,7 +37,7 @@ in
     helpers.mkEvalCheck "clawde-a2a-linux-uses-the-owned-transport-source"
       (
         lib.last linuxConfiguration.systemd.user.services.clawde-a2a.Service.Environment
-        == "PYTHONPATH=${transportSource}"
+        == "PYTHONPATH=${linuxTransportSource}"
       )
       "the daemon must import the patched live owner through its service environment";
 
@@ -37,7 +45,7 @@ in
     helpers.mkEvalCheck "clawde-a2a-darwin-uses-the-owned-transport-source"
       (
         darwinConfiguration.launchd.agents.clawde-a2a.config.EnvironmentVariables.PYTHONPATH
-        == "${transportSource}"
+        == "${darwinTransportSource}"
       )
       "the launch agent must import the same patched live owner";
 

@@ -16,7 +16,7 @@ def build_unique_lock_name():
 
 
 def build_lock_file_path_for(lock_name):
-    return Path(f"/tmp/dotfiles-{lock_name}.lock")
+    return Path(os.sep) / "tmp" / f"dotfiles-{lock_name}.lock"
 
 
 def wait_until_lock_metadata_written(lock_name, timeout_seconds=5):

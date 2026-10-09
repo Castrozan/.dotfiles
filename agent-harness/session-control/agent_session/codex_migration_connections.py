@@ -24,14 +24,7 @@ def inspect_private_connection(server_arguments, client_arguments):
         and client_path.is_socket(),
         "client remote is not an existing declared private socket",
     )
-    sizes = {}
-    for name in ("server-stderr.log", "server-stderr.previous.log"):
-        path = server_path.parent / name
-        sizes[name] = path.stat().st_size if path.exists() else 0
-        require(sizes[name] <= 1024 * 1024, "diagnostic file exceeded 1 MiB")
-    require(
-        sum(sizes.values()) <= 2 * 1024 * 1024, "session diagnostics exceeded 2 MiB"
-    )
+    sizes = _diagnostic_sizes(server_path.parent)
     return {
         "server_socket": str(server_path.resolve()),
         "client_socket": str(client_path.resolve()),
@@ -39,3 +32,15 @@ def inspect_private_connection(server_arguments, client_arguments):
         "socket_directory": str(server_path.parent),
         "diagnostic_sizes": sizes,
     }
+
+
+def _diagnostic_sizes(directory):
+    sizes = {}
+    for name in ("server-stderr.log", "server-stderr.previous.log"):
+        path = directory / name
+        sizes[name] = path.stat().st_size if path.exists() else 0
+        require(sizes[name] <= 1024 * 1024, "diagnostic file exceeded 1 MiB")
+    require(
+        sum(sizes.values()) <= 2 * 1024 * 1024, "session diagnostics exceeded 2 MiB"
+    )
+    return sizes

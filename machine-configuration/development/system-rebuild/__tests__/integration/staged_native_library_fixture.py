@@ -54,8 +54,9 @@ def parse_args(arguments):
     parser.add_argument("--file")
     parser.add_argument("--attr")
     parser.add_argument("--include", action="append")
-    for name in ("impure", "rollback", "upgrade", "upgrade-all", "commit-lock-file", "recreate-lock-file", "refresh", "show-trace", "no-write-lock-file", "install-bootloader", "sudo", "ask-sudo-password", "no-reexec"):
+    for name in ("impure", "rollback", "upgrade", "upgrade-all", "commit-lock-file", "recreate-lock-file", "refresh", "show-trace", "no-write-lock-file", "install-bootloader", "sudo", "no-reexec"):
         parser.add_argument("--" + name, action="store_true")
+    parser.add_argument("--ask-sudo-password", action="store_true")
     parser.add_argument("--update-input", action="append")
     parsed = parser.parse_args(arguments[1:])
     common = {name: getattr(parsed, name) for name in ("option", "cores", "max_jobs")}

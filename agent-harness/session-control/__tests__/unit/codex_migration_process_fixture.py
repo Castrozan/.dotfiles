@@ -5,6 +5,7 @@ import tempfile
 from types import SimpleNamespace
 
 from agent_session import codex_migration_processes as processes
+from agent_session import codex_migration_terminal as terminal
 from agent_session.codex_migration_contract import resume_arguments
 
 
@@ -76,7 +77,7 @@ def prepare_process_inspection(tmp_path, monkeypatch):
         else Path(path),
     )
     monkeypatch.setattr(
-        processes,
+        terminal,
         "os",
         SimpleNamespace(
             getsid=sessions.__getitem__,

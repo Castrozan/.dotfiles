@@ -19,19 +19,34 @@ def styled_characters(line: str) -> list[tuple[str, bool]]:
         characters.extend(
             (character, is_dim) for character in line[previous_end : style.start()]
         )
-        parameters = iter(int(value or "0") for value in style.group(1).split(";"))
-        for parameter in parameters:
-            if parameter in {38, 48, 58}:
-                color_mode = next(parameters, None)
-                for _ in range(3 if color_mode == 2 else 1):
-                    next(parameters, None)
-            elif parameter in {0, 22}:
-                is_dim = False
-            elif parameter == 2:
-                is_dim = True
+        is_dim = _dim_after_style(is_dim, style.group(1))
         previous_end = style.end()
     characters.extend((character, is_dim) for character in line[previous_end:])
     return characters
+
+
+def _dim_after_style(is_dim, encoded_parameters):
+    parameters = iter(int(value or "0") for value in encoded_parameters.split(";"))
+    for parameter in parameters:
+        if parameter in {38, 48, 58}:
+            _consume_color_parameters(parameters)
+            continue
+        is_dim = _dim_for_parameter(is_dim, parameter)
+    return is_dim
+
+
+def _consume_color_parameters(parameters):
+    color_mode = next(parameters, None)
+    for _ in range(3 if color_mode == 2 else 1):
+        next(parameters, None)
+
+
+def _dim_for_parameter(is_dim, parameter):
+    if parameter in {0, 22}:
+        return False
+    if parameter == 2:
+        return True
+    return is_dim
 
 
 def composer_is_observably_empty(capture: str, harness: str) -> bool:
@@ -39,35 +54,55 @@ def composer_is_observably_empty(capture: str, harness: str) -> bool:
     if prefix is None:
         return False
     rows = [styled_characters(line) for line in capture.splitlines()]
+    prompt_index = _last_prompt_index(rows, prefix)
+    if prompt_index is None:
+        return False
+    return _prompt_content_is_empty(
+        rows[prompt_index], prefix, harness
+    ) and _prompt_has_blank_neighbors(rows, prompt_index)
+
+
+def _last_prompt_index(rows, prefix):
     prompt_rows = [
         index
         for index, row in enumerate(rows)
         if "".join(character for character, _ in row).lstrip().startswith(prefix)
     ]
-    if not prompt_rows:
-        return False
-    prompt_index = prompt_rows[-1]
-    row = rows[prompt_index]
+    return prompt_rows[-1] if prompt_rows else None
+
+
+def _prompt_content_is_empty(row, prefix, harness):
     text = "".join(character for character, _ in row)
-    prefix_index = text.index(prefix)
-    content = row[prefix_index + len(prefix) :]
-    visible_content = [
-        (character, dim) for character, dim in content if not character.isspace()
-    ]
-    if visible_content:
-        if (
-            harness != "codex"
-            or text[prefix_index + len(prefix) :].strip() != "Ask Codex to do anything"
-            or not all(dim for _, dim in visible_content)
-        ):
-            return False
-    if prompt_index == 0 or any(
-        character.strip() for character, _ in rows[prompt_index - 1]
-    ):
+    content = row[text.index(prefix) + len(prefix) :]
+    visible_content = _visible_prompt_content(content)
+    return not visible_content or _is_dim_codex_placeholder(
+        harness, content, visible_content
+    )
+
+
+def _visible_prompt_content(content):
+    return [(character, dim) for character, dim in content if not character.isspace()]
+
+
+def _is_dim_codex_placeholder(harness, content, visible_content):
+    return (
+        harness == "codex"
+        and "".join(character for character, _ in content).strip()
+        == "Ask Codex to do anything"
+        and all(dim for _, dim in visible_content)
+    )
+
+
+def _prompt_has_blank_neighbors(rows, prompt_index):
+    if prompt_index == 0 or prompt_index + 1 >= len(rows):
         return False
-    if prompt_index + 1 >= len(rows):
-        return False
-    return not any(character.strip() for character, _ in rows[prompt_index + 1])
+    return _row_is_blank(rows[prompt_index - 1]) and _row_is_blank(
+        rows[prompt_index + 1]
+    )
+
+
+def _row_is_blank(row):
+    return not any(character.strip() for character, _ in row)
 
 
 class HerdrPromptAdapter:
@@ -94,6 +129,9 @@ class HerdrPromptAdapter:
             )
         )
         self._run(["agent", "prompt", self._pane_id, framed_input])
+        self._await_submission(harness, submission_identifier)
+
+    def _await_submission(self, harness, submission_identifier):
         deadline = time.monotonic() + DELIVERY_OBSERVATION_TIMEOUT_SECONDS
         while time.monotonic() < deadline:
             capture = self._capture_composer()

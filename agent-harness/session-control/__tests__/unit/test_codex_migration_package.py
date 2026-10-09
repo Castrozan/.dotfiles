@@ -74,6 +74,7 @@ def test_declared_package_layout_imports_without_checkout_or_pythonpath(
         "agent_session/codex_migration_journal.py",
         "agent_session/codex_migration_processes.py",
         "agent_session/codex_migration_readiness.py",
+        "agent_session/codex_migration_terminal.py",
     ]
     assert not list(scripts.rglob("*.pyc"))
 

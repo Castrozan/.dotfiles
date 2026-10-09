@@ -34,24 +34,7 @@ class MigrationCommands:
                 stderr=subprocess.PIPE,
             )
             deadline = started + min(30.0, timeout)
-            with selectors.DefaultSelector() as selector:
-                selector.register(process.stdout, selectors.EVENT_READ, "stdout")
-                selector.register(process.stderr, selectors.EVENT_READ, "stderr")
-                while selector.get_map():
-                    remaining = deadline - time.monotonic()
-                    if remaining <= 0:
-                        raise TimeoutError(label + " exceeded bounded command deadline")
-                    for key, mask in selector.select(min(0.1, remaining)):
-                        block = os.read(key.fileobj.fileno(), 65536)
-                        if not block:
-                            selector.unregister(key.fileobj)
-                            continue
-                        require(
-                            len(buffers[key.data]) + len(block) <= limits[key.data],
-                            label + " exceeded bounded " + key.data,
-                        )
-                        buffers[key.data].extend(block)
-                process.wait(timeout=max(0.001, deadline - time.monotonic()))
+            self._collect_output(process, deadline, buffers, limits, label)
             record["status"] = process.returncode
             require(
                 process.returncode == 0,
@@ -64,12 +47,7 @@ class MigrationCommands:
             )
             raise
         finally:
-            if process is not None:
-                if process.poll() is None:
-                    process.kill()
-                process.wait()
-                process.stdout.close()
-                process.stderr.close()
+            self._close_process(process)
             record.update(
                 elapsed_seconds=time.monotonic() - started,
                 stdout_bytes=len(buffers["stdout"]),
@@ -80,6 +58,43 @@ class MigrationCommands:
             (self.directory / f"command-{index:04d}-finished.json").write_text(
                 json.dumps(record, indent=2) + "\n"
             )
+
+    @staticmethod
+    def _collect_output(process, deadline, buffers, limits, label):
+        with selectors.DefaultSelector() as selector:
+            selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+            selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+            while selector.get_map():
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError(label + " exceeded bounded command deadline")
+                for key, _ in selector.select(min(0.1, remaining)):
+                    MigrationCommands._read_output_block(
+                        selector, key, buffers, limits, label
+                    )
+            process.wait(timeout=max(0.001, deadline - time.monotonic()))
+
+    @staticmethod
+    def _read_output_block(selector, key, buffers, limits, label):
+        block = os.read(key.fileobj.fileno(), 65536)
+        if not block:
+            selector.unregister(key.fileobj)
+            return
+        require(
+            len(buffers[key.data]) + len(block) <= limits[key.data],
+            label + " exceeded bounded " + key.data,
+        )
+        buffers[key.data].extend(block)
+
+    @staticmethod
+    def _close_process(process):
+        if process is None:
+            return
+        if process.poll() is None:
+            process.kill()
+        process.wait()
+        process.stdout.close()
+        process.stderr.close()
 
     def herdr(self, label, arguments, deadline=None):
         timeout = 3.0 if deadline is None else min(3.0, deadline - time.monotonic())

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 export PI_CODING_AGENT_DIR=@profileDirectory@
 export PI_AGENT_DIR="$PI_CODING_AGENT_DIR"
 @systemctl@ --user start local-language-model.socket || exit "$?"

@@ -49,14 +49,7 @@ def replacement_state(plan, commands, package, deadline):
         and pane["pane_id"] == pane_identifier,
         "replacement pane mismatch",
     )
-    session = pane.get("agent_session") or {}
-    if session.get("value") is None:
-        raise LookupError("recorded resumed thread is not available")
-    require(
-        session.get("value") == plan["thread_identifier"]
-        and session.get("agent") == "codex",
-        "resumed thread mismatch",
-    )
+    _validate_resumed_thread(pane, plan)
     state = inspect_new_processes(information, pane, package, plan)
     seeded = {
         process["pid"]: process["start_ticks"] for process in plan["old_processes"]
@@ -69,6 +62,17 @@ def replacement_state(plan, commands, package, deadline):
         "old birth mistaken for replacement",
     )
     return state
+
+
+def _validate_resumed_thread(pane, plan):
+    session = pane.get("agent_session") or {}
+    if session.get("value") is None:
+        raise LookupError("recorded resumed thread is not available")
+    require(
+        session.get("value") == plan["thread_identifier"]
+        and session.get("agent") == "codex",
+        "resumed thread mismatch",
+    )
 
 
 def runtime_signature(state):
@@ -93,20 +97,32 @@ def await_replacement(plan, commands, package, baseline):
             time.sleep(min(0.2, max(0.0, deadline - time.monotonic())))
             continue
         frame = read_pane_frame(commands, plan["pane_identifier"], deadline)
-        digest = hashlib.sha256(frame.encode()).hexdigest()
-        if digest != baseline and frame_complete(frame):
-            signature = (digest, runtime_signature(state))
-            if signature != previous:
-                previous, quiet_since = signature, time.monotonic()
-            elif time.monotonic() - quiet_since >= 1.0:
-                final = replacement_state(plan, commands, package, deadline)
-                require(
-                    runtime_signature(final) == runtime_signature(state),
-                    "replacement changed before continuation",
-                )
-                final["frame_digest"] = digest
-                return final
-        else:
-            previous, quiet_since = None, None
+        signature = _repaint_signature(frame, state, baseline)
+        previous, quiet_since, ready = _observe_signature(
+            signature, previous, quiet_since
+        )
+        if ready:
+            final = replacement_state(plan, commands, package, deadline)
+            require(
+                runtime_signature(final) == runtime_signature(state),
+                "replacement changed before continuation",
+            )
+            final["frame_digest"] = signature[0]
+            return final
         time.sleep(min(0.2, max(0.0, deadline - time.monotonic())))
     raise TimeoutError("replacement not ready within60s: " + last_reason)
+
+
+def _repaint_signature(frame, state, baseline):
+    digest = hashlib.sha256(frame.encode()).hexdigest()
+    if digest == baseline or not frame_complete(frame):
+        return None
+    return digest, runtime_signature(state)
+
+
+def _observe_signature(signature, previous, quiet_since):
+    if signature is None:
+        return None, None, False
+    if signature != previous:
+        return signature, time.monotonic(), False
+    return previous, quiet_since, time.monotonic() - quiet_since >= 1.0
