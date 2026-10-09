@@ -15,7 +15,8 @@ in
       };
 
   herdr-annotate =
-    import ../../machine-configuration/terminal/workspace-manager/herdr/herdr-annotate-package.nix
+    import
+      ../../machine-configuration/terminal/workspace-manager/herdr/annotation/herdr-annotate-package.nix
       {
         inherit pkgs lib inputs;
       };
