@@ -30,7 +30,9 @@ with (directory / "commands").open("a") as events:
 if "archive" in arguments:
     reference = arguments[-1]
     if "dotfiles" in reference:
-        print(json.dumps({{"path": {SOURCE_PATH!r}, "inputs": {{"nested": {{"path": "/nix/store/33333333333333333333333333333333-nested-source", "inputs": {{}}}}}}}}))
+        nested = {{"path": "/nix/store/33333333333333333333333333333333-nested-source", "inputs": {{}}}}
+        inputs = {{"dependencies": {{"inputs": {{"nested": nested}}}}}} if os.environ.get("TEST_RELATIVE_INPUTS") == "1" else {{"nested": nested}}
+        print(json.dumps({{"path": {SOURCE_PATH!r}, "inputs": inputs}}))
     else:
         if os.environ.get("TEST_REQUIRE_PUBLIC_ROOT") == "1" and not (directory / "prefetch-public/sources").is_symlink():
             raise SystemExit("public sources were unrooted during private prefetch")
