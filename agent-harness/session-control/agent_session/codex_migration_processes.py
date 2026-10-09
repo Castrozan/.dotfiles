@@ -2,23 +2,7 @@ import os
 from pathlib import Path
 import re
 
-
-def require(condition, message):
-    if not condition:
-        raise ValueError(message)
-
-
-def resume_arguments(plan):
-    return [
-        "--sandbox",
-        "danger-full-access",
-        "--ask-for-approval",
-        "never",
-        "--profile",
-        "dotfiles-interactive",
-        "resume",
-        plan["thread_identifier"],
-    ]
+from agent_session.codex_migration_contract import require, resume_arguments
 
 
 def process_birth(process_identifier):

@@ -7,7 +7,7 @@ import subprocess
 import time
 
 from agent_session.codex_launcher_migration import migrate
-from agent_session.codex_migration_processes import require
+from agent_session.codex_migration_contract import require
 
 
 class MigrationCommands:
