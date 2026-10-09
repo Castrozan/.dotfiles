@@ -6,7 +6,7 @@ paths = [
   '(^|/)\.git/',
   '(^|/)\.deep-work/',
   '(^|/)\.worktrees/',
-  '(^|/)\.qlty/(logs|cache|tmp|out)/',
+  '(^|/)\.qlty/(logs|out|plugin_cachedir|results)(/|$)',
   '(^|/)node_modules/',
   '(^|/)vendor/',
   '(^|/)dist/',

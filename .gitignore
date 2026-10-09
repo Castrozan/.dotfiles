@@ -6,10 +6,10 @@
 .deep-work/
 .scannerwork/
 .coverage-reports/
-.qlty/logs/
-.qlty/cache/
-.qlty/tmp/
-.qlty/out/
+.qlty/logs
+.qlty/out
+.qlty/plugin_cachedir
+.qlty/results
 .quality-results/
 
 # Session heartbeat (local-only resume marker)
