@@ -5,7 +5,14 @@ setup() {
 	source "$REPO_ROOT/repository/verification/helpers/bash-script-assertions.bash"
 	SCRIPT_UNDER_TEST="$(_resolve_script_under_test)"
 	BACKENDS_SOURCE_DIRECTORY="$(dirname "$SCRIPT_UNDER_TEST")/backends"
-	source "$SCRIPT_UNDER_TEST"
+	TEST_LOCK_HELPER="$BATS_TEST_TMPDIR/exclusive-run-lock.sh"
+	touch "$BATS_TEST_TMPDIR/exclusive_run_lock.py" "$BATS_TEST_TMPDIR/exclusive_run_scope.py"
+	cat >"$TEST_LOCK_HELPER" <<-'STUB'
+		acquire_exclusive_run_lock_or_emit_retry_instructions() {
+			echo "LOCK_ACQUIRED name=$1 typical_duration=$2"
+		}
+	STUB
+	source <(sed "s|@exclusiveRunLockHelper@|$TEST_LOCK_HELPER|g" "$SCRIPT_UNDER_TEST")
 }
 
 readonly BACKEND_CONTRACT=(
@@ -78,42 +85,42 @@ readonly BACKEND_CONTRACT=(
 	[ "$output" = "home-manager" ]
 }
 
-@test "the rebuild takes the shared exclusive-run lock" {
-	local helper="$BATS_TEST_TMPDIR/exclusive-run-lock.sh"
-	cat >"$helper" <<-'STUB'
-		acquire_exclusive_run_lock_or_emit_retry_instructions() {
-			echo "LOCK_ACQUIRED name=$1 typical_duration=$2"
-		}
-	STUB
-	hold_exclusive_rebuild_lock() {
-		[ -f "$helper" ] || return 0
-		# shellcheck disable=SC1090
-		. "$helper"
-		acquire_exclusive_run_lock_or_emit_retry_instructions \
-			"rebuild" "$TYPICAL_REBUILD_DURATION_SECONDS" "$REBUILD_SWITCH_LOG_PATH"
-	}
-	run hold_exclusive_rebuild_lock
+@test "home-manager takes the shared exclusive-run lock directly" {
+	detect_backend_name() { echo "home-manager"; }
+	run prepare_exclusive_rebuild_lock
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"LOCK_ACQUIRED name=rebuild"* ]]
 	[[ "$output" == *"typical_duration=420"* ]]
 }
 
-@test "the entrypoint locks before it switches" {
+@test "system rebuild entrypoints delegate ownership to their privileged guards" {
+	for platform in nixos darwin; do
+		detect_backend_name() { echo "$platform"; }
+		run prepare_exclusive_rebuild_lock
+		[ "$status" -eq 0 ]
+		[ -z "$output" ]
+	done
+}
+
+@test "the entrypoint prepares locking before it switches" {
 	local lock_line switch_line
-	lock_line=$(grep -n '^	hold_exclusive_rebuild_lock$' "$SCRIPT_UNDER_TEST" | cut -d: -f1)
+	lock_line=$(grep -n '^	prepare_exclusive_rebuild_lock$' "$SCRIPT_UNDER_TEST" | cut -d: -f1)
 	switch_line=$(grep -n '^	backend_switch ' "$SCRIPT_UNDER_TEST" | cut -d: -f1)
 	[ "$lock_line" -lt "$switch_line" ]
 }
 
-@test "rebuild still runs when the shared lock helper is absent from the checkout" {
-	EXCLUSIVE_RUN_LOCK_HELPER_OVERRIDE="$BATS_TEST_TMPDIR/absent-helper.sh"
-	hold_exclusive_rebuild_lock() {
-		[ -f "$EXCLUSIVE_RUN_LOCK_HELPER_OVERRIDE" ] || return 0
-		echo "LOCK_ATTEMPTED"
-	}
-	run hold_exclusive_rebuild_lock
-	[ "$status" -eq 0 ]
-	[ -z "$output" ]
+@test "rebuild fails closed when its lock helper is absent" {
+	rm "$TEST_LOCK_HELPER"
+	run prepare_exclusive_rebuild_lock
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"exclusive rebuild lock helper not found"* ]]
+}
+
+@test "rebuild fails closed when its lock driver is absent" {
+	rm "$BATS_TEST_TMPDIR/exclusive_run_lock.py"
+	run prepare_exclusive_rebuild_lock
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"exclusive rebuild lock driver is missing"* ]]
 }
 
 @test "the nixos backend resolves the entrypoint owner to the whole machine-local repository" {

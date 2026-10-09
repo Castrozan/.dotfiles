@@ -14,4 +14,4 @@ if [ "${DOTFILES_REBUILD_WRAPPER:-}" != "1" ]; then
 	done
 fi
 
-exec "$REAL_NIXOS_REBUILD" "$@"
+exec "$SYSTEM_REBUILD_LOCK_GUARD" "$REAL_NIXOS_REBUILD" "$@"
