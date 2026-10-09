@@ -35,26 +35,33 @@ def wait_for_process_group_exit(process_group):
         time.sleep(0.05)
 
 
-def run_owned_process_group(file_descriptor, command):
-    child = None
-    pending_signal = None
+class OwnedProcessGroupSignals:
+    def __init__(self):
+        self.child = None
+        self.pending_signal = None
 
-    def forward_termination_signal(received_signal, frame):
-        nonlocal pending_signal
-        if child is None:
-            pending_signal = received_signal
+    def forward(self, received_signal, frame):
+        if self.child is None:
+            self.pending_signal = received_signal
             return
         try:
-            os.killpg(child.pid, received_signal)
+            os.killpg(self.child.pid, received_signal)
         except ProcessLookupError:
             pass
 
+    def deliver_pending(self):
+        if self.pending_signal is not None:
+            self.forward(self.pending_signal, None)
+
+
+def run_owned_process_group(file_descriptor, command):
+    signals = OwnedProcessGroupSignals()
     for termination_signal in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
-        signal.signal(termination_signal, forward_termination_signal)
+        signal.signal(termination_signal, signals.forward)
     with os.fdopen(file_descriptor, "rb"):
         child = subprocess.Popen(command, pass_fds=(file_descriptor,), process_group=0)
-        if pending_signal is not None:
-            forward_termination_signal(pending_signal, None)
+        signals.child = child
+        signals.deliver_pending()
         try:
             with foreground_process_group(child.pid):
                 exit_status = child.wait()
