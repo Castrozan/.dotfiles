@@ -31,7 +31,7 @@ exec {command} "$DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR" {native_command}
 '''
     child, terminal = pty.fork()
     if child == 0:
-        os.execvp("bash", ["bash", "-c", program])
+        os._exit(subprocess.run(["bash", "-c", program], check=False).returncode)
     output = b""
     supplied_input = False
     child_reaped = False
