@@ -16,20 +16,27 @@ from staged_sources import (
 )
 
 
-def prepare_rebuild_sources(request_path, public_directory, arguments):
-    options = parse_native_options(arguments)
-    if len(arguments) < 3 or arguments[1] != "--flake":
-        raise ValueError("rebuild source must remain the machine-local entrypoint")
-    root_reference, configuration_name = options.flake_reference.split("#", 1)
+def selected_public_source_reference(root_reference, public_directory, input_overrides):
     root_directory = local_source_directory(root_reference)
     public_reference = (
         root_reference
         if root_directory == Path(public_directory).resolve()
         else str(Path(public_directory)) + "?submodules=1"
     )
-    for name, reference in options.input_overrides:
+    for name, reference in input_overrides:
         if name == "dotfiles":
             public_reference = reference
+    return public_reference
+
+
+def prepare_rebuild_sources(request_path, public_directory, arguments):
+    options = parse_native_options(arguments)
+    if len(arguments) < 3 or arguments[1] != "--flake":
+        raise ValueError("rebuild source must remain the machine-local entrypoint")
+    root_reference, configuration_name = options.flake_reference.split("#", 1)
+    public_reference = selected_public_source_reference(
+        root_reference, public_directory, options.input_overrides
+    )
     public_reference = pin_local_source(public_reference, "public")
     public_archive = archive_source(
         public_reference, options.archive_flags, "prefetch_public"
