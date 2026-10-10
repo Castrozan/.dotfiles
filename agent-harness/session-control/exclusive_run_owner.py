@@ -29,15 +29,21 @@ def single_line(value):
     return "".join(character for character in value if character.isprintable())[:256]
 
 
-def inherited_owner(environment):
-    encoded_owner = environment.get(OWNER_ENVIRONMENT_VARIABLE, "")
+def decoded_owner(encoded_owner):
     if not encoded_owner or len(encoded_owner) > 4096:
         return None
     try:
         owner = json.loads(encoded_owner)
     except ValueError:
         return None
-    if not isinstance(owner, dict) or owner.get("owner_type") not in (
+    return owner if isinstance(owner, dict) else None
+
+
+def inherited_owner(environment):
+    owner = decoded_owner(environment.get(OWNER_ENVIRONMENT_VARIABLE, ""))
+    if owner is None:
+        return None
+    if owner.get("owner_type") not in (
         "agent",
         "non-agent",
         "unknown",
@@ -46,7 +52,7 @@ def inherited_owner(environment):
     return {name: single_line(owner.get(name)) for name in OWNER_FIELDS}
 
 
-def harness_session(environment, process_identifier):
+def environment_harness_session(environment):
     for variable, harness in SESSION_ENVIRONMENT_VARIABLES:
         if session := single_line(environment.get(variable)):
             return harness, session
@@ -56,6 +62,13 @@ def harness_session(environment, process_identifier):
     ):
         if environment.get(variable):
             return harness, ""
+    return "", ""
+
+
+def harness_session(environment, process_identifier):
+    harness, session = environment_harness_session(environment)
+    if harness:
+        return harness, session
     try:
         process = find_agent_session(process_identifier)
     except OSError:
@@ -82,16 +95,21 @@ def servant_name(session_identifier):
     return single_line(result.stdout.strip()) if result.returncode == 0 else ""
 
 
+def run_owner_type(harness, agent_name):
+    if agent_name:
+        return "agent"
+    if harness == "unknown":
+        return "unknown"
+    return "agent" if harness else "non-agent"
+
+
 def resolve_run_owner(environment, process_identifier):
     if owner := inherited_owner(environment):
         return owner
     harness, session = harness_session(environment, process_identifier)
     agent_name = single_line(environment.get("CLAWDE_AGENT_NAME"))
-    owner_type = "agent" if agent_name or harness else "non-agent"
-    if harness == "unknown" and not agent_name:
-        owner_type = "unknown"
     return {
-        "owner_type": owner_type,
+        "owner_type": run_owner_type(harness, agent_name),
         "owner_user": pwd.getpwuid(os.getuid()).pw_name,
         "agent_name": agent_name or servant_name(session),
         "agent_harness": harness,
