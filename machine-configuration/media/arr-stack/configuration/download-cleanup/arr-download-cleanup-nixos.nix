@@ -42,7 +42,7 @@ in
         ARR_CLEANUP_STACK_HOME = cleanupConfig.stackHomeDirectory;
       };
       serviceConfig = {
-        Type = "exec";
+        Type = "notify";
         User = username;
         StateDirectory = "arr-download-cleanup";
         StateDirectoryMode = "0700";

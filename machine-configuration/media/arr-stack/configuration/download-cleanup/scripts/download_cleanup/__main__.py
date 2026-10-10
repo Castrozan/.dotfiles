@@ -1,5 +1,6 @@
 import logging
 import os
+import socket
 import sys
 import threading
 import xml.etree.ElementTree as ElementTree
@@ -67,6 +68,11 @@ def main():
     server = HTTPServer(
         ("172.28.0.1", 8789), webhook_handler(ledger, password, wake_worker)
     )
+    notify_address = os.environ["NOTIFY_SOCKET"]
+    if notify_address.startswith("@"):
+        notify_address = "\0" + notify_address[1:]
+    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as notification:
+        notification.sendto(b"READY=1", notify_address)
     logging.info("Listening for native Radarr/Sonarr lifecycle webhooks")
     server.serve_forever()
 

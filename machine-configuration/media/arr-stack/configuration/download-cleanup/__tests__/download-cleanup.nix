@@ -50,6 +50,7 @@ in
     mkEvalCheck "arr-download-cleanup-is-durable-and-restricted"
       (
         service.serviceConfig.StateDirectory == "arr-download-cleanup"
+        && service.serviceConfig.Type == "notify"
         && service.serviceConfig.ProtectSystem == "strict"
         && service.serviceConfig.User == "test-user"
         && builtins.length service.serviceConfig.LoadCredential == 2
