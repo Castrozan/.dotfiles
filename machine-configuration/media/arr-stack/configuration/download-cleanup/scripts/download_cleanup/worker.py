@@ -11,10 +11,16 @@ class CleanupWorker:
         self.filesystem = filesystem
         self.jellyfin = jellyfin
 
+    def manager_contains_media(self, app, identifier, provider_identifier):
+        client = self.media_clients[app]
+        return client.exists(identifier) or client.contains_provider(
+            provider_identifier
+        )
+
     def retained_owner(self, owner):
-        app, identifier, _, library_path = owner
-        return self.media_clients[app].exists(
-            identifier
+        app, identifier, provider_identifier, library_path = owner
+        return self.manager_contains_media(
+            app, identifier, provider_identifier
         ) or self.filesystem.library_exists(library_path)
 
     def require_unshared(self, media, hashes):
@@ -57,7 +63,9 @@ class CleanupWorker:
 
     def process(self, media):
         self.filesystem.assert_mounted()
-        if self.media_clients[media.app].exists(media.identifier):
+        if self.manager_contains_media(
+            media.app, media.identifier, media.provider_identifier
+        ):
             self.ledger.cancel(media)
             logging.warning(
                 "Cancelled cleanup for restored title %s/%s", media.app, media.title
