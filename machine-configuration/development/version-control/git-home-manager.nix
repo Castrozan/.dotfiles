@@ -25,7 +25,11 @@ in
 
   programs.git = {
     enable = true;
-    ignores = [ ".claude-context" ];
+    ignores = [
+      ".claude-context"
+      ".worktrees/"
+      ".deep-work/"
+    ];
     settings = {
       core = {
         pager = "delta --paging=never --detect-dark-light always";
