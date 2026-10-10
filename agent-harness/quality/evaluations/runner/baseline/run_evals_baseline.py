@@ -70,12 +70,10 @@ def check_baseline_for_regression(
     compliance_passed, compliance_total = compliance_passed_and_total(
         current_categories
     )
-    _append_pass_rate_failures(
-        current_passed,
-        current_total,
-        compliance_passed,
-        compliance_total,
-        failures,
+    failures.extend(
+        baseline_pass_rate_failures(
+            current_passed, current_total, compliance_passed, compliance_total
+        )
     )
 
     materialized_pass_rate = baseline.get("pass_rate", 0)
@@ -129,13 +127,13 @@ def _evidence_totals(current_categories: dict) -> tuple[int, int]:
     return current_passed, current_total
 
 
-def _append_pass_rate_failures(
+def baseline_pass_rate_failures(
     current_passed: int,
     current_total: int,
     compliance_passed: int,
     compliance_total: int,
-    failures: list[str],
-) -> None:
+) -> list[str]:
+    failures = []
     overall_pass_rate = current_passed / current_total if current_total else 0
     if overall_pass_rate < MINIMUM_PASS_RATE_OVERALL:
         failures.append(
@@ -149,6 +147,7 @@ def _append_pass_rate_failures(
                 f"Compliance pass rate {compliance_rate:.1%} "
                 f"below minimum {MINIMUM_PASS_RATE_COMPLIANCE:.1%}"
             )
+    return failures
 
 
 def _append_history_failures(

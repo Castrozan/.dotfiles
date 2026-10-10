@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-QUICKSHELL_BAR_CONFIGURATION_PATH=~/.dotfiles/machine-configuration/desktop/desktop-environments/quickshell/bar/program-configuration
+QUICKSHELL_BAR_CONFIGURATION_PATH=~/.config/quickshell/bar
 
 setup_file() {
 	[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || return 0

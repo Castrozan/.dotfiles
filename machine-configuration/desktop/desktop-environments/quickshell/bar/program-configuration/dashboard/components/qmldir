@@ -9,3 +9,4 @@ StateLayer 1.0 StateLayer.qml
 IconButton 1.0 IconButton.qml
 StyledSlider 1.0 StyledSlider.qml
 DashboardTabButton 1.0 DashboardTabButton.qml
+ServiceActivity 1.0 ServiceActivity.qml

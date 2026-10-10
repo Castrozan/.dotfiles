@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# shellcheck disable=SC2016
+NATIVE_DARWIN_REBUILD_COMMAND=("$DARWIN_REBUILD_SHELL" -c
+	'native_driver="$1"; shift; source "$native_driver"'
+	"$DARWIN_REBUILD_ENTRYPOINT" "$REAL_DARWIN_REBUILD")
+
+if [[ "$#" -eq 1 ]]; then
+	case "$1" in
+	-h | --help | --version) exec "${NATIVE_DARWIN_REBUILD_COMMAND[@]}" "$@" ;;
+	esac
+fi
+
+exec "$SYSTEM_REBUILD_LOCK_GUARD" "${NATIVE_DARWIN_REBUILD_COMMAND[@]}" "$@"

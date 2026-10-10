@@ -30,6 +30,9 @@ let
   localModel = helpers.homeManagerTestConfiguration [ (localModelModule true) ];
   darwinLocalModel = helpers.homeManagerTestConfigurationForDarwin [ (localModelModule false) ];
   localModelService = localModel.systemd.user.services.local-language-model.Service;
+  localModelUnit = localModel.systemd.user.services.local-language-model.Unit;
+  localModelSocket = localModel.systemd.user.sockets.local-language-model;
+  localModelProxy = localModel.systemd.user.services.local-language-model-proxy;
   localInferencePackage = lib.findFirst (
     package: (package.pname or "") == "llama-cpp"
   ) (throw "local inference package is missing") localModel.home.packages;
@@ -68,6 +71,28 @@ in
     && localModelService.MemoryMax == "6G"
   ) "local inference must stay on loopback with bounded concurrency and memory";
 
+  domain-local-model-demand-lifecycle =
+    mkEvalCheck "domain-local-model-demand-lifecycle"
+      (
+        localModelUnit.StopWhenUnneeded
+        && (localModel.systemd.user.services.local-language-model.Install.WantedBy or [ ]) == [ ]
+        && localModelSocket.Socket.ListenStream == "127.0.0.1:8081"
+        && localModelSocket.Socket.Service == "local-language-model-proxy.service"
+        && localModelSocket.Install.WantedBy == [ "sockets.target" ]
+        && lib.elem "local-language-model.service" localModelProxy.Unit.Requires
+        && lib.elem "local-language-model.service" localModelProxy.Unit.After
+        && lib.elem "local-language-model.socket" localModelProxy.Service.Sockets
+        && lib.hasInfix "--exit-idle-time=300 127.0.0.1:8082" (
+          lib.concatStringsSep " " localModelProxy.Service.ExecStart
+        )
+        && lib.hasInfix "--port 8082" (lib.concatStringsSep " " localModelService.ExecStart)
+        && lib.hasInfix "http://127.0.0.1:8082/health" localModelService.ExecStartPost
+        && (localModelProxy.Install.WantedBy or [ ]) == [ ]
+        && localModelService.TimeoutStartSec == 180
+        && localModelService.TimeoutStopSec == 30
+      )
+      "only the loopback socket starts at boot; the proxy owns inference readiness and releases the backend after idle";
+
   domain-local-agent-model-contract = mkEvalCheck "domain-local-agent-model-contract" (
     localAgentModels.providers.chise.baseUrl == "http://127.0.0.1:8081/v1"
     && (builtins.head localAgentModels.providers.chise.models).id == "qwen3.5-4b-uncensored"
@@ -95,6 +120,8 @@ in
 
   domain-local-model-linux-only = mkEvalCheck "domain-local-model-linux-only" (
     !(builtins.hasAttr "local-language-model" darwinLocalModel.systemd.user.services)
+    && !(builtins.hasAttr "local-language-model-proxy" darwinLocalModel.systemd.user.services)
+    && !(builtins.hasAttr "local-language-model" darwinLocalModel.systemd.user.sockets)
     && !(builtins.hasAttr ".local/bin/local-agent" darwinLocalModel.home.file)
   ) "the Chise inference service and launcher must not deploy on Darwin";
 
@@ -107,6 +134,14 @@ in
       "compaction must leave Pi's safety margin, the full response budget, and room for the next message";
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+  domain-local-model-socket-proxy-lifecycle =
+    pkgs.runCommand "domain-local-model-socket-proxy-lifecycle" { }
+      ''
+        ${pkgs.python3}/bin/python ${./verify-socket-proxy.py} \
+          ${pkgs.systemd}/lib/systemd/systemd-socket-proxyd
+        touch "$out"
+      '';
+
   domain-local-model-tokenizer-long-input =
     pkgs.runCommand "domain-local-model-tokenizer-long-input" { }
       ''

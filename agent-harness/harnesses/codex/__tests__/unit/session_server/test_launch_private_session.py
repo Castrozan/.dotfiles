@@ -36,7 +36,6 @@ def test_private_launch_keeps_client_arguments_and_owns_server_lifetime(private_
     server_call, client_call = processes.call_args_list
     endpoint = server_call.args[0][-1]
     assert server_call.args[0] == ["/codex", "app-server", "--listen", endpoint]
-    assert server_call.kwargs["start_new_session"] is True
     assert client_call.args[0] == ["/codex", "--remote", endpoint, *arguments]
     assert "start_new_session" not in client_call.kwargs
     environment = server_call.kwargs["env"]

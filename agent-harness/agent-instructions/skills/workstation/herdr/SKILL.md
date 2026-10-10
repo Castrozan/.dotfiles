@@ -50,8 +50,8 @@ here or on another machine or harness, belongs to the `orchestrate` skill.
 ### Resume and liveness
 
 Restart the current supported session with `agent-session restart`; Herdr resumes its exact recorded conversation in the
-same pane. When a spawned agent exits, its pane survives as an idle shell rather than closing, so a later reference
-focuses a dead pane; detect liveness by process, not presence. A pane is idle when its `foreground_process_group_id`
+same pane. Quitting inside a harness can leave its pane as an idle shell, so a later reference can focus a dead pane;
+detect liveness by process, not presence. A pane is idle when its `foreground_process_group_id`
 equals its `shell_pid` in `herdr pane process-info`; relaunch into it instead of assuming the agent is alive.
 
 ### Oneshot is gated

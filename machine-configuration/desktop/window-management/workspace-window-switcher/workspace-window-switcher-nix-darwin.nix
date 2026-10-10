@@ -1,10 +1,17 @@
 {
   lib,
   username,
+  pkgs,
   ...
 }:
 let
-  swiftDaemonSourcesDirectory = ./swift-sources;
+  swiftDaemonSourcesDirectory = pkgs.symlinkJoin {
+    name = "workspace-window-switcher-daemon-swift-sources";
+    paths = [
+      ./swift-sources
+      ../../input/command-sockets/swift-sources
+    ];
+  };
   swiftDaemonBinaryPath = "/usr/local/bin/workspace-window-switcher-daemon";
 in
 {

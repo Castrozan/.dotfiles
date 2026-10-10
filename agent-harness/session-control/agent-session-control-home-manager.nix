@@ -1,5 +1,7 @@
 {
   pkgs,
+  lib,
+  isNixOS,
   inputs,
   ...
 }:
@@ -9,6 +11,12 @@ let
     (import ../../machine-configuration/terminal/workspace-manager/herdr/herdr-client-package.nix {
       inherit pkgs herdrPackage;
     }).package;
+  a2aClientPackage = import ../agent-to-agent-communication/client/a2a-client-package.nix {
+    inherit pkgs;
+  };
+  codexLauncherMigrationPackage = import ./codex-launcher-migration-package.nix {
+    inherit pkgs herdrClientPackage a2aClientPackage;
+  };
   agentSessionRestartPreflight = pkgs.writeShellApplication {
     name = "agent-session-restart-preflight";
     runtimeInputs = [ pkgs.python3 ];
@@ -41,5 +49,6 @@ in
       ];
       text = builtins.readFile ./agent-session;
     })
-  ];
+  ]
+  ++ lib.optionals isNixOS [ codexLauncherMigrationPackage ];
 }

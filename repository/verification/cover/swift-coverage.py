@@ -14,9 +14,10 @@ LAUNCHER = DESKTOP / "applications/launcher"
 AMBIENT = DESKTOP / "appearance/screensaver/ambient-canvas"
 
 
-def compile_test_binary(source_directory, entry_point, test_sources, binary):
+def compile_test_binary(source_directories, entry_point, test_sources, binary):
     production_sources = sorted(
         path
+        for source_directory in source_directories
         for path in (REPOSITORY / source_directory).rglob("*.swift")
         if path.name not in {entry_point, "Package.swift"}
         and "__tests__" not in path.parts
@@ -43,7 +44,10 @@ def _compile_coverage_suite(suite, directory, binaries, index):
     if not test_sources:
         raise ValueError(f"No Swift tests found: {owner / test_directory}")
     binary = directory / f"suite-{index}"
-    compile_test_binary(owner / "swift-sources", entry_point, test_sources, binary)
+    source_directories = [owner / "swift-sources"]
+    if owner in {SWITCHER, LAUNCHER}:
+        source_directories.append(DESKTOP / "input/command-sockets/swift-sources")
+    compile_test_binary(source_directories, entry_point, test_sources, binary)
     binaries.append(binary)
     return binary, segment_counts
 

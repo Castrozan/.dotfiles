@@ -22,7 +22,7 @@ in
 {
   imports = [
     ./herdr-agent-resume-home-manager.nix
-    ./herdr-annotate-home-manager.nix
+    ./annotation/herdr-annotate-home-manager.nix
     ./herdr-pace-home-manager.nix
     ./herdr-config-mutable-home-manager.nix
     ./herdr-service-home-manager.nix

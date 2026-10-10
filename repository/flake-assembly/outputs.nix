@@ -30,6 +30,11 @@ in
 
   homeManagerModules = import ./home-manager-modules.nix;
 
+  packages.${linux} = import ./packages.nix {
+    inherit inputs;
+    system = linux;
+  };
+
   checks = import ./checks.nix {
     inherit inputs self release;
     systems = [

@@ -2,20 +2,25 @@
 
 readonly HOME_MANAGER_BACKUP_SUFFIX="backup"
 
+run_home_manager_command_under_rebuild_lock() {
+	"$EXCLUSIVE_RUN_SCOPE_PYTHON" "${EXCLUSIVE_RUN_LOCK_HELPER%/*}/exclusive_run_scope.py" \
+		"$DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR" "${LOW_PRIORITY_COMMAND_PREFIX[@]}" "$@"
+}
+
 switch_with_the_installed_home_manager() {
-	"${LOW_PRIORITY_COMMAND_PREFIX[@]}" home-manager switch \
+	run_home_manager_command_under_rebuild_lock home-manager switch \
 		--flake "$1" -b "$HOME_MANAGER_BACKUP_SUFFIX"
 }
 
 switch_with_home_manager_from_nixpkgs() {
-	"${LOW_PRIORITY_COMMAND_PREFIX[@]}" nix run nixpkgs#home-manager -- switch \
+	run_home_manager_command_under_rebuild_lock nix run nixpkgs#home-manager -- switch \
 		--flake "$1" -b "$HOME_MANAGER_BACKUP_SUFFIX" 2>/dev/null
 }
 
 switch_with_home_manager_from_upstream() {
 	echo "Falling back to the GitHub source, which may hit rate limits." >&2
 	echo "Install home-manager to avoid this: nix profile install nixpkgs#home-manager" >&2
-	"${LOW_PRIORITY_COMMAND_PREFIX[@]}" nix run home-manager/master -- switch \
+	run_home_manager_command_under_rebuild_lock nix run home-manager/master -- switch \
 		--flake "$1" -b "$HOME_MANAGER_BACKUP_SUFFIX"
 }
 

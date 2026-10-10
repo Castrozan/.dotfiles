@@ -16,19 +16,9 @@ StyledRect {
     radius: Appearance.rounding.large
     clip: true
 
-    Component.onDestruction: {
-        if (networkCardRoot.dashboardIsActive)
-            NetworkUsageService.refCount--;
-    }
-
-    Connections {
-        target: networkCardRoot
-        function onDashboardIsActiveChanged() {
-            if (networkCardRoot.dashboardIsActive)
-                NetworkUsageService.refCount++;
-            else
-                NetworkUsageService.refCount--;
-        }
+    ServiceActivity {
+        service: NetworkUsageService
+        active: networkCardRoot.dashboardIsActive
     }
 
     ColumnLayout {

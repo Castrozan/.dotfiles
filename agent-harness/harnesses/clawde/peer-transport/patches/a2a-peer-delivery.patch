@@ -1,0 +1,212 @@
+--- a/a2a_server/backends/base.py
++++ b/a2a_server/backends/base.py
+@@ -11,0 +12,4 @@
++
++
++class AgentBusyError(RuntimeError):
++    pass
+--- a/a2a_server/backends/herdr_backend.py
++++ b/a2a_server/backends/herdr_backend.py
+@@ -6,0 +7 @@
++from ..herdr_prompt_adapter import HerdrPromptAdapter
+@@ -9 +9,0 @@
+-DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS = 0.25
+@@ -38,3 +38,4 @@
+-        herdr_pane_resolution.send_text_to_pane(self._pane_id, text)
+-        time.sleep(DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS)
+-        herdr_pane_resolution.send_key_to_pane(self._pane_id, "Enter")
++        self._meaningful_line_tracker.adopt_capture_as_baseline(
++            self._capture_agent_pane_text()
++        )
++        HerdrPromptAdapter(self._pane_id).submit(text)
+--- a/a2a_server/active_task_coordinator.py
++++ b/a2a_server/active_task_coordinator.py
+@@ -4 +4 @@
+-from .backends.base import AgentBackend, BackendObservation
++from .backends.base import AgentBackend, AgentBusyError, BackendObservation
+@@ -22,0 +23 @@
++        self._active_task_delivery_is_pending = False
+@@ -41,0 +43 @@
++            self._active_task_delivery_is_pending = True
+@@ -43,2 +45,15 @@
+-        self._agent_backend.send_input_text(input_text)
+-        return new_task, True
++        delivery_error_message = None
++        delivery_was_accepted = True
++        try:
++            self._agent_backend.send_input_text(input_text)
++        except Exception as delivery_failure:
++            delivery_was_accepted = not isinstance(delivery_failure, AgentBusyError)
++            delivery_error_message = f"delivery failed: {delivery_failure}"
++        finally:
++            with self._lock:
++                if delivery_error_message is not None:
++                    self._task_store.mark_task_failed_with_error_message(
++                        new_task.id, delivery_error_message
++                    )
++                self._active_task_delivery_is_pending = False
++        return new_task, delivery_was_accepted
+@@ -73,0 +89,2 @@
++            if self._active_task_delivery_is_pending:
++                return
+@@ -90 +107,8 @@
+-        idle_for_seconds = time.time() - observation.last_activity_at_epoch_seconds
++        if observation.agent_is_busy is True:
++            return
++        active_task = self._task_store.get_task(active_task_id)
++        last_activity_at_epoch_seconds = max(
++            observation.last_activity_at_epoch_seconds,
++            active_task.created_at_epoch_seconds,
++        )
++        idle_for_seconds = time.time() - last_activity_at_epoch_seconds
+--- a/a2a_server/fleet/session.py
++++ b/a2a_server/fleet/session.py
+@@ -3,0 +4 @@
++from ..peer_notification_mailbox import PeerNotificationMailbox
+@@ -15,0 +17 @@
++        notification_mailbox: PeerNotificationMailbox,
+@@ -18,0 +21 @@
++        self.notification_mailbox = notification_mailbox
+--- a/a2a_server/fleet/registry.py
++++ b/a2a_server/fleet/registry.py
+@@ -2,0 +3 @@
++from ..peer_notification_mailbox import PeerNotificationMailbox
+@@ -32,0 +34,4 @@
++        mailboxes_by_pane_id = {
++            session.pane_id: session.notification_mailbox
++            for session in self.every_session()
++        }
+@@ -36 +41,3 @@
+-            self._adopt_pane_if_not_already_attached(peer_name, pane)
++            self._adopt_pane_if_not_already_attached(
++                peer_name, pane, mailboxes_by_pane_id.get(pane.pane_id)
++            )
+@@ -56 +63,4 @@
+-        self, peer_name: str, pane: DiscoveredAgentPane
++        self,
++        peer_name: str,
++        pane: DiscoveredAgentPane,
++        notification_mailbox: PeerNotificationMailbox | None,
+@@ -64,0 +75,2 @@
++        if notification_mailbox is None:
++            notification_mailbox = PeerNotificationMailbox(pane.pane_id)
+@@ -66 +78 @@
+-            peer_name, pane, self._metadata, self._daemon_base_url
++            peer_name, pane, self._metadata, self._daemon_base_url, notification_mailbox
+--- a/a2a_server/fleet/request_router.py
++++ b/a2a_server/fleet/request_router.py
+@@ -2,0 +3,4 @@
++from ..peer_notification_mailbox import (
++    MAXIMUM_NOTIFICATION_REQUEST_BYTES,
++    PeerNotificationInput,
++)
+@@ -55,0 +60,2 @@
++        if was_accepted and task.state == "failed":
++            return task_response(502, task)
+@@ -56,0 +63,58 @@
++
++    def submit_notification(
++        self, peer_name: str, request_body_bytes: bytes
++    ) -> tuple[int, str, bytes]:
++        session = self._registry.session_named(peer_name)
++        if session is None:
++            return self._unknown_agent_response(peer_name)
++        if len(request_body_bytes) > MAXIMUM_NOTIFICATION_REQUEST_BYTES:
++            return json_response(413, {"error": "notification_request_too_large"})
++        try:
++            body = json.loads(request_body_bytes.decode("utf-8"))
++        except (json.JSONDecodeError, UnicodeDecodeError):
++            return json_response(400, {"error": "invalid_json"})
++        if not isinstance(body, dict):
++            return json_response(400, {"error": "invalid_notification"})
++        claimed_sender = body.get("claimedSender")
++        content = body.get("content")
++        if not isinstance(claimed_sender, str) or not claimed_sender:
++            return json_response(400, {"error": "missing_claimed_sender"})
++        if not isinstance(content, str) or not content:
++            return json_response(400, {"error": "missing_content"})
++        notification = session.notification_mailbox.publish(
++            PeerNotificationInput(claimed_sender, content)
++        )
++        if notification is None:
++            return json_response(429, {"error": "notification_mailbox_full"})
++        return json_response(202, notification.to_json_serializable_dict())
++
++    def read_notifications(self, peer_name: str) -> tuple[int, str, bytes]:
++        session = self._registry.session_named(peer_name)
++        if session is None:
++            return self._unknown_agent_response(peer_name)
++        return json_response(
++            200,
++            {
++                "recipientPaneId": session.pane_id,
++                "messages": [
++                    notification.to_json_serializable_dict()
++                    for notification in session.notification_mailbox.read()
++                ],
++            },
++        )
++
++    def acknowledge_notification(
++        self, peer_name: str, notification_identifier: str
++    ) -> tuple[int, str, bytes]:
++        session = self._registry.session_named(peer_name)
++        if session is None:
++            return self._unknown_agent_response(peer_name)
++        session.notification_mailbox.acknowledge(notification_identifier)
++        return json_response(
++            200,
++            {
++                "id": notification_identifier,
++                "recipientPaneId": session.pane_id,
++                "acknowledged": True,
++            },
++        )
+@@ -95,0 +160,2 @@
++        if not isinstance(parsed_body, dict):
++            return None, "missing_input_field"
+--- a/a2a_server/fleet/http_handler.py
++++ b/a2a_server/fleet/http_handler.py
+@@ -4,0 +5 @@
++from ..peer_notification_mailbox import MAXIMUM_NOTIFICATION_REQUEST_BYTES
+@@ -31,0 +33,2 @@
++        if path_within_agent == "/messages":
++            return lambda: router.read_notifications(peer_name)
+@@ -44,0 +48,11 @@
++    if path_within_agent == "/messages":
++        return lambda: router.submit_notification(peer_name, request_body_bytes)
++    if path_within_agent.startswith("/messages/") and path_within_agent.endswith(
++        "/ack"
++    ):
++        notification_identifier = path_within_agent[len("/messages/") : -len("/ack")]
++        if not notification_identifier or "/" in notification_identifier:
++            return not_found_response
++        return lambda: router.acknowledge_notification(
++            peer_name, notification_identifier
++        )
+@@ -66,0 +81,25 @@
++            agent_scoped_path = split_agent_scoped_path(self.path)
++            if agent_scoped_path is not None and agent_scoped_path[1].startswith(
++                "/messages"
++            ):
++                try:
++                    content_length = int(self.headers.get("Content-Length", "0"))
++                    if (
++                        content_length < 0
++                        or self.headers.get("Transfer-Encoding") is not None
++                    ):
++                        raise ValueError
++                except ValueError:
++                    self.close_connection = True
++                    self._respond_with_router_result(
++                        lambda: json_response(400, {"error": "invalid_content_length"})
++                    )
++                    return
++                if content_length > MAXIMUM_NOTIFICATION_REQUEST_BYTES:
++                    self.close_connection = True
++                    self._respond_with_router_result(
++                        lambda: json_response(
++                            413, {"error": "notification_request_too_large"}
++                        )
++                    )
++                    return
