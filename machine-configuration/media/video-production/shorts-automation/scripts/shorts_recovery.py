@@ -140,18 +140,39 @@ def execute_recovery(root, configuration, queue, item):
 
 
 def drain_queue(root, configuration):
-    while has_pending(root):
-        if window_available(configuration):
-            subprocess.run(
-                ["systemctl", "--user", "start", "shorts-recovery.service"], check=True
-            )
-        if has_pending(root):
-            time.sleep(60)
+    while has_unfinished(root):
+        launch_pending(root, configuration)
+        time.sleep(60)
     return read_queue(root)
 
 
-def has_pending(root):
-    return any(item["status"] == "queued" for item in read_queue(root)["runs"])
+def has_unfinished(root):
+    return any(
+        item["status"] in ("queued", "running") for item in read_queue(root)["runs"]
+    )
+
+
+def launch_pending(root, configuration):
+    statuses = {item["status"] for item in read_queue(root)["runs"]}
+    if "running" in statuses or "queued" not in statuses:
+        return
+    if window_available(configuration):
+        # A daemon reexec can disconnect a blocking D-Bus wait after accepting a
+        # job. Observe the durable queue before another request instead.
+        try:
+            subprocess.run(
+                [
+                    "systemctl",
+                    "--user",
+                    "start",
+                    "--no-block",
+                    "shorts-recovery.service",
+                ],
+                check=False,
+                timeout=15,
+            )
+        except subprocess.TimeoutExpired:
+            pass
 
 
 def command(arguments, root, configuration):

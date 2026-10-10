@@ -8,6 +8,7 @@
 {
   imports = [
     ./audio.nix
+    ../../../../media/video-production/shorts-notifications-nixos.nix
     ./nvidia.nix
     ./libinput-quirks.nix
     ./keyboard-backlight.nix

@@ -108,3 +108,27 @@ def test_recovery_cannot_overlap_an_active_production_run(held_run):
         fcntl.flock(lock, fcntl.LOCK_EX)
         assert shorts_recovery.recover_next(root, config)["status"] == "deferred"
     assert shorts_recovery.read_queue(root)["runs"][0]["status"] == "queued"
+
+
+def test_coordinator_survives_lost_start_response_without_starting_twice(
+    held_run, monkeypatch
+):
+    root, run, config = held_run
+    shorts_recovery.queue_recoveries(root, [run.name], config)
+    monkeypatch.setattr(shorts_recovery, "window_available", lambda config: True)
+    calls = []
+
+    def start(command, **kwargs):
+        assert "--no-block" in command
+        assert kwargs["check"] is False
+        calls.append(command)
+        queue = shorts_recovery.read_queue(root)
+        queue["runs"][0]["status"] = "running"
+        write_document(root / shorts_recovery.QUEUE_FILE, queue)
+        return type("Response", (), {"returncode": 1})()
+
+    monkeypatch.setattr(shorts_recovery.subprocess, "run", start)
+    shorts_recovery.launch_pending(root, config)
+    shorts_recovery.launch_pending(root, config)
+    assert len(calls) == 1
+    assert shorts_recovery.has_unfinished(root)
