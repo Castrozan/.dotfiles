@@ -53,7 +53,7 @@ in
   };
   codexcli.hooks = {
     sessionStart = [ ((registration "SessionStart" 5) // { matcher = ".*"; }) ];
-    userPromptSubmit = [ (registration "UserPromptSubmit" 5) ];
+    beforeSubmitPrompt = [ (registration "UserPromptSubmit" 5) ];
   };
   opencode.apiVersion = 2;
 }
