@@ -9,10 +9,10 @@ Control lights with `ha-light` and the air conditioner with `ha-ac`. Run either 
 
 ### Architecture
 
-Home Assistant runs as a Podman container on localhost:8123. Two integrations: Tuya (lights, cloud-based) and Midea AC
-LAN (air conditioner, local LAN). CLI scripts use the HA REST API with a long-lived token from agenix. Web UI
-credentials are in the password store under `home-assistant/admin`. Verify the systemd service name from the NixOS
-module before restarting; it is not the obvious name.
+Home Assistant serves localhost:8123; `home-assistant-nixos.nix` declares its container runtime. Two integrations: Tuya
+(lights, cloud-based) and Midea AC LAN (air conditioner, local LAN). CLI scripts use the HA REST API with a long-lived
+token from agenix. Web UI credentials are in the password store under `home-assistant/admin`. Verify the systemd service
+name from the NixOS module before restarting; it is not the obvious name.
 
 ### Device constraints
 

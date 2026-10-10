@@ -5,6 +5,7 @@
   ...
 }:
 let
+  homeAssistantImage = "ghcr.io/home-assistant/home-assistant:2026.3.4@sha256:916682086154a7390114a9788782b8efb199852d4f7d47066722c2bc5d1829e6";
   homeAssistantConfigDirectory = "/home/${username}/.homeassistant";
   homeAssistantPipDepsDirectory = "/home/${username}/.homeassistant-pip-deps";
 
@@ -12,27 +13,30 @@ let
     set -euo pipefail
     mkdir -p ${homeAssistantPipDepsDirectory}
     if [ ! -d "${homeAssistantPipDepsDirectory}/midealocal" ]; then
-      ${pkgs.podman}/bin/podman run --rm \
+      ${pkgs.docker}/bin/docker run --rm \
         -v ${homeAssistantPipDepsDirectory}:/deps \
-        ghcr.io/home-assistant/home-assistant:stable \
+        ${homeAssistantImage} \
         pip install --target=/deps midea-local==6.5.0
     fi
   '';
 in
 {
-  virtualisation.oci-containers.containers.homeassistant = {
-    image = "ghcr.io/home-assistant/home-assistant:stable";
-    volumes = [
-      "${homeAssistantConfigDirectory}:/config"
-      "${homeAssistantPipDepsDirectory}:/deps"
-    ];
-    environment = {
-      PYTHONPATH = "/deps";
+  virtualisation.oci-containers = {
+    backend = "docker";
+    containers.homeassistant = {
+      image = homeAssistantImage;
+      volumes = [
+        "${homeAssistantConfigDirectory}:/config"
+        "${homeAssistantPipDepsDirectory}:/deps"
+      ];
+      environment = {
+        PYTHONPATH = "/deps";
+      };
+      extraOptions = [ "--network=host" ];
     };
-    extraOptions = [ "--network=host" ];
   };
 
-  systemd.services.podman-homeassistant = {
+  systemd.services.docker-homeassistant = {
     serviceConfig.ExecStartPre = [
       installMideaLocalBeforeStart
     ];
