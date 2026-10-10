@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import re
 import shlex
 
 from codex_app_server_client import CodexAppServerClient, CodexThreadTitle
@@ -11,25 +12,22 @@ from hook_dispatch import HandlerResult
 from servant_identity_handler import servant_for_hook_input, session_id_of
 from catalog import SERVANT_CATALOG
 
+SERVANT_NAME_FORMS = sorted(
+    (
+        form
+        for servant in SERVANT_CATALOG
+        for form in (servant["name"], f"[{servant['name']}]")
+    ),
+    key=len,
+    reverse=True,
+)
+SERVANT_PREFIX_PATTERN = re.compile(
+    "^(?:(?:" + "|".join(map(re.escape, SERVANT_NAME_FORMS)) + r")(?: \| | |$))+"
+)
+
 
 def servant_thread_name(thread_title: CodexThreadTitle, servant_name: str) -> str:
-    title = thread_title.name or ""
-    for servant in SERVANT_CATALOG:
-        name = servant["name"]
-        if title in (name, f"[{name}]"):
-            title = ""
-            break
-        prefix = next(
-            (
-                prefix
-                for prefix in (f"[{name}] | ", f"[{name}] ", f"{name} | ")
-                if title.startswith(prefix)
-            ),
-            None,
-        )
-        if prefix is not None:
-            title = title[len(prefix) :]
-            break
+    title = SERVANT_PREFIX_PATTERN.sub("", thread_title.name or "", count=1)
     title = title or thread_title.preview
     return f"{servant_name} | {title}" if title else servant_name
 
