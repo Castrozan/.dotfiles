@@ -54,14 +54,14 @@ def _resolve_over_a_tmux_only_machine(websocket_connection, attach_settings):
 def test_read_session_attach_target_reads_the_terminal_identifier_from_the_query():
     assert (
         settings.read_session_attach_target(
-            "/cockpit/jarvis-session/?terminal=term_abc123&windowIdentifier=@1"
+            "/cockpit/terminal-session/?terminal=term_abc123&windowIdentifier=@1"
         )
         == "term_abc123"
     )
 
 
 def test_read_session_attach_target_is_none_without_a_terminal_identifier():
-    assert settings.read_session_attach_target("/cockpit/jarvis-session/") is None
+    assert settings.read_session_attach_target("/cockpit/terminal-session/") is None
     assert settings.read_session_attach_target("/?terminal=") is None
 
 
@@ -87,7 +87,7 @@ def test_build_attach_session_command_uses_the_enumeration_socket_when_named():
 
 def test_resolve_session_command_attaches_the_requested_session_on_the_enumeration_socket():
     resolved = _resolve_over_a_tmux_only_machine(
-        _FakeWebsocketConnection("/cockpit/jarvis-session/?terminal=dotfiles"),
+        _FakeWebsocketConnection("/cockpit/terminal-session/?terminal=dotfiles"),
         _attach_settings(),
     )
     assert resolved == [
@@ -104,7 +104,7 @@ def test_resolve_session_command_attaches_the_requested_session_over_ssh_when_a_
         _attach_settings(), cockpit_tmux_remote_ssh_host="lucas.zanoni@kira"
     )
     resolved = _resolve_over_a_tmux_only_machine(
-        _FakeWebsocketConnection("/cockpit/jarvis-session/?terminal=dotfiles"),
+        _FakeWebsocketConnection("/cockpit/terminal-session/?terminal=dotfiles"),
         remote_settings,
     )
     assert resolved == [
@@ -119,7 +119,7 @@ def test_resolve_session_command_attaches_the_requested_session_over_ssh_when_a_
 def test_resolve_session_command_keeps_the_static_command_without_a_session_target():
     settings_with_static_command = _attach_settings()
     resolved = _resolve_over_a_tmux_only_machine(
-        _FakeWebsocketConnection("/cockpit/jarvis-session/"),
+        _FakeWebsocketConnection("/cockpit/terminal-session/"),
         settings_with_static_command,
     )
     assert resolved == settings_with_static_command.session_command

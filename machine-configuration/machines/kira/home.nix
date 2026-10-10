@@ -37,6 +37,5 @@ in
     enable = true;
     tmuxEnumerationSocket = "";
     tmuxMutationSocket = "";
-    persistentSession.enable = false;
   };
 }

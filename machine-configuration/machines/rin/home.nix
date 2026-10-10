@@ -16,7 +16,6 @@ in
   custom.cockpitSessionBridge = {
     enable = true;
     tmuxEnumerationSocket = "";
-    persistentSession.enable = false;
   };
 
   claude.requiredOrganizationId = "9f111c85-d2e9-4ef7-8049-e29707ff855a";
