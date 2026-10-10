@@ -73,6 +73,9 @@ let
     model_reasoning_effort = "xhigh";
     sandbox_mode = "danger-full-access";
     suppress_unstable_features_warning = true;
+    desktop = {
+      notifications-dot-enabled = false;
+    };
     features = {
       code_mode_host = true;
       hooks = true;
