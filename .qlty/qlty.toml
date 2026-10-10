@@ -2,6 +2,10 @@ config_version = "0"
 exclude_patterns = ["**/node_modules/**", "**/vendor/**", "**/dist/**", "**/fixtures/**", "private-configuration/**"]
 test_patterns = ["**/__tests__/**", "**/conftest.py", "**/*.test.*", "**/*.spec.*"]
 
+[[ignore]]
+file_patterns = ["agent-harness/harnesses/codex/session-title-instructions.md"]
+rules = ["MD041"]
+
 [file_types.nix]
 globs = ["**/*.nix"]
 

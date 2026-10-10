@@ -72,13 +72,27 @@ def test_copied_skills_expand_the_same_configuration(
     )
 
 
-def test_complete_interactive_instructions_fit_projection_limits():
+@pytest.mark.parametrize(
+    "additional_sources",
+    [
+        [],
+        [
+            REPO_ROOT
+            / "agent-harness/agent-instructions/core-rules/servant-identity.md",
+            REPO_ROOT / "agent-harness/harnesses/codex/session-title-instructions.md",
+        ],
+    ],
+)
+def test_complete_interactive_instructions_fit_projection_limits(additional_sources):
     source = (
         REPO_ROOT
         / "agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md"
     )
     rendered = project_instruction_documents(
-        [{"source": str(source), "text": source.read_text()}],
+        [
+            {"source": str(path), "text": path.read_text()}
+            for path in [source, *additional_sources]
+        ],
         PurePosixPath(
             "/nix/store/00000000000000000000000000000000-interactive-instructions.md"
         ),
