@@ -11,6 +11,7 @@ from hook_module_loader import (
     import_hyphenated_hook_module,
 )
 from flat_deploy_test_support import flatten_into_single_runtime_directory
+from hook_dispatch import HandlerResult
 
 
 @pytest.mark.parametrize("surface", ["codex", "claude", "opencode", "pi", "hermes"])
@@ -52,3 +53,21 @@ def test_prompt_dispatcher_imports_after_flat_deployment(tmp_path):
         timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_title_request_reaches_native_prompt_context(monkeypatch, capsys):
+    dispatcher = import_hyphenated_hook_module("user-prompt-submit-dispatcher")
+    context = "Codex session title command: a-guarded-command"
+    handler = Mock(return_value=HandlerResult(additional_context=context))
+    monkeypatch.setattr(dispatcher.USER_PROMPT_SUBMIT_HANDLERS[0], "handle", handler)
+    monkeypatch.setattr(
+        sys, "stdin", io.StringIO(json.dumps({"hook_event_name": "UserPromptSubmit"}))
+    )
+    monkeypatch.setattr(sys, "argv", ["dispatcher", "--surface=codex"])
+    with pytest.raises(SystemExit) as stopped:
+        dispatcher.main()
+    assert stopped.value.code == 0
+    assert json.loads(capsys.readouterr().out)["hookSpecificOutput"] == {
+        "hookEventName": "UserPromptSubmit",
+        "additionalContext": context,
+    }

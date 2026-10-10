@@ -1,5 +1,3 @@
-from unittest.mock import Mock
-
 import pytest
 
 import codex_servant_status_handler as status_handler
@@ -8,30 +6,16 @@ import servant_identity_handler
 from hook_dispatch import CODEX_SURFACE, HookHandler, run_handlers
 
 
-@pytest.fixture
-def session_client(monkeypatch):
-    monkeypatch.delenv("CLAWDE_AGENT_NAME", raising=False)
-    monkeypatch.delenv("OPENCLAW_GATEWAY_PORT", raising=False)
-    monkeypatch.setenv("CODEX_SESSION_SOCKET_PATH", "/tmp/private.sock")
-    client = Mock()
-    client.thread_title.return_value = CodexThreadTitle(None, "Fix terminal title")
-    connection = Mock()
-    connection.return_value.__enter__ = Mock(return_value=client)
-    connection.return_value.__exit__ = Mock(return_value=False)
-    monkeypatch.setattr(status_handler, "CodexAppServerClient", connection)
-    return client, connection
-
-
-def test_footer_name_matches_injected_servant_for_minted_thread(session_client):
+def test_footer_name_matches_injected_servant_for_minted_thread(
+    session_client, tmp_path
+):
     client, connection = session_client
     payload = {"session_id": "codex-name-probe", "source": "startup"}
     identity = servant_identity_handler.servant_for_hook_input(payload)
     assert status_handler.handle(payload) is None
-    connection.assert_called_once_with("/tmp/private.sock")
+    connection.assert_called_once_with(str(tmp_path / "private.sock"))
     client.thread_title.assert_called_once_with("codex-name-probe")
-    client.set_thread_name.assert_called_once_with(
-        "codex-name-probe", f"{identity['name']} | Fix terminal title"
-    )
+    client.set_thread_name.assert_called_once_with("codex-name-probe", identity["name"])
 
 
 @pytest.mark.parametrize("source", ["resume", "compact"])
@@ -81,7 +65,7 @@ def test_servant_only_names_recover_the_native_session_preview(title):
 
 
 @pytest.mark.parametrize("prompt", ["Fix terminal title", "\nFix  terminal\ttitle\n"])
-def test_first_prompt_fills_the_title_before_the_native_preview_exists(
+def test_first_prompt_requests_a_title_before_the_native_preview_exists(
     session_client, prompt
 ):
     client, _ = session_client
@@ -92,10 +76,9 @@ def test_first_prompt_fills_the_title_before_the_native_preview_exists(
     }
     servant = servant_identity_handler.servant_for_hook_input(payload)
     client.thread_title.return_value = CodexThreadTitle(servant["name"], "")
-    status_handler.handle(payload)
-    client.set_thread_name.assert_called_once_with(
-        "first-prompt", f"{servant['name']} | Fix terminal title"
-    )
+    result = status_handler.handle(payload)
+    assert "Codex session title command" in result.additional_context
+    client.set_thread_name.assert_not_called()
 
 
 @pytest.mark.parametrize("prompt", [None, 123, [], "", " \n\t"])
@@ -141,9 +124,7 @@ def test_native_preview_takes_precedence_over_followup_prompt(session_client):
         f"[{servant['name']}]", "Original first prompt"
     )
     status_handler.handle(payload)
-    client.set_thread_name.assert_called_once_with(
-        "recover-prompt", f"{servant['name']} | Original first prompt"
-    )
+    client.set_thread_name.assert_called_once_with("recover-prompt", servant["name"])
 
 
 @pytest.mark.parametrize(
