@@ -104,7 +104,7 @@ def test_startup_uses_only_existing_authorized_profile(monkeypatch, exists):
         "start",
         "--profile=shorts",
         "--mode",
-        "headed",
+        "headless",
         "--port",
         "9868",
     ]
