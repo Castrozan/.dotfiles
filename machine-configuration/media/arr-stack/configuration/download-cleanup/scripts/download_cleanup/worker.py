@@ -21,6 +21,7 @@ class CleanupWorker:
             return
         if self.filesystem.library_exists(media.library_path):
             raise RuntimeError("library deletion has not completed")
+        revision = self.ledger.revision(media)
         records = self.ledger.downloads(media)
         hashes = {record[0] for record in records}
         for download_hash in hashes:
@@ -56,8 +57,9 @@ class CleanupWorker:
             raise RuntimeError("torrent deletion has not completed")
         if any(self.filesystem.download_exists(path) for path in paths):
             raise RuntimeError("download files remain after torrent deletion")
-        self.jellyfin.refresh()
-        self.ledger.complete(media)
+        self.jellyfin.cleanup(media)
+        if not self.ledger.complete(media, revision):
+            return
         logging.info(
             "Cleaned %s/%s: %s torrent associations",
             media.app,

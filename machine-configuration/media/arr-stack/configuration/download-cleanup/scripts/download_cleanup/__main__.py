@@ -9,6 +9,7 @@ from pathlib import Path
 from .bootstrap import bootstrap
 from .clients import JellyfinClient, MediaClient, TorrentClient
 from .filesystem import Filesystem
+from .jellyfin_artifacts import JellyfinArtifacts
 from .ledger import Ledger
 from .server import webhook_handler
 from .worker import CleanupWorker
@@ -45,7 +46,9 @@ def main():
         bootstrap(ledger, media_clients, torrents, filesystem)
         return
     jellyfin = JellyfinClient(
-        "http://127.0.0.1:8096", (credentials / "jellyfin-api-key").read_text().strip()
+        "http://127.0.0.1:8096",
+        (credentials / "jellyfin-api-key").read_text().strip(),
+        JellyfinArtifacts(stack_home / "config/jellyfin"),
     )
     worker = CleanupWorker(ledger, media_clients, torrents, filesystem, jellyfin)
     wake_worker = threading.Event()

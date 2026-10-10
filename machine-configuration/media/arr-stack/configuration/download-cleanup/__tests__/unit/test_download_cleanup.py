@@ -52,7 +52,7 @@ def test_full_deletion_removes_only_recorded_hashes_and_refreshes_jellyfin(
     worker = worker_for(ledger, torrents)
     worker.process(media)
     torrents.delete.assert_called_once_with([owned_hash])
-    worker.jellyfin.refresh.assert_called_once()
+    worker.jellyfin.cleanup.assert_called_once_with(media)
     assert ledger.pending() == []
 
 
@@ -104,7 +104,7 @@ def test_network_failure_survives_restart_and_retries(ledger, media, tmp_path):
     restarted = Ledger(tmp_path / "cleanup.sqlite")
     assert restarted.pending(now=10**12) == [media]
     torrents.delete.assert_not_called()
-    worker.jellyfin.refresh.assert_not_called()
+    worker.jellyfin.cleanup.assert_not_called()
 
 
 def test_readded_title_cancels_old_deletion(ledger, media):
@@ -172,14 +172,24 @@ def test_file_deletion_must_be_observed_before_completion(ledger, media):
         worker.process(media)
     assert ledger.downloads(media) == [("a" * 40, "/data/torrents/Example.mkv")]
     assert ledger.pending() == [media]
-    worker.jellyfin.refresh.assert_not_called()
+    worker.jellyfin.cleanup.assert_not_called()
 
 
 def test_late_grab_reopens_completed_deletion(ledger, media):
     ledger.enqueue(media)
-    ledger.complete(media)
+    ledger.complete(media, ledger.revision(media))
     ledger.record_download(media, "a" * 40)
     assert ledger.pending() == [media]
+
+
+def test_grab_during_cleanup_cannot_be_discarded_by_completion(ledger, media):
+    ledger.record_download(media, "a" * 40)
+    ledger.enqueue(media)
+    revision = ledger.revision(media)
+    ledger.record_download(media, "b" * 40)
+    assert not ledger.complete(media, revision)
+    assert ledger.pending() == [media]
+    assert {value[0] for value in ledger.downloads(media)} == {"a" * 40, "b" * 40}
 
 
 def test_different_provider_cannot_inherit_old_hashes(ledger, media):

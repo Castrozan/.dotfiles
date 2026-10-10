@@ -13,7 +13,7 @@ class Ledger:
             connection.executescript(
                 "CREATE TABLE IF NOT EXISTS downloads (app TEXT, media_id INTEGER, provider_id INTEGER, library_path TEXT, download_hash TEXT, content_path TEXT NOT NULL DEFAULT '', PRIMARY KEY(app,media_id,provider_id,library_path,download_hash));"
                 "CREATE INDEX IF NOT EXISTS download_owners ON downloads(download_hash);"
-                "CREATE TABLE IF NOT EXISTS jobs (app TEXT, media_id INTEGER, provider_id INTEGER, library_path TEXT, payload TEXT, next_attempt REAL NOT NULL DEFAULT 0, completed_at REAL, PRIMARY KEY(app,media_id,provider_id,library_path));"
+                "CREATE TABLE IF NOT EXISTS jobs (app TEXT, media_id INTEGER, provider_id INTEGER, library_path TEXT, payload TEXT, revision INTEGER NOT NULL DEFAULT 0, next_attempt REAL NOT NULL DEFAULT 0, completed_at REAL, PRIMARY KEY(app,media_id,provider_id,library_path));"
             )
 
     @contextmanager
@@ -35,14 +35,14 @@ class Ledger:
                 (*media.key, download_hash),
             )
             connection.execute(
-                "UPDATE jobs SET next_attempt=0,completed_at=NULL WHERE app=? AND media_id=? AND provider_id=? AND library_path=?",
+                "UPDATE jobs SET next_attempt=0,completed_at=NULL,revision=revision+1 WHERE app=? AND media_id=? AND provider_id=? AND library_path=?",
                 media.key,
             )
 
     def enqueue(self, media):
         with self.connection() as connection:
             connection.execute(
-                "INSERT INTO jobs(app,media_id,provider_id,library_path,payload) VALUES (?,?,?,?,?) ON CONFLICT(app,media_id,provider_id,library_path) DO UPDATE SET next_attempt=0,completed_at=NULL",
+                "INSERT INTO jobs(app,media_id,provider_id,library_path,payload) VALUES (?,?,?,?,?) ON CONFLICT(app,media_id,provider_id,library_path) DO UPDATE SET next_attempt=0,completed_at=NULL,revision=revision+1",
                 (*media.key, json.dumps(media.serialize())),
             )
 
@@ -90,8 +90,22 @@ class Ledger:
                 media.key,
             )
 
-    def complete(self, media):
+    def revision(self, media):
         with self.connection() as connection:
+            return connection.execute(
+                "SELECT revision FROM jobs WHERE app=? AND media_id=? AND provider_id=? AND library_path=?",
+                media.key,
+            ).fetchone()[0]
+
+    def complete(self, media, revision):
+        with self.connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            current_revision = connection.execute(
+                "SELECT revision FROM jobs WHERE app=? AND media_id=? AND provider_id=? AND library_path=?",
+                media.key,
+            ).fetchone()
+            if current_revision != (revision,):
+                return False
             connection.execute(
                 "DELETE FROM downloads WHERE app=? AND media_id=? AND provider_id=? AND library_path=?",
                 media.key,
@@ -103,3 +117,4 @@ class Ledger:
             connection.execute(
                 "DELETE FROM jobs WHERE completed_at<?", (time.time() - 30 * 86400,)
             )
+            return True

@@ -97,9 +97,25 @@ class TorrentClient:
 
 
 class JellyfinClient:
-    def __init__(self, base_url, api_key):
+    def __init__(self, base_url, api_key, artifacts):
         self.base_url = base_url
         self.api_key = api_key
+        self.artifacts = artifacts
+
+    def cleanup(self, media):
+        request = Request(
+            self.base_url + "/ScheduledTasks",
+            headers={"X-Emby-Token": self.api_key},
+        )
+        with build_opener().open(request, timeout=5) as response:
+            tasks = json.loads(response_body(response))
+        task = next(value for value in tasks if value["Key"] == "RefreshLibrary")
+        if task["State"] != "Idle":
+            raise RuntimeError("Jellyfin library scan is still running")
+        if self.artifacts.contains(media):
+            self.refresh()
+            raise RuntimeError("Jellyfin catalogue removal is pending")
+        self.artifacts.clean()
 
     def refresh(self):
         request = Request(

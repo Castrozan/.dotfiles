@@ -59,6 +59,10 @@ in
         NoNewPrivileges = true;
         ProtectSystem = "strict";
         ProtectHome = "read-only";
+        ReadWritePaths = [
+          "${cleanupConfig.stackHomeDirectory}/config/jellyfin/data/data/subtitles"
+          "${cleanupConfig.stackHomeDirectory}/config/jellyfin/data/metadata/library"
+        ];
         PrivateTmp = true;
         PrivateDevices = true;
         ProtectKernelTunables = true;
