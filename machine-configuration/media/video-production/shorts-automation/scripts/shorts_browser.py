@@ -2,7 +2,9 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
+from shorts_browser_pages.ownership import BrowserPages
 from shorts_store import read_document
 from shorts_browser_upload import upload_video
 
@@ -50,7 +52,7 @@ def browser_instance(configuration):
     return matches[0]
 
 
-def browser_arguments(arguments, configuration):
+def validate_browser_arguments(arguments):
     if (
         not arguments
         or arguments[0] not in BROWSER_COMMANDS
@@ -61,24 +63,64 @@ def browser_arguments(arguments, configuration):
         raise ValueError(
             "Use browser actions only; the Shorts profile cannot be changed"
         )
+
+
+def browser_arguments(arguments, configuration):
+    validate_browser_arguments(arguments)
     instance = browser_instance(configuration)
     return [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"], *arguments]
 
 
-def main():
-    configuration = read_document(os.environ["SHORTS_CONFIGURATION"])
-    arguments = browser_arguments(sys.argv[1:], configuration)
-    if sys.argv[1] == "upload":
+def browser_pages(directory, configuration):
+    instance = browser_instance(configuration)
+    return BrowserPages(
+        directory.parent.parent,
+        directory.name,
+        [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"]],
+        instance["id"],
+    )
+
+
+def execute_browser(arguments, configuration, command):
+    if arguments[0] == "upload":
         print(
             json.dumps(
                 upload_video(
-                    sys.argv[2:], arguments[2], configuration["browser_profile_id"]
+                    arguments[1:], command[2], configuration["browser_profile_id"]
                 )
             )
         )
-        return
-    os.execv(arguments[0], arguments)
+        return 0
+    return subprocess.run([*command, *arguments]).returncode
+
+
+def main():
+    configuration = read_document(os.environ["SHORTS_CONFIGURATION"])
+    arguments = sys.argv[1:]
+    validate_browser_arguments(arguments)
+    instance = browser_instance(configuration)
+    command = [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"]]
+    directory = os.environ.get("SHORTS_BROWSER_RUN")
+    if directory is None or "--help" in arguments or "-h" in arguments:
+        if arguments[0] == "upload":
+            return execute_browser(arguments, configuration, command)
+        os.execv(command[0], [*command, *arguments])
+    directory = Path(directory)
+    pages = BrowserPages(
+        directory.parent.parent, directory.name, command, instance["id"]
+    )
+    with pages.lock():
+        if arguments in (["tab"], ["tab", "--json"]):
+            print(json.dumps(pages.tabs()))
+            return 0
+        scoped = pages.arguments(arguments)
+        returncode = execute_browser(scoped, configuration, command)
+        if scoped[0] == "close" and returncode == 0:
+            pages.forget(scoped[1])
+        if scoped[:2] == ["tab", "close"] and returncode == 0:
+            pages.forget(scoped[2])
+        return returncode
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

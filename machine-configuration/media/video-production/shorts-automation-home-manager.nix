@@ -39,7 +39,10 @@ let
         bind = "127.0.0.1";
         stateDir = "${config.home.homeDirectory}/.pinchtab";
       };
-      instanceDefaults.mode = "headed";
+      instanceDefaults = {
+        mode = "headed";
+        tabPolicy.eviction = "reject";
+      };
       profiles = {
         baseDir = "${config.home.homeDirectory}/.pinchtab/profiles";
         defaultProfile = "default";

@@ -119,6 +119,7 @@ def agent_launcher(tmp_path, monkeypatch, returncode):
     start = Mock(return_value=process)
     monkeypatch.setattr(shorts_runner.subprocess, "Popen", start)
     monkeypatch.setattr(shorts_runner, "browser_instance", lambda configuration: {})
+    monkeypatch.setattr(shorts_runner, "browser_pages", Mock(return_value=Mock()))
     return start
 
 
@@ -154,6 +155,7 @@ def test_same_slot_launches_only_one_fresh_agent(tmp_path, monkeypatch):
     assert "gpt-6.1-sol" in arguments
     assert "mcp_servers.chrome-devtools.enabled=false" not in arguments
     assert start.call_args.kwargs["env"]["CLAWDE_AGENT_NAME"] == "shorts-production"
+    assert start.call_args.kwargs["env"]["SHORTS_BROWSER_RUN"].endswith("-0900")
 
 
 def test_failed_agent_leaves_claimed_slot_for_inspection(tmp_path, monkeypatch):
