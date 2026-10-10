@@ -71,6 +71,13 @@
       prowlarrPasswordSecretFile = config.age.secrets."arr-prowlarr-password".path;
     };
 
+    arrDownloadCleanup = {
+      enable = true;
+      stackHomeDirectory = "/home/zanoni/arr-stack";
+      qbittorrentPasswordSecretFile = config.age.secrets."arr-qbittorrent-password".path;
+      jellyfinApiKeySecretFile = config.age.secrets."jellyfin-admin-api-key".path;
+    };
+
     jellyfinLibraryAccessProvisioner = {
       enable = true;
       jellyfinApiKeySecretFile = config.age.secrets."jellyfin-admin-api-key".path;

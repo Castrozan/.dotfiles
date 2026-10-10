@@ -11,6 +11,22 @@ RESOURCE_PLAN = [
     {
         "app": "radarr",
         "port": 7878,
+        "resource": "notification",
+        "match": "name",
+        "update": True,
+        "force_save": False,
+    },
+    {
+        "app": "sonarr",
+        "port": 8989,
+        "resource": "notification",
+        "match": "name",
+        "update": True,
+        "force_save": False,
+    },
+    {
+        "app": "radarr",
+        "port": 7878,
         "resource": "downloadclient",
         "match": "name",
         "update": True,

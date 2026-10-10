@@ -31,6 +31,14 @@
       ../../../../secrets/credentials/media/arr-samaritano-indexer-apikey.age
     ];
 
+    arr-download-cleanup = {
+      bindsTo = [ config.custom.arrStackOnDemandSupervisor.mountGuard.dataMountUnit ];
+      restartTriggers = [
+        ../../../../secrets/credentials/media/arr-qbittorrent-password.age
+        ../../../../secrets/credentials/media/jellyfin-admin-api-key.age
+      ];
+    };
+
     bazarr-auth-provisioner.restartTriggers = [
       ../../../../secrets/credentials/media/arr-bazarr-password.age
     ];
