@@ -1,5 +1,7 @@
 from unittest.mock import Mock
 
+import pytest
+
 import chatgpt_resource_control as resource_control
 from chatgpt_memory_policy import (
     BACKGROUND_MEMORY_HIGH_BYTES,
@@ -68,3 +70,47 @@ def test_failed_grouping_keeps_open_headroom(monkeypatch):
         == 0
     )
     scope.set_memory_high.assert_called_once_with(OPEN_WINDOW_MEMORY_HIGH_BYTES)
+
+
+def test_attachment_preserves_the_existing_process_and_tool_helpers(monkeypatch):
+    identity = resource_control.ProcessIdentity(42, 100)
+    scope = Mock()
+    scope.repair_chromium_scope_migration.return_value = True
+    observer = Mock(refresh_needed=False, window_open=True)
+    launch = Mock()
+    monkeypatch.setattr(
+        resource_control, "ChatGPTResourceScope", Mock(return_value=scope)
+    )
+    monkeypatch.setattr(
+        resource_control, "ChatGPTWindowObserver", Mock(return_value=observer)
+    )
+    monkeypatch.setattr(
+        resource_control, "is_primary_chatgpt_process", lambda value: value == identity
+    )
+    monkeypatch.setattr(
+        resource_control.ProcessIdentity,
+        "read",
+        Mock(side_effect=[identity, identity, None]),
+    )
+    monkeypatch.setattr(resource_control.subprocess, "Popen", launch)
+    assert resource_control.attach_running_app("app-chatgpt-test.scope", 42) == 0
+    scope.repair_chromium_scope_migration.assert_called_once_with(42)
+    scope.set_memory_high.assert_called_once_with(OPEN_WINDOW_MEMORY_HIGH_BYTES)
+    scope.terminate_remaining_helpers.assert_not_called()
+    launch.assert_not_called()
+
+
+def test_attachment_rejects_an_unrelated_process(monkeypatch):
+    monkeypatch.setattr(
+        resource_control.ProcessIdentity,
+        "read",
+        Mock(return_value=resource_control.ProcessIdentity(42, 100)),
+    )
+    monkeypatch.setattr(
+        resource_control, "is_primary_chatgpt_process", Mock(return_value=False)
+    )
+    scope = Mock()
+    monkeypatch.setattr(resource_control, "ChatGPTResourceScope", scope)
+    with pytest.raises(ValueError, match="ChatGPT main process"):
+        resource_control.attach_running_app("app-chatgpt-test.scope", 42)
+    scope.assert_not_called()
