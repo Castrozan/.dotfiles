@@ -44,7 +44,7 @@ let
 in
 {
   arr-download-cleanup-disabled = mkEvalCheck "arr-download-cleanup-disabled" (
-    !(disabled.systemd.services ? arr-download-cleanup)
+    !((disabled.systemd.services or { }) ? arr-download-cleanup)
   ) "Hosts that do not enable download cleanup must get no service.";
   arr-download-cleanup-is-durable-and-restricted =
     mkEvalCheck "arr-download-cleanup-is-durable-and-restricted"

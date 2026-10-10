@@ -11,6 +11,50 @@ class CleanupWorker:
         self.filesystem = filesystem
         self.jellyfin = jellyfin
 
+    def retained_owner(self, owner):
+        app, identifier, _, library_path = owner
+        return self.media_clients[app].exists(
+            identifier
+        ) or self.filesystem.library_exists(library_path)
+
+    def require_unshared(self, media, hashes):
+        for download_hash in hashes:
+            for owner in self.ledger.owners(download_hash):
+                if owner == media.key:
+                    continue
+                if self.retained_owner(owner):
+                    raise RuntimeError("torrent is shared with retained media")
+
+    def selected_torrents(self, hashes):
+        torrents = self.torrents.list()
+        selected = [value for value in torrents if value["hash"].lower() in hashes]
+        unrelated = [
+            value["content_path"]
+            for value in torrents
+            if value["hash"].lower() not in hashes
+        ]
+        return selected, unrelated
+
+    def download_paths(self, records, selected, unrelated):
+        paths = {value["content_path"] for value in selected} | {
+            record[1] for record in records if record[1]
+        }
+        validate_download_paths(paths, unrelated)
+        for path in paths:
+            self.filesystem.validate_download(path)
+        return paths
+
+    def remove_torrents(self, media, selected):
+        self.ledger.remember_paths(media, selected)
+        if selected:
+            self.torrents.delete(sorted(value["hash"].lower() for value in selected))
+
+    def verify_removal(self, hashes, paths):
+        if hashes.intersection(value["hash"].lower() for value in self.torrents.list()):
+            raise RuntimeError("torrent deletion has not completed")
+        if any(self.filesystem.download_exists(path) for path in paths):
+            raise RuntimeError("download files remain after torrent deletion")
+
     def process(self, media):
         self.filesystem.assert_mounted()
         if self.media_clients[media.app].exists(media.identifier):
@@ -24,48 +68,19 @@ class CleanupWorker:
         revision = self.ledger.revision(media)
         records = self.ledger.downloads(media)
         hashes = {record[0] for record in records}
-        for download_hash in hashes:
-            for (
-                app,
-                identifier,
-                provider_identifier,
-                library_path,
-            ) in self.ledger.owners(download_hash):
-                if (app, identifier, provider_identifier, library_path) == media.key:
-                    continue
-                if self.media_clients[app].exists(
-                    identifier
-                ) or self.filesystem.library_exists(library_path):
-                    raise RuntimeError("torrent is shared with retained media")
-        torrents = self.torrents.list()
-        selected = [value for value in torrents if value["hash"].lower() in hashes]
-        unrelated = [
-            value["content_path"]
-            for value in torrents
-            if value["hash"].lower() not in hashes
-        ]
-        paths = {value["content_path"] for value in selected} | {
-            record[1] for record in records if record[1]
-        }
-        validate_download_paths(paths, unrelated)
-        for path in paths:
-            self.filesystem.validate_download(path)
-        self.ledger.remember_paths(media, selected)
-        if selected:
-            self.torrents.delete(sorted(value["hash"].lower() for value in selected))
-        if hashes.intersection(value["hash"].lower() for value in self.torrents.list()):
-            raise RuntimeError("torrent deletion has not completed")
-        if any(self.filesystem.download_exists(path) for path in paths):
-            raise RuntimeError("download files remain after torrent deletion")
+        self.require_unshared(media, hashes)
+        selected, unrelated = self.selected_torrents(hashes)
+        paths = self.download_paths(records, selected, unrelated)
+        self.remove_torrents(media, selected)
+        self.verify_removal(hashes, paths)
         self.jellyfin.cleanup(media)
-        if not self.ledger.complete(media, revision):
-            return
-        logging.info(
-            "Cleaned %s/%s: %s torrent associations",
-            media.app,
-            media.title,
-            len(hashes),
-        )
+        if self.ledger.complete(media, revision):
+            logging.info(
+                "Cleaned %s/%s: %s torrent associations",
+                media.app,
+                media.title,
+                len(hashes),
+            )
 
     def run_pending(self):
         for media in self.ledger.pending():
