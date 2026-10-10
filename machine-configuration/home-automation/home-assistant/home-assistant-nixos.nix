@@ -1,7 +1,6 @@
 {
   username,
   pkgs,
-  lib,
   ...
 }:
 let
