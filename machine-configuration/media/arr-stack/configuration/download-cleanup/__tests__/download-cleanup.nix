@@ -7,14 +7,14 @@
 let
   inherit (helpers) mkEvalCheck;
   evaluate =
-    enabled:
+    modulePath: enabled:
     (lib.evalModules {
       specialArgs = {
         inherit pkgs;
         username = "test-user";
       };
       modules = [
-        ../arr-download-cleanup-nixos.nix
+        modulePath
         {
           options.systemd = lib.mkOption {
             type = lib.types.attrs;
@@ -33,8 +33,14 @@ let
         }
       ];
     }).config;
-  disabled = evaluate false;
-  enabled = evaluate true;
+  originalModulePath = ../arr-download-cleanup-nixos.nix;
+  isolatedModuleDirectory = builtins.path {
+    path = ../.;
+    name = "arr-download-cleanup-isolation-fixture";
+  };
+  disabled = evaluate originalModulePath false;
+  enabled = evaluate originalModulePath true;
+  isolatedConfiguration = evaluate (isolatedModuleDirectory + "/arr-download-cleanup-nixos.nix") true;
   service = enabled.systemd.services.arr-download-cleanup;
   connection =
     app:
@@ -43,6 +49,13 @@ let
     );
 in
 {
+  arr-download-cleanup-package-source-is-stable =
+    mkEvalCheck "arr-download-cleanup-package-source-is-stable"
+      (
+        service.environment.PYTHONPATH
+        == isolatedConfiguration.systemd.services.arr-download-cleanup.environment.PYTHONPATH
+      )
+      "Moving the module without changing its scripts must not change the listener package path.";
   arr-download-cleanup-disabled = mkEvalCheck "arr-download-cleanup-disabled" (
     !((disabled.systemd.services or { }) ? arr-download-cleanup)
   ) "Hosts that do not enable download cleanup must get no service.";

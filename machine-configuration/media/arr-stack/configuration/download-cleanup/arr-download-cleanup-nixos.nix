@@ -7,7 +7,7 @@
 }:
 let
   cleanupConfig = config.custom.arrDownloadCleanup;
-  packageDirectory = ./scripts;
+  packageDirectory = lib.cleanSource ./scripts;
   pythonCommand = "${pkgs.python3}/bin/python3 -m download_cleanup";
 in
 {
