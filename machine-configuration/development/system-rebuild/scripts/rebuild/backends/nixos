@@ -88,6 +88,7 @@ run_nixos_rebuild() (
 		"$rebuild_action" --flake "$flake_reference" "${lock_flags[@]}" "$@"
 	run_privileged env \
 		"PATH=${SETUID_WRAPPERS_DIRECTORY}:${PATH}" \
+		"DOTFILES_EXCLUSIVE_RUN_OWNER=${DOTFILES_EXCLUSIVE_RUN_OWNER}" \
 		NIXPKGS_ALLOW_UNFREE=1 \
 		DOTFILES_REBUILD_WRAPPER=1 \
 		"${LOW_PRIORITY_COMMAND_PREFIX[@]}" \

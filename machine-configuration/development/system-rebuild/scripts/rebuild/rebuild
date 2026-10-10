@@ -61,6 +61,7 @@ prepare_exclusive_rebuild_lock() {
 	[ -f "${EXCLUSIVE_RUN_LOCK_HELPER%/*}/exclusive_run_lock.py" ] || fail "exclusive rebuild lock driver is missing"
 	# shellcheck disable=SC1090
 	. "$EXCLUSIVE_RUN_LOCK_HELPER"
+	capture_exclusive_run_owner || fail "cannot identify rebuild owner"
 	[ "$(detect_backend_name)" = "home-manager" ] || return 0
 	acquire_exclusive_run_lock_or_emit_retry_instructions \
 		"rebuild" "$TYPICAL_REBUILD_DURATION_SECONDS" "$REBUILD_SWITCH_LOG_PATH"

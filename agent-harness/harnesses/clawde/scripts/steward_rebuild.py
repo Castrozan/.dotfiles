@@ -21,7 +21,14 @@ def write_result(state_directory, result):
 
 def desired_system(configuration):
     evaluation = subprocess.run(
-        ["nix", "eval", "--raw", "--no-write-lock-file", configuration],
+        [
+            os.environ["SYSTEM_REBUILD_LOCK_GUARD"],
+            "nix",
+            "eval",
+            "--raw",
+            "--no-write-lock-file",
+            configuration,
+        ],
         capture_output=True,
         text=True,
         timeout=180,

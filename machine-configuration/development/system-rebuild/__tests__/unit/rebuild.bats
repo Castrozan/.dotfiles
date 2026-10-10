@@ -8,6 +8,9 @@ setup() {
 	TEST_LOCK_HELPER="$BATS_TEST_TMPDIR/exclusive-run-lock.sh"
 	touch "$BATS_TEST_TMPDIR/exclusive_run_lock.py" "$BATS_TEST_TMPDIR/exclusive_run_scope.py"
 	cat >"$TEST_LOCK_HELPER" <<-'STUB'
+		capture_exclusive_run_owner() {
+			export DOTFILES_EXCLUSIVE_RUN_OWNER='{"owner_type":"non-agent"}'
+		}
 		acquire_exclusive_run_lock_or_emit_retry_instructions() {
 			echo "LOCK_ACQUIRED name=$1 typical_duration=$2"
 		}

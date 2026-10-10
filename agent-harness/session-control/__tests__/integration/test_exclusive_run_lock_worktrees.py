@@ -23,8 +23,16 @@ def test_worktree_helpers_compete_for_the_same_lock(
             for source in (
                 EXCLUSIVE_RUN_LOCK_HELPER_PATH,
                 EXCLUSIVE_RUN_LOCK_HELPER_PATH.with_name("exclusive_run_lock.py"),
+                EXCLUSIVE_RUN_LOCK_HELPER_PATH.with_name("exclusive_run_owner.py"),
+                EXCLUSIVE_RUN_LOCK_HELPER_PATH.with_name(
+                    "exclusive_run_diagnostics.py"
+                ),
             ):
                 shutil.copyfile(source, worktree / source.name)
+            shutil.copytree(
+                EXCLUSIVE_RUN_LOCK_HELPER_PATH.parent / "agent_session",
+                worktree / "agent_session",
+            )
             result = worktree / "result"
             results.append(result)
             program = f'''while [[ ! -f "{start}" ]]; do sleep 0.01; done

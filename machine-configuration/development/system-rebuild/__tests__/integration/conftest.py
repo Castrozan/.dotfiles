@@ -22,8 +22,11 @@ def managed_rebuild_environment(tmp_path):
         "exclusive-run-lock.sh",
         "exclusive_run_lock.py",
         "exclusive_run_scope.py",
+        "exclusive_run_owner.py",
+        "exclusive_run_diagnostics.py",
     ):
         shutil.copyfile(helper_source / name, tmp_path / name)
+    shutil.copytree(helper_source / "agent_session", tmp_path / "agent_session")
     helper = tmp_path / "exclusive-run-lock.sh"
     helper.write_text(
         helper.read_text().replace('"/tmp/dotfiles-', f'"{tmp_path}/dotfiles-')

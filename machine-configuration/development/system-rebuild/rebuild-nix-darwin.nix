@@ -6,12 +6,9 @@
   ...
 }:
 let
-  exclusiveRunLock = import ../../../agent-harness/session-control/exclusive-run-lock-package.nix {
+  systemRebuildLockGuard = import ./system-rebuild-lock-package.nix {
     inherit pkgs;
   };
-  systemRebuildLockGuard = pkgs.writeShellScript "system-rebuild-lock" (
-    builtins.readFile ./scripts/system-rebuild-lock
-  );
   guardScript = pkgs.writeShellScript "darwin-rebuild-guard" (
     builtins.readFile ./scripts/darwin-rebuild-guard
   );
@@ -20,12 +17,14 @@ let
     export DARWIN_REBUILD_SHELL=${pkgs.bash}/bin/bash
     export DARWIN_REBUILD_ENTRYPOINT="$0"
     export SYSTEM_REBUILD_LOCK_GUARD=${systemRebuildLockGuard}
-    export EXCLUSIVE_RUN_LOCK_HELPER=${exclusiveRunLock}/libexec/exclusive-run-lock/exclusive-run-lock.sh
-    export EXCLUSIVE_RUN_SCOPE_PYTHON=${pkgs.python3}/bin/python3
     exec ${guardScript} "$@"
   '';
 in
 {
+  security.sudo.extraConfig = ''
+    Defaults env_keep += "DOTFILES_EXCLUSIVE_RUN_OWNER"
+  '';
+
   environment.systemPackages = [
     (import ./scripts/rebuild { inherit pkgs hostname; })
     (lib.hiPrio guardedDarwinRebuild)

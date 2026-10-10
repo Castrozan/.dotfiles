@@ -1,3 +1,4 @@
+import json
 import subprocess
 import re
 import time
@@ -71,6 +72,28 @@ def test_default_switch_preserves_live_activation_and_post_switch_effects(
         "desktop",
         "fleet",
     ]
+
+
+def test_nixos_privilege_handoff_preserves_the_calling_agent_identity(
+    rebuild_boot_environment, tmp_path
+):
+    environment = {
+        **rebuild_boot_environment,
+        "CLAWDE_AGENT_NAME": "fixture-agent",
+        "CODEX_THREAD_ID": "fixture-session",
+    }
+    completed = run_rebuild(environment, "boot")
+    assert completed.returncode == 0, completed.stderr
+    arguments = (tmp_path / "privileged-arguments").read_text().splitlines()
+    owner_argument = next(
+        argument
+        for argument in arguments
+        if argument.startswith("DOTFILES_EXCLUSIVE_RUN_OWNER=")
+    )
+    owner = json.loads(owner_argument.split("=", 1)[1])
+    assert owner["owner_type"] == "agent"
+    assert owner["agent_name"] == "fixture-agent"
+    assert owner["agent_session"] == "fixture-session"
 
 
 @pytest.mark.parametrize("platform", ["darwin", "home-manager"])

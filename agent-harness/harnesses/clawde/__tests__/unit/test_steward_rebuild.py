@@ -13,6 +13,11 @@ CONFIGURATION = (
 )
 
 
+@pytest.fixture(autouse=True)
+def rebuild_guard_environment(monkeypatch):
+    monkeypatch.setenv("SYSTEM_REBUILD_LOCK_GUARD", "fixture-rebuild-guard")
+
+
 def test_launch_detaches_with_an_inherited_lock_and_persistent_output(
     tmp_path, monkeypatch
 ):
@@ -63,7 +68,7 @@ def test_worker_records_the_actual_rebuild_outcome(tmp_path, monkeypatch, exit_c
     monkeypatch.setattr(steward_rebuild, "current_system", lambda: next(closures))
 
     def rebuild(arguments, **options):
-        if arguments[0] == "nix":
+        if arguments[0] == "fixture-rebuild-guard":
             assert options["timeout"] == 180
             assert "--no-write-lock-file" in arguments
             return SimpleNamespace(
@@ -89,7 +94,7 @@ def test_worker_records_the_actual_rebuild_outcome(tmp_path, monkeypatch, exit_c
 
 def test_a_missing_rebuild_command_records_a_failure(tmp_path, monkeypatch):
     def missing_command(arguments, **options):
-        if arguments[0] == "nix":
+        if arguments[0] == "fixture-rebuild-guard":
             return SimpleNamespace(
                 returncode=0, stdout="/nix/store/new-system", stderr=""
             )
@@ -118,7 +123,7 @@ def test_an_unchanged_configuration_does_not_rebuild(tmp_path, monkeypatch):
     monkeypatch.setattr(subprocess, "run", evaluate)
     assert steward_rebuild.run_rebuild(tmp_path, CONFIGURATION) == 0
     assert len(calls) == 1
-    assert calls[0][0] == "nix"
+    assert calls[0][:3] == ["fixture-rebuild-guard", "nix", "eval"]
     assert (
         json.loads((tmp_path / "rebuild-result.json").read_text())["status"]
         == "unchanged"

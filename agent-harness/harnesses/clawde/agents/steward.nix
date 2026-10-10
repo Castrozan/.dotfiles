@@ -65,7 +65,14 @@ let
       "nixosConfigurations.${hostname}.config.system.build.toplevel.outPath";
   configurationReference = "git+file://${configurationDirectory}?submodules=1#${configurationAttribute}";
 
+  systemRebuildLockGuard =
+    import ../../../../machine-configuration/development/system-rebuild/system-rebuild-lock-package.nix
+      {
+        inherit pkgs;
+      };
+
   stewardRebuild = pkgs.writeShellScriptBin "steward-rebuild" ''
+    export SYSTEM_REBUILD_LOCK_GUARD=${systemRebuildLockGuard}
     exec ${pkgs.python312}/bin/python3 ${../scripts/steward_rebuild.py} \
       --configuration ${lib.escapeShellArg configurationReference} "$@"
   '';

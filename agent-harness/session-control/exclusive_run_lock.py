@@ -4,6 +4,8 @@ import os
 import stat
 import sys
 
+from exclusive_run_owner import resolve_run_owner
+
 
 def validate_lock_file(lock_path, file_descriptor):
     opened_file = os.fstat(file_descriptor)
@@ -50,10 +52,16 @@ def acquire_lock_file(lock_path, file_descriptor):
 
 def write_lock_metadata(lock_path, file_descriptor):
     validate_lock_file(lock_path, file_descriptor)
+    metadata_content = sys.stdin.buffer.read(8192).decode()
+    metadata_values = dict(
+        line.split("=", 1) for line in metadata_content.splitlines() if "=" in line
+    )
+    owner = resolve_run_owner(os.environ, int(metadata_values["pid"]))
+    owner_metadata = "".join(f"{name}={value}\n" for name, value in owner.items())
     with os.fdopen(os.open(lock_path, os.O_WRONLY | os.O_NOFOLLOW), "wb") as metadata:
         validate_lock_file(lock_path, metadata.fileno())
         metadata.truncate(0)
-        metadata.write(sys.stdin.buffer.read(8192))
+        metadata.write((metadata_content + owner_metadata).encode())
 
 
 def main():
