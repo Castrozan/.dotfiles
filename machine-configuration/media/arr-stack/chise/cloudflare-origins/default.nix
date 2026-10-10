@@ -21,40 +21,10 @@ let
       loginLocationRegexes = [ ];
     }
     {
-      hostname = "radarr.lucaszanoni.com";
-      proxyPort = 9448;
-      upstreamUrl = "http://${chiseTailnetBindAddress}:7878";
-      loginLocationRegexes = [ "^/login$" ];
-    }
-    {
-      hostname = "sonarr.lucaszanoni.com";
-      proxyPort = 9449;
-      upstreamUrl = "http://${chiseTailnetBindAddress}:8989";
-      loginLocationRegexes = [ "^/login$" ];
-    }
-    {
-      hostname = "prowlarr.lucaszanoni.com";
-      proxyPort = 9450;
-      upstreamUrl = "http://${chiseTailnetBindAddress}:9696";
-      loginLocationRegexes = [ "^/login$" ];
-    }
-    {
-      hostname = "bazarr.lucaszanoni.com";
-      proxyPort = 9451;
-      upstreamUrl = "http://${chiseTailnetBindAddress}:6767";
-      loginLocationRegexes = [ "^/login$" ];
-    }
-    {
       hostname = "suwayomi.lucaszanoni.com";
       proxyPort = 9452;
       upstreamUrl = "http://${chiseTailnetBindAddress}:4567";
       loginLocationRegexes = [ ];
-    }
-    {
-      hostname = "qbittorrent.lucaszanoni.com";
-      proxyPort = 9453;
-      upstreamUrl = "http://${chiseTailnetBindAddress}:8080";
-      loginLocationRegexes = [ "^/api/v2/auth/login$" ];
     }
     {
       hostname = "readmeabook.lucaszanoni.com";
