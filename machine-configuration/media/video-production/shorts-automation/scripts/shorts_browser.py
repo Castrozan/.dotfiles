@@ -101,7 +101,7 @@ def main():
     instance = browser_instance(configuration)
     command = [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"]]
     directory = os.environ.get("SHORTS_BROWSER_RUN")
-    if directory is None or "--help" in arguments or "-h" in arguments:
+    if directory is None or arguments[1:] in (["--help"], ["-h"]):
         if arguments[0] == "upload":
             return execute_browser(arguments, configuration, command)
         os.execv(command[0], [*command, *arguments])

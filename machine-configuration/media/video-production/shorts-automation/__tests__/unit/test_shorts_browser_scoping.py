@@ -131,12 +131,29 @@ def test_native_blank_page_creation_is_authenticated_and_returns_target(monkeypa
             ["tab", "close", "--json", "owned-tab"],
             ["tab", "close", "owned-tab", "--json"],
         ),
+        (
+            ["type", "e1", "--", "--help"],
+            ["type", "e1", "--tab", "owned-tab", "--", "--help"],
+        ),
+        (
+            ["type", "e1", "--", "-h"],
+            ["type", "e1", "--tab", "owned-tab", "--", "-h"],
+        ),
+        (
+            ["handoff", "--reason", "--help", "owned-tab"],
+            ["handoff", "owned-tab", "--reason", "--help"],
+        ),
     ],
 )
 def test_native_flag_order_and_literal_data_are_preserved(
     scoped_browser, monkeypatch, arguments, expected
 ):
     pages, instance, execute = scoped_browser
+    monkeypatch.setattr(
+        shorts_browser.os,
+        "execv",
+        Mock(side_effect=AssertionError("Literal data must retain tab ownership")),
+    )
     with pages.lock():
         pages.arguments(["nav", "https://studio.youtube.com"])
     monkeypatch.setattr(shorts_browser.sys, "argv", ["shorts-browser", *arguments])
