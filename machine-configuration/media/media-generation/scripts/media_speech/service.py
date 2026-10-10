@@ -101,6 +101,7 @@ class SpeechService:
             receipt.update(
                 provider_request_id=speech.provider_request_id,
                 billed_characters=speech.billed_characters,
+                alignment_adjustments=list(speech.alignment_adjustments),
             )
             if speech.sample_rate_hz != 24000:
                 raise SpeechError("invalid_sample_rate")
