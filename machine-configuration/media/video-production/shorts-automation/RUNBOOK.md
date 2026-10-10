@@ -39,6 +39,14 @@ Write `episode.json` with `topic_key`, `title`, specific `summary`, relative `vi
 true. Supply 6 to 24 `beats`, each with an inspected relative `frame` file. Align readable mobile captions and visuals
 to the narration; keep claims synchronized with their demonstrations.
 
+Retain the exact edited narration stem used in the final mix as 16-bit PCM WAV and include
+`"narration": {"file": "relative/edited-narration.wav", "start_seconds": 0}` in `episode.json`.
+Use its actual timeline offset. End the composition within one second of the last audible narration;
+finish captions, music and any visual payoff there instead of adding a silent closing card.
+The gate measures the voice stem at -45 dBFS in 10 ms windows, records its hash and rejects excess tail
+or more than 100 ms between final audio and video stream ends. Padded music does not extend the speech.
+This acoustic gate complements a real editorial review; it does not prove voice quality or engagement.
+
 Supply `review` entries for `novel_topic`, `factual_accuracy`, `opening`, `payoff`, `visual_storytelling`,
 `voice_performance`, `caption_readability`, `sound_mix` and `full_playback`. Each has `passed`, substantive `finding` and
 relative `evidence`. Save actual frame inspection, narration review and browser-playback observations with their limits.
