@@ -2,6 +2,8 @@ import asyncio
 import os
 import pty
 
+import pytest
+
 from cockpit_session_bridge_runtime_test_doubles import (
     OutputCollectingWebsocket,
     RecordingClosingWebsocket,
@@ -11,6 +13,40 @@ from cockpit_session_bridge_runtime_test_doubles import (
 import pseudoterminal_streams
 import server
 import settings
+
+
+def test_browser_session_identifies_terminal_origin_without_changing_parent(
+    monkeypatch,
+):
+    monkeypatch.setenv("TERM_PROGRAM", "WezTerm")
+    monkeypatch.delenv("HERDR_ENV", raising=False)
+    master_file_descriptor, slave_file_descriptor = pty.openpty()
+    monkeypatch.setattr(
+        pty, "openpty", lambda: (master_file_descriptor, slave_file_descriptor)
+    )
+    spawned_environment = {}
+
+    async def capture_session_environment(*arguments, **keyword_arguments):
+        spawned_environment.update(keyword_arguments["env"])
+        raise RuntimeError("session environment captured")
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", capture_session_environment)
+    owner_websocket = RecordingClosingWebsocket("https://lucaszanoni.com")
+    try:
+        with pytest.raises(RuntimeError, match="session environment captured"):
+            asyncio.run(
+                server.bridge_session_over_websocket(
+                    owner_websocket, settings.resolve_bridge_settings({}), None
+                )
+            )
+    finally:
+        os.close(master_file_descriptor)
+        os.close(slave_file_descriptor)
+
+    assert spawned_environment["TERM_PROGRAM"] == "cockpit"
+    assert spawned_environment["HERDR_ENV"] == "1"
+    assert os.environ["TERM_PROGRAM"] == "WezTerm"
+    assert "HERDR_ENV" not in os.environ
 
 
 def test_bridge_rejects_disallowed_origin_with_1008_and_never_spawns(monkeypatch):
