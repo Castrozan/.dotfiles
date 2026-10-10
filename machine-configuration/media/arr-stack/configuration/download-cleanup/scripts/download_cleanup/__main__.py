@@ -3,7 +3,7 @@ import os
 import socket
 import sys
 import threading
-import xml.etree.ElementTree as ElementTree
+import re
 from http.server import HTTPServer
 from pathlib import Path
 
@@ -14,6 +14,22 @@ from .jellyfin_artifacts import JellyfinArtifacts
 from .ledger import Ledger
 from .server import webhook_handler
 from .worker import CleanupWorker
+
+
+def api_key(stack_home, app):
+    configuration = (stack_home / f"config/{app}/config.xml").read_text()
+    match = re.search(r"<ApiKey>([a-fA-F0-9]{32})</ApiKey>", configuration)
+    if match is None:
+        raise RuntimeError(f"No valid API key in {app} configuration")
+    return match.group(1)
+
+
+def notify_ready():
+    notify_address = os.environ["NOTIFY_SOCKET"]
+    if notify_address.startswith("@"):
+        notify_address = "\0" + notify_address[1:]
+    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as notification:
+        notification.sendto(b"READY=1", notify_address)
 
 
 def main():
@@ -34,9 +50,7 @@ def main():
     media_clients = {
         app: MediaClient(
             f"http://{bind_address}:{port}/api/v3",
-            ElementTree.parse(stack_home / f"config/{app}/config.xml").findtext(
-                "ApiKey"
-            ),
+            api_key(stack_home, app),
             app,
         )
         for app, port in (("radarr", 7878), ("sonarr", 8989))
@@ -68,11 +82,7 @@ def main():
     server = HTTPServer(
         ("172.28.0.1", 8789), webhook_handler(ledger, password, wake_worker)
     )
-    notify_address = os.environ["NOTIFY_SOCKET"]
-    if notify_address.startswith("@"):
-        notify_address = "\0" + notify_address[1:]
-    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as notification:
-        notification.sendto(b"READY=1", notify_address)
+    notify_ready()
     logging.info("Listening for native Radarr/Sonarr lifecycle webhooks")
     server.serve_forever()
 
