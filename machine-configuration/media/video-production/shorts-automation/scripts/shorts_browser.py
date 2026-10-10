@@ -56,13 +56,15 @@ def validate_browser_arguments(arguments):
     if (
         not arguments
         or arguments[0] not in BROWSER_COMMANDS
-        or any(
-            value == "--server" or value.startswith("--server=") for value in arguments
-        )
+        or any(server_option(value) for value in arguments)
     ):
         raise ValueError(
             "Use browser actions only; the Shorts profile cannot be changed"
         )
+
+
+def server_option(value):
+    return value == "--server" or value.startswith("--server=")
 
 
 def browser_arguments(arguments, configuration):
@@ -94,18 +96,7 @@ def execute_browser(arguments, configuration, command):
     return subprocess.run([*command, *arguments]).returncode
 
 
-def main():
-    configuration = read_document(os.environ["SHORTS_CONFIGURATION"])
-    arguments = sys.argv[1:]
-    validate_browser_arguments(arguments)
-    instance = browser_instance(configuration)
-    command = [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"]]
-    directory = os.environ.get("SHORTS_BROWSER_RUN")
-    if directory is None or arguments[1:] in (["--help"], ["-h"]):
-        if arguments[0] == "upload":
-            return execute_browser(arguments, configuration, command)
-        os.execv(command[0], [*command, *arguments])
-    directory = Path(directory)
+def execute_scoped_browser(arguments, configuration, command, directory, instance):
     pages = BrowserPages(
         directory.parent.parent, directory.name, command, instance["id"]
     )
@@ -115,11 +106,32 @@ def main():
             return 0
         scoped = pages.arguments(arguments)
         returncode = execute_browser(scoped, configuration, command)
-        if scoped[0] == "close" and returncode == 0:
-            pages.forget(scoped[1])
-        if scoped[:2] == ["tab", "close"] and returncode == 0:
-            pages.forget(scoped[2])
+        forget_closed_page(pages, scoped, returncode)
         return returncode
+
+
+def forget_closed_page(pages, arguments, returncode):
+    if returncode != 0:
+        return
+    if arguments[0] == "close":
+        pages.forget(arguments[1])
+        return
+    if arguments[:2] == ["tab", "close"]:
+        pages.forget(arguments[2])
+
+
+def main():
+    configuration = read_document(os.environ["SHORTS_CONFIGURATION"])
+    arguments = sys.argv[1:]
+    validate_browser_arguments(arguments)
+    instance = browser_instance(configuration)
+    command = [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"]]
+    directory = os.environ.get("SHORTS_BROWSER_RUN")
+    if directory is None or arguments[1:] in (["--help"], ["-h"]):
+        return execute_browser(arguments, configuration, command)
+    return execute_scoped_browser(
+        arguments, configuration, command, Path(directory), instance
+    )
 
 
 if __name__ == "__main__":

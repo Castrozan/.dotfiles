@@ -2,10 +2,9 @@ import fcntl
 import json
 import subprocess
 from contextlib import contextmanager
-from urllib.parse import urlparse
 
 from shorts_store import read_document, write_document
-from shorts_browser_pages.arguments import positional_tab_arguments, tab_arguments
+from shorts_browser_pages.actions import owned_arguments
 from shorts_browser_pages.transport import create_page
 
 
@@ -68,58 +67,34 @@ class BrowserPages:
         return identifier
 
     def arguments(self, arguments):
-        state = self.state()
-        if arguments[0] == "health":
-            return arguments
-        remaining, identifier = tab_arguments(arguments)
-        if identifier is not None:
-            self.require_owned(state, identifier)
-        if arguments[0] in ("tab", "close", "handoff", "handoff-status", "resume"):
-            positional = positional_tab_arguments(remaining)
-            identifier = self.require_owned(
-                state, positional.identifier or identifier or state["current"]
-            )
-            if positional.command == ["tab"]:
-                state["current"] = identifier
-                write_document(self.path, state)
-            return [*positional.command, identifier, *positional.options]
-        if arguments[0] == "nav":
-            if len(remaining) < 2 or remaining[1].startswith("-"):
-                raise ValueError("Use nav URL to navigate a run-owned page")
-            remaining = [
-                value
-                for value in remaining
-                if value != "--new-tab" and not value.startswith("--new-tab=")
-            ]
-            role = (
-                "publisher"
-                if urlparse(remaining[1]).hostname == "studio.youtube.com"
-                else "research"
-            )
-            if identifier is None:
-                identifier = state["pages"].get(role)
-                if identifier is not None and identifier not in {
-                    target["id"] for target in self.targets()
-                }:
-                    del state["pages"][role]
-                    identifier = None
-                if identifier is None:
-                    state["pending"] = role
-                    write_document(self.path, state)
-                    identifier = create_page(self.command[2])
-                    if not isinstance(identifier, str) or not identifier:
-                        raise ValueError("Browser page creation returned no target ID")
-                    state["pages"][role] = identifier
-                    state["pending"] = None
-        else:
-            identifier = identifier or state["current"]
-            if identifier is None:
-                raise ValueError("Navigate before using a run-owned browser tab")
-            self.require_owned(state, identifier)
+        return owned_arguments(self, self.state(), arguments)
+
+    def navigation_page(self, state, role):
+        identifier = state["pages"].get(role)
+        if identifier is not None and not self.page_exists(identifier):
+            del state["pages"][role]
+            identifier = None
+        if identifier is None:
+            return self.create_page(state, role)
+        return identifier
+
+    def page_exists(self, identifier):
+        return any(target["id"] == identifier for target in self.targets())
+
+    def create_page(self, state, role):
+        state["pending"] = role
+        write_document(self.path, state)
+        identifier = create_page(self.command[2])
+        if not isinstance(identifier, str) or not identifier:
+            raise ValueError("Browser page creation returned no target ID")
+        state["pages"][role] = identifier
+        state["pending"] = None
+        write_document(self.path, state)
+        return identifier
+
+    def select_page(self, state, identifier):
         state["current"] = identifier
         write_document(self.path, state)
-        position = remaining.index("--") if "--" in remaining else len(remaining)
-        return [*remaining[:position], "--tab", identifier, *remaining[position:]]
 
     def tabs(self):
         state = self.state()
@@ -145,11 +120,18 @@ class BrowserPages:
         if not state["pages"] and state["pending"] is None:
             return
         if state["instance_id"] != self.instance_id:
-            state["pages"] = {}
-            state["current"] = None
-            state["pending"] = None
-            write_document(self.path, state)
+            self.clear_pages(state)
             return
+        self.close_pages(state)
+        self.require_completed_allocation(state)
+
+    def clear_pages(self, state):
+        state["pages"] = {}
+        state["current"] = None
+        state["pending"] = None
+        write_document(self.path, state)
+
+    def close_pages(self, state):
         identifiers = {target["id"] for target in self.targets()}
         for role, identifier in list(state["pages"].items()):
             if identifier in identifiers:
@@ -158,6 +140,8 @@ class BrowserPages:
             if state["current"] == identifier:
                 state["current"] = None
             write_document(self.path, state)
+
+    def require_completed_allocation(self, state):
         if state["pending"] is not None:
             raise ValueError(
                 "Browser page creation is ambiguous; inspect the dedicated profile before starting another run"

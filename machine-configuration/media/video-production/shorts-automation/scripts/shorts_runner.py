@@ -153,6 +153,30 @@ def finish_run(directory, status):
     return previous
 
 
+def execute_run(directory, configuration):
+    pages = browser_pages(directory, configuration)
+    previous_handler = signal.signal(signal.SIGTERM, terminate_run)
+    result = None
+    try:
+        pages.begin()
+        result = finish_run(directory, execute_agent(directory, configuration))
+        return result
+    finally:
+        try:
+            pages.cleanup()
+        except (ValueError, OSError, subprocess.SubprocessError) as error:
+            write_document(
+                directory / "browser-cleanup.json",
+                {"status": "needs_inspection", "reason": str(error)},
+            )
+            if result is not None:
+                result["browser_cleanup"] = "needs_inspection"
+        finally:
+            signal.signal(signal.SIGTERM, previous_handler)
+            if read_document(directory / RUN_STATUS_FILENAME)["status"] == "started":
+                finish_run(directory, "needs_inspection")
+
+
 def start_run(root, slot, configuration):
     root.mkdir(parents=True, exist_ok=True, mode=0o700)
     reason = publisher_readiness(root, configuration)
@@ -166,29 +190,4 @@ def start_run(root, slot, configuration):
         claim = claim_slot(root, slot, configuration)
         if claim.directory is None:
             return claim.skipped
-        pages = browser_pages(claim.directory, configuration)
-        previous_handler = signal.signal(signal.SIGTERM, terminate_run)
-        result = None
-        try:
-            pages.begin()
-            result = finish_run(
-                claim.directory, execute_agent(claim.directory, configuration)
-            )
-            return result
-        finally:
-            try:
-                pages.cleanup()
-            except (ValueError, OSError, subprocess.SubprocessError) as error:
-                write_document(
-                    claim.directory / "browser-cleanup.json",
-                    {"status": "needs_inspection", "reason": str(error)},
-                )
-                if result is not None:
-                    result["browser_cleanup"] = "needs_inspection"
-            finally:
-                signal.signal(signal.SIGTERM, previous_handler)
-                if (
-                    read_document(claim.directory / RUN_STATUS_FILENAME)["status"]
-                    == "started"
-                ):
-                    finish_run(claim.directory, "needs_inspection")
+        return execute_run(claim.directory, configuration)

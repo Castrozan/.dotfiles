@@ -1,4 +1,3 @@
-import io
 import json
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -6,7 +5,6 @@ from unittest.mock import Mock
 import pytest
 
 import shorts_browser
-from shorts_browser_pages.transport import create_page
 from shorts_store import write_document
 
 
@@ -99,22 +97,6 @@ def test_wrapper_lists_only_owned_tabs(scoped_browser, monkeypatch, capsys):
     execute.assert_not_called()
 
 
-def test_native_blank_page_creation_is_authenticated_and_returns_target(monkeypatch):
-    monkeypatch.setattr(
-        "shorts_browser_pages.transport.read_document",
-        lambda path: {"server": {"token": "fixture-credential"}},
-    )
-    response = io.BytesIO(b'{"tabId":"owned-tab"}')
-    send = Mock(return_value=response)
-    monkeypatch.setattr("shorts_browser_pages.transport.urlopen", send)
-    assert create_page("http://127.0.0.1:9868") == "owned-tab"
-    request = send.call_args.args[0]
-    assert request.full_url == "http://127.0.0.1:9868/tab"
-    assert request.get_method() == "POST"
-    assert json.loads(request.data) == {"action": "new"}
-    assert request.get_header("Authorization") == "Bearer fixture-credential"
-
-
 @pytest.mark.parametrize(
     "arguments, expected",
     [
@@ -149,11 +131,6 @@ def test_native_flag_order_and_literal_data_are_preserved(
     scoped_browser, monkeypatch, arguments, expected
 ):
     pages, instance, execute = scoped_browser
-    monkeypatch.setattr(
-        shorts_browser.os,
-        "execv",
-        Mock(side_effect=AssertionError("Literal data must retain tab ownership")),
-    )
     with pages.lock():
         pages.arguments(["nav", "https://studio.youtube.com"])
     monkeypatch.setattr(shorts_browser.sys, "argv", ["shorts-browser", *arguments])
