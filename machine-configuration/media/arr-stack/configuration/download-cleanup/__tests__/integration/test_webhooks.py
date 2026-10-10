@@ -2,8 +2,8 @@ import base64
 import json
 import threading
 from http.server import HTTPServer
-from urllib.error import HTTPError
-from urllib.request import Request, urlopen
+from http.client import HTTPConnection
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -32,16 +32,13 @@ def post(endpoint, payload, authenticated=True):
         headers["Authorization"] = (
             "Basic " + base64.b64encode(b"cleanup:test-secret").decode()
         )
+    address = urlsplit(endpoint)
+    connection = HTTPConnection(address.hostname, address.port, timeout=2)
     try:
-        with urlopen(
-            Request(
-                endpoint + "/sonarr", data=json.dumps(payload).encode(), headers=headers
-            ),
-            timeout=2,
-        ) as response:
-            return response.status
-    except HTTPError as error:
-        return error.code
+        connection.request("POST", "/sonarr", json.dumps(payload).encode(), headers)
+        return connection.getresponse().status
+    finally:
+        connection.close()
 
 
 def test_native_grab_and_delete_are_persisted_before_acknowledgement(endpoint):

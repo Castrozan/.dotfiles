@@ -84,9 +84,11 @@ def test_the_lifecycle_path_routes_to_the_lifecycle_handler_not_the_session_brid
     assert routed_handlers == ["lifecycle"]
 
 
-def test_a_non_lifecycle_path_routes_to_the_session_bridge():
+def test_the_terminal_session_path_routes_to_the_session_bridge():
     routed_handlers = []
-    websocket_connection = ScriptedLifecycleControlWebsocket([], request_path="/")
+    websocket_connection = ScriptedLifecycleControlWebsocket(
+        [], request_path="/cockpit/terminal-session/"
+    )
 
     asyncio.run(
         _route_recording_which_handler_fires(websocket_connection, routed_handlers)

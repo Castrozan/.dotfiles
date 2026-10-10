@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import NamedTuple
 from zoneinfo import ZoneInfo
 
-from shorts_browser import browser_instance
+from shorts_browser import browser_instance, browser_pages
 from shorts_store import (
     RUN_STATUS_FILENAME,
     TopicStore,
@@ -105,19 +105,41 @@ def execute_agent(directory, configuration):
             stdout=output,
             stderr=subprocess.STDOUT,
             start_new_session=True,
-            env=dict(os.environ, CLAWDE_AGENT_NAME="shorts-production"),
+            env=dict(
+                os.environ,
+                CLAWDE_AGENT_NAME="shorts-production",
+                SHORTS_BROWSER_RUN=str(directory),
+            ),
         )
         try:
             returncode = process.wait(timeout=7200)
             return "agent_finished" if returncode == 0 else "needs_inspection"
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGTERM)
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
-                process.wait()
+            terminate_agent(process)
             return "needs_inspection"
+        except BaseException:
+            terminate_agent(process)
+            raise
+
+
+def terminate_agent(process):
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        process.wait()
+        return
+    try:
+        process.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
+
+
+def terminate_run(signal_number, signal_frame):
+    raise SystemExit(128 + signal_number)
 
 
 def finish_run(directory, status):
@@ -129,6 +151,30 @@ def finish_run(directory, status):
     previous.update(status=status, finished_at=timestamp())
     write_document(directory / RUN_STATUS_FILENAME, previous)
     return previous
+
+
+def execute_run(directory, configuration):
+    pages = browser_pages(directory, configuration)
+    previous_handler = signal.signal(signal.SIGTERM, terminate_run)
+    result = None
+    try:
+        pages.begin()
+        result = finish_run(directory, execute_agent(directory, configuration))
+        return result
+    finally:
+        try:
+            pages.cleanup()
+        except (ValueError, OSError, subprocess.SubprocessError) as error:
+            write_document(
+                directory / "browser-cleanup.json",
+                {"status": "needs_inspection", "reason": str(error)},
+            )
+            if result is not None:
+                result["browser_cleanup"] = "needs_inspection"
+        finally:
+            signal.signal(signal.SIGTERM, previous_handler)
+            if read_document(directory / RUN_STATUS_FILENAME)["status"] == "started":
+                finish_run(directory, "needs_inspection")
 
 
 def start_run(root, slot, configuration):
@@ -144,6 +190,4 @@ def start_run(root, slot, configuration):
         claim = claim_slot(root, slot, configuration)
         if claim.directory is None:
             return claim.skipped
-        return finish_run(
-            claim.directory, execute_agent(claim.directory, configuration)
-        )
+        return execute_run(claim.directory, configuration)
