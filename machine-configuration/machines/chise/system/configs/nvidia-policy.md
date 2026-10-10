@@ -1,34 +1,41 @@
-# NVIDIA Policy
+# NVIDIA policy
 
-This module configures the NVIDIA proprietary driver for a Dell G15 5515 with AMD Renoir iGPU + NVIDIA RTX 3050 Ti dGPU. NixOS assertions enforce PRIME sync, modesetting, and LTS kernel pinning at evaluation time.
+Chise has an AMD integrated GPU and an NVIDIA RTX 3050 Laptop GPU. `nvidia.nix` owns its kernel, driver, PCI routing,
+and compositor device selection. Use a security-maintained R580 release with matching kernel module and NVIDIA
+userspace versions. When the locked nixpkgs production package predates required security fixes, a host driver pin
+through its native package factory avoids changing other packages. The open NVIDIA kernel module supports this Ampere
+GPU; it is separate from Nouveau and Mesa NVK.
 
+Keep the R580 pin current with NVIDIA's security maintenance and remove it when the locked production package is
+acceptable. NVIDIA recommends its open module on supported GPUs, but documents slower initialization and possible power
+and suspend latency costs. Verify those workloads on this laptop before accepting the migration. See
+[NVIDIA security advisories](https://github.com/NVIDIA/product-security) and
+[NVIDIA open kernel modules](https://download.nvidia.com/XFree86/Linux-x86_64/580.178.04/README/kernel_open.html).
 
-## PRIME Sync Topology
+## Hyprland routing
 
-The Dell G15 5515 has a muxless hybrid GPU design where the laptop display is physically wired to the AMD iGPU (PCI 4:0:0). The NVIDIA dGPU (PCI 1:0:0) renders frames and copies them to the iGPU's framebuffer for scanout. PRIME sync mode keeps both GPUs in lockstep so every rendered frame reaches the display — without sync, the copy can race with the scanout causing visible tearing that no compositor can fix because it happens below the compositor layer.
+`AQ_DRM_DEVICES` selects AMD as Hyprland's primary renderer and retains NVIDIA for its outputs. The external monitor
+connects through a hub to AMD's DisplayPort output. Keep that hub connection. AMD renders the desktop and presents
+application frames; NVIDIA remains available for applications that select it for rendering.
 
-PRIME offload is the alternative where the iGPU handles display and the dGPU only activates on demand. This saves power but introduces frame copy latency and requires applications to opt in via environment variables. For a workstation always plugged in, sync mode gives consistent full-GPU performance with zero per-application configuration.
+PRIME sync controls Xorg and does not select Hyprland's renderer. Xorg uses PRIME offload with the native
+`nvidia-offload` command available for applications that need NVIDIA explicitly. Verify each application's actual
+renderer before accepting its GPU selection.
 
+The udev aliases bind DRM card nodes to PCI devices. Numeric `cardN` names can change at boot, and PCI paths containing
+colons cannot appear directly in the colon-separated `AQ_DRM_DEVICES` list. Keep both aliases consistent with the
+host's PCI bus IDs. See the [Hyprland multi-GPU guide](https://wiki.hypr.land/configuring/extra/multi-gpu/).
 
-## Modesetting and DRM
+## Workload boundaries
 
-Kernel modesetting (`hardware.nvidia.modesetting.enable`) loads `nvidia_drm` with `modeset=1`. Wayland compositors (Hyprland, GNOME/Mutter) require DRM (Direct Rendering Manager) KMS to enumerate outputs, set display modes, and manage VT switching. Without modesetting, Wayland gets no DRM device and falls back to Xorg or fails entirely.
+Do not force GLX, GBM, or VA-API vendors globally. Applications that require a particular GPU must select it in their
+own launch environment. CUDA and NVENC use NVIDIA independently of the compositor's display routing. Chrome's
+hardware video decoding workaround remains until playback evidence supports removing it.
 
-The four kernel modules (`nvidia`, `nvidia_modeset`, `nvidia_uvm`, `nvidia_drm`) are loaded in initrd to ensure the display is available before the display manager starts. Loading them later causes a race where GDM starts before the NVIDIA DRM device exists, producing a black screen for 5-10 seconds.
+## Deployment and verification
 
-
-## Driver Pinning
-
-The NVIDIA driver is pinned to 550.135 using `mkDriver` with explicit hashes for each component. The `nvidiaPackages` set in nixpkgs tracks upstream releases and may bump to a newer version that has not been validated against the current kernel. Pinning prevents surprise breakage after `nix flake update`.
-
-The kernel is pinned to `linuxPackages_6_1` (LTS 6.1.x). NVIDIA 550.x is built and tested against 6.1 LTS — newer kernels change internal APIs (`struct drm_driver`, `vm_operations_struct`) that break the proprietary module build. When NVIDIA releases a driver validated for a newer kernel, both the kernel pin and driver pin should be updated together.
-
-
-## Power Management
-
-The NixOS options `powerManagement.enable` and `powerManagement.finegrained` remain false. GPU clocks are not locked. The driver can lower clocks and suspend an idle GPU.
-
-
-## Session Variables
-
-`LIBVA_DRIVER_NAME=nvidia` routes VA-API video decode through the NVIDIA driver instead of the mesa fallback. `__GLX_VENDOR_LIBRARY_NAME=nvidia` ensures GLX uses the NVIDIA vendor library on the PRIME sync output. `GBM_BACKEND=nvidia-drm` tells GBM-based compositors (Hyprland) to use the NVIDIA allocator. `NVD_BACKEND=direct` configures the nvidia-vaapi-driver to use direct rendering rather than going through EGL.
+Deploy kernel, driver, and routing changes together as a boot generation. Keep the running generation intact until a
+user-authorized reboot. Before accepting the new generation, verify the loaded kernel and driver, both DRM aliases,
+Hyprland's AMD renderer, the hub-connected monitor, selected applications' NVIDIA renderers, Chrome WebGL and playback,
+and CUDA/NVENC workloads. A source review or successful build does not establish runtime stability. Preserve the previous
+generation for recovery.
