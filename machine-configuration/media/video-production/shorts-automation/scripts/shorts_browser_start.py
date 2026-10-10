@@ -29,7 +29,7 @@ def start_profile(configuration, binary):
             "start",
             f"--profile={configuration['browser_profile']}",
             "--mode",
-            "headed",
+            "headless",
             "--port",
             "9868",
         ],

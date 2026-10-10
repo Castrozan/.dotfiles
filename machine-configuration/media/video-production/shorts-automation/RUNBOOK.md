@@ -45,9 +45,16 @@ relative `evidence`. Save actual frame inspection, narration review and browser-
 Record playback duration and errors.
 Repair a failure or hold. Run `shorts-production verify --episode-file episode.json` and preserve its final video hash.
 
+### Browser lifecycle
+
+The existing systemd timer starts each production job at 09:00, 15:00 and 21:00 in America/Sao_Paulo.
+The job requires the dedicated headless browser; the browser stops when no job needs it, including after failure,
+timeout or cancellation. Between jobs only the timer remains. Keep the persistent profile data and never enable
+`shorts-browser.service` at graphical login. Run-owned pages are reused and cleaned before the browser shuts down.
+
 ### Publishing boundary
 
-Use `shorts-browser` for YouTube Studio; it binds every action to the existing headed profile identified by
+Use `shorts-browser` for YouTube Studio; it binds every action to the existing dedicated profile identified by
 `browser_profile` and `browser_profile_id` in `config.json`. It refuses profile management and endpoint overrides.
 Its active channel must exactly match `config.json` before upload. Read the browser skill's unattended procedure;
 use fresh snapshots and file upload. Never copy shared Chrome cookies or change another person's open tab.
