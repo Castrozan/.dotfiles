@@ -80,12 +80,15 @@ def test_servant_only_names_recover_the_native_session_preview(title):
     )
 
 
-def test_first_prompt_fills_the_title_before_the_native_preview_exists(session_client):
+@pytest.mark.parametrize("prompt", ["Fix terminal title", "\nFix  terminal\ttitle\n"])
+def test_first_prompt_fills_the_title_before_the_native_preview_exists(
+    session_client, prompt
+):
     client, _ = session_client
     payload = {
         "session_id": "first-prompt",
         "hook_event_name": "UserPromptSubmit",
-        "prompt": "Fix terminal title",
+        "prompt": prompt,
     }
     servant = servant_identity_handler.servant_for_hook_input(payload)
     client.thread_title.return_value = CodexThreadTitle(servant["name"], "")
@@ -93,6 +96,22 @@ def test_first_prompt_fills_the_title_before_the_native_preview_exists(session_c
     client.set_thread_name.assert_called_once_with(
         "first-prompt", f"{servant['name']} | Fix terminal title"
     )
+
+
+@pytest.mark.parametrize("prompt", [None, 123, [], "", " \n\t"])
+def test_empty_or_malformed_first_prompt_keeps_the_plain_servant_name(
+    session_client, prompt
+):
+    client, _ = session_client
+    payload = {
+        "session_id": "empty-first-prompt",
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": prompt,
+    }
+    servant = servant_identity_handler.servant_for_hook_input(payload)
+    client.thread_title.return_value = CodexThreadTitle(servant["name"], "")
+    status_handler.handle(payload)
+    client.set_thread_name.assert_not_called()
 
 
 def test_followup_prompt_preserves_the_existing_title(session_client):

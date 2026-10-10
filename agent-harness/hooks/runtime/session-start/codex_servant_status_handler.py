@@ -30,6 +30,17 @@ def servant_thread_name(thread_title: CodexThreadTitle, servant_name: str) -> st
     return f"{servant_name} | {title}" if title else servant_name
 
 
+def thread_title_with_prompt_preview(
+    thread_title: CodexThreadTitle, hook_input: dict
+) -> CodexThreadTitle:
+    if thread_title.preview or hook_input.get("hook_event_name") != "UserPromptSubmit":
+        return thread_title
+    prompt = hook_input.get("prompt", "")
+    if not isinstance(prompt, str):
+        return thread_title
+    return CodexThreadTitle(thread_title.name, " ".join(prompt.split()))
+
+
 def handle(hook_input: dict):
     socket_path = os.environ.get("CODEX_SESSION_SOCKET_PATH")
     if not socket_path or belongs_to_a_subagent(hook_input):
@@ -39,14 +50,9 @@ def handle(hook_input: dict):
         return None
     thread_identifier = session_id_of(hook_input)
     with CodexAppServerClient(socket_path) as client:
-        title = client.thread_title(thread_identifier)
-        if (
-            hook_input.get("hook_event_name") == "UserPromptSubmit"
-            and not title.preview
-        ):
-            prompt = hook_input.get("prompt", "")
-            if isinstance(prompt, str):
-                title = CodexThreadTitle(title.name, " ".join(prompt.split()))
+        title = thread_title_with_prompt_preview(
+            client.thread_title(thread_identifier), hook_input
+        )
         name = servant_thread_name(title, servant["name"])
         if name != title.name:
             client.set_thread_name(thread_identifier, name)

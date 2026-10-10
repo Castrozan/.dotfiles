@@ -33,10 +33,10 @@ def _verify_opencode_hook(content):
 
 def _verify_json_hooks(hooks, target):
     required = {"SessionStart", "PreToolUse", "PostToolUse", "Stop"}
-    if target == "claudecode":
-        required |= {"SubagentStop", "PermissionRequest"}
-    if target == "codexcli":
-        required |= {"UserPromptSubmit"}
+    required |= {
+        "claudecode": {"SubagentStop", "PermissionRequest"},
+        "codexcli": {"UserPromptSubmit"},
+    }.get(target, set())
     if set(hooks) != required or any(not hooks[event] for event in required):
         raise ValueError(f"Rulesync changed the required {target} hook events")
 
