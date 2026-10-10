@@ -12,13 +12,13 @@ def servant_thread_name(thread_title: CodexThreadTitle, servant_name: str) -> st
     title = thread_title.name or ""
     for servant in SERVANT_CATALOG:
         name = servant["name"]
-        if title == f"[{name}]":
+        if title in (name, f"[{name}]"):
             title = ""
             break
         prefix = next(
             (
                 prefix
-                for prefix in (f"[{name}] ", f"{name} | ")
+                for prefix in (f"[{name}] | ", f"[{name}] ", f"{name} | ")
                 if title.startswith(prefix)
             ),
             None,
@@ -27,7 +27,7 @@ def servant_thread_name(thread_title: CodexThreadTitle, servant_name: str) -> st
             title = title[len(prefix) :]
             break
     title = title or thread_title.preview
-    return f"{servant_name} | {title}" if title else f"[{servant_name}]"
+    return f"{servant_name} | {title}" if title else servant_name
 
 
 def handle(hook_input: dict):
@@ -40,6 +40,13 @@ def handle(hook_input: dict):
     thread_identifier = session_id_of(hook_input)
     with CodexAppServerClient(socket_path) as client:
         title = client.thread_title(thread_identifier)
+        if (
+            hook_input.get("hook_event_name") == "UserPromptSubmit"
+            and not title.preview
+        ):
+            prompt = hook_input.get("prompt", "")
+            if isinstance(prompt, str):
+                title = CodexThreadTitle(title.name, " ".join(prompt.split()))
         name = servant_thread_name(title, servant["name"])
         if name != title.name:
             client.set_thread_name(thread_identifier, name)

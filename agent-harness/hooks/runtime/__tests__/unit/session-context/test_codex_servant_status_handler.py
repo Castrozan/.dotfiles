@@ -49,15 +49,16 @@ def test_repeated_session_does_not_rename_again(session_client, source):
 @pytest.mark.parametrize(
     "title,expected",
     [
-        (None, "[BB]"),
-        ("", "[BB]"),
-        ("BB", "BB | BB"),
-        ("Bedivere", "BB | Bedivere"),
-        ("[BB]", "[BB]"),
-        ("[Bedivere]", "[BB]"),
+        (None, "BB"),
+        ("", "BB"),
+        ("BB", "BB"),
+        ("Bedivere", "BB"),
+        ("[BB]", "BB"),
+        ("[Bedivere]", "BB"),
         ("Human title", "BB | Human title"),
         ("[Bedivere] Human title", "BB | Human title"),
         ("[BB] Human title", "BB | Human title"),
+        ("[BB] | Human title", "BB | Human title"),
         ("Bedivere | Human title", "BB | Human title"),
         ("BB | Human title", "BB | Human title"),
         ("[draft] Human title", "BB | [draft] Human title"),
@@ -70,12 +71,59 @@ def test_titles_survive_servant_prefix_replacement(title, expected):
     )
 
 
-@pytest.mark.parametrize("title", [None, "", "[BB]", "[Bedivere]"])
+@pytest.mark.parametrize("title", [None, "", "BB", "Bedivere", "[BB]", "[Bedivere]"])
 def test_servant_only_names_recover_the_native_session_preview(title):
     thread_title = CodexThreadTitle(title, "Fix terminal title")
     assert (
         status_handler.servant_thread_name(thread_title, "BB")
         == "BB | Fix terminal title"
+    )
+
+
+def test_first_prompt_fills_the_title_before_the_native_preview_exists(session_client):
+    client, _ = session_client
+    payload = {
+        "session_id": "first-prompt",
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": "Fix terminal title",
+    }
+    servant = servant_identity_handler.servant_for_hook_input(payload)
+    client.thread_title.return_value = CodexThreadTitle(servant["name"], "")
+    status_handler.handle(payload)
+    client.set_thread_name.assert_called_once_with(
+        "first-prompt", f"{servant['name']} | Fix terminal title"
+    )
+
+
+def test_followup_prompt_preserves_the_existing_title(session_client):
+    client, _ = session_client
+    payload = {
+        "session_id": "followup-prompt",
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": "Also fix the footer",
+    }
+    servant = servant_identity_handler.servant_for_hook_input(payload)
+    client.thread_title.return_value = CodexThreadTitle(
+        f"{servant['name']} | Fix terminal title", "Original first prompt"
+    )
+    status_handler.handle(payload)
+    client.set_thread_name.assert_not_called()
+
+
+def test_native_preview_takes_precedence_over_followup_prompt(session_client):
+    client, _ = session_client
+    payload = {
+        "session_id": "recover-prompt",
+        "hook_event_name": "UserPromptSubmit",
+        "prompt": "Also fix the footer",
+    }
+    servant = servant_identity_handler.servant_for_hook_input(payload)
+    client.thread_title.return_value = CodexThreadTitle(
+        f"[{servant['name']}]", "Original first prompt"
+    )
+    status_handler.handle(payload)
+    client.set_thread_name.assert_called_once_with(
+        "recover-prompt", f"{servant['name']} | Original first prompt"
     )
 
 
