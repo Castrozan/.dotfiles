@@ -12,17 +12,18 @@ from hook_dispatch import HandlerResult
 from servant_identity_handler import servant_for_hook_input, session_id_of
 from catalog import SERVANT_CATALOG
 
-SERVANT_NAME_FORMS = sorted(
-    (
-        form
-        for servant in SERVANT_CATALOG
-        for form in (servant["name"], f"[{servant['name']}]")
-    ),
-    key=len,
-    reverse=True,
+SERVANT_NAME_PATTERN = "|".join(
+    map(
+        re.escape,
+        sorted((servant["name"] for servant in SERVANT_CATALOG), key=len, reverse=True),
+    )
 )
 SERVANT_PREFIX_PATTERN = re.compile(
-    "^(?:(?:" + "|".join(map(re.escape, SERVANT_NAME_FORMS)) + r")(?: \| | |$))+"
+    r"^(?:"
+    + rf"\[(?:{SERVANT_NAME_PATTERN})\](?: \| | |$)"
+    + "|"
+    + rf"(?:{SERVANT_NAME_PATTERN})(?: \| |$)"
+    + ")+"
 )
 
 

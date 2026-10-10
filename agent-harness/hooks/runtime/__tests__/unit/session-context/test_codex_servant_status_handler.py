@@ -48,6 +48,10 @@ def test_repeated_session_does_not_rename_again(session_client, source):
         ("[Mata Hari] Mata Hari | Human title", "BB | Human title"),
         ("[BB] | [Bedivere] Human title", "BB | Human title"),
         ("Lancelot (Berserker) | Human title", "BB | Human title"),
+        (
+            "BB investigates build failures",
+            "BB | BB investigates build failures",
+        ),
         ("[draft] Human title", "BB | [draft] Human title"),
     ],
 )
