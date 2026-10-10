@@ -82,6 +82,7 @@ let
   production = pkgs.writeShellScriptBin "shorts-production" ''
     export PATH=${
       lib.makeBinPath [
+        browser
         pkgs.ffmpeg
         pkgs.yt-dlp
         pkgs.git
