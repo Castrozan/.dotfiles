@@ -95,10 +95,9 @@ def collect(root, ledger):
 
 
 def pending(ledger):
-    for path in sorted(ledger.glob("*.json")):
-        record = read_json(path)
-        if record["status"] == "pending":
-            yield path, record
+    records = ((path, read_json(path)) for path in ledger.glob("*.json"))
+    waiting = [pair for pair in records if pair[1]["status"] == "pending"]
+    yield from sorted(waiting, key=lambda pair: pair[1].get("attempted_at", ""))
 
 
 def initial_record(directory, event):

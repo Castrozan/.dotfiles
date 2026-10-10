@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  username,
+  ...
+}:
 let
   notifier = pkgs.writeShellScript "shorts-publication-email" ''
     export PYTHONPATH=${./shorts-automation/scripts}
@@ -8,6 +13,7 @@ in
 {
   systemd.services.shorts-publication-email = {
     description = "Email verified Shorts links with durable delivery deduplication";
+    environment.SHORTS_STATE_DIRECTORY = "${config.users.users.${username}.home}/clawde/shorts";
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     serviceConfig = {

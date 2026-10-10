@@ -12,7 +12,7 @@ def main():
     os.umask(0o077)
     ledger = Path(os.environ["STATE_DIRECTORY"])
     password = Path(os.environ["CREDENTIALS_DIRECTORY"]) / "smtp-password"
-    root = Path("/home/zanoni/clawde/shorts")
+    root = Path(os.environ["SHORTS_STATE_DIRECTORY"])
     with (ledger / "delivery.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         collect(root, ledger)
