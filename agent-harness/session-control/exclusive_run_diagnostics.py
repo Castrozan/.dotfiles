@@ -27,6 +27,13 @@ def read_metadata(lock_path):
     }
 
 
+def formatted_started_at(started_epoch):
+    try:
+        return datetime.fromtimestamp(started_epoch).strftime("%Y-%m-%d %H:%M:%S")
+    except (ValueError, OSError, OverflowError):
+        return "unknown"
+
+
 def contention_diagnostics(lock_name, lock_path):
     metadata = read_metadata(lock_path)
     process_identifier = bounded_number(metadata.get("pid"), 10) or "unknown"
@@ -34,14 +41,10 @@ def contention_diagnostics(lock_name, lock_path):
     typical_duration = bounded_number(metadata.get("typical_duration_seconds"), 9)
     elapsed = max(0, int(time.time()) - started_epoch)
     remaining = max(0, typical_duration - elapsed)
-    try:
-        started_at = datetime.fromtimestamp(started_epoch).strftime("%Y-%m-%d %H:%M:%S")
-    except (ValueError, OSError, OverflowError):
-        started_at = "unknown"
     fields = {
         "script": lock_name,
         "in_progress_pid": process_identifier,
-        "started_at": f"{started_at} ({elapsed}s ago)",
+        "started_at": f"{formatted_started_at(started_epoch)} ({elapsed}s ago)",
         "typical_duration": f"{typical_duration}s",
         "estimated_remaining": f"~{remaining}s",
         **{name: metadata.get(name) for name in OWNER_FIELDS},

@@ -7,7 +7,6 @@
 }:
 let
   cockpitSessionBridgeConfig = config.custom.cockpitSessionBridge;
-  persistentSessionConfig = cockpitSessionBridgeConfig.persistentSession;
   herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
   herdrClientPackage =
     (import ../herdr/herdr-client-package.nix {
@@ -17,19 +16,10 @@ let
 
   tmuxTemporaryDirectory = "/tmp";
 
-  persistentSessionTmuxConfiguration = pkgs.writeText "jarvis-persistent-session.tmux.conf" ''
-    set -g window-size smallest
-    set -g status off
-    set -g mouse on
-    set -g escape-time 0
-    set -g default-terminal "tmux-256color"
-    set -g history-limit 50000
-    set -g destroy-unattached off
-  '';
 in
 {
   options.custom.cockpitSessionBridge = {
-    enable = lib.mkEnableOption "the cockpit session bridge that streams the persistent opencode terminal over a loopback websocket for the owner-only cockpit Internal terminal";
+    enable = lib.mkEnableOption "the owner-only cockpit bridge for terminal sessions and machine inventory";
 
     listenAddress = lib.mkOption {
       type = lib.types.str;
@@ -46,21 +36,10 @@ in
     sessionCommand = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [
-        "${pkgs.tmux}/bin/tmux"
-        "-L"
-        persistentSessionConfig.socketName
-        "-u"
-        "attach-session"
-        "-t"
-        persistentSessionConfig.sessionName
+        "${pkgs.bashInteractive}/bin/bash"
+        "-il"
       ];
-      description = "Argument vector launched inside a pseudoterminal for each accepted owner session; by default it attaches a client to the always-on opencode tmux session so every owner connection shares the same live terminal.";
-    };
-
-    agentChatCommand = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "Argument vector run once per owner chat turn on the /cockpit/agent-chat route, with {message} and {sessionKey} substituted from the request; the empty default leaves the route answering that no command is configured, so a host that has no local agent exposes nothing.";
+      description = "Argument vector launched inside a pseudoterminal for an owner connection without a selected terminal.";
     };
 
     allowedRequestOrigin = lib.mkOption {
@@ -99,69 +78,20 @@ in
       description = "herdr session the lifecycle enumeration and attach target when herdr is the live multiplexer; herdr hosts the whole fleet on one shared server session, so this is the session every cockpit workspace lives under.";
     };
 
-    persistentSession = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = cockpitSessionBridgeConfig.enable;
-        description = "Keep an always-on tmux session running opencode so the cockpit Internal terminal attaches to one shared live TUI, the way the clawde agents stay resident, instead of spawning a throwaway shell per connection.";
-      };
-
-      socketName = lib.mkOption {
-        type = lib.types.str;
-        default = "jarvis";
-        description = "tmux socket name the persistent session lives on and the bridge attaches to, kept distinct from the owner's interactive default socket.";
-      };
-
-      sessionName = lib.mkOption {
-        type = lib.types.str;
-        default = "jarvis";
-        description = "tmux session name holding the always-on opencode TUI.";
-      };
-
-      command = lib.mkOption {
-        type = lib.types.str;
-        default = "${pkgs.bashInteractive}/bin/bash -lc 'exec opencode'";
-        description = "Shell command tmux runs as the persistent session's only window; a login non-interactive bash inherits the owner's PATH so opencode resolves, while staying non-interactive to skip the login screensaver, and exec replaces the shell so the window dies with opencode and the keepalive restarts it.";
-      };
-    };
   };
 
   config = lib.mkIf cockpitSessionBridgeConfig.enable {
-    systemd.services.jarvis-session-tmux = lib.mkIf persistentSessionConfig.enable {
-      description = "Jarvis always-on opencode tmux session";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-      path = [
-        pkgs.tmux
-        pkgs.bashInteractive
-        pkgs.coreutils
-      ];
-      environment = {
-        TMUX_TMPDIR = tmuxTemporaryDirectory;
-        JARVIS_PERSISTENT_SESSION_COMMAND = persistentSessionConfig.command;
-      };
-      serviceConfig = {
-        ExecStart = "${pkgs.bashInteractive}/bin/bash ${./scripts/maintain_persistent_session.sh} ${persistentSessionConfig.socketName} ${persistentSessionConfig.sessionName} ${persistentSessionTmuxConfiguration}";
-        Restart = "always";
-        RestartSec = 5;
-        User = cockpitSessionBridgeConfig.serviceUser;
-      };
-    };
-
     systemd.services.cockpit-session-bridge = {
       description = "cockpit session bridge";
       wantedBy = [ "multi-user.target" ];
       after = [
         "network.target"
-        "jarvis-session-tmux.service"
       ];
-      wants = lib.optional persistentSessionConfig.enable "jarvis-session-tmux.service";
       path = [ pkgs.openssh ];
       environment = {
         COCKPIT_SESSION_BRIDGE_LISTEN_ADDRESS = cockpitSessionBridgeConfig.listenAddress;
         COCKPIT_SESSION_BRIDGE_LISTEN_PORT = toString cockpitSessionBridgeConfig.listenPort;
         COCKPIT_SESSION_BRIDGE_COMMAND_JSON = builtins.toJSON cockpitSessionBridgeConfig.sessionCommand;
-        COCKPIT_SESSION_BRIDGE_AGENT_CHAT_COMMAND_JSON = builtins.toJSON cockpitSessionBridgeConfig.agentChatCommand;
         COCKPIT_SESSION_BRIDGE_ALLOWED_ORIGIN = cockpitSessionBridgeConfig.allowedRequestOrigin;
         COCKPIT_SESSION_BRIDGE_TMUX_PATH = "${pkgs.tmux}/bin/tmux";
         COCKPIT_SESSION_BRIDGE_TMUX_ENUMERATION_SOCKET = cockpitSessionBridgeConfig.tmuxEnumerationSocket;

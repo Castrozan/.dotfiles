@@ -17,6 +17,7 @@ MAXIMUM_BRIGHTNESS = 255
 # returned success and changed nothing. Brightness uses the Home Assistant
 # 0-255 scale; temperature is Kelvin inside the range the bulbs report.
 LIGHT_SCENE_CYCLE_STEPS = [
+    {"name": "minimum_warm", "brightness": 3, "color_temp_kelvin": 2000},
     {"name": "low_warm", "brightness": 64, "color_temp_kelvin": 2000},
     {"name": "half_half", "brightness": 128, "color_temp_kelvin": 4250},
     {"name": "70_70", "brightness": 179, "color_temp_kelvin": 5150},

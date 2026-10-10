@@ -39,6 +39,7 @@ in
     ../../../media/arr-stack/on-demand-supervisor/arr-stack-on-demand-supervisor-nixos.nix
     ../../../media/arr-stack/jellyseerr-notifications/jellyseerr-notifications-nixos.nix
     ../../../media/arr-stack/configuration/arr-config-provisioner-nixos.nix
+    ../../../media/arr-stack/configuration/download-cleanup/arr-download-cleanup-nixos.nix
     ../../../media/arr-stack/bazarr-auth/bazarr-auth-provisioner-nixos.nix
     ../../../media/arr-stack/library-access/jellyfin/jellyfin-library-access-provisioner-nixos.nix
     ../../../media/arr-stack/jellyfin-subtitle-extraction/jellyfin-subtitle-extraction-warmer-nixos.nix

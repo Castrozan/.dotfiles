@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Download cleanup",
+    "implementation": "Webhook",
+    "configContract": "WebhookSettings",
+    "onGrab": true,
+    "onDownload": true,
+    "onUpgrade": true,
+    "onSeriesDelete": true,
+    "onEpisodeFileDelete": false,
+    "onEpisodeFileDeleteForUpgrade": false,
+    "tags": [],
+    "fields": [
+      {
+        "name": "url",
+        "value": "http://172.28.0.1:8789/sonarr"
+      },
+      {
+        "name": "method",
+        "value": 1
+      },
+      {
+        "name": "username",
+        "value": "cleanup"
+      },
+      {
+        "name": "password",
+        "value": "@QBITTORRENT_PASSWORD@"
+      }
+    ]
+  }
+]
