@@ -1,9 +1,16 @@
 # NVIDIA policy
 
 Chise has an AMD integrated GPU and an NVIDIA RTX 3050 Laptop GPU. `nvidia.nix` owns its kernel, driver, PCI routing,
-and compositor device selection. The production driver comes from the locked nixpkgs input and the selected kernel's
-package set, so the kernel module and NVIDIA userspace share a driver release. The open NVIDIA kernel module supports
-this Ampere GPU; it is separate from Nouveau and Mesa NVK.
+and compositor device selection. Use a security-maintained R580 release with matching kernel module and NVIDIA
+userspace versions. When the locked nixpkgs production package predates required security fixes, a host driver pin
+through its native package factory avoids changing other packages. The open NVIDIA kernel module supports this Ampere
+GPU; it is separate from Nouveau and Mesa NVK.
+
+Keep the R580 pin current with NVIDIA's security maintenance and remove it when the locked production package is
+acceptable. NVIDIA recommends its open module on supported GPUs, but documents slower initialization and possible power
+and suspend latency costs. Verify those workloads on this laptop before accepting the migration. See
+https://github.com/NVIDIA/product-security and
+https://download.nvidia.com/XFree86/Linux-x86_64/580.178.04/README/kernel_open.html.
 
 ### Hyprland routing
 
