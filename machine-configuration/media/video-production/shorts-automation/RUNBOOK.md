@@ -78,3 +78,12 @@ visibility. Inspect Studio and the journal after a timeout or ambiguous result b
 Keep research, receipts and artifacts inside this run. Write `hold.json` with the precise failed gate or unavailable
 dependency and do not claim publication. A slot is claimed once, runs do not overlap, and missed slots are not backfilled.
 This fresh scheduled session ends after one attempt. Do not edit dotfiles or launch extra agent sessions to finish it.
+
+### Explicit recovery
+
+An operator may enqueue inspected held slots using `shorts-production queue-recovery --run-id YYYY-MM-DD-HH00`.
+The queue refuses an existing publication dispatch and preserves the original topic reservation. Run
+`shorts-production drain-recovery` in a transient user service to process only those requested slots in sequence.
+Each attempt archives the prior hold and agent evidence, uses the same production lock and headless browser, and
+stops on a fresh hold. Recovery reserves the full job deadline before the next ordinary slot and gives the timer's
+activation window priority. The normal timer never backfills automatically.

@@ -80,6 +80,7 @@ class SynthesizedSpeech:
     alignment: CharacterAlignment | None = None
     provider_request_id: str | None = None
     billed_characters: int | None = None
+    alignment_adjustments: tuple[dict, ...] = ()
 
 
 class SpeechProvider(Protocol):
