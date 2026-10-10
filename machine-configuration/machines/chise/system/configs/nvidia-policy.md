@@ -9,10 +9,10 @@ GPU; it is separate from Nouveau and Mesa NVK.
 Keep the R580 pin current with NVIDIA's security maintenance and remove it when the locked production package is
 acceptable. NVIDIA recommends its open module on supported GPUs, but documents slower initialization and possible power
 and suspend latency costs. Verify those workloads on this laptop before accepting the migration. See
-https://github.com/NVIDIA/product-security and
-https://download.nvidia.com/XFree86/Linux-x86_64/580.178.04/README/kernel_open.html.
+[NVIDIA security advisories](https://github.com/NVIDIA/product-security) and
+[NVIDIA open kernel modules](https://download.nvidia.com/XFree86/Linux-x86_64/580.178.04/README/kernel_open.html).
 
-### Hyprland routing
+## Hyprland routing
 
 `AQ_DRM_DEVICES` selects AMD as Hyprland's primary renderer and retains NVIDIA for its outputs. The external monitor
 connects through a hub to AMD's DisplayPort output. Keep that hub connection. AMD renders the desktop and presents
@@ -24,15 +24,15 @@ renderer before accepting its GPU selection.
 
 The udev aliases bind DRM card nodes to PCI devices. Numeric `cardN` names can change at boot, and PCI paths containing
 colons cannot appear directly in the colon-separated `AQ_DRM_DEVICES` list. Keep both aliases consistent with the
-host's PCI bus IDs. See https://wiki.hypr.land/configuring/extra/multi-gpu/.
+host's PCI bus IDs. See the [Hyprland multi-GPU guide](https://wiki.hypr.land/configuring/extra/multi-gpu/).
 
-### Workload boundaries
+## Workload boundaries
 
 Do not force GLX, GBM, or VA-API vendors globally. Applications that require a particular GPU must select it in their
 own launch environment. CUDA and NVENC use NVIDIA independently of the compositor's display routing. Chrome's
 hardware video decoding workaround remains until playback evidence supports removing it.
 
-### Deployment and verification
+## Deployment and verification
 
 Deploy kernel, driver, and routing changes together as a boot generation. Keep the running generation intact until a
 user-authorized reboot. Before accepting the new generation, verify the loaded kernel and driver, both DRM aliases,
