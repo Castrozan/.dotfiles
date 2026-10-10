@@ -4,7 +4,8 @@ from unittest.mock import Mock
 import pytest
 
 import chatgpt_resource_scope as resource_scope
-from chatgpt_resource_scope import ChatGPTResourceScope, ProcessIdentity
+from chatgpt_processes import ProcessIdentity
+from chatgpt_resource_scope import ChatGPTResourceScope
 
 
 @pytest.fixture
@@ -85,6 +86,30 @@ def test_stable_scope_does_not_rewalk_process_tree(scope_fixture, monkeypatch):
     monkeypatch.setattr(resource_scope, "process_tree", tree)
     assert scope.repair_chromium_scope_migration(40)
     command.assert_not_called()
+
+
+def test_attachment_audit_finds_a_child_created_during_migration(
+    scope_fixture, monkeypatch
+):
+    scope, groups, identities, command, target = scope_fixture
+    primary = identities[42]
+    renderer = identities[43]
+    monkeypatch.setattr(
+        resource_scope,
+        "process_tree",
+        lambda root: {primary} if groups[42] != target else {primary, renderer},
+    )
+
+    def attach(arguments, **kwargs):
+        for value in arguments[11:]:
+            groups[int(value)] = target
+
+    command.side_effect = attach
+    assert scope.repair_chromium_scope_migration(40)
+    assert groups[43] != target
+    assert scope.repair_chromium_scope_migration(40)
+    assert groups[43] == target
+    assert command.call_count == 2
 
 
 def test_memory_policy_changes_only_soft_threshold(scope_fixture):

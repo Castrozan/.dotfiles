@@ -114,3 +114,34 @@ def test_attachment_rejects_an_unrelated_process(monkeypatch):
     with pytest.raises(ValueError, match="ChatGPT main process"):
         resource_control.attach_running_app("app-chatgpt-test.scope", 42)
     scope.assert_not_called()
+
+
+def test_resource_and_desktop_failures_preserve_app_and_retry_open_headroom(
+    monkeypatch,
+):
+    scope = Mock()
+    scope.repair_chromium_scope_migration.side_effect = [OSError(), True]
+    scope.set_memory_high.side_effect = [OSError(), None]
+    observer = Mock(refresh_needed=False, window_open=False)
+    observer.poll.side_effect = [ValueError(), None]
+    child = Mock(pid=42, returncode=0)
+    child.poll.side_effect = [None, None, 0]
+    monkeypatch.setattr(
+        resource_control, "ChatGPTResourceScope", Mock(return_value=scope)
+    )
+    monkeypatch.setattr(
+        resource_control, "ChatGPTWindowObserver", Mock(return_value=observer)
+    )
+    monkeypatch.setattr(resource_control.subprocess, "Popen", Mock(return_value=child))
+    monkeypatch.setattr(resource_control.time, "monotonic", Mock(side_effect=[0, 90]))
+    assert (
+        resource_control.control_app("app-chatgpt-test.scope", ["/runtime/chatgpt"])
+        == 0
+    )
+    assert [call.args[0] for call in scope.set_memory_high.call_args_list] == [
+        OPEN_WINDOW_MEMORY_HIGH_BYTES,
+        OPEN_WINDOW_MEMORY_HIGH_BYTES,
+    ]
+    child.terminate.assert_not_called()
+    child.kill.assert_not_called()
+    assert observer.disconnect.call_count == 2

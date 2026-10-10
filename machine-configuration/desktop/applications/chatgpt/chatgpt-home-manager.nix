@@ -17,6 +17,7 @@ let
       })
       [
         ./scripts/chatgpt_memory_policy.py
+        ./scripts/chatgpt_processes.py
         ./scripts/chatgpt_resource_scope.py
         ./scripts/chatgpt_window_observer.py
       ]

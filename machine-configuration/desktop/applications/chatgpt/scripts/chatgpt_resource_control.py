@@ -7,64 +7,79 @@ from chatgpt_memory_policy import (
     OPEN_WINDOW_MEMORY_HIGH_BYTES,
     memory_high_for_window_state,
 )
-from chatgpt_resource_scope import (
-    ChatGPTResourceScope,
-    ProcessIdentity,
-    is_primary_chatgpt_process,
-)
+from chatgpt_processes import ProcessIdentity, is_primary_chatgpt_process
+from chatgpt_resource_scope import ChatGPTResourceScope
 from chatgpt_window_observer import ChatGPTWindowObserver
+
+
+class ChatGPTResourceController:
+    def __init__(self, scope: ChatGPTResourceScope):
+        self.scope = scope
+        self.observer = ChatGPTWindowObserver()
+        self.started_at = time.monotonic()
+        self.applied_memory_high = None
+        self.reported_error = False
+
+    def refresh_windows(self):
+        if self.observer.refresh_needed or self.observer.window_open is None:
+            self.observer.refresh(self.scope.process_ids())
+
+    def apply_memory_high(self, memory_high: int):
+        if memory_high == self.applied_memory_high:
+            return
+        self.scope.set_memory_high(memory_high)
+        self.applied_memory_high = memory_high
+        mode = "background" if memory_high < OPEN_WINDOW_MEMORY_HIGH_BYTES else "open"
+        print(
+            f"ChatGPT memory policy: {mode}, MemoryHigh={memory_high}, unit={self.scope.unit_name}",
+            file=sys.stderr,
+            flush=True,
+        )
+
+    def refresh_policy(self, root_process_id: int):
+        grouped = self.scope.repair_chromium_scope_migration(root_process_id)
+        self.refresh_windows()
+        window_open = self.observer.window_open if grouped else None
+        memory_high = memory_high_for_window_state(
+            window_open, time.monotonic() - self.started_at
+        )
+        self.apply_memory_high(memory_high)
+        self.reported_error = False
+
+    def recover_failure(self):
+        self.observer.window_open = None
+        self.observer.refresh_needed = True
+        if not self.reported_error:
+            print(
+                "ChatGPT memory policy could not refresh; retaining startup headroom",
+                file=sys.stderr,
+                flush=True,
+            )
+        self.reported_error = True
+        try:
+            self.scope.set_memory_high(OPEN_WINDOW_MEMORY_HIGH_BYTES)
+            self.applied_memory_high = OPEN_WINDOW_MEMORY_HIGH_BYTES
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    def poll(self):
+        try:
+            self.observer.poll(1)
+        except (OSError, ValueError):
+            self.observer.disconnect()
 
 
 def supervise_app(
     scope: ChatGPTResourceScope, root_process_id: int, is_running: Callable[[], bool]
 ) -> None:
-    observer = ChatGPTWindowObserver()
-    started_at = time.monotonic()
-    applied_memory_high = None
-    reported_error = False
+    controller = ChatGPTResourceController(scope)
     while is_running():
         try:
-            grouped = scope.repair_chromium_scope_migration(root_process_id)
-            if observer.refresh_needed or observer.window_open is None:
-                observer.refresh(scope.process_ids())
-            window_open = observer.window_open if grouped else None
-            memory_high = memory_high_for_window_state(
-                window_open, time.monotonic() - started_at
-            )
-            if memory_high != applied_memory_high:
-                scope.set_memory_high(memory_high)
-                applied_memory_high = memory_high
-                mode = (
-                    "background"
-                    if memory_high < OPEN_WINDOW_MEMORY_HIGH_BYTES
-                    else "open"
-                )
-                print(
-                    f"ChatGPT memory policy: {mode}, MemoryHigh={memory_high}, unit={scope.unit_name}",
-                    file=sys.stderr,
-                    flush=True,
-                )
-            reported_error = False
+            controller.refresh_policy(root_process_id)
         except (OSError, ValueError, subprocess.SubprocessError):
-            observer.window_open = None
-            observer.refresh_needed = True
-            if not reported_error:
-                print(
-                    "ChatGPT memory policy could not refresh; retaining startup headroom",
-                    file=sys.stderr,
-                    flush=True,
-                )
-            reported_error = True
-            try:
-                scope.set_memory_high(OPEN_WINDOW_MEMORY_HIGH_BYTES)
-                applied_memory_high = OPEN_WINDOW_MEMORY_HIGH_BYTES
-            except (OSError, subprocess.SubprocessError):
-                pass
-        try:
-            observer.poll(1)
-        except (OSError, ValueError):
-            observer.disconnect()
-    observer.disconnect()
+            controller.recover_failure()
+        controller.poll()
+    controller.observer.disconnect()
 
 
 def control_app(unit_name: str, command: list[str]) -> int:

@@ -1,78 +1,14 @@
 import os
 import signal
 import subprocess
-from dataclasses import dataclass
 from pathlib import Path
 
-
-@dataclass(frozen=True)
-class ProcessIdentity:
-    process_id: int
-    start_ticks: int
-
-    @classmethod
-    def read(cls, process_id: int):
-        try:
-            fields = (
-                (Path("/proc") / str(process_id) / "stat")
-                .read_text()
-                .rsplit(") ", 1)[1]
-                .split()
-            )
-            return cls(process_id, int(fields[19]))
-        except (OSError, ValueError, IndexError):
-            return None
-
-
-def process_tree(root_process_id: int) -> set[ProcessIdentity]:
-    pending = [root_process_id]
-    processes = set()
-    visited = set()
-    while pending:
-        process_id = pending.pop()
-        if process_id in visited:
-            continue
-        visited.add(process_id)
-        identity = ProcessIdentity.read(process_id)
-        if identity is None:
-            continue
-        processes.add(identity)
-        try:
-            threads = (Path("/proc") / str(process_id) / "task").iterdir()
-            for thread in threads:
-                try:
-                    pending.extend(
-                        int(child)
-                        for child in (thread / "children").read_text().split()
-                    )
-                except (OSError, ValueError):
-                    continue
-        except OSError:
-            continue
-    return processes
-
-
-def process_cgroup(process_id: int) -> str | None:
-    try:
-        return (
-            (Path("/proc") / str(process_id) / "cgroup")
-            .read_text()
-            .strip()
-            .split("0::", 1)[1]
-        )
-    except (OSError, IndexError):
-        return None
-
-
-def is_primary_chatgpt_process(identity: ProcessIdentity) -> bool:
-    path = Path("/proc") / str(identity.process_id)
-    try:
-        return (
-            os.readlink(path / "exe").endswith("/lib/chatgpt/ChatGPT")
-            and b"--type=" not in (path / "cmdline").read_bytes()
-        )
-    except OSError:
-        return False
+from chatgpt_processes import (
+    ProcessIdentity,
+    is_primary_chatgpt_process,
+    process_cgroup,
+    process_tree,
+)
 
 
 class ChatGPTResourceScope:
@@ -83,65 +19,90 @@ class ChatGPTResourceScope:
             raise ValueError("Resource controller must run inside its own scope")
         self.primary_process = None
         self.pending_migrations = set()
+        self.migration_audit_pending = False
 
-    def repair_chromium_scope_migration(self, root_process_id: int) -> bool:
-        if (
-            self.primary_process is None
-            or ProcessIdentity.read(self.primary_process.process_id)
-            != self.primary_process
-        ):
-            self.primary_process = next(
-                (
-                    identity
-                    for identity in process_tree(root_process_id)
-                    if is_primary_chatgpt_process(identity)
-                ),
-                None,
-            )
-        if self.primary_process is None:
-            return False
-        if (
-            process_cgroup(self.primary_process.process_id) == self.cgroup
-            and not self.pending_migrations
-        ):
-            return True
-        escaped = [
-            identity
-            for identity in process_tree(root_process_id)
-            if process_cgroup(identity.process_id) not in (None, self.cgroup)
-            and ProcessIdentity.read(identity.process_id) == identity
-        ]
-        self.pending_migrations = set(escaped)
-        if escaped:
-            subprocess.run(
-                [
-                    "busctl",
-                    "--user",
-                    "call",
-                    "org.freedesktop.systemd1",
-                    "/org/freedesktop/systemd1",
-                    "org.freedesktop.systemd1.Manager",
-                    "AttachProcessesToUnit",
-                    "ssau",
-                    self.unit_name,
-                    "",
-                    str(len(escaped)),
-                    *(str(identity.process_id) for identity in escaped),
-                ],
-                check=True,
-                capture_output=True,
-                timeout=3,
-            )
-        self.pending_migrations = {
-            identity
-            for identity in self.pending_migrations
-            if ProcessIdentity.read(identity.process_id) == identity
-            and process_cgroup(identity.process_id) != self.cgroup
-        }
+    def primary_process_is_alive(self) -> bool:
+        return (
+            self.primary_process is not None
+            and ProcessIdentity.read(self.primary_process.process_id)
+            == self.primary_process
+        )
+
+    def find_primary_process(self, root_process_id: int):
+        return next(
+            (
+                identity
+                for identity in process_tree(root_process_id)
+                if is_primary_chatgpt_process(identity)
+            ),
+            None,
+        )
+
+    def membership_is_stable(self) -> bool:
         return (
             not self.pending_migrations
             and process_cgroup(self.primary_process.process_id) == self.cgroup
         )
+
+    def migration_audit_is_required(self) -> bool:
+        return self.migration_audit_pending or not self.membership_is_stable()
+
+    def process_needs_attachment(self, identity: ProcessIdentity) -> bool:
+        return (
+            process_cgroup(identity.process_id) not in (None, self.cgroup)
+            and ProcessIdentity.read(identity.process_id) == identity
+        )
+
+    def escaped_processes(self, root_process_id: int) -> set[ProcessIdentity]:
+        return {
+            identity
+            for identity in process_tree(root_process_id)
+            if self.process_needs_attachment(identity)
+        }
+
+    def migration_is_pending(self, identity: ProcessIdentity) -> bool:
+        return (
+            ProcessIdentity.read(identity.process_id) == identity
+            and process_cgroup(identity.process_id) != self.cgroup
+        )
+
+    def attach_pending_processes(self) -> None:
+        if not self.pending_migrations:
+            return
+        subprocess.run(
+            [
+                "busctl",
+                "--user",
+                "call",
+                "org.freedesktop.systemd1",
+                "/org/freedesktop/systemd1",
+                "org.freedesktop.systemd1.Manager",
+                "AttachProcessesToUnit",
+                "ssau",
+                self.unit_name,
+                "",
+                str(len(self.pending_migrations)),
+                *(str(identity.process_id) for identity in self.pending_migrations),
+            ],
+            check=True,
+            capture_output=True,
+            timeout=3,
+        )
+
+    def repair_chromium_scope_migration(self, root_process_id: int) -> bool:
+        if not self.primary_process_is_alive():
+            self.primary_process = self.find_primary_process(root_process_id)
+        if self.primary_process is None:
+            return False
+        if not self.migration_audit_is_required():
+            return True
+        self.pending_migrations = self.escaped_processes(root_process_id)
+        self.migration_audit_pending = bool(self.pending_migrations)
+        self.attach_pending_processes()
+        self.pending_migrations = set(
+            filter(self.migration_is_pending, self.pending_migrations)
+        )
+        return self.membership_is_stable()
 
     def process_ids(self) -> set[int]:
         return {
