@@ -40,7 +40,7 @@ let
         stateDir = "${config.home.homeDirectory}/.pinchtab";
       };
       instanceDefaults = {
-        mode = "headed";
+        mode = "headless";
         tabPolicy.eviction = "reject";
       };
       profiles = {
@@ -104,24 +104,24 @@ in
   systemd.user = lib.mkIf (pkgs.stdenv.isLinux && hostname == "chise") {
     services.shorts-browser = {
       Unit = {
-        Description = "Persistent headed browser for the authorized Shorts profile";
-        After = [ "graphical-session-pre.target" ];
-        PartOf = [ "graphical-session.target" ];
+        Description = "On-demand headless browser for the authorized Shorts profile";
+        PartOf = [ "shorts-production.service" ];
+        StopWhenUnneeded = true;
       };
       Service = {
         ExecStart = browserServer;
         ExecStartPost = browserReady;
         TimeoutStartSec = 60;
+        TimeoutStopSec = 30;
         Restart = "on-failure";
         RestartSec = 5;
         KillMode = "control-group";
       };
-      Install.WantedBy = [ "graphical-session.target" ];
     };
     services.shorts-production = {
       Unit = {
         Description = "Research, direct, verify and publish one original YouTube Short";
-        Wants = [ "shorts-browser.service" ];
+        Requires = [ "shorts-browser.service" ];
         After = [ "shorts-browser.service" ];
       };
       Service = {
