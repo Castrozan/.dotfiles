@@ -27,13 +27,12 @@ def bootstrap(ledger, media_clients, torrents, filesystem):
             if download_hash in live_hashes:
                 ledger.record_download(media, download_hash)
                 mapped.add(download_hash)
-    unmapped = [value for value in torrent_list if value["hash"].lower() not in mapped]
-    if unmapped:
+    if torrent_list:
         owners = {}
         for media in media_list:
             for inode in filesystem.linked_inodes(media.library_path):
                 owners.setdefault(inode, set()).add(media)
-        for torrent in unmapped:
+        for torrent in torrent_list:
             try:
                 filesystem.validate_download(torrent["content_path"])
             except ValueError:

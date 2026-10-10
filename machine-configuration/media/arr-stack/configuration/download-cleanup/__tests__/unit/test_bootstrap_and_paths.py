@@ -68,3 +68,35 @@ def test_symlink_cannot_redirect_cleanup_outside_download_storage(tmp_path):
 def test_unmounted_drive_blocks_cleanup(tmp_path):
     with pytest.raises(RuntimeError, match="not mounted"):
         Filesystem(tmp_path).assert_mounted()
+
+
+def test_bootstrap_records_shared_owner_even_when_history_maps_the_torrent(tmp_path):
+    data = tmp_path / "data"
+    downloads = data / "torrents"
+    downloads.mkdir(parents=True)
+    (downloads / "Shared.mkv").write_bytes(b"media")
+    records = []
+    for identifier in (12, 13):
+        library = data / f"media/tv/Series{identifier}"
+        library.mkdir(parents=True)
+        os.link(downloads / "Shared.mkv", library / "Episode.mkv")
+        records.append(
+            {
+                "id": identifier,
+                "tvdbId": identifier + 1000,
+                "title": f"Series{identifier}",
+                "path": f"/data/media/tv/Series{identifier}",
+            }
+        )
+    client = Mock()
+    client.media.return_value = records
+    client.history.return_value = [{"seriesId": 12, "downloadId": "a" * 40}]
+    torrents = Mock()
+    torrents.list.return_value = [
+        {"hash": "a" * 40, "content_path": "/data/torrents/Shared.mkv"}
+    ]
+    filesystem = Filesystem(data)
+    filesystem.assert_mounted = Mock()
+    ledger = Ledger(tmp_path / "cleanup.sqlite")
+    bootstrap(ledger, {"sonarr": client}, torrents, filesystem)
+    assert len(ledger.owners("a" * 40)) == 2
