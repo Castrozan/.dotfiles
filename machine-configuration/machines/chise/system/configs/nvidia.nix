@@ -53,5 +53,5 @@
     cudatoolkit
   ];
 
-  environment.sessionVariables.AQ_DRM_DEVICES = "/dev/dri/nvidia-card:/dev/dri/amd-card";
+  environment.sessionVariables.AQ_DRM_DEVICES = "/dev/dri/amd-card:/dev/dri/nvidia-card";
 }
