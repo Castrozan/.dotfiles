@@ -6,7 +6,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from hook_module_loader import import_hyphenated_hook_module
+from hook_module_loader import (
+    HOOK_SUBPROCESS_TIMEOUT_SECONDS,
+    import_hyphenated_hook_module,
+)
 from flat_deploy_test_support import flatten_into_single_runtime_directory
 
 
@@ -46,6 +49,6 @@ def test_prompt_dispatcher_imports_after_flat_deployment(tmp_path):
         cwd=tmp_path,
         capture_output=True,
         text=True,
-        timeout=10,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
     assert result.returncode == 0, result.stderr
