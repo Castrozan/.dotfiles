@@ -109,12 +109,17 @@ def test_cleanup_excludes_controller_and_processes_outside_the_scope(
     monkeypatch.setattr(scope, "process_ids", lambda: {99, 42, 43})
     monkeypatch.setattr(resource_scope.os, "getpid", lambda: 99)
     monkeypatch.setattr(
-        resource_scope.os, "pidfd_open", lambda process_id: process_id + 1000
+        resource_scope.os,
+        "pidfd_open",
+        lambda process_id: process_id + 1000,
+        raising=False,
     )
     closed = Mock()
     signalled = Mock()
     monkeypatch.setattr(resource_scope.os, "close", closed)
-    monkeypatch.setattr(resource_scope.signal, "pidfd_send_signal", signalled)
+    monkeypatch.setattr(
+        resource_scope.signal, "pidfd_send_signal", signalled, raising=False
+    )
     scope.terminate_remaining_helpers()
     signalled.assert_called_once_with(1042, resource_scope.signal.SIGTERM)
     assert {call.args[0] for call in closed.call_args_list} == {1042, 1043}
