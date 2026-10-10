@@ -120,7 +120,7 @@ cloudflareTunnelChecks
     mkEvalCheck "chise-cockpit-session-bridge-opens-owner-shell"
       (
         nixosCfg.custom.cockpitSessionBridge.sessionCommand == [
-          "${pkgs.bashInteractive}/bin/bash"
+          "${self.nixosConfigurations.chise.pkgs.bashInteractive}/bin/bash"
           "-il"
         ]
       )
