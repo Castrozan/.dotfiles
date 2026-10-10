@@ -46,6 +46,8 @@ def normalize_trailing_separators(alignment, duration):
         for index in range(boundary, len(alignment.characters))
         if alignment.ends_seconds[index] > duration
     ]
-    if any(alignment.ends_seconds[index] - duration > 0.1 for index in indices):
+    if any(
+        round(alignment.ends_seconds[index] - duration, 9) > 0.1 for index in indices
+    ):
         return alignment, ()
     return clamp_separators(alignment, duration, indices)

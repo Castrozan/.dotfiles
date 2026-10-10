@@ -35,3 +35,11 @@ def test_invalid_speech_or_unbounded_alignment_is_still_rejected(alignment):
 
 def test_missing_alignment_remains_unavailable():
     assert normalize_trailing_separators(None, 1.0) == (None, ())
+
+
+def test_exact_hundred_millisecond_boundary_ignores_binary_float_roundoff():
+    original = CharacterAlignment(("a", "."), (0.0, 0.8), (0.8, 1.1))
+    aligned, adjustments = normalize_trailing_separators(original, 1.0)
+    aligned.validate(1.0)
+    assert aligned.ends_seconds == (0.8, 1.0)
+    assert len(adjustments) == 1
