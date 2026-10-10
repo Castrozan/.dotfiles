@@ -1,4 +1,6 @@
-### Tool selection
+# Interactive tool usage
+
+## Tool selection
 
 Use a dedicated tool when it can perform the operation. Read, not cat, head, or tail, inspects files; Glob, not find
 or ls, discovers files; Grep, not grep or rg, searches content; and Edit, not Write, changes an existing file. Use Bash
