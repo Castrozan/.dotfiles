@@ -37,32 +37,49 @@ class JellyfinArtifacts:
             for _, path in self.catalogue()
         )
 
+    def cache_prefixes(self, root):
+        if not root.exists():
+            return
+        for prefix in root.iterdir():
+            if self.cache_prefix(prefix):
+                yield prefix
+
+    def cache_candidates(self):
+        for root in self.cache_directories:
+            for prefix in self.cache_prefixes(root):
+                yield from ((root, directory) for directory in prefix.iterdir())
+
+    def cache_prefix(self, path):
+        return all((not path.is_symlink(), path.is_dir(), len(path.name) == 2))
+
+    def cache_identifier(self, path):
+        if any((path.is_symlink(), not path.is_dir())):
+            return None
+        try:
+            identifier = UUID(path.name).hex
+        except ValueError:
+            return None
+        if identifier[:2] != path.parent.name.lower():
+            return None
+        return identifier
+
+    def retained_cache(self, path, retained):
+        identifier = self.cache_identifier(path)
+        return any((identifier is None, identifier in retained))
+
+    def remove_cache(self, root, directory):
+        if not directory.resolve().is_relative_to(root.resolve()):
+            raise ValueError("Jellyfin cache path escapes its root")
+        shutil.rmtree(directory)
+
     def clean(self):
         retained = {UUID(identifier).hex for identifier, _ in self.catalogue()}
         removed = 0
-        for cache_directory in self.cache_directories:
-            if not cache_directory.exists():
+        for visited, (root, directory) in enumerate(self.cache_candidates(), start=1):
+            if visited > 200000:
+                raise RuntimeError("Jellyfin cache exceeds cleanup bound")
+            if self.retained_cache(directory, retained):
                 continue
-            visited = 0
-            for prefix in cache_directory.iterdir():
-                if prefix.is_symlink() or not prefix.is_dir() or len(prefix.name) != 2:
-                    continue
-                for directory in prefix.iterdir():
-                    visited += 1
-                    if visited > 200000:
-                        raise RuntimeError("Jellyfin cache exceeds cleanup bound")
-                    if directory.is_symlink() or not directory.is_dir():
-                        continue
-                    try:
-                        identifier = UUID(directory.name).hex
-                    except ValueError:
-                        continue
-                    if identifier[:2] != prefix.name.lower() or identifier in retained:
-                        continue
-                    if not directory.resolve().is_relative_to(
-                        cache_directory.resolve()
-                    ):
-                        raise ValueError("Jellyfin cache path escapes its root")
-                    shutil.rmtree(directory)
-                    removed += 1
+            self.remove_cache(root, directory)
+            removed += 1
         return removed

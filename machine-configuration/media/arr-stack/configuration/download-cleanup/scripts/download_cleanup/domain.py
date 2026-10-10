@@ -31,14 +31,10 @@ class Media:
     library_path: str
 
     def __post_init__(self):
-        if (
-            self.app not in ("radarr", "sonarr")
-            or type(self.identifier) is not int
-            or self.identifier <= 0
-        ):
+        if self.app not in ("radarr", "sonarr"):
             raise ValueError("invalid media identity")
-        if type(self.provider_identifier) is not int or self.provider_identifier <= 0:
-            raise ValueError("invalid provider identity")
+        validate_identifier(self.identifier)
+        validate_identifier(self.provider_identifier)
         scoped_path(self.library_path, "/data/media", 5)
 
     @property
@@ -66,41 +62,54 @@ def api_media(app, value):
     )
 
 
-def parse_event(app, payload):
+def validate_identifier(identifier):
+    if type(identifier) is not int or identifier <= 0:
+        raise ValueError("invalid media identifier")
+
+
+def event_kind(app, payload):
     event_type = payload.get("eventType")
-    deletion_type = "MovieDelete" if app == "radarr" else "SeriesDelete"
+    deletion_type = {"radarr": "MovieDelete", "sonarr": "SeriesDelete"}[app]
     if event_type == deletion_type:
-        if payload.get("deletedFiles") is not True:
-            return None
-        kind = "delete"
-    elif event_type in ("Grab", "Download"):
-        if str(payload.get("downloadClientType", "")).lower() != "qbittorrent":
-            return None
-        kind = "download"
-    else:
+        return "delete" if payload.get("deletedFiles") is True else None
+    if event_type not in ("Grab", "Download"):
         return None
+    if str(payload.get("downloadClientType", "")).lower() != "qbittorrent":
+        return None
+    return "download"
+
+
+def native_media(app, payload):
     value = payload["movie" if app == "radarr" else "series"]
-    media = Media(
+    return Media(
         app,
         value["id"],
         value["tmdbId" if app == "radarr" else "tvdbId"],
         value["title"],
         value["folderPath" if app == "radarr" else "path"],
     )
+
+
+def parse_event(app, payload):
+    kind = event_kind(app, payload)
+    if kind is None:
+        return None
     return Event(
-        kind, media, torrent_hash(payload["downloadId"]) if kind == "download" else None
+        kind,
+        native_media(app, payload),
+        torrent_hash(payload["downloadId"]) if kind == "download" else None,
     )
+
+
+def paths_overlap(left, right):
+    return any((left == right, left in right.parents, right in left.parents))
 
 
 def validate_download_paths(selected, unrelated):
     paths = [scoped_path(value, "/data/torrents", 4) for value in selected]
     for selected_path in paths:
-        for value in unrelated:
-            other_path = PurePosixPath(value)
-            if (
-                selected_path == other_path
-                or selected_path in other_path.parents
-                or other_path in selected_path.parents
-            ):
-                raise ValueError("download path overlaps an unrelated torrent")
+        if any(
+            paths_overlap(selected_path, PurePosixPath(value)) for value in unrelated
+        ):
+            raise ValueError("download path overlaps an unrelated torrent")
     return paths
