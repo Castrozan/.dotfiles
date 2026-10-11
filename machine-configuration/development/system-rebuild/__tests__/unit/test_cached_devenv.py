@@ -39,6 +39,10 @@ def install_transport(monkeypatch, module, metadata, responses=None):
         response = values[phase]
         if isinstance(response, Exception):
             raise response
+        if phase == "prefetch_devenv":
+            retention_path = Path(arguments[arguments.index("--add-root") + 1])
+            retention_path.symlink_to(response)
+            return str(retention_path)
         return response
 
     monkeypatch.setattr(module, "run_command", execute)

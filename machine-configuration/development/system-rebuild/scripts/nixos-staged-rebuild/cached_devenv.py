@@ -1,6 +1,7 @@
 import json
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from staged_command import run_command
@@ -57,7 +58,7 @@ def prefetch_cached_devenv(public_archive, retention_path, archive_flags):
     offline_flags = (
         ["--option", "substitute", "false"] if "--offline" in archive_flags else []
     )
-    realized = run_command(
+    run_command(
         "prefetch_devenv",
         [
             "nix-store",
@@ -84,7 +85,7 @@ def prefetch_cached_devenv(public_archive, retention_path, archive_flags):
         ],
         True,
     )
-    if realized != cached_devenv.store_path:
+    if Path(retention_path).resolve() != Path(cached_devenv.store_path):
         raise ValueError("Devenv binary cache returned a different store path")
     nar_hash = run_command(
         "prefetch_devenv_integrity",
