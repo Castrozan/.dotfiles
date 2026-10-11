@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import sys
 from pathlib import Path
 
@@ -91,16 +90,40 @@ else:
         (directory / name).symlink_to(native)
 
 
+def write_time_fixture(directory):
+    timer = directory / "time"
+    timer.write_text(
+        f"""#!{sys.executable}
+import subprocess
+import sys
+
+format_string = sys.argv[2]
+completed = subprocess.run(sys.argv[3:])
+exit_status = (
+    completed.returncode if completed.returncode >= 0 else 128 - completed.returncode
+)
+print(
+    format_string.replace("%e", "0.00").replace("%M", "0").replace("%x", str(exit_status)),
+    file=sys.stderr,
+)
+raise SystemExit(exit_status)
+"""
+    )
+    timer.chmod(0o755)
+    return timer
+
+
 def build_staged_environment(managed_environment, directory):
     write_nix_client_fixture(directory)
     library = write_native_library_fixture(directory)
+    timer = write_time_fixture(directory)
     return {
         **managed_environment,
         "BASH_ENV": "/dev/null",
         "PATH": f"{directory}:{os.environ['PATH']}",
         "PYTHONPATH": str(library),
         "PYTHONNOUSERSITE": "true",
-        "REBUILD_COMMAND_TIME": shutil.which("time"),
+        "REBUILD_COMMAND_TIME": str(timer),
         "NIXOS_STAGED_REBUILD_PYTHON": sys.executable,
         "NIXOS_STAGED_REBUILD_SCRIPTS": str(SCRIPTS),
         "TEST_PHASE_DIRECTORY": str(directory),
