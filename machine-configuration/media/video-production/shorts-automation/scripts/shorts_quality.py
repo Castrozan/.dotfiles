@@ -4,6 +4,8 @@ import math
 import subprocess
 from urllib.parse import urlparse
 
+from shorts_timing import validate_endings
+
 
 REVIEW_DIMENSIONS = (
     "novel_topic",
@@ -142,8 +144,22 @@ def verify_episode(run_directory, episode):
         raise ValueError("Short duration must be between 20 and 180 seconds")
     if abs(int(picture["nb_read_frames"]) - duration * 30) > 2:
         raise ValueError("Unexpected decoded frame count")
+    narration = inside_run(run_directory, episode["narration"]["file"])
+    timing = validate_endings(
+        duration,
+        picture,
+        audio,
+        narration,
+        float(episode["narration"].get("start_seconds", 0)),
+    )
     command(["ffmpeg", "-v", "error", "-xerror", "-i", str(video), "-f", "null", "-"])
-    return {"sha256": digest(video), "duration_seconds": duration, "full_decode": True}
+    return {
+        "sha256": digest(video),
+        "duration_seconds": duration,
+        "full_decode": True,
+        "narration_sha256": digest(narration),
+        "ending": timing,
+    }
 
 
 def verify_publication(url, channel_id):

@@ -1,5 +1,7 @@
 import base64
 
+from media_speech.elevenlabs_alignment import normalize_trailing_separators
+
 from media_speech.contract import (
     CharacterAlignment,
     SpeechError,
@@ -129,6 +131,9 @@ class ElevenLabsSpeechProvider:
                     tuple(data.alignment.character_start_times_seconds),
                     tuple(data.alignment.character_end_times_seconds),
                 )
+            alignment, adjustments = normalize_trailing_separators(
+                alignment, len(pcm_audio) / (24000 * 2)
+            )
             character_cost = response.headers.get("character-cost")
             billed_characters = None
             if character_cost is not None:
@@ -144,6 +149,7 @@ class ElevenLabsSpeechProvider:
                 alignment,
                 response.headers.get("request-id"),
                 billed_characters,
+                adjustments,
             )
         except (ValueError, AttributeError):
             raise SpeechError("invalid_provider_response") from None
