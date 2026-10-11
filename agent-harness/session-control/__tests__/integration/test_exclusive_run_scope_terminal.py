@@ -1,3 +1,4 @@
+import errno
 import importlib.util
 import os
 import pty
@@ -99,3 +100,37 @@ def test_native_exit_before_terminal_handoff_preserves_status(tmp_path, monkeypa
         assert os.waitstatus_to_exitcode(exit_status) == 42, output.decode()
     finally:
         os.close(terminal)
+
+
+def load_scope_module():
+    scope_path = EXCLUSIVE_RUN_LOCK_HELPER_PATH.with_name("exclusive_run_scope.py")
+    module_specification = importlib.util.spec_from_file_location("scope", scope_path)
+    scope = importlib.util.module_from_spec(module_specification)
+    module_specification.loader.exec_module(scope)
+    return scope
+
+
+def test_terminal_handoff_tolerates_a_process_group_that_already_exited(monkeypatch):
+    scope = load_scope_module()
+    for gone_errno in (errno.ESRCH, errno.EINVAL):
+
+        def raise_gone_process_group(*arguments, gone_errno=gone_errno):
+            raise OSError(gone_errno, os.strerror(gone_errno))
+
+        monkeypatch.setattr(scope.os, "tcsetpgrp", raise_gone_process_group)
+        scope.hand_terminal_to_process_group(os.getpgrp())
+
+
+def test_terminal_handoff_propagates_unrelated_failures(monkeypatch):
+    scope = load_scope_module()
+
+    def raise_permission_denied(*arguments):
+        raise OSError(errno.EPERM, os.strerror(errno.EPERM))
+
+    monkeypatch.setattr(scope.os, "tcsetpgrp", raise_permission_denied)
+    try:
+        scope.hand_terminal_to_process_group(os.getpgrp())
+    except OSError as error:
+        assert error.errno == errno.EPERM
+    else:
+        raise AssertionError("unrelated terminal handoff failure was swallowed")

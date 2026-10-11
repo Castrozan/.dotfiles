@@ -9,6 +9,15 @@ from contextlib import contextmanager
 GONE_PROCESS_GROUP_ERRNOS = (errno.ESRCH, errno.EINVAL)
 
 
+def hand_terminal_to_process_group(process_group):
+    try:
+        os.tcsetpgrp(0, process_group)
+        os.killpg(process_group, signal.SIGCONT)
+    except OSError as error:
+        if error.errno not in GONE_PROCESS_GROUP_ERRNOS:
+            raise
+
+
 @contextmanager
 def foreground_process_group(process_group):
     previous_process_group = None
@@ -17,12 +26,7 @@ def foreground_process_group(process_group):
         if os.isatty(0) and os.tcgetpgrp(0) == os.getpgrp():
             previous_process_group = os.getpgrp()
             signal.signal(signal.SIGTTOU, signal.SIG_IGN)
-            try:
-                os.tcsetpgrp(0, process_group)
-                os.killpg(process_group, signal.SIGCONT)
-            except OSError as error:
-                if error.errno not in GONE_PROCESS_GROUP_ERRNOS:
-                    raise
+            hand_terminal_to_process_group(process_group)
         yield
     finally:
         if previous_process_group is not None:
