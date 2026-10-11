@@ -1,0 +1,10 @@
+{
+  "version": "2.2.1",
+  "system": "x86_64-linux",
+  "sourceRevision": "8f297eae651cb47fb1e8f7c19b942462aa879636",
+  "sourceNarHash": "sha256-S4baMekJYJGWDCo1yOYxZkmgBlAruQ5MLi+h3Zo8als=",
+  "storePath": "/nix/store/xrn1id4m2xfz3wpdd931wjygcihc3ls2-devenv-wrapped-2.2.1",
+  "narHash": "sha256:0ivhvah7cm25v904mizzj2vv74dn0pjsf95vycg27v7mp9fc0bs8",
+  "cacheUrl": "https://devenv.cachix.org",
+  "publicKey": "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
+}

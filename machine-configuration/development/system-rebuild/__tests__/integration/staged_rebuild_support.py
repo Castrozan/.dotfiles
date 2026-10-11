@@ -10,6 +10,7 @@ SCRIPTS = Path(__file__).resolve().parents[2] / "scripts/nixos-staged-rebuild"
 SOURCE_PATH = "/nix/store/00000000000000000000000000000000-public-source"
 PRIVATE_PATH = "/nix/store/11111111111111111111111111111111-private-source"
 SYSTEM_PATH = "/nix/store/22222222222222222222222222222222-nixos-system-fixture"
+CACHED_DEVENV_PATH = "/nix/store/66666666666666666666666666666666-devenv-fixture"
 
 
 def write_nix_client_fixture(directory):
@@ -41,6 +42,10 @@ if "archive" in arguments:
         if os.environ.get("TEST_REQUIRE_PUBLIC_ROOT") == "1" and not (directory / "prefetch-public/sources").is_symlink():
             raise SystemExit("public sources were unrooted during private prefetch")
         print(json.dumps({{"path": {PRIVATE_PATH!r}, "inputs": {{"dotfiles": {{"path": {SOURCE_PATH!r}, "inputs": {{}}}}}}}}))
+elif "eval" in arguments and arguments[-1].endswith(".devenv.binaryCache"):
+    print(json.dumps({{"storePath": {CACHED_DEVENV_PATH!r}, "narHash": "sha256:" + "0" * 52, "cacheUrl": "https://devenv.cachix.org", "publicKey": "devenv.cachix.org-1:fixture"}}))
+elif "--query" in arguments and "--hash" in arguments:
+    print("sha256:" + ("1" if os.environ.get("TEST_CACHED_DEVENV_HASH_FAILURE") else "0") * 52)
 elif "eval" in arguments:
     (directory / "eval-pid").write_text(str(os.getpid()))
     if os.environ.get("TEST_REWRITE_REQUEST"):

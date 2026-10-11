@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 from staged_rebuild_support import (
+    CACHED_DEVENV_PATH,
     PRIVATE_PATH,
     SOURCE_PATH,
     SCRIPTS,
@@ -64,6 +65,7 @@ def test_user_prefetch_captures_public_inputs_and_private_immutable_root(
     assert completed.returncode == 0, completed.stderr
     request = json.loads((tmp_path / "request.json").read_text())
     assert set(request["sources"]) == {
+        CACHED_DEVENV_PATH,
         PRIVATE_PATH,
         SOURCE_PATH,
         "/nix/store/33333333333333333333333333333333-nested-source",
@@ -75,13 +77,15 @@ def test_user_prefetch_captures_public_inputs_and_private_immutable_root(
         f"path:{SOURCE_PATH}",
     ]
     events = read_events(tmp_path)
-    assert len(events) == 4
+    assert len(events) == 7
     archives = [event for event in events if "archive" in event["arguments"]]
     assert len(archives) == 2
     assert all("rev=" + "a" * 40 in event["arguments"][-1] for event in archives)
     assert all(event["gc"] == [None, None] for event in events)
     assert "phase=prefetch_public" in completed.stderr
     assert "phase=prefetch_private" in completed.stderr
+    assert (tmp_path / "prefetch-public/devenv").is_symlink()
+    assert "phase=prefetch_devenv_integrity" in completed.stderr
 
 
 def test_dirty_source_rejected_before_fetch_or_privilege_handoff(
@@ -94,6 +98,27 @@ def test_dirty_source_rejected_before_fetch_or_privilege_handoff(
     assert "dirty" in completed.stderr
     assert not read_events(tmp_path)
     assert not (tmp_path / "request.json").exists()
+
+
+def test_cached_devenv_integrity_failure_stops_before_private_prefetch(
+    managed_rebuild_environment, tmp_path
+):
+    environment = prefetch_environment(managed_rebuild_environment, tmp_path)
+    environment["TEST_CACHED_DEVENV_HASH_FAILURE"] = "1"
+    completed = run_prefetch(environment, tmp_path)
+    assert completed.returncode == 1
+    assert "NAR hash does not match" in completed.stderr
+    assert not (tmp_path / "request.json").exists()
+    assert (
+        len(
+            [
+                event
+                for event in read_events(tmp_path)
+                if "archive" in event["arguments"]
+            ]
+        )
+        == 1
+    )
 
 
 def test_unsupported_remote_mode_rejected_before_prefetch(

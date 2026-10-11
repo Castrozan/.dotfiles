@@ -41,7 +41,7 @@ in
   };
 
   config.home = {
-    packages = [ desktopComputerUse ];
+    inherit (desktopComputerUse) packages;
     file.".local/share/agent-plugins/dotfiles".source = config.agentPlugins.bundle;
   };
 }

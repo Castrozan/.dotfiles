@@ -9,7 +9,9 @@ let
     nodejs = pkgs.nodejs_22;
     homeDir = homeDirectory;
   };
-  desktopComputerUse = import ../skills/workstation/desktop/install { inherit pkgs; };
+  desktopComputerUse = import ../skills/workstation/desktop/install/computer-use-mcp-package.nix {
+    inherit pkgs;
+  };
 in
 {
   chrome-devtools = {
@@ -17,6 +19,8 @@ in
     command = browser.chromeDevtoolsMcpStdioCommand;
     args = browser.chromeDevtoolsMcpStdioArgs;
   };
+}
+// pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
   desktop-computer-use = {
     type = "stdio";
     command = pkgs.lib.getExe desktopComputerUse;

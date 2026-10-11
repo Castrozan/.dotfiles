@@ -24,6 +24,7 @@ inputs.nixpkgs.lib.nixosSystem {
   inherit system specialArgs;
 
   modules = [
+    ../../machine-configuration/development/development-environments/devenv-cache-system.nix
     ../../agent-harness/harnesses/codex/system-managed-hooks.nix
     ../../machine-configuration/machines/${hostname}/system
     inputs.home-manager.nixosModules.home-manager

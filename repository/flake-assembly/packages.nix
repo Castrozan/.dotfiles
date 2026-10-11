@@ -4,6 +4,12 @@ let
   inherit (pkgs) lib;
 in
 {
+  devenv =
+    import ../../machine-configuration/development/development-environments/devenv-cached-package.nix
+      {
+        inherit pkgs inputs;
+      };
+
   herdr = import ../../machine-configuration/terminal/workspace-manager/herdr/herdr-package.nix {
     inherit pkgs inputs;
   };
