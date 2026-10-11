@@ -40,6 +40,11 @@ def read_cached_devenv(public_archive):
     if not all(isinstance(metadata.get(name), str) for name in names):
         raise ValueError("Devenv binary-cache metadata fields must be strings")
     cached_devenv = CachedDevenv(*(metadata[name] for name in names))
+    validate_cached_devenv(cached_devenv)
+    return cached_devenv
+
+
+def validate_cached_devenv(cached_devenv):
     validate_store_path(cached_devenv.store_path)
     if not re.fullmatch(
         r"sha256:[0-9abcdfghijklmnpqrsvwxyz]{52}", cached_devenv.nar_hash
@@ -50,7 +55,6 @@ def read_cached_devenv(public_archive):
         raise ValueError("Devenv binary cache must use HTTPS")
     if not cached_devenv.public_key:
         raise ValueError("Devenv binary cache must declare its signing key")
-    return cached_devenv
 
 
 def prefetch_cached_devenv(public_archive, retention_path, archive_flags):

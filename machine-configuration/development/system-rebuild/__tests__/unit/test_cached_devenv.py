@@ -93,7 +93,7 @@ def test_archived_input_overrides_are_used_for_metadata(
 @pytest.mark.parametrize(
     "field,value",
     [
-        ("storePath", "/tmp/mutable"),
+        ("storePath", "/invalid/mutable"),
         ("storePath", True),
         ("narHash", "sha256:incorrect"),
         ("cacheUrl", "http://devenv.cachix.org"),
