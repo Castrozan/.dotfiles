@@ -1,9 +1,12 @@
+import errno
 import os
 import signal
 import subprocess
 import sys
 import time
 from contextlib import contextmanager
+
+GONE_PROCESS_GROUP_ERRNOS = (errno.ESRCH, errno.EINVAL)
 
 
 @contextmanager
@@ -17,8 +20,9 @@ def foreground_process_group(process_group):
             try:
                 os.tcsetpgrp(0, process_group)
                 os.killpg(process_group, signal.SIGCONT)
-            except ProcessLookupError:
-                pass
+            except OSError as error:
+                if error.errno not in GONE_PROCESS_GROUP_ERRNOS:
+                    raise
         yield
     finally:
         if previous_process_group is not None:
