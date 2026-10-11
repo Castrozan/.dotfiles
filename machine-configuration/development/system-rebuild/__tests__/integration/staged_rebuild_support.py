@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -90,25 +91,22 @@ else:
         (directory / name).symlink_to(native)
 
 
+TIME_FIXTURE_BODY = r"""
+format_string=$2
+shift 2
+"$@"
+exit_status=$?
+format_string=${format_string//\%e/0.00}
+format_string=${format_string//\%M/0}
+format_string=${format_string//\%x/$exit_status}
+echo "$format_string" >&2
+exit "$exit_status"
+"""
+
+
 def write_time_fixture(directory):
     timer = directory / "time"
-    timer.write_text(
-        f"""#!{sys.executable}
-import subprocess
-import sys
-
-format_string = sys.argv[2]
-completed = subprocess.run(sys.argv[3:])
-exit_status = (
-    completed.returncode if completed.returncode >= 0 else 128 - completed.returncode
-)
-print(
-    format_string.replace("%e", "0.00").replace("%M", "0").replace("%x", str(exit_status)),
-    file=sys.stderr,
-)
-raise SystemExit(exit_status)
-"""
-    )
+    timer.write_text(f"#!{shutil.which('bash')}\n{TIME_FIXTURE_BODY}")
     timer.chmod(0o755)
     return timer
 
