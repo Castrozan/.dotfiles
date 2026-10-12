@@ -128,6 +128,12 @@ in
     };
   };
 
+  networking.networkmanager.settings.connection-home-uplink = {
+    match-device = "interface-name:wlp4s0";
+    "ipv4.route-metric" = 50;
+    "ipv6.route-metric" = 50;
+  };
+
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [
