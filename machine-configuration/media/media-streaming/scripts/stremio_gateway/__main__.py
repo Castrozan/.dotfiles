@@ -15,6 +15,7 @@ from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_k
 import static_assets
 from runtime_configuration import load_comet_adapter, required_environment_value
 from stremio_protocol import addon_manifest, parse_stream_request
+from torbox_playback import relay_torbox_playback
 
 
 class StremioRequestHandler(BaseHTTPRequestHandler):
@@ -80,6 +81,10 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             forwarded_protocol = self.headers.get("X-Forwarded-Proto", "http")
             request_origin = f"{forwarded_protocol}://{self.headers['Host']}"
             response = self.comet_adapter.response(request_target, request_origin)
+            if "/playback/" in request_target and relay_torbox_playback(
+                self, response, include_body
+            ):
+                return
         except Exception as error:
             print(f"Comet proxy failed: {error}", file=sys.stderr, flush=True)
             self.send_error(502)
