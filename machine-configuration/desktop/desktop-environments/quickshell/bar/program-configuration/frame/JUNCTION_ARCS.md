@@ -1,6 +1,8 @@
 # Junction Arc Geometry
 
-Junction arcs are concave fillets connecting panel extensions to the bar strip. BarBackgroundShape.qml (fill) and BarInternalBorderShape.qml (stroke border) share BarFramePath.qml and its panel contours. BarFrameGeometry.qml computes their common geometry.
+Junction arcs are concave fillets connecting panel extensions to an attachment edge. Fill and border trace the same closed contour. BarFrameGeometry.qml computes the shared geometry.
+
+Use one Shape with separate closed ShapePaths for panel fills and borders. A desktop-sized outer rectangle minus a cutout puts coincident segments on the screen edge when the strip thickness is zero; the curve renderer can then fill the desktop instead of the panels.
 
 ## Anatomy of a Junction
 
@@ -10,7 +12,7 @@ Each junction is a PathLine followed by a PathArc. The PathLine positions the ar
 
 **Rule 1 — Start offset points AWAY from the panel, toward the strip.** The PathLine Y (for vertical strip junctions) or X (for horizontal strip junctions) must offset from the panel edge in the direction of the approaching strip, not into the panel interior. A top junction on the right strip uses `panelTop - radius` (above the panel), placing the fillet in the empty space between strip and panel top. A bottom junction uses `panelBottom + radius` (below the panel). Getting this wrong rotates the fillet 90 degrees into the panel body.
 
-**Rule 2 — Arc direction follows the bar's clockwise winding.** The bar perimeter is traced clockwise. Most junction arcs use `PathArc.Clockwise` because the concave fillet sits on the inside of a clockwise turn. The exception is the left extension bottom junction, which uses `PathArc.Counterclockwise` — at that point the path enters the extension rightward from the downward strip, and the clockwise winding places the concavity on the opposite side. When corner-merged, it switches to `PathArc.Clockwise` because the junction collapses into the strip corner. Panel corner arcs (convex rounded corners at the far edges of panels) always use `PathArc.Counterclockwise`.
+**Rule 2: Arc direction follows the local contour.** Junction arcs use `PathArc.Clockwise`; convex panel corner arcs use `PathArc.Counterclockwise`. The left extension contour approaches its bottom junction while moving upward along the bar edge, so that junction also uses `PathArc.Clockwise`.
 
 ## Horizontal Strip Panels (Dashboard, Launcher)
 
@@ -76,8 +78,8 @@ When a panel extends close enough to the strip's own rounded corner (within `jun
 
 Properties like `topCornerMerged` / `rightPanelTopFullyMerged` control this transition. Merged corners hide arc direction bugs because a zero-radius arc is invisible regardless of direction.
 
-The right panel aggregate (sidebar/notifications, session, utilities, OSD) is typically fully merged on both top and bottom. The sidebar spans from `stripThickness` to `screenHeight - stripThickness - utilitiesHeight`, and utilities fills the remaining gap to `screenHeight - stripThickness`. The aggregate bounding box covers the entire strip height, so both `rightPanelMergedTopArcRadius` and `rightPanelMergedBottomArcRadius` are 0.
+The right panel aggregate is fully merged when its bounding box reaches both screen edges. Both `rightPanelMergedTopArcRadius` and `rightPanelMergedBottomArcRadius` are then 0.
 
 ## Aggregate Right Panel Geometry
 
-Multiple right-side panels (session, sidebar, utilities, OSD) are combined into a single aggregate shape in drawers/RightPanelGeometry.qml. The aggregate Y, bottom, and width are computed as the bounding box of all visible right panels. BarBackgroundShape and BarInternalBorderShape receive this aggregate as a single `rightPanel` with one top junction and one bottom junction.
+Right-side panels share an aggregate contour whose bounds are computed in drawers/RightPanelGeometry.qml. Its bounding box determines the top and bottom junctions; the fill and stroke use the same path.

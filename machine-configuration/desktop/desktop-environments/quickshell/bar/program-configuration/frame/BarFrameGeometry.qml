@@ -27,7 +27,7 @@ QtObject {
     readonly property real extensionTopEdge: extensionY
     readonly property real extensionBottomEdge: extensionY + extensionHeight
 
-    readonly property bool hasExtension: extensionWidth > 0
+    readonly property bool hasExtension: extensionWidth > 0 && extensionHeight > 0
 
     readonly property real topJunctionAvailableSpace: Math.max(0, extensionTopEdge - barRightEdgeStartY)
     readonly property real bottomJunctionAvailableSpace: Math.max(0, barRightEdgeEndY - extensionBottomEdge)

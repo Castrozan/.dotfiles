@@ -1,7 +1,6 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Shapes
 import "../bar"
 import "../frame"
 import "../popouts"
@@ -67,14 +66,12 @@ PanelWindow {
         osdItem: rightPanels.osd
     }
 
-    Shape {
+    BarBackgroundShape {
         id: barBackgroundShape
         anchors.fill: parent
         z: 0
         visible: drawersWindow.visibleBarWidth > 0 || drawersWindow.animatedExtensionWidth > 0 || topBottomPanels.dashboard.visible || topBottomPanels.launcher.visible || aggregatedRightPanelGeometry.aggregatedWidth > 0
-        preferredRendererType: Shape.CurveRenderer
-
-        BarBackgroundShape {
+        geometry: BarFrameGeometry {
             leftBarWidth: drawersWindow.visibleBarWidth
             barHeight: drawersWindow.height
             screenWidth: drawersWindow.width
