@@ -119,6 +119,10 @@ in
       extraSetFlags = [ "--advertise-exit-node" ];
       openFirewall = true;
     };
+    resolved = {
+      enable = true;
+      extraConfig = "DNSStubListenerExtra=100.94.11.81";
+    };
     openssh = {
       enable = true;
       settings = {
@@ -132,10 +136,12 @@ in
     ipv4 = {
       method = "auto";
       route-metric = 50;
+      dns-priority = -50;
     };
     ipv6 = {
       method = "auto";
       route-metric = 50;
+      dns-priority = -50;
     };
   };
 
