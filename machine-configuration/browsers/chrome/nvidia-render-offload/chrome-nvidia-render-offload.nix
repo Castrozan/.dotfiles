@@ -1,6 +1,7 @@
 {
   pkgs,
   chromePackage,
+  hostname,
   nvidiaRenderOffloadCommand,
 }:
 let
@@ -18,7 +19,9 @@ let
       ln -s ${chromeNvidiaRenderOffloadLauncher} "$out/bin/google-chrome-stable"
     '';
   };
+
+  chromeForMachine = if hostname == "chise" then chromeWithNvidiaRenderOffload else chromePackage;
 in
 {
-  inherit chromeWithNvidiaRenderOffload;
+  inherit chromeForMachine;
 }

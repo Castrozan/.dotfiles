@@ -13,17 +13,14 @@ let
     chromeWithoutBrokenHardwareVideoDecoding
     ;
 
-  chromeNvidiaRenderOffload = import ./nvidia-render-offload/chrome-nvidia-render-offload.nix {
-    inherit pkgs;
-    chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
-    nvidiaRenderOffloadCommand = "/run/current-system/sw/bin/nvidia-offload";
-  };
-
-  chromeForMachine =
-    if hostname == "chise" then
-      chromeNvidiaRenderOffload.chromeWithNvidiaRenderOffload
-    else
-      chromeWithoutBrokenHardwareVideoDecoding;
+  inherit
+    (import ./nvidia-render-offload/chrome-nvidia-render-offload.nix {
+      inherit pkgs hostname;
+      chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
+      nvidiaRenderOffloadCommand = "/run/current-system/sw/bin/nvidia-offload";
+    })
+    chromeForMachine
+    ;
 
   chromeGlobalLauncher = pkgs.writeShellScript "chrome-global-launcher" ''
     exec ${chromeForMachine}/bin/google-chrome-stable \

@@ -1,4 +1,9 @@
-{ pkgs, latest, ... }:
+{
+  pkgs,
+  latest,
+  hostname,
+  ...
+}:
 let
   inherit
     (import
@@ -9,6 +14,15 @@ let
       }
     )
     chromeWithoutBrokenHardwareVideoDecoding
+    ;
+
+  inherit
+    (import ../../../browsers/chrome/nvidia-render-offload/chrome-nvidia-render-offload.nix {
+      inherit pkgs hostname;
+      chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
+      nvidiaRenderOffloadCommand = "/run/current-system/sw/bin/nvidia-offload";
+    })
+    chromeForMachine
     ;
 
   hyprlandPythonLibraryPath = ./scripts/lib;
@@ -68,7 +82,7 @@ in
     ])
     (mkHyprlandPythonScriptWithDeps "hypr-summon-chrome-global"
       ./scripts/launchers/summon_chrome_global.py
-      [ chromeWithoutBrokenHardwareVideoDecoding ]
+      [ chromeForMachine ]
     )
     (mkHyprlandPythonScriptWithDeps "brightness" ./scripts/hardware/brightness.py [
       pkgs.brightnessctl
