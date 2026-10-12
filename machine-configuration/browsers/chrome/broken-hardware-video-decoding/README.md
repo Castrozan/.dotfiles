@@ -1,5 +1,8 @@
 # Chrome broken hardware video decoding
 
+This fallback remains the default for Linux hosts outside chise. Chise selects the separate AMD hardware-decoding
+package after native playback testing; the failure evidence below describes the earlier configuration.
+
 Chrome cannot decode video in hardware on a hybrid NVIDIA and AMD laptop, and it does not know that. It refuses the
 NVIDIA render node outright, then fails on what is left with `failed Initialize()ing the frame pool` from
 `media/gpu/vaapi/vaapi_video_decoder.cc` and tears the decoder down. This happens for every codec, H.264 included, so

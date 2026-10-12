@@ -5,27 +5,9 @@
   ...
 }:
 let
-  inherit
-    (import
-      ../../../browsers/chrome/broken-hardware-video-decoding/chrome-broken-hardware-video-decoding-workaround.nix
-      {
-        inherit pkgs;
-        chromePackage = latest.google-chrome;
-      }
-    )
-    chromeWithoutBrokenHardwareVideoDecoding
-    ;
-
-  inherit
-    (import
-      ../../../browsers/chrome/broken-mipmap-generation/chrome-broken-mipmap-generation-workaround.nix
-      {
-        inherit pkgs hostname;
-        chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
-      }
-    )
-    chromeForMachine
-    ;
+  chromeForMachine = import ../../../browsers/chrome/chrome-linux-package.nix {
+    inherit pkgs latest hostname;
+  };
 
   hyprlandPythonLibraryPath = ./scripts/lib;
 

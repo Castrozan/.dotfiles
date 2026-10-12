@@ -5,21 +5,9 @@
   ...
 }:
 let
-  inherit
-    (import ./broken-hardware-video-decoding/chrome-broken-hardware-video-decoding-workaround.nix {
-      inherit pkgs;
-      chromePackage = latest.google-chrome;
-    })
-    chromeWithoutBrokenHardwareVideoDecoding
-    ;
-
-  inherit
-    (import ./broken-mipmap-generation/chrome-broken-mipmap-generation-workaround.nix {
-      inherit pkgs hostname;
-      chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
-    })
-    chromeForMachine
-    ;
+  chromeForMachine = import ./chrome-linux-package.nix {
+    inherit pkgs latest hostname;
+  };
 
   chromeGlobalLauncher = pkgs.writeShellScript "chrome-global-launcher" ''
     exec ${chromeForMachine}/bin/google-chrome-stable \

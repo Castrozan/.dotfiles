@@ -25,8 +25,32 @@ let
       inherit pkgs hostname;
       chromePackage = pkgs.hello;
     }).chromeForMachine;
+
+  chromeLinuxPackage =
+    hostname:
+    import ../chrome/chrome-linux-package.nix {
+      inherit pkgs hostname;
+      latest = {
+        google-chrome = pkgs.hello;
+        mesa = pkgs.hello;
+      };
+    };
 in
 {
+  domain-browser-chise-chrome-selects-amd-hardware-decoding =
+    mkEvalCheck "domain-browser-chise-chrome-selects-amd-hardware-decoding"
+      (lib.hasInfix "google-chrome-with-amd-hardware-video-decoding" (chromeLinuxPackage "chise")
+      .postBuild)
+      "Chise's common Chrome package must compose the AMD hardware decoder beneath the ANGLE mipmap workaround";
+
+  domain-browser-other-linux-hosts-preserve-video-decoding-policy =
+    mkEvalCheck "domain-browser-other-linux-hosts-preserve-video-decoding-policy"
+      (
+        lib.getName (chromeLinuxPackage "other-host")
+        == "google-chrome-without-broken-hardware-video-decoding"
+      )
+      "Other Linux hosts must keep the existing decoder workaround without selecting Chise's AMD driver";
+
   domain-browser-chise-chrome-uses-mipmap-generation-workaround =
     mkEvalCheck "domain-browser-chise-chrome-uses-mipmap-generation-workaround"
       (lib.getName (chromeForMachine "chise") == "google-chrome-without-broken-mipmap-generation")
