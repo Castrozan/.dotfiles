@@ -10,6 +10,7 @@ class NativeRebuildOptions:
     action: str
     flake_reference: str
     derivation_attribute: str
+    configuration_attribute: str
     profile_name: str
     specialisation: str | None
     install_bootloader: bool
@@ -74,6 +75,7 @@ def parse_native_options(arguments):
         derivation_attribute=Flake.parse(parsed.flake).to_attr(
             "config", "system", "build", "toplevel", "drvPath"
         ),
+        configuration_attribute=Flake.parse(parsed.flake).to_attr("config"),
         profile_name=parsed.profile_name,
         specialisation=parsed.specialisation,
         install_bootloader=parsed.install_bootloader,

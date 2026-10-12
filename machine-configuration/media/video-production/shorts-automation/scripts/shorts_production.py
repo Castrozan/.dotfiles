@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 import shorts_runner
+import shorts_recovery
 from shorts_quality import digest, inside_run, verify_episode, verify_publication
 from shorts_store import (
     PUBLICATION_FILENAME,
@@ -87,6 +88,11 @@ def main():
     run = commands.add_parser("run")
     run.add_argument("--slot", type=int, choices=[9, 15, 21])
     commands.add_parser("history")
+    commands.add_parser("queue-recovery").add_argument(
+        "--run-id", action="append", required=True
+    )
+    commands.add_parser("recover-next")
+    commands.add_parser("drain-recovery")
     for action in ("reserve", "verify", "dispatch", "complete"):
         commands.add_parser(action).add_argument(
             "--episode-file", type=Path, required=True
@@ -99,6 +105,10 @@ def main():
         )
     elif arguments.action == "history":
         result = TopicStore(root).history()
+    elif arguments.action in shorts_recovery.ACTIONS:
+        result = shorts_recovery.command(
+            arguments, root, read_document(os.environ["SHORTS_CONFIGURATION"])
+        )
     else:
         result = episode_command(arguments.action, root, arguments.episode_file)
     print(json.dumps(result))

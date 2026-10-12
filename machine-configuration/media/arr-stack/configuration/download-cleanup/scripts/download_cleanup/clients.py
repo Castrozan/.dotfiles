@@ -25,6 +25,10 @@ class MediaClient:
     def media(self):
         return self.get(f"/{self.resource}")
 
+    def contains_provider(self, identifier):
+        provider_field = "tmdbId" if self.app == "radarr" else "tvdbId"
+        return any(value[provider_field] == identifier for value in self.media())
+
     def history(self):
         for page in range(1, 21):
             result = self.get(

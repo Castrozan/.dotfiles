@@ -9,12 +9,18 @@ readonly EXCLUSIVE_RUN_LOCK_HELPER="@exclusiveRunLockHelper@"
 readonly EXCLUSIVE_RUN_SCOPE_PYTHON="@exclusiveRunScopePython@"
 readonly NIXOS_REBUILD_PREFETCH="@nixosRebuildPrefetch@"
 readonly NIXOS_STAGED_REBUILD="@nixosStagedRebuild@"
+readonly REBUILD_MEMORY_REPORTER="@memoryReporter@"
+readonly REBUILD_MEMORY_SYSTEM="@memorySystem@"
 export NIXOS_REBUILD_PREFETCH NIXOS_STAGED_REBUILD
 export EXCLUSIVE_RUN_SCOPE_PYTHON
+export REBUILD_MEMORY_SYSTEM
 readonly TYPICAL_REBUILD_DURATION_SECONDS=420
 readonly NIX_DAEMON_PROFILE="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 
 REBUILD_SWITCH_LOG_PATH=""
+REBUILD_MEASURE_MEMORY=0
+REBUILD_FORWARD_ARGUMENTS=()
+REBUILD_MEMORY_ACTION="switch"
 
 LOW_PRIORITY_COMMAND_PREFIX=(nice -n 19)
 if command -v ionice >/dev/null 2>&1; then
@@ -24,6 +30,34 @@ fi
 fail() {
 	echo "error: $*" >&2
 	exit 1
+}
+
+parse_memory_measurement_arguments() {
+	for argument in "$@"; do
+		case "$argument" in
+		--measure-memory) REBUILD_MEASURE_MEMORY=1 ;;
+		*) REBUILD_FORWARD_ARGUMENTS+=("$argument") ;;
+		esac
+	done
+	export REBUILD_MEASURE_MEMORY
+}
+
+prepare_rebuild_memory_metrics() {
+	REBUILD_MEMORY_DIRECTORY="$(mktemp -d -t dotfiles-rebuild-memory.XXXXXXXX)"
+	REBUILD_MEMORY_RECORDS="${REBUILD_MEMORY_DIRECTORY}/records.jsonl"
+	REBUILD_MEMORY_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+	export REBUILD_MEMORY_RECORDS
+	trap 'finish_rebuild_memory_metrics "$?"' EXIT
+}
+
+finish_rebuild_memory_metrics() {
+	local rebuild_status="$1"
+	local metrics_directory="${XDG_STATE_HOME:-${HOME}/.local/state}/dotfiles/rebuild-memory"
+	"$REBUILD_MEMORY_REPORTER" publish "$REBUILD_MEMORY_RECORDS" "$metrics_directory" \
+		"$REBUILD_MEMORY_ACTION" "$MACHINE_ALIAS" "$REBUILD_MEMORY_STARTED_AT" "$rebuild_status" ||
+		echo "error: could not persist rebuild memory metrics" >&2
+	rm -rf -- "$REBUILD_MEMORY_DIRECTORY"
+	exit "$rebuild_status"
 }
 
 detect_backend_name() {
@@ -78,12 +112,15 @@ nudge_clawde_agents_to_redeploy_on_continued_sessions() {
 }
 
 main() {
+	parse_memory_measurement_arguments "$@"
+	set -- "${REBUILD_FORWARD_ARGUMENTS[@]}"
 	local rebuild_action="switch"
 	if [ "${1:-}" = "boot" ]; then
 		[ "$(detect_backend_name)" = "nixos" ] || fail "rebuild boot is supported only on NixOS"
 		rebuild_action="boot"
 		shift
 	fi
+	REBUILD_MEMORY_ACTION="$rebuild_action"
 
 	ensure_dotfiles_directory_exists
 	ensure_nix_is_on_the_path
@@ -91,6 +128,7 @@ main() {
 
 	backend_prepare_environment
 	prepare_exclusive_rebuild_lock
+	prepare_rebuild_memory_metrics
 	initialize_git_submodules
 
 	if [ "$rebuild_action" = "boot" ]; then

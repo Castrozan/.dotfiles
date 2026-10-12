@@ -10,10 +10,12 @@ connections and `--no-daemon` retain their native behavior; noninteractive comma
 upstream launch path.
 
 SessionStart derives the session's Servant from the thread ID and names it through that terminal's server.
-UserPromptSubmit fills in `Servant | session name` using Codex's stored first-prompt preview or the submitted prompt when
-the preview is not yet available. Existing task titles retain their text; sessions awaiting their first prompt show the
-Servant's name without brackets. The footer and terminal title display that name. Resume and compaction keep the same
-identity, while forks derive one from their new ID.
+UserPromptSubmit asks the current session model to choose a concise title from the conversation's goal and save
+`Servant | session name` through the native naming command, without a separate title-generation request.
+Existing custom titles retain their text; unnamed and first-prompt-preview titles receive a generated name. The command
+preserves a title changed after the hook ran. Sessions awaiting a generated title show the Servant's name without
+brackets. The footer and terminal title display that name. Resume and compaction keep the same identity, while forks
+derive one from their new ID.
 
 Native profiles carry interactive instructions and workspace overrides. Nix deploys their immutable sources separately
 and seeds writable profile files during activation. Codex can save model and reasoning selections into those files;

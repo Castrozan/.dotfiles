@@ -21,6 +21,15 @@ runs:
           experimental-features = nix-command flakes
           access-tokens = github.com=${{ inputs.github-token }}
 
+    - name: Configure the signed Devenv cache
+      shell: bash
+      run: |
+        cache_configuration=machine-configuration/development/development-environments/devenv-cache.json
+        mkdir -p "$HOME/.config/nix"
+        printf 'extra-substituters = %s\nextra-trusted-public-keys = %s\n' \
+          "$(jq -er .cacheUrl "$cache_configuration")" \
+          "$(jq -er .publicKey "$cache_configuration")" >> "$HOME/.config/nix/nix.conf"
+
     # Keeping the cache configuration in one place matters more than the indirection costs: a key
     # that drifts between jobs turns every restore into a silent miss, which reads as a slow run
     # rather than as a broken cache.

@@ -13,6 +13,7 @@ let
         prefetch = "";
         rebuild = "";
       };
+  memoryReporter = import ../../memory-metrics-package.nix { inherit pkgs; };
 in
 pkgs.runCommand "rebuild" { } ''
   mkdir -p $out/bin $out/libexec/rebuild/backends
@@ -28,6 +29,8 @@ pkgs.runCommand "rebuild" { } ''
     --replace-fail '@exclusiveRunScopePython@' '${pkgs.python3}/bin/python3' \
     --replace-fail '@nixosRebuildPrefetch@' '${stagedRebuild.prefetch}' \
     --replace-fail '@nixosStagedRebuild@' '${stagedRebuild.rebuild}' \
+    --replace-fail '@memoryReporter@' '${memoryReporter}' \
+    --replace-fail '@memorySystem@' '${pkgs.stdenv.hostPlatform.system}' \
     --replace-fail '@backendsDirectory@' "$out/libexec/rebuild/backends"
 
   substituteInPlace $out/bin/rebuild \

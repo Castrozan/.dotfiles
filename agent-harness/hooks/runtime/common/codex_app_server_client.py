@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import hashlib
 import json
 import time
 
@@ -11,6 +12,10 @@ class CodexAppServerError(RuntimeError):
 class CodexThreadTitle:
     name: str | None
     preview: str
+
+    @property
+    def name_digest(self) -> str:
+        return hashlib.sha256((self.name or "").encode()).hexdigest()
 
 
 class CodexAppServerClient:

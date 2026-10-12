@@ -8,7 +8,12 @@
 }:
 {
   home.packages = [
-    inputs.devenv.packages.${pkgs.stdenv.hostPlatform.system}.devenv
+    (
+      if pkgs.stdenv.hostPlatform.isLinux then
+        import ./devenv-cached-package.nix { inherit pkgs inputs; }
+      else
+        inputs.devenv.packages.${pkgs.stdenv.hostPlatform.system}.devenv
+    )
   ];
 
   home.activation.removeDevelopmentContainerPilot = lib.mkIf (hostname == "rin") (

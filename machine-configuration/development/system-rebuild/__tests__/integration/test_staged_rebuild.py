@@ -162,3 +162,38 @@ def test_switch_preserves_native_profile_specialisation_and_bootloader_options(
     assert native[0]["profile"] == "custom"
     assert native[1]["specialisation"] == "desktop"
     assert native[1]["install_bootloader"] is True
+
+
+@pytest.mark.parametrize("measure", [False, True])
+def test_rebuild_records_phases_and_only_runs_requested_component_evaluations(
+    managed_rebuild_environment, tmp_path, measure
+):
+    environment = build_staged_environment(managed_rebuild_environment, tmp_path)
+    records = tmp_path / "memory-records"
+    environment["REBUILD_MEMORY_RECORDS"] = str(records)
+    environment.update(
+        REBUILD_MEASURE_MEMORY=str(int(measure)), REBUILD_MEMORY_SYSTEM="x86_64-linux"
+    )
+    request = write_prepared_request(tmp_path)
+    prepared = json.loads(request.read_text())
+    prepared.update(
+        public_reference="git+file:///source?rev=immutable",
+        public_path=prepared["sources"][0],
+    )
+    request.write_text(json.dumps(prepared))
+    completed = run_staged(environment, "switch", request)
+    assert completed.returncode == 0, completed.stderr
+    recorded = [json.loads(line) for line in records.read_text().splitlines()]
+    phases = [record["phase"] for record in recorded if "phase" in record]
+    assert len(phases) == 5 + 5 * measure
+    assert [phase for phase in phases if not phase.startswith("component_")] == [
+        "source_retention",
+        "evaluation",
+        "realization",
+        "profile_update",
+        "activation",
+    ]
+    assert (
+        sum("eval" in event["arguments"] for event in read_events(tmp_path))
+        == 1 + 5 * measure
+    )

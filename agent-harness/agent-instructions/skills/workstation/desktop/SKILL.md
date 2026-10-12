@@ -5,10 +5,10 @@ description: Control native desktop apps, keyboard, mouse, screenshots, clipboar
 
 ### Native app computer use
 
-Use the shared `desktop-computer-use` MCP for native app interaction. On macOS, start with `doctor` and inspect controls
-through `get_ui_tree`; on Hyprland, start with `desktop` and inspect controls through `ui`. Follow the server's tool
-descriptions for targeting and screenshot coordinates, and verify the visible result after an action. macOS requires
-Accessibility and Screen Recording grants for the terminal or agent host; installation alone cannot grant them.
+On macOS, use the shared `desktop-computer-use` MCP for native app interaction. Start with `doctor` and inspect controls
+through `get_ui_tree`. Follow the server's tool descriptions for targeting and screenshot coordinates, and verify the
+visible result after an action. macOS requires Accessibility and Screen Recording grants for the terminal or agent host;
+installation alone cannot grant them. On Linux, use the Wayland capabilities below.
 
 ### Cross platform capability routing
 

@@ -4,7 +4,7 @@ import pytest
 
 from download_cleanup.domain import Media, parse_event
 from download_cleanup.ledger import Ledger
-from download_cleanup.worker import CleanupWorker
+from download_cleanup_test_support import worker_for
 
 
 @pytest.fixture
@@ -15,23 +15,6 @@ def ledger(tmp_path):
 @pytest.fixture
 def media():
     return Media("sonarr", 12, 1234, "Example", "/data/media/tv/Example")
-
-
-def worker_for(ledger, torrents):
-    media_api = Mock()
-    media_api.exists.return_value = False
-    filesystem = Mock(
-        spec=[
-            "assert_mounted",
-            "library_exists",
-            "download_exists",
-            "validate_download",
-        ]
-    )
-    filesystem.library_exists.return_value = False
-    filesystem.download_exists.return_value = False
-    jellyfin = Mock()
-    return CleanupWorker(ledger, {"sonarr": media_api}, torrents, filesystem, jellyfin)
 
 
 def test_full_deletion_removes_only_recorded_hashes_and_refreshes_jellyfin(

@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from cached_devenv import prefetch_cached_devenv
 from staged_command import command_failure_status
 from staged_native import parse_native_options
 from staged_sources import (
@@ -45,6 +46,11 @@ def prepare_rebuild_sources(request_path, public_directory, arguments):
     public_retention = Path(request_path).parent / "prefetch-public"
     public_retention.mkdir()
     retain_source_roots(sorted(sources), public_retention, "prefetch_public_retention")
+    sources.add(
+        prefetch_cached_devenv(
+            public_archive, public_retention / "devenv", options.archive_flags
+        )
+    )
     root_reference = pin_local_source(root_reference, "entrypoint")
     if root_reference == public_reference:
         root_archive = public_archive
@@ -72,7 +78,14 @@ def prepare_rebuild_sources(request_path, public_directory, arguments):
         *archived_input_overrides(root_archive),
     ]
     Path(request_path).write_text(
-        json.dumps({"arguments": prepared_arguments, "sources": sorted(sources)})
+        json.dumps(
+            {
+                "arguments": prepared_arguments,
+                "sources": sorted(sources),
+                "public_reference": public_reference,
+                "public_path": public_archive["path"],
+            }
+        )
     )
 
 

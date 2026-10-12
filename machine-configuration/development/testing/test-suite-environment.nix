@@ -11,6 +11,7 @@ pkgs.buildEnv {
     pkgs.nodejs_22
     pkgs.pyright
     pkgs.ripgrep
+    pkgs.time
   ]
   ++ pkgs.lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.mpv;
 }

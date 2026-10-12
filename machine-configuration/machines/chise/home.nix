@@ -42,7 +42,6 @@ in
     ../../editors/visual-studio-code/visual-studio-code-home-manager.nix
     ../../editors/editor-command-packages-home-manager.nix
 
-    ../../browsers/firefox/firefox-home-manager.nix
     ../../browsers/chrome/chrome-global-linux-home-manager.nix
 
     ../../desktop/clipboard-history/clipse-home-manager.nix

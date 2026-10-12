@@ -25,6 +25,7 @@ inputs.nix-darwin.lib.darwinSystem {
   inherit system specialArgs;
 
   modules = [
+    ../../machine-configuration/development/development-environments/devenv-cache-system.nix
     ../../agent-harness/harnesses/codex/system-managed-hooks.nix
     ../../machine-configuration/machines/${hostname}/system
     inputs.home-manager.darwinModules.home-manager

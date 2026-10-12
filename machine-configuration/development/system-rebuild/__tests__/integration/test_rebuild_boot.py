@@ -5,23 +5,7 @@ import time
 from pathlib import Path
 
 import pytest
-
-
-def run_rebuild(environment, *arguments):
-    program = """source "$TEST_REBUILD_ENTRYPOINT"
-detect_backend_name() { echo "$TEST_REBUILD_PLATFORM"; }
-ensure_nix_is_on_the_path() { echo nix-ready >> "$TEST_EVENTS"; }
-initialize_git_submodules() { echo git-ready >> "$TEST_EVENTS"; }
-nudge_clawde_agents_to_redeploy_on_continued_sessions() { echo fleet >> "$TEST_EVENTS"; }
-main "$@"
-"""
-    return subprocess.run(
-        ["bash", "-c", program, "rebuild-test", *arguments],
-        env=environment,
-        capture_output=True,
-        text=True,
-        timeout=5,
-    )
+from rebuild_boot_fixture import run_rebuild
 
 
 def test_boot_stages_native_generation_without_live_or_post_switch_effects(
@@ -55,12 +39,17 @@ def test_boot_stages_native_generation_without_live_or_post_switch_effects(
     assert "reboot to activate" in completed.stdout
 
 
+@pytest.mark.parametrize("measure", [False, True])
 def test_default_switch_preserves_live_activation_and_post_switch_effects(
-    rebuild_boot_environment, tmp_path
+    rebuild_boot_environment, tmp_path, measure
 ):
-    completed = run_rebuild(rebuild_boot_environment, "--option", "cores", "2")
+    flags = ["--measure-memory"] if measure else []
+    completed = run_rebuild(rebuild_boot_environment, "--option", "cores", "2", *flags)
     assert completed.returncode == 0, completed.stderr
     assert (tmp_path / "native-arguments").read_text().splitlines()[0] == "switch"
+    assert "--measure-memory" not in (tmp_path / "native-arguments").read_text()
+    privileged = (tmp_path / "privileged-arguments").read_text().splitlines()
+    assert f"REBUILD_MEASURE_MEMORY={int(measure)}" in privileged
     assert (tmp_path / "current-generation").read_text() == "active\n"
     assert (tmp_path / "activated").exists()
     assert (tmp_path / "events").read_text().splitlines() == [

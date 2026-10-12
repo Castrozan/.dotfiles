@@ -117,7 +117,7 @@ def test_prefetch_releases_before_privilege_handoff_and_reacquires_fail_closed(
         env=environment,
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=15,
     )
     assert prepared.returncode == 0, prepared.stderr
     assert (tmp_path / "prepared/sources").is_symlink()

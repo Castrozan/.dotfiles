@@ -115,6 +115,7 @@ def instruction_surface_files() -> list[Path]:
     instruction_root = REPO_ROOT / "agent-harness" / "agent-instructions"
     surfaces = [
         instruction_root / "project-context" / "dotfiles-agent-instructions.md",
+        REPO_ROOT / "agent-harness/harnesses/codex/session-title-instructions.md",
     ]
     surfaces += sorted((instruction_root / "core-rules").glob("**/*.md"))
     surfaces += sorted((instruction_root / "rebuild-guidance").glob("*.md"))

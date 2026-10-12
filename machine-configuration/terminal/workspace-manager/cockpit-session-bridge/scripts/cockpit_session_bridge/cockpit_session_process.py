@@ -73,6 +73,8 @@ async def bridge_session_over_websocket(websocket_connection, settings, event_lo
 
     child_environment = dict(os.environ)
     child_environment["TERM"] = settings.terminal_type
+    child_environment["TERM_PROGRAM"] = "cockpit"
+    child_environment["HERDR_ENV"] = "1"
 
     session_process = await asyncio.create_subprocess_exec(
         *await resolve_session_command(websocket_connection, settings),

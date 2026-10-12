@@ -7,6 +7,7 @@
 }:
 let
   directory = ./shorts-automation;
+  speech = import ../media-generation/speech-package.nix { inherit pkgs; };
   configuration = pkgs.writeText "shorts-production-config.json" (
     builtins.toJSON {
       channel_id = "UC6Vso0wnLrqyf60Nn-rrpfw";
@@ -81,19 +82,24 @@ let
   '';
   production = pkgs.writeShellScriptBin "shorts-production" ''
     export PATH=${
-      lib.makeBinPath [
-        browser
-        pkgs.ffmpeg
-        pkgs.yt-dlp
-        pkgs.git
-        pkgs.bash
-      ]
+      lib.makeBinPath (
+        [
+          browser
+          speech
+          pkgs.ffmpeg
+          pkgs.yt-dlp
+          pkgs.git
+          pkgs.bash
+        ]
+        ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.systemd ]
+      )
     }:"${config.home.profileDirectory}/bin:$PATH"
     export SHORTS_CODEX=${config.codex.unwrappedPackage}/bin/codex
     export SHORTS_PINCHTAB=${pinchtab}/bin/pinchtab
     export SHORTS_GOAL_PROMPT=${directory}/goal.txt
     export SHORTS_CONFIGURATION=${configuration}
     export SHORTS_RUNBOOK=${directory}/RUNBOOK.md
+    export SHORTS_RECOVERY_GOAL=${directory}/recovery-goal.txt
     exec ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_production.py "$@"
   '';
 in
@@ -103,36 +109,57 @@ in
     browser
   ];
   systemd.user = lib.mkIf (pkgs.stdenv.isLinux && hostname == "chise") {
-    services.shorts-browser = {
-      Unit = {
-        Description = "On-demand headless browser for the authorized Shorts profile";
-        PartOf = [ "shorts-production.service" ];
-        StopWhenUnneeded = true;
+    services = {
+      shorts-browser = {
+        Unit = {
+          Description = "On-demand headless browser for the authorized Shorts profile";
+          PartOf = [ "shorts-production.service" ];
+          StopWhenUnneeded = true;
+        };
+        Service = {
+          ExecStart = browserServer;
+          ExecStartPost = browserReady;
+          TimeoutStartSec = 60;
+          TimeoutStopSec = 30;
+          Restart = "on-failure";
+          RestartSec = 5;
+          KillMode = "control-group";
+        };
       };
-      Service = {
-        ExecStart = browserServer;
-        ExecStartPost = browserReady;
-        TimeoutStartSec = 60;
-        TimeoutStopSec = 30;
-        Restart = "on-failure";
-        RestartSec = 5;
-        KillMode = "control-group";
+      shorts-production = {
+        Unit = {
+          Description = "Research, direct, verify and publish one original YouTube Short";
+          Requires = [ "shorts-browser.service" ];
+          After = [ "shorts-browser.service" ];
+        };
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${production}/bin/shorts-production run";
+          TimeoutStartSec = "125min";
+          KillMode = "control-group";
+          Nice = 10;
+          WorkingDirectory = config.home.homeDirectory;
+          Environment = [ "TZ=America/Sao_Paulo" ];
+        };
       };
-    };
-    services.shorts-production = {
-      Unit = {
-        Description = "Research, direct, verify and publish one original YouTube Short";
-        Requires = [ "shorts-browser.service" ];
-        After = [ "shorts-browser.service" ];
-      };
-      Service = {
-        Type = "oneshot";
-        ExecStart = "${production}/bin/shorts-production run";
-        TimeoutStartSec = "125min";
-        KillMode = "control-group";
-        Nice = 10;
-        WorkingDirectory = config.home.homeDirectory;
-        Environment = [ "TZ=America/Sao_Paulo" ];
+      shorts-recovery = {
+        Unit = {
+          Description = "Recover one explicitly queued held Short";
+          Requires = [ "shorts-browser.service" ];
+          After = [
+            "shorts-browser.service"
+            "shorts-production.service"
+          ];
+        };
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${production}/bin/shorts-production recover-next";
+          TimeoutStartSec = "125min";
+          KillMode = "control-group";
+          Nice = 10;
+          WorkingDirectory = config.home.homeDirectory;
+          Environment = [ "TZ=America/Sao_Paulo" ];
+        };
       };
     };
     timers.shorts-production = {
@@ -145,5 +172,6 @@ in
       };
       Install.WantedBy = [ "timers.target" ];
     };
+
   };
 }

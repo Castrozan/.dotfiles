@@ -39,6 +39,14 @@ Write `episode.json` with `topic_key`, `title`, specific `summary`, relative `vi
 true. Supply 6 to 24 `beats`, each with an inspected relative `frame` file. Align readable mobile captions and visuals
 to the narration; keep claims synchronized with their demonstrations.
 
+Retain the exact edited narration stem used in the final mix as 16-bit PCM WAV and include
+`"narration": {"file": "relative/edited-narration.wav", "start_seconds": 0}` in `episode.json`.
+Use its actual timeline offset. End the composition within one second of the last audible narration;
+finish captions, music and any visual payoff there instead of adding a silent closing card.
+The gate measures the voice stem at -45 dBFS in 10 ms windows, records its hash and rejects excess tail
+or more than 100 ms between final audio and video stream ends. Padded music does not extend the speech.
+This acoustic gate complements a real editorial review; it does not prove voice quality or engagement.
+
 Supply `review` entries for `novel_topic`, `factual_accuracy`, `opening`, `payoff`, `visual_storytelling`,
 `voice_performance`, `caption_readability`, `sound_mix` and `full_playback`. Each has `passed`, substantive `finding` and
 relative `evidence`. Save actual frame inspection, narration review and browser-playback observations with their limits.
@@ -78,3 +86,20 @@ visibility. Inspect Studio and the journal after a timeout or ambiguous result b
 Keep research, receipts and artifacts inside this run. Write `hold.json` with the precise failed gate or unavailable
 dependency and do not claim publication. A slot is claimed once, runs do not overlap, and missed slots are not backfilled.
 This fresh scheduled session ends after one attempt. Do not edit dotfiles or launch extra agent sessions to finish it.
+
+### Explicit recovery
+
+An operator may enqueue inspected held slots using `shorts-production queue-recovery --run-id YYYY-MM-DD-HH00`.
+The queue refuses an existing publication dispatch and preserves the original topic reservation. Run
+`shorts-production drain-recovery` in a transient user service to process only those requested slots in sequence.
+Each attempt archives the prior hold and agent evidence, uses the same production lock and headless browser, and
+stops on a fresh hold. Recovery reserves the full job deadline before the next ordinary slot and gives the timer's
+activation window priority. The normal timer never backfills automatically.
+
+### Published video email
+
+On chise, `shorts-publication-email.timer` checks the last seven days of scheduled run directories every five minutes. Only matching completed publication journals, verified by `shorts-production complete` for the configured channel, qualify. Notifications begin with publications on October 10, 2026. Each email includes the title, public Shorts URL and scheduled or recovered slot, and goes only to `castro.lucas290@gmail.com` through the existing Gmail SMTP account.
+
+The separate root service loads the existing SMTP credential with systemd `LoadCredential`; it does not change secret ownership or expose it to the production agent. Its private ledger is `/var/lib/shorts-publication-email`, keyed by video ID. Each run attempts at most two emails and is bounded to four minutes and 128 MiB. Connection/authentication failures and explicit SMTP rejections retry independently of video production. Successful SMTP acceptance is recorded as `sent`. A lost acknowledgement or crash during sending remains `delivery_uncertain`: inspect the deterministic Message-ID in Gmail before any manual retry. Exactly-once receipt cannot be guaranteed by SMTP after an ambiguous network failure.
+
+For an explicitly authorized link sent through connected Gmail before this service is activated, retain `email-notification.json` in that video's run directory with `status` (`sent` or `delivery_uncertain`), `video_id`, `recipient`, transport and provider message ID when known. The SMTP collector imports that receipt and does not resend. Email failures never change publication journals or queue another upload.

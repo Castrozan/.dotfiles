@@ -10,6 +10,7 @@ SCRIPTS = Path(__file__).resolve().parents[2] / "scripts/nixos-staged-rebuild"
 SOURCE_PATH = "/nix/store/00000000000000000000000000000000-public-source"
 PRIVATE_PATH = "/nix/store/11111111111111111111111111111111-private-source"
 SYSTEM_PATH = "/nix/store/22222222222222222222222222222222-nixos-system-fixture"
+CACHED_DEVENV_PATH = "/nix/store/66666666666666666666666666666666-devenv-fixture"
 
 
 def write_nix_client_fixture(directory):
@@ -41,6 +42,12 @@ if "archive" in arguments:
         if os.environ.get("TEST_REQUIRE_PUBLIC_ROOT") == "1" and not (directory / "prefetch-public/sources").is_symlink():
             raise SystemExit("public sources were unrooted during private prefetch")
         print(json.dumps({{"path": {PRIVATE_PATH!r}, "inputs": {{"dotfiles": {{"path": {SOURCE_PATH!r}, "inputs": {{}}}}}}}}))
+elif "eval" in arguments and arguments[-1].endswith(".devenv.binaryCache"):
+    print(json.dumps({{"storePath": {CACHED_DEVENV_PATH!r}, "narHash": "sha256:" + "0" * 52, "cacheUrl": "https://devenv.cachix.org", "publicKey": "devenv.cachix.org-1:fixture"}}))
+elif "--query" in arguments and "--hash" in arguments:
+    print("sha256:" + ("1" if os.environ.get("TEST_CACHED_DEVENV_HASH_FAILURE") else "0") * 52)
+elif "eval" in arguments and "--json" in arguments:
+    print(json.dumps(["/nix/store/44444444444444444444444444444444-component.drv"]))
 elif "eval" in arguments:
     (directory / "eval-pid").write_text(str(os.getpid()))
     if os.environ.get("TEST_REWRITE_REQUEST"):
@@ -91,16 +98,46 @@ else:
         (directory / name).symlink_to(native)
 
 
+TIME_FIXTURE_BODY = r"""
+format_string=$2
+shift 2
+output_path=""
+if [[ "${1:-}" == --quiet ]]; then
+    output_path=$3
+    shift 3
+fi
+"$@"
+exit_status=$?
+format_string=${format_string//\%e/0.00}
+format_string=${format_string//\%M/0}
+format_string=${format_string//\%x/$exit_status}
+if [[ -n "$output_path" ]]; then
+    echo "$format_string" > "$output_path"
+else
+    echo "$format_string" >&2
+fi
+exit "$exit_status"
+"""
+
+
+def write_time_fixture(directory):
+    timer = directory / "time"
+    timer.write_text(f"#!{shutil.which('bash')}\n{TIME_FIXTURE_BODY}")
+    timer.chmod(0o755)
+    return timer
+
+
 def build_staged_environment(managed_environment, directory):
     write_nix_client_fixture(directory)
     library = write_native_library_fixture(directory)
+    timer = write_time_fixture(directory)
     return {
         **managed_environment,
         "BASH_ENV": "/dev/null",
         "PATH": f"{directory}:{os.environ['PATH']}",
         "PYTHONPATH": str(library),
         "PYTHONNOUSERSITE": "true",
-        "REBUILD_COMMAND_TIME": shutil.which("time"),
+        "REBUILD_COMMAND_TIME": str(timer),
         "NIXOS_STAGED_REBUILD_PYTHON": sys.executable,
         "NIXOS_STAGED_REBUILD_SCRIPTS": str(SCRIPTS),
         "TEST_PHASE_DIRECTORY": str(directory),
