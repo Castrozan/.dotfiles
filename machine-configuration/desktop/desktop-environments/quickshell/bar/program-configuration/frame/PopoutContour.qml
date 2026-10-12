@@ -4,7 +4,7 @@ QtObject {
     id: contourRoot
 
     required property BarFrameGeometry geometry
-    property list<QtObject> elements: [
+    readonly property list<QtObject> bottomCornerElements: [
         PathLine {
             x: contourRoot.geometry.bottomEdgeTargetX
             y: contourRoot.geometry.barHeight - contourRoot.geometry.stripThickness
@@ -15,7 +15,10 @@ QtObject {
             radiusX: contourRoot.geometry.effectiveBottomLeftBarCornerRadius
             radiusY: contourRoot.geometry.effectiveBottomLeftBarCornerRadius
             direction: PathArc.Clockwise
-        },
+        }
+    ]
+
+    readonly property list<QtObject> extensionElements: [
         PathLine {
             x: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.bottomEdgeTargetX : contourRoot.geometry.leftBarWidth
             y: contourRoot.geometry.clampedExtensionBottomEdge + contourRoot.geometry.effectiveBottomJunctionArcRadius
@@ -59,7 +62,10 @@ QtObject {
             radiusX: contourRoot.geometry.effectiveTopJunctionArcRadius
             radiusY: contourRoot.geometry.effectiveTopJunctionArcRadius
             direction: PathArc.Clockwise
-        },
+        }
+    ]
+
+    readonly property list<QtObject> topCornerElements: [
         PathLine {
             x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : contourRoot.geometry.leftBarWidth
             y: contourRoot.geometry.stripThickness + contourRoot.geometry.effectiveTopLeftBarCornerRadius
@@ -72,4 +78,6 @@ QtObject {
             direction: PathArc.Clockwise
         }
     ]
+
+    readonly property list<QtObject> elements: geometry.hasExtension ? [...bottomCornerElements, ...extensionElements, ...topCornerElements] : [...bottomCornerElements, ...topCornerElements]
 }
