@@ -176,9 +176,11 @@ def test_rebuild_records_phases_and_only_runs_requested_component_evaluations(
     )
     request = write_prepared_request(tmp_path)
     prepared = json.loads(request.read_text())
-    request.write_text(
-        json.dumps({**prepared, "public_reference": "git+file:///source?rev=immutable"})
+    prepared.update(
+        public_reference="git+file:///source?rev=immutable",
+        public_path=prepared["sources"][0],
     )
+    request.write_text(json.dumps(prepared))
     completed = run_staged(environment, "switch", request)
     assert completed.returncode == 0, completed.stderr
     recorded = [json.loads(line) for line in records.read_text().splitlines()]

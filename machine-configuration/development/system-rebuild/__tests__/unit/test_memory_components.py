@@ -42,5 +42,4 @@ def test_component_probes_are_serial_offline_and_cannot_build(
     assert "--override-input" not in calls[2][1]
     assert any(public in argument for argument in calls[2][1])
     recorded = [json.loads(line) for line in records.read_text().splitlines()]
-    assert recorded[0]["sources"]["public"] == public
-    assert all(record["output_count"] == 1 for record in recorded[1:])
+    assert all(record["output_count"] == 1 for record in recorded)

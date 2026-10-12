@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 from memory_components import measure_components
-from memory_records import RebuildRun, publish_report
+from memory_records import RebuildRun, append_record, publish_report
 from staged_command import command_failure_status, run_command
 
 
@@ -40,6 +40,14 @@ def execute_operation(options):
     if options.operation == "run":
         run_command(options.phase, options.command)
         return
+    append_record(
+        {
+            "sources": {
+                "public": options.public_reference,
+                "configuration": options.configuration_attribute,
+            }
+        }
+    )
     measure_components(
         options.public_reference, options.configuration_attribute, options.system, ()
     )

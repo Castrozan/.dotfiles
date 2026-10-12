@@ -98,8 +98,11 @@ def record_rebuild_context(request_path, options):
     if os.environ.get("REBUILD_MEASURE_MEMORY") == "1":
         if not isinstance(public_reference, str):
             raise ValueError("component measurements require the pinned public source")
+        public_path = validate_store_path(request["public_path"])
+        if public_path not in request["sources"]:
+            raise ValueError("component measurement source was not prefetched")
         measure_components(
-            public_reference,
+            "path:" + public_path,
             options.configuration_attribute,
             os.environ["REBUILD_MEMORY_SYSTEM"],
             options.evaluation_flags,

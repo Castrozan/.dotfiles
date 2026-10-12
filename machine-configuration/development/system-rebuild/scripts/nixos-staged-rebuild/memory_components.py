@@ -54,14 +54,6 @@ def component_application(public_reference, system, component):
 def measure_components(
     public_reference, configuration_attribute, system, evaluation_flags
 ):
-    append_record(
-        {
-            "sources": {
-                "configuration": configuration_attribute,
-                "public": public_reference,
-            }
-        }
-    )
     os.environ["GC_INITIAL_HEAP_SIZE"] = "67108864"
     os.environ["GC_FREE_SPACE_DIVISOR"] = "8"
     configuration_probes = {

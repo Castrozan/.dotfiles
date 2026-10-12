@@ -83,6 +83,7 @@ def prepare_rebuild_sources(request_path, public_directory, arguments):
                 "arguments": prepared_arguments,
                 "sources": sorted(sources),
                 "public_reference": public_reference,
+                "public_path": public_archive["path"],
             }
         )
     )
