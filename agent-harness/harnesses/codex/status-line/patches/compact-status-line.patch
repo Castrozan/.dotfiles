@@ -91,3 +91,9 @@ diff --git a/tui/src/bottom_pane/chat_composer.rs b/tui/src/bottom_pane/chat_com
 @@ -4676 +4677 @@
 -                            truncate_line_with_ellipsis_if_overflow(line.clone(), max_left as usize)
 +                            fit_status_line_to_width(line.clone(), max_left as usize)
+diff --git a/tui/src/bottom_pane/chat_composer/status_surface.rs b/tui/src/bottom_pane/chat_composer/status_surface.rs
+--- a/tui/src/bottom_pane/chat_composer/status_surface.rs
++++ b/tui/src/bottom_pane/chat_composer/status_surface.rs
+@@ -77 +77 @@
+-                truncate_line_with_ellipsis_if_overflow(line, usize::from(width)),
++                fit_status_line_to_width(line, usize::from(width)),
