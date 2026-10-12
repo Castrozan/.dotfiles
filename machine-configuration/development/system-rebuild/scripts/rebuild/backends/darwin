@@ -83,6 +83,14 @@ resolve_flake_reference() {
 	echo "git+file://${DOTFILES_DIRECTORY}?submodules=1#$1"
 }
 
+measure_darwin_components() (
+	acquire_exclusive_run_lock_or_emit_retry_instructions "rebuild" 420
+	"$EXCLUSIVE_RUN_SCOPE_PYTHON" "${EXCLUSIVE_RUN_LOCK_HELPER%/*}/exclusive_run_scope.py" \
+		"$DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR" "${LOW_PRIORITY_COMMAND_PREFIX[@]}" \
+		"$REBUILD_MEMORY_REPORTER" components "$1" \
+		"$1#darwinConfigurations.\"${MACHINE_ALIAS}\".config" "$REBUILD_MEMORY_SYSTEM"
+)
+
 backend_switch() {
 	current_system_symlink_target_before_switch="$(read_current_system_symlink_target)"
 	current_system_symlink_mtime_before_switch="$(read_current_system_symlink_mtime)"
@@ -91,10 +99,7 @@ backend_switch() {
 	flake_reference="$(resolve_flake_reference "$MACHINE_ALIAS")"
 	if [ "$REBUILD_MEASURE_MEMORY" = "1" ]; then
 		local pinned_reference="${flake_reference%#*}&rev=$(git -C "$DOTFILES_DIRECTORY" rev-parse HEAD)"
-		"$EXCLUSIVE_RUN_SCOPE_PYTHON" "${EXCLUSIVE_RUN_LOCK_HELPER%/*}/exclusive_run_scope.py" \
-			"$DOTFILES_EXCLUSIVE_RUN_LOCK_FILE_DESCRIPTOR" "${LOW_PRIORITY_COMMAND_PREFIX[@]}" \
-			"$REBUILD_MEMORY_REPORTER" components "$pinned_reference" \
-			"${pinned_reference}#darwinConfigurations.\"${MACHINE_ALIAS}\".config" "$REBUILD_MEMORY_SYSTEM"
+		measure_darwin_components "$pinned_reference"
 	fi
 	echo ":: Rebuilding darwin from ${flake_reference}..."
 	echo ":: Rebuild output is logged to ${REBUILD_SWITCH_LOG_PATH}"

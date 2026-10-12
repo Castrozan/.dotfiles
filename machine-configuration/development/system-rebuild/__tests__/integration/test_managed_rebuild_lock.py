@@ -2,11 +2,45 @@ import os
 import subprocess
 import sys
 import time
+import shutil
 from pathlib import Path
 
 import pytest
 
 SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
+
+
+@pytest.mark.parametrize("contended", [False, True])
+def test_darwin_component_probes_use_the_shared_guard(
+    managed_rebuild_environment, tmp_path, contended
+):
+    environment = {
+        **managed_rebuild_environment,
+        "REBUILD_MEMORY_REPORTER": shutil.which("echo"),
+    }
+    holder = start_holder(environment, tmp_path) if contended else None
+    program = f'''set -Eeuo pipefail
+source "$EXCLUSIVE_RUN_LOCK_HELPER"
+source "{SCRIPTS}/rebuild/backends/darwin"
+LOW_PRIORITY_COMMAND_PREFIX=()
+MACHINE_ALIAS=fixture
+REBUILD_MEMORY_SYSTEM=aarch64-darwin
+measure_darwin_components "git+file:///source?rev=immutable"
+"$SYSTEM_REBUILD_LOCK_GUARD" true
+'''
+    try:
+        completed = subprocess.run(
+            ["bash", "-c", program],
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        assert completed.returncode == (99 if contended else 0), completed.stderr
+        assert completed.stdout.startswith("components ") is not contended
+    finally:
+        if holder:
+            stop_holder(holder)
 
 
 def wait_for_path(path):
