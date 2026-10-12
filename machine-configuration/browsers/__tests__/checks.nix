@@ -18,8 +18,25 @@ let
         inherit pkgs;
         chromePackage = pkgs.hello;
       };
+
+  chromeForMachine =
+    hostname:
+    (import ../chrome/broken-mipmap-generation/chrome-broken-mipmap-generation-workaround.nix {
+      inherit pkgs hostname;
+      chromePackage = pkgs.hello;
+    }).chromeForMachine;
 in
 {
+  domain-browser-chise-chrome-uses-mipmap-generation-workaround =
+    mkEvalCheck "domain-browser-chise-chrome-uses-mipmap-generation-workaround"
+      (lib.getName (chromeForMachine "chise") == "google-chrome-without-broken-mipmap-generation")
+      "Chise Chrome must disable ANGLE mipmap recreation and retain native Wayland presentation";
+
+  domain-browser-other-machines-preserve-chrome-rendering =
+    mkEvalCheck "domain-browser-other-machines-preserve-chrome-rendering"
+      (builtins.toString (chromeForMachine "other-host") == builtins.toString pkgs.hello)
+      "The Chise ANGLE workaround must preserve the original Chrome package on other machines";
+
   domain-browser-firefox-enabled =
     mkEvalCheck "domain-browser-firefox-enabled" cfg.programs.firefox.enable
       "firefox should be enabled";

@@ -1,4 +1,9 @@
-{ pkgs, latest, ... }:
+{
+  pkgs,
+  latest,
+  hostname,
+  ...
+}:
 let
   inherit
     (import
@@ -9,6 +14,17 @@ let
       }
     )
     chromeWithoutBrokenHardwareVideoDecoding
+    ;
+
+  inherit
+    (import
+      ../../../browsers/chrome/broken-mipmap-generation/chrome-broken-mipmap-generation-workaround.nix
+      {
+        inherit pkgs hostname;
+        chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
+      }
+    )
+    chromeForMachine
     ;
 
   hyprlandPythonLibraryPath = ./scripts/lib;
@@ -68,7 +84,7 @@ in
     ])
     (mkHyprlandPythonScriptWithDeps "hypr-summon-chrome-global"
       ./scripts/launchers/summon_chrome_global.py
-      [ chromeWithoutBrokenHardwareVideoDecoding ]
+      [ chromeForMachine ]
     )
     (mkHyprlandPythonScriptWithDeps "brightness" ./scripts/hardware/brightness.py [
       pkgs.brightnessctl
