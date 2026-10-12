@@ -1,0 +1,9 @@
+.media-status > span:has(> div[style*="width:"]) {
+  background-color: rgb(31 41 55 / 80%) !important;
+  border-color: rgb(75 85 99);
+  color: rgb(229 231 235) !important;
+}
+
+.media-status > span:has(> div[style*="width:"]) > div[style*="width:"] {
+  background-color: rgb(99 102 241 / 35%) !important;
+}

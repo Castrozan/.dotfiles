@@ -19,6 +19,9 @@ let
     cp ${../jellyseerr-notifications/Dockerfile} "$out/Dockerfile"
     cp ${../jellyseerr-notifications/scripts/available_media_email.js} "$out/available_media_email.js"
     cp ${../jellyseerr-notifications/__tests__/test_available_media_email.cjs} "$out/test_available_media_email.cjs"
+    cp ${../jellyseerr-notifications/interface/request-progress.css} "$out/request-progress.css"
+    cp ${../jellyseerr-notifications/interface/request_progress_stylesheet.js} "$out/request_progress_stylesheet.js"
+    cp ${../jellyseerr-notifications/interface/__tests__/test_request_progress_stylesheet.cjs} "$out/test_request_progress_stylesheet.cjs"
   '';
   miwayomiWebCacheVersion = builtins.hashString "sha256" (
     builtins.readFile ./miwayomi-interface-artwork.patch

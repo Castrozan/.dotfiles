@@ -16,6 +16,9 @@
         ../jellyseerr-notifications/Dockerfile
         ../jellyseerr-notifications/scripts/available_media_email.js
         ../jellyseerr-notifications/__tests__/test_available_media_email.cjs
+        ../jellyseerr-notifications/interface/request-progress.css
+        ../jellyseerr-notifications/interface/request_progress_stylesheet.js
+        ../jellyseerr-notifications/interface/__tests__/test_request_progress_stylesheet.cjs
       ];
     };
 
