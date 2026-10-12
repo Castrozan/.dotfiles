@@ -14,6 +14,11 @@ Item {
     signal contentPointerEntered
     signal contentPointerLeft
 
+    function cancelPendingTransition(): void {
+        revealDelayTimer.stop();
+        concealTimer.stop();
+    }
+
     function triggerEntered(): void {
         drawerHoverTimingRoot.triggerHovered = true;
         concealTimer.stop();

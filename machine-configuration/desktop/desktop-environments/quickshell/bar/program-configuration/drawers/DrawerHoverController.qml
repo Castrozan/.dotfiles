@@ -6,6 +6,7 @@ Item {
     required property var drawerState
 
     property bool pointerOverBar: false
+    property int barAutoHideInterval: 3000
 
     readonly property alias bar: barHoverTiming
     readonly property alias dashboard: dashboardHoverTiming
@@ -14,6 +15,18 @@ Item {
     readonly property alias utilities: utilitiesHoverTiming
     readonly property alias sidebar: sidebarHoverTiming
     readonly property alias osd: osdHoverTiming
+
+    function toggleBarTemporarily(): void {
+        barAutoHideTimer.stop();
+        barHoverTiming.cancelPendingTransition();
+        if (drawerHoverControllerRoot.drawerState.barVisible) {
+            drawerHoverControllerRoot.drawerState.clearPopout();
+            drawerHoverControllerRoot.drawerState.closeBar();
+            return;
+        }
+        drawerHoverControllerRoot.drawerState.openBar();
+        barAutoHideTimer.restart();
+    }
 
     function showOsdTemporarily(): void {
         drawerHoverControllerRoot.drawerState.openOsd();
@@ -110,6 +123,16 @@ Item {
         onTriggered: {
             if (!drawerHoverControllerRoot.drawerState.popoutHovered && !drawerHoverControllerRoot.pointerOverBar && !drawerHoverControllerRoot.drawerState.popoutIconHovered)
                 drawerHoverControllerRoot.drawerState.clearPopout();
+        }
+    }
+
+    Timer {
+        id: barAutoHideTimer
+
+        interval: drawerHoverControllerRoot.barAutoHideInterval
+        onTriggered: {
+            if (!drawerHoverControllerRoot.drawerState.barHovered && !barHoverTiming.triggerHovered && !drawerHoverControllerRoot.drawerState.hasActivePopout)
+                drawerHoverControllerRoot.drawerState.closeBar();
         }
     }
 

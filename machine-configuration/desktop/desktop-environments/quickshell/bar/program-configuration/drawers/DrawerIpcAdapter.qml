@@ -10,8 +10,8 @@ Item {
     IpcHandler {
         target: "bar"
 
-        function show(): void {
-            drawerIpcAdapterRoot.drawerState.openBar();
+        function toggle(): void {
+            drawerIpcAdapterRoot.drawerHoverController.toggleBarTemporarily();
         }
     }
 

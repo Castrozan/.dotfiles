@@ -14,10 +14,6 @@ Item {
     QtObject {
         id: recordedDrawerState
 
-        function openBar() {
-            intentLog.lastIntent = "openBar";
-        }
-
         function toggleDashboard() {
             intentLog.lastIntent = "toggleDashboard";
         }
@@ -57,6 +53,10 @@ Item {
 
     QtObject {
         id: recordedHoverController
+
+        function toggleBarTemporarily() {
+            intentLog.lastIntent = "toggleBarTemporarily";
+        }
 
         function showOsdTemporarily() {
             intentLog.lastIntent = "showOsdTemporarily";
@@ -131,9 +131,9 @@ Item {
             compare(intentLog.lastIntent, data.intent);
         }
 
-        function test_bar_show_maps_onto_the_open_intent() {
-            handlerForTarget("bar").show();
-            compare(intentLog.lastIntent, "openBar");
+        function test_bar_toggle_maps_onto_the_temporary_reveal_intent() {
+            handlerForTarget("bar").toggle();
+            compare(intentLog.lastIntent, "toggleBarTemporarily");
         }
 
         function test_osd_show_maps_onto_the_temporary_osd_intent() {
