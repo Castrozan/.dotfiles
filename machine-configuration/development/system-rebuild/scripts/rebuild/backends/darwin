@@ -98,7 +98,8 @@ backend_switch() {
 	local flake_reference
 	flake_reference="$(resolve_flake_reference "$MACHINE_ALIAS")"
 	if [ "$REBUILD_MEASURE_MEMORY" = "1" ]; then
-		local pinned_reference="${flake_reference%#*}&rev=$(git -C "$DOTFILES_DIRECTORY" rev-parse HEAD)"
+		local pinned_reference
+		pinned_reference="${flake_reference%#*}&rev=$(git -C "$DOTFILES_DIRECTORY" rev-parse HEAD)"
 		measure_darwin_components "$pinned_reference"
 	fi
 	echo ":: Rebuilding darwin from ${flake_reference}..."
