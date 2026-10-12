@@ -41,6 +41,16 @@ def measure_component(name, arguments, reference):
     )
 
 
+def component_application(public_reference, system, component):
+    values = {
+        "publicReference": public_reference,
+        "system": system,
+        "component": component,
+    }
+    encoded = json.dumps(json.dumps(values).replace("$", "\\u0024"))
+    return f"component: component (builtins.fromJSON {encoded})"
+
+
 def measure_components(
     public_reference, configuration_attribute, system, evaluation_flags
 ):
@@ -79,15 +89,8 @@ def measure_components(
                 *probe_arguments(()),
                 "--file",
                 str(Path(__file__).with_suffix(".nix")),
-                "--argstr",
-                "publicReference",
-                public_reference,
-                "--argstr",
-                "system",
-                system,
-                "--argstr",
-                "component",
-                name,
+                "--apply",
+                component_application(public_reference, system, name),
             ],
             public_reference,
         )
