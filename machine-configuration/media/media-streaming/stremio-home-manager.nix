@@ -24,7 +24,7 @@ in
         After = [ "network-online.target" ];
         Wants = [ "network-online.target" ];
         StartLimitIntervalSec = 0;
-        X-Restart-Triggers = [ "${../../../../secrets/credentials/media/torbox-api-key.age}" ];
+        X-Restart-Triggers = [ "${../../../secrets/credentials/media/torbox-api-key.age}" ];
       };
 
       Service = {
