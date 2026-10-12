@@ -9,6 +9,7 @@ let
   stagedScripts = pkgs.runCommand "nixos-staged-rebuild-scripts" { } ''
     mkdir -p $out
     install -m 0644 ${./scripts/nixos-staged-rebuild}/*.py $out/
+    install -m 0644 ${./scripts/nixos-staged-rebuild/memory_components.nix} $out/
     install -m 0755 ${./scripts/nixos-staged-rebuild/staged-rebuild} $out/staged-rebuild
     install -m 0755 ${./scripts/nixos-staged-rebuild/prefetch-rebuild} $out/prefetch-rebuild
     substituteInPlace $out/staged-rebuild $out/prefetch-rebuild \

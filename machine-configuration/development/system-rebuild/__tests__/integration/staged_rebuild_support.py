@@ -46,6 +46,8 @@ elif "eval" in arguments and arguments[-1].endswith(".devenv.binaryCache"):
     print(json.dumps({{"storePath": {CACHED_DEVENV_PATH!r}, "narHash": "sha256:" + "0" * 52, "cacheUrl": "https://devenv.cachix.org", "publicKey": "devenv.cachix.org-1:fixture"}}))
 elif "--query" in arguments and "--hash" in arguments:
     print("sha256:" + ("1" if os.environ.get("TEST_CACHED_DEVENV_HASH_FAILURE") else "0") * 52)
+elif "eval" in arguments and "--json" in arguments:
+    print(json.dumps(["/nix/store/44444444444444444444444444444444-component.drv"]))
 elif "eval" in arguments:
     (directory / "eval-pid").write_text(str(os.getpid()))
     if os.environ.get("TEST_REWRITE_REQUEST"):
@@ -99,12 +101,21 @@ else:
 TIME_FIXTURE_BODY = r"""
 format_string=$2
 shift 2
+output_path=""
+if [[ "${1:-}" == --quiet ]]; then
+    output_path=$3
+    shift 3
+fi
 "$@"
 exit_status=$?
 format_string=${format_string//\%e/0.00}
 format_string=${format_string//\%M/0}
 format_string=${format_string//\%x/$exit_status}
-echo "$format_string" >&2
+if [[ -n "$output_path" ]]; then
+    echo "$format_string" > "$output_path"
+else
+    echo "$format_string" >&2
+fi
 exit "$exit_status"
 """
 

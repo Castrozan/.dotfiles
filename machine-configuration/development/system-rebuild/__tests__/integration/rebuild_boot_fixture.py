@@ -1,4 +1,23 @@
 from pathlib import Path
+import sys
+import subprocess
+
+
+def run_rebuild(environment, *arguments):
+    program = """source "$TEST_REBUILD_ENTRYPOINT"
+detect_backend_name() { echo "$TEST_REBUILD_PLATFORM"; }
+ensure_nix_is_on_the_path() { echo nix-ready >> "$TEST_EVENTS"; }
+initialize_git_submodules() { echo git-ready >> "$TEST_EVENTS"; }
+nudge_clawde_agents_to_redeploy_on_continued_sessions() { echo fleet >> "$TEST_EVENTS"; }
+main "$@"
+"""
+    return subprocess.run(
+        ["bash", "-c", program, "rebuild-test", *arguments],
+        env=environment,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
 
 
 def build_rebuild_boot_environment(managed_rebuild_environment, tmp_path):
@@ -11,6 +30,11 @@ def build_rebuild_boot_environment(managed_rebuild_environment, tmp_path):
     private_entrypoint.mkdir()
     (private_entrypoint / "flake.nix").touch()
     entrypoint = tmp_path / "rebuild"
+    reporter = tmp_path / "memory-reporter"
+    reporter.write_text(
+        f'#!/usr/bin/env bash\nexec "{sys.executable}" "{scripts}/nixos-staged-rebuild/memory_report.py" "$@"\n'
+    )
+    reporter.chmod(0o755)
     substitutions = {
         "@machineAlias@": "chise",
         "@backendsDirectory@": str(backends),
@@ -22,6 +46,8 @@ def build_rebuild_boot_environment(managed_rebuild_environment, tmp_path):
         ],
         "@nixosRebuildPrefetch@": str(tmp_path / "prefetch"),
         "@nixosStagedRebuild@": str(scripts / "nixos-rebuild-guard"),
+        "@memoryReporter@": str(reporter),
+        "@memorySystem@": "x86_64-linux",
     }
     source = (scripts / "rebuild/rebuild").read_text()
     for placeholder, value in substitutions.items():

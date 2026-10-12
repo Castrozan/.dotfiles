@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -6,6 +7,8 @@ from pathlib import Path
 
 from staged_command import command_failure_status, run_command
 from staged_native import parse_native_options
+from memory_components import measure_components
+from memory_records import append_record
 from staged_sources import (
     read_prepared_request,
     retain_source_roots,
@@ -29,6 +32,7 @@ def run_staged_rebuild(action, request_path, temporary):
         raise ValueError("privileged evaluation requires an immutable prefetched flake")
     validate_store_path(source_reference.removeprefix("path:"))
     retain_source_roots(sources, temporary, "source_retention")
+    record_rebuild_context(request_path, options)
     derivation = run_command(
         "evaluation",
         [
@@ -77,6 +81,28 @@ def run_staged_rebuild(action, request_path, temporary):
                 activation_options,
                 system_path,
             ],
+        )
+
+
+def record_rebuild_context(request_path, options):
+    request = json.loads(Path(request_path).read_text())
+    public_reference = request.get("public_reference")
+    append_record(
+        {
+            "sources": {
+                "configuration": options.flake_reference,
+                "public": public_reference,
+            }
+        }
+    )
+    if os.environ.get("REBUILD_MEASURE_MEMORY") == "1":
+        if not isinstance(public_reference, str):
+            raise ValueError("component measurements require the pinned public source")
+        measure_components(
+            public_reference,
+            options.configuration_attribute,
+            os.environ["REBUILD_MEMORY_SYSTEM"],
+            options.evaluation_flags,
         )
 
 
