@@ -1,4 +1,9 @@
-{ pkgs, latest, ... }:
+{
+  pkgs,
+  latest,
+  hostname,
+  ...
+}:
 let
   inherit
     (import ./broken-hardware-video-decoding/chrome-broken-hardware-video-decoding-workaround.nix {
@@ -8,8 +13,20 @@ let
     chromeWithoutBrokenHardwareVideoDecoding
     ;
 
+  chromeNvidiaRenderOffload = import ./nvidia-render-offload/chrome-nvidia-render-offload.nix {
+    inherit pkgs;
+    chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
+    nvidiaRenderOffloadCommand = "/run/current-system/sw/bin/nvidia-offload";
+  };
+
+  chromeForMachine =
+    if hostname == "chise" then
+      chromeNvidiaRenderOffload.chromeWithNvidiaRenderOffload
+    else
+      chromeWithoutBrokenHardwareVideoDecoding;
+
   chromeGlobalLauncher = pkgs.writeShellScript "chrome-global-launcher" ''
-    exec ${chromeWithoutBrokenHardwareVideoDecoding}/bin/google-chrome-stable \
+    exec ${chromeForMachine}/bin/google-chrome-stable \
       --user-data-dir="$HOME/.config/chrome-global" \
       --class=chrome-global \
       --enable-features=UseNativeNotifications,WebRTCPipeWireCapturer \
@@ -40,7 +57,7 @@ let
 in
 {
   home.packages = [
-    chromeWithoutBrokenHardwareVideoDecoding
+    chromeForMachine
     desktopItem
   ];
 
