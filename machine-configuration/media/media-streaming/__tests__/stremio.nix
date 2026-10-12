@@ -181,9 +181,12 @@ in
   chise-stremio-streaming-server-can-probe-its-advertised-address =
     mkEvalCheck "chise-stremio-streaming-server-can-probe-its-advertised-address"
       (
-        systemModule.config.networking.firewall.interfaces.docker0.allowedTCPPorts == [ 11470 ]
+        systemModule.config.networking.firewall.interfaces.docker0.allowedTCPPorts == [
+          11470
+          43212
+        ]
         && !(systemModule.config.networking.firewall ? allowedTCPPorts)
         && !(systemModule.config.networking.firewall ? trustedInterfaces)
       )
-      "the streaming container must reach its tailnet-published port for media probing without opening the port on other host interfaces or trusting the entire Docker bridge";
+      "the streaming container must reach its tailnet-published server and TorBox gateway ports for media probing without opening them on other host interfaces or trusting the entire Docker bridge";
 }
