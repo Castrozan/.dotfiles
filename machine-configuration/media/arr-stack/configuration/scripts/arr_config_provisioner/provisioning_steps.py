@@ -1,5 +1,6 @@
 from arr_api_client import wait_for_api_ready
 from host_auth_provisioner import provision_host_login
+from jellyseerr_download_tracking_provisioner import provision_server_download_tracking
 from jellyseerr_sonarr_profile_provisioner import provision_sonarr_profiles
 from provisioner_logging import log
 from qbittorrent_preference_provisioner import provision_qbittorrent_preferences
@@ -96,6 +97,16 @@ def provision_host_login_step(configuration, step, dry_run):
         dry_run,
     )
     log(f"{step['app']}/host-login: {outcome}")
+
+
+def provision_jellyseerr_download_tracking_step(configuration, step, dry_run):
+    api_key = configuration["jellyseerr_api_key"]
+    if not api_key:
+        raise RuntimeError("jellyseerr api key unavailable")
+    outcomes = provision_server_download_tracking(
+        configuration["jellyseerr_base_url"], api_key, step["app"], dry_run
+    )
+    log(f"jellyseerr/{step['app']}/download-tracking: {outcomes}")
 
 
 def provision_qbittorrent_preference_step(configuration, step, dry_run):

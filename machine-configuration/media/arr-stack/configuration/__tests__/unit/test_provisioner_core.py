@@ -39,6 +39,11 @@ def stub_all_steps(monkeypatch):
     )
     monkeypatch.setattr(
         provisioner_core,
+        "provision_jellyseerr_download_tracking_step",
+        lambda configuration, step, dry_run: None,
+    )
+    monkeypatch.setattr(
+        provisioner_core,
         "provision_qbittorrent_preference_step",
         lambda configuration, step, dry_run: None,
     )
@@ -122,3 +127,21 @@ def test_provision_all_counts_a_failing_qbittorrent_preference_step(monkeypatch)
     )
     failed_steps = provisioner_core.provision_all({}, False)
     assert failed_steps == len(provisioner_core.QBITTORRENT_PREFERENCE_PLAN)
+
+
+def test_download_tracking_failure_does_not_skip_the_other_server_type(monkeypatch):
+    stub_all_steps(monkeypatch)
+    attempted = []
+
+    def fail_radarr_tracking(configuration, step, dry_run):
+        attempted.append(step["app"])
+        if step["app"] == "radarr":
+            raise RuntimeError("radarr settings unavailable")
+
+    monkeypatch.setattr(
+        provisioner_core,
+        "provision_jellyseerr_download_tracking_step",
+        fail_radarr_tracking,
+    )
+    assert provisioner_core.provision_all({}, False) == 1
+    assert attempted == ["radarr", "sonarr"]
