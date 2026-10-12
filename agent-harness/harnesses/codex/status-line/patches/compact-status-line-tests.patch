@@ -1,0 +1,111 @@
+diff --git a/tui/src/bottom_pane/status_line_layout_tests.rs b/tui/src/bottom_pane/status_line_layout_tests.rs
+--- /dev/null
++++ b/tui/src/bottom_pane/status_line_layout_tests.rs
+@@ -0,0 +1,95 @@
++use super::*;
++use ratatui::style::Style;
++
++const IDENTIFIER: &str = "01a131f8-4e5b-7382-ac48-aa698c134f1a";
++
++#[test]
++fn compact_percentages_preserve_their_values() {
++    for (item, original, expected) in [
++        (StatusLineItem::ContextUsed, "Context 4% used", "Context 4%"),
++        (StatusLineItem::WeeklyLimit, "weekly 83% left", "Week 83%"),
++        (StatusLineItem::WeeklyLimit, "5h 20% left", "5h 20%"),
++        (
++            StatusLineItem::ContextRemaining,
++            "Context 96% left",
++            "Context 96% left",
++        ),
++    ] {
++        assert_eq!(compact_status_line_value(item, original.into()), expected);
++    }
++}
++
++#[test]
++fn task_display_is_capped_without_changing_servant_or_saved_name() {
++    let saved = "Artoria Pendragon | Codex status line configuration";
++    assert_eq!(
++        compact_status_line_value(StatusLineItem::ThreadName, saved.into()),
++        "Artoria Pendragon | Codex status line…"
++    );
++    assert_eq!(saved, "Artoria Pendragon | Codex status line configuration");
++    assert_eq!(
++        compact_status_line_value(StatusLineItem::ThreadName, "Karna | Short title".into()),
++        "Karna | Short title"
++    );
++    assert_eq!(
++        compact_status_line_value(StatusLineItem::ThreadTitle, IDENTIFIER.into()),
++        IDENTIFIER
++    );
++}
++
++#[test]
++fn long_words_and_unicode_stay_within_the_display_budget() {
++    for title in ["x".repeat(100), "漢字".repeat(40), "👩🏽‍💻".repeat(20)] {
++        let display =
++            compact_status_line_value(StatusLineItem::ThreadName, format!("Karna | {title}"));
++        assert!(Line::from(display.clone()).width() <= 32, "{display}");
++        assert!(display.ends_with('…'));
++    }
++}
++
++#[test]
++fn overflow_preserves_full_identifier_and_styles_when_it_can_fit() {
++    let identifier_style = Style::default().fg(ratatui::style::Color::Cyan);
++    let line = Line::from(vec![
++        Span::raw("main · GPT-6.1-Sol xhigh · Context 4% · Week 83% · Karna | Codex status line…"),
++        Span::raw(" · "),
++        Span::styled(IDENTIFIER, identifier_style),
++    ]);
++    for width in [0, 1, 20, 35, 36, 37, 38, 39, 40, 80, 100, 139, 200] {
++        let fitted = fit_status_line_to_width(line.clone(), width);
++        assert!(fitted.width() <= width, "{width}: {fitted}");
++        if width >= 36 {
++            assert!(
++                fitted.to_string().ends_with(IDENTIFIER),
++                "{width}: {fitted}"
++            );
++            assert_eq!(fitted.spans.last().unwrap().style, identifier_style);
++        }
++    }
++    assert_eq!(fit_status_line_to_width(line.clone(), 139), line);
++}
++
++#[test]
++fn lines_without_identifiers_retain_native_overflow_behavior() {
++    assert_eq!(
++        fit_status_line_to_width(Line::from("abcdef"), 4).to_string(),
++        "abc…"
++    );
++    assert_eq!(
++        fit_status_line_to_width(Line::from("abc"), 4).to_string(),
++        "abc"
++    );
++}
++
++#[test]
++fn auxiliary_footer_hints_cannot_displace_the_identifier() {
++    let line = Line::from(vec![
++        Span::raw("main · Context 4% · Week 83%"),
++        Span::raw(" · "),
++        Span::raw(IDENTIFIER),
++        Span::raw(" · ctrl-a for agents"),
++    ]);
++    let fitted = fit_status_line_to_width(line, 60);
++    assert!(fitted.width() <= 60);
++    assert!(fitted.to_string().ends_with(IDENTIFIER));
++}
+diff --git a/tui/src/bottom_pane/status_line_style.rs b/tui/src/bottom_pane/status_line_style.rs
+--- a/tui/src/bottom_pane/status_line_style.rs
++++ b/tui/src/bottom_pane/status_line_style.rs
+@@ -319,7 +319,7 @@
+         )
+         .expect("status line");
+ 
+-        assert_eq!(line_text(&line), "gpt-5 · Context 12% used");
++        assert_eq!(line_text(&line), "gpt-5 · Context 12%");
+         assert_eq!(line.spans[0].style, secondary_text_style());
+         assert_eq!(line.spans[1].style, secondary_text_style());
+         assert_eq!(line.spans[2].style, secondary_text_style());

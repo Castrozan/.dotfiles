@@ -54,11 +54,13 @@ in
     && builtins.elem "linkGeneration" cfg.home.activation.seedCodexProfilesAsMutableFiles.after
   ) "Codex must seed writable profiles after removing the previous generation's symlinks";
 
-  codex-package-uses-upstream-binaries =
-    assert lib.assertMsg
-      (!(codexPackage.drvAttrs ? cargoDeps) && (codexPackage.drvAttrs.patches or [ ]) == [ ])
-      "Codex must use unpatched upstream prebuilt binaries; see agent-harness/harnesses/codex/README.md";
-    pkgs.runCommand "check-codex-package-uses-upstream-binaries" { } ''
+  codex-package-retains-upstream-companions =
+    assert lib.assertMsg (
+      codexPackage.drvAttrs ? cargoDeps
+      && builtins.length codexPackage.drvAttrs.patches == 2
+      && codexPackage.drvAttrs.doCheck
+    ) "Codex must test its footer patches and retain the matching upstream companion assets";
+    pkgs.runCommand "check-codex-package-retains-upstream-companions" { } ''
       export HOME="$TMPDIR"
       codexExecutable=${lib.getExe codexPackage}
       codexExecutableDirectory=$(dirname "$(readlink -f "$codexExecutable")")

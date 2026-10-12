@@ -1,6 +1,10 @@
-<prebuilt_codex_distribution> Use upstream prebuilt release binaries for Codex and its code-mode host. Do not patch
-upstream Codex or compile it from source; local source changes turn rebuilds and upgrades into expensive Rust builds.
-Keep customization in supported configuration, hooks, and the launcher. </prebuilt_codex_distribution>
+## Distribution
+
+Codex builds the upstream release source with a narrow footer customization and retains the matching prebuilt code-mode
+host and companion assets. The footer shortens usage labels, caps displayed task titles, and reserves space for the
+thread identifier. Saved session names and terminal titles retain their complete text. The package runs focused renderer
+tests and limits compilation concurrency to bound memory use. Keep other customization in supported configuration,
+hooks, and the launcher.
 
 ## Interactive sessions
 
@@ -11,11 +15,11 @@ upstream launch path.
 
 SessionStart derives the session's Servant from the thread ID and names it through that terminal's server.
 UserPromptSubmit asks the current session model to choose a concise title from the conversation's goal and save
-`Servant | session name` through the native naming command, without a separate title-generation request.
-Existing custom titles retain their text; unnamed and first-prompt-preview titles receive a generated name. The command
-preserves a title changed after the hook ran. Sessions awaiting a generated title show the Servant's name without
-brackets. The footer and terminal title display that name. Resume and compaction keep the same identity, while forks
-derive one from their new ID.
+`Servant | session name` through the native naming command, without a separate title-generation request. Existing custom
+titles retain their text; unnamed and first-prompt-preview titles receive a generated name. The command preserves a
+title changed after the hook ran. Sessions awaiting a generated title show the Servant's name without brackets. The
+footer and terminal title display that name. Resume and compaction keep the same identity, while forks derive one from
+their new ID.
 
 Native profiles carry interactive instructions and workspace overrides. Nix deploys their immutable sources separately
 and seeds writable profile files during activation. Codex can save model and reasoning selections into those files;

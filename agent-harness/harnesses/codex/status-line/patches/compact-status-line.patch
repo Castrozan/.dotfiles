@@ -1,0 +1,137 @@
+diff --git a/tui/src/bottom_pane/status_line_layout.rs b/tui/src/bottom_pane/status_line_layout.rs
+--- /dev/null
++++ b/tui/src/bottom_pane/status_line_layout.rs
+@@ -0,0 +1,66 @@
++use codex_protocol::ThreadId;
++use ratatui::text::Line;
++use ratatui::text::Span;
++
++use super::status_line_setup::StatusLineItem;
++use crate::line_truncation::truncate_line_with_ellipsis_if_overflow;
++
++pub(super) fn compact_status_line_value(item: StatusLineItem, text: String) -> String {
++    match item {
++        StatusLineItem::ContextUsed => text.trim_end_matches(" used").to_string(),
++        StatusLineItem::WeeklyLimit => {
++            let value = text.trim_end_matches(" left");
++            value.strip_prefix("weekly ").map_or_else(
++                || value.to_string(),
++                |percentage| format!("Week {percentage}"),
++            )
++        }
++        StatusLineItem::ThreadName | StatusLineItem::ThreadTitle => {
++            if ThreadId::from_string(&text).is_ok() {
++                return text;
++            }
++            let (prefix, title) = text
++                .split_once(" | ")
++                .map_or((String::new(), text.as_str()), |(prefix, title)| {
++                    (format!("{prefix} | "), title)
++                });
++            let mut words = title.split_whitespace();
++            let mut title = words.by_ref().take(3).collect::<Vec<_>>().join(" ");
++            if words.next().is_some() {
++                title.push('…');
++            }
++            let title = truncate_line_with_ellipsis_if_overflow(Line::from(title), 24);
++            format!("{prefix}{title}")
++        }
++        _ => text,
++    }
++}
++
++pub(super) fn fit_status_line_to_width(mut line: Line<'static>, width: usize) -> Line<'static> {
++    if line.width() <= width {
++        return line;
++    }
++    let Some(identifier_position) = line
++        .spans
++        .iter()
++        .rposition(|span| ThreadId::from_string(span.content.as_ref()).is_ok())
++    else {
++        return truncate_line_with_ellipsis_if_overflow(line, width);
++    };
++    let identifier = line.spans[identifier_position].clone();
++    line.spans.truncate(identifier_position);
++    let separator = line.spans.pop().unwrap_or_else(|| Span::raw(" · "));
++    if line.spans.is_empty() || width <= identifier.width() + separator.width() + 1 {
++        return truncate_line_with_ellipsis_if_overflow(Line::from(identifier), width);
++    }
++    let mut line = truncate_line_with_ellipsis_if_overflow(
++        line,
++        width - identifier.width() - separator.width(),
++    );
++    line.spans.extend([separator, identifier]);
++    line
++}
++
++#[cfg(test)]
++#[path = "status_line_layout_tests.rs"]
++mod tests;
+diff --git a/tui/src/bottom_pane/mod.rs b/tui/src/bottom_pane/mod.rs
+--- a/tui/src/bottom_pane/mod.rs
++++ b/tui/src/bottom_pane/mod.rs
+@@ -86,6 +86,7 @@
+ mod question_tests;
+ mod questions;
+ mod request_user_input;
++mod status_line_layout;
+ mod status_line_setup;
+ mod status_line_style;
+ mod status_surface_preview;
+diff --git a/tui/src/bottom_pane/status_line_style.rs b/tui/src/bottom_pane/status_line_style.rs
+--- a/tui/src/bottom_pane/status_line_style.rs
++++ b/tui/src/bottom_pane/status_line_style.rs
+@@ -6,6 +6,7 @@
+ use ratatui::text::Line;
+ use ratatui::text::Span;
+ 
++use super::status_line_layout::compact_status_line_value;
+ use super::status_line_setup::StatusLineItem;
+ use crate::render::highlight::foreground_style_for_scopes;
+ use crate::style::readable_color_on;
+@@ -115,6 +116,7 @@
+ {
+     let mut spans = Vec::new();
+     for (item, text) in segments {
++        let text = compact_status_line_value(item, text);
+         if !spans.is_empty() {
+             spans.push(STATUS_LINE_SEPARATOR.set_style(secondary_text_style()));
+         }
+diff --git a/tui/src/bottom_pane/chat_composer.rs b/tui/src/bottom_pane/chat_composer.rs
+--- a/tui/src/bottom_pane/chat_composer.rs
++++ b/tui/src/bottom_pane/chat_composer.rs
+@@ -278,7 +278,6 @@
+ use crate::key_hint::KeyBinding;
+ use crate::key_hint::ShortcutHint;
+ use crate::key_hint::has_ctrl_or_alt;
+-use crate::line_truncation::truncate_line_with_ellipsis_if_overflow;
+ use crate::ui_consts::FOOTER_INDENT_COLS;
+ use codex_message_history::HistoryBatchCursor;
+ use crossterm::event::KeyCode;
+@@ -337,6 +336,7 @@
+ use super::footer::side_conversation_context_line;
+ use super::footer::single_line_footer_layout;
+ use super::footer::status_line_right_indicator_line;
++use super::status_line_layout::fit_status_line_to_width;
+ use super::footer::toggle_shortcut_mode;
+ use super::footer::uses_passive_footer_status_layout;
+ use super::mentions_v2::MentionV2Popup;
+@@ -4615,7 +4615,7 @@
+                     };
+                     let mut truncated_status_line = if status_line_active {
+                         combined_status_line.as_ref().map(|line| {
+-                            truncate_line_with_ellipsis_if_overflow(line.clone(), available_width)
++                            fit_status_line_to_width(line.clone(), available_width)
+                         })
+                     } else {
+                         None
+@@ -4673,7 +4673,7 @@
+                         && let Some(max_left) = max_left_width_for_right(hint_rect, right_width)
+                         && left_width > max_left
+                         && let Some(line) = combined_status_line.as_ref().map(|line| {
+-                            truncate_line_with_ellipsis_if_overflow(line.clone(), max_left as usize)
++                            fit_status_line_to_width(line.clone(), max_left as usize)
+                         })
+                     {
+                         left_width = line.width() as u16;

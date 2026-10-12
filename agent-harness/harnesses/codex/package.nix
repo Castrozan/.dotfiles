@@ -2,6 +2,8 @@
   pkgs,
   lib,
   config,
+  latest,
+  inputs,
   ...
 }:
 let
@@ -35,7 +37,7 @@ let
     assetName:
     "https://github.com/openai/codex/releases/download/rust-v${version}/${assetName}-${currentHostSystem.releaseTargetTriple}.tar.gz";
 
-  codex-unwrapped = fetchPrebuiltBinary {
+  codexReleasePackage = fetchPrebuiltBinary {
     pname = "codex";
     inherit version;
     url = codexReleaseAssetUrl "codex-package";
@@ -43,6 +45,16 @@ let
     archivePrefixToInstall = ".";
     preserveCodeSignature = pkgs.stdenv.hostPlatform.isDarwin;
     meta.mainProgram = "codex";
+  };
+
+  codex-unwrapped = import ./status-line/package.nix {
+    inherit
+      latest
+      lib
+      inputs
+      version
+      ;
+    releasePackage = codexReleasePackage;
   };
 
   interactivePreferencesFile = import ./interactive-instructions.nix {
