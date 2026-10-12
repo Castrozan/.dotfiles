@@ -127,10 +127,23 @@ def write_time_fixture(directory):
     return timer
 
 
+def write_timeout_fixture(directory):
+    timeout = directory / "timeout"
+    timeout.write_text(
+        f"#!{shutil.which('bash')}\n"
+        'while [[ "${1:-}" == --* ]]; do shift; done\n'
+        "shift\n"
+        'exec "$@"\n'
+    )
+    timeout.chmod(0o755)
+    return timeout
+
+
 def build_staged_environment(managed_environment, directory):
     write_nix_client_fixture(directory)
     library = write_native_library_fixture(directory)
     timer = write_time_fixture(directory)
+    write_timeout_fixture(directory)
     return {
         **managed_environment,
         "BASH_ENV": "/dev/null",
