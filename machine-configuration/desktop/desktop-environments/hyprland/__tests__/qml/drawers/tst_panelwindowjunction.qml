@@ -55,6 +55,7 @@ Rectangle {
             panelGeometry.leftBarWidth = 0;
             panelGeometry.extensionWidth = 0;
             panelGeometry.extensionY = 200;
+            panelGeometry.extensionHeight = 200;
             panelGeometry.dashboardHeight = 0;
             panelGeometry.launcherHeight = 0;
             panelGeometry.rightPanelWidth = 0;
@@ -173,6 +174,20 @@ Rectangle {
                 compare(image.red(248, edgeY), 32);
                 verify(image.green(255, cornerY) < 50);
                 verify(image.blue(255, cornerY) > 100);
+            }
+        }
+
+        function test_near_edge_popout_preserves_window_corners() {
+            panelGeometry.leftBarWidth = 48;
+            panelGeometry.extensionWidth = 200;
+            panelGeometry.extensionHeight = 170;
+            for (const position of [30, 400]) {
+                panelGeometry.extensionY = position;
+                waitForRendering(panelShape);
+                const image = grabImage(desktop);
+                compare(image.red(48, position === 30 ? 3 : 597), 32);
+                verify(image.green(52, position === 30 ? 4 : 595) < 50);
+                verify(image.blue(52, position === 30 ? 4 : 595) > 100);
             }
         }
     }

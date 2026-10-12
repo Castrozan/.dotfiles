@@ -72,7 +72,7 @@ When a panel extends close enough to the strip's own rounded corner (within `jun
 
 **Normal** — panel edge is more than `junctionRadius` from the strip corner. Standard junction arc with full radius. The bar's inner corner radius remains intact.
 
-**Partially merged** (`cornerMerged = true`) — panel edge + `junctionRadius` reaches the strip corner. The bar's inner corner radius collapses to 0 (corner disappears). The junction arc radius transitions to `mergedArcRadius` — the remaining gap between panel edge and strip boundary — which shrinks as the panel extends further.
+**Partially merged** (`cornerMerged = true`): the panel approaches the screen edge. For a left popout, the available gap bounds both the bar corner and junction radii so their tangents meet without a square corner. The right-side junction uses the remaining gap to the screen edge.
 
 **Fully merged** (`fullyMerged = true`): the panel reaches the screen edge (`mergedArcRadius <= 0`). The junction arc disappears and the remaining window corner rounds toward the panel. The border omits the covered screen-edge segment. For the left extension, `bottomEdgeTargetX` becomes `extensionRight + cornerArcRadius`, where the window's bottom edge meets the rounded corner.
 

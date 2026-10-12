@@ -21,9 +21,11 @@ QtObject {
 
     readonly property real innerCornerRadius: Math.min(junctionRadius, stripThickness)
     readonly property real leftBarCornerArcRadius: Math.min(junctionRadius, leftBarWidth)
+    readonly property real topLeftBarCornerArcRadius: hasExtension ? Math.min(leftBarCornerArcRadius, Math.max(0, extensionTopEdge - stripThickness) / 2) : leftBarCornerArcRadius
+    readonly property real bottomLeftBarCornerArcRadius: hasExtension ? Math.min(leftBarCornerArcRadius, Math.max(0, barHeight - stripThickness - extensionBottomEdge) / 2) : leftBarCornerArcRadius
 
-    readonly property real barRightEdgeStartY: stripThickness + leftBarCornerArcRadius
-    readonly property real barRightEdgeEndY: barHeight - stripThickness - leftBarCornerArcRadius
+    readonly property real barRightEdgeStartY: stripThickness + topLeftBarCornerArcRadius
+    readonly property real barRightEdgeEndY: barHeight - stripThickness - bottomLeftBarCornerArcRadius
 
     readonly property real extensionTopEdge: extensionY
     readonly property real extensionBottomEdge: extensionY + extensionHeight
@@ -51,10 +53,10 @@ QtObject {
     readonly property bool bottomFullyMerged: bottomCornerMerged && mergedBottomArcRadius <= 0
     readonly property bool topFullyMerged: topCornerMerged && mergedTopArcRadius <= 0
 
-    readonly property real effectiveBottomLeftBarCornerRadius: bottomCornerMerged ? 0 : leftBarCornerArcRadius
-    readonly property real effectiveTopLeftBarCornerRadius: topCornerMerged ? 0 : leftBarCornerArcRadius
-    readonly property real effectiveBottomJunctionArcRadius: bottomCornerMerged ? mergedBottomArcRadius : bottomJunctionArcRadius
-    readonly property real effectiveTopJunctionArcRadius: topCornerMerged ? mergedTopArcRadius : topJunctionArcRadius
+    readonly property real effectiveBottomLeftBarCornerRadius: bottomFullyMerged ? 0 : bottomLeftBarCornerArcRadius
+    readonly property real effectiveTopLeftBarCornerRadius: topFullyMerged ? 0 : topLeftBarCornerArcRadius
+    readonly property real effectiveBottomJunctionArcRadius: bottomFullyMerged ? 0 : bottomJunctionArcRadius
+    readonly property real effectiveTopJunctionArcRadius: topFullyMerged ? 0 : topJunctionArcRadius
 
     readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight + extensionCornerArcRadius) : (leftBarWidth + effectiveBottomLeftBarCornerRadius)
     readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight + extensionCornerArcRadius) : (leftBarWidth + effectiveTopLeftBarCornerRadius)
