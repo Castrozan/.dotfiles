@@ -41,15 +41,18 @@ Item {
             return [
                 {
                     tag: "hidden",
-                    width: 0
+                    width: 0,
+                    outlineX: 0
                 },
                 {
                     tag: "animating",
-                    width: 24
+                    width: 24,
+                    outlineX: 48
                 },
                 {
                     tag: "shown",
-                    width: 48
+                    width: 48,
+                    outlineX: 84
                 }
             ];
         }
@@ -58,8 +61,8 @@ Item {
             geometry.leftBarWidth = data.width;
             compare(geometry.stripThickness, 0);
             compare(geometry.rightStripLeftEdge, 1920);
-            compare(geometry.topEdgeTargetX, data.width);
-            compare(geometry.bottomEdgeTargetX, data.width);
+            compare(geometry.topEdgeTargetX, data.outlineX);
+            compare(geometry.bottomEdgeTargetX, data.outlineX);
         }
 
         function test_popout_remains_attached_during_reveal_data() {

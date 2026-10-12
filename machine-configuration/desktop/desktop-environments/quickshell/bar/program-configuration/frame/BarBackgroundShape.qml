@@ -96,6 +96,11 @@ Shape {
         pathElements: backgroundRoot.geometry.hasLauncher ? backgroundRoot.launcherOutline.elements : []
     }
     FilledPanelPath {
+        strokeWidth: -1
         pathElements: backgroundRoot.geometry.hasRightPanel ? backgroundRoot.rightPanelOutline.elements : []
+    }
+    FilledPanelPath {
+        fillColor: "transparent"
+        pathElements: backgroundRoot.geometry.hasRightPanel ? backgroundRoot.rightPanelContour.borderElements : []
     }
 }

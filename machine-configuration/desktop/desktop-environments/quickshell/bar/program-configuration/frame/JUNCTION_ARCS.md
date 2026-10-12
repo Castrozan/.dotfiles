@@ -2,7 +2,7 @@
 
 Junction arcs are concave fillets connecting panel extensions to an attachment edge. Fill and border share the exposed contour. The fill closes across the attachment edge; the stroke stays open so the window border joins the curved panel outline. BarFrameGeometry.qml computes the shared geometry.
 
-Use one Shape with separate positive ShapePaths for each panel. Opaque panel fill covers the native window border at the attachment edge. The left bar has a closed fill path and a separate open border using the same popout contour. A desktop-sized outer rectangle minus a cutout puts coincident segments on the screen edge when the strip thickness is zero; the curve renderer can then fill the desktop instead of the panels.
+Use one Shape with separate positive ShapePaths for each panel. Opaque panel fill covers the native window border at the attachment edge. The left bar and right panels use open borders over their filled contours. Border paths skip segments along screen edges covered by a panel. A desktop-sized outer rectangle minus a cutout puts coincident segments on the screen edge when the strip thickness is zero; the curve renderer can then fill the desktop instead of the panels.
 
 ## Anatomy of a Junction
 
@@ -12,7 +12,7 @@ Each junction is a PathLine followed by a PathArc. The PathLine positions the ar
 
 **Rule 1 — Start offset points AWAY from the panel, toward the strip.** The PathLine Y (for vertical strip junctions) or X (for horizontal strip junctions) must offset from the panel edge in the direction of the approaching strip, not into the panel interior. A top junction on the right strip uses `panelTop - radius` (above the panel), placing the fillet in the empty space between strip and panel top. A bottom junction uses `panelBottom + radius` (below the panel). Getting this wrong rotates the fillet 90 degrees into the panel body.
 
-**Rule 2: Arc direction follows the local contour.** Junction arcs use `PathArc.Clockwise`; convex panel corner arcs use `PathArc.Counterclockwise`. The left extension contour approaches its bottom junction while moving upward along the bar edge, so that junction also uses `PathArc.Clockwise`.
+**Rule 2: Arc direction follows the local contour.** Junction arcs use `PathArc.Clockwise`; convex panel corner arcs use `PathArc.Counterclockwise`. When a panel reaches a screen edge, its corner becomes a rounded corner of the remaining window and uses `PathArc.Clockwise`. The left extension contour approaches its bottom junction while moving upward along the bar edge, so that junction also uses `PathArc.Clockwise`.
 
 ## Horizontal Strip Panels (Dashboard, Launcher)
 
@@ -42,7 +42,7 @@ Panels hang leftward from the right vertical strip edge. The path travels downwa
 
 Top junction: PathLine to `(stripX, panelTop - radius)`, arc to `(stripX - radius, panelTop)`, CW.
 Bottom junction: PathLine to `(stripX - radius, panelBottom)`, arc to `(stripX, panelBottom + radius)`, CW.
-Panel corners (top-left and bottom-left): both CCW.
+Panel corners (top-left and bottom-left): CCW until the panel reaches the screen edge, then CW.
 
 ## Vertical Strip Panels — Left Extension
 
@@ -58,7 +58,7 @@ The left extension hangs rightward from the left vertical strip inner edge. The 
 
 Bottom junction: PathLine to `(stripRight, panelBottom + radius)`, arc to `(stripRight + radius, panelBottom)`, **CW**.
 Top junction: PathLine to `(stripRight + radius, panelTop)`, arc to `(stripRight, panelTop - radius)`, CW.
-Panel corners (top-right and bottom-right): both CCW.
+Panel corners (top-right and bottom-right): CCW until the popout reaches the screen edge, then CW.
 
 Both junctions use CW. The path approaches going upward along the bar edge and turns right into the extension — the same right-turn geometry as the top junction (left-to-down), so the same CW direction produces the concave fillet.
 
@@ -74,7 +74,9 @@ When a panel extends close enough to the strip's own rounded corner (within `jun
 
 **Partially merged** (`cornerMerged = true`) — panel edge + `junctionRadius` reaches the strip corner. The bar's inner corner radius collapses to 0 (corner disappears). The junction arc radius transitions to `mergedArcRadius` — the remaining gap between panel edge and strip boundary — which shrinks as the panel extends further.
 
-**Fully merged** (`fullyMerged = true`) — panel edge reaches the strip boundary (`mergedArcRadius <= 0`). Junction arc radius = 0, the arc disappears entirely. The panel edge IS the strip boundary. For the left extension, `bottomEdgeTargetX` jumps to `extensionRight - cornerArcRadius`, so the bottom strip now starts at the popout's far-right edge.
+**Fully merged** (`fullyMerged = true`): the panel reaches the screen edge (`mergedArcRadius <= 0`). The junction arc disappears and the remaining window corner rounds toward the panel. The border omits the covered screen-edge segment. For the left extension, `bottomEdgeTargetX` becomes `extensionRight + cornerArcRadius`, where the window's bottom edge meets the rounded corner.
+
+The left bar retains rounded window corners while visible even when strip thickness is zero. Its corner radius is clamped to its animated width and the junction radius; hiding it collapses those corners without painting a permanent frame.
 
 Properties like `topCornerMerged` / `rightPanelTopFullyMerged` control this transition. Merged corners hide arc direction bugs because a zero-radius arc is invisible regardless of direction.
 

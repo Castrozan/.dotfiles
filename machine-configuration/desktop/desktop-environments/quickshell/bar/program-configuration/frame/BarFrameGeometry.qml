@@ -20,9 +20,10 @@ QtObject {
     readonly property real stripThickness: 0
 
     readonly property real innerCornerRadius: Math.min(junctionRadius, stripThickness)
+    readonly property real leftBarCornerArcRadius: Math.min(junctionRadius, leftBarWidth)
 
-    readonly property real barRightEdgeStartY: stripThickness + innerCornerRadius
-    readonly property real barRightEdgeEndY: barHeight - stripThickness - innerCornerRadius
+    readonly property real barRightEdgeStartY: stripThickness + leftBarCornerArcRadius
+    readonly property real barRightEdgeEndY: barHeight - stripThickness - leftBarCornerArcRadius
 
     readonly property real extensionTopEdge: extensionY
     readonly property real extensionBottomEdge: extensionY + extensionHeight
@@ -50,13 +51,13 @@ QtObject {
     readonly property bool bottomFullyMerged: bottomCornerMerged && mergedBottomArcRadius <= 0
     readonly property bool topFullyMerged: topCornerMerged && mergedTopArcRadius <= 0
 
-    readonly property real effectiveBottomLeftBarCornerRadius: bottomCornerMerged ? 0 : innerCornerRadius
-    readonly property real effectiveTopLeftBarCornerRadius: topCornerMerged ? 0 : innerCornerRadius
+    readonly property real effectiveBottomLeftBarCornerRadius: bottomCornerMerged ? 0 : leftBarCornerArcRadius
+    readonly property real effectiveTopLeftBarCornerRadius: topCornerMerged ? 0 : leftBarCornerArcRadius
     readonly property real effectiveBottomJunctionArcRadius: bottomCornerMerged ? mergedBottomArcRadius : bottomJunctionArcRadius
     readonly property real effectiveTopJunctionArcRadius: topCornerMerged ? mergedTopArcRadius : topJunctionArcRadius
 
-    readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight - extensionCornerArcRadius) : (leftBarWidth + effectiveBottomLeftBarCornerRadius)
-    readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight - extensionCornerArcRadius) : (leftBarWidth + effectiveTopLeftBarCornerRadius)
+    readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight + extensionCornerArcRadius) : (leftBarWidth + effectiveBottomLeftBarCornerRadius)
+    readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight + extensionCornerArcRadius) : (leftBarWidth + effectiveTopLeftBarCornerRadius)
 
     readonly property bool hasDashboard: dashboardHeight > 0
     readonly property real dashboardBottomEdge: stripThickness + dashboardHeight

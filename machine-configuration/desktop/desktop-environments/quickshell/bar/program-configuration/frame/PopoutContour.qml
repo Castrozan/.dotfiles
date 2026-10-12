@@ -31,7 +31,7 @@ QtObject {
             direction: PathArc.Clockwise
         },
         PathLine {
-            x: contourRoot.geometry.extensionRight - contourRoot.geometry.extensionCornerArcRadius
+            x: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.bottomEdgeTargetX : contourRoot.geometry.extensionRight - contourRoot.geometry.extensionCornerArcRadius
             y: contourRoot.geometry.clampedExtensionBottomEdge
         },
         PathArc {
@@ -39,18 +39,18 @@ QtObject {
             y: contourRoot.geometry.clampedExtensionBottomEdge - contourRoot.geometry.extensionCornerArcRadius
             radiusX: contourRoot.geometry.extensionCornerArcRadius
             radiusY: contourRoot.geometry.extensionCornerArcRadius
-            direction: PathArc.Counterclockwise
+            direction: contourRoot.geometry.bottomFullyMerged ? PathArc.Clockwise : PathArc.Counterclockwise
         },
         PathLine {
             x: contourRoot.geometry.extensionRight
             y: contourRoot.geometry.clampedExtensionTopEdge + contourRoot.geometry.extensionCornerArcRadius
         },
         PathArc {
-            x: contourRoot.geometry.extensionRight - contourRoot.geometry.extensionCornerArcRadius
+            x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : contourRoot.geometry.extensionRight - contourRoot.geometry.extensionCornerArcRadius
             y: contourRoot.geometry.clampedExtensionTopEdge
             radiusX: contourRoot.geometry.extensionCornerArcRadius
             radiusY: contourRoot.geometry.extensionCornerArcRadius
-            direction: PathArc.Counterclockwise
+            direction: contourRoot.geometry.topFullyMerged ? PathArc.Clockwise : PathArc.Counterclockwise
         },
         PathLine {
             x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : (contourRoot.geometry.leftBarWidth + contourRoot.geometry.effectiveTopJunctionArcRadius)
