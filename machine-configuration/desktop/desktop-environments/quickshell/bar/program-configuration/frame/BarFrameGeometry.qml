@@ -1,7 +1,6 @@
 import QtQuick
 
 QtObject {
-    required property real barWidth
     required property real leftBarWidth
     required property real barHeight
     required property real screenWidth
@@ -18,7 +17,7 @@ QtObject {
     required property real launcherWidth
     required property real launcherHeight
 
-    readonly property real stripThickness: barWidth / 3
+    readonly property real stripThickness: 0
 
     readonly property real innerCornerRadius: Math.min(junctionRadius, stripThickness)
 

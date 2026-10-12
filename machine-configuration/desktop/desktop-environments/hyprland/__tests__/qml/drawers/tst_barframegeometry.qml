@@ -5,8 +5,7 @@ import "../../../../quickshell/bar/program-configuration/frame"
 Item {
     BarFrameGeometry {
         id: geometry
-        barWidth: 48
-        leftBarWidth: 16
+        leftBarWidth: 0
         barHeight: 1080
         screenWidth: 1920
         junctionRadius: 36
@@ -33,7 +32,7 @@ Item {
         name: "BarFrameAutoHideGeometry"
 
         function init() {
-            geometry.leftBarWidth = 16;
+            geometry.leftBarWidth = 0;
             geometry.extensionWidth = 0;
             geometry.extensionY = 500;
         }
@@ -42,11 +41,11 @@ Item {
             return [
                 {
                     tag: "hidden",
-                    width: 16
+                    width: 0
                 },
                 {
                     tag: "animating",
-                    width: 32
+                    width: 24
                 },
                 {
                     tag: "shown",
@@ -57,21 +56,21 @@ Item {
 
         function test_reveal_keeps_frame_edges_fixed(data) {
             geometry.leftBarWidth = data.width;
-            compare(geometry.stripThickness, 16);
-            compare(geometry.rightStripLeftEdge, 1904);
-            compare(geometry.topEdgeTargetX, data.width + 16);
-            compare(geometry.bottomEdgeTargetX, data.width + 16);
+            compare(geometry.stripThickness, 0);
+            compare(geometry.rightStripLeftEdge, 1920);
+            compare(geometry.topEdgeTargetX, data.width);
+            compare(geometry.bottomEdgeTargetX, data.width);
         }
 
         function test_popout_remains_attached_during_reveal_data() {
             return [
                 {
                     tag: "hidden",
-                    width: 16
+                    width: 0
                 },
                 {
                     tag: "animating",
-                    width: 32
+                    width: 24
                 },
                 {
                     tag: "shown",
@@ -84,7 +83,7 @@ Item {
             geometry.leftBarWidth = data.width;
             geometry.extensionWidth = 312;
             compare(geometry.extensionRight, data.width + 312);
-            compare(geometry.stripThickness, 16);
+            compare(geometry.stripThickness, 0);
             compare(geometry.extensionTopEdge, 500);
             compare(geometry.extensionBottomEdge, 700);
         }

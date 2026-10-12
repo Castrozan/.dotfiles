@@ -7,15 +7,13 @@ Item {
     required property string currentName
     required property real currentCenterY
     required property real screenHeight
-    required property real barWidth
 
     property bool containsMouse: popoutHoverHandler.hovered
 
     readonly property bool hasContent: currentName !== ""
     readonly property real popoutHeight: popoutContent.implicitHeight + 32
     readonly property real popoutWidth: hasContent ? popoutContent.implicitWidth + 32 : 0
-    readonly property real stripThickness: barWidth / 3
-    readonly property real clampedY: Math.max(stripThickness, Math.min(currentCenterY - popoutHeight / 2, screenHeight - stripThickness - popoutHeight))
+    readonly property real clampedY: Math.max(0, Math.min(currentCenterY - popoutHeight / 2, screenHeight - popoutHeight))
 
     y: clampedY
     width: popoutWidth
@@ -23,7 +21,10 @@ Item {
     visible: hasContent
 
     Behavior on y {
-        NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+        NumberAnimation {
+            duration: 300
+            easing.type: Easing.OutCubic
+        }
     }
 
     HoverHandler {

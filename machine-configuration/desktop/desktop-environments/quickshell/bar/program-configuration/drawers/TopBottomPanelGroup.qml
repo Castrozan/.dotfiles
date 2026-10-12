@@ -8,7 +8,6 @@ Scope {
     id: topBottomPanelGroup
 
     required property Item panelParent
-    required property int barTotalWidth
     required property DrawerState drawerState
     required property DrawerHoverController hoverController
 
@@ -19,8 +18,8 @@ Scope {
         id: dashboardWrapper
         parent: topBottomPanelGroup.panelParent
 
-        x: topBottomPanelGroup.barTotalWidth + (topBottomPanelGroup.panelParent.width - topBottomPanelGroup.barTotalWidth - width) / 2
-        y: topBottomPanelGroup.barTotalWidth / 3
+        x: (topBottomPanelGroup.panelParent.width - width) / 2
+        y: 0
         z: 2
 
         dashboardVisible: topBottomPanelGroup.drawerState.dashboardVisible
@@ -40,8 +39,8 @@ Scope {
         id: launcherWrapper
         parent: topBottomPanelGroup.panelParent
 
-        x: topBottomPanelGroup.barTotalWidth + (topBottomPanelGroup.panelParent.width - topBottomPanelGroup.barTotalWidth - width) / 2
-        y: topBottomPanelGroup.panelParent.height - topBottomPanelGroup.barTotalWidth / 3 - height
+        x: (topBottomPanelGroup.panelParent.width - width) / 2
+        y: topBottomPanelGroup.panelParent.height - height
         z: 2
 
         launcherVisible: topBottomPanelGroup.drawerState.launcherVisible

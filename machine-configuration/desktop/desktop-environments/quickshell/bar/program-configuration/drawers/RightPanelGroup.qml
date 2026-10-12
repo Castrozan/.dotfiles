@@ -8,7 +8,6 @@ Scope {
     id: rightPanelGroup
 
     required property Item panelParent
-    required property int barTotalWidth
     required property DrawerState drawerState
     required property DrawerHoverController hoverController
 
@@ -21,7 +20,7 @@ Scope {
         id: sessionWrapper
         parent: rightPanelGroup.panelParent
 
-        x: rightPanelGroup.panelParent.width - rightPanelGroup.barTotalWidth / 3 - sidebarWrapper.width - width
+        x: rightPanelGroup.panelParent.width - sidebarWrapper.width - width
         y: (rightPanelGroup.panelParent.height - height) / 2
         z: 2
 
@@ -40,8 +39,8 @@ Scope {
         id: utilitiesWrapper
         parent: rightPanelGroup.panelParent
 
-        x: rightPanelGroup.panelParent.width - rightPanelGroup.barTotalWidth / 3 - width
-        y: rightPanelGroup.panelParent.height - rightPanelGroup.barTotalWidth / 3 - height
+        x: rightPanelGroup.panelParent.width - width
+        y: rightPanelGroup.panelParent.height - height
         z: 3
 
         utilitiesVisible: rightPanelGroup.drawerState.utilitiesVisible
@@ -59,10 +58,10 @@ Scope {
         id: sidebarWrapper
         parent: rightPanelGroup.panelParent
 
-        readonly property real sidebarTopEdge: rightPanelGroup.barTotalWidth / 3
-        readonly property real sidebarBottomEdge: rightPanelGroup.panelParent.height - rightPanelGroup.barTotalWidth / 3
+        readonly property real sidebarTopEdge: 0
+        readonly property real sidebarBottomEdge: rightPanelGroup.panelParent.height
 
-        x: rightPanelGroup.panelParent.width - rightPanelGroup.barTotalWidth / 3 - width
+        x: rightPanelGroup.panelParent.width - width
         y: sidebarTopEdge
         z: 2
         height: sidebarBottomEdge - sidebarTopEdge
@@ -85,7 +84,7 @@ Scope {
         id: osdWrapper
         parent: rightPanelGroup.panelParent
 
-        x: rightPanelGroup.panelParent.width - rightPanelGroup.barTotalWidth / 3 - sidebarWrapper.width - sessionWrapper.width - width
+        x: rightPanelGroup.panelParent.width - sidebarWrapper.width - sessionWrapper.width - width
         y: (rightPanelGroup.panelParent.height - height) / 2
         z: 2
 

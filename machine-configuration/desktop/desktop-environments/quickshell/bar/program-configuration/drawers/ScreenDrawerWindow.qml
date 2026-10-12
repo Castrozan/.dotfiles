@@ -17,14 +17,7 @@ PanelWindow {
 
     readonly property Item barItem: barWrapper.barItem
     readonly property bool pointerOverBar: interactions.isOverBar
-    property real animatedBarWidth: drawerState.barVisible ? barTotalWidth : barTotalWidth / 3
-
-    Behavior on animatedBarWidth {
-        NumberAnimation {
-            duration: 350
-            easing.type: Easing.OutCubic
-        }
-    }
+    readonly property real visibleBarWidth: Math.max(0, barWrapper.x + barWrapper.width)
 
     property real animatedExtensionWidth: drawerState.hasActivePopout ? popoutWrapper.popoutWidth : 0
     Behavior on animatedExtensionWidth {
@@ -54,10 +47,8 @@ PanelWindow {
     surfaceFormat.opaque: false
 
     mask: DrawerInputMask {
-        barTotalWidth: drawersWindow.barTotalWidth
-        leftBarWidth: drawersWindow.animatedBarWidth
-        windowWidth: drawersWindow.width
-        windowHeight: drawersWindow.height
+        edgeGeometry: edgeGeometry
+        leftBarWidth: drawersWindow.visibleBarWidth
         shapeJunctionRadius: drawersWindow.shapeJunctionRadius
         popoutItem: popoutWrapper
         dashboardItem: topBottomPanels.dashboard
@@ -80,11 +71,11 @@ PanelWindow {
         id: barBackgroundShape
         anchors.fill: parent
         z: 0
+        visible: drawersWindow.visibleBarWidth > 0 || drawersWindow.animatedExtensionWidth > 0 || topBottomPanels.dashboard.visible || topBottomPanels.launcher.visible || aggregatedRightPanelGeometry.aggregatedWidth > 0
         preferredRendererType: Shape.CurveRenderer
 
         BarBackgroundShape {
-            barWidth: barTotalWidth
-            leftBarWidth: drawersWindow.animatedBarWidth
+            leftBarWidth: drawersWindow.visibleBarWidth
             barHeight: drawersWindow.height
             screenWidth: drawersWindow.width
             junctionRadius: drawersWindow.shapeJunctionRadius
@@ -100,39 +91,13 @@ PanelWindow {
             rightPanelY: aggregatedRightPanelGeometry.aggregatedY
             rightPanelWidth: aggregatedRightPanelGeometry.aggregatedWidth
             rightPanelHeight: aggregatedRightPanelGeometry.aggregatedHeight
-        }
-    }
-
-    Shape {
-        anchors.fill: parent
-        z: 1
-        preferredRendererType: Shape.CurveRenderer
-
-        BarInternalBorderShape {
-            barWidth: barTotalWidth
-            leftBarWidth: drawersWindow.animatedBarWidth
-            barHeight: drawersWindow.height
-            screenWidth: drawersWindow.width
-            junctionRadius: drawersWindow.shapeJunctionRadius
-            extensionY: popoutWrapper.y
-            extensionHeight: popoutWrapper.hasContent ? popoutWrapper.height : 0
-            extensionWidth: drawersWindow.animatedExtensionWidth
-            dashboardX: topBottomPanels.dashboard.x
-            dashboardWidth: topBottomPanels.dashboard.visible ? topBottomPanels.dashboard.width : 0
-            dashboardHeight: topBottomPanels.dashboard.visible ? topBottomPanels.dashboard.height : 0
-            rightPanelY: aggregatedRightPanelGeometry.aggregatedY
-            rightPanelWidth: aggregatedRightPanelGeometry.aggregatedWidth
-            rightPanelHeight: aggregatedRightPanelGeometry.aggregatedHeight
-            launcherX: topBottomPanels.launcher.x
-            launcherWidth: topBottomPanels.launcher.visible ? topBottomPanels.launcher.width : 0
-            launcherHeight: topBottomPanels.launcher.visible ? topBottomPanels.launcher.height : 0
         }
     }
 
     Interactions {
         id: interactions
         anchors.fill: parent
-        barWidth: barWrapper.visible ? drawersWindow.animatedBarWidth : 0
+        barWidth: barWrapper.visible ? drawersWindow.visibleBarWidth : 0
         barComponent: barWrapper.barItem
 
         onPopoutAreaLeft: drawersWindow.drawerState.hidePopout()
@@ -140,7 +105,7 @@ PanelWindow {
 
     BarWrapper {
         id: barWrapper
-        width: barTotalWidth
+        width: drawersWindow.barTotalWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
 
@@ -153,31 +118,34 @@ PanelWindow {
     TopBottomPanelGroup {
         id: topBottomPanels
         panelParent: drawersWindow.contentItem
-        barTotalWidth: drawersWindow.barTotalWidth
         drawerState: drawersWindow.drawerState
         hoverController: drawersWindow.hoverController
     }
 
+    ScreenEdgeGeometry {
+        id: edgeGeometry
+        windowWidth: drawersWindow.width
+        windowHeight: drawersWindow.height
+    }
+
     ScreenEdgeHoverAreas {
-        barTotalWidth: drawersWindow.barTotalWidth
+        geometry: edgeGeometry
         hoverController: drawersWindow.hoverController
     }
 
     RightPanelGroup {
         id: rightPanels
         panelParent: drawersWindow.contentItem
-        barTotalWidth: drawersWindow.barTotalWidth
         drawerState: drawersWindow.drawerState
         hoverController: drawersWindow.hoverController
     }
 
     PopoutWrapper {
         id: popoutWrapper
-        x: drawersWindow.animatedBarWidth
+        x: drawersWindow.visibleBarWidth
         currentName: drawersWindow.drawerState.popoutCurrentName
         currentCenterY: drawersWindow.drawerState.popoutCenterY
         screenHeight: drawersWindow.height
-        barWidth: barTotalWidth
 
         onContainsMouseChanged: containsMouse ? drawersWindow.hoverController.popoutContentEntered() : drawersWindow.hoverController.popoutContentLeft()
     }

@@ -102,9 +102,4 @@ Scope {
     WallpaperTransitionOverlay {
         screen: screenScope.screen
     }
-
-    ExclusionZones {
-        screen: screenScope.screen
-        barWidth: barTotalWidth
-    }
 }
