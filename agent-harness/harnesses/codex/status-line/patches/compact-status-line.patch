@@ -71,67 +71,25 @@ diff --git a/tui/src/bottom_pane/status_line_layout.rs b/tui/src/bottom_pane/sta
 diff --git a/tui/src/bottom_pane/mod.rs b/tui/src/bottom_pane/mod.rs
 --- a/tui/src/bottom_pane/mod.rs
 +++ b/tui/src/bottom_pane/mod.rs
-@@ -86,6 +86,7 @@
- mod question_tests;
- mod questions;
- mod request_user_input;
+@@ -88,0 +89 @@
 +mod status_line_layout;
- mod status_line_setup;
- mod status_line_style;
- mod status_surface_preview;
 diff --git a/tui/src/bottom_pane/status_line_style.rs b/tui/src/bottom_pane/status_line_style.rs
 --- a/tui/src/bottom_pane/status_line_style.rs
 +++ b/tui/src/bottom_pane/status_line_style.rs
-@@ -6,6 +6,7 @@
- use ratatui::text::Line;
- use ratatui::text::Span;
- 
+@@ -8,0 +9 @@
 +use super::status_line_layout::compact_status_line_value;
- use super::status_line_setup::StatusLineItem;
- use crate::render::highlight::foreground_style_for_scopes;
- use crate::style::readable_color_on;
-@@ -115,6 +116,7 @@
- {
-     let mut spans = Vec::new();
-     for (item, text) in segments {
+@@ -117,0 +119 @@
 +        let text = compact_status_line_value(item, text);
-         if !spans.is_empty() {
-             spans.push(STATUS_LINE_SEPARATOR.set_style(secondary_text_style()));
-         }
 diff --git a/tui/src/bottom_pane/chat_composer.rs b/tui/src/bottom_pane/chat_composer.rs
 --- a/tui/src/bottom_pane/chat_composer.rs
 +++ b/tui/src/bottom_pane/chat_composer.rs
-@@ -278,7 +278,6 @@
- use crate::key_hint::KeyBinding;
- use crate::key_hint::ShortcutHint;
- use crate::key_hint::has_ctrl_or_alt;
+@@ -281 +280,0 @@
 -use crate::line_truncation::truncate_line_with_ellipsis_if_overflow;
- use crate::ui_consts::FOOTER_INDENT_COLS;
- use codex_message_history::HistoryBatchCursor;
- use crossterm::event::KeyCode;
-@@ -337,6 +336,7 @@
- use super::footer::side_conversation_context_line;
- use super::footer::single_line_footer_layout;
- use super::footer::status_line_right_indicator_line;
+@@ -339,0 +339 @@
 +use super::status_line_layout::fit_status_line_to_width;
- use super::footer::toggle_shortcut_mode;
- use super::footer::uses_passive_footer_status_layout;
- use super::mentions_v2::MentionV2Popup;
-@@ -4615,7 +4615,7 @@
-                     };
-                     let mut truncated_status_line = if status_line_active {
-                         combined_status_line.as_ref().map(|line| {
+@@ -4618 +4618 @@
 -                            truncate_line_with_ellipsis_if_overflow(line.clone(), available_width)
 +                            fit_status_line_to_width(line.clone(), available_width)
-                         })
-                     } else {
-                         None
-@@ -4673,7 +4673,7 @@
-                         && let Some(max_left) = max_left_width_for_right(hint_rect, right_width)
-                         && left_width > max_left
-                         && let Some(line) = combined_status_line.as_ref().map(|line| {
+@@ -4676 +4676 @@
 -                            truncate_line_with_ellipsis_if_overflow(line.clone(), max_left as usize)
 +                            fit_status_line_to_width(line.clone(), max_left as usize)
-                         })
-                     {
-                         left_width = line.width() as u16;

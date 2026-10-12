@@ -100,12 +100,6 @@ diff --git a/tui/src/bottom_pane/status_line_layout_tests.rs b/tui/src/bottom_pa
 diff --git a/tui/src/bottom_pane/status_line_style.rs b/tui/src/bottom_pane/status_line_style.rs
 --- a/tui/src/bottom_pane/status_line_style.rs
 +++ b/tui/src/bottom_pane/status_line_style.rs
-@@ -319,7 +319,7 @@
-         )
-         .expect("status line");
- 
+@@ -322 +322 @@
 -        assert_eq!(line_text(&line), "gpt-5 · Context 12% used");
 +        assert_eq!(line_text(&line), "gpt-5 · Context 12%");
-         assert_eq!(line.spans[0].style, secondary_text_style());
-         assert_eq!(line.spans[1].style, secondary_text_style());
-         assert_eq!(line.spans[2].style, secondary_text_style());
