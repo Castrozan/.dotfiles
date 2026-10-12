@@ -43,7 +43,8 @@ parse_memory_measurement_arguments() {
 }
 
 prepare_rebuild_memory_metrics() {
-	REBUILD_MEMORY_RECORDS="$(mktemp -t dotfiles-rebuild-memory.XXXXXXXX)"
+	REBUILD_MEMORY_DIRECTORY="$(mktemp -d -t dotfiles-rebuild-memory.XXXXXXXX)"
+	REBUILD_MEMORY_RECORDS="${REBUILD_MEMORY_DIRECTORY}/records.jsonl"
 	REBUILD_MEMORY_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 	export REBUILD_MEMORY_RECORDS
 	trap 'finish_rebuild_memory_metrics "$?"' EXIT
@@ -55,7 +56,7 @@ finish_rebuild_memory_metrics() {
 	"$REBUILD_MEMORY_REPORTER" publish "$REBUILD_MEMORY_RECORDS" "$metrics_directory" \
 		"$REBUILD_MEMORY_ACTION" "$MACHINE_ALIAS" "$REBUILD_MEMORY_STARTED_AT" "$rebuild_status" ||
 		echo "error: could not persist rebuild memory metrics" >&2
-	rm -f -- "$REBUILD_MEMORY_RECORDS"
+	rm -rf -- "$REBUILD_MEMORY_DIRECTORY"
 	exit "$rebuild_status"
 }
 
