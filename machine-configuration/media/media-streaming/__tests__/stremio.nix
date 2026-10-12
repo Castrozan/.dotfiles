@@ -174,4 +174,13 @@ in
         && streamingUnit.unitConfig.RequiresMountsFor == [ streamCacheDirectory ]
       )
       "the stream cache is the only media the streaming server writes and it must land on the configured drive with the unit waiting for that mount, while settings stay in the systemd state directory; a cache back on the root disk is what filled it to 95%";
+
+  chise-stremio-streaming-server-can-probe-its-advertised-address =
+    mkEvalCheck "chise-stremio-streaming-server-can-probe-its-advertised-address"
+      (
+        systemModule.config.networking.firewall.interfaces.docker0.allowedTCPPorts == [ 11470 ]
+        && !(systemModule.config.networking.firewall ? allowedTCPPorts)
+        && !(systemModule.config.networking.firewall ? trustedInterfaces)
+      )
+      "the streaming container must reach its tailnet-published port for media probing without opening the port on other host interfaces or trusting the entire Docker bridge";
 }

@@ -48,13 +48,21 @@ def request_fixture(metadata, results, requests):
     return request
 
 
-def test_parses_only_supported_stremio_stream_paths():
+@pytest.mark.parametrize(
+    "series_path",
+    [
+        "/prowlarr/stream/series/tt0944947:2:3.json",
+        "/prowlarr/stream/series/tt0944947%3A2%3A3.json",
+        "/prowlarr/stream/series/tt0944947%3a2%3a3.json",
+    ],
+)
+def test_parses_only_supported_stremio_stream_paths(series_path):
     assert stremio_protocol.parse_stream_request(
         "/prowlarr/stream/movie/tt1392170.json"
     ) == stremio_protocol.StreamRequest("movie", "tt1392170")
-    assert stremio_protocol.parse_stream_request(
-        "/prowlarr/stream/series/tt0944947:2:3.json"
-    ) == stremio_protocol.StreamRequest("series", "tt0944947", 2, 3)
+    assert stremio_protocol.parse_stream_request(series_path) == (
+        stremio_protocol.StreamRequest("series", "tt0944947", 2, 3)
+    )
     assert (
         stremio_protocol.parse_stream_request(
             "/prowlarr/stream/movie/tt1392170:1:1.json"

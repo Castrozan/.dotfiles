@@ -24,6 +24,8 @@ in
     '';
   };
 
+  config.networking.firewall.interfaces.docker0.allowedTCPPorts = [ 11470 ];
+
   config.systemd.services.stremio-streaming-server = {
     description = "Private Stremio torrent streaming server";
     after = [

@@ -1,4 +1,5 @@
 import re
+import urllib.parse
 from dataclasses import dataclass
 
 
@@ -16,7 +17,7 @@ class StreamRequest:
 
 
 def parse_stream_request(path: str) -> StreamRequest | None:
-    match = STREAM_PATH.fullmatch(path)
+    match = STREAM_PATH.fullmatch(urllib.parse.unquote(path))
     if match is None:
         return None
     identifier_parts = match.group("identifier").split(":")
