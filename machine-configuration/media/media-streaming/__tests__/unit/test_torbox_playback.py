@@ -99,7 +99,10 @@ def test_media_failures_do_not_expose_the_authenticated_url(monkeypatch):
     ["file:///etc/passwd", "http://media.example/episode.mkv", "ftp://host/episode"],
 )
 def test_refuses_to_relay_media_from_a_non_https_location(location, monkeypatch):
+    opened_locations = []
+
     def unexpected_open(request, timeout):
+        opened_locations.append(request.full_url)
         raise AssertionError("upstream must not be contacted")
 
     monkeypatch.setattr(
@@ -113,3 +116,4 @@ def test_refuses_to_relay_media_from_a_non_https_location(location, monkeypatch)
     )
     with pytest.raises(RuntimeError, match="^TorBox media request failed$"):
         torbox_playback.relay_torbox_playback(handler, response, True)
+    assert opened_locations == []
