@@ -8,6 +8,14 @@ Item {
     required property var drawerHoverController
 
     IpcHandler {
+        target: "bar"
+
+        function show(): void {
+            drawerIpcAdapterRoot.drawerState.openBar();
+        }
+    }
+
+    IpcHandler {
         target: "dashboard"
 
         function toggle(): void {

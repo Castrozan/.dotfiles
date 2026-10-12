@@ -14,6 +14,10 @@ Item {
     QtObject {
         id: recordedDrawerState
 
+        function openBar() {
+            intentLog.lastIntent = "openBar";
+        }
+
         function toggleDashboard() {
             intentLog.lastIntent = "toggleDashboard";
         }
@@ -82,7 +86,7 @@ Item {
         }
 
         function test_every_recorded_target_is_registered_data() {
-            return ["dashboard", "launcher", "session", "utilities", "sidebar", "osd", "popout"].map(target => ({
+            return ["bar", "dashboard", "launcher", "session", "utilities", "sidebar", "osd", "popout"].map(target => ({
                         tag: target,
                         target: target
                     }));
@@ -125,6 +129,11 @@ Item {
         function test_panel_toggle_maps_onto_the_drawer_intent(data) {
             handlerForTarget(data.target).toggle();
             compare(intentLog.lastIntent, data.intent);
+        }
+
+        function test_bar_show_maps_onto_the_open_intent() {
+            handlerForTarget("bar").show();
+            compare(intentLog.lastIntent, "openBar");
         }
 
         function test_osd_show_maps_onto_the_temporary_osd_intent() {

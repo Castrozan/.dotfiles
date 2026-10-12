@@ -147,7 +147,7 @@ PanelWindow {
         screenScope: drawersWindow.drawerState
         barVisible: drawersWindow.drawerState.barVisible
 
-        onHoverChanged: hovered ? drawersWindow.hoverController.bar.contentEntered() : drawersWindow.hoverController.bar.contentLeft()
+        onHoverChanged: hovered => hovered ? drawersWindow.hoverController.bar.contentEntered() : drawersWindow.hoverController.bar.contentLeft()
     }
 
     TopBottomPanelGroup {
