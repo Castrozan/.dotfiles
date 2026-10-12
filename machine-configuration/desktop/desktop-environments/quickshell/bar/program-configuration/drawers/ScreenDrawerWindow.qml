@@ -17,6 +17,15 @@ PanelWindow {
 
     readonly property Item barItem: barWrapper.barItem
     readonly property bool pointerOverBar: interactions.isOverBar
+    property real animatedBarWidth: drawerState.barVisible ? barTotalWidth : barTotalWidth / 3
+
+    Behavior on animatedBarWidth {
+        NumberAnimation {
+            duration: 350
+            easing.type: Easing.OutCubic
+        }
+    }
+
     property real animatedExtensionWidth: drawerState.hasActivePopout ? popoutWrapper.popoutWidth : 0
     Behavior on animatedExtensionWidth {
         NumberAnimation {
@@ -46,6 +55,7 @@ PanelWindow {
 
     mask: DrawerInputMask {
         barTotalWidth: drawersWindow.barTotalWidth
+        leftBarWidth: drawersWindow.animatedBarWidth
         windowWidth: drawersWindow.width
         windowHeight: drawersWindow.height
         shapeJunctionRadius: drawersWindow.shapeJunctionRadius
@@ -74,6 +84,7 @@ PanelWindow {
 
         BarBackgroundShape {
             barWidth: barTotalWidth
+            leftBarWidth: drawersWindow.animatedBarWidth
             barHeight: drawersWindow.height
             screenWidth: drawersWindow.width
             junctionRadius: drawersWindow.shapeJunctionRadius
@@ -99,6 +110,7 @@ PanelWindow {
 
         BarInternalBorderShape {
             barWidth: barTotalWidth
+            leftBarWidth: drawersWindow.animatedBarWidth
             barHeight: drawersWindow.height
             screenWidth: drawersWindow.width
             junctionRadius: drawersWindow.shapeJunctionRadius
@@ -120,7 +132,7 @@ PanelWindow {
     Interactions {
         id: interactions
         anchors.fill: parent
-        barWidth: barTotalWidth
+        barWidth: barWrapper.visible ? drawersWindow.animatedBarWidth : 0
         barComponent: barWrapper.barItem
 
         onPopoutAreaLeft: drawersWindow.drawerState.hidePopout()
@@ -131,9 +143,11 @@ PanelWindow {
         width: barTotalWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.left: parent.left
 
         screenScope: drawersWindow.drawerState
+        barVisible: drawersWindow.drawerState.barVisible
+
+        onHoverChanged: hovered ? drawersWindow.hoverController.bar.contentEntered() : drawersWindow.hoverController.bar.contentLeft()
     }
 
     TopBottomPanelGroup {
@@ -159,7 +173,7 @@ PanelWindow {
 
     PopoutWrapper {
         id: popoutWrapper
-        x: barTotalWidth
+        x: drawersWindow.animatedBarWidth
         currentName: drawersWindow.drawerState.popoutCurrentName
         currentCenterY: drawersWindow.drawerState.popoutCenterY
         screenHeight: drawersWindow.height

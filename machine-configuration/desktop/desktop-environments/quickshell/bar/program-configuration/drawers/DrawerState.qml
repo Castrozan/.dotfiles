@@ -9,6 +9,8 @@ QtObject {
     property real popoutCenterY: 0
     property bool popoutHovered: false
     property bool popoutIconHovered: false
+    property bool barVisible: false
+    property bool barHovered: false
     property bool dashboardVisible: false
     property bool dashboardHovered: false
     property bool launcherVisible: false
@@ -29,6 +31,7 @@ QtObject {
     signal popoutHideRequested
 
     function showPopout(name: string, centerY: real): void {
+        drawerStateRoot.openBar();
         drawerStateRoot.popoutCurrentName = name;
         drawerStateRoot.popoutCenterY = centerY;
         drawerStateRoot.popoutShown();
@@ -57,6 +60,18 @@ QtObject {
 
     function setPopoutHovered(hovered: bool): void {
         drawerStateRoot.popoutHovered = hovered;
+    }
+
+    function openBar(): void {
+        drawerStateRoot.barVisible = true;
+    }
+
+    function closeBar(): void {
+        drawerStateRoot.barVisible = false;
+    }
+
+    function setBarHovered(hovered: bool): void {
+        drawerStateRoot.barHovered = hovered;
     }
 
     function toggleDashboard(): void {

@@ -24,7 +24,7 @@ Item {
         implicitWidth: 1
         implicitHeight: 1
 
-        exclusiveZone: exclusionZonesRoot.barWidth
+        exclusiveZone: exclusionZonesRoot.stripThickness
 
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.namespace: "quickshell-bar-exclusion"

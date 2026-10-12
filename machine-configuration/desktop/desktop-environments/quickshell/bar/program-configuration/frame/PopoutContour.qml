@@ -10,18 +10,18 @@ QtObject {
             y: contourRoot.geometry.barHeight - contourRoot.geometry.stripThickness
         },
         PathArc {
-            x: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.bottomEdgeTargetX : contourRoot.geometry.barWidth
+            x: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.bottomEdgeTargetX : contourRoot.geometry.leftBarWidth
             y: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.clampedExtensionBottomEdge : (contourRoot.geometry.barHeight - contourRoot.geometry.stripThickness - contourRoot.geometry.effectiveBottomLeftBarCornerRadius)
             radiusX: contourRoot.geometry.effectiveBottomLeftBarCornerRadius
             radiusY: contourRoot.geometry.effectiveBottomLeftBarCornerRadius
             direction: PathArc.Clockwise
         },
         PathLine {
-            x: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.bottomEdgeTargetX : contourRoot.geometry.barWidth
+            x: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.bottomEdgeTargetX : contourRoot.geometry.leftBarWidth
             y: contourRoot.geometry.clampedExtensionBottomEdge + contourRoot.geometry.effectiveBottomJunctionArcRadius
         },
         PathArc {
-            x: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.bottomEdgeTargetX : (contourRoot.geometry.barWidth + contourRoot.geometry.effectiveBottomJunctionArcRadius)
+            x: contourRoot.geometry.bottomFullyMerged ? contourRoot.geometry.bottomEdgeTargetX : (contourRoot.geometry.leftBarWidth + contourRoot.geometry.effectiveBottomJunctionArcRadius)
             y: contourRoot.geometry.clampedExtensionBottomEdge
             radiusX: contourRoot.geometry.effectiveBottomJunctionArcRadius
             radiusY: contourRoot.geometry.effectiveBottomJunctionArcRadius
@@ -50,18 +50,18 @@ QtObject {
             direction: PathArc.Counterclockwise
         },
         PathLine {
-            x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : (contourRoot.geometry.barWidth + contourRoot.geometry.effectiveTopJunctionArcRadius)
+            x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : (contourRoot.geometry.leftBarWidth + contourRoot.geometry.effectiveTopJunctionArcRadius)
             y: contourRoot.geometry.clampedExtensionTopEdge
         },
         PathArc {
-            x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : contourRoot.geometry.barWidth
+            x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : contourRoot.geometry.leftBarWidth
             y: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.clampedExtensionTopEdge : (contourRoot.geometry.clampedExtensionTopEdge - contourRoot.geometry.effectiveTopJunctionArcRadius)
             radiusX: contourRoot.geometry.effectiveTopJunctionArcRadius
             radiusY: contourRoot.geometry.effectiveTopJunctionArcRadius
             direction: PathArc.Clockwise
         },
         PathLine {
-            x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : contourRoot.geometry.barWidth
+            x: contourRoot.geometry.topFullyMerged ? contourRoot.geometry.topEdgeTargetX : contourRoot.geometry.leftBarWidth
             y: contourRoot.geometry.stripThickness + contourRoot.geometry.effectiveTopLeftBarCornerRadius
         },
         PathArc {

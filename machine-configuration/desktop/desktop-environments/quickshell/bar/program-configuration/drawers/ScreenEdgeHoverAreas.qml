@@ -10,6 +10,20 @@ Item {
     z: 3
 
     MouseArea {
+        id: leftStripBarHoverTrigger
+
+        x: 0
+        y: edgeHoverAreas.barTotalWidth / 3
+        width: edgeHoverAreas.barTotalWidth / 3
+        height: edgeHoverAreas.height - edgeHoverAreas.barTotalWidth * 2 / 3
+
+        hoverEnabled: true
+        acceptedButtons: Qt.NoButton
+
+        onContainsMouseChanged: containsMouse ? edgeHoverAreas.hoverController.bar.triggerEntered() : edgeHoverAreas.hoverController.bar.triggerLeft()
+    }
+
+    MouseArea {
         id: topStripDashboardHoverTrigger
 
         readonly property real topStripHeight: 2

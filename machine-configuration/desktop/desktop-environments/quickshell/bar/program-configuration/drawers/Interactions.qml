@@ -3,7 +3,7 @@ import QtQuick
 MouseArea {
     id: interactionsRoot
 
-    required property int barWidth
+    required property real barWidth
     required property var barComponent
 
     property bool isOverBar: false
@@ -13,6 +13,11 @@ MouseArea {
     hoverEnabled: true
     acceptedButtons: Qt.NoButton
     propagateComposedEvents: true
+
+    onBarWidthChanged: {
+        if (barWidth === 0)
+            isOverBar = false;
+    }
 
     onMouseXChanged: mouse => {
         let wasOverBar = isOverBar;

@@ -5,6 +5,7 @@ Region {
     id: drawerInputMaskRoot
 
     required property int barTotalWidth
+    required property real leftBarWidth
     required property real windowWidth
     required property real windowHeight
     required property int shapeJunctionRadius
@@ -16,24 +17,24 @@ Region {
     required property Item osdItem
     required property Item sidebarItem
 
-    x: drawerInputMaskRoot.barTotalWidth
+    x: drawerInputMaskRoot.leftBarWidth
     y: 0
-    width: drawerInputMaskRoot.windowWidth - drawerInputMaskRoot.barTotalWidth
+    width: drawerInputMaskRoot.windowWidth - drawerInputMaskRoot.leftBarWidth
     height: drawerInputMaskRoot.windowHeight
     intersection: Intersection.Xor
 
     regions: [
         Region {
-            x: drawerInputMaskRoot.barTotalWidth
+            x: drawerInputMaskRoot.leftBarWidth
             y: 0
-            width: drawerInputMaskRoot.windowWidth - drawerInputMaskRoot.barTotalWidth
+            width: drawerInputMaskRoot.windowWidth - drawerInputMaskRoot.leftBarWidth
             height: drawerInputMaskRoot.barTotalWidth / 3
             intersection: Intersection.Subtract
         },
         Region {
-            x: drawerInputMaskRoot.barTotalWidth
+            x: drawerInputMaskRoot.leftBarWidth
             y: drawerInputMaskRoot.windowHeight - drawerInputMaskRoot.barTotalWidth / 3
-            width: drawerInputMaskRoot.windowWidth - drawerInputMaskRoot.barTotalWidth
+            width: drawerInputMaskRoot.windowWidth - drawerInputMaskRoot.leftBarWidth
             height: drawerInputMaskRoot.barTotalWidth / 3
             intersection: Intersection.Subtract
         },

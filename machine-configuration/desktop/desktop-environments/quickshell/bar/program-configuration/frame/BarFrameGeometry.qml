@@ -2,6 +2,7 @@ import QtQuick
 
 QtObject {
     required property real barWidth
+    required property real leftBarWidth
     required property real barHeight
     required property real screenWidth
     required property real junctionRadius
@@ -36,7 +37,7 @@ QtObject {
     readonly property real bottomJunctionArcRadius: Math.min(junctionRadius, extensionWidth, bottomJunctionAvailableSpace)
 
     readonly property real extensionCornerArcRadius: Math.min(junctionRadius, extensionWidth, extensionHeight / 2)
-    readonly property real extensionRight: barWidth + extensionWidth
+    readonly property real extensionRight: leftBarWidth + extensionWidth
 
     readonly property bool bottomCornerMerged: hasExtension && (extensionBottomEdge + junctionRadius >= barRightEdgeEndY)
     readonly property bool topCornerMerged: hasExtension && (extensionTopEdge - junctionRadius <= barRightEdgeStartY)
@@ -55,8 +56,8 @@ QtObject {
     readonly property real effectiveBottomJunctionArcRadius: bottomCornerMerged ? mergedBottomArcRadius : bottomJunctionArcRadius
     readonly property real effectiveTopJunctionArcRadius: topCornerMerged ? mergedTopArcRadius : topJunctionArcRadius
 
-    readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight - extensionCornerArcRadius) : (barWidth + effectiveBottomLeftBarCornerRadius)
-    readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight - extensionCornerArcRadius) : (barWidth + effectiveTopLeftBarCornerRadius)
+    readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight - extensionCornerArcRadius) : (leftBarWidth + effectiveBottomLeftBarCornerRadius)
+    readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight - extensionCornerArcRadius) : (leftBarWidth + effectiveTopLeftBarCornerRadius)
 
     readonly property bool hasDashboard: dashboardHeight > 0
     readonly property real dashboardBottomEdge: stripThickness + dashboardHeight

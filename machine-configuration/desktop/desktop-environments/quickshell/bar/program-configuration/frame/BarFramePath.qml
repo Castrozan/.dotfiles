@@ -5,6 +5,7 @@ ShapePath {
     id: framePathRoot
 
     required property real barWidth
+    required property real leftBarWidth
     required property real barHeight
     required property real screenWidth
     required property real junctionRadius
@@ -23,6 +24,7 @@ ShapePath {
 
     readonly property BarFrameGeometry geometry: BarFrameGeometry {
         barWidth: framePathRoot.barWidth
+        leftBarWidth: framePathRoot.leftBarWidth
         barHeight: framePathRoot.barHeight
         screenWidth: framePathRoot.screenWidth
         junctionRadius: framePathRoot.junctionRadius

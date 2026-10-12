@@ -5,7 +5,7 @@ import "../../../../quickshell/bar/program-configuration/drawers"
 Item {
     id: root
 
-    readonly property var drawerNames: ["dashboard", "launcher", "session", "utilities", "sidebar", "osd"]
+    readonly property var drawerNames: ["bar", "dashboard", "launcher", "session", "utilities", "sidebar", "osd"]
     readonly property int drivenInterval: 10
     readonly property int drivenTimeout: 400
     readonly property int osdAutoHideElapsed: 2200
@@ -57,7 +57,7 @@ Item {
         }
 
         function test_reveal_delay_matches_recorded_interval_data() {
-            return ["dashboard", "session", "sidebar", "osd"].map(name => ({
+            return ["bar", "dashboard", "session", "sidebar", "osd"].map(name => ({
                         tag: name,
                         drawer: name
                     }));
@@ -85,6 +85,7 @@ Item {
                 drawerState[drawerName + "Hovered"] = false;
             }
             drawerState.closeAllPanels();
+            drawerState.closeBar();
             drawerState.closeOsd();
             wait(root.drivenInterval * 4);
         }

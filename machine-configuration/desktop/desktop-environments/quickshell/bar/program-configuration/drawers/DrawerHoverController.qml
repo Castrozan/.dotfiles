@@ -7,6 +7,7 @@ Item {
 
     property bool pointerOverBar: false
 
+    readonly property alias bar: barHoverTiming
     readonly property alias dashboard: dashboardHoverTiming
     readonly property alias launcher: launcherHoverTiming
     readonly property alias session: sessionHoverTiming
@@ -27,6 +28,16 @@ Item {
     function popoutContentLeft(): void {
         drawerHoverControllerRoot.drawerState.setPopoutHovered(false);
         popoutHideTimer.restart();
+    }
+
+    DrawerHoverTiming {
+        id: barHoverTiming
+
+        contentHovered: drawerHoverControllerRoot.drawerState.barHovered || drawerHoverControllerRoot.drawerState.hasActivePopout
+        onContentPointerEntered: drawerHoverControllerRoot.drawerState.setBarHovered(true)
+        onContentPointerLeft: drawerHoverControllerRoot.drawerState.setBarHovered(false)
+        onRevealRequested: drawerHoverControllerRoot.drawerState.openBar()
+        onConcealRequested: drawerHoverControllerRoot.drawerState.closeBar()
     }
 
     DrawerHoverTiming {
@@ -111,6 +122,11 @@ Item {
 
     Connections {
         target: drawerHoverControllerRoot.drawerState
+
+        function onPopoutCurrentNameChanged(): void {
+            if (!drawerHoverControllerRoot.drawerState.hasActivePopout && !drawerHoverControllerRoot.drawerState.barHovered)
+                barHoverTiming.contentLeft();
+        }
 
         function onPopoutShown(): void {
             popoutHideTimer.stop();
