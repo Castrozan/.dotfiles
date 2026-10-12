@@ -72,8 +72,10 @@ in
         && lib.hasInfix "STREMIO_COMET_URL=http://${tailnetBindAddress}:43214" webEnvironment
         && lib.hasInfix "tracker:" cometAdapterSource
         && lib.hasInfix "dht:" cometAdapterSource
-        && lib.hasInfix "com.lucaszanoni.prowlarr-streams" managedProfileSource
+        && !(lib.hasInfix "com.lucaszanoni.prowlarr-streams" managedProfileSource)
         && lib.hasInfix "stremio.comet.fast" managedProfileSource
+        && lib.hasInfix "STREMIO_TORBOX_API_KEY_FILE=${testHomeDirectory}/.secrets/torbox-api-key" webEnvironment
+        && builtins.length webUnit.Unit.X-Restart-Triggers == 1
         && lib.hasInfix "addonsLocked: true" managedProfileSource
         && lib.hasInfix "https://v3-cinemeta.strem.io/manifest.json" managedProfileSource
         && lib.hasInfix "schema_version" managedProfileSource
@@ -125,6 +127,7 @@ in
         )
         && lib.hasInfix "PROWLARR_API_KEY" cometEnvironmentSource
         && !(lib.hasInfix "PROWLARR_API_KEY=" cometUnit.serviceConfig.ExecStart)
+        && !(lib.hasInfix "PUBLIC_BASE_URL=" cometUnit.serviceConfig.ExecStart)
         && cometUnit.wantedBy == [ "multi-user.target" ]
       )
       "Comet must be digest-pinned, tailnet-bound, resource-bounded and receive the live Prowlarr key outside the Nix store";

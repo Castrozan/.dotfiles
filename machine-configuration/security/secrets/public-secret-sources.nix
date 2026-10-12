@@ -15,6 +15,7 @@ in
   (secret "api-keys/opencode-api-key" ../../../secrets/api-keys/opencode-api-key.age)
   (secret "api-keys/openai-api-key" ../../../secrets/api-keys/openai-api-key.age)
   (secret "api-keys/todoist-api-token" ../../../secrets/api-keys/todoist-api-token.age)
+  (secret "credentials/torbox-api-key" ../../../secrets/credentials/media/torbox-api-key.age)
   (secret "infrastructure/telegram-ids" ../../../secrets/infrastructure/telegram-ids.age)
   (secret "infrastructure/ssh-hosts" ../../../secrets/infrastructure/ssh-hosts.age)
   (secret "credentials/x-username" ../../../secrets/credentials/x/x-username.age)

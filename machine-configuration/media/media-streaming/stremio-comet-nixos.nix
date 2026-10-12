@@ -59,7 +59,6 @@ in
         "--env FASTAPI_PORT=${port}"
         "--env FASTAPI_WORKERS=1"
         "--env EXECUTOR_MAX_WORKERS=1"
-        "--env PUBLIC_BASE_URL=https://stream.lucaszanoni.com/comet"
         "--env SCRAPE_PROWLARR=live"
         "--env PROWLARR_URL=http://${tailnetBindAddress}:9696"
         "--env 'PROWLARR_INDEXERS=[]'"

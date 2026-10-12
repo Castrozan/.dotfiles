@@ -43,53 +43,48 @@
   "officialAddons": [
     {
       "transportUrl": "https://v3-cinemeta.strem.io/manifest.json",
-      "flags": { "official": true, "protected": true }
+      "flags": {
+        "official": true,
+        "protected": true
+      }
     },
     {
       "transportUrl": "https://v3-channels.strem.io/manifest.json",
-      "flags": { "official": true, "protected": false }
+      "flags": {
+        "official": true,
+        "protected": false
+      }
     },
     {
       "transportUrl": "https://watchhub.strem.io/manifest.json",
-      "flags": { "official": true, "protected": false }
+      "flags": {
+        "official": true,
+        "protected": false
+      }
     },
     {
       "transportUrl": "https://caching.stremio.net/publicdomainmovies.now.sh/manifest.json",
-      "flags": { "official": true, "protected": false }
+      "flags": {
+        "official": true,
+        "protected": false
+      }
     },
     {
       "transportUrl": "https://opensubtitles-v3.strem.io/manifest.json",
-      "flags": { "official": true, "protected": false }
+      "flags": {
+        "official": true,
+        "protected": false
+      }
     },
     {
       "streamingServerPath": "local-addon/manifest.json",
-      "flags": { "official": true, "protected": true }
+      "flags": {
+        "official": true,
+        "protected": true
+      }
     }
   ],
   "managedAddons": [
-    {
-      "manifest": {
-        "id": "com.lucaszanoni.prowlarr-streams",
-        "version": "1.0.0",
-        "name": "Prowlarr Streams",
-        "contactEmail": null,
-        "description": "Instant private movie and TV streams from Prowlarr",
-        "logo": null,
-        "background": null,
-        "types": ["movie", "series"],
-        "resources": ["stream"],
-        "idPrefixes": ["tt"],
-        "catalogs": [],
-        "addonCatalogs": [],
-        "behaviorHints": {
-          "adult": false,
-          "p2p": true,
-          "configurable": false,
-          "configurationRequired": false
-        }
-      },
-      "transportPath": "/prowlarr/manifest.json"
-    },
     {
       "manifest": {
         "id": "stremio.comet.fast",
@@ -124,7 +119,12 @@
           "allowed": [],
           "exclude": [],
           "preferred": ["pt"]
-        }
+        },
+        "debridService": "torbox",
+        "cachedOnly": true,
+        "enableTorrent": false,
+        "deduplicateStreams": true,
+        "maxResultsPerResolution": 1
       }
     }
   ]

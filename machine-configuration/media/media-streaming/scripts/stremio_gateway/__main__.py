@@ -1,5 +1,4 @@
 import json
-import os
 import sys
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -14,6 +13,7 @@ from managed_profile import (
 from managed_service_worker import render_managed_service_worker
 from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
 import static_assets
+from runtime_configuration import load_comet_adapter, required_environment_value
 from stremio_protocol import addon_manifest, parse_stream_request
 
 
@@ -77,7 +77,9 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
 
     def _send_comet(self, request_target: str, include_body: bool):
         try:
-            response = self.comet_adapter.response(request_target)
+            forwarded_protocol = self.headers.get("X-Forwarded-Proto", "http")
+            request_origin = f"{forwarded_protocol}://{self.headers['Host']}"
+            response = self.comet_adapter.response(request_target, request_origin)
         except Exception as error:
             print(f"Comet proxy failed: {error}", file=sys.stderr, flush=True)
             self.send_error(502)
@@ -157,13 +159,6 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
 
 
-def required_environment_value(name: str) -> str:
-    value = os.environ.get(name, "").strip()
-    if not value:
-        raise RuntimeError(f"{name} is required")
-    return value
-
-
 def main():
     bind_address = required_environment_value("STREMIO_BIND_ADDRESS")
     port = int(required_environment_value("STREMIO_WEB_PORT"))
@@ -181,9 +176,7 @@ def main():
         ),
         required_environment_value("STREMIO_METADATA_URL"),
     )
-    StremioRequestHandler.comet_adapter = CometStreamAdapter(
-        required_environment_value("STREMIO_COMET_URL")
-    )
+    StremioRequestHandler.comet_adapter = load_comet_adapter()
     StremioRequestHandler.public_host = urllib.parse.urlsplit(public_web_url).netloc
     StremioRequestHandler.public_streaming_server_url = (
         f"{public_web_url.rstrip('/')}/server/"

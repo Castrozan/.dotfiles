@@ -70,6 +70,7 @@ in
   "credentials/media/arr-bazarr-password.age".publicKeys = all_keys;
   "credentials/media/arr-samaritano-indexer-apikey.age".publicKeys = all_keys;
   "credentials/media/jellyfin-admin-api-key.age".publicKeys = all_keys;
+  "credentials/media/torbox-api-key.age".publicKeys = all_keys;
   "credentials/media/suwayomi-extension-repositories.age".publicKeys = all_keys;
   "credentials/proton-vpn/proton-openvpn-credentials.age".publicKeys = all_keys;
   "credentials/proton-vpn/proton-paraguay-openvpn-config.age".publicKeys = all_keys;

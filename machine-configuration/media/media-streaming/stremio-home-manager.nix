@@ -24,6 +24,7 @@ in
         After = [ "network-online.target" ];
         Wants = [ "network-online.target" ];
         StartLimitIntervalSec = 0;
+        X-Restart-Triggers = [ "${../../../../secrets/credentials/media/torbox-api-key.age}" ];
       };
 
       Service = {
@@ -38,6 +39,7 @@ in
           "STREMIO_WEB_ROOT=${stremioWeb}"
           "STREMIO_TAILNET_STREAMING_SERVER_URL=${stremioStreamingServerUrl}"
           "STREMIO_COMET_URL=${stremioCometUrl}"
+          "STREMIO_TORBOX_API_KEY_FILE=${homeDirectory}/.secrets/torbox-api-key"
           "STREMIO_PROWLARR_URL=http://${tailnetBindAddress}:9696"
           "STREMIO_PROWLARR_CONFIG_FILE=${homeDirectory}/arr-stack/config/prowlarr/config.xml"
           "STREMIO_METADATA_URL=https://v3-cinemeta.strem.io"
