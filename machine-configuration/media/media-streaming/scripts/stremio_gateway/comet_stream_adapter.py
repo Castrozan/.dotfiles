@@ -4,10 +4,9 @@ import re
 import urllib.error
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from typing import Callable
 
-from torbox_download_resolver import TorBoxDownloadResolver
 
 INFO_HASH = re.compile(r"^[0-9a-fA-F]{40}$")
 TRACKER_SCHEMES = ("http://", "https://", "udp://")
@@ -108,7 +107,6 @@ class CometStreamAdapter:
             json.dumps(private_configuration, separators=(",", ":")).encode()
         ).decode()
         self.request = request
-        self.download_resolver = TorBoxDownloadResolver(api_key.strip())
 
     def response(self, request_target: str, request_origin: str) -> CometResponse:
         target = urllib.parse.urlsplit(f"/{request_target.lstrip('/')}")
@@ -136,10 +134,6 @@ class CometStreamAdapter:
             response = self.request(f"{self.comet_url}{upstream_target}")
         except Exception:
             raise RuntimeError("Comet upstream request failed") from None
-        if route_segments[0] == "playback" and response.status == 302:
-            response = replace(
-                response, location=self.download_resolver.download_url(request_target)
-            )
         public_body = response.body.replace(
             self.private_configuration.encode(), self.public_configuration.encode()
         )
