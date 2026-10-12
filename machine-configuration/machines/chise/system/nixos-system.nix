@@ -114,6 +114,11 @@ in
   # Services
   services = {
     flatpak.enable = true;
+    tailscale = {
+      useRoutingFeatures = "server";
+      extraSetFlags = [ "--advertise-exit-node" ];
+      openFirewall = true;
+    };
     openssh = {
       enable = true;
       settings = {
