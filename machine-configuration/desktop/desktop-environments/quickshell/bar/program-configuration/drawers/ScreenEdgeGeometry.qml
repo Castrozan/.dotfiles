@@ -4,7 +4,7 @@ QtObject {
     required property real windowWidth
     required property real windowHeight
 
-    readonly property int triggerThickness: 1
+    readonly property int triggerThickness: 2
     readonly property real innerWidth: Math.max(0, windowWidth - triggerThickness * 2)
     readonly property real innerHeight: Math.max(0, windowHeight - triggerThickness * 2)
     readonly property int rightZoneHeight: Math.floor(innerHeight / 3)

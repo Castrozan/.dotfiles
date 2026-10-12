@@ -66,10 +66,15 @@ Item {
         function test_hidden_panels_leave_the_desktop_clickable() {
             verify(!acceptsPoint(960, 540));
             verify(!acceptsPoint(24, 550));
-            verify(!acceptsPoint(1918, 540));
+            verify(!acceptsPoint(1917, 540));
         }
 
-        function test_edge_capture_is_one_pixel_wide_data() {
+        function test_native_pointer_clamp_reaches_edge_triggers() {
+            verify(acceptsPoint(1918, 540));
+            verify(acceptsPoint(960, 1078));
+        }
+
+        function test_edge_capture_is_two_pixels_wide_data() {
             return [
                 {
                     tag: "left-edge",
@@ -79,7 +84,7 @@ Item {
                 },
                 {
                     tag: "left-inner",
-                    x: 1,
+                    x: 2,
                     y: 400,
                     captured: false
                 },
@@ -92,7 +97,7 @@ Item {
                 {
                     tag: "top-inner",
                     x: 960,
-                    y: 1,
+                    y: 2,
                     captured: false
                 },
                 {
@@ -104,7 +109,7 @@ Item {
                 {
                     tag: "bottom-inner",
                     x: 960,
-                    y: 1078,
+                    y: 1077,
                     captured: false
                 },
                 {
@@ -115,7 +120,7 @@ Item {
                 },
                 {
                     tag: "sidebar-inner",
-                    x: 1918,
+                    x: 1917,
                     y: 100,
                     captured: false
                 },
@@ -127,7 +132,7 @@ Item {
                 },
                 {
                     tag: "osd-inner",
-                    x: 1918,
+                    x: 1917,
                     y: 540,
                     captured: false
                 },
@@ -139,7 +144,7 @@ Item {
                 },
                 {
                     tag: "session-inner",
-                    x: 1918,
+                    x: 1917,
                     y: 980,
                     captured: false
                 },
@@ -152,7 +157,7 @@ Item {
             ];
         }
 
-        function test_edge_capture_is_one_pixel_wide(data) {
+        function test_edge_capture_is_two_pixels_wide(data) {
             compare(acceptsPoint(data.x, data.y), data.captured);
         }
 
