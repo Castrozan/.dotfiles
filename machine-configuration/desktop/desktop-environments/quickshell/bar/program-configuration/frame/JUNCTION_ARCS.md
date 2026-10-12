@@ -1,8 +1,8 @@
 # Junction Arc Geometry
 
-Junction arcs are concave fillets connecting panel extensions to an attachment edge. Fill and border trace the same closed contour. BarFrameGeometry.qml computes the shared geometry.
+Junction arcs are concave fillets connecting panel extensions to an attachment edge. Fill and border share the exposed contour. The fill closes across the attachment edge; the stroke stays open so the window border joins the curved panel outline. BarFrameGeometry.qml computes the shared geometry.
 
-Use one Shape with separate closed ShapePaths for panel fills and borders. A desktop-sized outer rectangle minus a cutout puts coincident segments on the screen edge when the strip thickness is zero; the curve renderer can then fill the desktop instead of the panels.
+Use one Shape with separate positive ShapePaths for each panel. Opaque panel fill covers the native window border at the attachment edge. The left bar has a closed fill path and a separate open border using the same popout contour. A desktop-sized outer rectangle minus a cutout puts coincident segments on the screen edge when the strip thickness is zero; the curve renderer can then fill the desktop instead of the panels.
 
 ## Anatomy of a Junction
 

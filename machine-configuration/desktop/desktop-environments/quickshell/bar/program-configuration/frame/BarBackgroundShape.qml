@@ -8,7 +8,7 @@ Shape {
     id: backgroundRoot
 
     required property BarFrameGeometry geometry
-    property color fillColor: ThemeColors.background
+    property color fillColor: ThemeColors.backgroundSolid
     property color strokeColor: ThemeColors.accent
 
     preferredRendererType: Shape.CurveRenderer
@@ -35,11 +35,11 @@ Shape {
         capStyle: ShapePath.RoundCap
     }
 
-    component ClosedPanelOutline: QtObject {
+    component PanelOutline: QtObject {
         required property list<QtObject> elements
     }
 
-    readonly property ClosedPanelOutline barOutline: ClosedPanelOutline {
+    readonly property PanelOutline barOutline: PanelOutline {
         readonly property PathMove start: PathMove {
             x: 0
             y: 0
@@ -55,47 +55,39 @@ Shape {
         elements: [start, bottom, ...backgroundRoot.popoutContour.elements, closure]
     }
 
-    readonly property ClosedPanelOutline dashboardOutline: ClosedPanelOutline {
-        id: dashboardOutlineRoot
+    readonly property PanelOutline dashboardOutline: PanelOutline {
         readonly property PathMove start: PathMove {
             x: backgroundRoot.geometry.dashboardX - backgroundRoot.geometry.dashboardLeftJunctionArcRadius
             y: 0
         }
-        readonly property PathLine closure: PathLine {
-            x: dashboardOutlineRoot.start.x
-            y: dashboardOutlineRoot.start.y
-        }
-        elements: [start, ...backgroundRoot.dashboardContour.elements, closure]
+        elements: [start, ...backgroundRoot.dashboardContour.elements]
     }
 
-    readonly property ClosedPanelOutline launcherOutline: ClosedPanelOutline {
-        id: launcherOutlineRoot
+    readonly property PanelOutline launcherOutline: PanelOutline {
         readonly property PathMove start: PathMove {
             x: backgroundRoot.geometry.launcherRightEdge + backgroundRoot.geometry.launcherRightJunctionArcRadius
             y: backgroundRoot.geometry.barHeight
         }
-        readonly property PathLine closure: PathLine {
-            x: launcherOutlineRoot.start.x
-            y: launcherOutlineRoot.start.y
-        }
-        elements: [start, ...backgroundRoot.launcherContour.elements, closure]
+        elements: [start, ...backgroundRoot.launcherContour.elements]
     }
 
-    readonly property ClosedPanelOutline rightPanelOutline: ClosedPanelOutline {
-        id: rightPanelOutlineRoot
+    readonly property PanelOutline rightPanelOutline: PanelOutline {
         readonly property PathMove start: PathMove {
             x: backgroundRoot.geometry.screenWidth
             y: backgroundRoot.geometry.clampedRightPanelTopEdge - backgroundRoot.geometry.effectiveRightPanelTopJunctionArcRadius
         }
-        readonly property PathLine closure: PathLine {
-            x: rightPanelOutlineRoot.start.x
-            y: rightPanelOutlineRoot.start.y
-        }
-        elements: [start, ...backgroundRoot.rightPanelContour.elements, closure]
+        elements: [start, ...backgroundRoot.rightPanelContour.elements]
     }
 
     FilledPanelPath {
+        strokeWidth: -1
         pathElements: backgroundRoot.geometry.leftBarWidth > 0 || backgroundRoot.geometry.hasExtension ? backgroundRoot.barOutline.elements : []
+    }
+    FilledPanelPath {
+        fillColor: "transparent"
+        startX: backgroundRoot.geometry.bottomEdgeTargetX
+        startY: backgroundRoot.geometry.barHeight
+        pathElements: backgroundRoot.geometry.leftBarWidth > 0 || backgroundRoot.geometry.hasExtension ? backgroundRoot.popoutContour.elements : []
     }
     FilledPanelPath {
         pathElements: backgroundRoot.geometry.hasDashboard ? backgroundRoot.dashboardOutline.elements : []
