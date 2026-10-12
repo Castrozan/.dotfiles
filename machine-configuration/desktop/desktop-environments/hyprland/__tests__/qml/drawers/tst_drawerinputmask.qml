@@ -66,16 +66,90 @@ Item {
         function test_hidden_panels_leave_the_desktop_clickable() {
             verify(!acceptsPoint(960, 540));
             verify(!acceptsPoint(24, 550));
-            verify(!acceptsPoint(1919, 540));
+            verify(!acceptsPoint(1918, 540));
         }
 
         function test_edge_capture_is_one_pixel_wide_data() {
-            return [["left-edge", 0, 400, true], ["left-inner", 1, 400, false], ["top-edge", 960, 0, true], ["top-inner", 960, 1, false], ["bottom-edge", 960, 1079, true], ["bottom-inner", 960, 1078, false], ["sidebar-edge", 1919, 100, true], ["sidebar-inner", 1918, 100, false], ["session-edge", 1919, 980, true], ["session-inner", 1918, 980, false], ["top-left-corner", 0, 0, false]].map(point => ({
-                        tag: point[0],
-                        x: point[1],
-                        y: point[2],
-                        captured: point[3]
-                    }));
+            return [
+                {
+                    tag: "left-edge",
+                    x: 0,
+                    y: 400,
+                    captured: true
+                },
+                {
+                    tag: "left-inner",
+                    x: 1,
+                    y: 400,
+                    captured: false
+                },
+                {
+                    tag: "top-edge",
+                    x: 960,
+                    y: 0,
+                    captured: true
+                },
+                {
+                    tag: "top-inner",
+                    x: 960,
+                    y: 1,
+                    captured: false
+                },
+                {
+                    tag: "bottom-edge",
+                    x: 960,
+                    y: 1079,
+                    captured: true
+                },
+                {
+                    tag: "bottom-inner",
+                    x: 960,
+                    y: 1078,
+                    captured: false
+                },
+                {
+                    tag: "sidebar-edge",
+                    x: 1919,
+                    y: 100,
+                    captured: true
+                },
+                {
+                    tag: "sidebar-inner",
+                    x: 1918,
+                    y: 100,
+                    captured: false
+                },
+                {
+                    tag: "osd-edge",
+                    x: 1919,
+                    y: 540,
+                    captured: true
+                },
+                {
+                    tag: "osd-inner",
+                    x: 1918,
+                    y: 540,
+                    captured: false
+                },
+                {
+                    tag: "session-edge",
+                    x: 1919,
+                    y: 980,
+                    captured: true
+                },
+                {
+                    tag: "session-inner",
+                    x: 1918,
+                    y: 980,
+                    captured: false
+                },
+                {
+                    tag: "top-left-corner",
+                    x: 0,
+                    y: 0,
+                    captured: false
+                }
+            ];
         }
 
         function test_edge_capture_is_one_pixel_wide(data) {

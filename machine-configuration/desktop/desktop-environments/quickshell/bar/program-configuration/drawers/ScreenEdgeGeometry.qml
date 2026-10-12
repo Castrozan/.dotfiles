@@ -13,5 +13,6 @@ QtObject {
     readonly property rect topTrigger: Qt.rect(triggerThickness, 0, innerWidth, triggerThickness)
     readonly property rect bottomTrigger: Qt.rect(triggerThickness, windowHeight - triggerThickness, innerWidth, triggerThickness)
     readonly property rect sidebarTrigger: Qt.rect(windowWidth - triggerThickness, triggerThickness, triggerThickness, rightZoneHeight)
+    readonly property rect osdTrigger: Qt.rect(windowWidth - triggerThickness, triggerThickness + rightZoneHeight, triggerThickness, innerHeight - rightZoneHeight * 2)
     readonly property rect sessionTrigger: Qt.rect(windowWidth - triggerThickness, windowHeight - triggerThickness - rightZoneHeight, triggerThickness, rightZoneHeight)
 }

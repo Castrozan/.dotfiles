@@ -66,6 +66,20 @@ Item {
     }
 
     MouseArea {
+        readonly property rect trigger: edgeHoverAreas.geometry.osdTrigger
+
+        x: trigger.x
+        y: trigger.y
+        width: trigger.width
+        height: trigger.height
+
+        hoverEnabled: true
+        acceptedButtons: Qt.NoButton
+
+        onContainsMouseChanged: containsMouse ? edgeHoverAreas.hoverController.osd.triggerEntered() : edgeHoverAreas.hoverController.osd.triggerLeft()
+    }
+
+    MouseArea {
         readonly property rect trigger: edgeHoverAreas.geometry.sessionTrigger
 
         x: trigger.x

@@ -49,6 +49,12 @@ Region {
             height: drawerInputMaskRoot.edgeGeometry.sidebarTrigger.height
         },
         Region {
+            x: drawerInputMaskRoot.edgeGeometry.osdTrigger.x
+            y: drawerInputMaskRoot.edgeGeometry.osdTrigger.y
+            width: drawerInputMaskRoot.edgeGeometry.osdTrigger.width
+            height: drawerInputMaskRoot.edgeGeometry.osdTrigger.height
+        },
+        Region {
             x: drawerInputMaskRoot.edgeGeometry.sessionTrigger.x
             y: drawerInputMaskRoot.edgeGeometry.sessionTrigger.y
             width: drawerInputMaskRoot.edgeGeometry.sessionTrigger.width
