@@ -1,3 +1,4 @@
+import importlib
 import sys
 from pathlib import Path
 
@@ -8,8 +9,10 @@ PROVISIONER_PACKAGE_DIRECTORY_PATH = (
 )
 sys.path.insert(0, str(PROVISIONER_PACKAGE_DIRECTORY_PATH))
 
-import jellyseerr_download_tracking_provisioner
-import provisioning_steps
+jellyseerr_download_tracking_provisioner = importlib.import_module(
+    "jellyseerr_download_tracking_provisioner"
+)
+provisioning_steps = importlib.import_module("provisioning_steps")
 
 
 @pytest.mark.parametrize("server_type", ["radarr", "sonarr"])
