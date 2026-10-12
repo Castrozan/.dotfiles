@@ -21,22 +21,21 @@ let
 
   chromeForMachine =
     hostname:
-    (import ../chrome/nvidia-render-offload/chrome-nvidia-render-offload.nix {
+    (import ../chrome/broken-mipmap-generation/chrome-broken-mipmap-generation-workaround.nix {
       inherit pkgs hostname;
       chromePackage = pkgs.hello;
-      nvidiaRenderOffloadCommand = "/run/current-system/sw/bin/nvidia-offload";
     }).chromeForMachine;
 in
 {
-  domain-browser-chise-chrome-uses-nvidia-render-offload =
-    mkEvalCheck "domain-browser-chise-chrome-uses-nvidia-render-offload"
-      (lib.getName (chromeForMachine "chise") == "google-chrome-with-nvidia-render-offload")
-      "Chise Chrome must use the native NVIDIA PRIME and EGL renderer wrapper";
+  domain-browser-chise-chrome-uses-mipmap-generation-workaround =
+    mkEvalCheck "domain-browser-chise-chrome-uses-mipmap-generation-workaround"
+      (lib.getName (chromeForMachine "chise") == "google-chrome-without-broken-mipmap-generation")
+      "Chise Chrome must disable ANGLE mipmap recreation and retain native Wayland presentation";
 
   domain-browser-other-machines-preserve-chrome-rendering =
     mkEvalCheck "domain-browser-other-machines-preserve-chrome-rendering"
       (builtins.toString (chromeForMachine "other-host") == builtins.toString pkgs.hello)
-      "Chrome NVIDIA selection must preserve the original package on other machines";
+      "The Chise ANGLE workaround must preserve the original Chrome package on other machines";
 
   domain-browser-firefox-enabled =
     mkEvalCheck "domain-browser-firefox-enabled" cfg.programs.firefox.enable

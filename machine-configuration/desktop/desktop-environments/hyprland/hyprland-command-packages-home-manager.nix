@@ -17,11 +17,13 @@ let
     ;
 
   inherit
-    (import ../../../browsers/chrome/nvidia-render-offload/chrome-nvidia-render-offload.nix {
-      inherit pkgs hostname;
-      chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
-      nvidiaRenderOffloadCommand = "/run/current-system/sw/bin/nvidia-offload";
-    })
+    (import
+      ../../../browsers/chrome/broken-mipmap-generation/chrome-broken-mipmap-generation-workaround.nix
+      {
+        inherit pkgs hostname;
+        chromePackage = chromeWithoutBrokenHardwareVideoDecoding;
+      }
+    )
     chromeForMachine
     ;
 
