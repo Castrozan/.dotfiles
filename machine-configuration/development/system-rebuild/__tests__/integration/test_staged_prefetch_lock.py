@@ -24,6 +24,11 @@ def prefetch_command(directory, name):
     ]
 
 
+# The fixture performs several isolated process launches; this bounds setup
+# without conflating it with the lock's fail-closed behavior.
+REBUILD_TIMEOUT_SECONDS = 15
+
+
 def start_archive(environment, directory):
     log = (directory / "prefetch-output").open("w")
     holder = subprocess.Popen(
@@ -117,7 +122,7 @@ def test_prefetch_releases_before_privilege_handoff_and_reacquires_fail_closed(
         env=environment,
         capture_output=True,
         text=True,
-        timeout=15,
+        timeout=REBUILD_TIMEOUT_SECONDS,
     )
     assert prepared.returncode == 0, prepared.stderr
     assert (tmp_path / "prepared/sources").is_symlink()
@@ -143,7 +148,7 @@ def test_prefetch_releases_before_privilege_handoff_and_reacquires_fail_closed(
             env=environment,
             capture_output=True,
             text=True,
-            timeout=5,
+            timeout=REBUILD_TIMEOUT_SECONDS,
         )
         assert activated.returncode == (99 if contended else 0), activated.stderr
         if contended:
