@@ -43,7 +43,11 @@ def test_relays_range_requests_without_exposing_credentials_or_buffering_video(
         assert timeout == 30
         return Upstream(video)
 
-    monkeypatch.setattr(torbox_playback.urllib.request, "urlopen", open_request)
+    monkeypatch.setattr(
+        torbox_playback.urllib.request,
+        "build_opener",
+        lambda: SimpleNamespace(open=open_request),
+    )
     handler = SimpleNamespace(
         headers={"Range": "bytes=1-"},
         wfile=io.BytesIO(),
@@ -73,7 +77,11 @@ def test_media_failures_do_not_expose_the_authenticated_url(monkeypatch):
     def fail(request, timeout):
         raise RuntimeError(request.full_url)
 
-    monkeypatch.setattr(torbox_playback.urllib.request, "urlopen", fail)
+    monkeypatch.setattr(
+        torbox_playback.urllib.request,
+        "build_opener",
+        lambda: SimpleNamespace(open=fail),
+    )
     handler = SimpleNamespace(headers={})
     response = comet_stream_adapter.CometResponse(
         302,
@@ -81,6 +89,27 @@ def test_media_failures_do_not_expose_the_authenticated_url(monkeypatch):
         None,
         "https://media.example/episode.mkv?token=secret",
         b"",
+    )
+    with pytest.raises(RuntimeError, match="^TorBox media request failed$"):
+        torbox_playback.relay_torbox_playback(handler, response, True)
+
+
+@pytest.mark.parametrize(
+    "location",
+    ["file:///etc/passwd", "http://media.example/episode.mkv", "ftp://host/episode"],
+)
+def test_refuses_to_relay_media_from_a_non_https_location(location, monkeypatch):
+    def unexpected_open(request, timeout):
+        raise AssertionError("upstream must not be contacted")
+
+    monkeypatch.setattr(
+        torbox_playback.urllib.request,
+        "build_opener",
+        lambda: SimpleNamespace(open=unexpected_open),
+    )
+    handler = SimpleNamespace(headers={})
+    response = comet_stream_adapter.CometResponse(
+        302, "application/octet-stream", None, location, b""
     )
     with pytest.raises(RuntimeError, match="^TorBox media request failed$"):
         torbox_playback.relay_torbox_playback(handler, response, True)

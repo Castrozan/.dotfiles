@@ -4,6 +4,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from comet_proxy import proxy_comet_request
 from comet_stream_adapter import CometStreamAdapter
 from managed_profile import (
     inject_managed_profile_script,
@@ -13,9 +14,11 @@ from managed_profile import (
 from managed_service_worker import render_managed_service_worker
 from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
 import static_assets
-from runtime_configuration import load_comet_adapter, required_environment_value
+from stremio_runtime_configuration import (
+    load_comet_adapter,
+    required_environment_value,
+)
 from stremio_protocol import addon_manifest, parse_stream_request
-from torbox_playback import relay_torbox_playback
 
 
 class StremioRequestHandler(BaseHTTPRequestHandler):
@@ -44,7 +47,9 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
         if self._handle_fixed_request(path, include_body):
             return
         if self._is_comet_route(path):
-            self._send_comet(self.path.removeprefix("/comet") or "/", include_body)
+            proxy_comet_request(
+                self, self.path.removeprefix("/comet") or "/", include_body
+            )
             return
         stream_request = parse_stream_request(path)
         if stream_request is not None:
@@ -76,30 +81,6 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             return True
         return False
 
-    def _send_comet(self, request_target: str, include_body: bool):
-        try:
-            forwarded_protocol = self.headers.get("X-Forwarded-Proto", "http")
-            request_origin = f"{forwarded_protocol}://{self.headers['Host']}"
-            response = self.comet_adapter.response(request_target, request_origin)
-            if "/playback/" in request_target and relay_torbox_playback(
-                self, response, include_body
-            ):
-                return
-        except Exception as error:
-            print(f"Comet proxy failed: {error}", file=sys.stderr, flush=True)
-            self.send_error(502)
-            return
-        self.send_response(response.status)
-        self._send_cors_headers()
-        self.send_header("Content-Type", response.content_type)
-        self.send_header("Cache-Control", response.cache_control or "no-store")
-        if response.location is not None:
-            self.send_header("Location", response.location)
-        self.send_header("Content-Length", str(len(response.body)))
-        self.end_headers()
-        if include_body:
-            self.wfile.write(response.body)
-
     def _send_json(self, payload: dict, include_body: bool):
         body = json.dumps(payload, separators=(",", ":")).encode()
         self.send_response(200)
@@ -118,23 +99,26 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
             self.tailnet_streaming_server_url,
             self.public_streaming_server_url,
         )
-        body = render_managed_profile_script(streaming_server_url)
-        self.send_response(200)
-        self._send_cors_headers()
-        self.send_header("Content-Type", "text/javascript; charset=utf-8")
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        if include_body:
-            self.wfile.write(body)
+        self._send_javascript(
+            render_managed_profile_script(streaming_server_url), include_body
+        )
 
     def _send_managed_service_worker(self, include_body: bool):
-        body = render_managed_service_worker()
+        self._send_javascript(
+            render_managed_service_worker(),
+            include_body,
+            {"Service-Worker-Allowed": "/"},
+        )
+
+    def _send_javascript(
+        self, body: bytes, include_body: bool, extra_headers: dict | None = None
+    ):
         self.send_response(200)
         self._send_cors_headers()
         self.send_header("Content-Type", "text/javascript; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
-        self.send_header("Service-Worker-Allowed", "/")
+        for name, value in (extra_headers or {}).items():
+            self.send_header(name, value)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         if include_body:

@@ -4,12 +4,13 @@ import re
 import urllib.error
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Callable
 
 
 INFO_HASH = re.compile(r"^[0-9a-fA-F]{40}$")
 TRACKER_SCHEMES = ("http://", "https://", "udp://")
+ROUTE_NAMES = frozenset({"manifest.json", "stream", "playback"})
 
 
 @dataclass(frozen=True)
@@ -19,6 +20,9 @@ class CometResponse:
     cache_control: str | None
     location: str | None
     body: bytes
+
+
+NOT_FOUND_RESPONSE = CometResponse(404, "application/json", "no-store", None, b"{}")
 
 
 def normalize_stream(stream: dict) -> dict:
@@ -64,7 +68,7 @@ def normalize_stream_response(body: bytes) -> bytes:
 
 
 class PreservePlaybackRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, request, response, status, message, headers, new_url):
+    def redirect_request(self, *redirect_details):
         return None
 
 
@@ -82,6 +86,15 @@ def fetch_comet_response(url: str) -> CometResponse:
             response.headers.get("Location"),
             response.read(),
         )
+
+
+def _route_segments(path: str) -> list[str] | None:
+    path_segments = path.lstrip("/").split("/")
+    route_offset = 0 if path_segments[0] in ROUTE_NAMES else 1
+    route_segments = path_segments[route_offset:]
+    if not route_segments or route_segments[0] not in ROUTE_NAMES:
+        return None
+    return route_segments
 
 
 class CometStreamAdapter:
@@ -110,61 +123,54 @@ class CometStreamAdapter:
 
     def response(self, request_target: str, request_origin: str) -> CometResponse:
         target = urllib.parse.urlsplit(f"/{request_target.lstrip('/')}")
-        path_segments = target.path.lstrip("/").split("/")
-        route_offset = (
-            0 if path_segments[0] in {"manifest.json", "stream", "playback"} else 1
-        )
-        route_segments = path_segments[route_offset:]
-        if not route_segments or route_segments[0] not in {
-            "manifest.json",
-            "stream",
-            "playback",
-        }:
-            return CometResponse(404, "application/json", "no-store", None, b"{}")
+        route_segments = _route_segments(target.path)
+        if route_segments is None:
+            return NOT_FOUND_RESPONSE
+        upstream_path = self._upstream_path(route_segments)
+        upstream_response = self._fetch_upstream(upstream_path, target.query)
+        return self._public_response(upstream_response, upstream_path, request_origin)
+
+    def _upstream_path(self, route_segments: list[str]) -> str:
         encoded_configuration = (
             self.public_configuration
             if route_segments[0] == "manifest.json"
             else self.private_configuration
         )
-        upstream_path = "/" + "/".join([encoded_configuration, *route_segments])
-        upstream_target = urllib.parse.urlunsplit(
-            ("", "", upstream_path, target.query, "")
-        )
+        return "/" + "/".join([encoded_configuration, *route_segments])
+
+    def _fetch_upstream(self, upstream_path: str, query: str) -> CometResponse:
+        upstream_target = urllib.parse.urlunsplit(("", "", upstream_path, query, ""))
         try:
-            response = self.request(f"{self.comet_url}{upstream_target}")
+            return self.request(f"{self.comet_url}{upstream_target}")
         except Exception:
             raise RuntimeError("Comet upstream request failed") from None
-        public_body = response.body.replace(
-            self.private_configuration.encode(), self.public_configuration.encode()
-        )
+
+    def _public_response(
+        self, response: CometResponse, upstream_path: str, request_origin: str
+    ) -> CometResponse:
         public_location = self._public_playback_url(response.location, request_origin)
-        if "/stream/" not in upstream_path or response.status != 200:
-            if public_body != response.body or public_location != response.location:
-                return CometResponse(
-                    response.status,
-                    response.content_type,
-                    response.cache_control,
-                    public_location,
-                    public_body,
-                )
+        if "/stream/" in upstream_path and response.status == 200:
+            return self._public_stream_response(
+                response, public_location, request_origin
+            )
+        public_body = self._public_body(response.body)
+        if public_body == response.body and public_location == response.location:
             return response
+        return replace(response, location=public_location, body=public_body)
+
+    def _public_stream_response(
+        self, response: CometResponse, public_location: str | None, request_origin: str
+    ) -> CometResponse:
         payload = json.loads(normalize_stream_response(response.body))
         for stream in payload["streams"]:
             if "url" in stream:
                 stream["url"] = self._public_playback_url(stream["url"], request_origin)
-        body = (
-            json.dumps(payload, separators=(",", ":"))
-            .encode()
-            .replace(
-                self.private_configuration.encode(), self.public_configuration.encode()
-            )
-        )
-        return CometResponse(
-            response.status,
-            response.content_type,
-            response.cache_control,
-            public_location,
-            body,
+        body = self._public_body(json.dumps(payload, separators=(",", ":")).encode())
+        return replace(response, location=public_location, body=body)
+
+    def _public_body(self, body: bytes) -> bytes:
+        return body.replace(
+            self.private_configuration.encode(), self.public_configuration.encode()
         )
 
     def _public_playback_url(
