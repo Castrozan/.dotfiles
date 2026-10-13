@@ -172,3 +172,17 @@ def test_radarr_dubbing_is_not_blocked_by_the_movies_original_language():
     dubbed = next(profile for profile in profiles if profile["name"] == "PT-BR Dublado")
     assert dubbed["language"]["id"] == -1
     assert dubbed["formatScores"]["Portuguese (BR) Audio"] == 50
+
+
+def test_portuguese_profiles_accept_matching_releases_with_extra_languages():
+    profiles = load_desired_state("sonarr", "qualityprofile")
+    for profile_name, matched_format in (
+        ("PT-BR Dublado", "Portuguese (BR) Dublado"),
+        ("PT-BR Legendado", "Portuguese (BR) Legendado"),
+    ):
+        profile = next(
+            profile for profile in profiles if profile["name"] == profile_name
+        )
+        matched_formats = (matched_format, "VOSTFR / French")
+        score = sum(profile["formatScores"].get(name, 0) for name in matched_formats)
+        assert score >= profile["minFormatScore"]
