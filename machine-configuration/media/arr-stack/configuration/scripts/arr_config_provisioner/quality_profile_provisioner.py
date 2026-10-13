@@ -7,6 +7,7 @@ OVERRIDABLE_PROFILE_FIELDS = (
     "upgradeAllowed",
     "minFormatScore",
     "cutoffFormatScore",
+    "language",
 )
 
 

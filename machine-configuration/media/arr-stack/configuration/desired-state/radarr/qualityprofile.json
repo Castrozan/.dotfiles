@@ -3,7 +3,8 @@
     "name": "HD - 720p/1080p",
     "upgradeAllowed": true,
     "formatScores": {
-      "Portuguese (BR) / Dublado": 50
+      "Portuguese (BR) / Dublado": 50,
+      "Portuguese (BR) Audio": 50
     }
   },
   {
@@ -13,7 +14,26 @@
     "minFormatScore": 1,
     "cutoffFormatScore": 50,
     "formatScores": {
-      "Portuguese (BR) / Dublado": 50
+      "Portuguese (BR) / Dublado": 50,
+      "Portuguese (BR) Audio": 50
+    },
+    "language": {
+      "id": -1,
+      "name": "Any"
+    }
+  },
+  {
+    "name": "PT-BR Legendado",
+    "cloneFrom": "HD - 720p/1080p",
+    "upgradeAllowed": true,
+    "minFormatScore": 1,
+    "cutoffFormatScore": 50,
+    "formatScores": {
+      "Portuguese (BR) Legendado": 50
+    },
+    "language": {
+      "id": -2,
+      "name": "Original"
     }
   }
 ]

@@ -44,6 +44,18 @@
     "cutoffFormatScore": 50,
     "formatScores": {
       "Portuguese (BR) Dublado": 50,
+      "VOSTFR / French": -1000,
+      "Portuguese (BR)": 50
+    }
+  },
+  {
+    "name": "PT-BR Legendado",
+    "cloneFrom": "HD - 720p/1080p",
+    "upgradeAllowed": true,
+    "minFormatScore": 1,
+    "cutoffFormatScore": 50,
+    "formatScores": {
+      "Portuguese (BR) Legendado": 50,
       "VOSTFR / French": -1000
     }
   }

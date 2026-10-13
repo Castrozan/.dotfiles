@@ -90,3 +90,18 @@ def test_nothing_is_demoted_when_no_administrator_would_be_left(monkeypatch):
         )
 
     assert calls["permissions"] == []
+
+
+def test_permission_reconciliation_batches_only_matching_account_policies(monkeypatch):
+    lucas = {"id": 2, "jellyfinUsername": "lucas", "permissions": 160}
+    rogerio = {"id": 4, "jellyfinUsername": "Rogerio", "permissions": 160}
+    other_account = {"id": 8, "jellyfinUsername": "other", "permissions": 8192}
+    calls = stub_jellyseerr(monkeypatch, [OWNER_ACCOUNT, lucas, rogerio, other_account])
+    account_permission_synchronization.synchronize_account_permissions(make_context())
+    assert calls["permissions"] == [([2, 4], 8352), ([8], 160)]
+    lucas["permissions"] = 8352
+    rogerio["permissions"] = 8352
+    other_account["permissions"] = 160
+    calls["permissions"].clear()
+    account_permission_synchronization.synchronize_account_permissions(make_context())
+    assert calls["permissions"] == []

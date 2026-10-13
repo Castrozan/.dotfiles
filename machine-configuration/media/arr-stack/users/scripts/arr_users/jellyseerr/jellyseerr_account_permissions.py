@@ -7,6 +7,8 @@ JELLYSEERR_ADMINISTRATOR_ACCOUNT_USERNAMES = ("jellyseerr",)
 SELF_APPROVING_REQUESTER_PERMISSIONS = (
     friend_account_policy.FRIEND_JELLYSEERR_PERMISSIONS_BITMASK
 )
+JELLYSEERR_PERMISSION_REQUEST_ADVANCED = 8192
+ADVANCED_REQUEST_ACCOUNT_USERNAMES = frozenset({"lucas", "rogerio"})
 
 
 def resolve_account_names(jellyseerr_user):
@@ -39,10 +41,19 @@ def account_administers_jellyseerr(jellyseerr_user):
 
 
 def account_requests_without_approval(jellyseerr_user):
-    return (
-        int(jellyseerr_user.get("permissions") or 0)
-        == SELF_APPROVING_REQUESTER_PERMISSIONS
-    )
+    return int(
+        jellyseerr_user.get("permissions") or 0
+    ) == desired_requester_permissions(jellyseerr_user)
+
+
+def desired_requester_permissions(jellyseerr_user):
+    username = str(jellyseerr_user.get("jellyfinUsername") or "").casefold()
+    if username in ADVANCED_REQUEST_ACCOUNT_USERNAMES:
+        return (
+            SELF_APPROVING_REQUESTER_PERMISSIONS
+            | JELLYSEERR_PERMISSION_REQUEST_ADVANCED
+        )
+    return SELF_APPROVING_REQUESTER_PERMISSIONS
 
 
 def administrator_accounts(jellyseerr_users):

@@ -21,12 +21,20 @@ def synchronize_account_permissions(context):
             jellyseerr_users
         )
     )
-    if rewritten_accounts:
+    accounts_by_permissions = {}
+    for jellyseerr_user in rewritten_accounts:
+        permissions = jellyseerr_account_permissions.desired_requester_permissions(
+            jellyseerr_user
+        )
+        accounts_by_permissions.setdefault(permissions, []).append(
+            jellyseerr_user["id"]
+        )
+    for permissions, account_ids in accounts_by_permissions.items():
         jellyseerr_api_client.set_accounts_permissions(
             context.jellyseerr_base_url,
             context.jellyseerr_api_key,
-            [jellyseerr_user["id"] for jellyseerr_user in rewritten_accounts],
-            jellyseerr_account_permissions.SELF_APPROVING_REQUESTER_PERMISSIONS,
+            account_ids,
+            permissions,
         )
     return {
         "administrator_accounts": [

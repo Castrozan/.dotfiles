@@ -19,9 +19,10 @@ let
   accountPermissionsText = builtins.readFile ../scripts/arr_users/jellyseerr/jellyseerr_account_permissions.py;
   permissionReconcileText = builtins.readFile ../scripts/arr_users/account_permission_synchronization.py;
 
-  everyAccountHoldsTheSamePermissionsAsAFriend =
+  everyRequesterInheritsFriendSelfApproval =
     lib.hasInfix "friend_account_policy.FRIEND_JELLYSEERR_PERMISSIONS_BITMASK" accountPermissionsText
-    && lib.hasInfix "SELF_APPROVING_REQUESTER_PERMISSIONS" accountPermissionsText;
+    && lib.hasInfix "SELF_APPROVING_REQUESTER_PERMISSIONS" accountPermissionsText
+    && lib.hasInfix "desired_requester_permissions" permissionReconcileText;
   jellyseerrKeepsADeclaredAdministrator =
     lib.hasInfix "administrator_accounts" permissionReconcileText
     && lib.hasInfix "raise ValueError" permissionReconcileText;
@@ -108,8 +109,8 @@ in
       "the visibility reconcile must apply to administrators as well; reintroducing an is_administrator skip there would leave the owner's admin account permanently able to see the private libraries no matter what the allowlist declares";
 
   chise-arr-no-request-waits-on-an-approval =
-    mkEvalCheck "chise-arr-no-request-waits-on-an-approval" everyAccountHoldsTheSamePermissionsAsAFriend
-      "the permissions pinned onto every non-administrator account must be the very friend bitmask rather than a second literal spelling of it; the two would otherwise drift and an account left without auto-approve would sit pending forever, because the only accounts that could approve it are the ones this reconcile is demoting";
+    mkEvalCheck "chise-arr-no-request-waits-on-an-approval" everyRequesterInheritsFriendSelfApproval
+      "every requester must inherit the friend request-and-auto-approve bitmask before adding declared request customization; duplicating those base permissions would let an account drift back into pending requests while the reconciler removes its ability to approve";
 
   chise-arr-jellyseerr-keeps-a-declared-administrator =
     mkEvalCheck "chise-arr-jellyseerr-keeps-a-declared-administrator"

@@ -1,6 +1,6 @@
 import urllib.error
 
-import friend_account_policy
+from jellyseerr import jellyseerr_account_permissions
 from jellyseerr import jellyseerr_api_client
 
 
@@ -16,21 +16,21 @@ def import_into_jellyseerr_best_effort(context, jellyfin_user_id, email=None):
         return None
     if jellyseerr_user is None:
         return None
-    apply_jellyseerr_friend_policy(context, jellyseerr_user["id"], email)
+    apply_jellyseerr_friend_policy(context, jellyseerr_user, email)
     return jellyseerr_user["id"]
 
 
-def apply_jellyseerr_friend_policy(context, jellyseerr_user_id, email=None):
+def apply_jellyseerr_friend_policy(context, jellyseerr_user, email=None):
     jellyseerr_api_client.set_user_permissions(
         context.jellyseerr_base_url,
         context.jellyseerr_api_key,
-        jellyseerr_user_id,
-        friend_account_policy.FRIEND_JELLYSEERR_PERMISSIONS_BITMASK,
+        jellyseerr_user["id"],
+        jellyseerr_account_permissions.desired_requester_permissions(jellyseerr_user),
     )
     if email:
         jellyseerr_api_client.set_user_email(
             context.jellyseerr_base_url,
             context.jellyseerr_api_key,
-            jellyseerr_user_id,
+            jellyseerr_user["id"],
             email,
         )

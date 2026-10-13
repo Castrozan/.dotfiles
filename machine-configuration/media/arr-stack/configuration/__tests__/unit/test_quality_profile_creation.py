@@ -19,6 +19,7 @@ def test_creates_absent_profile_cloned_from_template(monkeypatch):
                 "upgradeAllowed": True,
                 "minFormatScore": 0,
                 "cutoffFormatScore": 0,
+                "language": {"id": -2, "name": "Original"},
                 "items": [{"quality": {"id": 9}, "allowed": True}],
                 "formatItems": [{"format": 99, "name": "Stale", "score": 99}],
             }
@@ -33,6 +34,7 @@ def test_creates_absent_profile_cloned_from_template(monkeypatch):
                 "name": "PT-BR Dublado",
                 "cloneFrom": "HD - 720p/1080p",
                 "minFormatScore": 1,
+                "language": {"id": -1, "name": "Any"},
                 "formatScores": {"Portuguese (BR) Dublado": 50},
             }
         ],
@@ -45,6 +47,7 @@ def test_creates_absent_profile_cloned_from_template(monkeypatch):
     assert "id" not in body
     assert body["name"] == "PT-BR Dublado"
     assert body["minFormatScore"] == 1
+    assert body["language"] == {"id": -1, "name": "Any"}
     assert body["items"] == [{"quality": {"id": 9}, "allowed": True}]
     assert {
         "format": 1,

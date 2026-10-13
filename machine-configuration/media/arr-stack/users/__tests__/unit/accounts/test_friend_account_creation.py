@@ -69,6 +69,16 @@ def test_create_auto_approves_and_sets_email_when_email_given(monkeypatch):
     assert jellyseerr_calls["emails"] == [(9, "ana@example.com")]
 
 
+def test_import_applies_the_declared_advanced_request_policy(monkeypatch):
+    created = {"Id": "new-id", "Name": "Rogerio", "Policy": {}}
+    stub_jellyfin(monkeypatch, [], created_user=created)
+    jellyseerr_calls = stub_jellyseerr(
+        monkeypatch, jellyseerr_user={"id": 9, "jellyfinUsername": "Rogerio"}
+    )
+    user_account_operations.create_friend_account(make_context(), "Rogerio")
+    assert jellyseerr_calls["permissions"] == [(9, 8352)]
+
+
 def test_create_uses_explicit_password_when_given(monkeypatch):
     created = {"Id": "new-id", "Name": "Ana", "Policy": {}}
     jellyfin_calls = stub_jellyfin(monkeypatch, [], created_user=created)

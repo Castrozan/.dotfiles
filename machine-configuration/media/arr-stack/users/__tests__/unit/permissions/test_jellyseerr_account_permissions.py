@@ -90,3 +90,28 @@ def test_a_null_display_name_never_becomes_an_account_name():
     assert jellyseerr_account_permissions.resolve_account_names(
         {"id": 3, "displayName": None, "jellyfinUsername": "joshen", "username": None}
     ) == {"joshen"}
+
+
+def test_lucas_and_rogerio_receive_advanced_requests_without_global_visibility():
+    for username in ("lucas", "Rogerio"):
+        account = {"id": 4, "jellyfinUsername": username, "permissions": 160}
+        assert (
+            jellyseerr_account_permissions.desired_requester_permissions(account)
+            == 8352
+        )
+        assert jellyseerr_account_permissions.accounts_needing_permission_rewrite(
+            [account]
+        ) == [account]
+        account["permissions"] = 8352
+        assert (
+            jellyseerr_account_permissions.accounts_needing_permission_rewrite(
+                [account]
+            )
+            == []
+        )
+        assert private_request_routing.account_requests_can_be_overridden(8352)
+
+
+def test_editable_display_names_cannot_grant_advanced_requests():
+    account = {**ROUTED_ACCOUNT, "displayName": "lucas"}
+    assert jellyseerr_account_permissions.desired_requester_permissions(account) == 160

@@ -107,3 +107,68 @@ def test_limetorrents_uses_current_download_link_fields():
     assert "fallbackdownloadlink" in field_names
     assert "downloadlink" not in field_names
     assert "downloadlink2" not in field_names
+
+
+def test_legendado_profiles_require_original_audio_and_portuguese_subtitle_markers():
+    for application in ("radarr", "sonarr"):
+        profiles = load_desired_state(application, "qualityprofile")
+        profile = next(
+            profile for profile in profiles if profile["name"] == "PT-BR Legendado"
+        )
+        assert profile["minFormatScore"] == 1
+        assert profile["formatScores"]["Portuguese (BR) Legendado"] == 50
+        formats = load_desired_state(application, "customformat")
+        custom_format = next(
+            item for item in formats if item["name"] == "Portuguese (BR) Legendado"
+        )
+        conditions = {
+            item["implementation"]: item for item in custom_format["specifications"]
+        }
+        assert (
+            next(
+                field["value"]
+                for field in conditions["LanguageSpecification"]["fields"]
+                if field["name"] == "value"
+            )
+            == -2
+        )
+        expression = conditions["ReleaseTitleSpecification"]["fields"][0]["value"]
+        for title in (
+            "Gattaca.1997.LEGENDADO.1080p",
+            "Example.S01E01.LEG.PT-BR.1080p",
+            "Example.1080p.PT-BR.SUBS",
+        ):
+            assert re.search(expression, title, re.IGNORECASE)
+        for title in (
+            "Example.1080p.DUBLADO",
+            "Example.1080p.ENGLISH.SUBS",
+            "Example.1080p.MULTISUB",
+            "Example.1080p.DUAL.AUDIO",
+        ):
+            assert not re.search(expression, title, re.IGNORECASE)
+
+
+def test_generic_dual_audio_cannot_claim_portuguese_dubbing():
+    for application, name in (
+        ("radarr", "Portuguese (BR) / Dublado"),
+        ("sonarr", "Portuguese (BR) Dublado"),
+    ):
+        formats = load_desired_state(application, "customformat")
+        custom_format = next(item for item in formats if item["name"] == name)
+        expression = next(
+            item
+            for item in custom_format["specifications"]
+            if item["implementation"] == "ReleaseTitleSpecification"
+        )["fields"][0]["value"]
+        assert re.search(expression, "Example.1080p.DUBLADO", re.IGNORECASE)
+        assert not re.search(
+            expression, "Example.1080p.DUAL.AUDIO.ENGLISH.JAPANESE", re.IGNORECASE
+        )
+        assert not re.search(expression, "Example.1080p.SUBS.PT-BR", re.IGNORECASE)
+
+
+def test_radarr_dubbing_is_not_blocked_by_the_movies_original_language():
+    profiles = load_desired_state("radarr", "qualityprofile")
+    dubbed = next(profile for profile in profiles if profile["name"] == "PT-BR Dublado")
+    assert dubbed["language"]["id"] == -1
+    assert dubbed["formatScores"]["Portuguese (BR) Audio"] == 50

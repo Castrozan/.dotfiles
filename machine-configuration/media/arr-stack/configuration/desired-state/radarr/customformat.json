@@ -14,16 +14,22 @@
             "order": 0,
             "privacy": "normal",
             "type": "textbox",
-            "value": "\\b(dublado|nacional|dual|dual.?audio|pt.?br|portugu[e\u00ea]s)\\b"
+            "value": "\\b(dublad[oa]s?|nacional|(pt[ ._-]?br|portugu[eê]s)[ ._-]?(audio|dub(bed)?)|(audio|dub(bed)?)[ ._-]?(pt[ ._-]?br|portugu[eê]s))\\b"
           }
         ],
         "implementation": "ReleaseTitleSpecification",
         "implementationName": "Release Title",
         "infoLink": "https://wiki.servarr.com/radarr/settings#custom-formats-2",
-        "name": "Dublado/Nacional/PT-BR title",
+        "name": "Portuguese dubbing release marker",
         "negate": false,
         "required": false
-      },
+      }
+    ]
+  },
+  {
+    "name": "Portuguese (BR) Audio",
+    "includeCustomFormatWhenRenaming": false,
+    "specifications": [
       {
         "fields": [
           {
@@ -416,6 +422,40 @@
         "name": "Portuguese Language",
         "negate": false,
         "required": false
+      }
+    ]
+  },
+  {
+    "name": "Portuguese (BR) Legendado",
+    "includeCustomFormatWhenRenaming": false,
+    "specifications": [
+      {
+        "name": "Portuguese subtitle release marker",
+        "implementation": "ReleaseTitleSpecification",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": "\\b(legendad[oa]s?|(leg(endas?)?|subs?|subtitles?)[ ._-]?(pt[ ._-]?br|portugu[eê]s)|(pt[ ._-]?br|portugu[eê]s)[ ._-]?(leg(endas?)?|subs?|subtitles?))\\b"
+          }
+        ]
+      },
+      {
+        "name": "Original audio language",
+        "implementation": "LanguageSpecification",
+        "negate": false,
+        "required": false,
+        "fields": [
+          {
+            "name": "value",
+            "value": -2
+          },
+          {
+            "name": "exceptLanguage",
+            "value": false
+          }
+        ]
       }
     ]
   }
