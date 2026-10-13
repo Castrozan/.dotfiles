@@ -4,6 +4,8 @@ Junction arcs are concave fillets connecting panel extensions to an attachment e
 
 Use one Shape with separate positive ShapePaths for each panel. Opaque panel fill covers the native window border at the attachment edge. The left bar and right panels use open borders over their filled contours. Border paths skip segments along screen edges covered by a panel. A desktop-sized outer rectangle minus a cutout puts coincident segments on the screen edge when the strip thickness is zero; the curve renderer can then fill the desktop instead of the panels.
 
+The stroke center is inset by half the window border width into the remaining window. This aligns its two pixels with the native border and prevents a straight native border segment from crossing a curve endpoint. Fill closures still reach the physical screen edges. Dashboard and launcher attachment covers use Qt's PathRectangle with no stroke; they do not reserve space or paint a permanent desktop frame.
+
 ## Anatomy of a Junction
 
 Each junction is a PathLine followed by a PathArc. The PathLine positions the arc start point, and the PathArc defines the endpoint, radius, and sweep direction. Together they produce a 90-degree quarter-circle fillet in the concave corner between a strip edge and a panel edge.
@@ -74,14 +76,14 @@ When a panel extends close enough to the strip's own rounded corner (within `jun
 
 **Partially merged** (`cornerMerged = true`): the panel approaches the screen edge. For a left popout, the available gap bounds both the bar corner and junction radii so their tangents meet without a square corner. The right-side junction uses the remaining gap to the screen edge.
 
-**Fully merged** (`fullyMerged = true`): the panel reaches the screen edge (`mergedArcRadius <= 0`). The junction arc disappears and the remaining window corner rounds toward the panel. The border omits the covered screen-edge segment. For the left extension, `bottomEdgeTargetX` becomes `extensionRight + cornerArcRadius`, where the window's bottom edge meets the rounded corner.
+**Fully merged** (`fullyMerged = true`): the panel reaches the native border (`mergedArcRadius <= 0`). The junction arc disappears and the remaining window corner rounds toward the panel. The border omits the covered screen-edge segment. For the left extension, `bottomEdgeTargetX` becomes `extensionBorderRightEdge + cornerArcRadius`, where the window's bottom edge meets the rounded corner.
 
 The left bar retains rounded window corners while visible even when strip thickness is zero. Its corner radius is clamped to its animated width and the junction radius; hiding it collapses those corners without painting a permanent frame.
 
 Properties like `topCornerMerged` / `rightPanelTopFullyMerged` control this transition. Merged corners hide arc direction bugs because a zero-radius arc is invisible regardless of direction.
 
-The right panel aggregate is fully merged when its bounding box reaches both screen edges. Both `rightPanelMergedTopArcRadius` and `rightPanelMergedBottomArcRadius` are then 0.
+The right panel aggregate is fully merged when its bounding box reaches both native border bands. Both `rightPanelMergedTopArcRadius` and `rightPanelMergedBottomArcRadius` are then 0.
 
 ## Aggregate Right Panel Geometry
 
-Right-side panels share an aggregate contour whose bounds are computed in drawers/RightPanelGeometry.qml. Its bounding box determines the top and bottom junctions; the fill and stroke use the same path.
+Right-side panels share an aggregate contour whose bounds are computed in drawers/RightPanelGeometry.qml. Its bounding box determines the top and bottom junctions; the fill and stroke share the exposed contour.

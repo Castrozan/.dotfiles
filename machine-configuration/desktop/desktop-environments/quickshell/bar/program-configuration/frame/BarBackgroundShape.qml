@@ -30,7 +30,7 @@ Shape {
         fillColor: backgroundRoot.fillColor
         fillRule: ShapePath.WindingFill
         strokeColor: backgroundRoot.strokeColor
-        strokeWidth: 2
+        strokeWidth: backgroundRoot.geometry.windowBorderWidth
         joinStyle: ShapePath.RoundJoin
         capStyle: ShapePath.RoundCap
     }
@@ -48,25 +48,33 @@ Shape {
             x: 0
             y: backgroundRoot.geometry.barHeight
         }
+        readonly property PathLine bottomAttachmentEdge: PathLine {
+            x: backgroundRoot.geometry.bottomEdgeTargetX
+            y: backgroundRoot.geometry.barHeight
+        }
+        readonly property PathLine topAttachmentEdge: PathLine {
+            x: backgroundRoot.geometry.topEdgeTargetX
+            y: 0
+        }
         readonly property PathLine closure: PathLine {
             x: 0
             y: 0
         }
-        elements: [start, bottom, ...backgroundRoot.popoutContour.elements, closure]
+        elements: [start, bottom, bottomAttachmentEdge, ...backgroundRoot.popoutContour.elements, topAttachmentEdge, closure]
     }
 
     readonly property PanelOutline dashboardOutline: PanelOutline {
         readonly property PathMove start: PathMove {
-            x: backgroundRoot.geometry.dashboardX - backgroundRoot.geometry.dashboardLeftJunctionArcRadius
-            y: 0
+            x: backgroundRoot.geometry.dashboardBorderLeftEdge - backgroundRoot.geometry.dashboardLeftJunctionArcRadius
+            y: backgroundRoot.geometry.topWindowBorderCenterY
         }
         elements: [start, ...backgroundRoot.dashboardContour.elements]
     }
 
     readonly property PanelOutline launcherOutline: PanelOutline {
         readonly property PathMove start: PathMove {
-            x: backgroundRoot.geometry.launcherRightEdge + backgroundRoot.geometry.launcherRightJunctionArcRadius
-            y: backgroundRoot.geometry.barHeight
+            x: backgroundRoot.geometry.launcherBorderRightEdge + backgroundRoot.geometry.launcherRightJunctionArcRadius
+            y: backgroundRoot.geometry.bottomWindowBorderCenterY
         }
         elements: [start, ...backgroundRoot.launcherContour.elements]
     }
@@ -79,6 +87,19 @@ Shape {
         elements: [start, ...backgroundRoot.rightPanelContour.elements]
     }
 
+    readonly property PathRectangle dashboardAttachmentCover: PathRectangle {
+        x: backgroundRoot.geometry.dashboardBorderLeftEdge - backgroundRoot.geometry.dashboardLeftJunctionArcRadius
+        y: 0
+        width: backgroundRoot.geometry.dashboardBorderRightEdge + backgroundRoot.geometry.dashboardRightJunctionArcRadius - x
+        height: backgroundRoot.geometry.topWindowBorderCenterY
+    }
+    readonly property PathRectangle launcherAttachmentCover: PathRectangle {
+        x: backgroundRoot.geometry.launcherBorderLeftEdge - backgroundRoot.geometry.launcherLeftJunctionArcRadius
+        y: backgroundRoot.geometry.bottomWindowBorderCenterY
+        width: backgroundRoot.geometry.launcherBorderRightEdge + backgroundRoot.geometry.launcherRightJunctionArcRadius - x
+        height: backgroundRoot.geometry.barHeight - y
+    }
+
     FilledPanelPath {
         strokeWidth: -1
         pathElements: backgroundRoot.geometry.leftBarWidth > 0 || backgroundRoot.geometry.hasExtension ? backgroundRoot.barOutline.elements : []
@@ -86,11 +107,19 @@ Shape {
     FilledPanelPath {
         fillColor: "transparent"
         startX: backgroundRoot.geometry.bottomEdgeTargetX
-        startY: backgroundRoot.geometry.barHeight
+        startY: backgroundRoot.geometry.bottomWindowBorderCenterY
         pathElements: backgroundRoot.geometry.leftBarWidth > 0 || backgroundRoot.geometry.hasExtension ? backgroundRoot.popoutContour.elements : []
     }
     FilledPanelPath {
+        strokeWidth: -1
+        pathElements: backgroundRoot.geometry.hasDashboard ? [backgroundRoot.dashboardAttachmentCover] : []
+    }
+    FilledPanelPath {
         pathElements: backgroundRoot.geometry.hasDashboard ? backgroundRoot.dashboardOutline.elements : []
+    }
+    FilledPanelPath {
+        strokeWidth: -1
+        pathElements: backgroundRoot.geometry.hasLauncher ? [backgroundRoot.launcherAttachmentCover] : []
     }
     FilledPanelPath {
         pathElements: backgroundRoot.geometry.hasLauncher ? backgroundRoot.launcherOutline.elements : []

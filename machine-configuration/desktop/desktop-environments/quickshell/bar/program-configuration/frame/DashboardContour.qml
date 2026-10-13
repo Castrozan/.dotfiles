@@ -6,45 +6,45 @@ QtObject {
     required property BarFrameGeometry geometry
     property list<QtObject> elements: [
         PathLine {
-            x: contourRoot.geometry.dashboardX - contourRoot.geometry.dashboardLeftJunctionArcRadius
-            y: contourRoot.geometry.stripThickness
+            x: contourRoot.geometry.dashboardBorderLeftEdge - contourRoot.geometry.dashboardLeftJunctionArcRadius
+            y: contourRoot.geometry.topWindowBorderCenterY
         },
         PathArc {
-            x: contourRoot.geometry.dashboardX
-            y: contourRoot.geometry.stripThickness + contourRoot.geometry.dashboardLeftJunctionArcRadius
+            x: contourRoot.geometry.dashboardBorderLeftEdge
+            y: contourRoot.geometry.topWindowBorderCenterY + contourRoot.geometry.dashboardLeftJunctionArcRadius
             radiusX: contourRoot.geometry.dashboardLeftJunctionArcRadius
             radiusY: contourRoot.geometry.dashboardLeftJunctionArcRadius
             direction: PathArc.Clockwise
         },
         PathLine {
-            x: contourRoot.geometry.dashboardX
-            y: contourRoot.geometry.dashboardBottomEdge - contourRoot.geometry.dashboardCornerArcRadius
+            x: contourRoot.geometry.dashboardBorderLeftEdge
+            y: contourRoot.geometry.dashboardBorderBottomEdge - contourRoot.geometry.dashboardCornerArcRadius
         },
         PathArc {
-            x: contourRoot.geometry.dashboardX + contourRoot.geometry.dashboardCornerArcRadius
-            y: contourRoot.geometry.dashboardBottomEdge
+            x: contourRoot.geometry.dashboardBorderLeftEdge + contourRoot.geometry.dashboardCornerArcRadius
+            y: contourRoot.geometry.dashboardBorderBottomEdge
             radiusX: contourRoot.geometry.dashboardCornerArcRadius
             radiusY: contourRoot.geometry.dashboardCornerArcRadius
             direction: PathArc.Counterclockwise
         },
         PathLine {
-            x: contourRoot.geometry.dashboardRightEdge - contourRoot.geometry.dashboardCornerArcRadius
-            y: contourRoot.geometry.dashboardBottomEdge
+            x: contourRoot.geometry.dashboardBorderRightEdge - contourRoot.geometry.dashboardCornerArcRadius
+            y: contourRoot.geometry.dashboardBorderBottomEdge
         },
         PathArc {
-            x: contourRoot.geometry.dashboardRightEdge
-            y: contourRoot.geometry.dashboardBottomEdge - contourRoot.geometry.dashboardCornerArcRadius
+            x: contourRoot.geometry.dashboardBorderRightEdge
+            y: contourRoot.geometry.dashboardBorderBottomEdge - contourRoot.geometry.dashboardCornerArcRadius
             radiusX: contourRoot.geometry.dashboardCornerArcRadius
             radiusY: contourRoot.geometry.dashboardCornerArcRadius
             direction: PathArc.Counterclockwise
         },
         PathLine {
-            x: contourRoot.geometry.dashboardRightEdge
-            y: contourRoot.geometry.stripThickness + contourRoot.geometry.dashboardRightJunctionArcRadius
+            x: contourRoot.geometry.dashboardBorderRightEdge
+            y: contourRoot.geometry.topWindowBorderCenterY + contourRoot.geometry.dashboardRightJunctionArcRadius
         },
         PathArc {
-            x: contourRoot.geometry.dashboardRightEdge + contourRoot.geometry.dashboardRightJunctionArcRadius
-            y: contourRoot.geometry.stripThickness
+            x: contourRoot.geometry.dashboardBorderRightEdge + contourRoot.geometry.dashboardRightJunctionArcRadius
+            y: contourRoot.geometry.topWindowBorderCenterY
             radiusX: contourRoot.geometry.dashboardRightJunctionArcRadius
             radiusY: contourRoot.geometry.dashboardRightJunctionArcRadius
             direction: PathArc.Clockwise

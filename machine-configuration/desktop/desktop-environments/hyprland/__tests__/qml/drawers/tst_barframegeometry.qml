@@ -42,17 +42,17 @@ Item {
                 {
                     tag: "hidden",
                     width: 0,
-                    outlineX: 0
+                    outlineX: 1
                 },
                 {
                     tag: "animating",
                     width: 24,
-                    outlineX: 48
+                    outlineX: 49
                 },
                 {
                     tag: "shown",
                     width: 48,
-                    outlineX: 84
+                    outlineX: 85
                 }
             ];
         }
@@ -100,7 +100,7 @@ Item {
             for (const position of [16, 500, 1064]) {
                 geometry.extensionY = position;
                 for (const element of contour.elements) {
-                    if (element.x === geometry.leftBarWidth) {
+                    if (element.x === geometry.leftBarBorderRightEdge) {
                         verify(element.y >= geometry.barRightEdgeStartY, "Empty popout crosses the top corner tangent");
                         verify(element.y <= geometry.barRightEdgeEndY, "Empty popout crosses the bottom corner tangent");
                     }

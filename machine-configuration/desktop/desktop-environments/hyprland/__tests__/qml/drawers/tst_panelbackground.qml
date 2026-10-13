@@ -93,7 +93,7 @@ Item {
                     x: 400,
                     y: 60,
                     borderX: 400,
-                    borderY: 119
+                    borderY: 120
                 },
                 {
                     tag: "launcher",
@@ -102,7 +102,7 @@ Item {
                     x: 400,
                     y: 550,
                     borderX: 400,
-                    borderY: 480
+                    borderY: 479
                 },
                 {
                     tag: "right",
@@ -110,7 +110,7 @@ Item {
                     value: 80,
                     x: 760,
                     y: 300,
-                    borderX: 720,
+                    borderX: 719,
                     borderY: 300
                 },
                 {
@@ -119,7 +119,7 @@ Item {
                     value: 200,
                     x: 100,
                     y: 300,
-                    borderX: 247,
+                    borderX: 248,
                     borderY: 300
                 }
             ];
@@ -161,7 +161,7 @@ Item {
             const image = renderedDesktop();
             compare(image.red(700, 300), 32);
             compare(image.red(400, 300), 255);
-            verify(image.green(600, 300) <= 10);
+            verify(image.green(599, 300) <= 10);
         }
 
         function test_overlapping_panels_do_not_clear_each_other() {

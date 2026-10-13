@@ -6,12 +6,22 @@ QtObject {
     required property BarFrameGeometry geometry
 
     readonly property PathMove borderStart: PathMove {
-        x: contourRoot.geometry.rightPanelTopFullyMerged ? contourRoot.geometry.rightPanelLeftEdge - contourRoot.geometry.rightPanelCornerArcRadius : contourRoot.geometry.screenWidth
+        x: contourRoot.geometry.rightPanelTopFullyMerged ? contourRoot.geometry.rightPanelBorderLeftEdge - contourRoot.geometry.rightPanelCornerArcRadius : contourRoot.geometry.rightWindowBorderCenterX
         y: contourRoot.geometry.clampedRightPanelTopEdge - contourRoot.geometry.effectiveRightPanelTopJunctionArcRadius
     }
 
+    readonly property PathLine topAttachmentEdge: PathLine {
+        x: contourRoot.geometry.rightPanelTopFullyMerged ? contourRoot.geometry.screenWidth : contourRoot.geometry.rightWindowBorderCenterX
+        y: contourRoot.geometry.rightPanelTopFullyMerged ? 0 : contourRoot.geometry.clampedRightPanelTopEdge - contourRoot.geometry.effectiveRightPanelTopJunctionArcRadius
+    }
+
+    readonly property PathLine topScreenCornerEdge: PathLine {
+        x: contourRoot.geometry.rightPanelBorderLeftEdge - contourRoot.geometry.rightPanelCornerArcRadius
+        y: 0
+    }
+
     readonly property PathArc topJunctionArc: PathArc {
-        x: contourRoot.geometry.rightPanelTopFullyMerged ? contourRoot.geometry.rightPanelLeftEdge - contourRoot.geometry.rightPanelCornerArcRadius : contourRoot.geometry.rightStripLeftEdge - contourRoot.geometry.effectiveRightPanelTopJunctionArcRadius
+        x: contourRoot.geometry.rightPanelTopFullyMerged ? contourRoot.geometry.rightPanelBorderLeftEdge - contourRoot.geometry.rightPanelCornerArcRadius : contourRoot.geometry.rightWindowBorderCenterX - contourRoot.geometry.effectiveRightPanelTopJunctionArcRadius
         y: contourRoot.geometry.clampedRightPanelTopEdge
         radiusX: contourRoot.geometry.effectiveRightPanelTopJunctionArcRadius
         radiusY: contourRoot.geometry.effectiveRightPanelTopJunctionArcRadius
@@ -19,12 +29,12 @@ QtObject {
     }
 
     readonly property PathLine topCornerStart: PathLine {
-        x: contourRoot.geometry.rightPanelLeftEdge + (contourRoot.geometry.rightPanelTopFullyMerged ? -contourRoot.geometry.rightPanelCornerArcRadius : contourRoot.geometry.rightPanelCornerArcRadius)
+        x: contourRoot.geometry.rightPanelBorderLeftEdge + (contourRoot.geometry.rightPanelTopFullyMerged ? -contourRoot.geometry.rightPanelCornerArcRadius : contourRoot.geometry.rightPanelCornerArcRadius)
         y: contourRoot.geometry.clampedRightPanelTopEdge
     }
 
     readonly property PathArc topCornerArc: PathArc {
-        x: contourRoot.geometry.rightPanelLeftEdge
+        x: contourRoot.geometry.rightPanelBorderLeftEdge
         y: contourRoot.geometry.clampedRightPanelTopEdge + contourRoot.geometry.rightPanelCornerArcRadius
         radiusX: contourRoot.geometry.rightPanelCornerArcRadius
         radiusY: contourRoot.geometry.rightPanelCornerArcRadius
@@ -32,12 +42,12 @@ QtObject {
     }
 
     readonly property PathLine leftEdge: PathLine {
-        x: contourRoot.geometry.rightPanelLeftEdge
+        x: contourRoot.geometry.rightPanelBorderLeftEdge
         y: contourRoot.geometry.clampedRightPanelBottomEdge - contourRoot.geometry.rightPanelCornerArcRadius
     }
 
     readonly property PathArc bottomCornerArc: PathArc {
-        x: contourRoot.geometry.rightPanelLeftEdge + (contourRoot.geometry.rightPanelBottomFullyMerged ? -contourRoot.geometry.rightPanelCornerArcRadius : contourRoot.geometry.rightPanelCornerArcRadius)
+        x: contourRoot.geometry.rightPanelBorderLeftEdge + (contourRoot.geometry.rightPanelBottomFullyMerged ? -contourRoot.geometry.rightPanelCornerArcRadius : contourRoot.geometry.rightPanelCornerArcRadius)
         y: contourRoot.geometry.clampedRightPanelBottomEdge
         radiusX: contourRoot.geometry.rightPanelCornerArcRadius
         radiusY: contourRoot.geometry.rightPanelCornerArcRadius
@@ -45,18 +55,28 @@ QtObject {
     }
 
     readonly property PathLine bottomJunctionStart: PathLine {
-        x: contourRoot.geometry.rightPanelBottomFullyMerged ? contourRoot.geometry.rightStripLeftEdge : contourRoot.geometry.rightStripLeftEdge - contourRoot.geometry.effectiveRightPanelBottomJunctionArcRadius
+        x: contourRoot.geometry.rightWindowBorderCenterX - contourRoot.geometry.effectiveRightPanelBottomJunctionArcRadius
         y: contourRoot.geometry.clampedRightPanelBottomEdge
     }
 
     readonly property PathArc bottomJunctionArc: PathArc {
-        x: contourRoot.geometry.rightStripLeftEdge
+        x: contourRoot.geometry.rightWindowBorderCenterX
         y: contourRoot.geometry.clampedRightPanelBottomEdge + contourRoot.geometry.effectiveRightPanelBottomJunctionArcRadius
         radiusX: contourRoot.geometry.effectiveRightPanelBottomJunctionArcRadius
         radiusY: contourRoot.geometry.effectiveRightPanelBottomJunctionArcRadius
         direction: PathArc.Clockwise
     }
 
-    readonly property list<QtObject> elements: [topJunctionArc, topCornerStart, topCornerArc, leftEdge, bottomCornerArc, bottomJunctionStart, bottomJunctionArc]
+    readonly property PathLine bottomScreenCornerEdge: PathLine {
+        x: contourRoot.geometry.rightPanelBorderLeftEdge - contourRoot.geometry.rightPanelCornerArcRadius
+        y: contourRoot.geometry.barHeight
+    }
+
+    readonly property PathLine bottomAttachmentEdge: PathLine {
+        x: contourRoot.geometry.screenWidth
+        y: contourRoot.geometry.rightPanelBottomFullyMerged ? contourRoot.geometry.barHeight : contourRoot.geometry.clampedRightPanelBottomEdge + contourRoot.geometry.effectiveRightPanelBottomJunctionArcRadius
+    }
+
+    readonly property list<QtObject> elements: [topAttachmentEdge, ...(geometry.rightPanelTopFullyMerged ? [topScreenCornerEdge] : [topJunctionArc]), topCornerStart, topCornerArc, leftEdge, bottomCornerArc, ...(geometry.rightPanelBottomFullyMerged ? [bottomScreenCornerEdge] : [bottomJunctionStart, bottomJunctionArc]), bottomAttachmentEdge]
     readonly property list<QtObject> borderElements: [borderStart, ...(geometry.rightPanelTopFullyMerged ? [] : [topJunctionArc, topCornerStart]), topCornerArc, leftEdge, bottomCornerArc, ...(geometry.rightPanelBottomFullyMerged ? [] : [bottomJunctionStart, bottomJunctionArc])]
 }

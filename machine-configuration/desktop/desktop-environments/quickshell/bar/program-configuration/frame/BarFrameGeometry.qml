@@ -18,37 +18,44 @@ QtObject {
     required property real launcherHeight
 
     readonly property real stripThickness: 0
+    readonly property real windowBorderWidth: 2
+    readonly property real windowBorderInset: windowBorderWidth / 2
+    readonly property real topWindowBorderCenterY: windowBorderInset
+    readonly property real bottomWindowBorderCenterY: barHeight - windowBorderInset
+    readonly property real rightWindowBorderCenterX: screenWidth - windowBorderInset
+    readonly property real leftBarBorderRightEdge: leftBarWidth + windowBorderInset
 
     readonly property real innerCornerRadius: Math.min(junctionRadius, stripThickness)
-    readonly property real leftBarCornerArcRadius: Math.min(junctionRadius, leftBarWidth)
-    readonly property real topLeftBarCornerArcRadius: hasExtension ? Math.min(leftBarCornerArcRadius, Math.max(0, extensionTopEdge - stripThickness) / 2) : leftBarCornerArcRadius
-    readonly property real bottomLeftBarCornerArcRadius: hasExtension ? Math.min(leftBarCornerArcRadius, Math.max(0, barHeight - stripThickness - extensionBottomEdge) / 2) : leftBarCornerArcRadius
+    readonly property real leftBarCornerArcRadius: Math.min(junctionRadius, leftBarWidth, Math.max(0, bottomWindowBorderCenterY - topWindowBorderCenterY) / 2)
+    readonly property real topLeftBarCornerArcRadius: hasExtension ? Math.min(leftBarCornerArcRadius, Math.max(0, clampedExtensionTopEdge - topWindowBorderCenterY) / 2) : leftBarCornerArcRadius
+    readonly property real bottomLeftBarCornerArcRadius: hasExtension ? Math.min(leftBarCornerArcRadius, Math.max(0, bottomWindowBorderCenterY - clampedExtensionBottomEdge) / 2) : leftBarCornerArcRadius
 
-    readonly property real barRightEdgeStartY: stripThickness + topLeftBarCornerArcRadius
-    readonly property real barRightEdgeEndY: barHeight - stripThickness - bottomLeftBarCornerArcRadius
+    readonly property real barRightEdgeStartY: topWindowBorderCenterY + topLeftBarCornerArcRadius
+    readonly property real barRightEdgeEndY: bottomWindowBorderCenterY - bottomLeftBarCornerArcRadius
 
     readonly property real extensionTopEdge: extensionY
     readonly property real extensionBottomEdge: extensionY + extensionHeight
 
     readonly property bool hasExtension: extensionWidth > 0 && extensionHeight > 0
 
-    readonly property real topJunctionAvailableSpace: Math.max(0, extensionTopEdge - barRightEdgeStartY)
-    readonly property real bottomJunctionAvailableSpace: Math.max(0, barRightEdgeEndY - extensionBottomEdge)
+    readonly property real topJunctionAvailableSpace: Math.max(0, clampedExtensionTopEdge - barRightEdgeStartY)
+    readonly property real bottomJunctionAvailableSpace: Math.max(0, barRightEdgeEndY - clampedExtensionBottomEdge)
 
     readonly property real topJunctionArcRadius: Math.min(junctionRadius, extensionWidth, topJunctionAvailableSpace)
     readonly property real bottomJunctionArcRadius: Math.min(junctionRadius, extensionWidth, bottomJunctionAvailableSpace)
 
-    readonly property real extensionCornerArcRadius: Math.min(junctionRadius, extensionWidth, extensionHeight / 2)
+    readonly property real extensionCornerArcRadius: Math.min(junctionRadius, extensionWidth, Math.max(0, clampedExtensionBottomEdge - clampedExtensionTopEdge) / 2)
     readonly property real extensionRight: leftBarWidth + extensionWidth
+    readonly property real extensionBorderRightEdge: extensionRight + windowBorderInset
 
-    readonly property bool bottomCornerMerged: hasExtension && (extensionBottomEdge + junctionRadius >= barRightEdgeEndY)
-    readonly property bool topCornerMerged: hasExtension && (extensionTopEdge - junctionRadius <= barRightEdgeStartY)
+    readonly property bool bottomCornerMerged: hasExtension && (extensionBottomEdge + windowBorderInset + junctionRadius >= barRightEdgeEndY)
+    readonly property bool topCornerMerged: hasExtension && (extensionTopEdge - windowBorderInset - junctionRadius <= barRightEdgeStartY)
 
-    readonly property real mergedBottomArcRadius: Math.max(0, (barHeight - stripThickness) - extensionBottomEdge)
-    readonly property real mergedTopArcRadius: Math.max(0, extensionTopEdge - stripThickness)
+    readonly property real mergedBottomArcRadius: Math.max(0, bottomWindowBorderCenterY - extensionBottomEdge - windowBorderInset)
+    readonly property real mergedTopArcRadius: Math.max(0, extensionTopEdge - windowBorderInset - topWindowBorderCenterY)
 
-    readonly property real clampedExtensionBottomEdge: bottomCornerMerged ? Math.min(extensionBottomEdge, barHeight - stripThickness) : extensionBottomEdge
-    readonly property real clampedExtensionTopEdge: topCornerMerged ? Math.max(extensionTopEdge, stripThickness) : extensionTopEdge
+    readonly property real clampedExtensionTopEdge: Math.min(bottomWindowBorderCenterY, Math.max(extensionTopEdge - windowBorderInset, topWindowBorderCenterY))
+    readonly property real clampedExtensionBottomEdge: Math.max(clampedExtensionTopEdge, Math.min(extensionBottomEdge + windowBorderInset, bottomWindowBorderCenterY))
 
     readonly property bool bottomFullyMerged: bottomCornerMerged && mergedBottomArcRadius <= 0
     readonly property bool topFullyMerged: topCornerMerged && mergedTopArcRadius <= 0
@@ -58,15 +65,19 @@ QtObject {
     readonly property real effectiveBottomJunctionArcRadius: bottomFullyMerged ? 0 : bottomJunctionArcRadius
     readonly property real effectiveTopJunctionArcRadius: topFullyMerged ? 0 : topJunctionArcRadius
 
-    readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionRight + extensionCornerArcRadius) : (leftBarWidth + effectiveBottomLeftBarCornerRadius)
-    readonly property real topEdgeTargetX: topFullyMerged ? (extensionRight + extensionCornerArcRadius) : (leftBarWidth + effectiveTopLeftBarCornerRadius)
+    readonly property real bottomEdgeTargetX: bottomFullyMerged ? (extensionBorderRightEdge + extensionCornerArcRadius) : (leftBarBorderRightEdge + effectiveBottomLeftBarCornerRadius)
+    readonly property real topEdgeTargetX: topFullyMerged ? (extensionBorderRightEdge + extensionCornerArcRadius) : (leftBarBorderRightEdge + effectiveTopLeftBarCornerRadius)
 
     readonly property bool hasDashboard: dashboardHeight > 0
     readonly property real dashboardBottomEdge: stripThickness + dashboardHeight
     readonly property real dashboardRightEdge: dashboardX + dashboardWidth
-    readonly property real dashboardCornerArcRadius: Math.min(junctionRadius, dashboardWidth / 2, dashboardHeight / 2)
-    readonly property real dashboardLeftJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, dashboardX - topEdgeTargetX))
-    readonly property real dashboardRightJunctionArcRadius: Math.min(junctionRadius, dashboardHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - dashboardRightEdge))
+    readonly property real dashboardBorderLeftEdge: dashboardX - windowBorderInset
+    readonly property real dashboardBorderRightEdge: dashboardRightEdge + windowBorderInset
+    readonly property real dashboardBorderBottomEdge: Math.max(topWindowBorderCenterY, dashboardBottomEdge + windowBorderInset)
+    readonly property real dashboardCornerArcRadius: Math.min(junctionRadius, (dashboardWidth + windowBorderWidth) / 2, (dashboardBorderBottomEdge - topWindowBorderCenterY) / 2)
+    readonly property real dashboardJunctionAvailableHeight: Math.max(0, dashboardBorderBottomEdge - topWindowBorderCenterY - dashboardCornerArcRadius)
+    readonly property real dashboardLeftJunctionArcRadius: Math.min(junctionRadius, dashboardJunctionAvailableHeight, Math.max(0, dashboardBorderLeftEdge - topEdgeTargetX))
+    readonly property real dashboardRightJunctionArcRadius: Math.min(junctionRadius, dashboardJunctionAvailableHeight, Math.max(0, rightWindowBorderCenterX - dashboardBorderRightEdge))
 
     required property real rightPanelY
     required property real rightPanelWidth
@@ -75,42 +86,47 @@ QtObject {
     readonly property bool hasRightPanel: rightPanelWidth > 0 && rightPanelHeight > 0
     readonly property real rightStripLeftEdge: screenWidth - stripThickness
     readonly property real rightPanelLeftEdge: rightStripLeftEdge - rightPanelWidth
+    readonly property real rightPanelBorderLeftEdge: rightPanelLeftEdge - windowBorderInset
     readonly property real rightPanelTopEdge: rightPanelY
     readonly property real rightPanelBottomEdge: rightPanelY + rightPanelHeight
 
-    readonly property real rightStripTopCornerStartY: stripThickness + innerCornerRadius
-    readonly property real rightStripBottomCornerStartY: barHeight - stripThickness - innerCornerRadius
+    readonly property real rightStripTopCornerStartY: topWindowBorderCenterY + innerCornerRadius
+    readonly property real rightStripBottomCornerStartY: bottomWindowBorderCenterY - innerCornerRadius
 
-    readonly property real rightPanelTopJunctionAvailableSpace: Math.max(0, rightPanelTopEdge - rightStripTopCornerStartY)
-    readonly property real rightPanelBottomJunctionAvailableSpace: Math.max(0, rightStripBottomCornerStartY - rightPanelBottomEdge)
+    readonly property real rightPanelTopJunctionAvailableSpace: Math.max(0, clampedRightPanelTopEdge - rightStripTopCornerStartY)
+    readonly property real rightPanelBottomJunctionAvailableSpace: Math.max(0, rightStripBottomCornerStartY - clampedRightPanelBottomEdge)
 
     readonly property real rightPanelTopJunctionArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth / 2, rightPanelTopJunctionAvailableSpace) : 0
     readonly property real rightPanelBottomJunctionArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth / 2, rightPanelBottomJunctionAvailableSpace) : 0
 
-    readonly property real rightPanelCornerArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth / 2, rightPanelHeight / 2) : 0
+    readonly property real rightPanelCornerArcRadius: hasRightPanel ? Math.min(junctionRadius, rightPanelWidth / 2, Math.max(0, clampedRightPanelBottomEdge - clampedRightPanelTopEdge) / 2) : 0
 
-    readonly property bool rightPanelTopCornerMerged: hasRightPanel && (rightPanelTopEdge - junctionRadius <= rightStripTopCornerStartY)
-    readonly property bool rightPanelBottomCornerMerged: hasRightPanel && (rightPanelBottomEdge + junctionRadius >= rightStripBottomCornerStartY)
+    readonly property bool rightPanelTopCornerMerged: hasRightPanel && (rightPanelTopEdge - windowBorderInset - junctionRadius <= rightStripTopCornerStartY)
+    readonly property bool rightPanelBottomCornerMerged: hasRightPanel && (rightPanelBottomEdge + windowBorderInset + junctionRadius >= rightStripBottomCornerStartY)
 
-    readonly property real rightPanelMergedTopArcRadius: Math.max(0, rightPanelTopEdge - stripThickness)
-    readonly property real rightPanelMergedBottomArcRadius: Math.max(0, (barHeight - stripThickness) - rightPanelBottomEdge)
+    readonly property real rightPanelMergedTopArcRadius: Math.max(0, rightPanelTopEdge - windowBorderInset - topWindowBorderCenterY)
+    readonly property real rightPanelMergedBottomArcRadius: Math.max(0, bottomWindowBorderCenterY - rightPanelBottomEdge - windowBorderInset)
 
     readonly property bool rightPanelTopFullyMerged: rightPanelTopCornerMerged && rightPanelMergedTopArcRadius <= 0
     readonly property bool rightPanelBottomFullyMerged: rightPanelBottomCornerMerged && rightPanelMergedBottomArcRadius <= 0
 
-    readonly property real effectiveRightPanelTopJunctionArcRadius: rightPanelTopCornerMerged ? rightPanelMergedTopArcRadius : rightPanelTopJunctionArcRadius
-    readonly property real effectiveRightPanelBottomJunctionArcRadius: rightPanelBottomCornerMerged ? rightPanelMergedBottomArcRadius : rightPanelBottomJunctionArcRadius
+    readonly property real effectiveRightPanelTopJunctionArcRadius: rightPanelTopFullyMerged ? 0 : rightPanelTopJunctionArcRadius
+    readonly property real effectiveRightPanelBottomJunctionArcRadius: rightPanelBottomFullyMerged ? 0 : rightPanelBottomJunctionArcRadius
 
     readonly property real effectiveRightTopInnerCornerRadius: rightPanelTopCornerMerged ? 0 : innerCornerRadius
     readonly property real effectiveRightBottomInnerCornerRadius: rightPanelBottomCornerMerged ? 0 : innerCornerRadius
 
-    readonly property real clampedRightPanelTopEdge: rightPanelTopCornerMerged ? Math.max(rightPanelTopEdge, stripThickness) : rightPanelTopEdge
-    readonly property real clampedRightPanelBottomEdge: rightPanelBottomCornerMerged ? Math.min(rightPanelBottomEdge, barHeight - stripThickness) : rightPanelBottomEdge
+    readonly property real clampedRightPanelTopEdge: Math.min(bottomWindowBorderCenterY, Math.max(rightPanelTopEdge - windowBorderInset, topWindowBorderCenterY))
+    readonly property real clampedRightPanelBottomEdge: Math.max(clampedRightPanelTopEdge, Math.min(rightPanelBottomEdge + windowBorderInset, bottomWindowBorderCenterY))
 
     readonly property bool hasLauncher: launcherHeight > 0
     readonly property real launcherTopEdge: barHeight - stripThickness - launcherHeight
     readonly property real launcherRightEdge: launcherX + launcherWidth
-    readonly property real launcherCornerArcRadius: Math.min(junctionRadius, launcherWidth / 2, launcherHeight / 2)
-    readonly property real launcherLeftJunctionArcRadius: Math.min(junctionRadius, launcherHeight, Math.max(0, launcherX - bottomEdgeTargetX))
-    readonly property real launcherRightJunctionArcRadius: Math.min(junctionRadius, launcherHeight, Math.max(0, (screenWidth - stripThickness - innerCornerRadius) - launcherRightEdge))
+    readonly property real launcherBorderLeftEdge: launcherX - windowBorderInset
+    readonly property real launcherBorderRightEdge: launcherRightEdge + windowBorderInset
+    readonly property real launcherBorderTopEdge: Math.min(bottomWindowBorderCenterY, launcherTopEdge - windowBorderInset)
+    readonly property real launcherCornerArcRadius: Math.min(junctionRadius, (launcherWidth + windowBorderWidth) / 2, (bottomWindowBorderCenterY - launcherBorderTopEdge) / 2)
+    readonly property real launcherJunctionAvailableHeight: Math.max(0, bottomWindowBorderCenterY - launcherBorderTopEdge - launcherCornerArcRadius)
+    readonly property real launcherLeftJunctionArcRadius: Math.min(junctionRadius, launcherJunctionAvailableHeight, Math.max(0, launcherBorderLeftEdge - bottomEdgeTargetX))
+    readonly property real launcherRightJunctionArcRadius: Math.min(junctionRadius, launcherJunctionAvailableHeight, Math.max(0, rightWindowBorderCenterX - launcherBorderRightEdge))
 }

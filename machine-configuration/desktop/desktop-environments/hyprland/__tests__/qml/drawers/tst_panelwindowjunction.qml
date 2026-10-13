@@ -134,8 +134,8 @@ Rectangle {
             verify(image.red(292, 7) > 80);
             verify(image.green(292, 7) < 50);
             verify(image.blue(292, 7) > 100);
-            verify(image.green(300, 60) < 10);
-            verify(image.blue(400, 119) > 240);
+            verify(image.green(299, 60) < 10);
+            verify(image.blue(400, 120) > 240);
         }
 
         function test_full_height_panel_preserves_window_corners() {
