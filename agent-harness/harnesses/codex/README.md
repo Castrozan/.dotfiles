@@ -1,3 +1,5 @@
+# Codex
+
 ## Distribution
 
 Codex builds the upstream release source with a narrow footer customization and retains the matching prebuilt code-mode
