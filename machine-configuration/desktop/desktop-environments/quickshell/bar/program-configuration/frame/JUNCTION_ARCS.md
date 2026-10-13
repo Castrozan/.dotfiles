@@ -66,7 +66,7 @@ Both junctions use CW. The path approaches going upward along the bar edge and t
 
 ## Radius Clamping
 
-Junction and corner arc radii must not exceed half the panel width. Without clamping, a narrow panel (like OSD at 56px) would have junction radius (36px) + corner radius (36px) = 72px, exceeding the panel width and causing overlapping path segments. Both are clamped to `Math.min(junctionRadius, panelWidth / 2, ...)`.
+Adjacent arcs must fit their available contour span. Right-side junction and corner radii are each capped at half the panel width, preventing overlap when the width is below twice `junctionRadius`. Top and bottom panel corners use the span between border centers; their junction radii also leave room for the corner arcs.
 
 ## Corner Merging
 
