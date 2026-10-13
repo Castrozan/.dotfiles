@@ -11,6 +11,7 @@ PanelWindow {
     required property int barTotalWidth
     required property int shapeJunctionRadius
     required property bool activeWorkspaceHasFullscreenWindow
+    required property bool activeWorkspaceIsEmpty
     required property DrawerState drawerState
     required property DrawerHoverController hoverController
 
@@ -70,7 +71,8 @@ PanelWindow {
         id: barBackgroundShape
         anchors.fill: parent
         z: 0
-        visible: drawersWindow.visibleBarWidth > 0 || drawersWindow.animatedExtensionWidth > 0 || topBottomPanels.dashboard.visible || topBottomPanels.launcher.visible || aggregatedRightPanelGeometry.aggregatedWidth > 0
+        visible: drawersWindow.activeWorkspaceIsEmpty || drawersWindow.visibleBarWidth > 0 || drawersWindow.animatedExtensionWidth > 0 || topBottomPanels.dashboard.visible || topBottomPanels.launcher.visible || aggregatedRightPanelGeometry.aggregatedWidth > 0
+        desktopBorderVisible: drawersWindow.activeWorkspaceIsEmpty
         geometry: BarFrameGeometry {
             leftBarWidth: drawersWindow.visibleBarWidth
             barHeight: drawersWindow.height

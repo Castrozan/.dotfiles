@@ -11,3 +11,4 @@ ScreenDrawers 1.0 ScreenDrawers.qml
 ScreenEdgeGeometry 1.0 ScreenEdgeGeometry.qml
 ScreenEdgeHoverAreas 1.0 ScreenEdgeHoverAreas.qml
 TopBottomPanelGroup 1.0 TopBottomPanelGroup.qml
+VisibleWorkspaceWindows 1.0 VisibleWorkspaceWindows.qml

@@ -10,6 +10,7 @@ Shape {
     required property BarFrameGeometry geometry
     property color fillColor: ThemeColors.backgroundSolid
     property color strokeColor: ThemeColors.accent
+    property bool desktopBorderVisible: false
 
     preferredRendererType: Shape.CurveRenderer
 
@@ -100,6 +101,18 @@ Shape {
         height: backgroundRoot.geometry.barHeight - y
     }
 
+    readonly property PathRectangle desktopBorder: PathRectangle {
+        x: backgroundRoot.geometry.windowBorderInset
+        y: backgroundRoot.geometry.topWindowBorderCenterY
+        width: backgroundRoot.geometry.screenWidth - backgroundRoot.geometry.windowBorderWidth
+        height: backgroundRoot.geometry.barHeight - backgroundRoot.geometry.windowBorderWidth
+        radius: backgroundRoot.geometry.windowCornerRadius
+    }
+
+    FilledPanelPath {
+        fillColor: "transparent"
+        pathElements: backgroundRoot.desktopBorderVisible ? [backgroundRoot.desktopBorder] : []
+    }
     FilledPanelPath {
         strokeWidth: -1
         pathElements: backgroundRoot.geometry.leftBarWidth > 0 || backgroundRoot.geometry.hasExtension ? backgroundRoot.barOutline.elements : []

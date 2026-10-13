@@ -14,38 +14,50 @@ Scope {
     readonly property int barContentWidth: 48
     readonly property int barTotalWidth: barContentWidth
 
-    property bool activeWorkspaceHasFullscreenWindow: false
+    readonly property var workspaceMonitor: Hyprland.monitorFor(screen)
+
+    VisibleWorkspaceWindows {
+        id: visibleWorkspaceWindows
+        monitorId: screenScope.workspaceMonitor ? screenScope.workspaceMonitor.id : -1
+        workspaceId: screenScope.workspaceMonitor?.activeWorkspace?.id ?? 0
+        specialWorkspaceId: screenScope.workspaceMonitor?.lastIpcObject?.specialWorkspace?.id ?? 0
+    }
 
     Process {
-        id: activeWorkspaceFullscreenQueryProcess
+        id: workspaceWindowsQueryProcess
         command: ["hyprctl", "clients", "-j"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
                 try {
-                    let clients = JSON.parse(data);
-                    let wsId = Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : -1;
-                    screenScope.activeWorkspaceHasFullscreenWindow = clients.some(c => c.workspace.id === wsId && c.fullscreen === 2);
+                    visibleWorkspaceWindows.clients = JSON.parse(data);
                 } catch (e) {
-                    screenScope.activeWorkspaceHasFullscreenWindow = false;
+                    visibleWorkspaceWindows.clients = null;
                 }
             }
         }
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0)
+                visibleWorkspaceWindows.clients = null;
+        }
     }
 
-    Component.onCompleted: activeWorkspaceFullscreenQueryProcess.running = true
+    Component.onCompleted: workspaceWindowsQueryProcess.running = true
 
     Connections {
-        target: Hyprland
-        function onFocusedWorkspaceChanged() {
-            activeWorkspaceFullscreenQueryProcess.running = true;
+        target: screenScope.workspaceMonitor
+        function onActiveWorkspaceChanged() {
+            workspaceWindowsQueryProcess.running = true;
         }
     }
 
     Connections {
         target: screenScope.shellEvents
         function onHyprlandFullscreenEventReceived() {
-            activeWorkspaceFullscreenQueryProcess.running = true;
+            workspaceWindowsQueryProcess.running = true;
+        }
+        function onHyprlandWindowLayoutEventReceived() {
+            workspaceWindowsQueryProcess.running = true;
         }
     }
     readonly property int shapeJunctionRadius: 36
@@ -94,7 +106,8 @@ Scope {
         screen: screenScope.screen
         barTotalWidth: screenScope.barTotalWidth
         shapeJunctionRadius: screenScope.shapeJunctionRadius
-        activeWorkspaceHasFullscreenWindow: screenScope.activeWorkspaceHasFullscreenWindow
+        activeWorkspaceHasFullscreenWindow: visibleWorkspaceWindows.hasFullscreenWindow
+        activeWorkspaceIsEmpty: visibleWorkspaceWindows.isEmpty
         drawerState: screenDrawerState
         hoverController: screenHoverController
     }

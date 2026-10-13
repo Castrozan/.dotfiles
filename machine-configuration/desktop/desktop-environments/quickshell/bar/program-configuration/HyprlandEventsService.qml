@@ -17,7 +17,10 @@ Singleton {
         function onRawEvent(event) {
             if (event.name === "fullscreen")
                 hyprlandEventsServiceRoot.fullscreenChanged();
-            else if (["openwindow", "closewindow", "movewindow", "movewindowv2"].includes(event.name))
+            else if (["activespecial", "activespecialv2"].includes(event.name)) {
+                Hyprland.refreshMonitors();
+                hyprlandEventsServiceRoot.windowLayoutChanged();
+            } else if (["openwindow", "closewindow", "movewindow", "movewindowv2", "pin"].includes(event.name))
                 hyprlandEventsServiceRoot.windowLayoutChanged();
             else if (event.name === "activewindow" || event.name === "activewindowv2")
                 hyprlandEventsServiceRoot.activeWindowChanged();

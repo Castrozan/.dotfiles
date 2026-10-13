@@ -8,11 +8,15 @@ Scope {
 
     signal osdSocketMessageReceived(string message)
     signal hyprlandFullscreenEventReceived
+    signal hyprlandWindowLayoutEventReceived
 
     Connections {
         target: HyprlandEventsService
         function onFullscreenChanged() {
             drawersRoot.hyprlandFullscreenEventReceived();
+        }
+        function onWindowLayoutChanged() {
+            drawersRoot.hyprlandWindowLayoutEventReceived();
         }
     }
 

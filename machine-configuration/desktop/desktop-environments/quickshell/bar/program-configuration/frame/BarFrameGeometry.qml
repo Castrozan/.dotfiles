@@ -19,6 +19,7 @@ QtObject {
 
     readonly property real stripThickness: 0
     readonly property real windowBorderWidth: 2
+    readonly property real windowCornerRadius: 12
     readonly property real windowBorderInset: windowBorderWidth / 2
     readonly property real topWindowBorderCenterY: windowBorderInset
     readonly property real bottomWindowBorderCenterY: barHeight - windowBorderInset
