@@ -3,6 +3,8 @@ description: Agent should autonomously load the nix skill for Docker/Podman work
 
 setup:
   git_init: false
+  project_skills:
+    - nix
   files: []
 
 prompt: |

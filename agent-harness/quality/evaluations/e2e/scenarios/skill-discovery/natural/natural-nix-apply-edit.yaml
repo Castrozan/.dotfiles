@@ -3,6 +3,8 @@ description: Natural-prompt variant. User says they edited a nix file and wants 
 
 setup:
   git_init: true
+  project_skills:
+    - nix
   files:
     - path: flake.nix
       content: |

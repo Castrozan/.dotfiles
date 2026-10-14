@@ -3,6 +3,8 @@ description: Natural-prompt variant. User complains about a container with no hi
 
 setup:
   git_init: false
+  project_skills:
+    - nix
   files: []
 
 prompt: |

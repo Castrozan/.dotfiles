@@ -14,6 +14,14 @@ CORE_INSTRUCTIONS_PATH = (
 )
 E2E_WORKSPACE_PARENT = Path.home() / "repo" / ".e2e-tests"
 IMPORTED_INSTRUCTION_FILENAME = "AGENTS.md"
+PROJECT_SKILL_DIRECTORIES = {
+    "nix": REPO_ROOT
+    / "agent-harness"
+    / "agent-instructions"
+    / "skills"
+    / "services"
+    / "nix",
+}
 
 
 def load_core_instructions() -> str:
@@ -66,6 +74,8 @@ def setup_e2e_scenario_workspace(
     for file_def in setup.get("files", []):
         _write_scenario_setup_file(file_def, workspace_directory)
 
+    _place_project_skills(setup.get("project_skills", []), workspace_directory)
+
     if setup.get("git_init", False):
         _initialize_scenario_git_repository(workspace_directory)
 
@@ -77,6 +87,17 @@ def _write_scenario_setup_file(file_def: dict, workspace_directory: Path) -> Non
     file_path = workspace_directory / relative_path
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(file_def["content"])
+
+
+def _place_project_skills(skill_names: list[str], workspace_directory: Path) -> None:
+    skills_directory = workspace_directory / ".claude" / "skills"
+    for skill_name in skill_names:
+        source_directory = PROJECT_SKILL_DIRECTORIES.get(skill_name)
+        if source_directory is None:
+            raise ValueError(f"unknown project skill: {skill_name}")
+        destination = skills_directory / skill_name
+        skills_directory.mkdir(parents=True, exist_ok=True)
+        destination.symlink_to(source_directory, target_is_directory=True)
 
 
 def _initialize_scenario_git_repository(workspace_directory: Path) -> None:

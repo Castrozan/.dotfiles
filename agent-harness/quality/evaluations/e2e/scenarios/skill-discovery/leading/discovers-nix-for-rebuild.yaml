@@ -3,6 +3,8 @@ description: Agent should autonomously load the nix skill when asked to apply .n
 
 setup:
   git_init: true
+  project_skills:
+    - nix
   files:
     - path: flake.nix
       content: |

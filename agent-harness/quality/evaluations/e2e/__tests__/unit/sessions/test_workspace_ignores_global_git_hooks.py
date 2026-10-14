@@ -1,5 +1,7 @@
 import subprocess
 
+import pytest
+
 from e2e.sessions.e2e_workspace import setup_e2e_scenario_workspace
 
 
@@ -36,3 +38,26 @@ def test_scenario_workspace_ignores_global_git_hooks(tmp_path, monkeypatch):
         check=True,
     )
     assert result.stdout.strip() == "initial"
+
+
+def test_scenario_workspace_installs_declared_project_skill(tmp_path):
+    workspace_directory = tmp_path / "workspace"
+    workspace_directory.mkdir()
+
+    setup_e2e_scenario_workspace(
+        {"setup": {"project_skills": ["nix"]}}, workspace_directory
+    )
+
+    skill_directory = workspace_directory / ".claude" / "skills" / "nix"
+    assert skill_directory.is_symlink()
+    assert (skill_directory / "SKILL.md").is_file()
+
+
+def test_scenario_workspace_rejects_unknown_project_skill(tmp_path):
+    workspace_directory = tmp_path / "workspace"
+    workspace_directory.mkdir()
+
+    with pytest.raises(ValueError, match="unknown project skill: unknown"):
+        setup_e2e_scenario_workspace(
+            {"setup": {"project_skills": ["unknown"]}}, workspace_directory
+        )
