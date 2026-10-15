@@ -132,6 +132,9 @@ def owned_fleet(transport_package, monkeypatch):
                 return subprocess.CompletedProcess(arguments, 1, "", "agent_blocked")
             if target.ignore_submission:
                 target.draft += arguments[3]
+                return subprocess.CompletedProcess(
+                    arguments, 1, "", "agent_prompt_stalled"
+                )
             else:
                 target.submitted.append(arguments[3])
                 target.status = "working"

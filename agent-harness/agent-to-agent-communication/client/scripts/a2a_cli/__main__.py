@@ -72,13 +72,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
 
     notify_parser = subcommands.add_parser(
         "notify",
-        help="queue untrusted peer data for delivery when the agent is idle",
+        help="queue peer messages for delivery when the agent is idle",
     )
     notify_parser.add_argument("agent", help="current peer name or stable paneId")
     notify_parser.add_argument("text")
-    notify_parser.add_argument(
-        "--sender", required=True, help="unauthenticated sender claim"
-    )
+    notify_parser.add_argument("--sender", required=True, help="sender name")
     notify_parser.set_defaults(handler=command_notify)
 
     inbox_parser = subcommands.add_parser(

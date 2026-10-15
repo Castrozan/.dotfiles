@@ -25,8 +25,6 @@ def test_notification_submission_uses_the_mailbox_and_preserves_sender_claim_and
         requests.append((method, url, payload))
         return 202, {
             "id": "notification",
-            "trust": "untrusted_peer_data",
-            "ownerPermission": False,
         }
 
     monkeypatch.setattr(peer_transport, "request_peer_json", record)
@@ -38,7 +36,7 @@ def test_notification_submission_uses_the_mailbox_and_preserves_sender_claim_and
             {"claimedSender": "Semiramis", "content": "Enter\nC-c"},
         )
     ]
-    assert receipt["ownerPermission"] is False
+    assert receipt == {"id": "notification"}
 
 
 @pytest.mark.parametrize("status", [400, 413, 429, 503])
@@ -78,7 +76,7 @@ def test_notify_requires_an_explicit_sender_claim():
         build_argument_parser().parse_args(["notify", "owned-pane", "result"])
 
 
-def test_inbox_output_escapes_untrusted_terminal_control_sequences(monkeypatch, capsys):
+def test_inbox_output_escapes_terminal_control_sequences(monkeypatch, capsys):
     monkeypatch.setattr(
         commands, "read_peer_inbox", lambda _: {"content": "\x1b]0;forged\x07"}
     )

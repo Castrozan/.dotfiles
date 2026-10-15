@@ -1,5 +1,3 @@
-import json
-
 from a2a_test_client import request_json
 
 
@@ -14,10 +12,9 @@ def test_observation_delivers_queued_notifications_when_idle(
     )
     observe_fleet()
     assert len(owned_fleet.target.submitted) == 1
-    envelope = json.loads(owned_fleet.target.submitted[0].split("\n", 1)[1])
-    batch = json.loads(envelope["content"])
-    assert batch["messages"] == [notification]
-    assert envelope["ownerPermission"] is False
+    assert owned_fleet.target.submitted[0] == "From peer:\nresult\nEnter C-c"
+    assert "trust" not in notification
+    assert "ownerPermission" not in notification
     assert (
         request_json(owned_fleet, "GET", "/agents/owned-peer/messages")[1]["messages"]
         == []

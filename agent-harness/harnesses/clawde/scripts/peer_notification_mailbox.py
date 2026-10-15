@@ -10,7 +10,7 @@ MAXIMUM_NOTIFICATION_REQUEST_BYTES = 8192
 @dataclasses.dataclass(frozen=True)
 class PeerNotificationInput:
     claimed_sender: str
-    untrusted_content: str
+    content: str
 
 
 @dataclasses.dataclass(frozen=True)
@@ -18,7 +18,7 @@ class PeerNotification:
     identifier: str
     recipient_pane_id: str
     claimed_sender: str
-    untrusted_content: str
+    content: str
     created_at_epoch_seconds: float
 
     def to_json_serializable_dict(self) -> dict:
@@ -26,10 +26,8 @@ class PeerNotification:
             "id": self.identifier,
             "recipientPaneId": self.recipient_pane_id,
             "claimedSender": self.claimed_sender,
-            "content": self.untrusted_content,
+            "content": self.content,
             "createdAt": self.created_at_epoch_seconds,
-            "trust": "untrusted_peer_data",
-            "ownerPermission": False,
         }
 
 
@@ -52,7 +50,7 @@ class PeerNotificationMailbox:
                 identifier=str(uuid.uuid4()),
                 recipient_pane_id=self._recipient_pane_id,
                 claimed_sender=notification_input.claimed_sender,
-                untrusted_content=notification_input.untrusted_content,
+                content=notification_input.content,
                 created_at_epoch_seconds=time.time(),
             )
             self._unread_notifications_by_identifier[notification.identifier] = (

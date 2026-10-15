@@ -19,8 +19,8 @@ def test_busy_callbacks_preserve_the_draft_and_do_not_replace_or_cancel_work(
         {"claimedSender": "Semiramis", "content": "clearance callback\nEnter C-c"},
     )
     assert notification_status == 202
-    assert notification["trust"] == "untrusted_peer_data"
-    assert notification["ownerPermission"] is False
+    assert "trust" not in notification
+    assert "ownerPermission" not in notification
     assert request_json(owned_fleet, "GET", "/agents/owned-peer/messages")[1][
         "messages"
     ] == [notification]

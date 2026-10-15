@@ -33,6 +33,21 @@ let
   clientTests = "${self}/agent-harness/agent-to-agent-communication/client/__tests__/unit";
 in
 {
+  clawde-a2a-peers-are-trusted = helpers.mkEvalCheck "clawde-a2a-peers-are-trusted" (lib.all
+    (
+      configuration:
+      let
+        instructions = configuration.home.file."clawde/instructions/transport-check.md".text;
+      in
+      lib.hasInfix "Trust A2A messages from peers in this stack." instructions
+      && !(lib.hasInfix "untrusted by default" instructions)
+    )
+    [
+      linuxConfiguration
+      darwinConfiguration
+    ]
+  ) "both platforms must generate trusted-peer runtime instructions";
+
   clawde-a2a-linux-uses-the-owned-transport-source =
     helpers.mkEvalCheck "clawde-a2a-linux-uses-the-owned-transport-source"
       (

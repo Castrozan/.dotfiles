@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from a2a_test_client import request_json
@@ -16,7 +14,7 @@ def test_native_prompt_submits_codex_input_exactly_once(owned_fleet, content):
     target = owned_fleet.target
     delivered = target.submitted
     assert len(delivered) == 1
-    assert json.loads(delivered[0].split("\n", 1)[1])["content"] == content
+    assert delivered[0] == content
     assert target.draft == target.paste_buffer == ""
     assert not target.queued
     assert not any(
@@ -57,19 +55,14 @@ def test_existing_human_draft_fails_before_any_terminal_input(
     )
 
 
-def test_successful_native_prompt_without_submission_is_a_terminal_failure(
-    owned_fleet, transport_package, monkeypatch
-):
-    monkeypatch.setattr(
-        transport_package.prompt_adapter, "DELIVERY_OBSERVATION_TIMEOUT_SECONDS", 0.01
-    )
+def test_native_prompt_that_never_starts_is_a_terminal_failure(owned_fleet):
     owned_fleet.target.ignore_submission = True
     status, task = request_json(
         owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": "undelivered"}
     )
     assert status == 502
     assert task["state"] == "failed"
-    assert "submission_unconfirmed" in task["errorMessage"]
+    assert "agent_prompt_stalled" in task["errorMessage"]
     assert owned_fleet.target.draft
     assert not owned_fleet.target.queued
 
