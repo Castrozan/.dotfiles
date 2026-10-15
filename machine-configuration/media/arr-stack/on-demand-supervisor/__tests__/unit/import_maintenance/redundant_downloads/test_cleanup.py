@@ -103,7 +103,7 @@ def test_transport_failure_preserves_download(monkeypatch, completed_pack, run_c
         )
 
 
-def test_sweep_deduplicates_and_bounds_work(monkeypatch, completed_pack, run_cleanup):
+def test_sweep_deduplicates_and_bounds_work(monkeypatch, completed_pack, tmp_path):
     record = completed_pack[0]
     records = [record] * 13 + [
         dict(record, downloadId=f"{number:040x}") for number in range(5)
@@ -117,7 +117,12 @@ def test_sweep_deduplicates_and_bounds_work(monkeypatch, completed_pack, run_cle
         lambda base, key, value, dry: selected.append(value["downloadId"]) or True,
     )
     cleanup.maybe_cleanup_redundant_downloads(
-        {"sonarr_url": "url", "sonarr_config_file": "xml"}, 0, False
+        {
+            "sonarr_url": "url",
+            "sonarr_config_file": "xml",
+            "state_file_path": str(tmp_path / "last-active"),
+        },
+        False,
     )
     assert len(selected) == len(set(selected)) == 2
 

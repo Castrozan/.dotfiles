@@ -40,7 +40,7 @@ def test_cleanup_runs_before_import_repair_and_respects_disk_guard(monkeypatch):
 
 @pytest.mark.parametrize("failure", [OSError, ValueError, KeyError, TypeError])
 def test_failed_verification_does_not_block_other_downloads(
-    monkeypatch, completed_pack, failure
+    monkeypatch, completed_pack, tmp_path, failure
 ):
     record = completed_pack[0]
     records = [record, dict(record, downloadId="b" * 40)]
@@ -54,14 +54,24 @@ def test_failed_verification_does_not_block_other_downloads(
 
     monkeypatch.setattr(cleanup, "remove_redundant_download", remove)
     cleanup.maybe_cleanup_redundant_downloads(
-        {"sonarr_url": "url", "sonarr_config_file": "xml"}, 0, False
+        {
+            "sonarr_url": "url",
+            "sonarr_config_file": "xml",
+            "state_file_path": str(tmp_path / "last-active"),
+        },
+        False,
     )
     assert calls == ["a" * 40, "b" * 40]
 
 
-def test_bounded_sweep_rotates_past_unresolvable_packs(monkeypatch, completed_pack):
+@pytest.mark.parametrize("queue_count", [3, 5, 6])
+@pytest.mark.parametrize("poll_seconds", [60, 180])
+def test_bounded_sweep_rotates_past_unresolvable_packs(
+    monkeypatch, completed_pack, tmp_path, queue_count, poll_seconds
+):
     records = [
-        dict(completed_pack[0], downloadId=f"{number:040x}") for number in range(5)
+        dict(completed_pack[0], downloadId=f"{number:040x}")
+        for number in range(queue_count)
     ]
     monkeypatch.setattr(cleanup, "read_arr_api_key_from_config_xml", lambda path: "key")
     monkeypatch.setattr(cleanup, "queued_records", lambda *args: records)
@@ -71,9 +81,17 @@ def test_bounded_sweep_rotates_past_unresolvable_packs(monkeypatch, completed_pa
         "remove_redundant_download",
         lambda base, key, value, dry: selected.append(value["downloadId"]) or False,
     )
-    for now_epoch in (0, 60, 120):
-        cleanup.maybe_cleanup_redundant_downloads(
-            {"sonarr_url": "url", "sonarr_config_file": "xml"}, now_epoch, False
+    attempts = (queue_count + 1) // 2
+    monkeypatch.setattr(maintenance, "maybe_repair_blocked_imports", lambda *args: None)
+    for now_epoch in range(0, poll_seconds * attempts, poll_seconds):
+        maintenance.maintain_blocked_imports(
+            {
+                "sonarr_url": "url",
+                "sonarr_config_file": "xml",
+                "state_file_path": str(tmp_path / "last-active"),
+            },
+            now_epoch,
+            False,
         )
-    assert len(selected) == 6
-    assert len(set(selected)) == 5
+    assert len(selected) == 2 * attempts
+    assert len(set(selected)) == queue_count

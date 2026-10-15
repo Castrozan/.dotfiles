@@ -1,5 +1,6 @@
 from functools import partial
 import json
+from pathlib import Path
 from urllib.parse import urlencode
 from xml.etree.ElementTree import ParseError
 
@@ -11,10 +12,9 @@ from import_repair.redundant_downloads.filesystem import (
     source_files_verified,
 )
 from import_repair.redundant_downloads.validation import validated_download
+from import_repair.redundant_downloads.selection import select_downloads
 from missing_search_api import queued_records
 from runtime_environment import log, read_arr_api_key_from_config_xml
-
-MAX_DOWNLOADS_PER_TICK = 2
 
 
 def read_json(base_url, api_key, path):
@@ -80,26 +80,8 @@ def remove_redundant_download(base_url, api_key, record, dry_run):
     return remove_from_queue(base_url, api_key, record, len(download.episode_files))
 
 
-def unique_redundant_downloads(records):
-    return {
-        record["downloadId"].lower(): record
-        for record in records
-        if eligible_record(record)
-    }
-
-
-def rotating_downloads(records, now_epoch):
-    downloads = unique_redundant_downloads(records or [])
-    identities = sorted(downloads)
-    if not identities:
-        return []
-    offset = int(now_epoch // 60) * MAX_DOWNLOADS_PER_TICK % len(identities)
-    identities = identities[offset:] + identities[:offset]
-    return [downloads[identity] for identity in identities[:MAX_DOWNLOADS_PER_TICK]]
-
-
-def cleanup_queued_downloads(base_url, api_key, records, now_epoch, dry_run):
-    for record in rotating_downloads(records, now_epoch):
+def cleanup_queued_downloads(base_url, api_key, records, state_path, dry_run):
+    for record in select_downloads(records, state_path, dry_run):
         try:
             remove_redundant_download(base_url, api_key, record, dry_run)
         except (OSError, ValueError, KeyError, TypeError, ParseError):
@@ -108,11 +90,15 @@ def cleanup_queued_downloads(base_url, api_key, records, now_epoch, dry_run):
             )
 
 
-def maybe_cleanup_redundant_downloads(configuration, now_epoch, dry_run):
+def maybe_cleanup_redundant_downloads(configuration, dry_run):
+    state_file = configuration.get("state_file_path")
+    if not state_file:
+        return
     try:
+        state_path = Path(state_file).with_name("redundant-download-cursor")
         api_key = read_arr_api_key_from_config_xml(configuration["sonarr_config_file"])
         base_url = configuration["sonarr_url"]
         records = queued_records(base_url, api_key)
-        cleanup_queued_downloads(base_url, api_key, records, now_epoch, dry_run)
+        cleanup_queued_downloads(base_url, api_key, records, state_path, dry_run)
     except (OSError, ValueError, KeyError, TypeError, ParseError):
-        log("redundant-download: Sonarr unavailable; deferring")
+        log("redundant-download: maintenance unavailable; deferring")
