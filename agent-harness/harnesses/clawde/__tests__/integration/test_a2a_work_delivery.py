@@ -1,4 +1,3 @@
-import json
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -17,10 +16,16 @@ def test_work_dispatch_and_a_busy_target_keep_one_task(owned_fleet):
         if command[:2] == ["agent", "prompt"]
     )
     assert invocation[:3] == ["agent", "prompt", "owned-pane"]
-    frame = json.loads(invocation[3].split("\n", 1)[1])
-    assert frame["content"] == "Enter\nC-c"
-    assert frame["trust"] == "untrusted_peer_data"
-    assert frame["ownerPermission"] is False
+    assert invocation[3] == "Enter\nC-c"
+    assert invocation[4:] == [
+        "--wait",
+        "--until",
+        "working",
+        "--until",
+        "blocked",
+        "--timeout",
+        "2000",
+    ]
     session = owned_fleet.registry.session_named("owned-peer")
     session.backend._last_activity_at_epoch_seconds = time.time() - 60
     session.task_store.get_task(first["id"]).created_at_epoch_seconds -= 60

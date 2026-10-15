@@ -1,7 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
 
-import json
-
 from a2a_test_client import request_json
 
 
@@ -48,10 +46,14 @@ def test_batch_is_bounded_and_preserves_later_arrivals(
 
     monkeypatch.setattr(session.backend, "send_input_text", send_and_publish)
     observe_fleet()
-    envelope = json.loads(owned_fleet.target.submitted[0].split("\n", 1)[1])
-    assert len(envelope["content"].encode()) <= 32768
-    delivered = json.loads(envelope["content"])["messages"]
-    assert 0 < len(delivered) < len(notifications)
+    content = owned_fleet.target.submitted[0]
+    assert len(content.encode()) <= 32768
+    delivered_count = content.count("From peer:\n")
+    delivered = notifications[:delivered_count]
+    assert 0 < delivered_count < len(notifications)
+    assert content == "\n\n".join(
+        f"From peer:\n{message['content']}" for message in delivered
+    )
     unread = request_json(owned_fleet, "GET", "/agents/owned-peer/messages")[1][
         "messages"
     ]
@@ -108,11 +110,8 @@ def test_explicit_work_cannot_submit_during_notification_delivery(
 
 
 def test_unconfirmed_submission_keeps_the_message_and_occupied_composer(
-    owned_fleet, observe_fleet, transport_package, monkeypatch
+    owned_fleet, observe_fleet
 ):
-    monkeypatch.setattr(
-        transport_package.prompt_adapter, "DELIVERY_OBSERVATION_TIMEOUT_SECONDS", 0.01
-    )
     _, notification = request_json(
         owned_fleet,
         "POST",

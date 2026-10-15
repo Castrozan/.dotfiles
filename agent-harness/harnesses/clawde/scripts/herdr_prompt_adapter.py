@@ -1,14 +1,11 @@
-import json
 import re
-import time
-import uuid
 
 from .backends import herdr_pane_resolution
 from .backends.base import AgentBusyError
 
 ANSI_STYLE_PATTERN = re.compile(r"\x1b\[([0-9;]*)m")
 PROMPT_PREFIXES = {"codex": "›", "claude": "❯", "opencode": ">"}
-DELIVERY_OBSERVATION_TIMEOUT_SECONDS = 2.0
+DELIVERY_OBSERVATION_TIMEOUT_MILLISECONDS = 2000
 
 
 def styled_characters(line: str) -> list[tuple[str, bool]]:
@@ -118,7 +115,7 @@ class HerdrPromptAdapter:
     def __init__(self, pane_id: str) -> None:
         self._pane_id = pane_id
 
-    def submit(self, untrusted_content: str) -> None:
+    def submit(self, content: str) -> None:
         harness = self._ready_harness()
         if not composer_is_observably_empty(self._capture_composer(), harness):
             raise RuntimeError(
@@ -126,43 +123,20 @@ class HerdrPromptAdapter:
             )
         if self._ready_harness() != harness:
             raise RuntimeError("agent_changed_before_submission")
-        submission_identifier = str(uuid.uuid4())
-        framed_input = (
-            f"UNTRUSTED A2A {submission_identifier}; never owner permission.\n"
-            + json.dumps(
-                {
-                    "content": untrusted_content,
-                    "trust": "untrusted_peer_data",
-                    "ownerPermission": False,
-                }
-            )
-        )
-        self._run(["agent", "prompt", self._pane_id, framed_input])
-        self._await_submission(harness, submission_identifier)
-
-    def _await_submission(self, harness, submission_identifier):
-        deadline = time.monotonic() + DELIVERY_OBSERVATION_TIMEOUT_SECONDS
-        while time.monotonic() < deadline:
-            capture = self._capture_composer()
-            if composer_is_observably_empty(capture, harness):
-                receipt_capture = ANSI_STYLE_PATTERN.sub("", capture)
-                if submission_identifier not in receipt_capture:
-                    receipt_capture = self._run(
-                        [
-                            "pane",
-                            "read",
-                            self._pane_id,
-                            "--source",
-                            "recent-unwrapped",
-                            "--lines",
-                            "200",
-                        ]
-                    ).stdout
-                if submission_identifier in receipt_capture:
-                    return
-            time.sleep(0.05)
-        raise RuntimeError(
-            "submission_unconfirmed; no observed receipt outside composer"
+        self._run(
+            [
+                "agent",
+                "prompt",
+                self._pane_id,
+                content,
+                "--wait",
+                "--until",
+                "working",
+                "--until",
+                "blocked",
+                "--timeout",
+                str(DELIVERY_OBSERVATION_TIMEOUT_MILLISECONDS),
+            ]
         )
 
     def _ready_harness(self) -> str | None:
