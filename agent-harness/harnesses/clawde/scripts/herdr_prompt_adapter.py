@@ -57,9 +57,10 @@ def composer_is_observably_empty(capture: str, harness: str) -> bool:
     prompt_index = _last_prompt_index(rows, prefix)
     if prompt_index is None:
         return False
-    return _prompt_content_is_empty(
-        rows[prompt_index], prefix, harness
-    ) and _prompt_has_blank_neighbors(rows, prompt_index)
+    return _prompt_content_is_empty(rows[prompt_index], prefix, harness) and (
+        _prompt_has_blank_neighbors(rows, prompt_index)
+        or (harness == "claude" and _prompt_has_claude_borders(rows, prompt_index))
+    )
 
 
 def _last_prompt_index(rows, prefix):
@@ -103,6 +104,14 @@ def _prompt_has_blank_neighbors(rows, prompt_index):
 
 def _row_is_blank(row):
     return not any(character.strip() for character, _ in row)
+
+
+def _prompt_has_claude_borders(rows, prompt_index):
+    if prompt_index == 0 or prompt_index + 1 >= len(rows):
+        return False
+    before = "".join(character for character, _ in rows[prompt_index - 1]).strip()
+    after = "".join(character for character, _ in rows[prompt_index + 1]).strip()
+    return len(before) >= 3 and set(before) == {"─"} and before == after
 
 
 class HerdrPromptAdapter:

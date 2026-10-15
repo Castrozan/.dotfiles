@@ -65,6 +65,8 @@ in
           ${harnessTests}/integration/test_busy_work_rejection.py \
           ${harnessTests}/integration/test_task_non_regression.py \
           ${harnessTests}/integration/test_a2a_mailbox_delivery.py \
+          ${harnessTests}/integration/test_a2a_notification_delivery.py \
+          ${harnessTests}/integration/test_a2a_notification_delivery_failures.py \
           ${harnessTests}/integration/test_a2a_notification_requests.py \
           ${harnessTests}/integration/test_a2a_notification_commands.py \
           ${harnessTests}/unit/test_peer_notification_mailbox.py \
