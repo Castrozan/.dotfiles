@@ -56,6 +56,9 @@ def transport_package():
             f"{package_name}.fleet.request_router"
         ).FleetRequestRouter,
         http=importlib.import_module(f"{package_name}.fleet.http_handler"),
+        observation_loop=importlib.import_module(
+            f"{package_name}.fleet.observation_loop"
+        ),
     )
 
 
@@ -160,3 +163,17 @@ def owned_fleet(transport_package, monkeypatch):
         worker.join(timeout=2)
         server.server_close()
         assert not worker.is_alive()
+
+
+@pytest.fixture
+def observe_fleet(owned_fleet, transport_package, monkeypatch):
+    discovery = transport_package.observation_loop.discovery
+    monkeypatch.setattr(
+        discovery, "read_agent_panes_from_the_live_fleet", lambda: [owned_fleet.pane]
+    )
+    monkeypatch.setattr(
+        discovery, "read_tab_labels_by_tab_id", lambda: {"owned-tab": "owned-peer"}
+    )
+    return transport_package.observation_loop.FleetObservationLoop(
+        owned_fleet.registry
+    ).run_one_pass
