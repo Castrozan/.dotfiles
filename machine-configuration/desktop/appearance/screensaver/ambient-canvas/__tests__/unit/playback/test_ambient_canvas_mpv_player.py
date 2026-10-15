@@ -80,6 +80,7 @@ def test_mpv_arguments_pin_the_window_title_and_screensaver_flags():
     assert "--force-window=yes" in arguments
     assert "--title=ambient-canvas-gpu-screensaver" in arguments
     assert "--audio=no" in arguments
+    assert "--pause" in arguments
     assert "--input-ipc-server=/tmp/ambient-canvas.sock" in arguments
     assert "--vo=gpu" in arguments
     assert "--gpu-context=wayland" in arguments
