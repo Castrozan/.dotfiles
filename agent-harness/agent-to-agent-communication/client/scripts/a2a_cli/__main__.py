@@ -72,7 +72,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
 
     notify_parser = subcommands.add_parser(
         "notify",
-        help="queue untrusted peer data without typing or starting a work task",
+        help="queue untrusted peer data for delivery when the agent is idle",
     )
     notify_parser.add_argument("agent", help="current peer name or stable paneId")
     notify_parser.add_argument("text")

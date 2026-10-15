@@ -210,3 +210,31 @@
 +                        )
 +                    )
 +                    return
+--- a/a2a_server/active_task_coordinator.py
++++ b/a2a_server/active_task_coordinator.py
+@@ -59,0 +60,13 @@
++
++    def deliver_notification_if_idle(self, input_text: str) -> bool:
++        with self._lock:
++            if (
++                self._active_task_id is not None
++                and not self._task_store.is_task_in_terminal_state(self._active_task_id)
++            ):
++                return False
++            try:
++                self._agent_backend.send_input_text(input_text)
++            except Exception:
++                return False
++            return True
+--- a/a2a_server/fleet/session.py
++++ b/a2a_server/fleet/session.py
+@@ -3,0 +4 @@
++from ..peer_notification_delivery import PeerNotificationDelivery
+@@ -29,0 +31,3 @@
++        self.notification_delivery = PeerNotificationDelivery(
++            notification_mailbox, self.coordinator
++        )
+--- a/a2a_server/fleet/observation_loop.py
++++ b/a2a_server/fleet/observation_loop.py
+@@ -36,0 +37 @@
++            session.notification_delivery.flush_once()
