@@ -28,7 +28,10 @@ def test_cleanup_runs_before_import_repair_and_respects_disk_guard(monkeypatch):
         "maybe_repair_blocked_imports",
         lambda *args: calls.append("repair"),
     )
-    maintain = lambda: maintenance.maintain_blocked_imports({}, 1000, False)
+
+    def maintain():
+        maintenance.maintain_blocked_imports({}, 1000, False)
+
     repair.maybe_repair_if_unblocked(["qbittorrent"], maintain)
     assert calls == []
     repair.maybe_repair_if_unblocked([], maintain)

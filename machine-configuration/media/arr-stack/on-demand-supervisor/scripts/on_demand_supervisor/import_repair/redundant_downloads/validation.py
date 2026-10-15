@@ -1,9 +1,13 @@
-import re
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 
+from import_repair.redundant_downloads.eligibility import (
+    positive_identifier,
+    redundant_reasons,
+    scoped_path,
+)
+
 MAX_CANDIDATES = 200
-NOT_AN_UPGRADE = "Not an upgrade for existing episode file(s)."
 
 
 @dataclass(frozen=True)
@@ -12,82 +16,76 @@ class RedundantEpisodeDownload:
     episode_files: dict
 
 
-def scoped_path(value, root):
-    if not isinstance(value, str) or not value:
+def candidate_source_path(record, candidate):
+    path = scoped_path(candidate.get("path"), "/data/torrents")
+    if path is None:
         return None
-    path = PurePosixPath(value)
-    if (
-        ".." in path.parts
-        or not path.is_relative_to(root)
-        or path == PurePosixPath(root)
-    ):
+    output_path = PurePosixPath(record["outputPath"])
+    if path != output_path and path.parent != output_path:
         return None
     return path
 
 
-def positive_identifier(value):
-    return type(value) is int and value > 0
-
-
-def redundant_reasons(reasons):
-    return bool(reasons) and all(
-        isinstance(reason, str) and reason.startswith(NOT_AN_UPGRADE)
-        for reason in reasons
-    )
-
-
-def eligible_record(record):
-    reasons = [
-        message
-        for status in record.get("statusMessages", [])
-        for message in status.get("messages", [])
-    ]
+def candidate_identity_matches(record, candidate):
     return (
-        positive_identifier(record.get("id"))
-        and positive_identifier(record.get("seriesId"))
-        and re.fullmatch(
-            r"[a-fA-F0-9]{40}|[a-fA-F0-9]{64}", record.get("downloadId") or ""
-        )
-        and record.get("status") == "completed"
-        and record.get("trackedDownloadState") == "importBlocked"
-        and record.get("sizeleft") == 0
-        and scoped_path(record.get("outputPath"), "/data/torrents") is not None
-        and redundant_reasons(reasons)
+        candidate.get("downloadId", "").lower() == record["downloadId"].lower()
+        and (candidate.get("series") or {}).get("id") == record["seriesId"]
+        and positive_identifier(candidate.get("size"))
     )
+
+
+def candidate_rejections_are_redundant(candidate):
+    rejections = candidate.get("rejections") or []
+    return redundant_reasons([item.get("reason") for item in rejections]) and all(
+        item.get("type") == "permanent" for item in rejections
+    )
+
+
+def existing_episode_is_identified(episode, series_id):
+    return (
+        episode.get("seriesId") == series_id
+        and episode.get("hasFile") is True
+        and positive_identifier(episode.get("id"))
+        and positive_identifier(episode.get("episodeFileId"))
+    )
+
+
+def candidate_episode_files(candidate, series_id):
+    episodes = candidate.get("episodes", [])
+    if not episodes:
+        return None
+    if not all(
+        existing_episode_is_identified(episode, series_id) for episode in episodes
+    ):
+        return None
+    return {episode["id"]: episode["episodeFileId"] for episode in episodes}
+
+
+def candidate_metadata_is_redundant(record, candidate):
+    return candidate_identity_matches(
+        record, candidate
+    ) and candidate_rejections_are_redundant(candidate)
+
+
+def add_validated_candidate(record, candidate, download):
+    path = candidate_source_path(record, candidate)
+    if path is None or path in download.source_files:
+        return False
+    if not candidate_metadata_is_redundant(record, candidate):
+        return False
+    episodes = candidate_episode_files(candidate, record["seriesId"])
+    if episodes is None:
+        return False
+    download.source_files[path] = candidate["size"]
+    download.episode_files.update(episodes)
+    return True
 
 
 def validated_download(record, candidates):
     if not candidates or len(candidates) > MAX_CANDIDATES:
         return None
-    output_path = PurePosixPath(record["outputPath"])
-    source_files = {}
-    episode_files = {}
+    download = RedundantEpisodeDownload({}, {})
     for candidate in candidates:
-        path = scoped_path(candidate.get("path"), "/data/torrents")
-        if path is None or (path != output_path and path.parent != output_path):
+        if not add_validated_candidate(record, candidate, download):
             return None
-        if path in source_files or not positive_identifier(candidate.get("size")):
-            return None
-        if candidate.get("downloadId", "").lower() != record["downloadId"].lower():
-            return None
-        if (candidate.get("series") or {}).get("id") != record["seriesId"]:
-            return None
-        rejections = candidate.get("rejections") or []
-        if not redundant_reasons([item.get("reason") for item in rejections]):
-            return None
-        if any(item.get("type") != "permanent" for item in rejections):
-            return None
-        episodes = candidate.get("episodes") or []
-        if not episodes:
-            return None
-        for episode in episodes:
-            if (
-                episode.get("seriesId") != record["seriesId"]
-                or episode.get("hasFile") is not True
-                or not positive_identifier(episode.get("id"))
-                or not positive_identifier(episode.get("episodeFileId"))
-            ):
-                return None
-            episode_files[episode["id"]] = episode["episodeFileId"]
-        source_files[path] = candidate["size"]
-    return RedundantEpisodeDownload(source_files, episode_files)
+    return download
