@@ -119,3 +119,28 @@ def test_sweep_deduplicates_and_bounds_work(monkeypatch, completed_pack, run_cle
         {"sonarr_url": "url", "sonarr_config_file": "xml"}, 0, False
     )
     assert len(selected) == len(set(selected)) == 2
+
+
+def test_private_library_files_are_verified(completed_pack, run_cleanup):
+    for file in completed_pack[3]:
+        file["path"] = file["path"].replace("/media/tv/", "/media/tv-private/")
+    directories = completed_pack[4]
+    original = "/data/media/tv/Solo Leveling/Season 2/"
+    contents = directories.pop(original)
+    for file in contents["files"]:
+        file["path"] = file["path"].replace("/media/tv/", "/media/tv-private/")
+    directories[original.replace("/media/tv/", "/media/tv-private/")] = contents
+    removed, calls = run_cleanup()
+    assert removed
+    assert calls[-1][0] == "DELETE"
+
+
+def test_single_episode_removal_preserves_neighboring_downloads(
+    completed_pack, run_cleanup
+):
+    record, candidates, _, _, _ = completed_pack
+    record["outputPath"] = candidates[0]["path"]
+    del candidates[1:]
+    removed, calls = run_cleanup()
+    assert removed
+    assert calls[-1][0] == "DELETE"

@@ -64,7 +64,7 @@ def library_files_verified(record, download, read):
         ):
             return False
         file = files.get(file_id, {})
-        path = scoped_path(file.get("path"), "/data/media/tv")
+        path = scoped_path(file.get("path"), "/data/media")
         if (
             path is None
             or file.get("seriesId") != record["seriesId"]
