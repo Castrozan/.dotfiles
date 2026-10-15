@@ -55,6 +55,7 @@ def build_mpv_arguments(socket_path):
         "--no-input-default-bindings",
         f"--input-conf={MPV_INPUT_CONFIGURATION_PATH}",
         "--idle",
+        "--pause",
         "--loop-file=no",
     ]
 
@@ -113,7 +114,7 @@ def run_player(segment_manifest_path, playback_dwell_override_path):
     mpv_client = MpvIpcClient(socket_path).connect()
 
     visibility_controller = VisibilityGatedPlaybackController(
-        mpv_client, TARGET_WORKSPACE_ID
+        mpv_client, mpv_process.pid, TARGET_WORKSPACE_ID
     )
     visibility_controller.start()
 
