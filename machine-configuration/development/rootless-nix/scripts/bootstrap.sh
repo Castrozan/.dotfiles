@@ -9,6 +9,7 @@ version=2.35.3
 archive="nix-${version}-x86_64-linux.tar.xz"
 sha256=6ce3ce3703fdc241b560cba401c5d338042122fe5b1a81e07bf1a623f259eba0
 for tool in bwrap python3 curl tar sha256sum git; do command -v "$tool" >/dev/null; done
+git -C ../../../.. rev-parse --show-toplevel >/dev/null
 [[ $(uname -m) == x86_64 && $(uname -s) == Linux ]]
 mkdir -p "$DOT_ROOT/downloads" "$DOT_ROOT/config/nix"
 cat > "$DOT_ROOT/config/nix/nix.conf" <<'EOF'
@@ -16,6 +17,8 @@ experimental-features = nix-command flakes
 sandbox = true
 sandbox-fallback = false
 build-users-group =
+max-jobs = 1
+cores = 2
 EOF
 if ! python3 run.py nix --version >/dev/null 2>&1; then
   curl --fail --location --retry 2 "https://releases.nixos.org/nix/nix-${version}/${archive}" -o "$DOT_ROOT/downloads/${archive}"

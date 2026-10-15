@@ -20,6 +20,10 @@ sha256sum, permitted unprivileged user/mount/PID namespaces, and access to GitHu
 releases.nixos.org and cache.nixos.org. Do not change security settings to work
 around platform denials. Bootstrap verifies the pinned Nix 2.35.3 archive checksum.
 
+Keep the Git checkout (including its `.git` metadata); source-only tarballs are not
+supported by this entry point. Nix reads the tracked source so runtime state never
+becomes part of the flake.
+
 The ignored `.runtime/` directory holds downloads, the physical Nix store,
 generated HOME, temporary files and the result link. Set `DOT_ROOT` to an absolute
 writable directory to keep state elsewhere; use the same value for all commands.
@@ -49,3 +53,10 @@ Repeat activation is supported. A clean runtime can be restored with the same
 activation command; downloaded binaries and generated HOME are never committed.
 Workspace persistence depends on the host platform. Keep this source in Git and
 restore after a reset. This profile does not verify the repository's other hosts.
+
+Build concurrency is bounded to one job and two cores. Budget several GiB for the
+store and additional headroom for downloads and builds; actual usage depends on
+the locked packages. Reuse the same runtime instead of making duplicate stores.
+Old Home Manager generations keep rollback paths alive. Review generations and
+Nix garbage-collection roots before explicitly removing anything; these scripts
+never run automatic garbage collection or delete previous generations.
