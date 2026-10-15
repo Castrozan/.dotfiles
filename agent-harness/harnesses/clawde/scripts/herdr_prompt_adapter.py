@@ -54,9 +54,14 @@ def composer_is_observably_empty(capture: str, harness: str) -> bool:
     prompt_index = _last_prompt_index(rows, prefix)
     if prompt_index is None:
         return False
-    return _prompt_content_is_empty(rows[prompt_index], prefix, harness) and (
-        _prompt_has_blank_neighbors(rows, prompt_index)
-        or (harness == "claude" and _prompt_has_claude_borders(rows, prompt_index))
+    return _prompt_content_is_empty(
+        rows[prompt_index], prefix, harness
+    ) and _prompt_has_empty_boundaries(rows, prompt_index, harness)
+
+
+def _prompt_has_empty_boundaries(rows, prompt_index, harness):
+    return _prompt_has_blank_neighbors(rows, prompt_index) or (
+        harness == "claude" and _prompt_has_claude_borders(rows, prompt_index)
     )
 
 
