@@ -17,4 +17,4 @@ decoding. Verify the actual codec and decoder when assessing YouTube resource us
 accepted only when real HEVC playback succeeds; a `canPlayType` result alone is insufficient.
 
 Chromium's Linux VA-API documentation describes the decoder and its verification:
-https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gpu/vaapi.md
+<https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gpu/vaapi.md>
