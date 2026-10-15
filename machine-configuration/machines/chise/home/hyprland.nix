@@ -8,5 +8,10 @@
     input {
       sensitivity = -0.9
     }
+
+    device {
+      name = dell0a6e:00-04f3:317e-touchpad
+      sensitivity = -0.59292234
+    }
   '';
 }
