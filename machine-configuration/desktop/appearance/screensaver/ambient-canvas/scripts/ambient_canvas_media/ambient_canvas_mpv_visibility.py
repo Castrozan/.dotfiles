@@ -60,38 +60,75 @@ def window_is_mapped(window):
     return window.get("mapped", False) and not window.get("hidden", True)
 
 
-def player_is_visible(clients, monitors, player_process_id, target_workspace_id):
-    player = next(
+def find_player_window(clients, player_process_id):
+    return next(
         (client for client in clients if client.get("pid") == player_process_id), None
     )
-    if player is None or not window_is_mapped(player):
+
+
+def player_is_mapped_on_workspace(player, target_workspace_id):
+    if player is None:
         return False
-    if player["workspace"]["id"] != target_workspace_id:
+    if not window_is_mapped(player):
+        return False
+    return player["workspace"]["id"] == target_workspace_id
+
+
+def monitor_is_displaying_workspace(monitor, target_workspace_id):
+    if monitor.get("disabled", False):
+        return False
+    if not monitor.get("dpmsStatus", True):
+        return False
+    return monitor["activeWorkspace"]["id"] == target_workspace_id
+
+
+def client_is_fullscreen_on_workspaces(client, workspace_ids):
+    if not window_is_mapped(client):
+        return False
+    if client.get("fullscreen", 0) == 0:
+        return False
+    return client["workspace"]["id"] in workspace_ids
+
+
+def visible_rectangle_is_covered(
+    clients, player_process_id, workspace_ids, visible_rectangle
+):
+    return any(
+        client.get("pid") != player_process_id
+        and client_is_fullscreen_on_workspaces(client, workspace_ids)
+        and window_rectangle(client).contains(visible_rectangle)
+        for client in clients
+    )
+
+
+def monitor_shows_uncovered_player(
+    monitor, clients, player_rectangle, player_process_id, target_workspace_id
+):
+    if not monitor_is_displaying_workspace(monitor, target_workspace_id):
+        return False
+    visible_rectangle = player_rectangle.intersection(monitor_rectangle(monitor))
+    if visible_rectangle is None:
+        return False
+    workspace_ids = {
+        target_workspace_id,
+        monitor.get("specialWorkspace", {}).get("id", 0),
+    }
+    return not visible_rectangle_is_covered(
+        clients, player_process_id, workspace_ids, visible_rectangle
+    )
+
+
+def player_is_visible(clients, monitors, player_process_id, target_workspace_id):
+    player = find_player_window(clients, player_process_id)
+    if not player_is_mapped_on_workspace(player, target_workspace_id):
         return False
     player_rectangle = window_rectangle(player)
-    for monitor in monitors:
-        if monitor.get("disabled", False) or not monitor.get("dpmsStatus", True):
-            continue
-        if monitor["activeWorkspace"]["id"] != target_workspace_id:
-            continue
-        visible_rectangle = player_rectangle.intersection(monitor_rectangle(monitor))
-        if visible_rectangle is None:
-            continue
-        visible_workspaces = {
-            target_workspace_id,
-            monitor.get("specialWorkspace", {}).get("id", 0),
-        }
-        covered = any(
-            client.get("pid") != player_process_id
-            and window_is_mapped(client)
-            and client.get("fullscreen", 0) != 0
-            and client["workspace"]["id"] in visible_workspaces
-            and window_rectangle(client).contains(visible_rectangle)
-            for client in clients
+    return any(
+        monitor_shows_uncovered_player(
+            monitor, clients, player_rectangle, player_process_id, target_workspace_id
         )
-        if not covered:
-            return True
-    return False
+        for monitor in monitors
+    )
 
 
 def resolve_player_visibility(player_process_id, target_workspace_id):
