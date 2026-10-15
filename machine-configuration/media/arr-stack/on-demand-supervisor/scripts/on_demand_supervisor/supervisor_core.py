@@ -3,7 +3,8 @@ from download_activity import arr_download_queue_active, arr_service_reachable
 import download_chain_control
 import jellyseerr_client
 from import_alerts import maybe_alert_blocked_imports
-from import_repair.repair import maybe_repair_blocked_imports, maybe_repair_if_unblocked
+from import_repair.maintenance import maintain_blocked_imports
+from import_repair.repair import maybe_repair_if_unblocked
 from missing_search_sweep import run_missing_search_sweep
 from mount_health_guard import enforce_data_mount_guard
 from runtime_environment import log, read_arr_api_key_from_config_xml
@@ -124,7 +125,7 @@ def run_supervisor_tick(configuration, now_epoch, dry_run):
     )
     maybe_repair_if_unblocked(
         held_down_services,
-        lambda: maybe_repair_blocked_imports(configuration, now_epoch, dry_run),
+        lambda: maintain_blocked_imports(configuration, now_epoch, dry_run),
     )
 
     if configuration["keep_chain_always_on"]:
