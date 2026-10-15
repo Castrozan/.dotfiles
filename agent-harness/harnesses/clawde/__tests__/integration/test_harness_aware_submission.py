@@ -118,3 +118,22 @@ def test_ambiguous_composer_and_color_values_cannot_pass_the_draft_guard(
     assert not transport_package.prompt_adapter.composer_is_observably_empty(
         capture, "codex"
     )
+
+
+@pytest.mark.parametrize(
+    "inside",
+    ["❯ unfinished", "❯ \ncontinued", "[Image #1]\n❯ ", "❯ \n[Image #1]"],
+)
+def test_claude_borders_do_not_hide_drafts_or_attachments(transport_package, inside):
+    capture = "─" * 80 + "\n" + inside + "\n" + "─" * 80
+    assert not transport_package.prompt_adapter.composer_is_observably_empty(
+        capture, "claude"
+    )
+
+
+def test_claude_ansi_borders_enclose_an_empty_composer(transport_package):
+    border = "\x1b[38;2;136;136;136m" + "─" * 80 + "\x1b[0m"
+    capture = border + "\n❯\u00a0\n" + border + "\nfooter"
+    assert transport_package.prompt_adapter.composer_is_observably_empty(
+        capture, "claude"
+    )

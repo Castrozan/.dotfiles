@@ -95,8 +95,12 @@ def owned_fleet(transport_package, monkeypatch):
                     draft = "\x1b[2mAsk Codex to do anything\x1b[0m"
                 delivered = target.queued + target.submitted
                 history = "\n".join(delivered)
+                boundary = "─" * 80 if target.harness == "claude" else ""
                 return subprocess.CompletedProcess(
-                    arguments, 0, f"{history}\n\n{prefix} {draft}\n\nfooter", ""
+                    arguments,
+                    0,
+                    f"{history}\n{boundary}\n{prefix} {draft}\n{boundary}\nfooter",
+                    "",
                 )
             return subprocess.CompletedProcess(arguments, 0, "", "")
         if arguments[:2] == ["pane", "send-text"]:
