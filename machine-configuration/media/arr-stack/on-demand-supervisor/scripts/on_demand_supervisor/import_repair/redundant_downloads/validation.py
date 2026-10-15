@@ -26,9 +26,17 @@ def candidate_source_path(record, candidate):
     return path
 
 
+def candidate_download_matches(record, candidate):
+    download_id = candidate.get("downloadId")
+    return (
+        isinstance(download_id, str)
+        and download_id.lower() == record["downloadId"].lower()
+    )
+
+
 def candidate_identity_matches(record, candidate):
     return (
-        candidate.get("downloadId", "").lower() == record["downloadId"].lower()
+        candidate_download_matches(record, candidate)
         and (candidate.get("series") or {}).get("id") == record["seriesId"]
         and positive_identifier(candidate.get("size"))
     )

@@ -46,6 +46,7 @@ def test_incomplete_unknown_or_unrelated_queue_items_are_untouched(
         lambda values: values[1][0].update(rejections=[]),
         lambda values: values[1][0]["rejections"].append({"reason": "Unknown series"}),
         lambda values: values[1][0].update(downloadId="b" * 40),
+        lambda values: values[1][0].update(downloadId=None),
         lambda values: values[1][0].update(series={"id": 99}),
         lambda values: values[1][0].update(episodes=[]),
         lambda values: values[1][0]["episodes"][0].update(hasFile=False),
