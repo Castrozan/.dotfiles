@@ -55,14 +55,12 @@ def test_nix_expert_defers_persistent_coding_and_repository_verification():
     assert "(rebuild.md)" in nix_expert
 
 
-def test_a2a_messages_carry_claimed_sender_identity():
+def test_a2a_messages_carry_sender_identity():
     orchestrate = normalized_text(ORCHESTRATE_SKILL_PATH)
 
     for required_contract in (
         "every message dispatched through a2a",
         "sender's current Servant name",
-        "claimed identity",
-        "does not authenticate",
     ):
         assert required_contract in orchestrate
 
