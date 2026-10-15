@@ -26,6 +26,14 @@ let
       chromePackage = pkgs.hello;
     }).chromeForMachine;
 
+  chromeAmdHardwareVideoDecoding =
+    import ../chrome/amd-hardware-video-decoding/chrome-amd-hardware-video-decoding.nix
+      {
+        inherit pkgs;
+        chromePackage = pkgs.hello;
+        mesaPackage = pkgs.hello;
+      };
+
   chromeLinuxPackage =
     hostname:
     import ../chrome/chrome-linux-package.nix {
@@ -39,8 +47,7 @@ in
 {
   domain-browser-chise-chrome-selects-amd-hardware-decoding =
     mkEvalCheck "domain-browser-chise-chrome-selects-amd-hardware-decoding"
-      (lib.hasInfix "google-chrome-with-amd-hardware-video-decoding" (chromeLinuxPackage "chise")
-      .postBuild)
+      (lib.head (chromeLinuxPackage "chise").drvAttrs.paths == toString chromeAmdHardwareVideoDecoding)
       "Chise's common Chrome package must compose the AMD hardware decoder beneath the ANGLE mipmap workaround";
 
   domain-browser-other-linux-hosts-preserve-video-decoding-policy =
