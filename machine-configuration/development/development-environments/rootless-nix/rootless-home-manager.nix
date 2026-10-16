@@ -14,6 +14,9 @@
       (import ../../../media/media-generation/speech-cloud-package.nix { inherit pkgs; })
     ]
     ++ (with pkgs; [
+      gh
+      openssh
+      age
       jq
       ripgrep
       fd

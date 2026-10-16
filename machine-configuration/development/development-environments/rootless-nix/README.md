@@ -36,7 +36,8 @@ Avoid using an existing personal HOME or an ancestor of the source as `DOT_ROOT`
 
 Nix builds use `sandbox = true` and `sandbox-fallback = false`. The bootstrap
 configuration has no build-users group because this is a single-user install.
-The profile has Bash completion, Git, jq, ripgrep, fd, bat, fzf, zoxide, tmux,
+The profile has Bash completion, Git, GitHub CLI, OpenSSH, age, jq, ripgrep, fd,
+bat, fzf, zoxide, tmux,
 nano, less, tree, transfer/archive utilities, Python 3.12, Node 22, ShellCheck,
 nixfmt and Home Manager. Login shells restore the managed package PATH after
 host `/etc/profile`. User systemd management is disabled.

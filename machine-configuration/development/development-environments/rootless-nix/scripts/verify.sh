@@ -7,6 +7,9 @@ set -eu
 nix --version
 home-manager --version
 git --version
+gh --version | head -1
+ssh -V
+age --version
 jq --version
 rg --version | head -1
 fd --version
