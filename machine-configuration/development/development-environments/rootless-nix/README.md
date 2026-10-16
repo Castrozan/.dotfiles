@@ -6,6 +6,13 @@ submodule is needed for `homeConfigurations.dot`.
 
 ## Restore from a public clone
 
+Before activation, place the already approved cloud age identity at
+`$DOT_ROOT/home/.config/age/keys.txt` with mode `0600`; create its parent directory
+with mode `0700`. The default `DOT_ROOT` is the scripts directory's sibling
+`.runtime`. Keep the private identity outside Git. Its public recipient must match
+`dot_key` in `secrets/secrets.nix`.
+
+
 ```sh
 git clone https://github.com/Castrozan/.dotfiles.git
 cd .dotfiles
@@ -14,7 +21,6 @@ cd .dotfiles
 python3 machine-configuration/development/development-environments/rootless-nix/scripts/run.py bash -l
 ```
 
-Until this branch is merged, check out the pull request branch before activation.
 Prerequisites: Linux x86_64, Python 3, bubblewrap, curl, Git, tar with xz support,
 sha256sum, permitted unprivileged user/mount/PID namespaces, and access to GitHub,
 releases.nixos.org and cache.nixos.org. Do not change security settings to work
@@ -51,6 +57,22 @@ session-control stack. Follow the [fleet runbook](../../../../agent-harness/agen
 `media-speech` uses the existing CLI with the ElevenLabs SDK. Verification runs
 help only: it neither loads credentials nor makes synthesis calls. The Kokoro
 catalog entry does not mean its model/runtime is installed.
+
+## GitHub authentication
+
+Dot uses the existing shared `credentials/github-com-token.age` through agenix and
+the fleet's GitHub authentication module. Only this secret grants dot access;
+Chise, Kira and Rin retain their recipients. The credential has the existing
+`repo`, `read:org` and `gist` scopes, which are broader than this repository.
+Activation runs agenix's native mount executable before configuring GitHub CLI;
+it starts no user service. Git uses HTTPS through the native `gh` credential helper.
+The decrypted token is mode `0400` under the managed home; GitHub CLI stores its
+native authentication in `~/.config/gh/hosts.yml`. Neither file belongs in Git.
+
+After loss of the cloud identity, Git ciphertext alone cannot restore access.
+Recovery requires a newly verified cloud public recipient and re-encryption of
+only this token from an authorized fleet machine. Never copy a fleet private key
+into the cloud or add dot to the shared `all_keys` recipient list.
 
 ## Checks and persistence
 

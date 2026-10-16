@@ -6,7 +6,6 @@
   ...
 }:
 {
-  # Headless standalone profile: no host services, account changes or credentials.
   home = {
     inherit username homeDirectory;
     stateVersion = home-version;
