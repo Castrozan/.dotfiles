@@ -118,9 +118,11 @@ without reporting anything.
 ### Durable fleet continuity
 
 Use `a2a fleet status` for a quiet cached view of confirmed hosts and exact pane/conversation identities. It performs no
-network or model calls. Read [fleet registry](../../../../agent-to-agent-communication/client/FLEET.md) for explicit
+network or model calls. Read [fleet registry](references/fleet.md) for explicit
 bounded refresh, owner/task assignment, durable dispatch receipts, readiness, result verification and create/resume
-procedures. Register only independently confirmed hosts; distinguish metadata freshness from productivity and idle
+procedures.
+
+Register only independently confirmed hosts; distinguish metadata freshness from productivity and idle
 status from composer readiness. A receipt or ACK is not completion, and a lost task record is not permission to resend.
 Do not send routine fleet updates or add another maintenance/nightly schedule. Check target command help before creating
 sessions: installed Herdr versions may use `agent start --kind ... --pane ...` instead of the placement syntax above.

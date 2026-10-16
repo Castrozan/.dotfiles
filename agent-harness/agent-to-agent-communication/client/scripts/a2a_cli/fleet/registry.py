@@ -34,9 +34,19 @@ def normalize(directory, reply):
     """Join the real A2A directory and Herdr snapshot by structural pane ID."""
     if not isinstance(directory, dict) or not isinstance(reply, dict):
         raise ValueError("expected A2A directory and Herdr snapshot objects")
-    snapshot = reply.get("result", {}).get("snapshot")
-    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("agents"), list):
-        raise ValueError("missing Herdr result.snapshot.agents")
+    result = reply.get("result")
+    snapshot = result.get("snapshot") if isinstance(result, dict) else None
+    if (
+        not isinstance(snapshot, dict)
+        or not isinstance(snapshot.get("version"), str)
+        or not isinstance(snapshot.get("protocol"), int)
+    ):
+        raise ValueError("missing Herdr snapshot version/protocol")
+    if any(
+        not isinstance(snapshot.get(key), list)
+        for key in ("agents", "panes", "tabs", "workspaces", "layouts")
+    ):
+        raise ValueError("incomplete Herdr snapshot collections")
     peers = {}
     for peer in directory.values():
         if not isinstance(peer, dict):
@@ -157,6 +167,7 @@ class Registry:
                 "last_attempt": None,
                 "observation": "unknown",
                 "blocker": None,
+                "refresh_required": False,
             }
             self.db.execute("INSERT INTO hosts VALUES (?,?)", (host, json.dumps(data)))
 
@@ -213,6 +224,7 @@ class Registry:
                 last_attempt=self.clock(),
                 observation="reachable",
                 blocker=None,
+                refresh_required=False,
             )
             self.db.execute("UPDATE hosts SET data=? WHERE id=?", (json.dumps(h), host))
         return True
@@ -271,10 +283,16 @@ class Registry:
                 (limit,),
             )
         ]
+        invalidated = {row["host_id"] for row in hosts if row.get("refresh_required")}
         for row in hosts + agents:
             last = row["last_seen"]
             row["age_seconds"] = None if last is None else max(0, now - last)
-            row["fresh"] = last is not None and 0 <= now - last <= freshness
+            row["refresh_required"] = row["host_id"] in invalidated
+            row["fresh"] = (
+                last is not None
+                and 0 <= now - last <= freshness
+                and not row["refresh_required"]
+            )
             row["view"] = (
                 "live"
                 if row["host_id"] in live_hosts and row.get("present", True)
@@ -332,6 +350,7 @@ class Registry:
                 or agent["source"] != "live"
                 or not 0 <= age <= 30
                 or h["observation"] != "reachable"
+                or h.get("refresh_required")
             ):
                 raise ValueError(
                     "dispatch requires a freshly resolved idle live session with readiness metadata"
@@ -368,7 +387,7 @@ class Registry:
             )
             return data, True
 
-    def update_job(self, request_id, state, **values):
+    def update_job(self, request_id, state, *, reconciled=False, **values):
         with self.db:
             self.db.execute("BEGIN IMMEDIATE")
             data = self.job(request_id)
@@ -376,7 +395,11 @@ class Registry:
                 raise ValueError("unknown request ID")
             if data["state"] in {"completed", "failed", "canceled", "not_submitted"}:
                 return data
-            if data["state"] == "reported_completed" and state != "completed":
+            if (
+                data["state"] == "reported_completed"
+                and state != "completed"
+                and not reconciled
+            ):
                 return data
             data.update(values, state=state, updated_at=self.clock())
             self.db.execute(
@@ -415,4 +438,38 @@ class Registry:
             )
         if outcome not in {"completed", "failed", "not_submitted"}:
             raise ValueError("invalid reconciliation outcome")
-        return self.update_job(request_id, outcome, evidence=evidence, blocker=None)
+        return self.update_job(
+            request_id, outcome, reconciled=True, evidence=evidence, blocker=None
+        )
+
+    def event(self, host, envelope, evidence):
+        """Existing event consumers invalidate metadata; no new subscription process."""
+        label(evidence, "event source reference")
+        supported = {
+            "pane.created",
+            "pane.closed",
+            "pane.updated",
+            "pane.exited",
+            "pane.agent_detected",
+            "pane.agent_status_changed",
+        }
+        lifecycle = {
+            "pane_created": "pane.created",
+            "pane_closed": "pane.closed",
+            "pane_updated": "pane.updated",
+            "pane_exited": "pane.exited",
+            "pane_agent_detected": "pane.agent_detected",
+            "pane_agent_status_changed": "pane.agent_status_changed",
+        }
+        event = envelope.get("event") if isinstance(envelope, dict) else None
+        if not isinstance(event, str) or lifecycle.get(event, event) not in supported:
+            raise ValueError("unsupported fleet invalidation event")
+        with self.db:
+            self.db.execute("BEGIN IMMEDIATE")
+            row = self.host(host)
+            row.update(
+                refresh_required=True, last_event_at=self.clock(), event_source=evidence
+            )
+            self.db.execute(
+                "UPDATE hosts SET data=? WHERE id=?", (json.dumps(row), host)
+            )

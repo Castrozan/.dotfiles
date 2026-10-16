@@ -10,6 +10,16 @@ before sending, and survive interpreter restarts. Do not place the database on a
 users. It contains metadata and artifact references, never prompts, response bodies, session-store files, tokens,
 transcript paths or credentials. Host confirmation is an operator assertion backed by a reference, not a health check.
 
+## Thin coordinator package
+
+The stable packaging entrypoint is `agent-harness/agent-to-agent-communication/client/fleet-client-package.nix`:
+`pkgs.callPackage ./fleet-client-package.nix {}` returns the `dot-fleet` executable. Its arguments are the same as
+`a2a fleet`: for example `dot-fleet --db PATH status`, `dot-fleet status --refresh HOST`, and
+`dot-fleet dispatch HOST PANE SESSION ... --execute`. The entrypoint imports only this standard-library client;
+it does not import A2A sender/session discovery, Herdr, a supervisor or a local daemon. Python and the shell wrapper are
+its only packaged runtimes. Existing `ssh` must be available for remote operations; A2A and Herdr run on the confirmed
+worker. Local transport requires the existing local CLIs. Bootstrap/profile integration is owned by the publishing task.
+
 ## Evidence and identity
 
 | Field or state                             | Meaning                                                                                                              |
@@ -66,6 +76,12 @@ The separate verification worker may instead supply this JSON for `a2a fleet ing
   "herdr": {
     "result": {
       "snapshot": {
+        "version": "EXACT_INSTALLED_VERSION",
+        "protocol": 1,
+        "panes": [],
+        "tabs": [],
+        "workspaces": [],
+        "layouts": [],
         "agents": [
           {
             "pane_id": "PANE_ID",
@@ -135,7 +151,9 @@ active dispatches at once at the driving layer. This CLI enforces one per pane, 
 `result` makes one bounded refresh and one ten-second status request; it never polls indefinitely or stores scraped text.
 
 The parent reported that Chise produced an exact ACK but A2A lost the task after rediscovery, and Kira refused a composer
-while its status was idle. Those are **parent-supplied live observations**, not probes performed by this implementation.
+while its status was idle. The parent also reported an unread Kira mailbox despite a healthy service and Rin steward
+watchdog unresponsiveness with a 300-second restart delay. Reachable hosts therefore cannot be promoted to productive
+workers. Those are **parent-supplied live observations**, not probes performed by this implementation.
 The source also confirms in-memory A2A task storage and the `composer_occupied_or_unrecognized` refusal path. Therefore:
 
 - Preserve the local receipt/correlation when remote status disappears. Missing status is `status_unavailable`, not
@@ -158,6 +176,12 @@ per-pane `pane.agent_status_changed`. Its status subscription data contains a pa
 Prefer consuming those existing events in the existing orchestration process, coalescing them to invalidate affected
 host evidence and trigger a bounded metadata refresh. Do not infer session continuity from a status event alone.
 Reconnect requires a full fresh snapshot; cached rows must not be marked live just because a socket opened.
+
+The implemented hook is `dot-fleet event HOST EVENT_JSON_FILE --evidence EXISTING_CONSUMER_REFERENCE`. It accepts
+Herdr lifecycle envelope names such as `pane_created` and subscription names such as `pane.agent_status_changed`.
+It persists `refresh_required`, event time and source reference, without storing event data, changing identity or
+starting a refresh. Subsequent cached status marks that host's entries stale until a complete snapshot is collected.
+Wire an existing consumer to this hook after approval; it is quiet and does not create subscriptions itself.
 
 No continuous event bridge is installed here. Proposed activation is limited to:
 

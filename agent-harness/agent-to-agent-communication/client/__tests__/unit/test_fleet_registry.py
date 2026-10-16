@@ -29,6 +29,12 @@ def inventory(session="conversation-1", state="idle", name="peer"):
         {
             "result": {
                 "snapshot": {
+                    "version": "fixture-0.9.1",
+                    "protocol": 1,
+                    "panes": [],
+                    "tabs": [],
+                    "workspaces": [],
+                    "layouts": [],
                     "agents": [
                         {
                             "pane_id": "w1:p1",
@@ -40,11 +46,17 @@ def inventory(session="conversation-1", state="idle", name="peer"):
                             "tab_id": "t1",
                             "workspace_id": "w1",
                         }
-                    ]
+                    ],
                 }
             }
         },
     )
+
+
+def empty_snapshot():
+    snapshot = inventory()[1]
+    snapshot["result"]["snapshot"]["agents"] = []
+    return snapshot
 
 
 def observe(registry, at=999, **kwargs):
@@ -167,9 +179,7 @@ def test_session_rotation_retains_history_without_inheriting_ownership(registry)
 
 def test_disappearance_is_not_task_failure(registry):
     observe(registry, at=998)
-    registry.ingest(
-        "test-host", {}, {"result": {"snapshot": {"agents": []}}}, 999, "fixture:empty"
-    )
+    registry.ingest("test-host", {}, empty_snapshot(), 999, "fixture:empty")
     row = registry.status()["agents"][0]
     assert not row["present"] and row["state"] == "idle"
 
@@ -189,7 +199,7 @@ def test_duplicate_and_inconsistent_inventory_are_refused():
     with pytest.raises(ValueError, match="duplicate"):
         normalize(directory, snapshot)
     with pytest.raises(ValueError, match="disagree"):
-        normalize(directory, {"result": {"snapshot": {"agents": []}}})
+        normalize(directory, empty_snapshot())
 
 
 def test_path_sessions_are_never_opened_or_retained(registry):
@@ -527,5 +537,141 @@ def test_two_connections_cannot_reserve_the_same_pane(registry):
                 "task:b",
                 "Work",
             )
+    finally:
+        second.close()
+
+
+def test_independent_failed_artifact_can_settle_reported_completion(registry):
+    transport = FakeTransport(task_state="completed")
+    send(registry, transport)
+    operations.result(registry, "intent-1", transport)
+    job = registry.reconcile(
+        "intent-1", "artifact:failed-acceptance-tests", outcome="failed"
+    )
+    assert (
+        job["state"] == "failed"
+        and job["evidence"] == "artifact:failed-acceptance-tests"
+    )
+
+
+def test_partial_snapshot_cannot_retire_all_agents(registry):
+    observe(registry)
+    with pytest.raises(ValueError, match="snapshot"):
+        registry.ingest(
+            "test-host",
+            {},
+            {"result": {"snapshot": {"agents": []}}},
+            1000,
+            "fixture:partial",
+        )
+    assert registry.status()["agents"][0]["present"]
+
+
+def test_result_of_proved_non_submission_is_cached_terminal(registry):
+    send(registry, FakeTransport(fail_send=True))
+    registry.reconcile(
+        "intent-1", "fixture:explicit-rejection", outcome="not_submitted"
+    )
+    transport = FakeTransport()
+    assert (
+        operations.result(registry, "intent-1", transport)["state"] == "not_submitted"
+    )
+    assert not transport.calls
+
+
+def test_event_invalidates_without_promoting_identity_or_freshness(registry):
+    observe(registry)
+    registry.event(
+        "test-host",
+        {"event": "pane.agent_status_changed", "data": {"agent_status": "idle"}},
+        "fixture:existing-subscription",
+    )
+    view = registry.status()
+    assert not view["agents"][0]["fresh"]
+    assert view["agents"][0]["last_seen"] == 999
+    assert view["hosts"][0]["refresh_required"]
+    operations.refresh(registry, ["test-host"], FakeTransport())
+    assert registry.status()["agents"][0]["fresh"]
+
+
+def test_unknown_event_does_not_mutate_registry(registry):
+    observe(registry)
+    with pytest.raises(ValueError, match="unsupported"):
+        registry.event(
+            "test-host",
+            {"event": "pane.output_matched", "data": "private text"},
+            "fixture:unsupported",
+        )
+    assert "private text" not in json.dumps(registry.status())
+    assert registry.status()["agents"][0]["fresh"]
+
+
+def test_newer_schema_is_refused_without_migration_or_erasure(tmp_path):
+    import sqlite3
+
+    path = tmp_path / "db"
+    r = Registry(path)
+    r.db.execute("PRAGMA user_version=99")
+    r.close()
+    with pytest.raises(ValueError, match="schema"):
+        Registry(path)
+    with sqlite3.connect(path) as connection:
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 99
+
+
+def test_reservation_survives_abrupt_process_exit_and_prevents_replay(registry):
+    import subprocess
+    from pathlib import Path
+
+    observe(registry)
+    path = registry.db.execute("PRAGMA database_list").fetchone()[2]
+    package = Path(__file__).resolve().parents[2] / "scripts"
+    script = """import os,sys
+from a2a_cli.fleet.registry import Registry
+r=Registry(sys.argv[1],clock=lambda:1000)
+r.reserve('intent-1','test-host','w1:p1','conversation-1','dot','task:review','Read the approved task brief.')
+os._exit(0)
+"""
+    subprocess.run(
+        [sys.executable, "-c", script, path],
+        env={**os.environ, "PYTHONPATH": str(package)},
+        check=True,
+        timeout=5,
+    )
+    reopened = Registry(path, clock=lambda: 1000)
+    try:
+        transport = FakeTransport()
+        assert send(reopened, transport)["state"] == "dispatching"
+        assert not transport.calls
+    finally:
+        reopened.close()
+
+
+def test_offline_host_cached_query_after_failed_refresh(registry):
+    observe(registry)
+
+    def offline(*args, **kwargs):
+        raise operations.ObservationError("unreachable")
+
+    assert operations.refresh(registry, ["test-host"], offline) == []
+    view = registry.status()
+    assert view["hosts"][0]["observation"] == "unreachable"
+    assert view["agents"][0]["view"] == "cached"
+    assert view["agents"][0]["session_id"] == "conversation-1"
+
+
+def test_lifecycle_envelope_invalidates_durably(registry):
+    observe(registry)
+    registry.event(
+        "test-host",
+        {"event": "pane_created", "data": {"pane": "untrusted"}},
+        "fixture:herdr-event",
+    )
+    path = registry.db.execute("PRAGMA database_list").fetchone()[2]
+    second = Registry(path, clock=lambda: 1000)
+    try:
+        assert second.status()["hosts"][0]["refresh_required"]
+        assert not second.status()["agents"][0]["fresh"]
+        assert "untrusted" not in json.dumps(second.status())
     finally:
         second.close()

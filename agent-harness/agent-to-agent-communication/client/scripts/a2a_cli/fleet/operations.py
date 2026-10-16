@@ -169,7 +169,13 @@ def result(registry, request_id, runner=run):
     job = registry.job(request_id)
     if job is None:
         raise ValueError("unknown request ID")
-    if job["state"] in {"completed", "failed", "canceled", "reported_completed"}:
+    if job["state"] in {
+        "completed",
+        "failed",
+        "canceled",
+        "not_submitted",
+        "reported_completed",
+    }:
         return job
     if not job["remote_task_id"]:
         raise ValueError("no receipt; reconcile target evidence manually, never resend")

@@ -49,6 +49,12 @@ def add_parser(subcommands):
     )
     ingest.add_argument("host")
     ingest.add_argument("file", type=Path)
+    event = commands.add_parser(
+        "event", help="invalidate metadata from an existing Herdr event consumer"
+    )
+    event.add_argument("host")
+    event.add_argument("file", type=Path)
+    event.add_argument("--evidence", required=True)
     assign = commands.add_parser(
         "assign", help="record an owner and task for an exact observed session"
     )
@@ -113,17 +119,20 @@ def command_fleet(arguments):
         elif command == "status":
             live = refresh(registry, arguments.refresh) if arguments.refresh else []
             answer = registry.status(live_hosts=live)
-        elif command == "ingest":
+        elif command in {"ingest", "event"}:
             if arguments.file.stat().st_size > 2 * 1024 * 1024:
                 raise ValueError("metadata import exceeds 2 MiB")
             document = json.loads(arguments.file.read_text())
-            registry.ingest(
-                arguments.host,
-                document["a2a"],
-                document["herdr"],
-                document["observed_at"],
-                document["evidence"],
-            )
+            if command == "event":
+                registry.event(arguments.host, document, arguments.evidence)
+            else:
+                registry.ingest(
+                    arguments.host,
+                    document["a2a"],
+                    document["herdr"],
+                    document["observed_at"],
+                    document["evidence"],
+                )
         elif command == "assign":
             registry.assign(
                 arguments.host,
