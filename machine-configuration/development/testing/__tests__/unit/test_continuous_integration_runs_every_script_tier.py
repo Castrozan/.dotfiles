@@ -2,6 +2,11 @@ import pathlib
 import re
 import subprocess
 
+import pytest
+import yaml
+
+from continuous_integration_workflows import executable_workflow_jobs
+
 REPOSITORY_ROOT = pathlib.Path(__file__).resolve().parents[5]
 TESTS_WORKFLOW = REPOSITORY_ROOT / ".github" / "workflows" / "tests.yml"
 VERIFICATION_ROOT = REPOSITORY_ROOT / "repository" / "verification"
@@ -69,7 +74,12 @@ def test_every_bats_tier_holding_tests_runs_in_continuous_integration():
 
 
 def test_the_lua_tier_runs_in_continuous_integration_when_it_holds_tests():
-    if LUA_TIER_FUNCTION_NAME in TESTS_WORKFLOW.read_text():
+    scripts = (
+        str(step.get("run", ""))
+        for _, job in executable_workflow_jobs(TESTS_WORKFLOW, REPOSITORY_ROOT)
+        for step in job.get("steps", [])
+    )
+    if any(LUA_TIER_FUNCTION_NAME in script for script in scripts):
         return
     if LUA_TIER_FUNCTION_NAME in checks_the_continuous_integration_tier_runs():
         return
@@ -81,3 +91,40 @@ def test_the_lua_tier_runs_in_continuous_integration_when_it_holds_tests():
         "pure-logic suites that run identically on either platform, so there is no "
         "environment reason to leave them out"
     )
+
+
+@pytest.mark.parametrize("include_lua", [False, True])
+def test_lua_guard_follows_reusable_workflows_and_rejects_missing_execution(
+    tmp_path, monkeypatch, include_lua
+):
+    workflow_directory = tmp_path / ".github/workflows"
+    workflow_directory.mkdir(parents=True)
+    workflow = workflow_directory / "tests.yml"
+    workflow.write_text(
+        yaml.safe_dump(
+            {"jobs": {"languages": {"uses": "./.github/workflows/languages.yml"}}}
+        )
+    )
+    (workflow_directory / "languages.yml").write_text(
+        yaml.safe_dump(
+            {
+                "jobs": {
+                    "lua": {
+                        "steps": [
+                            {"run": LUA_TIER_FUNCTION_NAME if include_lua else "true"}
+                        ]
+                    }
+                }
+            }
+        )
+    )
+    module = __import__(__name__)
+    monkeypatch.setattr(module, "REPOSITORY_ROOT", tmp_path)
+    monkeypatch.setattr(module, "TESTS_WORKFLOW", workflow)
+    monkeypatch.setattr(module, "checks_the_continuous_integration_tier_runs", set)
+    monkeypatch.setattr(module, "discovered_test_files", lambda *_: ["owned_test.lua"])
+    if include_lua:
+        test_the_lua_tier_runs_in_continuous_integration_when_it_holds_tests()
+    else:
+        with pytest.raises(AssertionError, match="no workflow calls"):
+            test_the_lua_tier_runs_in_continuous_integration_when_it_holds_tests()

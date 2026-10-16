@@ -5,6 +5,8 @@ from pathlib import Path
 import yaml
 import pytest
 
+from continuous_integration_workflows import executable_workflow_jobs
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 TESTS_WORKFLOW = REPOSITORY_ROOT / ".github" / "workflows" / "tests.yml"
 DISCOVERY_LIBRARY = (
@@ -14,25 +16,10 @@ DISCOVERY_LIBRARY = (
 PYTEST_TIERS_THAT_MUST_RUN_IN_CONTINUOUS_INTEGRATION = ("unit", "integration")
 
 
-def executable_workflow_jobs(path, prefix="", visited=None):
-    visited = set() if visited is None else visited
-    assert path not in visited, "Reusable workflow cycle"
-    workflow = yaml.safe_load(path.read_text())
-    for name, job in workflow["jobs"].items():
-        identifier = f"{prefix}{name}"
-        reusable = job.get("uses", "")
-        if reusable.startswith("./.github/workflows/"):
-            yield from executable_workflow_jobs(
-                REPOSITORY_ROOT / reusable, f"{identifier}/", visited | {path}
-            )
-        else:
-            yield identifier, job
-
-
 def jobs_invoking_a_pytest_tier():
     return {
         name: job
-        for name, job in executable_workflow_jobs(TESTS_WORKFLOW)
+        for name, job in executable_workflow_jobs(TESTS_WORKFLOW, REPOSITORY_ROOT)
         if any(
             "_run_pytest_tier" in str(step.get("run", ""))
             for step in job.get("steps", [])

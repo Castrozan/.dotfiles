@@ -46,7 +46,7 @@ jobs:
       - name: Verify publisher failure and preservation controls
         env:
           VERDR_EVALUATOR_ROOT: ${{ github.workspace }}/.quality-results/verdr
-        run: node --test "$PUBLISHING_SCRIPTS/__tests__/snapshot.test.mjs" "$PUBLISHING_SCRIPTS/__tests__/artifact.test.mjs"
+        run: node --test "$PUBLISHING_SCRIPTS"/__tests__/*.test.mjs
       - name: Build overview without turning missing inputs into passes
         id: overview
         run: |
