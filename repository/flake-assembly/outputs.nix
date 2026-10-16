@@ -8,6 +8,10 @@ let
     inherit inputs release;
     system = linux;
   };
+  standaloneHomeFactory = import ./standalone-home-factory.nix {
+    inherit inputs release;
+    system = linux;
+  };
   darwinMachineFactory = import ./darwin-machine-factory.nix {
     inherit inputs release;
     system = darwin;
@@ -26,6 +30,11 @@ in
   darwinConfigurations.kira = darwinMachineFactory {
     hostname = "kira";
     username = "lucas.zanoni";
+  };
+
+  homeConfigurations.dot = standaloneHomeFactory {
+    hostname = "dot";
+    username = "agent";
   };
 
   homeManagerModules = import ./home-manager-modules.nix;

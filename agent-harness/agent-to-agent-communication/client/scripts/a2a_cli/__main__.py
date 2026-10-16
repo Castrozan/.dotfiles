@@ -13,6 +13,7 @@ from .commands import (
     command_send,
     command_status,
 )
+from .fleet.cli import add_parser as add_fleet_parser
 from .peer_transport import (
     DEFAULT_ANSWER_TIMEOUT_SECONDS,
     DEFAULT_DAEMON_ENDPOINT,
@@ -92,11 +93,14 @@ def build_argument_parser() -> argparse.ArgumentParser:
     acknowledge_parser.add_argument("agent", help="current peer name or stable paneId")
     acknowledge_parser.add_argument("notification_id")
     acknowledge_parser.set_defaults(handler=command_acknowledge)
+    add_fleet_parser(subcommands)
     return parser
 
 
 def main() -> int:
     arguments = build_argument_parser().parse_args()
+    if arguments.command == "fleet":
+        return arguments.handler(arguments)
     try:
         return arguments.handler(arguments, read_agent_directory(arguments.daemon))
     except PeerRequestFailure as failure:

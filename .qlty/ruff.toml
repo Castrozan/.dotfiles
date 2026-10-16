@@ -6,3 +6,5 @@ ignore = ["S603", "S607"]
 
 [lint.per-file-ignores]
 "**/__tests__/**" = ["S101"]
+"machine-configuration/development/development-environments/rootless-nix/scripts/run.py" = ["S108", "S606"]
+"machine-configuration/development/development-environments/rootless-nix/__tests__/unit/test_runner.py" = ["S101", "S108"]

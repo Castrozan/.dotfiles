@@ -80,6 +80,8 @@ On an already configured machine:
 rebuild
 ```
 
+For a headless Linux workspace without root, use the [rootless dot profile](machine-configuration/development/development-environments/rootless-nix). It restores a separate Nix store and Home Manager home from this checkout.
+
 ## Verification
 
 Scripts and integrations have tests beside their owning modules. [CI](https://github.com/Castrozan/.dotfiles/actions) runs behavioral tests, validates Nix configuration and checks the emitted agent package. The [quality overview](agent-harness/measurement-and-reporting/quality-overview/README.md) explains exactly what its evidence establishes.
