@@ -1,4 +1,5 @@
 """Launcher contract tests without creating namespaces or running system tools."""
+
 import os
 import pathlib
 import runpy
@@ -6,7 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-SCRIPT = pathlib.Path(__file__).resolve().parents[1] / "scripts/run.py"
+SCRIPT = pathlib.Path(__file__).resolve().parents[2] / "scripts/run.py"
 
 
 class RunnerTests(unittest.TestCase):
@@ -22,8 +23,17 @@ class RunnerTests(unittest.TestCase):
             self.assertIn("--unshare-user", args)
             self.assertIn("--unshare-pid", args)
             self.assertIn("--remount-ro", args)
-            binds = [args[i + 1:i + 3] for i, value in enumerate(args) if value == "--bind"]
-            self.assertEqual(binds, [[directory, directory], [directory + "/store", "/nix"], [directory + "/tmp", "/tmp"]])
+            binds = [
+                args[i + 1 : i + 3] for i, value in enumerate(args) if value == "--bind"
+            ]
+            self.assertEqual(
+                binds,
+                [
+                    [directory, directory],
+                    [directory + "/store", "/nix"],
+                    [directory + "/tmp", "/tmp"],
+                ],
+            )
             self.assertTrue(pathlib.Path(directory, "home").is_dir())
 
     def test_refuse_writable_source_ancestor(self):
