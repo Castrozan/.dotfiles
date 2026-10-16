@@ -7,9 +7,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  # Every main push still gets its own verdict, because main is the test gate. Superseded pull
-  # request runs are dropped instead of queueing behind the run they already replaced.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
