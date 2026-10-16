@@ -1,10 +1,32 @@
 import os
+import subprocess
+import sys
 import termios
 from unittest.mock import Mock
 
 import pytest
 
 import steward_terminal_space
+
+
+@pytest.mark.parametrize("rows, expected_rows", [(2, 8), (8, 8), (38, 38)])
+def test_launch_guard_restores_real_terminal_size(rows, expected_rows):
+    terminal_master, terminal_slave = os.openpty()
+    try:
+        termios.tcsetwinsize(terminal_slave, (rows, 132))
+
+        subprocess.run(
+            [sys.executable, steward_terminal_space.__file__],
+            stdout=terminal_slave,
+            stderr=subprocess.PIPE,
+            check=True,
+            timeout=5,
+        )
+
+        assert termios.tcgetwinsize(terminal_slave) == (expected_rows, 132)
+    finally:
+        os.close(terminal_master)
+        os.close(terminal_slave)
 
 
 @pytest.mark.parametrize("rows", [8, 38])
