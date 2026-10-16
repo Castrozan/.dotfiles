@@ -31,6 +31,7 @@ in
 {
   inherit
     chromeGlobalUserDataDirectoryRelativeToHome
+    workChromeProfileDirectoryName
     chromeGlobalLauncherScript
     chromePersonalProfileLauncherScript
     chromeWorkProfileLauncherScript

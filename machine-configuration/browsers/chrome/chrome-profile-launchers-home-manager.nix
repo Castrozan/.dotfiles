@@ -54,6 +54,22 @@ in
             }
           );
 
+      applyChromeGlobalWorkProfileDarkTheme =
+        config.lib.dag.entryAfter
+          [
+            "writeBoundary"
+          ]
+          (
+            chromiumProfilePreferenceMerge.mkChromiumProfilePreferenceMergeActivationScript {
+              browserDisplayProcessName = "Google Chrome";
+              browserUserDataDirectoryRelativeToHome =
+                chromeGlobalLauncher.chromeGlobalUserDataDirectoryRelativeToHome;
+              preferencesOverridesJsonFile = ./program-configuration/work-profile-theme-overrides.json;
+              sentinelBasename = "chrome-global-work-profile-theme-applied";
+              targetFileRelativeToUserDataDirectory = "${chromeGlobalLauncher.workChromeProfileDirectoryName}/Preferences";
+            }
+          );
+
       convergeChromeEntryPointsOnChromeGlobal =
         config.lib.dag.entryAfter
           [
