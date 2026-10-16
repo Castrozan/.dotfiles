@@ -38,9 +38,17 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
 
+      - name: Configure the signed Python environment cache
+        run: |
+          cache_configuration=machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+          mkdir -p "$HOME/.config/nix"
+          printf 'extra-substituters = %s\nextra-trusted-public-keys = %s\n' \
+            "$(jq -er .url "$cache_configuration")" \
+            "$(jq -er .publicKey "$cache_configuration")" >> "$HOME/.config/nix/nix.conf"
+
       - name: Run Python tests
         run: |
-          nix shell --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash <<'PYTHON_TESTS'
+          nix shell --always-allow-substitutes --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash <<'PYTHON_TESTS'
             export REPO_DIR="$PWD"
             mkdir -p .coverage-reports
             export COVERAGE_PROCESS_START="$PWD/repository/verification/cover/coverage.ini"
