@@ -125,6 +125,27 @@ test("required evidence completeness accepts failed tests but rejects missing me
   assert.equal(incompleteEvidence({ evidence: [] }).length, 11);
 });
 
+test("Bash coverage is retained without replacing required overview evidence", async (context) => {
+  const input = await fixture(context, true);
+  const directory = join(input.downloads, "coverage-report/bats");
+  await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, "coverage.json"), '{"covered_lines": "1"}');
+  input.context.artifacts["coverage-report"] = { id: 3, reason: null };
+  const { payload, output } = await build(input);
+  assert.equal(payload.overview.evidence.length, 38);
+  assert.equal(
+    payload.overview.evidence.filter((item) => item.usable).length,
+    5,
+  );
+  assert.equal(
+    await readFile(
+      join(output, "site/raw/coverage-report/bats/coverage.json"),
+      "utf8",
+    ),
+    '{"covered_lines": "1"}',
+  );
+});
+
 test("completeness CLI consumes standard input and preserves a failing verdict", async () => {
   const { requiredEvidenceIds } = await import("../evidence_inputs.mjs");
   const script = fileURLToPath(

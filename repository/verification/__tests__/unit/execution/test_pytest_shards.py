@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-RUNNER_DIRECTORY = Path(__file__).resolve().parents[3] / "runner"
+RUNNER_DIRECTORY = Path(__file__).resolve().parents[3] / "runner/python"
 
 
 @pytest.fixture

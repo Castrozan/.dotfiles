@@ -1,0 +1,41 @@
+name: QML and Lua tests
+
+on:
+  workflow_call:
+
+jobs:
+  qml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
+
+      - name: Run QML unit tests
+        if: ${{ !cancelled() }}
+        run: |
+          nix shell nixpkgs#qt6.qtdeclarative --command bash <<'LANGUAGE_TESTS'
+            export QT_DECLARATIVE_PATH=$(dirname $(dirname $(which qmltestrunner)))
+            bash machine-configuration/desktop/desktop-environments/hyprland/__tests__/qml/run-qml-tests.sh
+          LANGUAGE_TESTS
+
+      - name: Run QML lint
+        if: ${{ !cancelled() }}
+        run: |
+          nix shell nixpkgs#qt6.qtdeclarative nixpkgs#quickshell --command bash <<'LANGUAGE_TESTS'
+            export REPO_DIR="$PWD"
+            export QT_DECLARATIVE_PATH=$(dirname $(dirname $(which qmllint)))
+            export QMLLINT_REQUIRED=1
+            source repository/verification/runner/qml.sh
+            _run_qmllint_checks
+          LANGUAGE_TESTS
+
+      - name: Run Lua unit tests
+        if: ${{ !cancelled() }}
+        run: |
+          nix shell nixpkgs#lua5_4 --command bash <<'LANGUAGE_TESTS'
+            export REPO_DIR="$PWD"
+            source repository/verification/runner/discovery.sh
+            source repository/verification/runner/lua.sh
+            _run_lua_unit_tests
+          LANGUAGE_TESTS

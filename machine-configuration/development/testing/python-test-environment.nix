@@ -4,6 +4,7 @@
   [
     pythonPackages.pytest
     pythonPackages.pytest-cov
+    pythonPackages.defusedxml
     pythonPackages.elevenlabs
     pythonPackages.numpy
     pythonPackages.tomlkit

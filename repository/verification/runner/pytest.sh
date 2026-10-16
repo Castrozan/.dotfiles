@@ -17,7 +17,7 @@ _run_pytest_tier() {
 	local reportSuffix=''
 	if [[ -n "${DOTFILES_PYTEST_SHARD_INDEX+set}" || -n "${DOTFILES_PYTEST_SHARD_COUNT+set}" ]]; then
 		local selectedTestFiles
-		selectedTestFiles=$(python3 "${BASH_SOURCE[0]%/*}/pytest_shards.py" "$REPO_DIR" \
+		selectedTestFiles=$(python3 "${BASH_SOURCE[0]%/*}/python/pytest_shards.py" "$REPO_DIR" \
 			"${DOTFILES_PYTEST_SHARD_INDEX:-}" "${DOTFILES_PYTEST_SHARD_COUNT:-}" "${testFiles[@]}") || return
 		testFiles=()
 		if [[ -n "$selectedTestFiles" ]]; then

@@ -1,0 +1,83 @@
+name: Python test shard
+
+on:
+  workflow_call:
+    inputs:
+      tier:
+        required: true
+        type: string
+      shard:
+        required: true
+        type: number
+      count:
+        required: true
+        type: number
+    outputs:
+      artifact-id:
+        value: ${{ jobs.python.outputs.artifact-id }}
+      artifact-attempt:
+        value: ${{ jobs.python.outputs.artifact-attempt }}
+
+jobs:
+  python:
+    name: Python ${{ inputs.tier }} shard ${{ inputs.shard }}
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      artifact-attempt: ${{ steps.identity.outputs.attempt }}
+    env:
+      PYTEST_TIER: ${{ inputs.tier }}
+      DOTFILES_PYTEST_SHARD_INDEX: ${{ inputs.shard }}
+      DOTFILES_PYTEST_SHARD_COUNT: ${{ inputs.count }}
+      DOTFILES_TEST_REPORT_DIRECTORY: ${{ github.workspace }}/.quality-results
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
+
+      - name: Run Python tests
+        run: |
+          nix shell --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash <<'PYTHON_TESTS'
+            export REPO_DIR="$PWD"
+            mkdir -p .coverage-reports
+            export COVERAGE_PROCESS_START="$PWD/repository/verification/cover/coverage.ini"
+            export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/cover/coverage.ini --cov-report="
+            source repository/verification/runner/discovery.sh
+            source repository/verification/runner/pytest.sh
+            case "$PYTEST_TIER" in
+              unit)
+                _run_pytest_tier unit quick
+                ;;
+              integration)
+                _run_pytest_tier integration integration-scripts
+                ;;
+              *) exit 1 ;;
+            esac
+          PYTHON_TESTS
+
+      - name: Retain raw Python shard evidence
+        if: ${{ always() }}
+        run: |
+          if test -f .coverage-reports/.coverage; then
+            mv .coverage-reports/.coverage ".coverage-reports/.coverage.$PYTEST_TIER-$DOTFILES_PYTEST_SHARD_INDEX"
+          fi
+
+      - name: Upload Python shard evidence
+        id: upload
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-shard-${{ inputs.tier }}-${{ inputs.shard }}-${{ github.run_attempt }}
+          path: |
+            .quality-results/pytest-*.xml
+            .coverage-reports/.coverage*
+          include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Retain the producing attempt
+        id: identity
+        if: ${{ always() }}
+        run: echo "attempt=$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"

@@ -89,7 +89,7 @@ const testInputs = [
     "python-junit",
     "pytest-unit.xml",
     "qml-and-python-tests",
-    "Run Python tests",
+    "Combine Python evidence",
     "unit",
   ],
   [
@@ -98,7 +98,7 @@ const testInputs = [
     "python-junit",
     "pytest-integration.xml",
     "qml-and-python-tests",
-    "Run Python tests",
+    "Combine Python evidence",
     "integration",
   ],
   [
@@ -107,7 +107,7 @@ const testInputs = [
     "python-coverage",
     "python-coverage.xml",
     "qml-and-python-tests",
-    "Run Python tests",
+    "Combine Python evidence",
     "unit and integration",
   ],
 ];
@@ -133,7 +133,11 @@ function conventionalInputDescriptor(id, label, tier) {
 
 function conventionalInput(context, detailsBaseUrl, input) {
   const [id, label, artifact, file, job, stepName, tier] = input;
-  const { coverage, scope, descriptor } = conventionalInputDescriptor(id, label, tier);
+  const { coverage, scope, descriptor } = conventionalInputDescriptor(
+    id,
+    label,
+    tier,
+  );
   const selection = context.artifacts[artifact];
   if (!selection?.id)
     return unavailableInput(

@@ -48,6 +48,7 @@ jobs:
           VERDR_EVALUATOR_ROOT: ${{ github.workspace }}/.quality-results/verdr
         run: node --test "$PUBLISHING_SCRIPTS/__tests__/snapshot.test.mjs" "$PUBLISHING_SCRIPTS/__tests__/artifact.test.mjs"
       - name: Build overview without turning missing inputs into passes
+        id: overview
         run: |
           node "$PUBLISHING_SCRIPTS/build_snapshot.mjs" "$PWD/.quality-results/verdr" \
             .quality-results/workflow-context.json .quality-results/downloads .quality-results/overview
@@ -76,19 +77,55 @@ jobs:
             gcloud storage rsync .quality-results/overview/site "$destination" --recursive
             gcloud storage cp .quality-results/overview/payload.json "$destination/snapshot.json" --if-generation-match=0
           fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          path: .quality-results/source
+          fetch-depth: 0
+          submodules: false
+      - name: Assemble reports from the verified producing revision and coverage artifact
+        id: reports
+        env:
+          REPORT_SITE: ${{ github.workspace }}/agent-harness/measurement-and-reporting/reports/site
+        run: |
+          python3 "$PUBLISHING_SCRIPTS/prepare_reports.py" .quality-results/workflow-context.json .quality-results/downloads "$REPORT_SITE"
+          mkdir -p "$REPORT_SITE/quality"
+          python3 .quality-results/source/agent-harness/quality/evaluations/reporting/render_baseline_dashboard.py "$REPORT_SITE/baseline"
+          cp .quality-results/source/.github/pages/style.css "$REPORT_SITE/baseline/style.css"
+          python3 .quality-results/source/agent-harness/quality/evaluations/reporting/render_quality_metrics.py "$REPORT_SITE/quality/metrics.json"
       - name: Check this snapshot still represents the current main run
-        if: ${{ vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
+        if: ${{ !cancelled() && steps.overview.outcome == 'success' && (vars.REPORTS_STATIC_GCS_PUBLISH == 'true' || vars.INGEST_BASE_URL != '') }}
         id: promotion
         run: |
           promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py")
           echo "current=$promote" >> "$GITHUB_OUTPUT"
       - name: Publish the current overview to the existing ingestion API
-        if: ${{ steps.promotion.outputs.current == 'true' && vars.INGEST_BASE_URL != '' }}
+        if: ${{ !cancelled() && steps.promotion.outputs.current == 'true' && vars.INGEST_BASE_URL != '' }}
         env:
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
           INGEST_PRODUCER_LABEL: dotfiles-github-actions
         run: |
           python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py
+      - name: Publish the current baseline, coverage and quality snapshots to the ingestion API
+        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.promotion.outputs.current == 'true' && vars.INGEST_BASE_URL != '' }}
+        env:
+          SOURCE_REVISION: ${{ github.event.workflow_run.head_sha }}
+          INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
+          INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
+          INGEST_PRODUCER_LABEL: dotfiles-github-actions
+        run: |
+          export GITHUB_SHA="$SOURCE_REVISION"
+          export GITHUB_RUN_ID="$SOURCE_RUN_ID"
+          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_test_baseline_snapshot.py .quality-results/source/agent-harness/quality/evaluations/baseline.json
+          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_test_coverage_snapshot.py .quality-results/downloads/coverage-report/bats/coverage.json
+          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_test_quality_snapshot.py agent-harness/measurement-and-reporting/reports/site/quality/metrics.json
+      - name: Publish the current baseline, coverage and quality metrics to the usage snapshots bucket
+        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.promotion.outputs.current == 'true' && vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
+        run: |
+          gcloud storage rsync agent-harness/measurement-and-reporting/reports/site/baseline "$REPORT_BUCKET/reports/baseline" --recursive --delete-unmatched-destination-objects
+          gcloud storage rsync agent-harness/measurement-and-reporting/reports/site/coverage "$REPORT_BUCKET/reports/coverage" --recursive --delete-unmatched-destination-objects
+          gcloud storage rsync agent-harness/measurement-and-reporting/reports/site/quality "$REPORT_BUCKET/reports/quality" --recursive --delete-unmatched-destination-objects
       - name: Require complete evidence after retaining the diagnostic report
+        if: ${{ !cancelled() && steps.overview.outcome == 'success' }}
         run: node "$PUBLISHING_SCRIPTS/check_completeness.mjs" < .quality-results/overview/payload.json

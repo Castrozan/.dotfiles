@@ -110,7 +110,7 @@ def test_one_failed_download_preserves_other_evidence_and_records_failure(
         }
     }
     DOWNLOAD.download_selected(context, tmp_path)
-    assert calls == [1, 2, 3, 4]
+    assert calls == list(range(1, len(DOWNLOAD.ARTIFACT_PRODUCERS) + 1))
     assert context["artifacts"]["bats-junit"]["id"] is None
     assert "TimeoutExpired" in context["artifacts"]["bats-junit"]["reason"]
     assert (tmp_path / "python-junit/report.xml").read_text() == "kept"
