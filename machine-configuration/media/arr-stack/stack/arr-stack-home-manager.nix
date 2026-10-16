@@ -10,6 +10,7 @@ let
   stackRoot = "${config.home.homeDirectory}/arr-stack";
   arrUsersCli = import ../users/arr-users-cli-home-manager.nix { inherit pkgs stackRoot; };
   arrStatusCli = import ../status/arr-status-cli-home-manager.nix { inherit pkgs stackRoot; };
+  arrMediaCli = import ../status/arr-media-cli-home-manager.nix { inherit pkgs stackRoot; };
   machineIdentityMapPath = ../../../../private-configuration/machines.nix;
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
@@ -89,6 +90,7 @@ lib.mkIf isChise {
     packages = [
       arrUsersCli
       arrStatusCli
+      arrMediaCli
     ];
 
     file = {

@@ -5,9 +5,22 @@ description: "Manage the chise media stack: Jellyfin friend accounts, Jellyseerr
 
 ### Commands
 
-Two CLIs, chise only: `arr-users` manages friend accounts and `arr-status [title]` prints one line per Jellyseerr
-request with its stage and any live download progress. Run either with `--help` for the exact interface; do not
-reconstruct flags from memory. On any host other than chise these commands do not exist.
+Three CLIs, chise only: `arr-users` manages friend accounts and `arr-status [title]` prints one line per Jellyseerr
+request with its stage and any live download progress. `arr-media` searches and requests public movies and TV. Run each
+with `--help` for the exact interface; do not reconstruct flags from memory. On any host other than chise these commands
+do not exist.
+
+### Public movie and TV requests
+
+Use `arr-media --help` for catalog searches, requests and status under the ordinary public requester. Search the title,
+match its year and media type, then use the returned TMDB ID. TV requests require explicit seasons or all seasons;
+`status` lists valid seasons. Read attached lists before requesting their contents, preserve every requested season, and
+ask when a title is ambiguous. A successful request means queued or approved, never proof that a download started or
+finished. Report failures per title and use status before claiming availability.
+
+`arr-media` returns public catalog metadata and only the public requester's requests. Guests may use this command
+through Monster; `arr-users`, `arr-status`, account changes, private libraries and direct service access remain outside
+that guest capability. Never substitute another command when the public request command fails.
 
 ### Account model
 
@@ -43,10 +56,10 @@ requesters, so route a request by logging in as the intended account.
 
 `arr-users` refuses to delete, disable, or reset any account whose Jellyfin policy is administrator, so it cannot lock
 out or wipe an admin or the Jellyseerr service user; that guard is deliberate, never work around it. `create` fails
-rather than overwrite when the name already exists. `arr-status` degrades instead of erroring: an item reads `processing
-(download chain idle)` when the on-demand supervisor has stopped the download chain, and a title that fails to resolve
-shows as `tmdb:<id>`; only Jellyseerr being unreachable is a hard failure. An \*arr app holds a title under exactly one
-root folder, so a title the stack already holds can make a new request for it fail rather than relocate it.
+rather than overwrite when the name already exists. `arr-status` degrades instead of erroring: an item reads
+`processing (download chain idle)` when the on-demand supervisor has stopped the download chain, and a title that fails
+to resolve shows as `tmdb:<id>`; only Jellyseerr being unreachable is a hard failure. An \*arr app holds a title under
+exactly one root folder, so a title the stack already holds can make a new request for it fail rather than relocate it.
 
 ### Manga is a separate pipeline
 
