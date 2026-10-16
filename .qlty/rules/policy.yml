@@ -36,3 +36,83 @@ rule:
   any:
     - pattern: load($$$ARGUMENTS)
     - pattern: loadstring($$$ARGUMENTS)
+---
+id: typescript-chained-type-assertions
+language: TypeScript
+severity: error
+message: Validate the value or preserve its inferred type instead of chaining assertions.
+metadata:
+  source: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-chained-type-assertions.ts
+utils:
+  assertion:
+    any:
+      - kind: as_expression
+      - kind: type_assertion
+  non-const-assertion:
+    all:
+      - matches: assertion
+      - not:
+          any:
+            - pattern: $VALUE as const
+            - pattern: <const>$VALUE
+rule:
+  all:
+    - matches: assertion
+    - has:
+        matches: assertion
+        stopBy:
+          not:
+            kind: parenthesized_expression
+    - not:
+        inside:
+          matches: assertion
+          stopBy:
+            not:
+              kind: parenthesized_expression
+    - any:
+        - matches: non-const-assertion
+        - has:
+            matches: non-const-assertion
+            stopBy:
+              not:
+                any:
+                  - matches: assertion
+                  - kind: parenthesized_expression
+---
+id: tsx-chained-type-assertions
+language: Tsx
+severity: error
+message: Validate the value or preserve its inferred type instead of chaining assertions.
+metadata:
+  source: https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-chained-type-assertions.ts
+utils:
+  assertion:
+    kind: as_expression
+  non-const-assertion:
+    all:
+      - matches: assertion
+      - not:
+          pattern: $VALUE as const
+rule:
+  all:
+    - matches: assertion
+    - has:
+        matches: assertion
+        stopBy:
+          not:
+            kind: parenthesized_expression
+    - not:
+        inside:
+          matches: assertion
+          stopBy:
+            not:
+              kind: parenthesized_expression
+    - any:
+        - matches: non-const-assertion
+        - has:
+            matches: non-const-assertion
+            stopBy:
+              not:
+                any:
+                  - matches: assertion
+                  - kind: parenthesized_expression

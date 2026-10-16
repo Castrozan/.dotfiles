@@ -2,6 +2,7 @@ target-version = "py312"
 
 [lint]
 select = ["E4", "E7", "E9", "F", "B", "S"]
+extend-select = ["ASYNC210", "ASYNC251", "RUF006"]
 ignore = ["S603", "S607"]
 
 [lint.per-file-ignores]
