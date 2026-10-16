@@ -4,8 +4,8 @@ description: Install Nix and restore the store cache for one Nix Lint job.
 inputs:
   cache-key:
     description: >-
-      Job-scoped segment of the cache key. Each job caches only the store paths it actually touches,
-      so a restore stays smaller than one shared cache covering every job at once.
+      Job-scoped segment of the cache key. Only flake-check restores and saves a store archive;
+      other jobs use their configured Nix substituters.
     required: true
   github-token:
     description: >-
@@ -34,6 +34,7 @@ runs:
     # that drifts between jobs turns every restore into a silent miss, which reads as a slow run
     # rather than as a broken cache.
     - uses: nix-community/cache-nix-action@v7
+      if: ${{ inputs.cache-key == 'flake-check' }}
       with:
         primary-key: nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/package.nix', 'agent-harness/harnesses/codex/status-line/**', 'repository/nix-library/fetch-prebuilt-binary.nix', 'machine-configuration/development/local-language-models/**') }}
         restore-prefixes-first-match: |
@@ -41,5 +42,5 @@ runs:
           nix-${{ runner.os }}-${{ inputs.cache-key }}-
         paths: |
           ~/.cache/nix
-        gc-max-store-size-linux: ${{ inputs.cache-key == 'flake-check' && '4G' || '' }}
+        gc-max-store-size-linux: 4G
         purge: false
