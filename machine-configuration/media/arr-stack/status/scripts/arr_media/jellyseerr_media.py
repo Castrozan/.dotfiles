@@ -84,9 +84,13 @@ def public_status(client, details, media_type):
     result["requests"] = [
         {
             "request_id": request["id"],
-            "status": {1: "pending", 2: "approved", 3: "declined", 4: "failed"}.get(
-                request["status"], "unknown"
-            ),
+            "status": {
+                1: "pending",
+                2: "approved",
+                3: "declined",
+                4: "failed",
+                5: "completed",
+            }.get(request["status"], "unknown"),
             "seasons": [
                 season["seasonNumber"] for season in request.get("seasons", [])
             ],

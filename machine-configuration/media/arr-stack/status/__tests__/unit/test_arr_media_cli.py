@@ -73,15 +73,16 @@ def test_tv_request_preserves_explicit_seasons(client, details, monkeypatch, cap
     assert "downloading" not in str(result)
 
 
+@pytest.mark.parametrize("request_status", [2, 5])
 def test_all_seasons_excludes_specials_and_existing_requests(
-    client, details, monkeypatch
+    client, details, monkeypatch, request_status
 ):
     details["mediaInfo"]["requests"] = [
         {
             "id": 7,
-            "status": 2,
+            "status": request_status,
             "requestedBy": {"id": 2},
-            "seasons": [{"seasonNumber": 1, "status": 2}],
+            "seasons": [{"seasonNumber": 1, "status": request_status}],
         }
     ]
     transport = Mock(return_value={"id": 8, "status": 2})
@@ -104,9 +105,12 @@ def test_invalid_season_never_posts(client, details, monkeypatch):
     transport.assert_not_called()
 
 
-def test_repeat_movie_request_is_idempotent(client, details, monkeypatch):
+@pytest.mark.parametrize("request_status", [2, 5])
+def test_repeat_movie_request_is_idempotent(
+    client, details, monkeypatch, request_status
+):
     details["mediaInfo"]["requests"] = [
-        {"id": 7, "status": 2, "requestedBy": {"id": 2}}
+        {"id": 7, "status": request_status, "requestedBy": {"id": 2}}
     ]
     transport = Mock()
     monkeypatch.setattr(JellyseerrMedia, "request", transport)

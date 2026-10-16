@@ -49,16 +49,17 @@ def request_media(client, arguments, details):
         requested_seasons = {
             season["seasonNumber"]
             for request in client.public_requests(details)
-            if request["status"] in {1, 2}
+            if request["status"] in {1, 2, 5}
             for season in request.get("seasons", [])
-            if season.get("status") in {1, 2}
+            if season.get("status") in {1, 2, 5}
         }
         remaining_seasons = sorted(set(selected_seasons) - requested_seasons)
         if not remaining_seasons:
             return {"result": "already_requested", **status}
         payload["seasons"] = remaining_seasons
     elif any(
-        request["status"] in {"pending", "approved"} for request in status["requests"]
+        request["status"] in {"pending", "approved", "completed"}
+        for request in status["requests"]
     ):
         return {"result": "already_requested", **status}
     request = client.request("POST", "/request", payload)
