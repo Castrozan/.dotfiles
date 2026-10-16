@@ -1,10 +1,14 @@
 --- a/a2a_server/backends/base.py
 +++ b/a2a_server/backends/base.py
-@@ -11,0 +12,4 @@
+@@ -11,0 +12,8 @@
 +
 +
 +class AgentBusyError(RuntimeError):
 +    pass
++
++
++class PromptNotSubmitted(RuntimeError):
++    """Preflight stopped before any input-producing command was invoked."""
 --- a/a2a_server/backends/herdr_backend.py
 +++ b/a2a_server/backends/herdr_backend.py
 @@ -6,0 +7 @@
@@ -23,7 +27,7 @@
 +++ b/a2a_server/active_task_coordinator.py
 @@ -4 +4 @@
 -from .backends.base import AgentBackend, BackendObservation
-+from .backends.base import AgentBackend, AgentBusyError, BackendObservation
++from .backends.base import AgentBackend, AgentBusyError, BackendObservation, PromptNotSubmitted
 @@ -22,0 +23 @@
 +        self._active_task_delivery_is_pending = False
 @@ -41,0 +43 @@
@@ -223,7 +227,7 @@
 +                return False
 +            try:
 +                self._agent_backend.send_input_text(input_text)
-+            except Exception:
++            except (AgentBusyError, PromptNotSubmitted):
 +                return False
 +            return True
 --- a/a2a_server/fleet/session.py

@@ -15,15 +15,29 @@ class PeerNotificationDelivery:
         batch, content = self._pending_batch()
         if not batch:
             return
-        if not self._coordinator.deliver_notification_if_idle(content):
+        identifiers = [notification.identifier for notification in batch]
+        if not self._mailbox.claim(identifiers):
             return
-        for notification in batch:
-            self._mailbox.acknowledge(notification.identifier)
+        self._deliver_claimed(identifiers, content)
+
+    def _deliver_claimed(self, identifiers: list[str], content: str) -> None:
+        try:
+            accepted = self._coordinator.deliver_notification_if_idle(content)
+        except Exception:
+            # Input may already have reached the harness. Never replay on an ACK error.
+            return
+        if not accepted:
+            self._mailbox.defer(identifiers)
+            return
+        for identifier in identifiers:
+            self._mailbox.acknowledge(identifier)
 
     def _pending_batch(self) -> tuple[list[PeerNotification], str]:
         batch = []
         content = ""
         for notification in self._mailbox.read():
+            if notification.delivery_state != "pending":
+                continue
             message = f"From {notification.claimed_sender}:\n{notification.content}"
             candidate = "\n\n".join(filter(None, (content, message)))
             if len(candidate.encode("utf-8")) > MAXIMUM_NOTIFICATION_BATCH_BYTES:

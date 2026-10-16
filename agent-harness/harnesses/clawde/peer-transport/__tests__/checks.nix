@@ -82,9 +82,11 @@ in
           ${harnessTests}/integration/test_a2a_mailbox_delivery.py \
           ${harnessTests}/integration/test_a2a_notification_delivery.py \
           ${harnessTests}/integration/test_a2a_notification_delivery_failures.py \
+          ${harnessTests}/integration/test_a2a_notification_uncertainty.py \
           ${harnessTests}/integration/test_a2a_notification_requests.py \
           ${harnessTests}/integration/test_a2a_notification_commands.py \
           ${harnessTests}/unit/test_peer_notification_mailbox.py \
+          ${harnessTests}/unit/test_peer_notification_claims.py \
           ${clientTests}/test_a2a_cli_notifications.py \
           ${clientTests}/test_a2a_cli_peer_transport.py
         touch "$out"

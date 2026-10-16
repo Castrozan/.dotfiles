@@ -3,7 +3,9 @@ from concurrent.futures import ThreadPoolExecutor
 from a2a_test_client import request_json
 
 
-def test_failed_delivery_keeps_notifications_for_retry(owned_fleet, observe_fleet):
+def test_failed_native_delivery_is_uncertain_and_cannot_retry(
+    owned_fleet, observe_fleet
+):
     _, notification = request_json(
         owned_fleet,
         "POST",
@@ -14,10 +16,10 @@ def test_failed_delivery_keeps_notifications_for_retry(owned_fleet, observe_flee
     observe_fleet()
     assert request_json(owned_fleet, "GET", "/agents/owned-peer/messages")[1][
         "messages"
-    ] == [notification]
+    ] == [{**notification, "deliveryState": "uncertain"}]
     owned_fleet.target.fail_submission = False
     observe_fleet()
-    assert len(owned_fleet.target.submitted) == 1
+    assert owned_fleet.target.submitted == []
 
 
 def test_batch_is_bounded_and_preserves_later_arrivals(
@@ -124,7 +126,7 @@ def test_unconfirmed_submission_keeps_the_message_and_occupied_composer(
     assert draft
     assert request_json(owned_fleet, "GET", "/agents/owned-peer/messages")[1][
         "messages"
-    ] == [notification]
+    ] == [{**notification, "deliveryState": "uncertain"}]
     observe_fleet()
     assert owned_fleet.target.draft == draft
     assert owned_fleet.target.submitted == []

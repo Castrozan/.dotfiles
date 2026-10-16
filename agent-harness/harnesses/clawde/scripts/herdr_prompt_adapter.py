@@ -1,7 +1,7 @@
 import re
 
 from .backends import herdr_pane_resolution
-from .backends.base import AgentBusyError
+from .backends.base import AgentBusyError, PromptNotSubmitted
 
 ANSI_STYLE_PATTERN = re.compile(r"\x1b\[([0-9;]*)m")
 PROMPT_PREFIXES = {"codex": "›", "claude": "❯", "opencode": ">"}
@@ -121,13 +121,12 @@ class HerdrPromptAdapter:
         self._pane_id = pane_id
 
     def submit(self, content: str) -> None:
-        harness = self._ready_harness()
-        if not composer_is_observably_empty(self._capture_composer(), harness):
-            raise RuntimeError(
-                "composer_occupied_or_unrecognized; use notify for coordination"
-            )
-        if self._ready_harness() != harness:
-            raise RuntimeError("agent_changed_before_submission")
+        try:
+            self._check_composer_before_input()
+        except AgentBusyError:
+            raise
+        except Exception as error:
+            raise PromptNotSubmitted(str(error)) from error
         self._run(
             [
                 "agent",
@@ -143,6 +142,15 @@ class HerdrPromptAdapter:
                 str(DELIVERY_OBSERVATION_TIMEOUT_MILLISECONDS),
             ]
         )
+
+    def _check_composer_before_input(self) -> None:
+        harness = self._ready_harness()
+        if not composer_is_observably_empty(self._capture_composer(), harness):
+            raise RuntimeError(
+                "composer_occupied_or_unrecognized; use notify for coordination"
+            )
+        if self._ready_harness() != harness:
+            raise RuntimeError("agent_changed_before_submission")
 
     def _ready_harness(self) -> str | None:
         pane = herdr_pane_resolution.read_pane_information(self._pane_id)
