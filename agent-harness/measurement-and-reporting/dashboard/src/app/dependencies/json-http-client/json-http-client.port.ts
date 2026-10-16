@@ -1,13 +1,13 @@
 import { InjectionToken } from '@angular/core';
 
-export interface JsonHttpResponse<TBody> {
+export interface JsonHttpResponse {
   ok: boolean;
   status: number;
-  body: TBody | null;
+  body: unknown;
 }
 
 export interface JsonHttpClientPort {
-  getJson<TBody>(url: string): Promise<JsonHttpResponse<TBody>>;
+  getJson(url: string): Promise<JsonHttpResponse>;
 }
 
 export const JSON_HTTP_CLIENT = new InjectionToken<JsonHttpClientPort>('JSON_HTTP_CLIENT');

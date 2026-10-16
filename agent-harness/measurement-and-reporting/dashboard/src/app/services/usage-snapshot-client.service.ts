@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { DASHBOARD_CONFIGURATION, DashboardConfiguration } from '../config/dashboard-config';
 import { JSON_HTTP_CLIENT } from '../dependencies/json-http-client/json-http-client.port';
-import { UsageSnapshot } from '../models/usage-snapshot.model';
-
-interface StorageObjectListing {
-  items?: { name: string }[];
-  nextPageToken?: string;
-}
+import type { UsageSnapshot } from '../models/usage-snapshot.model';
+import {
+  type StorageObjectListing,
+  parseStorageObjectListing,
+} from '../models/storage-object-listing-parser';
+import { parseUsageSnapshot } from '../models/usage-snapshot-parser';
 
 @Injectable({ providedIn: 'root' })
 export class UsageSnapshotClientService {
@@ -51,20 +51,18 @@ export class UsageSnapshotClientService {
   private async fetchObjectListingPage(
     pageToken: string | undefined,
   ): Promise<StorageObjectListing> {
-    const response = await this.jsonHttpClient.getJson<StorageObjectListing>(
-      this.buildObjectListingUrl(pageToken),
-    );
+    const response = await this.jsonHttpClient.getJson(this.buildObjectListingUrl(pageToken));
     if (!response.ok || response.body === null) {
       throw new Error(`snapshot listing failed with status ${response.status}`);
     }
-    return response.body;
+    return parseStorageObjectListing(response.body);
   }
 
   private async fetchSnapshotObject(objectName: string): Promise<UsageSnapshot | null> {
     const mediaUrl = `https://storage.googleapis.com/${this.configuration.snapshotsBucket}/${objectName}`;
     try {
-      const response = await this.jsonHttpClient.getJson<UsageSnapshot>(mediaUrl);
-      return response.ok ? response.body : null;
+      const response = await this.jsonHttpClient.getJson(mediaUrl);
+      return response.ok ? parseUsageSnapshot(response.body) : null;
     } catch {
       return null;
     }
