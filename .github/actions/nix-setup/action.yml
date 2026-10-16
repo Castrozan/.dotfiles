@@ -35,11 +35,10 @@ runs:
     # rather than as a broken cache.
     - uses: nix-community/cache-nix-action@v7
       with:
-        primary-key: nix-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/status-line/**', 'machine-configuration/development/local-language-models/**') }}
-        restore-prefixes-first-match: nix-${{ runner.os }}-${{ inputs.cache-key }}-
+        primary-key: nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/status-line/**', 'machine-configuration/development/local-language-models/**') }}
+        restore-prefixes-first-match: |
+          nix-native-${{ runner.os }}-${{ inputs.cache-key }}-
+          nix-${{ runner.os }}-${{ inputs.cache-key }}-
         paths: |
           ~/.cache/nix
-        purge: true
-        purge-prefixes: nix-${{ runner.os }}-${{ inputs.cache-key }}-
-        purge-created: 0
-        purge-primary-key: never
+        purge: false
