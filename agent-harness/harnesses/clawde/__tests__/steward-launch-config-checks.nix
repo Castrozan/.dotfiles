@@ -45,8 +45,32 @@ let
       (helpers.homeManagerTestConfigurationForLinuxHost "rin" (
         bothHarnessModules ++ [ ../agents/steward.nix ]
       )).home.file."clawde/launch-config/steward.json".text;
+
+  codexCommandForHost =
+    hostname: agentName: commandBuilderName:
+    (helpers.homeManagerTestConfigurationForLinuxHost hostname bothHarnessModules)
+    .clawde.harnesses.codex.${commandBuilderName}
+      ((launchArgumentsForEffort "high") // { name = agentName; });
 in
 {
+  clawde-rin-steward-restores-terminal-space-before-interactive-launch =
+    mkEvalCheck "clawde-rin-steward-restores-terminal-space-before-interactive-launch"
+      (pkgs.lib.hasInfix "steward_terminal_space.py &&" (
+        codexCommandForHost "rin" "steward" "buildLaunchCommandFor"
+      ))
+      "Rin's collapsed steward pane must regain drawable terminal space before Codex resumes";
+
+  clawde-steward-terminal-space-guard-is-scoped =
+    mkEvalCheck "clawde-steward-terminal-space-guard-is-scoped"
+      (builtins.all (command: !(pkgs.lib.hasInfix "steward_terminal_space.py" command)) [
+        (codexCommandForHost "kira" "steward" "buildLaunchCommandFor")
+        (codexCommandForHost "chise" "steward" "buildLaunchCommandFor")
+        (codexCommandForHost "rin" "other-agent" "buildLaunchCommandFor")
+        (codexCommandForHost "rin" "steward" "buildRunOnceCommandFor")
+        (codexCommandForHost "rin" "steward" "buildOneShotTurnCommandFor")
+      ])
+      "the terminal repair belongs only to Rin's interactive steward launch";
+
   clawde-rin-steward-checks-activation-before-its-model-gate =
     mkEvalCheck "clawde-rin-steward-checks-activation-before-its-model-gate"
       (builtins.any (

@@ -1,4 +1,10 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  hostname,
+  ...
+}:
 {
   options.clawde.harnesses = lib.mkOption {
     type = lib.types.attrsOf (
@@ -13,15 +19,25 @@
                 "buildOneShotTurnCommandFor"
               ]
               (
-                _:
+                commandBuilderName:
                 lib.mkOption {
                   apply =
                     buildCommand:
-                    if name != "claude" || buildCommand == null then
+                    if buildCommand == null then
                       buildCommand
                     else
                       arguments:
-                      "CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${buildCommand arguments}";
+                      if name == "claude" then
+                        "CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${buildCommand arguments}"
+                      else if
+                        name == "codex"
+                        && hostname == "rin"
+                        && arguments.name == "steward"
+                        && commandBuilderName == "buildLaunchCommandFor"
+                      then
+                        "${pkgs.python312}/bin/python3 ${./scripts/steward_terminal_space.py} && ${buildCommand arguments}"
+                      else
+                        buildCommand arguments;
                 }
               );
         }
