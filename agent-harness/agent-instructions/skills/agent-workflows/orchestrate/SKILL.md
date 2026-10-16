@@ -114,3 +114,13 @@ dispatching again, which the peer refuses while its task is still active. A pane
 vanished target, so check liveness before retrying into a dead session. Take the keyboard through herdr when correction
 has stopped working, and never leave a stalled peer unattended, because a peer blocked on a prompt burns the goal's time
 without reporting anything.
+
+### Durable fleet continuity
+
+Use `a2a fleet status` for a quiet cached view of confirmed hosts and exact pane/conversation identities. It performs no
+network or model calls. Read [fleet registry](../../../../agent-to-agent-communication/client/FLEET.md) for explicit
+bounded refresh, owner/task assignment, durable dispatch receipts, readiness, result verification and create/resume
+procedures. Register only independently confirmed hosts; distinguish metadata freshness from productivity and idle
+status from composer readiness. A receipt or ACK is not completion, and a lost task record is not permission to resend.
+Do not send routine fleet updates or add another maintenance/nightly schedule. Check target command help before creating
+sessions: installed Herdr versions may use `agent start --kind ... --pane ...` instead of the placement syntax above.
