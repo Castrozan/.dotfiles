@@ -143,7 +143,10 @@ in
       '';
 
   domain-local-model-tokenizer-long-input =
-    pkgs.runCommand "domain-local-model-tokenizer-long-input" { }
+    pkgs.runCommand "domain-local-model-tokenizer-long-input"
+      {
+        passthru.tokenizerPackage = localTokenizerPackage;
+      }
       ''
         ${pkgs.python3}/bin/python ${./verify-tokenizer.py} \
           ${localTokenizerPackage}/bin/llama-tokenize \

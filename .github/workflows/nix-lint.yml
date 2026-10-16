@@ -74,6 +74,13 @@ jobs:
       - name: ${{ matrix.name }}
         run: ${{ matrix.command }}
 
+      - name: Retain native package outputs for the store cache
+        if: ${{ matrix.cache-key == 'flake-check' }}
+        run: |
+          nix build --out-link "$RUNNER_TEMP/native-cache-package" \
+            .#nixosConfigurations.chise.config.home-manager.users.zanoni.codex.unwrappedPackage \
+            .#checks.x86_64-linux.domain-local-model-tokenizer-long-input.tokenizerPackage
+
   gate:
     name: Nix Lint
     needs: [lint, evaluate]

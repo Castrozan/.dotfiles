@@ -41,4 +41,5 @@ runs:
           nix-${{ runner.os }}-${{ inputs.cache-key }}-
         paths: |
           ~/.cache/nix
+        gc-max-store-size-linux: ${{ inputs.cache-key == 'flake-check' && '4G' || '' }}
         purge: false
