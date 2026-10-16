@@ -2,7 +2,7 @@ let
   chise_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDXjYtc1kccaHnEeCnLfn5jB+3K8ULqIIsFoq+4pc+fX";
   rin_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICpNZt8hGVbToPSE0nqVFXsGSM3Zae2tAH/lmVN5rD1x";
   kira_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJw+IAmg/Vwv7U3BKyKl5fE+VidKx3ZPp8fkWJTy4jNG";
-  dot_key = "age1gc0ajutk27q902qjawfddw03y99eeydjz6s4ezguemrrfazp29wsyw5kju";
+  dot_recipient = "age1gc0ajutk27q902qjawfddw03y99eeydjz6s4ezguemrrfazp29wsyw5kju";
   all_keys = [
     chise_key
     rin_key
@@ -45,7 +45,7 @@ in
   "credentials/jira-api-token.age".publicKeys = all_keys;
   "credentials/glab-token.age".publicKeys = all_keys;
   "credentials/gitlab-com-token.age".publicKeys = all_keys;
-  "credentials/github-com-token.age".publicKeys = all_keys ++ [ dot_key ];
+  "credentials/github-com-token.age".publicKeys = all_keys ++ [ dot_recipient ];
   "credentials/x/x-username.age".publicKeys = all_keys;
   "credentials/x/x-email.age".publicKeys = all_keys;
   "credentials/x/x-password.age".publicKeys = all_keys;
