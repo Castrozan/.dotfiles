@@ -117,10 +117,11 @@ without reporting anything.
 
 ### Durable fleet continuity
 
-Use `a2a fleet status` for cached host and exact pane/conversation evidence without network calls or routine updates.
-The standalone `dot-fleet` client accepts the same arguments without the `a2a fleet` prefix. State lives in
-`${XDG_STATE_HOME:-~/.local/state}/dot-fleet/registry.sqlite3`; `--db PATH` selects isolated state. Register only reviewed
-host mappings with `confirm-host HOST --transport SSH_ALIAS --evidence REF`, using `local` for the confirmed collector.
+Use `a2a fleet status` for cached host and exact pane/conversation evidence without network calls or routine
+updates. The standalone `dot-fleet` client accepts the same arguments without the `a2a fleet` prefix. State lives
+in `${XDG_STATE_HOME:-~/.local/state}/dot-fleet/registry.sqlite3`; `--db PATH` selects isolated state. Register
+only reviewed host mappings with `confirm-host HOST --transport SSH_ALIAS --evidence REF`, using `local` for the
+confirmed collector.
 
 Run `status --refresh HOST OTHER_HOST` only when current evidence is needed: at most four confirmed hosts, two metadata
 commands each, five seconds per command, thirty-second network budget, bounded output and no retries. `ingest HOST FILE`
@@ -141,11 +142,11 @@ refuses supervised ownership; do not inspect private session stores or use the m
 
 ### Fleet receipts and results
 
-For an authorized self-contained target-accessible brief, use `dispatch HOST PANE SESSION --owner dot --task TASK_REF
---request-id ID --prompt 'Read /target/brief and implement it.' --execute` on one shell line. The durable intent is
-reserved before one A2A send; `[dot-fleet:ID]` travels in the prompt. An identical repeated ID never resends. One unresolved
-task holds each pane; limit coordinator fan-out to two. Use owned targets and avoid concurrent lifecycle changes because
-A2A has no atomic expected-conversation-ID send precondition.
+For an authorized self-contained target-accessible brief, use `dispatch HOST PANE SESSION --owner dot --task
+TASK_REF --request-id ID --prompt 'Read /target/brief and implement it.' --execute` on one shell line. The durable
+intent is reserved before one A2A send; `[dot-fleet:ID]` travels in the prompt. An identical repeated ID never
+resends. One unresolved task holds each pane; limit coordinator fan-out to two. Use owned targets and avoid
+concurrent lifecycle changes because A2A has no atomic expected-conversation-ID send precondition.
 
 Use `result ID` for one bounded read. A receipt or exact ACK is not completion. `reported_completed` is heuristic;
 inspect the artifact, tests and session before `verify ID --evidence CHECKED_RESULT_REF`. A lost receipt or remote task
