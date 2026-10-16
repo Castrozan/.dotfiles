@@ -117,12 +117,51 @@ without reporting anything.
 
 ### Durable fleet continuity
 
-Use `a2a fleet status` for a quiet cached view of confirmed hosts and exact pane/conversation identities. It performs no
-network or model calls. Read [fleet registry](references/fleet.md) for explicit
-bounded refresh, owner/task assignment, durable dispatch receipts, readiness, result verification and create/resume
-procedures.
+Use `a2a fleet status` for cached host and exact pane/conversation evidence without network calls or routine updates.
+The standalone `dot-fleet` client accepts the same arguments without the `a2a fleet` prefix. State lives in
+`${XDG_STATE_HOME:-~/.local/state}/dot-fleet/registry.sqlite3`; `--db PATH` selects isolated state. Register only reviewed
+host mappings with `confirm-host HOST --transport SSH_ALIAS --evidence REF`, using `local` for the confirmed collector.
 
-Register only independently confirmed hosts; distinguish metadata freshness from productivity and idle
-status from composer readiness. A receipt or ACK is not completion, and a lost task record is not permission to resend.
-Do not send routine fleet updates or add another maintenance/nightly schedule. Check target command help before creating
-sessions: installed Herdr versions may use `agent start --kind ... --pane ...` instead of the placement syntax above.
+Run `status --refresh HOST OTHER_HOST` only when current evidence is needed: at most four confirmed hosts, two metadata
+commands each, five seconds per command, thirty-second network budget, bounded output and no retries. `ingest HOST FILE`
+accepts a timestamped object containing `observed_at`, `evidence`, exact `a2a list --json` under `a2a`, and complete
+`herdr api snapshot` under `herdr`. Imports remain cached and cannot alone authorize dispatch.
+
+### Fleet identity and readiness
+
+Read `view`, `last_seen`, `fresh`, `present`, host `observation` and blockers together. Unreachable preserves cached
+agent evidence; failed observation does not imply failed work. Idle and service health do not establish composer
+readiness, mailbox consumption or model productivity. A rotated conversation retains history but not prior ownership.
+Assign only an observed tuple with `assign HOST PANE_ID SESSION_ID --owner dot --task TASK_REF`.
+
+Check installed command help before creating sessions: Herdr 0.9.1 uses
+`agent start NAME --kind codex --pane OWNED_PANE --timeout 30000` instead of the placement syntax above. Resume only an
+exact Herdr-reported ID through the existing owned-session workflow. `agent-session restart` is self-targeted and
+refuses supervised ownership; do not inspect private session stores or use the most-recent conversation fallback.
+
+### Fleet receipts and results
+
+For an authorized self-contained target-accessible brief, use `dispatch HOST PANE SESSION --owner dot --task TASK_REF
+--request-id ID --prompt 'Read /target/brief and implement it.' --execute` on one shell line. The durable intent is
+reserved before one A2A send; `[dot-fleet:ID]` travels in the prompt. An identical repeated ID never resends. One unresolved
+task holds each pane; limit coordinator fan-out to two. Use owned targets and avoid concurrent lifecycle changes because
+A2A has no atomic expected-conversation-ID send precondition.
+
+Use `result ID` for one bounded read. A receipt or exact ACK is not completion. `reported_completed` is heuristic;
+inspect the artifact, tests and session before `verify ID --evidence CHECKED_RESULT_REF`. A lost receipt or remote task
+record remains uncertain, not permission to retry. Recover a receipt with `reconcile ID --remote-task-id RECOVERED_ID
+--evidence RECEIPT_REF`, or record a checked outcome with `reconcile ID --outcome completed --evidence RESULT_REF`.
+Outcomes `failed` and `not_submitted` require independent proof; silence cannot prove non-submission.
+
+### Fleet event integration
+
+Feed existing Herdr lifecycle/status events to `dot-fleet event HOST FILE --evidence SOURCE_REF`. This persists
+invalidation without storing event data, inferring conversation identity, starting a subscription or refreshing itself.
+Collect a full snapshot after invalidation or reconnect. Keep on-demand refresh until an existing orchestrator consumes
+events; alternatively attach metadata collection to the existing fifteen-minute maintenance. Do not add duplicate
+timers, nightly tests, paid inference for polling or routine notifications.
+
+No service or session lifecycle is activated by this client. Never clear drafts, send extra Enter or switch transport
+to bypass a refusal. Preserve exact target, blocker and pending/denied/uncertain outcome, then reconcile before another
+intent. The repository runbook `agent-harness/agent-to-agent-communication/client/FLEET.md` documents formats and the
+separate deployment proposal. Local synthetic tests do not establish live fleet readiness or deployed behavior.

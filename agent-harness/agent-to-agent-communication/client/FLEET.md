@@ -141,6 +141,8 @@ a2a fleet verify UNIQUE_INTENT_ID --evidence CHECKED_COMMIT_AND_TEST_REFERENCE
 Dispatch re-resolves A2A and Herdr immediately, requires the exact conversation to be present, idle, interactive-ready
 and not launch-pending, then commits the reservation before calling `a2a send` once with the structural pane target and
 explicit sender. The sent text starts with `[dot-fleet:UNIQUE_INTENT_ID]`, and its hash and correlation survive locally.
+Herdr 0.9.1 omits false `launch_pending` and `interactive_ready` values; the client applies those defaults while
+requiring explicit true interactive readiness and rejecting malformed pending values.
 A2A does not accept an atomic expected-session-ID precondition: a rotation between preflight and send remains a known
 race. Use an owned peer and do not change its lifecycle concurrently. No claim of exactly-once remote delivery is made.
 
@@ -202,7 +204,7 @@ persistent on-demand interface and is not authorized or created here.
 
 ## Local verification
 
-Run the specific `client/__tests__/unit/test_fleet_registry.py` file and existing A2A transport/signed-command tests.
+Run the specific `client/__tests__/unit/test_fleet_*.py` files and existing A2A CLI test files.
 Inventories and delivery outcomes in those tests are synthetic; only SQLite persistence, CLI execution, and bounded
 local Python subprocess timeout/output tests are real. Tests do not prove fleet reachability, model productivity,
 composer acceptance, session creation/resume, event delivery or deployed behavior. Those remain verification-owner

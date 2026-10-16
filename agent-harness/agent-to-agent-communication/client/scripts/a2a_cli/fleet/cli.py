@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import json
 import os
-import sqlite3
-import sys
 from pathlib import Path
 
-from .operations import dispatch, refresh, result
-from .registry import Registry
+from .command_handlers import command_fleet as command_fleet
 
 
 def add_parser(subcommands):
@@ -104,78 +100,3 @@ def add_parser(subcommands):
     choice.add_argument("--remote-task-id")
     choice.add_argument("--outcome", choices=["completed", "failed", "not_submitted"])
     fleet.set_defaults(handler=command_fleet)
-
-
-def command_fleet(arguments):
-    registry = None
-    try:
-        registry = Registry(arguments.db)
-        command = arguments.fleet_command
-        answer = None
-        if command == "confirm-host":
-            registry.confirm_host(
-                arguments.host, arguments.transport, arguments.evidence
-            )
-        elif command == "status":
-            live = refresh(registry, arguments.refresh) if arguments.refresh else []
-            answer = registry.status(live_hosts=live)
-        elif command in {"ingest", "event"}:
-            if arguments.file.stat().st_size > 2 * 1024 * 1024:
-                raise ValueError("metadata import exceeds 2 MiB")
-            document = json.loads(arguments.file.read_text())
-            if command == "event":
-                registry.event(arguments.host, document, arguments.evidence)
-            else:
-                registry.ingest(
-                    arguments.host,
-                    document["a2a"],
-                    document["herdr"],
-                    document["observed_at"],
-                    document["evidence"],
-                )
-        elif command == "assign":
-            registry.assign(
-                arguments.host,
-                arguments.pane,
-                arguments.session,
-                arguments.owner,
-                arguments.task,
-            )
-        elif command == "dispatch":
-            answer = dispatch(
-                registry,
-                arguments.request_id,
-                arguments.host,
-                arguments.pane,
-                arguments.session,
-                arguments.owner,
-                arguments.task,
-                arguments.prompt,
-            )
-        elif command == "result":
-            answer = result(registry, arguments.request_id)
-        elif command == "verify":
-            answer = registry.verify(arguments.request_id, arguments.evidence)
-        elif command == "reconcile":
-            answer = registry.reconcile(
-                arguments.request_id,
-                arguments.evidence,
-                arguments.remote_task_id,
-                arguments.outcome,
-            )
-        if answer is not None:
-            print(json.dumps(answer, indent=2))
-        return 0
-    except (
-        ValueError,
-        OSError,
-        sqlite3.Error,
-        KeyError,
-        TypeError,
-        AttributeError,
-    ) as error:
-        print(f"a2a fleet: {error}", file=sys.stderr)
-        return 1
-    finally:
-        if registry is not None:
-            registry.close()
