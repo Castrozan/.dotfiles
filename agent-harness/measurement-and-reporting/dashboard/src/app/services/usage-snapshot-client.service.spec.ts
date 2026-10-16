@@ -96,7 +96,7 @@ describe('UsageSnapshotClientService', () => {
   ])('rejects a listing with %s', async (_description, body) => {
     const { service } = buildService(new Map([['/storage/v1/b/', okResponse(body)]]));
 
-    await expect(service.fetchAllSnapshots()).rejects.toThrow('snapshot listing');
+    await expect(service.fetchAllSnapshots()).rejects.toThrow('Invalid snapshot listing response');
   });
 
   it('accepts an empty listing', async () => {

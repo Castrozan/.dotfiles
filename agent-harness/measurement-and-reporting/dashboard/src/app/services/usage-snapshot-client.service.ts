@@ -52,7 +52,7 @@ export class UsageSnapshotClientService {
     pageToken: string | undefined,
   ): Promise<StorageObjectListing> {
     const response = await this.jsonHttpClient.getJson(this.buildObjectListingUrl(pageToken));
-    if (!response.ok || response.body === null) {
+    if (!response.ok) {
       throw new Error(`snapshot listing failed with status ${response.status}`);
     }
     return parseStorageObjectListing(response.body);
