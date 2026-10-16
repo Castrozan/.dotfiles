@@ -1,5 +1,5 @@
 import os
-import subprocess
+import termios
 from unittest.mock import Mock
 
 import pytest
@@ -10,61 +10,49 @@ import steward_terminal_space
 @pytest.mark.parametrize("rows", [8, 38])
 def test_drawable_terminal_preserves_layout(monkeypatch, rows):
     monkeypatch.setattr(os, "get_terminal_size", lambda: os.terminal_size((132, rows)))
-    run = Mock()
-    monkeypatch.setattr(subprocess, "run", run)
+    resize = Mock()
+    monkeypatch.setattr(termios, "tcsetwinsize", resize)
 
     steward_terminal_space.ensure_terminal_space()
 
-    run.assert_not_called()
+    resize.assert_not_called()
 
 
-def test_collapsed_terminal_zooms_only_its_own_pane(monkeypatch):
-    sizes = iter([os.terminal_size((132, 2)), os.terminal_size((132, 38))])
-    monkeypatch.setattr(os, "get_terminal_size", lambda: next(sizes))
-    monkeypatch.setenv("HERDR_PANE_ID", "w2B:pA")
-    run = Mock()
-    monkeypatch.setattr(subprocess, "run", run)
-
-    steward_terminal_space.ensure_terminal_space()
-
-    run.assert_called_once_with(
-        ["herdr", "pane", "zoom", "w2B:pA", "--on"],
-        check=True,
-        capture_output=True,
-        text=True,
-        timeout=5,
-    )
-
-
-def test_collapsed_terminal_requires_its_pane_identity(monkeypatch):
-    monkeypatch.setattr(os, "get_terminal_size", lambda: os.terminal_size((132, 2)))
-    monkeypatch.delenv("HERDR_PANE_ID", raising=False)
-    run = Mock()
-    monkeypatch.setattr(subprocess, "run", run)
-
-    with pytest.raises(SystemExit, match="HERDR_PANE_ID"):
-        steward_terminal_space.ensure_terminal_space()
-
-    run.assert_not_called()
-
-
-def test_zoom_failure_prevents_launch(monkeypatch):
-    monkeypatch.setattr(os, "get_terminal_size", lambda: os.terminal_size((132, 2)))
-    monkeypatch.setenv("HERDR_PANE_ID", "w2B:pA")
+@pytest.mark.parametrize("columns, rows", [(132, 2), (80, 0), (24, 7)])
+def test_collapsed_terminal_resizes_only_its_inherited_terminal(
+    monkeypatch, columns, rows
+):
     monkeypatch.setattr(
-        subprocess,
-        "run",
-        Mock(side_effect=subprocess.TimeoutExpired("herdr", 5)),
+        os, "get_terminal_size", lambda: os.terminal_size((columns, rows))
     )
+    resize = Mock()
+    monkeypatch.setattr(termios, "tcsetwinsize", resize)
 
-    with pytest.raises(subprocess.TimeoutExpired):
+    steward_terminal_space.ensure_terminal_space()
+
+    resize.assert_called_once_with(1, (8, columns))
+
+
+def test_nonterminal_output_prevents_launch(monkeypatch):
+    monkeypatch.setattr(
+        os, "get_terminal_size", Mock(side_effect=OSError("no terminal"))
+    )
+    resize = Mock()
+    monkeypatch.setattr(termios, "tcsetwinsize", resize)
+
+    with pytest.raises(OSError, match="no terminal"):
         steward_terminal_space.ensure_terminal_space()
 
+    resize.assert_not_called()
 
-def test_zoom_must_restore_drawable_terminal(monkeypatch):
+
+def test_resize_failure_prevents_launch(monkeypatch):
     monkeypatch.setattr(os, "get_terminal_size", lambda: os.terminal_size((132, 2)))
-    monkeypatch.setenv("HERDR_PANE_ID", "w2B:pA")
-    monkeypatch.setattr(subprocess, "run", Mock())
+    monkeypatch.setattr(
+        termios,
+        "tcsetwinsize",
+        Mock(side_effect=OSError("resize denied")),
+    )
 
-    with pytest.raises(SystemExit, match="fewer than 8 rows"):
+    with pytest.raises(OSError, match="resize denied"):
         steward_terminal_space.ensure_terminal_space()

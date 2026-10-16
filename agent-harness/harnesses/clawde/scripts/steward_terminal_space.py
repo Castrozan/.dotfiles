@@ -1,22 +1,12 @@
 import os
-import subprocess
+import termios
 
 
 def ensure_terminal_space():
-    if os.get_terminal_size().lines >= 8:
+    terminal_size = os.get_terminal_size()
+    if terminal_size.lines >= 8:
         return
-    pane_identifier = os.environ.get("HERDR_PANE_ID")
-    if not pane_identifier:
-        raise SystemExit("Collapsed steward terminal requires HERDR_PANE_ID")
-    subprocess.run(
-        ["herdr", "pane", "zoom", pane_identifier, "--on"],
-        check=True,
-        capture_output=True,
-        text=True,
-        timeout=5,
-    )
-    if os.get_terminal_size().lines < 8:
-        raise SystemExit("Steward terminal still has fewer than 8 rows after zoom")
+    termios.tcsetwinsize(1, (8, terminal_size.columns))
 
 
 if __name__ == "__main__":
