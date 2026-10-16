@@ -75,7 +75,9 @@ pending or denied outcome. Reconcile before a new intent.
 Prefer the existing Herdr `events.subscribe` surface for pane lifecycle and per-pane agent-status events. These events
 do not establish conversation identity by themselves: coalesce invalidations, refresh a complete snapshot, and refresh
 after reconnect. Feed an existing consumer's envelope to `dot-fleet event HOST FILE --evidence SOURCE_REF` to persist
-invalidation without storing event data or creating a subscription. No service is activated by this CLI. Keep on-demand refresh until integration into
+invalidation without storing event data or creating a subscription.
+
+No service is activated by this CLI. Keep on-demand refresh until integration into
 an existing orchestrator is approved; alternatively attach metadata collection to the existing fifteen-minute
 maintenance. Never add a duplicate timer, duplicate nightly tests, or model calls for status polling.
 
