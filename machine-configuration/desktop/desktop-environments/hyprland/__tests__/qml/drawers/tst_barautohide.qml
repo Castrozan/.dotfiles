@@ -25,7 +25,7 @@ Item {
         name: "BarAutoHide"
 
         function initTestCase() {
-            compare(hoverController.barAutoHideInterval, 3000);
+            compare(hoverController.barAutoHideInterval, 6000);
         }
 
         function init() {

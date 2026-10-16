@@ -86,6 +86,7 @@ Scope {
         id: screenHoverController
 
         drawerState: screenDrawerState
+        activeWorkspaceId: visibleWorkspaceWindows.workspaceId
         pointerOverBar: drawersWindow.pointerOverBar
     }
 

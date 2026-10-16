@@ -6,7 +6,18 @@ Item {
     required property var drawerState
 
     property bool pointerOverBar: false
-    property int barAutoHideInterval: 3000
+    property int barAutoHideInterval: 6000
+    property int activeWorkspaceId: 0
+    property int previousWorkspaceId: 0
+
+    onActiveWorkspaceIdChanged: {
+        if (activeWorkspaceId === 0)
+            return;
+        const workspaceChanged = previousWorkspaceId !== 0 && previousWorkspaceId !== activeWorkspaceId;
+        previousWorkspaceId = activeWorkspaceId;
+        if (workspaceChanged)
+            showBarTemporarily();
+    }
 
     readonly property alias bar: barHoverTiming
     readonly property alias dashboard: dashboardHoverTiming
@@ -24,6 +35,11 @@ Item {
             drawerHoverControllerRoot.drawerState.closeBar();
             return;
         }
+        drawerHoverControllerRoot.showBarTemporarily();
+    }
+
+    function showBarTemporarily(): void {
+        barHoverTiming.cancelPendingTransition();
         drawerHoverControllerRoot.drawerState.openBar();
         barAutoHideTimer.restart();
     }
@@ -50,7 +66,10 @@ Item {
         onContentPointerEntered: drawerHoverControllerRoot.drawerState.setBarHovered(true)
         onContentPointerLeft: drawerHoverControllerRoot.drawerState.setBarHovered(false)
         onRevealRequested: drawerHoverControllerRoot.drawerState.openBar()
-        onConcealRequested: drawerHoverControllerRoot.drawerState.closeBar()
+        onConcealRequested: {
+            if (!barAutoHideTimer.running)
+                drawerHoverControllerRoot.drawerState.closeBar();
+        }
     }
 
     DrawerHoverTiming {
