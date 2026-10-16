@@ -1,4 +1,5 @@
 import subprocess
+import re
 from pathlib import Path
 
 import yaml
@@ -13,23 +14,39 @@ DISCOVERY_LIBRARY = (
 PYTEST_TIERS_THAT_MUST_RUN_IN_CONTINUOUS_INTEGRATION = ("unit", "integration")
 
 
-def tiers_invoked_by_the_tests_workflow():
-    workflow_text = TESTS_WORKFLOW.read_text()
-    return {
-        line.split()[1]
-        for line in workflow_text.splitlines()
-        if "_run_pytest_tier" in line and len(line.split()) >= 2
-    }
+def executable_workflow_jobs(path, prefix="", visited=None):
+    visited = set() if visited is None else visited
+    assert path not in visited, "Reusable workflow cycle"
+    workflow = yaml.safe_load(path.read_text())
+    for name, job in workflow["jobs"].items():
+        identifier = f"{prefix}{name}"
+        reusable = job.get("uses", "")
+        if reusable.startswith("./.github/workflows/"):
+            yield from executable_workflow_jobs(
+                REPOSITORY_ROOT / reusable, f"{identifier}/", visited | {path}
+            )
+        else:
+            yield identifier, job
 
 
 def jobs_invoking_a_pytest_tier():
-    workflow = yaml.safe_load(TESTS_WORKFLOW.read_text())
     return {
-        job_name: job
-        for job_name, job in workflow["jobs"].items()
+        name: job
+        for name, job in executable_workflow_jobs(TESTS_WORKFLOW)
         if any(
             "_run_pytest_tier" in str(step.get("run", ""))
             for step in job.get("steps", [])
+        )
+    }
+
+
+def tiers_invoked_by_the_tests_workflow():
+    return {
+        tier
+        for job in jobs_invoking_a_pytest_tier().values()
+        for step in job.get("steps", [])
+        for tier in re.findall(
+            r"_run_pytest_tier\s+(unit|integration)\b", str(step.get("run", ""))
         )
     }
 
@@ -69,8 +86,11 @@ def test_every_pytest_tier_holding_tests_is_invoked_by_continuous_integration():
 
 
 def test_continuous_integration_supplies_the_binaries_the_suite_shells_out_to():
-    workflow_text = TESTS_WORKFLOW.read_text()
-    assert "test-suite-environment.nix" in workflow_text, (
+    assert any(
+        "test-suite-environment.nix" in str(step.get("run", ""))
+        for job in jobs_invoking_a_pytest_tier().values()
+        for step in job.get("steps", [])
+    ), (
         "the pytest jobs run inside a nix shell built from an expression, so every "
         "binary the tests shell out to has to come from that expression rather than "
         "from the runner image; a hook that shells out to a binary missing from the "

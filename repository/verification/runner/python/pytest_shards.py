@@ -4,18 +4,24 @@ from pathlib import Path
 import sys
 
 
-def select_shard(test_files, repository_directory, shard_index, shard_count, weights):
+def _validate_shard_inputs(test_files, shard_index, shard_count):
     if shard_count < 1 or not 0 <= shard_index < shard_count:
         raise ValueError(
             "shard index must be nonnegative and smaller than a positive shard count"
         )
     if len(set(test_files)) != len(test_files):
         raise ValueError("shard discovery contains duplicate test files")
+
+
+def _validate_weights(weights):
     if any(not math.isfinite(weight) or weight <= 0 for weight in weights.values()):
         raise ValueError("shard weights must be finite positive durations")
+
+
+def _weight_test_files(test_files, repository_directory, weights):
     repository_directory = Path(repository_directory).resolve()
     default_weight = max(1.0, max(weights.values(), default=1.0))
-    weighted_files = [
+    return [
         (
             path,
             weights.get(
@@ -25,6 +31,12 @@ def select_shard(test_files, repository_directory, shard_index, shard_count, wei
         )
         for path in test_files
     ]
+
+
+def select_shard(test_files, repository_directory, shard_index, shard_count, weights):
+    _validate_shard_inputs(test_files, shard_index, shard_count)
+    _validate_weights(weights)
+    weighted_files = _weight_test_files(test_files, repository_directory, weights)
     partitions = [[] for _ in range(shard_count)]
     durations = [0.0] * shard_count
     for path, weight in sorted(weighted_files, key=lambda item: (-item[1], item[0])):

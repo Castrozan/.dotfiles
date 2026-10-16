@@ -51,7 +51,7 @@ export async function fixture(testContext, includeReports) {
         id: 102,
         steps: [
           {
-            name: "Run Python tests",
+            name: "Combine Python evidence",
             status: "completed",
             started_at: startedAt,
             completed_at: completedAt,

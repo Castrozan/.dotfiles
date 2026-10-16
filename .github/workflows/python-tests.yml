@@ -1,0 +1,39 @@
+name: Python tests
+
+on:
+  workflow_call:
+    outputs:
+      unit-artifact-id:
+        value: ${{ jobs.unit.outputs.artifact-id }}
+      unit-artifact-attempt:
+        value: ${{ jobs.unit.outputs.artifact-attempt }}
+      integration-first-artifact-id:
+        value: ${{ jobs.integration-first.outputs.artifact-id }}
+      integration-first-artifact-attempt:
+        value: ${{ jobs.integration-first.outputs.artifact-attempt }}
+      integration-second-artifact-id:
+        value: ${{ jobs.integration-second.outputs.artifact-id }}
+      integration-second-artifact-attempt:
+        value: ${{ jobs.integration-second.outputs.artifact-attempt }}
+
+jobs:
+  unit:
+    uses: ./.github/workflows/python-test-shard.yml
+    with:
+      tier: unit
+      shard: 0
+      count: 1
+
+  integration-first:
+    uses: ./.github/workflows/python-test-shard.yml
+    with:
+      tier: integration
+      shard: 0
+      count: 2
+
+  integration-second:
+    uses: ./.github/workflows/python-test-shard.yml
+    with:
+      tier: integration
+      shard: 1
+      count: 2
