@@ -27,6 +27,8 @@ becomes part of the flake.
 The ignored `.runtime/` directory holds downloads, the physical Nix store,
 generated HOME, temporary files and the result link. Set `DOT_ROOT` to an absolute
 writable directory to keep state elsewhere; use the same value for all commands.
+When updating from the earlier `development/rootless-nix` layout, set `DOT_ROOT`
+to its existing absolute `.runtime` path to reuse the store and generated home.
 The source checkout is read-only inside the launcher. No root install or system
 service is required. `/nix` exists only in the process namespace, so always run
 installed binaries through `run.py`. The launcher mirrors host entries read-only
@@ -37,10 +39,13 @@ Avoid using an existing personal HOME or an ancestor of the source as `DOT_ROOT`
 Nix builds use `sandbox = true` and `sandbox-fallback = false`. The bootstrap
 configuration has no build-users group because this is a single-user install.
 The profile has Bash completion, Git, GitHub CLI, OpenSSH, age, jq, ripgrep, fd,
-bat, fzf, zoxide, tmux,
-nano, less, tree, transfer/archive utilities, Python 3.12, Node 22, ShellCheck,
+bat, fzf, zoxide, tmux, nano, less, tree, transfer/archive utilities, Python 3.12, Node 22, ShellCheck,
 nixfmt and Home Manager. Login shells restore the managed package PATH after
 host `/etc/profile`. User systemd management is disabled.
+
+The thin `a2a` client is included through its existing Home Manager module. Use
+its explicit `--daemon` endpoint or invoke it through SSH on a configured peer;
+this profile starts no A2A daemon and installs no full session-control stack.
 
 `media-speech` uses the existing CLI with the ElevenLabs SDK. Verification runs
 help only: it neither loads credentials nor makes synthesis calls. The Kokoro
