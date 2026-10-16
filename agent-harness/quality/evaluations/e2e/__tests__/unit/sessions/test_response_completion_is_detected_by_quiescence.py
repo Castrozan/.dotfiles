@@ -1,12 +1,14 @@
 import itertools
 
+import pytest
+
 from e2e.sessions import e2e_herdr_io
 
 PANE = "wX:p1"
+pytestmark = pytest.mark.usefixtures("simulated_monotonic_clock")
 
 
 def drive_completion(monkeypatch, first_capture, next_capture, timeout_seconds=30):
-    monkeypatch.setattr(e2e_herdr_io.time, "sleep", lambda _seconds: None)
     monkeypatch.setattr(
         e2e_herdr_io, "capture_visible_screen", lambda _pane: next_capture()
     )
@@ -16,7 +18,6 @@ def drive_completion(monkeypatch, first_capture, next_capture, timeout_seconds=3
 
 
 def drive_startup_settle(monkeypatch, next_capture, timeout_seconds=30):
-    monkeypatch.setattr(e2e_herdr_io.time, "sleep", lambda _seconds: None)
     monkeypatch.setattr(
         e2e_herdr_io, "capture_visible_screen", lambda _pane: next_capture()
     )
@@ -127,7 +128,6 @@ def test_a_harness_whose_startup_never_moves_is_ready_rather_than_stuck(monkeypa
 
 def test_quiescence_samples_the_visible_screen_not_the_recent_scrollback(monkeypatch):
     requested_sources = []
-    monkeypatch.setattr(e2e_herdr_io.time, "sleep", lambda _seconds: None)
     monkeypatch.setattr(
         e2e_herdr_io,
         "read_pane",
@@ -142,7 +142,6 @@ def test_quiescence_samples_the_visible_screen_not_the_recent_scrollback(monkeyp
 
 
 def test_a_frozen_busy_indicator_does_not_end_the_turn(monkeypatch):
-    monkeypatch.setattr(e2e_herdr_io.time, "sleep", lambda _seconds: None)
     monkeypatch.setattr(
         e2e_herdr_io,
         "capture_visible_screen",
@@ -166,7 +165,6 @@ def test_a_frozen_busy_indicator_does_not_end_the_turn(monkeypatch):
 def test_a_turn_ends_once_the_busy_indicator_clears(monkeypatch):
     captures = ["Working (0s - esc to interrupt)"] * 3 + ["Context compacted"]
     captures += ["Context compacted"] * e2e_herdr_io.RESPONSE_QUIESCENCE_SAMPLES
-    monkeypatch.setattr(e2e_herdr_io.time, "sleep", lambda _seconds: None)
     replay = replaying(captures)
     monkeypatch.setattr(e2e_herdr_io, "capture_visible_screen", lambda _pane: replay())
 
@@ -182,7 +180,6 @@ def test_a_turn_ends_once_the_busy_indicator_clears(monkeypatch):
 
 
 def test_a_harness_still_starting_is_not_ready_while_its_busy_marker_is_up(monkeypatch):
-    monkeypatch.setattr(e2e_herdr_io.time, "sleep", lambda _seconds: None)
     monkeypatch.setattr(
         e2e_herdr_io,
         "capture_visible_screen",
