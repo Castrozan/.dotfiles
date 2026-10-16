@@ -43,9 +43,10 @@ bat, fzf, zoxide, tmux, nano, less, tree, transfer/archive utilities, Python 3.1
 nixfmt and Home Manager. Login shells restore the managed package PATH after
 host `/etc/profile`. User systemd management is disabled.
 
-The thin `a2a` client is included through its existing Home Manager module. Use
-its explicit `--daemon` endpoint or invoke it through SSH on a configured peer;
-this profile starts no A2A daemon and installs no full session-control stack.
+The thin `dot-fleet` client is included through `fleet-client-package.nix`. Its
+cached status reads local metadata; remote operations use already authorized SSH
+to confirmed workers. This profile starts no A2A daemon and installs no full
+session-control stack. Follow the [fleet runbook](../../../../agent-harness/agent-to-agent-communication/client/FLEET.md) for confirmation, receipts and independent result verification.
 
 `media-speech` uses the existing CLI with the ElevenLabs SDK. Verification runs
 help only: it neither loads credentials nor makes synthesis calls. The Kokoro

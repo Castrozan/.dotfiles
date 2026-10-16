@@ -10,7 +10,7 @@ git --version
 gh --version | head -1
 ssh -V
 age --version
-a2a --help >/dev/null
+dot-fleet --help >/dev/null
 jq --version
 rg --version | head -1
 fd --version

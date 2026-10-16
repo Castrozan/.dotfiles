@@ -11,6 +11,10 @@
     inherit username homeDirectory;
     stateVersion = home-version;
     packages = [
+      (pkgs.callPackage
+        ../../../../agent-harness/agent-to-agent-communication/client/fleet-client-package.nix
+        { }
+      )
       (import ../../../media/media-generation/speech-cloud-package.nix { inherit pkgs; })
     ]
     ++ (with pkgs; [
