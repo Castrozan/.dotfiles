@@ -1,28 +1,38 @@
+import http.client
 import json
-import urllib.request
 from dataclasses import dataclass, replace
 from pathlib import Path
 from urllib.parse import urlencode
 
 
 @dataclass(frozen=True)
+class JellyseerrRequestError(Exception):
+    status: int
+
+
+@dataclass(frozen=True)
 class JellyseerrMedia:
     api_key: str
     requester_id: int | None = None
-    base_url: str = "http://127.0.0.1:5055"
 
     def request(self, method, path, payload=None):
         headers = {"X-Api-Key": self.api_key, "Content-Type": "application/json"}
         if self.requester_id is not None:
             headers["X-API-User"] = str(self.requester_id)
-        request = urllib.request.Request(
-            f"{self.base_url}/api/v1{path}",
-            data=json.dumps(payload).encode() if payload is not None else None,
-            method=method,
-            headers=headers,
-        )
-        with urllib.request.urlopen(request, timeout=20) as response:
-            return json.load(response)
+        connection = http.client.HTTPConnection("127.0.0.1", 5055, timeout=20)
+        try:
+            connection.request(
+                method,
+                f"/api/v1{path}",
+                body=json.dumps(payload).encode() if payload is not None else None,
+                headers=headers,
+            )
+            response = connection.getresponse()
+            if response.status >= 400:
+                raise JellyseerrRequestError(response.status)
+            return json.loads(response.read())
+        finally:
+            connection.close()
 
     def search(self, title):
         query = urlencode({"query": title, "page": 1, "language": "pt-BR"})
@@ -56,11 +66,15 @@ def public_requester(stack_home):
     if len(matches) != 1:
         raise ValueError("Public Jellyseerr requester is unavailable")
     requester = matches[0]
+    validate_public_requester(requester)
+    return replace(administrator, requester_id=requester["id"])
+
+
+def validate_public_requester(requester):
     if requester["id"] == 1 or int(requester.get("permissions") or 0) & (
         2 | 16 | 16384
     ):
         raise ValueError("Public Jellyseerr requester must have ordinary permissions")
-    return replace(administrator, requester_id=requester["id"])
 
 
 def catalog_entry(details, media_type):

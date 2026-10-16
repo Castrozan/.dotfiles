@@ -1,7 +1,6 @@
 import importlib.util
 import json
 import sys
-import urllib.error
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -134,10 +133,8 @@ def test_movie_request_uses_only_public_defaults(client, details, monkeypatch):
 @pytest.mark.parametrize(
     "failure",
     [
-        urllib.error.HTTPError(
-            "http://secret", 409, "private title and secret", {}, None
-        ),
-        urllib.error.URLError("secret"),
+        cli.JellyseerrRequestError(409),
+        OSError("secret"),
         ValueError("secret"),
     ],
 )

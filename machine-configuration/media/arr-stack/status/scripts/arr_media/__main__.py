@@ -1,11 +1,11 @@
 import argparse
+import http.client
 import json
 import os
 import sys
-import urllib.error
 from pathlib import Path
 
-from jellyseerr_media import public_requester, public_status
+from jellyseerr_media import JellyseerrRequestError, public_requester, public_status
 
 
 def positive_integer(value):
@@ -35,32 +35,43 @@ def argument_parser():
     return parser
 
 
+def selected_tv_seasons(arguments, status):
+    selected = (
+        status["seasons"] if arguments.all_seasons else sorted(set(arguments.seasons))
+    )
+    if not selected or not set(selected) <= set(status["seasons"]):
+        raise ValueError("Select existing nonempty seasons from status")
+    return selected
+
+
+def active_request_seasons(requests):
+    return {
+        season["seasonNumber"]
+        for request in requests
+        if request["status"] in {1, 2, 5}
+        for season in request.get("seasons", [])
+        if season.get("status") in {1, 2, 5}
+    }
+
+
+def movie_is_requested(status):
+    return any(
+        request["status"] in {"pending", "approved", "completed"}
+        for request in status["requests"]
+    )
+
+
 def request_media(client, arguments, details):
     status = public_status(client, details, arguments.media_type)
     payload = {"mediaType": arguments.media_type, "mediaId": arguments.media_id}
     if arguments.media_type == "tv":
-        selected_seasons = (
-            status["seasons"]
-            if arguments.all_seasons
-            else sorted(set(arguments.seasons))
-        )
-        if not selected_seasons or not set(selected_seasons) <= set(status["seasons"]):
-            raise ValueError("Select existing nonempty seasons from status")
-        requested_seasons = {
-            season["seasonNumber"]
-            for request in client.public_requests(details)
-            if request["status"] in {1, 2, 5}
-            for season in request.get("seasons", [])
-            if season.get("status") in {1, 2, 5}
-        }
-        remaining_seasons = sorted(set(selected_seasons) - requested_seasons)
+        selected = selected_tv_seasons(arguments, status)
+        requested = active_request_seasons(client.public_requests(details))
+        remaining_seasons = sorted(set(selected) - requested)
         if not remaining_seasons:
             return {"result": "already_requested", **status}
         payload["seasons"] = remaining_seasons
-    elif any(
-        request["status"] in {"pending", "approved", "completed"}
-        for request in status["requests"]
-    ):
+    elif movie_is_requested(status):
         return {"result": "already_requested", **status}
     request = client.request("POST", "/request", payload)
     return {
@@ -73,36 +84,42 @@ def request_media(client, arguments, details):
     }
 
 
+def validate_request_arguments(parser, arguments):
+    if arguments.command != "request":
+        return
+    has_seasons = bool(arguments.seasons or arguments.all_seasons)
+    if has_seasons != (arguments.media_type == "tv"):
+        parser.error(
+            "TV requests require --seasons or --all-seasons; movies take neither"
+        )
+
+
+def execute_command(client, arguments):
+    if arguments.command == "search":
+        return {"results": client.search(arguments.title)}
+    details = client.details(arguments.media_type, arguments.media_id)
+    if arguments.command == "request":
+        return request_media(client, arguments, details)
+    return public_status(client, details, arguments.media_type)
+
+
 def main(argv=None):
     parser = argument_parser()
     arguments = parser.parse_args(argv)
-    if arguments.command == "request":
-        has_seasons = bool(arguments.seasons or arguments.all_seasons)
-        if has_seasons != (arguments.media_type == "tv"):
-            parser.error(
-                "TV requests require --seasons or --all-seasons; movies take neither"
-            )
+    validate_request_arguments(parser, arguments)
     try:
         client = public_requester(
             os.environ.get("ARR_MEDIA_STACK_HOME", Path.home() / "arr-stack")
         )
-        if arguments.command == "search":
-            result = {"results": client.search(arguments.title)}
-        else:
-            details = client.details(arguments.media_type, arguments.media_id)
-            result = (
-                request_media(client, arguments, details)
-                if arguments.command == "request"
-                else public_status(client, details, arguments.media_type)
-            )
+        result = execute_command(client, arguments)
         print(json.dumps(result, ensure_ascii=False))
         return 0
-    except urllib.error.HTTPError as error:
+    except JellyseerrRequestError as error:
         print(
-            f"Jellyseerr request failed (HTTP {error.code}); no success confirmed",
+            f"Jellyseerr request failed (HTTP {error.status}); no success confirmed",
             file=sys.stderr,
         )
-    except (OSError, ValueError, KeyError):
+    except (OSError, ValueError, KeyError, http.client.HTTPException):
         print(
             "Media command failed; check the public requester and Jellyseerr service",
             file=sys.stderr,

@@ -1,8 +1,8 @@
 import importlib
-import io
 import json
 import sys
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 
@@ -11,20 +11,35 @@ media = importlib.import_module("jellyseerr_media")
 
 
 def test_transport_impersonates_ordinary_requester_with_bounded_timeout(monkeypatch):
-    observed = []
-
-    def open_request(request, timeout):
-        observed.append((request, timeout))
-        return io.BytesIO(b'{"id":8,"status":2}')
-
-    monkeypatch.setattr(media.urllib.request, "urlopen", open_request)
+    connection = Mock()
+    connection.getresponse.return_value.status = 201
+    connection.getresponse.return_value.read.return_value = b'{"id":8,"status":2}'
+    factory = Mock(return_value=connection)
+    monkeypatch.setattr(media.http.client, "HTTPConnection", factory)
     client = media.JellyseerrMedia("secret", 2)
     client.request("POST", "/request", {"mediaType": "movie", "mediaId": 36657})
-    request, timeout = observed[0]
-    assert timeout == 20
-    assert request.get_header("X-api-user") == "2"
-    assert request.get_header("X-api-key") == "secret"
-    assert json.loads(request.data) == {"mediaType": "movie", "mediaId": 36657}
+    factory.assert_called_once_with("127.0.0.1", 5055, timeout=20)
+    assert connection.request.call_args.args == ("POST", "/api/v1/request")
+    headers = connection.request.call_args.kwargs["headers"]
+    assert headers["X-API-User"] == "2"
+    assert headers["X-Api-Key"] == "secret"
+    assert json.loads(connection.request.call_args.kwargs["body"]) == {
+        "mediaType": "movie",
+        "mediaId": 36657,
+    }
+    connection.close.assert_called_once()
+
+
+def test_http_failure_closes_connection_without_exposing_body(monkeypatch):
+    connection = Mock()
+    connection.getresponse.return_value.status = 403
+    factory = Mock(return_value=connection)
+    monkeypatch.setattr(media.http.client, "HTTPConnection", factory)
+    with pytest.raises(media.JellyseerrRequestError) as error:
+        media.JellyseerrMedia("secret", 2).request("POST", "/request", {})
+    assert error.value.status == 403
+    connection.getresponse.return_value.read.assert_not_called()
+    connection.close.assert_called_once()
 
 
 @pytest.mark.parametrize(
