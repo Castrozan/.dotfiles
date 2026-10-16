@@ -43,11 +43,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install bats
-        run: sudo apt-get install -y bats
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
 
       - name: Run quick tests
-        run: ./repository/verification/run.sh --ci
+        run: |
+          nix shell --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in [ pkgs.kcov pkgs.bats pkgs.bc ]' --command ./repository/verification/run.sh --ci
 
       - name: Retain native Bats test results
         if: ${{ always() }}
@@ -57,6 +58,15 @@ jobs:
           path: .quality-results/bats-*/report.xml
           include-hidden-files: true
           if-no-files-found: error
+
+      - name: Upload coverage report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: repository/verification/coverage/
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Enforce directory entry limits
         if: ${{ !cancelled() }}
@@ -85,9 +95,6 @@ jobs:
             .coverage-reports/swift-runner-coverage.xml
           if-no-files-found: error
 
-  bash-coverage:
-    uses: ./.github/workflows/coverage.yml
-
   python-tests:
     uses: ./.github/workflows/python-tests.yml
 
@@ -95,7 +102,7 @@ jobs:
     uses: ./.github/workflows/qml-tests.yml
 
   qml-and-python-tests:
-    needs: [swift-tests, python-tests, qml-tests, bash-coverage]
+    needs: [swift-tests, python-tests, qml-tests, quick-tests]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -179,5 +186,5 @@ jobs:
           PYTHON_RESULT: ${{ needs.python-tests.result }}
           QML_RESULT: ${{ needs.qml-tests.result }}
           SWIFT_RESULT: ${{ needs.swift-tests.result }}
-          BASH_COVERAGE_RESULT: ${{ needs.bash-coverage.result }}
-        run: test "$PYTHON_RESULT" = success && test "$QML_RESULT" = success && test "$SWIFT_RESULT" = success && test "$BASH_COVERAGE_RESULT" = success
+          QUICK_RESULT: ${{ needs.quick-tests.result }}
+        run: test "$PYTHON_RESULT" = success && test "$QML_RESULT" = success && test "$SWIFT_RESULT" = success && test "$QUICK_RESULT" = success

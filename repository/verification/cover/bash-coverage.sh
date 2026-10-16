@@ -7,7 +7,6 @@ readonly REPOSITORY_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 readonly REPO_DIR="$REPOSITORY_DIR"
 readonly TESTS_DIR="$REPOSITORY_DIR/repository/verification"
 readonly COVERAGE_OUTPUT_DIR="$TESTS_DIR/coverage"
-readonly INSTRUMENTED_SOURCE_ROOT="$REPOSITORY_DIR/machine-configuration"
 
 # shellcheck source=runner/discovery.sh
 source "$TESTS_DIR/runner/discovery.sh"
@@ -21,9 +20,11 @@ main() {
 	_require_command kcov "nix shell nixpkgs#kcov"
 	_require_command bats "nix shell nixpkgs#bats"
 	_clean_previous_coverage
-	_run_bats_through_kcov
+	local batsExitCode=0
+	_run_bats_through_kcov || batsExitCode=$?
 	_print_coverage_summary
 	_print_per_file_coverage
+	return "$batsExitCode"
 }
 
 _parse_arguments() {
@@ -57,25 +58,10 @@ _clean_previous_coverage() {
 	mkdir -p "$COVERAGE_OUTPUT_DIR"
 }
 
-_collect_quick_bats_test_files() {
-	local discoveredTestFile
-	while IFS= read -r discoveredTestFile; do
-		case "$discoveredTestFile" in
-		"$INSTRUMENTED_SOURCE_ROOT"/*) echo "$discoveredTestFile" ;;
-		esac
-	done < <(_collect_bats_test_files_in_tier_directory "unit")
-}
-
 _run_bats_through_kcov() {
 	echo "=== Running tests with coverage ==="
 	echo ""
-	local testFiles
-	testFiles=$(_collect_quick_bats_test_files)
-	kcov \
-		--bash-dont-parse-binary-dir \
-		--include-pattern="$INSTRUMENTED_SOURCE_ROOT/" \
-		"$COVERAGE_OUTPUT_DIR" \
-		bats $testFiles
+	_run_bats_tier "unit" "ci" "$COVERAGE_OUTPUT_DIR"
 }
 
 _print_coverage_summary() {

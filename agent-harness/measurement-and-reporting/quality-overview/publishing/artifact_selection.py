@@ -4,7 +4,7 @@ import re
 
 ARTIFACT_PRODUCERS = {
     "bats-junit": ("quick-tests", "Retain native Bats test results"),
-    "coverage-report": ("bash-coverage / Coverage (PR)", "Upload coverage report"),
+    "coverage-report": ("quick-tests", "Upload coverage report"),
     "python-junit": ("qml-and-python-tests", "Retain native Python test results"),
     "python-coverage": ("qml-and-python-tests", "Upload Python coverage"),
     "verdr-artifact-evidence": (

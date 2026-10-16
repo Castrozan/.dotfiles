@@ -19,7 +19,7 @@ def coverage_producer(run, artifact, jobs, monkeypatch):
     artifact.update(
         name="coverage-report", digest="sha256:" + sha256(content).hexdigest()
     )
-    jobs[0]["name"] = "bash-coverage / Coverage (PR)"
+    jobs[0]["name"] = "quick-tests"
     jobs[0]["steps"][0]["name"] = "Upload coverage report"
     route = f"repos/{CONTEXT.REPOSITORY}/actions/runs/{run['id']}"
     documents = {

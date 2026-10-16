@@ -8,6 +8,7 @@ _collect_bats_test_files_in_tier_directory() {
 _run_bats_tier() {
 	local tierDirectoryName="$1"
 	local tierLabel="$2"
+	local coverageOutputDirectory="${3:-}"
 
 	if ! command -v bats &>/dev/null; then
 		echo "WARN: bats not installed, skipping bin script tests" >&2
@@ -31,8 +32,19 @@ _run_bats_tier() {
 		mkdir -p "$report_directory" || return
 		report_arguments=(--report-formatter junit --output "$report_directory")
 	fi
+	local -a batsCommand=(bats)
+	if [[ -n "$coverageOutputDirectory" ]]; then
+		batsCommand=(
+			kcov
+			"--bash-parser=$BASH"
+			--bash-dont-parse-binary-dir
+			"--include-pattern=$REPO_DIR/machine-configuration/"
+			"$coverageOutputDirectory"
+			bats
+		)
+	fi
 	local batsExitCode=0
-	DOTFILES_TEST_REPORT_DIRECTORY='' bats "${report_arguments[@]}" "${testFiles[@]}" || batsExitCode=$?
+	DOTFILES_TEST_REPORT_DIRECTORY='' "${batsCommand[@]}" "${report_arguments[@]}" "${testFiles[@]}" || batsExitCode=$?
 	echo ""
 	return "$batsExitCode"
 }
@@ -42,7 +54,9 @@ _run_quick_bats_tests() {
 }
 
 _run_quick_bats_tests_ci() {
-	_run_bats_tier "unit" "ci"
+	local coverageExitCode=0
+	"$SCRIPT_DIR/cover/bash-coverage.sh" --ci || coverageExitCode=$?
+	return "$coverageExitCode"
 }
 
 _run_integration_scripts_bats_tests() {

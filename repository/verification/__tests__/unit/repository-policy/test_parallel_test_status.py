@@ -8,7 +8,7 @@ import yaml
 
 REPOSITORY = Path(__file__).resolve().parents[5]
 WORKFLOW = REPOSITORY / ".github/workflows/tests.yml"
-PRODUCERS = ("swift-tests", "python-tests", "qml-tests", "bash-coverage")
+PRODUCERS = ("swift-tests", "python-tests", "qml-tests", "quick-tests")
 RESULTS = ("success", "failure", "cancelled", "skipped")
 
 
