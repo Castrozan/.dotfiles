@@ -12,7 +12,6 @@ with mode `0700`. The default `DOT_ROOT` is the scripts directory's sibling
 `.runtime`. Keep the private identity outside Git. Its public recipient must match
 `dot_key` in `secrets/secrets.nix`.
 
-
 ```sh
 git clone https://github.com/Castrozan/.dotfiles.git
 cd .dotfiles
