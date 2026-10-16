@@ -1,5 +1,5 @@
 let
-  flake = builtins.getFlake ("git+file://" + builtins.toString ../../../..);
+  flake = builtins.getFlake ("git+file://" + builtins.toString ../../../../..);
   base = flake.homeConfigurations.dot;
   configured = base.extendModules {
     modules = [

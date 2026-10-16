@@ -1,4 +1,4 @@
 { ... }:
 {
-  imports = [ ../../development/rootless-nix/rootless-home-manager.nix ];
+  imports = [ ../../development/development-environments/rootless-nix/rootless-home-manager.nix ];
 }

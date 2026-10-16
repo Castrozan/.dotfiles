@@ -9,9 +9,9 @@ submodule is needed for `homeConfigurations.dot`.
 ```sh
 git clone https://github.com/Castrozan/.dotfiles.git
 cd .dotfiles
-./machine-configuration/development/rootless-nix/scripts/activate.sh
-./machine-configuration/development/rootless-nix/scripts/verify.sh
-python3 machine-configuration/development/rootless-nix/scripts/run.py bash -l
+./machine-configuration/development/development-environments/rootless-nix/scripts/activate.sh
+./machine-configuration/development/development-environments/rootless-nix/scripts/verify.sh
+python3 machine-configuration/development/development-environments/rootless-nix/scripts/run.py bash -l
 ```
 
 Until this branch is merged, check out the pull request branch before activation.

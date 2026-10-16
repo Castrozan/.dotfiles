@@ -80,7 +80,7 @@ On an already configured machine:
 rebuild
 ```
 
-For a headless Linux workspace without root, use the [rootless dot profile](machine-configuration/development/rootless-nix). It restores a separate Nix store and Home Manager home from this checkout.
+For a headless Linux workspace without root, use the [rootless dot profile](machine-configuration/development/development-environments/rootless-nix). It restores a separate Nix store and Home Manager home from this checkout.
 
 ## Verification
 

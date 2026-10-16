@@ -11,7 +11,7 @@
     inherit username homeDirectory;
     stateVersion = home-version;
     packages = [
-      (import ../../media/media-generation/speech-cloud-package.nix { inherit pkgs; })
+      (import ../../../media/media-generation/speech-cloud-package.nix { inherit pkgs; })
     ]
     ++ (with pkgs; [
       jq

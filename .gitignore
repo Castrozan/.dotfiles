@@ -64,4 +64,4 @@ windows-11.conf
 *.iso
 
 # Rootless Nix runtime (store, downloads, generated HOME)
-/machine-configuration/development/rootless-nix/.runtime/
+/machine-configuration/development/development-environments/rootless-nix/.runtime/
