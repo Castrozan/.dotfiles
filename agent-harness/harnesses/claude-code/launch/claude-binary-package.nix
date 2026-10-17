@@ -40,6 +40,9 @@ let
 
   claude-code = pkgs.writeShellScriptBin "claude" ''
     ${exportLinesForClaudeEnvironment}
+    if [ -n "''${HERDR_PANE_ID:-}" ] && [ -z "''${CLAUDE_IMAGE_VIEW_RENDERER:-}" ]; then
+      export CLAUDE_IMAGE_VIEW_RENDERER=blocks
+    fi
     ${pkgs.bash}/bin/bash ${../scripts/pre-approve-current-workspace-trust-dialog.sh} "${pkgs.jq}/bin/jq" || true
     exec ${claude-code-unwrapped}/bin/claude "$@"
   '';
