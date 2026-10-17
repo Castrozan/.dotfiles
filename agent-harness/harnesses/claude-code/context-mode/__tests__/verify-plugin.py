@@ -116,6 +116,12 @@ async def verify_plugin(plugin_directory):
                 assert initialization.serverInfo.version == manifest["version"]
                 tools = {tool.name for tool in (await session.list_tools()).tools}
                 assert len(tools) == 11, tools
+                diagnostics = await session.call_tool("ctx_doctor", {})
+                diagnostic_text = "\n".join(
+                    getattr(item, "text", "") for item in diagnostics.content
+                )
+                assert not diagnostics.isError, diagnostics
+                assert "[FAIL]" not in diagnostic_text, diagnostic_text
                 result = await session.call_tool(
                     "ctx_execute_file",
                     {
@@ -155,6 +161,7 @@ async def verify_plugin(plugin_directory):
         assert "incident.json" in "\n".join(captured)
         assert not (root / "home/.claude").exists()
         assert not list(state.rglob("hook-errors.log"))
+        assert json.loads((state / "claude/settings.json").read_text()) == {}
         assert state.stat().st_mode & 0o077 == 0
         print(
             "Verified six hooks, routing, session capture, compaction, 11 MCP tools, workspace access and persistent search"
