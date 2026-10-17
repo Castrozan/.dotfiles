@@ -8,7 +8,7 @@ from http.client import HTTPConnection, HTTPException
 
 def stop_process(process):
     try:
-        os.killpg(process.pid, signal.SIGTERM)
+        process.terminate()
     except ProcessLookupError:
         process.wait(timeout=5)
         return
