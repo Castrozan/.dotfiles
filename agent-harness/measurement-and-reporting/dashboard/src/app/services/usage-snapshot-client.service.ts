@@ -7,7 +7,6 @@ import {
   parseStorageObjectListing,
 } from '../models/storage-object-listing-parser';
 import { parseUsageSnapshot } from '../models/usage-snapshot-parser';
-import { mapWithBoundedWorkerPool } from './usage-snapshot-client/bounded-worker-pool';
 import {
   buildObjectListingUrl,
   buildObjectMediaUrl,
@@ -44,12 +43,24 @@ export class UsageSnapshotClientService {
 
   async fetchAllSnapshots(): Promise<UsageSnapshot[]> {
     const objectNames = await this.listSnapshotObjectNames();
-    const snapshots = await mapWithBoundedWorkerPool(
-      objectNames,
-      maximumSnapshotDownloadsInFlight,
-      (objectName) => this.fetchSnapshotObject(objectName),
-    );
+    const snapshots = await this.downloadSnapshotsInListingOrder(objectNames);
     return snapshots.filter((snapshot): snapshot is UsageSnapshot => snapshot !== null);
+  }
+
+  private async downloadSnapshotsInListingOrder(
+    objectNames: string[],
+  ): Promise<(UsageSnapshot | null)[]> {
+    const snapshots = new Array<UsageSnapshot | null>(objectNames.length).fill(null);
+    let nextObjectIndex = 0;
+    const runDownloadSlot = async (): Promise<void> => {
+      while (nextObjectIndex < objectNames.length) {
+        const objectIndex = nextObjectIndex++;
+        snapshots[objectIndex] = await this.fetchSnapshotObject(objectNames[objectIndex]);
+      }
+    };
+    const downloadSlotCount = Math.min(maximumSnapshotDownloadsInFlight, objectNames.length);
+    await Promise.all(Array.from({ length: downloadSlotCount }, runDownloadSlot));
+    return snapshots;
   }
 
   private async listSnapshotObjectNames(): Promise<string[]> {
