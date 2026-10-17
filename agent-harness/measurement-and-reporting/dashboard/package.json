@@ -40,6 +40,7 @@
     "hono": "^4.12.27",
     "immutable": "^5.1.8",
     "postcss": "^8.5.18",
-    "tar": "^7.5.22"
+    "tar": "^7.5.22",
+    "@modelcontextprotocol/sdk": "^1.32.1"
   }
 }
