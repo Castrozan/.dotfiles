@@ -9,6 +9,11 @@ Build the page the user describes by invoking the `compose-page` workflow (Workf
 hand-scaffold the markup yourself, which reproduces the random-skeleton-of-placeholders failure this skill exists to
 prevent.
 
+### Visual direction
+
+Load [frontend-design](../frontend-design/SKILL.md) before invoking the workflow. Include its concrete visual direction
+in `constraints`, preserving the user's design tokens, voice and factual limits.
+
 ### Invocation
 
 Pass the workflow an args object. `brief` is the subject, the audience, and the single action the page drives, drawn

@@ -1,0 +1,16 @@
+{
+  "repository": "https://github.com/anthropics/claude-plugins-official",
+  "revision": "ea10b213686c90bb1984b2016937310e05336cf3",
+  "source_path": "plugins/frontend-design/skills/frontend-design",
+  "license": "Apache-2.0",
+  "files": {
+    "anthropic-frontend-design.txt": {
+      "source": "SKILL.md",
+      "sha256": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3"
+    },
+    "LICENSE.txt": {
+      "source": "LICENSE.txt",
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    }
+  }
+}
