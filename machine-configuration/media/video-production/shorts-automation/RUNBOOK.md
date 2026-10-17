@@ -4,6 +4,13 @@ Direct one original faceless Short for the channel in `config.json`. Read `short
 reserved after this run's snapshot. Paraphrases of a previous subject and mechanism are the same idea. Reserve a genuinely
 new topic once with `shorts-production reserve --episode-file episode.json` before generation.
 
+### Idea inbox
+
+Before comparing new topics, read the Markdown notes in `~/clawde/shorts/ideas/inbox/` as candidate research under the
+normal topic-history, sourcing and production gates. Record each evaluated note's decision, reason and source path in
+the run's research evidence, then move it to `~/clawde/shorts/ideas/reviewed/`. Keep a note pending when missing access
+prevents evaluation.
+
 ### Research and learning
 
 Retain dated source findings and three inspected reference Shorts. Compare views relative to channel size and release
