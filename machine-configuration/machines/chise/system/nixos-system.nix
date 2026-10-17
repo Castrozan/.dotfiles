@@ -121,7 +121,10 @@ in
     };
     resolved = {
       enable = true;
-      extraConfig = "DNSStubListenerExtra=100.94.11.81";
+      extraConfig = ''
+        DNSStubListenerExtra=100.94.11.81
+        DNSStubListenerExtra=172.17.0.1
+      '';
     };
     openssh = {
       enable = true;
@@ -145,7 +148,19 @@ in
     };
   };
 
+  virtualisation.docker.daemon.settings.dns = [ "172.17.0.1" ];
+
   networking.firewall = {
+    interfaces = {
+      docker0 = {
+        allowedTCPPorts = [ 53 ];
+        allowedUDPPorts = [ 53 ];
+      };
+      "br-+" = {
+        allowedTCPPorts = [ 53 ];
+        allowedUDPPorts = [ 53 ];
+      };
+    };
     enable = true;
     allowedTCPPorts = [
       22
