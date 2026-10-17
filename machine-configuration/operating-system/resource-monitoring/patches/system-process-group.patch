@@ -128,8 +128,8 @@
  
  namespace Proc {
  	uint64_t all_process_resident_memory{};
-+	bool system_group_expanded = false;
-+	bool selected_is_system_group = false;
++	atomic<bool> system_group_expanded = false;
++	atomic<bool> selected_is_system_group = false;
  
  	void update_process_resident_memory_total(const vector<proc_info>& processes) {
  		all_process_resident_memory = 0;
@@ -139,8 +139,8 @@
  namespace Proc {
  	extern atomic<int> numpids;
  	extern uint64_t all_process_resident_memory;
-+	extern bool system_group_expanded;
-+	extern bool selected_is_system_group;
++	extern atomic<bool> system_group_expanded;
++	extern atomic<bool> selected_is_system_group;
  
  	extern string box;
  	extern int x, y, width, height, min_width, min_height;
