@@ -7,6 +7,7 @@
 }:
 let
   pluginsConfig = import ../plugins/language-server-packages.nix { inherit pkgs; };
+  claudeModsMarketplace = import ../plugins/mods/marketplace.nix { inherit pkgs; };
 
   privateMarketplacePluginsPath =
     ../../../../private-configuration/machines + "/${hostname}/claude-plugins.nix";
@@ -31,10 +32,13 @@ let
 
   spinnerVerbs = import ./spinner-verbs.nix;
 
-  claudeGlobalSettings = {
+  claudeGlobalSettings = lib.recursiveUpdate {
     ultracode = false;
     enableWorkflows = true;
-    enabledPlugins."image-view@claude-image-view" = true;
+    enabledPlugins = {
+      "image-view@claude-image-view" = true;
+    }
+    // claudeModsMarketplace.everySessionEnabledPlugins;
     language = "english";
     animationInterval = 80;
     spinnerText = spinnerVerbs;
@@ -86,8 +90,7 @@ let
         }
       ];
     };
-  }
-  // privateMarketplacePlugins;
+  } privateMarketplacePlugins;
 
   baseSettings = pkgs.writeText "claude-base-settings.json" (builtins.toJSON claudeGlobalSettings);
   claudeGlobalSettingsJson =

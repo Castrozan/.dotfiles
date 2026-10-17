@@ -2,9 +2,16 @@
   pkgs,
   lib,
   interactiveSessionOnlySystemPromptSurfaces,
+  interactiveSessionSettings,
 }:
 let
-  settingsOverlayFile = import ../settings/workspace-profile-settings-json.nix { inherit pkgs; };
+  interactiveSessionSettingsFileForProfile =
+    workspaceProfile:
+    pkgs.writeText "claude-workspace-profile-${workspaceProfile.name}-interactive-settings.json" (
+      builtins.toJSON (
+        lib.recursiveUpdate interactiveSessionSettings workspaceProfile.claudeCode.settingsOverlay
+      )
+    );
 
   systemPromptFile =
     workspaceProfile:
@@ -20,7 +27,7 @@ in
     workspaceProfile:
     lib.concatStrings [
       (lib.optionalString (workspaceProfile.claudeCode ? settingsOverlay) ''
-        workspaceProfileArguments+=(--settings ${settingsOverlayFile workspaceProfile})
+        claudeSettingsFile=${interactiveSessionSettingsFileForProfile workspaceProfile}
       '')
       (lib.optionalString (workspaceProfile.instructionFiles != [ ]) ''
         claudeSystemPromptFile=${systemPromptFile workspaceProfile}

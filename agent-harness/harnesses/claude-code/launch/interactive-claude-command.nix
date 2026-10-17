@@ -10,8 +10,22 @@ let
     inherit (config.home) homeDirectory;
   };
 
+  interactiveSessionSettings = {
+    enabledPlugins =
+      (import ../plugins/mods/marketplace.nix { inherit pkgs; }).interactiveSessionEnabledPlugins;
+  };
+
+  interactiveSessionSettingsFile = pkgs.writeText "claude-interactive-session-settings.json" (
+    builtins.toJSON interactiveSessionSettings
+  );
+
   workspaceProfileActivation = import ./workspace-profile-settings-and-instructions.nix {
-    inherit pkgs lib interactiveSessionOnlySystemPromptSurfaces;
+    inherit
+      pkgs
+      lib
+      interactiveSessionOnlySystemPromptSurfaces
+      interactiveSessionSettings
+      ;
   };
 
   inherit (import ../../../workspace-profiles/activation/harness-launch-dispatch.nix { inherit lib; })
@@ -40,13 +54,13 @@ let
         fi
       ''}
       claudeSystemPromptFile="${interactiveSessionOnlySystemPromptSurfaces}"
-      workspaceProfileArguments=()
+      claudeSettingsFile="${interactiveSessionSettingsFile}"
       resolvedWorkspaceProfileName=""
       ${workspaceProfileLaunchDispatch}
       export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
       exec ${lib.getExe config.claude.unwrappedPackage} \
         --append-system-prompt-file "$claudeSystemPromptFile" \
-        "''${workspaceProfileArguments[@]}" \
+        --settings "$claudeSettingsFile" \
         "$@"
     '';
 

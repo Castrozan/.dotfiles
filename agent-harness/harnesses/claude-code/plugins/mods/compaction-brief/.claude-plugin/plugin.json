@@ -1,0 +1,8 @@
+{
+  "name": "compaction-brief",
+  "version": "0.1.0",
+  "description": "Tells every compaction which durable session state its summary must keep.",
+  "author": {
+    "name": "Castrozan"
+  }
+}

@@ -115,10 +115,10 @@ in
   claude-applies-the-resolved-workspace-profile =
     mkEvalCheck "claude-applies-the-resolved-workspace-profile"
       (
-        containsText claudeWrapperText "workspaceProfileArguments"
+        containsText claudeWrapperText ''--settings "$claudeSettingsFile"''
         && containsText claudeWrapperText "claudeSystemPromptFile"
       )
-      "claude activation lands as extra argv and a swapped system-prompt file; a wrapper refactor that stops splicing either one leaves routing resolving correctly and applying nothing";
+      "claude activation lands as a swapped settings file and a swapped system-prompt file; a wrapper refactor that stops passing either one leaves routing resolving correctly and applying nothing";
 
   claude-required-organization-is-checked-before-launch =
     mkEvalCheck "claude-required-organization-is-checked-before-launch"

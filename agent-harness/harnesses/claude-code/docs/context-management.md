@@ -26,6 +26,10 @@ Disabling auto-compaction entirely: `claude config set -g autoCompactEnabled fal
 
 Manual compaction with `/compact <what to preserve>` lets you control what survives. `/compact` without arguments uses defaults. The community-proposed `/compact-next <instructions>` (queuing compaction instructions without executing immediately) is not yet implemented.
 
+Every compaction, automatic or manual, also carries a standing brief from the `compaction-brief` mod under `agent-harness/harnesses/claude-code/plugins/mods/`: its `session.compact` hook appends the brief after any text typed after `/compact`. A settings-file `PreCompact` hook cannot do this, because it can only block a compaction, never change its instructions.
+
+Idle compaction is native: the [`idleCompaction`](https://code.claude.com/docs/en/settings-reference#idlecompaction) setting, on by default, compacts a large interactive conversation shortly before its one-hour prompt cache expires. Its size threshold and timing are upstream's; read that page rather than copying them here.
+
 ### Strategies to Reduce Context Pressure
 
 Subagents via the Task tool get their own context windows. Heavy exploration, file reads, and searches should be delegated to subagents, keeping the parent session lean. CLAUDE.md should contain short pointers to guide files on disk rather than inlining large blocks — Claude reads guides on-demand when the conversation triggers them.
