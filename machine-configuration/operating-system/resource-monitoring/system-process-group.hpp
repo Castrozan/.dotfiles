@@ -20,13 +20,18 @@ struct system_process_view {
 	vector<proc_info> system_processes;
 };
 
-inline system_process_view make_system_process_view(vector<proc_info> processes, bool expanded) {
-	system_process_view view;
-	view.processes.reserve(processes.size());
+inline proc_info make_system_group_row(bool expanded) {
 	proc_info group;
 	group.name = expanded ? "System [-]" : "System [+]";
 	group.user = "-";
 	group.system_group = true;
+	return group;
+}
+
+inline system_process_view make_system_process_view(vector<proc_info> processes, bool expanded) {
+	system_process_view view;
+	view.processes.reserve(processes.size());
+	auto group = make_system_group_row(expanded);
 	for (auto& process : processes) {
 		if (process.filtered) continue;
 		process.prefix.clear();
@@ -43,7 +48,7 @@ inline system_process_view make_system_process_view(vector<proc_info> processes,
 	}
 	if (not view.system_processes.empty()) {
 		group.cmd = std::to_string(view.system_processes.size())
-			+ " processes; Enter/Space to " + (expanded ? "collapse" : "expand");
+			+ " processes; Enter/Space to fold";
 		view.processes.push_back(std::move(group));
 	}
 	return view;

@@ -3,8 +3,7 @@ let
   btopWithMemoryTotals = import ../btop-package.nix { inherit pkgs; };
   patchedBtopSource = pkgs.applyPatches {
     name = "btop-system-process-group-source";
-    src = btopWithMemoryTotals.src;
-    patches = btopWithMemoryTotals.patches;
+    inherit (btopWithMemoryTotals) src patches;
   };
 in
 {
