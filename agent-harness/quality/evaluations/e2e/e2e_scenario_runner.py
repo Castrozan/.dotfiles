@@ -54,6 +54,8 @@ def run_e2e_scenario(
 
     if dry_run:
         return _empty_e2e_result(scenario_name)
+    if not herdr_server_is_reachable():
+        return _empty_e2e_result(scenario_name, "herdr server not reachable")
     return _run_live_scenario(
         scenario,
         scenario_name,
@@ -67,9 +69,6 @@ def run_e2e_scenario(
 def _run_live_scenario(
     scenario, scenario_name, profile, model, debug_capture, instruction_placement_mode
 ):
-    if not herdr_server_is_reachable():
-        return _empty_e2e_result(scenario_name, "herdr server not reachable")
-
     sanitized = sanitize_name_for_session(scenario_name)
     timestamp = int(time.time())
     tab_label = f"{E2E_TAB_LABEL_PREFIX}{sanitized}-{timestamp}"
@@ -88,12 +87,9 @@ def _run_live_scenario(
             scenario, workspace, profile, instruction_placement_mode
         )
 
-        if profile.name == "claude":
-            authentication_failure = claude_authentication_failure(workspace)
-            if authentication_failure:
-                return _empty_e2e_result(
-                    scenario_name, authentication_failure, workspace
-                )
+        authentication_failure = _scenario_authentication_failure(profile, workspace)
+        if authentication_failure:
+            return _empty_e2e_result(scenario_name, authentication_failure, workspace)
 
         tab_handle = create_isolated_herdr_tab_for_test(tab_label, workspace)
         if not tab_handle:
@@ -123,6 +119,12 @@ def _run_live_scenario(
         if tab_handle:
             destroy_test_tab(tab_handle["tab_id"])
         shutil.rmtree(workspace, ignore_errors=True)
+
+
+def _scenario_authentication_failure(profile, workspace):
+    if profile.name == "claude":
+        return claude_authentication_failure(workspace)
+    return None
 
 
 def _run_e2e_session(session: E2eScenarioSession, profile, timeout):
