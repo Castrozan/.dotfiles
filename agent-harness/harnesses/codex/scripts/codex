@@ -6,7 +6,26 @@ workspaceProfileArguments=()
 interactivePreferencesArguments=()
 codexLaunchExecutable="$CODEX_LAUNCHER_BINARY"
 unset CODEX_SESSION_SOCKET_PATH
-case "${1:-}" in
+codexCommand=""
+codexCommandOptionValuePending=false
+for argument in "$@"; do
+	if [[ "$codexCommandOptionValuePending" = true ]]; then
+		codexCommandOptionValuePending=false
+		continue
+	fi
+	case "$argument" in
+	--) break ;;
+	-C | --cd | -c | --config | --enable | --disable | -p | --profile | -m | --model | -i | --image | -s | --sandbox | -a | --ask-for-approval | --add-dir | --local-provider | --remote | --remote-auth-token-env | --code-mode-host)
+		codexCommandOptionValuePending=true
+		;;
+	-*) ;;
+	*)
+		codexCommand="$argument"
+		break
+		;;
+	esac
+done
+case "$codexCommand" in
 agents | exec | e | review | login | logout | mcp | plugin | app-server | remote-control | app | completion | update | doctor | sandbox | debug | apply | a | queue | archive | delete | migrate-rollouts | unarchive | cloud | exec-server | features | help) ;;
 *)
 	source "$CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
