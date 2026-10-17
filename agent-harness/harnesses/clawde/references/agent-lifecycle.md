@@ -27,13 +27,17 @@ A model change deploys but does not reach a running session, and a codex resume 
 session while ignoring `config.toml`, so force it by deleting the session record and killing the process, which makes
 the next launch mint a fresh session that reads config.
 
+Codex channel resumes also retain their original `developer_instructions`; supplying new text with `-c` does not update
+them. A fresh channel session is required for personality changes. The channel's resumable marker is separate from the
+agent window's session record, so rotating the window alone does not refresh Discord.
+
 ### A supervisor restart spares everything sharing its cgroup
 
 Restarting the supervisor unit reads like a fleet-wide outage and is not one. The unit sets `KillMode = process` and
-declares no `ExecStop`, so systemd kills the supervisor pid alone and logs `Unit process N remains running after unit
-stopped` for the multiplexer server, every wrapper, every harness under them and the human's own session, all of which
-survive: one `herdr` pid was observed surviving two such stops four days apart. Read that journal line rather than any
-warning before deciding a restart is too expensive.
+declares no `ExecStop`, so systemd kills the supervisor pid alone and logs
+`Unit process N remains running after unit stopped` for the multiplexer server, every wrapper, every harness under them
+and the human's own session, all of which survive: one `herdr` pid was observed surviving two such stops four days
+apart. Read that journal line rather than any warning before deciding a restart is too expensive.
 
 The unit's `X-RestartIfChanged = false` suppresses the churn and guarantees nothing, three restarts having got through
 105 home-manager activations in one measured week, so read the fleet's live store paths rather than inferring them from
@@ -89,10 +93,10 @@ compares the running supervisor's command line against the one the generation de
 so a supervisor already on the current code is still never disturbed.
 
 The bridge takes no baked one-shot command: it reads the agent's launch config, which carries one one-shot turn command
-per eligible harness, and resolves the active harness from the runtime override on every message, so a manual `clawde
-harness <agent> <harness>` or a failover rewires the Discord channel onto the new harness without the bridge restarting.
-Each turn is recorded in the agent's harness-productivity record against that active harness, which is what lets a
-channel agent with no heartbeat driver accrue the three-empty-turn refusal signature and fail over at all.
+per eligible harness, and resolves the active harness from the runtime override on every message, so a manual
+`clawde harness <agent> <harness>` or a failover rewires the Discord channel onto the new harness without the bridge
+restarting. Each turn is recorded in the agent's harness-productivity record against that active harness, which is what
+lets a channel agent with no heartbeat driver accrue the three-empty-turn refusal signature and fail over at all.
 
 ### Taking an agent offline
 
