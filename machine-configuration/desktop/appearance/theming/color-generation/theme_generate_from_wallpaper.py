@@ -1,4 +1,5 @@
 import sys
+import tempfile
 from pathlib import Path
 
 from colorthief import ColorThief
@@ -31,10 +32,9 @@ DARK_BACKGROUND_MAXIMUM_LIGHTNESS = 0.13
 MINIMUM_BACKGROUND_ANCHOR_SATURATION = 0.2
 
 
-def extract_first_frame_if_gif(image_path: Path) -> Path:
+def extract_first_frame_if_gif(image_path: Path, first_frame_path: Path) -> Path:
     with Image.open(image_path) as image:
         if image.format == "GIF":
-            first_frame_path = Path("/tmp/wallpaper_first_frame.png")
             image.seek(0)
             image.save(first_frame_path, "PNG")
             return first_frame_path
@@ -170,8 +170,13 @@ def generate_colors_toml_from_palette(palette: list[tuple[int, int, int]]) -> st
 
 
 def generate_colors_toml_for_image_path(wallpaper_image_path: Path) -> str:
-    resolved_image_path = extract_first_frame_if_gif(wallpaper_image_path)
-    dominant_colors = extract_dominant_colors_from_image(resolved_image_path)
+    with tempfile.TemporaryDirectory(
+        prefix="wallpaper-palette-"
+    ) as temporary_directory:
+        resolved_image_path = extract_first_frame_if_gif(
+            wallpaper_image_path, Path(temporary_directory) / "first-frame.png"
+        )
+        dominant_colors = extract_dominant_colors_from_image(resolved_image_path)
     luminance_sorted_colors = sort_colors_by_luminance(dominant_colors)
     sixteen_color_palette = build_sixteen_color_palette(luminance_sorted_colors)
     return generate_colors_toml_from_palette(sixteen_color_palette)

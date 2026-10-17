@@ -2,17 +2,13 @@ from __future__ import annotations
 
 import os
 
-TEMPORARY_DIRECTORY_ENVIRONMENT_VARIABLES = ("TMPDIR", "TEMP", "TMP")
-FALLBACK_TEMPORARY_DIRECTORY = "/tmp"
+from hook_state_directory import hook_state_directory
+
 UNIDENTIFIED_SESSION = "unknown-session"
 
 
 def temporary_directory() -> str:
-    for variable_name in TEMPORARY_DIRECTORY_ENVIRONMENT_VARIABLES:
-        candidate_directory = os.environ.get(variable_name)
-        if candidate_directory and os.path.isdir(candidate_directory):
-            return candidate_directory
-    return FALLBACK_TEMPORARY_DIRECTORY
+    return hook_state_directory()
 
 
 def session_ledger_path(ledger_name: str, session_id: str) -> str:

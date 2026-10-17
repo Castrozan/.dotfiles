@@ -1,5 +1,7 @@
+import pytest
 import record_skill_invocation_handler
 import skill_loaded_marker
+from hook_state_directory import hook_state_directory
 
 
 def test_marker_path_templates_skill_name_and_sanitizes_session_id(
@@ -16,12 +18,28 @@ def test_marker_path_templates_skill_name_and_sanitizes_session_id(
     )
 
 
-def test_marker_path_defaults_to_the_tmp_directory(monkeypatch):
+def test_marker_path_defaults_to_a_private_state_directory(tmp_path, monkeypatch):
     monkeypatch.delenv("AGENT_SKILL_LOADED_MARKER_STATE_DIRECTORY", raising=False)
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
 
     marker_path = skill_loaded_marker.skill_loaded_marker_path("instructions", "abc")
 
-    assert marker_path == "/tmp/instructions-skill-loaded-abc.marker"
+    assert marker_path == str(
+        tmp_path / "agent-hooks/instructions-skill-loaded-abc.marker"
+    )
+    assert (tmp_path / "agent-hooks").stat().st_mode & 0o777 == 0o700
+
+
+def test_hook_state_directory_refuses_a_symlink(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    target_directory = tmp_path / "unrelated"
+    target_directory.mkdir(mode=0o755)
+    (tmp_path / "agent-hooks").symlink_to(target_directory, target_is_directory=True)
+
+    with pytest.raises(PermissionError):
+        hook_state_directory()
+
+    assert target_directory.stat().st_mode & 0o777 == 0o755
 
 
 def test_recorded_marker_is_detected_by_has_skill_loaded(tmp_path, monkeypatch):

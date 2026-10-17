@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import re
-import fcntl
 from pathlib import Path
+
+from hook_state_directory import hook_state_directory
 
 STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE = "SUBAGENT_SPAWN_BUDGET_STATE_DIRECTORY"
 ALLOWED_SPAWN_COUNT_KEY = "allowed_subagent_spawn_count"
@@ -15,7 +17,7 @@ def resolve_state_directory():
     override = os.environ.get(STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE)
     if override:
         return Path(override)
-    return Path("/tmp")
+    return Path(hook_state_directory())
 
 
 def subagent_spawn_budget_state_path(session_id):

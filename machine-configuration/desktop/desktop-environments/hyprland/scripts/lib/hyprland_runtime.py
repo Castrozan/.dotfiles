@@ -5,7 +5,7 @@ from pathlib import Path
 
 def build_event_socket_path() -> str:
     hyprland_instance_signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", "")
-    xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR", "/tmp")
+    xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
     return f"{xdg_runtime_dir}/hypr/{hyprland_instance_signature}/.socket2.sock"
 
 

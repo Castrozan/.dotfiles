@@ -11,7 +11,9 @@ CPU_PERCENT_RUNAWAY_THRESHOLD = 130.0
 CPU_SAMPLE_INTERVAL_SECONDS = 3.0
 CONSECUTIVE_STRIKES_BEFORE_TERMINATION = 4
 SIGTERM_GRACE_SECONDS = 5.0
-STRIKE_STATE_FILE_PATH = Path("/tmp/chrome-devtools-mcp-runaway-watchdog-strikes.json")
+STRIKE_STATE_FILE_PATH = (
+    Path.home() / ".local/state/chrome-devtools-mcp-watchdog/strikes.json"
+)
 
 
 def build_stable_process_key(process) -> str:
@@ -88,6 +90,7 @@ def read_persisted_strike_counts(state_file_path):
 
 
 def write_persisted_strike_counts(state_file_path, strike_counts):
+    state_file_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     state_file_path.write_text(json.dumps(strike_counts))
 
 

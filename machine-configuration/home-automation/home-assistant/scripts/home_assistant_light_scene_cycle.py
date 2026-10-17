@@ -6,7 +6,9 @@ from home_assistant_client import (
 )
 from home_assistant_entities import ALL_LIGHT_ENTITY_IDS
 
-SCENE_CYCLE_STATE_FILE = Path("/tmp/ha-light-scene-cycle-index")
+SCENE_CYCLE_STATE_FILE = (
+    Path.home() / ".local/state/home-assistant/light-scene-cycle-index"
+)
 
 MINIMUM_COLOR_TEMPERATURE_KELVIN = 2000
 MAXIMUM_COLOR_TEMPERATURE_KELVIN = 6500
@@ -35,6 +37,7 @@ def read_current_scene_cycle_index() -> int:
 
 
 def write_scene_cycle_index(index: int) -> None:
+    SCENE_CYCLE_STATE_FILE.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     SCENE_CYCLE_STATE_FILE.write_text(str(index))
 
 

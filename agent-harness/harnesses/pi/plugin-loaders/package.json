@@ -8,5 +8,8 @@
     "@wkqco33/pi-loop-guard": "0.2.0",
     "pi-agent-plugins": "0.1.8",
     "pi-mcp-adapter": "5.1.0"
+  },
+  "overrides": {
+    "@modelcontextprotocol/client": "^2.3.1"
   }
 }

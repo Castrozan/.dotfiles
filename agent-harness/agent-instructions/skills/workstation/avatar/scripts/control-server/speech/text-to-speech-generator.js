@@ -25,7 +25,10 @@ class TextToSpeechGenerator {
 
   async prepareOutputRootDirectory() {
     try {
-      await fs.mkdir(this.outputRootDirectory, { recursive: true });
+      await fs.mkdir(this.outputRootDirectory, {
+        recursive: true,
+        mode: 0o700,
+      });
       console.log(`✅ TTS directory: ${this.outputRootDirectory}`);
     } catch (error) {
       console.error("❌ Failed to create TTS directory:", error.message);

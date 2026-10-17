@@ -3,5 +3,8 @@
   "private": true,
   "dependencies": {
     "rulesync": "https://github.com/Castrozan/rulesync/releases/download/v21.0.0-castrozan.4/rulesync-21.0.0-castrozan.4.tgz"
+  },
+  "overrides": {
+    "@modelcontextprotocol/sdk": "^1.32.1"
   }
 }
