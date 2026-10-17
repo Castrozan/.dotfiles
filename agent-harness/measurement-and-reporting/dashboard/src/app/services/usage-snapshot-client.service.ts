@@ -7,6 +7,35 @@ import {
   parseStorageObjectListing,
 } from '../models/storage-object-listing-parser';
 import { parseUsageSnapshot } from '../models/usage-snapshot-parser';
+import { mapWithBoundedWorkerPool } from './usage-snapshot-client/bounded-worker-pool';
+import {
+  buildObjectListingUrl,
+  buildObjectMediaUrl,
+} from './usage-snapshot-client/cloud-storage-object-urls';
+
+const maximumSnapshotDownloadsInFlight = 6;
+
+function addSnapshotObjectNames(objectNames: Set<string>, listing: StorageObjectListing): void {
+  for (const item of listing.items ?? []) {
+    if (item.name.endsWith('.json')) {
+      objectNames.add(item.name);
+    }
+  }
+}
+
+function claimNextPageToken(
+  requestedPageTokens: Set<string>,
+  nextPageToken: string | undefined,
+): string | undefined {
+  if (!nextPageToken) {
+    return undefined;
+  }
+  if (requestedPageTokens.has(nextPageToken)) {
+    throw new Error(`snapshot listing pagination cycle at page token ${nextPageToken}`);
+  }
+  requestedPageTokens.add(nextPageToken);
+  return nextPageToken;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UsageSnapshotClientService {
@@ -15,43 +44,36 @@ export class UsageSnapshotClientService {
 
   async fetchAllSnapshots(): Promise<UsageSnapshot[]> {
     const objectNames = await this.listSnapshotObjectNames();
-    const snapshots = await Promise.all(
-      objectNames.map((objectName) => this.fetchSnapshotObject(objectName)),
+    const snapshots = await mapWithBoundedWorkerPool(
+      objectNames,
+      maximumSnapshotDownloadsInFlight,
+      (objectName) => this.fetchSnapshotObject(objectName),
     );
     return snapshots.filter((snapshot): snapshot is UsageSnapshot => snapshot !== null);
   }
 
   private async listSnapshotObjectNames(): Promise<string[]> {
-    const objectNames: string[] = [];
+    const objectNames = new Set<string>();
+    const requestedPageTokens = new Set<string>();
     let pageToken: string | undefined;
     do {
       const listing = await this.fetchObjectListingPage(pageToken);
-      for (const item of listing.items ?? []) {
-        if (item.name.endsWith('.json')) {
-          objectNames.push(item.name);
-        }
-      }
-      pageToken = listing.nextPageToken;
+      addSnapshotObjectNames(objectNames, listing);
+      pageToken = claimNextPageToken(requestedPageTokens, listing.nextPageToken);
     } while (pageToken);
-    return objectNames;
-  }
-
-  private buildObjectListingUrl(pageToken: string | undefined): string {
-    const listUrl = new URL(
-      `https://storage.googleapis.com/storage/v1/b/${this.configuration.snapshotsBucket}/o`,
-    );
-    listUrl.searchParams.set('prefix', this.configuration.snapshotsObjectPrefix);
-    listUrl.searchParams.set('fields', 'items(name),nextPageToken');
-    if (pageToken) {
-      listUrl.searchParams.set('pageToken', pageToken);
-    }
-    return listUrl.toString();
+    return [...objectNames];
   }
 
   private async fetchObjectListingPage(
     pageToken: string | undefined,
   ): Promise<StorageObjectListing> {
-    const response = await this.jsonHttpClient.getJson(this.buildObjectListingUrl(pageToken));
+    const response = await this.jsonHttpClient.getJson(
+      buildObjectListingUrl(
+        this.configuration.snapshotsBucket,
+        this.configuration.snapshotsObjectPrefix,
+        pageToken,
+      ),
+    );
     if (!response.ok) {
       throw new Error(`snapshot listing failed with status ${response.status}`);
     }
@@ -59,9 +81,10 @@ export class UsageSnapshotClientService {
   }
 
   private async fetchSnapshotObject(objectName: string): Promise<UsageSnapshot | null> {
-    const mediaUrl = `https://storage.googleapis.com/${this.configuration.snapshotsBucket}/${objectName}`;
     try {
-      const response = await this.jsonHttpClient.getJson(mediaUrl);
+      const response = await this.jsonHttpClient.getJson(
+        buildObjectMediaUrl(this.configuration.snapshotsBucket, objectName),
+      );
       return response.ok ? parseUsageSnapshot(response.body) : null;
     } catch {
       return null;
