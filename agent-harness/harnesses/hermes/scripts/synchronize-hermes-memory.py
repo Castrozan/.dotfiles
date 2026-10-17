@@ -4,7 +4,6 @@ import os
 import tempfile
 from pathlib import Path
 
-
 ENTRY_DELIMITER = "\n§\n"
 
 
@@ -71,7 +70,7 @@ def replace_memory_file(memory_path: Path, memory_text: str) -> None:
         ) as temporary_file:
             temporary_file.write(memory_text)
             temporary_path = Path(temporary_file.name)
-        os.chmod(temporary_path, 0o644)
+        os.chmod(temporary_path, 0o600)
         os.replace(temporary_path, memory_path)
     finally:
         if temporary_path is not None and temporary_path.exists():

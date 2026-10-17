@@ -51,7 +51,7 @@ def test_write_config_lines_writes_atomically_with_mode_and_ownership(tmp_path):
         str(target), ["auth:", "  type: form"], os.getuid(), os.getgid()
     )
     assert target.read_text() == "auth:\n  type: form\n"
-    assert (target.stat().st_mode & 0o777) == 0o644
+    assert (target.stat().st_mode & 0o777) == 0o600
 
 
 def prepare_main(monkeypatch, tmp_path, username="lucas", password="pw"):

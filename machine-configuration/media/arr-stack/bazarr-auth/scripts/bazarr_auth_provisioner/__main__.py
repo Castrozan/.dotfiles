@@ -46,7 +46,7 @@ def write_config_lines(config_file_path, config_lines, owner_uid, owner_gid):
     with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
         handle.write("\n".join(config_lines) + "\n")
     os.chown(temporary_path, owner_uid, owner_gid)
-    os.chmod(temporary_path, 0o644)
+    os.chmod(temporary_path, 0o600)
     os.replace(temporary_path, config_file_path)
 
 

@@ -57,7 +57,7 @@ def write_settings_atomically(settings_file, settings):
     with temporary_handle:
         json.dump(settings, temporary_handle, indent=2)
         temporary_handle.write("\n")
-    os.chmod(temporary_handle.name, 0o644)
+    os.chmod(temporary_handle.name, 0o600)
     os.chown(
         temporary_handle.name,
         existing_file_metadata.st_uid,

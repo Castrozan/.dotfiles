@@ -1,5 +1,7 @@
 import argparse
+import os
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -53,6 +55,28 @@ def read_secret_backed_credentials(
     return resolved_credentials, unresolved_credentials
 
 
+def replace_credentials_file_if_changed(output_path: Path, contents: str) -> None:
+    if (
+        not output_path.is_symlink()
+        and output_path.is_file()
+        and output_path.read_text(encoding="utf-8") == contents
+    ):
+        output_path.chmod(0o600)
+        return
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=output_path.parent, delete=False
+        ) as temporary_file:
+            temporary_path = Path(temporary_file.name)
+            temporary_file.write(contents)
+        os.replace(temporary_path, output_path)
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-path", required=True)
@@ -91,15 +115,7 @@ def main() -> int:
     rendered_credentials = "".join(
         f"{key}={value}\n" for key, value in sorted(credentials.items())
     )
-    if output_path.exists() and output_path.read_text(encoding="utf-8") == (
-        rendered_credentials
-    ):
-        output_path.chmod(0o600)
-        return 0
-
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(rendered_credentials, encoding="utf-8")
-    output_path.chmod(0o600)
+    replace_credentials_file_if_changed(output_path, rendered_credentials)
     return 0
 
 

@@ -13,19 +13,21 @@ on:
 jobs:
   baseline-regression-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: false
 
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/nix-setup
         with:
-          python-version: "3.12"
+          cache-key: eval-contracts
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install offline verification dependencies
-        run: pip install pyyaml pytest
+        run: |
+          nix profile install --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in pkgs.python312.withPackages (pythonPackages: [ pythonPackages.pyyaml pythonPackages.pytest ])'
 
       - name: Test evaluation contracts without model providers
         run: |

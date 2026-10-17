@@ -32,7 +32,10 @@ def run_gh(
 
 def cache_path(root: Path, layer: int) -> Path:
     repo_hash = hashlib.md5(str(root).encode()).hexdigest()[:12]
-    return Path(f"/tmp/gitlog-{root.name}-{repo_hash}-L{layer}.txt")
+    cache_directory = (
+        Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "git-history"
+    )
+    return cache_directory / f"gitlog-{root.name}-{repo_hash}-L{layer}.txt"
 
 
 @pytest.fixture(autouse=True)

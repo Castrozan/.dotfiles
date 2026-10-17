@@ -27,15 +27,16 @@ identified the area from layers 1-2 and need precise history.
 
 Search broad first, then narrow. Use multiple keyword variants in one grep, since the commit message may say "browser"
 but the file path says "chrome" and the diff says "cdp"; cast a wide net with 'grep -i
-"browser|chrome|cdp|playwright|devtools" /tmp/gitlog-\*.txt'. When searching layer 1, file paths are the highest-signal
-data because they don't suffer from terse commit messages: a commit touching 'home/modules/desktop/browser-control/' is
-about browser automation regardless of what the subject line says. When searching layer 2 (patches), look for function
-names, variable names, config keys, and error messages, things that appear in code but never in commit messages.
+"browser|chrome|cdp|playwright|devtools" ~/.cache/git-history/gitlog-\*.txt'. When searching layer 1, file paths are the
+highest-signal data because they don't suffer from terse commit messages: a commit touching
+'home/modules/desktop/browser-control/' is about browser automation regardless of what the subject line says. When
+searching layer 2 (patches), look for function names, variable names, config keys, and error messages, things that
+appear in code but never in commit messages.
 
 ### Cache behavior
 
-Cache files live in '/tmp/gitlog-{reponame}-{hash}-L{1,2}.txt'. Auto-invalidated when HEAD changes or file is older than
-1 hour. Use '--force' to refresh manually. Use 'git-history info' to check cache status. Cache is per-repo - works
+Cache files live in `${XDG_CACHE_HOME:-$HOME/.cache}/git-history/`. Auto-invalidated when HEAD changes or file is older
+than 1 hour. Use '--force' to refresh manually. Use 'git-history info' to check cache status. Cache is per-repo - works
 across multiple repos simultaneously.
 
 ### When not to use
