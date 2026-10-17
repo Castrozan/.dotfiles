@@ -116,7 +116,7 @@ def main(argv=None):
         return 0
     except JellyseerrRequestError as error:
         print(
-            f"Jellyseerr request failed (HTTP {error.status}); no success confirmed",
+            f"Jellyseerr {arguments.command} failed (HTTP {error.status}); no success confirmed",
             file=sys.stderr,
         )
     except (OSError, ValueError, KeyError, http.client.HTTPException):

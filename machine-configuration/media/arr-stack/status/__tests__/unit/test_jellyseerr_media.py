@@ -3,6 +3,7 @@ import json
 import sys
 from pathlib import Path
 from unittest.mock import Mock
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -102,7 +103,7 @@ def test_search_encodes_input_and_discards_service_and_user_data(monkeypatch):
 
     monkeypatch.setattr(media.JellyseerrMedia, "request", request)
     result = media.JellyseerrMedia("secret", 2).search("X-Men & $(reboot)")
-    assert "query=X-Men+%26+%24%28reboot%29" in paths[0]
+    assert "query=X-Men%20%26%20%24%28reboot%29" in paths[0]
     assert result == [
         {
             "media_id": 36657,
@@ -138,3 +139,38 @@ def test_status_hides_private_requests_and_availability():
         {"request_id": 10, "status": "approved", "seasons": []}
     ]
     assert result["availability"] == "available"
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Goodfellas",
+        "Donnie Brasco",
+        "Lilo & Stitch",
+        "Wallace + Gromit",
+        "Cidade de Deus",
+        "東京ゴッドファーザーズ",
+    ],
+)
+def test_search_preserves_titles_under_jellyseerr_uri_validation(monkeypatch, title):
+    connection = Mock()
+    client = media.JellyseerrMedia("secret", 2)
+
+    def search_response():
+        path = connection.request.call_args.args[1]
+        response = Mock()
+        response.status = 400 if "+" in path else 200
+        response.read.return_value = json.dumps({"results": []}).encode()
+        return response
+
+    connection.getresponse.side_effect = search_response
+    monkeypatch.setattr(
+        media.http.client, "HTTPConnection", lambda *_args, **_kwargs: connection
+    )
+
+    assert client.search(title) == []
+
+    method, path = connection.request.call_args.args
+    assert method == "GET"
+    assert parse_qs(urlsplit(path).query)["query"] == [title]
+    connection.close.assert_called_once()

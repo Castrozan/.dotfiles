@@ -2,7 +2,7 @@ import http.client
 import json
 from dataclasses import dataclass, replace
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 
 @dataclass(frozen=True)
@@ -35,7 +35,9 @@ class JellyseerrMedia:
             connection.close()
 
     def search(self, title):
-        query = urlencode({"query": title, "page": 1, "language": "pt-BR"})
+        query = urlencode(
+            {"query": title, "page": 1, "language": "pt-BR"}, quote_via=quote
+        )
         results = self.request("GET", f"/search?{query}")["results"]
         return [
             catalog_entry(result, result["mediaType"])

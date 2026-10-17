@@ -38,6 +38,29 @@ def details():
 @pytest.mark.parametrize(
     "arguments",
     [
+        ["search", "Donnie Brasco"],
+        ["status", "movie", "9366"],
+        ["request", "movie", "9366"],
+    ],
+)
+def test_http_failure_identifies_the_media_operation(
+    client, monkeypatch, capsys, arguments
+):
+    failure = cli.JellyseerrRequestError(400)
+    monkeypatch.setattr(JellyseerrMedia, "search", Mock(side_effect=failure))
+    monkeypatch.setattr(JellyseerrMedia, "details", Mock(side_effect=failure))
+
+    assert cli.main(arguments) == 1
+
+    captured = capsys.readouterr()
+    assert not captured.out
+    assert f"Jellyseerr {arguments[0]} failed (HTTP 400)" in captured.err
+    assert "no success confirmed" in captured.err
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
         ["request", "tv", "4574"],
         ["request", "movie", "36657", "--seasons", "1"],
         ["request", "tv", "4574", "--seasons", "0"],
