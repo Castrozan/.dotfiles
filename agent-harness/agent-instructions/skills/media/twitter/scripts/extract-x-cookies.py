@@ -7,15 +7,15 @@ and exports them as JSON for twikit's load_cookies().
 
 import json
 import os
+import shutil
 import sqlite3
 import sys
-import shutil
 import tempfile
 from contextlib import closing
 from pathlib import Path
 
 BROWSER_COOKIE_PATHS = [
-    Path.home() / ".pinchtab/chrome-profile/Default/Cookies",
+    Path.home() / ".local/share/opencli/profiles/default/Default/Cookies",
     Path.home() / ".config/BraveSoftware/Brave-Browser/Default/Cookies",
     Path.home() / ".config/google-chrome/Default/Cookies",
     Path.home() / ".config/chromium/Default/Cookies",

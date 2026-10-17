@@ -1,6 +1,6 @@
 ### Tool selection
 
-`SKILL.md` owns browser-tool selection: Chrome DevTools first, explicit user tool choice binding, and PinchTab eligible
+`SKILL.md` owns browser-tool selection: Chrome DevTools first, explicit user tool choice binding, and OpenCLI eligible
 only as its defined last resort. This file explains why the Chrome target has consent, concurrency, and tab-safety
 constraints; it does not broaden fallback eligibility.
 
@@ -47,9 +47,9 @@ bump fixes, so do not chase a newer pin for it.
 Once authorized the target sustains tens of thousands of CDP operations per second at roughly 1ms latency with no memory
 growth, so never diagnose slowness or contention here; the only ceiling is the manual Allow.
 
-### Pinchtab tradeoffs
+### OpenCLI tradeoffs
 
-PinchTab runs a separate persistent-profile Chrome with none of the user's real-browser logins. It can satisfy eligible
+OpenCLI runs a separate persistent-profile Chrome with none of the user's real-browser logins. It can satisfy eligible
 isolated work after Chrome DevTools recovery fails, but it cannot substitute for an explicitly requested Chrome DevTools
 session or authenticated work that depends on the real profile. `SKILL.md` owns the last-resort gate;
-[pinchtab](pinchtab.md) owns the workflow after that gate passes.
+[OpenCLI](opencli.md) owns the workflow after that gate passes.

@@ -1,24 +1,28 @@
 ---
 name: browser
-description: "Interact with live browser pages and Electron apps: navigate, fill forms, test UI, or capture browser-window screenshots. Not for programmatic fetching, desktop capture, media, or non-browser GUI."
+description: "Interact with browser pages and Electron apps, run OpenCLI site commands, or use an isolated browser fallback. Not for desktop capture, media, or other GUI."
 ---
 
 ### Strategy
 
-Start every browser task with Chrome DevTools (`mcp__chrome-devtools__*`). It drives the user's real Chrome Global with
-their live logins and no page-visible automation flags. When the user names Chrome DevTools, CDP, or the browser
-harness, that choice is binding: stay on Chrome DevTools and never invoke, inspect, restart, or configure PinchTab. A
-stale connection, zero attached pages, a blocking consent prompt, "Could not connect to Chrome," or another recoverable
-tool error starts the recovery workflow below; none permits a tool switch.
+Start ad-hoc interactive browser tasks with Chrome DevTools (`mcp__chrome-devtools__*`). It drives the user's real
+Chrome Global with their live logins and no page-visible automation flags. When the user names Chrome DevTools, CDP, or
+the browser harness, that choice is binding: stay on Chrome DevTools and never invoke, inspect, restart, or configure
+OpenCLI. A stale connection, zero attached pages, a blocking consent prompt, "Could not connect to Chrome," or another
+recoverable tool error starts the recovery workflow below; none permits a tool switch.
 
-PinchTab is eligible only as the last resort when every recovery step has failed, Chrome DevTools remains unavailable,
+OpenCLI is eligible only as the last resort when every recovery step has failed, Chrome DevTools remains unavailable,
 the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. An autonomous clawde
-agent is mechanically denied the shared Chrome target; that makes PinchTab eligible only for an unattended task that did
+agent is mechanically denied the shared Chrome target; that makes OpenCLI eligible only for an unattended task that did
 not require Chrome DevTools. Otherwise report the blocked Chrome DevTools requirement instead of silently substituting
 another browser.
 
-Read [pinchtab](references/pinchtab.md) only after every eligibility condition holds. [chrome
+Read [OpenCLI](references/opencli.md) for site commands and eligible isolated workflows. [chrome
 target](references/chrome-target.md) explains the Chrome target's constraints.
+
+Use OpenCLI site adapters for repeatable site reads when an isolated profile meets the request; this does not broaden
+eligibility for generic browser fallback. Read [OpenCLI](references/opencli.md) for job ownership and adapter
+development.
 
 ### Chrome devtools connection and recovery
 
@@ -31,7 +35,7 @@ Chrome," recover in this order: 1) launch Chrome Global with `hypr-summon-chrome
 `summon-chrome-global` on macOS; 2) tell the user to enable `chrome://inspect/#remote-debugging` if needed and click
 Allow on the consent dialog; 3) call `mcp__chrome-devtools__list_pages` again. A dropped connection clears itself after
 one failed tool call, and this retry reconnects. It blocks until the user clicks Allow, so call no other tools and do
-not probe PinchTab while waiting.
+not probe OpenCLI while waiting.
 
 ### Chrome devtools operation
 

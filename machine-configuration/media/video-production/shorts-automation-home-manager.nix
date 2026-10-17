@@ -26,57 +26,24 @@ let
       provider_overage = false;
     }
   );
-  pinchtab =
-    import
-      ../../../agent-harness/agent-instructions/skills/workstation/browser/install/pinchtab-package.nix
+  opencli =
+    import ../../../agent-harness/agent-instructions/skills/workstation/browser/install/opencli-jobs.nix
       {
         inherit pkgs;
+        nodejs = pkgs.nodejs_22;
       };
-  browserConfiguration = pkgs.writeText "shorts-browser-config.json" (
-    builtins.toJSON {
-      configVersion = "0.8.0";
-      server = {
-        port = "9867";
-        bind = "127.0.0.1";
-        stateDir = "${config.home.homeDirectory}/.pinchtab";
-      };
-      instanceDefaults = {
-        mode = "headless";
-        tabPolicy.eviction = "reject";
-      };
-      profiles = {
-        baseDir = "${config.home.homeDirectory}/.pinchtab/profiles";
-        defaultProfile = "default";
-      };
-      multiInstance = {
-        strategy = "explicit";
-        instancePortStart = 9868;
-        instancePortEnd = 9968;
-      };
-      security = {
-        allowEvaluate = true;
-        allowScreencast = true;
-        allowDownload = true;
-        allowUpload = true;
-        uploadMaxRequestBytes = 104857600;
-        uploadMaxFileBytes = 26214400;
-        uploadMaxTotalBytes = 104857600;
-      };
-      autoSolver.enabled = false;
-    }
-  );
   browser = pkgs.writeShellScriptBin "shorts-browser" ''
-    export SHORTS_PINCHTAB=${pinchtab}/bin/pinchtab
+    export SHORTS_OPENCLI=${opencli.command}/bin/opencli
     export SHORTS_CONFIGURATION=${configuration}
     exec ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_browser.py "$@"
   '';
   browserServer = pkgs.writeShellScript "shorts-browser-server" ''
-    export SHORTS_PINCHTAB=${pinchtab}/bin/pinchtab
-    export SHORTS_BROWSER_CONFIGURATION=${browserConfiguration}
-    exec ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_browser_server.py
+    export SHORTS_OPENCLI=${opencli.command}/bin/opencli
+    export SHORTS_CONFIGURATION=${configuration}
+    exec ${opencli.runner}/bin/opencli-run --profile shorts --timeout 7800 -- ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_browser_server.py
   '';
   browserReady = pkgs.writeShellScript "shorts-browser-ready" ''
-    export SHORTS_PINCHTAB=${pinchtab}/bin/pinchtab
+    export SHORTS_OPENCLI=${opencli.command}/bin/opencli
     export SHORTS_CONFIGURATION=${configuration}
     exec ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_browser_start.py
   '';
@@ -95,7 +62,7 @@ let
       )
     }:"${config.home.profileDirectory}/bin:$PATH"
     export SHORTS_CODEX=${config.codex.unwrappedPackage}/bin/codex
-    export SHORTS_PINCHTAB=${pinchtab}/bin/pinchtab
+    export SHORTS_OPENCLI=${opencli.command}/bin/opencli
     export SHORTS_GOAL_PROMPT=${directory}/goal.txt
     export SHORTS_CONFIGURATION=${configuration}
     export SHORTS_RUNBOOK=${directory}/RUNBOOK.md
@@ -108,6 +75,11 @@ in
     production
     browser
   ];
+  home.activation.importOpencliShortsProfile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${../../../agent-harness/agent-instructions/skills/workstation/browser/install/scripts/opencli/import_opencli_profile.py} \
+      ${lib.escapeShellArg "${config.home.homeDirectory}/.pinchtab/profiles/prof_474a744f"} \
+      ${lib.escapeShellArg "${config.home.homeDirectory}/.local/share/opencli/profiles/shorts"}
+  '';
   systemd.user = lib.mkIf (pkgs.stdenv.isLinux && hostname == "chise") {
     services = {
       shorts-browser = {
@@ -119,7 +91,7 @@ in
         Service = {
           ExecStart = browserServer;
           ExecStartPost = browserReady;
-          TimeoutStartSec = 60;
+          TimeoutStartSec = 90;
           TimeoutStopSec = 30;
           Restart = "on-failure";
           RestartSec = 5;

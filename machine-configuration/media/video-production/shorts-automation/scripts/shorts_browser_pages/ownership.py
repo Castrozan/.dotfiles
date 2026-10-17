@@ -1,15 +1,14 @@
 import fcntl
-import json
-import subprocess
 from contextlib import contextmanager
 
-from shorts_store import read_document, write_document
 from shorts_browser_pages.actions import owned_arguments
-from shorts_browser_pages.transport import create_page
+from shorts_browser_pages.transport import browser_result, create_page, list_pages
+from shorts_store import read_document, write_document
 
 
 class BrowserPages:
-    def __init__(self, root, run_id, command, instance_id):
+    def __init__(self, root, run_id, command, instance_id, scope):
+        self.scope = scope
         self.root = root
         self.run_id = run_id
         self.command = command
@@ -23,17 +22,25 @@ class BrowserPages:
             yield
 
     def result(self, arguments):
-        result = subprocess.run(
-            [*self.command, *arguments],
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=15,
-        )
-        return json.loads(result.stdout)
+        return browser_result(self.target_command(arguments), arguments, self.scope)
 
     def targets(self):
-        return self.result(["tab", "--json"])["tabs"]
+        return list_pages(
+            self.command, read_document(self.path)["sessions"], self.scope
+        )
+
+    def target_command(self, arguments):
+        identifier = (
+            arguments[2]
+            if arguments[:2] in (["tab", "close"], ["tab", "select"])
+            else None
+        )
+        if "--tab" in arguments:
+            identifier = arguments[arguments.index("--tab") + 1]
+        if identifier is None:
+            return self.command
+        session = read_document(self.path)["sessions"][identifier]
+        return [*self.command[:3], session]
 
     def begin(self):
         with self.lock():
@@ -46,6 +53,7 @@ class BrowserPages:
                     "instance_id": self.instance_id,
                     "finished": False,
                     "pages": {},
+                    "sessions": {},
                     "current": None,
                     "pending": None,
                 },
@@ -84,10 +92,12 @@ class BrowserPages:
     def create_page(self, state, role):
         state["pending"] = role
         write_document(self.path, state)
-        identifier = create_page(self.command[2])
+        session = f"shorts-{self.run_id}-{role}"
+        identifier = create_page([*self.command[:3], session], self.scope)
         if not isinstance(identifier, str) or not identifier:
             raise ValueError("Browser page creation returned no target ID")
         state["pages"][role] = identifier
+        state["sessions"][identifier] = session
         state["pending"] = None
         write_document(self.path, state)
         return identifier
@@ -105,6 +115,7 @@ class BrowserPages:
 
     def forget(self, identifier):
         state = self.state()
+        state["sessions"].pop(identifier, None)
         state["pages"] = {
             role: target
             for role, target in state["pages"].items()
@@ -127,6 +138,7 @@ class BrowserPages:
 
     def clear_pages(self, state):
         state["pages"] = {}
+        state["sessions"] = {}
         state["current"] = None
         state["pending"] = None
         write_document(self.path, state)
@@ -135,8 +147,9 @@ class BrowserPages:
         identifiers = {target["id"] for target in self.targets()}
         for role, identifier in list(state["pages"].items()):
             if identifier in identifiers:
-                self.result(["close", identifier, "--json"])
+                self.result(["tab", "close", identifier])
             del state["pages"][role]
+            state["sessions"].pop(identifier, None)
             if state["current"] == identifier:
                 state["current"] = None
             write_document(self.path, state)

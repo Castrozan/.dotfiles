@@ -1,9 +1,8 @@
 from itertools import islice
 from typing import NamedTuple
 
-
-POSITIONAL_TAB_COMMANDS = frozenset({"close", "handoff", "handoff-status", "resume"})
-TAB_VALUE_FLAGS = frozenset({"--reason", "--timeout-ms", "--status"})
+POSITIONAL_TAB_COMMANDS = frozenset({"close", "select"})
+TAB_VALUE_FLAGS = frozenset({"--timeout", "--nth"})
 
 
 class PositionalTabArguments(NamedTuple):

@@ -38,7 +38,7 @@ alone do not prove an entertaining voice; distinguish measured delivery from sub
 
 ### Editorial and media acceptance
 
-Keep the final video at or below 25 MiB, PinchTab's per-file upload ceiling. Re-encode before verification if necessary;
+Keep the final video at or below 25 MiB, the workflow's per-file upload budget. Re-encode before verification if necessary;
 the quality gate rejects oversized files before publication dispatch.
 
 Write `episode.json` with `topic_key`, `title`, specific `summary`, relative `video`, three `candidates`, `sources` and
@@ -83,8 +83,8 @@ Run `shorts-production dispatch --episode-file episode.json` before uploading. A
 second dispatch. Complete Studio checks, source description and truthful audience/synthetic-content declarations before
 publishing. Save the displayed direct video URL as `url` in `episode.json`.
 Use `shorts-browser upload final.mp4 --tab TAB_ID --selector 'input[type=file]'` for the observed Studio input.
-The adapter preserves MP4 filename and MIME through PinchTab's sandbox-path API. After confirmed publication,
-remove only the returned `staged_file` and its empty staging directory; retain the original video in this run.
+The adapter attaches the verified MP4 directly through OpenCLI to the exact run-owned tab. After confirmed publication,
+retain the original video in this run.
 Run `shorts-production complete --episode-file episode.json`; anonymous metadata must prove exact channel and public
 visibility. Inspect Studio and the journal after a timeout or ambiguous result before doing anything further.
 

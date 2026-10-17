@@ -2,54 +2,58 @@ import json
 import os
 import subprocess
 import sys
+from http.client import HTTPConnection, HTTPException
 from pathlib import Path
 
 from shorts_browser_pages.ownership import BrowserPages
-from shorts_store import read_document
+from shorts_browser_pages.transport import browser_environment
 from shorts_browser_upload import upload_video
-
+from shorts_store import read_document
 
 BROWSER_COMMANDS = frozenset(
-    "nav snap click fill type upload wait eval text tab health screenshot close press "
-    "record set capture console errors scroll select attr box value visible find "
-    "handoff handoff-status resume title url focus reload back forward keyboard".split()
+    "open state click fill type upload wait eval get tab screenshot keys scroll select find back network".split()
 )
 
 
-def authorized_instance(instance, configuration):
-    expected = {
-        "profileId": configuration["browser_profile_id"],
-        "profileName": configuration["browser_profile"],
-        "status": "running",
-        "url": "http://127.0.0.1:9868",
-    }
-    return all(instance.get(field) == value for field, value in expected.items())
-
-
 def browser_instance(configuration):
-    result = subprocess.run(
-        [
-            os.environ["SHORTS_PINCHTAB"],
-            "--server",
-            "http://127.0.0.1:9867",
-            "instances",
-            "--json",
-        ],
-        capture_output=True,
-        text=True,
-        timeout=15,
+    from shorts_browser_server import runtime_path
+
+    try:
+        instance = read_document(runtime_path())
+        validate_profile(instance, configuration)
+        os.kill(instance["pid"], 0)
+        status = daemon_status()
+        if status.get("managedJobId") != instance["id"] or not status.get(
+            "extensionConnected"
+        ):
+            raise ValueError("The exact logged-in Shorts profile is not running")
+        return instance
+    except (OSError, HTTPException, KeyError) as error:
+        raise ValueError("The exact logged-in Shorts profile is not running") from error
+
+
+def daemon_status():
+    connection = HTTPConnection("127.0.0.1", 19825, timeout=3)
+    try:
+        connection.request("GET", "/status", headers={"X-OpenCLI": "1"})
+        return json.load(connection.getresponse())
+    finally:
+        connection.close()
+
+
+def validate_profile(instance, configuration):
+    expected = (
+        Path.home() / ".local/share/opencli/profiles" / configuration["browser_profile"]
     )
-    if result.returncode:
-        raise ValueError("The dedicated Shorts browser is unavailable")
-    instances = json.loads(result.stdout)
-    matches = [
-        instance
-        for instance in instances
-        if authorized_instance(instance, configuration)
-    ]
-    if len(matches) != 1:
+    if (
+        instance["profileName"] != configuration["browser_profile"]
+        or Path(instance["scope"]).resolve() != expected.resolve()
+    ):
         raise ValueError("The exact logged-in Shorts profile is not running")
-    return matches[0]
+
+
+def command_for(instance):
+    return [os.environ["SHORTS_OPENCLI"], "browser", "--session", "shorts-production"]
 
 
 def validate_browser_arguments(arguments):
@@ -64,13 +68,15 @@ def validate_browser_arguments(arguments):
 
 
 def server_option(value):
-    return value == "--server" or value.startswith("--server=")
+    return value in ("--server", "--profile", "--session") or value.startswith(
+        ("--server=", "--profile=", "--session=")
+    )
 
 
 def browser_arguments(arguments, configuration):
     validate_browser_arguments(arguments)
     instance = browser_instance(configuration)
-    return [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"], *arguments]
+    return [*command_for(instance), *arguments]
 
 
 def browser_pages(directory, configuration):
@@ -78,43 +84,45 @@ def browser_pages(directory, configuration):
     return BrowserPages(
         directory.parent.parent,
         directory.name,
-        [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"]],
+        command_for(instance),
         instance["id"],
+        instance["scope"],
     )
 
 
-def execute_browser(arguments, configuration, command):
+def execute_browser(arguments, configuration, command, scope):
     if arguments[0] == "upload":
         print(
-            json.dumps(
-                upload_video(
-                    arguments[1:], command[2], configuration["browser_profile_id"]
-                )
-            )
+            json.dumps(upload_video(arguments[1:], command, browser_environment(scope)))
         )
         return 0
-    return subprocess.run([*command, *arguments]).returncode
+    return subprocess.run(
+        [*command, *arguments], env=browser_environment(scope)
+    ).returncode
 
 
 def execute_scoped_browser(arguments, configuration, command, directory, instance):
     pages = BrowserPages(
-        directory.parent.parent, directory.name, command, instance["id"]
+        directory.parent.parent,
+        directory.name,
+        command,
+        instance["id"],
+        instance["scope"],
     )
     with pages.lock():
-        if arguments in (["tab"], ["tab", "--json"]):
+        if arguments == ["tab", "list"]:
             print(json.dumps(pages.tabs()))
             return 0
         scoped = pages.arguments(arguments)
-        returncode = execute_browser(scoped, configuration, command)
+        returncode = execute_browser(
+            scoped, configuration, pages.target_command(scoped), instance["scope"]
+        )
         forget_closed_page(pages, scoped, returncode)
         return returncode
 
 
 def forget_closed_page(pages, arguments, returncode):
     if returncode != 0:
-        return
-    if arguments[0] == "close":
-        pages.forget(arguments[1])
         return
     if arguments[:2] == ["tab", "close"]:
         pages.forget(arguments[2])
@@ -125,10 +133,10 @@ def main():
     arguments = sys.argv[1:]
     validate_browser_arguments(arguments)
     instance = browser_instance(configuration)
-    command = [os.environ["SHORTS_PINCHTAB"], "--server", instance["url"]]
+    command = command_for(instance)
     directory = os.environ.get("SHORTS_BROWSER_RUN")
     if directory is None or arguments[1:] in (["--help"], ["-h"]):
-        return execute_browser(arguments, configuration, command)
+        return execute_browser(arguments, configuration, command, instance["scope"])
     return execute_scoped_browser(
         arguments, configuration, command, Path(directory), instance
     )

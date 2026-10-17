@@ -33,13 +33,8 @@ else
 	echo "  Renderer was not running"
 fi
 
-if curl -sf --max-time 2 http://localhost:9867/health >/dev/null 2>&1; then
-	curl -sf --max-time 2 -X POST http://localhost:9867/shutdown >/dev/null 2>&1 || true
-	sleep 2
-	echo "  Agent browser stopped"
-else
-	echo "  Agent browser was not running"
-fi
+python3 "$(dirname "$0")/browser/runtime.py" stop
+echo "  Avatar browser stopped"
 
 # Remove virtual audio devices
 for sink in AvatarSpeaker AvatarMic AvatarMicSource; do

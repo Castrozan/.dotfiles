@@ -11,21 +11,7 @@ let
   chromeDevtoolsMcpBinary = "${chromeDevtoolsMcpPackage}/bin/chrome-devtools-mcp";
   chromeGlobalUserDataDir = "${homeDir}/.config/chrome-global";
 
-  pinchtabPackage = import ./pinchtab-package.nix {
-    inherit pkgs;
-  };
-  pinchtabBinary = "${pinchtabPackage}/bin/pinchtab";
-
-  pinchtabModeWrapper = pkgs.writeShellApplication {
-    name = "pinchtab-mode";
-    runtimeInputs = [
-      pinchtabPackage
-      pkgs.coreutils
-    ];
-    text = builtins.readFile ./scripts/pinchtab-mode.sh;
-  };
-
-  enforcePinchtabConfigActivation = "$DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${./scripts/enforce_pinchtab_config.py}";
+  opencli = import ./opencli-jobs.nix { inherit pkgs nodejs; };
 
   mkChromeDevtoolsAutoConnectArgs = userDataDir: [
     "--autoConnect"
@@ -37,7 +23,7 @@ let
 
   reserveStealthTargetForInteractiveSession = pkgs.writeShellScript "stealth-browser-mcp-interactive-only" ''
     if [ -n "''${CLAWDE_AGENT_NAME:-}" ]; then
-      echo "stealth-browser-mcp: the consent-attached browser is a single-client target reserved for the interactive session; refusing to attach from an autonomous clawde agent so the agent fleet never contends for the user's real logged-in browser (use pinchtab for autonomous browsing)" >&2
+      echo "stealth-browser-mcp: the consent-attached browser is reserved for the interactive session; autonomous clawde agents must use opencli-run with an isolated browser profile" >&2
       exit 0
     fi
     exec ${chromeDevtoolsMcpBinary} "$@"
@@ -49,11 +35,5 @@ in
 {
   inherit chromeDevtoolsMcpStdioCommand;
   inherit chromeDevtoolsMcpStdioArgs;
-  inherit pinchtabBinary;
-  inherit enforcePinchtabConfigActivation;
-
-  packages = [
-    pinchtabPackage
-    pinchtabModeWrapper
-  ];
+  inherit (opencli) packages;
 }
