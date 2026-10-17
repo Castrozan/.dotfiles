@@ -7,4 +7,5 @@ ignore = ["S603", "S607"]
 
 [lint.per-file-ignores]
 "**/__tests__/**" = ["S101"]
+"agent-harness/agent-instructions/skills/workstation/browser/install/scripts/opencli/opencli_browser.py" = ["S606"]
 "agent-harness/agent-instructions/skills/workstation/browser/install/scripts/opencli/opencli_command.py" = ["S606"]

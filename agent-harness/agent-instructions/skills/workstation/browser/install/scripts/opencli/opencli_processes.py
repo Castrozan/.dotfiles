@@ -7,11 +7,7 @@ from http.client import HTTPConnection, HTTPException
 
 
 def stop_process(process):
-    try:
-        process.terminate()
-    except ProcessLookupError:
-        process.wait(timeout=5)
-        return
+    process.terminate()
     try:
         process.wait(timeout=5)
     except subprocess.TimeoutExpired:
