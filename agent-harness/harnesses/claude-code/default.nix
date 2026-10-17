@@ -14,7 +14,6 @@
     ./plugins/automatic-updates-home-manager.nix
     ./plugins/production-plugin-home-manager.nix
     ./plugins/image-view-home-manager.nix
-    ./context-mode
     ./private.nix
     ./scripts
     ../../workspace-profiles
