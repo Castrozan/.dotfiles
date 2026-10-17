@@ -39,6 +39,7 @@
       mongosh
       neofetch
       # nix # leave the manually installed version
+      nix-output-monitor
       nixd
       nixfmt-rfc-style
       nodejs
