@@ -1,5 +1,5 @@
 {
-  "observed_at": "2026-10-17T20:13:54.431119+00:00",
+  "observed_at": "2026-10-17T20:32:46.975969+00:00",
   "platform": "linux",
   "opencli_version": "2.0.0",
   "checks": {
@@ -30,9 +30,27 @@
   "passed": 23,
   "total": 23,
   "posting_or_publishing_exercised": false,
-  "method": "prove_opencli.py with the built managed CLI and runner; fresh temporary profile data; fixture UI plus public GitHub and Hacker News reads",
+  "method": "Installed Linux managed CLI and runner; fresh temporary profiles; fixture UI plus public GitHub and Hacker News reads",
   "limits": [
     "Authenticated account workflows and macOS were not exercised",
     "No posting or publishing was performed"
-  ]
+  ],
+  "targeted_python_tests": {
+    "passed": 68,
+    "total": 68
+  },
+  "native_package_tests": {
+    "passed": 3,
+    "total": 3
+  },
+  "shorts_fixture_checks": {
+    "exact_live_job_attested": true,
+    "scoped_native_form_dispatch": true,
+    "original_mp4_attached_to_exact_owned_page": true,
+    "two_roles_use_distinct_sessions": true,
+    "unowned_page_rejected": true,
+    "finished_run_releases_owned_pages": true,
+    "owner_state_removed_after_exit": true
+  },
+  "shorts_fixture_scope": "Real managed CLI, Bridge and Shorts dispatch; profile home lookup rehosted in a temporary directory; no account or publishing actions"
 }
