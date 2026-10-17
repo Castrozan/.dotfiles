@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from jellyseerr_media import JellyseerrRequestError, public_requester, public_status
+from media_removal import MediaRemovalDenied, authorize_media_removal, remove_media
 
 
 def positive_integer(value):
@@ -22,12 +23,14 @@ def argument_parser():
     commands = parser.add_subparsers(dest="command", required=True)
     search = commands.add_parser("search")
     search.add_argument("title")
-    for command in ("status", "request", "cancel"):
+    for command in ("status", "request", "cancel", "remove"):
         action = commands.add_parser(
             command,
             description=(
                 "Remove one public request record; downloads and library files stay unchanged."
                 if command == "cancel"
+                else "Operator only: remove one public library title and its files."
+                if command == "remove"
                 else None
             ),
         )
@@ -126,6 +129,13 @@ def cancel_media_request(client, arguments, details):
 def execute_command(client, arguments):
     if arguments.command == "search":
         return {"results": client.search(arguments.title)}
+    if arguments.command == "remove":
+        return remove_media(
+            client,
+            os.environ.get("ARR_MEDIA_STACK_HOME", Path.home() / "arr-stack"),
+            arguments.media_type,
+            arguments.media_id,
+        )
     details = client.details(arguments.media_type, arguments.media_id)
     if arguments.command == "request":
         return request_media(client, arguments, details)
@@ -139,12 +149,16 @@ def main(argv=None):
     arguments = parser.parse_args(argv)
     validate_request_arguments(parser, arguments)
     try:
+        if arguments.command == "remove":
+            authorize_media_removal()
         client = public_requester(
             os.environ.get("ARR_MEDIA_STACK_HOME", Path.home() / "arr-stack")
         )
         result = execute_command(client, arguments)
         print(json.dumps(result, ensure_ascii=False))
         return 0
+    except MediaRemovalDenied as error:
+        print(str(error), file=sys.stderr)
     except JellyseerrRequestError as error:
         print(
             f"Jellyseerr {arguments.command} failed (HTTP {error.status}); no success confirmed",
@@ -152,7 +166,9 @@ def main(argv=None):
         )
     except (OSError, ValueError, KeyError, http.client.HTTPException):
         print(
-            "Media command failed; check the public requester and Jellyseerr service",
+            "Media removal failed or is unconfirmed; no success confirmed"
+            if arguments.command == "remove"
+            else "Media command failed; check the public requester and Jellyseerr service",
             file=sys.stderr,
         )
     return 1

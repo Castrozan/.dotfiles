@@ -10,7 +10,10 @@ let
   stackRoot = "${config.home.homeDirectory}/arr-stack";
   arrUsersCli = import ../users/arr-users-cli-home-manager.nix { inherit pkgs stackRoot; };
   arrStatusCli = import ../status/arr-status-cli-home-manager.nix { inherit pkgs stackRoot; };
-  arrMediaCli = import ../status/arr-media-cli-home-manager.nix { inherit pkgs stackRoot; };
+  arrMediaCli = import ../status/arr-media-cli-home-manager.nix {
+    inherit pkgs stackRoot;
+    operatorDiscordUserId = config.arrMediaOperatorDiscordUserId;
+  };
   machineIdentityMapPath = ../../../../private-configuration/machines.nix;
   privateConfigPresent = builtins.pathExists machineIdentityMapPath;
   chiseMachineIdentity = lib.optionalAttrs privateConfigPresent (import machineIdentityMapPath).chise;
@@ -85,22 +88,29 @@ let
     directory: ''$DRY_RUN_CMD mkdir -p $VERBOSE_ARG "${directory}"''
   ) allPersistenceDirectories;
 in
-lib.mkIf isChise {
-  home = {
-    packages = [
-      arrUsersCli
-      arrStatusCli
-      arrMediaCli
-    ];
+{
+  options.arrMediaOperatorDiscordUserId = lib.mkOption {
+    type = lib.types.nullOr lib.types.str;
+    default = null;
+    description = "Verified Discord operator allowed to remove public library media.";
+  };
+  config = lib.mkIf isChise {
+    home = {
+      packages = [
+        arrUsersCli
+        arrStatusCli
+        arrMediaCli
+      ];
 
-    file = {
-      "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
-      "arr-stack/.env".text = runtimeEnvironmentFileContents;
-      "arr-stack/README.md".source = ./README.md;
+      file = {
+        "arr-stack/docker-compose.yml".source = ./docker-compose.yml;
+        "arr-stack/.env".text = runtimeEnvironmentFileContents;
+        "arr-stack/README.md".source = ./README.md;
+      };
+
+      activation.createArrStackPersistenceDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        ${makePersistenceDirectoriesCommand}
+      '';
     };
-
-    activation.createArrStackPersistenceDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      ${makePersistenceDirectoriesCommand}
-    '';
   };
 }

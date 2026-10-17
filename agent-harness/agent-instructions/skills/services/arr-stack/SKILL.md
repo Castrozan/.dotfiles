@@ -21,9 +21,17 @@ finished. Report failures per title and use status before claiming availability.
 Withdrawing a request removes only the selected public request record. Downloads and library files continue unchanged;
 report that limited effect instead of saying the media was deleted or its download stopped.
 
-`arr-media` returns public catalog metadata and only the public requester's requests. Guests may use this command
-through Monster; `arr-users`, `arr-status`, account changes, private libraries and direct service access remain outside
-that guest capability. Never substitute another command when the public request command fails.
+`arr-media` returns public catalog metadata and only the public requester's requests. Guests may search, request, check
+status and withdraw public requests through Monster. `arr-users`, `arr-status`, account changes, private libraries and
+direct service access remain outside that guest capability. Never substitute another command when the public request
+command fails.
+
+### Public library media removal
+
+Only the verified Discord operator may use `arr-media remove` to remove one public movie or entire TV series and ask
+Radarr or Sonarr to delete its library files. Match the title, year and media type first. An ambiguous target or unclear
+deletion intent needs clarification. The command rejects guests and private libraries; `cancel` only withdraws a request.
+Report the confirmed library removal and file-deletion request accurately; neither means torrent data was purged.
 
 ### Account model
 
