@@ -89,6 +89,39 @@ load '../support/codex_launcher_fixture'
 	[ ! -f "$DISPATCH_MARKER" ]
 }
 
+@test "keeps global configuration options before app-server outside the interactive launch" {
+	for configuration_option in -c --config; do
+		run_codex "$configuration_option" features.code_mode_host=true app-server --listen unix://
+		[ "$status" -eq 0 ]
+		[ "${lines[0]}" = "argv: $(launcher_arguments) <$configuration_option> <features.code_mode_host=true> <app-server> <--listen> <unix://>" ]
+		[ "${lines[1]}" = 'AGENT_INTERACTIVE_PREFERENCES_PATH=<unset>' ]
+		[ ! -f "$PRIVATE_LAUNCH_MARKER" ]
+		[ ! -f "$DISPATCH_MARKER" ]
+	done
+}
+
+@test "keeps inline global configuration before app-server proxy outside the interactive launch" {
+	run_codex --config=features.code_mode_host=true app-server proxy
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--config=features.code_mode_host=true> <app-server> <proxy>" ]
+	[ ! -f "$PRIVATE_LAUNCH_MARKER" ]
+	[ ! -f "$DISPATCH_MARKER" ]
+}
+
+@test "does not treat global option values as commands" {
+	run_codex -m app-server 'explain this code'
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <-m> <app-server> <explain this code>" ]
+	[ -f "$PRIVATE_LAUNCH_MARKER" ]
+}
+
+@test "does not treat a positional prompt after the option separator as a command" {
+	run_codex -- app-server
+	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <--> <app-server>" ]
+	[ -f "$PRIVATE_LAUNCH_MARKER" ]
+}
+
 @test "preserves caller arguments that contain spaces and quotes" {
 	run_codex exec 'a "quoted" argument'
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <exec> <a \"quoted\" argument>" ]
