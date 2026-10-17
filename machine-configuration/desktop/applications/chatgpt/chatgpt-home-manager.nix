@@ -1,10 +1,13 @@
 {
+  config,
   pkgs,
   lib,
+  hostname,
   isNixOS,
   ...
 }:
 let
+  jsonFormat = pkgs.formats.json { };
   chatgpt = pkgs.callPackage ./package.nix { };
   resourceControlSource = pkgs.writeText "chatgpt-resource-control.py" (
     builtins.readFile ./scripts/chatgpt_resource_control.py
@@ -46,9 +49,27 @@ let
   };
 in
 {
-  config = lib.mkIf isNixOS {
-    home.packages = [ resourceManagedChatgpt ];
-    xdg.dataFile."applications/chatgpt.desktop".source =
-      "${resourceManagedChatgpt}/share/applications/chatgpt.desktop";
+  options.programs.chatgpt.remoteConnections = lib.mkOption {
+    type = lib.types.listOf lib.types.nonEmptyStr;
+    default = lib.remove hostname [
+      "chise"
+      "rin"
+      "kira"
+    ];
+    description = "SSH aliases declared as ChatGPT remote connections.";
   };
+
+  config = lib.mkMerge [
+    {
+      home.file.".codex/codex-app/config.json".source = jsonFormat.generate "chatgpt-config.json" {
+        version = 1;
+        remoteConnections = map (sshAlias: { inherit sshAlias; }) config.programs.chatgpt.remoteConnections;
+      };
+    }
+    (lib.mkIf isNixOS {
+      home.packages = [ resourceManagedChatgpt ];
+      xdg.dataFile."applications/chatgpt.desktop".source =
+        "${resourceManagedChatgpt}/share/applications/chatgpt.desktop";
+    })
+  ];
 }
