@@ -5,11 +5,11 @@ description: "Interact with browser pages and Electron apps, run OpenCLI site co
 
 ### Strategy
 
-Start ad-hoc interactive browser tasks with Chrome DevTools (`mcp__chrome-devtools__*`). It drives the user's real Chrome Global with
-their live logins and no page-visible automation flags. When the user names Chrome DevTools, CDP, or the browser
-harness, that choice is binding: stay on Chrome DevTools and never invoke, inspect, restart, or configure OpenCLI. A
-stale connection, zero attached pages, a blocking consent prompt, "Could not connect to Chrome," or another recoverable
-tool error starts the recovery workflow below; none permits a tool switch.
+Start ad-hoc interactive browser tasks with Chrome DevTools (`mcp__chrome-devtools__*`). It drives the user's real
+Chrome Global with their live logins and no page-visible automation flags. When the user names Chrome DevTools, CDP, or
+the browser harness, that choice is binding: stay on Chrome DevTools and never invoke, inspect, restart, or configure
+OpenCLI. A stale connection, zero attached pages, a blocking consent prompt, "Could not connect to Chrome," or another
+recoverable tool error starts the recovery workflow below; none permits a tool switch.
 
 OpenCLI is eligible only as the last resort when every recovery step has failed, Chrome DevTools remains unavailable,
 the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. An autonomous clawde
@@ -21,7 +21,8 @@ Read [OpenCLI](references/opencli.md) for site commands and eligible isolated wo
 target](references/chrome-target.md) explains the Chrome target's constraints.
 
 Use OpenCLI site adapters for repeatable site reads when an isolated profile meets the request; this does not broaden
-eligibility for generic browser fallback. Read [OpenCLI](references/opencli.md) for job ownership and adapter development.
+eligibility for generic browser fallback. Read [OpenCLI](references/opencli.md) for job ownership and adapter
+development.
 
 ### Chrome devtools connection and recovery
 

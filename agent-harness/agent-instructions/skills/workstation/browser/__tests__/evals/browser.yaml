@@ -14,7 +14,7 @@ tests:
       output_not_contains:
         - "opencli daemon"
         - "opencli profile"
-        - "opencli-run"
+        - "opencli-run --"
 
   - name: browser_uses_chrome_devtools_for_public_scraping_when_available
     skill_path: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md
@@ -59,4 +59,4 @@ tests:
         - "opencli browser open"
         - "opencli daemon"
         - "opencli profile"
-        - "opencli-run"
+        - "opencli-run --"

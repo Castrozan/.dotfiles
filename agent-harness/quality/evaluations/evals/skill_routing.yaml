@@ -8,7 +8,7 @@ shared_system_prompt: &shared_system_prompt |
 
   architecture - Boundaries, dependency direction, system design, UML and deployment shape. Use when choosing a structure, adding a module or service, moving a boundary, or reviewing a design.
 
-  browser - Interact with live browser pages and Electron apps: navigate, fill forms, test UI, or capture browser-window screenshots. Not for programmatic fetching, desktop capture, media, or non-browser GUI.
+  browser - Interact with browser pages and Electron apps, run OpenCLI site commands, or use an isolated browser fallback. Not for desktop capture, media, or other GUI.
 
   coding - Implement and evolve code safely. Use for coding, fixes, tests, commits, Git history and archaeology, or parallel branch work.
 
