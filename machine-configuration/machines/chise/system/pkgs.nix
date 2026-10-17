@@ -52,6 +52,7 @@
       mpv-shim-default-shaders
       oath-toolkit
       nix-output-monitor
+      (import ../../../development/system-rebuild/nh-package.nix { inherit pkgs; })
       nixd
       nix-prefetch-github
       nixpkgs-fmt
