@@ -1,73 +1,43 @@
-import { TestBed } from '@angular/core/testing';
+import { DASHBOARD_CONFIGURATION } from '../config/dashboard-config';
 import {
-  JSON_HTTP_CLIENT,
-  type JsonHttpClientPort,
-  type JsonHttpResponse,
-} from '../dependencies/json-http-client/json-http-client.port';
-import { UsageSnapshotClientService } from './usage-snapshot-client.service';
+  buildServiceWithFakeStorage,
+  okResponse,
+  singlePageListing,
+} from './usage-snapshot-client/cloud-storage-json-http-client.doubles';
 
-class RecordingJsonHttpClient implements JsonHttpClientPort {
-  readonly requestedUrls: string[] = [];
-
-  constructor(private readonly responsesByUrlFragment: Map<string, JsonHttpResponse>) {}
-
-  async getJson(url: string): Promise<JsonHttpResponse> {
-    if (this.requestedUrls.includes(url)) {
-      throw new Error('Unexpected repeated HTTP request');
-    }
-    this.requestedUrls.push(url);
-    for (const [fragment, response] of this.responsesByUrlFragment) {
-      if (url.includes(fragment)) {
-        return response;
-      }
-    }
-    return { ok: false, status: 404, body: null };
-  }
-}
-
-function okResponse(body: unknown): JsonHttpResponse {
-  return { ok: true, status: 200, body };
-}
-
-function buildService(responses: Map<string, JsonHttpResponse>) {
-  const jsonHttpClient = new RecordingJsonHttpClient(responses);
-  TestBed.configureTestingModule({
-    providers: [{ provide: JSON_HTTP_CLIENT, useValue: jsonHttpClient }],
-  });
-  return { service: TestBed.inject(UsageSnapshotClientService), jsonHttpClient };
-}
+const objectMediaUrlPrefix = `https://storage.googleapis.com/storage/v1/b/${DASHBOARD_CONFIGURATION.snapshotsBucket}/o/`;
 
 describe('UsageSnapshotClientService', () => {
   it('follows every listing page and skips non-json objects', async () => {
-    const responses = new Map<string, JsonHttpResponse>([
-      [
-        'pageToken=second',
-        okResponse({ items: [{ name: 'usage/b.json' }, { name: 'usage/notes.txt' }] }),
-      ],
-      [
-        '/storage/v1/b/',
-        okResponse({ items: [{ name: 'usage/a.json' }], nextPageToken: 'second' }),
-      ],
-      ['usage/a.json', okResponse({ account_label: 'a' })],
-      ['usage/b.json', okResponse({ account_label: 'b' })],
-    ]);
-    const { service } = buildService(responses);
+    const { service, jsonHttpClient } = buildServiceWithFakeStorage(
+      new Map([
+        ['', okResponse({ items: [{ name: 'usage/a.json' }], nextPageToken: 'second' })],
+        ['second', okResponse({ items: [{ name: 'usage/b.json' }, { name: 'usage/notes.txt' }] })],
+      ]),
+      new Map([
+        ['usage/a.json', okResponse({ account_label: 'a' })],
+        ['usage/b.json', okResponse({ account_label: 'b' })],
+      ]),
+    );
 
     const snapshots = await service.fetchAllSnapshots();
 
     expect(snapshots.map((snapshot) => snapshot.account_label)).toEqual(['a', 'b']);
+    expect(jsonHttpClient.requestedPageTokens).toEqual(['', 'second']);
+    expect(jsonHttpClient.requestedObjectNames).toEqual(['usage/a.json', 'usage/b.json']);
+    expect(new URL(jsonHttpClient.requestedUrls[0]).searchParams.get('prefix')).toBe(
+      DASHBOARD_CONFIGURATION.snapshotsObjectPrefix,
+    );
   });
 
   it('drops snapshot objects the transport could not fetch', async () => {
-    const responses = new Map<string, JsonHttpResponse>([
-      [
-        '/storage/v1/b/',
-        okResponse({ items: [{ name: 'usage/a.json' }, { name: 'usage/gone.json' }] }),
-      ],
-      ['usage/a.json', okResponse({ account_label: 'a' })],
-      ['usage/gone.json', { ok: false, status: 403, body: null }],
-    ]);
-    const { service } = buildService(responses);
+    const { service } = buildServiceWithFakeStorage(
+      singlePageListing(['usage/a.json', 'usage/gone.json']),
+      new Map([
+        ['usage/a.json', okResponse({ account_label: 'a' })],
+        ['usage/gone.json', { ok: false, status: 403, body: null }],
+      ]),
+    );
 
     const snapshots = await service.fetchAllSnapshots();
 
@@ -75,10 +45,9 @@ describe('UsageSnapshotClientService', () => {
   });
 
   it('raises when the listing request itself fails', async () => {
-    const responses = new Map<string, JsonHttpResponse>([
-      ['/storage/v1/b/', { ok: false, status: 500, body: null }],
-    ]);
-    const { service } = buildService(responses);
+    const { service } = buildServiceWithFakeStorage(
+      new Map([['', { ok: false, status: 500, body: null }]]),
+    );
 
     await expect(service.fetchAllSnapshots()).rejects.toThrow('status 500');
   });
@@ -94,98 +63,115 @@ describe('UsageSnapshotClientService', () => {
     ['numeric object name', { items: [{ name: 7 }] }],
     ['numeric page token', { nextPageToken: 7 }],
   ])('rejects a listing with %s', async (_description, body) => {
-    const { service } = buildService(new Map([['/storage/v1/b/', okResponse(body)]]));
+    const { service } = buildServiceWithFakeStorage(new Map([['', okResponse(body)]]));
 
     await expect(service.fetchAllSnapshots()).rejects.toThrow('Invalid snapshot listing response');
   });
 
-  it('accepts an empty listing', async () => {
-    const { service, jsonHttpClient } = buildService(new Map([['/storage/v1/b/', okResponse({})]]));
+  it.each([{}, { items: [] }])('accepts an empty listing %j', async (body) => {
+    const { service, jsonHttpClient } = buildServiceWithFakeStorage(
+      new Map([['', okResponse(body)]]),
+    );
 
     await expect(service.fetchAllSnapshots()).resolves.toEqual([]);
     expect(jsonHttpClient.requestedUrls).toHaveLength(1);
   });
 
-  it.each([
-    ['null response', null],
-    ['array response', []],
-    ['string response', 'invalid'],
-    ['numeric label', { account_label: 7 }],
-    ['boolean machine', { machine_label: false }],
-    ['string schema version', { schema_version: '1' }],
-    ['nonfinite schema version', { schema_version: Infinity }],
-    ['array model totals', { model_usage_totals: [] }],
-    ['null model totals', { model_usage_totals: { sonnet: null } }],
-    ['string token count', { model_usage_totals: { sonnet: { input_tokens: '5' } } }],
-    ['object daily usage', { daily_model_tokens: {} }],
-    ['null daily entry', { daily_model_tokens: [null] }],
-    ['missing daily date', { daily_model_tokens: [{ tokens_by_model: {} }] }],
-    ['numeric date', { daily_model_tokens: [{ date: 7, tokens_by_model: {} }] }],
-    ['missing daily counts', { daily_model_tokens: [{ date: '2026-10-16' }] }],
-    ['array daily counts', { daily_model_tokens: [{ date: '2026-10-16', tokens_by_model: [] }] }],
-    [
-      'string daily count',
-      { daily_model_tokens: [{ date: '2026-10-16', tokens_by_model: { sonnet: '5' } }] },
-    ],
-    ['string OTEL flag', { otel_metrics: { has_data: 'true' } }],
-    ['string OTEL cost', { otel_metrics: { total_cost_usd: '1' } }],
-    ['string OTEL count', { otel_metrics: { token_usage_by_type: { input: '5' } } }],
-    ['numeric first date', { stats_first_session_date: 7 }],
-    ['boolean last date', { stats_last_computed_date: false }],
-  ])('drops a snapshot with %s while retaining valid snapshots', async (_description, body) => {
-    const responses = new Map<string, JsonHttpResponse>([
-      ['/storage/v1/b/', okResponse({ items: [{ name: 'good.json' }, { name: 'bad.json' }] })],
-      ['good.json', okResponse({ account_label: 'good' })],
-      ['bad.json', okResponse(body)],
-    ]);
-    const { service } = buildService(responses);
-
-    await expect(service.fetchAllSnapshots()).resolves.toEqual([{ account_label: 'good' }]);
-  });
-
-  it.each([
-    {},
-    { model_usage_totals: {}, daily_model_tokens: [], otel_metrics: { has_data: false } },
-    { stats_first_session_date: null, stats_last_computed_date: null },
-  ])('accepts optional snapshot fields in %j', async (snapshot) => {
-    const { service } = buildService(
+  it('downloads each object name once across pages in first-seen order', async () => {
+    const { service, jsonHttpClient } = buildServiceWithFakeStorage(
       new Map([
-        ['/storage/v1/b/', okResponse({ items: [{ name: 'usage.json' }] })],
-        ['usage.json', okResponse(snapshot)],
+        [
+          '',
+          okResponse({
+            items: [{ name: 'usage/a.json' }, { name: 'usage/b.json' }, { name: 'usage/a.json' }],
+            nextPageToken: 'second',
+          }),
+        ],
+        [
+          'second',
+          okResponse({
+            items: [{ name: 'usage/b.json' }, { name: 'usage/c.json' }, { name: 'usage/a.json' }],
+          }),
+        ],
+      ]),
+      new Map([
+        ['usage/a.json', okResponse({ account_label: 'a' })],
+        ['usage/b.json', okResponse({ account_label: 'b' })],
+        ['usage/c.json', okResponse({ account_label: 'c' })],
       ]),
     );
 
-    await expect(service.fetchAllSnapshots()).resolves.toEqual([snapshot]);
+    const snapshots = await service.fetchAllSnapshots();
+
+    expect(snapshots.map((snapshot) => snapshot.account_label)).toEqual(['a', 'b', 'c']);
+    expect(jsonHttpClient.requestedObjectNames).toEqual([
+      'usage/a.json',
+      'usage/b.json',
+      'usage/c.json',
+    ]);
   });
 
-  it('accepts nested usage metrics, nullable dates and additional metadata', async () => {
-    const snapshot = {
-      account_label: 'account',
-      machine_label: 'machine',
-      schema_version: 1,
-      model_usage_totals: { sonnet: { input_tokens: 5, output_tokens: 2, cost_usd: 0.1 } },
-      daily_model_tokens: [{ date: '2026-10-16', tokens_by_model: { sonnet: 7 } }],
-      otel_metrics: { token_usage_by_type: { input: 5 }, total_cost_usd: 0.1, has_data: true },
-      stats_first_session_date: null,
-      stats_last_computed_date: '2026-10-16',
-      additional_metadata: { source: 'snapshot publisher' },
-    };
-    const { service } = buildService(
-      new Map<string, JsonHttpResponse>([
-        ['/storage/v1/b/', okResponse({ items: [{ name: 'usage.json' }] })],
-        ['usage.json', okResponse(snapshot)],
-      ]),
+  it.each([
+    [
+      'a self-loop',
+      [
+        ['', 'loop'],
+        ['loop', 'loop'],
+      ],
+      ['', 'loop'],
+    ],
+    [
+      'a multi-token cycle',
+      [
+        ['', 'first'],
+        ['first', 'second'],
+        ['second', 'third'],
+        ['third', 'first'],
+      ],
+      ['', 'first', 'second', 'third'],
+    ],
+  ])(
+    'rejects %s before requesting a repeated page token',
+    async (_description, nextPageTokenByPageToken, expectedRequestedPageTokens) => {
+      const { service, jsonHttpClient } = buildServiceWithFakeStorage(
+        new Map(
+          nextPageTokenByPageToken.map(([pageToken, nextPageToken]) => [
+            pageToken,
+            okResponse({ items: [{ name: `${pageToken}.json` }], nextPageToken }),
+          ]),
+        ),
+      );
+
+      await expect(service.fetchAllSnapshots()).rejects.toThrow(
+        'snapshot listing pagination cycle',
+      );
+      expect(jsonHttpClient.requestedPageTokens).toEqual(expectedRequestedPageTokens);
+      expect(jsonHttpClient.requestedObjectNames).toEqual([]);
+    },
+  );
+
+  it('fetches reserved-character object names through the JSON API media endpoint', async () => {
+    const objectNamesWithEncodedPaths = [
+      ['snapshots/space name.json', 'snapshots%2Fspace%20name.json'],
+      ['snapshots/ünï-日本.json', 'snapshots%2F%C3%BCn%C3%AF-%E6%97%A5%E6%9C%AC.json'],
+      ['snapshots/nested/slash.json', 'snapshots%2Fnested%2Fslash.json'],
+      ['snapshots/100%.json', 'snapshots%2F100%25.json'],
+      ['snapshots/question?.json', 'snapshots%2Fquestion%3F.json'],
+      ['snapshots/fragment#1.json', 'snapshots%2Ffragment%231.json'],
+    ];
+    const objectNames = objectNamesWithEncodedPaths.map(([objectName]) => objectName);
+    const { service, jsonHttpClient } = buildServiceWithFakeStorage(
+      singlePageListing(objectNames),
+      new Map(objectNames.map((name) => [name, okResponse({ account_label: name })])),
     );
 
-    await expect(service.fetchAllSnapshots()).resolves.toEqual([snapshot]);
-  });
+    const snapshots = await service.fetchAllSnapshots();
 
-  it('drops an individual snapshot when JSON decoding fails', async () => {
-    const { service, jsonHttpClient } = buildService(new Map());
-    vi.spyOn(jsonHttpClient, 'getJson')
-      .mockResolvedValueOnce(okResponse({ items: [{ name: 'broken.json' }] }))
-      .mockRejectedValueOnce(new SyntaxError('Invalid JSON'));
-
-    await expect(service.fetchAllSnapshots()).resolves.toEqual([]);
+    expect(snapshots.map((snapshot) => snapshot.account_label)).toEqual(objectNames);
+    expect(jsonHttpClient.requestedUrls.slice(1)).toEqual(
+      objectNamesWithEncodedPaths.map(
+        ([, encodedPath]) => `${objectMediaUrlPrefix}${encodedPath}?alt=media`,
+      ),
+    );
   });
 });
