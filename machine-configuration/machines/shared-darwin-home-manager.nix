@@ -51,6 +51,8 @@
     ../development/version-control/lazygit-home-manager.nix
     ../development/version-control/git-fzf-home-manager.nix
 
+    ../operating-system/resource-monitoring/btop-home-manager.nix
+
     # ../terminal/visual-effects/bad-apple/bad-apple-chise-home-manager.nix  # disabled on darwin: pulls latest.yt-dlp -> deno -> rusty-v8 (V8 build takes 30+ min on aarch64-darwin)
     ../terminal/visual-effects/cbonsai/cbonsai-home-manager.nix
     ../terminal/visual-effects/cmatrix/cmatrix-home-manager.nix
