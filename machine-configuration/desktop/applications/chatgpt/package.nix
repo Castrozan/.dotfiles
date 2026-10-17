@@ -52,6 +52,11 @@ pkgs.stdenvNoCC.mkDerivation (finalAttributes: {
     xorg.libxshmfence
   ];
 
+  runtimeDependencies = map lib.getLib [
+    pkgs.libGL
+    pkgs.vulkan-loader
+  ];
+
   gappsWrapperArgs = [
     "--prefix"
     "PATH"
