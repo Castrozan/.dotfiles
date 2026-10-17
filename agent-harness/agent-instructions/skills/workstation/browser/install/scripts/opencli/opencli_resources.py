@@ -5,13 +5,12 @@ import re
 import secrets
 import shutil
 import socket
-import subprocess
 from contextlib import contextmanager
 from pathlib import Path
 
 from opencli_browser import browser_process
-from opencli_owner import register_process
-from opencli_processes import stop_process, wait_for_bridge
+from opencli_owner import owned_process
+from opencli_processes import wait_for_bridge
 
 
 def profile_directory(name):
@@ -98,7 +97,6 @@ def browser_job(name, headed=False):
         require_unused_port()
         token = secrets.token_urlsafe(32)
         extension = prepare_extension(profile, token)
-        processes = []
         environment = dict(
             os.environ,
             OPENCLI_BRIDGE_TOKEN=token,
@@ -110,25 +108,19 @@ def browser_job(name, headed=False):
         try:
             with open(state / "last-job.log", "w", opener=private_opener) as output:
                 os.fchmod(output.fileno(), 0o600)
-                daemon = subprocess.Popen(
+                with owned_process(
                     [os.environ["OPENCLI_NODE"], os.environ["OPENCLI_DAEMON"]],
-                    env=dict(environment),
-                    stdout=output,
-                    stderr=output,
-                    start_new_session=True,
-                )
-                processes.append(daemon)
-                register_process(daemon)
-                with browser_process(
-                    browser_arguments(profile, extension, headed), environment, output
-                ) as browser:
-                    processes.append(browser)
-                    register_process(browser)
-                    wait_for_bridge(processes)
-                    yield environment
+                    dict(environment),
+                    output,
+                ) as daemon:
+                    with browser_process(
+                        browser_arguments(profile, extension, headed),
+                        environment,
+                        output,
+                    ) as browser:
+                        wait_for_bridge([daemon, browser])
+                        yield environment
         finally:
-            for process in reversed(processes):
-                stop_process(process)
             shutil.rmtree(extension, ignore_errors=True)
 
 

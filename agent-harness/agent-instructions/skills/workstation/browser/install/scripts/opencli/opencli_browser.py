@@ -4,6 +4,8 @@ import subprocess
 import sys
 from contextlib import ExitStack, contextmanager
 
+from opencli_owner import owned_process
+
 
 @contextmanager
 def browser_process(arguments, environment, output):
@@ -22,7 +24,7 @@ def browser_process(arguments, environment, output):
         browser_output = resources.enter_context(
             os.fdopen(browser_output, "wb", buffering=0)
         )
-        process = subprocess.Popen(
+        with owned_process(
             [
                 sys.executable,
                 __file__,
@@ -30,18 +32,16 @@ def browser_process(arguments, environment, output):
                 str(browser_output.fileno()),
                 *arguments,
             ],
-            pass_fds=(browser_input.fileno(), browser_output.fileno()),
-            env=environment,
-            stdout=output,
-            stderr=output,
-            start_new_session=True,
-        )
-        browser_input.close()
-        browser_output.close()
-        try:
-            yield process
-        finally:
-            close_browser(process, control_input)
+            environment,
+            output,
+            (browser_input.fileno(), browser_output.fileno()),
+        ) as process:
+            browser_input.close()
+            browser_output.close()
+            try:
+                yield process
+            finally:
+                close_browser(process, control_input)
 
 
 def close_browser(process, control):
