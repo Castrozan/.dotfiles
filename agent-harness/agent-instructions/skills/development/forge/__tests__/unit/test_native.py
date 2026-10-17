@@ -131,3 +131,47 @@ def test_github_queries_use_explicit_repository_url(monkeypatch):
     assert all(
         command[command.index("--repo") + 1] == repository.url for command in calls
     )
+
+
+def test_github_run_lookup_falls_back_to_commit_scoped_actions_api(monkeypatch):
+    repository = Repository("github", "github.example", "owner/project")
+    calls = []
+
+    def capture(command, **options):
+        calls.append(command)
+        if command[:3] == ["gh", "run", "list"]:
+            raise subprocess.CalledProcessError(1, command)
+        return {
+            "workflow_runs": [
+                {
+                    "id": 7,
+                    "head_sha": REVISION,
+                    "status": "completed",
+                    "conclusion": "success",
+                    "name": "checks",
+                    "html_url": "https://github.example/owner/project/actions/runs/7",
+                }
+            ]
+        }
+
+    monkeypatch.setattr(native, "capture_json", capture)
+
+    assert native.runs_for_revision(repository, REVISION) == [
+        {
+            "databaseId": 7,
+            "headSha": REVISION,
+            "status": "completed",
+            "conclusion": "success",
+            "workflowName": "checks",
+            "url": "https://github.example/owner/project/actions/runs/7",
+        }
+    ]
+    assert calls[1] == [
+        "gh",
+        "api",
+        "--method",
+        "GET",
+        f"repos/owner/project/actions/runs?head_sha={REVISION}&per_page=100",
+        "--hostname",
+        "github.example",
+    ]

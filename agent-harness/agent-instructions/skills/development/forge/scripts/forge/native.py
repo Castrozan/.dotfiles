@@ -84,25 +84,65 @@ def runs_for_revision(repository, revision):
     if not re.fullmatch(r"[0-9a-fA-F]{40}|[0-9a-fA-F]{64}", revision):
         raise ValueError("CI lookup requires a full commit SHA")
     if repository.provider == "github":
-        return capture_json(
-            [
-                "gh",
-                "run",
-                "list",
-                "--repo",
-                repository.url,
-                "--commit",
-                revision,
-                "--limit",
-                "100",
-                "--json",
-                "databaseId,headSha,status,conclusion,workflowName,url",
-            ]
-        )
+        try:
+            return capture_json(
+                [
+                    "gh",
+                    "run",
+                    "list",
+                    "--repo",
+                    repository.url,
+                    "--commit",
+                    revision,
+                    "--limit",
+                    "100",
+                    "--json",
+                    "databaseId,headSha,status,conclusion,workflowName,url",
+                ]
+            )
+        except subprocess.CalledProcessError:
+            return github_actions_runs_for_revision(repository, revision)
     pipelines = gitlab_pages(
         repository, f"{project_endpoint(repository)}/pipelines?sha={revision}"
     )
     return [pipeline_result(pipeline) for pipeline in pipelines]
+
+
+def github_actions_runs_for_revision(repository, revision):
+    response = capture_json(
+        [
+            "gh",
+            "api",
+            "--method",
+            "GET",
+            f"repos/{repository.project}/actions/runs?head_sha={revision}&per_page=100",
+            "--hostname",
+            repository.hostname,
+        ]
+    )
+    try:
+        runs = response["workflow_runs"]
+    except (KeyError, TypeError) as error:
+        raise ValueError("GitHub Actions runs response has no workflow runs") from error
+    if not isinstance(runs, list):
+        raise ValueError("GitHub Actions workflow runs response is not a list")
+    return [github_actions_run(run) for run in runs]
+
+
+def github_actions_run(run):
+    try:
+        return {
+            "databaseId": run["id"],
+            "headSha": run["head_sha"],
+            "status": run["status"],
+            "conclusion": run["conclusion"],
+            "workflowName": run["name"],
+            "url": run["html_url"],
+        }
+    except (KeyError, TypeError) as error:
+        raise ValueError(
+            "GitHub Actions workflow run is missing required fields"
+        ) from error
 
 
 def open_change_requests(repository, branch_prefix):
