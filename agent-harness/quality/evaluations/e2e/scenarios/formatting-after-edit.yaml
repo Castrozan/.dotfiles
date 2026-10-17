@@ -3,6 +3,8 @@ description: Editing a Python file triggers ruff format (via hook or manual work
 
 setup:
   git_init: true
+  additional_project_instructions: |
+    Format each changed Python file with ruff format before responding.
   files:
     - path: calculator.py
       content: |

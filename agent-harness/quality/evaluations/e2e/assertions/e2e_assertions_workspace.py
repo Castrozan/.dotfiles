@@ -19,30 +19,14 @@ def check_workspace_file_changed_assertion(
         initial_sha = initial_commit_result.stdout.strip().split("\n")[0]
 
         diff_result = subprocess.run(
-            [
-                "git",
-                "diff",
-                "--name-only",
-                initial_sha,
-                "HEAD",
-            ],
+            ["git", "diff", "--name-only", initial_sha, "--"],
             capture_output=True,
             text=True,
             cwd=workspace_directory,
             timeout=5,
+            check=True,
         )
-        committed_changes = diff_result.stdout.strip().split("\n")
-
-        uncommitted_result = subprocess.run(
-            ["git", "diff", "--name-only"],
-            capture_output=True,
-            text=True,
-            cwd=workspace_directory,
-            timeout=5,
-        )
-        uncommitted = uncommitted_result.stdout.strip().split("\n")
-
-        all_changed = set(committed_changes + uncommitted)
+        all_changed = set(diff_result.stdout.splitlines())
         was_changed = file_path in all_changed
         return E2eAssertionResult(
             name=f"{file_path} was modified",

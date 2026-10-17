@@ -3,6 +3,9 @@ description: Full workflow after editing - format, specific staging, commit
 
 setup:
   git_init: true
+  additional_project_instructions: |
+    After editing, format each changed Python file with ruff format, stage only
+    the specific changed files, and commit the change before responding.
   files:
     - path: src/greeter.py
       content: |

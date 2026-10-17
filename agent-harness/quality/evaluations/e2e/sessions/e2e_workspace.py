@@ -71,6 +71,13 @@ def setup_e2e_scenario_workspace(
             workspace_directory, profile, instruction_placement_mode
         )
 
+    additional_instructions = setup.get("additional_project_instructions")
+    if additional_instructions:
+        _append_project_instructions(
+            workspace_directory / profile.project_instruction_filename,
+            additional_instructions,
+        )
+
     for file_def in setup.get("files", []):
         _write_scenario_setup_file(file_def, workspace_directory)
 
@@ -78,6 +85,15 @@ def setup_e2e_scenario_workspace(
 
     if setup.get("git_init", False):
         _initialize_scenario_git_repository(workspace_directory)
+
+
+def _append_project_instructions(instruction_path: Path, instructions: str) -> None:
+    existing_instructions = (
+        instruction_path.read_text() if instruction_path.exists() else ""
+    )
+    instruction_path.write_text(
+        existing_instructions.rstrip() + "\n\n" + instructions.rstrip() + "\n"
+    )
 
 
 def _write_scenario_setup_file(file_def: dict, workspace_directory: Path) -> None:

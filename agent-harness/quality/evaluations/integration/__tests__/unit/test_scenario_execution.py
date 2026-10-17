@@ -31,6 +31,7 @@ def _load_ab_runner():
 
 def test_missing_prompt_returns_error_and_cleans_workspace(monkeypatch, tmp_path):
     runner = _load_runner()
+    monkeypatch.setattr(runner, "claude_authentication_failure", lambda directory: None)
     removed_paths = []
     monkeypatch.setattr(runner, "load_scenario", lambda _: {"name": "scenario"})
     monkeypatch.setattr(runner.tempfile, "mkdtemp", lambda **_: str(tmp_path))

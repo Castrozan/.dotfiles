@@ -61,3 +61,49 @@ def test_scenario_workspace_rejects_unknown_project_skill(tmp_path):
         setup_e2e_scenario_workspace(
             {"setup": {"project_skills": ["unknown"]}}, workspace_directory
         )
+
+
+def test_scenario_additional_instructions_preserve_core_instructions(tmp_path):
+    from e2e.sessions.e2e_workspace import load_core_instructions
+
+    setup_e2e_scenario_workspace(
+        {
+            "setup": {
+                "additional_project_instructions": "Format changed Python files with ruff."
+            }
+        },
+        tmp_path,
+    )
+
+    instructions = (tmp_path / "CLAUDE.md").read_text()
+    assert instructions.startswith(load_core_instructions().rstrip())
+    assert instructions.endswith("Format changed Python files with ruff.\n")
+
+
+@pytest.mark.parametrize("placement", ["reference", "global-only"])
+def test_additional_project_rules_preserve_instruction_placement(tmp_path, placement):
+    setup_e2e_scenario_workspace(
+        {"setup": {"additional_project_instructions": "Format changed Python files."}},
+        tmp_path,
+        instruction_placement_mode=placement,
+    )
+
+    instructions = (tmp_path / "CLAUDE.md").read_text()
+    assert instructions.endswith("Format changed Python files.\n")
+    assert (tmp_path / "AGENTS.md").exists() is (placement == "reference")
+    assert ("@AGENTS.md" in instructions) is (placement == "reference")
+    assert "### Evidence" not in instructions
+
+
+def test_additional_project_rules_preserve_custom_project_instructions(tmp_path):
+    setup_e2e_scenario_workspace(
+        {
+            "setup": {
+                "project_instructions": "Project rule.",
+                "additional_project_instructions": "Additional rule.",
+            }
+        },
+        tmp_path,
+    )
+
+    assert (tmp_path / "CLAUDE.md").read_text() == "Project rule.\n\nAdditional rule.\n"

@@ -47,29 +47,15 @@ def check_workspace_file_changed_assertion(
             .stdout.strip()
             .split("\n")[0]
         )
-        committed_changes = (
-            subprocess.run(
-                ["git", "diff", "--name-only", initial_commit, "HEAD"],
-                capture_output=True,
-                text=True,
-                cwd=workspace_directory,
-                timeout=5,
-            )
-            .stdout.strip()
-            .split("\n")
+        changed_paths = subprocess.run(
+            ["git", "diff", "--name-only", initial_commit, "--"],
+            capture_output=True,
+            text=True,
+            cwd=workspace_directory,
+            timeout=5,
+            check=True,
         )
-        uncommitted_changes = (
-            subprocess.run(
-                ["git", "diff", "--name-only"],
-                capture_output=True,
-                text=True,
-                cwd=workspace_directory,
-                timeout=5,
-            )
-            .stdout.strip()
-            .split("\n")
-        )
-        all_changed_files = set(committed_changes + uncommitted_changes)
+        all_changed_files = set(changed_paths.stdout.splitlines())
         was_changed = file_path in all_changed_files
         return AssertionResult(
             name=f"{file_path} was modified",
