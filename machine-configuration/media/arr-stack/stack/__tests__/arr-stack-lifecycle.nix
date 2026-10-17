@@ -42,7 +42,7 @@ let
       config.home.homeDirectory = "/home/test";
       inherit lib pkgs;
       hostname = candidateHostname;
-    }).condition;
+    }).config.condition;
 in
 {
   chise-arr-stack-roster-complete =

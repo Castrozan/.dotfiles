@@ -29,8 +29,8 @@ command fails.
 ### Public library media removal
 
 Only the verified Discord operator may use `arr-media remove` to remove one public movie or entire TV series and ask
-Radarr or Sonarr to delete its library files. Match the title, year and media type first. An ambiguous target or unclear
-deletion intent needs clarification. The command rejects guests and private libraries; `cancel` only withdraws a request.
+Radarr or Sonarr to delete its library files. Match the title, year and media type first. Clarify ambiguous targets or
+unclear deletion intent. The command rejects guests and private libraries; `cancel` only withdraws a request.
 Report the confirmed library removal and file-deletion request accurately; neither means torrent data was purged.
 
 ### Account model

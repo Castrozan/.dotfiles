@@ -16,35 +16,51 @@ def authorize_media_removal():
         envelope = json.loads(os.environ.get("CLAWDE_CHANNEL_PROMPT", ""))
     except ValueError:
         envelope = None
-    if (
-        not operator
-        or not isinstance(envelope, dict)
-        or envelope.get("source") != "discord"
-        or envelope.get("user_id") != operator
+    if not isinstance(envelope, dict):
+        raise MediaRemovalDenied("Media removal requires the verified Discord operator")
+    if not operator or (envelope.get("source"), envelope.get("user_id")) != (
+        "discord",
+        operator,
     ):
         raise MediaRemovalDenied("Media removal requires the verified Discord operator")
 
 
-def validate_public_library_item(record, details, media_type, external_identifier):
+def validate_native_media_identity(details, media_type):
     media = details["mediaInfo"]
+    if (media.get("tmdbId"), media.get("mediaType")) != (details["id"], media_type):
+        raise ValueError("Removal target identity is inconsistent")
+    if media_type == "movie" and str(media.get("externalServiceSlug")) != str(
+        details["id"]
+    ):
+        raise ValueError("Removal target identity is inconsistent")
+
+
+def validate_arr_library_identity(record, details, media_type, external_identifier):
     identity_field, identity = (
         ("tmdbId", details["id"])
         if media_type == "movie"
         else ("tvdbId", (details.get("externalIds") or {}).get("tvdbId"))
     )
-    path = PurePosixPath(record.get("path", ""))
-    if (
-        record.get("id") != external_identifier
-        or not identity
-        or record.get(identity_field) != identity
-        or media.get("tmdbId") != details["id"]
-        or media.get("mediaType") != media_type
-        or path.parent != PurePosixPath(PUBLIC_LIBRARY_DIRECTORIES[media_type])
-        or ".." in path.parts
+    if not identity or (record.get("id"), record.get(identity_field)) != (
+        external_identifier,
+        identity,
     ):
         raise ValueError("Removal target is not the identified public library item")
-    if media_type == "movie" and str(media.get("externalServiceSlug")) != str(identity):
-        raise ValueError("Removal target identity is inconsistent")
+
+
+def validate_public_library_path(record, media_type):
+    path = PurePosixPath(record.get("path", ""))
+    if (
+        path.parent != PurePosixPath(PUBLIC_LIBRARY_DIRECTORIES[media_type])
+        or ".." in path.parts
+    ):
+        raise ValueError("Removal target is outside the public library")
+
+
+def validate_public_library_item(record, details, media_type, external_identifier):
+    validate_native_media_identity(details, media_type)
+    validate_arr_library_identity(record, details, media_type, external_identifier)
+    validate_public_library_path(record, media_type)
 
 
 def remove_media(client, stack_home, media_type, media_id):
