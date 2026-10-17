@@ -3,7 +3,7 @@ import {
   JSON_HTTP_CLIENT,
   type JsonHttpClientPort,
   type JsonHttpResponse,
-} from '../dependencies/json-http-client/json-http-client.port';
+} from '../../dependencies/json-http-client/json-http-client.port';
 import { UsageSnapshotClientService } from './usage-snapshot-client.service';
 
 class RecordingJsonHttpClient implements JsonHttpClientPort {

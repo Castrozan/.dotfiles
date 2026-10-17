@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { DASHBOARD_CONFIGURATION, DashboardConfiguration } from '../config/dashboard-config';
-import { JSON_HTTP_CLIENT } from '../dependencies/json-http-client/json-http-client.port';
-import type { UsageSnapshot } from '../models/usage-snapshot.model';
+import { DASHBOARD_CONFIGURATION, DashboardConfiguration } from '../../config/dashboard-config';
+import { JSON_HTTP_CLIENT } from '../../dependencies/json-http-client/json-http-client.port';
+import type { UsageSnapshot } from '../../models/usage-snapshot.model';
 import {
   type StorageObjectListing,
   parseStorageObjectListing,
-} from '../models/storage-object-listing-parser';
-import { parseUsageSnapshot } from '../models/usage-snapshot-parser';
+} from '../../models/storage-object-listing-parser';
+import { parseUsageSnapshot } from '../../models/usage-snapshot-parser';
 
 @Injectable({ providedIn: 'root' })
 export class UsageSnapshotClientService {
