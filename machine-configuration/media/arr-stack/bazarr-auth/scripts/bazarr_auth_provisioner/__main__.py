@@ -112,6 +112,7 @@ def main():
         print("bazarr-auth: skipped, config file not present yet")
         return
     if _authentication_matches_config(config_lines, username, password_hash):
+        os.chmod(config_file_path, 0o600)
         print("bazarr-auth: already up to date")
         return
     _update_config_while_container_is_running(

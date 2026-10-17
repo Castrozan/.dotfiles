@@ -92,6 +92,7 @@ def test_main_short_circuits_when_already_matching(monkeypatch, tmp_path):
     config.write_text(
         f"auth:\n  apikey: keepme\n  type: form\n  username: lucas\n  password: {password_hash}\n"
     )
+    config.chmod(0o644)
     checked = {"running": False}
     monkeypatch.setattr(
         main_module,
@@ -101,6 +102,7 @@ def test_main_short_circuits_when_already_matching(monkeypatch, tmp_path):
     main_module.main()
     assert calls == {"stop": 0, "start": 0}
     assert checked["running"] is False
+    assert config.stat().st_mode & 0o777 == 0o600
 
 
 def test_main_bounces_running_container_and_writes(monkeypatch, tmp_path):

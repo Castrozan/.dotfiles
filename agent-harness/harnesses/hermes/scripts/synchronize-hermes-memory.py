@@ -57,6 +57,7 @@ def synchronized_memory_text(
 
 def replace_memory_file(memory_path: Path, memory_text: str) -> None:
     if memory_path.exists() and memory_path.read_text(encoding="utf-8") == memory_text:
+        memory_path.chmod(0o600)
         return
     memory_path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = None

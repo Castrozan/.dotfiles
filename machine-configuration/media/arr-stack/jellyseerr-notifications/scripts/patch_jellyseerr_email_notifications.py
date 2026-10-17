@@ -96,6 +96,7 @@ def apply_email_notification_configuration(configuration):
         existing_email_agent, app_password, configuration
     )
     if updated_email_agent == existing_email_agent:
+        os.chmod(configuration["settings_file"], 0o600)
         print("jellyseerr email agent already matches the desired configuration")
         return False
     agents["email"] = updated_email_agent

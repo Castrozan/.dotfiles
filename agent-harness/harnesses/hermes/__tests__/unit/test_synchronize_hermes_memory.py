@@ -68,7 +68,9 @@ def test_synchronizer_does_not_rewrite_an_identical_target(tmp_path):
         target,
         ns=(fixed_timestamp_nanoseconds, fixed_timestamp_nanoseconds),
     )
+    target.chmod(0o644)
 
     run_memory_synchronizer(target, source)
 
     assert target.stat().st_mtime_ns == fixed_timestamp_nanoseconds
+    assert target.stat().st_mode & 0o777 == 0o600
