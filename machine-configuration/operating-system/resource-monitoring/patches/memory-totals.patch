@@ -1,0 +1,175 @@
+--- a/src/btop.cpp
++++ b/src/btop.cpp
+@@ -570,7 +570,7 @@
+ 				}
+ 			#endif
+ 				//? MEM
+-				if (v_contains(conf.boxes, "mem")) {
++				if (v_contains(conf.boxes, "mem") or (v_contains(conf.boxes, "proc") and not Mem::shown)) {
+ 					try {
+ 						if (Global::debug) debug_timer("mem", collect_begin);
+ 
+@@ -580,7 +580,7 @@
+ 						if (Global::debug) debug_timer("mem", draw_begin);
+ 
+ 						//? Draw box
+-						if (not pause_output) output += Mem::draw(mem, conf.force_redraw, conf.no_update);
++						if (not pause_output and Mem::shown) output += Mem::draw(mem, conf.force_redraw, conf.no_update);
+ 
+ 						if (Global::debug) debug_timer("mem", draw_done);
+ 					}
+--- a/src/btop_draw.cpp
++++ b/src/btop_draw.cpp
+@@ -1830,8 +1830,10 @@
+ 
+ 		//* Iteration over processes
+ 		int lc = 0;
++		uint64_t visible_process_resident_memory{};
+ 		for (int n=0; auto& p : plist) {
+ 			if (p.filtered or (proc_tree and p.tree_index == plist.size()) or n++ < start) continue;
++			visible_process_resident_memory += p.mem;
+ 			bool is_selected = (lc + 1 == selected);
+ 			if (is_selected) {
+ 				selected_pid = (int)p.pid;
+@@ -1951,19 +1953,33 @@
+ 				+ (is_selected ? "" : Theme::c("inactive_fg")) + (show_graphs ? graph_bg * 5: "")
+ 				+ (p_graphs.contains(p.pid) ? Mv::l(5) + c_color + p_graphs.at(p.pid)({(p.cpu_p >= 0.1 and p.cpu_p < 5 ? 5ll : (long long)round(p.cpu_p))}, data_same) : "") + end + ' '
+ 				+ c_color + rjust(cpu_str, 4) + "  " + end;
+-			if (lc++ > height - 5) break;
++			if (++lc >= select_max) break;
+ 		}
+ 
+ 		out += Fx::reset;
+-		while (lc++ < height - 5) out += Mv::to(y+lc+1, x+1) + string(width - 2, ' ');
++		while (lc < select_max) {
++			out += Mv::to(y + 2 + lc, x + 1) + string(width - 2, ' ');
++			++lc;
++		}
++
++		const double visible_memory_percent = visible_process_resident_memory * 100.0 / totalMem;
++		const double all_process_memory_percent = all_process_resident_memory * 100.0 / totalMem;
++		const double system_used_memory_percent = Mem::collect(true).stats.at("used") * 100.0 / totalMem;
++		string memory_summary = fmt::format("Visible RSS: {:.2f}%  All RSS: {:.2f}%  System used: {:.2f}%",
++			visible_memory_percent, all_process_memory_percent, system_used_memory_percent);
++		if (cmp_greater(memory_summary.size(), width - 2))
++			memory_summary = fmt::format("Visible: {:.1f}% All: {:.1f}% used: {:.1f}%",
++				visible_memory_percent, all_process_memory_percent, system_used_memory_percent);
++		out += Mv::to(y + height - 2, x + 1) + Theme::c("title") + Fx::b
++			+ ljust(memory_summary, width - 2) + Fx::reset;
+ 
+ 		//? Draw scrollbar if needed
+ 		if (numpids > select_max) {
+-			const int scroll_pos = clamp((int)round((double)start * select_max / (numpids - select_max)), 0, height - 5);
++			const int scroll_pos = clamp((int)round((double)start * select_max / (numpids - select_max)), 0, height - 6);
+ 			out += Mv::to(y + 1, x + width - 2) + Fx::b + Theme::c("main_fg") + Symbols::up
+-				+ Mv::to(y + height - 2, x + width - 2) + Symbols::down;
+-
+-			for (int i = y + 2; i < y + height - 2; i++) {
++				+ Mv::to(y + height - 3, x + width - 2) + Symbols::down;
++
++			for (int i = y + 2; i < y + height - 3; i++) {
+ 				out += Mv::to(i, x + width - 2) + ((i == y + 2 + scroll_pos) ? "█" : " ");
+ 			}
+ 		}
+@@ -2279,7 +2295,7 @@
+ 		#else
+ 			y = (cpu_bottom and Cpu::shown) ? 1 : Cpu::height + 1;
+ 		#endif
+-			select_max = height - 3;
++			select_max = height - 4;
+ 			box = createBox(x, y, width, height, Theme::c("proc_box"), true, "proc", "", 4);
+ 		}
+ 	}
+--- a/src/btop_input.cpp
++++ b/src/btop_input.cpp
+@@ -345,7 +345,7 @@
+ 					const auto& [col, line] = mouse_pos;
+ 					const int y = (Config::getB("show_detailed") ? Proc::y + 8 : Proc::y);
+ 					const int height = (Config::getB("show_detailed") ? Proc::height - 8 : Proc::height);
+-					if (col >= Proc::x + 1 and col < Proc::x + Proc::width and line >= y + 1 and line < y + height - 1) {
++					if (col >= Proc::x + 1 and col < Proc::x + Proc::width and line >= y + 1 and line < y + height - 2) {
+ 						if (key == "mouse_click") {
+ 							if (col < Proc::x + Proc::width - 2) {
+ 								const auto& current_selection = Config::getI("proc_selected");
+@@ -369,7 +369,7 @@
+ 							else if (line == y + 1) {
+ 								if (Proc::selection("page_up") == -1) return;
+ 							}
+-							else if (line == y + height - 2) {
++							else if (line == y + height - 3) {
+ 								if (Proc::selection("page_down") == -1) return;
+ 							}
+ 							else if (Proc::selection("mousey" + to_string(line - y - 2)) == -1)
+--- a/src/btop_shared.cpp
++++ b/src/btop_shared.cpp
+@@ -87,6 +87,13 @@
+ #endif
+ 
+ namespace Proc {
++	uint64_t all_process_resident_memory{};
++
++	void update_process_resident_memory_total(const vector<proc_info>& processes) {
++		all_process_resident_memory = 0;
++		for (const auto& process : processes) all_process_resident_memory += process.mem;
++	}
++
+ 	void proc_sorter(vector<proc_info>& proc_vec, const string& sorting, bool reverse, bool tree) {
+ 		if (reverse) {
+ 			switch (v_index(sort_vector, sorting)) {
+--- a/src/linux/btop_collect.cpp
++++ b/src/linux/btop_collect.cpp
+@@ -1915,7 +1915,7 @@
+ 		if (Runner::stopping or (no_update and not current_mem.percent.at("used").empty())) return current_mem;
+ 		auto show_swap = Config::getB("show_swap");
+ 		auto swap_disk = Config::getB("swap_disk");
+-		auto show_disks = Config::getB("show_disks");
++		auto show_disks = Config::getB("show_disks") and Mem::shown;
+ 		auto zfs_arc_cached = Config::getB("zfs_arc_cached");
+ 		auto totalMem = get_totalMem();
+ 		auto& mem = current_mem;
+@@ -3039,6 +3039,7 @@
+ 			//? Clear dead processes from current_procs and remove kernel processes if enabled
+ 			auto eraser = rng::remove_if(current_procs, [&](const auto& element){ return not v_contains(found, element.pid); });
+ 			current_procs.erase(eraser.begin(), eraser.end());
++			update_process_resident_memory_total(current_procs);
+ 
+ 			//? Update the details info box for process if active
+ 			if (show_detailed and got_detailed) {
+--- a/src/osx/btop_collect.cpp
++++ b/src/osx/btop_collect.cpp
+@@ -641,7 +641,7 @@
+ 			return current_mem;
+ 
+ 		auto show_swap = Config::getB("show_swap");
+-		auto show_disks = Config::getB("show_disks");
++		auto show_disks = Config::getB("show_disks") and Mem::shown;
+ 		auto swap_disk = Config::getB("swap_disk");
+ 		auto &mem = current_mem;
+ 		static bool snapped = (getenv("BTOP_SNAPPED") != nullptr);
+@@ -1260,6 +1260,7 @@
+ 				// //? Clear dead processes from current_procs
+ 				auto eraser = rng::remove_if(current_procs, [&](const auto &element) { return not v_contains(found, element.pid); });
+ 				current_procs.erase(eraser.begin(), eraser.end());
++				update_process_resident_memory_total(current_procs);
+ 
+ 				//? Update the details info box for process if active
+ 				if (show_detailed and got_detailed) {
+--- a/src/btop_shared.hpp
++++ b/src/btop_shared.hpp
+@@ -343,6 +343,7 @@
+ 
+ namespace Proc {
+ 	extern atomic<int> numpids;
++	extern uint64_t all_process_resident_memory;
+ 
+ 	extern string box;
+ 	extern int x, y, width, height, min_width, min_height;
+@@ -431,6 +432,8 @@
+ 		vector<tree_proc> children;
+ 	};
+ 
++	void update_process_resident_memory_total(const vector<proc_info>& processes);
++
+ 	//* Sort vector of proc_info's
+ 	void proc_sorter(vector<proc_info>& proc_vec, const string& sorting, bool reverse, bool tree = false);
+ 

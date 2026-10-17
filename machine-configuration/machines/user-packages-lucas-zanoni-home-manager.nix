@@ -69,7 +69,7 @@
     ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin (
       with pkgs;
       [
-        btop
+        (import ../operating-system/resource-monitoring/btop-package.nix { inherit pkgs; })
       ]
     )
     ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux (

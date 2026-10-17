@@ -16,7 +16,7 @@
       bash-completion
       bats
       bun
-      btop
+      (import ../../../operating-system/resource-monitoring/btop-package.nix { inherit pkgs; })
       cacert
       curl
       dbeaver-bin
