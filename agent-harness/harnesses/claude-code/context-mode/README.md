@@ -18,6 +18,9 @@ and logs. Claude itself keeps its usual configuration root. No marketplace regis
 needed. The plugin has the user's normal filesystem and network access; its execution sandbox is a subprocess,
 not an operating-system security boundary. Captured project content stays on disk in that state directory.
 
+The private plugin config contains an empty settings file because upstream doctor requires that file before checking
+plugin-declared hooks. It declares no hooks or user preferences; Claude loads the hooks from the plugin itself.
+
 Upgrade the dependency pin and lock through Nix, then rebuild; `/context-mode:ctx-upgrade` cannot update this
 immutable installation. Hosted Insight is not configured by this module.
 

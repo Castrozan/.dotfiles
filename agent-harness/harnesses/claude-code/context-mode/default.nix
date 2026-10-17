@@ -6,14 +6,15 @@
 let
   contextModePackage = import ./package.nix { inherit pkgs; };
   contextModeDependencies = "${contextModePackage}/lib/context-mode/node_modules";
+  contextModePrivateSettings = pkgs.writeText "context-mode-private-settings.json" "{}";
   contextModeRuntime = pkgs.writeShellScript "context-mode-runtime" ''
     umask 077
     contextModeStateDirectory="''${XDG_STATE_HOME:-${config.xdg.stateHome}}/context-mode"
-    mkdir -p "$contextModeStateDirectory"
-    export CONTEXT_MODE_DIR="$contextModeStateDirectory/data"
+    mkdir -p "$contextModeStateDirectory/claude"
+    ln -s ${contextModePrivateSettings} "$contextModeStateDirectory/claude/settings.json" 2>/dev/null || test -f "$contextModeStateDirectory/claude/settings.json"
+    export CONTEXT_MODE_DIR="$contextModeStateDirectory/data" CONTEXT_MODE_PLATFORM=claude-code
     export CLAUDE_CONFIG_DIR="$contextModeStateDirectory/claude"
     export XDG_CONFIG_HOME="$contextModeStateDirectory/config"
-    export CONTEXT_MODE_PLATFORM=claude-code
     export PATH="${
       pkgs.lib.makeBinPath [
         pkgs.bun
