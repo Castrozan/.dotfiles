@@ -29,8 +29,9 @@ Search broad first, then narrow. Use multiple keyword variants in one grep, sinc
 but the file path says "chrome" and the diff says "cdp"; cast a wide net with 'grep -i
 "browser|chrome|cdp|playwright|devtools" ~/.cache/git-history/gitlog-\*.txt'. When searching layer 1, file paths are the
 highest-signal data because they don't suffer from terse commit messages: a commit touching
-'home/modules/desktop/browser-control/' is about browser automation regardless of what the subject line says. When
-searching layer 2 (patches), look for function names, variable names, config keys, and error messages, things that
+'home/modules/desktop/browser-control/' is about browser automation regardless of what the subject line says.
+
+When searching layer 2 (patches), look for function names, variable names, config keys, and error messages, things that
 appear in code but never in commit messages.
 
 ### Cache behavior
