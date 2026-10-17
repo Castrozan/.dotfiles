@@ -32,6 +32,10 @@ which races its live loop, unless explicitly told to act in the steward's place.
 A checkout that is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile;
 never surface it as a task pending on the human.
 
+Treat CI failures on `main` during active WIP as expected. Check ongoing work and its context before escalating; do not
+alert or initiate unsolicited repairs solely because `main` is red while that work is in progress. Existing validation
+requirements for changes you own still apply.
+
 ### Configuration
 
 Every configuration change lives in this repo and applies declaratively through its capabilities - nix modules,
