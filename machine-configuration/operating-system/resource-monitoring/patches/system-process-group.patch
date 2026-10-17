@@ -1,0 +1,183 @@
+--- a/src/btop.cpp
++++ b/src/btop.cpp
+@@ -48,6 +48,7 @@
+ 
+ #include "btop_cli.hpp"
+ #include "btop_shared.hpp"
++#include "btop_system_process_group.hpp"
+ #include "btop_tools.hpp"
+ #include "btop_config.hpp"
+ #include "btop_input.hpp"
+@@ -616,6 +617,12 @@
+ 
+ 						//? Start collect
+ 						auto proc = Proc::collect(conf.no_update);
++						if (not Config::getB("proc_tree")) {
++							auto view = Proc::make_system_process_view(std::move(proc), Proc::system_group_expanded);
++							if (not view.system_processes.empty()) Proc::proc_sorter(view.processes, Config::getS("proc_sorting"), Config::getB("proc_reversed"));
++							proc = Proc::finish_system_process_view(std::move(view), Proc::system_group_expanded);
++							Proc::numpids = proc.size();
++						}
+ 
+ 						if (Global::debug) debug_timer("proc", draw_begin);
+ 
+--- a/src/btop_draw.cpp
++++ b/src/btop_draw.cpp
+@@ -1599,6 +1599,18 @@
+ 		const int select_max = show_detailed ? Proc::select_max - 8 : Proc::select_max;
+ 		auto totalMem = Mem::get_totalMem();
+ 		int numpids = Proc::numpids;
++		if (start > 0 and numpids <= select_max)
++			start = 0;
++		if (start > numpids - select_max)
++			start = max(0, numpids - select_max);
++		if (selected > select_max)
++			selected = select_max;
++		if (selected > numpids)
++			selected = numpids;
++		const int selected_index = start + selected - 1;
++		const bool group_selected = not proc_tree and selected > 0 and selected_index >= 0 and std::cmp_less(selected_index, plist.size()) and plist[selected_index].system_group;
++		if (selected_is_system_group != group_selected) redraw = true;
++		selected_is_system_group = group_selected;
+ 		if (force_redraw) redraw = true;
+ 		string out;
+ 		out.reserve(width * height);
+@@ -1745,21 +1757,23 @@
+ 			const string hi_color = (selected == 0 ? Theme::c("inactive_fg") : Theme::c("hi_fg"));
+ 			int mouse_x = x + 14;
+ 			out += Mv::to(y + height - 1, x + 1) + title_left_down + Fx::b + hi_color + Symbols::up + Theme::c("title") + " select " + down_button + Fx::ub + title_right_down
+-				+ title_left_down + Fx::b + t_color + "info " + hi_color + Symbols::enter + Fx::ub + title_right_down;
++				+ title_left_down + Fx::b + t_color + (selected_is_system_group ? "fold " : "info ") + hi_color + Symbols::enter + Fx::ub + title_right_down;
+ 				if (selected > 0) Input::mouse_mappings["enter"] = {y + height - 1, mouse_x, 1, 6};
+ 				mouse_x += 8;
++			const string action_color = selected_is_system_group ? Theme::c("inactive_fg") : t_color;
++			const string action_hi_color = selected_is_system_group ? Theme::c("inactive_fg") : hi_color;
+ 			if (width > 60) {
+-				out += title_left_down + Fx::b + hi_color + 't' + t_color + "erminate" + Fx::ub + title_right_down;
+-				if (selected > 0) Input::mouse_mappings["t"] = {y + height - 1, mouse_x, 1, 9};
++				out += title_left_down + Fx::b + action_hi_color + 't' + action_color + "erminate" + Fx::ub + title_right_down;
++				if (selected > 0 and not selected_is_system_group) Input::mouse_mappings["t"] = {y + height - 1, mouse_x, 1, 9};
+ 				mouse_x += 11;
+ 			}
+ 			if (width > 55) {
+-				out += title_left_down + Fx::b + hi_color + (vim_keys ? 'K' : 'k') + t_color + "ill" + Fx::ub + title_right_down;
+-				if (selected > 0) Input::mouse_mappings["k"] = {y + height - 1, mouse_x, 1, 4};
++				out += title_left_down + Fx::b + action_hi_color + (vim_keys ? 'K' : 'k') + action_color + "ill" + Fx::ub + title_right_down;
++				if (selected > 0 and not selected_is_system_group) Input::mouse_mappings["k"] = {y + height - 1, mouse_x, 1, 4};
+ 				mouse_x += 6;
+ 			}
+-			out += title_left_down + Fx::b + hi_color + 's' + t_color + "ignals" + Fx::ub + title_right_down;
+-			if (selected > 0) Input::mouse_mappings["s"] = {y + height - 1, mouse_x, 1, 7};
++			out += title_left_down + Fx::b + action_hi_color + 's' + action_color + "ignals" + Fx::ub + title_right_down;
++			if (selected > 0 and not selected_is_system_group) Input::mouse_mappings["s"] = {y + height - 1, mouse_x, 1, 7};
+ 
+ 			//? Labels for fields in list
+ 			if (not proc_tree)
+@@ -1818,22 +1832,12 @@
+ 				+ Theme::c("title") + Fx::b + detailed.memory;
+ 		}
+ 
+-		//? Check bounds of current selection and view
+-		if (start > 0 and numpids <= select_max)
+-			start = 0;
+-		if (start > numpids - select_max)
+-			start = max(0, numpids - select_max);
+-		if (selected > select_max)
+-			selected = select_max;
+-		if (selected > numpids)
+-			selected = numpids;
+-
+ 		//* Iteration over processes
+ 		int lc = 0;
+ 		uint64_t visible_process_resident_memory{};
+ 		for (int n=0; auto& p : plist) {
+ 			if (p.filtered or (proc_tree and p.tree_index == plist.size()) or n++ < start) continue;
+-			visible_process_resident_memory += p.mem;
++			if (not p.system_group or not system_group_expanded) visible_process_resident_memory += p.mem;
+ 			bool is_selected = (lc + 1 == selected);
+ 			if (is_selected) {
+ 				selected_pid = (int)p.pid;
+@@ -1897,8 +1901,8 @@
+ 			//? Normal view line
+ 			if (not proc_tree) {
+ 				out += Mv::to(y+2+lc, x+1)
+-					+ g_color + rjust(to_string(p.pid), 8) + ' '
+-					+ c_color + ljust(p.name, prog_size, true) + ' ' + end
++					+ g_color + rjust(p.system_group ? "-" : to_string(p.pid), 8) + ' '
++					+ c_color + ljust(p.prefix + p.name, prog_size, true) + ' ' + end
+ 					+ (cmd_size > 0 ? g_color + ljust(san_cmd, cmd_size, true, p_wide_cmd[p.pid]) + Mv::to(y+2+lc, x+11+prog_size+cmd_size) + ' ' : "");
+ 			}
+ 			//? Tree view line
+--- a/src/btop_input.cpp
++++ b/src/btop_input.cpp
+@@ -385,6 +385,11 @@
+ 					else
+ 						keep_going = true;
+ 				}
++				else if (Proc::selected_is_system_group and is_in(key, "enter", "space", "+", "-")) {
++					atomic_wait(Runner::active);
++					Proc::system_group_expanded = key == "+" or (key != "-" and not Proc::system_group_expanded);
++				}
++				else if (Proc::selected_is_system_group and is_in(key, "t", kill_key, "s")) return;
+ 				else if (key == "enter") {
+ 					if (Config::getI("proc_selected") == 0 and not Config::getB("show_detailed")) {
+ 						return;
+--- a/src/btop_shared.cpp
++++ b/src/btop_shared.cpp
+@@ -88,6 +88,8 @@
+ 
+ namespace Proc {
+ 	uint64_t all_process_resident_memory{};
++	bool system_group_expanded = false;
++	bool selected_is_system_group = false;
+ 
+ 	void update_process_resident_memory_total(const vector<proc_info>& processes) {
+ 		all_process_resident_memory = 0;
+--- a/src/btop_shared.hpp
++++ b/src/btop_shared.hpp
+@@ -344,6 +344,8 @@
+ namespace Proc {
+ 	extern atomic<int> numpids;
+ 	extern uint64_t all_process_resident_memory;
++	extern bool system_group_expanded;
++	extern bool selected_is_system_group;
+ 
+ 	extern string box;
+ 	extern int x, y, width, height, min_width, min_height;
+@@ -402,6 +404,8 @@
+ 		size_t tree_index{};
+ 		bool collapsed{};
+ 		bool filtered{};
++		bool system_service{};
++		bool system_group{};
+ 	};
+ 
+ 	//* Container for process info box
+--- a/src/linux/btop_collect.cpp
++++ b/src/linux/btop_collect.cpp
+@@ -43,6 +43,7 @@
+ #endif
+ 
+ #include "../btop_shared.hpp"
++#include "../btop_system_process_group.hpp"
+ #include "../btop_config.hpp"
+ #include "../btop_tools.hpp"
+ 
+@@ -3012,6 +3013,17 @@
+ 
+ 				if (x-offset < 24) continue;
+ 
++				new_proc.system_service = pid == KTHREADD or new_proc.ppid == KTHREADD;
++				if (not new_proc.system_service) {
++					pread.open(d.path() / "cgroup");
++					while (getline(pread, long_string)) {
++						if (not long_string.starts_with("0::")) continue;
++						new_proc.system_service = is_system_service_cgroup(std::string_view(long_string).substr(long_string.find_last_of(':') + 1));
++						break;
++					}
++					pread.close();
++				}
++
+ 				//? Get RSS memory from /proc/[pid]/statm if value from /proc/[pid]/stat looks wrong
+ 				if (new_proc.mem >= totalMem) {
+ 					pread.open(d.path() / "statm");

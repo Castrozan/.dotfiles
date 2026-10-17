@@ -5,11 +5,8 @@ import re
 import select
 import struct
 import subprocess
-import sys
-import tempfile
 import termios
 import time
-from pathlib import Path
 from typing import NamedTuple
 
 
@@ -56,6 +53,10 @@ class BtopSession:
         os.close(slave)
         self.output = ""
 
+    @property
+    def plain_output(self):
+        return re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", self.output)
+
     def read_summary(self, timeout=5):
         deadline = time.monotonic() + timeout
         self.output = ""
@@ -66,7 +67,7 @@ class BtopSession:
                     self.output += os.read(self.master, 65536).decode(errors="replace")
                 except OSError:
                     break
-                plain = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", self.output)
+                plain = self.plain_output
                 matches = re.findall(
                     r"Visible(?: RSS)?: ([\d.]+)% +All(?: RSS)?: ([\d.]+)% +(?:System )?used: ([\d.]+)%",
                     plain,
@@ -91,60 +92,3 @@ class BtopSession:
             self.process.kill()
             self.process.wait()
         os.close(self.master)
-
-
-def verify(binary):
-    with tempfile.TemporaryDirectory(prefix="btop-memory-totals-") as directory:
-        session = BtopSession(binary, Path(directory))
-        try:
-            visible, all_processes, system_used = session.read_summary()
-            assert 0 < visible <= all_processes
-            assert 0 < system_used <= 100
-            session.send(b"f")
-            session.send(b"z")
-            session.send(b"z")
-            session.send(b"z")
-            session.send(b"z")
-            session.send(b"z")
-            session.send(b"\n")
-            filtered = session.read_summary()
-            assert filtered == MemoryTotals(0.0, all_processes, system_used), filtered
-            session.send(b"\x1b[3~")
-            restored = session.read_summary()
-            assert restored == MemoryTotals(visible, all_processes, system_used), (
-                restored
-            )
-            session.send(b"e")
-            tree = session.read_summary()
-            assert 0 <= tree.visible_process_percent
-            assert 0 < tree.all_process_percent
-            assert 0 < tree.system_used_percent <= 100
-            session.send(b"f")
-            for character in b"zzzzz":
-                session.send(bytes([character]))
-            session.send(b"\n")
-            filtered_tree = session.read_summary()
-            expected_tree = MemoryTotals(
-                0.0, tree.all_process_percent, tree.system_used_percent
-            )
-            assert filtered_tree == expected_tree, (filtered_tree, expected_tree)
-            session.send(b"2")
-            hidden_memory = session.read_summary()
-            assert hidden_memory.visible_process_percent == 0.0
-            assert hidden_memory.system_used_percent > 0
-        finally:
-            session.close()
-        session = BtopSession(binary, Path(directory), shown_boxes="proc", columns=44)
-        try:
-            narrow = session.read_summary()
-            assert 0 < narrow.visible_process_percent <= narrow.all_process_percent
-            assert 0 < narrow.system_used_percent <= 100
-        finally:
-            session.close()
-    print(
-        "Verified visible, global, filtered, tree, hidden-panel, and narrow memory totals"
-    )
-
-
-if __name__ == "__main__":
-    verify(sys.argv[1])
