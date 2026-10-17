@@ -1,0 +1,8 @@
+{
+  "name": "dotfiles-context-mode",
+  "version": "1.0.169",
+  "private": true,
+  "dependencies": {
+    "context-mode": "1.0.169"
+  }
+}
