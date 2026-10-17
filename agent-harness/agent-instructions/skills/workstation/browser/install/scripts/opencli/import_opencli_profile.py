@@ -34,7 +34,10 @@ def import_profile(source, destination):
             temporary,
             dirs_exist_ok=True,
             ignore=shutil.ignore_patterns(
-                "Singleton*", ".pinchtab-state", "DevToolsActivePort"
+                "Singleton*",
+                ".pinchtab-state",
+                "DevToolsActivePort",
+                "RunningChromeVersion",
             ),
         )
         temporary.chmod(0o700)

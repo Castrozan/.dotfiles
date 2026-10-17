@@ -16,7 +16,7 @@ from opencli_restrictions import verify_restrictions
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Exercise OpenCLI reads, UI, isolation and cleanup on a Linux host without posting or publishing."
+        description="Exercise OpenCLI reads, UI, isolation and cleanup without posting or publishing."
     )
     parser.add_argument(
         "--opencli",
