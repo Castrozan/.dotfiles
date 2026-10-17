@@ -148,7 +148,8 @@ fi
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 # Disable hey-bot keyword detection while avatar is active (prevents feedback loops)
-touch /tmp/hey-bot-keywords-disabled
+install -d -m 700 "${XDG_RUNTIME_DIR:-$HOME/.local/state}/hey-bot"
+touch "${XDG_RUNTIME_DIR:-$HOME/.local/state}/hey-bot/keywords-disabled"
 echo -e "${GREEN}   ✓ Avatar System Ready!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""

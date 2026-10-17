@@ -23,7 +23,12 @@ from hook_dispatch import HandlerResult  # noqa: E402
 
 WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_WORKSPACE_STATE_FILE"
 WORKSPACE_STATE_FILE = os.environ.get(
-    WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE, "/tmp/claude-code-workspace-cwd"
+    WORKSPACE_STATE_FILE_ENVIRONMENT_VARIABLE,
+    os.path.join(
+        os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"),
+        "agent-hooks",
+        "workspace-cwd",
+    ),
 )
 
 

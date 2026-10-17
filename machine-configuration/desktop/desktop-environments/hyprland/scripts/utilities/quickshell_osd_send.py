@@ -3,7 +3,10 @@ import os
 import socket
 import sys
 
-OSD_SOCKET_PATH = os.environ.get("XDG_RUNTIME_DIR", "/tmp") + "/quickshell-osd.sock"
+OSD_SOCKET_PATH = (
+    os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+    + "/quickshell-osd.sock"
+)
 
 
 def write_json_to_osd_socket(payload: dict) -> None:

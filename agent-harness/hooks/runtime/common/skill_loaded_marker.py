@@ -1,17 +1,17 @@
 import os
 import re
 
+from hook_state_directory import hook_state_directory
+
 STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE = (
     "AGENT_SKILL_LOADED_MARKER_STATE_DIRECTORY"
 )
-
-DEFAULT_STATE_DIRECTORY = "/tmp"
 
 
 def resolve_state_directory():
     return (
         os.environ.get(STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE)
-        or DEFAULT_STATE_DIRECTORY
+        or hook_state_directory()
     )
 
 

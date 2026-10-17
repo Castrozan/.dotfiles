@@ -1,13 +1,11 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
-from hey_bot.system.temporary_paths import temporary_directory
-
 FOLLOWUP_FLAG_FILE_NAME = "hey-bot-followup"
 WAIT_CONTEXT_FILE_NAME = "hey-bot-wait-context"
-KEYWORDS_DISABLED_FLAG_PATH = Path("/tmp/hey-bot-keywords-disabled")
 
 
 @dataclass(frozen=True)
@@ -18,11 +16,15 @@ class SignalFilePaths:
 
 
 def default_signal_file_paths() -> SignalFilePaths:
-    directory = temporary_directory()
+    directory = (
+        Path(os.environ.get("XDG_RUNTIME_DIR") or Path.home() / ".local/state")
+        / "hey-bot"
+    )
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     return SignalFilePaths(
         followup_flag=directory / FOLLOWUP_FLAG_FILE_NAME,
         wait_context=directory / WAIT_CONTEXT_FILE_NAME,
-        keywords_disabled=KEYWORDS_DISABLED_FLAG_PATH,
+        keywords_disabled=directory / "keywords-disabled",
     )
 
 

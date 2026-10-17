@@ -3,23 +3,25 @@ import tempfile
 
 import pytest
 from hey_bot.audio.audio_capture import AudioCapture
+from hey_bot.audio.speech_synthesizer import SpeechSynthesizer
 from hey_bot.system.process_execution import CommandResult
 from hey_bot.system.signal_files import default_signal_file_paths
-from hey_bot.audio.speech_synthesizer import SpeechSynthesizer
 
 
 @pytest.fixture
 def temporary_home(monkeypatch, tmp_path):
     monkeypatch.setenv("TMPDIR", str(tmp_path))
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
     monkeypatch.setattr(tempfile, "tempdir", None)
     return tmp_path
 
 
-def test_the_signal_files_follow_tmpdir_and_carry_no_process_id(temporary_home):
+def test_the_signal_files_use_a_private_runtime_directory(temporary_home):
     paths = default_signal_file_paths()
 
-    assert paths.followup_flag == temporary_home / "hey-bot-followup"
-    assert paths.wait_context == temporary_home / "hey-bot-wait-context"
+    assert paths.followup_flag == temporary_home / "hey-bot/hey-bot-followup"
+    assert paths.wait_context == temporary_home / "hey-bot/hey-bot-wait-context"
+    assert paths.followup_flag.parent.stat().st_mode & 0o777 == 0o700
     assert str(os.getpid()) not in str(paths.followup_flag)
     assert str(os.getpid()) not in str(paths.wait_context)
 
@@ -27,8 +29,9 @@ def test_the_signal_files_follow_tmpdir_and_carry_no_process_id(temporary_home):
 def test_the_keywords_disabled_flag_keeps_the_path_its_writers_agreed_on(
     temporary_home,
 ):
-    assert str(default_signal_file_paths().keywords_disabled) == (
-        "/tmp/hey-bot-keywords-disabled"
+    assert (
+        default_signal_file_paths().keywords_disabled
+        == temporary_home / "hey-bot/keywords-disabled"
     )
 
 

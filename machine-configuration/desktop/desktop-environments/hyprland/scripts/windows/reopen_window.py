@@ -6,7 +6,8 @@ from pathlib import Path
 from hyprland_ipc import run_hyprctl
 
 CLOSED_WINDOWS_HISTORY_FILE = (
-    Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "hypr-closed-windows-history"
+    Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
+    / "hypr-closed-windows-history"
 )
 
 

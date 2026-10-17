@@ -10,7 +10,10 @@ from hyprland_ipc import (
     run_hyprctl_batch,
 )
 
-STATE_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "hyprland-show-desktop"
+STATE_DIR = (
+    Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
+    / "hyprland-show-desktop"
+)
 
 
 def hide_all_workspace_windows_to_special_desktop(workspace_id: int) -> None:

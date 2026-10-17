@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -23,9 +24,13 @@ def git_root(repo: str | None = None) -> Path:
 def cache_paths(root: Path) -> dict[int, Path]:
     repo_hash = hashlib.md5(str(root).encode()).hexdigest()[:12]
     name = root.name
+    cache_directory = (
+        Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "git-history"
+    )
+    cache_directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     return {
-        1: Path(f"/tmp/gitlog-{name}-{repo_hash}-L1.txt"),
-        2: Path(f"/tmp/gitlog-{name}-{repo_hash}-L2.txt"),
+        1: cache_directory / f"gitlog-{name}-{repo_hash}-L1.txt",
+        2: cache_directory / f"gitlog-{name}-{repo_hash}-L2.txt",
     }
 
 

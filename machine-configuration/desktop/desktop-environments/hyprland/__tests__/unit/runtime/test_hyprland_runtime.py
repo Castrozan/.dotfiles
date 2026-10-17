@@ -24,7 +24,7 @@ class TestBuildEventSocketPath:
                 == "/run/user/1000/hypr/abc123/.socket2.sock"
             )
 
-    def test_falls_back_to_tmp_when_the_runtime_directory_is_unset(self):
+    def test_falls_back_to_the_user_runtime_directory_when_unset(self):
         with patch.dict(
             hyprland_runtime.os.environ,
             {"HYPRLAND_INSTANCE_SIGNATURE": "abc123"},
@@ -32,7 +32,7 @@ class TestBuildEventSocketPath:
         ):
             assert (
                 hyprland_runtime.build_event_socket_path()
-                == "/tmp/hypr/abc123/.socket2.sock"
+                == f"/run/user/{hyprland_runtime.os.getuid()}/hypr/abc123/.socket2.sock"
             )
 
     def test_uses_an_empty_signature_when_hyprland_exported_none(self):

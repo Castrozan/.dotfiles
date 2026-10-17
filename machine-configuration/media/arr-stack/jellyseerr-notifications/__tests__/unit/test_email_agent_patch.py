@@ -106,8 +106,12 @@ def test_idempotent_second_run_does_not_rewrite_or_restart(tmp_path, monkeypatch
     )
     configuration = configuration_for(settings_file, secret_file)
     assert patcher.apply_email_notification_configuration(configuration) is True
+    settings_file.chmod(0o644)
+    modification_time = settings_file.stat().st_mtime_ns
     assert patcher.apply_email_notification_configuration(configuration) is False
     assert restarts == ["arr-jellyseerr"]
+    assert settings_file.stat().st_mode & 0o777 == 0o600
+    assert settings_file.stat().st_mtime_ns == modification_time
 
 
 def test_preserves_foreign_option_keys_and_sibling_agents(tmp_path, monkeypatch):

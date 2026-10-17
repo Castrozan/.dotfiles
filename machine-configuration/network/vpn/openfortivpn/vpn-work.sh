@@ -9,7 +9,7 @@ export PATH="@openfortivpn@/bin:@procps@/bin:@coreutils@/bin:@gnugrep@/bin:@xdgU
 VPN_HOST_CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/vpn-work/host"
 DEFAULT_VPN_HOST="${OPENFORTIVPN_WORK_HOST:-vpn.example.com}"
 VPN_PORT="${OPENFORTIVPN_WORK_PORT:-10443}"
-LOG_FILE="/tmp/openfortivpn.log"
+LOG_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/vpn-work/connection.log"
 OPENFORTIVPN="@openfortivpn@/bin/openfortivpn"
 
 read_vpn_host_from_cache() {
@@ -94,9 +94,11 @@ case "${1:-}" in
 	echo ""
 
 	# Clear old log and create with proper permissions
-	rm -f "$LOG_FILE" 2>/dev/null || sudo rm -f "$LOG_FILE"
+	install -d -m 700 "$(dirname "$LOG_FILE")"
+	rm -f "$LOG_FILE"
+	umask 077
 	touch "$LOG_FILE"
-	chmod 666 "$LOG_FILE"
+	chmod 600 "$LOG_FILE"
 
 	# Start openfortivpn in background
 	sudo nohup "$OPENFORTIVPN" "$VPN_HOST:$VPN_PORT" --saml-login >>"$LOG_FILE" 2>&1 &

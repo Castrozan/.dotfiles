@@ -51,5 +51,5 @@ for sink in AvatarSpeaker AvatarMic AvatarMicSource; do
 done
 
 # Re-enable hey-bot keyword detection
-rm -f /tmp/hey-bot-keywords-disabled
+rm -f "${XDG_RUNTIME_DIR:-$HOME/.local/state}/hey-bot/keywords-disabled"
 echo "Avatar system stopped."

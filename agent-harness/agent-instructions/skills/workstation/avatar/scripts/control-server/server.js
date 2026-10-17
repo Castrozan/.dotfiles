@@ -20,7 +20,12 @@ const CONFIG = {
   WS_PORT: parseInt(process.env.AVATAR_WS_PORT || "8765"),
   HTTP_PORT: parseInt(process.env.AVATAR_HTTP_PORT || "8766"),
   TTS_VOICE: process.env.AVATAR_TTS_VOICE || "@ttsVoice@",
-  TTS_DIR: "/tmp/clever-avatar-tts",
+  TTS_DIR: require("node:path").join(
+    require("node:os").homedir(),
+    ".cache",
+    "clever-avatar",
+    "tts",
+  ),
   SPEAKER_SINK: "default",
   KEEP_ALIVE_INTERVAL_MS: 30000,
   RENDERER_ORIGINS: [
