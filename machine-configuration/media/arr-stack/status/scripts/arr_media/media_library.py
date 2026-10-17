@@ -2,7 +2,6 @@ import http.client
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from xml.etree import ElementTree
 
 PUBLIC_LIBRARY_DIRECTORIES = {"movie": "/data/media/movies", "tv": "/data/media/tv"}
 
@@ -32,23 +31,21 @@ class MediaLibrary:
             connection.close()
 
 
-def load_media_library(stack_home, media_type, service_identifier):
-    stack = Path(stack_home)
-    application, port, resource = (
-        ("radarr", 7878, "movie")
-        if media_type == "movie"
-        else ("sonarr", 8989, "series")
-    )
-    settings = json.loads((stack / "config/jellyseerr/settings.json").read_text())
+def matches_library_service(service, service_identifier):
+    if service.get("is4k"):
+        return False
+    if service_identifier is None or service_identifier < 0:
+        return service.get("isDefault")
+    return service.get("id") == service_identifier
+
+
+def validate_library_service(
+    settings, application, port, media_type, service_identifier
+):
     services = [
         service
         for service in settings[application]
-        if not service.get("is4k")
-        and (
-            service.get("id") == service_identifier
-            if service_identifier is not None and service_identifier >= 0
-            else service.get("isDefault")
-        )
+        if matches_library_service(service, service_identifier)
     ]
     if len(services) != 1 or any(
         (
@@ -61,17 +58,39 @@ def load_media_library(stack_home, media_type, service_identifier):
         )
     ):
         raise ValueError("Removal service is not the public stack library")
+
+
+def library_bind_address(stack):
     addresses = [
         line.partition("=")[2].strip()
         for line in (stack / ".env").read_text().splitlines()
         if line.startswith("ARR_BIND_ADDR=")
     ]
-    try:
-        key = ElementTree.parse(stack / "config" / application / "config.xml").findtext(
-            "ApiKey"
-        )
-    except ElementTree.ParseError as error:
-        raise ValueError("Library credentials are unavailable") from error
-    if len(addresses) != 1 or not addresses[0] or not key:
+    if len(addresses) != 1 or not addresses[0]:
+        raise ValueError("Library address is unavailable")
+    return addresses[0]
+
+
+def library_api_key(stack, application):
+    text = (stack / "config" / application / "config.xml").read_text()
+    _, opening, remainder = text.partition("<ApiKey>")
+    key, closing, _ = remainder.partition("</ApiKey>")
+    if not opening or not closing or not key.strip():
         raise ValueError("Library credentials are unavailable")
-    return MediaLibrary(addresses[0], port, key, resource)
+    return key.strip()
+
+
+def load_media_library(stack_home, media_type, service_identifier):
+    stack = Path(stack_home)
+    application, port, resource = (
+        ("radarr", 7878, "movie")
+        if media_type == "movie"
+        else ("sonarr", 8989, "series")
+    )
+    settings = json.loads((stack / "config/jellyseerr/settings.json").read_text())
+    validate_library_service(
+        settings, application, port, media_type, service_identifier
+    )
+    return MediaLibrary(
+        library_bind_address(stack), port, library_api_key(stack, application), resource
+    )

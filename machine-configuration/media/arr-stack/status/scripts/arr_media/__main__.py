@@ -23,16 +23,14 @@ def argument_parser():
     commands = parser.add_subparsers(dest="command", required=True)
     search = commands.add_parser("search")
     search.add_argument("title")
+    descriptions = {
+        "cancel": "Remove one public request record; downloads and library files stay unchanged.",
+        "remove": "Operator only: remove one public library title and its files.",
+    }
     for command in ("status", "request", "cancel", "remove"):
         action = commands.add_parser(
             command,
-            description=(
-                "Remove one public request record; downloads and library files stay unchanged."
-                if command == "cancel"
-                else "Operator only: remove one public library title and its files."
-                if command == "remove"
-                else None
-            ),
+            description=descriptions.get(command),
         )
         action.add_argument("media_type", choices=("movie", "tv"))
         action.add_argument(
@@ -144,16 +142,20 @@ def execute_command(client, arguments):
     return public_status(client, details, arguments.media_type)
 
 
+def client_for_command(arguments):
+    if arguments.command == "remove":
+        authorize_media_removal()
+    return public_requester(
+        os.environ.get("ARR_MEDIA_STACK_HOME", Path.home() / "arr-stack")
+    )
+
+
 def main(argv=None):
     parser = argument_parser()
     arguments = parser.parse_args(argv)
     validate_request_arguments(parser, arguments)
     try:
-        if arguments.command == "remove":
-            authorize_media_removal()
-        client = public_requester(
-            os.environ.get("ARR_MEDIA_STACK_HOME", Path.home() / "arr-stack")
-        )
+        client = client_for_command(arguments)
         result = execute_command(client, arguments)
         print(json.dumps(result, ensure_ascii=False))
         return 0
