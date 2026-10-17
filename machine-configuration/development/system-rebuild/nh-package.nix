@@ -23,6 +23,7 @@ let
       platforms = builtins.attrNames releaseHashes;
     };
   };
+  guardScript = pkgs.writeShellScript "nh-guard" (builtins.readFile ./scripts/nh-guard);
 in
 pkgs.symlinkJoin {
   inherit (unwrapped) name meta;
@@ -30,7 +31,9 @@ pkgs.symlinkJoin {
   paths = [ unwrapped ];
   nativeBuildInputs = [ pkgs.makeBinaryWrapper ];
   postBuild = ''
-    wrapProgram $out/bin/nh \
+    rm $out/bin/nh
+    makeWrapper ${guardScript} $out/bin/nh \
+      --set REAL_NH ${unwrapped}/bin/nh \
       --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.nix-output-monitor ]}
   '';
 }

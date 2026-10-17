@@ -15,6 +15,15 @@ For Nix language and ecosystem expertise: idiomatic expressions, lazy evaluation
 internals (mkIf, mkMerge, types), flake design, ecosystem tools (direnv, cachix, agenix); read
 [expert](references/expert.md).
 
+### Installed helpers
+
+Use installed `nh` for package search, scoped NixOS/Home Manager/nix-darwin option search, and generation inspection;
+use `nom` for standalone Nix build progress. Check their availability on the target host. Use
+[rebuild](references/rebuild.md) for deployment.
+
+Online NH search follows the selected remote channel, not the repository's exact lock. Pass option scopes as
+`--scope=home-manager` (or `nixpkgs` or `nix-darwin`): a space-separated scope silently becomes query text.
+
 ### Rebuild routing
 
 For applying configuration changes: staging prerequisite, rebuild script, platform detection, timeout/active-waiting

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+command_path=()
+skip_elevation_strategy=0
+
+for argument in "$@"; do
+	if ((skip_elevation_strategy)); then
+		skip_elevation_strategy=0
+		continue
+	fi
+	case "$argument" in
+	-e | --elevation-strategy | -[vq]*e) skip_elevation_strategy=1 ;;
+	-*) ;;
+	*)
+		command_path+=("$argument")
+		if [[ "${#command_path[@]}" -eq 2 ]]; then
+			break
+		fi
+		;;
+	esac
+done
+
+if [[ "${command_path[0]:-}" == os && "${command_path[1]:-}" == switch ]]; then
+	printf '%s\n' "error: 'nh os switch' is blocked. Use 'rebuild' to deploy this machine." >&2
+	exit 1
+fi
+
+exec "$REAL_NH" "$@"
