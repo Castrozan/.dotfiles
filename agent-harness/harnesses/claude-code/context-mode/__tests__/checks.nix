@@ -7,11 +7,11 @@
 let
   configuration = helpers.homeManagerTestConfigurationForEvaluatingSystem [
     self.homeManagerModules.claude-code
-    ../default.nix
+    ../.
   ];
   configurationWithoutTrial = helpers.homeManagerTestConfigurationForEvaluatingSystem [
     self.homeManagerModules.claude-code
-    { disabledModules = [ ../default.nix ]; }
+    { disabledModules = [ ../. ]; }
   ];
   plugin = configuration.home.file.".local/share/claude-context-mode".source;
   protocolPython = pkgs.python312.withPackages (packages: [ packages.mcp ]);
