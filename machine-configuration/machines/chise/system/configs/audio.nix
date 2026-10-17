@@ -3,6 +3,8 @@ let
   btPolicy = import ../../../../../machine-configuration/audio/bluetooth-policy.nix;
 in
 {
+  imports = [ ../../../../audio/pipewire-alsa-recovery-nixos.nix ];
+
   assertions = [
     {
       assertion = config.services.pipewire.enable;
@@ -59,16 +61,7 @@ in
 
     wireplumber.extraConfig = {
       "40-stream-defaults" = {
-        "stream.rules" = [
-          {
-            matches = [
-              { "node.name" = "~*"; }
-            ];
-            actions.update-props = {
-              "stream.restore-target" = btPolicy.restoreStreamTarget;
-            };
-          }
-        ];
+        "wireplumber.settings"."node.stream.restore-target" = btPolicy.restoreStreamTarget;
       };
 
       "50-disable-unused-audio-cards" = {
