@@ -29,6 +29,6 @@ To stop using the trial immediately, exit that Claude session and launch `claude
 Existing Claude configuration requires no rollback. Delete the dedicated state directory separately if its retained
 project data is no longer needed.
 
-Upstream: https://github.com/mksglu/context-mode
+Upstream: `https://github.com/mksglu/context-mode`
 
-Claude plugin loading: https://code.claude.com/docs/en/plugins-reference
+Claude plugin loading: `https://code.claude.com/docs/en/plugins-reference`

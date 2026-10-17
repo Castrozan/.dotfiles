@@ -4,6 +4,16 @@ import sys
 from pathlib import Path
 
 
+def configured_hook_command(plugin_directory, runtime_command, command):
+    interpreter, source = shlex.split(command)
+    if interpreter != "node" or not source.startswith("${CLAUDE_PLUGIN_ROOT}/hooks/"):
+        raise ValueError(f"Unexpected upstream hook command: {command}")
+    hook_path = plugin_directory / source.removeprefix("${CLAUDE_PLUGIN_ROOT}/")
+    if not hook_path.is_file():
+        raise FileNotFoundError(hook_path)
+    return shlex.join([runtime_command, str(hook_path)])
+
+
 def configure_plugin(plugin_directory, runtime_command):
     manifest_path = plugin_directory / ".claude-plugin/plugin.json"
     manifest = json.loads(manifest_path.read_text())
@@ -20,19 +30,9 @@ def configure_plugin(plugin_directory, runtime_command):
     for entries in configuration["hooks"].values():
         for entry in entries:
             for hook in entry["hooks"]:
-                interpreter, source = shlex.split(hook["command"])
-                if interpreter != "node" or not source.startswith(
-                    "${CLAUDE_PLUGIN_ROOT}/hooks/"
-                ):
-                    raise ValueError(
-                        f"Unexpected upstream hook command: {hook['command']}"
-                    )
-                hook_path = plugin_directory / source.removeprefix(
-                    "${CLAUDE_PLUGIN_ROOT}/"
+                hook["command"] = configured_hook_command(
+                    plugin_directory, runtime_command, hook["command"]
                 )
-                if not hook_path.is_file():
-                    raise FileNotFoundError(hook_path)
-                hook["command"] = shlex.join([runtime_command, str(hook_path)])
     hooks_path.write_text(json.dumps(configuration, indent=2) + "\n")
 
 
