@@ -34,6 +34,7 @@ let
   claudeGlobalSettings = {
     ultracode = false;
     enableWorkflows = true;
+    enabledPlugins."image-view@claude-image-view" = true;
     language = "english";
     animationInterval = 80;
     spinnerText = spinnerVerbs;
