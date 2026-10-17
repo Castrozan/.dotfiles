@@ -6,6 +6,7 @@ test_patterns = ["**/__tests__/**", "**/conftest.py", "**/*.test.*", "**/*.spec.
 file_patterns = [
   "agent-harness/harnesses/codex/session-title-instructions.md",
   "agent-harness/harnesses/claude-code/launch/interactive-tool-usage.md",
+  "agent-harness/agent-instructions/skills/workstation/browser/references/opencli.md",
 ]
 rules = ["MD041"]
 
