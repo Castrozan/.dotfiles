@@ -1,11 +1,11 @@
 # OpenCLI browser jobs
 
-### Scope
+## Scope
 
 Chrome DevTools remains the primary interactive browser. OpenCLI supplies reusable site commands and the isolated
 fallback permitted by `SKILL.md`. Its profiles carry their own logins; never assume access to Chrome Global accounts.
 
-### Workflow ownership
+## Workflow ownership
 
 Use `opencli` for site adapters and capability discovery. Public adapters run without a browser; browser-backed adapters
 automatically acquire a complete job. Put all commands of a multi-step browser workflow inside one `opencli-run`
@@ -16,7 +16,7 @@ Choose a named profile when a task needs persistent authentication. Use a headed
 profile persists after its processes exit. Concurrent jobs fail without interrupting the current owner. Retry after the
 owner finishes; never kill another job or substitute the user's shared browser.
 
-### Reusable site work
+## Reusable site work
 
 Inspect `opencli list` before reimplementing a supported site's extraction. Use the site's read commands when their
 output matches the task, and validate completeness against the requested scope. A successful exit does not establish
