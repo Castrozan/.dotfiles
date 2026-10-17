@@ -19,13 +19,14 @@ def test_unauthenticated_claude_fails_without_starting_a_session(tmp_path, tier)
         "import json, pathlib, sys\n"
         "if sys.argv[1:3] == ['auth', 'status']:\n"
         " print(json.dumps({'loggedIn': False, 'authMethod': 'none'}))\n"
+        f" pathlib.Path({str(tmp_path / 'probe-cwd')!r}).write_text(str(pathlib.Path.cwd()))\n"
         " sys.exit(1)\n"
         f"pathlib.Path({str(launch_marker)!r}).write_text('launched')\n"
         "sys.exit(1)\n"
     )
     claude.chmod(0o755)
     herdr = binary_directory / "herdr"
-    herdr.write_text(f"#!{sys.executable}\nimport sys\nsys.exit(1)\n")
+    herdr.write_text(f"#!{sys.executable}\nimport sys\nsys.exit(0)\n")
     herdr.chmod(0o755)
     scenario_name = {
         "integration": "no_comments_in_code",
@@ -52,3 +53,7 @@ def test_unauthenticated_claude_fails_without_starting_a_session(tmp_path, tier)
     assert "Claude is not authenticated" in completed.stdout
     assert "Passed: 0/1" in completed.stdout
     assert not launch_marker.exists()
+
+    probe_workspace = Path((tmp_path / "probe-cwd").read_text())
+    assert probe_workspace.name.startswith(("claude-eval-", "e2e-"))
+    assert not probe_workspace.exists()

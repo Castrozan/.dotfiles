@@ -1,13 +1,15 @@
 import json
 import subprocess
+from pathlib import Path
 
 AUTHENTICATION_TIMEOUT_SECONDS = 15
 
 
-def claude_authentication_failure() -> str | None:
+def claude_authentication_failure(workspace_directory: Path) -> str | None:
     try:
         completed = subprocess.run(
             ["claude", "auth", "status", "--json"],
+            cwd=workspace_directory,
             capture_output=True,
             text=True,
             timeout=AUTHENTICATION_TIMEOUT_SECONDS,

@@ -30,16 +30,14 @@ def run_scenario(
     scenario = load_scenario(scenario_path)
     scenario_name = scenario["name"]
 
-    authentication_failure = None if dry_run else claude_authentication_failure()
-    if dry_run or authentication_failure:
+    if dry_run:
         return ScenarioResult(
             scenario_name=scenario_name,
-            passed=authentication_failure is None,
+            passed=True,
             assertion_results=[],
             trace=SessionTrace(),
             workspace_directory=None,
             duration_seconds=0,
-            error=authentication_failure,
         )
 
     sanitized_name = sanitize_scenario_name_for_tempdir(scenario_name)
@@ -49,6 +47,18 @@ def run_scenario(
 
     try:
         setup_scenario_workspace(scenario, workspace_directory)
+
+        authentication_failure = claude_authentication_failure(workspace_directory)
+        if authentication_failure:
+            return ScenarioResult(
+                scenario_name=scenario_name,
+                passed=False,
+                assertion_results=[],
+                trace=SessionTrace(),
+                workspace_directory=workspace_directory,
+                duration_seconds=0,
+                error=authentication_failure,
+            )
 
         timeout = scenario.get("timeout", 180)
 

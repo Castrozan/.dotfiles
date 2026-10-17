@@ -52,10 +52,6 @@ def run_e2e_scenario(
 
     if dry_run:
         return _empty_e2e_result(scenario_name)
-    if profile.name == "claude":
-        authentication_failure = claude_authentication_failure()
-        if authentication_failure:
-            return _empty_e2e_result(scenario_name, authentication_failure)
     return _run_live_scenario(
         scenario,
         scenario_name,
@@ -89,6 +85,13 @@ def _run_live_scenario(
         setup_e2e_scenario_workspace(
             scenario, workspace, profile, instruction_placement_mode
         )
+
+        if profile.name == "claude":
+            authentication_failure = claude_authentication_failure(workspace)
+            if authentication_failure:
+                return _empty_e2e_result(
+                    scenario_name, authentication_failure, workspace
+                )
 
         tab_handle = create_isolated_herdr_tab_for_test(tab_label, workspace)
         if not tab_handle:
