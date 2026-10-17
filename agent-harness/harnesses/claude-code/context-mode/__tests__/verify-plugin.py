@@ -101,7 +101,9 @@ async def verify_plugin(plugin_directory):
             environment,
             workspace,
         )
-        assert "ctx_execute" in restored["hookSpecificOutput"]["additionalContext"]
+        restored_context = restored["hookSpecificOutput"]["additionalContext"]
+        assert "ctx_execute" in restored_context
+        assert "incident.json" in restored_context
         run_hook(configuration, "Stop", payload, environment, workspace)
 
         server = manifest["mcpServers"]["context-mode"]
