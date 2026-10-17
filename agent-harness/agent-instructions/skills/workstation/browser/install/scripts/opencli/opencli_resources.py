@@ -9,6 +9,7 @@ import subprocess
 from contextlib import contextmanager
 from pathlib import Path
 
+from opencli_browser import browser_process
 from opencli_owner import register_process
 from opencli_processes import stop_process, wait_for_bridge
 
@@ -68,6 +69,7 @@ def browser_arguments(profile, extension, headed):
         "--disable-background-networking",
         "--disable-component-update",
         "--disable-sync",
+        "--remote-debugging-pipe",
         "--password-store=basic",
         "--window-size=1280,900",
     ]
@@ -108,22 +110,22 @@ def browser_job(name, headed=False):
         try:
             with open(state / "last-job.log", "w", opener=private_opener) as output:
                 os.fchmod(output.fileno(), 0o600)
-                for arguments in (
+                daemon = subprocess.Popen(
                     [os.environ["OPENCLI_NODE"], os.environ["OPENCLI_DAEMON"]],
-                    browser_arguments(profile, extension, headed),
-                ):
-                    processes.append(
-                        subprocess.Popen(
-                            arguments,
-                            env=dict(environment),
-                            stdout=output,
-                            stderr=output,
-                            start_new_session=True,
-                        )
-                    )
-                    register_process(processes[-1])
-                wait_for_bridge(processes)
-                yield environment
+                    env=dict(environment),
+                    stdout=output,
+                    stderr=output,
+                    start_new_session=True,
+                )
+                processes.append(daemon)
+                register_process(daemon)
+                with browser_process(
+                    browser_arguments(profile, extension, headed), environment, output
+                ) as browser:
+                    processes.append(browser)
+                    register_process(browser)
+                    wait_for_bridge(processes)
+                    yield environment
         finally:
             for process in reversed(processes):
                 stop_process(process)

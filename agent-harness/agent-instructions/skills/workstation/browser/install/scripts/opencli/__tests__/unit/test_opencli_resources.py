@@ -30,6 +30,9 @@ def resources(tmp_path, monkeypatch):
     monkeypatch.setattr(module, "wait_for_bridge", Mock())
     monkeypatch.setattr(module, "stop_process", Mock())
     monkeypatch.setattr(
+        importlib.import_module("opencli_browser"), "close_browser", Mock()
+    )
+    monkeypatch.setattr(
         module.subprocess,
         "Popen",
         Mock(side_effect=[SimpleNamespace(pid=1), SimpleNamespace(pid=2)]),

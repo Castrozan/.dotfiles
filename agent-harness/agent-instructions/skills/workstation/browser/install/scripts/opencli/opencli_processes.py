@@ -20,6 +20,9 @@ def stop_process(process):
         os.killpg(process.pid, signal.SIGKILL)
     except ProcessLookupError:
         pass
+    except PermissionError:
+        if process.poll() is None:
+            raise
     process.wait(timeout=5)
 
 

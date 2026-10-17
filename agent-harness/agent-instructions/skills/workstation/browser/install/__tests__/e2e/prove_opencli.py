@@ -74,6 +74,9 @@ def main():
             timeout=90,
             env=environment,
         )
+        (options.output / "automatic-browser.log").write_text(
+            article.stdout + article.stderr
+        )
         checks["browser_adapter_automatically_starts_owned_job"] = (
             article.returncode == 0
             and "OpenCLI" in article.stdout
