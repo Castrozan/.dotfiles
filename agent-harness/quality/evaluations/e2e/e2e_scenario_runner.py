@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 from typing import NamedTuple
 
+from claude_session_readiness import claude_authentication_failure
 from e2e.sessions.e2e_harness_profiles import scenario_harness_profile
 from e2e.sessions.e2e_models import E2eScenarioResult, TerminalSessionTrace
 from e2e.sessions.e2e_herdr import (
@@ -51,6 +52,10 @@ def run_e2e_scenario(
 
     if dry_run:
         return _empty_e2e_result(scenario_name)
+    if profile.name == "claude":
+        authentication_failure = claude_authentication_failure()
+        if authentication_failure:
+            return _empty_e2e_result(scenario_name, authentication_failure)
     return _run_live_scenario(
         scenario,
         scenario_name,

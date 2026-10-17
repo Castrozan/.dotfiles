@@ -7,7 +7,10 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import integration_scenario_execution
+from claude_session_readiness import claude_authentication_failure
 from integration_models import ScenarioResult, SessionTrace
 from integration_reporting import print_scenario_results
 from integration_workspace import (
@@ -27,14 +30,16 @@ def run_scenario(
     scenario = load_scenario(scenario_path)
     scenario_name = scenario["name"]
 
-    if dry_run:
+    authentication_failure = None if dry_run else claude_authentication_failure()
+    if dry_run or authentication_failure:
         return ScenarioResult(
             scenario_name=scenario_name,
-            passed=True,
+            passed=authentication_failure is None,
             assertion_results=[],
             trace=SessionTrace(),
             workspace_directory=None,
             duration_seconds=0,
+            error=authentication_failure,
         )
 
     sanitized_name = sanitize_scenario_name_for_tempdir(scenario_name)

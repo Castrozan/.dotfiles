@@ -36,6 +36,21 @@ def herdr_result_payload(completed: subprocess.CompletedProcess) -> dict:
         return {}
 
 
+def pane_hosts_a_live_agent(pane_id: str) -> bool:
+    payload = herdr_result_payload(run_herdr_command(["agent", "get", pane_id]))
+    agent_name = (payload.get("agent") or {}).get("agent")
+    if not agent_name:
+        return False
+    process_payload = herdr_result_payload(
+        run_herdr_command(["pane", "process-info", "--pane", pane_id])
+    )
+    processes = process_payload.get("process_info", {}).get("foreground_processes", [])
+    return any(
+        agent_name in {process.get("name"), Path(process.get("argv0") or "").name}
+        for process in processes
+    )
+
+
 def herdr_server_is_reachable() -> bool:
     return run_herdr_command(["tab", "list"]).returncode == 0
 

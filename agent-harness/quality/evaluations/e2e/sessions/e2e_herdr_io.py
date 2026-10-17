@@ -1,7 +1,7 @@
 import time
 
 from e2e.sessions.e2e_harness_profiles import HarnessProfile
-from e2e.sessions.e2e_herdr import herdr_result_payload, run_herdr_command
+from e2e.sessions.e2e_herdr import pane_hosts_a_live_agent, run_herdr_command
 
 INPUT_SETTLE_SECONDS = 2
 TYPED_INPUT_SETTLE_SECONDS = 0.25
@@ -28,11 +28,6 @@ def wait_for_agent_status(
         timeout_seconds=timeout_seconds + 10,
     )
     return completed.returncode == 0
-
-
-def pane_hosts_a_live_agent(pane_id: str) -> bool:
-    payload = herdr_result_payload(run_herdr_command(["agent", "get", pane_id]))
-    return bool(payload.get("agent", {}).get("agent"))
 
 
 def wait_for_pane_to_host_a_live_agent(pane_id: str, timeout_seconds: float) -> bool:
