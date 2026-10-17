@@ -17,7 +17,7 @@ def resolve_state_directory():
     override = os.environ.get(STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE)
     if override:
         return Path(override)
-    return hook_state_directory()
+    return Path(hook_state_directory())
 
 
 def subagent_spawn_budget_state_path(session_id):
