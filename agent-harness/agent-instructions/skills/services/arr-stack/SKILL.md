@@ -6,7 +6,7 @@ description: "Manage the chise media stack: Jellyfin friend accounts, Jellyseerr
 ### Commands
 
 Three CLIs, chise only: `arr-users` manages friend accounts and `arr-status [title]` prints one line per Jellyseerr
-request with its stage and any live download progress. `arr-media` searches and requests public movies and TV. Run each
+request with its stage and any live download progress. `arr-media` manages public movie and TV requests. Run each
 with `--help` for the exact interface; do not reconstruct flags from memory. On any host other than chise these commands
 do not exist.
 
@@ -17,6 +17,9 @@ match its year and media type, then use the returned TMDB ID. TV requests requir
 `status` lists valid seasons. Read attached lists before requesting their contents, preserve every requested season, and
 ask when a title is ambiguous. A successful request means queued or approved, never proof that a download started or
 finished. Report failures per title and use status before claiming availability.
+
+Withdrawing a request removes only the selected public request record. Downloads and library files continue unchanged;
+report that limited effect instead of saying the media was deleted or its download stopped.
 
 `arr-media` returns public catalog metadata and only the public requester's requests. Guests may use this command
 through Monster; `arr-users`, `arr-status`, account changes, private libraries and direct service access remain outside

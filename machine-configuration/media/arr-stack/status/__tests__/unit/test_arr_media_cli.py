@@ -66,6 +66,8 @@ def test_http_failure_identifies_the_media_operation(
         ["request", "tv", "4574", "--seasons", "0"],
         ["status", "movie", "-1"],
         ["request", "movie", "36657; reboot"],
+        ["cancel", "movie", "769", "0"],
+        ["cancel", "movie", "769", "65; reboot"],
     ],
 )
 def test_invalid_request_never_accesses_credentials(monkeypatch, arguments):

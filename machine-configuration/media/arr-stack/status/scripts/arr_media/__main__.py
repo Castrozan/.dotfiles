@@ -17,17 +17,30 @@ def positive_integer(value):
 
 def argument_parser():
     parser = argparse.ArgumentParser(
-        description="Search and request public movies or TV through Jellyseerr."
+        description="Search public movies and TV, request titles or withdraw requests."
     )
     commands = parser.add_subparsers(dest="command", required=True)
     search = commands.add_parser("search")
     search.add_argument("title")
-    for command in ("status", "request"):
-        action = commands.add_parser(command)
+    for command in ("status", "request", "cancel"):
+        action = commands.add_parser(
+            command,
+            description=(
+                "Remove one public request record; downloads and library files stay unchanged."
+                if command == "cancel"
+                else None
+            ),
+        )
         action.add_argument("media_type", choices=("movie", "tv"))
         action.add_argument(
             "media_id", type=positive_integer, help="TMDB ID from search"
         )
+        if command == "cancel":
+            action.add_argument(
+                "request_id",
+                type=positive_integer,
+                help="Public request ID from status",
+            )
         if command == "request":
             seasons = action.add_mutually_exclusive_group()
             seasons.add_argument("--seasons", nargs="+", type=positive_integer)
@@ -94,12 +107,30 @@ def validate_request_arguments(parser, arguments):
         )
 
 
+def cancel_media_request(client, arguments, details):
+    requested = any(
+        request["id"] == arguments.request_id
+        for request in client.public_requests(details)
+    )
+    if requested:
+        client.request("DELETE", f"/request/{arguments.request_id}")
+    return {
+        "result": "request_removed" if requested else "not_requested",
+        "media_type": arguments.media_type,
+        "media_id": arguments.media_id,
+        "request_id": arguments.request_id,
+        "downloads": "unchanged",
+    }
+
+
 def execute_command(client, arguments):
     if arguments.command == "search":
         return {"results": client.search(arguments.title)}
     details = client.details(arguments.media_type, arguments.media_id)
     if arguments.command == "request":
         return request_media(client, arguments, details)
+    if arguments.command == "cancel":
+        return cancel_media_request(client, arguments, details)
     return public_status(client, details, arguments.media_type)
 
 

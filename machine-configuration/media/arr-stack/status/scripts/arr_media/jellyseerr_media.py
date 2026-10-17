@@ -30,6 +30,8 @@ class JellyseerrMedia:
             response = connection.getresponse()
             if response.status >= 400:
                 raise JellyseerrRequestError(response.status)
+            if response.status == 204:
+                return None
             return json.loads(response.read())
         finally:
             connection.close()
