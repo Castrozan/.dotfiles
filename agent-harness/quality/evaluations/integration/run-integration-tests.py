@@ -10,7 +10,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import integration_scenario_execution
-from claude_session_readiness import claude_authentication_failure
+from runner.execution.claude_session_readiness import (
+    claude_authentication_failure,
+)
 from integration_models import ScenarioResult, SessionTrace
 from integration_reporting import print_scenario_results
 from integration_workspace import (

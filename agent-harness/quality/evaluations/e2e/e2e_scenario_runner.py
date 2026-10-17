@@ -4,7 +4,9 @@ import time
 from pathlib import Path
 from typing import NamedTuple
 
-from claude_session_readiness import claude_authentication_failure
+from runner.execution.claude_session_readiness import (
+    claude_authentication_failure,
+)
 from e2e.sessions.e2e_harness_profiles import scenario_harness_profile
 from e2e.sessions.e2e_models import E2eScenarioResult, TerminalSessionTrace
 from e2e.sessions.e2e_herdr import (

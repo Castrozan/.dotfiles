@@ -2,7 +2,7 @@ import subprocess
 
 import pytest
 
-import claude_session_readiness
+from runner.execution import claude_session_readiness
 
 
 @pytest.mark.parametrize(
