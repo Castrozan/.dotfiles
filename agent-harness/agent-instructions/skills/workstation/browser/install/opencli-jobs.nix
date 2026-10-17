@@ -7,6 +7,8 @@ let
     root = ./scripts/opencli;
     fileset = pkgs.lib.fileset.unions [
       ./scripts/opencli/opencli_job.py
+      ./scripts/opencli/opencli_browser.py
+      ./scripts/opencli/opencli_exec.py
       ./scripts/opencli/opencli_resources.py
       ./scripts/opencli/opencli_processes.py
       ./scripts/opencli/opencli_command.py

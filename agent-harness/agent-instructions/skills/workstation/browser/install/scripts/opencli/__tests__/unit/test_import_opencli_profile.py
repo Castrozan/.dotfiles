@@ -37,6 +37,22 @@ def test_existing_destination_is_never_overwritten(tmp_path):
     assert (destination / "session").read_text() == "current"
 
 
+def test_import_excludes_dangling_chromium_version_marker(tmp_path):
+    source = tmp_path / "legacy"
+    (source / "Default").mkdir(parents=True)
+    (source / "Default/Cookies").write_bytes(b"cookie-fixture")
+    marker = source / "RunningChromeVersion"
+    marker.symlink_to("147.0.7727.55")
+    destination = tmp_path / "profiles/default"
+    module.import_profile(source, destination)
+    assert marker.is_symlink()
+    assert marker.readlink() == Path("147.0.7727.55")
+    assert (source / "Default/Cookies").read_bytes() == b"cookie-fixture"
+    assert (destination / "Default/Cookies").read_bytes() == b"cookie-fixture"
+    assert not (destination / "RunningChromeVersion").is_symlink()
+    assert not (destination / "RunningChromeVersion").exists()
+
+
 def test_live_source_is_not_copied(tmp_path, monkeypatch):
     source = tmp_path / "legacy"
     source.mkdir()

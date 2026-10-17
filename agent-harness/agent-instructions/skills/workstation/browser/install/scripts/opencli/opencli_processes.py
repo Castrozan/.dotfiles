@@ -7,11 +7,7 @@ from http.client import HTTPConnection, HTTPException
 
 
 def stop_process(process):
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        process.wait(timeout=5)
-        return
+    process.terminate()
     try:
         process.wait(timeout=5)
     except subprocess.TimeoutExpired:
@@ -20,6 +16,9 @@ def stop_process(process):
         os.killpg(process.pid, signal.SIGKILL)
     except ProcessLookupError:
         pass
+    except PermissionError:
+        if process.poll() is None:
+            raise
     process.wait(timeout=5)
 
 

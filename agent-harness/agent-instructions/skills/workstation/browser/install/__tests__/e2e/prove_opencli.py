@@ -16,7 +16,7 @@ from opencli_restrictions import verify_restrictions
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Exercise OpenCLI reads, UI, isolation and cleanup on a Linux host without posting or publishing."
+        description="Exercise OpenCLI reads, UI, isolation and cleanup without posting or publishing."
     )
     parser.add_argument(
         "--opencli",
@@ -73,6 +73,9 @@ def main():
             text=True,
             timeout=90,
             env=environment,
+        )
+        (options.output / "automatic-browser.log").write_text(
+            article.stdout + article.stderr
         )
         checks["browser_adapter_automatically_starts_owned_job"] = (
             article.returncode == 0

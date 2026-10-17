@@ -8,7 +8,7 @@ import sys
 import tempfile
 import uuid
 
-from opencli_owner import register_process, watch_owner
+from opencli_owner import owned_process, watch_owner
 from opencli_processes import stop_process
 from opencli_resources import browser_job
 from opencli_supervisor import supervise_process
@@ -106,14 +106,8 @@ def execute(options):
     if options.worker:
         watch_owner()
     with browser_job(options.profile, options.headed) as environment:
-        process = subprocess.Popen(
-            options.command, env=environment, start_new_session=True
-        )
-        try:
-            register_process(process)
+        with owned_process(options.command, environment) as process:
             return process.wait(timeout=options.timeout)
-        finally:
-            stop_process(process)
 
 
 def dispatch(options):

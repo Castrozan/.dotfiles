@@ -1,9 +1,13 @@
+import subprocess
+import sys
 import time
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
 
 def owned_processes():
+    if sys.platform == "darwin":
+        return darwin_owned_processes()
     found = []
     for path in Path("/proc").iterdir():
         if not path.name.isdigit():
@@ -23,6 +27,26 @@ def owned_processes():
                 found.append(int(path.name))
         except (OSError, UnicodeDecodeError, IndexError):
             pass
+    return found
+
+
+def darwin_owned_processes():
+    result = subprocess.run(
+        ["/bin/ps", "-axww", "-o", "pid=,command="],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    found = []
+    for line in result.stdout.splitlines():
+        identifier, _, arguments = line.strip().partition(" ")
+        browser = "--user-data-dir=" in arguments and "/opencli/profiles/" in arguments
+        daemon = (
+            "/opencli/node_modules/@jackwener/opencli/dist/src/daemon.js" in arguments
+        )
+        if identifier.isdigit() and (browser or daemon):
+            found.append(int(identifier))
     return found
 
 
