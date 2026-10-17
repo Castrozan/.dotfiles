@@ -51,6 +51,7 @@
       mpvc
       mpv-shim-default-shaders
       oath-toolkit
+      nix-output-monitor
       nixd
       nix-prefetch-github
       nixpkgs-fmt
