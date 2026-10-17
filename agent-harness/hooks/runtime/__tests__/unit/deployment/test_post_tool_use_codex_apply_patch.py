@@ -18,7 +18,7 @@ def run_codex_post_tool_use_dispatcher(tmp_path, payload, environment=None):
         payload,
         environment
         if environment is not None
-        else {**os.environ, "TMPDIR": str(tmp_path)},
+        else {**os.environ, "TMPDIR": str(tmp_path), "XDG_STATE_HOME": str(tmp_path)},
         (CODEX_SURFACE_ARGUMENT,),
     )
 
@@ -40,7 +40,9 @@ def make_directory_look_like_dotfiles_repository(root):
 
 
 def recorded_ledger_contents(tmp_path):
-    ledger_files = list(tmp_path.glob("claude-nix-rebuild-ledger-*.txt"))
+    ledger_files = list(
+        (tmp_path / "agent-hooks").glob("claude-nix-rebuild-ledger-*.txt")
+    )
     return "\n".join(path.read_text() for path in ledger_files)
 
 
@@ -62,6 +64,7 @@ def test_a_changed_nix_file_is_recorded_silently_on_codex_apply_patch(tmp_path):
         "edit-time emission is the per-file noise this replaced"
     )
     assert "codex-hooks-configuration.nix" in recorded_ledger_contents(tmp_path)
+    assert (tmp_path / "agent-hooks").stat().st_mode & 0o777 == 0o700
 
 
 def test_nothing_is_recorded_when_the_nix_file_is_outside_the_dotfiles_repo(tmp_path):

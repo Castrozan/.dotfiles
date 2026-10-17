@@ -9,8 +9,9 @@ STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE = (
 
 
 def resolve_state_directory():
-    return os.environ.get(STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE) or str(
-        hook_state_directory()
+    return (
+        os.environ.get(STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE)
+        or hook_state_directory()
     )
 
 

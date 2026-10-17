@@ -8,7 +8,7 @@ UNIDENTIFIED_SESSION = "unknown-session"
 
 
 def temporary_directory() -> str:
-    return str(hook_state_directory())
+    return hook_state_directory()
 
 
 def session_ledger_path(ledger_name: str, session_id: str) -> str:

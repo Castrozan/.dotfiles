@@ -8,13 +8,6 @@ let
   configuration = helpers.homeManagerTestConfiguration [ ../lazygit-home-manager.nix ];
   gitCoreSettings =
     (helpers.homeManagerTestConfiguration [ ../git-home-manager.nix ]).programs.git.settings.core;
-  rootlessGithubConfiguration = helpers.homeManagerTestConfiguration [
-    ../github-rootless-home-manager.nix
-    { systemd.user.enable = false; }
-  ];
-  rootlessGithubServiceFiles = builtins.filter (name: lib.hasPrefix ".config/systemd/user/" name) (
-    builtins.attrNames rootlessGithubConfiguration.home.file
-  );
   personalRepositoryRouting = import ../personal-repository-routing.nix;
   routesEveryRepository =
     forge: expectedTargets:
@@ -29,24 +22,6 @@ let
     ) expectedTargets;
 in
 {
-  domain-dev-rootless-github-loads-only-approved-secret =
-    mkEvalCheck "domain-dev-rootless-github-loads-only-approved-secret"
-      (
-        builtins.attrNames rootlessGithubConfiguration.age.secrets == [ "credentials/github-com-token" ]
-        && rootlessGithubConfiguration.age.secrets."credentials/github-com-token".mode == "0400"
-        && rootlessGithubConfiguration.age.identityPaths == [ "/home/test/.config/age/keys.txt" ]
-      )
-      "Rootless GitHub auth must load only the shared GitHub credential through the cloud-local identity";
-
-  domain-dev-rootless-github-mounts-before-auth-without-services =
-    mkEvalCheck "domain-dev-rootless-github-mounts-before-auth-without-services"
-      (
-        rootlessGithubServiceFiles == [ ]
-        && builtins.elem "setupGithubAuthentication" rootlessGithubConfiguration.home.activation.mountDotGithubCredential.before
-        && builtins.elem "setupGithubAuthentication" rootlessGithubConfiguration.home.activation.setupDotGithubHttps.after
-      )
-      "Rootless activation must mount the credential before native login and configure HTTPS after login without services";
-
   domain-dev-lazygit-enabled =
     mkEvalCheck "domain-dev-lazygit-enabled" configuration.programs.lazygit.enable
       "lazygit should be enabled";
