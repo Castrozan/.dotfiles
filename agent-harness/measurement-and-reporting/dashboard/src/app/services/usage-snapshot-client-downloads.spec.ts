@@ -167,4 +167,19 @@ describe('UsageSnapshotClientService snapshot downloads', () => {
       'https://storage.googleapis.com/storage/v1/b/zg-url-shortener-2026-dotfiles-usage-snapshots/o/snapshots%2Fplus%2Band%26equals%3D.json?alt=media',
     ]);
   });
+
+  it('skips an object whose name cannot be encoded while keeping the rest', async () => {
+    const { service, jsonHttpClient } = buildControlledService(
+      new Map<string | null, JsonHttpResponse>([
+        [null, okResponse({ items: [{ name: 'broken-\ud800.json' }, { name: 'kept.json' }] })],
+      ]),
+    );
+
+    const loadedSnapshots = service.fetchAllSnapshots();
+    await settleMicrotasks();
+    jsonHttpClient.pendingSnapshotRequests[0]?.respond(okResponse({ account_label: 'kept' }));
+
+    await expect(loadedSnapshots).resolves.toEqual([{ account_label: 'kept' }]);
+    expect(jsonHttpClient.requestedSnapshotUrls).toEqual([snapshotMediaUrl('kept.json')]);
+  });
 });

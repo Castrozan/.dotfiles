@@ -92,10 +92,13 @@ export class UsageSnapshotClientService {
     return parseStorageObjectListing(response.body);
   }
 
+  private buildSnapshotMediaUrl(objectName: string): string {
+    return `https://storage.googleapis.com/storage/v1/b/${this.configuration.snapshotsBucket}/o/${encodeURIComponent(objectName)}?alt=media`;
+  }
+
   private async fetchSnapshotObject(objectName: string): Promise<UsageSnapshot | null> {
-    const mediaUrl = `https://storage.googleapis.com/storage/v1/b/${this.configuration.snapshotsBucket}/o/${encodeURIComponent(objectName)}?alt=media`;
     try {
-      const response = await this.jsonHttpClient.getJson(mediaUrl);
+      const response = await this.jsonHttpClient.getJson(this.buildSnapshotMediaUrl(objectName));
       return response.ok ? parseUsageSnapshot(response.body) : null;
     } catch {
       return null;
