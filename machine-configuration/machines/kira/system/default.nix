@@ -9,7 +9,6 @@
 
   homebrew.casks = [
     "claude"
-    "codex-app"
     "firefox"
     "kiro"
     "mongodb-compass"
