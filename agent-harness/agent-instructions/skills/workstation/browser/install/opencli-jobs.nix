@@ -20,9 +20,9 @@ let
     export OPENCLI_DAEMON=${runtime}/lib/opencli/node_modules/@jackwener/opencli/dist/src/daemon.js
     export OPENCLI_EXTENSION=${extension}
     export OPENCLI_BROWSER=${browser}/bin/chromium
-    export PATH=${
-      pkgs.lib.makeBinPath (pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.systemd ])
-    }:"$PATH"
+    ${pkgs.lib.optionalString pkgs.stdenv.isLinux ''
+      export PATH=${pkgs.lib.makeBinPath [ pkgs.systemd ]}:"$PATH"
+    ''}
     exec ${pkgs.python312}/bin/python3 ${scripts}/opencli_job.py "$@"
   '';
   command = pkgs.writeShellScriptBin "opencli" ''
