@@ -13,23 +13,26 @@ class AlsaFailure:
     timestamp: float
 
 
+def journal_string(entry, name):
+    value = entry.get(name)
+    return value if isinstance(value, str) else ""
+
+
 def parse_failure(line):
     try:
         entry = json.loads(line)
     except json.JSONDecodeError:
         return None
-    if not isinstance(entry, dict) or not isinstance(entry.get("MESSAGE"), str):
+    if not isinstance(entry, dict):
         return None
     match = re.search(
         r"spa\.alsa: (\S+): \(\d+ suppressed\) "
         r"snd_pcm_avail after recover: Broken pipe$",
-        entry["MESSAGE"],
+        journal_string(entry, "MESSAGE"),
     )
-    process_id = entry.get("_PID")
-    timestamp = entry.get("__MONOTONIC_TIMESTAMP")
-    if not match or not isinstance(process_id, str) or not process_id.isdecimal():
-        return None
-    if not isinstance(timestamp, str) or not timestamp.isdecimal():
+    process_id = journal_string(entry, "_PID")
+    timestamp = journal_string(entry, "__MONOTONIC_TIMESTAMP")
+    if not all((match, process_id.isdecimal(), timestamp.isdecimal())):
         return None
     return AlsaFailure(process_id, match[1], int(timestamp) / 1_000_000)
 
@@ -39,19 +42,26 @@ class RecoveryPolicy:
     failures: deque = field(default_factory=lambda: deque(maxlen=32))
     next_recovery_time: float = 0
 
-    def should_recover(self, failure, now):
-        if now < self.next_recovery_time or not now - 10 <= failure.timestamp <= now:
-            return False
-        if failure in self.failures:
-            return False
-        self.failures.append(failure)
-        matching = [
+    def matching_timestamps(self, failure, earliest):
+        return [
             recorded.timestamp
             for recorded in self.failures
             if recorded.process_id == failure.process_id
             and recorded.device == failure.device
-            and recorded.timestamp >= now - 10
+            and recorded.timestamp >= earliest
         ]
+
+    def should_recover(self, failure, now):
+        if not all(
+            (
+                now >= self.next_recovery_time,
+                now - 10 <= failure.timestamp <= now,
+                failure not in self.failures,
+            )
+        ):
+            return False
+        self.failures.append(failure)
+        matching = self.matching_timestamps(failure, now - 10)
         if len(matching) < 3 or max(matching) - min(matching) < 4:
             return False
         self.failures.clear()

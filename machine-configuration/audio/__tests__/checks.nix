@@ -36,8 +36,7 @@ in
   domain-audio-streams-follow-default =
     mkEvalCheck "domain-audio-streams-follow-default"
       (
-        nixosAudio.services.pipewire.wireplumber.extraConfig."40-stream-defaults"."wireplumber.settings"."node.stream.restore-target"
-        == false
+        !nixosAudio.services.pipewire.wireplumber.extraConfig."40-stream-defaults"."wireplumber.settings"."node.stream.restore-target"
       )
       "WirePlumber must use its native setting to prevent stale stream targets after headset disconnects";
 
