@@ -1,82 +1,97 @@
 { pkgs, lib }:
-let
+pkgs.stdenvNoCC.mkDerivation (finalAttributes: {
+  pname = "chatgpt";
   version = "26.928.21956";
   # Official Linux payload; no Debian maintainer scripts or security policy are installed.
-  payload = pkgs.stdenvNoCC.mkDerivation {
-    pname = "chatgpt-linux-payload";
-    inherit version;
-    src = pkgs.fetchurl {
-      url = "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${version}_amd64.deb";
-      hash = "sha256-msjQcRtGATaNSd7dv1Co/lI1jLYbbZ96XBi0HtRQCtg=";
-    };
-    nativeBuildInputs = [
-      pkgs.binutils
-      pkgs.xz
-    ];
-    unpackPhase = ''
-      ar p "$src" data.tar.xz | tar -xJf - ./usr
-    '';
-    dontConfigure = true;
-    dontBuild = true;
-    dontFixup = true;
-    installPhase = ''
-      mkdir -p "$out"
-      cp -a usr/lib usr/share "$out/"
-    '';
+  src = pkgs.fetchurl {
+    url = "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${finalAttributes.version}_amd64.deb";
+    hash = "sha256-msjQcRtGATaNSd7dv1Co/lI1jLYbbZ96XBi0HtRQCtg=";
   };
-in
-# Keep the vendor binaries intact, with their normal Linux runtime and sandbox.
-pkgs.buildFHSEnv {
-  name = "chatgpt";
-  inherit version;
-  targetPkgs =
-    p: with p; [
-      alsa-lib
-      at-spi2-core
-      atk
-      cairo
-      cups
-      curl
-      dbus
-      expat
-      fontconfig
-      freetype
-      gdk-pixbuf
-      git
-      glib
-      gtk3
-      libGL
-      libdrm
-      libgbm
-      libnotify
-      libusb1
-      libxkbcommon
-      mesa
-      nspr
-      nss
-      openssl
-      pango
-      stdenv.cc.cc
-      systemd
-      tpm2-tss
-      vulkan-loader
-      xdg-utils
-      xorg.libX11
-      xorg.libXcomposite
-      xorg.libXdamage
-      xorg.libXext
-      xorg.libXfixes
-      xorg.libXrandr
-      xorg.libxcb
-      xorg.libxshmfence
-    ];
-  runScript = "${payload}/lib/chatgpt/codex-launcher";
-  extraInstallCommands = ''
-    mkdir -p "$out/share/applications" "$out/share/pixmaps"
-    cp ${payload}/share/applications/chatgpt.desktop "$out/share/applications/"
-    cp ${payload}/share/pixmaps/chatgpt.png "$out/share/pixmaps/"
+  nativeBuildInputs = with pkgs; [
+    autoPatchelfHook
+    binutils
+    makeWrapper
+    wrapGAppsHook3
+    xz
+  ];
+  buildInputs = with pkgs; [
+    alsa-lib
+    at-spi2-core
+    atk
+    cairo
+    cups
+    dbus
+    expat
+    fontconfig
+    freetype
+    gdk-pixbuf
+    glib
+    gtk3
+    libGL
+    libdrm
+    libgbm
+    libnotify
+    libusb1
+    libxkbcommon
+    mesa
+    nspr
+    nss
+    openssl
+    pango
+    stdenv.cc.cc
+    systemd
+    tpm2-tss
+    vulkan-loader
+    xorg.libX11
+    xorg.libXcomposite
+    xorg.libXdamage
+    xorg.libXext
+    xorg.libXfixes
+    xorg.libXrandr
+    xorg.libxcb
+    xorg.libxshmfence
+  ];
+
+  gappsWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    (lib.makeBinPath (
+      with pkgs;
+      [
+        curl
+        git
+        xdg-utils
+      ]
+    ))
+  ];
+  unpackPhase = ''
+    ar p "$src" data.tar.xz | tar -xJf - ./usr
+  '';
+  dontConfigure = true;
+  dontBuild = true;
+  dontStrip = true;
+  installPhase = ''
+    runHook preInstall
+    mkdir -p "$out/bin"
+    cp -a usr/lib usr/share "$out/"
+    ln -s "$out/lib/chatgpt/codex-launcher" "$out/bin/chatgpt"
     substituteInPlace "$out/share/applications/chatgpt.desktop" \
       --replace-fail "Exec=chatgpt %U" "Exec=$out/bin/chatgpt %U"
+    runHook postInstall
+  '';
+  preFixup = ''
+    addAutoPatchelfSearchPath "${pkgs.qt5.qtbase}/lib" "${pkgs.qt6.qtbase}/lib"
+    find "$out/lib/chatgpt/resources/app.asar.unpacked" -type d -name '*-musl' -prune -exec rm -r {} +
+    find "$out/lib/chatgpt/resources/app.asar.unpacked" -type f -name '*.musl.node' -delete
+  '';
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    "$out/lib/chatgpt/resources/codex" --version
+    "$out/lib/chatgpt/resources/cua_node/bin/node" --version
+    "$out/lib/chatgpt/resources/rg" --version
+    runHook postInstallCheck
   '';
   meta = {
     description = "Official ChatGPT desktop app for Linux";
@@ -85,4 +100,4 @@ pkgs.buildFHSEnv {
     platforms = [ "x86_64-linux" ];
     mainProgram = "chatgpt";
   };
-}
+})
