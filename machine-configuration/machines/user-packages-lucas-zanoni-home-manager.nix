@@ -40,6 +40,7 @@
       neofetch
       # nix # leave the manually installed version
       nix-output-monitor
+      (import ../development/system-rebuild/nh-package.nix { inherit pkgs; })
       nixd
       nixfmt-rfc-style
       nodejs
