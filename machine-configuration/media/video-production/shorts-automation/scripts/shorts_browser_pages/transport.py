@@ -1,30 +1,40 @@
 import json
-from contextlib import closing
-from http.client import HTTPConnection
+import os
+import subprocess
 from pathlib import Path
-from urllib.parse import urlsplit
-
-from shorts_store import read_document
 
 
-def create_page(server):
-    configuration = read_document(Path.home() / ".pinchtab/config.json")
-    address = urlsplit(server)
-    with closing(
-        HTTPConnection(address.hostname, address.port, timeout=15)
-    ) as connection:
-        connection.request(
-            "POST",
-            "/tab",
-            body=json.dumps({"action": "new"}).encode(),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {configuration['server']['token']}",
-            },
-        )
-        with connection.getresponse() as response:
-            if response.status >= 400:
-                raise ValueError(
-                    f"Browser page creation failed with HTTP {response.status}"
-                )
-            return json.load(response)["tabId"]
+def browser_environment(scope):
+    return dict(
+        os.environ, OPENCLI_JOB_SCOPE=scope, OPENCLI_BRIDGE_TOKEN=job_token(scope)
+    )
+
+
+def job_token(scope):
+    return json.loads((Path(scope) / "OpenCLIBridge/job-token.json").read_text())[
+        "token"
+    ]
+
+
+def browser_result(command, arguments, scope):
+    result = subprocess.run(
+        [*command, *arguments],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=15,
+        env=browser_environment(scope),
+    )
+    return json.loads(result.stdout)["data"]
+
+
+def create_page(command, scope):
+    return browser_result(command, ["tab", "new"], scope)["page"]
+
+
+def list_pages(command, sessions, scope):
+    targets = {}
+    for session in set(sessions.values()):
+        for target in browser_result([*command[:3], session], ["tab", "list"], scope):
+            targets[target["page"]] = dict(target, id=target["page"])
+    return list(targets.values())

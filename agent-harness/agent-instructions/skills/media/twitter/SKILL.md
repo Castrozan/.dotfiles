@@ -13,7 +13,7 @@ grok-search. Run each tool with --help for available commands and flags.
 ### Auth traps
 
 grok-search requires grok-4 family models only for server-side search; API key is configured via 'XAI_API_KEY' env var
-or 'auth-profiles.json'. twikit-cli uses cookie-based auth; run 'twikit-cli extract-cookies' to pull from pinchtab's
+or 'auth-profiles.json'. twikit-cli uses cookie-based auth; run 'twikit-cli extract-cookies' to pull from OpenCLI's isolated
 Chrome profile and re-run when cookies expire; credentials are managed by agenix.
 
 ### Troubleshooting

@@ -1,0 +1,38 @@
+{
+  "observed_at": "2026-10-17T20:13:54.431119+00:00",
+  "platform": "linux",
+  "opencli_version": "2.0.0",
+  "checks": {
+    "structured_snapshot": true,
+    "native_form_interaction": true,
+    "markdown_extraction": true,
+    "network_and_endpoint_discovery": true,
+    "local_file_attachment": true,
+    "independent_owned_sessions": true,
+    "screenshot": true,
+    "real_web_article_adapter": true,
+    "zero_owned_processes_after_success": true,
+    "profile_persists_across_cold_starts": true,
+    "zero_owned_processes_after_persistence": true,
+    "command_failure_returns_failure": true,
+    "zero_owned_processes_after_command_failure": true,
+    "timeout_returns_failure": true,
+    "zero_owned_processes_after_timeout": true,
+    "competing_job_refused_without_interrupting_owner": true,
+    "zero_owned_processes_after_signal_15": true,
+    "zero_owned_processes_after_signal_9": true,
+    "existing_service_not_adopted": true,
+    "public_adapter_returns_three_structured_records": true,
+    "zero_owned_processes_after_public_adapter": true,
+    "browser_adapter_automatically_starts_owned_job": true,
+    "zero_owned_processes_after_automatic_browser_adapter": true
+  },
+  "passed": 23,
+  "total": 23,
+  "posting_or_publishing_exercised": false,
+  "method": "prove_opencli.py with the built managed CLI and runner; fresh temporary profile data; fixture UI plus public GitHub and Hacker News reads",
+  "limits": [
+    "Authenticated account workflows and macOS were not exercised",
+    "No posting or publishing was performed"
+  ]
+}

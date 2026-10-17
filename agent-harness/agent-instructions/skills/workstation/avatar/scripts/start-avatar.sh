@@ -86,8 +86,8 @@ else
 	fi
 fi
 
-# shellcheck source=renderer-browser.sh
-source "$LAUNCHER_DIRECTORY/renderer-browser.sh"
+# shellcheck source=browser/launch.sh
+source "$LAUNCHER_DIRECTORY/browser/launch.sh"
 
 # Step 4: Start Virtual Camera (requires v4l2loopback)
 echo -e "${YELLOW}[4/5]${NC} Starting Virtual Camera..."

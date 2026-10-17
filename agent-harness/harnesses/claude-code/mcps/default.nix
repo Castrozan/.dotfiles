@@ -59,11 +59,11 @@ in
 
   _module.args.selectClawdeAgentMcpServers = selectClawdeAgentMcpServers;
 
-  home = {
-    inherit (browserMcp) packages;
+  home.packages = browserMcp.packages;
 
-    activation.enforcePinchtabFullAccessConfig = lib.hm.dag.entryAfter [
-      "writeBoundary"
-    ] browserMcp.enforcePinchtabConfigActivation;
-  };
+  home.activation.importOpencliDefaultProfile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${../../../agent-instructions/skills/workstation/browser/install/scripts/opencli/import_opencli_profile.py} \
+      ${lib.escapeShellArg "${homeDir}/.pinchtab/profiles/default"} \
+      ${lib.escapeShellArg "${homeDir}/.local/share/opencli/profiles/default"}
+  '';
 }

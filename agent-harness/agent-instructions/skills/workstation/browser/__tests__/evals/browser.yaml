@@ -10,11 +10,11 @@ tests:
       llm_judge:
         - >-
           Keeps the explicit Chrome DevTools choice and takes the next appropriate recovery action by launching or
-          reconnecting Chrome Global or retrying chrome-devtools list_pages, instead of switching to or probing PinchTab.
+          reconnecting Chrome Global or retrying chrome-devtools list_pages, instead of switching to or probing OpenCLI.
       output_not_contains:
-        - "pinchtab daemon"
-        - "pinchtab config"
-        - "pinchtab profiles"
+        - "opencli daemon"
+        - "opencli profile"
+        - "opencli-run"
 
   - name: browser_uses_chrome_devtools_for_public_scraping_when_available
     skill_path: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md
@@ -26,7 +26,7 @@ tests:
     assertions:
       llm_judge:
         - >-
-          Chooses Chrome DevTools because it is available, and does not choose PinchTab merely because the site is
+          Chooses Chrome DevTools because it is available, and does not choose OpenCLI merely because the site is
           public or the task is scraping.
 
   - name: browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails
@@ -34,13 +34,13 @@ tests:
     prompt: >-
       I did not require a particular browser, and an isolated profile can satisfy this task. Chrome DevTools returned no
       pages, so I launched Chrome Global, enabled remote debugging, approved the consent prompt, and retried list_pages.
-      It still cannot connect. Is PinchTab eligible now? Answer in one sentence.
+      It still cannot connect. Is OpenCLI eligible now? Answer in one sentence.
     model: haiku
     no_tools: true
     assertions:
       llm_judge:
         - >-
-          Says PinchTab is eligible only now as the last resort because every Chrome DevTools recovery step failed,
+          Says OpenCLI is eligible only now as the last resort because every Chrome DevTools recovery step failed,
           Chrome remains unavailable, the user did not require it, and the isolated profile can satisfy the task.
 
   - name: browser_reports_blocked_when_autonomous_agent_requires_chrome_devtools
@@ -54,9 +54,9 @@ tests:
       llm_judge:
         - >-
           Reports that the explicit Chrome DevTools requirement is blocked in this autonomous session and does not
-          silently substitute, invoke, inspect, restart, or configure PinchTab.
+          silently substitute, invoke, inspect, restart, or configure OpenCLI.
       output_not_contains:
-        - "pinchtab nav"
-        - "pinchtab daemon"
-        - "pinchtab config"
-        - "pinchtab profiles"
+        - "opencli browser open"
+        - "opencli daemon"
+        - "opencli profile"
+        - "opencli-run"
