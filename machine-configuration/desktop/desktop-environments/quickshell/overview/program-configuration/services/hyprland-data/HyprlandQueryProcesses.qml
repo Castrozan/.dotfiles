@@ -1,4 +1,5 @@
 import Quickshell
+import ".."
 
 Scope {
     id: queries
