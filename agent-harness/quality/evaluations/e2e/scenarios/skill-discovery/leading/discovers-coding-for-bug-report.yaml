@@ -17,9 +17,9 @@ setup:
 
 prompt: |
   Bug report: divide_numbers(10, 0) crashes with ZeroDivisionError instead of
-  returning a sensible value. Before touching the source, follow this project's
-  testing protocol — what does it require for bug reports, and how many test
-  passes are needed to confirm stability?
+  returning None for a zero denominator. Follow the testing protocol for bug
+  reports: first reproduce the failure with a regression test, then fix the
+  implementation and run the relevant tests.
 
 timeout: 240
 

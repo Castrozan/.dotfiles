@@ -71,6 +71,19 @@ def setup_e2e_scenario_workspace(
             workspace_directory, profile, instruction_placement_mode
         )
 
+    additional_instructions = setup.get("additional_project_instructions")
+    if additional_instructions:
+        instruction_path = workspace_directory / profile.project_instruction_filename
+        existing_instructions = (
+            instruction_path.read_text() if instruction_path.exists() else ""
+        )
+        instruction_path.write_text(
+            existing_instructions.rstrip()
+            + "\n\n"
+            + additional_instructions.rstrip()
+            + "\n"
+        )
+
     for file_def in setup.get("files", []):
         _write_scenario_setup_file(file_def, workspace_directory)
 
