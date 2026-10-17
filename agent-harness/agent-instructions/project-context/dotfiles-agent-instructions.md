@@ -30,11 +30,9 @@ leave a diverged history, a rebase, or a submodule gitlink conflict to the stewa
 which races its live loop, unless explicitly told to act in the steward's place.
 
 A checkout that is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile;
-never surface it as a task pending on the human.
-
-Treat CI failures on `main` during active WIP as expected. Check ongoing work and its context before escalating; do not
-alert or initiate unsolicited repairs solely because `main` is red while that work is in progress. Existing validation
-requirements for changes you own still apply.
+never surface it as a task pending on the human. Treat CI failures on `main` during active WIP as expected. Check
+ongoing work and its context before escalating; do not alert or initiate unsolicited repairs solely because `main` is
+red while that work is in progress. Existing validation requirements for changes you own still apply.
 
 ### Configuration
 
@@ -113,10 +111,8 @@ test.
 Before pushing a substantive change, load the `review` skill and follow its dotfiles-change procedure over the exact
 commits you added; when the harness cannot load skills, read
 `agent-harness/agent-instructions/skills/development/review/SKILL.md` and its `references/dotfiles-change.md` chapter
-instead.
-
-Commit first: this checkout is shared, so a review of the working tree reads whatever peers left uncommitted, and a
-confirmed finding belongs in a follow-up commit rather than an amend a peer may already have built on.
+instead. Commit first: this checkout is shared, so a review of the working tree reads whatever peers left uncommitted,
+and a confirmed finding belongs in a follow-up commit rather than an amend a peer may already have built on.
 
 A change is substantive when a wrong edit would survive formatting and still change machine or agent behavior, a build,
 a deployment, a dependency, an interface, a test, security, a secret, what this public repository exposes, or an
