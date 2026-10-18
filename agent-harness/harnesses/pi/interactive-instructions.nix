@@ -5,10 +5,9 @@ in
 projection.instructionFile {
   name = "pi-interactive-session-only-reply-rules.md";
   sources = [
-    ../../agent-instructions/skills/writing/humanize/references/interactive-communication.md
+    ../../agent-instructions/interactive-communication.md
   ];
   destinations = projection.interactiveDestinations {
     coreInstructionFile = "${homeDirectory}/.pi/agent/AGENTS.md";
-    humanizeSkillDirectory = "${homeDirectory}/.local/share/agent-plugins/dotfiles/plugin/skills/humanize";
   };
 }

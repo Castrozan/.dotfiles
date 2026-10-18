@@ -25,6 +25,7 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_context_injection  # noqa: E402
 
 SESSION_START_HANDLERS = [
+    HookHandler(handler_module_name="wellput_hook_handler"),
     HookHandler(
         handler_module_name="session_context_handler", surfaces=(CLAUDE_SURFACE,)
     ),

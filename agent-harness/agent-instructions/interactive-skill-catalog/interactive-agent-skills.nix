@@ -26,7 +26,7 @@ let
     "explore"
     "goal-prompt"
     "herdr"
-    "humanize"
+    "wellput"
     "instructions"
     "orchestrate"
     "research"

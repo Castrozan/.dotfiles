@@ -4,6 +4,9 @@ import json
 
 
 def emit_context_injection(event_name: str, outcome) -> None:
+    if outcome.decision in ("block", "deny"):
+        print(json.dumps({"continue": False, "stopReason": outcome.reason}))
+        return
     combined_context = outcome.combined_additional_context
     if not combined_context:
         return

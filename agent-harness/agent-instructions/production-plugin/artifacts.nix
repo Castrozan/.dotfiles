@@ -7,6 +7,7 @@
   isDarwin ? pkgs.stdenv.isDarwin,
 }:
 let
+  wellputSource = import ../wellput-plugin/upstream.nix { inherit pkgs; };
   projection = import ../instruction-projection.nix { inherit pkgs; };
   browser = import ../skills/workstation/browser/install {
     inherit pkgs chromePackage;
@@ -23,12 +24,15 @@ let
   destinations =
     builtins.listToAttrs (
       map (name: {
-        name = toString skillCatalog.skillSourceDirectoryByName.${name};
+        name = builtins.unsafeDiscardStringContext (
+          toString skillCatalog.skillSourceDirectoryByName.${name}
+        );
         value = "/plugin/${skillPath name}";
       }) skillCatalog.allSkillNames
     )
     // {
       "${toString ../core-rules/core.md}" = "/plugin/skills/core/SKILL.md";
+      "${toString ../interactive-communication.md}" = "/plugin/instructions/interactive.md";
     };
   skillEntries = map (
     name:
@@ -80,10 +84,14 @@ let
         name = "instructions/interactive.md";
         path = projection.instructionFile {
           name = "dotfiles-interactive-instructions.md";
-          sources = [ ../skills/writing/humanize/references/interactive-communication.md ];
+          sources = [ ../interactive-communication.md ];
           deployed = "/plugin/instructions/interactive.md";
           inherit destinations;
         };
+      }
+      {
+        name = "native/wellput";
+        path = wellputSource;
       }
       {
         name = "hooks";

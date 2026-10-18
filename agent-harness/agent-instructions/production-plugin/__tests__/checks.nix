@@ -27,6 +27,14 @@ in
     && (desktopPackages != [ ]) == pkgs.stdenv.hostPlatform.isDarwin
   ) "The desktop MCP and runtime must be present only on macOS";
 
+  production-plugin-wellput-consumption =
+    pkgs.runCommand "production-plugin-wellput-consumption" { }
+      ''
+        XDG_STATE_HOME="$TMPDIR/wellput-consumer-state" \
+          ${pkgs.python312}/bin/python3 ${./verify-wellput-consumption.py} ${bundle}
+          touch "$out"
+      '';
+
   production-plugin-artifact-preservation =
     pkgs.runCommand "production-plugin-artifact-preservation" { }
       ''

@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 
 const hookDispatcherPath = "@piHookDispatcher@";
+const sessionStartDispatcherPath = "@piSessionStartDispatcher@";
 const hookTimeoutMilliseconds = 15000;
 
 function messageText(message) {
@@ -15,7 +16,11 @@ function messageText(message) {
 
 function invokeReplyGuard(payload) {
   return new Promise((resolve, reject) => {
-    const child = spawn(hookDispatcherPath, [], {
+    const dispatcher =
+      payload.hook_event_name === "SessionStart"
+        ? sessionStartDispatcherPath
+        : hookDispatcherPath;
+    const child = spawn(dispatcher, [], {
       stdio: ["pipe", "pipe", "pipe"],
     });
     let stdout = "";
@@ -77,6 +82,20 @@ export default function HumanFacingReplyGuard(pi) {
   let userRequestText = "";
   let replyText = "";
   let correctionPending = false;
+  let sessionContext;
+
+  pi.on("before_agent_start", async (event) => {
+    if (sessionContext === undefined) {
+      const output = await invokeReplyGuard({
+        hook_event_name: "SessionStart",
+      });
+      if (output.continue === false) throw new Error(output.stopReason);
+      sessionContext = output.hookSpecificOutput?.additionalContext || "";
+    }
+    if (sessionContext) {
+      return { systemPrompt: `${event.systemPrompt}\n\n${sessionContext}` };
+    }
+  });
 
   pi.on("message_end", (event) => {
     const text = messageText(event.message);

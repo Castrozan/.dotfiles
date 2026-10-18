@@ -120,6 +120,8 @@ try {
   await session.prompt("Report the first result.");
   await awaitSettledTurns(2);
   assert.equal(requests.length, 2);
+  assert.match(JSON.stringify(requests[0].messages), /100 prose words/);
+  assert.match(JSON.stringify(requests[0].messages), /wellput/i);
   assert.equal(corrections().length, 1);
   assert.equal(corrections()[0].display, false);
   assert.match(corrections()[0].content, /table|index/i);
@@ -127,6 +129,14 @@ try {
   await session.prompt("Report the next result.");
   await awaitSettledTurns(4);
   assert.equal(requests.length, 4);
+  assert.equal(
+    (
+      JSON.stringify(requests[2].messages).match(
+        /### Wellput policy loading/g,
+      ) || []
+    ).length,
+    1,
+  );
   assert.equal(corrections().length, 2);
   reply = "Ready.";
   await session.prompt("Confirm readiness.");

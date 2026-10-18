@@ -14,6 +14,8 @@ if [[ ! -f "$HOOK_SCRIPT" ]]; then
 	exit 1
 fi
 
+export DOTFILES_WELLPUT_HOOK="@wellputReplyHook@"
+
 export PYTHONPYCACHEPREFIX="${XDG_CACHE_HOME:-$HOME/.cache}/claude-code-hooks/pycache"
 
 exec "@hookPythonInterpreter@" "$HOOK_SCRIPT" "$@"

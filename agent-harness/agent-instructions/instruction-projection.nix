@@ -1,5 +1,6 @@
 { pkgs }:
 let
+  wellputSource = import ./wellput-plugin/upstream.nix { inherit pkgs; };
   evaluationDirectory = ../quality/evaluations;
   python = pkgs.python312.withPackages (
     import (evaluationDirectory + "/instructions/python-packages.nix")
@@ -9,7 +10,7 @@ let
     let
       usesReplyFormats =
         if manifest ? sourceDirectory then
-          toString manifest.sourceDirectory == toString ./skills/writing/humanize
+          toString manifest.sourceDirectory == "${wellputSource}/skills/wellput"
         else
           builtins.any (document: pkgs.lib.hasInfix "{{reply_format}}" document.text) manifest.documents;
     in
@@ -21,9 +22,7 @@ let
           builtins.toJSON (
             manifest
             // pkgs.lib.optionalAttrs usesReplyFormats {
-              replyFormatConfiguration = builtins.fromJSON (
-                builtins.readFile ../hooks/runtime/common/human_facing_reply/reply-formats.json
-              );
+              replyFormatConfiguration = builtins.fromJSON (builtins.readFile "${wellputSource}/wellput.json");
             }
           )
         );
@@ -36,10 +35,9 @@ in
   inherit python;
 
   interactiveDestinations =
-    { coreInstructionFile, humanizeSkillDirectory }:
+    { coreInstructionFile }:
     {
       "${toString ./core-rules/core.md}" = coreInstructionFile;
-      "${toString ./skills/writing/humanize}" = humanizeSkillDirectory;
     };
 
   instructionFile =

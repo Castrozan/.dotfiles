@@ -30,7 +30,7 @@ from hook_event_output import emit_stop_decision  # noqa: E402
 STOP_HANDLERS = [
     HookHandler(handler_module_name="nix_rebuild_reminder_handler"),
     HookHandler(
-        handler_module_name="end_of_turn_format_guard_handler",
+        handler_module_name="wellput_hook_handler",
         surfaces=(CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE, PI_SURFACE),
     ),
     HookHandler(

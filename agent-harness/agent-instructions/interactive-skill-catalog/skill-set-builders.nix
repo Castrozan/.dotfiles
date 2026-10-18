@@ -35,7 +35,7 @@ let
   privateSkillNames = builtins.concatMap completeSkillNamesIn privateSkillSourceDirectories;
   publicSkillNames = builtins.concatMap completeSkillNamesIn publicSkillSourceDirectories;
 
-  skillSourceDirectoryByName =
+  authoredSkillSourceDirectoryByName =
     assert builtins.length publicSkillNames == builtins.length (pkgs.lib.unique publicSkillNames);
     builtins.foldl' (
       accumulatedSourceDirectoryByName: skillSourceDirectory:
@@ -48,6 +48,14 @@ let
       )
     ) { } skillSourceDirectories;
 
+  wellputSource = import ../wellput-plugin/upstream.nix { inherit pkgs; };
+
+  skillSourceDirectoryByName =
+    (builtins.removeAttrs authoredSkillSourceDirectoryByName [ "humanize" ])
+    // {
+      wellput = "${wellputSource}/skills/wellput";
+    };
+
   allSkillNames = builtins.attrNames skillSourceDirectoryByName;
 
   deploymentDestinations =
@@ -55,7 +63,7 @@ let
     let
       indexed = builtins.listToAttrs (
         map (skillName: {
-          name = toString skillSourceDirectoryByName.${skillName};
+          name = builtins.unsafeDiscardStringContext (toString skillSourceDirectoryByName.${skillName});
           value = "/.local/share/agent-plugins/dotfiles/plugin/${
             if builtins.elem skillName defaultInteractiveSkillNames then "skills" else "library/skills"
           }/${skillName}";
@@ -63,7 +71,7 @@ let
       );
       selected = builtins.listToAttrs (
         map (skillName: {
-          name = toString skillSourceDirectoryByName.${skillName};
+          name = builtins.unsafeDiscardStringContext (toString skillSourceDirectoryByName.${skillName});
           value = "/${homeFileSkillsPrefix}/${skillName}";
         }) skillNames
       );
@@ -71,6 +79,8 @@ let
     indexed
     // selected
     // {
+      "${toString ../interactive-communication.md}" =
+        "/.local/share/agent-plugins/dotfiles/plugin/instructions/interactive.md";
       "${toString ../core-rules/core.md}" =
         "/.local/share/agent-plugins/dotfiles/plugin/skills/core/SKILL.md";
     };

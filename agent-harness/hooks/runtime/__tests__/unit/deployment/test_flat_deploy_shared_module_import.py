@@ -1,4 +1,6 @@
 import json
+import os
+from pathlib import Path
 
 from flat_deploy_test_support import (
     CLAWDE_BACKGROUND_AGENT_ENV_MARKER,
@@ -65,10 +67,11 @@ def test_stop_dispatcher_imports_shared_modules_after_flat_deploy(
     assert clawde.stdout.strip() == ""
 
 
-def test_packaged_stop_hook_reads_the_packaged_reply_configuration(tmp_path):
+def test_packaged_stop_hook_reads_the_wellput_configuration(tmp_path):
     flatten_into_single_runtime_directory(tmp_path)
-    configuration_path = tmp_path / "reply-formats.json"
-    configuration = json.loads(configuration_path.read_text())
+    configuration_path = tmp_path / "wellput.json"
+    plugin_root = Path(os.environ["DOTFILES_WELLPUT_HOOK"]).parents[1]
+    configuration = json.loads((plugin_root / "wellput.json").read_text())
     configuration["formats"]["confirmation"] = {"maximum_words": 5, "grace_words": 0}
     configuration_path.write_text(json.dumps(configuration))
 
@@ -76,7 +79,10 @@ def test_packaged_stop_hook_reads_the_packaged_reply_configuration(tmp_path):
         tmp_path,
         "stop-dispatcher.py",
         {"hook_event_name": "Stop", "reply_text": "word " * 6},
-        {INTERACTIVE_ENV_VAR: "/some/interactive-communication.md"},
+        {
+            INTERACTIVE_ENV_VAR: "/some/interactive-communication.md",
+            "WELLPUT_CONFIG": str(configuration_path),
+        },
     )
 
     assert result.returncode == 0

@@ -17,7 +17,7 @@ def test_stop_dispatcher_composes_only_active_handlers():
     }
     assert handler_module_names == {
         "nix_rebuild_reminder_handler",
-        "end_of_turn_format_guard_handler",
+        "wellput_hook_handler",
         "herdr_agent_session_report_handler",
     }
 

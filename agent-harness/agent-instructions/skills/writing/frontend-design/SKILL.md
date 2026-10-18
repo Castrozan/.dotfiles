@@ -6,8 +6,7 @@ description: "Visual design guidance for frontend interfaces, components, dashbo
 ### Visual direction
 
 Read [Anthropic's frontend design guidance](references/anthropic-frontend-design.txt). Derive concrete visual
-constraints from the brief while preserving the user's design system and the [humanize](../humanize/SKILL.md) writing
-rules.
+constraints from the brief while preserving the user's design system and requested tone.
 
 ### Page composition
 

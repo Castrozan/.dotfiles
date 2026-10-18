@@ -26,12 +26,9 @@ def main():
     assert configuration["toolsets"] == ["hermes-cli"]
     instructions = configuration["agent"]["system_prompt"]
     assert not inspect_markdown_instruction(instructions).violations
-    assert "### Humanize policy loading\n" in instructions
+    assert "### Explicit Wellput requests\n" in instructions
     assert "(SOUL.md#evidence)" in instructions
-    assert (
-        "(plugins/dotfiles/skills/humanize/SKILL.md#representation-selection)"
-        in instructions
-    )
+    assert "(plugins/dotfiles/skills/wellput/SKILL.md)" in instructions
 
 
 if __name__ == "__main__":

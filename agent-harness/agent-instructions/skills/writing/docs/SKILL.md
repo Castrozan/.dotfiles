@@ -34,5 +34,4 @@ assertion that lies in the path of the work; a detached policy document silently
 
 ### Format
 
-Use Markdown. Exclude generated badges and status indicators because they become stale. Let the `humanize` skill own how
-the prose reads on its published channel rather than creating a second communication rulebook here.
+Use Markdown. Exclude generated badges and status indicators because they become stale.

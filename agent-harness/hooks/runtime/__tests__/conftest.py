@@ -1,4 +1,5 @@
 import json
+import runpy
 import sys
 from pathlib import Path
 
@@ -121,3 +122,20 @@ def invoke_record_skill_invocation_hook(tmp_path, monkeypatch):
         )
 
     return runner
+
+
+@pytest.fixture(scope="session")
+def exported_wellput_hook(tmp_path_factory):
+    helper = (
+        HOOKS_ROOT.parents[1]
+        / "agent-instructions/wellput-plugin/__tests__/wellput_fixture.py"
+    )
+    plugin = runpy.run_path(str(helper))["export_plugin_fixture"](
+        tmp_path_factory.mktemp("wellput-hook")
+    )
+    return plugin / "hooks/reply_hook.py"
+
+
+@pytest.fixture(autouse=True)
+def configured_wellput_hook(exported_wellput_hook, monkeypatch):
+    monkeypatch.setenv("DOTFILES_WELLPUT_HOOK", str(exported_wellput_hook))

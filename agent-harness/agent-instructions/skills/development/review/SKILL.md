@@ -41,4 +41,4 @@ verdict on whether the goal is achieved; never repair.
 Read [dotfiles change](references/dotfiles-change.md) for the pre-push dotfiles change-review procedure,
 [compliance](references/compliance.md) for end-of-turn policy checks, [authoring](references/authoring.md) for AI
 instruction surfaces, and [skill routing](references/skill-routing.md) for skill reachability or routing failures. Use
-`docs` for documentation standards and `humanize` for human-facing prose.
+`docs` for documentation standards and `wellput` for human-facing prose.

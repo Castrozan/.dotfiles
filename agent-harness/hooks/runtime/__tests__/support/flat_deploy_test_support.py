@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -68,6 +69,7 @@ def run_flattened_hook(
         capture_output=True,
         text=True,
         timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
-        env=environment,
+        env={"DOTFILES_WELLPUT_HOOK": os.environ["DOTFILES_WELLPUT_HOOK"]}
+        | environment,
         cwd=working_directory,
     )

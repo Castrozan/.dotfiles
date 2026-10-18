@@ -5,12 +5,11 @@ in
 projection.instructionFile {
   name = "codex-interactive-session-only-developer-instructions.md";
   sources = [
-    ../../agent-instructions/skills/writing/humanize/references/interactive-communication.md
+    ../../agent-instructions/interactive-communication.md
     ../../../agent-harness/agent-instructions/core-rules/servant-identity.md
     ./session-title-instructions.md
   ];
   destinations = projection.interactiveDestinations {
     coreInstructionFile = "${homeDirectory}/.codex/AGENTS.md";
-    humanizeSkillDirectory = "${homeDirectory}/.local/share/agent-plugins/dotfiles/plugin/skills/humanize";
   };
 }

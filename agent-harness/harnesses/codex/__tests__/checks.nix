@@ -43,7 +43,7 @@ in
         import tomllib
         configuration = tomllib.loads(Path(sys.argv[1]).read_text())
         assert set(configuration) == {"developer_instructions"}
-        assert "### Humanize policy loading" in configuration["developer_instructions"]
+        assert "### Explicit Wellput requests" in configuration["developer_instructions"]
         assert "### Servant" in configuration["developer_instructions"]
         PY
         touch "$out"

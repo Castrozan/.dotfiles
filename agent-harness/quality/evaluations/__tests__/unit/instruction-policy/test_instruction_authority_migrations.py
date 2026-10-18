@@ -146,10 +146,7 @@ def test_hermes_declares_managed_core_and_removes_memory_authority():
 
     assert "agent-instructions/rulesync" in soul_source
     assert "hermesagent/.hermes.md" in soul_source
-    assert (
-        "agent-instructions/skills/writing/humanize/references/interactive-communication.md"
-        in (config_source)
-    )
+    assert "agent-instructions/interactive-communication.md" in (config_source)
     for managed_surface in (
         "HERMES_AGENT_SOUL",
         "HERMES_AGENT_MEMORY_SYNCHRONIZER",

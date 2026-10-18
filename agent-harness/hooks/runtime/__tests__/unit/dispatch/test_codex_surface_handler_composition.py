@@ -42,7 +42,7 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "directory_entry_guard_handler",
     },
     "STOP_HANDLERS": {
-        "end_of_turn_format_guard_handler",
+        "wellput_hook_handler",
         "herdr_agent_session_report_handler",
     },
     "SESSION_START_HANDLERS": {
@@ -192,6 +192,6 @@ def test_requested_hook_surface_defaults_to_claude(monkeypatch):
 
 def test_all_interactive_surfaces_run_the_same_reply_guard():
     for surface in (CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE, PI_SURFACE):
-        assert "end_of_turn_format_guard_handler" in handler_module_names_on_surface(
+        assert "wellput_hook_handler" in handler_module_names_on_surface(
             "STOP_HANDLERS", surface
         )
