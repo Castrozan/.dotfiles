@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import stat
 import subprocess
@@ -8,8 +9,11 @@ import pytest
 
 
 @pytest.fixture
-def invoke(plugin_root):
-    def invoke_hook(payload, root=plugin_root):
+def invoke(plugin_root, tmp_path):
+    def invoke_hook(payload, root=plugin_root, environment=None):
+        hook_environment = dict(os.environ, XDG_CONFIG_HOME=str(tmp_path / "config"))
+        hook_environment.pop("WELLPUT_CONFIG", None)
+        hook_environment.update(environment or {})
         result = subprocess.run(
             [sys.executable, "-S", str(root / "hooks/reply_hook.py")],
             input=json.dumps(payload),
@@ -17,6 +21,7 @@ def invoke(plugin_root):
             text=True,
             timeout=5,
             cwd="/",
+            env=hook_environment,
             check=True,
         )
         return json.loads(result.stdout)
@@ -123,42 +128,69 @@ def test_relocation_with_spaces_preserves_policy_and_validation(
     )
 
 
-def test_invalid_configuration_fails_closed(tmp_path, invoke, plugin_root):
+@pytest.mark.parametrize("document", ["not json", "{}"])
+def test_invalid_configuration_fails_closed(tmp_path, invoke, plugin_root, document):
     destination = tmp_path / "invalid"
     copy_plugin(plugin_root, destination)
-    (destination / "hooks/rules/reply-formats.json").write_text("{}")
+    (destination / "wellput.json").write_text(document)
     output = invoke(
         {"hook_event_name": "Stop", "reply_text": "The check passed."}, destination
     )
     assert output["decision"] == "block"
     assert "could not run" in output["reason"]
 
-
-def test_invalid_configuration_stops_policy_loading(tmp_path, invoke, plugin_root):
-    destination = tmp_path / "invalid-session"
-    copy_plugin(plugin_root, destination)
-    (destination / "hooks/rules/reply-formats.json").write_text("not json")
     output = invoke({"hook_event_name": "SessionStart"}, destination)
     assert output["continue"] is False
     assert "could not run" in output["stopReason"]
 
 
-def test_custom_budgets_change_injected_policy_and_enforcement_together(
-    tmp_path, invoke, plugin_root
+@pytest.mark.parametrize("selection", ["bundled", "xdg", "explicit"])
+def test_selected_configuration_changes_policy_and_enforcement_together(
+    tmp_path, invoke, plugin_root, selection
 ):
     destination = tmp_path / "custom"
     copy_plugin(plugin_root, destination)
-    path = destination / "hooks/rules/reply-formats.json"
-    document = json.loads(path.read_text())
+    document = json.loads((destination / "wellput.json").read_text())
     document["formats"]["confirmation"] = {"maximum_words": 5, "grace_words": 0}
+    path = {
+        "bundled": destination / "wellput.json",
+        "xdg": tmp_path / "config/wellput/config.json",
+        "explicit": tmp_path / "explicit.json",
+    }[selection]
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(document))
-    policy = invoke({"hook_event_name": "SessionStart"}, destination)[
+    environment = {"WELLPUT_CONFIG": str(path)} if selection == "explicit" else {}
+    if selection == "explicit":
+        user_path = tmp_path / "config/wellput/config.json"
+        user_path.parent.mkdir(parents=True, exist_ok=True)
+        user_path.write_text("invalid user config overridden by explicit path")
+    policy = invoke({"hook_event_name": "SessionStart"}, destination, environment)[
         "hookSpecificOutput"
     ]["additionalContext"]
     assert "5 prose words" in policy
     assert (
-        invoke({"hook_event_name": "Stop", "reply_text": "word " * 6}, destination)[
-            "decision"
-        ]
+        invoke(
+            {"hook_event_name": "Stop", "reply_text": "word " * 6},
+            destination,
+            environment,
+        )["decision"]
+        == "block"
+    )
+
+
+@pytest.mark.parametrize("content", [None, "not json", "{}"])
+def test_explicit_invalid_config_never_falls_back(tmp_path, invoke, content):
+    path = tmp_path / "explicit.json"
+    if content is not None:
+        path.write_text(content)
+    environment = {"WELLPUT_CONFIG": str(path)}
+    assert (
+        invoke({"hook_event_name": "SessionStart"}, environment=environment)["continue"]
+        is False
+    )
+    assert (
+        invoke(
+            {"hook_event_name": "Stop", "reply_text": "Done."}, environment=environment
+        )["decision"]
         == "block"
     )

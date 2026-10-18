@@ -94,18 +94,35 @@ def export_transcript_reader(sources, output):
 def export_runtime(sources, output):
     copy_directory(Path(sources["rules"]), output / "hooks/rules")
     configuration = output / "hooks/rules/reply-formats.json"
-    configuration.write_text(configuration.read_text().replace("Humanize", "Wellput"))
+    write_file(
+        output, "wellput.json", configuration.read_text().replace("Humanize", "Wellput")
+    )
+    configuration.unlink()
+    configuration_module = output / "hooks/rules/reply_format_configuration.py"
+    configuration_source = configuration_module.read_text().replace(
+        "import json\nimport os\n",
+        "from wellput_configuration import load_configuration_document\n",
+    )
+    configuration_source = configuration_source[
+        : configuration_source.index("\nwith open(")
+    ]
+    configuration_module.write_text(
+        configuration_source
+        + "\nREPLY_FORMAT_DOCUMENT = load_configuration_document()\n"
+        + "REPLY_FORMAT_CONFIGURATION = ReplyFormatConfiguration(REPLY_FORMAT_DOCUMENT)\n"
+    )
     export_transcript_reader(sources, output)
     renderer = Path(sources["renderer"]).read_text()
+    renderer = renderer[renderer.index("def expand_reply_format_instructions(") :]
     renderer = renderer.replace(
-        "from instructions.instruction_surface_scanner import REPO_ROOT",
-        "REPO_ROOT = Path(__file__).resolve().parent",
+        "configuration = json.loads(\n            (REPO_ROOT / REPLY_FORMAT_CONFIGURATION_PATH).read_text()\n        )",
+        "from reply_format_configuration import REPLY_FORMAT_DOCUMENT\n\n        configuration = REPLY_FORMAT_DOCUMENT",
     )
-    renderer = renderer.replace(
-        "agent-harness/hooks/runtime/common/human_facing_reply/reply-formats.json",
-        "rules/reply-formats.json",
+    write_file(
+        output,
+        "hooks/reply_format_instructions.py",
+        'REPLY_FORMAT_PLACEHOLDER = "{{reply_format}}"\n\n\n' + renderer,
     )
-    write_file(output, "hooks/reply_format_instructions.py", renderer)
     for module, distribution_name in (
         ("markdown_it", "markdown-it-py"),
         ("mdurl", "mdurl"),
@@ -136,7 +153,15 @@ def export_tests(sources, output):
         "test_reply_markdown_structure.py",
         "test_reply_quotation_performance.py",
     ):
-        shutil.copyfile(tests / name, output / "tests" / name)
+        text = (
+            (tests / name)
+            .read_text()
+            .replace(
+                'REPLY_RULE_MODULE_DIRECTORY / "reply-formats.json"',
+                'REPLY_RULE_MODULE_DIRECTORY.parents[1] / "wellput.json"',
+            )
+        )
+        write_file(output, f"tests/{name}", text)
     support = Path(sources["support"]).read_text()
     start = support.index("HOOKS_ROOT =")
     end = support.index("LABELED_REPLY =")

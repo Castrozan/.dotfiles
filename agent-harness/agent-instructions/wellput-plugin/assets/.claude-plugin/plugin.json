@@ -1,6 +1,6 @@
 {
   "name": "wellput",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Reader-first writing policy with deterministic reply checks and repair feedback.",
   "author": { "name": "Castrozan", "url": "https://github.com/Castrozan" },
   "repository": "https://github.com/Castrozan/wellput",

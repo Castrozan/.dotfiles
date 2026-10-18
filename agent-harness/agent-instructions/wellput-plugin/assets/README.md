@@ -1,10 +1,28 @@
 # Wellput
 
-Wellput helps coding agents write answers that a reader can act on without reconstructing the conversation. It preserves facts and technical terms, puts decisions first, and chooses a diff, table, diagram, or prose according to the relationship being explained.
+You have a few dozen agents working on problems that need discovery, judgment, and delivery. Spending 5-15 minutes on
+every session explaining a goal, requesting a plan, and checking that plan consumes the attention you needed for the
+work itself. Reading hundreds of lines and validating another PRD becomes its own job.
 
-The plugin includes the writing skill, interactive communication policy, deterministic reply validator, and reader-recovery evaluation cases extracted from [Castrozan/.dotfiles](https://github.com/Castrozan/.dotfiles). Python 3.12 or newer must be available as `python3`. The Markdown parser and its licenses are bundled; runtime hooks need no package installation, network connection, model call, Nix, or dotfiles checkout.
+For that work, I use what I call a **free session**: a capable agent, a plain harness, and the tools it needs to discover
+and deliver. Give it a direction, let it inspect the context and form a reasonable assumption, answer a brief
+clarification when needed, and let it work. Each interaction should move the work forward with minimal supervision.
+
+Wellput is built for those daily-driver sessions, especially when the work has high stakes and the route is still
+unknown. Its goal is to maximize human understanding while minimizing the attention each agent requires. You should be
+able to return to a session, recover its purpose, understand the result, and make the next decision without rereading
+the conversation.
+
+The writing skill teaches the agent what the human needs and how to choose a useful explanation or visual. Hooks
+introduce the communication contract and check the final reply's structure. They support autonomous work by making its
+results easier to understand; the agent's tools, judgment, and verification still determine the quality of the work.
+
+[Watch the terminal demo](https://github.com/Castrozan/wellput/releases/download/v0.2.0/wellput-demo.mp4): real hook
+output showing policy injection, a rejected reply, a corrected reply, and a configuration change.
 
 ## Install in Claude Code
+
+Requires Python 3.12 or newer on your path as `python3`. The hooks bundle their runtime dependencies.
 
 Run these commands in Claude Code:
 
@@ -13,47 +31,94 @@ Run these commands in Claude Code:
 /plugin install wellput@wellput
 ```
 
-Start a new session after installation. The plugin registers `SessionStart` and `Stop` hooks automatically.
-
-For a local preview, clone this repository and run `claude --plugin-dir /absolute/path/to/wellput`.
+Start a new session after installing.
 
 ## Install in Codex
+
+Requires Python 3.12 or newer on your path as `python3`.
 
 ```sh
 codex plugin marketplace add Castrozan/wellput
 codex plugin add wellput@wellput
 ```
 
-Review and trust the plugin's hook definitions when Codex requests it, then start a new session. Installation alone does not grant hook trust. See the [Codex hooks documentation](https://learn.chatgpt.com/docs/hooks).
+Review and trust the plugin's hooks when prompted, then start a new session. The package follows the
+[Agent Plugins specification](https://agent-plugins.org/) and includes native hook manifests for Claude Code and Codex.
+Hook execution in other clients depends on their support for those events.
 
-## What runs
+## Decisions made
 
-`SessionStart` injects the interactive policy at startup, resume, and compaction. That policy tells the agent to load the Wellput skill before substantial writing. The skill remains available for explicit requests such as “use Wellput to revise this explanation.”
+`SessionStart` introduces the communication contract before work begins. It also restores the contract when the harness
+emits that event for a resumed or compacted session.
 
-`Stop` checks the final reply and requests one correction if a rule fails. It skips a reply already continued by a Stop hook, preventing an endless repair loop. Feedback identifies every violation found in that pass. Passing the checks establishes format compliance, not factual accuracy or good judgment.
+`Stop` checks the final reply, because that is the message a multitasking human is expected to read. It returns specific
+repair feedback when a rule fails. A correction turn marked `stop_hook_active` bypasses another check to prevent an
+endless repair loop. Structural checks cannot establish whether an answer is true or understandable; the writing skill
+provides guidance for that judgment.
 
-The default policy uses a 100-word confirmation budget, with 10 words of grace. Longer replies use **What is this session about?:**, **Done:**, and **Next:** blocks. Separate budgets apply to the body, labels, and lists. Tables need a numbered `#` column; links use bare URLs or paths. The validator also checks unlinked pull or merge request references, sentence dashes outside quotations, and reaction or narration openers. Code, quotations, tables, diagrams, and short lists have their defined exemptions.
+Short replies have a **100-word prose budget plus 10 words of grace** and require no labels. Longer replies end with
+three blocks that let you recover the session and act:
 
-These are the author's complete interactive defaults. Enable the plugin in sessions where you want that response contract. It does not change tool permissions or validate generated documents.
+| #   | Block                            | Content                                                  | Word budget  | Purpose                                                      |
+| --- | -------------------------------- | -------------------------------------------------------- | ------------ | ------------------------------------------------------------ |
+| 1   | **What is this session about?:** | The whole session's subject, goal, and intended outcome. | 25 + 5 grace | Recover a session you have forgotten among dozens of others. |
+| 2   | **Done:**                        | What this turn established or changed.                   | 20 + 5 grace | Identify the result without reconstructing progress updates. |
+| 3   | **Next:**                        | Required remaining work, a blocker, or completion.       | 20 + 5 grace | See whether you need to act and what follows.                |
 
-The root `plugin.json` follows [Agent Plugins 1.0](https://agent-plugins.org/specification). Other compatible loaders can discover the skill; hook execution requires client support. Native hook registration is included for Claude Code and Codex.
+The three blocks share a **50-word budget plus 10 words of grace**. Prose above them has its own **80-word budget plus
+10 words of grace**. Each budget applies independently. Labels appear once, in order, with bold names and content on
+the same line, separated by blank lines.
+
+Visuals carry relationships that prose makes expensive to read. The skill chooses a focused diff for a change, a
+sequence for ordering, a table for comparison, or a diagram for another relationship. Visuals and fenced code do not
+consume the prose budgets. Lists of up to three items are also exempt when they satisfy the item limits. A list may
+have at most five lines; each complete item has a 20-word budget plus five words of grace. Other lists count as prose.
+
+The remaining defaults make replies easier to reference and use:
+
+- Tables start with a numbered `#` column, so you can answer “about #1” without quoting a row.
+- Bare URLs and paths work with terminal link detection and keyboard navigation. Literal code and blockquotes keep their syntax.
+- Pull and merge request references include direct links, so you can inspect the work in the browser.
+- Em and en dashes outside quotations are rejected. Reaction and narration openers are also rejected.
 
 ## Change the reply contract
 
-Edit `hooks/rules/reply-formats.json` in a fork. The same configuration renders the injected response format and drives validation, so changing budgets, labels, or active restrictions does not require a second policy edit. Invalid configurations fail validation instead of silently disabling enforcement.
+The bundled defaults live in [wellput.json](wellput.json). To keep your settings across plugin updates, copy that whole
+file to `~/.config/wellput/config.json`, or `$XDG_CONFIG_HOME/wellput/config.json` when `XDG_CONFIG_HOME` is set. Set
+`WELLPUT_CONFIG` to an absolute file path if you keep your configuration elsewhere. Settings are complete documents;
+they do not merge with the defaults.
 
-## Verify
+Selection order is `WELLPUT_CONFIG`, then the user config if present, then the bundled defaults. Both hooks read the
+selected file. Missing explicit files, invalid JSON, and invalid settings stop policy loading or block reply completion
+with an error instead of silently falling back.
 
-```sh
-python3 -S tests/verify_plugin.py .
-python3 -m pytest tests/test_hooks.py tests/test_human_facing_reply_rules.py tests/test_reply_format_configuration.py tests/test_reply_markdown_structure.py tests/test_reply_quotation_performance.py
-claude plugin validate . --strict
+For example, change `formats.confirmation` to allow 60 prose words with five words of grace:
+
+```json
+{
+  "maximum_words": 60,
+  "grace_words": 5
+}
 ```
 
-The first command runs without site packages. The regression suite additionally needs pytest. `evals/reader_recovery.yaml` contains model-based cases from the original system; those cases are not run by structural CI, and no model-quality result is claimed for this extraction.
+That fragment replaces only the `confirmation` object inside your complete config. It changes both the session's
+instructions and the hook's word limit. Restart the session after editing settings so the agent receives the updated
+instructions; Stop reads the file on every invocation.
 
-## Source and license
+| #   | Setting                  | What you can change                                                                                           |
+| --- | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| 1   | `formats`                | Confirmation and body budgets, label names, order, instructions, individual limits, and their combined limit. |
+| 2   | `lists`                  | Line limit, item budget, grace, and the number of items exempt from prose budgets.                            |
+| 3   | `syntax`                 | Label emphasis, quotation pairs, apostrophe characters, and the tree-branch pattern.                          |
+| 4   | `restrictions`           | Active checks, supported patterns, and violation messages. Remove an entry to disable its check.              |
+| 5   | `feedback`               | The prefix and repair instruction returned after a failed check.                                              |
+| 6   | `instruction_paragraphs` | The response-shape instructions rendered for the agent, including budget and label placeholders.              |
 
-The maintained source is the writing policy and reply hooks in Castrozan/.dotfiles. Its `wellput-plugin` Nix package exports this distributable repository. To build an export from that checkout, run `nix build .#wellput-plugin`; publish the resulting directory rather than maintaining a second copy of the rules.
+Budget and label instructions are rendered from the configured values. If you change a prose preference or disable a
+check, update any corresponding instruction too. The writing skill and the other sections of
+[the interactive policy](skills/wellput/references/interactive-communication.md) remain guidance outside this JSON
+contract. Configuration validates supported fields and rule names; adding a new kind of check requires code.
+
+## License
 
 Wellput is MIT licensed. Bundled Markdown dependencies retain their own licenses under `hooks/vendor/licenses`.
