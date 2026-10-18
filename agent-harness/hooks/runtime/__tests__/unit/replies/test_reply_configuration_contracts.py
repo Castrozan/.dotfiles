@@ -41,10 +41,14 @@ def test_invalid_configuration_is_rejected_before_any_reply(
         ReplyFormatConfiguration(configuration_document)
 
 
-def test_invalid_configuration_cannot_silently_disable_the_stop_guard(tmp_path):
+def test_invalid_configuration_cannot_silently_disable_the_stop_guard(
+    tmp_path, exported_wellput_hook
+):
     flatten_into_single_runtime_directory(tmp_path)
-    path = tmp_path / "reply-formats.json"
-    document = json.loads(path.read_text())
+    path = tmp_path / "wellput.json"
+    document = json.loads(
+        (exported_wellput_hook.parents[1] / "wellput.json").read_text()
+    )
     document["restrictions"][0].pop("required_pattern")
     path.write_text(json.dumps(document))
 
@@ -55,7 +59,10 @@ def test_invalid_configuration_cannot_silently_disable_the_stop_guard(tmp_path):
             "hook_event_name": "Stop",
             "reply_text": "PR #17 is ready. " + "evidence " * 150,
         },
-        {INTERACTIVE_ENV_VAR: "/some/interactive-communication.md"},
+        {
+            INTERACTIVE_ENV_VAR: "/some/interactive-communication.md",
+            "WELLPUT_CONFIG": str(path),
+        },
     )
 
     response = json.loads(result.stdout)
