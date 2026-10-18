@@ -46,36 +46,44 @@ codex plugin add wellput@wellput
 
 Review and trust the hooks when prompted, then start a new session.
 
-## Decisions made
+## How it works
 
-`SessionStart` This is present bc it introduces agent to the system one single time and makes it clear the communication
-standards needed for the session with the human from the beggining.
+**The skill guides the writing. The hook enforces the format.**
 
-`Stop` This is the main worker, it enforces the shape of the system reply. We understand that in this system te human
-will only read the end of turn message, which is the most important point of a agent lifetime, since is wehre humans see
-the agent work and interact with the agent. When we make sure every interaciton with a session is effective and requires
-minimal attention of the human, work can be paralelised, moving your attention to other high vlaue tasks and other
-agents.
+`SessionStart` introduces the communication rules once. `Stop` checks the end-of-turn reply and asks the agent to repair it when it breaks them.
 
-The default policy is:
+The work stays open-ended. The reply has to be usable.
 
-- 100-word confirmation budget, with 10 words of grace, for short answers, tldrs, no bs direct to the core of it, short turns.
-- Labels: Longer replies use **What is this session about?:**, **Done:**, and **Next:** blocks. **What is this session about?:** helps you keep track of work, it makes you never ask, "what is this session about?" in a pool of dozens of sesions, it keeps your mind and introduces you to work you forgot about. **Done:** is for this you to know what was "done" in turn, keeping you in track of te current wip. **Next:** makes it very clear what is bloking, if the owrk is finished or if a sequential job has a "next" step.
-- Visuals: do you want me to draw it for you? YES! Tables, graphs, diffs, diagrams, code snippets, are all tools that clarify and discart hte need to read plain text. these have a Separate budget outside the "labels". The agent is incouraged to use the best visual cue ot help maximize human understanding with minimal reading, so choosing the best visual for the job is crucial.
-- General preferences:
-  - Tables need a numbered `#` column for referencing in a reply. Eg, "about #1 ...";
-  - links use bare URLs or paths. Hyprlinks are cool if youre gonna use the mouse, but not that keyboard focus friendly, and bare links are clickable, soo...
-  - pull or merge request references require links, bc as a multitasker you stop writing and reviewing code locally and expect all code visualization to be on your vsc. eg. pr or mr links for accessing in the browser
-  - No em dashes
-  - No reaction or narration openers
+## What you come back to
+
+**A quick answer shouldn’t become a report.** Short replies get 100 prose words, plus 10 words of grace. No required labels.
+
+**Longer replies should bring you back into the session, not make you reconstruct it.** They end with three blocks:
+
+| #   | Block                            | What it tells you                                              |
+| --- | -------------------------------- | -------------------------------------------------------------- |
+| 1   | **What is this session about?:** | The session’s goal, not just the latest step.                  |
+| 2   | **Done:**                        | What this turn changed or established.                         |
+| 3   | **Next:**                        | What remains, what’s blocked, or whether the work is finished. |
+
+**Sometimes the clearest paragraph is a diff.** Tables, diagrams, graphs, and code should replace prose when they make the work easier to understand. Visuals and fenced code don’t count toward the prose budget.
+
+**Small details make the next interaction easier.**
+
+- Number table rows so you can reply “about #2” instead of quoting the whole thing.
+- Use bare URLs and paths for keyboard-friendly navigation. Link referenced PRs and MRs so you don’t have to find them.
+- Start with the answer, not a reaction or a narration of what the agent is about to do.
+- No em or en dashes outside quotations.
 
 ## Configure
 
-Copy [wellput.json](wellput.json) to `~/.config/wellput/config.json` or `$XDG_CONFIG_HOME/wellput/config.json`.
-`WELLPUT_CONFIG` selects an absolute path instead and takes precedence.
+**No configuration needed to start.** Bundled defaults apply until you provide your own.
 
-Edit budgets, labels, active checks, and feedback. Use a complete config; files do not merge. Invalid settings fail with
-an error. Restart the session after editing. Without a user config, bundled defaults apply.
+To change budgets, labels, checks, or repair feedback, copy `wellput.json` to `~/.config/wellput/config.json`, or `$XDG_CONFIG_HOME/wellput/config.json` when using XDG.
+
+For a different location, set `WELLPUT_CONFIG` to an absolute path. It takes precedence over the default locations.
+
+Use a complete config; files aren’t merged. Invalid settings produce an error. Restart the session after editing.
 
 ## License
 
