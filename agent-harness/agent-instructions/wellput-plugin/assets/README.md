@@ -48,32 +48,35 @@ Review and trust the hooks when prompted, then start a new session.
 
 ## How it works
 
-**The skill guides the writing. The hook enforces the format.**
+**The agent has the context. You shouldn’t have to rebuild it.**
 
-`SessionStart` introduces the communication rules once. `Stop` checks the end-of-turn reply and asks the agent to repair it when it breaks them.
+Wellput assumes the end-of-turn reply may be all you read. It should make the work understandable without sending you back through the conversation.
 
-The work stays open-ended. The reply has to be usable.
+**The skill guides the writing. The hook enforces the format.** `SessionStart` introduces the rules once; `Stop` checks the reply and requests repairs. You shouldn’t have to keep correcting how the agent communicates.
 
-## What you come back to
+The work stays open-ended. The handoff to you doesn’t.
 
-**A quick answer shouldn’t become a report.** Short replies get 100 prose words, plus 10 words of grace. No required labels.
+## The reply format
 
-**Longer replies should bring you back into the session, not make you reconstruct it.** They end with three blocks:
+**Short answers stay short.** Up to 100 prose words, plus 10 words of grace, without required labels. A confirmation shouldn’t become a report.
 
-| #   | Block                            | What it tells you                                              |
-| --- | -------------------------------- | -------------------------------------------------------------- |
-| 1   | **What is this session about?:** | The session’s goal, not just the latest step.                  |
-| 2   | **Done:**                        | What this turn changed or established.                         |
-| 3   | **Next:**                        | What remains, what’s blocked, or whether the work is finished. |
+**Longer replies bring you back into the session.** Three closing blocks answer the questions you ask when switching agents:
 
-**Sometimes the clearest paragraph is a diff.** Tables, diagrams, graphs, and code should replace prose when they make the work easier to understand. Visuals and fenced code don’t count toward the prose budget.
+| #   | Block                            | Why it exists                                                             |
+| --- | -------------------------------- | ------------------------------------------------------------------------- |
+| 1   | **What is this session about?:** | Restore the session’s subject and goal, not just the latest step.         |
+| 2   | **Done:**                        | Show what actually changed or was established, not what was planned.      |
+| 3   | **Next:**                        | Make clear what remains, what’s blocked, or whether the work is finished. |
 
-**Small details make the next interaction easier.**
+Consistent order and bold labels make answers easy to find. Separate word budgets keep the explanation from swallowing the summary.
 
-- Number table rows so you can reply “about #2” instead of quoting the whole thing.
-- Use bare URLs and paths for keyboard-friendly navigation. Link referenced PRs and MRs so you don’t have to find them.
-- Start with the answer, not a reaction or a narration of what the agent is about to do.
-- No em or en dashes outside quotations.
+**Sometimes the clearest paragraph is a diff.** Use tables, diagrams, and code when they save the reader work. Visuals and fenced code don’t count toward the prose budget. The goal is understanding, not just fewer words.
+
+## Small rules, less friction
+
+Numbered rows in agent tables let you reply “about #2.” Bare URLs and paths support keyboard navigation. PR and MR links take you straight to the work.
+
+Start with substance, not reactions or narration. The default also excludes em and en dashes outside quotations, a configurable style preference.
 
 ## Configure
 
