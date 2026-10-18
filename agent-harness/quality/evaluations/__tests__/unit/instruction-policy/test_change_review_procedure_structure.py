@@ -161,6 +161,6 @@ def test_the_project_context_keeps_the_semantic_risk_classification():
     assert "non-semantic" in scope, (
         "the non-semantic exemption must survive the rewrite"
     )
-    assert "rebuild" in scope, (
-        "skipping the review must never excuse the rebuild or the tests"
+    assert "[testing](#testing)" in scope, (
+        "skipping review must preserve verification required by the testing policy"
     )

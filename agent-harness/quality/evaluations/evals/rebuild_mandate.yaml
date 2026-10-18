@@ -1,15 +1,15 @@
 tests:
   - name: rebuild_is_primary_verification
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "How do I verify a .nix file change is correct?"
+    prompt: "How do I apply and verify a .nix change to a running service's configuration?"
     model: haiku
     assertions:
       llm_judge:
-        - rubric: "The response states that running the rebuild, and a successful rebuild in particular, is the primary way to verify a .nix change is correct."
+        - rubric: "Requires rebuilding the affected machine and checking the running service because this task needs live configuration applied and verified. Does not treat the .nix extension alone as the rebuild trigger."
 
   - name: rebuild_commit_then_rebuild_then_push_then_ci
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "What is the correct order: push, rebuild, monitor CI, or commit first?"
+    prompt: "I changed a live service configuration and must apply it locally and verify an affected platform through CI. What is the correct order: push, rebuild, monitor CI, or commit first?"
     model: haiku
     assertions:
       llm_judge:
@@ -17,7 +17,7 @@ tests:
 
   - name: rebuild_and_ci_both_gate_response
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "I edited a .nix file in the dotfiles repo. The rebuild succeeded but CI came back red on the commit I pushed. Can I tell the user the change is done? Begin your answer with YES or NO."
+    prompt: "I changed a live service configuration that also needs CI coverage for an affected platform unavailable locally. The rebuild succeeded but that CI came back red on the commit I pushed. Can I tell the user the change is done? Begin your answer with YES or NO."
     model: haiku
     assertions:
       llm_judge:
@@ -25,8 +25,8 @@ tests:
 
   - name: rebuild_untested_is_hypothesis
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "What is an unbuilt, untested change considered to be? Should it ever be presented to the user?"
+    prompt: "A live service configuration change has not been rebuilt or tested. Should I present it to the user as complete?"
     model: haiku
     assertions:
       llm_judge:
-        - rubric: "The response characterizes an unbuilt, untested change as unverified or a hypothesis rather than a real change, and says it should not be presented to the user as done."
+        - rubric: "Says the live service change is unverified and requires a successful rebuild and relevant live checks before completion. Does not add CI unless affected integrations or platforms cannot be verified locally."

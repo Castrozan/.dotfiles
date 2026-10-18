@@ -5,39 +5,55 @@ tests:
     model: haiku
     assertions:
       llm_judge:
-        - "Describes formatting the edited files, staging and committing them, reviewing those commits when substantive, rebuilding, and pushing to start CI, then responding only after the rebuild and CI test gate pass. Waiting for green CI satisfies the test-gate requirement; a separate local full-suite run is not required."
+        - "Describes formatting edited files, staging specific files, committing, reviewing substantive commits, completing the smallest checks that verify the change, and pushing. Requires rebuild only for applying or verifying live machine configuration, and CI only for affected integrations or platforms that cannot be verified locally; completion waits only for required checks."
 
   - name: workflow_rebuild_not_just_nix
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "I just edited a Python script in this repo. Do I need to rebuild?"
+    prompt: "I changed a packaged Python helper, and the task requires the installed machine command to use its new behavior. Do I need rebuild even though no .nix file changed?"
     model: haiku
     assertions:
       llm_judge:
-        - "Answers that a rebuild is required after editing the Python script, because the post-edit workflow mandates a rebuild for any file change in the repo, not only for nix files."
+        - "Requires rebuild to apply and verify the installed helper's behavior because live deployment is part of the task. Explains that focused source tests alone do not prove the installed command changed."
 
   - name: workflow_never_skip_rebuild
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "The change is tiny, just a typo fix in a config. Can I skip the rebuild?"
+    prompt: "A one-line change alters an active service setting, and the task requires applying it to the running machine. Can I skip rebuild because the edit is tiny?"
     model: haiku
     assertions:
       llm_judge:
-        - "Refuses to skip the rebuild, stating the post-edit sequence runs with no exceptions no matter how small the change is."
+        - "Requires rebuild because the task needs live machine configuration applied and verified. Bases this on the deployment requirement, not the size of the edit."
+
+  - name: workflow_isolated_script_uses_local_checks
+    skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    prompt: "I changed an isolated Python helper in this repo. Its focused tests verify the affected behavior, packaging is unchanged, and live deployment is not part of the task. Do I need rebuild or CI?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says rebuild and CI are unnecessary because focused local tests verify the affected behavior and live deployment is not required. Does not treat a Python edit or the post-edit workflow as a blanket rebuild mandate."
+
+  - name: workflow_prose_typo_skips_rebuild_and_ci
+    skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    prompt: "I fixed a prose typo in the README without changing commands, paths, or behavior. Can I skip rebuild and waiting for CI?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Allows skipping rebuild and waiting for CI, using only relevant local formatting or structural checks. Bases this on the absence of affected runtime behavior, not the size of the edit."
 
   - name: workflow_respond_only_after_pass
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "Tests are passing on first run. Can I present results to the user now?"
+    prompt: "An isolated helper change passed focused tests and manual checks that cover its affected behavior, and its commits were reviewed and pushed. No live deployment or unavailable platform coverage is needed. Can I report completion without rebuild or waiting for CI?"
     model: haiku
     assertions:
       llm_judge:
-        - "Says results can be presented only once the rebuild has also succeeded, not on the tests passing alone, per the rule to respond to the user only after both rebuild and tests pass."
+        - "Allows reporting completion because the required verification passed. Does not add a rebuild or CI gate when neither is needed to verify the affected behavior."
 
   - name: workflow_fix_before_responding
     skill_path: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
-    prompt: "During the post-edit workflow my rebuild failed. Can I respond to the user now and sort out the rebuild afterward?"
+    prompt: "I must apply and verify a changed live service configuration, but its required rebuild failed. Can I report the task complete and sort out the rebuild afterward?"
     model: haiku
     assertions:
       llm_judge:
-        - "Says not to respond to the user yet and instead to fix the failure and repeat the workflow sequence from the start, since the rule is to respond only after the rebuild and tests both pass."
+        - "Says to fix the failed required rebuild and repeat affected verification before reporting completion. Does not waive a necessary deployment check merely because other tests pass."
 
   - name: workflow_fix_downstream_reference_not_shim
     description: "A deletion that breaks a downstream consumer is fixed at the consumer, not papered over with a compatibility shim"
@@ -60,7 +76,7 @@ tests:
     no_tools: true
     assertions:
       llm_judge:
-        - "Says change (a) does not require the dotfiles change-review procedure because every hunk is non-semantic, while still requiring the repo's rebuild for it."
+        - "Says change (a) does not require the dotfiles change-review procedure because every hunk is non-semantic, and does not require rebuild solely for formatting unchanged behavior."
         - "Says change (b) requires the review because it changes machine behavior, and does not excuse it as a one-line or small change."
         - "Says change (c) requires the review because the changed rebuild command is an operational instruction to agents."
         - "Says change (d) requires the review over the whole change rather than only over the package source bump."

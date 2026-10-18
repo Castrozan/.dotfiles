@@ -25,9 +25,8 @@ live at `references/knowledge.md` beneath each skill.
 
 This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the
 clawde-agents module and built from the clawde flake input where its behavior lives. You still push your own commits,
-because CI is the test gate and a commit that never reaches origin is never verified, but push only what fast-forwards:
-leave a diverged history, a rebase, or a submodule gitlink conflict to the steward rather than reconciling it by hand,
-which races its live loop, unless explicitly told to act in the steward's place.
+but push only what fast-forwards: leave a diverged history, a rebase, or a submodule gitlink conflict to the steward
+rather than reconciling it by hand, which races its live loop, unless explicitly told to act in the steward's place.
 
 A checkout that is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile;
 never surface it as a task pending on the human. Treat CI failures on `main` during active WIP as expected. Check
@@ -93,15 +92,13 @@ prefer incremental updates over whole-state recomputation.
 
 ### Testing
 
-Never present code that has not been rebuilt and tested. For .nix files, a successful rebuild IS the primary
-verification. Do the local work first, through the rebuild and the manual tests the change calls for, and only then push
-(see [workflow](#workflow)). Pushing is what starts CI: it runs the script tiers and `nix flake check` on every push,
-and CI is the test gate, so a local full-suite pass is not what proves a change.
+Use the smallest checks that verify the change. Run `rebuild` only to apply or verify live machine configuration.
+Require CI only for affected integrations or platforms that cannot be verified locally.
 
 Reach for `repository/verification/run.sh` only to reproduce a job CI turned red, or to iterate on a test you are
 writing. The same goes for a whole pytest tier directory (`*/__tests__/unit`, `*/__tests__/integration`), bare `pytest`,
-`pytest agents`, `pytest .`, and `nix flake check`: run a specific test file, or use `rebuild` as the local nix
-verification.
+`pytest agents`, `pytest .`, and `nix flake check`: run a specific test file or the targeted Nix evaluation or build
+needed to verify the change.
 
 Test every Neovim change live in a newly created Herdr pane; automated and headless checks do not replace this manual
 test.
@@ -121,7 +118,7 @@ operational instruction, or when correctness depends on several files changing t
 Skip the review only when every hunk is demonstrably non-semantic, meaning a formatting or prose correction that alters
 no command, path, identifier, factual claim, policy or behavior; review the whole change when substantive and
 non-substantive hunks are mixed or the classification stays uncertain. Changed line and file counts never decide this,
-and skipping the review never excuses the rebuild or the tests.
+and skipping review does not waive verification required by [testing](#testing).
 
 ### Workflows
 
@@ -133,20 +130,19 @@ how every harness other than Claude Code reaches the workflow at all.
 
 ### Workflow
 
-After editing any file in the dotfiles repo, execute this sequence before responding, no exceptions: 1) format edited
-files; 2) stage each file with git add specific-file, never -A; 3) commit; 4) review the commits you just added when
-they are substantive (see [change review scope](#change-review-scope)); 5) rebuild for any file change in this repo (see
-[rebuild](../rebuild-guidance/rebuild-agent-instructions.md#rebuild));
+After editing files in the dotfiles repo, execute this sequence before responding: 1) format edited files; 2) stage each
+file with git add specific-file, never -A; 3) commit; 4) review the commits you just added when they are substantive
+(see [change review scope](#change-review-scope)); 5) run the local verification required by [testing](#testing);
 
-6\) push, which starts the run in the background; 7) do not block on the run: continue with the next independent piece
-of the task while CI works, and check the verdict only when other work is exhausted and a response to the user is due -
-load the forge and CI watcher skills, resolve the effective upstream and find runs for the full commit SHA; start a
-background watcher for every relevant run and accept only terminal success as green; a just-pushed commit can have no
-run for a few seconds, so retry an empty list rather than reading it as a verdict;
+6\) push; 7) when [testing](#testing) requires CI, continue with independent work while CI runs, and check the verdict
+only when other work is exhausted and a response to the user is due - load the forge and CI watcher skills, resolve the
+effective upstream and find runs for the full commit SHA; start a background watcher for every relevant run and accept
+only terminal success as green; a just-pushed commit can have no run for a few seconds, so retry an empty list rather
+than reading it as a verdict;
 
-8\) if the rebuild or CI fails: fix and repeat from 1; 9) only after a green rebuild and green CI: respond to user.
-Every CI job reports all of its failures rather than dying on the first, so read the whole run and fix the batch in one
-pass instead of pushing once per error.
+8\) if required verification fails: fix and repeat the affected steps; 9) respond once the required checks pass. Every
+CI job reports all of its failures rather than dying on the first, so read the whole run and fix the batch in one pass
+instead of pushing once per error.
 
 ### Worktrees
 
