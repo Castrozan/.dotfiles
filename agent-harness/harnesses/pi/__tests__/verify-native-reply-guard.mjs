@@ -19,7 +19,7 @@ process.env.AGENT_INTERACTIVE_PREFERENCES_PATH = join(
 mkdirSync(join(profile, "extensions"), { recursive: true });
 symlinkSync(extension, join(profile, "extensions/human-facing-reply-guard.js"));
 const requests = [];
-let reply = "| Result |\n| --- |\n| Passed |";
+let reply = "Summary:\n\n| Result |\n| --- |\n| Passed |";
 const server = createServer(async (request, response) => {
   let body = "";
   for await (const chunk of request) body += chunk;

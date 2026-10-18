@@ -47,6 +47,8 @@ def test_allows_every_humanize_visual_representation(tmp_path):
     ],
 )
 def test_every_rendered_table_requires_sequential_row_indexes(reply):
+    if reply.startswith("|"):
+        reply = f"Summary:\n\n{reply}"
     assert any(
         "table 1" in violation and "index" in violation
         for violation in template_violations_in_reply(reply)
@@ -87,14 +89,14 @@ def test_stop_hook_blocks_an_unindexed_table_and_accepts_its_repair(surface):
     payload = {
         "hook_event_name": "Stop",
         "session_id": "table-index-test",
-        "reply_text": "| Result |\n| --- |\n| Passed |",
+        "reply_text": "Summary:\n\n| Result |\n| --- |\n| Passed |",
     }
     blocked = invoke_guard(payload, surface=surface)
     feedback = json.loads(blocked.stdout)
     assert feedback["decision"] == "block"
     assert "index" in feedback["reason"]
 
-    payload["reply_text"] = "| # | Result |\n| --- | --- |\n| 1 | Passed |"
+    payload["reply_text"] = "Summary:\n\n| # | Result |\n| --- | --- |\n| 1 | Passed |"
     allowed = invoke_guard(payload, surface=surface)
     assert allowed.returncode == 0
     assert allowed.stdout.strip() == ""

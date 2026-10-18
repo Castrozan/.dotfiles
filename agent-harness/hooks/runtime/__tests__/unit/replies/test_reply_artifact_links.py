@@ -34,7 +34,7 @@ def test_links_in_prose_and_tables_can_satisfy_artifact_references(reply):
 
 
 def test_an_artifact_named_in_a_table_needs_a_link():
-    reply = "| # | Artifact | Status |\n| --- | --- | --- |\n| 1 | PR #17 | ready |"
+    reply = "Summary:\n\n| # | Artifact | Status |\n| --- | --- | --- |\n| 1 | PR #17 | ready |"
 
     assert template_violations_in_reply(reply)
 
@@ -71,7 +71,7 @@ def test_long_form_numbered_references_keep_their_identifier(article, kind, rout
         "Review: <https://example.com/result>",
         '<a href="https://example.com/result">result</a>',
         '<div>\n<a href="https://example.com/result">result</a>\n</div>',
-        "| # | Result |\n| --- | --- |\n| 1 | [result](https://example.com/result) |",
+        "Summary:\n\n| # | Result |\n| --- | --- |\n| 1 | [result](https://example.com/result) |",
         "[source](/tmp/source.py)",
         "Contact: <engineer@example.com>",
         "\x1b]8;;https://example.com/result\x1b\\result\x1b]8;;\x1b\\",

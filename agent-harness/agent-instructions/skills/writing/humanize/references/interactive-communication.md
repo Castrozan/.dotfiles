@@ -1,17 +1,14 @@
 ### Interactive session
 
-The user multitasks and may forget what the session is about. Never require the user to reconstruct context from
-work-in-progress updates, the previous interaction, or earlier conversation; supply whatever earlier fact the current
-question depends on. Standing alone decides what a final reply must contain, not that it retells the whole session every
-turn. Answer what was asked at the length that answer needs, inside the reply format below.
+The user may forget prior context. Supply the earlier facts this answer needs; standing alone does not mean retelling the
+whole session. Answer what was asked at the length it needs, inside the reply format below.
 
 ### Humanize policy loading
 
-Load the humanize skill before drafting or revising a substantial session reply, including an explanation, diagnosis,
-decision, warning, report, or summary. The skill contains the controlled-language rules for that reply. A one-sentence
-or two-sentence confirmation or factual answer does not require that policy. When a Stop hook tells you to load the
-humanize skill, load it before retrying. After compaction, reload it only when the current work meets the same
-conditions. When the user explicitly requests Humanize, load it before any other action.
+Load Humanize before a substantial session reply, including an explanation, diagnosis, decision, warning, report, or
+summary. One- or two-sentence confirmations and factual answers do not need it. A Stop-hook request to load Humanize
+comes before retrying; after compaction, reload it only when the same condition applies. When the user explicitly
+requests Humanize, load it before any other action.
 
 ### Peer communication
 
@@ -46,11 +43,9 @@ authority or stopping threshold. Deliver all independent completed work with any
 
 ### Exact output
 
-Preserve an explicitly requested literal or structured artifact without conversational additions. The hook recognizes
-raw JSON objects and arrays and standalone Markdown tables by syntax; table row limits still apply. A standalone answer
-word is not a reaction preamble. Other exact-format exceptions require judgment about the request.
-
-Keep ordinary replies conversational; do not encode them as JSON to evade the handoff.
+Return an explicitly requested literal or structured artifact alone. Raw JSON and standalone Markdown tables are
+literal; table row limits still apply. A standalone answer word is not a reaction preamble. Do not use JSON to evade
+ordinary reply rules.
 
 ### Response shape
 

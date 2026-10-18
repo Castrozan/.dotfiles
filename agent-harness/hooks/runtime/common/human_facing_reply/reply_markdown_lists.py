@@ -27,15 +27,23 @@ def extract_reply_lists(tokens, source_lines, prose_line_indices):
     active_lists = []
     for token in tokens:
         if token.type in ("bullet_list_open", "ordered_list_open"):
-            block = ReplyList(token.map, prose_line_indices)
-            lists.append(block)
-            active_lists.append(block)
+            add_list(token, lists, active_lists, prose_line_indices)
         elif token.type in ("bullet_list_close", "ordered_list_close"):
             active_lists.pop()
         elif token.type == "list_item_open":
-            for block in active_lists:
-                block.item_count += 1
-            active_lists[-1].items.append(
-                ReplyListItem(token.map, source_lines, prose_line_indices)
-            )
+            add_list_item(token, active_lists, source_lines, prose_line_indices)
     return lists
+
+
+def add_list(token, lists, active_lists, prose_line_indices):
+    block = ReplyList(token.map, prose_line_indices)
+    lists.append(block)
+    active_lists.append(block)
+
+
+def add_list_item(token, active_lists, source_lines, prose_line_indices):
+    for block in active_lists:
+        block.item_count += 1
+    active_lists[-1].items.append(
+        ReplyListItem(token.map, source_lines, prose_line_indices)
+    )
