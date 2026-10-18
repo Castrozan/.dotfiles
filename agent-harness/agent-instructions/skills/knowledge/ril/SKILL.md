@@ -56,9 +56,6 @@ one that adds a dependency, and say plainly when we already have the capability.
 
 ### Verdict gate
 
-For an interactive walkthrough or a researched batch, read [interactive review](references/interactive-review.md) before
-presenting the findings. It owns the source-to-decision conversation; the verdict authority below remains unchanged.
-
 Five outcomes: adopt changes the repo now; trial runs it unpackaged first and decides after; learn creates a study entry
 naming what to practice; reference files it with no action; drop discards it with the reason.
 
