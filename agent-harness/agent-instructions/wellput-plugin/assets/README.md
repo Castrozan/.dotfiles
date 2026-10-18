@@ -16,11 +16,11 @@
 
 <!-- markdownlint-enable MD033 MD041 -->
 
-Wellput is a **hook and a writing skill** that make end-of-turn replies easier to **understand and act on**. Recognize the session, see what got done, know whether you’re needed, and move on without rereading the conversation.
+Wellput is a **hook and a writing skill** that make end-of-turn replies easier to **understand and act on**. Recognize the session, see what got done, know whether you’re needed, and move on without rereading the full conversation.
 
 > Built for **free sessions**: high-stakes discovery and delivery, not predefined workflows.
 
-The point isn’t just _shorter replies_. It’s putting the effort of making work understandable **on the agent**, so you can stay across dozens of sessions without giving each one your afternoon.
+The point isn’t just _shorter replies_. It’s putting the responsibility for making work understandable on the agent, so you can work across dozens of sessions without having to give each one your full attention.
 
 ![Live Claude Code session showing Wellput rejecting and repairing a reply](https://raw.githubusercontent.com/Castrozan/wellput/a4a21aff55e2cf4cdd36c76d2e9cf248538f52e3/wellput-fluid-demo.gif)
 
@@ -50,42 +50,75 @@ Review and trust the hooks when prompted, then start a new session.
 
 **The agent has the context. You shouldn’t have to rebuild it.**
 
-Wellput assumes the end-of-turn reply may be all you read. It should make the work understandable without sending you back through the conversation.
+The end-of-turn reply may be all you read. It should make the work understandable without sending you back through the conversation.
 
-**The skill guides the writing. The hook enforces the format.** `SessionStart` introduces the rules once; `Stop` checks the reply and requests repairs.
+**The skill guides the writing. The hook enforces the format.**
+
+```mermaid
+flowchart LR
+    start["SessionStart<br/>Introduce rules once"] --> work["Agent works<br/>with session context"]
+    skill["Writing skill<br/>Context and clarity"] --> draft["Draft reply"]
+    work --> draft
+    draft --> check{"Stop<br/>Format valid?"}
+    check -->|Pass| reader["Reply to you"]
+    check -->|Needs repair| repair["Agent repairs reply"]
+    repair --> reader
+
+    classDef hook fill:#102b3f,color:#f0f7f5,stroke:#6de2c7
+    classDef writing fill:#6de2c7,color:#102b3f,stroke:#102b3f
+    classDef handoff fill:#e6b76a,color:#102b3f,stroke:#102b3f
+    class start,work,check hook
+    class skill,draft,repair writing
+    class reader handoff
+```
 
 ## The reply format
 
-**Short answers stay short.** Up to 100 prose words, plus 10 words of grace, without required labels. A confirmation shouldn’t become a report.
+**A confirmation shouldn’t become a report. Longer replies should bring you back into the session.**
 
-**Longer replies bring you back into the session.** Three closing blocks answer the questions you ask when switching agents:
+| #   | Reply  | Prose budget                      | Ending                     |
+| --- | ------ | --------------------------------- | -------------------------- |
+| 1   | Short  | 100 words + 10 words of grace     | No required labels         |
+| 2   | Longer | Separate body and closing budgets | Three closing blocks below |
 
-| #   | Block                            | Why it exists                                                             |
-| --- | -------------------------------- | ------------------------------------------------------------------------- |
-| 1   | **What is this session about?:** | Restore the session’s subject and goal, not just the latest step.         |
-| 2   | **Done:**                        | Show what actually changed or was established, not what was planned.      |
-| 3   | **Next:**                        | Make clear what remains, what’s blocked, or whether the work is finished. |
+| #   | Closing block                    | What you get                                                         |
+| --- | -------------------------------- | -------------------------------------------------------------------- |
+| 1   | **What is this session about?:** | The session’s subject and goal, beyond the latest step.              |
+| 2   | **Done:**                        | What actually changed or was established.                            |
+| 3   | **Next:**                        | Remaining work, blockers, or confirmation that the work is finished. |
 
-Consistent order and bold labels make answers easy to find. Separate word budgets keep the explanation from swallowing the summary.
+Bold labels, consistent order, and independent word budgets keep the summary easy to find.
 
-**Sometimes the clearest paragraph is a diff.** Use tables, diagrams, and code when they save the reader work. Visuals and fenced code don’t count toward the prose budget. The goal is understanding, not just fewer words.
+**Sometimes the clearest paragraph is a diff.** For an exact change in `release.yaml`:
+
+```diff
+- retry_limit: 10
++ retry_limit: 3
+```
+
+Use tables, diagrams, and code when they save the reader work. Visuals and fenced code don’t count toward the prose budget.
 
 ### Other rules
 
-- Number table rows so you can reply “about #2.”
-- Use bare URLs and paths for keyboard navigation.
-- Include links when mentioning PRs or MRs.
-- Start with the answer. Skip reactions and narration.
-- No em or en dashes outside quotes (configurable).
+| #   | Check            | What it gives you                                                              |
+| --- | ---------------- | ------------------------------------------------------------------------------ |
+| 1   | Lists and tables | At most 5 items or data rows; numbered table rows for replies like “about #2.” |
+| 2   | Navigation       | Bare URLs and paths; direct links to referenced PRs and MRs.                   |
+| 3   | Opening          | The answer first, without reactions or narration.                              |
+| 4   | Punctuation      | No em or en dashes outside quotes; configurable.                               |
 
 ## Configure
 
-Wellput uses bundled defaults. To change budgets, labels, checks, or repair feedback:
+**No configuration needed to start.** Bundled defaults apply until you provide your own.
 
-- Copy `wellput.json` to `~/.config/wellput/config.json`.
-- With XDG, use `$XDG_CONFIG_HOME/wellput/config.json`.
-- For another location, set `WELLPUT_CONFIG` to an absolute path. It overrides the default locations.
+| #   | When                                | Configuration file                                  |
+| --- | ----------------------------------- | --------------------------------------------------- |
+| 1   | `WELLPUT_CONFIG` is set             | Its absolute path; overrides the default locations. |
+| 2   | Otherwise, `XDG_CONFIG_HOME` is set | `$XDG_CONFIG_HOME/wellput/config.json`              |
+| 3   | Otherwise                           | `~/.config/wellput/config.json`                     |
+
+Copy `wellput.json` to the applicable path, then change budgets, labels, checks, or repair feedback. Use a complete file; configurations aren’t merged. Restart the session after editing.
 
 ## License
 
-Wellput is MIT licensed. Bundled Markdown dependencies retain their own licenses under `hooks/vendor/licenses`.
+Wellput is [MIT licensed](LICENSE). Bundled Markdown dependencies retain their own [licenses](hooks/vendor/licenses).
