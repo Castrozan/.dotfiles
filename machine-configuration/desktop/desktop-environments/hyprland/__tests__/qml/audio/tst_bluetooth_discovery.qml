@@ -12,6 +12,64 @@ Item {
     TestCase {
         name: "AudioServiceMergePairedDevices"
 
+        function connectedDevicesOutput(text) {
+            const process = bluetoothDiscovery.children.find(candidate => candidate.command.join(" ") === "bluetoothctl devices Connected");
+            verify(process !== undefined);
+            process.stdout.text = text;
+            process.stdout.streamFinished();
+        }
+
+        function test_last_connected_device_disconnects() {
+            bluetoothDiscovery._pairedDevicesList = [
+                {
+                    mac: "AA:BB:CC:DD:EE:01",
+                    name: "Headphones"
+                }
+            ];
+            connectedDevicesOutput("Device AA:BB:CC:DD:EE:01 Headphones\n");
+            verify(bluetoothDiscovery.previousPairedDevices[0].connected);
+
+            connectedDevicesOutput("");
+
+            compare(bluetoothDiscovery.previousPairedDevices.length, 1);
+            verify(!bluetoothDiscovery.previousPairedDevices[0].connected);
+        }
+
+        function test_disconnected_device_reconnects() {
+            bluetoothDiscovery._pairedDevicesList = [
+                {
+                    mac: "AA:BB:CC:DD:EE:01",
+                    name: "Headphones"
+                }
+            ];
+            connectedDevicesOutput("");
+            verify(!bluetoothDiscovery.previousPairedDevices[0].connected);
+
+            connectedDevicesOutput("Device AA:BB:CC:DD:EE:01 Headphones\n");
+
+            verify(bluetoothDiscovery.previousPairedDevices[0].connected);
+        }
+
+        function test_disconnect_preserves_other_connection() {
+            bluetoothDiscovery._pairedDevicesList = [
+                {
+                    mac: "AA:BB:CC:DD:EE:01",
+                    name: "Speaker"
+                },
+                {
+                    mac: "AA:BB:CC:DD:EE:02",
+                    name: "Headphones"
+                }
+            ];
+            connectedDevicesOutput("Device AA:BB:CC:DD:EE:01 Speaker\nDevice AA:BB:CC:DD:EE:02 Headphones\n");
+
+            connectedDevicesOutput("Device AA:BB:CC:DD:EE:02 Headphones\n");
+
+            compare(bluetoothDiscovery.previousPairedDevices[0].mac, "AA:BB:CC:DD:EE:02");
+            verify(bluetoothDiscovery.previousPairedDevices[0].connected);
+            verify(!bluetoothDiscovery.previousPairedDevices[1].connected);
+        }
+
         function test_merges_paired_with_connected_status() {
             bluetoothDiscovery._pairedDevicesList = [
                 {

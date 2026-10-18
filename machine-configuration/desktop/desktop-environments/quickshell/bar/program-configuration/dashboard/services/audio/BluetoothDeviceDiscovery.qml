@@ -58,10 +58,9 @@ Scope {
     Process {
         id: listConnectedDevicesProcess
         command: ["bluetoothctl", "devices", "Connected"]
-        stdout: SplitParser {
-            splitMarker: ""
-            onRead: data => {
-                const lines = data.trim().split("\n");
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const lines = text.trim().split("\n");
                 const macs = {};
                 for (let i = 0; i < lines.length; i++) {
                     const parts = lines[i].trim().split(" ");
