@@ -2,7 +2,7 @@
 
 ![Wellput hook demo](https://github.com/user-attachments/assets/98458e2d-bb10-48cc-9932-60f50bcbedee)
 
-https://github.com/user-attachments/assets/653decc1-f93b-4348-b351-c9f4d5d59cbf
+[Watch the narrated tour](https://github.com/user-attachments/assets/653decc1-f93b-4348-b351-c9f4d5d59cbf)
 
 A few dozen agents should not require a few dozen plans to review. Wellput helps you recover each session's purpose,
 result, and next step with minimal reading.
@@ -14,14 +14,14 @@ needed. A writing skill guides the explanation; hooks enforce the reply's struct
 
 Requires Python 3.12+ as `python3`. Runtime dependencies are bundled.
 
-**Claude Code**
+### Claude Code
 
 ```text
 /plugin marketplace add Castrozan/wellput
 /plugin install wellput@wellput
 ```
 
-**Codex**
+### Codex
 
 ```sh
 codex plugin marketplace add Castrozan/wellput
