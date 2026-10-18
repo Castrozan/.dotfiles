@@ -34,7 +34,7 @@
       inputs.home-manager.follows = "home-manager";
     };
 
-    clawde.url = "github:Castrozan/clawde/0d2f1578c5dd9b5e9cbc97c669d1603ecb8455c0";
+    clawde.url = "github:Castrozan/clawde/061af2295013dba8338dca8b9d512a662bf4c324";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 
     hermes.url = "github:NousResearch/hermes-agent/d337b736aa1e8ebecfab043842d13e4a2d2f48a3";
