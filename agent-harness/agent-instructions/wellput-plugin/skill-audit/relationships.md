@@ -6,7 +6,7 @@
 
 ```mermaid
 flowchart TD
-  classDef default fill:#161b22,stroke:#8b949e,color:#f0f6fc
+  classDef default fill:#ffffff,stroke:#57606a,color:#161b22
   Source[Canonical Humanize skill and references] --> Export[Wellput exporter]
   Config[Shared reply format configuration] --> Export
   Core[Selected Core and docs sections] --> Export
