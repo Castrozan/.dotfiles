@@ -12,7 +12,8 @@ let
       tests = ../../hooks/runtime/__tests__/unit/replies;
       support = ../../hooks/runtime/__tests__/support/human_facing_reply_test_support.py;
       assets = ./assets;
-      portableTests = ./__tests__/portable;
+      portableTests = ./__tests__/integration;
+      verifier = ./__tests__/portable/verify_plugin.py;
     }
   );
 in

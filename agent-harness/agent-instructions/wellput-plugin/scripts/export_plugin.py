@@ -125,6 +125,10 @@ def export_runtime(sources, output):
 
 
 def export_tests(sources, output):
+    shutil.copyfile(
+        Path(sources["portableTests"]) / "test_hooks.py", output / "tests/test_hooks.py"
+    )
+    shutil.copyfile(sources["verifier"], output / "tests/verify_plugin.py")
     tests = Path(sources["tests"])
     for name in (
         "test_human_facing_reply_rules.py",
@@ -150,7 +154,6 @@ def main():
     if output.exists():
         raise ValueError(f"Refusing to replace an existing export: {output}")
     copy_directory(Path(sources["assets"]), output)
-    copy_directory(Path(sources["portableTests"]), output / "tests")
     export_instructions(sources, output)
     export_runtime(sources, output)
     export_tests(sources, output)

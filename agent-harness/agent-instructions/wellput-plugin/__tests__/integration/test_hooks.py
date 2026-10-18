@@ -3,30 +3,30 @@ import shutil
 import stat
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 
 
-ROOT = Path(__file__).resolve().parents[1]
+@pytest.fixture
+def invoke(plugin_root):
+    def invoke_hook(payload, root=plugin_root):
+        result = subprocess.run(
+            [sys.executable, "-S", str(root / "hooks/reply_hook.py")],
+            input=json.dumps(payload),
+            capture_output=True,
+            text=True,
+            timeout=5,
+            cwd="/",
+            check=True,
+        )
+        return json.loads(result.stdout)
+
+    return invoke_hook
 
 
-def invoke(payload, root=ROOT):
-    result = subprocess.run(
-        [sys.executable, "-S", str(root / "hooks/reply_hook.py")],
-        input=json.dumps(payload),
-        capture_output=True,
-        text=True,
-        timeout=5,
-        cwd="/",
-        check=True,
-    )
-    return json.loads(result.stdout)
-
-
-def copy_plugin(destination):
+def copy_plugin(plugin_root, destination):
     shutil.copytree(
-        ROOT,
+        plugin_root,
         destination,
         ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
     )
@@ -35,23 +35,23 @@ def copy_plugin(destination):
 
 
 @pytest.mark.parametrize("source", ["startup", "resume", "compact", "clear", "fork"])
-def test_session_events_render_the_current_contract(source):
+def test_session_events_render_the_current_contract(source, invoke, plugin_root):
     output = invoke({"hook_event_name": "SessionStart", "source": source})
     context = output["hookSpecificOutput"]["additionalContext"]
     assert "{{reply_format}}" not in context
     assert "100 prose words" in context
-    assert str(ROOT / "skills/wellput/SKILL.md") in context
+    assert str(plugin_root / "skills/wellput/SKILL.md") in context
 
 
 @pytest.mark.parametrize("field", ["reply_text", "last_assistant_message"])
-def test_native_direct_reply_fields_trigger_a_repair(field):
+def test_native_direct_reply_fields_trigger_a_repair(field, invoke):
     output = invoke({"hook_event_name": "Stop", field: "PR #17 is ready."})
     assert output["decision"] == "block"
     assert "gives no link" in output["reason"]
 
 
 @pytest.mark.parametrize("codex", [False, True])
-def test_transcript_fallback_reads_both_native_formats(tmp_path, codex):
+def test_transcript_fallback_reads_both_native_formats(tmp_path, codex, invoke):
     content = [{"type": "output_text" if codex else "text", "text": "Sure, done."}]
     message = {"type": "message", "role": "assistant", "content": content}
     event = (
@@ -66,7 +66,7 @@ def test_transcript_fallback_reads_both_native_formats(tmp_path, codex):
     assert "reaction" in output["reason"]
 
 
-def test_direct_reply_does_not_read_an_unavailable_transcript():
+def test_direct_reply_does_not_read_an_unavailable_transcript(invoke):
     assert (
         invoke(
             {
@@ -79,7 +79,7 @@ def test_direct_reply_does_not_read_an_unavailable_transcript():
     )
 
 
-def test_a_retry_does_not_create_an_infinite_correction_loop():
+def test_a_retry_does_not_create_an_infinite_correction_loop(invoke):
     assert (
         invoke(
             {
@@ -92,7 +92,7 @@ def test_a_retry_does_not_create_an_infinite_correction_loop():
     )
 
 
-def test_a_later_user_turn_does_not_validate_an_old_assistant_reply(tmp_path):
+def test_a_later_user_turn_does_not_validate_an_old_assistant_reply(tmp_path, invoke):
     transcript = tmp_path / "transcript.jsonl"
     transcript.write_text(
         "\n".join(
@@ -106,9 +106,11 @@ def test_a_later_user_turn_does_not_validate_an_old_assistant_reply(tmp_path):
     assert invoke({"hook_event_name": "Stop", "transcript_path": str(transcript)}) == {}
 
 
-def test_relocation_with_spaces_preserves_policy_and_validation(tmp_path):
+def test_relocation_with_spaces_preserves_policy_and_validation(
+    tmp_path, invoke, plugin_root
+):
     destination = tmp_path / "wellput plugin"
-    copy_plugin(destination)
+    copy_plugin(plugin_root, destination)
     policy = invoke({"hook_event_name": "SessionStart"}, destination)[
         "hookSpecificOutput"
     ]["additionalContext"]
@@ -121,9 +123,9 @@ def test_relocation_with_spaces_preserves_policy_and_validation(tmp_path):
     )
 
 
-def test_invalid_configuration_fails_closed(tmp_path):
+def test_invalid_configuration_fails_closed(tmp_path, invoke, plugin_root):
     destination = tmp_path / "invalid"
-    copy_plugin(destination)
+    copy_plugin(plugin_root, destination)
     (destination / "hooks/rules/reply-formats.json").write_text("{}")
     output = invoke(
         {"hook_event_name": "Stop", "reply_text": "The check passed."}, destination
@@ -132,18 +134,20 @@ def test_invalid_configuration_fails_closed(tmp_path):
     assert "could not run" in output["reason"]
 
 
-def test_invalid_configuration_stops_policy_loading(tmp_path):
+def test_invalid_configuration_stops_policy_loading(tmp_path, invoke, plugin_root):
     destination = tmp_path / "invalid-session"
-    copy_plugin(destination)
+    copy_plugin(plugin_root, destination)
     (destination / "hooks/rules/reply-formats.json").write_text("not json")
     output = invoke({"hook_event_name": "SessionStart"}, destination)
     assert output["continue"] is False
     assert "could not run" in output["stopReason"]
 
 
-def test_custom_budgets_change_injected_policy_and_enforcement_together(tmp_path):
+def test_custom_budgets_change_injected_policy_and_enforcement_together(
+    tmp_path, invoke, plugin_root
+):
     destination = tmp_path / "custom"
-    copy_plugin(destination)
+    copy_plugin(plugin_root, destination)
     path = destination / "hooks/rules/reply-formats.json"
     document = json.loads(path.read_text())
     document["formats"]["confirmation"] = {"maximum_words": 5, "grace_words": 0}
