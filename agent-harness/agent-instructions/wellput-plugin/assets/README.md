@@ -56,18 +56,17 @@ The end-of-turn reply may be all you read. It should make the work understandabl
 
 ```mermaid
 flowchart LR
-    start["SessionStart<br/>Introduce rules once"] --> work["Agent works<br/>with session context"]
-    skill["Writing skill<br/>Context and clarity"] --> draft["Draft reply"]
-    work --> draft
+    start["SessionStart<br/>Rules once"] --> draft["Agent drafts"]
+    skill["Writing skill<br/>Context + clarity"] --> draft
     draft --> check{"Stop<br/>Format valid?"}
     check -->|Pass| reader["Reply to you"]
-    check -->|Needs repair| repair["Agent repairs reply"]
+    check -->|Needs repair| repair["Agent repairs"]
     repair --> reader
 
     classDef hook fill:#102b3f,color:#f0f7f5,stroke:#6de2c7
     classDef writing fill:#6de2c7,color:#102b3f,stroke:#102b3f
     classDef handoff fill:#e6b76a,color:#102b3f,stroke:#102b3f
-    class start,work,check hook
+    class start,check hook
     class skill,draft,repair writing
     class reader handoff
 ```
