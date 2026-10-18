@@ -17,6 +17,9 @@ let
     "--autoConnect"
     "--userDataDir"
     userDataDir
+    "--experimentalScreencast"
+    "--experimentalFfmpegPath"
+    "${pkgs.ffmpeg}/bin/ffmpeg"
     "--usageStatistics"
     "false"
   ];
