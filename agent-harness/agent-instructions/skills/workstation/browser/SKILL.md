@@ -34,11 +34,14 @@ Keep one worker for a browser task and run `stop` when finished. The completion 
 current Herdr pane or Codex thread; outside those contexts, explicit `stop` is required. A fresh worker discards page
 IDs and snapshot refs, so enumerate pages and take a fresh snapshot before continuing an earlier task.
 
+CLI tool failures can print `Error:` while exiting successfully. Read the tool output and verify the resulting browser
+state instead of treating exit status alone as success.
+
 ### Chrome devtools connection and recovery
 
 Connects to the user's real Chrome Global via `--autoConnect`, preserving its normal launch flags. The user must enable
-`chrome://inspect/#remote-debugging` once (persists across restarts) and click Allow on the consent dialog once per
-Chrome session.
+`chrome://inspect/#remote-debugging` once (persists across restarts). A new attached connection can require the user to
+click Allow again, including after worker cleanup.
 
 If attached `chrome-devtools list_pages` returns no pages, reports a stale connection, or returns "Could not connect to
 Chrome," recover in this order: 1) launch Chrome Global with `hypr-summon-chrome-global` on Linux or
@@ -64,6 +67,9 @@ The Chrome DevTools target is single and sequential and needs its own Allow.
 
 Start attached recording only after bringing the owned target tab forward; background tabs can wait indefinitely for
 their first frame. Headless recording needs no desktop focus. Stop recording before stopping its worker.
+
+In headless mode, activate an owned background tab with `select_page --bringToFront true` before input or recording.
+Background rendering throttling can otherwise make input time out; activation inside headless Chrome shows no window.
 
 ### Knowledge
 
