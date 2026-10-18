@@ -7,6 +7,7 @@
 {
   imports = [
     ../desktop/applications/chatgpt/chatgpt-home-manager.nix
+    ../development/cloud-services/agent-api/agent-api-home-manager.nix
     ../development/cloud-services/cloudflare-cli/cloudflare-cli-home-manager.nix
     ../development/cloud-services/google-workspace-cli/google-workspace-cli-home-manager.nix
     ../operating-system/health-check/health-check-home-manager.nix
