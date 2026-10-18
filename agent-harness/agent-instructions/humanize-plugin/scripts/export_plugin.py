@@ -56,7 +56,7 @@ def export_instructions(sources, output):
         for section in sections
         if section.startswith(("### Evidence\n", "### Autonomy\n", "### Completion\n"))
     ]
-    write_file(destination, "references/core.md", "".join(selected))
+    write_file(destination, "references/core.md", "".join(selected).rstrip() + "\n")
     docs = Path(sources["docs"]).read_text()
     docs = docs[docs.index("### Never write") :]
     write_file(destination, "references/artifact-writing.md", docs)
