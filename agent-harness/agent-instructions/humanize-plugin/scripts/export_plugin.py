@@ -4,6 +4,7 @@ import importlib.util
 import json
 import re
 import shutil
+import stat
 import sys
 from pathlib import Path
 
@@ -21,6 +22,8 @@ def copy_directory(source, destination):
         dirs_exist_ok=True,
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "__tests__"),
     )
+    for path in (destination, *destination.rglob("*")):
+        path.chmod(path.stat().st_mode | stat.S_IWUSR)
 
 
 def portable_references(text, core_path, docs_path):
