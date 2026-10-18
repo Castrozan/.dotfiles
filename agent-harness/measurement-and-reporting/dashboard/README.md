@@ -20,7 +20,7 @@ app is now the usage front end, replacing the retired GitHub Pages report.
 
 - `src/app/models` — snapshot JSON and aggregated view-model types.
 - `src/app/services/usage-aggregation` — the pure aggregation port, split by concern.
-- `src/app/services/usage-snapshot-client.service.ts` — lists and fetches snapshots from GCS.
+- `src/app/services/usage-snapshot-client/` — lists and fetches snapshots from GCS.
 - `src/app/shared/token-formatting.ts` — token/percent formatting helpers.
 - `src/app/components` — presentational components plus the live dashboard container.
 

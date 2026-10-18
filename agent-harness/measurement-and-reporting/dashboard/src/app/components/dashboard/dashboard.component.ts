@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '
 import { DASHBOARD_CONFIGURATION } from '../../config/dashboard-config';
 import { UsageViewModel } from '../../models/account-view.model';
 import { UsageAggregationService } from '../../services/usage-aggregation/usage-aggregation.service';
-import { UsageSnapshotClientService } from '../../services/usage-snapshot-client.service';
+import { UsageSnapshotClientService } from '../../services/usage-snapshot-client/usage-snapshot-client.service';
 import { StatCardsComponent } from '../stat-cards/stat-cards.component';
 import { DailyTokensChartComponent } from '../daily-tokens-chart/daily-tokens-chart.component';
 import { OtelPanelComponent } from '../otel-panel/otel-panel.component';
