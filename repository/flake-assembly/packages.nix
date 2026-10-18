@@ -4,8 +4,6 @@ let
   inherit (pkgs) lib;
 in
 {
-  wellput-plugin = import ../../agent-harness/agent-instructions/wellput-plugin { inherit pkgs; };
-
   devenv =
     import ../../machine-configuration/development/development-environments/devenv-cached-package.nix
       {
