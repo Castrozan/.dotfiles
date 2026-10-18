@@ -1,7 +1,11 @@
 ---
 name: humanize
-description: Use for substantial replies in active agent sessions; exclude file authoring.
+description: Use for substantial replies to people in active agent sessions. Skip one- or two-sentence confirmations, factual answers, and file authoring.
 ---
+
+### Interactive communication
+
+Read [interactive communication](references/interactive-communication.md) for session delivery policy.
 
 ### Reader understanding policy
 
@@ -20,6 +24,9 @@ rewrite may change wording without changing meaning.
 Use established terms consistently and define necessary unfamiliar terms through their concrete referents.
 
 Separate observations from inferences and recommendations; state unknowns and how they limit the answer.
+
+Core [evidence](../../../core-rules/core.md#evidence) and [autonomy](../../../core-rules/core.md#autonomy) own factual
+verification and decision thresholds.
 
 ### Representation selection
 

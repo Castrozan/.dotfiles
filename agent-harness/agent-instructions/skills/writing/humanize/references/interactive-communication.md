@@ -1,6 +1,11 @@
+---
+name: interactive-communication
+---
+
 ### Humanize policy loading
 
-Load [Humanize](../SKILL.md) before substantial replies.
+Load [Humanize](../SKILL.md) before substantial replies. When the user explicitly requests Humanize, load it before any
+other action.
 
 ### Peer communication
 
