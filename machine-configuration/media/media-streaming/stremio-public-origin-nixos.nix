@@ -33,7 +33,11 @@ in
         "/" = {
           proxyPass = "http://${tailnetBindAddress}:43212";
           proxyWebsockets = true;
-          extraConfig = streamingProxyExtraConfig;
+          extraConfig = streamingProxyExtraConfig + ''
+            proxy_set_header Accept-Encoding "";
+            sub_filter_once off;
+            sub_filter 'rel="manifest"' 'rel="manifest" crossorigin="use-credentials"';
+          '';
         };
         "/server/" = {
           proxyPass = "http://${tailnetBindAddress}:11470/";
