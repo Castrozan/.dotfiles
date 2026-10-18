@@ -1,6 +1,6 @@
 # Wellput skill sentence review
 
-Source snapshot: https://github.com/Castrozan/wellput/blob/80aeb06381904ed2952372cab8cf7b831d4bf782/skills/wellput/SKILL.md
+Source snapshot: <https://github.com/Castrozan/wellput/blob/80aeb06381904ed2952372cab8cf7b831d4bf782/skills/wellput/SKILL.md>
 
 **ID** runs continuously across sections; **#** is the row within each table.
 
