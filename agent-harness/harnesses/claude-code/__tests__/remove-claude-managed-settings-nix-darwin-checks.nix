@@ -12,10 +12,11 @@ let
     (import ../settings/remove-claude-managed-settings-nix-darwin.nix { inherit pkgs; })
     .system.activationScripts.postActivation.text.content;
 
-  userSettings = builtins.fromJSON (
-    (helpers.homeManagerTestConfiguration [ self.homeManagerModules.claude-code ])
-    .home.file.".claude/settings.json.nix-source".source.baseSettings.text
-  );
+  claudeConfiguration = helpers.homeManagerTestConfiguration [ self.homeManagerModules.claude-code ];
+
+  userSettings =
+    builtins.fromJSON
+      claudeConfiguration.home.file.".claude/settings.json.nix-source".source.baseSettings.text;
 in
 {
   claude-ai-account-connectors-denied-from-user-settings =
