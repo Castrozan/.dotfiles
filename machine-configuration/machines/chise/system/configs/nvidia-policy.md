@@ -39,3 +39,5 @@ user-authorized reboot. Before accepting the new generation, verify the loaded k
 Hyprland's AMD renderer, the hub-connected monitor, selected applications' NVIDIA renderers, Chrome WebGL and playback,
 and CUDA/NVENC workloads. A source review or successful build does not establish runtime stability. Preserve the previous
 generation for recovery.
+
+The [2026-10-17 firmware resume incident](nvidia-resume-failure.md) records the observed fault and recovery checks.
