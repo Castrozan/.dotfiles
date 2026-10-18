@@ -1,8 +1,8 @@
 # Wellput
 
-![Wellput hook demo](https://github.com/user-attachments/assets/98458e2d-bb10-48cc-9932-60f50bcbedee)
+![Live Claude Code session showing Wellput rejecting and repairing a reply](https://github.com/user-attachments/assets/4c87b20e-a722-43cc-97de-c827fd72b85a)
 
-[Watch the narrated tour](https://github.com/user-attachments/assets/653decc1-f93b-4348-b351-c9f4d5d59cbf)
+<video src="https://github.com/user-attachments/assets/8cd263e3-5665-4b8d-97a5-da5fbf3e153a" controls width="100%"></video>
 
 A few dozen agents should not require a few dozen plans to review. Wellput helps you recover each session's purpose,
 result, and next step with minimal reading.
