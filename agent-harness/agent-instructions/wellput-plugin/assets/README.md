@@ -1,6 +1,6 @@
 # Wellput
 
-![Live Claude Code session showing Wellput rejecting and repairing a reply](https://github.com/user-attachments/assets/f8af5d68-2c78-4506-bc4f-681347e58097)
+![Live Claude Code session showing Wellput rejecting and repairing a reply](https://github.com/user-attachments/assets/8f2b00c6-ea37-486f-a118-8df32fdf0b81)
 
 [Watch the narrated tour](https://github.com/user-attachments/assets/2fe47182-cf30-4bb3-9659-f298dc39a57a)
 
