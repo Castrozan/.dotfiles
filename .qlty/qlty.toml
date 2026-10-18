@@ -7,6 +7,7 @@ file_patterns = [
   "agent-harness/harnesses/codex/session-title-instructions.md",
   "agent-harness/harnesses/claude-code/launch/interactive-tool-usage.md",
   "agent-harness/agent-instructions/skills/workstation/browser/references/opencli.md",
+  "agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md",
 ]
 rules = ["MD041"]
 
