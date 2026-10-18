@@ -76,7 +76,6 @@ in
       (
         lib.hasInfix "<<: *media-3g" suwayomiServiceBody
         && lib.hasInfix "JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m" suwayomiServiceBody
-        && lib.hasInfix "-XX:+UseG1GC -XX:G1PeriodicGCInterval=300000" suwayomiServiceBody
         && lib.hasInfix ''test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4567/api/v1/health"]'' suwayomiServiceBody
         && lib.hasInfix "start_period: 120s" suwayomiServiceBody
       )

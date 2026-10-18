@@ -4,7 +4,6 @@ from agent_api.catalogs.cloud import cloud_capabilities
 from agent_api.catalogs.local import local_capabilities
 from agent_api.catalogs.media import media_capabilities
 from agent_api.contract import CapabilityError
-from agent_api.providers.credentials import credential_available
 
 PROVIDERS = {
     "trafilatura": {
@@ -29,22 +28,8 @@ PROVIDERS = {
         "execution": "local_and_cloud",
         "documentation": "media-image providers; media-speech providers; media-movie schema",
     },
-    "monid": {
-        "execution": "cloud",
-        "credential_environment": "MONID_API_KEY",
-        "credential_file": "monid-api-key",
-        "documentation": "https://docs.monid.ai/",
-    },
-    "fal": {
-        "execution": "cloud",
-        "credential_environment": "FAL_KEY",
-        "credential_file": "fal-api-key",
-        "documentation": "https://fal.ai/docs/documentation/model-apis/inference/queue",
-    },
     "firecrawl": {
         "execution": "cloud",
-        "credential_environment": "FIRECRAWL_API_KEY",
-        "credential_file": "firecrawl-api-key",
         "documentation": "https://docs.firecrawl.dev/",
         "unauthenticated_access": "limited",
     },
@@ -52,14 +37,7 @@ PROVIDERS = {
 
 
 def providers():
-    return [
-        {
-            "id": name,
-            **description,
-            "credentials_available": credential_available(description),
-        }
-        for name, description in PROVIDERS.items()
-    ]
+    return [{"id": name, **description} for name, description in PROVIDERS.items()]
 
 
 def capabilities(query="", provider=None):
@@ -106,8 +84,6 @@ def validate_request(request):
     requires_payment = payment == "provider_plan"
     if payment == "speech_provider":
         requires_payment = request.input["provider"] != "kokoro"
-    if payment == "optional_account":
-        requires_payment = credential_available(PROVIDERS[entry["provider"]])
     if requires_payment and not request.allow_paid:
         raise CapabilityError("payment_permission_required")
     return entry

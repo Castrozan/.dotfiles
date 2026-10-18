@@ -1,9 +1,7 @@
 from agent_api.contract import CapabilityError
 from agent_api.providers.downloading import DownloadProvider
-from agent_api.providers.fal import FalProvider
 from agent_api.providers.firecrawl import FirecrawlProvider
 from agent_api.providers.media import MediaProvider
-from agent_api.providers.monid import MonidProvider
 from agent_api.providers.processing import ProcessingProvider
 from agent_api.providers.web import WebProvider
 
@@ -15,8 +13,6 @@ PROVIDER_TYPES = {
     "whisper-cpp": ProcessingProvider,
     "pandoc": ProcessingProvider,
     "media": MediaProvider,
-    "monid": MonidProvider,
-    "fal": FalProvider,
     "firecrawl": FirecrawlProvider,
 }
 

@@ -1,31 +1,27 @@
 # Wellput
 
+![Wellput hook demo](https://github.com/user-attachments/assets/98458e2d-bb10-48cc-9932-60f50bcbedee)
+
+[Watch the narrated tour](https://github.com/user-attachments/assets/653decc1-f93b-4348-b351-c9f4d5d59cbf)
+
 A few dozen agents should not require a few dozen plans to review. Wellput helps you recover each session's purpose,
 result, and next step with minimal reading.
 
 Built for **free sessions** with high stakes: capable agents discover and deliver from a direction, clarifying when
 needed. A writing skill guides the explanation; hooks enforce the reply's structure.
 
-<table>
-<tr><th>Hook demo · loops automatically</th><th>Free sessions · narrated tour</th></tr>
-<tr>
-<td width="50%"><img src="https://github.com/user-attachments/assets/98458e2d-bb10-48cc-9932-60f50bcbedee" alt="Wellput hooks load the policy, reject a sample reply, accept its correction, and apply a custom budget" width="100%" /></td>
-<td width="50%"><video src="https://github.com/user-attachments/assets/653decc1-f93b-4348-b351-c9f4d5d59cbf" controls width="100%"></video></td>
-</tr>
-</table>
-
 ## Install
 
 Requires Python 3.12+ as `python3`. Runtime dependencies are bundled.
 
-**Claude Code**
+### Claude Code
 
 ```text
 /plugin marketplace add Castrozan/wellput
 /plugin install wellput@wellput
 ```
 
-**Codex**
+### Codex
 
 ```sh
 codex plugin marketplace add Castrozan/wellput

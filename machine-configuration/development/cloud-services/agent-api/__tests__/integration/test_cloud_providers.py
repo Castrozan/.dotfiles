@@ -1,11 +1,12 @@
 import json
+from pathlib import Path
 
 import httpx
 import pytest
 
+from agent_api.catalog import validate_request
 from agent_api.contract import CapabilityError, OperationRequest
-from agent_api.providers.fal import FalProvider
-from agent_api.providers.monid import MonidProvider
+from agent_api.providers import firecrawl
 from agent_api.providers.network import NetworkClient
 
 
@@ -13,127 +14,61 @@ def client_for(handler):
     return NetworkClient(10, httpx.Client(transport=httpx.MockTransport(handler)))
 
 
-def test_monid_async_run_submits_once_and_retains_remote_identity(
-    tmp_path, monkeypatch
+@pytest.mark.parametrize("credential_source", ["environment", "file"])
+@pytest.mark.parametrize(
+    ("capability", "input_data"),
+    [
+        ("web.search", {"query": "documentation", "limit": 2}),
+        ("web.scrape", {"url": "https://example.com"}),
+    ],
+)
+def test_firecrawl_never_uses_account_credentials(
+    tmp_path, monkeypatch, credential_source, capability, input_data
 ):
-    monkeypatch.setenv("MONID_API_KEY", "synthetic")
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)
+    if credential_source == "environment":
+        monkeypatch.setenv("FIRECRAWL_API_KEY", "synthetic")
+    else:
+        secrets_directory = tmp_path / ".secrets"
+        secrets_directory.mkdir()
+        (secrets_directory / "firecrawl-api-key").write_text("synthetic")
     calls = []
 
     def respond(request):
         calls.append(request)
-        assert request.headers["authorization"] == "Bearer synthetic"
-        if request.method == "POST":
-            return httpx.Response(202, json={"runId": "remote-id", "status": "RUNNING"})
-        return httpx.Response(
-            200,
-            json={
-                "runId": "remote-id",
-                "status": "COMPLETED",
-                "providerResponse": {"httpStatus": 200},
-                "output": {"text": "result"},
-            },
-        )
+        assert "authorization" not in request.headers
+        assert request.url.path == "/v2/" + capability.removeprefix("web.")
+        data = json.loads(request.content)
+        assert all(data[name] == value for name, value in input_data.items())
+        if capability == "web.scrape":
+            assert data["formats"] == ["markdown"]
+            assert data["onlyMainContent"] is True
+        return httpx.Response(200, json={"success": True, "data": []})
 
-    client = client_for(respond)
-    monkeypatch.setattr(client, "pause", lambda: None)
-    request = OperationRequest(
-        "monid.run",
-        {"provider": "apify", "endpoint": "/example", "input": {}},
-        allow_paid=True,
-    )
-    result = MonidProvider().run(request, tmp_path, client)
-    assert result["output"] == {"text": "result"}
-    assert [call.method for call in calls] == ["POST", "GET"]
-    assert (
-        json.loads((tmp_path / "submission.json").read_text())["run_id"] == "remote-id"
-    )
+    monkeypatch.setattr(firecrawl, "NetworkClient", lambda timeout: client_for(respond))
+    for allow_paid in (False, True):
+        request = OperationRequest(capability, input_data, allow_paid=allow_paid)
+        assert validate_request(request)["payment"] == "none"
+        assert firecrawl.FirecrawlProvider().execute(request, tmp_path, "id") == {
+            "success": True,
+            "data": [],
+        }
+    assert len(calls) == 2
 
 
-def test_monid_completed_provider_error_is_a_failure(tmp_path, monkeypatch):
-    monkeypatch.setenv("MONID_API_KEY", "synthetic")
-    calls = []
-
-    def respond(request):
-        calls.append(request)
-        return httpx.Response(
-            200,
-            json={
-                "runId": "remote-id",
-                "status": "COMPLETED",
-                "providerResponse": {"httpStatus": 429},
-            },
-        )
-
-    request = OperationRequest(
-        "monid.run",
-        {"provider": "apify", "endpoint": "/example", "input": {}},
-        allow_paid=True,
+def test_firecrawl_rejects_unsuccessful_provider_responses(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        firecrawl,
+        "NetworkClient",
+        lambda timeout: client_for(
+            lambda request: httpx.Response(200, json={"success": False})
+        ),
     )
     with pytest.raises(CapabilityError, match="provider_failed"):
-        MonidProvider().run(request, tmp_path, client_for(respond))
-    assert len(calls) == 1
-    assert (tmp_path / "submission.json").exists()
-
-
-def test_fal_polls_returned_urls_without_submitting_twice(tmp_path, monkeypatch):
-    monkeypatch.setenv("FAL_KEY", "synthetic")
-    calls = []
-    status_url = "https://queue.fal.run/fal-ai/flux/requests/request-id/status"
-    response_url = "https://queue.fal.run/fal-ai/flux/requests/request-id"
-
-    def respond(request):
-        calls.append(request)
-        if request.method == "POST":
-            return httpx.Response(
-                200,
-                json={
-                    "request_id": "request-id",
-                    "status_url": status_url,
-                    "response_url": response_url,
-                },
-            )
-        return httpx.Response(
-            200,
-            json={"status": "COMPLETED"}
-            if str(request.url) == status_url
-            else {"images": []},
+        firecrawl.FirecrawlProvider().execute(
+            OperationRequest("web.search", {"query": "documentation"}), tmp_path, "id"
         )
-
-    request = OperationRequest(
-        "fal.run",
-        {"endpoint": "fal-ai/flux/schnell", "input": {"prompt": "cat"}},
-        allow_paid=True,
-    )
-    result = FalProvider().run(request, tmp_path, client_for(respond))
-    assert result == {"images": []}
-    assert [call.method for call in calls] == ["POST", "GET", "GET"]
-    assert (
-        json.loads((tmp_path / "submission.json").read_text())["request_id"]
-        == "request-id"
-    )
-
-
-def test_fal_refuses_to_forward_credentials_to_another_host(tmp_path, monkeypatch):
-    monkeypatch.setenv("FAL_KEY", "synthetic")
-    calls = []
-
-    def respond(request):
-        calls.append(request)
-        return httpx.Response(
-            200,
-            json={
-                "request_id": "id",
-                "status_url": "https://other.example/status",
-                "response_url": "https://other.example/result",
-            },
-        )
-
-    request = OperationRequest(
-        "fal.run", {"endpoint": "fal-ai/flux/schnell", "input": {}}, allow_paid=True
-    )
-    with pytest.raises(CapabilityError, match="invalid_provider_url"):
-        FalProvider().run(request, tmp_path, client_for(respond))
-    assert len(calls) == 1
 
 
 @pytest.mark.parametrize("status", [401, 429, 500])
@@ -144,6 +79,7 @@ def test_transport_never_retries_submission(status):
         calls.append(request)
         return httpx.Response(status, json={"error": "synthetic"})
 
-    with pytest.raises(CapabilityError):
-        client_for(respond).json("POST", "https://api.monid.ai/v1/run", {})
+    with client_for(respond) as client:
+        with pytest.raises(CapabilityError):
+            client.json("POST", "https://api.firecrawl.dev/v2/search", {})
     assert len(calls) == 1
