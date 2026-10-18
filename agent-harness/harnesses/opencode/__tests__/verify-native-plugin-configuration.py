@@ -85,7 +85,7 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
                 "native-configuration-overlay.md"
             ]
             mcp_documents = [
-                document["mcp"]["servers"]
+                document["mcp"].get("servers", {})
                 for document in documents
                 if "mcp" in document
             ]
