@@ -1,5 +1,6 @@
 import json
 import shutil
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -21,6 +22,16 @@ def invoke(payload, root=ROOT):
         check=True,
     )
     return json.loads(result.stdout)
+
+
+def copy_plugin(destination):
+    shutil.copytree(
+        ROOT,
+        destination,
+        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
+    )
+    for path in (destination, *destination.rglob("*")):
+        path.chmod(path.stat().st_mode | stat.S_IWUSR)
 
 
 @pytest.mark.parametrize("source", ["startup", "resume", "compact", "clear", "fork"])
@@ -97,11 +108,7 @@ def test_a_later_user_turn_does_not_validate_an_old_assistant_reply(tmp_path):
 
 def test_relocation_with_spaces_preserves_policy_and_validation(tmp_path):
     destination = tmp_path / "humanize plugin"
-    shutil.copytree(
-        ROOT,
-        destination,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
-    )
+    copy_plugin(destination)
     policy = invoke({"hook_event_name": "SessionStart"}, destination)[
         "hookSpecificOutput"
     ]["additionalContext"]
@@ -116,11 +123,7 @@ def test_relocation_with_spaces_preserves_policy_and_validation(tmp_path):
 
 def test_invalid_configuration_fails_closed(tmp_path):
     destination = tmp_path / "invalid"
-    shutil.copytree(
-        ROOT,
-        destination,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
-    )
+    copy_plugin(destination)
     (destination / "hooks/rules/reply-formats.json").write_text("{}")
     output = invoke(
         {"hook_event_name": "Stop", "reply_text": "The check passed."}, destination
@@ -131,11 +134,7 @@ def test_invalid_configuration_fails_closed(tmp_path):
 
 def test_invalid_configuration_stops_policy_loading(tmp_path):
     destination = tmp_path / "invalid-session"
-    shutil.copytree(
-        ROOT,
-        destination,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
-    )
+    copy_plugin(destination)
     (destination / "hooks/rules/reply-formats.json").write_text("not json")
     output = invoke({"hook_event_name": "SessionStart"}, destination)
     assert output["continue"] is False
@@ -144,11 +143,7 @@ def test_invalid_configuration_stops_policy_loading(tmp_path):
 
 def test_custom_budgets_change_injected_policy_and_enforcement_together(tmp_path):
     destination = tmp_path / "custom"
-    shutil.copytree(
-        ROOT,
-        destination,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
-    )
+    copy_plugin(destination)
     path = destination / "hooks/rules/reply-formats.json"
     document = json.loads(path.read_text())
     document["formats"]["confirmation"] = {"maximum_words": 5, "grace_words": 0}
