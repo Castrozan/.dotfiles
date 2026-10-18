@@ -29,7 +29,7 @@ in
   hooks-flat-deploy-excludes-the-human-communication-policy =
     mkEvalCheck "hooks-flat-deploy-excludes-the-human-communication-policy"
       (!(builtins.hasAttr "interactive-communication.md" sourcePathsByFlatDeploymentFilename))
-      "the hook package must carry enforcement only; interactive communication guidance ships as a side file in the humanize skill package";
+      "the hook package must carry enforcement only; Wellput owns writing guidance and interactive profiles own scoped dotfiles policy";
 
   hooks-flat-deploy-has-no-basename-collision =
     mkEvalCheck "hooks-flat-deploy-has-no-basename-collision" (collidingFlatDeploymentFilenames == { })
