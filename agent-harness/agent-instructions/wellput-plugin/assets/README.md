@@ -14,32 +14,13 @@
 
 <!-- markdownlint-enable MD033 MD041 -->
 
-You are driving a bunch of high stakes agents, you are not running 100 agents, but some dozens of agents, you dont have
-time to dedicate 5-15 minutes to each session by giving it your goal, asking it to create a plan and checking the plan,
-the idea is to work with agents that are smart enough to take a not very well structured goal or even just a idrection,
-come up with a reasonable asumption of what needs to be odne based on context, reply ot the human briefly for
-clarification, another vague but more directive input fom the human is done, then work can start to be done, and each
-iteration can be done with minimal interaction.
+**Your agents work in parallel. Your attention doesn’t.**
 
-when thhis is odne a hhuman can take over multiple agents and work, instead of reading hundreds of lines of plans and
-writing and validating douzens of prd's.
+Wellput is a hook and a writing skill that make end-of-turn replies easier to understand and act on. Recognize the session, see what got done, know whether you’re needed, and move on without rereading the conversation.
 
-This is about "doing it", instead of working around it eg making plans or prds or following a orchestration guide.
+Built for **free sessions**: high-stakes discovery and delivery, not predefined workflows.
 
-when high stakes work should be done, that was never automatized, you need to make your hands dirty and launch waht i
-call a "free session", no workflows, simple harness with capable tools and high inteligence for discovery and delivery
-owrk.
-
-Wellput helps you do this and maximizes you and your time. This is not for your workflows, for your automations, this is
-for your daily driver high stakes, high discovery and delivery sessions.
-
-Wellput helps people multitask. Its goal is to maximize understanding and minimize agent attention. Your agents shoudl
-be as autonomous as possible and even if it needs you for smt, it should be brief, direct and make a big effort into
-making you understand the work as fast and as efficient as possible.
-
-The plugin includes a writing skill that instructs agents into what to prioritise and how to work with the hooks and
-what the human needs and wants when using the system and hooks for deterministic reply validations to enforce the shape
-of a good reply to the human.
+The point isn’t just shorter replies. It’s putting the effort of making work understandable on the agent, so you can stay across dozens of sessions without giving each one your afternoon.
 
 ![Live Claude Code session showing Wellput rejecting and repairing a reply](https://github.com/user-attachments/assets/8f2b00c6-ea37-486f-a118-8df32fdf0b81)
 
