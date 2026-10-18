@@ -1,0 +1,14 @@
+{
+  "name": "humanize",
+  "metadata": {
+    "description": "Humanize writing policy and reply enforcement."
+  },
+  "owner": { "name": "Castrozan" },
+  "plugins": [
+    {
+      "name": "humanize",
+      "source": "./",
+      "description": "Reader-first writing policy with reply enforcement."
+    }
+  ]
+}

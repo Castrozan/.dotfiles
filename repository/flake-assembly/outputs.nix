@@ -35,6 +35,16 @@ in
     system = linux;
   };
 
+  packages.${darwin}.humanize-plugin = import ../../agent-harness/agent-instructions/humanize-plugin {
+    inherit
+      (import ./channels.nix {
+        inherit inputs;
+        system = darwin;
+      })
+      pkgs
+      ;
+  };
+
   checks = import ./checks.nix {
     inherit inputs self release;
     systems = [

@@ -1,0 +1,8 @@
+{
+  "name": "humanize",
+  "version": "0.1.0",
+  "description": "Reader-first writing policy with deterministic reply checks and repair feedback.",
+  "author": { "name": "Castrozan", "url": "https://github.com/Castrozan" },
+  "repository": "https://github.com/Castrozan/humanize",
+  "license": "MIT"
+}

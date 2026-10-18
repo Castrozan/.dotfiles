@@ -1,0 +1,7 @@
+{
+  "name": "humanize",
+  "interface": { "displayName": "Humanize" },
+  "plugins": [
+    { "name": "humanize", "source": { "source": "local", "path": "./" } }
+  ]
+}
