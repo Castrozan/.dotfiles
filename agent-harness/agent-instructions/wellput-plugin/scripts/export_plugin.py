@@ -2,13 +2,13 @@ import ast
 import importlib.metadata
 import importlib.util
 import json
-import re
 import shutil
 import stat
 import sys
 from pathlib import Path
 
 from export_tests import export_tests
+from portable_instructions import portable_session_policy, portable_skill
 
 
 def write_file(root, relative, content):
@@ -28,10 +28,6 @@ def copy_directory(source, destination):
         path.chmod(path.stat().st_mode | stat.S_IWUSR)
 
 
-def portable_references(text, core_path):
-    return re.sub(r"(?:\.\./)+core-rules/core\.md", core_path, text)
-
-
 def export_instructions(sources, output):
     sys.path.insert(0, str(sources["instructionFormatter"]))
     from instructions.instruction_prose_wrapping import wrap_instruction_prose
@@ -39,12 +35,12 @@ def export_instructions(sources, output):
     skill = Path(sources["skill"])
     destination = output / "skills/wellput"
     copy_directory(skill, destination)
-    for relative, core_path in (
-        ("SKILL.md", "references/core.md"),
-        ("references/interactive-communication.md", "core.md"),
+    for relative, project_policy in (
+        ("SKILL.md", portable_skill),
+        ("references/interactive-communication.md", portable_session_policy),
     ):
         path = destination / relative
-        text = portable_references(path.read_text(), core_path)
+        text = project_policy(path.read_text())
         text = text.replace(
             "so WezTerm can detect them", "so terminals can detect them"
         )
@@ -57,14 +53,6 @@ def export_instructions(sources, output):
                 text.replace("Humanize", "Wellput").replace("humanize", "wellput")
             )
         )
-    core = Path(sources["core"]).read_text()
-    sections = re.split(r"(?=^### )", core, flags=re.MULTILINE)
-    selected = [
-        section
-        for section in sections
-        if section.startswith(("### Evidence\n", "### Autonomy\n", "### Completion\n"))
-    ]
-    write_file(destination, "references/core.md", "".join(selected).rstrip() + "\n")
     evaluation = (skill / "__tests__/evals/reader_recovery.yaml").read_text()
     evaluation = evaluation.replace(
         "agent-harness/agent-instructions/skills/writing/humanize/", "skills/wellput/"

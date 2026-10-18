@@ -12,7 +12,6 @@ let
           path = ../../quality/evaluations/instructions;
         }
       ];
-      core = ../core-rules/core.md;
       rules = ../../hooks/runtime/common/human_facing_reply;
       guard = ../../hooks/runtime/stop/end_of_turn_format_guard_handler.py;
       renderer = ../../quality/evaluations/instructions/reply_format_instructions.py;

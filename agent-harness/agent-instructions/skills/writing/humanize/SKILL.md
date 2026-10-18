@@ -102,11 +102,6 @@ an unclear referent hides the answer; preserve the facts under [source fidelity]
 Check in this order: 1) answer the requested task under [source fidelity](#source-fidelity); 2) restore only the context
 the reader needs under [reader understanding](#reader-understanding-policy); 3) apply [representation
 selection](#representation-selection); 4) repair unclear relationships under [confusion recovery](#confusion-recovery);
-5) check the injected conversational contract. Before returning a procedure, walk through its written steps without
-executing them and check [prerequisites and hazards](#procedures-and-explanations).
-
-### Interactive communication reference
-
-Interactive harnesses inject [interactive communication](references/interactive-communication.md) separately because its
-response contract must remain available before Humanize is selected. Do not reload it during ordinary Humanize use.
-Follow its [link format](references/interactive-communication.md#link-format) when writing interactive replies.
+5) check the injected [conversational contract](references/interactive-communication.md), including its [link
+format](references/interactive-communication.md#link-format). Before returning a procedure, walk through its written
+steps without executing them and check [prerequisites and hazards](#procedures-and-explanations).

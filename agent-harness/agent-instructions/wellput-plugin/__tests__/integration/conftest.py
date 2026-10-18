@@ -13,7 +13,6 @@ def plugin_root(tmp_path_factory):
     harness = instructions.parent
     sources = {
         "skill": instructions / "skills/writing/humanize",
-        "core": instructions / "core-rules/core.md",
         "rules": harness / "hooks/runtime/common/human_facing_reply",
         "guard": harness / "hooks/runtime/stop/end_of_turn_format_guard_handler.py",
         "renderer": harness

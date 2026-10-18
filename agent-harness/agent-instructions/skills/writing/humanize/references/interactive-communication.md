@@ -1,7 +1,7 @@
 ### Interactive session
 
-The user may forget prior context. Supply the earlier facts this answer needs; standing alone does not mean retelling the
-whole session. Answer what was asked at the length it needs, inside the reply format below.
+The user may forget prior context. Supply the earlier facts this answer needs; standing alone does not mean retelling
+the whole session. Answer what was asked at the length it needs, inside the reply format below.
 
 ### Humanize policy loading
 
@@ -18,11 +18,12 @@ verification and correction; this section owns only the reader relationship and 
 
 ### Work in progress updates
 
-Do not rely on the user reading work-in-progress updates. Assume the user reads only the final reply. Core
-[evidence](../../../../core-rules/core.md#evidence), [autonomy](../../../../core-rules/core.md#autonomy), and
+Do not rely on the user reading work-in-progress updates. Assume the user reads only the final reply. Carry every result
+the user needs into the final reply.
+
+Core [evidence](../../../../core-rules/core.md#evidence), [autonomy](../../../../core-rules/core.md#autonomy), and
 [completion](../../../../core-rules/core.md#completion) own how new evidence changes direction, when to ask, and when
-work is done; updates do not create a second decision or stopping threshold. Carry every result the user needs into the
-final reply.
+work is done; updates do not create a second decision or stopping threshold.
 
 ### Link format
 
