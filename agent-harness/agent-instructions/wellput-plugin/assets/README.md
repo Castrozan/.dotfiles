@@ -1,8 +1,18 @@
+<!-- markdownlint-disable MD033 MD041 -->
+
+<div align="center">
+
+<img src="assets/logo.svg" width="96" height="96" alt="Wellput logo: a mint W inside a navy speech mark with a gold full stop">
+
 # Wellput
 
-![Live Claude Code session showing Wellput rejecting and repairing a reply](https://github.com/user-attachments/assets/8f2b00c6-ea37-486f-a118-8df32fdf0b81)
+[![Verify Wellput](https://github.com/Castrozan/wellput/actions/workflows/verify.yml/badge.svg)](https://github.com/Castrozan/wellput/actions/workflows/verify.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-6de2c7)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-e6b76a)](#install)
 
-[Watch the narrated tour](https://github.com/user-attachments/assets/c1aab86a-405e-44d0-adca-d3c8d6eff208)
+</div>
+
+<!-- markdownlint-enable MD033 MD041 -->
 
 You are driving a bunch of high stakes agents, you are not running 100 agents, but some dozens of agents, you dont have
 time to dedicate 5-15 minutes to each session by giving it your goal, asking it to create a plan and checking the plan,
@@ -30,6 +40,10 @@ making you understand the work as fast and as efficient as possible.
 The plugin includes a writing skill that instructs agents into what to prioritise and how to work with the hooks and
 what the human needs and wants when using the system and hooks for deterministic reply validations to enforce the shape
 of a good reply to the human.
+
+![Live Claude Code session showing Wellput rejecting and repairing a reply](https://github.com/user-attachments/assets/8f2b00c6-ea37-486f-a118-8df32fdf0b81)
+
+[Watch the narrated tour](https://github.com/user-attachments/assets/c1aab86a-405e-44d0-adca-d3c8d6eff208)
 
 ## Install
 

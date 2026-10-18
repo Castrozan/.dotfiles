@@ -1,0 +1,25 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="112"
+  height="112"
+  viewBox="0 0 112 112"
+  fill="none"
+  role="img"
+  aria-labelledby="title"
+>
+  <title id="title">Wellput</title>
+  <path
+    d="M30 8H82C95.255 8 106 18.745 106 32V66C106 79.255 95.255 90 82 90H46L24 106V89.245C13.649 86.578 6 77.183 6 66V32C6 18.745 16.745 8 30 8Z"
+    fill="#081725"
+    stroke="#6DE2C7"
+    stroke-width="2"
+  />
+  <path
+    d="M27 31L37 65L52 44L67 65L77 31"
+    stroke="#6DE2C7"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="84" cy="72" r="4" fill="#E6B76A" />
+</svg>
