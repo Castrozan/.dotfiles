@@ -12,8 +12,7 @@ in
   imports = [
     ./scripts
     ./secrets.nix
-    ../../../media/arr-stack/chise/chise-arr-stack-nixos.nix
-    ../../../media/arr-stack/miwayomi/miwayomi-nixos.nix
+    ./media/arr-stack.nix
     ../../../media/container-resources/media-container-resources-nixos.nix
     ./pkgs.nix
     ../../../development/virtualization/virtualization-nixos.nix
@@ -34,17 +33,6 @@ in
     ../../../home-automation/home-assistant/home-assistant-nixos.nix
     ../../../terminal/workspace-manager/cockpit-session-bridge/cockpit-session-bridge-nixos.nix
     ../../../network/cloudflare-tunnel-connector/cloudflare-tunnel-connector-nixos.nix
-    ../../../media/arr-stack/tailscale-funnel/arr-media-tailscale-funnel-nixos.nix
-    ../../../media/arr-stack/login-rate-limit-proxy/arr-media-login-ratelimit-proxy-nixos.nix
-    ../../../media/arr-stack/on-demand-supervisor/arr-stack-on-demand-supervisor-nixos.nix
-    ../../../media/arr-stack/jellyseerr-notifications/jellyseerr-notifications-nixos.nix
-    ../../../media/arr-stack/configuration/arr-config-provisioner-nixos.nix
-    ../../../media/arr-stack/configuration/download-cleanup/arr-download-cleanup-nixos.nix
-    ../../../media/arr-stack/bazarr-auth/bazarr-auth-provisioner-nixos.nix
-    ../../../media/arr-stack/library-access/jellyfin/jellyfin-library-access-provisioner-nixos.nix
-    ../../../media/arr-stack/jellyfin-subtitle-extraction/jellyfin-subtitle-extraction-warmer-nixos.nix
-    ../../../media/arr-stack/jellyseerr-account-permissions/jellyseerr-account-permission-provisioner-nixos.nix
-    ../../../media/arr-stack/jellyseerr-private-request-routing/jellyseerr-private-request-routing-provisioner-nixos.nix
   ]
   ++ lib.optional (builtins.pathExists ../../../../private-configuration/machines/chise/jarvis-connector.nix) ../../../../private-configuration/machines/chise/jarvis-connector.nix;
 

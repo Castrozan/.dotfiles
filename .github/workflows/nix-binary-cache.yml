@@ -38,6 +38,7 @@ jobs:
         with:
           cache-key: binary-cache
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          private-input-key: ${{ secrets.ARR_STACK_DEPLOY_KEY }}
 
       - name: Configure the signed binary cache
         run: |

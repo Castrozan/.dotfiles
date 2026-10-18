@@ -21,6 +21,7 @@ jobs:
         with:
           cache-key: lint
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          private-input-key: ${{ secrets.ARR_STACK_DEPLOY_KEY }}
 
       - name: statix
         if: ${{ !cancelled() }}
@@ -70,6 +71,7 @@ jobs:
         with:
           cache-key: ${{ matrix.cache-key }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          private-input-key: ${{ secrets.ARR_STACK_DEPLOY_KEY }}
 
       - name: ${{ matrix.name }}
         run: ${{ matrix.command }}

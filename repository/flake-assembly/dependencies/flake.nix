@@ -28,6 +28,12 @@
       flake = false;
     };
 
+    arr-stack = {
+      url = "git+ssh://git@github.com/Castrozan/arr-stack";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     clawde.url = "github:Castrozan/clawde/0d2f1578c5dd9b5e9cbc97c669d1603ecb8455c0";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 

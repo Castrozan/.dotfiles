@@ -11,10 +11,26 @@ inputs:
     description: >-
       Token used when fetching flake inputs, so GitHub API rate limits do not fail a run.
     required: true
+  private-input-key:
+    description: Read-only deploy key for the private arr-stack flake input.
+    required: false
+    default: ""
 
 runs:
   using: composite
   steps:
+    - name: Configure private arr-stack input access
+      if: ${{ inputs.private-input-key != '' }}
+      shell: bash
+      env:
+        ARR_STACK_DEPLOY_KEY: ${{ inputs.private-input-key }}
+      run: |
+        umask 077
+        mkdir -p "$RUNNER_TEMP/arr-stack-ssh"
+        printf '%s\n' "$ARR_STACK_DEPLOY_KEY" > "$RUNNER_TEMP/arr-stack-ssh/key"
+        printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' > "$RUNNER_TEMP/arr-stack-ssh/known_hosts"
+        printf 'GIT_SSH_COMMAND=ssh -i "%s" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="%s"\n' "$RUNNER_TEMP/arr-stack-ssh/key" "$RUNNER_TEMP/arr-stack-ssh/known_hosts" >> "$GITHUB_ENV"
+
     - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
       with:
         extra_nix_config: |

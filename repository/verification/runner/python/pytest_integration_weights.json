@@ -71,8 +71,6 @@
   "machine-configuration/development/system-rebuild/__tests__/integration/test_staged_sources.py": 22.311,
   "machine-configuration/development/system-rebuild/__tests__/integration/test_steward_preflight_lock.py": 1.115,
   "machine-configuration/machines/__tests__/integration/test_declared_launchd_agents_are_registered.py": 0.001,
-  "machine-configuration/media/arr-stack/configuration/download-cleanup/__tests__/integration/test_http_clients.py": 1.518,
-  "machine-configuration/media/arr-stack/configuration/download-cleanup/__tests__/integration/test_webhooks.py": 2.039,
   "machine-configuration/media/media-generation/__tests__/integration/test_elevenlabs_adapter.py": 0.017,
   "machine-configuration/media/media-generation/__tests__/integration/test_elevenlabs_usage.py": 0.076,
   "machine-configuration/media/media-generation/__tests__/integration/test_elevenlabs_voice_catalog.py": 0.131,

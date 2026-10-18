@@ -49,11 +49,7 @@ def _path_is_in_chise_host_tree(path):
 HARDCODED_NON_LUCAS_HOME_PATTERN = re.compile(r"/home/zanoni(?:/|\b)")
 
 
-CHISE_ONLY_CAPABILITY_ROOTS = (
-    "machine-configuration/media/anime-streaming/",
-    "machine-configuration/media/arr-stack/",
-    "machine-configuration/media/manga-streaming/",
-)
+CHISE_ONLY_CAPABILITY_ROOTS = ("machine-configuration/media/anime-streaming/",)
 
 
 def _is_acceptable_zanoni_home_reference(path):
