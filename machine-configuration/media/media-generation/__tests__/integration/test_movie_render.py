@@ -49,10 +49,8 @@ def fixture_movie(fps):
     scenes = tuple(
         MovieScene(
             ImageSelection(
-                "replicate",
-                ImageRequest(
-                    color, "black-forest-labs/flux-schnell", "1:1", "standard"
-                ),
+                "openai",
+                ImageRequest(color, "gpt-image-1-mini", "1:1", "low"),
             ),
             NarrationSelection(
                 "elevenlabs", "eleven_v4", "Hello.", "voice", "en-us", "calm"

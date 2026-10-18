@@ -3,7 +3,6 @@ from pathlib import Path
 
 from media_image.contract import ImageError
 from media_image.openai_provider import OpenAIImageProvider
-from media_image.replicate_provider import ReplicateImageProvider
 
 
 def read_credential(environment_name, filename):
@@ -21,8 +20,4 @@ def read_credential(environment_name, filename):
 def create_image_provider(provider_name):
     if provider_name == "openai":
         return OpenAIImageProvider(read_credential("OPENAI_API_KEY", "openai-api-key"))
-    if provider_name == "replicate":
-        return ReplicateImageProvider(
-            read_credential("REPLICATE_API_TOKEN", "replicate-api-token")
-        )
     raise ImageError("unsupported_provider")

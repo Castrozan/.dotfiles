@@ -13,10 +13,8 @@ from media_movie.contract import (
 def movie_scene(directions=None, provider="elevenlabs", model="eleven_v4"):
     return MovieScene(
         ImageSelection(
-            "replicate",
-            ImageRequest(
-                "A mountain", "black-forest-labs/flux-schnell", "9:16", "standard"
-            ),
+            "openai",
+            ImageRequest("A mountain", "gpt-image-1-mini", "2:3", "low"),
         ),
         NarrationSelection(
             provider, model, "Hello Lucas.", "voice", "en-us", directions

@@ -6,6 +6,9 @@ import pytest
 import media_image_cli
 import media_movie_cli
 import media_speech_cli
+from media_image.contract import ImageError
+from media_image.provider_factory import create_image_provider
+from media_movie.discovery import example_movie_request
 from media_movie.request_reader import read_movie_request
 from media_speech.contract import SpeechError
 from media_speech.delivery import direct_speech_text
@@ -124,3 +127,41 @@ def test_movie_inspection_needs_no_provider_runtime(
         == 1
     )
     assert json.loads(capsys.readouterr().err)["error"] == "operation_unavailable"
+
+
+def test_removed_image_provider_is_rejected_before_state_or_credentials(
+    tmp_path, capsys
+):
+    state = tmp_path / "state"
+    with pytest.raises(SystemExit) as error:
+        media_image_cli.main(
+            [
+                "--state-directory",
+                str(state),
+                "validate",
+                "--provider",
+                "replicate",
+                "--model",
+                "black-forest-labs/flux-schnell",
+                "--aspect-ratio",
+                "1:1",
+                "--quality",
+                "standard",
+                "--prompt",
+                "Mountain",
+            ]
+        )
+    assert error.value.code == 2
+    assert "invalid choice" in capsys.readouterr().err
+    with pytest.raises(ImageError, match="unsupported_provider"):
+        create_image_provider("replicate")
+    assert not state.exists()
+
+
+def test_movie_schema_rejects_removed_image_provider(capsys):
+    document = example_movie_request()
+    document["scenes"][0]["image"]["provider"] = "replicate"
+    assert media_movie_cli.main(["schema"]) == 0
+    schema = json.loads(capsys.readouterr().out)
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(document, schema)

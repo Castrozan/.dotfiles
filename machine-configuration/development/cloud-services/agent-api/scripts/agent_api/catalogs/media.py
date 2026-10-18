@@ -9,7 +9,7 @@ def media_capabilities():
             "Generate one PNG through the existing media-image API and retain its child receipt.",
             object_schema(
                 {
-                    "provider": {"enum": ["openai", "replicate"]},
+                    "provider": {"enum": ["openai"]},
                     "model": text(100),
                     "prompt": text(8000),
                     "aspect_ratio": {"enum": ["1:1", "2:3", "3:2", "9:16", "16:9"]},

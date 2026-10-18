@@ -51,12 +51,11 @@ def example_movie_request():
         "scenes": [
             {
                 "image": {
-                    "provider": "replicate",
-                    "model": "black-forest-labs/flux-schnell",
+                    "provider": "openai",
+                    "model": "gpt-image-1-mini",
                     "prompt": "A mountain at dawn, editorial paper collage, bold silhouettes, room for titles",
-                    "aspect_ratio": "9:16",
-                    "quality": "standard",
-                    "seed": 42,
+                    "aspect_ratio": "2:3",
+                    "quality": "low",
                 },
                 "narration": {
                     "provider": "elevenlabs",

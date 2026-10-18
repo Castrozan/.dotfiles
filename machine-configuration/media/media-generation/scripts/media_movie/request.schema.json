@@ -29,11 +29,7 @@
       "$ref": "#/$defs/dimension"
     },
     "fps": {
-      "enum": [
-        24,
-        25,
-        30
-      ]
+      "enum": [24, 25, 30]
     },
     "scenes": {
       "type": "array",
@@ -60,10 +56,7 @@
     "scene": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "image",
-        "narration"
-      ],
+      "required": ["image", "narration"],
       "properties": {
         "image": {
           "$ref": "#/$defs/image"
@@ -77,29 +70,17 @@
           "maximum": 600
         },
         "motion": {
-          "enum": [
-            "static",
-            "zoom_in"
-          ]
+          "enum": ["static", "zoom_in"]
         }
       }
     },
     "image": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "provider",
-        "model",
-        "prompt",
-        "aspect_ratio",
-        "quality"
-      ],
+      "required": ["provider", "model", "prompt", "aspect_ratio", "quality"],
       "properties": {
         "provider": {
-          "enum": [
-            "openai",
-            "replicate"
-          ]
+          "enum": ["openai"]
         },
         "model": {
           "type": "string",
@@ -111,13 +92,7 @@
           "maxLength": 8000
         },
         "aspect_ratio": {
-          "enum": [
-            "1:1",
-            "2:3",
-            "3:2",
-            "9:16",
-            "16:9"
-          ]
+          "enum": ["1:1", "2:3", "3:2", "9:16", "16:9"]
         },
         "quality": {
           "type": "string",
@@ -133,19 +108,10 @@
     "narration": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "provider",
-        "model",
-        "text",
-        "voice",
-        "language"
-      ],
+      "required": ["provider", "model", "text", "voice", "language"],
       "properties": {
         "provider": {
-          "enum": [
-            "elevenlabs",
-            "kokoro"
-          ]
+          "enum": ["elevenlabs", "kokoro"]
         },
         "model": {
           "type": "string",
@@ -161,10 +127,7 @@
           "minLength": 1
         },
         "language": {
-          "enum": [
-            "en-us",
-            "pt-br"
-          ]
+          "enum": ["en-us", "pt-br"]
         },
         "directions": {
           "type": "string",

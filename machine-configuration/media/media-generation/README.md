@@ -68,24 +68,23 @@ Registration and manifest files require private modes, and their containing dire
 
 Rendering and verification run without a shell, with private bounded logs and process-group cleanup on timeout or interruption. Source/assets remain with the consumer; editorial timing, image generation, voice selection and browser publishing stay outside the renderer. Receipts report zero generative calls for the local render and leave compute cost unknown. They do not include previous image or narration charges.
 
-
 ## Images and model discovery
 
-`media-image` wraps the official OpenAI and Replicate Python SDKs behind `ImageGenerationProvider`. Use `providers` to discover exact model IDs, aspect ratios, quality levels, seed support, credential sources and usage capabilities. Controls are checked before dispatch. [OpenAI image generation](https://developers.openai.com/api/docs/guides/image-generation) and [Replicate FLUX Schnell](https://replicate.com/black-forest-labs/flux-schnell) document upstream behavior and prices; the API does not claim a fixed price or enforce a budget reservation.
+`media-image` wraps the official OpenAI Python SDK behind `ImageGenerationProvider`. Use `providers` to discover exact model IDs, aspect ratios, quality levels, seed support, credential sources and usage capabilities. Controls are checked before dispatch. [OpenAI image generation](https://developers.openai.com/api/docs/guides/image-generation) documents upstream behavior and prices; the API does not claim a fixed price or enforce a budget reservation.
 
 ```sh
 media-image providers
 media-image generate --help
 media-image validate --provider openai --model gpt-image-2.5-flare \
   --aspect-ratio 1:1 --quality low --prompt-file image.txt
-media-image generate --provider replicate --model black-forest-labs/flux-schnell \
-  --aspect-ratio 9:16 --quality standard --seed 42 --prompt-file image.txt
+media-image generate --provider openai --model gpt-image-1-mini \
+  --aspect-ratio 2:3 --quality low --prompt-file image.txt
 media-image inspect OPERATION_UUID
 ```
 
-OpenAI reads `OPENAI_API_KEY` or `~/.secrets/openai-api-key`; Replicate reads `REPLICATE_API_TOKEN` or `~/.secrets/replicate-api-token`. Secret files must be provisioned separately. Existing agent subscriptions do not supply these API credentials. Discovery and local inspection require no credential. `validate` checks controls and credential presence without making a provider call or creating a job; it cannot establish account/model access or available balance.
+OpenAI reads `OPENAI_API_KEY` or `~/.secrets/openai-api-key`. Secret files must be provisioned separately. Existing agent subscriptions do not supply these API credentials. Discovery and local inspection require no credential. `validate` checks controls and credential presence without making a provider call or creating a job; it cannot establish account/model access or available balance.
 
-State defaults to `$XDG_STATE_HOME/media-image`. Successful receipts retain the fully decoded PNG, measured dimensions, checksum, provider request ID and available token or prediction-time usage. Account usage is explicitly unavailable. A canonical UUID owns one operation: same-request success replays with checksum verification; changed requests conflict, and incomplete jobs never redispatch under that UUID. OpenAI submission retries are disabled; Replicate submission is not retried, and prediction polling/download have a 180-second total deadline. PNG size is capped at 32 MiB and 20 million pixels. Cloud charge remains unknown even after a failed request.
+State defaults to `$XDG_STATE_HOME/media-image`. Successful receipts retain the fully decoded PNG, measured dimensions, checksum, provider request ID and available token usage. Account usage is explicitly unavailable. A canonical UUID owns one operation: same-request success replays with checksum verification; changed requests conflict, and incomplete jobs never redispatch under that UUID. OpenAI submission retries are disabled and requests use a 180-second timeout. PNG size is capped at 32 MiB and 20 million pixels. Cloud charge remains unknown even after a failed request.
 
 ## Directed narration and finished movies
 

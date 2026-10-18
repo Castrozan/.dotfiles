@@ -37,7 +37,7 @@ def build_parser():
         "generate",
         help="Generate one image or replay a successful operation without generating again.",
     )
-    generate.add_argument("--provider", required=True, choices=("openai", "replicate"))
+    generate.add_argument("--provider", required=True, choices=("openai",))
     generate.add_argument(
         "--model",
         required=True,

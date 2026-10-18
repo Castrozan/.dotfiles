@@ -6,5 +6,5 @@ not imply that the movie assembler burns captions. Discovery states whether capt
 
 ### Billing boundary
 
-OpenAI and Replicate API credentials have their own billing. An interactive image tool in an agent session does not
+Provider API credentials have their own billing. An interactive image tool in an agent session does not
 provide a headless API credential. Unknown dollar charges must stay unknown until reconciled with provider evidence.

@@ -26,7 +26,6 @@ in
       __tests__/unit/test_media_discovery_cli.py \
       __tests__/unit/test_media_operation_identity.py \
       __tests__/integration/test_image_providers.py \
-      __tests__/integration/test_replicate_lifecycle.py \
       __tests__/integration/test_movie_render.py \
       __tests__/integration/test_movie_cli.py \
       __tests__/integration/test_speech_delivery.py

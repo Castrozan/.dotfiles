@@ -4,6 +4,5 @@ pythonPackages: [
     withRealtime = false;
     withVoiceHelpers = false;
   })
-  pythonPackages.replicate
   pythonPackages.pillow
 ]

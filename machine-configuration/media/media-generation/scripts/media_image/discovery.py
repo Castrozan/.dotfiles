@@ -1,7 +1,6 @@
 from media_image.contract import MAXIMUM_PROMPT_CHARACTERS, ImageError
 
 OPENAI_MODELS = ("gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "gpt-image-1-mini")
-REPLICATE_MODELS = ("black-forest-labs/flux-schnell",)
 OPENAI_SIZES = {"1:1": "1024x1024", "2:3": "1024x1536", "3:2": "1536x1024"}
 
 
@@ -30,34 +29,6 @@ def describe_image_providers():
                         "pricing_url": "https://developers.openai.com/api/docs/guides/image-generation",
                     }
                     for model in OPENAI_MODELS
-                ],
-                "account_usage": {
-                    "status": "unavailable",
-                    "scope": "account",
-                    "metrics": [],
-                },
-            },
-            {
-                "provider": "replicate",
-                "execution": "cloud",
-                "requires_payment": True,
-                "requires_credentials": True,
-                "credential_environment": "REPLICATE_API_TOKEN",
-                "credential_file": "replicate-api-token",
-                "operations": ["text_to_image"],
-                "output_formats": ["png"],
-                "maximum_prompt_characters": MAXIMUM_PROMPT_CHARACTERS,
-                "models": [
-                    {
-                        "model": REPLICATE_MODELS[0],
-                        "aspect_ratios": ["1:1", "2:3", "3:2", "9:16", "16:9"],
-                        "qualities": ["standard"],
-                        "seed": True,
-                        "delivery_instructions": "prompt",
-                        "usage": "reported_predict_seconds",
-                        "weights_license": "Apache-2.0",
-                        "pricing_url": "https://replicate.com/black-forest-labs/flux-schnell",
-                    }
                 ],
                 "account_usage": {
                     "status": "unavailable",

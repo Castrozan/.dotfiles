@@ -79,3 +79,19 @@ def test_kokoro_does_not_require_payment_permission():
         },
     )
     assert validate_request(request)["id"] == "speech.generate"
+
+
+def test_removed_image_provider_is_rejected_even_with_payment_permission():
+    request = OperationRequest(
+        "image.generate",
+        {
+            "provider": "replicate",
+            "model": "black-forest-labs/flux-schnell",
+            "prompt": "Mountain",
+            "aspect_ratio": "1:1",
+            "quality": "standard",
+        },
+        allow_paid=True,
+    )
+    with pytest.raises(CapabilityError, match="invalid_input"):
+        validate_request(request)

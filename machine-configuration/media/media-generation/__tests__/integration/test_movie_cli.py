@@ -58,7 +58,6 @@ def test_movie_cli_calls_public_asset_apis_and_returns_finished_mp4(
         aspect_ratio="1:1",
         quality="low",
     )
-    del document["scenes"][0]["image"]["seed"]
     document["scenes"][0]["narration"]["voice"] = "fixtureVoice"
     request_path = tmp_path / "movie.json"
     request_path.write_text(json.dumps(document))

@@ -77,7 +77,6 @@
   "machine-configuration/media/media-generation/__tests__/integration/test_image_providers.py": 0.544,
   "machine-configuration/media/media-generation/__tests__/integration/test_movie_cli.py": 7.618,
   "machine-configuration/media/media-generation/__tests__/integration/test_movie_render.py": 1.062,
-  "machine-configuration/media/media-generation/__tests__/integration/test_replicate_lifecycle.py": 0.019,
   "machine-configuration/media/media-generation/__tests__/integration/test_speech_delivery.py": 0.002,
   "machine-configuration/media/media-generation/__tests__/integration/test_video_process.py": 1.046
 }
