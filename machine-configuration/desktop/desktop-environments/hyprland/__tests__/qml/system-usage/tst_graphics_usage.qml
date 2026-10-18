@@ -37,9 +37,39 @@ Item {
         }
         function test_nvidia_usage_and_temperature() {
             graphics.gpuType = "NVIDIA";
-            process("sh -c nvidia-smi --query-gpu=utilization").stdout.read("38, 65\n");
+            const query = process("nvidia-smi --query-gpu=utilization");
+            query.stdout.read("38, 65\n");
+            query.exited(0, 0);
             compare(observedUsage, 0.38);
             compare(observedTemperature, 65);
+        }
+        function test_nvidia_unavailable_usage() {
+            graphics.gpuType = "NVIDIA";
+            process("nvidia-smi --query-gpu=utilization").stdout.read("[N/A], [GPU requires reset]\n");
+            verify(!Number.isFinite(observedUsage));
+        }
+        function test_nvidia_failed_query_clears_previous_usage_data() {
+            return [
+                {
+                    tag: "command failure",
+                    exitCode: 1,
+                    exitStatus: 0
+                },
+                {
+                    tag: "process crash",
+                    exitCode: 0,
+                    exitStatus: 1
+                }
+            ];
+        }
+        function test_nvidia_failed_query_clears_previous_usage(data) {
+            graphics.gpuType = "NVIDIA";
+            const query = process("nvidia-smi --query-gpu=utilization");
+            query.stdout.read("38, 65\n");
+            query.exited(data.exitCode, data.exitStatus);
+            verify(!Number.isFinite(observedUsage));
+            query.stdout.read("42, 65\n");
+            compare(observedUsage, 0.42);
         }
         function test_generic_usage_averages_devices() {
             graphics.gpuType = "GENERIC";

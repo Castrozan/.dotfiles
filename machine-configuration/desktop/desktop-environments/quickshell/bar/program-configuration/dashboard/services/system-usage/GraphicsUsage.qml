@@ -66,7 +66,11 @@ Scope {
     Process {
         id: gpuUsageProcess
 
-        command: graphicsUsageRoot.gpuType === "GENERIC" ? ["sh", "-c", "cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null || echo 0"] : graphicsUsageRoot.gpuType === "NVIDIA" ? ["sh", "-c", "nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo '0, 0'"] : ["echo"]
+        command: graphicsUsageRoot.gpuType === "GENERIC" ? ["sh", "-c", "cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null || echo 0"] : graphicsUsageRoot.gpuType === "NVIDIA" ? ["nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits"] : ["echo"]
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0 || exitStatus !== 0)
+                graphicsUsageRoot.usageDiscovered(NaN);
+        }
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {

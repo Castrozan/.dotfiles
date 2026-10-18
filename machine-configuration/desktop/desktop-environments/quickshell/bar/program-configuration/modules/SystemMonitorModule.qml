@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 import ".."
+import "../dashboard/services/system-usage"
 
 ColumnLayout {
     id: systemMonitorModuleRoot
@@ -10,6 +11,8 @@ ColumnLayout {
 
     property real cpuPercentage: 0
     property real memoryPercentage: 0
+    property string gpuType: "NONE"
+    property real gpuPercentage: NaN
     property real previousCpuIdle: 0
     property real previousCpuTotal: 0
 
@@ -21,7 +24,22 @@ ColumnLayout {
         onTriggered: {
             cpuStatFileView.reload();
             memInfoFileView.reload();
+            if (systemMonitorModuleRoot.gpuType !== "NONE")
+                graphicsUsage.refresh();
         }
+    }
+
+    GraphicsUsage {
+        id: graphicsUsage
+
+        gpuType: systemMonitorModuleRoot.gpuType
+        Component.onCompleted: detect()
+        onTypeDiscovered: type => {
+            systemMonitorModuleRoot.gpuType = type;
+            if (type !== "NONE")
+                refresh();
+        }
+        onUsageDiscovered: percentage => systemMonitorModuleRoot.gpuPercentage = percentage
     }
 
     FileView {
@@ -98,6 +116,36 @@ ColumnLayout {
     Text {
         Layout.alignment: Qt.AlignHCenter
         text: Math.round(systemMonitorModuleRoot.memoryPercentage * 100) + "%"
+        font.pixelSize: 16
+        font.bold: true
+        font.family: "JetBrainsMono Nerd Font"
+        color: ThemeColors.foreground
+    }
+
+    Rectangle {
+        visible: systemMonitorModuleRoot.gpuType !== "NONE"
+        Layout.alignment: Qt.AlignHCenter
+        Layout.topMargin: 4
+        Layout.bottomMargin: 4
+        width: 20
+        height: 1
+        color: ThemeColors.dim
+    }
+
+    Text {
+        visible: systemMonitorModuleRoot.gpuType !== "NONE"
+        Layout.alignment: Qt.AlignHCenter
+        text: "GPU"
+        font.pixelSize: 14
+        font.bold: true
+        font.family: "JetBrainsMono Nerd Font"
+        color: ThemeColors.foreground
+    }
+
+    Text {
+        visible: systemMonitorModuleRoot.gpuType !== "NONE"
+        Layout.alignment: Qt.AlignHCenter
+        text: Number.isFinite(systemMonitorModuleRoot.gpuPercentage) ? Math.round(systemMonitorModuleRoot.gpuPercentage * 100) + "%" : "N/A"
         font.pixelSize: 16
         font.bold: true
         font.family: "JetBrainsMono Nerd Font"
