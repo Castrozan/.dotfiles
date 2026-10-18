@@ -40,11 +40,12 @@ def test_exported_policy_excludes_consumer_execution_and_audience_rules(plugin_r
 
 def test_session_start_supplies_contract_without_selected_skill_bootstrap(plugin_root):
     skill = (plugin_root / "skills/wellput/SKILL.md").read_text()
-    assert len(re.findall(r"^### ", skill, flags=re.MULTILINE)) == 11
-    assert "\n### Whole context cohesion\n" in skill
+    assert "\n### Source fidelity\n" in skill
+    assert "\n### Representation selection\n" in skill
     assert "### Interactive communication reference" not in skill
     assert "Do not reload" not in skill
-    assert "#link-format" in skill
+    assert "100 prose words" not in skill
+    assert "### Revision and semantic check" not in skill
     result = subprocess.run(
         [sys.executable, "-S", plugin_root / "hooks/reply_hook.py"],
         input=json.dumps({"hook_event_name": "SessionStart"}),
@@ -60,7 +61,6 @@ def test_session_start_supplies_contract_without_selected_skill_bootstrap(plugin
         "within 5 items",
         "within 5 data rows",
         "**Done:**",
-        "final reply",
         str(plugin_root / "skills/wellput/SKILL.md"),
     ):
         assert required_rule in context

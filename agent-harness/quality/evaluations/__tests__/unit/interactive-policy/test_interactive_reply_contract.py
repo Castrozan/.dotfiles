@@ -1,157 +1,74 @@
 from interactive_humanize_surface_support import (
+    HUMANIZE_SKILL_PATH,
+    INTERACTIVE_POLICY_PATH,
     interactive_policy_section,
 )
 
 
-def test_interactive_contract_reconstructs_the_whole_session():
-    interactive_session = interactive_policy_section("interactive_session")
-
-    for required_context in (
-        "multitasks",
-        "may forget what the session is about",
-        "whole session",
-        "work-in-progress updates",
-        "previous interaction",
-        "earlier conversation",
-    ):
-        assert required_context in interactive_session
-
-    for unrelated_session_type in (
-        "background agents",
-        "clawde",
-        "headless runs",
-        "subagents",
-    ):
-        assert unrelated_session_type not in interactive_session
+def skill_policy():
+    return " ".join(HUMANIZE_SKILL_PATH.read_text().split())
 
 
-def test_standalone_recovery_does_not_license_restating_the_session():
-    interactive_session = interactive_policy_section("interactive_session")
-
-    for required_behavior in (
-        "not that it retells the whole session",
-        "at the length that answer needs",
-    ):
-        assert required_behavior in interactive_session
-
-    assert "state the overall task, the result or current state" not in (
-        interactive_session
-    ), (
-        "an unbounded task, state, evidence, and remaining-work recital turns standalone "
-        "recovery into a per-turn session retelling, which is the pure-verbosity failure "
-        "class the reader-recovery evidence recorded; the bounded three-label format "
-        "in response-shape carries that recovery instead"
-    )
+def test_reader_recovery_owns_context_without_requiring_a_session_retelling():
+    policy = skill_policy()
+    assert "full session" in policy
+    assert "only the earlier facts needed" in policy
+    assert "assume progress updates were unread" in policy
+    assert "stop when the request is answered" in policy
+    assert "### Interactive session" not in INTERACTIVE_POLICY_PATH.read_text()
 
 
-def test_work_in_progress_updates_do_not_require_user_attention():
-    work_in_progress_updates = interactive_policy_section("work_in_progress_updates")
-    normalized_updates = work_in_progress_updates.lower()
-
-    for required_behavior in (
-        "Do not rely on the user reading work-in-progress updates",
-        "Assume the user reads only the final reply",
-        "core [evidence](../../../../core-rules/core.md#evidence), [autonomy](../../../../core-rules/core.md#autonomy), and [completion](../../../../core-rules/core.md#completion)",
-        "do not create a second decision or stopping threshold",
-        "final reply",
-    ):
-        assert required_behavior.lower() in normalized_updates
-
-    assert "report new evidence" not in work_in_progress_updates
+def test_work_in_progress_updates_preserve_consumer_authority_only():
+    updates = interactive_policy_section("work_in_progress_updates").lower()
+    assert "core [evidence]" in updates
+    assert "[autonomy]" in updates and "[completion]" in updates
+    assert "do not create a second decision or stopping threshold" in updates
+    assert "assume progress updates were unread" not in updates
 
 
 def test_interactive_policy_routes_general_judgment_and_completion_to_core():
-    peer_communication = interactive_policy_section("peer_communication")
-    exhaust_before_returning = interactive_policy_section("exhaust_before_returning")
-
-    assert (
-        "core [evidence](../../../../core-rules/core.md#evidence)"
-        in peer_communication.lower()
-    )
-    for authority in (
-        "core [autonomy](../../../../core-rules/core.md#autonomy)",
-        "core [completion](../../../../core-rules/core.md#completion)",
-    ):
-        assert authority in exhaust_before_returning.lower()
-
-    assert "before defending or retracting" not in peer_communication
-    assert "Return only when the task is done" not in exhaust_before_returning
+    peer = interactive_policy_section("peer_communication").lower()
+    completion = interactive_policy_section("exhaust_before_returning").lower()
+    assert "core [evidence]" in peer
+    assert "core [autonomy]" in completion and "core [completion]" in completion
 
 
-def test_artifact_links_are_remote_and_complete():
-    artifact_links = interactive_policy_section("artifact_links")
-
-    for required_behavior in (
-        "browser link",
-        "merge request",
-        "pull request",
-        "CI run",
-        "report",
-        "artifact",
+def test_artifact_links_preserve_the_dotfiles_publication_policy():
+    artifacts = interactive_policy_section("artifact_links")
+    for required in (
         "Publish local artifacts",
         "full direct URL",
-        "local path",
-        "commit SHA",
-        "ticket key",
-        "shorthand reference",
+        "CI run",
+        "Done line",
     ):
-        assert required_behavior in artifact_links
-
-    assert "needs only the SHA" not in artifact_links
+        assert required in artifacts
 
 
-def test_every_substantive_reply_carries_the_three_labels():
-    response_shape = interactive_policy_section("response_shape")
-
-    for required_label in (
+def test_the_generated_contract_keeps_one_owner_outside_markdown():
+    handoff = interactive_policy_section("response_shape")
+    for required in (
         "**What is this session about?:**",
-        "**Done:**",
-        "**Next:**",
-    ):
-        assert required_label in response_shape
-
-    for required_behavior in (
-        "Bold each label",
-        "start its content on the same line",
-        "Leave a blank line between blocks",
-        "100 prose words or fewer is a confirmation",
         "the whole session's subject and goal",
-        "never the current step alone",
-        "someone who never saw this session can start working",
-        "No progress report",
+        "**Done:**",
+        "what this round established or changed",
+        "**Next:**",
         "required remaining work on this same task",
-        "unrelated work",
     ):
-        assert required_behavior in response_shape
+        assert required in handoff
+    raw_reference = INTERACTIVE_POLICY_PATH.read_text()
+    assert "{{reply_format}}" in raw_reference
+    for enforced in ("100 prose words", "grace", "data rows", "index column"):
+        assert enforced not in raw_reference
 
 
-def test_the_reply_budgets_exempt_visuals_and_never_drop_a_fact():
-    response_shape = interactive_policy_section("response_shape")
-
-    for required_budget in (
-        "the labels together within 50",
-        "prose above the labels stays within 80 words",
-        "Visual lines never count",
+def test_requested_form_and_meaning_remain_semantic_obligations():
+    policy = skill_policy()
+    for required in (
+        "Honor requested brevity or form",
+        "literal-only output",
+        "denominators, bounds, conditions",
+        "without changing meaning",
+        "Do not disguise ordinary replies as JSON",
     ):
-        assert required_budget in response_shape
-
-    structure_limits = interactive_policy_section("list_and_table_limits")
-    assert "within 5 items, counting nested items" in structure_limits
-    assert "within 5 data rows" in structure_limits
-
-    concise_request = interactive_policy_section("concise_request")
-    assert "No budget justifies deleting a fact" in concise_request
-
-
-def test_concise_request_is_semantic_instead_of_a_global_shape_limit():
-    concise_request = interactive_policy_section("concise_request")
-
-    assert "binding" in concise_request
-    assert "tldr" in concise_request
-    for required_behavior in (
-        "stop when the requested outcome is clear",
-        "offer to cover material the reader deferred",
-    ):
-        assert required_behavior in concise_request
-    assert "hard ceiling" not in concise_request
-    assert "1500" not in concise_request
+        assert required in policy
+    assert "### Concise request" not in INTERACTIVE_POLICY_PATH.read_text()

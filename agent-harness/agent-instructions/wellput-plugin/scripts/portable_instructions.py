@@ -16,14 +16,8 @@ def portable_session_policy(text):
     selected = []
     for section in sections:
         heading = section.partition("\n")[0]
-        if heading in (
-            "### Peer communication",
-            "### Artifact links",
-            "### Exhaust before returning",
-        ):
+        if heading not in ("### Humanize policy loading", "### Response shape"):
             continue
-        if heading == "### Work in progress updates":
-            section = section.partition("\n\nCore ")[0]
         if section.strip():
             selected.append(section.rstrip())
     return "\n\n".join(selected) + "\n"

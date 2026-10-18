@@ -35,26 +35,15 @@ def representation_selection_policy() -> str:
     return re.sub(r"\s+", " ", match.group(1)).strip().lower()
 
 
-def representation_rendering_policy() -> str:
-    preferences = CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8")
-    match = re.search(
-        r"### Representation rendering\n(.*?)(?=\n### |\Z)",
-        preferences,
-        re.DOTALL,
-    )
-    assert match, "Humanize needs one representation-rendering policy"
-    return re.sub(r"\s+", " ", match.group(1)).strip().lower()
-
-
 def test_representation_policy_maps_reader_needs_to_the_smallest_useful_form():
     policy = representation_selection_policy()
     required_mappings = {
         "ownership": "tree",
-        "ordering or failure": "sequence",
-        "choices": "table",
-        "behavior": "state model",
-        "change": "focused diff",
-        "one answer or action": "prose",
+        "failure paths": "sequences",
+        "comparisons": "tables",
+        "transitions": "state models",
+        "exact edits": "diffs",
+        "linear answer": "prose",
     }
 
     assert "smallest useful" in policy
@@ -68,18 +57,17 @@ def test_representation_policy_maps_reader_needs_to_the_smallest_useful_form():
     )
     for required_behavior in (
         "diagram",
-        "well-spaced",
-        "repeated-field",
-        "linear prose",
+        "material actors",
+        "relationships",
+        "without repeating",
+        "table rows",
     ):
         assert required_behavior in policy
-    assert "pseudocode" in representation_rendering_policy()
 
 
-def test_interactive_contract_explicitly_allows_the_selected_representation():
+def test_the_generated_contract_points_to_the_representation_owner():
     policy = expand_reply_format_instructions(
         INTERACTIVE_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8")
     ).lower()
     assert "#representation-selection)" in policy
-    assert "smallest useful form" in policy
-    assert "no bullet" not in policy
+    assert "smallest useful form" in representation_selection_policy()

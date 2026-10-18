@@ -21,7 +21,7 @@ INTERACTIVE_POLICY_PATH = (
 )
 REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
 REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
-MAXIMUM_HUMANIZE_SKILL_BYTES = 15000
+MAXIMUM_HUMANIZE_SKILL_BYTES = 4000
 
 REMOVED_GENERATED_SURFACES = (
     CORE_COMMUNICATION_DIRECTORY / "interactive-human-communication.md",
@@ -36,29 +36,22 @@ def test_humanize_package_owns_interactive_and_output_policies():
     humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
 
     for tag in (
-        "interactive_session",
         "humanize_policy_loading",
         "peer_communication",
         "work_in_progress_updates",
         "artifact_links",
         "exhaust_before_returning",
         "response_shape",
-        "concise_request",
     ):
         assert "### " + tag.replace("_", " ").capitalize() in interactive_policy
 
     for tag in (
         "reader_understanding_policy",
         "source_fidelity",
-        "whole_context_cohesion",
         "representation_selection",
-        "representation_rendering",
-        "meaning_and_certainty",
         "confusion_recovery",
-        "sentence_and_paragraph_construction",
         "procedures_and_explanations",
         "human_register",
-        "revision_and_semantic_check",
     ):
         assert "### " + tag.replace("_", " ").capitalize() in humanize_skill
 
@@ -102,7 +95,7 @@ def test_humanize_owns_session_replies_and_excludes_file_authoring():
 
     normalized_description = description.lower()
     assert "active agent sessions" in normalized_description
-    assert "one- or two-sentence confirmations" in normalized_description
+    assert "substantial replies" in normalized_description
     assert "file authoring" in normalized_description
     assert "### Durable artifacts" not in skill_text
     assert "Use the `docs` skill" not in skill_text
@@ -128,14 +121,10 @@ def test_humanize_explains_unresolved_choices_before_internal_rationale():
     )
 
     for required_behavior in (
-        "#source-fidelity)",
-        "#confusion-recovery)",
-        "not a coined label",
-        "for every option",
         "who acts",
         "what changes",
         "scope",
-        "what remains unchanged",
+        "material tradeoffs",
         "before internal rationale",
     ):
         assert required_behavior in skill_text
@@ -147,10 +136,9 @@ def test_humanize_uses_established_language_before_coining_terms():
     )
 
     for required_behavior in (
-        "ubiquitous language",
-        "context already uses",
-        "before coining a new term",
-        "term the reader has rejected",
+        "established terms consistently",
+        "concrete referents",
+        "reader's terms",
     ):
         assert required_behavior in skill_text
 
@@ -160,10 +148,5 @@ def test_humanize_integrates_new_information_without_recency_priority():
         HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower().split()
     )
 
-    for required_behavior in (
-        "because it is recent",
-        "full context",
-        "restructure the whole piece",
-        "cohesive",
-    ):
+    for required_behavior in ("full session",):
         assert required_behavior in skill_text
