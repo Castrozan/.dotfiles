@@ -43,10 +43,10 @@ not claim to recall it later.
 
 ### Library visibility
 
-Which Jellyfin libraries an account sees is declared per account in the `arr_users` package and re-applied to every
+Which Jellyfin libraries an account sees is declared in the host's `services.arrStack.accounts` and re-applied to every
 account on each rebuild, administrators included, by pinning `EnableAllFolders: false` and writing an explicit
 `EnabledFolders` list. It is a named allowlist rather than a role test, and the reconcile never changes who is an
-administrator. Edit that module rather than a Jellyfin dashboard checkbox, and expect a dashboard edit not to survive
+administrator. Edit those Nix options rather than a Jellyfin dashboard checkbox; a dashboard edit does not survive
 the next rebuild. The reconcile refuses to write any policy at all when a declared library is missing from Jellyfin,
 because a half-read library list would silently narrow or widen what everyone sees.
 
@@ -89,8 +89,8 @@ port remains bound to the tailnet.
 
 ### Declarative boundary
 
-Friend permissions and stack config are code: the friend policy lives in the `arr_users` package and the stack in the
-arr-stack nix module, changed by editing the repo and rebuilding. Never change a friend's access or the stack by
+Friend permissions and stack config live in the host's `services.arrStack` options; reusable implementation lives in
+the external arr-stack flake. Change host policy in dotfiles and rebuild. Never change a friend's access or the stack by
 clicking in the Jellyfin or Jellyseerr dashboard, which drifts from the repo and is erased on the next rebuild. Jellyfin
 admin access is an agenix secret, so the tools keep working after a wipe-and-rebuild.
 
