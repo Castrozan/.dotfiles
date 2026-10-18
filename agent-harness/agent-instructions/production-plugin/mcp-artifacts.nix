@@ -1,11 +1,9 @@
 {
   pkgs,
   lib,
-  homeDirectory,
-  chromePackage,
 }:
 let
-  servers = import ./mcp-servers.nix { inherit pkgs homeDirectory chromePackage; };
+  servers = import ./mcp-servers.nix { inherit pkgs; };
   launchers = lib.mapAttrsToList (name: server: {
     name = "native/mcp/${name}";
     path = pkgs.writeShellScript "dotfiles-mcp-${name}" ''

@@ -57,6 +57,10 @@ def verify(bundle: Path) -> None:
 
     mcp = json.loads((package / "mcp.json").read_text())
     assert mcp["$schema"] == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+    assert "chrome-devtools" not in mcp["mcpServers"]
+    browser_command = package / "native/browser/chrome-devtools"
+    assert browser_command.is_file()
+    assert browser_command.stat().st_mode & stat.S_IXUSR
     for server in mcp["mcpServers"].values():
         command = Path(server["command"])
         assert not command.is_absolute()

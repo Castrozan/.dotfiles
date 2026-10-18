@@ -6,7 +6,7 @@ constraints; it does not broaden fallback eligibility.
 
 ### Stealth cdp target chrome global
 
-The stealth target is the chrome-devtools-mcp tool surface pointed at the dedicated Chrome Global profile
+The attached target is the managed `chrome-devtools` CLI pointed at the dedicated Chrome Global profile
 (`~/.config/chrome-global`) on every host, carrying that browser's own cookies, logins, and extensions. Prefer it when
 the task needs the user's actual everyday accounts or hits a bot-detecting site (Google, banking, anything behind
 Cloudflare or PerimeterX); it is the user's real logged-in session, so treat it as the user's own and never clobber the
@@ -14,15 +14,13 @@ open tab.
 
 ### Chrome devtools is stealth by consent
 
-The CDP target connects via `--autoConnect` to a real browser launched bare with no `--remote-debugging-port`, no
-`--enable-automation`, no `navigator.webdriver`. Pages see an ordinary browser carrying the user's real cookies, logins,
-and profile. The stealth is precisely that consent lives in a live human action, the user's manual Allow on the
-browser's inspect page (`chrome://inspect`), instead of in a launch flag, so nothing on the page can detect the
-automation. The Allow gate is the security model and the entire point of this tool, not an obstacle to remove.
+The attached worker connects via `--autoConnect` to the user's normally launched Chrome and retains its profile,
+cookies, logins and extensions. Consent lives in the user's manual Allow on `chrome://inspect`; do not replace that gate
+with an always-on debugging port or automation launch flags on the user's browser.
 
 ### Chrome devtools never break the gate
 
-Three traps each waste a whole session if hit: 1) the first `list_pages`, and every new client connection, BLOCKS until
+Three traps each waste a whole session if hit: 1) the first `list_pages` after a new attached connection can BLOCK until
 the user clicks Allow, which is expected and not a hang, so wait for it and never time it out, retry-storm it, kill the
 process, or report it broken;
 
@@ -30,8 +28,8 @@ process, or report it broken;
 destroys the stealth and the recurring manual Allow is the cost of invisibility by design;
 
 3\) the target is one browser, single and sequential, so never drive it from parallel agents or open concurrent clients
-because each new client needs its own Allow and they hang while the browser serializes them, one agent and one
-connection at a time.
+because each new client needs its own Allow and they can wait while the browser serializes them. Work through one agent
+and one attached connection at a time.
 
 ### Real browser never clobber the users open tab
 
@@ -42,10 +40,15 @@ a fresh tab without stealing the user's focus, or `select_page` onto a tab you a
 a tab you opened yourself. This is intended chrome-devtools-mcp behavior through the latest release, not a bug a version
 bump fixes, so do not chase a newer pin for it.
 
-### Chrome devtools performance is not the limit
+### Worker lifetime and performance
 
-Once authorized the target sustains tens of thousands of CDP operations per second at roughly 1ms latency with no memory
-growth, so never diagnose slowness or contention here; the only ceiling is the manual Allow.
+The CLI uses an MCP worker internally while a task is active. Stopping that worker disconnects attached Chrome and
+closes a worker-launched headless browser. It does not close the user's regular Chrome. Keep the connection across steps
+within a task, then stop it; reconnecting for every command adds startup and consent overhead.
+
+Measure complete workflows and separate cold startup, warm commands, rendering waits and active memory. Headless removes
+desktop interruptions but still runs Chrome's rendering engine. Native background throttling can delay an attached tab's
+rendering or recording until the tab is visible.
 
 ### OpenCLI tradeoffs
 

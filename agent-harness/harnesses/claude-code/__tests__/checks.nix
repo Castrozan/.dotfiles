@@ -165,7 +165,7 @@ in
     mkEvalCheck
     ;
 }
-// import ./chrome-devtools-mcp-stealth-checks.nix {
+// import ./chrome-devtools-cli-checks.nix {
   inherit
     pkgs
     lib

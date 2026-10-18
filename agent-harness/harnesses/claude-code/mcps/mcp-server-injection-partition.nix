@@ -9,6 +9,7 @@ let
     "a2a"
     "brave-devtools"
     "browser-use"
+    "chrome-devtools"
     "figma"
     "figma-read"
     "mem0"

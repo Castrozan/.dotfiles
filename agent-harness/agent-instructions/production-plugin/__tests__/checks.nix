@@ -18,8 +18,6 @@ let
   };
   servers = import ../mcp-servers.nix {
     inherit pkgs;
-    homeDirectory = "/home/test";
-    chromePackage = pkgs.hello;
   };
   desktopPackages = (import ../../skills/workstation/desktop/install { inherit pkgs; }).packages;
 in

@@ -51,7 +51,7 @@ in
   domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir =
     mkEvalCheck "domain-desktop-chrome-global-launcher-targets-chrome-global-user-data-dir"
       chromeGlobalLauncherTargetsChromeGlobalUserDataDir
-      "summon-chrome-global must launch the ~/.config/chrome-global profile, matching chromeGlobalUserDataDir in the chrome-devtools-mcp install so autoConnect can attach";
+      "summon-chrome-global must launch the ~/.config/chrome-global profile, matching the managed Chrome DevTools CLI attached profile so autoConnect can attach";
 
   domain-desktop-chrome-global-launcher-no-remote-debugging-flag =
     mkEvalCheck "domain-desktop-chrome-global-launcher-no-remote-debugging-flag"

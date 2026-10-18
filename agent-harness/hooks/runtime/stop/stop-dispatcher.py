@@ -42,12 +42,21 @@ STOP_HANDLERS = [
 COMPLETION_HANDLERS = [
     HookHandler(handler_module_name="herdr_pace_reply_capture_handler")
 ]
+BROWSER_CLEANUP_HANDLER = HookHandler(
+    handler_module_name="chrome_devtools_cleanup_handler"
+)
 
 
 def main() -> None:
     hook_input = dispatched_hook_input_or_exit(("Stop", "SubagentStop"))
     outcome = run_handlers(hook_input, STOP_HANDLERS, requested_hook_surface())
     if outcome.decision not in ("block", "deny"):
+        cleanup_outcome = run_handlers(
+            hook_input, [BROWSER_CLEANUP_HANDLER], requested_hook_surface()
+        )
+        if cleanup_outcome.decision in ("block", "deny"):
+            emit_stop_decision(cleanup_outcome)
+            sys.exit(0)
         run_handlers(hook_input, COMPLETION_HANDLERS, requested_hook_surface())
     emit_stop_decision(outcome)
     sys.exit(0)

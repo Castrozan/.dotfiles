@@ -8,7 +8,6 @@ let
     import ../mcps/mcp-server-injection-partition.nix { inherit lib allMcpServerNames; };
 
   representativeInteractiveDefinitionNames = [
-    "chrome-devtools"
     "codex"
   ];
 
@@ -29,6 +28,7 @@ in
         "a2a"
         "brave-devtools"
         "browser-use"
+        "chrome-devtools"
         "figma"
         "figma-read"
         "mem0"

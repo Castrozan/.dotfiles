@@ -8,6 +8,11 @@
 }:
 let
   projection = import ../instruction-projection.nix { inherit pkgs; };
+  browser = import ../skills/workstation/browser/install {
+    inherit pkgs chromePackage;
+    homeDir = homeDirectory;
+    nodejs = pkgs.nodejs_22;
+  };
   skillCatalog = import ../interactive-skill-catalog/interactive-agent-skills.nix {
     inherit pkgs hostname;
   };
@@ -85,6 +90,10 @@ let
         path = import ../../hooks/flat-hook-scripts-directory.nix { inherit pkgs lib; };
       }
       {
+        name = "native/browser/chrome-devtools";
+        path = "${browser.chromeDevtoolsCli}/bin/chrome-devtools";
+      }
+      {
         name = "native/hermes/hook-bridge";
         path =
           (import ../../hooks/integrations/hermes/hermes-hooks.nix {
@@ -121,8 +130,6 @@ let
       inherit
         pkgs
         lib
-        homeDirectory
-        chromePackage
         ;
     })
     ++

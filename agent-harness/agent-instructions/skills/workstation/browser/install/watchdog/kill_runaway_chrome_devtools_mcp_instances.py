@@ -34,6 +34,8 @@ def find_chrome_devtools_mcp_processes():
 
 
 def _is_chrome_devtools_mcp_process(joined_command_line, process_name):
+    if "/build/src/daemon/daemon.js" in joined_command_line:
+        return False
     return (
         CHROME_DEVTOOLS_MCP_PROCESS_MATCH_TOKEN in joined_command_line
         or CHROME_DEVTOOLS_MCP_PROCESS_MATCH_TOKEN in process_name

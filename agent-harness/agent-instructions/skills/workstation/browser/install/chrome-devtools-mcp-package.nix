@@ -44,6 +44,9 @@ pkgs.stdenv.mkDerivation {
 
     makeWrapper ${nodejs}/bin/node "$out/bin/chrome-devtools-mcp" \
       --add-flags "$bundleRoot/build/src/bin/chrome-devtools-mcp.js"
+    makeWrapper ${nodejs}/bin/node "$out/bin/chrome-devtools" \
+      --set CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS 1 \
+      --add-flags "$bundleRoot/build/src/bin/chrome-devtools.js"
 
     runHook postInstall
   '';

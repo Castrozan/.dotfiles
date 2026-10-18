@@ -16,6 +16,5 @@ than a single synthetic click.
 
 ### Authenticated sites need the real browser target
 
-Any site behind a login can only be read through the stealth target attached to the real browser profile, because that
-is what carries the session. A disposable or isolated target will render a logged-out page and the scrape will look like
-a content change rather than an auth failure.
+When work depends on the user's existing login, use the attached real browser profile. The separate headless profile has
+its own cookies; a logged-out page there can look like a content change rather than an auth failure.

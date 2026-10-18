@@ -21,8 +21,6 @@ let
   mcpServerDefinitions =
     (import ../../../agent-instructions/production-plugin/mcp-servers.nix {
       inherit pkgs;
-      homeDirectory = homeDir;
-      chromePackage = latest.google-chrome;
     })
     // {
       codex = {
