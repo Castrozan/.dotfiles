@@ -12,6 +12,7 @@ let
       tests = ../../hooks/runtime/__tests__/unit/replies;
       support = ../../hooks/runtime/__tests__/support/human_facing_reply_test_support.py;
       assets = ./assets;
+      portableTests = ./__tests__/portable;
     }
   );
 in
@@ -22,5 +23,5 @@ pkgs.runCommand "wellput-plugin"
   }
   ''
     python ${./scripts/export_plugin.py} ${sources} "$out"
-    python -S ${./assets/tests/verify_plugin.py} "$out"
+    python -S ${./__tests__/portable/verify_plugin.py} "$out"
   ''

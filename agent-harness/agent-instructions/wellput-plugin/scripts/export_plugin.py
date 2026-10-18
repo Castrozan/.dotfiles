@@ -75,10 +75,7 @@ def export_instructions(sources, output):
     )
 
 
-def export_runtime(sources, output):
-    copy_directory(Path(sources["rules"]), output / "hooks/rules")
-    configuration = output / "hooks/rules/reply-formats.json"
-    configuration.write_text(configuration.read_text().replace("Humanize", "Wellput"))
+def export_transcript_reader(sources, output):
     guard = Path(sources["guard"]).read_text()
     reader_functions = []
     for node in ast.parse(guard).body:
@@ -92,6 +89,13 @@ def export_runtime(sources, output):
         "hooks/transcript.py",
         "import json\nimport os\n\n\n" + "\n\n\n".join(reader_functions) + "\n",
     )
+
+
+def export_runtime(sources, output):
+    copy_directory(Path(sources["rules"]), output / "hooks/rules")
+    configuration = output / "hooks/rules/reply-formats.json"
+    configuration.write_text(configuration.read_text().replace("Humanize", "Wellput"))
+    export_transcript_reader(sources, output)
     renderer = Path(sources["renderer"]).read_text()
     renderer = renderer.replace(
         "from instructions.instruction_surface_scanner import REPO_ROOT",
@@ -146,6 +150,7 @@ def main():
     if output.exists():
         raise ValueError(f"Refusing to replace an existing export: {output}")
     copy_directory(Path(sources["assets"]), output)
+    copy_directory(Path(sources["portableTests"]), output / "tests")
     export_instructions(sources, output)
     export_runtime(sources, output)
     export_tests(sources, output)

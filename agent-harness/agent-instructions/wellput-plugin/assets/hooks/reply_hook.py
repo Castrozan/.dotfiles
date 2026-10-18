@@ -21,14 +21,19 @@ def session_instructions():
     )
 
 
+def final_reply_text(payload):
+    reply = payload.get("reply_text") or payload.get("last_assistant_message")
+    if reply:
+        return reply
+    from transcript import final_turn_request_and_reply
+
+    return final_turn_request_and_reply(payload)[1]
+
+
 def stop_decision(payload):
     if payload.get("stop_hook_active"):
         return {}
-    reply = payload.get("reply_text") or payload.get("last_assistant_message")
-    if not reply:
-        from transcript import final_turn_request_and_reply
-
-        _, reply = final_turn_request_and_reply(payload)
+    reply = final_reply_text(payload)
     if not reply:
         return {}
     from reply_rule_catalog import template_violations_in_reply

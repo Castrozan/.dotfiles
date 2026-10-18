@@ -19,14 +19,7 @@ def invoke(root, payload):
     return json.loads(result.stdout)
 
 
-def verify(root):
-    manifest = json.loads((root / "plugin.json").read_text())
-    assert (
-        manifest["$schema"]
-        == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
-    )
-    assert manifest["name"] == "wellput"
-    assert not any(path.is_symlink() for path in root.rglob("*"))
+def verify_references(root):
     for path in (root / "skills").rglob("*.md"):
         text = path.read_text()
         assert "core-rules/" not in text
@@ -35,6 +28,17 @@ def verify(root):
             if "://" in target or target.startswith("#"):
                 continue
             assert (path.parent / target.split("#")[0]).is_file(), (path, target)
+
+
+def verify(root):
+    manifest = json.loads((root / "plugin.json").read_text())
+    assert (
+        manifest["$schema"]
+        == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+    )
+    assert manifest["name"] == "wellput"
+    assert not any(path.is_symlink() for path in root.rglob("*"))
+    verify_references(root)
     context = invoke(root, {"hook_event_name": "SessionStart"})
     policy = context["hookSpecificOutput"]["additionalContext"]
     assert "{{reply_format}}" not in policy
