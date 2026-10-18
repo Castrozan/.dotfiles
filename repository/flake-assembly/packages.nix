@@ -4,7 +4,7 @@ let
   inherit (pkgs) lib;
 in
 {
-  humanize-plugin = import ../../agent-harness/agent-instructions/humanize-plugin { inherit pkgs; };
+  wellput-plugin = import ../../agent-harness/agent-instructions/wellput-plugin { inherit pkgs; };
 
   devenv =
     import ../../machine-configuration/development/development-environments/devenv-cached-package.nix

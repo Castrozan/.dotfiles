@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def invoke(payload, root=ROOT):
     result = subprocess.run(
-        [sys.executable, "-S", str(root / "hooks/humanize.py")],
+        [sys.executable, "-S", str(root / "hooks/reply_hook.py")],
         input=json.dumps(payload),
         capture_output=True,
         text=True,
@@ -40,7 +40,7 @@ def test_session_events_render_the_current_contract(source):
     context = output["hookSpecificOutput"]["additionalContext"]
     assert "{{reply_format}}" not in context
     assert "100 prose words" in context
-    assert str(ROOT / "skills/humanize/SKILL.md") in context
+    assert str(ROOT / "skills/wellput/SKILL.md") in context
 
 
 @pytest.mark.parametrize("field", ["reply_text", "last_assistant_message"])
@@ -107,12 +107,12 @@ def test_a_later_user_turn_does_not_validate_an_old_assistant_reply(tmp_path):
 
 
 def test_relocation_with_spaces_preserves_policy_and_validation(tmp_path):
-    destination = tmp_path / "humanize plugin"
+    destination = tmp_path / "wellput plugin"
     copy_plugin(destination)
     policy = invoke({"hook_event_name": "SessionStart"}, destination)[
         "hookSpecificOutput"
     ]["additionalContext"]
-    assert str(destination / "skills/humanize/SKILL.md") in policy
+    assert str(destination / "skills/wellput/SKILL.md") in policy
     assert (
         invoke(
             {"hook_event_name": "Stop", "reply_text": "PR #17 is ready."}, destination

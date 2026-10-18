@@ -1,7 +1,7 @@
 { pkgs }:
 let
   python = pkgs.python312.withPackages (packages: [ packages.markdown-it-py ]);
-  sources = pkgs.writeText "humanize-plugin-sources.json" (
+  sources = pkgs.writeText "wellput-plugin-sources.json" (
     builtins.toJSON {
       skill = ../skills/writing/humanize;
       core = ../core-rules/core.md;
@@ -15,7 +15,7 @@ let
     }
   );
 in
-pkgs.runCommand "humanize-plugin"
+pkgs.runCommand "wellput-plugin"
   {
     nativeBuildInputs = [ python ];
     PYTHONDONTWRITEBYTECODE = "1";

@@ -1,15 +1,15 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "humanize",
+  "name": "wellput",
   "version": "0.1.0",
   "description": "Reader-first writing policy with deterministic reply checks and repair feedback.",
   "author": { "name": "Castrozan", "url": "https://github.com/Castrozan" },
-  "repository": "https://github.com/Castrozan/humanize",
+  "repository": "https://github.com/Castrozan/wellput",
   "license": "MIT",
   "keywords": ["writing", "communication", "hooks"],
   "extensions": {
     "com.openai": {
-      "interface": { "displayName": "Humanize" },
+      "interface": { "displayName": "Wellput" },
       "hooks": "./hooks/codex.json"
     }
   }

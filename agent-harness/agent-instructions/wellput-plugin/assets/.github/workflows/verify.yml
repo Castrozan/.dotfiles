@@ -1,4 +1,4 @@
-name: Verify Humanize
+name: Verify Wellput
 on: [push, pull_request]
 permissions:
   contents: read

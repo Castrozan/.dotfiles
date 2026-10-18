@@ -12,7 +12,7 @@ sys.path.insert(0, str(PLUGIN_ROOT / "hooks/vendor"))
 def session_instructions():
     from reply_format_instructions import expand_reply_format_instructions
 
-    policy = PLUGIN_ROOT / "skills/humanize/references/interactive-communication.md"
+    policy = PLUGIN_ROOT / "skills/wellput/references/interactive-communication.md"
     text = expand_reply_format_instructions(policy.read_text(encoding="utf-8"))
     return re.sub(
         r"\[([^\]]+)\]\(([^)]+)\)",
@@ -62,7 +62,7 @@ def main():
             raise ValueError("Hook input must be a JSON object")
         output = hook_output(payload)
     except Exception as error:
-        reason = f"Humanize validation could not run: {type(error).__name__}: {error}. Repair the plugin before retrying."
+        reason = f"Wellput validation could not run: {type(error).__name__}: {error}. Repair the plugin before retrying."
         if (
             isinstance(payload, dict)
             and payload.get("hook_event_name") == "SessionStart"

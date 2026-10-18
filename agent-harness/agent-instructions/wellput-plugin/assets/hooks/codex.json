@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${PLUGIN_ROOT}/hooks/humanize.py\"",
+            "command": "python3 \"${PLUGIN_ROOT}/hooks/reply_hook.py\"",
             "timeout": 5,
             "additionalContextLimit": 5000
           }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${PLUGIN_ROOT}/hooks/humanize.py\"",
+            "command": "python3 \"${PLUGIN_ROOT}/hooks/reply_hook.py\"",
             "timeout": 5
           }
         ]

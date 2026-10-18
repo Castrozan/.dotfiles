@@ -35,7 +35,7 @@ in
     system = linux;
   };
 
-  packages.${darwin}.humanize-plugin = import ../../agent-harness/agent-instructions/humanize-plugin {
+  packages.${darwin}.wellput-plugin = import ../../agent-harness/agent-instructions/wellput-plugin {
     inherit
       (import ./channels.nix {
         inherit inputs;

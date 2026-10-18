@@ -8,7 +8,7 @@ from pathlib import Path
 
 def invoke(root, payload):
     result = subprocess.run(
-        [sys.executable, "-S", str(root / "hooks/humanize.py")],
+        [sys.executable, "-S", str(root / "hooks/reply_hook.py")],
         input=json.dumps(payload),
         capture_output=True,
         text=True,
@@ -25,7 +25,7 @@ def verify(root):
         manifest["$schema"]
         == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
     )
-    assert manifest["name"] == "humanize"
+    assert manifest["name"] == "wellput"
     assert not any(path.is_symlink() for path in root.rglob("*"))
     for path in (root / "skills").rglob("*.md"):
         text = path.read_text()
@@ -39,7 +39,7 @@ def verify(root):
     policy = context["hookSpecificOutput"]["additionalContext"]
     assert "{{reply_format}}" not in policy
     assert "100 prose words" in policy
-    assert str(root / "skills/humanize/SKILL.md") in policy
+    assert str(root / "skills/wellput/SKILL.md") in policy
     assert (
         invoke(
             root,
@@ -74,7 +74,7 @@ def verify(root):
     )
     assert time.perf_counter() - started < 2
     print(
-        "Humanize package, dependency isolation, policy injection, reply repair, and bounded runtime verified."
+        "Wellput package, dependency isolation, policy injection, reply repair, and bounded runtime verified."
     )
 
 

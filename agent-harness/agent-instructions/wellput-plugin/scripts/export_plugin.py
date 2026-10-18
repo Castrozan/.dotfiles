@@ -33,7 +33,7 @@ def portable_references(text, core_path, docs_path):
 
 def export_instructions(sources, output):
     skill = Path(sources["skill"])
-    destination = output / "skills/humanize"
+    destination = output / "skills/wellput"
     copy_directory(skill, destination)
     for relative, core_path, docs_path in (
         ("SKILL.md", "references/core.md", "references/artifact-writing.md"),
@@ -48,7 +48,9 @@ def export_instructions(sources, output):
             "Use\n`url-shortener` for long public references; keep artifact URLs direct.",
             "Keep artifact URLs direct.",
         )
-        path.write_text(text)
+        path.write_text(
+            text.replace("Humanize", "Wellput").replace("humanize", "wellput")
+        )
     core = Path(sources["core"]).read_text()
     sections = re.split(r"(?=^### )", core, flags=re.MULTILINE)
     selected = [
@@ -59,16 +61,24 @@ def export_instructions(sources, output):
     write_file(destination, "references/core.md", "".join(selected).rstrip() + "\n")
     docs = Path(sources["docs"]).read_text()
     docs = docs[docs.index("### Never write") :]
-    write_file(destination, "references/artifact-writing.md", docs)
+    write_file(
+        destination,
+        "references/artifact-writing.md",
+        docs.replace("humanize", "wellput"),
+    )
     evaluation = (skill / "__tests__/evals/reader_recovery.yaml").read_text()
     evaluation = evaluation.replace(
-        "agent-harness/agent-instructions/skills/writing/humanize/", "skills/humanize/"
+        "agent-harness/agent-instructions/skills/writing/humanize/", "skills/wellput/"
     )
-    write_file(output, "evals/reader_recovery.yaml", evaluation)
+    write_file(
+        output, "evals/reader_recovery.yaml", evaluation.replace("Humanize", "Wellput")
+    )
 
 
 def export_runtime(sources, output):
     copy_directory(Path(sources["rules"]), output / "hooks/rules")
+    configuration = output / "hooks/rules/reply-formats.json"
+    configuration.write_text(configuration.read_text().replace("Humanize", "Wellput"))
     guard = Path(sources["guard"]).read_text()
     reader_functions = []
     for node in ast.parse(guard).body:

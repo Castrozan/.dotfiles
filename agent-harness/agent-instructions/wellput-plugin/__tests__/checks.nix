@@ -4,7 +4,7 @@ let
   python = pkgs.python312.withPackages (packages: [ packages.pytest ]);
 in
 {
-  humanize-plugin = pkgs.runCommand "check-humanize-plugin" { } ''
+  wellput-plugin = pkgs.runCommand "check-wellput-plugin" { } ''
     ${python}/bin/python -m pytest -p no:cacheprovider \
       ${plugin}/tests/test_hooks.py \
       ${plugin}/tests/test_human_facing_reply_rules.py \

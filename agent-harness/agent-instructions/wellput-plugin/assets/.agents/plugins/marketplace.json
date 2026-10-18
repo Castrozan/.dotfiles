@@ -1,0 +1,7 @@
+{
+  "name": "wellput",
+  "interface": { "displayName": "Wellput" },
+  "plugins": [
+    { "name": "wellput", "source": { "source": "local", "path": "./" } }
+  ]
+}
