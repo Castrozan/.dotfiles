@@ -1,4 +1,5 @@
 {
+  "disk_io_type": 2,
   "queueing_enabled": true,
   "max_active_downloads": 3,
   "max_active_torrents": -1,

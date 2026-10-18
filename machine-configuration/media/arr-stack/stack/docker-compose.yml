@@ -27,7 +27,7 @@ services:
     image: lscr.io/linuxserver/qbittorrent:4.6.7
     container_name: arr-qbittorrent
     restart: "no"
-    <<: *media-2g
+    <<: *media-512m
     networks:
       - arrnet
     ports:
@@ -213,7 +213,7 @@ services:
       KCEF_ENABLED: "true"
       FLARESOLVERR_ENABLED: "true"
       FLARESOLVERR_URL: http://flaresolverr:8191
-      JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m -XX:+UseG1GC -XX:G1PeriodicGCInterval=300000
     volumes:
       - ${ARR_CONFIG_ROOT}/suwayomi:/home/suwayomi/.local/share/Tachidesk
       - ${ARR_DATA_ROOT}/manga:/home/suwayomi/.local/share/Tachidesk/downloads
