@@ -64,4 +64,35 @@ in
   everySessionEnabledPlugins = enabledPluginsFor everySessionModSources;
 
   interactiveSessionEnabledPlugins = enabledPluginsFor interactiveSessionModSources;
+
+  interactiveSessionPluginConfigs.${pluginKeyOf "airquote"}.options.dictionary =
+    lib.concatStringsSep ", "
+      [
+        "Claude Code"
+        "Codex"
+        "OpenCode"
+        "herdr"
+        "clawde"
+        "Nix"
+        "nixpkgs"
+        "NixOS"
+        "nix-darwin"
+        "home-manager"
+        "agenix"
+        "flake"
+        "dotfiles"
+        "worktree"
+        "kira"
+        "chise"
+        "rin"
+        "Betha"
+        "Todoist"
+        "Obsidian"
+        "Quickshell"
+        "Neovim"
+        "LazyVim"
+        "Cache Tax"
+        "crayon"
+        "Airquote"
+      ];
 }

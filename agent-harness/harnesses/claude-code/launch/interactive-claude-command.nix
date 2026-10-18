@@ -10,9 +10,11 @@ let
     inherit (config.home) homeDirectory;
   };
 
+  claudeModsMarketplace = import ../plugins/mods/marketplace.nix { inherit pkgs; };
+
   interactiveSessionSettings = {
-    enabledPlugins =
-      (import ../plugins/mods/marketplace.nix { inherit pkgs; }).interactiveSessionEnabledPlugins;
+    enabledPlugins = claudeModsMarketplace.interactiveSessionEnabledPlugins;
+    pluginConfigs = claudeModsMarketplace.interactiveSessionPluginConfigs;
   };
 
   interactiveSessionSettingsFile = pkgs.writeText "claude-interactive-session-settings.json" (
