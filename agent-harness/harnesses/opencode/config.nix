@@ -13,7 +13,6 @@ let
 
   opencodePluginSettings = pkgs.runCommand "opencode-plugin-settings.json" { } ''
     ${pkgs.jq}/bin/jq -r '
-      .mcp."plugin.dotfiles.chrome-devtools".timeout = 120000 |
       tojson |
       gsub("\\{env:"; "\\u007benv:") |
       gsub("\\{file:"; "\\u007bfile:")

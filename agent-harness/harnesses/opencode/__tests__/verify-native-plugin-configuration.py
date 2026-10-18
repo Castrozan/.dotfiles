@@ -13,17 +13,11 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
         (bundle / ".opencode/opencode.jsonc").read_text()
     )
     installed_configuration = json.loads(plugin_settings.read_text())
-    installed_servers = {
-        name: server.copy() for name, server in installed_configuration["mcp"].items()
-    }
-    expected_timeouts = {
-        "plugin.dotfiles.chrome-devtools": 120000,
-    }
+    installed_servers = installed_configuration.get("mcp", {})
+    assert "plugin.dotfiles.chrome-devtools" not in installed_servers
     assert "mcp" not in global_configuration
     assert "skills" not in global_configuration
-    for name, timeout in expected_timeouts.items():
-        assert installed_configuration["mcp"][name].pop("timeout") == timeout
-        server = emitted_configuration["mcp"][name]
+    for name, server in installed_servers.items():
         assert server["command"][0] == str(
             bundle / ".agents/plugins/dotfiles/native/mcp" / name.split(".")[-1]
         )
@@ -99,23 +93,12 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
             for servers in mcp_documents:
                 for name, settings in servers.items():
                     merged_servers.setdefault(name, {}).update(settings)
-            assert merged_servers.keys() == emitted_configuration["mcp"].keys()
+            assert merged_servers.keys() == installed_servers.keys()
             for name, settings in merged_servers.items():
                 assert settings["disabled"] is True
-                if name in expected_timeouts:
-                    assert settings["timeout"] == {
-                        "catalog": expected_timeouts[name],
-                        "execution": expected_timeouts[name],
-                    }
-                else:
-                    assert "timeout" not in settings
-                assert (
-                    settings["command"] == emitted_configuration["mcp"][name]["command"]
-                )
-                assert (
-                    settings["environment"]
-                    == emitted_configuration["mcp"][name]["environment"]
-                )
+                assert "timeout" not in settings
+                assert settings["command"] == installed_servers[name]["command"]
+                assert settings["environment"] == installed_servers[name]["environment"]
 
 
 if __name__ == "__main__":
