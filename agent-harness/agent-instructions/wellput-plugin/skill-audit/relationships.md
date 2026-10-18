@@ -4,25 +4,24 @@
 
 ## What is actually assembled
 
-```mermaid
-flowchart TD
-  classDef default fill:#ffffff,stroke:#57606a,color:#161b22
-  Source[Canonical Humanize skill and references] --> Export[Wellput exporter]
-  Config[Shared reply format configuration] --> Export
-  Core[Selected Core and docs sections] --> Export
-  Export --> Skill[Public Wellput skill]
-  Export --> Chat[Public interactive contract and rule modules]
-  Skill --> Load[Skill selection and loading]
-  Chat --> Start[SessionStart expands and injects chat context]
-  Reply[End of turn reply text] --> Stop[Stop checks mechanical rules]
-  Load -. guides writing .-> Reply
-  Start -. supplies contract .-> Reply
-  Chat --> Stop
-  Stop --> Feedback[Acceptance or one repair request]
-  Skill --> Eval[Reader recovery model evaluation]
-  Chat --> Eval
-  Eval --> Judge[Authored assertions and semantic judge]
-  Stop -. acceptance is not checked on this path .-> Judge
+```text
+Canonical Humanize skill + references ─┐
+Shared reply format configuration ────┼─> Wellput exporter
+Selected Core + docs sections ────────┘
+
+Wellput exporter
+├─> Public Wellput skill ─> selection/loading ──guides──> end-of-turn reply
+└─> Public interactive contract + rule modules
+    ├─> SessionStart ──injects chat context─────────────> end-of-turn reply
+    └─> Stop rules
+
+End-of-turn reply + Stop rules ─> Stop ─> acceptance / one repair request
+
+Public Wellput skill ──────────────────┐
+Public interactive contract + rules ───┴─> recovery model evaluation
+                                          └─> authored assertions + semantic judge
+
+Stop acceptance is not checked on the semantic evaluation path.
 ```
 
 The separate paths are intentional: deterministic code owns exact syntax, while language guidance owns meaning and representation suitability. The missing integration is a test of both on the same finished reply. The injected contract is conditional on the harness actually running the trusted hook. A manifest and a successful subprocess prove configuration and output, not installed runtime delivery.
