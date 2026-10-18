@@ -15,7 +15,12 @@ let
     }
   );
 in
-pkgs.runCommand "humanize-plugin" { nativeBuildInputs = [ python ]; } ''
-  python ${./scripts/export_plugin.py} ${sources} "$out"
-  python -S ${./assets/tests/verify_plugin.py} "$out"
-''
+pkgs.runCommand "humanize-plugin"
+  {
+    nativeBuildInputs = [ python ];
+    PYTHONDONTWRITEBYTECODE = "1";
+  }
+  ''
+    python ${./scripts/export_plugin.py} ${sources} "$out"
+    python -S ${./assets/tests/verify_plugin.py} "$out"
+  ''
