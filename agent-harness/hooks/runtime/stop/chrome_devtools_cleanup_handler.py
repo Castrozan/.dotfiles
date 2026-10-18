@@ -5,12 +5,7 @@ from herdr_pane_client import belongs_to_a_subagent
 from hook_dispatch import HandlerResult
 
 
-def handle(hook_input):
-    if hook_input.get("hook_event_name") != "Stop" or belongs_to_a_subagent(hook_input):
-        return None
-    command = shutil.which("chrome-devtools")
-    if command is None:
-        return None
+def cleanup_failure_reason(command):
     try:
         result = subprocess.run(
             [command, "cleanup"],
@@ -22,10 +17,20 @@ def handle(hook_input):
         )
         if not result.returncode:
             return None
-        reason = result.stderr.strip() or "worker cleanup failed"
+        return result.stderr.strip() or "worker cleanup failed"
     except (OSError, subprocess.TimeoutExpired) as error:
-        reason = str(error)
-    return HandlerResult(
-        decision="block",
-        reason=f"Chrome DevTools cleanup failed: {reason}. Run chrome-devtools stop before completing.",
-    )
+        return str(error)
+
+
+def handle(hook_input):
+    if hook_input.get("hook_event_name") != "Stop" or belongs_to_a_subagent(hook_input):
+        return None
+    command = shutil.which("chrome-devtools")
+    if command is None:
+        return None
+    if reason := cleanup_failure_reason(command):
+        return HandlerResult(
+            decision="block",
+            reason=f"Chrome DevTools cleanup failed: {reason}. Run chrome-devtools stop before completing.",
+        )
+    return None

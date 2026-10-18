@@ -30,7 +30,12 @@ def test_pid_file_matches_upstream_linux_and_darwin_locations(tmp_path, monkeypa
     assert session.pid_file == tmp_path / "chrome-devtools-mcp-abc123/daemon.pid"
     monkeypatch.delenv("XDG_RUNTIME_DIR")
     monkeypatch.setattr(sessions.os, "getuid", lambda: 42)
-    assert session.pid_file == Path("/tmp/chrome-devtools-mcp-abc123-42/daemon.pid")
+    assert session.pid_file.parts == (
+        "/",
+        "tmp",
+        "chrome-devtools-mcp-abc123-42",
+        "daemon.pid",
+    )
 
 
 @pytest.mark.parametrize("content", ["invalid", "0", "-1"])

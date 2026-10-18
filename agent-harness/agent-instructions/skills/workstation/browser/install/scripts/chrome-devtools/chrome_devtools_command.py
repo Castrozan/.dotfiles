@@ -52,13 +52,17 @@ class ChromeDevtoolsConfiguration:
         ]
 
 
+def following_argument(arguments, index):
+    return arguments[index + 1] if index + 1 < len(arguments) else "true"
+
+
 def headless_requested(arguments):
     enabled = False
     for index, argument in enumerate(arguments):
         if argument.startswith("--headless="):
             enabled = argument.partition("=")[2].lower() == "true"
         elif argument == "--headless":
-            value = arguments[index + 1] if index + 1 < len(arguments) else "true"
+            value = following_argument(arguments, index)
             enabled = value.lower() != "false"
         elif argument == "--no-headless":
             enabled = False
@@ -98,43 +102,45 @@ def stop_worker(configuration, session):
     return 0
 
 
-def main(configuration, arguments):
-    session = ChromeDevtoolsSession.current(configuration.home_directory)
-    operation = arguments[0] if arguments else "--help"
+def validate_session_arguments(arguments):
     if any(argument.startswith("--sessionId") for argument in arguments):
         raise ValueError("Chrome DevTools session ownership is managed automatically")
-    if operation == "cleanup" and (
+
+
+def unused_cleanup(session, operation):
+    return operation == "cleanup" and (
         not session.automatic_cleanup or not session.state_file.exists()
-    ):
-        return 0
-    if operation in ("stop", "cleanup"):
-        with session.locked():
-            return stop_worker(configuration, session)
-    inspection = (
-        not arguments
-        or "--help" in arguments
-        or operation
-        in (
-            "--version",
-            "status",
-        )
     )
-    if os.environ.get("CLAWDE_AGENT_NAME") and not inspection:
+
+
+def inspection_requested(arguments, operation):
+    return (
+        not arguments or "--help" in arguments or operation in ("--version", "status")
+    )
+
+
+def require_interactive_session():
+    if os.environ.get("CLAWDE_AGENT_NAME"):
         raise ValueError(
             "Chrome DevTools is reserved for interactive sessions; "
             "autonomous agents cannot attach to Chrome Global"
         )
-    if inspection:
-        if not arguments or arguments == ["--help"] or operation == "start":
-            print(
-                "Managed Chrome DevTools CLI: start attaches to Chrome Global; "
-                "start --headless uses a separate profile. Workers start on demand. "
-                "stop closes this worker; cleanup closes an agent-owned worker. "
-                "The agent completion hook performs cleanup for Herdr panes and Codex threads.\n",
-                flush=True,
-            )
-        command = upstream_command(configuration, session, arguments or ["--help"])
-        return os.execv(configuration.upstream_executable, command)
+
+
+def inspect_worker(configuration, session, arguments, operation):
+    if not arguments or arguments == ["--help"] or operation == "start":
+        print(
+            "Managed Chrome DevTools CLI: start attaches to Chrome Global; "
+            "start --headless uses a separate profile. Workers start on demand. "
+            "stop closes this worker; cleanup closes an agent-owned worker. "
+            "The agent completion hook performs cleanup for Herdr panes and Codex threads.\n",
+            flush=True,
+        )
+    command = upstream_command(configuration, session, arguments or ["--help"])
+    return os.execv(configuration.upstream_executable, command)
+
+
+def invoke_browser(configuration, session, arguments, operation):
     with session.locked():
         if operation == "start":
             mode = "headless" if headless_requested(arguments[1:]) else "attached"
@@ -145,6 +151,21 @@ def main(configuration, arguments):
                 return result
     command = upstream_command(configuration, session, arguments)
     return os.execv(configuration.upstream_executable, command)
+
+
+def main(configuration, arguments):
+    session = ChromeDevtoolsSession.current(configuration.home_directory)
+    operation = arguments[0] if arguments else "--help"
+    validate_session_arguments(arguments)
+    if unused_cleanup(session, operation):
+        return 0
+    if operation in ("stop", "cleanup"):
+        with session.locked():
+            return stop_worker(configuration, session)
+    if inspection_requested(arguments, operation):
+        return inspect_worker(configuration, session, arguments, operation)
+    require_interactive_session()
+    return invoke_browser(configuration, session, arguments, operation)
 
 
 if __name__ == "__main__":
