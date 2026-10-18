@@ -2,7 +2,7 @@
 
 ![Live Claude Code session showing Wellput rejecting and repairing a reply](https://github.com/user-attachments/assets/8f2b00c6-ea37-486f-a118-8df32fdf0b81)
 
-[Watch the narrated tour](https://github.com/user-attachments/assets/2fe47182-cf30-4bb3-9659-f298dc39a57a)
+[Watch the narrated tour](https://github.com/user-attachments/assets/c1aab86a-405e-44d0-adca-d3c8d6eff208)
 
 You are driving a bunch of high stakes agents, you are not running 100 agents, but some dozens of agents, you dont have
 time to dedicate 5-15 minutes to each session by giving it your goal, asking it to create a plan and checking the plan,
