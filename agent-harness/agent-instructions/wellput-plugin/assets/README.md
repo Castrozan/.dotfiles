@@ -6,6 +6,8 @@
 
 # Wellput
 
+**Your agents work in parallel. Your attention doesn’t.**
+
 [![Verify Wellput](https://github.com/Castrozan/wellput/actions/workflows/verify.yml/badge.svg)](https://github.com/Castrozan/wellput/actions/workflows/verify.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-6de2c7)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-e6b76a)](#install)
@@ -14,13 +16,11 @@
 
 <!-- markdownlint-enable MD033 MD041 -->
 
-**Your agents work in parallel. Your attention doesn’t.**
+Wellput is a **hook and a writing skill** that make end-of-turn replies easier to **understand and act on**. Recognize the session, see what got done, know whether you’re needed, and move on without rereading the conversation.
 
-Wellput is a hook and a writing skill that make end-of-turn replies easier to understand and act on. Recognize the session, see what got done, know whether you’re needed, and move on without rereading the conversation.
+> Built for **free sessions**: high-stakes discovery and delivery, not predefined workflows.
 
-Built for **free sessions**: high-stakes discovery and delivery, not predefined workflows.
-
-The point isn’t just shorter replies. It’s putting the effort of making work understandable on the agent, so you can stay across dozens of sessions without giving each one your afternoon.
+The point isn’t just _shorter replies_. It’s putting the effort of making work understandable **on the agent**, so you can stay across dozens of sessions without giving each one your afternoon.
 
 ![Live Claude Code session showing Wellput rejecting and repairing a reply](https://github.com/user-attachments/assets/8f2b00c6-ea37-486f-a118-8df32fdf0b81)
 
