@@ -18,10 +18,21 @@ let
   );
 in
 {
-  claude-ai-connectors-disabled-from-user-settings =
-    mkEvalCheck "claude-ai-connectors-disabled-from-user-settings"
-      (userSettings.disableClaudeAiConnectors or false)
-      "disableClaudeAiConnectors in user settings keeps every claude.ai account connector from loading its MCP tool prefix into each session on every host, without a managed-settings.json; any managed settings file loads Claude Code's built-in sec-default guard, which skips every user mod on classic.* and prompt.compose events and so silently disables Cache Tax's resume warning and crayon's model teaching";
+  claude-ai-account-connectors-denied-from-user-settings =
+    mkEvalCheck "claude-ai-account-connectors-denied-from-user-settings"
+      (
+        builtins.all
+          (connectorName: builtins.elem { serverName = connectorName; } userSettings.deniedMcpServers)
+          [
+            "claude.ai Gmail"
+            "claude.ai Google Calendar"
+            "claude.ai Google Drive"
+            "claude.ai Claude Code Remote"
+            "claude.ai Context7"
+          ]
+        && !(userSettings ? disableClaudeAiConnectors)
+      )
+      "deniedMcpServers merges from every settings file, so user settings keep these five claude.ai account connectors from loading their MCP tool prefix into each session without a managed-settings.json, whose mere presence loads Claude Code's built-in sec-default guard and makes it skip every user mod on classic.* and prompt.compose events, silently disabling Cache Tax's resume warning and crayon's model teaching; each entry must stay a { serverName = <verbatim display name>; } object, and disableClaudeAiConnectors must stay off because it would also drop the connectors that are wanted, such as Claude Docs";
 
   darwin-removes-only-the-managed-settings-this-repository-wrote =
     mkEvalCheck "darwin-removes-only-the-managed-settings-this-repository-wrote"

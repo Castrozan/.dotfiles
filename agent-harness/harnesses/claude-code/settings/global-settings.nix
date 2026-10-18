@@ -39,7 +39,6 @@ let
       "image-view@claude-image-view" = true;
     }
     // claudeModsMarketplace.everySessionEnabledPlugins;
-    disableClaudeAiConnectors = true;
     language = "english";
     animationInterval = 80;
     spinnerText = spinnerVerbs;
@@ -60,6 +59,11 @@ let
     deniedMcpServers = [
       { serverName = "plugin:betha-desenvolvimento:chrome-devtools"; }
       { serverName = "plugin:betha-chrome-devtools:chrome-devtools"; }
+      { serverName = "claude.ai Gmail"; }
+      { serverName = "claude.ai Google Calendar"; }
+      { serverName = "claude.ai Google Drive"; }
+      { serverName = "claude.ai Claude Code Remote"; }
+      { serverName = "claude.ai Context7"; }
     ];
     permissions = {
       defaultMode = "bypassPermissions";
