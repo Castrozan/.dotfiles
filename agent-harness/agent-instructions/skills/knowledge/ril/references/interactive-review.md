@@ -1,3 +1,7 @@
+---
+name: ril-interactive-review
+---
+
 ### Brief the capture
 
 Present a useful briefing in the first research handoff: what the item is, its original web link, what was established,
