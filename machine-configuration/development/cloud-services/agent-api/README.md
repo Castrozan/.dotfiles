@@ -39,11 +39,12 @@ Monid is an established provider gateway. Its discovery and inspection APIs supp
 and prices; this API wraps those rather than implementing another connector engine. Use `monid.discover`, then
 `monid.inspect`, then `monid.run` with the returned provider, endpoint and input. Credentials come from `MONID_API_KEY`
 or `~/.secrets/monid-api-key`. Discovery and inspection are free upstream; execution is priced by endpoint.
-See https://docs.monid.ai/ and https://github.com/monid-ai/monid.
+See [Monid documentation](https://docs.monid.ai/) and [its connector engine](https://github.com/monid-ai/monid).
 
 fal offers image, video, audio and 3D models through a durable queue. `fal.run` accepts a documented model endpoint and
 its provider-specific input object. It returns the provider result, including hosted asset URLs. Model schemas and
-pricing remain upstream: https://fal.ai/docs/documentation/model-apis/inference/queue. Use `web.download` to retain a
+pricing remain in the [fal queue documentation](https://fal.ai/docs/documentation/model-apis/inference/queue).
+Use `web.download` to retain a
 hosted artifact separately. Credentials come from `FAL_KEY` or `~/.secrets/fal-api-key`. Hosted result URLs can expire.
 
 Account-billed operations require `--allow-paid` or HTTP `allow_paid: true`. This grants account use, not a price

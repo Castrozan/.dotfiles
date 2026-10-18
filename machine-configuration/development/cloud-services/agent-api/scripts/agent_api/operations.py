@@ -78,7 +78,6 @@ class OperationStore:
 
     def claim(self, operation_id, request: OperationRequest, input_fingerprints=None):
         validate_operation_id(operation_id)
-        request_json = canonical_json(asdict(request))
         digest = hashlib.sha256(
             canonical_json(
                 {"request": asdict(request), "input_files": input_fingerprints or {}}
@@ -92,28 +91,33 @@ class OperationStore:
                 (operation_id,),
             ).fetchone()
             if previous is not None:
-                if previous[0] != digest:
-                    raise CapabilityError("operation_conflict")
-                if previous[1] != "succeeded":
-                    raise CapabilityError("operation_incomplete")
+                self.validate_previous(previous, digest)
             else:
-                active = connection.execute(
-                    "SELECT COUNT(*) FROM operations WHERE status = 'running'"
-                ).fetchone()[0]
-                if active >= 2:
-                    raise CapabilityError("capacity_exceeded")
-                self.directory(operation_id).mkdir(mode=0o700)
-                connection.execute(
-                    "INSERT INTO operations VALUES (?, ?, ?, 'running', ?, NULL)",
-                    (
-                        operation_id,
-                        digest,
-                        request_json.decode(),
-                        time.time() + request.timeout_seconds + 10,
-                    ),
-                )
-                return None
-        return self.inspect(operation_id)
+                self.reserve(connection, operation_id, request, digest)
+        return self.inspect(operation_id) if previous is not None else None
+
+    def validate_previous(self, previous, digest):
+        if previous[0] != digest:
+            raise CapabilityError("operation_conflict")
+        if previous[1] != "succeeded":
+            raise CapabilityError("operation_incomplete")
+
+    def reserve(self, connection, operation_id, request, digest):
+        active = connection.execute(
+            "SELECT COUNT(*) FROM operations WHERE status = 'running'"
+        ).fetchone()[0]
+        if active >= 2:
+            raise CapabilityError("capacity_exceeded")
+        self.directory(operation_id).mkdir(mode=0o700)
+        connection.execute(
+            "INSERT INTO operations VALUES (?, ?, ?, 'running', ?, NULL)",
+            (
+                operation_id,
+                digest,
+                canonical_json(asdict(request)).decode(),
+                time.time() + request.timeout_seconds + 10,
+            ),
+        )
 
     def finish(self, operation_id, status, result):
         receipt = {"result": result, "artifacts": []}

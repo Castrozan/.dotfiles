@@ -100,13 +100,18 @@ def serve_api(args):
     return 0
 
 
-def execute(args):
+def execute_discovery(args):
     if args.command == "providers":
         return {"providers": providers()}
     if args.command == "discover":
         return {"capabilities": discover(args.query, args.provider)}
     if args.command == "inspect":
         return describe(args.capability)
+
+
+def execute(args):
+    if args.command in ("providers", "discover", "inspect"):
+        return execute_discovery(args)
     service = CapabilityService(args.state_directory)
     if args.command == "operation":
         return service.store.inspect(args.operation_id)
@@ -118,18 +123,22 @@ def execute(args):
     return service.run(operation_id, request)
 
 
+def execute_mode(args):
+    if args.command == "worker":
+        from agent_api.worker import execute_worker
+
+        return execute_worker(args.directory)
+    if args.command == "serve":
+        return serve_api(args)
+    print(json.dumps(execute(args), ensure_ascii=False, allow_nan=False, indent=2))
+    return 0
+
+
 def main(arguments=None):
     os.umask(0o077)
     args = build_parser().parse_args(arguments)
     try:
-        if args.command == "worker":
-            from agent_api.worker import execute_worker
-
-            return execute_worker(args.directory)
-        if args.command == "serve":
-            return serve_api(args)
-        print(json.dumps(execute(args), ensure_ascii=False, allow_nan=False, indent=2))
-        return 0
+        return execute_mode(args)
     except CapabilityError as error:
         print(json.dumps({"error": str(error)}), file=sys.stderr)
         return 1

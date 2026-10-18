@@ -16,6 +16,12 @@ class NetworkClient:
         self.deadline = time.monotonic() + timeout_seconds
         self.client = client or httpx.Client(follow_redirects=False, trust_env=False)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception, traceback):
+        self.close()
+
     def remaining(self):
         remaining = self.deadline - time.monotonic()
         if remaining <= 0:

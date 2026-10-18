@@ -28,6 +28,8 @@ def test_deadlines_are_finite_strict_and_bounded(value):
         "file:///etc/passwd",
         "https://user:password@example.com",
         "https://example.com:invalid",
+        "https://example.com:0",
+        "https://example.com:99999",
         "https://example.com/\n",
     ],
 )

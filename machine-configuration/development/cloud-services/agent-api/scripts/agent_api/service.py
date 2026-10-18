@@ -17,6 +17,14 @@ def fingerprint_inputs(request):
     }
 
 
+def execution_charge(request):
+    return None if describe(request.capability)["payment"] != "none" else 0
+
+
+def failure_category(error):
+    return str(error) if isinstance(error, CapabilityError) else "execution_interrupted"
+
+
 class CapabilityService:
     def __init__(self, state_directory, executor=None):
         self.store = OperationStore(state_directory)
@@ -25,18 +33,26 @@ class CapabilityService:
     def run(self, operation_id, request):
         validate_input(request)
         fingerprints = fingerprint_inputs(request)
-        try:
-            self.store.inspect(operation_id)
-        except CapabilityError as error:
-            if str(error) != "operation_not_found":
-                raise
-        else:
-            return self.store.claim(operation_id, request, fingerprints)
+        replay = self.replay(operation_id, request, fingerprints)
+        if replay is not None:
+            return replay
         entry = validate_request(request)
         create_provider(entry["provider"]).preflight(request)
         replay = self.store.claim(operation_id, request, fingerprints)
         if replay is not None:
             return replay
+        return self.execute_claimed(operation_id, request, fingerprints)
+
+    def replay(self, operation_id, request, fingerprints):
+        try:
+            self.store.inspect(operation_id)
+        except CapabilityError as error:
+            if str(error) != "operation_not_found":
+                raise
+            return None
+        return self.store.claim(operation_id, request, fingerprints)
+
+    def execute_claimed(self, operation_id, request, fingerprints):
         directory = self.store.directory(operation_id)
         started = time.monotonic()
         try:
@@ -59,18 +75,13 @@ class CapabilityService:
                 {
                     "output": result,
                     "elapsed_seconds": time.monotonic() - started,
-                    "charge_usd": None
-                    if describe(request.capability)["payment"] != "none"
-                    else 0,
+                    "charge_usd": execution_charge(request),
                 },
             )
         except BaseException as error:
-            category = (
-                str(error)
-                if isinstance(error, CapabilityError)
-                else "execution_interrupted"
-            )
             self.store.finish(
-                operation_id, "failed", {"error": category, "charge_usd": None}
+                operation_id,
+                "failed",
+                {"error": failure_category(error), "charge_usd": None},
             )
             raise

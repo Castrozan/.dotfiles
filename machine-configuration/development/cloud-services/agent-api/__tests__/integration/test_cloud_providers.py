@@ -4,7 +4,8 @@ import httpx
 import pytest
 
 from agent_api.contract import CapabilityError, OperationRequest
-from agent_api.providers.cloud import CloudProvider
+from agent_api.providers.fal import FalProvider
+from agent_api.providers.monid import MonidProvider
 from agent_api.providers.network import NetworkClient
 
 
@@ -40,7 +41,7 @@ def test_monid_async_run_submits_once_and_retains_remote_identity(
         {"provider": "apify", "endpoint": "/example", "input": {}},
         allow_paid=True,
     )
-    result = CloudProvider().monid(request, tmp_path, client)
+    result = MonidProvider().run(request, tmp_path, client)
     assert result["output"] == {"text": "result"}
     assert [call.method for call in calls] == ["POST", "GET"]
     assert (
@@ -69,7 +70,7 @@ def test_monid_completed_provider_error_is_a_failure(tmp_path, monkeypatch):
         allow_paid=True,
     )
     with pytest.raises(CapabilityError, match="provider_failed"):
-        CloudProvider().monid(request, tmp_path, client_for(respond))
+        MonidProvider().run(request, tmp_path, client_for(respond))
     assert len(calls) == 1
     assert (tmp_path / "submission.json").exists()
 
@@ -103,7 +104,7 @@ def test_fal_polls_returned_urls_without_submitting_twice(tmp_path, monkeypatch)
         {"endpoint": "fal-ai/flux/schnell", "input": {"prompt": "cat"}},
         allow_paid=True,
     )
-    result = CloudProvider().fal(request, tmp_path, client_for(respond))
+    result = FalProvider().run(request, tmp_path, client_for(respond))
     assert result == {"images": []}
     assert [call.method for call in calls] == ["POST", "GET", "GET"]
     assert (
@@ -131,7 +132,7 @@ def test_fal_refuses_to_forward_credentials_to_another_host(tmp_path, monkeypatc
         "fal.run", {"endpoint": "fal-ai/flux/schnell", "input": {}}, allow_paid=True
     )
     with pytest.raises(CapabilityError, match="invalid_provider_url"):
-        CloudProvider().fal(request, tmp_path, client_for(respond))
+        FalProvider().run(request, tmp_path, client_for(respond))
     assert len(calls) == 1
 
 

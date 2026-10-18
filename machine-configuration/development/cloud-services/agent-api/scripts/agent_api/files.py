@@ -23,13 +23,14 @@ def input_file(value):
         metadata = path.lstat()
     except OSError:
         raise CapabilityError("input_unavailable") from None
-    if (
-        not path.is_absolute()
-        or not stat.S_ISREG(metadata.st_mode)
-        or path.resolve() != path
-        or metadata.st_uid != os.geteuid()
-        or metadata.st_size > MAXIMUM_ARTIFACT_BYTES
-    ):
+    valid = (
+        path.is_absolute(),
+        stat.S_ISREG(metadata.st_mode),
+        path.resolve() == path,
+        metadata.st_uid == os.geteuid(),
+        metadata.st_size <= MAXIMUM_ARTIFACT_BYTES,
+    )
+    if not all(valid):
         raise CapabilityError("invalid_input_file")
     return path
 
@@ -85,11 +86,11 @@ def describe_artifacts(directory):
 def verify_artifacts(directory, artifacts):
     for artifact in artifacts:
         path = directory / artifact["path"]
-        if (
-            path.parent != directory
-            or path.is_symlink()
-            or not path.is_file()
-            or path.stat().st_size != artifact["size_bytes"]
-            or file_digest(path) != artifact["sha256"]
+        valid = (path.parent == directory, not path.is_symlink(), path.is_file())
+        if not all(valid):
+            raise CapabilityError("artifact_changed")
+        if (path.stat().st_size, file_digest(path)) != (
+            artifact["size_bytes"],
+            artifact["sha256"],
         ):
             raise CapabilityError("artifact_changed")

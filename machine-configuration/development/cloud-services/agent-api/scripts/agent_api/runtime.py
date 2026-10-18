@@ -37,11 +37,13 @@ class WorkerExecutor:
             except BaseException:
                 self.stop(process)
                 raise
+        return self.read_result(directory)
+
+    def read_result(self, directory):
         result_path = directory / "result.json"
-        if (
-            not result_path.is_file()
-            or result_path.stat().st_size > MAXIMUM_RESULT_BYTES
-        ):
+        if not result_path.is_file():
+            raise CapabilityError("worker_failed")
+        if result_path.stat().st_size > MAXIMUM_RESULT_BYTES:
             raise CapabilityError("worker_failed")
         try:
             result = json.loads(result_path.read_bytes())
@@ -56,21 +58,25 @@ class WorkerExecutor:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise CapabilityError("deadline_exceeded")
-            sizes = {
-                path.name: path.stat().st_size
-                for path in directory.iterdir()
-                if path.is_file()
-            }
-            if (
-                sizes.get("worker.log", 0) > MAXIMUM_RESULT_BYTES
-                or sum(sizes.values()) > MAXIMUM_ARTIFACT_BYTES
-            ):
-                raise CapabilityError("artifact_too_large")
+            self.check_sizes(directory)
             try:
                 process.wait(timeout=min(0.25, remaining))
                 return
             except subprocess.TimeoutExpired:
                 pass
+
+    def check_sizes(self, directory):
+        sizes = {
+            path.name: path.stat().st_size
+            for path in directory.iterdir()
+            if path.is_file()
+        }
+        exceeded = (
+            sizes.get("worker.log", 0) > MAXIMUM_RESULT_BYTES,
+            sum(sizes.values()) > MAXIMUM_ARTIFACT_BYTES,
+        )
+        if any(exceeded):
+            raise CapabilityError("artifact_too_large")
 
     def stop(self, process):
         try:
