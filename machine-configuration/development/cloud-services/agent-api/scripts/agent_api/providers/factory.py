@@ -18,6 +18,10 @@ PROVIDER_TYPES = {
 
 
 def create_provider(provider_name):
+    if provider_name == "scrapy":
+        from agent_api.providers.crawling import CrawlingProvider
+
+        return CrawlingProvider()
     try:
         return PROVIDER_TYPES[provider_name]()
     except KeyError:

@@ -6,6 +6,10 @@ from agent_api.catalogs.media import media_capabilities
 from agent_api.contract import CapabilityError
 
 PROVIDERS = {
+    "scrapy": {
+        "execution": "local",
+        "documentation": "https://docs.scrapy.org/",
+    },
     "trafilatura": {
         "execution": "local",
         "documentation": "https://trafilatura.readthedocs.io/",

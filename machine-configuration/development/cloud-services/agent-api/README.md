@@ -39,6 +39,40 @@ Account-billed operations require `--allow-paid` or HTTP `allow_paid: true`. Thi
 reservation or dollar cap. The gateway does not create accounts, provision keys, buy credits or switch providers after
 failure. API credentials and billing remain separate from agent harness subscriptions.
 
+## Programmatic crawling
+
+`web.crawl` runs Scrapy over HTTP without opening or connecting to a browser. It follows links only within the starting
+URL's exact origin, including scheme and port. Supply the final HTTPS URL when a site redirects from HTTP. It respects
+robots.txt, disables cookies, proxies and retries, and downloads one response at a time with a 250 ms delay.
+
+```sh
+agent-api run web.crawl --input '{"url":"https://docs.scrapy.org/en/2.13/","max_pages":5,"max_depth":1}'
+```
+
+The default is ten distinct page targets and two link levels below the starting page. `max_pages` accepts 1 through 50;
+`max_depth` accepts 0 through 5. Failed or robots-excluded targets consume page slots. Robots and redirects can add HTTP
+requests; redirects are limited to five hops and cannot leave the origin. Each response is limited to 1 MiB, and the
+operation uses the gateway's existing deadline. JavaScript is not executed.
+
+Optional `extraction` defines a CSS `item_selector` and named CSS expressions in `fields`:
+
+```json
+{
+  "url": "https://example.com/catalogue",
+  "max_pages": 1,
+  "extraction": {
+    "item_selector": "article.product",
+    "fields": { "title": "h2::text", "link": "a::attr(href)" }
+  }
+}
+```
+
+Each field returns its first match as a string, or null when absent. Relative links remain relative to that page's URL.
+Extraction accepts at most 20 fields, 1,000 records per page and 16,384 characters per field; oversized extraction is
+reported as a page error. Page content and extracted records are retained in `crawl.jsonl`, one JSON object per page.
+The receipt returns page summaries, errors and the artifact name. Partial crawls expose their failed pages; a crawl with
+no successful pages fails. Successful replay reads the retained artifact without fetching the site again.
+
 ## Durable operations and limits
 
 State defaults to `$XDG_STATE_HOME/agent-api`, or `~/.local/state/agent-api`. Its directory requires mode 0700. Each
