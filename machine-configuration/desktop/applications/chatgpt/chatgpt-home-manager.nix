@@ -26,7 +26,12 @@ let
       ]
   );
   resourceLauncher = pkgs.writeShellScriptBin "chatgpt" ''
-    export PATH="${lib.makeBinPath [ pkgs.systemd ]}:$PATH"
+    export PATH="${
+      lib.makeBinPath [
+        pkgs.bubblewrap
+        pkgs.systemd
+      ]
+    }:$PATH"
     export PYTHONPATH="${resourcePolicyModules}:''${PYTHONPATH:-}"
     chatgpt_resource_unit="app-chatgpt-$BASHPID-$RANDOM"
     exec ${pkgs.systemd}/bin/systemd-run --user --scope --quiet --collect \
