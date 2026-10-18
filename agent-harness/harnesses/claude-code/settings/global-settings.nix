@@ -39,6 +39,7 @@ let
       "image-view@claude-image-view" = true;
     }
     // claudeModsMarketplace.everySessionEnabledPlugins;
+    disableClaudeAiConnectors = true;
     language = "english";
     animationInterval = 80;
     spinnerText = spinnerVerbs;

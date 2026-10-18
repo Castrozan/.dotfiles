@@ -127,8 +127,13 @@ in
       "private-configuration/machines/<hostname>/claude mixes files Claude reads out of ~/.claude with nix modules the harness imports, so private.nix must keep the modules out; a deployed .nix file would publish machine configuration as if it were Claude data";
 
 }
-// import ./claude-managed-settings-nix-darwin-checks.nix {
-  inherit helpers pkgs lib;
+// import ./remove-claude-managed-settings-nix-darwin-checks.nix {
+  inherit
+    helpers
+    pkgs
+    lib
+    self
+    ;
 }
 // import ./skill-tier-checks.nix {
   inherit
