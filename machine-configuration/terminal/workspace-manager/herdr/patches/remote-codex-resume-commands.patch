@@ -1,3 +1,14 @@
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -9,0 +10,3 @@
++
++#[cfg(test)]
++mod private_codex_resume_tests;
+@@ -52 +55,3 @@
+-            return Ok(Some(command.to_string()));
++            return Ok(Some(resume::normalize_private_codex_resume_command(
++                command,
++            )));
 --- a/src/resume.rs
 +++ b/src/resume.rs
 @@ -3 +3 @@
@@ -5,10 +16,36 @@
 +const COMMAND_PREFIXES: [&str; 5] = [
 @@ -5,0 +6 @@
 +    "codex --remote ",
-@@ -20 +21 @@
+@@ -17,0 +19,25 @@
++pub(crate) fn normalize_private_codex_resume_command(command: &str) -> String {
++    let Some((endpoint, session)) = command
++        .strip_prefix("codex --remote ")
++        .and_then(|arguments| arguments.split_once(" resume "))
++    else {
++        return command.to_owned();
++    };
++    let Some((directory, socket)) = endpoint
++        .strip_prefix("unix:///tmp/codex-session-")
++        .and_then(|path| path.split_once('/'))
++    else {
++        return command.to_owned();
++    };
++    if directory.is_empty()
++        || !directory
++            .bytes()
++            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-'))
++        || !matches!(socket, "client.sock" | "server.sock")
++    {
++        return command.to_owned();
++    }
++
++    format!("codex resume {session}")
++}
++
+@@ -20 +46 @@
 -        let session_start = start + prefix.len();
 +        let session_start = command_session_start(output, start, prefix)?;
-@@ -36,0 +38,20 @@
+@@ -36,0 +63,20 @@
 +}
 +
 +fn command_session_start(output: &str, start: usize, prefix: &str) -> Option<usize> {
@@ -29,10 +66,10 @@
 +
 +    let session = arguments.strip_prefix("resume ")?;
 +    Some(output.len() - session.len())
-@@ -58 +79 @@
+@@ -58 +104 @@
 -        "codex resume " | "claude --resume " => valid_uuid(session_id),
 +        "codex resume " | "codex --remote " | "claude --resume " => valid_uuid(session_id),
-@@ -78,141 +99 @@
+@@ -78,141 +124 @@
 -mod tests {
 -    use super::latest_command;
 -
@@ -385,5 +422,65 @@
 +    ] {
 +        let output = format!("codex --remote unix:///tmp/client.sock {arguments}");
 +        assert_eq!(latest_command(&output), None, "{output}");
++    }
++}
+--- /dev/null
++++ b/src/private_codex_resume_tests.rs
+@@ -0,0 +1,57 @@
++use crate::find_resume_command;
++
++const SESSION: &str = "00000000-0000-4000-8000-000000000001";
++
++#[test]
++fn private_codex_disconnect_footer_uses_a_fresh_local_server() {
++    let output = format!(
++        "Disconnected from this task. Any running work continues.\nTo reconnect, run:\n  codex --remote unix:///tmp/codex-session-example/client.sock resume {SESSION}\nStop the current turn: run codex --remote unix:///tmp/codex-session-example/client.sock agents, select this task, and press x.\n$ "
++    );
++    let command = find_resume_command(|_| Ok(output.clone())).unwrap();
++    assert_eq!(command, Some(format!("codex resume {SESSION}")));
++}
++
++#[test]
++fn private_codex_server_and_profile_proxy_use_the_same_local_resume() {
++    for socket in ["server.sock", "client.sock"] {
++        let output =
++            format!("codex --remote unix:///tmp/codex-session-a_b-123/{socket} resume {SESSION}");
++        let command = find_resume_command(|_| Ok(output.clone())).unwrap();
++        assert_eq!(command, Some(format!("codex resume {SESSION}")), "{socket}");
++    }
++}
++
++#[test]
++fn explicit_remote_servers_and_unowned_socket_paths_keep_their_endpoint() {
++    for endpoint in [
++        "ws://codex.example:8080",
++        "wss://codex.example:443",
++        "unix:///run/codex/server.sock",
++        "unix:///tmp/other-session/client.sock",
++        "unix:///tmp/codex-session-example/other.sock",
++        "unix:///tmp/codex-session-example/nested/client.sock",
++        "unix:///tmp/codex-session-/client.sock",
++        "unix:///tmp/codex-session-../client.sock",
++    ] {
++        let output = format!("codex --remote {endpoint} resume {SESSION}");
++        let command = find_resume_command(|_| Ok(output.clone())).unwrap();
++        assert_eq!(command, Some(output), "{endpoint}");
++    }
++}
++
++#[test]
++fn newest_resume_command_is_selected_before_private_socket_normalization() {
++    let private =
++        format!("codex --remote unix:///tmp/codex-session-example/client.sock resume {SESSION}");
++    let remote = format!("codex --remote wss://codex.example:443 resume {SESSION}");
++    for (output, expected) in [
++        (format!("{private}\n{remote}"), remote.clone()),
++        (
++            format!("{remote}\n{private}"),
++            format!("codex resume {SESSION}"),
++        ),
++    ] {
++        let command = find_resume_command(|_| Ok(output.clone())).unwrap();
++        assert_eq!(command, Some(expected));
 +    }
 +}
