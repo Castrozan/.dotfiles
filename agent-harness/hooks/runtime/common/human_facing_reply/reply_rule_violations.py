@@ -32,7 +32,12 @@ def opener_violation(reply: ReplyUnderReview, restriction: str) -> str | None:
 
 def reaction_opener_violation(reply: ReplyUnderReview) -> str | None:
     pattern = reply.configuration.restriction_patterns["reaction_opener"]["pattern"]
-    if pattern.fullmatch("\n".join(reply.document.source_lines).strip()):
+    tokens = reply.document.tokens
+    if (
+        len(tokens) == 3
+        and tokens[0].type == "paragraph_open"
+        and pattern.fullmatch(reply.opening_text.strip().rstrip(".!?"))
+    ):
         return None
     return opener_violation(reply, "reaction_opener")
 

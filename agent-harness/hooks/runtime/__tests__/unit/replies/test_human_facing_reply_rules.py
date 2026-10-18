@@ -27,7 +27,8 @@ def test_a_standalone_table_preserves_its_column_schema():
 
 
 def test_a_standalone_answer_word_is_not_a_reaction_preamble():
-    assert template_violations_in_reply("Absolutely") == []
+    for reply in ("Absolutely", "Absolutely.", "**Absolutely**"):
+        assert template_violations_in_reply(reply) == []
 
 
 def test_a_reply_past_the_confirmation_and_its_grace_names_the_labels_it_omits():

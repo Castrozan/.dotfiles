@@ -12,7 +12,11 @@ from reply_text_metrics import ReplyUnderReview
 def violations_from_rules(reply: ReplyUnderReview) -> list[str]:
     restrictions = reply.configuration.restrictions
     tokens = reply.document.tokens
-    if tokens and tokens[0].type == "table_open" and tokens[-1].type == "table_close":
+    if (
+        len(reply.table_first_columns) == 1
+        and tokens[0].type == "table_open"
+        and tokens[-1].type == "table_close"
+    ):
         restrictions = {
             name: rule
             for name, rule in restrictions.items()

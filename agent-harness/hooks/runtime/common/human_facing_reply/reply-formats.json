@@ -44,15 +44,15 @@
     "maximum_items": 5
   },
   "syntax": {
-    "tree_branch_pattern": "^[ \\t\u2502|]*(?:[\u251c\u2514]\u2500+|[+`]--)\\s+\\S",
+    "tree_branch_pattern": "^[ \\t│|]*(?:[├└]─+|[+`]--)\\s+\\S",
     "label_emphasis_marker": "**",
     "quotation_pairs": {
       "\"": "\"",
       "'": "'",
-      "\u201c": "\u201d",
-      "\u2018": "\u2019"
+      "“": "”",
+      "‘": "’"
     },
-    "apostrophe_characters": "\u2019\u2018"
+    "apostrophe_characters": "’‘"
   },
   "restrictions": [
     {
@@ -127,8 +127,8 @@
     {
       "name": "sentence_dash",
       "characters": {
-        "\u2014": "em dash",
-        "\u2013": "en dash"
+        "—": "em dash",
+        "–": "en dash"
       },
       "message": "contains an {character_name} outside a quotation"
     },

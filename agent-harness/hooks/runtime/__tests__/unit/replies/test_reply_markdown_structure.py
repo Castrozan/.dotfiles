@@ -47,6 +47,13 @@ def test_a_table_with_prose_still_requires_conversational_indexes():
     assert any("index column" in item for item in template_violations_in_reply(reply))
 
 
+def test_tables_cannot_hide_the_prose_between_them():
+    table = "| Name | Value |\n| --- | --- |\n| timeout | 30 |"
+    reply = table + "\n\n" + "evidence " * 120 + "\n\n" + table
+
+    assert any("prose words" in item for item in template_violations_in_reply(reply))
+
+
 @pytest.mark.parametrize(
     "reply",
     [
