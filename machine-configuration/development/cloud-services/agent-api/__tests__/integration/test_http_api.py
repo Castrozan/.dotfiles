@@ -35,8 +35,13 @@ def test_http_validation_rejects_unknown_and_paid_requests_without_dispatch(tmp_
     response = client.put(
         "/v1/operations/" + operation_id,
         json={
-            "capability": "fal.run",
-            "input": {"endpoint": "fal-ai/flux/schnell", "input": {}},
+            "capability": "speech.generate",
+            "input": {
+                "provider": "elevenlabs",
+                "text": "Hello",
+                "voice": "test-voice",
+                "language": "en-us",
+            },
         },
     )
     assert response.status_code == 422

@@ -60,16 +60,23 @@ def test_changed_local_file_conflicts_even_when_its_path_is_identical(tmp_path):
     assert executor.calls == 1
 
 
-def test_missing_credentials_do_not_claim_an_operation(tmp_path, monkeypatch):
-    from agent_api.providers import credentials
-
-    monkeypatch.setenv("MONID_API_KEY", "")
-    monkeypatch.setattr(credentials.Path, "home", lambda: tmp_path)
-    service = CapabilityService(tmp_path / "state", RecordingExecutor())
+@pytest.mark.parametrize(
+    "capability",
+    [
+        "monid.discover",
+        "monid.inspect",
+        "monid.run",
+        "monid.result",
+        "fal.run",
+        "fal.result",
+    ],
+)
+def test_removed_cloud_capabilities_do_not_claim_or_dispatch(tmp_path, capability):
+    executor = RecordingExecutor()
+    service = CapabilityService(tmp_path / "state", executor)
     operation_id = str(uuid.uuid4())
-    with pytest.raises(CapabilityError, match="missing_credentials"):
-        service.run(
-            operation_id, OperationRequest("monid.discover", {"query": "video"})
-        )
+    with pytest.raises(CapabilityError, match="unsupported_capability"):
+        service.run(operation_id, OperationRequest(capability, {}, allow_paid=True))
+    assert executor.calls == 0
     with pytest.raises(CapabilityError, match="operation_not_found"):
         service.store.inspect(operation_id)

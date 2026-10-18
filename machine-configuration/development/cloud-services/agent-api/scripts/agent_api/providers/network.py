@@ -65,8 +65,5 @@ class NetworkClient:
         except (ValueError, UnicodeError):
             raise CapabilityError("invalid_provider_response") from None
 
-    def pause(self):
-        time.sleep(min(2, self.remaining()))
-
     def close(self):
         self.client.close()

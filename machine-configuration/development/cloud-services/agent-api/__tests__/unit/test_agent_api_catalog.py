@@ -1,7 +1,13 @@
 import pytest
 from jsonschema import Draft202012Validator
 
-from agent_api.catalog import capabilities, describe, discover, validate_request
+from agent_api.catalog import (
+    capabilities,
+    describe,
+    discover,
+    providers,
+    validate_request,
+)
 from agent_api.contract import CapabilityError, OperationRequest, validate_url
 
 
@@ -13,7 +19,9 @@ def test_every_capability_has_a_valid_strict_input_schema_and_unique_id():
         assert entry["input_schema"]["additionalProperties"] is False
         assert entry["description"]
     assert all("input_schema" not in entry for entry in discover())
-    assert describe("fal.run")["payment"] == "provider_plan"
+    assert {"fal", "monid"}.isdisjoint(entry["id"] for entry in providers())
+    assert describe("web.search")["payment"] == "none"
+    assert describe("web.scrape")["payment"] == "none"
 
 
 @pytest.mark.parametrize("value", [0, 601, True, float("nan")])
@@ -48,7 +56,13 @@ def test_unknown_controls_fail_before_any_dispatch():
 
 def test_paid_generation_requires_explicit_permission():
     request = OperationRequest(
-        "fal.run", {"endpoint": "fal-ai/flux/schnell", "input": {"prompt": "cat"}}
+        "speech.generate",
+        {
+            "provider": "elevenlabs",
+            "text": "Hello",
+            "voice": "test-voice",
+            "language": "en-us",
+        },
     )
     with pytest.raises(CapabilityError, match="payment_permission_required"):
         validate_request(request)
