@@ -64,6 +64,7 @@ pkgs.stdenvNoCC.mkDerivation (finalAttributes: {
     (lib.makeBinPath (
       with pkgs;
       [
+        bubblewrap
         curl
         git
         xdg-utils
