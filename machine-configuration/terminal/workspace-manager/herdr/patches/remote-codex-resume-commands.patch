@@ -1,0 +1,389 @@
+--- a/src/resume.rs
++++ b/src/resume.rs
+@@ -3 +3 @@
+-const COMMAND_PREFIXES: [&str; 4] = [
++const COMMAND_PREFIXES: [&str; 5] = [
+@@ -5,0 +6 @@
++    "codex --remote ",
+@@ -20 +21 @@
+-        let session_start = start + prefix.len();
++        let session_start = command_session_start(output, start, prefix)?;
+@@ -36,0 +38,20 @@
++}
++
++fn command_session_start(output: &str, start: usize, prefix: &str) -> Option<usize> {
++    let argument_start = start + prefix.len();
++    if prefix != "codex --remote " {
++        return Some(argument_start);
++    }
++
++    let (endpoint, arguments) = output[argument_start..].split_once(' ')?;
++    if endpoint.is_empty()
++        || endpoint.starts_with('-')
++        || !endpoint
++            .bytes()
++            .all(|byte| byte.is_ascii_alphanumeric() || b"/:._-@".contains(&byte))
++    {
++        return None;
++    }
++
++    let session = arguments.strip_prefix("resume ")?;
++    Some(output.len() - session.len())
+@@ -58 +79 @@
+-        "codex resume " | "claude --resume " => valid_uuid(session_id),
++        "codex resume " | "codex --remote " | "claude --resume " => valid_uuid(session_id),
+@@ -78,141 +99 @@
+-mod tests {
+-    use super::latest_command;
+-
+-    #[test]
+-    fn extracts_opencode_command_from_exit_screen() {
+-        let output = "Session  Herdr navigation plugin comparison\n\
+-                      Continue opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\n$ ";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("opencode -s ses_0221956a4ffeHQolAvyWwmrEgN")
+-        );
+-    }
+-
+-    #[test]
+-    fn extracts_codex_command_from_exit_screen() {
+-        let output =
+-            "To continue this session, run codex resume 019f88e3-0fa1-7851-a94b-b895e299bcd6\n$ ";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("codex resume 019f88e3-0fa1-7851-a94b-b895e299bcd6")
+-        );
+-    }
+-
+-    #[test]
+-    fn extracts_claude_command_from_exit_screen() {
+-        let output = "Resume this session with:\n\
+-                      claude --resume b3dbde41-b5d1-49d9-899b-4c70dbd39b88\n$ ";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("claude --resume b3dbde41-b5d1-49d9-899b-4c70dbd39b88")
+-        );
+-    }
+-
+-    #[test]
+-    fn extracts_droid_command_from_exit_screen() {
+-        let output = "Resume this session with:\n\
+-                      droid --resume droid-session-123\n$ ";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("droid --resume droid-session-123")
+-        );
+-    }
+-
+-    #[test]
+-    fn chooses_opencode_when_it_is_the_latest_agent() {
+-        let output = "codex resume 00000000-0000-4000-8000-000000000001\ntext\nopencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
+-        );
+-    }
+-
+-    #[test]
+-    fn chooses_codex_when_it_is_the_latest_agent() {
+-        let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ntext\ncodex resume 00000000-0000-4000-8000-000000000002";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("codex resume 00000000-0000-4000-8000-000000000002")
+-        );
+-    }
+-
+-    #[test]
+-    fn chooses_claude_when_it_is_the_latest_agent() {
+-        let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ncodex resume 00000000-0000-4000-8000-000000000003\nclaude --resume 00000000-0000-4000-8000-000000000004";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("claude --resume 00000000-0000-4000-8000-000000000004")
+-        );
+-    }
+-
+-    #[test]
+-    fn chooses_droid_when_it_is_the_latest_agent() {
+-        let output = "claude --resume 00000000-0000-4000-8000-000000000005\ncodex resume 00000000-0000-4000-8000-000000000003\ndroid --resume droid-third";
+-
+-        assert_eq!(latest_command(output), Some("droid --resume droid-third"));
+-    }
+-
+-    #[test]
+-    fn chooses_the_latest_opencode_session() {
+-        let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ntext\nopencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
+-        );
+-    }
+-
+-    #[test]
+-    fn chooses_the_latest_codex_session() {
+-        let output = "codex resume 00000000-0000-4000-8000-000000000001\ntext\ncodex resume 00000000-0000-4000-8000-000000000002";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("codex resume 00000000-0000-4000-8000-000000000002")
+-        );
+-    }
+-
+-    #[test]
+-    fn chooses_the_latest_claude_session() {
+-        let output = "claude --resume 00000000-0000-4000-8000-000000000006\ntext\nclaude --resume 00000000-0000-4000-8000-000000000007";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("claude --resume 00000000-0000-4000-8000-000000000007")
+-        );
+-    }
+-
+-    #[test]
+-    fn chooses_the_latest_droid_session() {
+-        let output = "droid --resume droid-old\ntext\ndroid --resume droid-new";
+-
+-        assert_eq!(latest_command(output), Some("droid --resume droid-new"));
+-    }
+-
+-    #[test]
+-    fn stops_at_characters_outside_the_session_id() {
+-        let output = "Run `opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V`, then continue.";
+-
+-        assert_eq!(
+-            latest_command(output),
+-            Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
+-        );
+-    }
+-
+-    #[test]
+-    fn ignores_an_empty_session_id() {
+-        assert_eq!(latest_command("opencode -s ses_"), None);
+-    }
+-
+-    #[test]
+-    fn returns_none_when_no_resume_command_exists() {
+-        assert_eq!(latest_command("ordinary terminal output"), None);
+-    }
+-}
++mod tests;
+--- /dev/null
++++ b/src/resume/tests.rs
+@@ -0,0 +1,139 @@
++use super::latest_command;
++
++#[test]
++fn extracts_opencode_command_from_exit_screen() {
++    let output = "Session  Herdr navigation plugin comparison\n\
++                  Continue opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\n$ ";
++
++    assert_eq!(
++        latest_command(output),
++        Some("opencode -s ses_0221956a4ffeHQolAvyWwmrEgN")
++    );
++}
++
++#[test]
++fn extracts_codex_command_from_exit_screen() {
++    let output =
++        "To continue this session, run codex resume 019f88e3-0fa1-7851-a94b-b895e299bcd6\n$ ";
++
++    assert_eq!(
++        latest_command(output),
++        Some("codex resume 019f88e3-0fa1-7851-a94b-b895e299bcd6")
++    );
++}
++
++#[test]
++fn extracts_claude_command_from_exit_screen() {
++    let output = "Resume this session with:\n\
++                  claude --resume b3dbde41-b5d1-49d9-899b-4c70dbd39b88\n$ ";
++
++    assert_eq!(
++        latest_command(output),
++        Some("claude --resume b3dbde41-b5d1-49d9-899b-4c70dbd39b88")
++    );
++}
++
++#[test]
++fn extracts_droid_command_from_exit_screen() {
++    let output = "Resume this session with:\n\
++                  droid --resume droid-session-123\n$ ";
++
++    assert_eq!(
++        latest_command(output),
++        Some("droid --resume droid-session-123")
++    );
++}
++
++#[test]
++fn chooses_opencode_when_it_is_the_latest_agent() {
++    let output = "codex resume 00000000-0000-4000-8000-000000000001\ntext\nopencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V";
++
++    assert_eq!(
++        latest_command(output),
++        Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
++    );
++}
++
++#[test]
++fn chooses_codex_when_it_is_the_latest_agent() {
++    let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ntext\ncodex resume 00000000-0000-4000-8000-000000000002";
++
++    assert_eq!(
++        latest_command(output),
++        Some("codex resume 00000000-0000-4000-8000-000000000002")
++    );
++}
++
++#[test]
++fn chooses_claude_when_it_is_the_latest_agent() {
++    let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ncodex resume 00000000-0000-4000-8000-000000000003\nclaude --resume 00000000-0000-4000-8000-000000000004";
++
++    assert_eq!(
++        latest_command(output),
++        Some("claude --resume 00000000-0000-4000-8000-000000000004")
++    );
++}
++
++#[test]
++fn chooses_droid_when_it_is_the_latest_agent() {
++    let output = "claude --resume 00000000-0000-4000-8000-000000000005\ncodex resume 00000000-0000-4000-8000-000000000003\ndroid --resume droid-third";
++
++    assert_eq!(latest_command(output), Some("droid --resume droid-third"));
++}
++
++#[test]
++fn chooses_the_latest_opencode_session() {
++    let output = "opencode -s ses_0221956a4ffeHQolAvyWwmrEgN\ntext\nopencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V";
++
++    assert_eq!(
++        latest_command(output),
++        Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
++    );
++}
++
++#[test]
++fn chooses_the_latest_codex_session() {
++    let output = "codex resume 00000000-0000-4000-8000-000000000001\ntext\ncodex resume 00000000-0000-4000-8000-000000000002";
++
++    assert_eq!(
++        latest_command(output),
++        Some("codex resume 00000000-0000-4000-8000-000000000002")
++    );
++}
++
++#[test]
++fn chooses_the_latest_claude_session() {
++    let output = "claude --resume 00000000-0000-4000-8000-000000000006\ntext\nclaude --resume 00000000-0000-4000-8000-000000000007";
++
++    assert_eq!(
++        latest_command(output),
++        Some("claude --resume 00000000-0000-4000-8000-000000000007")
++    );
++}
++
++#[test]
++fn chooses_the_latest_droid_session() {
++    let output = "droid --resume droid-old\ntext\ndroid --resume droid-new";
++
++    assert_eq!(latest_command(output), Some("droid --resume droid-new"));
++}
++
++#[test]
++fn stops_at_characters_outside_the_session_id() {
++    let output = "Run `opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V`, then continue.";
++
++    assert_eq!(
++        latest_command(output),
++        Some("opencode -s ses_f171c2cd8ffeqeY5w248uZ0Y4V")
++    );
++}
++
++#[test]
++fn ignores_an_empty_session_id() {
++    assert_eq!(latest_command("opencode -s ses_"), None);
++}
++
++#[test]
++fn returns_none_when_no_resume_command_exists() {
++    assert_eq!(latest_command("ordinary terminal output"), None);
++}
+--- a/src/resume_regression_tests.rs
++++ b/src/resume_regression_tests.rs
+@@ -3,0 +4,2 @@
++const CODEX_REMOTE_PREFIX: &str =
++    "codex --remote unix:///tmp/codex-session-g122rjxk/client.sock resume ";
+@@ -22,0 +25 @@
++        (CODEX_REMOTE_PREFIX, CODEX_SESSION),
+@@ -37 +40 @@
+-    for prefix in ["codex resume ", "claude --resume "] {
++    for prefix in ["codex resume ", CODEX_REMOTE_PREFIX, "claude --resume "] {
+@@ -93,0 +97 @@
++        format!("{CODEX_REMOTE_PREFIX}{CODEX_SESSION}"),
+@@ -109 +113 @@
+-    for prefix in ["codex resume ", "claude --resume "] {
++    for prefix in ["codex resume ", CODEX_REMOTE_PREFIX, "claude --resume "] {
+@@ -122 +126 @@
+-    for prefix in ["codex resume ", "claude --resume "] {
++    for prefix in ["codex resume ", CODEX_REMOTE_PREFIX, "claude --resume "] {
+@@ -131,0 +136,51 @@
++
++#[test]
++fn codex_remote_disconnect_footer_preserves_endpoint_and_session() {
++    let command = "codex --remote unix:///tmp/codex-session-g122rjxk/client.sock resume 01a14ce2-d314-7a63-a25a-948aca69c94e";
++    let output = format!(
++        "Worked for 50m 56s
++Disconnected from this task. Any running work continues.
++To reconnect, run:
++  {command}
++Stop the current turn: run codex --remote unix:///tmp/codex-session-g122rjxk/client.sock agents, select this task, and press x.
++Token usage so far: total=421,694
++ zanoni ~/.dotfiles (main)$
++"
++    );
++    assert_eq!(latest_command(&output), Some(command));
++}
++
++#[test]
++fn codex_remote_rejects_missing_or_unsafe_endpoints() {
++    for endpoint in [
++        "",
++        "--last",
++        "unix:///tmp/client.sock;id",
++        "unix:///tmp/$(id)/client.sock",
++        "unix:///tmp/`id`/client.sock",
++        "unix:///tmp/client.sock\n",
++        "unix:///tmp/client.sock\r",
++        "unix:///tmp/client.sock\t",
++        "unix:///tmp/client.sock&",
++        "unix:///tmp/client.sock'",
++        "unix:///tmp/client.sock\"",
++    ] {
++        let output = format!("codex --remote {endpoint} resume {CODEX_SESSION}");
++        assert_eq!(latest_command(&output), None, "{output}");
++    }
++}
++
++#[test]
++fn codex_remote_requires_the_resume_subcommand() {
++    for arguments in [
++        "",
++        "resume",
++        "agents",
++        "agents, select this task, and press x.",
++        "resume and select a session.",
++        "--last",
++    ] {
++        let output = format!("codex --remote unix:///tmp/client.sock {arguments}");
++        assert_eq!(latest_command(&output), None, "{output}");
++    }
++}
