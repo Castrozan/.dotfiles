@@ -10,6 +10,7 @@ hooks_root_directory = os.path.dirname(hook_script_directory)
 for importable_directory in (
     hook_script_directory,
     os.path.join(hooks_root_directory, "common"),
+    os.path.join(hooks_root_directory, "wellput"),
     os.path.join(hooks_root_directory, "nix-rebuild"),
 ):
     if os.path.isdir(importable_directory) and importable_directory not in sys.path:

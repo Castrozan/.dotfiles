@@ -14,6 +14,17 @@ function messageText(message) {
     .trim();
 }
 
+function parseHookOutput(stdout, stderr, exitCode) {
+  if (exitCode !== 0) {
+    throw new Error(stderr.trim() || `Pi reply guard exited ${exitCode}`);
+  }
+  try {
+    return stdout.trim() ? JSON.parse(stdout) : {};
+  } catch {
+    throw new Error("Pi reply guard returned invalid JSON");
+  }
+}
+
 function invokeReplyGuard(payload) {
   return new Promise((resolve, reject) => {
     const dispatcher =
@@ -36,14 +47,10 @@ function invokeReplyGuard(payload) {
     child.on("error", reject);
     child.on("close", (exitCode) => {
       clearTimeout(timeout);
-      if (exitCode !== 0) {
-        reject(new Error(stderr.trim() || `Pi reply guard exited ${exitCode}`));
-        return;
-      }
       try {
-        resolve(stdout.trim() ? JSON.parse(stdout) : {});
-      } catch {
-        reject(new Error("Pi reply guard returned invalid JSON"));
+        resolve(parseHookOutput(stdout, stderr, exitCode));
+      } catch (failure) {
+        reject(failure);
       }
     });
     child.stdin.end(JSON.stringify(payload));
@@ -78,52 +85,61 @@ async function checkSettledReply(
   );
 }
 
-export default function HumanFacingReplyGuard(pi) {
-  let userRequestText = "";
-  let replyText = "";
-  let correctionPending = false;
-  let sessionContext;
+async function readSessionContext() {
+  const output = await invokeReplyGuard({ hook_event_name: "SessionStart" });
+  if (output.continue === false) throw new Error(output.stopReason);
+  return output.hookSpecificOutput?.additionalContext || "";
+}
 
-  pi.on("before_agent_start", async (event) => {
+function createSessionStartHandler() {
+  let sessionContext;
+  return async (event) => {
     if (sessionContext === undefined) {
-      const output = await invokeReplyGuard({
-        hook_event_name: "SessionStart",
-      });
-      if (output.continue === false) throw new Error(output.stopReason);
-      sessionContext = output.hookSpecificOutput?.additionalContext || "";
+      sessionContext = await readSessionContext();
     }
     if (sessionContext) {
       return { systemPrompt: `${event.systemPrompt}\n\n${sessionContext}` };
     }
-  });
+  };
+}
 
-  pi.on("message_end", (event) => {
-    const text = messageText(event.message);
-    if (event.message.role === "user" && text) {
-      userRequestText = text;
-      replyText = "";
-      correctionPending = false;
-    } else if (event.message.role === "assistant" && text) {
-      replyText = text;
-    }
-  });
+function updateReplyState(state, event) {
+  const text = messageText(event.message);
+  if (event.message.role === "user" && text) {
+    state.userRequestText = text;
+    state.replyText = "";
+    state.correctionPending = false;
+  } else if (event.message.role === "assistant" && text) {
+    state.replyText = text;
+  }
+}
 
-  pi.on("agent_settled", async () => {
-    const correctedReply = correctionPending;
-    correctionPending = false;
-    if (!replyText) return;
-    try {
-      await checkSettledReply(
-        pi,
-        correctedReply,
-        userRequestText,
-        replyText,
-        () => {
-          correctionPending = true;
-        },
-      );
-    } catch (failure) {
-      console.error(failure.message);
-    }
-  });
+async function checkSessionReply(pi, state) {
+  const correctedReply = state.correctionPending;
+  state.correctionPending = false;
+  if (!state.replyText) return;
+  try {
+    await checkSettledReply(
+      pi,
+      correctedReply,
+      state.userRequestText,
+      state.replyText,
+      () => {
+        state.correctionPending = true;
+      },
+    );
+  } catch (failure) {
+    console.error(failure.message);
+  }
+}
+
+export default function HumanFacingReplyGuard(pi) {
+  const state = {
+    userRequestText: "",
+    replyText: "",
+    correctionPending: false,
+  };
+  pi.on("before_agent_start", createSessionStartHandler());
+  pi.on("message_end", (event) => updateReplyState(state, event));
+  pi.on("agent_settled", () => checkSessionReply(pi, state));
 }

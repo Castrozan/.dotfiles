@@ -62,8 +62,7 @@ def test_launch_preserves_plugin_assets_and_uses_the_pinned_runtime(tmp_path):
     }
     environment.pop("HERMES_AGENT_LAUNCH_SEEDED", None)
     installed = (
-        home
-        / "plugins/dotfiles/skills/humanize/references/interactive-communication.md"
+        home / "plugins/dotfiles/skills/wellput/references/interactive-communication.md"
     )
     installed.parent.mkdir(parents=True)
     installed.write_text("Preserved package asset.")
@@ -75,5 +74,5 @@ def test_launch_preserves_plugin_assets_and_uses_the_pinned_runtime(tmp_path):
             check=True,
         )
         assert installed.read_text() == "Preserved package asset."
-        assert not (home / "skills/humanize").exists()
+        assert not (home / "skills/wellput").exists()
         assert (home / "SOUL.md").read_text() == content
