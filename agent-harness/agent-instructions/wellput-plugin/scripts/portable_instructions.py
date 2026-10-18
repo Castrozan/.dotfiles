@@ -8,6 +8,12 @@ def portable_skill(text):
         "",
         text,
     )
+    text = re.sub(
+        r"Core\s+\[evidence\]\([^)]+\) and\s+\[autonomy\]\([^)]+\) own factual\s+"
+        r"verification and decision thresholds\.",
+        "",
+        text,
+    )
     return re.sub(r" under core\s+\[autonomy\]\([^)]+\)", "", text)
 
 
