@@ -24,7 +24,7 @@ The point isn’t just _shorter replies_. It’s putting the effort of making wo
 
 ![Live Claude Code session showing Wellput rejecting and repairing a reply](https://raw.githubusercontent.com/Castrozan/wellput/a4a21aff55e2cf4cdd36c76d2e9cf248538f52e3/wellput-fluid-demo.gif)
 
-[Watch the narrated tour](https://github.com/user-attachments/assets/c1aab86a-405e-44d0-adca-d3c8d6eff208)
+[Watch the narrated tour](https://github.com/user-attachments/assets/391e5c77-8c97-44d3-90bc-8e4e62f25953)
 
 ## Install
 
@@ -52,9 +52,7 @@ Review and trust the hooks when prompted, then start a new session.
 
 Wellput assumes the end-of-turn reply may be all you read. It should make the work understandable without sending you back through the conversation.
 
-**The skill guides the writing. The hook enforces the format.** `SessionStart` introduces the rules once; `Stop` checks the reply and requests repairs. You shouldn’t have to keep correcting how the agent communicates.
-
-The work stays open-ended. The handoff to you doesn’t.
+**The skill guides the writing. The hook enforces the format.** `SessionStart` introduces the rules once; `Stop` checks the reply and requests repairs.
 
 ## The reply format
 
@@ -72,21 +70,21 @@ Consistent order and bold labels make answers easy to find. Separate word budget
 
 **Sometimes the clearest paragraph is a diff.** Use tables, diagrams, and code when they save the reader work. Visuals and fenced code don’t count toward the prose budget. The goal is understanding, not just fewer words.
 
-## Small rules, less friction
+### Other rules
 
-Numbered rows in agent tables let you reply “about #2.” Bare URLs and paths support keyboard navigation. PR and MR links take you straight to the work.
-
-Start with substance, not reactions or narration. The default also excludes em and en dashes outside quotations, a configurable style preference.
+- Number table rows so you can reply “about #2.”
+- Use bare URLs and paths for keyboard navigation.
+- Include links when mentioning PRs or MRs.
+- Start with the answer. Skip reactions and narration.
+- No em or en dashes outside quotes (configurable).
 
 ## Configure
 
-**No configuration needed to start.** Bundled defaults apply until you provide your own.
+Wellput uses bundled defaults. To change budgets, labels, checks, or repair feedback:
 
-To change budgets, labels, checks, or repair feedback, copy `wellput.json` to `~/.config/wellput/config.json`, or `$XDG_CONFIG_HOME/wellput/config.json` when using XDG.
-
-For a different location, set `WELLPUT_CONFIG` to an absolute path. It takes precedence over the default locations.
-
-Use a complete config; files aren’t merged. Invalid settings produce an error. Restart the session after editing.
+- Copy `wellput.json` to `~/.config/wellput/config.json`.
+- With XDG, use `$XDG_CONFIG_HOME/wellput/config.json`.
+- For another location, set `WELLPUT_CONFIG` to an absolute path. It overrides the default locations.
 
 ## License
 
