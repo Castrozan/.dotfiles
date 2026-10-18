@@ -54,6 +54,21 @@ def verify(bundle):
     }
     accepted = invoke(scripts, valid_reply, environment)
     assert accepted == {}, accepted
+    label_sections = "\n\n".join(
+        f"**{label}** " + " ".join(["evidence"] * word_count)
+        for label, word_count in (
+            ("What is this session about?:", 30),
+            ("Done:", 15),
+            ("Next:", 15),
+        )
+    )
+    label_budget_reply = " ".join(["context"] * 90) + "\n\n" + label_sections
+    accepted_at_label_budget = invoke(
+        scripts,
+        {"hook_event_name": "Stop", "reply_text": label_budget_reply},
+        environment,
+    )
+    assert accepted_at_label_budget == {}, accepted_at_label_budget
     rejected = invoke(
         scripts, {"hook_event_name": "Stop", "reply_text": "Ready — done."}, environment
     )
@@ -76,6 +91,7 @@ def verify(bundle):
         startup = invoke(scripts, {"hook_event_name": "SessionStart"}, configured)
         context = startup["hookSpecificOutput"]["additionalContext"]
         assert "2 prose words" in context
+        assert "label content, excluding headings" in context
         assert "skills/wellput/SKILL.md" in context
         assert "Humanize" not in context
         assert invoke(scripts, valid_reply, configured)["decision"] == "block"
