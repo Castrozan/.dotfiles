@@ -1,8 +1,6 @@
 ---
 name: browser
-description:
-  "Control browser pages and Electron apps through Chrome DevTools CLI or eligible OpenCLI workflows. Not for desktop
-  capture, media, or other GUI."
+description: "Control browser pages and Electron apps through Chrome DevTools CLI or eligible OpenCLI workflows. Not for desktop capture, media, or other GUI."
 ---
 
 ### Strategy
