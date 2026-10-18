@@ -1,3 +1,5 @@
+import json
+
 from human_facing_reply_test_support import (
     LABELED_REPLY,
     labeled_reply_of,
@@ -10,6 +12,22 @@ def test_a_hundred_word_confirmation_needs_no_labels():
     reply = " ".join(["evidence"] * 100)
 
     assert template_violations_in_reply(reply) == []
+
+
+def test_raw_json_preserves_its_schema_without_conversational_labels():
+    reply = json.dumps({"summary": "evidence " * 120, "source": "PR #17"})
+
+    assert template_violations_in_reply(reply) == []
+
+
+def test_a_standalone_table_preserves_its_column_schema():
+    reply = "| Name | Value |\n| --- | --- |\n| timeout | 30 |"
+
+    assert template_violations_in_reply(reply) == []
+
+
+def test_a_standalone_answer_word_is_not_a_reaction_preamble():
+    assert template_violations_in_reply("Absolutely") == []
 
 
 def test_a_reply_past_the_confirmation_and_its_grace_names_the_labels_it_omits():
@@ -91,11 +109,11 @@ def test_one_label_inside_its_own_grace_passes():
 
 
 def test_a_table_is_exempt_from_the_word_count():
-    header = "| # | " + " | ".join(["Column"] * 8) + " |\n"
-    separator = "| " + " | ".join(["---"] * 9) + " |\n"
+    header = "| # | " + " | ".join(["Column"] * 24) + " |\n"
+    separator = "| " + " | ".join(["---"] * 25) + " |\n"
     table_rows = "\n".join(
-        f"| {number} | " + " | ".join(["measured"] * 8) + " |"
-        for number in range(1, 41)
+        f"| {number} | " + " | ".join(["measured"] * 24) + " |"
+        for number in range(1, 6)
     )
     reply = f"{header}{separator}{table_rows}\n\n{LABELED_REPLY}"
 
@@ -109,12 +127,12 @@ def test_a_tree_or_diagram_is_exempt_from_the_word_count():
     assert template_violations_in_reply(reply) == []
 
 
-def test_a_list_past_five_lines_is_blocked():
+def test_a_list_past_five_items_is_blocked():
     reply = "\n".join(["- one finding"] * 6) + f"\n\n{LABELED_REPLY}"
 
     violations = template_violations_in_reply(reply)
 
-    assert violations == ["stacks 6 list lines, past the 5-line ceiling for one list"]
+    assert violations == ["stacks 6 list items, past the 5-item ceiling for one list"]
 
 
 def test_a_list_line_past_twenty_words_and_its_grace_is_blocked():

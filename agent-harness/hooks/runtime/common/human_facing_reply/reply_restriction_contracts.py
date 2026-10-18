@@ -5,14 +5,17 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from reply_link_format import formatted_link_violation
+from reply_output_limits import (
+    list_block_length_violation,
+    list_line_word_violation,
+    table_block_length_violation,
+)
 from reply_rule_violations import (
     duplicate_label_violation,
     label_inline_content_violation,
     label_order_violation,
     label_table_violation,
     labeled_section_ceiling_violation,
-    list_block_length_violation,
-    list_line_word_violation,
     missing_required_labels_violation,
     narration_opener_violation,
     per_label_ceiling_violation,
@@ -78,7 +81,7 @@ REPLY_RESTRICTIONS = {
     ),
     "list_block_length": ReplyRestriction(
         list_block_length_violation,
-        placeholders=frozenset({"line_count", "maximum_lines"}),
+        placeholders=frozenset({"item_count", "maximum_items"}),
     ),
     "list_line_words": ReplyRestriction(
         list_line_word_violation,
@@ -86,6 +89,10 @@ REPLY_RESTRICTIONS = {
     ),
     "table_indexes": ReplyRestriction(
         table_indexes_violation, placeholders=frozenset({"table_number"})
+    ),
+    "table_block_length": ReplyRestriction(
+        table_block_length_violation,
+        placeholders=frozenset({"table_number", "row_count", "maximum_rows"}),
     ),
     "sentence_dash": ReplyRestriction(
         sentence_dash_violation,

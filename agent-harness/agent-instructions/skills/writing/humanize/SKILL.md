@@ -1,137 +1,109 @@
 ---
 name: humanize
-description: Use before drafting or revising substantial human-facing explanations, decisions, warnings, reports, summaries, chat replies, and durable artifacts. Skip one- or two-sentence confirmations and factual answers.
+description: Use for substantial replies to people in active agent sessions. Skip one- or two-sentence confirmations, factual answers, and file authoring.
 ---
 
 ### Reader understanding policy
 
-Identify the exact question, decision, or action requested. Optimize for a multitasking reader recovering the requested
-outcome and relationships needed to act without prior history. Success means that the reader can identify the answer,
-actor, evidence, conditions, limits, and required next action without needing to go back through the conversation
-history.
+Identify the exact question, decision, or action requested. Supply the earlier facts a returning reader needs to
+understand this answer and act on it without reopening the conversation. Include actors, evidence, conditions, limits,
+and next actions when they change that understanding; a small factual answer need not become a session report.
 
-When asking the reader to choose, apply [source fidelity](#source-fidelity) and [confusion
-recovery](#confusion-recovery) before naming the options. Use each option's concrete behavior, not a coined label, as
-its heading; for every option, name who acts, what changes, its scope, and what remains unchanged before internal
-rationale.
+Describe each option by its concrete behavior, not a coined label; for every option, name who acts, what changes, and
+its scope before internal rationale. Mention what remains unchanged when it distinguishes the options. Apply [source
+fidelity](#source-fidelity) to the option names and facts.
 
-Treat `tldr`, re-explanation requests, and frustration as signals to inspect the preceding answer. When the user asks
-only what remains, name the unfinished work and collapse completed work into an explicit confirmation that everything
-else is complete. Write text that must stand alone so a reader without the agent session can understand it without
-additional session context.
+Treat `tldr`, re-explanation requests, and frustration as signals to inspect the preceding answer. Distinguish a failed
+outcome from a failed explanation; use [confusion recovery](#confusion-recovery) when the explanation is unclear. When
+the user asks only what remains, name unfinished work and confirm everything else is complete only when evidence
+supports that claim.
 
 ### Source fidelity
 
-Preserve exact facts, identifiers, original text, code, interface labels, domain terms, numbers, conventional concepts,
-names, and ubiquitous language. Before coining a new term, find the actual term the context already uses for the same
-referent; check the product, interface, code, source, and domain language first.
+Preserve decision-changing facts and relationships, including quantities, units, bounds, conditions, and uncertainty.
+Preserve quotations, code, identifiers, commands, interface labels, and required output strings exactly unless the task
+explicitly changes them. A rewrite may change wording while retaining meaning; an exact quotation retains the source's
+wording. Return only a requested literal or artifact, preserving its required schema.
 
-For a rewrite, summary, TL;DR, quotation, or named format, recover the source's established wording and conceptual
-model, then return only the requested artifact. Keep a precise technical term when a familiar substitute changes its
-meaning. Shortening must not remove a material fact or relationship. Replace an ambiguous referent with the exact actor,
-artifact, object, condition, or time established by the context. State a missing fact as unknown and name the decision
-it prevents; never fill the gap with plausible detail.
+Before coining a new term, use the name the context already uses for the same referent; check the relevant product,
+interface, code, source, or domain language only when that name is missing. Preserve ubiquitous language and precise
+technical terms. Define a necessary unfamiliar term beside its concrete referent, then use one stable term for it.
+Introduce a conventional short form only when repeated use reduces reading effort. Do not reuse a term the reader has
+rejected.
+
+Replace an ambiguous referent with the established actor, object, condition, or time. State an unknown fact and its
+effect on the requested decision; never supply plausible detail as evidence. Core
+[evidence](../../../core-rules/core.md#evidence) owns verification and factual correction.
 
 ### Whole context cohesion
 
-Do not give a new finding, concept, or passage priority because it is recent. Integrate new information with the full
-context and restructure the whole piece when needed so its priorities, concepts, vocabulary, and flow remain cohesive
-before and after the addition.
+Do not prioritize a finding because it is recent. Integrate new information with the full context and restructure the
+whole piece only as far as needed to keep the requested outcome, terms, and relationships cohesive.
 
 ### Representation selection
 
-Choose the smallest useful form with this first-match procedure: 1) for change against an existing shape, use a focused
-diff; 2) for the same mechanism before and after a change, use a compact before-and-after contrast; 3) for behavior
-across events, use a state model with material invalid transitions; 4) for ordering or failure across steps, use a
-sequence with material failure branches; 5) for a repeated-field comparison of choices or exact mappings, use a table;
-6) for ownership, hierarchy, or nesting, use a tree with each node's responsibility; 7) for another multi-part
-relationship, use a diagram; 8) for one answer or action, or a linear point, use prose.
+Honor an explicitly requested form. Otherwise choose the smallest useful form for the relationship the reader needs: use
+a focused diff for exact text or code edits; a before-and-after contrast for changed behavior; a state model for
+behavior across events; a sequence with failure branches for ordering or failure across steps; a repeated-field table
+for choices or exact mappings; a tree for ownership or hierarchy; and a diagram for another multi-part relationship. Use
+a list for parallel items or ordered actions and prose for one answer or action, or a linear explanation.
 
-Never use a table to wrap linear prose or create room for more text. Put the selected visual at the top before
-interpretation, and make every diagram well-spaced and complete. A visual must carry the load-bearing relationship
-rather than decorate the answer.
+Lead with the answer or recommended action. A visual can lead when it directly states that answer or action. Never use a
+table to wrap linear prose or create room for more text. Make diagrams well-spaced and show the relationship needed for
+the decision; add only the prose needed to interpret them.
 
 ### Representation rendering
 
-Show additions and removals in a focused diff; use source text or pseudocode when either expresses the change more
-clearly. Render sibling ownership paths under their common parent and label each responsibility in the tree rather than
-describing the paths only in prose. Add only prose needed to interpret the visual; repeating the same relationships in
-prose increases load without adding meaning.
+Keep the selected visual focused: show changed lines and necessary context in a diff; use pseudocode when literal code
+obscures the mechanism. Label each node's responsibility in an ownership tree. Show material invalid transitions or
+failure branches when omitting them would change the reader's decision.
 
 ### Meaning and certainty
 
-Core [evidence](../../../core-rules/core.md#evidence) owns epistemic judgment. In human-facing output, keep observation,
-source evidence, inference, assumption, recommendation, and decision distinct when the difference changes confidence or
-action. Lead an action recommendation with the action. State the evidence for a diagnosis or recommendation, including
-observed state, scope, and timing, and name missing evidence that limits it.
+Core [evidence](../../../core-rules/core.md#evidence) owns epistemic judgment. Distinguish observation, inference,
+assumption, recommendation, and decision when the difference changes confidence or action. Support a diagnosis or
+recommendation with the observed state, scope, timing, and missing evidence that limits it.
 
 ### Confusion recovery
 
-When the reader signals confusion, treat the preceding explanation as failed. Restart one abstraction level below that
-answer: state the exact answer first; name each actor, artifact, referent, and relationship; then add only the mechanism
-needed to support the answer. Use the reader's established terms and do not reuse a term the reader has rejected.
+When the reader signals confusion, identify the unanswered question or undefined relationship. State the exact answer,
+name who does what to which object, and explain the missing cause, condition, or dependency using the reader's terms.
+Rewrite the sentence or explanation when replacing words leaves that relationship unclear; moving the same undefined
+concepts into a table preserves the failure.
 
-Replacing invented or unfamiliar terms with the context's established terms is recovery; vocabulary substitution that
-leaves actors, referents, relationships, or behavior undefined is not. Moving the same undefined concepts into a table,
-replacing them with childish metaphors, or adding new labels preserves the failure. Ask only when a missing referent
-would materially change the answer under core [autonomy](../../../core-rules/core.md#autonomy); otherwise state the
-narrow supported interpretation and continue.
-
-### Terminology and jargon
-
-Apply [source fidelity](#source-fidelity) before selecting or defining a term. When no established name exists, select
-the clearest familiar term that preserves meaning. Define a necessary unfamiliar term beside its concrete referent at
-first use, then show the actor, action, or relationship it names. Use one stable term for each referent and do not
-rotate synonyms for variety. Preserve commands, identifiers, errors, protocol terms, and library types exactly.
+Ask only when a missing referent would materially change the answer under core
+[autonomy](../../../core-rules/core.md#autonomy); otherwise state the narrow supported interpretation and continue.
 
 ### Sentence and paragraph construction
 
-Introduce one stable short form after a long technical name. Unpack noun stacks and possessive chains so their
-relationships are explicit. Prefer active voice with the actor close to the verb and object; use passive voice only when
-the actor is unknown, irrelevant, or intentionally withheld. Express actions as verbs, replace an ambiguous phrasal verb
-with a direct verb, and keep grammatical subjects, articles, and necessary objects.
-
-Give one idea per descriptive sentence and one action per procedural sentence unless two actions are inseparable. Use
-explicit connecting words for cause, contrast, condition, sequence, and result. Give each paragraph one reader need and
-put its main point first. Use punctuation that reduces how many relationships the reader must hold at once.
+Unpack noun stacks, split sentences, or add connecting words when the actor, dependency, condition, or order is unclear.
+Prefer active voice when it clarifies who acts; keep passive voice when it better serves the requested focus or source
+fidelity. Give each paragraph one reader need and put its main point first.
 
 ### Procedures and explanations
 
-Present prerequisites and actions in execution order. Put the hazard and its limiting condition before the first
-instruction about the affected action, including a prohibition. A warning after that instruction arrives too late. Keep
-required actions out of notes and make a procedure complete for a reader who follows only its steps. Use a vertical list
-for parallel items, alternatives, prerequisites, or ordered actions when prose would hide their relationships. For
-descriptions, move from the answer or known context to the new mechanism and consequence. For a change, name the changed
-mechanism, the result it caused, and the important behavior that remained unchanged.
+Present prerequisites and actions in execution order. Put a relevant hazard and its limiting condition before the first
+affected instruction. Keep required actions in the steps so a reader following only those steps can complete the
+procedure. For a change, explain the changed mechanism, its result, and unchanged behavior when that prevents a material
+misunderstanding.
 
 ### Human register
 
-Match demonstrated expertise. Write direct, calm, natural prose that preserves legitimate personality, technical
-register, specific detail, mixed positions, and useful asides. Remove canned reactions, unneeded self-announcements,
-obvious headings, praise, unneeded offers, promotional language, inflated significance, vague authority, slogans, and
-conclusions that only repeat the opening.
+Match demonstrated expertise. Preserve legitimate personality, technical register, specific detail, mixed positions, and
+useful asides. Remove reactions used as preambles, unneeded self-announcements, praise, promotional language, vague
+authority, and repeated conclusions. A standalone answer word may itself be the requested answer.
 
 Do not force groups of three, manufacture a `not X but Y` opposition, or invent a range without a scale. Call work easy,
-simple, obvious, or quick only when that fact changes the reader's action or expectation. Rewrite machine-like wording
-only when several signals combine, and preserve every fact the changed wording carried.
+simple, obvious, or quick only when that fact changes the reader's action or expectation. Revise wording when filler or
+an unclear referent hides the answer; preserve the facts under [source fidelity](#source-fidelity).
 
 ### Revision and semantic check
 
-Revise in this order: 1) verify facts, reasoning, and the requested task by matching every material quantity with its
-unit and bound, condition, named artifact, and uncertainty from the source to the draft; 2) confirm that the reader can
-recover the answer, actor, action, evidence, conditions, limits, and next step; 3) match the draft's format to
-[representation selection](#representation-selection) and order the information; 4) standardize terms and expose hidden
-relationships; 5) tighten sentences; 6) scan for ambiguity, unsupported certainty, formulaic voice, and channel
-constraints.
-
-Rewrite sentence structure when word substitution cannot restore meaning. Before returning a procedure, follow only its
-actions in order and check [prerequisites and hazards](#procedures-and-explanations) at their first affected action.
-
-### Durable artifacts
-
-Include the goal, material constraints, current state, evidence, limits, and required action when the durable artifact's
-reader lacks them. Use the `docs` skill to decide whether the artifact earns its place, what must remain evergreen, and
-how its conclusion, supporting context, and headings serve distinct reader needs.
+Check in this order: 1) answer the requested task under [source fidelity](#source-fidelity); 2) restore only the context
+the reader needs under [reader understanding](#reader-understanding-policy); 3) apply [representation
+selection](#representation-selection); 4) repair unclear relationships under [confusion recovery](#confusion-recovery);
+5) check the injected conversational contract. Before returning a procedure, walk through its written steps without
+executing them and check [prerequisites and hazards](#procedures-and-explanations).
 
 ### Interactive communication reference
 

@@ -136,3 +136,25 @@ def test_unknown_restrictions_are_rejected(configuration_document):
 
     with pytest.raises(ValueError, match="unknown reply restriction"):
         ReplyFormatConfiguration(configuration_document)
+
+
+def test_configured_table_row_limit_changes_the_verdict(configuration_document):
+    configuration_document["tables"]["maximum_rows"] = 1
+    configuration = ReplyFormatConfiguration(configuration_document)
+    table = "| Name | Value |\n| --- | --- |\n| first | value |"
+
+    assert template_violations_in_reply(table, configuration=configuration) == []
+    assert (
+        "1-row ceiling"
+        in template_violations_in_reply(
+            table + "\n| second | value |", configuration=configuration
+        )[0]
+    )
+
+
+@pytest.mark.parametrize("value", [-1, True, "5"])
+def test_invalid_table_limits_are_rejected(configuration_document, value):
+    configuration_document["tables"]["maximum_rows"] = value
+
+    with pytest.raises(ValueError, match="nonnegative integer"):
+        ReplyFormatConfiguration(configuration_document)

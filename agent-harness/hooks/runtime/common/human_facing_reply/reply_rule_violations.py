@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from reply_artifact_links import reply_has_unlinked_artifacts
-from reply_word_budget import exceeds_word_budget
+from reply_output_limits import exceeds_word_budget
 
 if TYPE_CHECKING:
     from reply_text_metrics import ReplyUnderReview
@@ -31,6 +31,9 @@ def opener_violation(reply: ReplyUnderReview, restriction: str) -> str | None:
 
 
 def reaction_opener_violation(reply: ReplyUnderReview) -> str | None:
+    pattern = reply.configuration.restriction_patterns["reaction_opener"]["pattern"]
+    if pattern.fullmatch("\n".join(reply.document.source_lines).strip()):
+        return None
     return opener_violation(reply, "reaction_opener")
 
 
@@ -92,30 +95,6 @@ def per_label_ceiling_violation(reply: ReplyUnderReview) -> str | None:
             return reply.configuration.violation(
                 "per_label_ceiling", label=label, word_count=word_count, **budget
             )
-    return None
-
-
-def list_block_length_violation(reply: ReplyUnderReview) -> str | None:
-    maximum_lines = reply.configuration.lists["maximum_lines"]
-    for block in reply.list_blocks:
-        if block.line_count > maximum_lines:
-            return reply.configuration.violation(
-                "list_block_length",
-                line_count=block.line_count,
-                maximum_lines=maximum_lines,
-            )
-    return None
-
-
-def list_line_word_violation(reply: ReplyUnderReview) -> str | None:
-    budget = reply.configuration.lists["item"]
-    for block in reply.list_blocks:
-        for item in block.items:
-            word_count = item.word_count
-            if exceeds_word_budget(word_count, budget):
-                return reply.configuration.violation(
-                    "list_line_words", word_count=word_count, **budget
-                )
     return None
 
 

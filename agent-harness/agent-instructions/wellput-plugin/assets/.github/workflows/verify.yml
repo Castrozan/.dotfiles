@@ -15,4 +15,4 @@ jobs:
           python-version: "3.12"
       - run: python -S tests/verify_plugin.py .
       - run: python -m pip install pytest
-      - run: python -m pytest tests/test_hooks.py tests/test_human_facing_reply_rules.py tests/test_reply_format_configuration.py tests/test_reply_markdown_structure.py tests/test_reply_quotation_performance.py
+      - run: python -m pytest tests/test_hooks.py tests/test_exported_instructions.py tests/test_human_facing_reply_rules.py tests/test_reply_format_configuration.py tests/test_reply_markdown_structure.py tests/test_reply_quotation_performance.py

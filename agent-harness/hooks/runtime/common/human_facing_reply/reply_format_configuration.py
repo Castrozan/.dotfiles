@@ -46,6 +46,7 @@ class ReplyFormatConfiguration:
             (
                 "formats",
                 "lists",
+                "tables",
                 "syntax",
                 "restrictions",
                 "feedback",
@@ -65,13 +66,16 @@ class ReplyFormatConfiguration:
         self.labels = validate_reply_labels(labeled_reply["labels"])
         self.lists = document["lists"]
         require_fields(
-            self.lists, ("maximum_lines", "maximum_exempt_items", "item"), "lists"
+            self.lists, ("maximum_items", "maximum_exempt_items", "item"), "lists"
         )
         validate_word_budget(self.lists["item"], "list item")
-        for field in ("maximum_lines", "maximum_exempt_items"):
+        for field in ("maximum_items", "maximum_exempt_items"):
             require_nonnegative_integer(self.lists[field], f"lists.{field}")
-        if self.lists["maximum_exempt_items"] > self.lists["maximum_lines"]:
-            raise ValueError("exempt list size cannot exceed the list line limit")
+        if self.lists["maximum_exempt_items"] > self.lists["maximum_items"]:
+            raise ValueError("exempt list size cannot exceed the list item limit")
+        self.tables = document["tables"]
+        require_fields(self.tables, ("maximum_rows",), "tables")
+        require_nonnegative_integer(self.tables["maximum_rows"], "tables.maximum_rows")
         self.syntax = document["syntax"]
         self.tree_branch_pattern = validate_reply_syntax(self.syntax)
         self.label_patterns = {

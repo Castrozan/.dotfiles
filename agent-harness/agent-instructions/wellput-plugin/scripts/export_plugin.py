@@ -8,6 +8,8 @@ import stat
 import sys
 from pathlib import Path
 
+from export_tests import export_tests
+
 
 def write_file(root, relative, content):
     destination = root / relative
@@ -26,21 +28,23 @@ def copy_directory(source, destination):
         path.chmod(path.stat().st_mode | stat.S_IWUSR)
 
 
-def portable_references(text, core_path, docs_path):
-    text = re.sub(r"(?:\.\./)+core-rules/core\.md", core_path, text)
-    return text.replace("Use the `docs` skill", f"Read [artifact writing]({docs_path})")
+def portable_references(text, core_path):
+    return re.sub(r"(?:\.\./)+core-rules/core\.md", core_path, text)
 
 
 def export_instructions(sources, output):
+    sys.path.insert(0, str(sources["instructionFormatter"]))
+    from instructions.instruction_prose_wrapping import wrap_instruction_prose
+
     skill = Path(sources["skill"])
     destination = output / "skills/wellput"
     copy_directory(skill, destination)
-    for relative, core_path, docs_path in (
-        ("SKILL.md", "references/core.md", "references/artifact-writing.md"),
-        ("references/interactive-communication.md", "core.md", "artifact-writing.md"),
+    for relative, core_path in (
+        ("SKILL.md", "references/core.md"),
+        ("references/interactive-communication.md", "core.md"),
     ):
         path = destination / relative
-        text = portable_references(path.read_text(), core_path, docs_path)
+        text = portable_references(path.read_text(), core_path)
         text = text.replace(
             "so WezTerm can detect them", "so terminals can detect them"
         )
@@ -49,7 +53,9 @@ def export_instructions(sources, output):
             "Keep artifact URLs direct.",
         )
         path.write_text(
-            text.replace("Humanize", "Wellput").replace("humanize", "wellput")
+            wrap_instruction_prose(
+                text.replace("Humanize", "Wellput").replace("humanize", "wellput")
+            )
         )
     core = Path(sources["core"]).read_text()
     sections = re.split(r"(?=^### )", core, flags=re.MULTILINE)
@@ -59,13 +65,6 @@ def export_instructions(sources, output):
         if section.startswith(("### Evidence\n", "### Autonomy\n", "### Completion\n"))
     ]
     write_file(destination, "references/core.md", "".join(selected).rstrip() + "\n")
-    docs = Path(sources["docs"]).read_text()
-    docs = docs[docs.index("### Never write") :]
-    write_file(
-        destination,
-        "references/artifact-writing.md",
-        docs.replace("humanize", "wellput"),
-    )
     evaluation = (skill / "__tests__/evals/reader_recovery.yaml").read_text()
     evaluation = evaluation.replace(
         "agent-harness/agent-instructions/skills/writing/humanize/", "skills/wellput/"
@@ -139,38 +138,6 @@ def export_runtime(sources, output):
                     f"hooks/vendor/licenses/{distribution_name}/{path.name}",
                     distribution.locate_file(path).read_text(),
                 )
-
-
-def export_tests(sources, output):
-    shutil.copyfile(
-        Path(sources["portableTests"]) / "test_hooks.py", output / "tests/test_hooks.py"
-    )
-    shutil.copyfile(sources["verifier"], output / "tests/verify_plugin.py")
-    tests = Path(sources["tests"])
-    for name in (
-        "test_human_facing_reply_rules.py",
-        "test_reply_format_configuration.py",
-        "test_reply_markdown_structure.py",
-        "test_reply_quotation_performance.py",
-    ):
-        text = (
-            (tests / name)
-            .read_text()
-            .replace(
-                'REPLY_RULE_MODULE_DIRECTORY / "reply-formats.json"',
-                'REPLY_RULE_MODULE_DIRECTORY.parents[1] / "wellput.json"',
-            )
-        )
-        write_file(output, f"tests/{name}", text)
-    support = Path(sources["support"]).read_text()
-    start = support.index("HOOKS_ROOT =")
-    end = support.index("LABELED_REPLY =")
-    support = (
-        support[:start]
-        + 'REPLY_RULE_MODULE_DIRECTORY = Path(__file__).resolve().parents[1] / "hooks/rules"\nsys.path.insert(0, str(REPLY_RULE_MODULE_DIRECTORY))\nsys.path.insert(0, str(REPLY_RULE_MODULE_DIRECTORY.parent / "vendor"))\n\nfrom reply_rule_catalog import template_violations_in_reply\nfrom reply_rule_feedback import bounce_guidance\n\n'
-        + support[end:]
-    )
-    write_file(output, "tests/human_facing_reply_test_support.py", support)
 
 
 def main():

@@ -55,12 +55,10 @@ def test_humanize_package_owns_interactive_and_output_policies():
         "representation_rendering",
         "meaning_and_certainty",
         "confusion_recovery",
-        "terminology_and_jargon",
         "sentence_and_paragraph_construction",
         "procedures_and_explanations",
         "human_register",
         "revision_and_semantic_check",
-        "durable_artifacts",
     ):
         assert "### " + tag.replace("_", " ").capitalize() in humanize_skill
 
@@ -98,13 +96,16 @@ def test_hooks_enforce_the_policy_without_rendering_instruction_surfaces():
     assert "rendered_markdown_surface" not in feedback
 
 
-def test_humanize_is_the_output_policy_and_artifact_adapter():
+def test_humanize_owns_session_replies_and_excludes_file_authoring():
     skill_text = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
     description = (frontmatter_key_values(skill_text) or {}).get("description", "")
 
     normalized_description = description.lower()
-    assert "substantial human-facing" in normalized_description
+    assert "active agent sessions" in normalized_description
     assert "one- or two-sentence confirmations" in normalized_description
+    assert "file authoring" in normalized_description
+    assert "### Durable artifacts" not in skill_text
+    assert "Use the `docs` skill" not in skill_text
     assert "enforced-wording-rules.md" not in skill_text
     assert "human-communication-policy.md" not in skill_text
     assert not (HUMANIZE_DIRECTORY / "human-communication-policy.md").exists()
@@ -141,7 +142,9 @@ def test_humanize_explains_unresolved_choices_before_internal_rationale():
 
 
 def test_humanize_uses_established_language_before_coining_terms():
-    skill_text = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower()
+    skill_text = " ".join(
+        HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower().split()
+    )
 
     for required_behavior in (
         "ubiquitous language",

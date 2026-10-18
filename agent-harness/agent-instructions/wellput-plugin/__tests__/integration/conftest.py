@@ -14,7 +14,6 @@ def plugin_root(tmp_path_factory):
     sources = {
         "skill": instructions / "skills/writing/humanize",
         "core": instructions / "core-rules/core.md",
-        "docs": instructions / "skills/writing/docs/SKILL.md",
         "rules": harness / "hooks/runtime/common/human_facing_reply",
         "guard": harness / "hooks/runtime/stop/end_of_turn_format_guard_handler.py",
         "renderer": harness
@@ -27,6 +26,12 @@ def plugin_root(tmp_path_factory):
         "verifier": owner / "__tests__/portable/verify_plugin.py",
     }
     fixture_directory = tmp_path_factory.mktemp("wellput")
+    formatter = fixture_directory / "formatter"
+    formatter.mkdir()
+    (formatter / "instructions").symlink_to(
+        harness / "quality/evaluations/instructions", target_is_directory=True
+    )
+    sources["instructionFormatter"] = formatter
     manifest = fixture_directory / "sources.json"
     manifest.write_text(json.dumps({name: str(path) for name, path in sources.items()}))
     plugin = fixture_directory / "plugin"

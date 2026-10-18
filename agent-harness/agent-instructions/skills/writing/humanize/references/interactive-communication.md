@@ -7,10 +7,10 @@ turn. Answer what was asked at the length that answer needs, inside the reply fo
 
 ### Humanize policy loading
 
-Load the humanize skill before drafting or revising a substantial human-facing explanation, diagnosis, decision,
-warning, report, summary, or durable artifact. The skill contains the controlled-language rules for that work. A
-one-sentence or two-sentence confirmation or factual answer does not require that policy. When a Stop hook tells you to
-load the humanize skill, load it before retrying. After compaction, reload it only when the current work meets the same
+Load the humanize skill before drafting or revising a substantial session reply, including an explanation, diagnosis,
+decision, warning, report, or summary. The skill contains the controlled-language rules for that reply. A one-sentence
+or two-sentence confirmation or factual answer does not require that policy. When a Stop hook tells you to load the
+humanize skill, load it before retrying. After compaction, reload it only when the current work meets the same
 conditions. When the user explicitly requests Humanize, load it before any other action.
 
 ### Peer communication
@@ -43,6 +43,14 @@ never substitute a local path, commit SHA, issue or ticket key, change descripti
 Treat a return to the user as a context switch. Apply core [autonomy](../../../../core-rules/core.md#autonomy) and core
 [completion](../../../../core-rules/core.md#completion) before handing control back; this channel adds no broader
 authority or stopping threshold. Deliver all independent completed work with any required question.
+
+### Exact output
+
+Preserve an explicitly requested literal or structured artifact without conversational additions. The hook recognizes
+raw JSON objects and arrays and standalone Markdown tables by syntax; table row limits still apply. A standalone answer
+word is not a reaction preamble. Other exact-format exceptions require judgment about the request.
+
+Keep ordinary replies conversational; do not encode them as JSON to evade the handoff.
 
 ### Response shape
 

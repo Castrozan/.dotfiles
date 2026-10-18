@@ -1,4 +1,5 @@
 import itertools
+import json
 
 import pytest
 
@@ -13,6 +14,47 @@ from human_facing_reply_test_support import (
 def test_visual_characters_do_not_turn_prose_into_a_diagram(prefix, suffix):
     reply = prefix + "evidence " * 300 + suffix
 
+    assert template_violations_in_reply(reply)
+
+
+def test_a_wrapped_item_does_not_spend_multiple_item_slots():
+    reply = "- first\n  second\n  third\n  fourth\n  fifth\n  sixth"
+
+    assert template_violations_in_reply(reply) == []
+
+
+def test_nested_items_count_toward_the_containing_list_limit():
+    reply = "- Parent\n" + "\n".join("  - Child" for _ in range(5))
+
+    assert any("6 list items" in item for item in template_violations_in_reply(reply))
+
+
+@pytest.mark.parametrize("row_count", [0, 5, 6, 100])
+def test_table_limits_count_data_rows_without_the_header(row_count):
+    reply = "| Name | Value |\n| --- | --- |\n" + "\n".join(
+        f"| item-{number} | value |" for number in range(row_count)
+    )
+
+    violations = template_violations_in_reply(reply)
+    assert bool(violations) == (row_count > 5)
+    if violations:
+        assert "data rows" in violations[0]
+
+
+def test_a_table_with_prose_still_requires_conversational_indexes():
+    reply = "The result:\n\n| Name | Value |\n| --- | --- |\n| timeout | 30 |"
+
+    assert any("index column" in item for item in template_violations_in_reply(reply))
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [
+        json.dumps({"summary": "evidence " * 120, "value": float("nan")}),
+        '{"summary": "' + "evidence " * 120,
+    ],
+)
+def test_malformed_json_does_not_bypass_conversational_rules(reply):
     assert template_violations_in_reply(reply)
 
 

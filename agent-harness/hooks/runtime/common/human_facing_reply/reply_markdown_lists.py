@@ -1,4 +1,4 @@
-from reply_word_budget import exceeds_word_budget
+from reply_output_limits import exceeds_word_budget
 
 
 class ReplyListItem:
@@ -12,7 +12,7 @@ class ReplyListItem:
 class ReplyList:
     def __init__(self, source_range, prose_line_indices):
         self.line_indices = set(range(*source_range)) & prose_line_indices
-        self.line_count = len(self.line_indices)
+        self.item_count = 0
         self.items = []
 
     def is_exempt(self, configuration):
@@ -33,6 +33,8 @@ def extract_reply_lists(tokens, source_lines, prose_line_indices):
         elif token.type in ("bullet_list_close", "ordered_list_close"):
             active_lists.pop()
         elif token.type == "list_item_open":
+            for block in active_lists:
+                block.item_count += 1
             active_lists[-1].items.append(
                 ReplyListItem(token.map, source_lines, prose_line_indices)
             )

@@ -131,10 +131,13 @@ def test_the_reply_budgets_exempt_visuals_and_never_drop_a_fact():
     for required_budget in (
         "the labels together within 50",
         "prose above the labels stays within 80 words",
-        "within 5 lines and 20 words per complete item",
         "Visual lines never count",
     ):
         assert required_budget in response_shape
+
+    structure_limits = interactive_policy_section("list_and_table_limits")
+    assert "within 5 items, counting nested items" in structure_limits
+    assert "within 5 data rows" in structure_limits
 
     concise_request = interactive_policy_section("concise_request")
     assert "No budget justifies deleting a fact" in concise_request
