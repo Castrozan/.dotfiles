@@ -27,8 +27,8 @@ development.
 ### Worker ownership
 
 Read `chrome-devtools --help` and each command's help for syntax. The plugin also carries the executable at
-`native/browser/chrome-devtools`. Default startup attaches to Chrome Global; choose `start --headless` explicitly for
-work that can use a separate profile. Headless does not inherit the user's current logins.
+`native/browser/chrome-devtools`. Default startup attaches to Chrome Global. Prefer `start --headless` unless the task
+needs existing logins, open tabs, or visible interaction. Headless does not inherit the user's current logins.
 
 Keep one worker for a browser task and run `stop` when finished. The completion hook also closes workers owned by the
 current Herdr pane or Codex thread; outside those contexts, explicit `stop` is required. A fresh worker discards page
