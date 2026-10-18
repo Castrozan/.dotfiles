@@ -30,7 +30,7 @@ def download_options(request, directory):
 
 
 def require_single_media(info):
-    if not isinstance(info, dict):
+    if not isinstance(info, dict) or not info:
         raise CapabilityError("single_media_required")
     if info.get("_type") in ("playlist", "multi_video") or "entries" in info:
         raise CapabilityError("single_media_required")
