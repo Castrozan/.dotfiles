@@ -17,6 +17,12 @@ let
       rev = "f7c719eccd5d6eb48884e55b2e36b42e918109c5";
       hash = "sha256-AFOnQqrfmywcCBrdKqpUwJC8KSk9rT/Jm3dHxffhX0w=";
     };
+    image-view = pkgs.fetchFromGitHub {
+      owner = "jarrodwatts";
+      repo = "claude-image-view";
+      rev = "370b8e7bc0708bebe9762e63534f7ca18bc3e802";
+      hash = "sha256-cH2yGtD5k/zmOCE5WK8s9DoFicUnrCdzqfmp/GGoJW4=";
+    };
     airquote = pkgs.fetchFromGitHub {
       owner = "karan-79";
       repo = "airquote";

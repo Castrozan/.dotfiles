@@ -35,10 +35,7 @@ let
   claudeGlobalSettings = lib.recursiveUpdate {
     ultracode = false;
     enableWorkflows = true;
-    enabledPlugins = {
-      "image-view@claude-image-view" = true;
-    }
-    // claudeModsMarketplace.everySessionEnabledPlugins;
+    enabledPlugins = claudeModsMarketplace.everySessionEnabledPlugins;
     language = "english";
     animationInterval = 80;
     spinnerText = spinnerVerbs;
