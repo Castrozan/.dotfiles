@@ -85,6 +85,13 @@ in
       description = "The interactive Claude package with workspace-profile activation but without the plain command's organization admission policy. Alternate model-provider frontends consume this capability.";
     };
 
+    interactiveSessionSettings = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = interactiveSessionSettings;
+      readOnly = true;
+      description = "The settings the plain claude command layers onto every interactive session before any workspace profile overlay, for a non-interactive launcher that must give its sessions the same plugins and plugin options.";
+    };
+
     requiredOrganizationId = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
