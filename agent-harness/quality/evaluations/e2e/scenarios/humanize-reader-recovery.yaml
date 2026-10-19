@@ -6,7 +6,7 @@ setup:
 
 prompts:
   - |
-    Use the Humanize skill. Explain this proposed renderer change: normalize safe paths, encode cache keys as base64,
+    Use the Wellput skill. Explain this proposed renderer change: normalize safe paths, encode cache keys as base64,
     and replace contentCache with a bounded LRU. The current renderer stores generated image bytes in the in-memory
     contentCache map for the process lifetime, and contentCache has no size limit.
   - |
@@ -18,7 +18,7 @@ minimum_experience_score: 85
 
 assertions:
   autonomous_skill_invocation:
-    - humanize
+    - wellput
   output_contains:
     - "contentCache"
     - "in-memory"

@@ -1,8 +1,8 @@
 name: humanize_reader_recovery
-description: Humanize recovers from a context-heavy explanation with a short concrete answer
+description: Wellput recovers from a context-heavy explanation with a short concrete answer
 
 prompt: |
-  Load the Humanize skill before answering. The previous answer proposed base64 keys, normalized safe paths, and a
+  Load the Wellput skill before answering. The previous answer proposed base64 keys, normalized safe paths, and a
   bounded LRU without establishing the current system. I do not understand it. Do we have a cache at all? TL;DR. The
   current renderer stores generated image bytes in the in-memory contentCache map for the process lifetime, and the map
   has no size limit. Answer the existence question and current facts, not the proposed fix.
