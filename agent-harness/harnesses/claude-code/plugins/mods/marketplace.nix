@@ -5,15 +5,11 @@ let
   marketplaceName = "dotfiles-mods";
 
   interactiveSessionModSources = {
-    cache-tax = pkgs.applyPatches {
-      name = "cache-tax-without-prompt-band";
-      src = pkgs.fetchFromGitHub {
-        owner = "karanb192";
-        repo = "cache-tax";
-        rev = "5cde9acc806728728cae70836db4f8f0655e0ff2";
-        hash = "sha256-SD7NQmxGwnGYvJmXOfulVeGIPZXMGUT2UyRu3yNsa6s=";
-      };
-      patches = [ ./patches/hide-cache-tax-prompt-band.patch ];
+    cache-tax = pkgs.fetchFromGitHub {
+      owner = "Castrozan";
+      repo = "cache-tax";
+      rev = "5a567cf607237231da99850b50ea385791bb0e23";
+      hash = "sha256-s/XZUfVfm7gzV+erl5FcU04o8aJC/AxSLuBc2lId2+A=";
     };
     crayon = pkgs.fetchFromGitHub {
       owner = "jonpojonpo";
