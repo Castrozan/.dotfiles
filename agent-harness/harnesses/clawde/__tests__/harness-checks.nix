@@ -188,5 +188,11 @@ in
       "the command builtin defeats the alias but still resolves the name through whatever PATH the pane inherits, so any stale binary sitting earlier on PATH quietly replaces the one the deployment pinned: a claude 2.1.72 left behind in /opt/homebrew/bin did exactly that and killed an agent at argument parsing every 300 seconds for two days while the configured 2.1.220 sat unused. Every launch command must therefore prepend its own harness-home binary directory, which holds nothing but the package this deployment built";
 }
 // import ./harness-plugin-checks.nix {
-  inherit pkgs mkEvalCheck cfgWithBothHarnesses;
+  inherit
+    pkgs
+    mkEvalCheck
+    helpers
+    self
+    cfgWithBothHarnesses
+    ;
 }
