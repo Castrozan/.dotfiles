@@ -21,8 +21,8 @@ Use `url-shortener` for long public references; keep artifact URLs direct.
 
 ### Artifact links
 
-Give a raw browser link with the full direct URL for every merge request, pull request, CI run, report, or artifact the
-user must inspect. Publish local artifacts to an authorized remote before returning. Put each URL on the Done line, and
+Give a hyperlink to the full direct URL for every merge request, pull request, CI run, report, or artifact the user
+must inspect. Publish local artifacts to an authorized remote before returning. Put each link on the Done line, and
 never substitute a local path, commit SHA, issue or ticket key, change description, or another shorthand reference.
 
 ### Exhaust before returning

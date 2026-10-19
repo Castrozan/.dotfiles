@@ -41,7 +41,8 @@ NO_COMMENTS_RULE_RESTATEMENTS = (
 )
 
 SINGLE_HOME_RULE_PHRASES = {
-    "Give a raw browser link": INTERACTIVE_INSTRUCTIONS,
+    "Give a hyperlink to the full direct URL": INTERACTIVE_INSTRUCTIONS,
+    "Write every link as a Markdown hyperlink": CORE_CODING_AUTHORITY,
     NO_COMMENTS_RULE_PHRASE: CORE_CODING_AUTHORITY,
 }
 

@@ -40,6 +40,11 @@ something, drop it and never raise it again for the rest of the session. Read th
 need rather than the whole of it. Before likely context loss, persist requirements, decisions, changed files, starting
 revision, and verification state under the narrowest owner; restore it before continuing.
 
+### Links
+
+Write every link as a Markdown hyperlink with descriptive text and never paste a raw URL; a URL inside code stays
+literal.
+
 ### Coding
 
 When creating or changing owned code, add no comments, docstrings, section banners, commented-out code, TODO notes, or
