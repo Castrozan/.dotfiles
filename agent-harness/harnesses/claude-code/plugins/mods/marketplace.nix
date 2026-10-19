@@ -14,8 +14,8 @@ let
     crayon = pkgs.fetchFromGitHub {
       owner = "Castrozan";
       repo = "cc-crayon";
-      rev = "0cd8cc04bbe6127f0a51ab794ea5bcc44bfd72d7";
-      hash = "sha256-DtxEc+5Gk8CSWUVQ0v6Mi6SucrJfjKlaKG2ft74GLj8=";
+      rev = "a8ceb447b4a88fe0b55497f29856623479ba95fa";
+      hash = "sha256-uG5Ar0onbU5cjVkNRcuTQjE8/b/g2B6TCztwyyuN3HI=";
     };
     image-view = pkgs.fetchFromGitHub {
       owner = "jarrodwatts";
