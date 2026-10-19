@@ -12,10 +12,10 @@ let
       hash = "sha256-s/XZUfVfm7gzV+erl5FcU04o8aJC/AxSLuBc2lId2+A=";
     };
     crayon = pkgs.fetchFromGitHub {
-      owner = "jonpojonpo";
+      owner = "Castrozan";
       repo = "cc-crayon";
-      rev = "f7c719eccd5d6eb48884e55b2e36b42e918109c5";
-      hash = "sha256-AFOnQqrfmywcCBrdKqpUwJC8KSk9rT/Jm3dHxffhX0w=";
+      rev = "0cd8cc04bbe6127f0a51ab794ea5bcc44bfd72d7";
+      hash = "sha256-DtxEc+5Gk8CSWUVQ0v6Mi6SucrJfjKlaKG2ft74GLj8=";
     };
     image-view = pkgs.fetchFromGitHub {
       owner = "jarrodwatts";
