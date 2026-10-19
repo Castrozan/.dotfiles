@@ -100,7 +100,8 @@ let
 
   inherit (cfgWithWorkspaceProfileAgent.claude) interactiveSessionSettings;
 
-  launchSettingsOf = agentName: cfgWithWorkspaceProfileAgent.clawde.agents.${agentName}.claudeLaunchSettings;
+  launchSettingsOf =
+    agentName: cfgWithWorkspaceProfileAgent.clawde.agents.${agentName}.claudeLaunchSettings;
 in
 {
   clawde-workspace-profile-agent-launches-claude-with-the-profile-settings =

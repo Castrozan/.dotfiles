@@ -40,7 +40,9 @@ let
           builtins.toJSON agent.claudeLaunchSettings
         );
       in
-      lib.replaceStrings [ " ${binaryInvocation} " ] [ " ${binaryInvocation} --settings ${settingsFile} " ]
+      lib.replaceStrings
+        [ " ${binaryInvocation} " ]
+        [ " ${binaryInvocation} --settings ${settingsFile} " ]
         harnessCommand;
 in
 {
@@ -113,7 +115,9 @@ in
                     else
                       arguments:
                       if name == "claude" then
-                        "CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${withClaudeLaunchSettings arguments.name arguments.agent (buildCommand arguments)}"
+                        "CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${
+                          withClaudeLaunchSettings arguments.name arguments.agent (buildCommand arguments)
+                        }"
                       else if
                         name == "codex"
                         && hostname == "rin"
