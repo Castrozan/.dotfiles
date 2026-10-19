@@ -70,52 +70,33 @@ def test_long_form_numbered_references_keep_their_identifier(article, kind, rout
         "Review: [result][review]\n\n[review]: https://example.com/result",
         "Review: <https://example.com/result>",
         '<a href="https://example.com/result">result</a>',
-        '<div>\n<a href="https://example.com/result">result</a>\n</div>',
         "Summary:\n\n| # | Result |\n| --- | --- |\n| 1 | [result](https://example.com/result) |",
         "[source](/tmp/source.py)",
-        "Contact: <engineer@example.com>",
         "\x1b]8;;https://example.com/result\x1b\\result\x1b]8;;\x1b\\",
-    ],
-)
-def test_formatted_links_are_rejected_in_reply_prose(reply):
-    violations = template_violations_in_reply(reply)
-
-    assert any("bare URLs" in violation for violation in violations)
-
-
-@pytest.mark.parametrize(
-    "reply",
-    [
-        "Review: https://example.com/result",
         "Review: https://example.com/result?branch=main&job=build#logs",
         "| # | Result |\n| --- | --- |\n| 1 | https://example.com/result |",
-        "Literal syntax: `[result](https://example.com/result)`.",
-        'Literal syntax: `<a href="https://example.com/result">result</a>`.',
-        "```markdown\n[result](https://example.com/result)\n```",
-        '```html\n<a href="https://example.com/result">result</a>\n```',
         "> [quoted source](https://example.com/result)",
-        '> <a href="https://example.com/result">quoted source</a>',
         "![figure](https://example.com/figure.png)",
     ],
 )
-def test_raw_urls_and_literal_examples_remain_allowed(reply):
+def test_formatted_and_raw_links_are_both_allowed(reply):
+    assert template_violations_in_reply(reply) == []
+
+
+def test_a_formatted_link_to_the_named_pull_request_satisfies_the_artifact_rule():
+    reply = "PR #17 is [ready](https://github.com/example/repo/pull/17)."
+
     assert template_violations_in_reply(reply) == []
 
 
 @pytest.mark.parametrize("surface", ("claude", "codex", "opencode", "pi"))
-def test_shared_stop_guard_rejects_hidden_urls_and_accepts_raw_urls(surface):
+def test_shared_stop_guard_accepts_formatted_links(surface):
     payload = {
         "hook_event_name": "Stop",
-        "session_id": "raw-url-contract",
+        "session_id": "formatted-link-contract",
         "reply_text": "Review: [result](https://example.com/result)",
     }
 
-    rejected = json.loads(invoke_guard(payload, surface=surface).stdout)
-
-    assert rejected["decision"] == "block"
-    assert "bare URLs" in rejected["reason"]
-
-    payload["reply_text"] = "Review: https://example.com/result"
     accepted = json.loads(invoke_guard(payload, surface=surface).stdout or "{}")
 
     assert accepted.get("decision") != "block"

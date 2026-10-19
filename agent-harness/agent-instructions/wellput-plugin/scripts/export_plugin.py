@@ -42,9 +42,6 @@ def export_instructions(sources, output):
         path = destination / relative
         text = project_policy(path.read_text())
         text = text.replace(
-            "so WezTerm can detect them", "so terminals can detect them"
-        )
-        text = text.replace(
             "Use\n`url-shortener` for long public references; keep artifact URLs direct.",
             "Keep artifact URLs direct.",
         )

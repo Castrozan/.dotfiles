@@ -4,7 +4,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from reply_link_format import formatted_link_violation
 from reply_output_limits import (
     list_block_length_violation,
     list_line_word_violation,
@@ -48,7 +47,6 @@ REPLY_RESTRICTIONS = {
         missing_required_labels_violation,
         placeholders=frozenset({"word_count", "maximum_words", "missing_labels"}),
     ),
-    "formatted_link": ReplyRestriction(formatted_link_violation),
     "label_emphasis": ReplyRestriction(
         unemphasized_label_violation, placeholders=frozenset({"label"})
     ),

@@ -102,7 +102,7 @@ Use tables, diagrams, and code when they save the reader work. Visuals and fence
 | #   | Check            | What it gives you                                                              |
 | --- | ---------------- | ------------------------------------------------------------------------------ |
 | 1   | Lists and tables | At most 5 items or data rows; numbered table rows for replies like “about #2.” |
-| 2   | Navigation       | Bare URLs and paths; direct links to referenced PRs and MRs.                   |
+| 2   | Navigation       | Direct links to referenced PRs and MRs.                                        |
 | 3   | Opening          | The answer first, without reactions or narration.                              |
 | 4   | Punctuation      | No em or en dashes outside quotes; configurable.                               |
 

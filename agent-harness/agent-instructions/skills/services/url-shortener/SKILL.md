@@ -11,5 +11,5 @@ artifact links follow the session's [artifact links](../../../interactive-commun
 
 ### Reply rendering
 
-Use the verified result as a bare URL and identify its destination in nearby prose. If the command fails, keep the
+Use the verified result and identify its destination in nearby prose. If the command fails, keep the
 original URL. Follow the session's [link format](../../../interactive-communication.md#link-format).
