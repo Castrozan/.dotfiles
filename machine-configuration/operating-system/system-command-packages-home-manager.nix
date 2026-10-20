@@ -15,7 +15,7 @@ in
 
   home.packages = [
     rebuild
-    (mkSystemPythonScript "nix-gc" ./nix-store-maintenance/scripts/nix_gc.py)
+    (mkSystemPythonScript "nix-gc" ./storage-maintenance/nix-store/scripts/nix_gc.py)
     (pkgs.writeShellScriptBin "tar-unzip2dir" (
       builtins.readFile ./archive-extraction/scripts/tar-unzip2dir
     ))

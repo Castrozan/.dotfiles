@@ -66,7 +66,7 @@ in
 
     ../../operating-system/system-command-packages-home-manager.nix
     ../../operating-system/resource-monitoring/btop-home-manager.nix
-    ../../operating-system/nix-store-maintenance/stale-symlink-cleanup-home-manager.nix
+    ../../operating-system/storage-maintenance/nix-store/stale-symlink-cleanup-home-manager.nix
 
     ../../network/ssh/ssh-private-home-manager.nix
 
