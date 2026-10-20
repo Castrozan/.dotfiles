@@ -41,8 +41,8 @@ NO_COMMENTS_RULE_RESTATEMENTS = (
 )
 
 SINGLE_HOME_RULE_PHRASES = {
-    "Give a hyperlink to the full direct URL": INTERACTIVE_INSTRUCTIONS,
-    "Write every link as a Markdown hyperlink": CORE_CODING_AUTHORITY,
+    "Write every link outside code as a hyperlink": INTERACTIVE_INSTRUCTIONS,
+    "Link the full direct URL": INTERACTIVE_INSTRUCTIONS,
     NO_COMMENTS_RULE_PHRASE: CORE_CODING_AUTHORITY,
 }
 
