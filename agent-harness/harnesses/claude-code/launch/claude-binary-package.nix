@@ -43,6 +43,9 @@ let
     if [ -n "''${HERDR_PANE_ID:-}" ] && [ -z "''${CLAUDE_CODE_FORCE_TERMINAL_IMAGES:-}" ]; then
       export CLAUDE_CODE_FORCE_TERMINAL_IMAGES=1
     fi
+    if [ "''${TERM_PROGRAM:-}" = "WezTerm" ] && [ -z "''${FORCE_HYPERLINK+set}" ]; then
+      export FORCE_HYPERLINK=1
+    fi
     ${pkgs.bash}/bin/bash ${../scripts/pre-approve-current-workspace-trust-dialog.sh} "${pkgs.jq}/bin/jq" || true
     exec ${claude-code-unwrapped}/bin/claude "$@"
   '';
