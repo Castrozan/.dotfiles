@@ -12,10 +12,10 @@ blocking consent prompt, "Could not connect to Chrome," or another recoverable t
 below; none permits a tool switch.
 
 OpenCLI is eligible only as the last resort when every recovery step has failed, Chrome DevTools remains unavailable,
-the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. An autonomous clawde
-agent is mechanically denied the shared Chrome target; that makes OpenCLI eligible only for an unattended task that did
-not require Chrome DevTools. Otherwise report the blocked Chrome DevTools requirement instead of silently substituting
-another browser.
+the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. Attaching to Chrome
+Global waits on the user's manual Allow, so an unattended task that did not require Chrome DevTools uses
+`start --headless` or an eligible OpenCLI workflow. Otherwise report the blocked Chrome DevTools requirement instead of
+silently substituting another browser.
 
 Read [OpenCLI](references/opencli.md) for site commands and eligible isolated workflows.
 [chrome target](references/chrome-target.md) explains the Chrome target's constraints.

@@ -144,17 +144,23 @@ def test_start_failure_prevents_tool_execution(configuration, monkeypatch):
     ).state_file.exists()
 
 
-def test_autonomous_agent_cannot_start_or_reuse_interactive_worker(
-    configuration, monkeypatch
-):
-    monkeypatch.setenv("CLAWDE_AGENT_NAME", "background-agent")
+def test_clawde_agent_attaches_to_chrome_global(configuration, monkeypatch):
+    monkeypatch.setenv("CLAWDE_AGENT_NAME", "project-manager")
+    monkeypatch.setattr(ChromeDevtoolsSession, "running", lambda self: False)
+    started = []
+    executed = []
     monkeypatch.setattr(
         command.subprocess,
         "run",
-        lambda *arguments, **options: pytest.fail("spawned a worker"),
+        lambda arguments, **options: started.append(arguments)
+        or SimpleNamespace(returncode=0),
     )
-    with pytest.raises(ValueError, match="reserved for interactive sessions"):
-        command.main(configuration, ["list_pages"])
+    monkeypatch.setattr(
+        command.os, "execv", lambda executable, arguments: executed.append(arguments)
+    )
+    command.main(configuration, ["list_pages"])
+    assert "--autoConnect" in started[0]
+    assert executed[0][-1] == "list_pages"
 
 
 def test_help_never_starts_a_worker(configuration, monkeypatch):

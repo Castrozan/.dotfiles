@@ -119,14 +119,6 @@ def inspection_requested(arguments, operation):
     )
 
 
-def require_interactive_session():
-    if os.environ.get("CLAWDE_AGENT_NAME"):
-        raise ValueError(
-            "Chrome DevTools is reserved for interactive sessions; "
-            "autonomous agents cannot attach to Chrome Global"
-        )
-
-
 def inspect_worker(configuration, session, arguments, operation):
     if not arguments or arguments == ["--help"] or operation == "start":
         print(
@@ -164,7 +156,6 @@ def main(configuration, arguments):
             return stop_worker(configuration, session)
     if inspection_requested(arguments, operation):
         return inspect_worker(configuration, session, arguments, operation)
-    require_interactive_session()
     return invoke_browser(configuration, session, arguments, operation)
 
 
