@@ -1,7 +1,5 @@
 {
   helpers,
-  pkgs,
-  lib,
   ...
 }:
 let

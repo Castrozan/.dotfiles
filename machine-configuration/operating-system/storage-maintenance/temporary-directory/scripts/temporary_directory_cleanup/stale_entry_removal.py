@@ -43,13 +43,13 @@ def is_stale(entry_status: os.stat_result, stale_before_timestamp: float) -> boo
     return newest_timestamp < stale_before_timestamp
 
 
+def is_removable_file_type(file_mode: int) -> bool:
+    return stat.S_ISDIR(file_mode) or stat.S_ISREG(file_mode) or stat.S_ISLNK(file_mode)
+
+
 def grant_owner_read_write_and_traverse(directory_path: str) -> None:
     directory_mode = stat.S_IMODE(os.lstat(directory_path).st_mode)
-    os.chmod(
-        directory_path,
-        directory_mode | OWNER_READ_WRITE_AND_TRAVERSE,
-        follow_symlinks=False,
-    )
+    os.chmod(directory_path, directory_mode | OWNER_READ_WRITE_AND_TRAVERSE)
 
 
 def retry_after_granting_directory_access[Outcome](
@@ -89,21 +89,28 @@ class StaleEntryRemover:
         except OSError as error:
             self.record_failure(entry_path, error)
             return False
-        if entry_status.st_dev != self.root_device:
-            return False
-        if entry_status.st_flags & UNDELETABLE_FILE_FLAGS:
+        return self.remove_examined_entry(entry_path, entry_status)
+
+    def remove_examined_entry(
+        self, entry_path: str, entry_status: os.stat_result
+    ) -> bool:
+        if not self.is_eligible_for_removal(entry_status):
             return False
         if stat.S_ISDIR(entry_status.st_mode):
             return self.remove_directory_when_stale_and_emptied(
                 entry_path, entry_status
             )
-        if not (
-            stat.S_ISREG(entry_status.st_mode) or stat.S_ISLNK(entry_status.st_mode)
-        ):
-            return False
         if not is_stale(entry_status, self.policy.stale_before_timestamp):
             return False
         return self.remove(os.unlink, entry_path)
+
+    def is_eligible_for_removal(self, entry_status: os.stat_result) -> bool:
+        entry_flags = getattr(entry_status, "st_flags", 0)
+        return (
+            entry_status.st_dev == self.root_device
+            and not entry_flags & UNDELETABLE_FILE_FLAGS
+            and is_removable_file_type(entry_status.st_mode)
+        )
 
     def remove_directory_when_stale_and_emptied(
         self, directory_path: str, directory_status: os.stat_result
@@ -117,15 +124,22 @@ class StaleEntryRemover:
         except OSError as error:
             self.record_failure(directory_path, error)
             return False
-        remaining_child_count = 0
-        for child_name in child_names:
-            if not self.remove_when_stale(os.path.join(directory_path, child_name)):
-                remaining_child_count += 1
-        if remaining_child_count or not is_stale(
+        children_removed = self.remove_stale_children(directory_path, child_names)
+        directory_was_stale = is_stale(
             directory_status, self.policy.stale_before_timestamp
-        ):
+        )
+        if not (children_removed and directory_was_stale):
             return False
         return self.remove(os.rmdir, directory_path)
+
+    def remove_stale_children(
+        self, directory_path: str, child_names: list[str]
+    ) -> bool:
+        child_outcomes = [
+            self.remove_when_stale(os.path.join(directory_path, child_name))
+            for child_name in child_names
+        ]
+        return all(child_outcomes)
 
     def remove(self, remove_operation: Callable[[str], None], entry_path: str) -> bool:
         try:

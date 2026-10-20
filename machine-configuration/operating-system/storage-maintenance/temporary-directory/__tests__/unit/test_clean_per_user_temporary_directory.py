@@ -13,7 +13,7 @@ def resolve_reported_directory(reported_directory: str) -> Path:
 
 
 @pytest.mark.parametrize(
-    "reported_directory", ["/tmp/", "/Users/user/", "/var/folders/ab/cd/C/"]
+    "reported_directory", ["/private/tmp/", "/Users/user/", "/var/folders/ab/cd/C/"]
 )
 def test_refuses_a_temporary_directory_outside_per_user_var_folders(reported_directory):
     with pytest.raises(ValueError, match="refusing to clean"):

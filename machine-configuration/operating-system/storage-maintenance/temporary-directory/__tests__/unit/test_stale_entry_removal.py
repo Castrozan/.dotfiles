@@ -66,10 +66,11 @@ def test_keeps_a_fresh_file_and_its_ancestors_while_removing_stale_siblings(tmp_
     current_file.write_text("current")
     mark_fresh(current_file)
 
-    remove_everything_written_before_now(tmp_path)
+    result = remove_everything_written_before_now(tmp_path)
 
     assert current_file.exists()
     assert not abandoned_run.exists()
+    assert result.failed_entry_count == 0
 
 
 def test_keeps_a_fresh_directory_after_removing_its_stale_children(tmp_path):
@@ -94,10 +95,11 @@ def test_never_removes_special_files_or_the_directory_holding_them(
     special_file = channel_directory / "endpoint"
     create_special_file(special_file)
 
-    remove_everything_written_before_now(tmp_path)
+    result = remove_everything_written_before_now(tmp_path)
 
     special_file_mode = os.lstat(special_file).st_mode
     assert stat.S_ISFIFO(special_file_mode) or stat.S_ISSOCK(special_file_mode)
+    assert result.failed_entry_count == 0
 
 
 @pytest.mark.parametrize(
@@ -113,6 +115,7 @@ def test_leaves_protected_top_level_entries_untouched(tmp_path, top_level_name):
     assert (protected_directory / "secret").exists()
 
 
+@pytest.mark.skipif(not hasattr(os, "chflags"), reason="platform has no file flags")
 def test_skips_a_directory_flagged_undeletable_without_recording_a_failure(tmp_path):
     flagged_directory = tmp_path / "duetexpertd"
     flagged_directory.mkdir()

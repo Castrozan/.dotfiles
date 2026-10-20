@@ -5,6 +5,16 @@ import sys
 from pathlib import Path
 
 NIX_DAEMON_PROFILE = Path("/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh")
+SCOPE_BY_OPTION = {
+    "-a": "all",
+    "--all": "all",
+    "-u": "user",
+    "--user": "user",
+    "-s": "system",
+    "--system": "system",
+}
+DRY_RUN_OPTIONS = ("-d", "--dry-run")
+HELP_OPTIONS = ("-h", "--help")
 
 
 def ensure_nix_in_path_or_source_daemon_profile() -> bool:
@@ -77,23 +87,23 @@ def parse_arguments(argv: list[str]) -> tuple[str, bool]:
     dry_run = False
 
     for argument in argv:
-        if argument in ("-a", "--all"):
-            scope = "all"
-        elif argument in ("-u", "--user"):
-            scope = "user"
-        elif argument in ("-s", "--system"):
-            scope = "system"
-        elif argument in ("-d", "--dry-run"):
+        if argument in SCOPE_BY_OPTION:
+            scope = SCOPE_BY_OPTION[argument]
+        elif argument in DRY_RUN_OPTIONS:
             dry_run = True
-        elif argument in ("-h", "--help"):
-            print_usage()
-            raise SystemExit(0)
         else:
-            print(f"Unknown option: {argument}", file=sys.stderr)
-            print_usage()
-            raise SystemExit(1)
+            exit_with_usage_for(argument)
 
     return scope, dry_run
+
+
+def exit_with_usage_for(argument: str) -> None:
+    if argument in HELP_OPTIONS:
+        print_usage()
+        raise SystemExit(0)
+    print(f"Unknown option: {argument}", file=sys.stderr)
+    print_usage()
+    raise SystemExit(1)
 
 
 def main() -> None:
