@@ -21,7 +21,7 @@ in
       Label = "com.dotfiles.temporary-directory-cleanup";
       ProgramArguments = [
         "${pkgs.python312}/bin/python3"
-        "${./scripts/temporary_directory_cleanup.py}"
+        "${./scripts/temporary_directory_cleanup}/clean_per_user_temporary_directory.py"
         "--maximum-age-hours"
         (toString maximumAgeHours)
       ]

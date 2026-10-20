@@ -1,14 +1,14 @@
+import errno
 import os
 import socket
 import stat
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
-import temporary_directory_cleanup
-from temporary_directory_cleanup import CleanupPolicy, CleanupResult, StaleEntryRemover
+import stale_entry_removal
+from stale_entry_removal import CleanupPolicy, CleanupResult, StaleEntryRemover
 
 FRESHNESS_MARGIN_SECONDS = 3600
 TIMESTAMP_ORDERING_PAUSE_SECONDS = 0.01
@@ -126,16 +126,44 @@ def test_removes_a_stale_symlink_without_touching_its_target(tmp_path):
     assert link_target.read_text() == "target"
 
 
-def test_removes_stale_entries_inside_an_owner_read_only_directory(tmp_path):
+@pytest.mark.parametrize(
+    "restrictive_mode", [0o555, 0o600], ids=["without-write", "without-traverse"]
+)
+def test_removes_stale_entries_inside_an_owner_restricted_directory(
+    tmp_path, restrictive_mode
+):
     store_copy = tmp_path / "nix-store-copy"
     store_copy.mkdir()
     (store_copy / "file.txt").write_text("copied")
-    store_copy.chmod(0o555)
+    store_copy.chmod(restrictive_mode)
 
     result = remove_everything_written_before_now(tmp_path)
 
     assert not store_copy.exists()
     assert result.failed_entry_count == 0
+
+
+def test_records_an_unreadable_entry_and_keeps_cleaning_its_siblings(
+    tmp_path, monkeypatch
+):
+    too_deep_entry = tmp_path / "too-deep"
+    too_deep_entry.mkdir()
+    (tmp_path / "leaked.txt").write_text("leaked")
+    original_lstat = os.lstat
+
+    def lstat_failing_past_path_limit(path, *arguments, **keyword_arguments):
+        if str(path) == str(too_deep_entry):
+            raise OSError(errno.ENAMETOOLONG, os.strerror(errno.ENAMETOOLONG))
+        return original_lstat(path, *arguments, **keyword_arguments)
+
+    policy = policy_treating_existing_entries_as_stale(tmp_path)
+    monkeypatch.setattr(stale_entry_removal.os, "lstat", lstat_failing_past_path_limit)
+
+    result = StaleEntryRemover(policy).remove_stale_top_level_entries()
+
+    assert not (tmp_path / "leaked.txt").exists()
+    assert result.failed_entry_count == 1
+    assert result.first_failure.startswith(str(too_deep_entry))
 
 
 def test_does_not_descend_into_another_device(tmp_path):
@@ -146,23 +174,3 @@ def test_does_not_descend_into_another_device(tmp_path):
     remover.remove_stale_top_level_entries()
 
     assert (tmp_path / "mounted-image").is_dir()
-
-
-@pytest.mark.parametrize(
-    "reported_directory", ["/tmp/", "/Users/user/", "/var/folders/ab/cd/C/"]
-)
-def test_refuses_a_temporary_directory_outside_per_user_var_folders(reported_directory):
-    with patch("temporary_directory_cleanup.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(stdout=f"{reported_directory}\n")
-        with pytest.raises(ValueError, match="refusing to clean"):
-            temporary_directory_cleanup.resolve_per_user_temporary_directory()
-
-
-def test_accepts_the_per_user_var_folders_temporary_directory():
-    reported_directory = "/var/folders/8s/fg53rbc55953s5rsg4xr45pw0000gp/T/"
-    with patch("temporary_directory_cleanup.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(stdout=f"{reported_directory}\n")
-        assert (
-            temporary_directory_cleanup.resolve_per_user_temporary_directory()
-            == Path(reported_directory)
-        )
