@@ -49,13 +49,17 @@ def _repository_violation_result(
     repository_is_excluded,
     directory_entry_ceilings,
     repository_entry_paths,
+    paths_not_ignored_by_git,
 ):
     for repository_root, created_paths in repositories.items():
         if repository_is_excluded(repository_root, excluded_repository_patterns):
             continue
+        counted_paths = paths_not_ignored_by_git(repository_root, created_paths)
+        if not counted_paths:
+            continue
         violations = created_entry_violations(
             repository_entry_paths(repository_root),
-            created_paths,
+            counted_paths,
             directory_entry_ceilings(repository_root),
         )
         if violations:
@@ -87,6 +91,7 @@ def handle(hook_input):
     )
     from repository_directory_entries import (
         directory_entry_ceilings,
+        paths_not_ignored_by_git,
         repository_entry_paths,
     )
 
@@ -100,6 +105,7 @@ def handle(hook_input):
             repository_is_excluded,
             directory_entry_ceilings,
             repository_entry_paths,
+            paths_not_ignored_by_git,
         )
         if violation_result is not None:
             return violation_result

@@ -126,6 +126,15 @@ def test_creation_reaching_the_limit_is_allowed(repository_at_entry_limit):
     )
 
 
+@pytest.mark.parametrize("ignored_target", ["source/run.log", "source/build/out.py"])
+def test_gitignored_creation_is_not_counted(repository_at_entry_limit, ignored_target):
+    (repository_at_entry_limit / ".gitignore").write_text("*.log\nsource/build/\n")
+    target = repository_at_entry_limit / ignored_target
+    assert (
+        handle({"tool_name": "Write", "tool_input": {"file_path": str(target)}}) is None
+    )
+
+
 def test_read_does_not_enumerate_repository(repository_at_entry_limit, monkeypatch):
     monkeypatch.setattr(
         "repository_directory_entries.repository_root_for_path", fail_if_called

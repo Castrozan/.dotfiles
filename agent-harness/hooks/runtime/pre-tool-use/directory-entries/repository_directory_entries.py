@@ -38,6 +38,22 @@ def repository_entry_paths(repository_root: Path) -> list[str]:
     ]
 
 
+def paths_not_ignored_by_git(repository_root: Path, relative_paths) -> set[str]:
+    result = subprocess.run(
+        ["git", "check-ignore", "--stdin", "-z"],
+        cwd=repository_root,
+        input=b"\0".join(os.fsencode(path) for path in relative_paths),
+        capture_output=True,
+        timeout=5,
+    )
+    if result.returncode not in (0, 1):
+        raise subprocess.CalledProcessError(
+            result.returncode, result.args, result.stdout, result.stderr
+        )
+    ignored_paths = {os.fsdecode(path) for path in result.stdout.split(b"\0") if path}
+    return set(relative_paths) - ignored_paths
+
+
 def repository_entry_counts(repository_root: Path) -> dict[str, int]:
     return directory_entry_counts(repository_entry_paths(repository_root))
 
