@@ -56,6 +56,7 @@ def test_tool_specific_handlers_carry_their_matchers():
     assert (
         handlers["documentation_authoring_router_handler"].tool_matcher == "Write|Edit"
     )
+    assert handlers["directory_entry_guard_handler"].tool_matcher == "Write|Edit"
 
 
 def test_prohibited_command_guard_runs_before_the_tool_specific_handlers():

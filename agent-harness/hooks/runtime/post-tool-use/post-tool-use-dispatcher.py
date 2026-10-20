@@ -12,7 +12,6 @@ for importable_directory in (
     os.path.join(hooks_root_directory, "common"),
     os.path.join(hooks_root_directory, "nix-rebuild"),
     os.path.join(hook_script_directory, "line-count"),
-    os.path.join(hook_script_directory, "directory-entries"),
     os.path.join(hook_script_directory, "skill-invocation-marker"),
 ):
     if os.path.isdir(importable_directory) and importable_directory not in sys.path:
@@ -46,9 +45,6 @@ POST_TOOL_USE_HANDLERS = [
     ),
     HookHandler(
         handler_module_name="line_count_limit_guard_handler", tool_matcher="Edit|Write"
-    ),
-    HookHandler(
-        handler_module_name="directory_entry_guard_handler", tool_matcher="Edit|Write"
     ),
 ]
 

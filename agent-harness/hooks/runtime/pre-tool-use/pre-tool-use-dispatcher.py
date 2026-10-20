@@ -81,6 +81,10 @@ PRE_TOOL_USE_HANDLERS = [
         tool_matcher="Write|Edit",
     ),
     HookHandler(
+        handler_module_name="directory_entry_guard_handler",
+        tool_matcher="Write|Edit",
+    ),
+    HookHandler(
         handler_module_name="subagent_budget_guard_handler",
         tool_matcher="Agent",
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),

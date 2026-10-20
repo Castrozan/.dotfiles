@@ -17,7 +17,7 @@ def path_has_repository_ancestor(path):
         directory = parent
 
 
-def affected_repository_directories(paths):
+def created_paths_by_repository(paths):
     from collections import defaultdict
     from pathlib import Path
 
@@ -27,44 +27,41 @@ def affected_repository_directories(paths):
     for path in paths:
         absolute_path = Path(path).parent.resolve() / Path(path).name
         repository_root = repository_root_for_path(absolute_path)
-        if repository_root is None:
+        if repository_root is None or not absolute_path.is_relative_to(repository_root):
             continue
-        for directory in absolute_path.parents:
-            if not directory.is_relative_to(repository_root):
-                break
-            relative = directory.relative_to(repository_root).as_posix()
-            repositories[repository_root].add(relative)
+        relative = absolute_path.relative_to(repository_root).as_posix()
+        repositories[repository_root].add(relative)
     return repositories
 
 
-def _paths_in_repositories(hook_input):
+def _created_paths_in_repositories(hook_input):
     return [
         path
         for path in collect_changed_file_paths(hook_input)
-        if path_has_repository_ancestor(path)
+        if not os.path.lexists(path) and path_has_repository_ancestor(path)
     ]
 
 
 def _repository_violation_result(
     repositories,
     excluded_repository_patterns,
-    directory_entry_violations,
+    created_entry_violations,
     repository_is_excluded,
     directory_entry_ceilings,
-    repository_entry_counts,
+    repository_entry_paths,
 ):
-    for repository_root, directories in repositories.items():
+    for repository_root, created_paths in repositories.items():
         if repository_is_excluded(repository_root, excluded_repository_patterns):
             continue
-        violations = directory_entry_violations(
-            repository_entry_counts(repository_root),
+        violations = created_entry_violations(
+            repository_entry_paths(repository_root),
+            created_paths,
             directory_entry_ceilings(repository_root),
-            directories,
         )
         if violations:
             reason = f"Repository {repository_root}: " + violations[0].describe()
             return HandlerResult(
-                decision="block", reason=reason, system_message=f"BLOCKED: {reason}"
+                decision="deny", reason=reason, system_message=f"BLOCKED: {reason}"
             )
     return None
 
@@ -78,35 +75,35 @@ def handle(hook_input):
         "apply_patch",
     }:
         return None
-    paths = _paths_in_repositories(hook_input)
+    paths = _created_paths_in_repositories(hook_input)
     if not paths:
         return None
     import subprocess
 
-    from directory_entry_policy import directory_entry_violations
+    from directory_entry_policy import created_entry_violations
     from excluded_repositories import (
         load_excluded_repository_patterns,
         repository_is_excluded,
     )
     from repository_directory_entries import (
         directory_entry_ceilings,
-        repository_entry_counts,
+        repository_entry_paths,
     )
 
     try:
-        repositories = affected_repository_directories(paths)
+        repositories = created_paths_by_repository(paths)
         excluded_repository_patterns = load_excluded_repository_patterns()
         violation_result = _repository_violation_result(
             repositories,
             excluded_repository_patterns,
-            directory_entry_violations,
+            created_entry_violations,
             repository_is_excluded,
             directory_entry_ceilings,
-            repository_entry_counts,
+            repository_entry_paths,
         )
         if violation_result is not None:
             return violation_result
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         reason = f"Directory entry check could not complete: {error}"
-        return HandlerResult(decision="block", reason=reason, system_message=reason)
+        return HandlerResult(decision="deny", reason=reason, system_message=reason)
     return None

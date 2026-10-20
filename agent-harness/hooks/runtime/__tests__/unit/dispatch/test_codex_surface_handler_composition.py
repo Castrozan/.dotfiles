@@ -32,6 +32,7 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "prohibited_words_guard_handler",
         "agent_instruction_file_authoring_router_handler",
         "documentation_authoring_router_handler",
+        "directory_entry_guard_handler",
         "worktree_location_guard_handler",
     },
     "POST_TOOL_USE_HANDLERS": {
@@ -39,7 +40,6 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "auto_format_handler",
         "record_changed_nix_file_handler",
         "line_count_limit_guard_handler",
-        "directory_entry_guard_handler",
     },
     "STOP_HANDLERS": {
         "wellput_hook_handler",
@@ -68,6 +68,7 @@ HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
         "prohibited_words_guard_handler",
         "agent_instruction_file_authoring_router_handler",
         "documentation_authoring_router_handler",
+        "directory_entry_guard_handler",
         "worktree_location_guard_handler",
         "blocked_skill_invocation_guard_handler",
         "url_to_skill_router_handler",
@@ -78,7 +79,6 @@ HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
         "record_changed_nix_file_handler",
         "record_skill_invocation_handler",
         "line_count_limit_guard_handler",
-        "directory_entry_guard_handler",
     },
     "SESSION_START_HANDLERS": {
         "compaction_context_recovery_handler",

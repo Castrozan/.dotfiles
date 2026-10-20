@@ -3,7 +3,11 @@ import subprocess
 
 import pytest
 
-from directory_entry_policy import directory_entry_counts, directory_entry_violations
+from directory_entry_policy import (
+    created_entry_violations,
+    directory_entry_counts,
+    directory_entry_violations,
+)
 from repository_directory_entries import (
     BASELINE_RELATIVE_PATH,
     directory_entry_ceilings,
@@ -33,6 +37,14 @@ def test_counts_immediate_files_and_directories_together():
         16,
         15,
     )
+
+
+def test_creation_checks_only_directories_that_gain_an_entry():
+    existing = [f"crowded/file{index}.py" for index in range(16)]
+    existing.append("crowded/module/a.py")
+    assert created_entry_violations(existing, ["crowded/module/b.py"], {}) == []
+    violation = created_entry_violations(existing, ["crowded/new.py"], {})[0]
+    assert (violation.directory, violation.count) == ("crowded", 18)
 
 
 def test_git_scope_keeps_tracked_ignored_files_and_excludes_generated_files(repository):

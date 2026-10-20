@@ -30,7 +30,6 @@ def test_post_tool_use_dispatcher_composes_only_active_handlers():
         "auto_format_handler",
         "record_changed_nix_file_handler",
         "line_count_limit_guard_handler",
-        "directory_entry_guard_handler",
     }
     assert handlers["record_skill_invocation_handler"].tool_matcher == "Skill"
     assert handlers["record_codex_skill_read_handler"].tool_matcher == "Bash"
@@ -38,7 +37,6 @@ def test_post_tool_use_dispatcher_composes_only_active_handlers():
         "auto_format_handler",
         "record_changed_nix_file_handler",
         "line_count_limit_guard_handler",
-        "directory_entry_guard_handler",
     ):
         assert handlers[edit_or_write_handler_module_name].tool_matcher == "Edit|Write"
 

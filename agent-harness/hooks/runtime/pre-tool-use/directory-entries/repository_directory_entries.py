@@ -23,7 +23,7 @@ def repository_root_for_path(path: Path) -> Path | None:
     return Path(result.stdout.strip()) if result.returncode == 0 else None
 
 
-def repository_entry_counts(repository_root: Path) -> dict[str, int]:
+def repository_entry_paths(repository_root: Path) -> list[str]:
     result = subprocess.run(
         ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
         cwd=repository_root,
@@ -31,12 +31,15 @@ def repository_entry_counts(repository_root: Path) -> dict[str, int]:
         check=True,
         timeout=5,
     )
-    paths = [
+    return [
         os.fsdecode(path)
         for path in result.stdout.split(b"\0")
         if path and os.path.lexists(repository_root / os.fsdecode(path))
     ]
-    return directory_entry_counts(paths)
+
+
+def repository_entry_counts(repository_root: Path) -> dict[str, int]:
+    return directory_entry_counts(repository_entry_paths(repository_root))
 
 
 def directory_entry_ceilings(repository_root: Path) -> dict[str, int]:

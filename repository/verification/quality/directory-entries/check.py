@@ -3,7 +3,7 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 POLICY_DIRECTORY = (
-    REPOSITORY_ROOT / "agent-harness/hooks/runtime/post-tool-use/directory-entries"
+    REPOSITORY_ROOT / "agent-harness/hooks/runtime/pre-tool-use/directory-entries"
 )
 sys.path.insert(0, str(POLICY_DIRECTORY))
 

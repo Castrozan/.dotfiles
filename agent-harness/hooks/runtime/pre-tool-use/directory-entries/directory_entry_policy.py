@@ -38,3 +38,14 @@ def directory_entry_violations(counts, ceilings, directories=None):
         and (directories is None or directory in directories)
         and count > ceilings.get(directory, DIRECTORY_ENTRY_LIMIT)
     ]
+
+
+def created_entry_violations(existing_paths, created_paths, ceilings):
+    existing_counts = directory_entry_counts(existing_paths)
+    resulting_counts = directory_entry_counts([*existing_paths, *created_paths])
+    growing_directories = {
+        directory
+        for directory, count in resulting_counts.items()
+        if count > existing_counts.get(directory, 0)
+    }
+    return directory_entry_violations(resulting_counts, ceilings, growing_directories)

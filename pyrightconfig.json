@@ -22,6 +22,7 @@
     "agent-harness/hooks/runtime/pre-tool-use/blocked-skill-invocation-guard",
     "agent-harness/hooks/runtime/pre-tool-use/codex-sandbox-downgrade-guard",
     "agent-harness/hooks/runtime/pre-tool-use/common",
+    "agent-harness/hooks/runtime/pre-tool-use/directory-entries",
     "agent-harness/hooks/runtime/pre-tool-use/documentation-authoring-router",
     "agent-harness/hooks/runtime/pre-tool-use/monitor-streaming-pattern-validator",
     "agent-harness/hooks/runtime/pre-tool-use/prohibited-command-guard",
@@ -33,7 +34,6 @@
     "agent-harness/hooks/runtime/session-start",
     "agent-harness/hooks/runtime/stop",
     "agent-harness/hooks/runtime/user-prompt-submit",
-    "agent-harness/hooks/runtime/post-tool-use/directory-entries",
     "agent-harness/hooks/runtime/__tests__/support"
   ],
   "pythonVersion": "3.12"
