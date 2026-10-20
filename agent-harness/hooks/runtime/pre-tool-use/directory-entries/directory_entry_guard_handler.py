@@ -42,15 +42,15 @@ def _created_paths_in_repositories(hook_input):
     ]
 
 
-def _repository_violation_result(
-    repositories,
-    excluded_repository_patterns,
-    created_entry_violations,
-    repository_is_excluded,
-    directory_entry_ceilings,
-    repository_entry_paths,
-    paths_not_ignored_by_git,
-):
+def _repository_violation_result(repositories, excluded_repository_patterns):
+    from directory_entry_policy import created_entry_violations
+    from excluded_repositories import repository_is_excluded
+    from repository_directory_entries import (
+        directory_entry_ceilings,
+        paths_not_ignored_by_git,
+        repository_entry_paths,
+    )
+
     for repository_root, created_paths in repositories.items():
         if repository_is_excluded(repository_root, excluded_repository_patterns):
             continue
@@ -84,28 +84,13 @@ def handle(hook_input):
         return None
     import subprocess
 
-    from directory_entry_policy import created_entry_violations
-    from excluded_repositories import (
-        load_excluded_repository_patterns,
-        repository_is_excluded,
-    )
-    from repository_directory_entries import (
-        directory_entry_ceilings,
-        paths_not_ignored_by_git,
-        repository_entry_paths,
-    )
+    from excluded_repositories import load_excluded_repository_patterns
 
     try:
         repositories = created_paths_by_repository(paths)
         excluded_repository_patterns = load_excluded_repository_patterns()
         violation_result = _repository_violation_result(
-            repositories,
-            excluded_repository_patterns,
-            created_entry_violations,
-            repository_is_excluded,
-            directory_entry_ceilings,
-            repository_entry_paths,
-            paths_not_ignored_by_git,
+            repositories, excluded_repository_patterns
         )
         if violation_result is not None:
             return violation_result
