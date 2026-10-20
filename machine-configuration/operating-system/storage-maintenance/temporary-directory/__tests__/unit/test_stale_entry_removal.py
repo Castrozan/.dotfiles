@@ -113,6 +113,20 @@ def test_leaves_protected_top_level_entries_untouched(tmp_path, top_level_name):
     assert (protected_directory / "secret").exists()
 
 
+def test_skips_a_directory_flagged_undeletable_without_recording_a_failure(tmp_path):
+    flagged_directory = tmp_path / "duetexpertd"
+    flagged_directory.mkdir()
+    (flagged_directory / "TemporaryItems").mkdir()
+    os.chflags(flagged_directory, stat.UF_IMMUTABLE)
+    try:
+        result = remove_everything_written_before_now(tmp_path)
+    finally:
+        os.chflags(flagged_directory, 0)
+
+    assert (flagged_directory / "TemporaryItems").is_dir()
+    assert result.failed_entry_count == 0
+
+
 def test_removes_a_stale_symlink_without_touching_its_target(tmp_path):
     temporary_directory = tmp_path / "T"
     temporary_directory.mkdir()

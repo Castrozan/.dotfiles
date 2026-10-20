@@ -9,6 +9,7 @@ APPLE_MANAGED_TOP_LEVEL_NAMES = frozenset(
     {".AddressBookLocks", ".LINKS", "TemporaryItems"}
 )
 OWNER_READ_WRITE_AND_TRAVERSE = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+UNDELETABLE_FILE_FLAGS = stat.SF_NOUNLINK | stat.SF_IMMUTABLE | stat.UF_IMMUTABLE
 
 
 @dataclass(frozen=True)
@@ -89,6 +90,8 @@ class StaleEntryRemover:
             self.record_failure(entry_path, error)
             return False
         if entry_status.st_dev != self.root_device:
+            return False
+        if entry_status.st_flags & UNDELETABLE_FILE_FLAGS:
             return False
         if stat.S_ISDIR(entry_status.st_mode):
             return self.remove_directory_when_stale_and_emptied(
