@@ -55,10 +55,7 @@ let
 
   containsText = haystack: needle: lib.hasInfix needle haystack;
 
-  claudeConfiguration = helpers.homeManagerTestConfiguration [
-    ../../harnesses/claude-code
-    { claude.requiredOrganizationId = "test-organization-id"; }
-  ];
+  claudeConfiguration = helpers.homeManagerTestConfiguration [ ../../harnesses/claude-code ];
   codexConfiguration = helpers.homeManagerTestConfiguration [ ../../harnesses/codex ];
   opencodeConfiguration = helpers.homeManagerTestConfiguration [ ../../harnesses/opencode ];
 
@@ -120,23 +117,14 @@ in
       )
       "claude activation lands as a swapped settings file and a swapped system-prompt file; a wrapper refactor that stops passing either one leaves routing resolving correctly and applying nothing";
 
-  claude-required-organization-is-checked-before-launch =
-    mkEvalCheck "claude-required-organization-is-checked-before-launch"
+  claude-launches-without-organization-admission =
+    mkEvalCheck "claude-launches-without-organization-admission"
       (
-        containsText claudeWrapperText "auth status --json"
-        && containsText claudeWrapperText "select(.loggedIn == true)"
-        && containsText claudeWrapperText "test-organization-id"
-        && containsText claudeWrapperText "required Claude organization"
+        !(containsText claudeWrapperText "auth status --json")
+        && !(containsText claudeWrapperText "required Claude organization")
+        && containsText claudeWrapperText ''"$@"''
       )
-      "the plain Claude launcher must fail closed unless the authenticated account belongs to the machine's required organization";
-
-  claude-auth-management-bypasses-organization-check =
-    mkEvalCheck "claude-auth-management-bypasses-organization-check"
-      (
-        containsText claudeWrapperText ''"''${1-}" != "auth"''
-        && !(containsText claudeWrapperText "Claude is restricted to the")
-      )
-      "authentication commands must remain available when the current account is logged out or belongs to the wrong organization, and launch directories must no longer decide admission";
+      "the plain Claude launcher must forward commands directly without requiring a particular authenticated organization";
 
   codex-applies-the-resolved-workspace-profile =
     mkEvalCheck "codex-applies-the-resolved-workspace-profile"

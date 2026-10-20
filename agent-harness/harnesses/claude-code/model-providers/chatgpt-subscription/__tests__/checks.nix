@@ -15,12 +15,7 @@ let
     map
       (
         hostname:
-        helpers.homeManagerTestConfigurationForDarwinHost hostname (
-          [ self.homeManagerModules.claude-code ]
-          ++ lib.optional (hostname == "rin") {
-            claude.requiredOrganizationId = "test-organization-id";
-          }
-        )
+        helpers.homeManagerTestConfigurationForDarwinHost hostname [ self.homeManagerModules.claude-code ]
       )
       [
         "kira"
@@ -68,13 +63,10 @@ in
     && builtins.any (lib.hasSuffix "cli-proxy-api-ipv4-gateway.py") configuration.launchd.agents.cli-proxy-api.config.ProgramArguments
   ) darwinConfigurations) "Rin and Kira must run cli-proxy-api through the IPv4 gateway";
 
-  claudex-rin-launches-the-unrestricted-interactive-package =
-    mkEvalCheck "claudex-rin-launches-the-unrestricted-interactive-package"
-      (
-        lib.hasInfix (executableText rinConfiguration.claude.unrestrictedInteractivePackage) rinClaudexPackage.text
-        && !(lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudexPackage.text)
-      )
-      "claudex uses a different provider and must remain independent of Rin's organization-restricted plain Claude command";
+  claudex-rin-launches-the-interactive-claude-package =
+    mkEvalCheck "claudex-rin-launches-the-interactive-claude-package"
+      (lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudexPackage.text)
+      "claudex must inherit the same interactive prompt and workspace-profile setup as the plain Claude command";
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
   claudex-linux-proxy-binary = pkgs.runCommandLocal "check-claudex-linux-proxy-binary" { } ''

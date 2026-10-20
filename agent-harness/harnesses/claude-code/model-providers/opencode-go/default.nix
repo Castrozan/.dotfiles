@@ -107,7 +107,7 @@ let
       CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = translationProxyUnavailableMessage;
       CLAUDE_GO_LAUNCHER_LIFECYCLE_PYTHON = builtins.elemAt onDemandService.lifecycleProgramArguments 0;
       CLAUDE_GO_LAUNCHER_LIFECYCLE_SCRIPT = builtins.elemAt onDemandService.lifecycleProgramArguments 1;
-      CLAUDE_GO_LAUNCHER_CLAUDE_BINARY = "${config.claude.unrestrictedInteractivePackage}/bin/claude";
+      CLAUDE_GO_LAUNCHER_CLAUDE_BINARY = "${config.claude.package}/bin/claude";
       CLAUDE_GO_LAUNCHER_MODEL = opencodeGo.models.sonnet;
     };
     text = builtins.readFile ./scripts/claude-go;

@@ -15,12 +15,7 @@ let
     map
       (
         hostname:
-        helpers.homeManagerTestConfigurationForDarwinHost hostname (
-          [ self.homeManagerModules.claude-code ]
-          ++ lib.optional (hostname == "rin") {
-            claude.requiredOrganizationId = "test-organization-id";
-          }
-        )
+        helpers.homeManagerTestConfigurationForDarwinHost hostname [ self.homeManagerModules.claude-code ]
       )
       [
         "kira"
@@ -70,13 +65,10 @@ in
     configuration: hasPackage configuration "claude-go"
   ) darwinConfigurations) "Kira and Rin must install the claude-go launcher";
 
-  opencode-go-rin-launches-the-unrestricted-interactive-package =
-    mkEvalCheck "opencode-go-rin-launches-the-unrestricted-interactive-package"
-      (
-        lib.hasInfix (executableText rinConfiguration.claude.unrestrictedInteractivePackage) rinClaudeGoPackage.text
-        && !(lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudeGoPackage.text)
-      )
-      "claude-go uses a different provider and must remain independent of Rin's organization-restricted plain Claude command";
+  opencode-go-rin-launches-the-interactive-claude-package =
+    mkEvalCheck "opencode-go-rin-launches-the-interactive-claude-package"
+      (lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudeGoPackage.text)
+      "claude-go must inherit the same interactive prompt and workspace-profile setup as the plain Claude command";
 
   opencode-go-linux-translation-proxy-service =
     mkEvalCheck "opencode-go-linux-translation-proxy-service"

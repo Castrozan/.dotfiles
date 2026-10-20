@@ -121,7 +121,7 @@ let
       CLAUDEX_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = proxyUnavailableMessage;
       CLAUDEX_LAUNCHER_LIFECYCLE_PYTHON = builtins.elemAt onDemandService.lifecycleProgramArguments 0;
       CLAUDEX_LAUNCHER_LIFECYCLE_SCRIPT = builtins.elemAt onDemandService.lifecycleProgramArguments 1;
-      CLAUDEX_LAUNCHER_CLAUDE_BINARY = "${config.claude.unrestrictedInteractivePackage}/bin/claude";
+      CLAUDEX_LAUNCHER_CLAUDE_BINARY = "${config.claude.package}/bin/claude";
       CLAUDEX_LAUNCHER_MODEL = gptModelForOpusTier;
     };
     text = builtins.readFile ./scripts/claudex;
