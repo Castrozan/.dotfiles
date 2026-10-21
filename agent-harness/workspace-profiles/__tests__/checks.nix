@@ -121,7 +121,8 @@ in
     mkEvalCheck "claude-remote-control-launches-without-session-only-flags"
       (containsText claudeWrapperText ''
         remote-control | rc | remote | sync | bridge)
-            exec '')
+            exec ${builtins.unsafeDiscardStringContext (lib.getExe claudeConfiguration.claude.unwrappedPackage)} "$@"
+            ;;'')
       "claude refuses to start Remote Control when --settings or --append-system-prompt-file precede its verb, so the wrapper must hand every Remote Control verb straight to the binary or `claude rc` never starts";
 
   claude-launches-without-organization-admission =
