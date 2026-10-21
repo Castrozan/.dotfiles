@@ -26,8 +26,8 @@ let
     airquote = pkgs.fetchFromGitHub {
       owner = "Castrozan";
       repo = "airquote";
-      rev = "7bb9679a8524a8c154b50afdab921c061df1f00b";
-      hash = "sha256-/vHV1dLbT2GhfHGX6t4eIR/KakcnCEPXZpGQwno6aDA=";
+      rev = "9d3a1cbf676707b110e8c5d638700c1fe627d6b1";
+      hash = "sha256-j1xfp8n9WHEzghiTcRittVN+EWZY2BSsob4ncX033gY=";
     };
   };
 
