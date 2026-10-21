@@ -44,6 +44,25 @@ let
         [ " ${binaryInvocation} " ]
         [ " ${binaryInvocation} --settings ${settingsFile} " ]
         harnessCommand;
+
+  launchesAsInteractiveSession =
+    harnessName: agent: commandBuilderName:
+    harnessName == "claude"
+    && agent.claudeInteractiveSessionSettings
+    && commandBuilderName == "buildLaunchCommandFor";
+
+  withInteractiveSessionMarker =
+    harnessName: agent: commandBuilderName: harnessCommand:
+    let
+      inherit (config.clawde.harnesses.${harnessName}) binaryInvocation;
+      systemPromptFile = config.claude.interactiveSessionSystemPromptFile;
+      markedInvocation =
+        if launchesAsInteractiveSession harnessName agent commandBuilderName then
+          "AGENT_INTERACTIVE_PREFERENCES_PATH=${systemPromptFile} ${binaryInvocation} --append-system-prompt-file ${systemPromptFile}"
+        else
+          "AGENT_INTERACTIVE_PREFERENCES_PATH= ${binaryInvocation}";
+    in
+    lib.replaceStrings [ " ${binaryInvocation} " ] [ " ${markedInvocation} " ] harnessCommand;
 in
 {
   options.clawde.agents = lib.mkOption {
@@ -70,10 +89,15 @@ in
             type = lib.types.bool;
             default = false;
             description = ''
-              Whether this agent launches on the claude harness with the settings the
-              plain claude command gives every interactive session, its plugins and
-              plugin options, beneath any workspace profile overlay exactly as an
-              interactive session layers them. Other harnesses ignore it.
+              Whether a human drives this agent's claude window as an interactive
+              session. Its claude commands receive the plugins and plugin options a
+              keyboard claude session gets, beneath any workspace profile overlay, and
+              its window launch also appends the interactive system prompt and exports
+              its marker, so every turn in that window, heartbeat ticks included,
+              follows and is judged by the interactive reply rules. Run-once and
+              channel turns, every other agent, and the codex and opencode harnesses
+              export an empty marker instead, so an inherited one never applies those
+              rules to a session that lacks them.
             '';
           };
 
@@ -114,9 +138,14 @@ in
                       buildCommand
                     else
                       arguments:
+                      let
+                        markedCommand = withInteractiveSessionMarker name arguments.agent commandBuilderName (
+                          buildCommand arguments
+                        );
+                      in
                       if name == "claude" then
                         "CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${
-                          withClaudeLaunchSettings arguments.name arguments.agent (buildCommand arguments)
+                          withClaudeLaunchSettings arguments.name arguments.agent markedCommand
                         }"
                       else if
                         name == "codex"
@@ -124,9 +153,9 @@ in
                         && arguments.name == "steward"
                         && commandBuilderName == "buildLaunchCommandFor"
                       then
-                        "${pkgs.python312}/bin/python3 ${./scripts/steward_terminal_space.py} && ${buildCommand arguments}"
+                        "${pkgs.python312}/bin/python3 ${./scripts/steward_terminal_space.py} && ${markedCommand}"
                       else
-                        buildCommand arguments;
+                        markedCommand;
                 }
               );
         }

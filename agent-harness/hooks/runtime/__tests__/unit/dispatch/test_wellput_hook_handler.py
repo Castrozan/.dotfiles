@@ -52,9 +52,20 @@ def test_nonhuman_sessions_do_not_invoke_wellput(
     if not interactive:
         monkeypatch.delenv("AGENT_INTERACTIVE_PREFERENCES_PATH")
     if background:
-        monkeypatch.setenv("CLAWDE_AGENT_NAME", "")
+        monkeypatch.setenv("CLAWDE_AGENT_NAME", "background-agent")
+        monkeypatch.setenv("AGENT_INTERACTIVE_PREFERENCES_PATH", "")
     assert wellput_hook_handler.handle({"hook_event_name": "Stop"}) is None
     assert calls == []
+
+
+def test_a_clawde_agent_launched_as_an_interactive_session_invokes_wellput(
+    public_hook, monkeypatch
+):
+    calls, respond = public_hook
+    monkeypatch.setenv("CLAWDE_AGENT_NAME", "project-manager")
+    respond({"hookSpecificOutput": {"additionalContext": "configured Wellput rules"}})
+    wellput_hook_handler.handle({"hook_event_name": "SessionStart"})
+    assert calls
 
 
 def test_unavailable_wellput_blocks_instead_of_using_local_rules(

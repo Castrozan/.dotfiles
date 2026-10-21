@@ -73,7 +73,10 @@ def verify(bundle):
         scripts, {"hook_event_name": "Stop", "reply_text": "Ready — done."}, environment
     )
     assert rejected["decision"] == "block"
-    background = environment | {"CLAWDE_AGENT_NAME": ""}
+    background = environment | {
+        "CLAWDE_AGENT_NAME": "background-agent",
+        "AGENT_INTERACTIVE_PREFERENCES_PATH": "",
+    }
     assert (
         invoke(
             scripts,

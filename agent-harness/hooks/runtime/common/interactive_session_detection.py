@@ -25,6 +25,4 @@ def is_clawde_background_agent_session() -> bool:
 
 
 def is_keyboard_driven_interactive_session() -> bool:
-    if is_clawde_background_agent_session():
-        return False
     return bool(os.environ.get(INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE))

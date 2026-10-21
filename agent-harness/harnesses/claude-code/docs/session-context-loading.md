@@ -109,8 +109,9 @@ skill instead of carrying that policy itself.
 
 The marker must ship with the rules. Inverting detection to "interactive unless `CLAWDE_AGENT_NAME` is set" is wrong: a
 bare `claude` would then be format-guarded by the Stop hook without ever having received the format rules it is judged
-against. The existing `CLAWDE_AGENT_NAME` check in `interactive_session_detection.py` stays as the second gate, which
-also makes the launcher's environment scrub redundant.
+against. The marker alone decides, and `CLAWDE_AGENT_NAME` is identity only. A clawde agent a human drives opts in
+with `claudeInteractiveSessionSettings`: its window launch appends the same prompt and exports the marker. Every other
+clawde command exports an empty marker, so an inherited one cannot leak in.
 
 ## Consequences
 

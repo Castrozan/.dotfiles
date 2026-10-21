@@ -22,6 +22,18 @@ def test_blocks_merge_request_without_a_direct_link(tmp_path):
     assert "link" in parsed["reason"]
 
 
+def test_blocks_a_clawde_agent_launched_as_an_interactive_session(tmp_path):
+    transcript = write_transcript_with_request_and_reply(
+        tmp_path,
+        "is the change ready?",
+        "MR !15 is ready for review.",
+    )
+    result = invoke_guard(
+        stop_payload(transcript), clawde_interactive_agent_name="project-manager"
+    )
+    assert json.loads(result.stdout)["decision"] == "block"
+
+
 def test_blocks_pull_request_without_a_direct_link(tmp_path):
     transcript = write_transcript_with_request_and_reply(
         tmp_path,

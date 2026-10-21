@@ -70,6 +70,13 @@ in
       description = "The settings the plain claude command layers onto every interactive session before any workspace profile overlay, for a non-interactive launcher that must give its sessions the same plugins and plugin options.";
     };
 
+    interactiveSessionSystemPromptFile = lib.mkOption {
+      type = lib.types.path;
+      default = interactiveSessionOnlySystemPromptSurfaces;
+      readOnly = true;
+      description = "The system prompt file the plain claude command appends and exports as the interactive session marker, for a non-interactive launcher whose sessions a human drives.";
+    };
+
   };
 
   config.home = {

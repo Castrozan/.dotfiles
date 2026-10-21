@@ -99,6 +99,7 @@ def invoke_guard(
     interactive: bool = True,
     clawde_background_agent: bool = False,
     clawde_marker_value: str = "",
+    clawde_interactive_agent_name: str = "",
     surface: str = "claude",
 ) -> subprocess.CompletedProcess:
     environment = {
@@ -116,6 +117,11 @@ def invoke_guard(
         )
     if clawde_background_agent:
         environment[CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER] = clawde_marker_value
+        environment[INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE] = ""
+    if clawde_interactive_agent_name:
+        environment[CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER] = (
+            clawde_interactive_agent_name
+        )
     return subprocess.run(
         [sys.executable, str(STOP_DISPATCHER_SCRIPT), f"--surface={surface}"],
         input=json.dumps(payload),

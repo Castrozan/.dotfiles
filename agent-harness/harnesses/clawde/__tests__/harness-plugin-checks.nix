@@ -148,3 +148,12 @@ in
       (!(builtins.hasAttr ".claude/skills/steward" cfgWithBothHarnesses.home.file))
       "the privileged steward payload must not sit in the machine tier every session loads; it belongs to the steward agent type and is scoped to the steward instance";
 }
+// import ./harness-interactive-marker-checks.nix {
+  inherit
+    pkgs
+    mkEvalCheck
+    cfgWithBothHarnesses
+    cfgWithWorkspaceProfileAgent
+    claudeCommandsOf
+    ;
+}

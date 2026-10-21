@@ -33,15 +33,24 @@ def test_an_agent_workspace_is_a_background_agent_session_without_the_launcher_m
     assert interactive_session_detection.is_clawde_background_agent_session()
 
 
-def test_an_agent_workspace_turn_is_never_keyboard_driven(
+def test_a_clawde_agent_launched_with_the_interactive_prompt_is_keyboard_driven(
     clawde_agent_workspaces, monkeypatch
 ):
-    monkeypatch.delenv("CLAWDE_AGENT_NAME", raising=False)
+    monkeypatch.setenv("CLAWDE_AGENT_NAME", "monster")
     monkeypatch.setenv(
         "AGENT_INTERACTIVE_PREFERENCES_PATH",
         "/nix/store/interactive-session-only-instructions.md",
     )
     monkeypatch.chdir(clawde_agent_workspaces / "monster")
+
+    assert interactive_session_detection.is_keyboard_driven_interactive_session()
+
+
+def test_a_clawde_agent_launched_without_the_interactive_prompt_is_not_keyboard_driven(
+    monkeypatch,
+):
+    monkeypatch.setenv("CLAWDE_AGENT_NAME", "monster")
+    monkeypatch.setenv("AGENT_INTERACTIVE_PREFERENCES_PATH", "")
 
     assert not interactive_session_detection.is_keyboard_driven_interactive_session()
 
