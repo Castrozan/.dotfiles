@@ -117,6 +117,13 @@ in
       )
       "claude activation lands as a swapped settings file and a swapped system-prompt file; a wrapper refactor that stops passing either one leaves routing resolving correctly and applying nothing";
 
+  claude-remote-control-launches-without-session-only-flags =
+    mkEvalCheck "claude-remote-control-launches-without-session-only-flags"
+      (containsText claudeWrapperText ''
+        remote-control | rc | remote | sync | bridge)
+            exec '')
+      "claude refuses to start Remote Control when --settings or --append-system-prompt-file precede its verb, so the wrapper must hand every Remote Control verb straight to the binary or `claude rc` never starts";
+
   claude-launches-without-organization-admission =
     mkEvalCheck "claude-launches-without-organization-admission"
       (

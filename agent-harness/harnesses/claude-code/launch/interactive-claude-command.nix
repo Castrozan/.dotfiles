@@ -10,6 +10,8 @@ let
     inherit (config.home) homeDirectory;
   };
 
+  claudeExecutable = lib.getExe config.claude.unwrappedPackage;
+
   claudeModsMarketplace = import ../plugins/mods/marketplace.nix { inherit pkgs; };
 
   interactiveSessionSettings = {
@@ -48,7 +50,12 @@ let
     resolvedWorkspaceProfileName=""
     ${workspaceProfileLaunchDispatch}
     export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
-    exec ${lib.getExe config.claude.unwrappedPackage} \
+    case "''${1-}" in
+      remote-control | rc | remote | sync | bridge)
+        exec ${claudeExecutable} "$@"
+        ;;
+    esac
+    exec ${claudeExecutable} \
       --append-system-prompt-file "$claudeSystemPromptFile" \
       --settings "$claudeSettingsFile" \
       "$@"
