@@ -44,7 +44,7 @@ import ./service-checks.nix {
     self
     ;
 }
-// import ./harness-checks.nix {
+// import ./harness/harness-checks.nix {
   inherit
     pkgs
     mkEvalCheck

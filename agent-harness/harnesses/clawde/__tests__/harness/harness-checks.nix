@@ -6,7 +6,7 @@
   ...
 }:
 let
-  fixtures = import ./harness-check-fixtures.nix { inherit helpers self; };
+  fixtures = import ../harness-check-fixtures.nix { inherit helpers self; };
   inherit (fixtures) bothHarnessModules cfgWithBothHarnesses parseDeployedJson;
 
   harnessNamesCarryingDiscord = builtins.sort (a: b: a < b) (
@@ -133,7 +133,7 @@ in
           builtins.hasAttr ".local/share/claude-skill-sets/normal-harness/.claude/skills/${skillName}" cfgWithBothHarnesses.home.file
         )
         (import
-          ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
+          ../../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
           {
             hostname = "test";
             inherit pkgs;

@@ -10,7 +10,7 @@ let
     self.homeManagerModules.clawde
     self.homeManagerModules.claude-code
     {
-      disabledModules = [ ../../../workspace-profiles ];
+      disabledModules = [ ../../../../workspace-profiles ];
       options.agentWorkspaceProfiles = pkgs.lib.mkOption {
         type = pkgs.lib.types.attrsOf pkgs.lib.types.anything;
       };

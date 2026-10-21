@@ -59,7 +59,7 @@ def test_stop_dispatcher_imports_shared_modules_after_flat_deploy(
         "stop-dispatcher.py",
         payload,
         {
-            INTERACTIVE_ENV_VAR: "/some/interactive-communication.md",
+            INTERACTIVE_ENV_VAR: "",
             CLAWDE_BACKGROUND_AGENT_ENV_MARKER: "",
         },
     )
