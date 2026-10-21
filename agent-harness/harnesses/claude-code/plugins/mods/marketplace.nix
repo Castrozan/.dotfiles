@@ -24,10 +24,10 @@ let
       hash = "sha256-cH2yGtD5k/zmOCE5WK8s9DoFicUnrCdzqfmp/GGoJW4=";
     };
     airquote = pkgs.fetchFromGitHub {
-      owner = "karan-79";
+      owner = "Castrozan";
       repo = "airquote";
-      rev = "5e24a4a4047c3b8a02e05b01f403f5d02510cfe9";
-      hash = "sha256-zJunklDAUnf/yvo/6xDYzFpfF5N/n85243FeKoGOH+o=";
+      rev = "7bb9679a8524a8c154b50afdab921c061df1f00b";
+      hash = "sha256-/vHV1dLbT2GhfHGX6t4eIR/KakcnCEPXZpGQwno6aDA=";
     };
   };
 
