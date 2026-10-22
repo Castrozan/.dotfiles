@@ -1,61 +1,61 @@
 {
-  "generated_at": "2026-09-20T05:22:47+00:00",
-  "git_commit": "b479749f",
+  "generated_at": "2026-10-22T07:17:08+00:00",
+  "git_commit": "41acabb3e",
   "host": "chise",
   "config": "nixos",
   "threshold_percent": 200,
   "measurements": {
     "hyprctl-ipc": {
-      "avg_ms": 11.6,
-      "max_allowed_ms": 23.3
+      "avg_ms": 13.0,
+      "max_allowed_ms": 26.0
     },
     "hyprctl-clients": {
-      "avg_ms": 11.2,
-      "max_allowed_ms": 22.5
+      "avg_ms": 12.5,
+      "max_allowed_ms": 25.0
     },
     "workspace-switch": {
-      "avg_ms": 12.7,
-      "max_allowed_ms": 25.5
+      "avg_ms": 15.5,
+      "max_allowed_ms": 31.1
     },
     "window-switcher": {
-      "avg_ms": 65.4,
-      "max_allowed_ms": 130.9
+      "avg_ms": 66.1,
+      "max_allowed_ms": 132.2
     },
     "launcher-qs": {
-      "avg_ms": 64.4,
-      "max_allowed_ms": 128.8
+      "avg_ms": 53.3,
+      "max_allowed_ms": 106.5
     },
     "dashboard": {
-      "avg_ms": 72.7,
-      "max_allowed_ms": 145.4
+      "avg_ms": 52.6,
+      "max_allowed_ms": 105.2
     },
     "sidebar": {
-      "avg_ms": 71.9,
-      "max_allowed_ms": 143.9
+      "avg_ms": 43.0,
+      "max_allowed_ms": 86.0
     },
     "workspace-overview": {
-      "avg_ms": 73.9,
-      "max_allowed_ms": 147.7
+      "avg_ms": 50.7,
+      "max_allowed_ms": 101.4
     },
     "volume-control": {
-      "avg_ms": 251.0,
-      "max_allowed_ms": 502.1
+      "avg_ms": 319.7,
+      "max_allowed_ms": 639.3
     },
     "fuzzel": {
-      "avg_ms": 300.6,
-      "max_allowed_ms": 601.2
+      "avg_ms": 300.8,
+      "max_allowed_ms": 601.6
     },
     "wezterm-launch": {
-      "avg_ms": 1500.9,
-      "max_allowed_ms": 3001.9
+      "avg_ms": 1500.8,
+      "max_allowed_ms": 3001.6
     },
     "tmux-new-session": {
-      "avg_ms": 458.8,
-      "max_allowed_ms": 917.7
+      "avg_ms": 533.0,
+      "max_allowed_ms": 1066.1
     },
     "tmux-split-window": {
       "avg_ms": 4.2,
-      "max_allowed_ms": 8.5
+      "max_allowed_ms": 8.3
     }
   }
 }
