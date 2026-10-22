@@ -2,7 +2,6 @@ import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import benchmark_core
 import desktop_benchmarks.catalog
 import desktop_benchmarks.hyprland
 import desktop_benchmarks.measurement
