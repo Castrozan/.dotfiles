@@ -147,17 +147,7 @@ class TestRecordResult:
 
 
 class TestQuickshellBarConfiguration:
-    @staticmethod
-    def bar_directory_in(repository_root):
-        bar_path = Path(desktop_benchmarks.hyprland.QS_BAR_PATH)
-        return repository_root / bar_path.relative_to(benchmark_core.DOTFILES_DIRECTORY)
-
-    def test_the_bar_path_is_a_configuration_that_exists_in_the_checkout(
-        self, repository_root
-    ):
-        assert self.bar_directory_in(repository_root).is_dir()
-
-    def test_the_bar_path_holds_the_shell_entry_point_quickshell_loads(
-        self, repository_root
-    ):
-        assert (self.bar_directory_in(repository_root) / "shell.qml").is_file()
+    def test_the_bar_path_targets_the_live_home_manager_configuration(self):
+        assert Path(desktop_benchmarks.hyprland.QS_BAR_PATH) == (
+            Path.home() / ".config" / "quickshell" / "bar"
+        )

@@ -1,6 +1,7 @@
 import json
 import shutil
 import subprocess
+from pathlib import Path
 
 import benchmark_core
 import desktop_benchmarks.measurement
@@ -11,15 +12,7 @@ QUICKSHELL_SETTLE_SECONDS = 0.15
 WINDOW_SWITCHER_SETTLE_SECONDS = 0.1
 
 
-QS_BAR_PATH = str(
-    benchmark_core.DOTFILES_DIRECTORY
-    / "machine-configuration"
-    / "desktop"
-    / "desktop-environments"
-    / "quickshell"
-    / "bar"
-    / "program-configuration"
-)
+QS_BAR_PATH = str(Path.home() / ".config" / "quickshell" / "bar")
 
 
 def quickshell_bar_call(target: str, action: str) -> list[str]:
