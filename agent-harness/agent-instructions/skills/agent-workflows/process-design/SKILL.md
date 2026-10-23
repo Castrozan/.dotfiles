@@ -22,8 +22,8 @@ When one agent finishes the task in one pass, say so and stop.
 Run the design as a conversation with the human, or as the same loop alone when acting autonomously: 1) fix the outcome,
 the done check, constraints, the budget in tokens, time, and agents, and every irreversible or owner-only action; 2) ask
 one question at a time, only for forks evidence cannot settle; 3) produce two or three candidates with different
-topologies and recommend one with its tradeoff; 4) iterate on the chosen diagram and contracts; 5) get approval before
-any execution starts.
+topologies and recommend one with its tradeoff; 4) iterate on the chosen diagram and contracts; 5) before any execution
+starts, get the human's approval, or when autonomous, record the chosen candidate and the evidence that decided it.
 
 Do not drop the alternative candidates because the first idea looks adequate: comparing topologies is where most of the
 design value appears, and a lone candidate hides its own cost.
