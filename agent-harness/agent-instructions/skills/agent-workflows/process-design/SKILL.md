@@ -44,8 +44,9 @@ maps onto any framework or harness. Add a new element only when no palette eleme
 ### Specify node contracts
 
 Give every agent node a delegation brief: objective, inputs, output shape, allowed capabilities, effort budget, and stop
-condition. Give every node and loop a failure path and a checkpoint, every join its completion rule, and every fan-out
-its count rule and ceiling. A node missing any of these is incomplete, not something to decide at runtime.
+condition. Give every node and loop a failure path and a checkpoint, every join its completion rule, every fan-out its
+count rule and ceiling, and every watcher its signals, baseline of known noise, thresholds, cadence, and exit. A node
+missing any of these is incomplete, not something to decide at runtime or to patch with follow-up messages.
 
 ### Critique before running
 
@@ -71,6 +72,9 @@ to the harness's workflow authoring skill, cross-session peers to the `orchestra
 Persist the design beside its executable form, in the task's deep-work workspace or the repository's equivalent. After
 each run, compare what executed (agents spawned, loops taken, failures hit, gates crossed) against the diagram and
 revise the design when they diverge, so the executable never drifts silently away from the approved process.
+
+When the process already ran by hand, run the same comparison backwards: draw the as-run diagram from its transcript and
+tracker first, then design against it, so every divergence names a concrete failure the new design prevents.
 
 ### Sources
 

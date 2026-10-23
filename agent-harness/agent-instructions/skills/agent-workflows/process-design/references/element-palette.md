@@ -6,9 +6,10 @@ cheaper, repeatable, and never drifts. A read-only searcher is an agent step tha
 the safest unit to parallelize.
 
 A verifier checks another step's output from a clean context; prefer executable verification such as tests, builds, or
-live probes over model judgment, and never let it inherit the generator's reasoning. An aggregator reduces many outputs
-by voting, deduplication, or ranking; a synthesizer turns them into one answer with citations; a compressor shrinks
-history before a handoff so the receiver keeps decisions without the noise.
+live probes over model judgment, never let it inherit the generator's reasoning, and verify where the outcome is
+consumed rather than where it is written. An aggregator reduces many outputs by voting, deduplication, or ranking; a
+synthesizer turns them into one answer with citations; a compressor shrinks history before a handoff so the receiver
+keeps decisions without the noise.
 
 A human gate pauses for approval, a choice, or missing facts; place one before every irreversible or owner-only action.
 A watcher waits on an external condition such as a timer, a CI run, a queue, a file, or a log pattern, and wakes the
@@ -44,6 +45,10 @@ A ledger manager keeps a task ledger of facts, guesses, and plan plus a progress
 looping, or progressing and who acts next; it replans when progress stalls. Hierarchy adds intermediate coordinators
 when one manager can no longer hold every worker's output. A blackboard posts open requests to shared state that agents
 volunteer for, suited to open-ended discovery.
+
+A staged rollout applies any bulk or irreversible step to a small canary first, verifies the outcome end to end, and
+only then proceeds in throttled waves with a resumable log, pausing when a monitor reports a shared resource near its
+limit and resuming when it drains. Skipping the canary turns a defect in the write path into a defect in every record.
 
 Use debate only for multi-hop factual disputes where voting already failed. Avoid unstructured group chat in which
 agents negotiate without a moderator, a turn rule, and a termination condition.

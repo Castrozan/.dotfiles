@@ -8,6 +8,7 @@ flowchart LR
         ledger[("Task and progress ledger")]
         join(("join: all"))
         synthesize("Synthesize findings")
+        approve{{"Human: approve fix"}}
         fix["Apply fix"]
     end
 
@@ -22,10 +23,6 @@ flowchart LR
 
     subgraph verification["Verification"]
         verify("Verifier: clean context")
-    end
-
-    subgraph human["Human"]
-        approve{{"Approve fix"}}
     end
 
     start --> triage

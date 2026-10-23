@@ -12,8 +12,10 @@ loop maps to a workflow script with schema-typed outputs, which can resume. A st
 so split the design at every human gate into separate workflow runs, with the gate held by the main agent.
 
 Human gates map to a structured question to the user. Watchers map to background shell commands, monitors, and scheduled
-wakeups. Guardrails and deterministic gates map to hooks and permission rules. Parallel writers map to isolated
-worktrees. A shared task list with dependencies maps to agent teams where that feature is enabled.
+wakeups. A subagent cannot sleep until a threshold fires, so a watcher that needs judgment becomes a deterministic
+monitor that emits the event plus a subagent the main agent messages or spawns to diagnose it. Guardrails and
+deterministic gates map to hooks and permission rules. Parallel writers map to isolated worktrees. A shared task list
+with dependencies maps to agent teams where that feature is enabled.
 
 ### Codex and OpenCode
 

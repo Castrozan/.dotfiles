@@ -7,11 +7,12 @@ small investigation process.
 
 ### Flowchart conventions
 
-Use `flowchart` with one `subgraph` lane per actor: the main agent, background workers, watchers, and the human. Give
-each palette element one shape: stadium `(["..."])` for start and end, rounded `("...")` for agent steps, rectangle
-`["..."]` for deterministic steps, rhombus `{"..."}` for routers, circle `(("..."))` for splits and joins, hexagon
-`{{"..."}}` for human gates, asymmetric `>"..."]` for watchers, cylinder `[("...")]` for persisted state, and subroutine
-`[["..."]]` for sub-processes.
+Use `flowchart` with one `subgraph` lane per actor that runs concurrently with the main path, such as background workers
+and watchers. Draw human gates and other sequential checkpoints inline on the main path instead of in their own lane,
+because a gate lane forces every approval edge across the whole diagram. Give each palette element one shape: stadium
+`(["..."])` for start and end, rounded `("...")` for agent steps, rectangle `["..."]` for deterministic steps, rhombus
+`{"..."}` for routers, circle `(("..."))` for splits and joins, hexagon `{{"..."}}` for human gates, asymmetric
+`>"..."]` for watchers, cylinder `[("...")]` for persisted state, and subroutine `[["..."]]` for sub-processes.
 
 Draw control flow as `-->`, conditional branches as `-->|"condition"|`, failure and escalation paths as dashed `-.->`,
 loop-backs as thick `==>` labeled with their cap, and reads or writes of persisted state as `--o`. Label every join with
@@ -19,7 +20,8 @@ its completion rule and every fan-out with its count rule. Color roles with `cla
 distinct from generators.
 
 Stay on the classic shape syntax shown here; newer extended shape forms render in fewer places. Split a diagram that
-outgrows one screen into a top-level process with sub-process nodes, each expanded in its own diagram.
+outgrows one screen or carries more than a few gates into an overview of phases drawn as sub-process nodes, then expand
+each phase that has internal branching, loops, or watchers in its own diagram.
 
 ### Sequence diagrams
 
