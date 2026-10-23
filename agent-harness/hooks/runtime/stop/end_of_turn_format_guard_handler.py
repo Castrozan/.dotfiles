@@ -79,12 +79,16 @@ def _transcript_event_from_line(transcript_line):
         return False, None
 
 
+def _is_hook_feedback(message_text):
+    return message_text.startswith(("Stop hook feedback:", "<hook_prompt"))
+
+
 def _updated_transcript_texts(
     role, message_text, current_turn_user_request, final_reply_text
 ):
     if role == "user":
         final_reply_text = ""
-        if message_text:
+        if message_text and not _is_hook_feedback(message_text):
             current_turn_user_request = message_text
     elif role == "assistant" and message_text:
         final_reply_text = message_text
@@ -123,12 +127,14 @@ def final_turn_request_and_reply(hook_input: dict) -> tuple[str, str]:
     return user_request_text.strip(), reply_text.strip()
 
 
-def _reply_format_validation_result(reply_text):
+def _reply_format_validation_result(reply_text, user_request_text):
     try:
         from reply_rule_catalog import template_violations_in_reply
         from reply_rule_feedback import bounce_guidance
 
-        violations = template_violations_in_reply(reply_text)
+        violations = template_violations_in_reply(
+            reply_text, user_request=user_request_text
+        )
         if not violations:
             return None
         return HandlerResult(decision="block", reason=bounce_guidance(violations))
@@ -150,7 +156,7 @@ def handle(hook_input: dict):
     if hook_input.get("stop_hook_active"):
         return None
 
-    _, reply_text = final_turn_request_and_reply(hook_input)
+    user_request_text, reply_text = final_turn_request_and_reply(hook_input)
     if not reply_text:
         return None
-    return _reply_format_validation_result(reply_text)
+    return _reply_format_validation_result(reply_text, user_request_text)

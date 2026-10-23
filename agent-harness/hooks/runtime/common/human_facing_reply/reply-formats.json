@@ -153,11 +153,12 @@
     "{label_instructions}",
     "Bold each label and start its content on the same line. Keep tables above all labels, never inside their blocks. Leave a blank line between blocks. Budgets are independent: the prose above the labels stays within {formats[labeled_reply][body][maximum_words]} words, the labels together within {formats[labeled_reply][combined_labels][maximum_words]}. Label budgets including grace: {label_budgets}. Body grace: {formats[labeled_reply][body][grace_words]}; confirmation: {formats[confirmation][grace_words]}; combined labels: {formats[labeled_reply][combined_labels][grace_words]} words.",
     "### List and table limits",
-    "One list stays within {lists[maximum_items]} items, counting nested items, and {lists[item][maximum_words]} words per complete item, plus {lists[item][grace_words]} words of grace per item. One table stays within {tables[maximum_rows]} data rows; the header does not count. Choose representations through Humanize first. Exclude visuals, fenced code and diffs, and lists of up to {lists[maximum_exempt_items]} items within the item budget plus grace from prose budgets. Other lists count as prose.",
+    "One list stays within {lists[maximum_items]} items, counting nested items, and {lists[item][maximum_words]} words per complete item, plus {lists[item][grace_words]} words of grace per item. One table stays within {tables[maximum_rows]} data rows unless the user's current request asks for a table; the header does not count. Choose representations through Humanize first. Exclude visuals, fenced code and diffs, and lists of up to {lists[maximum_exempt_items]} items within the item budget plus grace from prose budgets. Other lists count as prose.",
     "### Table indexes",
     "Every rendered table starts with a `#` index column numbered `1, 2, 3, ...`; restart at `1` per table. Preserve the columns of a standalone table when its schema was explicitly requested."
   ],
   "tables": {
-    "maximum_rows": 5
+    "maximum_rows": 5,
+    "request_terms": ["table", "tables", "tabela", "tabelas"]
   }
 }

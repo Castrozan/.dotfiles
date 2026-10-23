@@ -9,7 +9,7 @@ from reply_restriction_contracts import REPLY_RESTRICTIONS
 from reply_text_metrics import ReplyUnderReview
 
 
-def violations_from_rules(reply: ReplyUnderReview) -> list[str]:
+def applicable_restrictions(reply: ReplyUnderReview, user_request: str):
     restrictions = reply.configuration.restrictions
     tokens = reply.document.tokens
     if (
@@ -22,10 +22,21 @@ def violations_from_rules(reply: ReplyUnderReview) -> list[str]:
             for name, rule in restrictions.items()
             if name == "table_block_length"
         }
+    if reply.configuration.table_request_pattern.search(user_request):
+        restrictions = {
+            name: rule
+            for name, rule in restrictions.items()
+            if name != "table_block_length"
+        }
+    return restrictions
+
+
+def violations_from_rules(reply: ReplyUnderReview, user_request: str) -> list[str]:
     return [
         violation
         for violation in (
-            REPLY_RESTRICTIONS[name].evaluate(reply) for name in restrictions
+            REPLY_RESTRICTIONS[name].evaluate(reply)
+            for name in applicable_restrictions(reply, user_request)
         )
         if violation
     ]
@@ -34,11 +45,14 @@ def violations_from_rules(reply: ReplyUnderReview) -> list[str]:
 def template_violations_in_reply(
     reply_text: str,
     *,
+    user_request: str = "",
     configuration=REPLY_FORMAT_CONFIGURATION,
 ) -> list[str]:
     if structured_json_reply(reply_text):
         return []
-    return violations_from_rules(ReplyUnderReview(reply_text, configuration))
+    return violations_from_rules(
+        ReplyUnderReview(reply_text, configuration), user_request
+    )
 
 
 def structured_json_reply(reply_text):

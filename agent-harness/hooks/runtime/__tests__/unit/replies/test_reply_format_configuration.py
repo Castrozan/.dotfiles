@@ -152,6 +152,14 @@ def test_configured_table_row_limit_changes_the_verdict(configuration_document):
     )
 
 
+@pytest.mark.parametrize("value", [[], [""], "table", [7]])
+def test_invalid_table_request_terms_are_rejected(configuration_document, value):
+    configuration_document["tables"]["request_terms"] = value
+
+    with pytest.raises(ValueError, match="request_terms"):
+        ReplyFormatConfiguration(configuration_document)
+
+
 @pytest.mark.parametrize("value", [-1, True, "5"])
 def test_invalid_table_limits_are_rejected(configuration_document, value):
     configuration_document["tables"]["maximum_rows"] = value

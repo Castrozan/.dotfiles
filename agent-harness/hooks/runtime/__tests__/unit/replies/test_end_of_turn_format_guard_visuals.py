@@ -4,11 +4,18 @@ import pytest
 
 from end_of_turn_format_guard_test_support import (
     WELL_FORMED_REPLY,
+    assistant_text_event,
     invoke_guard,
     stop_payload,
+    user_event,
+    write_transcript_from_events,
     write_transcript_with_final_assistant_reply,
 )
 from human_facing_reply_test_support import template_violations_in_reply
+
+FIFTEEN_ROW_TABLE = "| # | Finding |\n| --- | --- |\n" + "\n".join(
+    f"| {number} | finding-{number} |" for number in range(1, 16)
+)
 
 
 def test_allows_every_humanize_visual_representation(tmp_path):
@@ -100,3 +107,72 @@ def test_stop_hook_blocks_an_unindexed_table_and_accepts_its_repair(surface):
     allowed = invoke_guard(payload, surface=surface)
     assert allowed.returncode == 0
     assert allowed.stdout.strip() == ""
+
+
+@pytest.mark.parametrize(
+    "user_request,exempt",
+    [
+        ("show the 15 findings as a table", True),
+        ("Tables, please", True),
+        ("monte uma tabela com tudo", True),
+        ("list every finding", False),
+        ("check the timetable", False),
+    ],
+)
+def test_a_table_request_lifts_the_row_ceiling(user_request, exempt):
+    violations = template_violations_in_reply(
+        FIFTEEN_ROW_TABLE, user_request=user_request
+    )
+
+    assert (violations == []) == exempt
+
+
+def test_a_table_request_keeps_the_index_column_rule():
+    reply = "Summary:\n\n| Finding |\n| --- |\n" + "\n".join(
+        "| finding |" for _ in range(15)
+    )
+
+    violations = template_violations_in_reply(reply, user_request="as a table")
+
+    assert any("index column" in item for item in violations)
+    assert not any("data rows" in item for item in violations)
+
+
+def test_stop_hook_accepts_a_long_table_the_user_asked_for(tmp_path):
+    transcript = write_transcript_from_events(
+        tmp_path,
+        [
+            user_event("give me every finding in one table"),
+            assistant_text_event(FIFTEEN_ROW_TABLE),
+        ],
+    )
+
+    result = invoke_guard(stop_payload(transcript))
+
+    assert result.returncode == 0
+    assert result.stdout.strip() == ""
+
+
+@pytest.mark.parametrize(
+    "hook_feedback",
+    [
+        "Stop hook feedback:\nReply breaks the enforced interactive rules "
+        "(table 1 has 15 data rows, past its 5-row ceiling).",
+        '<hook_prompt hook_run_id="stop:1">table 1 has 15 data rows</hook_prompt>',
+    ],
+)
+def test_hook_feedback_naming_a_table_is_not_a_table_request(tmp_path, hook_feedback):
+    transcript = write_transcript_from_events(
+        tmp_path,
+        [
+            user_event("list every finding"),
+            assistant_text_event(FIFTEEN_ROW_TABLE),
+            user_event(hook_feedback),
+            assistant_text_event(FIFTEEN_ROW_TABLE),
+        ],
+    )
+
+    feedback = json.loads(invoke_guard(stop_payload(transcript)).stdout)
+
+    assert feedback["decision"] == "block"
+    assert "data rows" in feedback["reason"]

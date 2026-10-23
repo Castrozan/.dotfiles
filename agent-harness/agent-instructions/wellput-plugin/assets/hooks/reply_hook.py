@@ -21,25 +21,18 @@ def session_instructions():
     )
 
 
-def final_reply_text(payload):
-    reply = payload.get("reply_text") or payload.get("last_assistant_message")
-    if reply:
-        return reply
-    from transcript import final_turn_request_and_reply
-
-    return final_turn_request_and_reply(payload)[1]
-
-
 def stop_decision(payload):
     if payload.get("stop_hook_active"):
         return {}
-    reply = final_reply_text(payload)
+    from transcript import final_turn_request_and_reply
+
+    user_request, reply = final_turn_request_and_reply(payload)
     if not reply:
         return {}
     from reply_rule_catalog import template_violations_in_reply
     from reply_rule_feedback import bounce_guidance
 
-    violations = template_violations_in_reply(reply)
+    violations = template_violations_in_reply(reply, user_request=user_request)
     if not violations:
         return {}
     return {"decision": "block", "reason": bounce_guidance(violations)}

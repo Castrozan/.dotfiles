@@ -39,6 +39,15 @@ def validate_reply_syntax(syntax):
     return compile_reply_pattern(syntax["tree_branch_pattern"], "tree branch pattern")
 
 
+def compile_table_request_pattern(request_terms):
+    if not isinstance(request_terms, list) or not request_terms:
+        raise ValueError("tables.request_terms must be a non-empty list")
+    for term in request_terms:
+        require_nonempty_text(term, "tables.request_terms")
+    alternatives = "|".join(re.escape(term) for term in request_terms)
+    return re.compile(rf"\b(?:{alternatives})\b", re.IGNORECASE)
+
+
 class ReplyFormatConfiguration:
     def __init__(self, document):
         require_fields(
@@ -74,8 +83,11 @@ class ReplyFormatConfiguration:
         if self.lists["maximum_exempt_items"] > self.lists["maximum_items"]:
             raise ValueError("exempt list size cannot exceed the list item limit")
         self.tables = document["tables"]
-        require_fields(self.tables, ("maximum_rows",), "tables")
+        require_fields(self.tables, ("maximum_rows", "request_terms"), "tables")
         require_nonnegative_integer(self.tables["maximum_rows"], "tables.maximum_rows")
+        self.table_request_pattern = compile_table_request_pattern(
+            self.tables["request_terms"]
+        )
         self.syntax = document["syntax"]
         self.tree_branch_pattern = validate_reply_syntax(self.syntax)
         self.label_patterns = {
