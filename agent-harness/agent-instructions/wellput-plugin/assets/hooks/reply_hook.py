@@ -21,18 +21,25 @@ def session_instructions():
     )
 
 
+def reply_violations(payload):
+    from reply_rule_catalog import template_violations_in_reply
+    from transcript import final_turn_request_and_reply
+
+    reply = payload.get("reply_text") or payload.get("last_assistant_message")
+    if reply and not template_violations_in_reply(reply):
+        return []
+    user_request, reply = final_turn_request_and_reply(payload)
+    if not reply:
+        return []
+    return template_violations_in_reply(reply, user_request=user_request)
+
+
 def stop_decision(payload):
     if payload.get("stop_hook_active"):
         return {}
-    from transcript import final_turn_request_and_reply
-
-    user_request, reply = final_turn_request_and_reply(payload)
-    if not reply:
-        return {}
-    from reply_rule_catalog import template_violations_in_reply
     from reply_rule_feedback import bounce_guidance
 
-    violations = template_violations_in_reply(reply, user_request=user_request)
+    violations = reply_violations(payload)
     if not violations:
         return {}
     return {"decision": "block", "reason": bounce_guidance(violations)}
