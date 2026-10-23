@@ -12,7 +12,7 @@ timeout: 180
 
 assertions:
   autonomous_skill_invocation:
-    - ril
+    - all-skills
   wrong_skill_not_invoked:
     - nix
     - review
