@@ -15,8 +15,8 @@ each palette element one shape: stadium `(["..."])` for start and end, rounded `
 
 Draw control flow as `-->`, conditional branches as `-->|"condition"|`, failure and escalation paths as dashed `-.->`,
 loop-backs as thick `==>` labeled with their cap, and reads or writes of persisted state as `--o`. Label every join with
-its completion rule and every fan-out with its count rule. Color roles with `classDef`, keeping verifiers visibly distinct
-from generators.
+its completion rule and every fan-out with its count rule. Color roles with `classDef`, keeping verifiers visibly
+distinct from generators.
 
 Stay on the classic shape syntax shown here; newer extended shape forms render in fewer places. Split a diagram that
 outgrows one screen into a top-level process with sub-process nodes, each expanded in its own diagram.
@@ -30,9 +30,9 @@ such as irreversible actions to `critical`.
 ### Terminal view
 
 When the reader sees only a terminal, also write the process as a Unicode box-drawing outline with the same lanes,
-labels, caps, and join rules, so it reads without any renderer and diffs cleanly. Render the Mermaid source with a
-terminal renderer only when one is installed, and avoid `stateDiagram` there, since terminal renderers support it
-poorly.
+labels, caps, and join rules, so it reads without any renderer and diffs cleanly. Terminal Mermaid renderers parse only
+a subset: shapes beyond plain boxes and `class` styling lines print as literal text or phantom nodes, and `stateDiagram`
+is mostly unsupported, so never present a terminal render as the diagram without checking it.
 
 ### Rich view
 

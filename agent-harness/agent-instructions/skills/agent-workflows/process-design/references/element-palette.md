@@ -17,9 +17,9 @@ parent level.
 
 ### Control flow
 
-Name control flow with the Workflow Patterns vocabulary: sequence; parallel split with synchronization; exclusive choice;
-multi-choice; multiple instances with a count known only at runtime, which is the fan-out over discovered items; and a
-structured loop with an exit condition and a cap.
+Name control flow with the Workflow Patterns vocabulary: sequence; parallel split with synchronization; exclusive
+choice; multi-choice; multiple instances with a count known only at runtime, which is the fan-out over discovered items;
+and a structured loop with an exit condition and a cap.
 
 Use the discriminator or N-of-M join when the first or the first N results suffice, paired with cancellation of the
 remaining siblings. Use deferred choice when whichever event arrives first decides the path, such as a watcher racing a
@@ -36,8 +36,9 @@ path. Sectioning splits independent subtasks across parallel workers. Voting run
 aggregates; it captures most of the gain usually attributed to debate at lower cost.
 
 Maker-checker, also called evaluator-optimizer or review-and-critique, loops a generator against an independent verifier
-with a cap and a fallback. Orchestrator-workers lets a manager decompose at runtime, delegate, and integrate; the manager
-maps, reduces, and manages, while workers stay narrow. Handoff transfers control so one agent is active at a time.
+with a cap and a fallback. Orchestrator-workers lets a manager decompose at runtime, delegate, and integrate; the
+manager maps, reduces, and manages, while workers stay narrow. Handoff transfers control so one agent is active at a
+time.
 
 A ledger manager keeps a task ledger of facts, guesses, and plan plus a progress ledger asking whether the work is done,
 looping, or progressing and who acts next; it replans when progress stalls. Hierarchy adds intermediate coordinators

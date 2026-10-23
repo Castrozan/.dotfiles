@@ -37,5 +37,5 @@ Microsoft Agent Framework offers executors, fan-out and fan-in edges, human requ
 built-in sequential, concurrent, handoff, group chat, and Magentic orchestrations.
 
 The OpenAI Agents SDK offers handoffs, agents as tools, and guardrails. Google ADK offers sequential, parallel, and loop
-agents. Temporal offers durable workflows whose activities carry retry policies, with signals, updates, timers, and child
-workflows; use it when the process must survive restarts over hours or days.
+agents. Temporal offers durable workflows whose activities carry retry policies, with signals, updates, timers, and
+child workflows; use it when the process must survive restarts over hours or days.

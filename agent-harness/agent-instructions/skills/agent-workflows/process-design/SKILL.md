@@ -56,8 +56,8 @@ redraw it before approval.
 ### Visualize
 
 Draw per [visualization](references/visualization.md): a Mermaid flowchart with one lane per actor as the source of
-truth, a sequence diagram when timing or messaging matters, and a Unicode outline wherever only a terminal shows it. Show
-the diagram at every iteration, not only at the end.
+truth, a sequence diagram when timing or messaging matters, and a Unicode outline wherever only a terminal shows it.
+Show the diagram at every iteration, not only at the end.
 
 ### Map to the harness
 
@@ -69,8 +69,8 @@ to the harness's workflow authoring skill, cross-session peers to the `orchestra
 ### Keep the diagram a contract
 
 Persist the design beside its executable form, in the task's deep-work workspace or the repository's equivalent. After
-each run, compare what executed (agents spawned, loops taken, failures hit, gates crossed) against the diagram and revise
-the design when they diverge, so the executable never drifts silently away from the approved process.
+each run, compare what executed (agents spawned, loops taken, failures hit, gates crossed) against the diagram and
+revise the design when they diverge, so the executable never drifts silently away from the approved process.
 
 ### Sources
 
