@@ -1,0 +1,61 @@
+flowchart LR
+    start(["Incident reported"])
+    finish(["Root cause confirmed live"])
+
+    subgraph main["Main agent"]
+        triage{"Scope known?"}
+        plan("Plan fan-out")
+        ledger[("Task and progress ledger")]
+        join(("join: all"))
+        synthesize("Synthesize findings")
+        fix["Apply fix"]
+    end
+
+    subgraph workers["Background read-only workers"]
+        queueCheck("Queue checker")
+        metricsCheck("Metrics checker")
+    end
+
+    subgraph watchers["Watchers"]
+        ciWatch>"CI run finished"]
+    end
+
+    subgraph verification["Verification"]
+        verify("Verifier: clean context")
+    end
+
+    subgraph human["Human"]
+        approve{{"Approve fix"}}
+    end
+
+    start --> triage
+    triage -->|"no"| plan
+    triage -->|"yes"| synthesize
+    plan --o ledger
+    plan -->|"fan-out: one per signal, max 4"| queueCheck
+    plan --> metricsCheck
+    queueCheck --> join
+    metricsCheck --> join
+    queueCheck -.->|"timeout: escalate"| synthesize
+    join --> synthesize
+    synthesize --o ledger
+    synthesize --> verify
+    verify ==>|"rejected, max 2"| synthesize
+    verify -->|"accepted"| approve
+    approve -->|"approved"| fix
+    approve -.->|"declined: park"| ledger
+    fix --> ciWatch
+    ciWatch -->|"green"| finish
+    ciWatch -.->|"red: replan"| plan
+
+    classDef agent fill:#dbeafe,stroke:#1d4ed8,color:#0f172a
+    classDef deterministic fill:#f1f5f9,stroke:#475569,color:#0f172a
+    classDef verifier fill:#dcfce7,stroke:#15803d,color:#0f172a
+    classDef gate fill:#fef3c7,stroke:#b45309,color:#0f172a
+    classDef watcher fill:#f3e8ff,stroke:#7e22ce,color:#0f172a
+
+    class plan,synthesize,queueCheck,metricsCheck agent
+    class fix deterministic
+    class verify verifier
+    class approve gate
+    class ciWatch watcher

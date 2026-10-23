@@ -36,6 +36,9 @@ stopping after any slice still leaves the system better. Name invariants that mu
 owner-only decisions before execution reaches them, and define done-per-increment and value-per-milestone so completion
 is objective.
 
+When the build process itself spans several agents, strategies, or parallel phases, load the `process-design` skill to
+compose, critique, and draw it before authoring the goal.
+
 ### Author the goal
 
 Persist the plan to a durable tracker before executing, using a deep-work workspace or the repository's equivalent, and
