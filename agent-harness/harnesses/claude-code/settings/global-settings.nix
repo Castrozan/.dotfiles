@@ -40,6 +40,7 @@ let
     animationInterval = 80;
     spinnerText = spinnerVerbs;
     spinnerTipsEnabled = false;
+    prefersReducedMotion = true;
     feedbackDrafts = "off";
     spinnerVerbs = {
       mode = "replace";
