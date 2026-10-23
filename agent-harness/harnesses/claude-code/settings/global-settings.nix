@@ -37,8 +37,6 @@ let
     enableWorkflows = true;
     enabledPlugins = claudeModsMarketplace.everySessionEnabledPlugins;
     language = "english";
-    animationInterval = 80;
-    spinnerText = spinnerVerbs;
     spinnerTipsEnabled = false;
     prefersReducedMotion = true;
     feedbackDrafts = "off";
@@ -68,16 +66,9 @@ let
       allow = [ ];
       deny = [ "Artifact" ];
     };
-    terminalShowHoverHint = false;
     statusLine = {
       type = "command";
       command = "bash $HOME/.claude/statusline-command.sh";
-    };
-    composer = {
-      shouldChimeAfterChatFinishes = true;
-    };
-    fileFiltering = {
-      respectGitignore = true;
     };
     hooks = {
       SessionStart = [
