@@ -79,8 +79,10 @@ def _transcript_event_from_line(transcript_line):
         return False, None
 
 
-def _is_hook_feedback(message_text):
-    return message_text.startswith(("Stop hook feedback:", "<hook_prompt"))
+def _is_user_request(message_text):
+    return bool(message_text) and not message_text.startswith(
+        ("Stop hook feedback:", "<hook_prompt")
+    )
 
 
 def _updated_transcript_texts(
@@ -88,7 +90,7 @@ def _updated_transcript_texts(
 ):
     if role == "user":
         final_reply_text = ""
-        if message_text and not _is_hook_feedback(message_text):
+        if _is_user_request(message_text):
             current_turn_user_request = message_text
     elif role == "assistant" and message_text:
         final_reply_text = message_text
