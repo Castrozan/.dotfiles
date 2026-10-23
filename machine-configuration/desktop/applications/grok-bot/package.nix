@@ -11,7 +11,10 @@ let
 in
 pkgs.appimageTools.wrapType2 {
   inherit pname version src;
+  nativeBuildInputs = [ pkgs.makeWrapper ];
   extraInstallCommands = ''
+    wrapProgram "$out/bin/grok-bot" \
+      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
     install -Dm444 ${extracted}/grok-bot.desktop "$out/share/applications/grok-bot.desktop"
     substituteInPlace "$out/share/applications/grok-bot.desktop" \
       --replace-fail "Exec=AppRun --no-sandbox %U" "Exec=$out/bin/grok-bot %U"
