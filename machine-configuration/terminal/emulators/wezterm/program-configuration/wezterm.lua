@@ -62,14 +62,12 @@ local config = {
 		bottom = 10,
 	},
 
-	max_fps = 120,
 	front_end = is_darwin and "WebGpu" or "OpenGL",
 	window_decorations = "RESIZE",
 	use_resize_increments = false,
 	adjust_window_size_when_changing_font_size = false,
 	window_background_opacity = 0.85,
 	text_background_opacity = 0.75,
-	macos_window_background_blur = 20,
 
 	enable_tab_bar = false,
 	hide_tab_bar_if_only_one_tab = true,
