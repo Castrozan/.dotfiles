@@ -22,5 +22,5 @@ done check, at a gate, or at the budget, and report which one ended the run.
 
 ### Harness
 
-Any harness's main session. For runs longer than one sitting, pair it with a heartbeat and a tracker so a restart
+Any harness's main session. For runs longer than one sitting, pair it with a scheduled wakeup and a tracker so a restart
 resumes from durable state.

@@ -50,7 +50,7 @@ Hands perform deterministic actions: [skill and script](references/blocks/skill-
 script](references/blocks/workflow-script.md), and [MCP server](references/blocks/mcp-server.md). Eyes watch the running
 process: [main short loop](references/blocks/main-short-loop.md), [monitor
 subagents](references/blocks/monitor-subagents.md), [script monitor](references/blocks/script-monitor.md), and
-[heartbeat](references/blocks/heartbeat.md).
+[scheduled wakeup](references/blocks/scheduled-wakeup.md).
 
 Controls bound risk: [human gate](references/blocks/human-gate.md), [guardrail
 hook](references/blocks/guardrail-hook.md), [canary and waves](references/blocks/canary-and-waves.md), and [dry
