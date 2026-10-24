@@ -74,6 +74,25 @@ def test_claude_reply_with_a_link_is_found_in_the_transcript_named_after_the_cwd
     assert detected_request.reference == "owner/repo#2"
 
 
+def test_claude_reply_with_string_content_is_found(tmp_path, monkeypatch, herdr_pane):
+    monkeypatch.setattr(agent_replies, "CLAUDE_PROJECTS_DIRECTORY", tmp_path)
+    write_lines(
+        tmp_path / "-work-my-project" / "session-1.jsonl",
+        [
+            {
+                "type": "assistant",
+                "isSidechain": False,
+                "message": {"content": FIRST_LINK},
+            }
+        ],
+    )
+    with patch(
+        "agent_replies.run_command", return_value=herdr_pane("claude", "session-1")
+    ):
+        detected_request = agent_replies.latest_request_link_in_active_agent()
+    assert detected_request.reference == "group/project!1"
+
+
 def test_codex_reply_is_found_in_its_rollout(tmp_path, monkeypatch, herdr_pane):
     monkeypatch.setattr(agent_replies, "CODEX_SESSIONS_DIRECTORY", tmp_path)
     write_lines(
