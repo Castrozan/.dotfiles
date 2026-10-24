@@ -114,20 +114,15 @@ class ChatGPTResourceScope:
             .split()
         }
 
-    def set_memory_high(self, memory_high_bytes: int) -> None:
-        subprocess.run(
-            [
-                "systemctl",
-                "--user",
-                "set-property",
-                "--runtime",
-                self.unit_name,
-                f"MemoryHigh={memory_high_bytes}",
-            ],
-            check=True,
-            capture_output=True,
-            timeout=3,
-        )
+    def quit_app(self) -> None:
+        if not self.primary_process_is_alive():
+            return
+        descriptor = os.pidfd_open(self.primary_process.process_id)
+        try:
+            if self.primary_process_is_alive():
+                signal.pidfd_send_signal(descriptor, signal.SIGTERM)
+        finally:
+            os.close(descriptor)
 
     def terminate_remaining_helpers(self) -> None:
         for process_id in self.process_ids() - {os.getpid()}:

@@ -1,23 +1,27 @@
 import pytest
 
-from chatgpt_memory_policy import memory_high_for_window_state
+from chatgpt_lifecycle_policy import app_should_quit
 from chatgpt_window_observer import owned_window_addresses
 
 
 @pytest.mark.parametrize(
-    ("window_open", "elapsed_seconds", "expected_bytes"),
+    ("window_open", "elapsed_seconds", "windowless_seconds", "expected_quit"),
     [
-        (True, 90, 4 * 1024**3),
-        (False, 90, 1536 * 1024**2),
-        (None, 90, 4 * 1024**3),
-        (False, 10, 4 * 1024**3),
-        (False, 30, 1536 * 1024**2),
+        (True, 90, 0, False),
+        (None, 90, 90, False),
+        (False, 10, 10, False),
+        (False, 90, 4, False),
+        (False, 30, 5, True),
+        (False, 90, 60, True),
     ],
 )
-def test_window_modes_preserve_startup_and_unknown_state_headroom(
-    window_open, elapsed_seconds, expected_bytes
+def test_only_a_settled_windowless_app_quits(
+    window_open, elapsed_seconds, windowless_seconds, expected_quit
 ):
-    assert memory_high_for_window_state(window_open, elapsed_seconds) == expected_bytes
+    assert (
+        app_should_quit(window_open, elapsed_seconds, windowless_seconds)
+        is expected_quit
+    )
 
 
 def test_unfocused_and_off_workspace_windows_remain_open():

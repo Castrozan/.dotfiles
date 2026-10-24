@@ -3,29 +3,23 @@ from unittest.mock import Mock
 import pytest
 
 import chatgpt_resource_control as resource_control
-from chatgpt_memory_policy import (
-    BACKGROUND_MEMORY_HIGH_BYTES,
-    OPEN_WINDOW_MEMORY_HIGH_BYTES,
-)
 
 
-def test_launch_arguments_and_window_transitions_preserve_the_running_app(monkeypatch):
-    scope = Mock()
+def run_controlled_app(monkeypatch, window_states_after_each_poll, scope=None):
+    scope = scope or Mock()
     scope.repair_chromium_scope_migration.return_value = True
     scope.process_ids.return_value = {42}
-    observer = Mock()
-    observer.refresh_needed = False
-    observer.window_open = True
-    child = Mock(pid=42, returncode=0)
-    child.poll.side_effect = [None, None, None, 0]
-    launch = Mock(return_value=child)
+    observer = Mock(refresh_needed=False, window_open=True)
     elapsed = [0]
+    remaining_states = list(window_states_after_each_poll)
 
     def advance(timeout_seconds):
-        elapsed[0] += 40
-        observer.window_open = False if elapsed[0] == 40 else None
+        elapsed[0], observer.window_open = remaining_states.pop(0)
 
     observer.poll.side_effect = advance
+    child = Mock(pid=42, returncode=0)
+    child.poll.side_effect = [None] * len(remaining_states) + [0]
+    launch = Mock(return_value=child)
     monkeypatch.setattr(
         resource_control, "ChatGPTResourceScope", Mock(return_value=scope)
     )
@@ -41,17 +35,33 @@ def test_launch_arguments_and_window_transitions_preserve_the_running_app(monkey
     ]
     assert resource_control.control_app("app-chatgpt-test.scope", command) == 0
     launch.assert_called_once_with(command)
-    assert [call.args[0] for call in scope.set_memory_high.call_args_list] == [
-        OPEN_WINDOW_MEMORY_HIGH_BYTES,
-        BACKGROUND_MEMORY_HIGH_BYTES,
-        OPEN_WINDOW_MEMORY_HIGH_BYTES,
-    ]
-    child.terminate.assert_not_called()
+    return scope, child
+
+
+def test_closing_the_window_quits_the_app_once_after_the_grace(monkeypatch):
+    scope, child = run_controlled_app(
+        monkeypatch, [(40, False), (44, False), (46, False), (47, False), (48, False)]
+    )
+    scope.quit_app.assert_called_once_with()
     child.kill.assert_not_called()
     scope.terminate_remaining_helpers.assert_called_once_with()
 
 
-def test_failed_grouping_keeps_open_headroom(monkeypatch):
+def test_a_window_reopened_within_the_grace_keeps_the_app(monkeypatch):
+    scope, _ = run_controlled_app(
+        monkeypatch, [(40, False), (43, True), (44, False), (48, False), (49, False)]
+    )
+    scope.quit_app.assert_not_called()
+
+
+def test_a_window_closed_during_startup_waits_for_the_headroom(monkeypatch):
+    scope, _ = run_controlled_app(
+        monkeypatch, [(5, False), (20, False), (29, False), (30, False)]
+    )
+    scope.quit_app.assert_not_called()
+
+
+def test_failed_grouping_never_quits(monkeypatch):
     scope = Mock()
     scope.repair_chromium_scope_migration.return_value = False
     observer = Mock(refresh_needed=False, window_open=False)
@@ -69,7 +79,7 @@ def test_failed_grouping_keeps_open_headroom(monkeypatch):
         resource_control.control_app("app-chatgpt-test.scope", ["/runtime/chatgpt"])
         == 0
     )
-    scope.set_memory_high.assert_called_once_with(OPEN_WINDOW_MEMORY_HIGH_BYTES)
+    scope.quit_app.assert_not_called()
 
 
 def test_attachment_preserves_the_existing_process_and_tool_helpers(monkeypatch):
@@ -95,7 +105,7 @@ def test_attachment_preserves_the_existing_process_and_tool_helpers(monkeypatch)
     monkeypatch.setattr(resource_control.subprocess, "Popen", launch)
     assert resource_control.attach_running_app("app-chatgpt-test.scope", 42) == 0
     scope.repair_chromium_scope_migration.assert_called_once_with(42)
-    scope.set_memory_high.assert_called_once_with(OPEN_WINDOW_MEMORY_HIGH_BYTES)
+    scope.quit_app.assert_not_called()
     scope.terminate_remaining_helpers.assert_not_called()
     launch.assert_not_called()
 
@@ -116,12 +126,9 @@ def test_attachment_rejects_an_unrelated_process(monkeypatch):
     scope.assert_not_called()
 
 
-def test_resource_and_desktop_failures_preserve_app_and_retry_open_headroom(
-    monkeypatch,
-):
+def test_resource_and_desktop_failures_keep_the_app_running(monkeypatch):
     scope = Mock()
     scope.repair_chromium_scope_migration.side_effect = [OSError(), True]
-    scope.set_memory_high.side_effect = [OSError(), None]
     observer = Mock(refresh_needed=False, window_open=False)
     observer.poll.side_effect = [ValueError(), None]
     child = Mock(pid=42, returncode=0)
@@ -138,10 +145,7 @@ def test_resource_and_desktop_failures_preserve_app_and_retry_open_headroom(
         resource_control.control_app("app-chatgpt-test.scope", ["/runtime/chatgpt"])
         == 0
     )
-    assert [call.args[0] for call in scope.set_memory_high.call_args_list] == [
-        OPEN_WINDOW_MEMORY_HIGH_BYTES,
-        OPEN_WINDOW_MEMORY_HIGH_BYTES,
-    ]
+    scope.quit_app.assert_not_called()
     child.terminate.assert_not_called()
     child.kill.assert_not_called()
     assert observer.disconnect.call_count == 2

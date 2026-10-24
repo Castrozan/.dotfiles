@@ -112,18 +112,45 @@ def test_attachment_audit_finds_a_child_created_during_migration(
     assert command.call_count == 2
 
 
-def test_memory_policy_changes_only_soft_threshold(scope_fixture):
-    scope, _, _, command, _ = scope_fixture
-    scope.set_memory_high(1536 * 1024**2)
-    arguments = command.call_args.args[0]
-    assert arguments == [
-        "systemctl",
-        "--user",
-        "set-property",
-        "--runtime",
-        scope.unit_name,
-        "MemoryHigh=1610612736",
-    ]
+@pytest.fixture
+def signal_capture(monkeypatch):
+    monkeypatch.setattr(
+        resource_scope.os,
+        "pidfd_open",
+        lambda process_id: process_id + 1000,
+        raising=False,
+    )
+    monkeypatch.setattr(resource_scope.os, "close", Mock())
+    signalled = Mock()
+    monkeypatch.setattr(
+        resource_scope.signal, "pidfd_send_signal", signalled, raising=False
+    )
+    return signalled
+
+
+def test_quit_terminates_only_the_verified_primary_process(
+    scope_fixture, signal_capture
+):
+    scope, _, _, _, _ = scope_fixture
+    scope.primary_process = ProcessIdentity(42, 100)
+    scope.quit_app()
+    signal_capture.assert_called_once_with(1042, resource_scope.signal.SIGTERM)
+
+
+def test_quit_spares_a_recycled_primary_process_id(scope_fixture, signal_capture):
+    scope, _, identities, _, _ = scope_fixture
+    scope.primary_process = ProcessIdentity(42, 100)
+    identities[42] = ProcessIdentity(42, 999)
+    scope.quit_app()
+    signal_capture.assert_not_called()
+
+
+def test_quit_without_a_known_primary_process_signals_nothing(
+    scope_fixture, signal_capture
+):
+    scope, _, _, _, _ = scope_fixture
+    scope.quit_app()
+    signal_capture.assert_not_called()
 
 
 def test_cleanup_excludes_controller_and_processes_outside_the_scope(
