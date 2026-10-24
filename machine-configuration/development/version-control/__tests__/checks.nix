@@ -26,6 +26,11 @@ in
     mkEvalCheck "domain-dev-lazygit-enabled" configuration.programs.lazygit.enable
       "lazygit should be enabled";
 
+  domain-dev-lazygit-ships-review-changes-launcher =
+    mkEvalCheck "domain-dev-lazygit-ships-review-changes-launcher"
+      (builtins.any (package: lib.getName package == "review-changes") configuration.home.packages)
+      "the lazygit module should install the review-changes launcher the herdr review key runs";
+
   domain-dev-lazygit-pagers-cycle-unified-then-side-by-side =
     mkEvalCheck "domain-dev-lazygit-pagers-cycle-unified-then-side-by-side"
       (

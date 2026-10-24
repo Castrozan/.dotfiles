@@ -70,6 +70,12 @@ type = "pane"
 command = "lazygit"
 
 [[keys.command]]
+key = "prefix+shift+i"
+type = "pane"
+command = "review-changes"
+description = "review an MR, PR or branch in lazygit"
+
+[[keys.command]]
 key = "prefix+f"
 type = "plugin_action"
 command = "castrozan.pace.read"
