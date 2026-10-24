@@ -1,7 +1,8 @@
 import json
 from dataclasses import dataclass
 
-from review_command_runner import ReviewTargetError, run_command, run_git
+from request_links import ForgeRepository
+from review_command_runner import ReviewTargetError, run_command
 
 
 @dataclass(frozen=True)
@@ -10,21 +11,29 @@ class ChangeRequest:
     description: str
     web_url: str
     base_branch: str
+    head_branch: str
     head_fetch_reference: str
 
 
 def forge_lookup_error(result, selector: str) -> ReviewTargetError:
     forge_message = " ".join(result.stderr.split())
-    return ReviewTargetError(forge_message or f"no MR/PR {selector} found on origin")
+    return ReviewTargetError(forge_message or f"no MR/PR {selector} found")
 
 
-def origin_is_github() -> bool:
-    return "github.com" in run_git(["remote", "get-url", "origin"])
-
-
-def view_github_pull_request(selector: str) -> ChangeRequest:
+def view_github_pull_request(
+    repository: ForgeRepository, selector: str
+) -> ChangeRequest:
     result = run_command(
-        ["gh", "pr", "view", selector, "--json", "number,title,body,url,baseRefName"]
+        [
+            "gh",
+            "pr",
+            "view",
+            selector,
+            "--repo",
+            f"{repository.host}/{repository.project_path}",
+            "--json",
+            "number,title,body,url,baseRefName,headRefName",
+        ]
     )
     if result.returncode != 0:
         raise forge_lookup_error(result, selector)
@@ -34,12 +43,26 @@ def view_github_pull_request(selector: str) -> ChangeRequest:
         description=pull_request["body"] or "",
         web_url=pull_request["url"],
         base_branch=pull_request["baseRefName"],
+        head_branch=pull_request["headRefName"],
         head_fetch_reference=f"pull/{pull_request['number']}/head",
     )
 
 
-def view_gitlab_merge_request(selector: str) -> ChangeRequest:
-    result = run_command(["glab", "mr", "view", selector, "--output", "json"])
+def view_gitlab_merge_request(
+    repository: ForgeRepository, selector: str
+) -> ChangeRequest:
+    result = run_command(
+        [
+            "glab",
+            "mr",
+            "view",
+            selector,
+            "--repo",
+            f"https://{repository.host}/{repository.project_path}",
+            "--output",
+            "json",
+        ]
+    )
     if result.returncode != 0:
         raise forge_lookup_error(result, selector)
     merge_request = json.loads(result.stdout)
@@ -48,19 +71,21 @@ def view_gitlab_merge_request(selector: str) -> ChangeRequest:
         description=merge_request["description"] or "",
         web_url=merge_request["web_url"],
         base_branch=merge_request["target_branch"],
+        head_branch=merge_request["source_branch"],
         head_fetch_reference=f"merge-requests/{merge_request['iid']}/head",
     )
 
 
-def view_change_request(selector: str) -> ChangeRequest:
-    if origin_is_github():
-        return view_github_pull_request(selector)
-    return view_gitlab_merge_request(selector)
+def view_change_request(repository: ForgeRepository, selector: str) -> ChangeRequest:
+    if repository.is_github:
+        return view_github_pull_request(repository, selector)
+    return view_gitlab_merge_request(repository, selector)
 
 
 def format_change_request(change_request: ChangeRequest) -> str:
     return (
         f"# {change_request.title}\n\n"
+        f"{change_request.head_branch} -> {change_request.base_branch}\n"
         f"{change_request.web_url}\n\n"
         f"{change_request.description}\n"
     )

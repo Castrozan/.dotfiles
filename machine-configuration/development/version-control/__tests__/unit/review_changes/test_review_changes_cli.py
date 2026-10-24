@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 import review_changes_cli
+from request_links import ForgeRepository, RequestLink
 
 
 @pytest.fixture
@@ -36,25 +37,40 @@ def test_signals_after_the_first_cannot_interrupt_cleanup(restored_signal_handle
     assert signal.getsignal(signal.SIGTERM) is signal.SIG_IGN
 
 
-def test_prompt_names_the_repository_a_bare_number_resolves_in(monkeypatch):
+@pytest.fixture
+def prompt_doubles(monkeypatch):
     prompts = []
     monkeypatch.setattr("builtins.input", lambda prompt: prompts.append(prompt) or "")
     monkeypatch.setattr(
-        review_changes_cli, "origin_project_path", lambda _directory: "group/project"
+        review_changes_cli,
+        "origin_repository",
+        lambda _directory: ForgeRepository("github.com", "group/project"),
     )
     with patch(
         "review_changes_cli.run_command", return_value=MagicMock(stdout="main\n")
     ):
-        review_changes_cli.prompt_for_target()
-    assert prompts == ["MR/PR number, link or branch in group/project [main]: "]
+        yield prompts
+
+
+def test_prompt_names_the_repository_a_bare_number_resolves_in(prompt_doubles):
+    review_changes_cli.prompt_for_target(None)
+    assert prompt_doubles == ["MR/PR number, link or branch in group/project [main]: "]
+
+
+def test_prompt_offers_the_request_detected_in_the_agent_reply(prompt_doubles):
+    detected_request = RequestLink(ForgeRepository("gitlab.example", "team/app"), "9")
+    review_changes_cli.prompt_for_target(detected_request)
+    assert prompt_doubles == [
+        "MR/PR number, link or branch in group/project [team/app!9]: "
+    ]
 
 
 def test_prompt_outside_a_repository_names_no_repository(monkeypatch):
     prompts = []
     monkeypatch.setattr("builtins.input", lambda prompt: prompts.append(prompt) or "")
     monkeypatch.setattr(
-        review_changes_cli, "origin_project_path", lambda _directory: None
+        review_changes_cli, "origin_repository", lambda _directory: None
     )
     with patch("review_changes_cli.run_command", return_value=MagicMock(stdout="")):
-        review_changes_cli.prompt_for_target()
+        review_changes_cli.prompt_for_target(None)
     assert prompts == ["MR/PR number, link or branch: "]
