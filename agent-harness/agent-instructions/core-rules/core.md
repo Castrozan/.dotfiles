@@ -33,6 +33,8 @@ Delegate only mechanical work, which is a task already decided or read-only rese
 subagent carries it out rather than choosing the direction. Retain requirements, architecture, judgment, verification,
 and synthesis. Treat delegated output as evidence, not authority.
 
+Design multi-agent or multi-phase work with the `process-design` skill before executing it.
+
 ### Context
 
 Write down what you have established as true, and delete it once it is stale or wrong. When the user asks you to forget
