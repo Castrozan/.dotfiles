@@ -30,8 +30,8 @@ let
       {
         context = "Scroll";
         bindings = {
-          "alt+pageup" = "scroll:lineUp";
-          "alt+pagedown" = "scroll:lineDown";
+          "shift+pageup" = "scroll:lineUp";
+          "shift+pagedown" = "scroll:lineDown";
         };
       }
     ];

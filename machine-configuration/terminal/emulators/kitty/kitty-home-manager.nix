@@ -43,5 +43,9 @@ in
       background_image_layout = "cscaled";
       hide_window_decorations = "yes";
     };
+    keybindings = {
+      "shift+page_up" = "no_op";
+      "shift+page_down" = "no_op";
+    };
   };
 }
