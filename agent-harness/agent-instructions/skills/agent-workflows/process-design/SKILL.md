@@ -56,9 +56,9 @@ redraw it before approval.
 
 ### Visualize
 
-Draw per [visualization](references/visualization.md): a Mermaid flowchart with one lane per actor as the source of
-truth, a sequence diagram when timing or messaging matters, and a Unicode outline wherever only a terminal shows it.
-Show the diagram at every iteration, not only at the end.
+Draw per [visualization](references/visualization.md): a Mermaid flowchart with gates inline and lanes only for
+concurrent actors as the source of truth, a sequence diagram when timing or messaging matters, and a Unicode C4 dynamic
+view wherever only a terminal shows it. Show the diagram at every iteration, not only at the end.
 
 ### Map to the harness
 

@@ -53,4 +53,5 @@ and subagent skills in [superpowers](https://github.com/obra/superpowers).
 Shapes and edges follow [Mermaid flowchart syntax](https://mermaid.js.org/syntax/flowchart.html), which renders on
 [GitHub](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
 and in terminals through renderers such as [mermaid-ascii](https://github.com/AlexanderGrooff/mermaid-ascii). Framework
-vocabulary follows the [LangGraph graph API](https://docs.langchain.com/oss/python/langgraph/graph-api).
+vocabulary follows the [LangGraph graph API](https://docs.langchain.com/oss/python/langgraph/graph-api). The terminal
+view follows the [C4 model dynamic diagram](https://c4model.com/diagrams/dynamic).
