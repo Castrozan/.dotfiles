@@ -26,6 +26,21 @@ in
     mkEvalCheck "domain-dev-lazygit-enabled" configuration.programs.lazygit.enable
       "lazygit should be enabled";
 
+  domain-dev-lazygit-pagers-cycle-unified-then-side-by-side =
+    mkEvalCheck "domain-dev-lazygit-pagers-cycle-unified-then-side-by-side"
+      (
+        let
+          pagerCommands = map (
+            pagerEntry: pagerEntry.pager
+          ) configuration.programs.lazygit.settings.git.pagers;
+        in
+        builtins.length pagerCommands == 2
+        && lib.all (lib.hasPrefix "delta ") pagerCommands
+        && !(lib.hasInfix "--side-by-side" (builtins.elemAt pagerCommands 0))
+        && lib.hasSuffix "--side-by-side" (builtins.elemAt pagerCommands 1)
+      )
+      "lazygit should render diffs through delta, unified first and side-by-side on the pager cycle key";
+
   domain-dev-git-editor-is-the-terminal-gated-launcher =
     mkEvalCheck "domain-dev-git-editor-is-the-terminal-gated-launcher"
       (lib.hasSuffix "git-message-editor" gitCoreSettings.editor)

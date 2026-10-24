@@ -1,4 +1,7 @@
 { pkgs, inputs, ... }:
+let
+  deltaPagerWithEditorLinks = "delta --paging=never --detect-dark-light always --hyperlinks --hyperlinks-file-link-format=\"lazygit-edit://{path}:{line}\"";
+in
 {
   programs.lazygit = {
     enable = true;
@@ -8,6 +11,11 @@
       os = {
         shell = "${pkgs.bashInteractive}/bin/bash -c";
       };
+      gui.showDivergenceFromBaseBranch = "arrowAndNumber";
+      git.pagers = [
+        { pager = deltaPagerWithEditorLinks; }
+        { pager = "${deltaPagerWithEditorLinks} --side-by-side"; }
+      ];
     };
   };
 }
