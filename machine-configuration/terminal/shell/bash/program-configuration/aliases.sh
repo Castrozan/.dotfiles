@@ -38,6 +38,7 @@ alias k='k9s'
 alias kc="nvim ~/.config/kitty/kitty.conf"
 alias l='eza --classify'
 alias la='eza --all'
+alias al='eza --all'
 alias lc='eza --all --color=never'
 alias ll='eza --long --all --classify --git --icons'
 alias ls='eza --color=auto'
