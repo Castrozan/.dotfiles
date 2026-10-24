@@ -5,8 +5,6 @@ provides: brief
 needs: driver
 ---
 
-# router
-
 ### What it gives
 
 One classification of the input that dispatches it to a specialized path or agent, without taking part in the work.

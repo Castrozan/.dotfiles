@@ -5,8 +5,6 @@ provides: rehearsal, trace
 needs: action
 ---
 
-# dry-run
-
 ### What it gives
 
 The same composition executed with side effects stubbed and gates simulated, producing a trace of intended actions to

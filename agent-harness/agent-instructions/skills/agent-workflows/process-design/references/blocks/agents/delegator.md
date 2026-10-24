@@ -5,8 +5,6 @@ provides: driver, subagents, artifact
 needs: goal, budget, verdict
 ---
 
-# delegator
-
 ### What it gives
 
 The main agent only plans, delegates, integrates, and verifies, so its context stays small and clean for judgment across

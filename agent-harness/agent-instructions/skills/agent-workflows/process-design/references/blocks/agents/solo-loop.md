@@ -5,8 +5,6 @@ provides: driver, artifact
 needs: goal, budget
 ---
 
-# solo-loop
-
 ### What it gives
 
 One agent with tools does the whole task in a continuous loop of acting, observing, and deciding, with no helpers and no

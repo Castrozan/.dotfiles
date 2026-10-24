@@ -5,8 +5,6 @@ provides: verdict
 needs: trace
 ---
 
-# eval-gate
-
 ### What it gives
 
 A versioned evaluation suite that gates changes to the process itself: its skills, briefs, composition, or models.

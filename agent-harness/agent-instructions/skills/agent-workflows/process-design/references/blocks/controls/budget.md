@@ -5,8 +5,6 @@ provides: budget
 needs: driver
 ---
 
-# budget
-
 ### What it gives
 
 Ceilings on turns, iterations, tokens, cost, time, and agent count, each with defined behavior when hit.

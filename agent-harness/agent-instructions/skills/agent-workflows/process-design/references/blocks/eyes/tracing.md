@@ -5,8 +5,6 @@ provides: trace
 needs: driver
 ---
 
-# tracing
-
 ### What it gives
 
 Spans for every model call, tool call, handoff, and cost, so failures are diagnosed from what ran rather than from what

@@ -5,8 +5,6 @@ provides: isolation
 needs: driver, verdict
 ---
 
-# worktree
-
 ### What it gives
 
 A separate checkout per writer, so parallel agents change code without overwriting each other.

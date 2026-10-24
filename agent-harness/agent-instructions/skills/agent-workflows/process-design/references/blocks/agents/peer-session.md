@@ -5,8 +5,6 @@ provides: peer
 needs: goal
 ---
 
-# peer-session
-
 ### What it gives
 
 A long-lived interactive session in its own visible terminal pane, which the human can watch and steer, instead of a

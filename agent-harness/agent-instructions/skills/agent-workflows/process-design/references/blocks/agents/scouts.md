@@ -5,8 +5,6 @@ provides: finding
 needs: subagents, budget
 ---
 
-# scouts
-
 ### What it gives
 
 Read-only researchers fanned out over independent questions and joined when all return, so discovery costs wall-clock

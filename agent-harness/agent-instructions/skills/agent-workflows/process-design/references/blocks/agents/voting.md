@@ -5,8 +5,6 @@ provides: verdict, artifact
 needs: subagents, budget
 ---
 
-# voting
-
 ### What it gives
 
 Several independent attempts at the same task, then one picked by majority, verifier, or judge.

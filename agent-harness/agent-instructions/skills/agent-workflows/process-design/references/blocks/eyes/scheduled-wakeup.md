@@ -5,8 +5,6 @@ provides: event
 needs: driver, state
 ---
 
-# scheduled-wakeup
-
 ### What it gives
 
 A recurring wakeup that brings the driver back on a schedule for processes that run hours or days.

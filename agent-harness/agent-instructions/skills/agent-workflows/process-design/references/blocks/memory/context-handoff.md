@@ -5,8 +5,6 @@ provides: handoff
 needs: driver
 ---
 
-# context-handoff
-
 ### What it gives
 
 A structured summary or an artifact reference passed between phases or agents, so the receiver keeps the decisions

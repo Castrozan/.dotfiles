@@ -5,8 +5,6 @@ provides: rollout
 needs: action, verdict, event, approval
 ---
 
-# canary-and-waves
-
 ### What it gives
 
 A staged rollout: apply the action to a small canary, verify the outcome end to end, then proceed in throttled waves

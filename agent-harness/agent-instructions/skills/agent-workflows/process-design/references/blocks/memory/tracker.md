@@ -5,8 +5,6 @@ provides: state
 needs: driver
 ---
 
-# tracker
-
 ### What it gives
 
 One durable file holding the plan, decisions, progress, monitors, and approvals, so the process survives compaction and

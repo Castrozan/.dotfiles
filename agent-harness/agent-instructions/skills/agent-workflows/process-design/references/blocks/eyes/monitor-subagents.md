@@ -5,8 +5,6 @@ provides: watch, finding
 needs: subagents, observable
 ---
 
-# monitor-subagents
-
 ### What it gives
 
 Subagents that watch the running processes and diagnose what they see, keeping log reading and triage out of the main
