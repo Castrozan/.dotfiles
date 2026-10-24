@@ -119,6 +119,12 @@ blink.cmp `super-tab` preset selected in `lua/plugins/blink-cmp.lua`, not a hand
 menu is open, while `Enter` goes back to opening a line. `C-y` keeps accepting too, the way LazyVim
 binds it.
 
+MR and PR review adds no owned chord. The LazyVim octo extra brings its curated `leader g i`,
+`leader g I`, `leader g p`, `leader g P`, `leader g r` and `leader g S` lists, plus its
+`localleader` keys inside octo buffers, on the owner's explicit request. gitlab.nvim keeps its
+plugin-default `gl` keys, which exist only after the review tab's lazygit `I` loads the plugin; `gl`
+carries no native meaning. That `I` is a lazygit key the review tab adds, not a Neovim map.
+
 ## Canonical references
 
 Find how Neovim itself does a thing before proposing any mapping:
