@@ -11,8 +11,8 @@ from review_command_runner import ReviewTargetError
     ("raw_target", "expected_link"),
     [
         (
-            "https://gitlab.services.example/betha-ai/betha.ai-marketplace/-/merge_requests/388",
-            request_links.RequestLink("betha-ai/betha.ai-marketplace", "388"),
+            "https://gitlab.services.example/team/tools.marketplace/-/merge_requests/388",
+            request_links.RequestLink("team/tools.marketplace", "388"),
         ),
         (
             "https://gitlab.example/group/subgroup/project/-/merge_requests/7/diffs",
@@ -36,9 +36,9 @@ def test_numbers_and_branches_are_not_links(raw_target):
 @pytest.mark.parametrize(
     "origin_url",
     [
-        "git@gitlab.services.example:betha-ai/betha.ai-marketplace.git",
-        "https://gitlab.services.example/betha-ai/betha.ai-marketplace.git",
-        "ssh://git@gitlab.services.example/betha-ai/Betha.ai-Marketplace",
+        "git@gitlab.services.example:team/tools.marketplace.git",
+        "https://gitlab.services.example/team/tools.marketplace.git",
+        "ssh://git@gitlab.services.example/team/Tools.Marketplace",
     ],
 )
 def test_origin_project_path_normalizes_ssh_and_https_remotes(origin_url):
@@ -46,7 +46,7 @@ def test_origin_project_path_normalizes_ssh_and_https_remotes(origin_url):
     with patch("request_links.run_command", return_value=origin):
         assert (
             request_links.origin_project_path(request_links.Path("/any"))
-            == "betha-ai/betha.ai-marketplace"
+            == "team/tools.marketplace"
         )
 
 
