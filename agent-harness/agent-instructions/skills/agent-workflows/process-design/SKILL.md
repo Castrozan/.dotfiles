@@ -43,28 +43,28 @@ Build every process from capability blocks, one file each, and load only the blo
 
 ### Block index
 
-Agents decide who thinks: [solo loop](references/blocks/solo-loop.md), [main and
-helpers](references/blocks/main-and-helpers.md), [delegator](references/blocks/delegator.md),
-[orchestrator](references/blocks/orchestrator.md), [scouts](references/blocks/scouts.md),
-[reviewers](references/blocks/reviewers.md), [peer session](references/blocks/peer-session.md),
-[planner](references/blocks/planner.md), [router](references/blocks/router.md), [voting](references/blocks/voting.md),
-and [consultant](references/blocks/consultant.md).
+Agents decide who thinks: [solo loop](references/blocks/agents/solo-loop.md), [main and
+helpers](references/blocks/agents/main-and-helpers.md), [delegator](references/blocks/agents/delegator.md),
+[orchestrator](references/blocks/agents/orchestrator.md), [scouts](references/blocks/agents/scouts.md),
+[reviewers](references/blocks/agents/reviewers.md), [peer session](references/blocks/agents/peer-session.md),
+[planner](references/blocks/agents/planner.md), [router](references/blocks/agents/router.md), [voting](references/blocks/agents/voting.md),
+and [consultant](references/blocks/agents/consultant.md).
 
-Hands act deterministically: [skill and script](references/blocks/skill-and-script.md), [workflow
-script](references/blocks/workflow-script.md), and [MCP server](references/blocks/mcp-server.md). Eyes watch the run:
-[main short loop](references/blocks/main-short-loop.md), [monitor subagents](references/blocks/monitor-subagents.md),
-[script monitor](references/blocks/script-monitor.md), [scheduled wakeup](references/blocks/scheduled-wakeup.md), and
-[tracing](references/blocks/tracing.md).
+Hands act deterministically: [skill and script](references/blocks/hands/skill-and-script.md), [workflow
+script](references/blocks/hands/workflow-script.md), and [MCP server](references/blocks/hands/mcp-server.md). Eyes watch the run:
+[main short loop](references/blocks/eyes/main-short-loop.md), [monitor subagents](references/blocks/eyes/monitor-subagents.md),
+[script monitor](references/blocks/eyes/script-monitor.md), [scheduled wakeup](references/blocks/eyes/scheduled-wakeup.md), and
+[tracing](references/blocks/eyes/tracing.md).
 
-Controls bound risk: [verifier](references/blocks/verifier.md), [budget](references/blocks/budget.md), [human
-gate](references/blocks/human-gate.md), [guardrail hook](references/blocks/guardrail-hook.md),
-[sandbox](references/blocks/sandbox.md), [canary and waves](references/blocks/canary-and-waves.md), [dry
-run](references/blocks/dry-run.md), and [eval gate](references/blocks/eval-gate.md).
+Controls bound risk: [verifier](references/blocks/controls/verifier.md), [budget](references/blocks/controls/budget.md), [human
+gate](references/blocks/controls/human-gate.md), [guardrail hook](references/blocks/controls/guardrail-hook.md),
+[sandbox](references/blocks/controls/sandbox.md), [canary and waves](references/blocks/controls/canary-and-waves.md), [dry
+run](references/blocks/controls/dry-run.md), and [eval gate](references/blocks/controls/eval-gate.md).
 
-Memory persists and isolates: [tracker](references/blocks/tracker.md), [context
-handoff](references/blocks/context-handoff.md), [durable checkpoint](references/blocks/durable-checkpoint.md), [task
-board](references/blocks/task-board.md), and [worktree](references/blocks/worktree.md). Edges start and finish the
-process: [trigger](references/blocks/trigger.md), and [report](references/blocks/report.md).
+Memory persists and isolates: [tracker](references/blocks/memory/tracker.md), [context
+handoff](references/blocks/memory/context-handoff.md), [durable checkpoint](references/blocks/memory/durable-checkpoint.md), [task
+board](references/blocks/memory/task-board.md), and [worktree](references/blocks/memory/worktree.md). Edges start and finish the
+process: [trigger](references/blocks/edges/trigger.md), and [report](references/blocks/edges/report.md).
 
 ### Specify block contracts
 

@@ -9,12 +9,7 @@ file_patterns = [
   "agent-harness/agent-instructions/skills/workstation/browser/references/opencli.md",
   "agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md",
   "agent-harness/agent-instructions/interactive-communication.md",
-  "agent-harness/agent-instructions/skills/agent-workflows/process-design/references/design-review.md",
-  "agent-harness/agent-instructions/skills/agent-workflows/process-design/references/element-palette.md",
-  "agent-harness/agent-instructions/skills/agent-workflows/process-design/references/harness-mapping.md",
-  "agent-harness/agent-instructions/skills/agent-workflows/process-design/references/sources.md",
-  "agent-harness/agent-instructions/skills/agent-workflows/process-design/references/topology-selection.md",
-  "agent-harness/agent-instructions/skills/agent-workflows/process-design/references/visualization.md",
+  "agent-harness/agent-instructions/skills/agent-workflows/process-design/references/**/*.md",
 ]
 rules = ["MD041"]
 

@@ -7,7 +7,7 @@ composition by its blocks, such as main and helpers with skill and script, scrip
 tracker.
 
 Every agent block also carries two attributes: a model tier chosen by the difficulty of its role, and its share of the
-budget. The [consultant](blocks/consultant.md) block owns the tiering rule.
+budget. The [consultant](blocks/agents/consultant.md) block owns the tiering rule.
 
 ### Ports
 
