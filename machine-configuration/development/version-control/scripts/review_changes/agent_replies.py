@@ -20,8 +20,12 @@ CLAUDE_PROJECT_DIRECTORY_SEPARATOR = re.compile(r"[^A-Za-z0-9-]")
 def entries_mentioning_requests(transcript: Path) -> Iterator[dict]:
     with transcript.open(encoding="utf-8", errors="replace") as transcript_lines:
         for line in transcript_lines:
-            if any(marker in line for marker in REQUEST_LINK_MARKERS):
+            if not any(marker in line for marker in REQUEST_LINK_MARKERS):
+                continue
+            try:
                 yield json.loads(line)
+            except ValueError:
+                continue
 
 
 def claude_reply_texts(session_id: str, agent_directory: str) -> list[str]:

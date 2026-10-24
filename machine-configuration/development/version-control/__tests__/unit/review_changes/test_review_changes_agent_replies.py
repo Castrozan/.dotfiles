@@ -144,12 +144,16 @@ def test_nothing_is_detected_outside_herdr(monkeypatch):
     run_command.assert_not_called()
 
 
-def test_unreadable_transcript_detects_nothing(tmp_path, monkeypatch, herdr_pane):
+def test_a_torn_transcript_line_does_not_hide_earlier_replies(
+    tmp_path, monkeypatch, herdr_pane
+):
     monkeypatch.setattr(agent_replies, "CLAUDE_PROJECTS_DIRECTORY", tmp_path)
     transcript = tmp_path / "-work-my-project" / "session-1.jsonl"
-    transcript.parent.mkdir()
-    transcript.write_text(f"not json {FIRST_LINK}\n")
+    write_lines(transcript, [claude_entry("assistant", FIRST_LINK)])
+    with transcript.open("a") as transcript_file:
+        transcript_file.write(f'{{"type": "assistant", "message": "{LATEST_LINK}\n')
     with patch(
         "agent_replies.run_command", return_value=herdr_pane("claude", "session-1")
     ):
-        assert agent_replies.latest_request_link_in_active_agent() is None
+        detected_request = agent_replies.latest_request_link_in_active_agent()
+    assert detected_request.reference == "group/project!1"
