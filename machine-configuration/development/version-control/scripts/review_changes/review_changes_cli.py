@@ -39,6 +39,7 @@ def main(arguments: list[str]) -> int:
     try:
         detected_request = None if arguments else latest_request_link_in_active_agent()
         raw_target = arguments[0] if arguments else prompt_for_target(detected_request)
+        print("Fetching the review...", flush=True)
         review_in_lazygit(resolve_review_target(raw_target, detected_request))
     except ReviewTargetError as error:
         print(f"review-changes: {error}", file=sys.stderr)

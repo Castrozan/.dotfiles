@@ -31,9 +31,12 @@ def default_base_branch() -> str:
     return result.stdout.strip().removeprefix("origin/")
 
 
-def fetch_commit(reference: str) -> str:
-    run_git(["fetch", "--quiet", "origin", reference])
-    return run_git(["rev-parse", "FETCH_HEAD"])
+def fetch_commits(*references: str) -> list[str]:
+    run_git(["fetch", "--quiet", "origin", *references])
+    fetch_head = Path(
+        run_git(["rev-parse", "--path-format=absolute", "--git-path", "FETCH_HEAD"])
+    )
+    return [line.split("\t", 1)[0] for line in fetch_head.read_text().splitlines()]
 
 
 def local_branch_commit(branch: str) -> str | None:
@@ -82,12 +85,11 @@ def find_change_request_for_branch(branch: str) -> ChangeRequest | None:
 
 
 def review_target_against_base(
-    selector: str, head_commit: str, change_request: ChangeRequest | None
+    selector: str,
+    head_commit: str,
+    base_tip_commit: str,
+    change_request: ChangeRequest | None,
 ) -> ReviewTarget:
-    base_branch = (
-        change_request.base_branch if change_request else default_base_branch()
-    )
-    base_tip_commit = fetch_commit(base_branch)
     merge_base_commit = run_git(["merge-base", base_tip_commit, head_commit])
     return ReviewTarget(selector, head_commit, merge_base_commit, change_request)
 
@@ -95,16 +97,27 @@ def review_target_against_base(
 def review_target_of_request(request_link: RequestLink) -> ReviewTarget:
     enter_local_clone(request_link.repository)
     change_request = view_change_request(request_link.repository, request_link.number)
-    head_commit = fetch_commit(change_request.head_fetch_reference)
+    head_commit, base_tip_commit = fetch_commits(
+        change_request.head_fetch_reference, change_request.base_branch
+    )
     return review_target_against_base(
-        request_link.short_reference, head_commit, change_request
+        request_link.short_reference, head_commit, base_tip_commit, change_request
     )
 
 
 def review_target_of_branch(branch: str) -> ReviewTarget:
     change_request = find_change_request_for_branch(branch)
-    head_commit = local_branch_commit(branch) or fetch_commit(branch)
-    return review_target_against_base(branch, head_commit, change_request)
+    base_branch = (
+        change_request.base_branch if change_request else default_base_branch()
+    )
+    head_commit = local_branch_commit(branch)
+    if head_commit:
+        (base_tip_commit,) = fetch_commits(base_branch)
+    else:
+        head_commit, base_tip_commit = fetch_commits(branch, base_branch)
+    return review_target_against_base(
+        branch, head_commit, base_tip_commit, change_request
+    )
 
 
 def resolve_review_target(

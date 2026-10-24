@@ -19,8 +19,8 @@ MERGE_REQUEST = ChangeRequest(
 )
 
 
-def fake_fetch_commit(reference: str) -> str:
-    return f"commit-of-{reference}"
+def fake_fetch_commits(*references: str) -> list[str]:
+    return [f"commit-of-{reference}" for reference in references]
 
 
 def fake_run_git(arguments: list[str], working_directory=None) -> str:
@@ -35,7 +35,7 @@ def fake_run_git(arguments: list[str], working_directory=None) -> str:
 def git_doubles():
     with (
         patch("review_target.run_git", side_effect=fake_run_git),
-        patch("review_target.fetch_commit", side_effect=fake_fetch_commit),
+        patch("review_target.fetch_commits", side_effect=fake_fetch_commits),
         patch("review_target.origin_repository", return_value=CURRENT_REPOSITORY),
         patch("review_target.enter_local_clone") as enter_local_clone,
     ):
@@ -152,3 +152,21 @@ def test_detached_head_without_target_raises():
         pytest.raises(ReviewTargetError, match="detached"),
     ):
         review_target.resolve_review_target("")
+
+
+def test_one_fetch_returns_each_reference_commit_in_request_order(tmp_path):
+    fetch_head = tmp_path / "FETCH_HEAD"
+    fetch_head.write_text(
+        "head-commit\t\t'refs/pull/236/head' of github.com:owner/repo\n"
+        "base-commit\t\tbranch 'main' of github.com:owner/repo\n"
+    )
+    with patch("review_target.run_git", side_effect=["", str(fetch_head)]) as run_git:
+        commits = review_target.fetch_commits("pull/236/head", "main")
+    assert run_git.call_args_list[0].args[0] == [
+        "fetch",
+        "--quiet",
+        "origin",
+        "pull/236/head",
+        "main",
+    ]
+    assert commits == ["head-commit", "base-commit"]
