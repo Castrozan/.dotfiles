@@ -10,7 +10,11 @@ def run_command(
     arguments: list[str], working_directory: Path | None = None
 ) -> subprocess.CompletedProcess:
     return subprocess.run(
-        arguments, capture_output=True, text=True, cwd=working_directory
+        arguments,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        cwd=working_directory,
     )
 
 

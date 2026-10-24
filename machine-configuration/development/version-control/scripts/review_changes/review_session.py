@@ -1,6 +1,8 @@
 import json
 import os
+import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 from change_requests import format_change_request
@@ -65,7 +67,8 @@ def open_description_pane(description_file: Path) -> str | None:
     return description_pane_identifier
 
 
-def review_in_lazygit(review_target: ReviewTarget, review_directory: Path) -> None:
+def review_in_lazygit(review_target: ReviewTarget) -> None:
+    review_directory = Path(tempfile.mkdtemp(prefix="review-changes-"))
     worktree_directory = review_directory / "worktree"
     description_pane_identifier = None
     try:
@@ -78,6 +81,7 @@ def review_in_lazygit(review_target: ReviewTarget, review_directory: Path) -> No
             description_pane_identifier = open_description_pane(description_file)
         subprocess.run(["lazygit"], cwd=worktree_directory)
     finally:
+        run_command(["git", "worktree", "remove", "--force", str(worktree_directory)])
+        shutil.rmtree(review_directory, ignore_errors=True)
         if description_pane_identifier:
             run_command(["herdr", "pane", "close", description_pane_identifier])
-        run_command(["git", "worktree", "remove", "--force", str(worktree_directory)])
