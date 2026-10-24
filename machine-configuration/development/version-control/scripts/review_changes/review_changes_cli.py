@@ -1,7 +1,7 @@
 import signal
 import sys
 
-from command_runner import ReviewTargetError, run_git
+from review_command_runner import ReviewTargetError, run_git
 from review_session import review_in_lazygit
 from review_target import resolve_review_target
 

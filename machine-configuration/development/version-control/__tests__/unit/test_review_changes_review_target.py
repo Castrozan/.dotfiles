@@ -4,7 +4,7 @@ import pytest
 
 import review_target
 from change_requests import ChangeRequest
-from command_runner import ReviewTargetError
+from review_command_runner import ReviewTargetError
 
 MERGE_REQUEST = ChangeRequest(
     title="Title",

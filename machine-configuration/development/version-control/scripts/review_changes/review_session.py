@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 from change_requests import format_change_request
-from command_runner import run_command, run_git
+from review_command_runner import run_command, run_git
 from review_target import ReviewTarget
 
 LAZYGIT_SHARE_OF_REVIEW_TAB = "0.65"

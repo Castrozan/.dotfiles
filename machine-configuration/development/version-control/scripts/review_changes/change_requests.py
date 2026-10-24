@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 
-from command_runner import run_command, run_git
+from review_command_runner import run_command, run_git
 
 
 @dataclass(frozen=True)
