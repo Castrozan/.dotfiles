@@ -35,14 +35,14 @@ When the reader sees only a terminal, also draw the process in Unicode box drawi
 diffs cleanly. Draw it as a C4 dynamic view: the human owner on top, agents and scripts as containers inside the system
 boundary, external systems in a bottom row, and relationships numbered in step order with a step key beneath. Size it to
 one full screen, about 150 columns by 60 lines: a vertical flow of every step overflows the screen, and a compressed one
-drops the labels that make it readable.
+drops the labels that make it readable. Keep every gate, cap, and join rule in an arrow label or the step key.
 
-Terminal Mermaid renderers parse only
-a subset: shapes beyond plain boxes and `class` styling lines print as literal text or phantom nodes, and `stateDiagram`
-is mostly unsupported, so never present a terminal render as the diagram without checking it.
+Terminal Mermaid renderers parse only a subset: shapes beyond plain boxes and `class` styling lines print as literal
+text or phantom nodes, and `stateDiagram` is mostly unsupported, so never present a terminal render as the diagram
+without checking it.
 
 ### Rich view
 
 When the harness offers a rendered surface such as an artifact, a document, a pull request, or a note, publish the
-Mermaid there for the human and keep the terminal outline in the conversation. For dense graphs where Mermaid layout
+Mermaid there for the human and keep the terminal view in the conversation. For dense graphs where Mermaid layout
 breaks down, emit Graphviz DOT as an alternate view, never as the source of truth.
