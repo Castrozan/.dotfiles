@@ -28,6 +28,16 @@ def entries_mentioning_requests(transcript: Path) -> Iterator[dict]:
                 continue
 
 
+def is_main_assistant_entry(entry: dict) -> bool:
+    return entry.get("type") == "assistant" and not entry.get("isSidechain")
+
+
+def claude_text_blocks(content: str | list[dict]) -> list[str]:
+    if isinstance(content, str):
+        return [content]
+    return [block["text"] for block in content if block["type"] == "text"]
+
+
 def claude_reply_texts(session_id: str, agent_directory: str) -> list[str]:
     project_directory = CLAUDE_PROJECT_DIRECTORY_SEPARATOR.sub("-", agent_directory)
     transcript = CLAUDE_PROJECTS_DIRECTORY / project_directory / f"{session_id}.jsonl"
@@ -35,13 +45,8 @@ def claude_reply_texts(session_id: str, agent_directory: str) -> list[str]:
         return []
     reply_texts = []
     for entry in entries_mentioning_requests(transcript):
-        if entry.get("type") != "assistant" or entry.get("isSidechain"):
-            continue
-        content = entry["message"]["content"]
-        if isinstance(content, str):
-            reply_texts.append(content)
-            continue
-        reply_texts += [block["text"] for block in content if block["type"] == "text"]
+        if is_main_assistant_entry(entry):
+            reply_texts += claude_text_blocks(entry["message"]["content"])
     return reply_texts
 
 
