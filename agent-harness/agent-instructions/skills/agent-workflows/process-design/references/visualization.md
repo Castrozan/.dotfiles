@@ -9,7 +9,7 @@ small investigation process.
 
 Use `flowchart` with one `subgraph` lane per actor that runs concurrently with the main path, such as background workers
 and watchers. Draw human gates and other sequential checkpoints inline on the main path instead of in their own lane,
-because a gate lane forces every approval edge across the whole diagram. Give each palette element one shape: stadium
+because a gate lane forces every approval edge across the whole diagram. Give each element one shape: stadium
 `(["..."])` for start and end, rounded `("...")` for agent steps, rectangle `["..."]` for deterministic steps, rhombus
 `{"..."}` for routers, circle `(("..."))` for splits and joins, hexagon `{{"..."}}` for human gates, asymmetric
 `>"..."]` for watchers, cylinder `[("...")]` for persisted state, and subroutine `[["..."]]` for sub-processes.
@@ -32,10 +32,11 @@ such as irreversible actions to `critical`.
 ### Terminal view
 
 When the reader sees only a terminal, also draw the process in Unicode box drawing, so it reads without any renderer and
-diffs cleanly. Draw it as a C4 dynamic view: the human owner on top, agents and scripts as containers inside the system
-boundary, external systems in a bottom row, and relationships numbered in step order with a step key beneath. Size it to
-one full screen, about 150 columns by 60 lines: a vertical flow of every step overflows the screen, and a compressed one
-drops the labels that make it readable. Keep every gate, cap, and join rule in an arrow label or the step key.
+diffs cleanly. Draw it as a C4 dynamic view: the human owner on top, each block as a container labeled with its block
+name inside the system boundary, external systems in a bottom row, and relationships numbered in step order with a step
+key beneath. Size it to one full screen, about 150 columns by 60 lines: a vertical flow of every step overflows the
+screen, and a compressed one drops the labels that make it readable. Keep every gate, cap, and join rule in an arrow
+label or the step key.
 
 Terminal Mermaid renderers parse only a subset: shapes beyond plain boxes and `class` styling lines print as literal
 text or phantom nodes, and `stateDiagram` is mostly unsupported, so never present a terminal render as the diagram
@@ -44,5 +45,5 @@ without checking it.
 ### Rich view
 
 When the harness offers a rendered surface such as an artifact, a document, a pull request, or a note, publish the
-Mermaid there for the human and keep the terminal view in the conversation. For dense graphs where Mermaid layout
-breaks down, emit Graphviz DOT as an alternate view, never as the source of truth.
+Mermaid there for the human and keep the terminal view in the conversation. For dense graphs where Mermaid layout breaks
+down, emit Graphviz DOT as an alternate view, never as the source of truth.

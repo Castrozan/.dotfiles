@@ -1,6 +1,6 @@
 ---
 name: process-design
-description: "Co-design multi-step, multi-agent processes or workflows from an established element palette: topology, node contracts, failure-taxonomy critique, Mermaid diagrams, harness mapping. Use before orchestrating complex agent work."
+description: "Co-design multi-step, multi-agent processes by composing capability blocks from a toolbox (agents, deterministic tools, monitors, gates, memory), redrawing with the human each round, then suggesting a dry run. Use before orchestrating complex agent work."
 ---
 
 ### Core authority
@@ -19,14 +19,14 @@ When one agent finishes the task in one pass, say so and stop.
 
 ### Co-design loop
 
-Run the design as a conversation with the human, or as the same loop alone when acting autonomously: 1) fix the outcome,
-the done check, constraints, the budget in tokens, time, and agents, and every irreversible or owner-only action; 2) ask
-one question at a time, only for forks evidence cannot settle; 3) produce two or three candidates with different
-topologies and recommend one with its tradeoff; 4) iterate on the chosen diagram and contracts; 5) before any execution
-starts, get the human's approval, or when autonomous, record the chosen candidate and the evidence that decided it.
+Run the design as this loop with the human: 1) the human frames the goal; 2) propose the smallest composition of toolbox
+blocks that fits it, naming the nearest alternative composition and why it lost; 3) draw it; 4) the human reframes the
+goal, and you propose the block change and redraw, repeating until the human is satisfied; 5) draw the final composition
+with every block's contract; 6) suggest a dry run before the first real action.
 
-Do not drop the alternative candidates because the first idea looks adequate: comparing topologies is where most of the
-design value appears, and a lone candidate hides its own cost.
+Turn each framing into the outcome, the done check, constraints, the budget in tokens, time, and agents, and every
+irreversible or owner-only action; ask one question at a time, only for forks evidence cannot settle. When acting
+autonomously, run the same loop alone and record the evidence behind each change of composition.
 
 ### Argue it down first
 
@@ -35,24 +35,41 @@ tools, a fixed workflow, then multiple agents. Multi-agent designs win on decomp
 tightly coupled, or tool-heavy work, and multiply token cost; tune a single agent's brief before adding topology. Read
 [topology selection](references/topology-selection.md) to classify the task and pick the shape.
 
-### Compose from the palette
+### Compose from the toolbox
 
-Build every process from the named elements in [element palette](references/element-palette.md): steps, control-flow
-patterns, coordination strategies, allocation, state, and failure handling. Use their established names so the design
-maps onto any framework or harness. Add a new element only when no palette element fits, and name the ones rejected.
+Build every process from capability blocks, one file each, and load only the blocks a proposal uses. Read
+[toolbox](references/toolbox.md) for ports, composition rules, and how a composition changes, and
+[wiring](references/wiring.md) for the control-flow, state, and failure names that connect blocks.
+
+Agents decide who thinks: [solo loop](references/blocks/solo-loop.md), [main and
+helpers](references/blocks/main-and-helpers.md), [delegator](references/blocks/delegator.md),
+[orchestrator](references/blocks/orchestrator.md), [scouts](references/blocks/scouts.md),
+[reviewers](references/blocks/reviewers.md), and [peer session](references/blocks/peer-session.md).
+
+Hands perform deterministic actions: [skill and script](references/blocks/skill-and-script.md), [workflow
+script](references/blocks/workflow-script.md), and [MCP server](references/blocks/mcp-server.md). Eyes watch the running
+process: [main short loop](references/blocks/main-short-loop.md), [monitor
+subagents](references/blocks/monitor-subagents.md), [script monitor](references/blocks/script-monitor.md), and
+[heartbeat](references/blocks/heartbeat.md).
+
+Controls bound risk: [human gate](references/blocks/human-gate.md), [guardrail
+hook](references/blocks/guardrail-hook.md), [canary and waves](references/blocks/canary-and-waves.md), and [dry
+run](references/blocks/dry-run.md). Memory persists and isolates: [tracker](references/blocks/tracker.md), and
+[worktree](references/blocks/worktree.md). Edges start and finish the process: [trigger](references/blocks/trigger.md),
+and [report](references/blocks/report.md).
 
 ### Specify node contracts
 
-Give every agent node a delegation brief: objective, inputs, output shape, allowed capabilities, effort budget, and stop
-condition. Give every node and loop a failure path and a checkpoint, every join its completion rule, every fan-out its
-count rule and ceiling, and every watcher its signals, baseline of known noise, thresholds, cadence, and exit. A node
-missing any of these is incomplete, not something to decide at runtime or to patch with follow-up messages.
+Give every agent block a delegation brief: objective, inputs, output shape, allowed capabilities, effort budget, and
+stop condition. Give every node and loop a failure path and a checkpoint, every join its completion rule, every fan-out
+its count rule and ceiling, and every watcher its signals, baseline of known noise, thresholds, cadence, and exit. A
+node missing any of these is incomplete, not something to decide at runtime or to patch with follow-up messages.
 
 ### Critique before running
 
-Run [design review](references/design-review.md) on the recommended design: the failure taxonomy walk, a pre-mortem, a
-coupling pass for parallel writers, the exception matrix, and the anti-pattern list. Fix findings in the design and
-redraw it before approval.
+Run [design review](references/design-review.md) on the composition before its final drawing: the failure taxonomy walk,
+a pre-mortem, a coupling pass for parallel writers, the exception matrix, and the anti-pattern list. Fix findings in the
+design and redraw it.
 
 ### Visualize
 

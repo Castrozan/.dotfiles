@@ -24,7 +24,7 @@ structure matrix idea applied to agents, and it is the main defense against para
 ### Exception matrix
 
 For every node, confirm a handling exists for work failure, deadline, guardrail violation, and external cancellation, as
-listed in the [element palette](element-palette.md#failure-handling). A node whose failure has no path stalls the whole
+listed in the [wiring](wiring.md#failure-handling). A node whose failure has no path stalls the whole
 process or fails silently; draw the failure edge or document why the failure cannot occur.
 
 ### Anti-patterns

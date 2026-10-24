@@ -1,8 +1,8 @@
 ### Mapping rule
 
-Map each palette element to the narrowest mechanism the target runtime offers, and keep control flow in the main agent
-whenever the runtime has no mechanism for it. Check the runtime's current documentation for concurrency caps, background
-behavior, and feature status before committing to a mapping, because these change between releases.
+Map each block and wiring element to the narrowest mechanism the target runtime offers, and keep control flow in the
+main agent whenever the runtime has no mechanism for it. Check the runtime's current documentation for concurrency caps,
+background behavior, and feature status before committing to a mapping, because these change between releases.
 
 ### Claude Code
 
