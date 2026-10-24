@@ -31,6 +31,25 @@ def prepare_review_worktree(
     )
 
 
+def move_review_into_its_own_tab(review_target: ReviewTarget) -> None:
+    review_pane_identifier = os.environ.get("HERDR_PANE_ID")
+    if not review_pane_identifier:
+        return
+    run_command(["herdr", "pane", "zoom", review_pane_identifier, "--off"])
+    run_command(
+        [
+            "herdr",
+            "pane",
+            "move",
+            review_pane_identifier,
+            "--new-tab",
+            "--label",
+            f"review {review_target.selector}",
+            "--focus",
+        ]
+    )
+
+
 def open_description_pane(description_file: Path) -> str | None:
     review_pane_identifier = os.environ.get("HERDR_PANE_ID")
     if not review_pane_identifier:
@@ -73,6 +92,7 @@ def review_in_lazygit(review_target: ReviewTarget) -> None:
     description_pane_identifier = None
     try:
         prepare_review_worktree(review_target, worktree_directory)
+        move_review_into_its_own_tab(review_target)
         if review_target.change_request:
             description_file = review_directory / "description.md"
             description_file.write_text(

@@ -1,7 +1,10 @@
 import json
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 import change_requests
+from review_command_runner import ReviewTargetError
 
 
 def completed_process(returncode: int, stdout: str = "") -> MagicMock:
@@ -33,9 +36,25 @@ class TestViewGithubPullRequest:
             head_fetch_reference="pull/12/head",
         )
 
-    def test_returns_none_when_no_pull_request_matches(self):
-        with patch("change_requests.run_command", return_value=completed_process(1)):
-            assert change_requests.view_github_pull_request("missing") is None
+    def test_lookup_failure_raises_the_cli_message_on_one_line(self):
+        failed_lookup = completed_process(1)
+        failed_lookup.stderr = "  ERROR\n\n  dial tcp 10.0.0.1:443:\n  i/o timeout.\n"
+        with (
+            patch("change_requests.run_command", return_value=failed_lookup),
+            pytest.raises(
+                ReviewTargetError, match="^ERROR dial tcp 10.0.0.1:443: i/o timeout.$"
+            ),
+        ):
+            change_requests.view_github_pull_request("12")
+
+    def test_lookup_failure_without_cli_message_names_the_missing_request(self):
+        failed_lookup = completed_process(1)
+        failed_lookup.stderr = ""
+        with (
+            patch("change_requests.run_command", return_value=failed_lookup),
+            pytest.raises(ReviewTargetError, match="no MR/PR missing found"),
+        ):
+            change_requests.view_gitlab_merge_request("missing")
 
 
 class TestViewGitlabMergeRequest:

@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 
-from review_command_runner import run_command, run_git
+from review_command_runner import ReviewTargetError, run_command, run_git
 
 
 @dataclass(frozen=True)
@@ -13,16 +13,21 @@ class ChangeRequest:
     head_fetch_reference: str
 
 
+def forge_lookup_error(result, selector: str) -> ReviewTargetError:
+    forge_message = " ".join(result.stderr.split())
+    return ReviewTargetError(forge_message or f"no MR/PR {selector} found on origin")
+
+
 def origin_is_github() -> bool:
     return "github.com" in run_git(["remote", "get-url", "origin"])
 
 
-def view_github_pull_request(selector: str) -> ChangeRequest | None:
+def view_github_pull_request(selector: str) -> ChangeRequest:
     result = run_command(
         ["gh", "pr", "view", selector, "--json", "number,title,body,url,baseRefName"]
     )
     if result.returncode != 0:
-        return None
+        raise forge_lookup_error(result, selector)
     pull_request = json.loads(result.stdout)
     return ChangeRequest(
         title=pull_request["title"],
@@ -33,10 +38,10 @@ def view_github_pull_request(selector: str) -> ChangeRequest | None:
     )
 
 
-def view_gitlab_merge_request(selector: str) -> ChangeRequest | None:
+def view_gitlab_merge_request(selector: str) -> ChangeRequest:
     result = run_command(["glab", "mr", "view", selector, "--output", "json"])
     if result.returncode != 0:
-        return None
+        raise forge_lookup_error(result, selector)
     merge_request = json.loads(result.stdout)
     return ChangeRequest(
         title=merge_request["title"],
@@ -47,7 +52,7 @@ def view_gitlab_merge_request(selector: str) -> ChangeRequest | None:
     )
 
 
-def view_change_request(selector: str) -> ChangeRequest | None:
+def view_change_request(selector: str) -> ChangeRequest:
     if origin_is_github():
         return view_github_pull_request(selector)
     return view_gitlab_merge_request(selector)

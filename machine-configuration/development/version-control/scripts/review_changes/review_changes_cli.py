@@ -1,7 +1,8 @@
 import signal
 import sys
 
-from review_command_runner import ReviewTargetError, run_git
+from request_links import enter_repository_of
+from review_command_runner import ReviewTargetError, run_command
 from review_session import review_in_lazygit
 from review_target import resolve_review_target
 
@@ -21,15 +22,16 @@ def route_terminating_signals_through_cleanup() -> None:
 
 
 def prompt_for_target() -> str:
-    current_branch = run_git(["branch", "--show-current"])
-    return input(f"MR/PR number or branch [{current_branch}]: ")
+    current_branch = run_command(["git", "branch", "--show-current"]).stdout.strip()
+    default_hint = f" [{current_branch}]" if current_branch else ""
+    return input(f"MR/PR number, link or branch{default_hint}: ")
 
 
 def main(arguments: list[str]) -> int:
     route_terminating_signals_through_cleanup()
     try:
         raw_target = arguments[0] if arguments else prompt_for_target()
-        review_in_lazygit(resolve_review_target(raw_target))
+        review_in_lazygit(resolve_review_target(enter_repository_of(raw_target)))
     except ReviewTargetError as error:
         print(f"review-changes: {error}", file=sys.stderr)
         input("Press Enter to close")

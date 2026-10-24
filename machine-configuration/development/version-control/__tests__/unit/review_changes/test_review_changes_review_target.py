@@ -52,10 +52,13 @@ def test_request_number_reviews_the_fetched_request_head_against_its_target(
     assert resolved.change_request == MERGE_REQUEST
 
 
-def test_unknown_request_number_raises(git_doubles):
+def test_request_lookup_failure_surfaces_the_forge_message(git_doubles):
     with (
-        patch("review_target.view_change_request", return_value=None),
-        pytest.raises(ReviewTargetError, match="no MR/PR 404"),
+        patch(
+            "review_target.view_change_request",
+            side_effect=ReviewTargetError("dial tcp 10.0.0.1:443: i/o timeout"),
+        ),
+        pytest.raises(ReviewTargetError, match="i/o timeout"),
     ):
         review_target.resolve_review_target("404")
 
@@ -78,7 +81,10 @@ def test_branch_without_request_or_local_copy_uses_the_remote_branch_and_default
     git_doubles,
 ):
     with (
-        patch("review_target.view_change_request", return_value=None),
+        patch(
+            "review_target.view_change_request",
+            side_effect=ReviewTargetError("no merge request for branch"),
+        ),
         patch("review_target.local_branch_commit", return_value=None),
         patch("review_target.default_base_branch", return_value="main"),
     ):

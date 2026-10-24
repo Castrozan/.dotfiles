@@ -10,6 +10,7 @@ FALLBACK_BASE_BRANCH = "main"
 
 @dataclass(frozen=True)
 class ReviewTarget:
+    selector: str
     head_commit: str
     merge_base_commit: str
     change_request: ChangeRequest | None
@@ -43,23 +44,29 @@ def resolve_selector(raw_target: str) -> str:
     return selector
 
 
+def find_change_request_for_branch(branch: str) -> ChangeRequest | None:
+    try:
+        return view_change_request(branch)
+    except ReviewTargetError:
+        return None
+
+
 def resolve_head(selector: str) -> tuple[ChangeRequest | None, str]:
     request_number_match = REQUEST_NUMBER_PATTERN.match(selector)
     if not request_number_match:
-        change_request = view_change_request(selector)
+        change_request = find_change_request_for_branch(selector)
         return change_request, local_branch_commit(selector) or fetch_commit(selector)
 
     change_request = view_change_request(request_number_match.group(1))
-    if change_request is None:
-        raise ReviewTargetError(f"no MR/PR {selector} found on origin")
     return change_request, fetch_commit(change_request.head_fetch_reference)
 
 
 def resolve_review_target(raw_target: str) -> ReviewTarget:
-    change_request, head_commit = resolve_head(resolve_selector(raw_target))
+    selector = resolve_selector(raw_target)
+    change_request, head_commit = resolve_head(selector)
     base_branch = (
         change_request.base_branch if change_request else default_base_branch()
     )
     base_tip_commit = fetch_commit(base_branch)
     merge_base_commit = run_git(["merge-base", base_tip_commit, head_commit])
-    return ReviewTarget(head_commit, merge_base_commit, change_request)
+    return ReviewTarget(selector, head_commit, merge_base_commit, change_request)
