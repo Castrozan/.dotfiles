@@ -27,6 +27,13 @@ let
           "ctrl+e" = "chat:undo";
         };
       }
+      {
+        context = "Scroll";
+        bindings = {
+          "alt+pageup" = "scroll:lineUp";
+          "alt+pagedown" = "scroll:lineDown";
+        };
+      }
     ];
   };
 
