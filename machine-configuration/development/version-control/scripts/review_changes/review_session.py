@@ -1,15 +1,18 @@
 import json
 import os
+import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
-from change_requests import format_change_request
+from change_requests import ChangeRequest, format_change_request
 from review_command_runner import run_command, run_git
 from review_target import ReviewTarget
 
 LAZYGIT_SHARE_OF_REVIEW_TAB = "0.65"
+FORGE_REVIEW_KEY = "I"
 
 
 def prepare_review_worktree(
@@ -86,10 +89,45 @@ def open_description_pane(description_file: Path) -> str | None:
     return description_pane_identifier
 
 
+def forge_review_lazygit_config(change_request: ChangeRequest) -> str:
+    forge_review_command = shlex.join(
+        [
+            sys.executable,
+            str(Path(__file__).with_name("review_changes_cli.py")),
+            "--forge-review",
+            change_request.web_url,
+            change_request.head_branch,
+        ]
+    )
+    return (
+        "customCommands:\n"
+        f"  - key: {FORGE_REVIEW_KEY}\n"
+        "    context: global\n"
+        "    output: terminal\n"
+        "    description: Comment on and review this MR/PR in Neovim\n"
+        f"    command: {json.dumps(forge_review_command)}\n"
+    )
+
+
+def lazygit_arguments(extra_config_file: Path | None) -> list[str]:
+    if extra_config_file is None:
+        return ["lazygit"]
+    user_config_directory = run_command(["lazygit", "--print-config-dir"]).stdout
+    user_config_file = Path(user_config_directory.strip()) / "config.yml"
+    config_files = [user_config_file] if user_config_file.exists() else []
+    config_files.append(extra_config_file)
+    return [
+        "lazygit",
+        "--use-config-file",
+        ",".join(str(config_file) for config_file in config_files),
+    ]
+
+
 def review_in_lazygit(review_target: ReviewTarget) -> None:
     review_directory = Path(tempfile.mkdtemp(prefix="review-changes-"))
     worktree_directory = review_directory / "worktree"
     description_pane_identifier = None
+    forge_review_config_file = None
     try:
         prepare_review_worktree(review_target, worktree_directory)
         move_review_into_its_own_tab(review_target)
@@ -99,7 +137,13 @@ def review_in_lazygit(review_target: ReviewTarget) -> None:
                 format_change_request(review_target.change_request)
             )
             description_pane_identifier = open_description_pane(description_file)
-        subprocess.run(["lazygit"], cwd=worktree_directory)
+            forge_review_config_file = review_directory / "forge-review.yml"
+            forge_review_config_file.write_text(
+                forge_review_lazygit_config(review_target.change_request)
+            )
+        subprocess.run(
+            lazygit_arguments(forge_review_config_file), cwd=worktree_directory
+        )
     finally:
         run_command(["git", "worktree", "remove", "--force", str(worktree_directory)])
         shutil.rmtree(review_directory, ignore_errors=True)
