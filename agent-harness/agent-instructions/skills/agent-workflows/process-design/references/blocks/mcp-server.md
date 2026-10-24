@@ -21,4 +21,4 @@ enforces.
 
 ### Harness
 
-Shared MCP servers in the plugin; Codex and OpenCode read the same server definitions.
+Any MCP-capable harness; Claude Code, Codex, and OpenCode all connect to MCP servers.

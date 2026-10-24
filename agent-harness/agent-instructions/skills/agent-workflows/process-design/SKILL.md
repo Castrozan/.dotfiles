@@ -58,7 +58,7 @@ run](references/blocks/dry-run.md). Memory persists and isolates: [tracker](refe
 [worktree](references/blocks/worktree.md). Edges start and finish the process: [trigger](references/blocks/trigger.md),
 and [report](references/blocks/report.md).
 
-### Specify node contracts
+### Specify block contracts
 
 Give every agent block a delegation brief: objective, inputs, output shape, allowed capabilities, effort budget, and
 stop condition. Give every node and loop a failure path and a checkpoint, every join its completion rule, every fan-out
