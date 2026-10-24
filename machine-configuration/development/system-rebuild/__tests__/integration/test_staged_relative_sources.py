@@ -10,7 +10,7 @@ from staged_rebuild_support import (
     SOURCE_PATH,
     SCRIPTS,
 )
-from test_staged_sources import prefetch_environment
+from test_staged_sources import PREFETCH_TIMEOUT_SECONDS, prefetch_environment
 
 
 @pytest.mark.parametrize("entrypoint", ["public", "private"])
@@ -37,7 +37,7 @@ def test_relative_inputs_share_parent_source_and_preserve_nested_archived_inputs
         env=environment,
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=PREFETCH_TIMEOUT_SECONDS,
     )
     assert completed.returncode == 0, completed.stderr
     prepared = json.loads((tmp_path / "request.json").read_text())
