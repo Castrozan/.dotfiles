@@ -24,7 +24,7 @@ from pathlib import Path
 
 command = Path(sys.argv[0]).name
 with open(os.environ["COMMAND_RECORD"], "a") as record:
-    record.write(json.dumps({"command": command, "arguments": sys.argv[1:], "coding_directory": os.environ.get("PI_CODING_AGENT_DIR"), "agent_directory": os.environ.get("PI_AGENT_DIR")}) + "\\n")
+    record.write(json.dumps({"command": command, "arguments": sys.argv[1:], "coding_directory": os.environ.get("PI_CODING_AGENT_DIR"), "agent_directory": os.environ.get("PI_AGENT_DIR"), "loop_guard_cycle_repeats": os.environ.get("PI_LOOP_GUARD_CYCLE_REPEATS")}) + "\\n")
 if command == "curl":
     print('{"status":"ok"}')
 if command == "pi":
@@ -101,6 +101,15 @@ def test_local_agent_waits_for_readiness_and_preserves_actor_output(
     ]
     assert commands[2]["coding_directory"].endswith("actor profile")
     assert commands[2]["agent_directory"] == commands[2]["coding_directory"]
+
+
+def test_local_agent_stops_a_repeating_tool_cycle_after_two_rounds(
+    local_agent_launcher,
+):
+    _, commands = invoke_local_agent(local_agent_launcher)
+
+    assert commands[-1]["command"] == "pi"
+    assert commands[-1]["loop_guard_cycle_repeats"] == "2"
 
 
 def test_socket_start_failure_prevents_readiness_and_agent_launch(local_agent_launcher):
