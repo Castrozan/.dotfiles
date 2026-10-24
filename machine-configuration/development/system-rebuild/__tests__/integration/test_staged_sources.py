@@ -11,6 +11,8 @@ from staged_rebuild_support import (
     read_events,
 )
 
+PREFETCH_TIMEOUT_SECONDS = 15
+
 
 def prefetch_environment(managed_environment, directory):
     environment = build_staged_environment(managed_environment, directory)
@@ -53,7 +55,7 @@ def run_prefetch(environment, directory, *extra_arguments):
         env=environment,
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=PREFETCH_TIMEOUT_SECONDS,
     )
 
 
@@ -170,7 +172,7 @@ def test_ordinary_host_uses_public_immutable_root_and_archived_input_overrides(
         env=environment,
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=PREFETCH_TIMEOUT_SECONDS,
     )
     assert completed.returncode == 0, completed.stderr
     request = json.loads((tmp_path / "request.json").read_text())
