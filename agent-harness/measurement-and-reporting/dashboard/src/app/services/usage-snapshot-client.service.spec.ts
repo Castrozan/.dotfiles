@@ -44,12 +44,9 @@ describe('UsageSnapshotClientService', () => {
         'pageToken=second',
         okResponse({ items: [{ name: 'usage/b.json' }, { name: 'usage/notes.txt' }] }),
       ],
-      [
-        '/storage/v1/b/',
-        okResponse({ items: [{ name: 'usage/a.json' }], nextPageToken: 'second' }),
-      ],
-      ['usage/a.json', okResponse({ account_label: 'a' })],
-      ['usage/b.json', okResponse({ account_label: 'b' })],
+      ['/o?', okResponse({ items: [{ name: 'usage/a.json' }], nextPageToken: 'second' })],
+      ['usage%2Fa.json', okResponse({ account_label: 'a' })],
+      ['usage%2Fb.json', okResponse({ account_label: 'b' })],
     ]);
     const { service } = buildService(responses);
 
@@ -60,12 +57,9 @@ describe('UsageSnapshotClientService', () => {
 
   it('drops snapshot objects the transport could not fetch', async () => {
     const responses = new Map<string, JsonHttpResponse>([
-      [
-        '/storage/v1/b/',
-        okResponse({ items: [{ name: 'usage/a.json' }, { name: 'usage/gone.json' }] }),
-      ],
-      ['usage/a.json', okResponse({ account_label: 'a' })],
-      ['usage/gone.json', { ok: false, status: 403, body: null }],
+      ['/o?', okResponse({ items: [{ name: 'usage/a.json' }, { name: 'usage/gone.json' }] })],
+      ['usage%2Fa.json', okResponse({ account_label: 'a' })],
+      ['usage%2Fgone.json', { ok: false, status: 403, body: null }],
     ]);
     const { service } = buildService(responses);
 
@@ -76,7 +70,7 @@ describe('UsageSnapshotClientService', () => {
 
   it('raises when the listing request itself fails', async () => {
     const responses = new Map<string, JsonHttpResponse>([
-      ['/storage/v1/b/', { ok: false, status: 500, body: null }],
+      ['/o?', { ok: false, status: 500, body: null }],
     ]);
     const { service } = buildService(responses);
 
@@ -94,13 +88,13 @@ describe('UsageSnapshotClientService', () => {
     ['numeric object name', { items: [{ name: 7 }] }],
     ['numeric page token', { nextPageToken: 7 }],
   ])('rejects a listing with %s', async (_description, body) => {
-    const { service } = buildService(new Map([['/storage/v1/b/', okResponse(body)]]));
+    const { service } = buildService(new Map([['/o?', okResponse(body)]]));
 
     await expect(service.fetchAllSnapshots()).rejects.toThrow('Invalid snapshot listing response');
   });
 
   it('accepts an empty listing', async () => {
-    const { service, jsonHttpClient } = buildService(new Map([['/storage/v1/b/', okResponse({})]]));
+    const { service, jsonHttpClient } = buildService(new Map([['/o?', okResponse({})]]));
 
     await expect(service.fetchAllSnapshots()).resolves.toEqual([]);
     expect(jsonHttpClient.requestedUrls).toHaveLength(1);
@@ -134,7 +128,7 @@ describe('UsageSnapshotClientService', () => {
     ['boolean last date', { stats_last_computed_date: false }],
   ])('drops a snapshot with %s while retaining valid snapshots', async (_description, body) => {
     const responses = new Map<string, JsonHttpResponse>([
-      ['/storage/v1/b/', okResponse({ items: [{ name: 'good.json' }, { name: 'bad.json' }] })],
+      ['/o?', okResponse({ items: [{ name: 'good.json' }, { name: 'bad.json' }] })],
       ['good.json', okResponse({ account_label: 'good' })],
       ['bad.json', okResponse(body)],
     ]);
@@ -150,7 +144,7 @@ describe('UsageSnapshotClientService', () => {
   ])('accepts optional snapshot fields in %j', async (snapshot) => {
     const { service } = buildService(
       new Map([
-        ['/storage/v1/b/', okResponse({ items: [{ name: 'usage.json' }] })],
+        ['/o?', okResponse({ items: [{ name: 'usage.json' }] })],
         ['usage.json', okResponse(snapshot)],
       ]),
     );
@@ -172,7 +166,7 @@ describe('UsageSnapshotClientService', () => {
     };
     const { service } = buildService(
       new Map<string, JsonHttpResponse>([
-        ['/storage/v1/b/', okResponse({ items: [{ name: 'usage.json' }] })],
+        ['/o?', okResponse({ items: [{ name: 'usage.json' }] })],
         ['usage.json', okResponse(snapshot)],
       ]),
     );
