@@ -71,6 +71,7 @@ in
         defaultProvider = "chise";
         defaultModel = modelId;
         defaultThinkingLevel = "off";
+        extensions = [ "-builtin:mcp" ];
         compaction = {
           enabled = true;
           reserveTokens = 7168;

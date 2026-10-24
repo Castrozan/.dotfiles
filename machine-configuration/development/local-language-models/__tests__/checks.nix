@@ -118,6 +118,14 @@ in
     && builtins.hasAttr "registerProductionPiPlugin-.pi/agent" localModel.home.activation
   ) "both Pi profiles must receive and register the same shared plugin and native loaders";
 
+  domain-local-agent-yields-mcp-to-the-adapter =
+    mkEvalCheck "domain-local-agent-yields-mcp-to-the-adapter"
+      (
+        builtins.hasAttr ".local/share/pi-local/extensions/mcp-adapter" localModel.home.file
+        && lib.elem "-builtin:mcp" (localAgentSettings.extensions or [ ])
+      )
+      "the local profile's settings are read-only, so they must disable Pi's built-in MCP themselves; the MCP adapter cannot write that choice and Pi warns about the /mcp clash on every launch";
+
   domain-local-model-linux-only = mkEvalCheck "domain-local-model-linux-only" (
     !(builtins.hasAttr "local-language-model" darwinLocalModel.systemd.user.services)
     && !(builtins.hasAttr "local-language-model-proxy" darwinLocalModel.systemd.user.services)
