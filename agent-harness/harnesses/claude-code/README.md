@@ -11,8 +11,8 @@ supported platform.
 
 ## Ownership boundaries
 
-- Shared MCP servers travel in the production plugin's `mcp-servers.nix`; `mcps/` adds only agent-only Claude servers
-  and the selector clawde agents use to pick their servers.
+- Shared MCP servers travel in the production plugin's `mcp-servers.nix`; `mcps/` keeps only the Claude-side wiring
+  around them.
 - Hooks come from `agent-harness/hooks/`. The Claude integration deploys the shared runtime flat under
   `~/.claude/hooks/` and renders event registrations from the shared event-to-dispatcher map. Its walker deploys `.md`
   files too, so only a resource consumed by hook code or its interactive launcher belongs beside a hook. Before
