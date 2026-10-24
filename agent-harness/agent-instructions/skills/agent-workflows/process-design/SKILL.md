@@ -41,30 +41,42 @@ Build every process from capability blocks, one file each, and load only the blo
 [toolbox](references/toolbox.md) for ports, composition rules, and how a composition changes, and
 [wiring](references/wiring.md) for the control-flow, state, and failure names that connect blocks.
 
-### Block index
+### Block index: agents and hands
 
 Agents decide who thinks: [solo loop](references/blocks/agents/solo-loop.md), [main and
 helpers](references/blocks/agents/main-and-helpers.md), [delegator](references/blocks/agents/delegator.md),
 [orchestrator](references/blocks/agents/orchestrator.md), [scouts](references/blocks/agents/scouts.md),
 [reviewers](references/blocks/agents/reviewers.md), [peer session](references/blocks/agents/peer-session.md),
-[planner](references/blocks/agents/planner.md), [router](references/blocks/agents/router.md), [voting](references/blocks/agents/voting.md),
-and [consultant](references/blocks/agents/consultant.md).
+[planner](references/blocks/agents/planner.md), [router](references/blocks/agents/router.md),
+[voting](references/blocks/agents/voting.md), and [consultant](references/blocks/agents/consultant.md).
 
-Hands act deterministically: [skill and script](references/blocks/hands/skill-and-script.md), [workflow
-script](references/blocks/hands/workflow-script.md), and [MCP server](references/blocks/hands/mcp-server.md). Eyes watch the run:
-[main short loop](references/blocks/eyes/main-short-loop.md), [monitor subagents](references/blocks/eyes/monitor-subagents.md),
-[script monitor](references/blocks/eyes/script-monitor.md), [scheduled wakeup](references/blocks/eyes/scheduled-wakeup.md), and
+Hands act deterministically: [skill and script](references/blocks/hands/skill-and-script.md),
+[workflow script](references/blocks/hands/workflow-script.md), and
+[MCP server](references/blocks/hands/mcp-server.md).
+
+### Block index: eyes and controls
+
+Eyes watch the run: [main short loop](references/blocks/eyes/main-short-loop.md),
+[monitor subagents](references/blocks/eyes/monitor-subagents.md),
+[script monitor](references/blocks/eyes/script-monitor.md),
+[scheduled wakeup](references/blocks/eyes/scheduled-wakeup.md), and
 [tracing](references/blocks/eyes/tracing.md).
 
-Controls bound risk: [verifier](references/blocks/controls/verifier.md), [budget](references/blocks/controls/budget.md), [human
-gate](references/blocks/controls/human-gate.md), [guardrail hook](references/blocks/controls/guardrail-hook.md),
-[sandbox](references/blocks/controls/sandbox.md), [canary and waves](references/blocks/controls/canary-and-waves.md), [dry
-run](references/blocks/controls/dry-run.md), and [eval gate](references/blocks/controls/eval-gate.md).
+Controls bound risk: [verifier](references/blocks/controls/verifier.md),
+[budget](references/blocks/controls/budget.md), [human gate](references/blocks/controls/human-gate.md),
+[guardrail hook](references/blocks/controls/guardrail-hook.md), [sandbox](references/blocks/controls/sandbox.md),
+[canary and waves](references/blocks/controls/canary-and-waves.md), [dry run](references/blocks/controls/dry-run.md),
+and [eval gate](references/blocks/controls/eval-gate.md).
 
-Memory persists and isolates: [tracker](references/blocks/memory/tracker.md), [context
-handoff](references/blocks/memory/context-handoff.md), [durable checkpoint](references/blocks/memory/durable-checkpoint.md), [task
-board](references/blocks/memory/task-board.md), and [worktree](references/blocks/memory/worktree.md). Edges start and finish the
-process: [trigger](references/blocks/edges/trigger.md), and [report](references/blocks/edges/report.md).
+### Block index: memory and edges
+
+Memory persists and isolates: [tracker](references/blocks/memory/tracker.md),
+[context handoff](references/blocks/memory/context-handoff.md),
+[durable checkpoint](references/blocks/memory/durable-checkpoint.md),
+[task board](references/blocks/memory/task-board.md), and [worktree](references/blocks/memory/worktree.md).
+
+Edges start and finish the process: [trigger](references/blocks/edges/trigger.md),
+and [report](references/blocks/edges/report.md).
 
 ### Specify block contracts
 
