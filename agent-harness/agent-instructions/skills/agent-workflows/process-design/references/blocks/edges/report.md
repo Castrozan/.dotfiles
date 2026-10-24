@@ -5,6 +5,8 @@ provides: outcome
 needs: approval, artifact
 ---
 
+# report
+
 ### What it gives
 
 The process's outward result: a ticket comment, a reply to the requesting agent, a chat message, or a published report.

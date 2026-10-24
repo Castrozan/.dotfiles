@@ -5,6 +5,8 @@ provides: action, artifact
 needs: driver, budget
 ---
 
+# workflow-script
+
 ### What it gives
 
 A fixed fan-out, pipeline, or maker-checker loop executed by a script runner, with no model choice between steps and

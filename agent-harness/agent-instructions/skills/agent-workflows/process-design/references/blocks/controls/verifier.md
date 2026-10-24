@@ -5,6 +5,8 @@ provides: verdict
 needs: artifact
 ---
 
+# verifier
+
 ### What it gives
 
 An executable check, such as tests, a build, a linter, a fixture diff, or a live probe, that returns pass or fail with

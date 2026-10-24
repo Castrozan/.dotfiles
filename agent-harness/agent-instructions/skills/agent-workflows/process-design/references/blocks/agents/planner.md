@@ -5,6 +5,8 @@ provides: goal
 needs: driver
 ---
 
+# planner
+
 ### What it gives
 
 A separate exploration and planning step that turns the framing into an approved plan or spec with acceptance criteria,

@@ -5,6 +5,8 @@ provides: watch
 needs: driver, observable
 ---
 
+# main-short-loop
+
 ### What it gives
 
 The main agent polls the process on a short interval and acts on issues immediately, with no handoff between seeing and

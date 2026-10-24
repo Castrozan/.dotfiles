@@ -5,6 +5,8 @@ provides: brief, state
 needs: driver
 ---
 
+# task-board
+
 ### What it gives
 
 A shared list of tasks with dependencies that several agents claim under a lock, as opposed to the tracker's single

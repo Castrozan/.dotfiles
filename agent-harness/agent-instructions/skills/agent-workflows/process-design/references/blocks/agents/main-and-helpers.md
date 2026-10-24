@@ -5,6 +5,8 @@ provides: driver, subagents, artifact
 needs: goal, budget
 ---
 
+# main-and-helpers
+
 ### What it gives
 
 The main agent keeps working on the critical path while subagents take defined side tasks with fresh contexts and return

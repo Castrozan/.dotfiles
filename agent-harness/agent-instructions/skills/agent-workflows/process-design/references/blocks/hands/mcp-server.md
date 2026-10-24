@@ -5,6 +5,8 @@ provides: action, observable
 needs: driver
 ---
 
+# mcp-server
+
 ### What it gives
 
 The process's tools, resources, and prompts exposed through the Model Context Protocol, so every harness and every peer

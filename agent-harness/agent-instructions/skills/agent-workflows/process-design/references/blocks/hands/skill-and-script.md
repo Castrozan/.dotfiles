@@ -5,6 +5,8 @@ provides: action, observable, artifact
 needs: driver
 ---
 
+# skill-and-script
+
 ### What it gives
 
 A skill instruction plus a command-line script that performs one deterministic action, such as a bulk change or a

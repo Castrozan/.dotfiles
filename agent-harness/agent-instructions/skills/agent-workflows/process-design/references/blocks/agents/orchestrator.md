@@ -5,6 +5,8 @@ provides: driver, artifact
 needs: peer, state, budget
 ---
 
+# orchestrator
+
 ### What it gives
 
 A main agent manages other main agents, each running its own composition, over agent-to-agent messages: it assigns work,

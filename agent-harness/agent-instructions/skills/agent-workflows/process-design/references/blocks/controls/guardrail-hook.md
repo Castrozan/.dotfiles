@@ -5,6 +5,8 @@ provides: policy
 needs: action
 ---
 
+# guardrail-hook
+
 ### What it gives
 
 A deterministic check that blocks a forbidden action before it runs, whatever the model decides.

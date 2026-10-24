@@ -5,6 +5,8 @@ provides: containment
 needs: driver
 ---
 
+# sandbox
+
 ### What it gives
 
 Filesystem and network isolation that lets the agent act autonomously without an approval prompt per action, and

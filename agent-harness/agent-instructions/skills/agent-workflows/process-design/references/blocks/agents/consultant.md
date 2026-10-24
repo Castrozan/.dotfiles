@@ -5,6 +5,8 @@ provides: finding
 needs: driver
 ---
 
+# consultant
+
 ### What it gives
 
 A stronger model consulted for a hard decision while cheaper models carry the routine work, with every agent block

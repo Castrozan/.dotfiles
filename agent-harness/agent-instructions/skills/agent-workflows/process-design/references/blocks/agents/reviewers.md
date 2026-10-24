@@ -5,6 +5,8 @@ provides: verdict
 needs: subagents, artifact
 ---
 
+# reviewers
+
 ### What it gives
 
 Independent checkers, each with one lens, review a deliverable from a clean context and return MERGE or BLOCK with

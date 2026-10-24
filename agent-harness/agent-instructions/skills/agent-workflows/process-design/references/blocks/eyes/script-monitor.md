@@ -5,6 +5,8 @@ provides: event
 needs: observable
 ---
 
+# script-monitor
+
 ### What it gives
 
 A deterministic watcher that reads an observable and emits an event only when a threshold is crossed, spending no model

@@ -5,6 +5,8 @@ provides: goal, event
 needs: none
 ---
 
+# trigger
+
 ### What it gives
 
 The event that starts the process or pushes into a running one: a ticket, a webhook, a CI result, a schedule, or the

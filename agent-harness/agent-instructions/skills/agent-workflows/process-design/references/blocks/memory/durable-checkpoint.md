@@ -5,6 +5,8 @@ provides: state
 needs: driver
 ---
 
+# durable-checkpoint
+
 ### What it gives
 
 Resumption from the last completed step after a crash, rate limit, or deploy, with bounded retries per step.

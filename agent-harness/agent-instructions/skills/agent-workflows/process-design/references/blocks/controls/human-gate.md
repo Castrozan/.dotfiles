@@ -5,6 +5,8 @@ provides: approval
 needs: driver, state
 ---
 
+# human-gate
+
 ### What it gives
 
 A stop where the owner approves, chooses, or supplies a missing fact before the process continues.
