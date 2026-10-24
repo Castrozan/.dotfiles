@@ -38,7 +38,6 @@ let
     enabledPlugins = claudeModsMarketplace.everySessionEnabledPlugins;
     language = "english";
     spinnerTipsEnabled = false;
-    prefersReducedMotion = true;
     feedbackDrafts = "off";
     spinnerVerbs = {
       mode = "replace";
