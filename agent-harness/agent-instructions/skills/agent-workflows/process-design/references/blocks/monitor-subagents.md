@@ -2,17 +2,19 @@
 block: monitor-subagents
 group: eyes
 provides: watch, finding
-needs: subagents, event
+needs: subagents, observable
 ---
 
 ### What it gives
 
-Subagents that diagnose what a script monitor flagged, keeping log reading and triage out of the main context.
+Subagents that watch the running processes and diagnose what they see, keeping log reading and triage out of the main
+context.
 
 ### Use when
 
-Telling a real regression from known noise needs judgment. Wake them on a script monitor's event rather than letting
-them poll, since no evidence shows a polling agent watcher beats a script monitor with an escalation agent.
+Telling a real regression from known noise needs judgment. Prefer waking them on a script monitor's event over a short
+polling loop, since no evidence shows a polling agent watcher beats a script monitor with an escalation agent; poll only
+when no signal can be coded.
 
 ### Instruction
 

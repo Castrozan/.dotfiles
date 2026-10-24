@@ -25,8 +25,8 @@ twice.
 
 ### Pitfalls
 
-Inter-agent misalignment is the largest failure family in multi-agent systems; peers guess instead of asking for input;
-message loops; a peer's message treated as human consent or as a configuration change.
+Inter-agent misalignment causes about a third of multi-agent failures; peers guess instead of asking for input; message
+loops; a peer's message treated as human consent or as a configuration change.
 
 ### Harness
 
