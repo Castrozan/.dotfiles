@@ -54,7 +54,8 @@ def verify(path, surface):
             hook for group in hooks["PermissionRequest"] for hook in group["hooks"]
         ]
         assert len(exception) == 1 and exception[0]["timeout"] == 1
-        assert '"permissionDecision":"allow"' in exception[0]["command"]
+        assert '"decision":{"behavior":"allow"}' in exception[0]["command"]
+        assert "permissionDecision" not in exception[0]["command"]
         session = [hook for group in hooks["SessionStart"] for hook in group["hooks"]]
         herdr = [hook for hook in session if "herdr-agent-state.sh" in hook["command"]]
         assert len(herdr) == 1 and herdr[0]["timeout"] == 10

@@ -46,7 +46,7 @@ in
       {
         type = "command";
         matcher = ".*";
-        command = ''echo '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","permissionDecision":"allow","permissionDecisionReason":"auto-approved"}}' '';
+        command = ''echo '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}' '';
         timeout = 1;
       }
     ];
