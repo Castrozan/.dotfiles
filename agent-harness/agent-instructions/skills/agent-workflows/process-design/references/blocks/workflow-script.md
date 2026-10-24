@@ -1,8 +1,8 @@
 ---
 block: workflow-script
 group: hands
-provides: action
-needs: driver
+provides: action, artifact
+needs: driver, budget
 ---
 
 ### What it gives
@@ -12,14 +12,20 @@ schema-typed outputs.
 
 ### Use when
 
-The shape is known before the run and repeats. Avoid it across a human gate, because a started workflow takes no input;
-split it into one run per gate.
+The steps are predictable or the same step runs over many items, beyond what one conversation can coordinate. Avoid it
+across a human gate, because a started workflow takes no input, and where routing needs open-ended interpretation.
 
 ### Instruction
 
-Author the workflow with a call ceiling, typed outputs, and one run per segment between gates. Resume a failed run
-instead of restarting it.
+Type every step's output with a schema so code routes on it, try the workflow on a small slice before the full run,
+retry per step instead of tuning prompts for bulk transforms, keep the script deterministic so it replays, and run one
+workflow per segment between gates.
+
+### Pitfalls
+
+A mid-fan-out failure reruns later agents on relaunch; projected cost grows fast with item count.
 
 ### Harness
 
-Claude Code workflow scripts; elsewhere the main agent runs the same shape itself.
+Claude Code dynamic workflows, which resume and cap concurrency; ADK sequential, parallel, and loop agents; LangGraph
+graphs; Temporal and Mastra workflows. Codex and OpenCode run the same shape from the main agent.

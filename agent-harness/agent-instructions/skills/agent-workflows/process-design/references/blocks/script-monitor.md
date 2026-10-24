@@ -1,25 +1,31 @@
 ---
 block: script-monitor
 group: eyes
-provides: alarm
+provides: event
 needs: observable
 ---
 
 ### What it gives
 
-A deterministic watcher that reads an observable on a cadence and emits an event only when a threshold is crossed,
-spending no model tokens while nothing is wrong.
+A deterministic watcher that reads an observable and emits an event only when a threshold is crossed, spending no model
+tokens while nothing is wrong.
 
 ### Use when
 
-The threshold is exact: a queue size, an error rate, a count that stalls. This is the default watcher; add agents only
-for judgment.
+The trigger condition can be coded: tailing logs, watching CI or a queue, counting until a number stalls. This is the
+default watcher; add agent eyes only for judgment.
 
 ### Instruction
 
-Run one monitor per signal, list every monitor in the tracker, give each an until condition, and never start a duplicate
-of a running monitor.
+Run one monitor per signal, emit one line per meaningful event because every line wakes the agent, filter noisy feeds,
+give each an until condition, list every monitor in the tracker, re-arm at its deadline, and never start a duplicate of
+a running monitor.
+
+### Pitfalls
+
+Monitors and background commands are lost on resume; some providers lack the monitor tool.
 
 ### Harness
 
-Claude Code Monitor and background commands; cron or a supervisor elsewhere.
+Claude Code Monitor, plugin monitors, and channels for longer horizons; Codex asynchronous hooks; OpenCode plugin
+events; cron or a supervisor elsewhere.

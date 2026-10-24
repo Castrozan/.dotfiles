@@ -2,7 +2,7 @@
 block: report
 group: edges
 provides: outcome
-needs: approval
+needs: approval, artifact
 ---
 
 ### What it gives
@@ -16,8 +16,13 @@ it.
 
 ### Instruction
 
-Draft the report from the tracker, show it at its gate, and publish only after approval.
+Draft the report from the tracker with evidence or citations for each claim, deliver artifacts by reference, mark
+unverified claims as unverified, show the draft at its gate, and publish only after approval.
+
+### Pitfalls
+
+Asserting success instead of showing evidence; children that never report back because no one designed the reply.
 
 ### Harness
 
-Ticket, chat, and forge integrations; an A2A reply for an orchestrating peer.
+Ticket, chat, and forge integrations; A2A artifacts; cross-session replies.

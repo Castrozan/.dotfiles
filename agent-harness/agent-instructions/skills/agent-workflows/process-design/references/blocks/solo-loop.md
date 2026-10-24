@@ -1,26 +1,33 @@
 ---
 block: solo-loop
 group: agents
-provides: driver
-needs: none
+provides: driver, artifact
+needs: goal, budget
 ---
 
 ### What it gives
 
 One agent with tools does the whole task in a continuous loop of acting, observing, and deciding, with no helpers and no
-handoffs. It keeps every decision in one context, which removes coordination failures entirely.
+handoffs. Every decision stays in one context, which removes coordination failures entirely.
 
 ### Use when
 
-The work is sequential, tightly coupled, or tool heavy, or a single context can hold it. Start here and climb to another
-agent block only when evidence shows breadth that parallelizes or a context that overflows.
+The work is sequential, its edits depend on each other, or it is coding with few truly parallel parts; this is the
+default agent block. Avoid it when the context overflows even with compaction, or when wide read-heavy discovery would
+run faster as parallel scouts.
 
 ### Instruction
 
-Work the task end to end yourself. Persist decisions in the tracker when the task can outlive the context. Stop at the
-done check, at a gate, or at the budget, and report which one ended the run.
+Work the task end to end yourself. Recite the goal by rewriting the todo list as you go, keep failed attempts visible
+instead of erasing them, and compact deliberately before the context fills. Gate the stop on a check you can run; after
+two failed corrections, restart with a better brief instead of pushing on.
+
+### Pitfalls
+
+Context rot as the window fills, goal drift over long runs, unscoped exploration that never converges, and declaring
+victory before the done check passes.
 
 ### Harness
 
-Any harness's main session. For runs longer than one sitting, pair it with a scheduled wakeup and a tracker so a restart
-resumes from durable state.
+Any harness's main session; Claude Code adds goal evaluation, self-paced loops, and focused compaction. For runs longer
+than one sitting, pair it with a scheduled wakeup and a tracker.

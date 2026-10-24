@@ -41,22 +41,30 @@ Build every process from capability blocks, one file each, and load only the blo
 [toolbox](references/toolbox.md) for ports, composition rules, and how a composition changes, and
 [wiring](references/wiring.md) for the control-flow, state, and failure names that connect blocks.
 
+### Block index
+
 Agents decide who thinks: [solo loop](references/blocks/solo-loop.md), [main and
 helpers](references/blocks/main-and-helpers.md), [delegator](references/blocks/delegator.md),
 [orchestrator](references/blocks/orchestrator.md), [scouts](references/blocks/scouts.md),
-[reviewers](references/blocks/reviewers.md), and [peer session](references/blocks/peer-session.md).
+[reviewers](references/blocks/reviewers.md), [peer session](references/blocks/peer-session.md),
+[planner](references/blocks/planner.md), [router](references/blocks/router.md), [voting](references/blocks/voting.md),
+and [consultant](references/blocks/consultant.md).
 
-Hands perform deterministic actions: [skill and script](references/blocks/skill-and-script.md), [workflow
-script](references/blocks/workflow-script.md), and [MCP server](references/blocks/mcp-server.md). Eyes watch the running
-process: [main short loop](references/blocks/main-short-loop.md), [monitor
-subagents](references/blocks/monitor-subagents.md), [script monitor](references/blocks/script-monitor.md), and
-[scheduled wakeup](references/blocks/scheduled-wakeup.md).
+Hands act deterministically: [skill and script](references/blocks/skill-and-script.md), [workflow
+script](references/blocks/workflow-script.md), and [MCP server](references/blocks/mcp-server.md). Eyes watch the run:
+[main short loop](references/blocks/main-short-loop.md), [monitor subagents](references/blocks/monitor-subagents.md),
+[script monitor](references/blocks/script-monitor.md), [scheduled wakeup](references/blocks/scheduled-wakeup.md), and
+[tracing](references/blocks/tracing.md).
 
-Controls bound risk: [human gate](references/blocks/human-gate.md), [guardrail
-hook](references/blocks/guardrail-hook.md), [canary and waves](references/blocks/canary-and-waves.md), and [dry
-run](references/blocks/dry-run.md). Memory persists and isolates: [tracker](references/blocks/tracker.md), and
-[worktree](references/blocks/worktree.md). Edges start and finish the process: [trigger](references/blocks/trigger.md),
-and [report](references/blocks/report.md).
+Controls bound risk: [verifier](references/blocks/verifier.md), [budget](references/blocks/budget.md), [human
+gate](references/blocks/human-gate.md), [guardrail hook](references/blocks/guardrail-hook.md),
+[sandbox](references/blocks/sandbox.md), [canary and waves](references/blocks/canary-and-waves.md), [dry
+run](references/blocks/dry-run.md), and [eval gate](references/blocks/eval-gate.md).
+
+Memory persists and isolates: [tracker](references/blocks/tracker.md), [context
+handoff](references/blocks/context-handoff.md), [durable checkpoint](references/blocks/durable-checkpoint.md), [task
+board](references/blocks/task-board.md), and [worktree](references/blocks/worktree.md). Edges start and finish the
+process: [trigger](references/blocks/trigger.md), and [report](references/blocks/report.md).
 
 ### Specify block contracts
 

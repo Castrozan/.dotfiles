@@ -12,14 +12,20 @@ acting.
 
 ### Use when
 
-The process is short, the signals are few, and reaction time matters more than tokens. Avoid it for long runs, where
-every quiet poll spends model tokens and floods the main context.
+The main agent itself must react, as when babysitting a pull request or a deploy, and the run is short. Avoid it when
+the event can be pushed by a monitor, or when the job must outlive the session.
 
 ### Instruction
 
-Poll the observables at a fixed cadence, compare them with the baseline and thresholds, act on a breach, and stop
-polling at the stated exit.
+Self-pace: wait briefly while things change and long while quiet, keep intervals under the prompt-cache lifetime or well
+above it, compare each poll with the baseline and thresholds, act on a breach, and stop the loop yourself at the stated
+exit.
+
+### Pitfalls
+
+Every quiet poll spends model tokens; session-scoped loops expire, skip missed fires, and fire only while the session is
+idle.
 
 ### Harness
 
-Scheduled wakeups or a loop command in Claude Code; the main agent's own loop elsewhere.
+Claude Code loops and scheduled wakeups; the main agent's own loop elsewhere.

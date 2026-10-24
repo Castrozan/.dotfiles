@@ -2,7 +2,7 @@
 block: reviewers
 group: agents
 provides: verdict
-needs: subagents
+needs: subagents, artifact
 ---
 
 ### What it gives
@@ -12,15 +12,21 @@ findings, in a capped maker-checker loop.
 
 ### Use when
 
-A defect would be costly and a fresh context can catch what the maker cannot. Prefer an executable check, such as a
-test, build, or live probe, whenever one can decide.
+A defect would be costly, acceptance criteria exist, and a fresh context can catch what the maker cannot. Put a verifier
+first whenever a test, build, or probe can decide, so reviewers judge only what code cannot.
 
 ### Instruction
 
-Give each reviewer one lens and no access to the maker's reasoning. Any BLOCK returns the work to the maker; cap the
-loop at two rounds and escalate a third BLOCK to the human. Verify where the outcome is consumed, not where it is
-written.
+Give each reviewer one lens, the artifact, and the acceptance criteria, never the maker's reasoning. Ask only for
+correctness and requirement gaps, filter findings against the user's goal, return any BLOCK to the maker, and cap the
+loop at two rounds with escalation to the human or a shipped quality warning as the fallback.
+
+### Pitfalls
+
+Model judges carry position, verbosity, and self-preference bias; reviewers asked for gaps find some even in sound work,
+and chasing them all over-engineers; self-review without outside feedback can make work worse.
 
 ### Harness
 
-Quality-assurance subagents or a workflow script with schema-typed verdicts; the `review` skill for the method.
+Quality-assurance subagents or a workflow script with schema-typed verdicts; the `review` skill for the method; agent
+team reviewers with distinct lenses.

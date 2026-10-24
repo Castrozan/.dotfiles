@@ -1,8 +1,8 @@
 ---
 block: delegator
 group: agents
-provides: driver, subagents
-needs: none
+provides: driver, subagents, artifact
+needs: goal, budget, verdict
 ---
 
 ### What it gives
@@ -12,15 +12,22 @@ a long or wide task.
 
 ### Use when
 
-The work spreads across more units than one context can hold, and each unit fits one worker. Avoid it for small tasks,
-where the brief costs more than doing the work.
+The work exceeds one context and its subtasks cannot be predicted in advance, such as breadth-first research or a large
+split change. Avoid it when subtasks share heavy context, when the work is sequential, or when the integrator cannot
+verify what comes back.
 
 ### Instruction
 
-Do no unit of work yourself. Hand each unit to a worker with a complete brief, track every unit in the tracker, verify
-each result against its done check, and replan when progress stalls instead of retrying the same brief.
+Do no unit of work yourself. Scale effort to the task with explicit rules, hand each unit a complete brief, and design
+the report-back each worker owes. Save the plan to the tracker before the context fills, track every unit there, verify
+each result against its done check, and replan when progress stalls instead of resending the same brief.
+
+### Pitfalls
+
+The lead starts implementing instead of waiting, or stops before every unit is done; workers assume state they were
+never given; vague briefs duplicate work; token cost multiplies.
 
 ### Harness
 
-Claude Code subagents or a workflow script for a fixed fan-out; Codex and OpenCode subagents with the main agent holding
-joins and loops.
+Claude Code subagents or a workflow script for a fixed fan-out, or an agent team lead; Microsoft Agent Framework
+Magentic orchestration; CrewAI hierarchical process; Camunda's AI agent over an ad-hoc sub-process.

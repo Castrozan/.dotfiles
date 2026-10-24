@@ -55,3 +55,50 @@ Shapes and edges follow [Mermaid flowchart syntax](https://mermaid.js.org/syntax
 and in terminals through renderers such as [mermaid-ascii](https://github.com/AlexanderGrooff/mermaid-ascii). Framework
 vocabulary follows the [LangGraph graph API](https://docs.langchain.com/oss/python/langgraph/graph-api). The terminal
 view follows the [C4 model dynamic diagram](https://c4model.com/diagrams/dynamic).
+
+### Toolbox practice
+
+Block evidence comes from Anthropic's [building effective
+agents](https://www.anthropic.com/engineering/building-effective-agents), [multi-agent research
+system](https://www.anthropic.com/engineering/multi-agent-research-system), and [long-running
+harnesses](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents).
+
+Context, evaluation, and parallel-writer practice follow [context
+engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents), [agent
+evals](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents), and the [parallel compiler
+build](https://www.anthropic.com/engineering/building-c-compiler).
+
+Counterpoints come from Cognition's [don't build multi-agents](https://cognition.com/blog/dont-build-multi-agents) and
+[what's actually working](https://cognition.com/blog/multi-agents-working), [12-factor
+agents](https://github.com/humanlayer/12-factor-agents), and [Manus context
+engineering](https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus).
+
+Use and avoid lists follow the [Azure agent orchestration
+patterns](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns), and the sandbox
+block follows [Claude Code sandboxing](https://www.anthropic.com/engineering/claude-code-sandboxing).
+
+### Toolbox limits and precedents
+
+Judging and voting limits come from [self-correction](https://arxiv.org/abs/2310.01798), [LLM as a
+judge](https://arxiv.org/abs/2306.05685), and [voting or consensus](https://arxiv.org/abs/2502.19130). Typed ports
+follow [Langflow components](https://docs.langflow.org/concepts-components).
+
+Comparable catalogs are the [Agent Design Pattern Catalogue](https://arxiv.org/abs/2405.10467), [CC Workflow
+Studio](https://github.com/breaking-brake/cc-wf-studio), and the [BPMN human-agentic
+extension](https://arxiv.org/abs/2412.05958); none combines per-block instructions, typed ports, and harness mapping.
+
+### Toolbox harnesses and standards
+
+Harness mechanics follow the Claude Code docs on [subagents](https://code.claude.com/docs/en/sub-agents), [agent
+teams](https://code.claude.com/docs/en/agent-teams), [workflows](https://code.claude.com/docs/en/workflows), and
+[scheduled tasks](https://code.claude.com/docs/en/scheduled-tasks).
+
+Hooks and habits follow [hooks](https://code.claude.com/docs/en/hooks-guide) and [best
+practices](https://code.claude.com/docs/en/best-practices), plus [Codex
+subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents) and [OpenCode
+agents](https://opencode.ai/docs/agents/).
+
+Standards: [Agent Skills](https://agentskills.io/specification) for block instructions,
+[A2A](https://a2a-protocol.org/latest/topics/key-concepts/) for peers,
+[MCP](https://modelcontextprotocol.io/specification/2025-11-25) for shared tools, and [OpenTelemetry generative AI
+conventions](https://github.com/open-telemetry/semantic-conventions-genai) for traces.

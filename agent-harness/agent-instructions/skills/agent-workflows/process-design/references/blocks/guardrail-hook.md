@@ -11,14 +11,19 @@ A deterministic check that blocks a forbidden action before it runs, whatever th
 
 ### Use when
 
-A rule has an exact predicate: no production write without approval, no secrets printed, no broad staging. Prefer it to
-an instruction whenever the predicate can be coded.
+A rule must hold every time with an exact predicate: no production write without approval, no secrets printed, no broad
+staging. Avoid it for judgment calls, and never make it the only security boundary.
 
 ### Instruction
 
-State the rule, its predicate, and its message, and test that the hook blocks the forbidden call and allows the
-legitimate one.
+State the rule, its predicate, and its message; block before the tool runs, keep one hook per rewrite of a tool's input,
+pair it with a sandbox for containment, and test that it blocks the forbidden call and allows the legitimate one.
+
+### Pitfalls
+
+Hosted tools can bypass hooks; post-tool hooks cannot undo; stop hooks that keep blocking are capped by the harness.
 
 ### Harness
 
-Pre-tool hooks and permission rules in Claude Code; equivalent hooks or sandbox policies elsewhere.
+Claude Code pre-tool hooks and permission rules; Codex hooks after trust review; OpenCode plugins that throw before
+execution; agent SDK guardrails.
