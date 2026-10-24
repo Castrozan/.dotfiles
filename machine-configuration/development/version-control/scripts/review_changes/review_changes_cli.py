@@ -1,7 +1,8 @@
 import signal
 import sys
+from pathlib import Path
 
-from request_links import enter_repository_of
+from request_links import enter_repository_of, origin_project_path
 from review_command_runner import ReviewTargetError, run_command
 from review_session import review_in_lazygit
 from review_target import resolve_review_target
@@ -23,8 +24,10 @@ def route_terminating_signals_through_cleanup() -> None:
 
 def prompt_for_target() -> str:
     current_branch = run_command(["git", "branch", "--show-current"]).stdout.strip()
+    current_repository = origin_project_path(Path.cwd())
+    repository_hint = f" in {current_repository}" if current_repository else ""
     default_hint = f" [{current_branch}]" if current_branch else ""
-    return input(f"MR/PR number, link or branch{default_hint}: ")
+    return input(f"MR/PR number, link or branch{repository_hint}{default_hint}: ")
 
 
 def main(arguments: list[str]) -> int:

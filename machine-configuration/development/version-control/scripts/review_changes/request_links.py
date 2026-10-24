@@ -34,7 +34,7 @@ def origin_project_path(repository_directory: Path) -> str | None:
     if result.returncode != 0:
         return None
     origin_match = ORIGIN_PROJECT_PATH_PATTERN.match(result.stdout.strip())
-    return origin_match["project_path"].lower() if origin_match else None
+    return origin_match["project_path"] if origin_match else None
 
 
 def candidate_clone_directories(project_path: str) -> list[Path]:
@@ -49,9 +49,9 @@ def candidate_clone_directories(project_path: str) -> list[Path]:
 def find_local_clone(project_path: str) -> Path:
     wanted_project_path = project_path.lower()
     for candidate_directory in candidate_clone_directories(project_path):
-        if (candidate_directory / ".git").exists() and origin_project_path(
-            candidate_directory
-        ) == wanted_project_path:
+        if (candidate_directory / ".git").exists() and (
+            origin_project_path(candidate_directory) or ""
+        ).lower() == wanted_project_path:
             return candidate_directory
     searched_roots = " or ".join(str(root) for root in LOCAL_CLONE_ROOTS)
     raise ReviewTargetError(f"no local clone of {project_path} in {searched_roots}")

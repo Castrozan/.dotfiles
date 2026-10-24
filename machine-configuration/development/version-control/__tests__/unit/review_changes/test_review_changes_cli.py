@@ -1,4 +1,5 @@
 import signal
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -33,3 +34,27 @@ def test_signals_after_the_first_cannot_interrupt_cleanup(restored_signal_handle
         signal.getsignal(signal.SIGHUP)(signal.SIGHUP, None)
     assert signal.getsignal(signal.SIGHUP) is signal.SIG_IGN
     assert signal.getsignal(signal.SIGTERM) is signal.SIG_IGN
+
+
+def test_prompt_names_the_repository_a_bare_number_resolves_in(monkeypatch):
+    prompts = []
+    monkeypatch.setattr("builtins.input", lambda prompt: prompts.append(prompt) or "")
+    monkeypatch.setattr(
+        review_changes_cli, "origin_project_path", lambda _directory: "group/project"
+    )
+    with patch(
+        "review_changes_cli.run_command", return_value=MagicMock(stdout="main\n")
+    ):
+        review_changes_cli.prompt_for_target()
+    assert prompts == ["MR/PR number, link or branch in group/project [main]: "]
+
+
+def test_prompt_outside_a_repository_names_no_repository(monkeypatch):
+    prompts = []
+    monkeypatch.setattr("builtins.input", lambda prompt: prompts.append(prompt) or "")
+    monkeypatch.setattr(
+        review_changes_cli, "origin_project_path", lambda _directory: None
+    )
+    with patch("review_changes_cli.run_command", return_value=MagicMock(stdout="")):
+        review_changes_cli.prompt_for_target()
+    assert prompts == ["MR/PR number, link or branch: "]

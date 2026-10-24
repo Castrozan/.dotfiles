@@ -34,19 +34,28 @@ def test_numbers_and_branches_are_not_links(raw_target):
 
 
 @pytest.mark.parametrize(
-    "origin_url",
+    ("origin_url", "project_path"),
     [
-        "git@gitlab.services.example:team/tools.marketplace.git",
-        "https://gitlab.services.example/team/tools.marketplace.git",
-        "ssh://git@gitlab.services.example/team/Tools.Marketplace",
+        (
+            "git@gitlab.services.example:team/tools.marketplace.git",
+            "team/tools.marketplace",
+        ),
+        (
+            "https://gitlab.services.example/team/tools.marketplace.git",
+            "team/tools.marketplace",
+        ),
+        (
+            "ssh://git@gitlab.services.example/team/Tools.Marketplace",
+            "team/Tools.Marketplace",
+        ),
     ],
 )
-def test_origin_project_path_normalizes_ssh_and_https_remotes(origin_url):
+def test_origin_project_path_reads_ssh_and_https_remotes(origin_url, project_path):
     origin = MagicMock(returncode=0, stdout=f"{origin_url}\n")
     with patch("request_links.run_command", return_value=origin):
         assert (
             request_links.origin_project_path(request_links.Path("/any"))
-            == "team/tools.marketplace"
+            == project_path
         )
 
 
