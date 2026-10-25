@@ -112,62 +112,57 @@ def test_expired_or_changed_target_consumes_token_without_approval(
     assert not path.exists()
 
 
+def mock_watch_desktop(monkeypatch, window):
+    state = {"focus": "original", "cursor": (10, 20)}
+    monkeypatch.setattr(helper, "consume_token", lambda *args: window)
+    monkeypatch.setattr(helper, "current_target", lambda *args: window)
+    monkeypatch.setattr(helper, "focused_window", lambda *args: state["focus"])
+    monkeypatch.setattr(helper, "cursor_position", lambda *args: state["cursor"])
+    monkeypatch.setattr(
+        helper, "focus_window", lambda configuration, value: state.update(focus=value)
+    )
+    monkeypatch.setattr(
+        helper, "move_cursor", lambda configuration, value: state.update(cursor=value)
+    )
+    monkeypatch.setattr(
+        helper, "settle_focused_target", lambda *args: (window, (0, 0, 1920, 1080))
+    )
+    monkeypatch.setattr(
+        helper, "click_once", lambda *args: pytest.fail("unexpected approval click")
+    )
+    return state
+
+
 def test_existing_dialog_is_never_approved(prepared_token, monkeypatch):
     directory, path, token, window = prepared_token
-    monkeypatch.setattr(helper, "consume_token", lambda *args: window)
-    monkeypatch.setattr(helper, "focused_window", lambda *args: window["address"])
-    positions = iter([(10, 20), (40, 20)])
-    monkeypatch.setattr(helper, "cursor_position", lambda *args: next(positions))
-    monkeypatch.setattr(helper, "focus_window", lambda *args: None)
+    state = mock_watch_desktop(monkeypatch, window)
     monkeypatch.setattr(helper, "capture_dialog", lambda *args: object())
-    monkeypatch.setattr(
-        helper, "click_once", lambda *args: pytest.fail("clicked a pre-existing dialog")
-    )
     with pytest.raises(RuntimeError, match="predates"):
         helper.watch({}, directory, token, 1)
+    assert state == {"focus": "original", "cursor": (10, 20)}
 
 
 def test_user_focus_change_aborts_and_does_not_restore_over_user(
     prepared_token, monkeypatch
 ):
     directory, path, token, window = prepared_token
-    focus = iter(["0xoriginal", window["address"], "0xuser", "0xuser"])
-    focused = []
-    monkeypatch.setattr(helper, "consume_token", lambda *args: window)
-    monkeypatch.setattr(helper, "focused_window", lambda *args: next(focus))
-    positions = iter([(10, 20), (40, 20)])
-    monkeypatch.setattr(helper, "cursor_position", lambda *args: next(positions))
-    monkeypatch.setattr(
-        helper, "focus_window", lambda configuration, address: focused.append(address)
-    )
-    monkeypatch.setattr(helper, "capture_dialog", lambda *args: None)
-    monkeypatch.setattr(
-        helper,
-        "click_once",
-        lambda *args: pytest.fail("clicked after user changed focus"),
-    )
+    state = mock_watch_desktop(monkeypatch, window)
+
+    def capture(*args):
+        state["focus"] = "user"
+
+    monkeypatch.setattr(helper, "capture_dialog", capture)
     with pytest.raises(RuntimeError, match="User focus"):
         helper.watch({}, directory, token, 1)
-    assert focused == [window["address"]]
+    assert state["focus"] == "user"
 
 
 def test_missing_dialog_times_out_without_click_and_restores_focus(
     prepared_token, monkeypatch
 ):
     directory, path, token, window = prepared_token
-    focused = []
-    focus = iter(["0xoriginal", window["address"], window["address"]])
-    monkeypatch.setattr(helper, "consume_token", lambda *args: window)
-    monkeypatch.setattr(helper, "focused_window", lambda *args: next(focus))
-    positions = iter([(10, 20), (40, 20)])
-    monkeypatch.setattr(helper, "cursor_position", lambda *args: next(positions))
-    monkeypatch.setattr(
-        helper, "focus_window", lambda configuration, address: focused.append(address)
-    )
+    state = mock_watch_desktop(monkeypatch, window)
     monkeypatch.setattr(helper, "capture_dialog", lambda *args: None)
-    monkeypatch.setattr(
-        helper, "click_once", lambda *args: pytest.fail("clicked without a dialog")
-    )
     with pytest.raises(RuntimeError, match="deadline"):
         helper.watch({}, directory, token, 0)
-    assert focused == [window["address"], "0xoriginal"]
+    assert state == {"focus": "original", "cursor": (10, 20)}
