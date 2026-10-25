@@ -31,6 +31,7 @@ let
       {
         inherit pkgs;
         nodejs = pkgs.nodejs_22;
+        muteAudio = true;
       };
   browser = pkgs.writeShellScriptBin "shorts-browser" ''
     export SHORTS_OPENCLI=${opencli.command}/bin/opencli
