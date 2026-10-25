@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from cycle_commands import CommandRunner
@@ -93,14 +94,18 @@ def launch_activation(
     return log_path
 
 
+def is_rebuild_executable(argument: bytes) -> bool:
+    return argument.endswith(b"/rebuild") and os.path.realpath(argument).endswith(
+        REBUILD_EXECUTABLE_SUFFIX
+    )
+
+
 def rebuild_running(process_directory: Path = PROCESS_DIRECTORY) -> bool:
     for command_line in process_directory.glob("[0-9]*/cmdline"):
         try:
             arguments = command_line.read_bytes().split(b"\0")
         except OSError:
             continue
-        if any(
-            argument.endswith(REBUILD_EXECUTABLE_SUFFIX) for argument in arguments[:2]
-        ):
+        if any(is_rebuild_executable(argument) for argument in arguments[:2]):
             return True
     return False

@@ -38,6 +38,22 @@ def test_a_running_rebuild_is_recognized_by_its_executable(tmp_path):
     assert rebuild_running(tmp_path)
 
 
+def test_a_rebuild_started_through_the_profile_link_is_recognized(tmp_path):
+    store_executable = tmp_path / "store" / "aaa-rebuild" / "bin" / "rebuild"
+    store_executable.parent.mkdir(parents=True)
+    store_executable.write_text("")
+    profile_link = tmp_path / "profile" / "bin" / "rebuild"
+    profile_link.parent.mkdir(parents=True)
+    profile_link.symlink_to(store_executable)
+    processes = tmp_path / "proc"
+    (processes / "20").mkdir(parents=True)
+    (processes / "20" / "cmdline").write_bytes(
+        b"bash\0" + str(profile_link).encode() + b"\0"
+    )
+
+    assert rebuild_running(processes)
+
+
 def test_attention_is_published_and_cleared(tmp_path):
     configuration = configuration_in(tmp_path)
     steward_cycle.publish(
