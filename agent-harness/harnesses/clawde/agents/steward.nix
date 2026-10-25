@@ -103,9 +103,9 @@ in
 
   clawde.agents.steward = {
     type = "steward";
-    harness = "codex";
+    harness = "claude";
     harnessFallbackChain = [
-      "claude"
+      "codex"
       "opencode"
     ];
     modelByHarness = {
