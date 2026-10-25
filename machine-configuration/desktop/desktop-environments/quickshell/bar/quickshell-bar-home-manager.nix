@@ -21,7 +21,6 @@ in
   home.packages = [
     quickshellPackage
     pkgs.cava
-    pkgs.brightnessctl
   ];
 
   xdg.configFile."quickshell/bar" = {

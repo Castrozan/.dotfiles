@@ -11,7 +11,9 @@ Item {
     property bool osdVisible: false
     property string osdType: "volume"
     property int osdValue: 0
-    property int brightnessValue: 0
+    property real brightnessValue: 0
+    property real brightnessMinimum: 0.1
+    property bool brightnessQueryPending: false
     property bool osdMuted: false
     property bool hasReceivedSocketMessage: false
     property bool hasReceivedBrightnessMessage: false
@@ -32,16 +34,32 @@ Item {
             if (parsed.type === "brightness") {
                 brightnessValue = parsed.value ?? 0;
                 hasReceivedBrightnessMessage = true;
+                refreshBrightness();
             } else {
                 osdType = parsed.type ?? "volume";
                 osdValue = parsed.value ?? 0;
                 osdMuted = parsed.muted ?? false;
+                // Mute messages carry a zero placeholder rather than the volume.
+                if (osdType === "volume" && osdValue === 0)
+                    queryCurrentState();
             }
             hasReceivedSocketMessage = true;
             osdMessageReceived();
         } catch (error) {
             return;
         }
+    }
+
+    function refreshBrightness(): void {
+        brightnessQueryPending = true;
+        startPendingBrightnessQuery();
+    }
+
+    function startPendingBrightnessQuery(): void {
+        if (queryCurrentBrightnessProcess.running || !brightnessQueryPending)
+            return;
+        brightnessQueryPending = false;
+        queryCurrentBrightnessProcess.running = true;
     }
 
     function queryCurrentState(): void {
@@ -51,7 +69,7 @@ Item {
     onOsdVisibleChanged: {
         if (osdVisible) {
             if (!hasReceivedBrightnessMessage)
-                queryCurrentBrightnessProcess.running = true;
+                refreshBrightness();
             if (!hasReceivedSocketMessage || osdType === "volume")
                 queryCurrentState();
         }
@@ -63,13 +81,21 @@ Item {
 
     Process {
         id: queryCurrentBrightnessProcess
-        command: ["brightness", "--get"]
+        command: ["brightness", "--get-state"]
+        onRunningChanged: {
+            if (!running)
+                Qt.callLater(osdWrapperRoot.startPendingBrightnessQuery);
+        }
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
-                let parsed = parseInt(data.trim());
-                if (!isNaN(parsed))
-                    osdWrapperRoot.brightnessValue = parsed;
+                try {
+                    let state = JSON.parse(data);
+                    osdWrapperRoot.brightnessValue = state.value;
+                    osdWrapperRoot.brightnessMinimum = state.minimum;
+                } catch (error) {
+                    return;
+                }
             }
         }
     }
@@ -152,8 +178,9 @@ Item {
             OsdContent {
                 osdType: "brightness"
                 osdValue: osdWrapperRoot.brightnessValue
+                brightnessMinimum: osdWrapperRoot.brightnessMinimum
 
-                onOsdValueChanged: osdWrapperRoot.brightnessValue = osdValue
+                onValueChangeRequested: value => osdWrapperRoot.brightnessValue = value
                 onInteractionKeepAlive: osdWrapperRoot.osdMessageReceived()
             }
 
@@ -162,7 +189,7 @@ Item {
                 osdValue: osdWrapperRoot.osdValue
                 osdMuted: osdWrapperRoot.osdMuted
 
-                onOsdValueChanged: osdWrapperRoot.osdValue = osdValue
+                onValueChangeRequested: value => osdWrapperRoot.osdValue = value
                 onInteractionKeepAlive: osdWrapperRoot.osdMessageReceived()
             }
         }

@@ -1,6 +1,9 @@
 from unittest.mock import patch
 
 import brightness
+import pytest
+
+pytestmark = pytest.mark.usefixtures("brightness_runtime_defaults")
 
 
 class TestMain:

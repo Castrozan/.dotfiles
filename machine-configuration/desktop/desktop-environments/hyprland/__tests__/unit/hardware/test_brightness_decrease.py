@@ -1,6 +1,11 @@
 from unittest.mock import patch
 
 import brightness
+import pytest
+
+pytestmark = pytest.mark.usefixtures(
+    "brightness_runtime_defaults", "brightness_hardware_floor"
+)
 
 
 class TestDecreaseBrightnessLowersHardwareAboveMinimum:
@@ -55,7 +60,7 @@ class TestDecreaseBrightnessLowersGammaAtHardwareMinimum:
 
             mock_apply.assert_called_once_with(90)
             mock_write.assert_called_once_with(90)
-            mock_osd.assert_called_once_with(90)
+            mock_osd.assert_called_once_with(0.9)
 
     def test_clamps_gamma_to_minimum(self):
         with (
@@ -74,7 +79,7 @@ class TestDecreaseBrightnessLowersGammaAtHardwareMinimum:
 
             mock_apply.assert_called_once_with(brightness.GAMMA_MINIMUM_PERCENT)
             mock_write.assert_called_once_with(brightness.GAMMA_MINIMUM_PERCENT)
-            mock_osd.assert_called_once_with(brightness.GAMMA_MINIMUM_PERCENT)
+            mock_osd.assert_called_once_with(0.1)
 
     def test_skips_gamma_write_when_compositor_apply_fails(self):
         with (
