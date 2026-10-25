@@ -128,7 +128,7 @@
 
   homebrew = {
     enable = true;
-    onActivation.cleanup = "none";
+    onActivation.cleanup = "uninstall";
     casks = [
       "brave-browser"
       "dbeaver-community"
