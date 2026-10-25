@@ -18,19 +18,34 @@ def run_tool(configuration, name, *arguments):
     ).stdout
 
 
-def chrome_identity(process_identifier, profile_directory, package_directory):
-    directory = Path("/proc") / str(process_identifier)
+def browser_process_arguments(directory):
     arguments = (
         directory.joinpath("cmdline").read_bytes().decode().strip("\0").split("\0")
     )
     if len(arguments) == 1:
         arguments = shlex.split(arguments[0])
+    return arguments
+
+
+def native_chrome_executable(directory, executable, package_directory):
+    return (
+        directory.stat().st_uid == os.getuid()
+        and executable.is_relative_to(Path(package_directory))
+        and executable.name == "chrome"
+    )
+
+
+def visible_browser_window(target):
+    return not any(
+        target.get(name) for name in ("fullscreen", "fullscreenClient", "hidden")
+    )
+
+
+def chrome_identity(process_identifier, profile_directory, package_directory):
+    directory = Path("/proc") / str(process_identifier)
+    arguments = browser_process_arguments(directory)
     executable = directory.joinpath("exe").resolve(strict=True)
-    if (
-        directory.stat().st_uid != os.getuid()
-        or not executable.is_relative_to(Path(package_directory))
-        or executable.name != "chrome"
-    ):
+    if not native_chrome_executable(directory, executable, package_directory):
         raise RuntimeError("Target is not the native Chrome browser process")
     if f"--user-data-dir={profile_directory}" not in arguments:
         raise RuntimeError("Target does not own the managed Chrome Global profile")
@@ -54,11 +69,7 @@ def current_target(configuration):
             "Expected exactly one managed Chrome window; refusing ambiguous targeting"
         )
     target = targets[0]
-    if (
-        target.get("fullscreen")
-        or target.get("fullscreenClient")
-        or target.get("hidden")
-    ):
+    if not visible_browser_window(target):
         raise RuntimeError("Chrome window must be visible and outside fullscreen")
     target["process_start"] = chrome_identity(
         target["pid"],

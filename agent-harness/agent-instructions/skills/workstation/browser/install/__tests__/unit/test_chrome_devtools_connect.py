@@ -7,6 +7,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts/chrome-devtools"))
 
 import chrome_devtools_connect as connection
+from chrome_devtools_request import verified_pages
 from chrome_devtools_session import ChromeDevtoolsSession
 
 
@@ -31,7 +32,7 @@ def test_warm_connection_does_not_start_worker_or_native_helper(tmp_path, monkey
     "output", ["Error: denied", "[]", '{"pages": []}', '{"message": "Error: denied"}']
 )
 def test_successful_exit_without_pages_is_not_a_connection(output):
-    assert not connection.verified_pages(output)
+    assert not verified_pages(output)
 
 
 def test_unsupported_approval_does_not_start_a_request(tmp_path, monkeypatch):

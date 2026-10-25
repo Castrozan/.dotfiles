@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from chrome_consent_dialog import capture_dialog
+from chrome_consent_input import click_once
 from chrome_consent_target import (
     consume_token,
     current_target,
@@ -20,64 +21,50 @@ from chrome_consent_target import (
 )
 
 
-def stop_process(process):
-    process.terminate()
-    try:
-        process.wait(timeout=0.5)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait(timeout=0.5)
-
-
 def interruption(signum, frame):
     raise InterruptedError("Consent attempt ended")
 
 
-def click_once(configuration, target, button, directory, original_cursor):
-    socket = directory / "ydotool.sock"
-    process = subprocess.Popen(
-        [configuration["ydotoold"], f"--socket-path={socket}", "--socket-perm=0600"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    try:
-        deadline = time.monotonic() + 1
-        while not socket.exists():
-            if process.poll() is not None or time.monotonic() >= deadline:
-                raise RuntimeError(
-                    "Temporary ydotoold could not start; check existing uinput permission"
-                )
-            time.sleep(0.02)
-        if focused_window(configuration) != target["address"]:
-            raise RuntimeError("Focus changed before the consent action")
-        observed = capture_dialog(configuration, target, directory)
-        if observed != button or target_signature(
-            current_target(configuration)
-        ) != target_signature(target):
-            raise RuntimeError(
-                "Chrome dialog or process changed before the consent action"
-            )
-        position = tuple(
-            target["at"][index] + button.position[index] for index in (0, 1)
+def prepare_watch(configuration, target, temporary, parked_cursor):
+    focus_window(configuration, target["address"])
+    if focused_window(configuration) != target["address"]:
+        raise RuntimeError("Chrome could not be focused safely")
+    move_cursor(configuration, parked_cursor)
+    if capture_dialog(configuration, target, temporary) is not None:
+        raise RuntimeError(
+            "A consent dialog predates this attempt; refusing to approve it"
         )
-        if cursor_position(configuration) != original_cursor:
-            raise RuntimeError("User cursor changed before the consent action")
-        move_cursor(configuration, position)
-        try:
-            if focused_window(configuration) != target["address"]:
-                raise RuntimeError("Focus changed after cursor movement")
-            subprocess.run(
-                [configuration["ydotool"], "click", "0xC0"],
-                env={**os.environ, "YDOTOOL_SOCKET": str(socket)},
-                check=True,
-                capture_output=True,
-                timeout=1,
-            )
-        finally:
-            if cursor_position(configuration) == position:
-                move_cursor(configuration, original_cursor)
-    finally:
-        stop_process(process)
+
+
+def verify_unchanged_attempt(configuration, target, parked_cursor):
+    if (
+        focused_window(configuration) != target["address"]
+        or cursor_position(configuration) != parked_cursor
+    ):
+        raise RuntimeError("User focus or cursor changed during this attempt")
+    if target_signature(current_target(configuration)) != target_signature(target):
+        raise RuntimeError("Chrome process or geometry changed during this attempt")
+
+
+def await_consent(configuration, target, temporary, parked_cursor, deadline):
+    while time.monotonic() < deadline:
+        verify_unchanged_attempt(configuration, target, parked_cursor)
+        button = capture_dialog(configuration, target, temporary)
+        if button is not None:
+            click_once(configuration, target, button, temporary, parked_cursor)
+            return
+        time.sleep(0.1)
+    raise RuntimeError("No exact consent dialog appeared before the deadline")
+
+
+def restore_view(configuration, target, parked_cursor, original_cursor, original_focus):
+    if (
+        focused_window(configuration) == target["address"]
+        and cursor_position(configuration) == parked_cursor
+    ):
+        move_cursor(configuration, original_cursor)
+        if original_focus:
+            focus_window(configuration, original_focus)
 
 
 def watch(configuration, directory, token, timeout):
@@ -88,44 +75,14 @@ def watch(configuration, directory, token, timeout):
     with tempfile.TemporaryDirectory(prefix="chrome-consent-") as temporary:
         temporary = Path(temporary)
         try:
-            focus_window(configuration, target["address"])
-            if focused_window(configuration) != target["address"]:
-                raise RuntimeError("Chrome could not be focused safely")
-            move_cursor(configuration, parked_cursor)
-            if capture_dialog(configuration, target, temporary) is not None:
-                raise RuntimeError(
-                    "A consent dialog predates this attempt; refusing to approve it"
-                )
+            prepare_watch(configuration, target, temporary, parked_cursor)
             print("ready", flush=True)
             deadline = time.monotonic() + min(timeout, 25)
-            while time.monotonic() < deadline:
-                if (
-                    focused_window(configuration) != target["address"]
-                    or cursor_position(configuration) != parked_cursor
-                ):
-                    raise RuntimeError(
-                        "User focus or cursor changed during this attempt"
-                    )
-                if target_signature(current_target(configuration)) != target_signature(
-                    target
-                ):
-                    raise RuntimeError(
-                        "Chrome process or geometry changed during this attempt"
-                    )
-                button = capture_dialog(configuration, target, temporary)
-                if button is not None:
-                    click_once(configuration, target, button, temporary, parked_cursor)
-                    return
-                time.sleep(0.1)
-            raise RuntimeError("No exact consent dialog appeared before the deadline")
+            await_consent(configuration, target, temporary, parked_cursor, deadline)
         finally:
-            if (
-                focused_window(configuration) == target["address"]
-                and cursor_position(configuration) == parked_cursor
-            ):
-                move_cursor(configuration, original_cursor)
-                if original_focus:
-                    focus_window(configuration, original_focus)
+            restore_view(
+                configuration, target, parked_cursor, original_cursor, original_focus
+            )
 
 
 def main(arguments):

@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts/chrome-devtools"))
 
 import chrome_devtools_connect as connection
+from chrome_devtools_request import finish_process
 
 
 @pytest.fixture
@@ -110,7 +111,7 @@ def test_blocked_connection_leaves_tools_available_and_rejects_parallel_grants(
             "stop",
         ]
     finally:
-        connection.finish_process(process)
+        finish_process(process)
 
 
 def test_rejected_helper_cancels_request_and_cleans_owned_worker(
@@ -155,4 +156,4 @@ def test_cancellation_stops_the_request_and_temporary_helper(
             with pytest.raises(ProcessLookupError):
                 os.kill(int(Path(str(events) + suffix).read_text()), 0)
     finally:
-        connection.finish_process(process)
+        finish_process(process)

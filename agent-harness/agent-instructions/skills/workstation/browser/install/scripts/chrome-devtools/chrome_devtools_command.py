@@ -149,14 +149,7 @@ def invoke_browser(configuration, session, arguments, operation):
     return os.execv(configuration.upstream_executable, command)
 
 
-def main(configuration, arguments):
-    session = ChromeDevtoolsSession.current(configuration.home_directory)
-    operation = arguments[0] if arguments else "--help"
-    validate_session_arguments(arguments)
-    if operation == "connect":
-        return connect(configuration, session, arguments[1:], start_worker, stop_worker)
-    if unused_cleanup(session, operation):
-        return 0
+def run_worker_operation(configuration, session, arguments, operation):
     if operation in ("stop", "cleanup"):
         with session.locked():
             return stop_worker(configuration, session)
@@ -165,6 +158,17 @@ def main(configuration, arguments):
     attached = not (operation == "start" and headless_requested(arguments[1:]))
     with session.attached_locked(required=attached):
         return invoke_browser(configuration, session, arguments, operation)
+
+
+def main(configuration, arguments):
+    session = ChromeDevtoolsSession.current(configuration.home_directory)
+    operation = arguments[0] if arguments else "--help"
+    validate_session_arguments(arguments)
+    if operation == "connect":
+        return connect(configuration, session, arguments[1:], start_worker, stop_worker)
+    if unused_cleanup(session, operation):
+        return 0
+    return run_worker_operation(configuration, session, arguments, operation)
 
 
 if __name__ == "__main__":

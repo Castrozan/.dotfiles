@@ -30,20 +30,23 @@ def consent_title(words):
     return titles[0]
 
 
-def find_allow_button(words, size):
-    title = consent_title(words)
-    if title is None:
-        return None
+def warning_origin(title, size):
     left, top = int(title[0]["left"]), min(int(word["top"]) for word in title)
-    width, height = size
+    width, _ = size
     if not width * 0.2 < left < width * 0.7 or not 25 < top < 90:
         raise RuntimeError("Consent title is outside the native Chrome header area")
-    region = [
-        word
-        for word in words
-        if left - 10 <= int(word["left"]) < left + 420
+    return left, top
+
+
+def word_inside_warning(word, origin):
+    left, top = origin
+    return (
+        left - 10 <= int(word["left"]) < left + 420
         and top <= int(word["top"]) < top + 260
-    ]
+    )
+
+
+def verify_warning(region):
     text = re.sub(r"\s+", " ", " ".join(word["text"] for word in region))
     expected = (
         "Allow remote debugging? An external app wants full control over this Chrome "
@@ -55,6 +58,9 @@ def find_allow_button(words, size):
         raise RuntimeError(
             "Consent dialog text did not match the exact native Chrome warning"
         )
+
+
+def allow_button_word(region, top):
     buttons = [
         word
         for word in region
@@ -62,7 +68,12 @@ def find_allow_button(words, size):
     ]
     if len(buttons) != 1:
         raise RuntimeError("Expected one Allow button in the consent dialog")
-    button = buttons[0]
+    return buttons[0]
+
+
+def button_geometry(button, origin, size):
+    left, top = origin
+    width, height = size
     x, y, button_width, button_height = (
         int(button[key]) for key in ("left", "top", "width", "height")
     )
@@ -72,6 +83,21 @@ def find_allow_button(words, size):
         (x + button_width // 2, y + button_height // 2),
         (left - 10, top - 15, left + 430, y + button_height + 20),
     )
+
+
+def find_allow_button(words, size):
+    title = consent_title(words)
+    if title is None:
+        return None
+    origin = warning_origin(title, size)
+    region = [word for word in words if word_inside_warning(word, origin)]
+    verify_warning(region)
+    return button_geometry(allow_button_word(region, origin[1]), origin, size)
+
+
+def normalized_word(row, offset):
+    shifts = {"left": offset[0], "top": offset[1], "width": 0, "height": 0}
+    return {**row, **{key: int(row[key]) // 2 + shift for key, shift in shifts.items()}}
 
 
 def recognize_words(configuration, image, path, offset=(0, 0), segmentation="6"):
@@ -92,12 +118,7 @@ def recognize_words(configuration, image, path, offset=(0, 0), segmentation="6")
         for row in csv.DictReader(io.StringIO(result.stdout), delimiter="\t")
         if row["text"].strip()
     ]
-    for word in words:
-        for key in ("left", "top", "width", "height"):
-            word[key] = int(word[key]) // 2 + (
-                offset[0] if key == "left" else offset[1] if key == "top" else 0
-            )
-    return words
+    return [normalized_word(word, offset) for word in words]
 
 
 def inspect_image(configuration, image, directory):
