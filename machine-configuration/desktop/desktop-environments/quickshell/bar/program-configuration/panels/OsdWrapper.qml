@@ -11,11 +11,13 @@ Item {
     property bool osdVisible: false
     property string osdType: "volume"
     property int osdValue: 0
+    property int brightnessValue: 0
     property bool osdMuted: false
     property bool hasReceivedSocketMessage: false
+    property bool hasReceivedBrightnessMessage: false
     property real visibleProgress: 0
 
-    signal osdMessageReceived()
+    signal osdMessageReceived
 
     visible: osdVisible || visibleProgress > 0
     width: visible ? implicitWidth : 0
@@ -27,9 +29,14 @@ Item {
     function handleOsdMessage(message: string): void {
         try {
             let parsed = JSON.parse(message);
-            osdType = parsed.type ?? "volume";
-            osdValue = parsed.value ?? 0;
-            osdMuted = parsed.muted ?? false;
+            if (parsed.type === "brightness") {
+                brightnessValue = parsed.value ?? 0;
+                hasReceivedBrightnessMessage = true;
+            } else {
+                osdType = parsed.type ?? "volume";
+                osdValue = parsed.value ?? 0;
+                osdMuted = parsed.muted ?? false;
+            }
             hasReceivedSocketMessage = true;
             osdMessageReceived();
         } catch (error) {
@@ -42,10 +49,29 @@ Item {
     }
 
     onOsdVisibleChanged: {
-        if (osdVisible && !hasReceivedSocketMessage)
-            queryCurrentState();
-        if (!osdVisible)
+        if (osdVisible) {
+            if (!hasReceivedBrightnessMessage)
+                queryCurrentBrightnessProcess.running = true;
+            if (!hasReceivedSocketMessage || osdType === "volume")
+                queryCurrentState();
+        }
+        if (!osdVisible) {
             hasReceivedSocketMessage = false;
+            hasReceivedBrightnessMessage = false;
+        }
+    }
+
+    Process {
+        id: queryCurrentBrightnessProcess
+        command: ["brightness", "--get"]
+        stdout: SplitParser {
+            splitMarker: ""
+            onRead: data => {
+                let parsed = parseInt(data.trim());
+                if (!isNaN(parsed))
+                    osdWrapperRoot.brightnessValue = parsed;
+            }
+        }
     }
 
     Process {
@@ -122,13 +148,23 @@ Item {
 
         active: osdWrapperRoot.osdVisible || osdWrapperRoot.visible
 
-        sourceComponent: OsdContent {
-            osdType: osdWrapperRoot.osdType
-            osdValue: osdWrapperRoot.osdValue
-            osdMuted: osdWrapperRoot.osdMuted
+        sourceComponent: Column {
+            OsdContent {
+                osdType: "brightness"
+                osdValue: osdWrapperRoot.brightnessValue
 
-            onOsdValueChanged: osdWrapperRoot.osdValue = osdValue
-            onInteractionKeepAlive: osdWrapperRoot.osdMessageReceived()
+                onOsdValueChanged: osdWrapperRoot.brightnessValue = osdValue
+                onInteractionKeepAlive: osdWrapperRoot.osdMessageReceived()
+            }
+
+            OsdContent {
+                osdType: osdWrapperRoot.osdType
+                osdValue: osdWrapperRoot.osdValue
+                osdMuted: osdWrapperRoot.osdMuted
+
+                onOsdValueChanged: osdWrapperRoot.osdValue = osdValue
+                onInteractionKeepAlive: osdWrapperRoot.osdMessageReceived()
+            }
         }
     }
 }
