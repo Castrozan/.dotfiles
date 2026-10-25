@@ -34,6 +34,22 @@ let
       (helpers.homeManagerTestConfiguration (bothHarnessModules ++ [ ../agents/steward.nix ]))
       .home.file."clawde/launch-config/steward.json".text;
 
+  heartbeatDrivenLaunchConfig =
+    parseDeployedJson
+      (helpers.homeManagerTestConfiguration (
+        bothHarnessModules
+        ++ [
+          {
+            clawde.agents.heartbeat-driven-agent = {
+              harness = "claude";
+              personality = "Heartbeat driven agent";
+              heartbeatInterval = "*/30 * * * *";
+              heartbeatPrompt = "Check in.";
+            };
+          }
+        ]
+      )).home.file."clawde/launch-config/heartbeat-driven-agent.json".text;
+
   codexCommandForHost =
     hostname: agentName: commandBuilderName:
     (helpers.homeManagerTestConfigurationForLinuxHost hostname bothHarnessModules)
@@ -108,6 +124,13 @@ in
         && pkgs.lib.hasInfix "-steward-cycle/bin/steward-cycle run" stewardLaunchConfig.launch_gate_command
       )
       "the launch gate replaces the heartbeat driver and runs inside a supervisor that keeps the environment it launched with, so it must reach the cycle through the generation's own steward-cycle wrapper instead of any inherited PYTHONPATH, or a rebuild leaves the gate failing on ModuleNotFoundError while the steward never launches";
+
+  clawde-the-heartbeat-driver-carries-its-own-module-search-path =
+    mkEvalCheck "clawde-the-heartbeat-driver-carries-its-own-module-search-path"
+      (builtins.any (
+        argument: pkgs.lib.hasPrefix "PYTHONPATH=" argument
+      ) heartbeatDrivenLaunchConfig.heartbeat_driver_argv)
+      "a rebuild regenerates this argv with the new generation's driver script while the supervisor that spawns it keeps the PYTHONPATH it launched with, so a driver relying on the inherited one dies on ModuleNotFoundError the moment a running agent restarts its session, and the watchdog then restart-loops the agent on a widening backoff until the whole supervisor is respawned";
 
   clawde-the-steward-can-fall-off-a-harness-that-stops-producing-turns =
     mkEvalCheck "clawde-the-steward-can-fall-off-a-harness-that-stops-producing-turns"
