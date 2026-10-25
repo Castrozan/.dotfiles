@@ -10,7 +10,6 @@
   homebrew.casks = [
     "claude"
     "firefox"
-    "grok-bot"
     "kiro"
     "mongodb-compass"
   ];
