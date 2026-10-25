@@ -13,9 +13,9 @@ below; none permits a tool switch.
 
 OpenCLI is eligible only as the last resort when every recovery step has failed, Chrome DevTools remains unavailable,
 the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. Attaching to Chrome
-Global waits on the user's manual Allow, so an unattended task that did not require Chrome DevTools uses
-`start --headless` or an eligible OpenCLI workflow. Otherwise report the blocked Chrome DevTools requirement instead of
-silently substituting another browser.
+Global can require scoped user approval for a new debugging connection. An unattended task without that approval uses
+`start --headless` or an eligible OpenCLI workflow when the task permits it. Otherwise report the blocked Chrome
+DevTools requirement instead of silently substituting another browser.
 
 Read [OpenCLI](references/opencli.md) for site commands and eligible isolated workflows.
 [chrome target](references/chrome-target.md) explains the Chrome target's constraints.
@@ -27,8 +27,10 @@ development.
 ### Worker ownership
 
 Read `chrome-devtools --help` and each command's help for syntax. The plugin also carries the executable at
-`native/browser/chrome-devtools`. Default startup attaches to Chrome Global. Prefer `start --headless` unless the task
-needs existing logins, open tabs, or visible interaction. Headless does not inherit the user's current logins.
+`native/browser/chrome-devtools`. Default startup attaches to Chrome Global. Reuse the current task's authorized worker
+before starting another. Prefer `start --headless` when existing logins, open tabs, and visible interaction are
+unnecessary; headless does not inherit the user's current logins. Never borrow another task's worker or change its
+ownership identifier.
 
 Keep one worker for a browser task and run `stop` when finished. The completion hook also closes workers owned by the
 current Herdr pane or Codex thread; outside those contexts, explicit `stop` is required. A fresh worker discards page
@@ -39,21 +41,30 @@ state instead of treating exit status alone as success.
 
 ### Chrome devtools connection and recovery
 
-Connects to the user's real Chrome Global via `--autoConnect`, preserving its normal launch flags. The user must enable
-`chrome://inspect/#remote-debugging` once (persists across restarts). A new attached connection can require the user to
-click Allow again, including after worker cleanup.
+Use the managed `connect` command to verify a task-owned connection within a deadline; read `connect --help` first. Keep
+the worker across task steps. Its existing authorized CDP transport avoids repeated grants; a running worker alone does
+not prove Chrome is still attached. A new connection can require Allow again, including after cleanup. Chrome's remote
+debugging setting remains user-controlled; do not change settings or launch flags to suppress consent.
 
-If attached `chrome-devtools list_pages` returns no pages, reports a stale connection, or returns "Could not connect to
-Chrome," recover in this order: 1) launch Chrome Global with `hypr-summon-chrome-global` on Linux or
-`summon-chrome-global` on macOS; 2) tell the user to enable `chrome://inspect/#remote-debugging` if needed and click
-Allow on the consent dialog; 3) call `chrome-devtools list_pages` again. A dropped connection clears itself after one
-failed tool call, and this retry reconnects. It blocks until the user clicks Allow, so call no other tools and do not
-probe OpenCLI while waiting.
+When a new grant is needed, prepare the exact Chrome target and obtain explicit user approval for that connection before
+consuming its one-use token. A standing preference for automation is not approval for future access grants. The native
+helper starts before the potentially blocking request, handles only the matching fresh Chrome consent dialog, then
+exits. Unsupported layouts, stale prompts, ambiguity, or user input abort the attempt; use manual scoped approval in
+those cases. Read [connection consent](references/connection-consent.md) before using native approval.
+
+Run connection attempts through an execution tool that yields promptly, retaining its process handle so the agent can
+continue independent work while consent is pending. Do not synchronously block the agent on `list_pages`, retry in a
+loop, or start parallel attached clients. The wrapper rejects overlapping attached operations. On failure it cancels the
+request and cleans only its own worker; inspect any cleanup error before retrying.
+
+If Chrome is absent, summon Chrome Global through the platform's existing launcher. If debugging is disabled, ask the
+user to enable it. After a stale connection or empty page list, inspect the failure and use one scoped reconnect. Keep
+an explicit Chrome DevTools requirement throughout recovery; none of these failures permits probing OpenCLI.
 
 ### Chrome devtools operation
 
-Once connected, work in this order: 1) `list_pages` verifies the connection; 2) `new_page` with `--background true`
-opens work in a fresh tab; never `navigate_page` the selected tab because it replaces what the user has open.
+Once connected, work in this order: 1) `connect` verifies the connection; 2) `new_page` with `--background true` opens
+work in a fresh tab; never `navigate_page` the selected tab because it replaces what the user has open.
 
 For profile-bound work, pick the account from the profile names in `~/.config/chrome-global/Local State` and use that
 profile's open window; only when it has none, cold-start it with `summon-chrome-work-profile` or

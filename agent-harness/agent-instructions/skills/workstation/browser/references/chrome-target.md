@@ -15,21 +15,19 @@ open tab.
 ### Chrome devtools is stealth by consent
 
 The attached worker connects via `--autoConnect` to the user's normally launched Chrome and retains its profile,
-cookies, logins and extensions. Consent lives in the user's manual Allow on `chrome://inspect`; do not replace that gate
-with an always-on debugging port or automation launch flags on the user's browser.
+cookies, logins and extensions. Each new grant requires the user's explicit approval; do not replace that gate with an
+always-on debugging port or automation launch flags on the user's browser.
 
-### Chrome devtools never break the gate
+### Chrome devtools consent ownership
 
-Three traps each waste a whole session if hit: 1) the first `list_pages` after a new attached connection can BLOCK until
-the user clicks Allow, which is expected and not a hang, so wait for it and never time it out, retry-storm it, kill the
-process, or report it broken;
+Reuse the current task's authorized worker for its lifetime; reconnecting creates another grant boundary. Chrome's
+supported `--autoConnect` flow requests permission for each new session. Do not expose a debugging port, change
+settings, or retain workers across unrelated tasks to avoid that boundary. See
+[connection consent](connection-consent.md).
 
-2\) never add `--remote-debugging-port` or any automation flag to suppress the prompt, that flag is exactly what
-destroys the stealth and the recurring manual Allow is the cost of invisibility by design;
-
-3\) the target is one browser, single and sequential, so never drive it from parallel agents or open concurrent clients
-because each new client needs its own Allow and they can wait while the browser serializes them. Work through one agent
-and one attached connection at a time.
+Keep one attached operation active at a time. Connection verification has a deadline and runs through a yielding
+execution tool. The bounded helper must be ready before the DevTools call that can wait on Allow; starting it afterwards
+can leave the agent unable to act. A timeout cancels this attempt and cleans its worker rather than retrying consent.
 
 ### Real browser never clobber the users open tab
 
