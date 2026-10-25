@@ -8,7 +8,7 @@
 }:
 let
   modelId = "qwen3.5-4b-uncensored";
-  contextWindow = 24576;
+  contextWindow = 32768;
   listenPort = 8081;
   backendPort = 8082;
   inferencePackage =
