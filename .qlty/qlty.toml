@@ -10,6 +10,7 @@ file_patterns = [
   "agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md",
   "agent-harness/agent-instructions/interactive-communication.md",
   "agent-harness/agent-instructions/skills/agent-workflows/process-design/references/**/*.md",
+  "agent-harness/harnesses/clawde/agents/steward/cycle/*.md",
 ]
 rules = ["MD041"]
 

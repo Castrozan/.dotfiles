@@ -96,18 +96,18 @@ def execute(
 ) -> str:
     repository = Repository(configuration.repository, runner)
     entrypoint = Repository(configuration.entrypoint, runner)
-    if decision.action == "fast-forward":
-        return fast_forward(repository)
-    if decision.action == "fast-forward-entrypoint":
-        return fast_forward(entrypoint, with_submodules=False)
-    if decision.action == "rebase":
-        return rebase(configuration, repository, facts)
-    if decision.action == "validate":
-        return validate(configuration, runner, facts, decision.attempt, cycle_command)
-    if decision.action == "push":
-        return push(repository, facts.head)
-    if decision.action == "push-entrypoint":
-        return push(entrypoint, facts.entrypoint_head)
-    if decision.action == "activate":
-        return activate(configuration, runner, facts)
-    return ""
+    actions = {
+        "fast-forward": lambda: fast_forward(repository),
+        "fast-forward-entrypoint": lambda: fast_forward(
+            entrypoint, with_submodules=False
+        ),
+        "rebase": lambda: rebase(configuration, repository, facts),
+        "validate": lambda: validate(
+            configuration, runner, facts, decision.attempt, cycle_command
+        ),
+        "push": lambda: push(repository, facts.head),
+        "push-entrypoint": lambda: push(entrypoint, facts.entrypoint_head),
+        "activate": lambda: activate(configuration, runner, facts),
+    }
+    action = actions.get(decision.action)
+    return action() if action else ""

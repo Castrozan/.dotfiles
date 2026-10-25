@@ -1,5 +1,4 @@
 import os
-import time
 from pathlib import Path
 
 from continuous_integration_status import continuous_integration_status_for_revision
@@ -70,18 +69,57 @@ def head_activation(
     return settled
 
 
+def forget_synchronization_pending(configuration: CycleConfiguration) -> None:
+    if not configuration.dry_run:
+        configuration.synchronization_pending_file.unlink(missing_ok=True)
+
+
+def remember_synchronization_pending(
+    configuration: CycleConfiguration, now: float
+) -> str:
+    if not configuration.dry_run:
+        configuration.synchronization_pending_file.write_text(f"{now}\n")
+    return str(now)
+
+
 def synchronization_pending_seconds(
     configuration: CycleConfiguration, behind: int, now: float
 ) -> float:
-    marker = configuration.synchronization_pending_file
     if not behind:
-        if not configuration.dry_run:
-            marker.unlink(missing_ok=True)
+        forget_synchronization_pending(configuration)
         return 0
-    since = read_text(marker)
-    if not since and not configuration.dry_run:
-        marker.write_text(f"{now}\n")
-    return now - float(since) if since else 0
+    since = read_text(
+        configuration.synchronization_pending_file
+    ) or remember_synchronization_pending(configuration, now)
+    return now - float(since)
+
+
+def oldest_unvalidated_age_seconds(
+    repository: Repository, last_green: str, head: str, now: float
+) -> float:
+    if last_green == head:
+        return 0
+    return now - repository.oldest_commit_time_since(last_green, head)
+
+
+def publication_facts(
+    configuration: CycleConfiguration,
+    runner: CommandRunner,
+    repository: Repository,
+    validation: dict | None,
+    revisions: tuple[str, str, int, int],
+) -> dict:
+    head, upstream, behind, ahead = revisions
+    if (validation or {}).get("status") != "green" or behind:
+        return {}
+    if ahead:
+        pins = repository.unpublished_submodule_pins(head)
+        return {"unpublished_submodule_pins": tuple(pins)}
+    return {
+        "continuous_integration": continuous_integration_for(
+            configuration, runner, upstream
+        )
+    }
 
 
 def entrypoint_settled(entrypoint: Repository) -> bool:
@@ -93,9 +131,8 @@ def entrypoint_settled(entrypoint: Repository) -> bool:
 
 
 def observe(
-    configuration: CycleConfiguration, runner: CommandRunner, now: float | None = None
+    configuration: CycleConfiguration, runner: CommandRunner, now: float
 ) -> CycleFacts:
-    now = time.time() if now is None else now
     repository = Repository(configuration.repository, runner)
     scopes = active_job_scopes(runner, configuration.state_directory)
     entrypoint = Repository(configuration.entrypoint, runner)
@@ -113,14 +150,12 @@ def observe(
         repository.newest_modification_time(dirty_paths),
         entrypoint.commit_time(entrypoint_head),
     )
-    last_green = read_text(configuration.last_green_file) or None
+    last_green = read_text(configuration.last_green_file)
     validation = settled_validation(
         read_record(revision_record_path(configuration.validations_directory, head)),
         scopes,
     )
     live_toplevel = os.path.realpath(LIVE_SYSTEM)
-    green = (validation or {}).get("status") == "green"
-    synchronized_green = green and behind == 0
     return CycleFacts(
         branch=repository.current_branch(),
         operation_in_progress=repository.operation_in_progress(),
@@ -131,19 +166,11 @@ def observe(
         ahead=ahead,
         tracked_dirty=bool(dirty_paths),
         newest_activity_age_seconds=now - newest_activity,
-        oldest_unvalidated_age_seconds=0
-        if last_green == head
-        else now - repository.oldest_commit_time_since(last_green, head),
+        oldest_unvalidated_age_seconds=oldest_unvalidated_age_seconds(
+            repository, last_green, head, now
+        ),
         head_validation=validation,
         recorded_rebase_conflict=read_record(configuration.rebase_conflict_file),
-        unpublished_submodule_pins=tuple(repository.unpublished_submodule_pins(head))
-        if synchronized_green and ahead
-        else (),
-        continuous_integration=continuous_integration_for(
-            configuration, runner, upstream
-        )
-        if synchronized_green and not ahead
-        else None,
         live_toplevel=live_toplevel,
         head_activation=head_activation(configuration, head, scopes, live_toplevel),
         operator_idle=configuration.idle_marker.exists(),
@@ -157,5 +184,12 @@ def observe(
         ),
         synchronization_pending_seconds=synchronization_pending_seconds(
             configuration, behind, now
+        ),
+        **publication_facts(
+            configuration,
+            runner,
+            repository,
+            validation,
+            (head, upstream, behind, ahead),
         ),
     )

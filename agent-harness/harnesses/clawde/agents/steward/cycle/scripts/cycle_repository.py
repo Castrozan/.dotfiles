@@ -72,7 +72,7 @@ class Repository:
     def is_ancestor(self, ancestor: str, descendant: str) -> bool:
         return self.git("merge-base", "--is-ancestor", ancestor, descendant).succeeded
 
-    def oldest_commit_time_since(self, base: str | None, head: str) -> int:
+    def oldest_commit_time_since(self, base: str, head: str) -> int:
         if not base:
             return 0
         if self.is_ancestor(base, head):

@@ -3,6 +3,7 @@ import fcntl
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 from cycle_actions import execute
@@ -31,7 +32,7 @@ def publish(configuration: CycleConfiguration, report: dict) -> None:
 
 
 def run_cycle(configuration: CycleConfiguration, runner: CommandRunner) -> dict:
-    facts = observe(configuration, runner)
+    facts = observe(configuration, runner, time.time())
     decision = decide(facts)
     outcome = (
         ""

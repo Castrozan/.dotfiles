@@ -31,6 +31,14 @@ class CycleFacts:
     synchronization_pending_seconds: float = 0
 
     @property
+    def validation(self) -> dict:
+        return self.head_validation or {}
+
+    @property
+    def rebase_conflict(self) -> dict:
+        return self.recorded_rebase_conflict or {}
+
+    @property
     def synchronization_stalled(self) -> bool:
         return self.synchronization_pending_seconds >= STARVATION_SECONDS
 

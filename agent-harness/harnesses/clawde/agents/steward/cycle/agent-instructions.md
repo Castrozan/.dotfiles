@@ -14,14 +14,17 @@ the operator's desktop.
 
 ### Attention kinds
 
-For `build-red`, `ci-failing` and `activation-failed`, the named log or failing workflow holds the cause; read CI through
-the forge skill. For `rebase-conflict` and `entrypoint-diverged`, rebase the local commits onto their origin by hand and
-resolve the conflict, never resetting or force-pushing. For `submodule-pin-unpublished`, publish the pinned submodule
-commit to its own remote fast-forward-only. For `inbox`, act on each named message within the steward scope, then move
-it into `inbox/read/`.
+For `build-red`, `ci-failing` and `activation-failed`, the named log or failing workflow holds the cause; read CI
+through the forge skill, and a `build-red` whose cause is a wrapper commit is fixed in the wrapper. For
+`rebase-conflict` and `entrypoint-diverged`, rebase the local commits onto their origin by hand and resolve the
+conflict, never resetting or force-pushing. For `submodule-pin-unpublished`, publish the pinned submodule commit to its
+own remote fast-forward-only. For `inbox`, act on each named message within the steward scope, then move it into
+`inbox/read/`.
 
 ### When you cannot fix it
 
 When the failure has no cause in the tree, as with `validation-unavailable` from Nix infrastructure or a `cycle-error`
-inside the cycle itself, report the kind, revision and detail to the operator through notify and end the turn. An
-unchanged failure wakes you once more, then stays silent until it changes.
+inside the cycle itself, report the kind, revision and detail to the operator through notify and end the turn. For
+`synchronization-blocked`, uncommitted edits someone else owns have kept the checkout from syncing for hours: report
+the dirty paths through notify and never stage, stash, commit or discard them. An unchanged failure wakes you once
+more, then stays silent until it changes.
