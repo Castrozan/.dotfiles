@@ -27,9 +27,7 @@ STALLED_SECONDS = 3 * 60 * 60
         (replace(SETTLED, operation_in_progress=True), "wait", None),
         (replace(SETTLED, behind=3, upstream=UPSTREAM), "fast-forward", None),
         (
-            replace(
-                SETTLED, behind=1, ahead=2, upstream=UPSTREAM, dirty_paths=("a.nix",)
-            ),
+            replace(SETTLED, behind=1, ahead=2, upstream=UPSTREAM, tracked_dirty=True),
             "wait",
             None,
         ),
@@ -51,7 +49,7 @@ STALLED_SECONDS = 3 * 60 * 60
                 behind=1,
                 ahead=2,
                 upstream=UPSTREAM,
-                dirty_paths=("a.nix",),
+                tracked_dirty=True,
                 synchronization_pending_seconds=STALLED_SECONDS,
             ),
             "attention",
@@ -74,7 +72,7 @@ STALLED_SECONDS = 3 * 60 * 60
                 SETTLED,
                 behind=3,
                 upstream=UPSTREAM,
-                dirty_paths=("a.nix",),
+                tracked_dirty=True,
                 synchronization_pending_seconds=STALLED_SECONDS,
             ),
             "fast-forward",

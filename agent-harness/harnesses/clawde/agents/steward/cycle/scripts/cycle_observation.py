@@ -129,7 +129,7 @@ def observe(
         upstream=upstream,
         behind=behind,
         ahead=ahead,
-        dirty_paths=tuple(dirty_paths),
+        tracked_dirty=bool(dirty_paths),
         newest_activity_age_seconds=now - newest_activity,
         oldest_unvalidated_age_seconds=0
         if last_green == head
