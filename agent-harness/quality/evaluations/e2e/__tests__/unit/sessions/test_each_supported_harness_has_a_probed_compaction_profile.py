@@ -34,9 +34,11 @@ def test_every_profile_carries_a_directive_and_a_confirmation_marker():
 def test_claude_takes_the_requested_model_and_codex_leaves_its_model_unset():
     workspace = Path("/tmp/e2e-workspace")
     assert CLAUDE_PROFILE.launch_command("sonnet", workspace) == (
+        "CLAUDE_CODE_WORKSPACE_STATE_FILE=/dev/null "
         "claude --model sonnet --dangerously-skip-permissions"
     )
     assert CODEX_PROFILE.launch_command("sonnet", workspace) == (
+        "CLAUDE_CODE_WORKSPACE_STATE_FILE=/dev/null "
         'codex -c \'projects={"/tmp/e2e-workspace"={trust_level="trusted"}}\''
     )
 
