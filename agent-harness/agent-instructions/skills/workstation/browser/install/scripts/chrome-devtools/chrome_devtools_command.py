@@ -82,7 +82,7 @@ def upstream_command(configuration, session, arguments):
 
 
 def start_worker(configuration, session, mode, arguments=(), timeout=35):
-    session.record_mode(mode)
+    session.record_mode(mode, configuration.upstream_executable)
     command = upstream_command(
         configuration,
         session,
@@ -153,6 +153,7 @@ def invoke_browser(configuration, session, arguments, operation):
             result = start_worker(configuration, session, session.mode())
             if result:
                 return result
+        session.require_current_worker(configuration.upstream_executable)
     command = upstream_command(configuration, session, arguments)
     return os.execv(configuration.upstream_executable, command)
 

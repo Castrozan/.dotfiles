@@ -119,6 +119,8 @@ def connect(configuration, session, arguments, start_worker, stop_worker):
                 "A new attached connection requires scoped approval; run connect --prepare "
                 "and obtain approval before --approve-once, or use --manual-once for an approved manual attempt"
             )
+        if not fresh_approval:
+            session.require_current_worker(configuration.upstream_executable)
         if options.manual_once and session.mode() == "headless":
             raise ValueError("Manual consent cannot be used with a headless worker")
         if fresh_approval and session.running():

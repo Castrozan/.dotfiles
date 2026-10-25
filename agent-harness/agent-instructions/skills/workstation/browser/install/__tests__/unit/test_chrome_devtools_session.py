@@ -54,3 +54,14 @@ def test_corrupt_mode_falls_back_to_attached_profile(tmp_path):
     session = sessions.ChromeDevtoolsSession("abc123", tmp_path, True)
     session.state_file.write_text("{invalid")
     assert session.mode() == "attached"
+
+
+@pytest.mark.parametrize("stored", [None, "/older/backend", "/current/backend"])
+def test_attached_worker_reuse_requires_matching_backend(tmp_path, stored):
+    session = sessions.ChromeDevtoolsSession("owned", tmp_path, True)
+    session.record_mode("attached", stored)
+    if stored == "/current/backend":
+        session.require_current_worker("/current/backend")
+    else:
+        with pytest.raises(RuntimeError, match="older attached worker"):
+            session.require_current_worker("/current/backend")
