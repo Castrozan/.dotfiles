@@ -19,6 +19,7 @@ Item {
     readonly property bool isVolumeWithNoMusicPlaying: osdType === "volume" && !(PlayersService.active?.isPlaying ?? false)
 
     signal interactionKeepAlive
+    signal valueChangeRequested(real value)
 
     implicitWidth: 56
     implicitHeight: osdSliderColumn.implicitHeight + Appearance.padding.large * 2
@@ -52,7 +53,7 @@ Item {
     function applyValueFromMouseY(mouseY: real, trackHeight: real): void {
         let fraction = 1.0 - Math.max(0, Math.min(mouseY, trackHeight)) / trackHeight;
         let newValue = osdType === "brightness" ? brightnessFromFraction(fraction) : Math.round(fraction * 100);
-        osdContentRoot.osdValue = newValue;
+        osdContentRoot.valueChangeRequested(newValue);
         osdContentRoot.interactionKeepAlive();
 
         if (osdContentRoot.osdType === "brightness") {
@@ -153,7 +154,7 @@ Item {
                     }
                     let delta = event.angleDelta.y > 0 ? 5 : -5;
                     let newValue = Math.max(0, Math.min(100, osdContentRoot.osdValue + delta));
-                    osdContentRoot.osdValue = newValue;
+                    osdContentRoot.valueChangeRequested(newValue);
                     osdContentRoot.interactionKeepAlive();
 
                     if (osdContentRoot.osdType === "mic")

@@ -104,18 +104,26 @@ def send_brightness_osd(value: float) -> None:
     subprocess.run(["quickshell-osd-send", "brightness", str(value)])
 
 
-def set_brightness_percentage(target: float) -> None:
+def brightness_targets(target: float, state: dict) -> tuple[int, int]:
     if not math.isfinite(target):
         raise ValueError("Brightness must be finite")
-    state = get_brightness_state()
     target = max(state["minimum"], min(100, target))
-    hardware = max(1, round(target)) if state["hardwareActive"] else state["hardware"]
-    gamma = round(target * 100) if state["hardwareActive"] and target < 1 else 100
     if not state["hardwareActive"]:
-        gamma = round(target)
-    if gamma != state["gamma"] and not apply_compositor_gamma_percentage(gamma):
-        send_brightness_osd(state["value"])
-        raise RuntimeError("Could not apply compositor dimming")
+        return state["hardware"], round(target)
+    hardware = max(1, round(target))
+    gamma = 100
+    if target < 1:
+        gamma = round(target * 100)
+    return hardware, gamma
+
+
+def set_brightness_percentage(target: float) -> None:
+    state = get_brightness_state()
+    hardware, gamma = brightness_targets(target, state)
+    if gamma != state["gamma"]:
+        if not apply_compositor_gamma_percentage(gamma):
+            send_brightness_osd(state["value"])
+            raise RuntimeError("Could not apply compositor dimming")
     write_persisted_gamma_percentage(gamma)
     if state["hardwareActive"] and hardware != state["hardware"]:
         set_hardware_brightness_percentage(hardware)
@@ -159,21 +167,19 @@ def decrease_brightness(step: int) -> None:
 
 def main() -> None:
     action = sys.argv[1] if len(sys.argv) > 1 else "--get"
-    match action:
-        case "--inc":
-            increase_brightness(BRIGHTNESS_STEP_NORMAL)
-        case "--dec":
-            decrease_brightness(BRIGHTNESS_STEP_NORMAL)
-        case "--inc-precise":
-            increase_brightness(BRIGHTNESS_STEP_PRECISE)
-        case "--dec-precise":
-            decrease_brightness(BRIGHTNESS_STEP_PRECISE)
-        case "--set":
-            set_brightness_percentage(float(sys.argv[2]))
-        case "--get-state":
-            print(json.dumps(get_brightness_state()))
-        case _:
-            print(f"{get_brightness_state()['value']:g}")
+    actions = {
+        "--inc": lambda: increase_brightness(BRIGHTNESS_STEP_NORMAL),
+        "--dec": lambda: decrease_brightness(BRIGHTNESS_STEP_NORMAL),
+        "--inc-precise": lambda: increase_brightness(BRIGHTNESS_STEP_PRECISE),
+        "--dec-precise": lambda: decrease_brightness(BRIGHTNESS_STEP_PRECISE),
+        "--set": lambda: set_brightness_percentage(float(sys.argv[2])),
+        "--get-state": lambda: print(json.dumps(get_brightness_state())),
+    }
+    handler = actions.get(action)
+    if handler is not None:
+        handler()
+    else:
+        print(f"{get_brightness_state()['value']:g}")
 
 
 if __name__ == "__main__":
