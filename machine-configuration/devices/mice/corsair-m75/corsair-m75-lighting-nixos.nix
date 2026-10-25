@@ -1,11 +1,12 @@
 {
   lib,
-  latest,
+  pkgs,
+  inputs,
   utils,
   ...
 }:
 let
-  openrgb = import ./openrgb-package.nix { pkgs = latest; };
+  openrgb = inputs.nixpkgs-openrgb.legacyPackages.${pkgs.stdenv.hostPlatform.system}.openrgb;
   slipstreamReceiverAlias = "/sys/subsystem/usb/devices/corsair-slipstream-receiver";
   slipstreamReceiverDeviceUnit = "${utils.escapeSystemdPath slipstreamReceiverAlias}.device";
 in
