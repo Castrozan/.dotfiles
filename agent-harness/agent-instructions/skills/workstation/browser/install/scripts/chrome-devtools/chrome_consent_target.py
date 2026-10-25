@@ -2,6 +2,7 @@ import json
 import os
 import re
 import secrets
+import shlex
 import subprocess
 import time
 from pathlib import Path
@@ -19,7 +20,11 @@ def run_tool(configuration, name, *arguments):
 
 def chrome_identity(process_identifier, profile_directory, package_directory):
     directory = Path("/proc") / str(process_identifier)
-    arguments = directory.joinpath("cmdline").read_bytes().decode().split("\0")
+    arguments = (
+        directory.joinpath("cmdline").read_bytes().decode().strip("\0").split("\0")
+    )
+    if len(arguments) == 1:
+        arguments = shlex.split(arguments[0])
     executable = directory.joinpath("exe").resolve(strict=True)
     if (
         directory.stat().st_uid != os.getuid()
