@@ -71,7 +71,6 @@
   "machine-configuration/development/system-rebuild/__tests__/integration/test_staged_relative_sources.py": 8.561,
   "machine-configuration/development/system-rebuild/__tests__/integration/test_staged_source_selection.py": 27.679,
   "machine-configuration/development/system-rebuild/__tests__/integration/test_staged_sources.py": 22.311,
-  "machine-configuration/development/system-rebuild/__tests__/integration/test_steward_preflight_lock.py": 1.115,
   "machine-configuration/machines/__tests__/integration/test_declared_launchd_agents_are_registered.py": 0.001,
   "machine-configuration/media/media-generation/__tests__/integration/test_elevenlabs_adapter.py": 0.017,
   "machine-configuration/media/media-generation/__tests__/integration/test_elevenlabs_usage.py": 0.076,

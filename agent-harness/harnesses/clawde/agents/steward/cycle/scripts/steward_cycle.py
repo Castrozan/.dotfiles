@@ -10,6 +10,7 @@ from cycle_actions import execute
 from cycle_commands import CommandRunner
 from cycle_configuration import CycleConfiguration
 from cycle_decision import decide
+from cycle_jobs import run_job
 from cycle_observation import observe
 from cycle_records import current_timestamp, read_record, remove_record, write_record
 from cycle_validation_worker import validate_revision
@@ -113,14 +114,21 @@ def parse_arguments(argv: list[str] | None) -> argparse.Namespace:
     )
     worker.add_argument("--revision", required=True)
     worker.add_argument("--attempt", type=int, required=True)
+    job = commands.add_parser(
+        "run-job", help="run a command while holding its job lock"
+    )
+    job.add_argument("--lock", type=Path, required=True)
+    job.add_argument("job_command", nargs=argparse.REMAINDER)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     arguments = parse_arguments(argv)
+    if arguments.command == "run-job":
+        return run_job(arguments.lock, arguments.job_command[1:])
     configuration = CycleConfiguration.from_settings(
         Path(os.environ["STEWARD_CYCLE_SETTINGS"]),
-        Path(os.environ["XDG_RUNTIME_DIR"]),
+        dict(os.environ),
         getattr(arguments, "dry_run", False),
     )
     runner = CommandRunner()

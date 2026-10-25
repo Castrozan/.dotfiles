@@ -77,6 +77,8 @@ def decide_activation_window(facts: CycleFacts, state: str | None) -> CycleDecis
         return wait("CI on origin/main has not passed yet")
     if not facts.operator_idle:
         return wait("the operator is active")
+    if facts.activation_reads_working_tree and facts.tracked_dirty:
+        return wait("uncommitted edits would reach a rebuild of the working tree")
     return CycleDecision(
         "activate", "validated, pushed, CI passing and the operator is idle"
     )

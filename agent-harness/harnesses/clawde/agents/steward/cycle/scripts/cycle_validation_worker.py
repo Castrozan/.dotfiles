@@ -24,6 +24,15 @@ TRANSIENT_FAILURE_PATTERN = re.compile(
 def build_command(
     configuration: CycleConfiguration, revision: str, entrypoint_revision: str
 ) -> list[str]:
+    override = (
+        []
+        if configuration.entrypoint is None
+        else [
+            "--override-input",
+            "dotfiles",
+            configuration.pinned_repository_reference(revision),
+        ]
+    )
     return [
         configuration.nix_binary,
         "--extra-experimental-features",
@@ -32,10 +41,8 @@ def build_command(
         "--no-link",
         "--print-out-paths",
         "--no-write-lock-file",
-        "--override-input",
-        "dotfiles",
-        configuration.pinned_repository_reference(revision),
-        configuration.entrypoint_installable(entrypoint_revision),
+        *override,
+        configuration.system_installable(revision, entrypoint_revision),
     ]
 
 
@@ -87,7 +94,11 @@ def validate_revision(
     os.chdir(configuration.state_directory)
     log_path = revision_log_path(configuration.validations_directory, revision)
     started = current_timestamp()
-    entrypoint_head = Repository(configuration.entrypoint, runner).revision("HEAD")
+    entrypoint_head = (
+        ""
+        if configuration.entrypoint is None
+        else Repository(configuration.entrypoint, runner).revision("HEAD")
+    )
     return_code, standard_output = build(
         build_command(configuration, revision, entrypoint_head),
         configuration.state_directory,

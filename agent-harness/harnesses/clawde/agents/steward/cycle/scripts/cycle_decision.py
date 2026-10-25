@@ -91,7 +91,7 @@ def decide_after_red_build(facts: CycleFacts, validation: dict) -> CycleDecision
         return decide_for_entrypoint(facts, validation)
     return attention(
         "build-red",
-        "the chise build failed",
+        "the system build failed",
         revision=facts.head,
         entrypoint_revision=facts.entrypoint_head,
         log=validation.get("log", ""),

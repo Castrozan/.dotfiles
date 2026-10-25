@@ -27,6 +27,7 @@ class CycleFacts:
     entrypoint_settled: bool = False
     entrypoint_behind: int = 0
     entrypoint_ahead: int = 0
+    activation_reads_working_tree: bool = False
     unread_local_messages: tuple[str, ...] = ()
     synchronization_pending_seconds: float = 0
 

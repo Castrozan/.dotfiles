@@ -86,7 +86,7 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
         rf"{COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}",
         "launchctl submit creates a KeepAlive job that launchd relaunches every "
         "time it exits, forever. Run one-shot work through the harness's "
-        "background execution facility, or steward-rebuild for activation.",
+        "background execution facility.",
     ),
     (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",

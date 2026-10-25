@@ -3,10 +3,11 @@ from pathlib import Path
 
 from continuous_integration_status import continuous_integration_status_for_revision
 from cycle_commands import CommandRunner
-from cycle_configuration import UPSTREAM_BRANCH, UPSTREAM_REFERENCE, CycleConfiguration
+from cycle_configuration import UPSTREAM_REFERENCE, CycleConfiguration
+from cycle_entrypoint import observe_entrypoint
 from cycle_facts import CycleFacts
-from cycle_inbox import unread_local_messages
-from cycle_jobs import active_job_scopes, rebuild_running
+from cycle_jobs import active_jobs, rebuild_running
+from cycle_operator import operator_idle, unread_local_messages
 from cycle_records import (
     current_timestamp,
     read_record,
@@ -122,25 +123,14 @@ def publication_facts(
     }
 
 
-def entrypoint_settled(entrypoint: Repository) -> bool:
-    return (
-        entrypoint.current_branch() == UPSTREAM_BRANCH
-        and not entrypoint.operation_in_progress()
-        and entrypoint.is_clean()
-    )
-
-
 def observe(
     configuration: CycleConfiguration, runner: CommandRunner, now: float
 ) -> CycleFacts:
     repository = Repository(configuration.repository, runner)
-    scopes = active_job_scopes(runner, configuration.state_directory)
-    entrypoint = Repository(configuration.entrypoint, runner)
+    scopes = active_jobs(configuration, runner)
     repository.fetch()
-    entrypoint.fetch()
+    entrypoint = observe_entrypoint(configuration, runner)
     head = repository.revision("HEAD")
-    entrypoint_head = entrypoint.revision("HEAD")
-    entrypoint_behind, entrypoint_ahead = entrypoint.divergence()
     upstream = repository.revision(UPSTREAM_REFERENCE)
     behind, ahead = repository.divergence()
     dirty_paths = repository.tracked_dirty_paths()
@@ -148,7 +138,7 @@ def observe(
         repository.commit_time(head),
         repository.commit_time(upstream),
         repository.newest_modification_time(dirty_paths),
-        entrypoint.commit_time(entrypoint_head),
+        entrypoint.commit_time,
     )
     last_green = read_text(configuration.last_green_file)
     validation = settled_validation(
@@ -173,12 +163,9 @@ def observe(
         recorded_rebase_conflict=read_record(configuration.rebase_conflict_file),
         live_toplevel=live_toplevel,
         head_activation=head_activation(configuration, head, scopes, live_toplevel),
-        operator_idle=configuration.idle_marker.exists(),
-        rebuild_running=rebuild_running(),
-        entrypoint_head=entrypoint_head,
-        entrypoint_settled=entrypoint_settled(entrypoint),
-        entrypoint_behind=entrypoint_behind,
-        entrypoint_ahead=entrypoint_ahead,
+        operator_idle=operator_idle(configuration, runner),
+        rebuild_running=rebuild_running(runner, configuration.state_directory),
+        **entrypoint.as_facts(),
         unread_local_messages=unread_local_messages(
             configuration.inbox_directory, configuration.peers_file
         ),

@@ -69,7 +69,10 @@ def push(repository: Repository, revision: str) -> str:
 
 
 def activate(
-    configuration: CycleConfiguration, runner: CommandRunner, facts: CycleFacts
+    configuration: CycleConfiguration,
+    runner: CommandRunner,
+    facts: CycleFacts,
+    cycle_command: list[str],
 ) -> str:
     write_record(
         revision_record_path(configuration.activations_directory, facts.head),
@@ -83,7 +86,7 @@ def activate(
             ),
         },
     )
-    launch_activation(configuration, runner, facts.head)
+    launch_activation(configuration, runner, facts.head, cycle_command)
     return "activation launched"
 
 
@@ -107,7 +110,7 @@ def execute(
         ),
         "push": lambda: push(repository, facts.head),
         "push-entrypoint": lambda: push(entrypoint, facts.entrypoint_head),
-        "activate": lambda: activate(configuration, runner, facts),
+        "activate": lambda: activate(configuration, runner, facts, cycle_command),
     }
     action = actions.get(decision.action)
     return action() if action else ""

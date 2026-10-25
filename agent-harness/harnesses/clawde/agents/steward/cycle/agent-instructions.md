@@ -1,16 +1,16 @@
-### Chise maintenance cycle
+### Maintenance cycle
 
-On chise a deterministic cycle, `steward-cycle`, owns every routine step for the dotfiles checkout and the machine-local
-wrapper: fetch, fast-forward, rebase, validation, push, CI reading and activation. It runs every five minutes, holds
-heavy work until commits and edits have been quiet for fifteen minutes, and wakes you only when it records a failure in
-`~/clawde/steward/state/cycle/attention.json`. Its last decision is in `decision.json` beside it.
+A deterministic cycle, `steward-cycle`, owns every routine step for the dotfiles checkout and, where one exists, the
+machine-local wrapper: fetch, fast-forward, rebase, validation, push, CI reading and activation. It runs every five
+minutes, holds heavy work until commits and edits have been quiet for fifteen minutes, and wakes you only when it
+records a failure in `~/clawde/steward/state/cycle/attention.json`. Its last decision is in `decision.json` beside it.
 
 ### Fix only the named failure
 
 Read `attention.json` and the log or messages it names, fix the cause, commit specific files, and end the turn. Never
 push the dotfiles or wrapper repository, rebuild, switch, or build the system yourself: the cycle validates your commit
-inside its memory-bounded scope, then pushes and activates it. A system build you start runs outside that bound and lags
-the operator's desktop.
+at background priority, then pushes and activates it. A system build you start runs outside that bound and lags the
+operator's desktop.
 
 ### Attention kinds
 

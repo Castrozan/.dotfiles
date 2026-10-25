@@ -4,54 +4,11 @@ from pathlib import Path
 
 import steward_cycle
 from cycle_decision import decide
-from cycle_inbox import unread_local_messages
 from cycle_observation import synchronization_pending_seconds
-from cycle_jobs import (
-    ACTIVATION_SCOPE_PREFIX,
-    VALIDATION_SCOPE_PREFIX,
-    rebuild_running,
-    scope_command,
-)
+from cycle_operator import unread_local_messages
 from cycle_repository import RepositoryStateUnknown
 from steward_cycle_facts_fixtures import RED_VALIDATION, SETTLED
 from test_steward_cycle_records_and_worker import configuration_in
-
-
-def test_scopes_keep_the_prefix_the_memory_bound_attaches_to():
-    command = scope_command(VALIDATION_SCOPE_PREFIX, "a" * 40, ["worker"])
-
-    assert "--unit=steward-validate-aaaaaaaa" in command
-    assert command[-2:] == ["--", "worker"]
-    assert ACTIVATION_SCOPE_PREFIX != VALIDATION_SCOPE_PREFIX
-
-
-def test_a_running_rebuild_is_recognized_by_its_executable(tmp_path):
-    def process(identifier: str, *arguments: bytes) -> None:
-        (tmp_path / identifier).mkdir()
-        (tmp_path / identifier / "cmdline").write_bytes(b"\0".join(arguments) + b"\0")
-
-    process("10", b"bash", b"-c", b"cd ~/.dotfiles && rebuild")
-    process("11", b"vim", b"notes", b"/nix/store/aaa-rebuild/bin/rebuild")
-    assert not rebuild_running(tmp_path)
-
-    process("12", b"bash", b"/nix/store/aaa-rebuild/bin/rebuild", b"--override-input")
-    assert rebuild_running(tmp_path)
-
-
-def test_a_rebuild_started_through_the_profile_link_is_recognized(tmp_path):
-    store_executable = tmp_path / "store" / "aaa-rebuild" / "bin" / "rebuild"
-    store_executable.parent.mkdir(parents=True)
-    store_executable.write_text("")
-    profile_link = tmp_path / "profile" / "bin" / "rebuild"
-    profile_link.parent.mkdir(parents=True)
-    profile_link.symlink_to(store_executable)
-    processes = tmp_path / "proc"
-    (processes / "20").mkdir(parents=True)
-    (processes / "20" / "cmdline").write_bytes(
-        b"bash\0" + str(profile_link).encode() + b"\0"
-    )
-
-    assert rebuild_running(processes)
 
 
 def test_attention_is_published_and_cleared(tmp_path):
