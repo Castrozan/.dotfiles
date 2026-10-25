@@ -136,15 +136,19 @@ def inspect_worker(configuration, session, arguments, operation):
     return os.execv(configuration.upstream_executable, command)
 
 
+def start_requested_worker(configuration, session, arguments):
+    mode = "headless" if headless_requested(arguments[1:]) else "attached"
+    if mode == "attached":
+        raise RuntimeError(
+            "Use connect with scoped approval to start an attached worker"
+        )
+    return start_worker(configuration, session, mode, arguments[1:])
+
+
 def invoke_browser(configuration, session, arguments, operation):
     with session.locked():
         if operation == "start":
-            mode = "headless" if headless_requested(arguments[1:]) else "attached"
-            if mode == "attached":
-                raise RuntimeError(
-                    "Use connect with scoped approval to start an attached worker"
-                )
-            return start_worker(configuration, session, mode, arguments[1:])
+            return start_requested_worker(configuration, session, arguments)
         if not session.running():
             if session.mode() == "attached":
                 raise RuntimeError(

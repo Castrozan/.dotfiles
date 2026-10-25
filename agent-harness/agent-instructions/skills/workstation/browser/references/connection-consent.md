@@ -27,6 +27,7 @@ and cleanup state before obtaining approval for another attempt. Do not blindly 
 ### Failed attempts and manual consent
 
 A cold `connect` without a scoped approval option fails before requesting access. For an explicitly approved manual
-connection, use `--manual-once` and handle the same bounded grant yourself. Never use that option as standing permission.
-The native helper dismisses its fresh pending dialog on failure only while target, focus, and cursor remain under its
-control; user movement aborts dismissal. If cleanup reports a pending dialog, cancel it manually before another attempt.
+connection, use `--manual-once` and handle the same bounded grant yourself. Never use that option as standing
+permission. The native helper dismisses its fresh pending dialog on failure only while target, focus, and cursor remain
+under its control; user movement aborts dismissal. If cleanup reports a pending dialog, cancel it manually before
+another attempt.

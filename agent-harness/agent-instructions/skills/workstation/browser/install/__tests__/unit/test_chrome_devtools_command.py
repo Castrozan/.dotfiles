@@ -21,14 +21,7 @@ def configuration(tmp_path, monkeypatch):
     )
 
 
-def test_attached_start_keeps_consent_and_recording(configuration, monkeypatch):
-    calls = []
-    monkeypatch.setattr(
-        command.subprocess,
-        "run",
-        lambda arguments, **options: calls.append(arguments)
-        or SimpleNamespace(returncode=0),
-    )
+def test_attached_configuration_keeps_consent_and_recording(configuration):
     arguments = configuration.start_arguments("attached")
     assert "--autoConnect" in arguments
     assert "--headless=false" in arguments
@@ -138,14 +131,16 @@ def test_start_failure_prevents_tool_execution(configuration, monkeypatch):
     monkeypatch.setattr(
         command.os, "execv", lambda *arguments: pytest.fail("executed a browser tool")
     )
-    assert command.main(configuration, ["start", "--headless"]) == 9
+    ChromeDevtoolsSession.current(configuration.home_directory).record_mode("headless")
+    assert command.main(configuration, ["list_pages"]) == 9
     assert ChromeDevtoolsSession.current(
         configuration.home_directory
     ).state_file.exists()
 
 
-def test_clawde_agent_cannot_start_an_unapproved_attached_connection(
-    configuration, monkeypatch
+@pytest.mark.parametrize("operation", ["start", "list_pages"])
+def test_agent_cannot_start_an_unapproved_attached_connection(
+    configuration, monkeypatch, operation
 ):
     monkeypatch.setenv("CLAWDE_AGENT_NAME", "project-manager")
     monkeypatch.setattr(ChromeDevtoolsSession, "running", lambda self: False)
@@ -161,7 +156,7 @@ def test_clawde_agent_cannot_start_an_unapproved_attached_connection(
         command.os, "execv", lambda executable, arguments: executed.append(arguments)
     )
     with pytest.raises(RuntimeError, match="scoped approval"):
-        command.main(configuration, ["list_pages"])
+        command.main(configuration, [operation])
     assert started == []
     assert executed == []
 
@@ -199,13 +194,3 @@ def test_private_session_override_is_rejected(configuration):
 )
 def test_headless_boolean_arguments(arguments, expected):
     assert command.headless_requested(arguments) is expected
-
-
-def test_direct_attached_start_does_not_bypass_scoped_approval(
-    configuration, monkeypatch
-):
-    monkeypatch.setattr(
-        command.subprocess, "run", lambda *args, **kwargs: pytest.fail("started worker")
-    )
-    with pytest.raises(RuntimeError, match="scoped approval"):
-        command.main(configuration, ["start"])

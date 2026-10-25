@@ -66,9 +66,39 @@ def prepare_connection(configuration, session):
 
 
 def validate_approval_mode(session, options):
-    if options.approve_once and session.mode() == "headless":
+    if session.mode() != "headless":
+        return
+    if options.approve_once:
         raise ValueError(
             "A native approval token cannot be used with a headless worker"
+        )
+    if options.manual_once:
+        raise ValueError("Manual consent cannot be used with a headless worker")
+
+
+def require_connection_authorization(configuration, session, options):
+    if session.mode() == "headless":
+        return
+    if options.approve_once:
+        return
+    if options.manual_once:
+        return
+    if not session.running():
+        raise RuntimeError(
+            "A new attached connection requires scoped approval; run connect --prepare "
+            "and obtain approval before --approve-once, or use --manual-once for an approved manual attempt"
+        )
+    session.require_current_worker(configuration.upstream_executable)
+
+
+def restart_approved_worker(configuration, session, options, deadline, stop_worker):
+    if not (options.approve_once or options.manual_once):
+        return
+    if not session.running():
+        return
+    if stop_worker(configuration, session, timeout=min(5, remaining_time(deadline))):
+        raise RuntimeError(
+            "Previous owned worker could not stop for the approved connection"
         )
 
 
@@ -109,28 +139,8 @@ def connect(configuration, session, arguments, start_worker, stop_worker):
     deadline = time.monotonic() + options.timeout
     validate_approval_mode(session, options)
     with session.attached_locked(), session.locked(), cancellable():
-        fresh_approval = options.approve_once or options.manual_once
-        if (
-            session.mode() != "headless"
-            and not fresh_approval
-            and not session.running()
-        ):
-            raise RuntimeError(
-                "A new attached connection requires scoped approval; run connect --prepare "
-                "and obtain approval before --approve-once, or use --manual-once for an approved manual attempt"
-            )
-        if not fresh_approval:
-            session.require_current_worker(configuration.upstream_executable)
-        if options.manual_once and session.mode() == "headless":
-            raise ValueError("Manual consent cannot be used with a headless worker")
-        if fresh_approval and session.running():
-            result = stop_worker(
-                configuration, session, timeout=min(5, remaining_time(deadline))
-            )
-            if result:
-                raise RuntimeError(
-                    "Previous owned worker could not stop for the approved connection"
-                )
+        require_connection_authorization(configuration, session, options)
+        restart_approved_worker(configuration, session, options, deadline, stop_worker)
         request_started = False
         try:
             with ExitStack() as stack:
