@@ -65,6 +65,7 @@ def test_geometry_movement_after_pointer_move_prevents_click(tmp_path, monkeypat
     }
     button = DialogButton((1119, 285), (744, 52, 1184, 311))
     state = {"cursor": (42, 22), "target_reads": 0}
+    clicks = []
 
     @contextmanager
     def input_socket(*args):
@@ -87,8 +88,59 @@ def test_geometry_movement_after_pointer_move_prevents_click(tmp_path, monkeypat
     monkeypatch.setattr(
         native_input.subprocess,
         "run",
-        lambda *args, **kwargs: pytest.fail("clicked stale geometry"),
+        lambda arguments, **kwargs: clicks.append(arguments),
     )
     with pytest.raises(RuntimeError, match="geometry changed after cursor movement"):
-        native_input.click_once({}, target, button, tmp_path, (42, 22))
+        native_input.click_once(
+            {"ydotool": "fake-input"}, target, button, tmp_path, (42, 22)
+        )
     assert state["cursor"] == (42, 22)
+    assert not clicks
+
+
+def test_focus_theft_during_final_geometry_query_never_clicks_or_restores(
+    tmp_path, monkeypatch
+):
+    target = {
+        "address": "chrome",
+        "pid": 123,
+        "process_start": "456",
+        "at": [2, 2],
+        "size": [1916, 1076],
+    }
+    button = DialogButton((1119, 285), (744, 52, 1184, 311))
+    state = {"focus": "chrome", "cursor": (42, 22), "reads": 0}
+    clicks = []
+
+    @contextmanager
+    def input_socket(*args):
+        yield tmp_path / "input"
+
+    def observed(*args):
+        state["reads"] += 1
+        if state["reads"] == 2:
+            state["focus"] = "user"
+        return target
+
+    monkeypatch.setattr(native_input, "temporary_input", input_socket)
+    monkeypatch.setattr(native_input, "focused_window", lambda *args: state["focus"])
+    monkeypatch.setattr(native_input, "capture_dialog", lambda *args: button)
+    monkeypatch.setattr(native_input, "current_target", observed)
+    monkeypatch.setattr(native_input, "cursor_position", lambda *args: state["cursor"])
+    monkeypatch.setattr(
+        native_input,
+        "move_cursor",
+        lambda configuration, position: state.update(cursor=position),
+    )
+    monkeypatch.setattr(
+        native_input.subprocess,
+        "run",
+        lambda arguments, **kwargs: clicks.append(arguments),
+    )
+    with pytest.raises(RuntimeError, match="Focus changed after cursor movement"):
+        native_input.click_once(
+            {"ydotool": "fake-input"}, target, button, tmp_path, (42, 22)
+        )
+    assert not clicks
+    assert state["focus"] == "user"
+    assert state["cursor"] == (1121, 287)

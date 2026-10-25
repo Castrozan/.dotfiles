@@ -63,15 +63,18 @@ def verify_click_target(configuration, target, button, directory):
         raise RuntimeError("Chrome dialog or process changed before the consent action")
 
 
-def restore_cursor(configuration, expected_cursor, original_cursor):
-    if cursor_position(configuration) == expected_cursor:
+def restore_cursor(configuration, target, expected_cursor, original_cursor):
+    if (
+        focused_window(configuration) == target["address"]
+        and cursor_position(configuration) == expected_cursor
+    ):
         move_cursor(configuration, original_cursor)
 
 
 def verify_click_position(configuration, target, position):
-    require_chrome_focus(configuration, target, "Focus changed after cursor movement")
     if target_signature(current_target(configuration)) != target_signature(target):
         raise RuntimeError("Chrome geometry changed after cursor movement")
+    require_chrome_focus(configuration, target, "Focus changed after cursor movement")
     if cursor_position(configuration) != position:
         raise RuntimeError(
             "User cursor changed after movement; refusing the consent click"
@@ -97,4 +100,4 @@ def click_once(configuration, target, button, directory, original_cursor):
                 timeout=1,
             )
         finally:
-            restore_cursor(configuration, position, original_cursor)
+            restore_cursor(configuration, target, position, original_cursor)
