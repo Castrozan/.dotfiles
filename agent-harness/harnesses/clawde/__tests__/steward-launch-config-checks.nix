@@ -101,12 +101,13 @@ in
       )
       "Claude's effort environment belongs only to Claude; Codex and OpenCode keep their native configuration paths";
 
-  clawde-the-heartbeat-driver-carries-its-own-module-search-path =
-    mkEvalCheck "clawde-the-heartbeat-driver-carries-its-own-module-search-path"
-      (builtins.any (
-        argument: pkgs.lib.hasPrefix "PYTHONPATH=" argument
-      ) stewardLaunchConfig.heartbeat_driver_argv)
-      "a rebuild regenerates this argv with the new generation's driver script while the supervisor that spawns it keeps the PYTHONPATH it launched with, so a driver relying on the inherited one dies on ModuleNotFoundError the moment a running agent restarts its session, and the watchdog then restart-loops the agent on a widening backoff until the whole supervisor is respawned";
+  clawde-the-steward-launch-gate-carries-its-own-module-search-path =
+    mkEvalCheck "clawde-the-steward-launch-gate-carries-its-own-module-search-path"
+      (
+        stewardLaunchConfig.heartbeat_driver_argv == null
+        && pkgs.lib.hasInfix "-steward-cycle/bin/steward-cycle run" stewardLaunchConfig.launch_gate_command
+      )
+      "the launch gate replaces the heartbeat driver and runs inside a supervisor that keeps the environment it launched with, so it must reach the cycle through the generation's own steward-cycle wrapper instead of any inherited PYTHONPATH, or a rebuild leaves the gate failing on ModuleNotFoundError while the steward never launches";
 
   clawde-the-steward-can-fall-off-a-harness-that-stops-producing-turns =
     mkEvalCheck "clawde-the-steward-can-fall-off-a-harness-that-stops-producing-turns"
