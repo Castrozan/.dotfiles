@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   hostname,
@@ -47,6 +48,16 @@ in
       };
     };
   };
+
+  home.file.".ssh/config".target = lib.mkIf isNixOS ".ssh/config.nix-source";
+
+  home.activation.materializeUserOwnedSshConfig = lib.mkIf isNixOS (
+    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      run ${pkgs.python312}/bin/python3 ${./scripts/materialize_ssh_config.py} \
+        ${config.home.file.".ssh/config".source} \
+        ${lib.escapeShellArg "${config.home.homeDirectory}/.ssh/config"}
+    ''
+  );
 
   home.activation.generatePrivateSshConfig = lib.mkIf (sshHostsSecretExists && isWorkpcLinux) (
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
