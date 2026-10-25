@@ -1,3 +1,3 @@
 _: {
-  homebrew.casks = [ "codex-app" ];
+  homebrew.casks = [ "chatgpt" ];
 }
