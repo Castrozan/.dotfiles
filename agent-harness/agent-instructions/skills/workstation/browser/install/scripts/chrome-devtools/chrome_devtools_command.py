@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from chrome_devtools_session import ChromeDevtoolsSession
+from chrome_devtools_connect import connect
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class ChromeDevtoolsConfiguration:
     home_directory: Path
     ffmpeg_executable: str
     chrome_executable: str
+    consent_helper: tuple[str, ...] = ()
 
     @classmethod
     def read(cls, path):
@@ -26,6 +28,7 @@ class ChromeDevtoolsConfiguration:
             Path(configuration["homeDirectory"]),
             configuration["ffmpegExecutable"],
             configuration["chromeExecutable"],
+            tuple(configuration.get("consentHelper", ())),
         )
 
     def start_arguments(self, mode):
@@ -78,19 +81,19 @@ def upstream_command(configuration, session, arguments):
     ]
 
 
-def start_worker(configuration, session, mode, arguments=()):
+def start_worker(configuration, session, mode, arguments=(), timeout=35):
     session.record_mode(mode)
     command = upstream_command(
         configuration,
         session,
         ["start", *configuration.start_arguments(mode), *arguments],
     )
-    return subprocess.run(command, check=False, timeout=35).returncode
+    return subprocess.run(command, check=False, timeout=timeout).returncode
 
 
-def stop_worker(configuration, session):
+def stop_worker(configuration, session, timeout=15):
     command = upstream_command(configuration, session, ["stop"])
-    result = subprocess.run(command, check=False, timeout=15)
+    result = subprocess.run(command, check=False, timeout=timeout)
     if result.returncode:
         return result.returncode
     deadline = time.monotonic() + 5
@@ -123,6 +126,7 @@ def inspect_worker(configuration, session, arguments, operation):
     if not arguments or arguments == ["--help"] or operation == "start":
         print(
             "Managed Chrome DevTools CLI: start attaches to Chrome Global; "
+            "connect verifies pages within 20 seconds; connect --help describes scoped native consent. "
             "start --headless uses a separate profile. Workers start on demand. "
             "stop closes this worker; cleanup closes an agent-owned worker. "
             "The agent completion hook performs cleanup for Herdr panes and Codex threads.\n",
@@ -149,6 +153,8 @@ def main(configuration, arguments):
     session = ChromeDevtoolsSession.current(configuration.home_directory)
     operation = arguments[0] if arguments else "--help"
     validate_session_arguments(arguments)
+    if operation == "connect":
+        return connect(configuration, session, arguments[1:], start_worker, stop_worker)
     if unused_cleanup(session, operation):
         return 0
     if operation in ("stop", "cleanup"):
@@ -156,7 +162,9 @@ def main(configuration, arguments):
             return stop_worker(configuration, session)
     if inspection_requested(arguments, operation):
         return inspect_worker(configuration, session, arguments, operation)
-    return invoke_browser(configuration, session, arguments, operation)
+    attached = not (operation == "start" and headless_requested(arguments[1:]))
+    with session.attached_locked(required=attached):
+        return invoke_browser(configuration, session, arguments, operation)
 
 
 if __name__ == "__main__":
