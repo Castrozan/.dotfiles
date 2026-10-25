@@ -39,3 +39,23 @@ def test_native_profile_identity_handles_chrome_process_titles(
             target.chrome_identity(123, str(profile), str(package))
     else:
         assert target.chrome_identity(123, str(profile), str(package)) == "456"
+
+
+@pytest.mark.parametrize("count", [0, 2])
+def test_missing_or_multiple_global_windows_are_ambiguous(monkeypatch, count):
+    import json
+
+    clients = [{"class": "chrome-global", "mapped": True} for _ in range(count)]
+    monkeypatch.setattr(target, "run_tool", lambda *args: json.dumps(clients))
+    with pytest.raises(RuntimeError, match="exactly one managed Chrome window"):
+        target.current_target({})
+
+
+@pytest.mark.parametrize("flag", ["hidden", "fullscreen", "fullscreenClient"])
+def test_hidden_or_fullscreen_window_cannot_receive_approval(monkeypatch, flag):
+    import json
+
+    client = {"class": "chrome-global", "mapped": True, flag: True}
+    monkeypatch.setattr(target, "run_tool", lambda *args: json.dumps([client]))
+    with pytest.raises(RuntimeError, match="visible and outside fullscreen"):
+        target.current_target({})
