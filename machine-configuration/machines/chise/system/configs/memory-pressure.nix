@@ -20,22 +20,24 @@ in
 
   boot.kernel.sysctl."vm.swappiness" = 150;
 
-  systemd.slices.user.sliceConfig.MemoryLow = desktopSessionProtectedMemory;
+  systemd = {
+    slices.user.sliceConfig.MemoryLow = desktopSessionProtectedMemory;
 
-  systemd.units."user-.slice" = {
-    overrideStrategy = "asDropin";
-    text = ''
-      [Slice]
-      MemoryLow=${desktopSessionProtectedMemory}
-    '';
-  };
+    units."user-.slice" = {
+      overrideStrategy = "asDropin";
+      text = ''
+        [Slice]
+        MemoryLow=${desktopSessionProtectedMemory}
+      '';
+    };
 
-  systemd.units."session-.scope" = {
-    overrideStrategy = "asDropin";
-    text = ''
-      [Scope]
-      MemoryLow=${desktopSessionProtectedMemory}
-    '';
+    units."session-.scope" = {
+      overrideStrategy = "asDropin";
+      text = ''
+        [Scope]
+        MemoryLow=${desktopSessionProtectedMemory}
+      '';
+    };
   };
 
   zramSwap = {
