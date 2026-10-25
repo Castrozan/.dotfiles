@@ -18,14 +18,13 @@ let
       vulkanSupport = false;
     }).overrideAttrs
       (previous: {
+        version = "11870";
+        src = previous.src.override {
+          hash = "sha256-QSlOmH2D4c+LgTsOCbf1FZ0T0fiZPw9laXlBEFQkm3U=";
+        };
+        npmRoot = "tools/ui";
+        npmDepsHash = "sha256-XLtEZsSFdk+2SyfXzBp8HQ2e27PQPpDCn1YjePU1/9w=";
         cmakeFlags = (previous.cmakeFlags or [ ]) ++ [ "-DCMAKE_CUDA_ARCHITECTURES=86-real" ];
-        patches = (previous.patches or [ ]) ++ [
-          (pkgs.fetchpatch {
-            url = "https://github.com/ggml-org/llama.cpp/commit/42532afff43910e619a650c1704525b3acbbec5a.patch";
-            includes = [ "src/unicode.cpp" ];
-            hash = "sha256-jOqh65x8gZy0QBi+ZX1JQVSpLMm2RNaIX0BPO1/GQ+k=";
-          })
-        ];
       });
   model = pkgs.fetchurl {
     name = "qwen3.5-4b-uncensored-q4_k_m.gguf";
