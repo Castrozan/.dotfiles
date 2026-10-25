@@ -5,7 +5,7 @@
   ...
 }:
 let
-  homebrew = config.homebrew;
+  inherit (config) homebrew;
   declaredBrewfile = pkgs.writeText "Brewfile" homebrew.brewfile;
 in
 {
