@@ -149,7 +149,12 @@ def run_claude_session(
             cwd=workspace_directory,
             timeout=timeout_seconds,
             env={
-                key: value for key, value in os.environ.items() if key != "CLAUDECODE"
+                **{
+                    key: value
+                    for key, value in os.environ.items()
+                    if key != "CLAUDECODE"
+                },
+                "CLAUDE_CODE_WORKSPACE_STATE_FILE": os.devnull,
             },
         )
     except subprocess.TimeoutExpired:

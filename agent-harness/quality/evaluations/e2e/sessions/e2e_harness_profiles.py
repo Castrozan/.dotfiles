@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from string import Template
 
+ISOLATED_WORKSPACE_STATE_ASSIGNMENT = "CLAUDE_CODE_WORKSPACE_STATE_FILE=/dev/null"
+
 UNPROFILED_HARNESS_ADMISSION_CRITERIA = (
     "A harness earns an e2e profile only after a live probe records six facts: the "
     "manual compaction trigger, the confirmation marker printed when it compacts, the "
@@ -38,12 +40,13 @@ class HarnessProfile:
             model=model, workspace_directory=workspace_directory
         )
         command = f"{self.executable_name} {arguments}".strip()
+        environment_assignments = [ISOLATED_WORKSPACE_STATE_ASSIGNMENT]
         if self.name == "opencode":
             settings = shlex.quote(
                 json.dumps({"model": model, "agents": {"build": {"model": model}}})
             )
-            return f"OPENCODE_CONFIG_CONTENT={settings} {command}"
-        return command
+            environment_assignments.append(f"OPENCODE_CONFIG_CONTENT={settings}")
+        return " ".join([*environment_assignments, command])
 
 
 CLAUDE_PROFILE = HarnessProfile(
