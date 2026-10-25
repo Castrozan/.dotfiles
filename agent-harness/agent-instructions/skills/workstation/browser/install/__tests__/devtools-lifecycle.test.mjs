@@ -137,7 +137,7 @@ test("a lost CDP session returns a protocol error without an uncaught exception"
   assert.equal(session.eventNames().length, 0);
 });
 
-test("a disconnected attached browser reconnects without closing user Chrome", async (context) => {
+test("a disconnected attached browser requires a new scoped connection", async (context) => {
   let connections = 0;
   let disconnections = 0;
   context.mock.method(puppeteer, "connect", async () => {
@@ -152,8 +152,21 @@ test("a disconnected attached browser reconnects without closing user Chrome", a
   const original = await manager.ensureBrowser();
   assert.equal(await manager.ensureBrowser(), original);
   original.connected = false;
-  assert.notEqual(await manager.ensureBrowser(), original);
-  assert.equal(connections, 2);
+  await assert.rejects(manager.ensureBrowser(), /scoped approval/);
+  assert.equal(connections, 1);
   await manager.close();
-  assert.equal(disconnections, 1);
+  assert.equal(disconnections, 0);
+});
+
+test("a failed attached connection cannot silently request consent again", async (context) => {
+  let attempts = 0;
+  context.mock.method(puppeteer, "connect", async () => {
+    attempts++;
+    throw new Error("User cancelled debugging permission");
+  });
+  const manager = new BrowserManager({ autoConnect: true, channel: "stable" });
+  await assert.rejects(manager.ensureBrowser(), /Could not connect/);
+  await assert.rejects(manager.ensureBrowser(), /scoped approval/);
+  assert.equal(attempts, 1);
+  await manager.close();
 });

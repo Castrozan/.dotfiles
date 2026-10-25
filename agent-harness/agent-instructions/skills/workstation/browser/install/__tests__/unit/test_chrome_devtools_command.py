@@ -29,8 +29,7 @@ def test_attached_start_keeps_consent_and_recording(configuration, monkeypatch):
         lambda arguments, **options: calls.append(arguments)
         or SimpleNamespace(returncode=0),
     )
-    assert command.main(configuration, ["start"]) == 0
-    arguments = calls[0]
+    arguments = configuration.start_arguments("attached")
     assert "--autoConnect" in arguments
     assert "--headless=false" in arguments
     assert str(configuration.home_directory / ".config/chrome-global") in arguments
@@ -58,9 +57,10 @@ def test_headless_start_uses_its_own_profile(configuration, monkeypatch):
     assert arguments[arguments.index("--executablePath") + 1] == "/chrome"
 
 
-def test_cold_tool_starts_once_then_reuses_worker(configuration, monkeypatch):
+def test_headless_cold_tool_starts_once_then_reuses_worker(configuration, monkeypatch):
     starts = []
     invocations = []
+    ChromeDevtoolsSession.current(configuration.home_directory).record_mode("headless")
     running = {"value": False}
     monkeypatch.setattr(ChromeDevtoolsSession, "running", lambda self: running["value"])
 
@@ -138,13 +138,15 @@ def test_start_failure_prevents_tool_execution(configuration, monkeypatch):
     monkeypatch.setattr(
         command.os, "execv", lambda *arguments: pytest.fail("executed a browser tool")
     )
-    assert command.main(configuration, ["list_pages"]) == 9
+    assert command.main(configuration, ["start", "--headless"]) == 9
     assert ChromeDevtoolsSession.current(
         configuration.home_directory
     ).state_file.exists()
 
 
-def test_clawde_agent_attaches_to_chrome_global(configuration, monkeypatch):
+def test_clawde_agent_cannot_start_an_unapproved_attached_connection(
+    configuration, monkeypatch
+):
     monkeypatch.setenv("CLAWDE_AGENT_NAME", "project-manager")
     monkeypatch.setattr(ChromeDevtoolsSession, "running", lambda self: False)
     started = []
@@ -158,9 +160,10 @@ def test_clawde_agent_attaches_to_chrome_global(configuration, monkeypatch):
     monkeypatch.setattr(
         command.os, "execv", lambda executable, arguments: executed.append(arguments)
     )
-    command.main(configuration, ["list_pages"])
-    assert "--autoConnect" in started[0]
-    assert executed[0][-1] == "list_pages"
+    with pytest.raises(RuntimeError, match="scoped approval"):
+        command.main(configuration, ["list_pages"])
+    assert started == []
+    assert executed == []
 
 
 def test_help_never_starts_a_worker(configuration, monkeypatch):
@@ -196,3 +199,13 @@ def test_private_session_override_is_rejected(configuration):
 )
 def test_headless_boolean_arguments(arguments, expected):
     assert command.headless_requested(arguments) is expected
+
+
+def test_direct_attached_start_does_not_bypass_scoped_approval(
+    configuration, monkeypatch
+):
+    monkeypatch.setattr(
+        command.subprocess, "run", lambda *args, **kwargs: pytest.fail("started worker")
+    )
+    with pytest.raises(RuntimeError, match="scoped approval"):
+        command.main(configuration, ["start"])

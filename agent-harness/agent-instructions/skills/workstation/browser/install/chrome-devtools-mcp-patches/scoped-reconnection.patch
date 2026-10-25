@@ -1,0 +1,21 @@
+--- a/build/src/BrowserManager.js
++++ b/build/src/BrowserManager.js
+@@ -69,6 +69,7 @@
+     #initPromise;
+     #mutex = new Mutex();
+     #closingCount = 0;
++    #connectionAttempted = false;
+     #serverArgs;
+     #options;
+     constructor(serverArgs, options = {}) {
+@@ -266,6 +267,10 @@
+         }
+     }
+     async #connect() {
++        if (this.#serverArgs.autoConnect && this.#connectionAttempted) {
++            throw new Error('Attached Chrome disconnected; obtain scoped approval and start a new connection.');
++        }
++        this.#connectionAttempted = true;
+         const { browserUrl: browserURL, wsEndpoint, wsHeaders, autoConnect: isAutoConnect, userDataDir, blockedUrlPattern: blocklist, allowedUrlPattern: allowlist, } = this.#serverArgs;
+         // Important: only pass channel, if autoConnect is true.
+         const channel = isAutoConnect ? this.#serverArgs.channel : undefined;

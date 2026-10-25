@@ -27,10 +27,10 @@ development.
 ### Worker ownership
 
 Read `chrome-devtools --help` and each command's help for syntax. The plugin also carries the executable at
-`native/browser/chrome-devtools`. Default startup attaches to Chrome Global. Reuse the current task's authorized worker
-before starting another. Prefer `start --headless` when existing logins, open tabs, and visible interaction are
-unnecessary; headless does not inherit the user's current logins. Never borrow another task's worker or change its
-ownership identifier.
+`native/browser/chrome-devtools`. Use approved `connect` for attached startup and `start --headless` for
+isolated work. Reuse the current task's authorized worker before starting another. Prefer `start --headless` when
+existing logins, open tabs, and visible interaction are unnecessary; headless does not inherit the user's current
+logins. Never borrow another task's worker or change its ownership identifier.
 
 Keep one worker for a browser task and run `stop` when finished. The completion hook also closes workers owned by the
 current Herdr pane or Codex thread; outside those contexts, explicit `stop` is required. A fresh worker discards page
@@ -43,8 +43,9 @@ state instead of treating exit status alone as success.
 
 Use the managed `connect` command to verify a task-owned connection within a deadline; read `connect --help` first. Keep
 the worker across task steps. Its existing authorized CDP transport avoids repeated grants; a running worker alone does
-not prove Chrome is still attached. A new connection can require Allow again, including after cleanup. Chrome's remote
-debugging setting remains user-controlled; do not change settings or launch flags to suppress consent.
+not prove Chrome is still attached. A cold connection requires scoped approval before any browser request. A dropped
+attached transport fails without requesting a new grant; obtain approval and restart it through `connect`. Chrome's
+remote debugging setting remains user-controlled; do not change settings or launch flags to suppress consent.
 
 When a new grant is needed, prepare the exact Chrome target and obtain explicit user approval for that connection before
 consuming its one-use token. A standing preference for automation is not approval for future access grants. The native

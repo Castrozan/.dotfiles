@@ -130,8 +130,11 @@ def inspect_image(configuration, image, directory):
     title = consent_title(words)
     if title is None:
         return None
-    left, top = int(title[0]["left"]), min(int(word["top"]) for word in title)
-    words = [word for word in words if int(word["top"]) < top + 190]
+    left, top = warning_origin(title, image.size)
+    bounds = (left - 10, top - 4, left + 430, top + 190)
+    words = recognize_words(
+        configuration, image.crop(bounds), directory / "body.png", bounds[:2]
+    )
     for index, (start, end) in enumerate(((12, 175), (240, 305), (338, 397))):
         bounds = (left + start, top + 207, left + end, top + 230)
         words.extend(

@@ -13,6 +13,7 @@ let
       tesseract = "${pkgs.tesseract.override { enableLanguages = [ "eng" ]; }}/bin/tesseract";
       ydotool = "${pkgs.ydotool}/bin/ydotool";
       ydotoold = "${pkgs.ydotool}/bin/ydotoold";
+      wtype = "${pkgs.wtype}/bin/wtype";
       profileDirectory = "${homeDir}/.config/chrome-global";
       chromePackageDirectory = "${chromePackage}";
     }

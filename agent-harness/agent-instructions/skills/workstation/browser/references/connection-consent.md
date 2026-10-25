@@ -23,3 +23,10 @@ cleanup.
 Prefer a successful warm connection without native approval. A worker restart, dropped transport, or task change may
 require fresh approval; this workflow does not grant persistent access. If the helper fails, inspect the reported target
 and cleanup state before obtaining approval for another attempt. Do not blindly click fixed screenshot coordinates.
+
+### Failed attempts and manual consent
+
+A cold `connect` without a scoped approval option fails before requesting access. For an explicitly approved manual
+connection, use `--manual-once` and handle the same bounded grant yourself. Never use that option as standing permission.
+The native helper dismisses its fresh pending dialog on failure only while target, focus, and cursor remain under its
+control; user movement aborts dismissal. If cleanup reports a pending dialog, cancel it manually before another attempt.

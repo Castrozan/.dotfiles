@@ -67,6 +67,25 @@ def restore_view(configuration, target, parked_cursor, original_cursor, original
             focus_window(configuration, original_focus)
 
 
+def dismiss_failed_attempt(configuration, target, temporary, parked_cursor):
+    try:
+        verify_unchanged_attempt(configuration, target, parked_cursor)
+        if capture_dialog(configuration, target, temporary) is None:
+            return
+        verify_unchanged_attempt(configuration, target, parked_cursor)
+        subprocess.run(
+            [configuration["wtype"], "-k", "Escape"],
+            check=True,
+            capture_output=True,
+            timeout=1,
+        )
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+        print(
+            f"chrome-consent: Could not dismiss own pending dialog: {error}",
+            file=sys.stderr,
+        )
+
+
 def watch(configuration, directory, token, timeout):
     target = consume_token(configuration, directory, token)
     original_focus = focused_window(configuration)
@@ -74,11 +93,17 @@ def watch(configuration, directory, token, timeout):
     parked_cursor = (target["at"][0] + 40, target["at"][1] + 20)
     with tempfile.TemporaryDirectory(prefix="chrome-consent-") as temporary:
         temporary = Path(temporary)
+        armed = False
         try:
             prepare_watch(configuration, target, temporary, parked_cursor)
+            armed = True
             print("ready", flush=True)
             deadline = time.monotonic() + min(timeout, 25)
             await_consent(configuration, target, temporary, parked_cursor, deadline)
+        except BaseException:
+            if armed:
+                dismiss_failed_attempt(configuration, target, temporary, parked_cursor)
+            raise
         finally:
             restore_view(
                 configuration, target, parked_cursor, original_cursor, original_focus

@@ -67,3 +67,62 @@ def test_worker_cleanup_failure_is_reported(tmp_path, monkeypatch, capsys):
             SimpleNamespace(), session, [], lambda *args: 0, lambda *args, **kwargs: 7
         )
     assert "Owned worker cleanup failed" in capsys.readouterr().out
+
+
+def test_cold_connection_without_scoped_approval_never_requests_access(
+    tmp_path, monkeypatch
+):
+    session = ChromeDevtoolsSession("no-grant", tmp_path, True)
+    calls = []
+    monkeypatch.setattr(
+        connection, "request_pages", lambda *args: calls.append("request") or 0
+    )
+    with pytest.raises(RuntimeError, match="scoped approval"):
+        connection.connect(
+            SimpleNamespace(consent_helper=()),
+            session,
+            [],
+            lambda *args, **kwargs: calls.append("start") or 0,
+            lambda *args, **kwargs: calls.append("stop") or 0,
+        )
+    assert calls == []
+
+
+@pytest.mark.parametrize("option", ["--approve-once", "--manual-once"])
+def test_scoped_retry_restarts_only_its_owned_worker(tmp_path, monkeypatch, option):
+    session = ChromeDevtoolsSession("approved-retry", tmp_path, True)
+    running = {"value": True}
+    calls = []
+    monkeypatch.setattr(ChromeDevtoolsSession, "running", lambda self: running["value"])
+
+    def stop(*args, **kwargs):
+        calls.append("stop")
+        running["value"] = False
+        return 0
+
+    def start(*args, **kwargs):
+        calls.append("start")
+        return 0
+
+    monkeypatch.setattr(
+        connection, "connection_helper", lambda *args: calls.append("helper")
+    )
+    monkeypatch.setattr(
+        connection, "request_pages", lambda *args: calls.append("request") or 0
+    )
+    arguments = [option, "token"] if option == "--approve-once" else [option]
+    assert connection.connect(SimpleNamespace(), session, arguments, start, stop) == 0
+    assert calls == ["stop", "helper", "start", "request"]
+
+
+def test_manual_consent_rejects_headless_without_starting_tools(tmp_path):
+    session = ChromeDevtoolsSession("headless", tmp_path, True)
+    session.record_mode("headless")
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("started an approval request")
+
+    with pytest.raises(ValueError, match="headless"):
+        connection.connect(
+            SimpleNamespace(), session, ["--manual-once"], forbidden, forbidden
+        )

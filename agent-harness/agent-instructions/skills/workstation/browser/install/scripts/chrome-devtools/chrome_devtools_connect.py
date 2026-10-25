@@ -24,6 +24,11 @@ def arguments_for_connection(arguments):
         metavar="TOKEN",
         help="Consume the prepared token only after explicit approval for this connection",
     )
+    group.add_argument(
+        "--manual-once",
+        action="store_true",
+        help="Request one new connection only after explicit scoped approval for manual consent",
+    )
     return parser.parse_args(arguments)
 
 
@@ -104,6 +109,26 @@ def connect(configuration, session, arguments, start_worker, stop_worker):
     deadline = time.monotonic() + options.timeout
     validate_approval_mode(session, options)
     with session.attached_locked(), session.locked(), cancellable():
+        fresh_approval = options.approve_once or options.manual_once
+        if (
+            session.mode() != "headless"
+            and not fresh_approval
+            and not session.running()
+        ):
+            raise RuntimeError(
+                "A new attached connection requires scoped approval; run connect --prepare "
+                "and obtain approval before --approve-once, or use --manual-once for an approved manual attempt"
+            )
+        if options.manual_once and session.mode() == "headless":
+            raise ValueError("Manual consent cannot be used with a headless worker")
+        if fresh_approval and session.running():
+            result = stop_worker(
+                configuration, session, timeout=min(5, remaining_time(deadline))
+            )
+            if result:
+                raise RuntimeError(
+                    "Previous owned worker could not stop for the approved connection"
+                )
         request_started = False
         try:
             with ExitStack() as stack:

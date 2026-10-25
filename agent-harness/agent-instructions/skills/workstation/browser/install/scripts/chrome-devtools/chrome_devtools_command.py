@@ -125,7 +125,7 @@ def inspection_requested(arguments, operation):
 def inspect_worker(configuration, session, arguments, operation):
     if not arguments or arguments == ["--help"] or operation == "start":
         print(
-            "Managed Chrome DevTools CLI: start attaches to Chrome Global; "
+            "Managed Chrome DevTools CLI: connect attaches with scoped approval; "
             "connect verifies pages within 20 seconds; connect --help describes scoped native consent. "
             "start --headless uses a separate profile. Workers start on demand. "
             "stop closes this worker; cleanup closes an agent-owned worker. "
@@ -140,8 +140,16 @@ def invoke_browser(configuration, session, arguments, operation):
     with session.locked():
         if operation == "start":
             mode = "headless" if headless_requested(arguments[1:]) else "attached"
+            if mode == "attached":
+                raise RuntimeError(
+                    "Use connect with scoped approval to start an attached worker"
+                )
             return start_worker(configuration, session, mode, arguments[1:])
         if not session.running():
+            if session.mode() == "attached":
+                raise RuntimeError(
+                    "Run connect with scoped approval before requesting attached browser tools"
+                )
             result = start_worker(configuration, session, session.mode())
             if result:
                 return result
