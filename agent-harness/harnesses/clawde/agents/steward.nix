@@ -78,6 +78,8 @@ let
   '';
 in
 {
+  imports = [ ./steward/validation-resource-bound.nix ];
+
   home.packages = [ stewardRebuild ] ++ forgeTools.profilePackages;
   clawde.agentTypes.steward.packages = lib.mkForce forgeTools.packages;
 

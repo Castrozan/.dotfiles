@@ -60,6 +60,14 @@ import ./service-checks.nix {
     self
     ;
 }
+// import ./steward-validation-bound-checks.nix {
+  inherit
+    pkgs
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
 // import ./channel-sidecar-checks.nix {
   inherit
     lib

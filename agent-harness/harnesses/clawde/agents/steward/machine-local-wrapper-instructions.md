@@ -20,3 +20,7 @@ Launch every chise validation through
 `scripts/validation/start_detached_validation_of_head.py` in the steward workspace. It owns the systemd scope, pinned
 wrapper build, log, and revision-keyed result sentinel. Never replace it with a raw background `nix build`: a successful
 build can finish silently, leaving no verdict and making the next tick misclassify success as missing evidence.
+
+Keep its scope named `steward-validate-<revision prefix>.scope` and never pass `--slice`: that name alone places the run
+in `background-steward.slice`, whose memory bound makes the evaluator swap its own pages instead of the desktop's. A
+validation under any other name or slice runs unbounded and lags the operator's input.
