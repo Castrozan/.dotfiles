@@ -8,7 +8,6 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # For latest bleeding edge packages - daily* updated with: $ nix flake update dependencies/nixpkgs-latest
     nixpkgs-latest.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-openrgb.url = "github:nixos/nixpkgs/3ec636362e1816bc2f0888fa0fa2c69f1bc9e504";
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 

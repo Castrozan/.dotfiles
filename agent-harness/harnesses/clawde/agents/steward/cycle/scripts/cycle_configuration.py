@@ -51,6 +51,10 @@ class CycleConfiguration:
         return self.state_directory / "last-green-revision"
 
     @property
+    def synchronization_pending_file(self) -> Path:
+        return self.state_directory / "synchronization-pending-since"
+
+    @property
     def lock_file(self) -> Path:
         return self.state_directory / "cycle.lock"
 

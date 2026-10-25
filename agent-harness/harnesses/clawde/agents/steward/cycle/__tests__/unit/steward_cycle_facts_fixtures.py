@@ -6,11 +6,13 @@ HEAD = "a" * 40
 UPSTREAM = "b" * 40
 TOPLEVEL = "/nix/store/validated-system"
 SETTLED_SECONDS = 20 * 60
+ENTRYPOINT = "e" * 40
+RED_VALIDATION = {"status": "red", "log": "/log", "entrypoint_head": ENTRYPOINT}
 
 GREEN_VALIDATION = {
     "status": "green",
     "toplevel": TOPLEVEL,
-    "entrypoint_head": "e" * 40,
+    "entrypoint_head": ENTRYPOINT,
 }
 
 SETTLED = CycleFacts(
@@ -21,10 +23,12 @@ SETTLED = CycleFacts(
     upstream=HEAD,
     behind=0,
     ahead=0,
-    tracked_dirty=False,
+    dirty_paths=(),
     newest_activity_age_seconds=SETTLED_SECONDS,
     oldest_unvalidated_age_seconds=SETTLED_SECONDS,
     head_validation=None,
+    entrypoint_head=ENTRYPOINT,
+    entrypoint_settled=True,
 )
 
 READY_TO_ACTIVATE = replace(
@@ -33,6 +37,4 @@ READY_TO_ACTIVATE = replace(
     continuous_integration={"state": "passing"},
     live_toplevel="/nix/store/older-system",
     operator_idle=True,
-    entrypoint_head="e" * 40,
-    entrypoint_settled=True,
 )

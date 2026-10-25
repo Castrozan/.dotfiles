@@ -350,7 +350,6 @@
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs_9",
         "nixpkgs-latest": "nixpkgs-latest",
-        "nixpkgs-openrgb": "nixpkgs-openrgb",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "private-config": "private-config",
         "quickshell": "quickshell",
@@ -1522,22 +1521,6 @@
       "original": {
         "owner": "nix-community",
         "repo": "nixpkgs.lib",
-        "type": "github"
-      }
-    },
-    "nixpkgs-openrgb": {
-      "locked": {
-        "lastModified": 1792773339,
-        "narHash": "sha256-rZLrzrC6i+jnTAlvPZHogKDulY7WWDEv9hJeHieO7Zw=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
         "type": "github"
       }
     },

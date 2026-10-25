@@ -70,6 +70,20 @@ def head_activation(
     return settled
 
 
+def synchronization_pending_seconds(
+    configuration: CycleConfiguration, behind: int, now: float
+) -> float:
+    marker = configuration.synchronization_pending_file
+    if not behind:
+        if not configuration.dry_run:
+            marker.unlink(missing_ok=True)
+        return 0
+    since = read_text(marker)
+    if not since and not configuration.dry_run:
+        marker.write_text(f"{now}\n")
+    return now - float(since) if since else 0
+
+
 def entrypoint_settled(entrypoint: Repository) -> bool:
     return (
         entrypoint.current_branch() == UPSTREAM_BRANCH
@@ -115,7 +129,7 @@ def observe(
         upstream=upstream,
         behind=behind,
         ahead=ahead,
-        tracked_dirty=bool(dirty_paths),
+        dirty_paths=tuple(dirty_paths),
         newest_activity_age_seconds=now - newest_activity,
         oldest_unvalidated_age_seconds=0
         if last_green == head
@@ -140,5 +154,8 @@ def observe(
         entrypoint_ahead=entrypoint_ahead,
         unread_local_messages=unread_local_messages(
             configuration.inbox_directory, configuration.peers_file
+        ),
+        synchronization_pending_seconds=synchronization_pending_seconds(
+            configuration, behind, now
         ),
     )

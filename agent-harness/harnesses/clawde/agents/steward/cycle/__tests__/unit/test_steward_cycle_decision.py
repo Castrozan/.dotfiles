@@ -3,7 +3,16 @@ from dataclasses import replace
 import pytest
 
 from cycle_decision import decide
-from steward_cycle_facts_fixtures import GREEN_VALIDATION, HEAD, SETTLED, UPSTREAM
+from steward_cycle_facts_fixtures import (
+    ENTRYPOINT,
+    GREEN_VALIDATION,
+    HEAD,
+    RED_VALIDATION,
+    SETTLED,
+    UPSTREAM,
+)
+
+STALLED_SECONDS = 3 * 60 * 60
 
 
 @pytest.mark.parametrize(
@@ -18,7 +27,9 @@ from steward_cycle_facts_fixtures import GREEN_VALIDATION, HEAD, SETTLED, UPSTRE
         (replace(SETTLED, operation_in_progress=True), "wait", None),
         (replace(SETTLED, behind=3, upstream=UPSTREAM), "fast-forward", None),
         (
-            replace(SETTLED, behind=1, ahead=2, upstream=UPSTREAM, tracked_dirty=True),
+            replace(
+                SETTLED, behind=1, ahead=2, upstream=UPSTREAM, dirty_paths=("a.nix",)
+            ),
             "wait",
             None,
         ),
@@ -34,6 +45,46 @@ from steward_cycle_facts_fixtures import GREEN_VALIDATION, HEAD, SETTLED, UPSTRE
             None,
         ),
         (replace(SETTLED, behind=1, ahead=2, upstream=UPSTREAM), "rebase", None),
+        (
+            replace(
+                SETTLED,
+                behind=1,
+                ahead=2,
+                upstream=UPSTREAM,
+                dirty_paths=("a.nix",),
+                synchronization_pending_seconds=STALLED_SECONDS,
+            ),
+            "attention",
+            "synchronization-blocked",
+        ),
+        (
+            replace(
+                SETTLED,
+                behind=1,
+                ahead=2,
+                upstream=UPSTREAM,
+                newest_activity_age_seconds=60,
+                synchronization_pending_seconds=STALLED_SECONDS,
+            ),
+            "rebase",
+            None,
+        ),
+        (
+            replace(
+                SETTLED,
+                behind=3,
+                upstream=UPSTREAM,
+                dirty_paths=("a.nix",),
+                synchronization_pending_seconds=STALLED_SECONDS,
+            ),
+            "fast-forward",
+            "synchronization-blocked",
+        ),
+        (
+            replace(SETTLED, head_validation=RED_VALIDATION, entrypoint_head="f" * 40),
+            "validate",
+            None,
+        ),
         (
             replace(
                 SETTLED,
@@ -67,7 +118,7 @@ from steward_cycle_facts_fixtures import GREEN_VALIDATION, HEAD, SETTLED, UPSTRE
             "validation-unavailable",
         ),
         (
-            replace(SETTLED, head_validation={"status": "red", "log": "/log"}),
+            replace(SETTLED, head_validation=RED_VALIDATION),
             "attention",
             "build-red",
         ),
@@ -104,12 +155,13 @@ def test_attention_names_the_revision_and_log_the_agent_must_fix():
     decision = decide(
         replace(
             SETTLED,
-            head_validation={"status": "red", "log": "/state/validations/a.log"},
+            head_validation={**RED_VALIDATION, "log": "/state/validations/a.log"},
         )
     )
 
     assert decision.attention == {
         "kind": "build-red",
         "revision": HEAD,
+        "entrypoint_revision": ENTRYPOINT,
         "log": "/state/validations/a.log",
     }

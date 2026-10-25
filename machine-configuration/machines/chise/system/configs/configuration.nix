@@ -18,7 +18,7 @@
     ../scripts
     ../../../../desktop/xdg-portal/xdg-portal-nixos.nix
     ../../../../network/network-optimization/network-optimization-nixos.nix
-    ../../../../devices/mice/corsair-m75/corsair-m75-lighting-nixos.nix
+    ../../../../devices/mice/corsair-mouse/corsair-mouse-nixos.nix
   ];
 
   boot = {

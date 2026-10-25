@@ -12,7 +12,7 @@ class CycleFacts:
     upstream: str
     behind: int
     ahead: int
-    tracked_dirty: bool
+    dirty_paths: tuple[str, ...]
     newest_activity_age_seconds: float
     oldest_unvalidated_age_seconds: float
     head_validation: dict | None
@@ -28,6 +28,15 @@ class CycleFacts:
     entrypoint_behind: int = 0
     entrypoint_ahead: int = 0
     unread_local_messages: tuple[str, ...] = ()
+    synchronization_pending_seconds: float = 0
+
+    @property
+    def tracked_dirty(self) -> bool:
+        return bool(self.dirty_paths)
+
+    @property
+    def synchronization_stalled(self) -> bool:
+        return self.synchronization_pending_seconds >= STARVATION_SECONDS
 
     @property
     def work_in_progress(self) -> bool:

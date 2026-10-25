@@ -26,10 +26,21 @@ def decide_maintenance(facts: CycleFacts) -> CycleDecision:
     return decide_for_synchronized_head(facts)
 
 
+def synchronization_blocked(facts: CycleFacts) -> dict:
+    return {
+        "kind": "synchronization-blocked",
+        "dirty_paths": list(facts.dirty_paths),
+    }
+
+
 def decide_synchronization(facts: CycleFacts) -> CycleDecision:
     if not facts.ahead:
         return CycleDecision(
-            "fast-forward", f"{facts.behind} commits behind origin/main"
+            "fast-forward",
+            f"{facts.behind} commits behind origin/main",
+            synchronization_blocked(facts)
+            if facts.synchronization_stalled and facts.tracked_dirty
+            else None,
         )
     conflict = facts.recorded_rebase_conflict or {}
     if (
@@ -42,7 +53,15 @@ def decide_synchronization(facts: CycleFacts) -> CycleDecision:
             head=facts.head,
             upstream=facts.upstream,
         )
-    if facts.tracked_dirty or facts.work_in_progress:
+    if facts.tracked_dirty and facts.synchronization_stalled:
+        return CycleDecision(
+            "attention",
+            "uncommitted edits have blocked the rebase onto origin/main for hours",
+            synchronization_blocked(facts),
+        )
+    if facts.tracked_dirty or (
+        facts.work_in_progress and not facts.synchronization_stalled
+    ):
         return wait(
             "diverged from origin/main while the checkout is still being worked on"
         )
@@ -54,16 +73,17 @@ def decide_synchronization(facts: CycleFacts) -> CycleDecision:
 def decide_for_synchronized_head(facts: CycleFacts) -> CycleDecision:
     validation = facts.head_validation or {}
     status = validation.get("status")
-    if status == "red":
+    if status == "red" and validation_covers_entrypoint(facts, validation):
         return attention(
             "build-red",
             "the chise build failed",
             revision=facts.head,
+            entrypoint_revision=facts.entrypoint_head,
             log=validation.get("log", ""),
         )
-    if status != "green":
+    if status not in ("green", "red"):
         return decide_validation(facts, validation)
-    if facts.ahead:
+    if status == "green" and facts.ahead:
         return decide_push(facts)
     return decide_for_entrypoint(facts, validation)
 

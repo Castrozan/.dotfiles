@@ -5,6 +5,7 @@ from pathlib import Path
 import steward_cycle
 from cycle_decision import decide
 from cycle_inbox import unread_local_messages
+from cycle_observation import synchronization_pending_seconds
 from cycle_jobs import (
     ACTIVATION_SCOPE_PREFIX,
     VALIDATION_SCOPE_PREFIX,
@@ -12,7 +13,7 @@ from cycle_jobs import (
     scope_command,
 )
 from cycle_repository import RepositoryStateUnknown
-from steward_cycle_facts_fixtures import SETTLED
+from steward_cycle_facts_fixtures import RED_VALIDATION, SETTLED
 from test_steward_cycle_records_and_worker import configuration_in
 
 
@@ -128,8 +129,18 @@ def test_a_local_message_raises_attention_without_stopping_maintenance():
 def test_a_maintenance_failure_outranks_the_inbox():
     facts = replace(
         SETTLED,
-        head_validation={"status": "red", "log": "/log"},
+        head_validation=RED_VALIDATION,
         unread_local_messages=("/inbox/2-from-nightly.json",),
     )
 
     assert decide(facts).attention["kind"] == "build-red"
+
+
+def test_the_stall_timer_runs_only_while_the_checkout_stays_behind(tmp_path):
+    configuration = configuration_in(tmp_path)
+
+    assert synchronization_pending_seconds(configuration, 2, now=1000.0) == 0
+    assert synchronization_pending_seconds(configuration, 5, now=1600.0) == 600
+    assert synchronization_pending_seconds(configuration, 0, now=1700.0) == 0
+    assert not configuration.synchronization_pending_file.exists()
+    assert synchronization_pending_seconds(configuration, 1, now=1800.0) == 0
