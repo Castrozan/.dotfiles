@@ -1,11 +1,11 @@
 { pkgs, lib }:
 pkgs.stdenvNoCC.mkDerivation (finalAttributes: {
   pname = "chatgpt";
-  version = "26.928.21956";
+  version = "26.1021.22027";
   # Official Linux payload; no Debian maintainer scripts or security policy are installed.
   src = pkgs.fetchurl {
     url = "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${finalAttributes.version}_amd64.deb";
-    hash = "sha256-msjQcRtGATaNSd7dv1Co/lI1jLYbbZ96XBi0HtRQCtg=";
+    hash = "sha256-6wgxxzTxVPk/jrzw4X0RjaDep9wXN9xhoecURDdb8ZA=";
   };
   nativeBuildInputs = with pkgs; [
     autoPatchelfHook
