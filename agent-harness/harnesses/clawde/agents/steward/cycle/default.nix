@@ -37,7 +37,9 @@ let
 
   source = pkgs.runCommand "steward-cycle-source" { } ''
     mkdir -p $out
-    cp ${./scripts}/*.py ${../continuous_integration_status.py} $out/
+    cp ${./scripts}/*.py $out/
+    cp ${../continuous_integration_status.py} $out/continuous_integration_status.py
+    cd $out && ${pkgs.python312}/bin/python3 -B -c "import steward_cycle"
   '';
 
   stewardCycle = pkgs.writeShellScriptBin "steward-cycle" ''
