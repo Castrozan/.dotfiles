@@ -4,7 +4,7 @@ import json
 def test_a_new_file_lands_next_to_the_file_in_the_current_buffer(
     run_headless_lua, neovim_lua_path, tmp_path
 ):
-    module_path = neovim_lua_path("config", "file_creation.lua")
+    module_path = neovim_lua_path("config", "buffers", "file_creation.lua")
     opened_directory = tmp_path / "practice" / "01-tree-height"
     opened_directory.mkdir(parents=True)
     opened_file = opened_directory / "solution.py"
@@ -35,7 +35,7 @@ def test_a_new_file_lands_next_to_the_file_in_the_current_buffer(
 def test_a_nested_name_creates_the_directories_it_needs(
     run_headless_lua, neovim_lua_path, tmp_path
 ):
-    module_path = neovim_lua_path("config", "file_creation.lua")
+    module_path = neovim_lua_path("config", "buffers", "file_creation.lua")
     opened_file = tmp_path / "solution.py"
     opened_file.write_text("raise NotImplementedError\n")
     result = run_headless_lua(
@@ -60,7 +60,7 @@ def test_a_nested_name_creates_the_directories_it_needs(
 def test_an_existing_file_is_never_overwritten(
     run_headless_lua, neovim_lua_path, tmp_path
 ):
-    module_path = neovim_lua_path("config", "file_creation.lua")
+    module_path = neovim_lua_path("config", "buffers", "file_creation.lua")
     opened_file = tmp_path / "solution.py"
     opened_file.write_text("raise NotImplementedError\n")
     result = run_headless_lua(

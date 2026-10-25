@@ -68,7 +68,7 @@ and it deletes the owned scroll along with the default it was meant to strip.
 In a buffer it prompts for a name and creates the file next to the file that buffer holds, falling
 back to the working directory for a buffer with no file of its own, then opens it; a name with
 slashes in it creates the directories it needs, and an existing file is warned about rather than
-overwritten. `lua/config/file_creation.lua` carries that. Inside the explorer the same chord runs
+overwritten. `lua/config/buffers/file_creation.lua` carries that. Inside the explorer the same chord runs
 snacks' own `explorer_add`, which creates inside the selected directory or beside the selected
 file, so the plugin spec overrides the picker's `<c-n>` list action the way it already overrides
 `<c-p>`. Normal mode only, so insert-mode keyword completion on `C-n` survives untouched.

@@ -4,7 +4,7 @@ import json
 def test_closing_focuses_the_buffer_to_the_right_then_falls_back_to_the_left(
     run_headless_lua, neovim_lua_path
 ):
-    module_path = neovim_lua_path("config", "buffer_closing.lua")
+    module_path = neovim_lua_path("config", "buffers", "buffer_closing.lua")
     result = run_headless_lua(
         "buffer_closing_focus_order.lua",
         f"""
@@ -43,7 +43,7 @@ def test_closing_focuses_the_buffer_to_the_right_then_falls_back_to_the_left(
 def test_closing_the_last_file_buffer_lands_on_the_dashboard(
     run_headless_lua, neovim_lua_path
 ):
-    module_path = neovim_lua_path("config", "buffer_closing.lua")
+    module_path = neovim_lua_path("config", "buffers", "buffer_closing.lua")
     result = run_headless_lua(
         "buffer_closing_last_buffer.lua",
         f"""
@@ -72,7 +72,7 @@ def test_closing_the_last_file_buffer_lands_on_the_dashboard(
 def test_closing_leaves_a_buffer_that_holds_no_file_alone(
     run_headless_lua, neovim_lua_path
 ):
-    module_path = neovim_lua_path("config", "buffer_closing.lua")
+    module_path = neovim_lua_path("config", "buffers", "buffer_closing.lua")
     result = run_headless_lua(
         "buffer_closing_ignores_non_file_buffers.lua",
         f"""
