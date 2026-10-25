@@ -46,7 +46,7 @@ esac
 "$CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE" \
 	"${workspaceProfileArguments[@]}" "$@" || exit "$?"
 exec "$codexLaunchExecutable" \
-	--sandbox "danger-full-access" \
+	--config 'default_permissions=":danger-full-access"' \
 	--ask-for-approval "never" \
 	"${interactivePreferencesArguments[@]}" \
 	"$@"

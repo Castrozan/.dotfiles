@@ -71,7 +71,7 @@ let
     approval_policy = "never";
     check_for_update_on_startup = false;
     model_reasoning_effort = "xhigh";
-    sandbox_mode = "danger-full-access";
+    default_permissions = ":danger-full-access";
     suppress_unstable_features_warning = true;
     desktop = {
       notifications-dot-enabled = false;

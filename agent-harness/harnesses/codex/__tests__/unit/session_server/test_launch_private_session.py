@@ -65,8 +65,8 @@ def test_managed_permissions_apply_on_server_without_remote_resume_overrides(
     _, _, processes, _, _ = private_launch
     launcher.run_private_session(
         [
-            "--sandbox",
-            "danger-full-access",
+            "--config",
+            'default_permissions=":danger-full-access"',
             "--ask-for-approval",
             "never",
             "resume",
@@ -76,7 +76,7 @@ def test_managed_permissions_apply_on_server_without_remote_resume_overrides(
     server_call, client_call = processes.call_args_list
     assert server_call.args[0][1:5] == [
         "-c",
-        'sandbox_mode="danger-full-access"',
+        'default_permissions=":danger-full-access"',
         "-c",
         'approval_policy="never"',
     ]

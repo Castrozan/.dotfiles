@@ -170,3 +170,27 @@ status_line = []
     assert live_config["tui"]["session_picker_view"] == "dense"
     assert live_config["tui"]["status_line_use_colors"] is True
     assert live_config["notice"]["hide_full_access_warning"] is True
+
+
+def test_seed_migrates_legacy_sandbox_flags_to_explicit_full_access_profile(tmp_path):
+    codex_directory = tmp_path / ".codex"
+    codex_directory.mkdir()
+    (codex_directory / "config.toml.nix-source").write_text(
+        'default_permissions = ":danger-full-access"\napproval_policy = "never"\n',
+        encoding="utf-8",
+    )
+    (codex_directory / "config.toml").write_text(
+        'model = "user-selected-model"\nsandbox_mode = "workspace-write"\n'
+        "[sandbox_workspace_write]\nnetwork_access = false\n",
+        encoding="utf-8",
+    )
+
+    result = run_seed(tmp_path)
+
+    assert result.returncode == 0, result.stderr
+    configuration = read_live_config(tmp_path)
+    assert configuration["default_permissions"] == ":danger-full-access"
+    assert configuration["approval_policy"] == "never"
+    assert configuration["model"] == "user-selected-model"
+    assert "sandbox_mode" not in configuration
+    assert "sandbox_workspace_write" not in configuration

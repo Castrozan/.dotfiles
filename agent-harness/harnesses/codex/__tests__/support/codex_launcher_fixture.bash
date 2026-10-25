@@ -72,6 +72,6 @@ run_codex() {
 }
 
 launcher_arguments() {
-	echo '<--sandbox> <danger-full-access> <--ask-for-approval> <never>'
+	echo '<--config> <default_permissions=":danger-full-access"> <--ask-for-approval> <never>'
 	return $?
 }

@@ -80,8 +80,8 @@ def stop_client_when_server_exits(server, client) -> None:
 
 def run_private_session(arguments: list[str]) -> int:
     managed_permission_arguments = [
-        "--sandbox",
-        "danger-full-access",
+        "--config",
+        'default_permissions=":danger-full-access"',
         "--ask-for-approval",
         "never",
     ]
@@ -93,7 +93,7 @@ def run_private_session(arguments: list[str]) -> int:
         server_arguments.extend(
             [
                 "-c",
-                'sandbox_mode="danger-full-access"',
+                'default_permissions=":danger-full-access"',
                 "-c",
                 'approval_policy="never"',
             ]
