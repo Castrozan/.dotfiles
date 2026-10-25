@@ -7,6 +7,7 @@
 {
   imports = [
     ../desktop/applications/chatgpt/chatgpt-nix-darwin.nix
+    ../operating-system/package-management/homebrew-undeclared-package-cleanup-nix-darwin.nix
     ../browsers/brave/brave-update-policy-nix-darwin.nix
     ../browsers/chrome/chrome-update-policy-nix-darwin.nix
     ../../agent-harness/harnesses/claude-code/settings/remove-claude-managed-settings-nix-darwin.nix
@@ -128,7 +129,7 @@
 
   homebrew = {
     enable = true;
-    onActivation.cleanup = "uninstall";
+    onActivation.cleanup = "none";
     casks = [
       "brave-browser"
       "dbeaver-community"
