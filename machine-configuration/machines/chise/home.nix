@@ -64,7 +64,7 @@ in
     ../../media/media-command-packages-home-manager.nix
     ../../media/media-generation/media-generation-home-manager.nix
 
-    ../../operating-system/system-command-packages-home-manager.nix
+    ../../operating-system/package-management/system-command-packages-home-manager.nix
     ../../operating-system/resource-monitoring/btop-home-manager.nix
     ../../operating-system/storage-maintenance/nix-store/stale-symlink-cleanup-home-manager.nix
 
