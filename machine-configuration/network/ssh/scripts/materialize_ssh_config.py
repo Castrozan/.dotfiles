@@ -21,8 +21,7 @@ def destination_identity(destination):
     )
 
 
-def materialize_ssh_config(source, destination):
-    directory = destination.parent
+def validate_config_directory(directory):
     metadata = directory.lstat()
     if (
         not stat.S_ISDIR(metadata.st_mode)
@@ -32,6 +31,11 @@ def materialize_ssh_config(source, destination):
         raise ValueError(
             "SSH config directory must be user-owned and not writable by other users"
         )
+
+
+def materialize_ssh_config(source, destination):
+    directory = destination.parent
+    validate_config_directory(directory)
     original_identity = destination_identity(destination)
     content = source.read_bytes()
     temporary_path = None
