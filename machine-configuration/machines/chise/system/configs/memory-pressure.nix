@@ -1,4 +1,7 @@
 { config, ... }:
+let
+  desktopSessionProtectedMemory = "3G";
+in
 {
   assertions = [
     {
@@ -16,6 +19,24 @@
   ];
 
   boot.kernel.sysctl."vm.swappiness" = 150;
+
+  systemd.slices.user.sliceConfig.MemoryLow = desktopSessionProtectedMemory;
+
+  systemd.units."user-.slice" = {
+    overrideStrategy = "asDropin";
+    text = ''
+      [Slice]
+      MemoryLow=${desktopSessionProtectedMemory}
+    '';
+  };
+
+  systemd.units."session-.scope" = {
+    overrideStrategy = "asDropin";
+    text = ''
+      [Scope]
+      MemoryLow=${desktopSessionProtectedMemory}
+    '';
+  };
 
   zramSwap = {
     enable = true;

@@ -63,6 +63,22 @@ cloudflareTunnelChecks
     mkEvalCheck "chise-zram-enabled" nixosCfg.zramSwap.enable
       "zram swap must be enabled for compressed in-memory swap";
 
+  chise-desktop-session-memory-is-protected-at-every-level =
+    mkEvalCheck "chise-desktop-session-memory-is-protected-at-every-level"
+      (
+        let
+          protectedMemory = nixosCfg.systemd.slices.user.sliceConfig.MemoryLow;
+          protectsAsDropin =
+            unitName: section:
+            nixosCfg.systemd.units.${unitName}.overrideStrategy == "asDropin"
+            &&
+              lib.hasInfix "[${section}]\nMemoryLow=${protectedMemory}"
+                nixosCfg.systemd.units.${unitName}.text;
+        in
+        protectsAsDropin "user-.slice" "Slice" && protectsAsDropin "session-.scope" "Scope"
+      )
+      "user.slice, every user-UID.slice and every logind session-N.scope must carry the same MemoryLow, so reclaim takes background pages before the compositor's and terminal's and Wayland key repeat never outlives a stalled key release; the slice and scope entries must stay drop-ins so they never shadow logind's transient units";
+
   chise-keyboard-backlight-service-enabled =
     mkEvalCheck "chise-keyboard-backlight-service-enabled"
       (nixosCfg.systemd.services.dim-keyboard-backlight.enable or true)
