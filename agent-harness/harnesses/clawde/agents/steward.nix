@@ -78,7 +78,10 @@ let
   '';
 in
 {
-  imports = [ ./steward/validation-resource-bound.nix ];
+  imports = [
+    ./steward/validation-resource-bound.nix
+    ./steward/cycle
+  ];
 
   home.packages = [ stewardRebuild ] ++ forgeTools.profilePackages;
   clawde.agentTypes.steward.packages = lib.mkForce forgeTools.packages;
@@ -112,7 +115,7 @@ in
     };
     reasoningEffort = "high";
     personality = effectivePersonality;
-    launchOnTrigger = false;
+    launchOnTrigger = lib.mkDefault false;
     heartbeatGateCommand = lib.mkIf (hostname == "rin") ''
       ${stewardRebuild}/bin/steward-rebuild --state-directory ${lib.escapeShellArg "${config.home.homeDirectory}/clawde/steward/state/rebuild"} >/dev/null
       clawde-heartbeat-change-gate --label steward --retries-while-pending 2 --probe steward-heartbeat-probe

@@ -1,19 +1,28 @@
 { lib, pkgs, ... }:
 let
-  validationSliceName = "background-steward";
-  validationScopeNamePrefix = "steward-validate";
+  boundedSliceName = "background-steward";
+  boundedScopeNamePrefixes = [
+    "steward-validate"
+    "steward-activation"
+  ];
 in
 {
   config = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
-    systemd.user.slices.${validationSliceName} = {
+    systemd.user.slices.${boundedSliceName} = {
       Unit.Description = "Steward revision validations held below the interactive desktop";
       Slice.MemoryHigh = "3G";
     };
 
-    xdg.configFile."systemd/user/${validationScopeNamePrefix}-.scope.d/${validationSliceName}.conf".text =
-      ''
-        [Scope]
-        Slice=${validationSliceName}.slice
-      '';
+    xdg.configFile = lib.listToAttrs (
+      map (
+        prefix:
+        lib.nameValuePair "systemd/user/${prefix}-.scope.d/${boundedSliceName}.conf" {
+          text = ''
+            [Scope]
+            Slice=${boundedSliceName}.slice
+          '';
+        }
+      ) boundedScopeNamePrefixes
+    );
   };
 }
