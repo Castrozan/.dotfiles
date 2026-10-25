@@ -68,6 +68,16 @@ def restore_cursor(configuration, expected_cursor, original_cursor):
         move_cursor(configuration, original_cursor)
 
 
+def verify_click_position(configuration, target, position):
+    require_chrome_focus(configuration, target, "Focus changed after cursor movement")
+    if target_signature(current_target(configuration)) != target_signature(target):
+        raise RuntimeError("Chrome geometry changed after cursor movement")
+    if cursor_position(configuration) != position:
+        raise RuntimeError(
+            "User cursor changed after movement; refusing the consent click"
+        )
+
+
 def click_once(configuration, target, button, directory, original_cursor):
     with temporary_input(configuration, directory) as socket:
         verify_click_target(configuration, target, button, directory)
@@ -78,13 +88,7 @@ def click_once(configuration, target, button, directory, original_cursor):
             raise RuntimeError("User cursor changed before the consent action")
         move_cursor(configuration, position)
         try:
-            require_chrome_focus(
-                configuration, target, "Focus changed after cursor movement"
-            )
-            if cursor_position(configuration) != position:
-                raise RuntimeError(
-                    "User cursor changed after movement; refusing the consent click"
-                )
+            verify_click_position(configuration, target, position)
             subprocess.run(
                 [configuration["ydotool"], "click", "0xC0"],
                 env={**os.environ, "YDOTOOL_SOCKET": str(socket)},

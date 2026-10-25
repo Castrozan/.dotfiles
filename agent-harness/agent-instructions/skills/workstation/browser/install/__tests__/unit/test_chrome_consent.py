@@ -25,7 +25,9 @@ def warning_words():
     words = []
     for index, line in enumerate(lines):
         x = 750
-        for text in line.split():
+        for word_index, text in enumerate(line.split()):
+            if index == 7:
+                x = 750 + (14, 54, 78, 98, 244, 344)[word_index]
             words.append(
                 {
                     "text": text,

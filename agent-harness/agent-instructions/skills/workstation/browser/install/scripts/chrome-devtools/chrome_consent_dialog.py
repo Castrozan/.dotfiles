@@ -1,8 +1,16 @@
 import csv
 import io
+import math
 import re
 import subprocess
 from dataclasses import dataclass
+
+from chrome_consent_controls import (
+    BUTTON_AREAS,
+    BUTTON_TOP,
+    BUTTON_BOTTOM,
+    verify_control_layout,
+)
 
 
 @dataclass(frozen=True)
@@ -46,6 +54,14 @@ def word_inside_warning(word, origin):
     )
 
 
+def confident_word(word):
+    try:
+        confidence = float(word["conf"])
+    except (ValueError, TypeError):
+        return False
+    return math.isfinite(confidence) and 75 <= confidence <= 100
+
+
 def verify_warning(region):
     text = re.sub(r"\s+", " ", " ".join(word["text"] for word in region))
     expected = (
@@ -54,7 +70,7 @@ def verify_warning(region):
         "and the ability to navigate to any URL. Only web developers should turn on this feature, "
         "and only use it with trusted apps. Turn off in settings Cancel Allow"
     )
-    if text != expected or any(float(word["conf"]) < 65 for word in region):
+    if text != expected or any(not confident_word(word) for word in region):
         raise RuntimeError(
             "Consent dialog text did not match the exact native Chrome warning"
         )
@@ -92,6 +108,7 @@ def find_allow_button(words, size):
     origin = warning_origin(title, size)
     region = [word for word in words if word_inside_warning(word, origin)]
     verify_warning(region)
+    verify_control_layout(region, origin)
     return button_geometry(allow_button_word(region, origin[1]), origin, size)
 
 
@@ -135,8 +152,8 @@ def inspect_image(configuration, image, directory):
     words = recognize_words(
         configuration, image.crop(bounds), directory / "body.png", bounds[:2]
     )
-    for index, (start, end) in enumerate(((12, 175), (240, 305), (338, 397))):
-        bounds = (left + start, top + 207, left + end, top + 230)
+    for index, (start, end) in enumerate(BUTTON_AREAS):
+        bounds = (left + start, top + BUTTON_TOP, left + end, top + BUTTON_BOTTOM)
         words.extend(
             recognize_words(
                 configuration,
