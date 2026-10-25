@@ -1,8 +1,8 @@
 local map = vim.keymap.set
 
-local buffer_closing = require("config.buffer_closing")
+local buffer_closing = require("config.buffers.buffer_closing")
 local command_line_abbreviations = require("config.command_line_abbreviations")
-local file_creation = require("config.file_creation")
+local file_creation = require("config.buffers.file_creation")
 local file_explorer = require("config.navigation.file_explorer")
 local lazyvim_defaults = require("config.lazyvim_defaults")
 local missing_imports = require("config.missing_imports")

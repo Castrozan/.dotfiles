@@ -58,20 +58,16 @@ in
     description = "SSH aliases declared as ChatGPT remote connections.";
   };
 
-  config = lib.mkMerge [
-    {
-      home.file.".codex/codex-app/config.json".source = jsonFormat.generate "chatgpt-config.json" {
-        version = 1;
-        remoteConnections = map (sshAlias: { inherit sshAlias; }) config.programs.chatgpt.remoteConnections;
-      };
-    }
-    (lib.mkIf isNixOS {
-      home.packages = [
-        resourceManagedChatgpt
-        pkgs.bubblewrap
-      ];
-      xdg.dataFile."applications/chatgpt.desktop".source =
-        "${resourceManagedChatgpt}/share/applications/chatgpt.desktop";
-    })
-  ];
+  config = lib.mkIf isNixOS {
+    home.file.".codex/codex-app/config.json".source = jsonFormat.generate "chatgpt-config.json" {
+      version = 1;
+      remoteConnections = map (sshAlias: { inherit sshAlias; }) config.programs.chatgpt.remoteConnections;
+    };
+    home.packages = [
+      resourceManagedChatgpt
+      pkgs.bubblewrap
+    ];
+    xdg.dataFile."applications/chatgpt.desktop".source =
+      "${resourceManagedChatgpt}/share/applications/chatgpt.desktop";
+  };
 }
