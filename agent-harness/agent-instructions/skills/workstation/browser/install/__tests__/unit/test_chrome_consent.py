@@ -79,6 +79,7 @@ def prepared_token(tmp_path, monkeypatch):
         "size": [1920, 1080],
     }
     monkeypatch.setattr(target, "current_target", lambda configuration: window)
+    monkeypatch.setattr(helper, "move_cursor", lambda *args: None)
     target.prepare({}, tmp_path)
     path = next(tmp_path.glob("consent-*.json"))
     return tmp_path, path, path.stem.removeprefix("consent-"), window
@@ -114,7 +115,8 @@ def test_existing_dialog_is_never_approved(prepared_token, monkeypatch):
     directory, path, token, window = prepared_token
     monkeypatch.setattr(helper, "consume_token", lambda *args: window)
     monkeypatch.setattr(helper, "focused_window", lambda *args: window["address"])
-    monkeypatch.setattr(helper, "cursor_position", lambda *args: (10, 20))
+    positions = iter([(10, 20), (40, 20)])
+    monkeypatch.setattr(helper, "cursor_position", lambda *args: next(positions))
     monkeypatch.setattr(helper, "focus_window", lambda *args: None)
     monkeypatch.setattr(helper, "capture_dialog", lambda *args: object())
     monkeypatch.setattr(
@@ -132,7 +134,8 @@ def test_user_focus_change_aborts_and_does_not_restore_over_user(
     focused = []
     monkeypatch.setattr(helper, "consume_token", lambda *args: window)
     monkeypatch.setattr(helper, "focused_window", lambda *args: next(focus))
-    monkeypatch.setattr(helper, "cursor_position", lambda *args: (10, 20))
+    positions = iter([(10, 20), (40, 20)])
+    monkeypatch.setattr(helper, "cursor_position", lambda *args: next(positions))
     monkeypatch.setattr(
         helper, "focus_window", lambda configuration, address: focused.append(address)
     )
@@ -155,7 +158,8 @@ def test_missing_dialog_times_out_without_click_and_restores_focus(
     focus = iter(["0xoriginal", window["address"], window["address"]])
     monkeypatch.setattr(helper, "consume_token", lambda *args: window)
     monkeypatch.setattr(helper, "focused_window", lambda *args: next(focus))
-    monkeypatch.setattr(helper, "cursor_position", lambda *args: (10, 20))
+    positions = iter([(10, 20), (40, 20)])
+    monkeypatch.setattr(helper, "cursor_position", lambda *args: next(positions))
     monkeypatch.setattr(
         helper, "focus_window", lambda configuration, address: focused.append(address)
     )

@@ -62,3 +62,34 @@ def test_click_is_single_and_temporary_input_daemon_always_stops(
         assert clicks == [["input", "click", "0xC0"]]
         assert moved == [button.position, (10, 20)]
     assert stopped == [daemon]
+
+
+def test_cursor_is_parked_outside_dialog_before_capture_and_restored(
+    tmp_path, monkeypatch
+):
+    target = {"address": "0x123", "at": [2, 2]}
+    position = {"value": (1121, 287)}
+    focused = iter(["0xoriginal", target["address"], target["address"]])
+    moves, captures, restored_focus = [], [], []
+
+    def move(configuration, value):
+        position["value"] = value
+        moves.append(value)
+
+    monkeypatch.setattr(helper, "consume_token", lambda *args: target)
+    monkeypatch.setattr(helper, "focused_window", lambda *args: next(focused))
+    monkeypatch.setattr(
+        helper,
+        "focus_window",
+        lambda configuration, address: restored_focus.append(address),
+    )
+    monkeypatch.setattr(helper, "cursor_position", lambda *args: position["value"])
+    monkeypatch.setattr(helper, "move_cursor", move)
+    monkeypatch.setattr(
+        helper, "capture_dialog", lambda *args: captures.append(position["value"])
+    )
+    with pytest.raises(RuntimeError, match="deadline"):
+        helper.watch({}, tmp_path, "token", 0)
+    assert captures == [(42, 22)]
+    assert moves == [(42, 22), (1121, 287)]
+    assert restored_focus == [target["address"], "0xoriginal"]

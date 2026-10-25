@@ -84,12 +84,14 @@ def watch(configuration, directory, token, timeout):
     target = consume_token(configuration, directory, token)
     original_focus = focused_window(configuration)
     original_cursor = cursor_position(configuration)
+    parked_cursor = (target["at"][0] + 40, target["at"][1] + 20)
     with tempfile.TemporaryDirectory(prefix="chrome-consent-") as temporary:
         temporary = Path(temporary)
         try:
             focus_window(configuration, target["address"])
             if focused_window(configuration) != target["address"]:
                 raise RuntimeError("Chrome could not be focused safely")
+            move_cursor(configuration, parked_cursor)
             if capture_dialog(configuration, target, temporary) is not None:
                 raise RuntimeError(
                     "A consent dialog predates this attempt; refusing to approve it"
@@ -99,7 +101,7 @@ def watch(configuration, directory, token, timeout):
             while time.monotonic() < deadline:
                 if (
                     focused_window(configuration) != target["address"]
-                    or cursor_position(configuration) != original_cursor
+                    or cursor_position(configuration) != parked_cursor
                 ):
                     raise RuntimeError(
                         "User focus or cursor changed during this attempt"
@@ -112,19 +114,18 @@ def watch(configuration, directory, token, timeout):
                     )
                 button = capture_dialog(configuration, target, temporary)
                 if button is not None:
-                    click_once(
-                        configuration, target, button, temporary, original_cursor
-                    )
+                    click_once(configuration, target, button, temporary, parked_cursor)
                     return
                 time.sleep(0.1)
             raise RuntimeError("No exact consent dialog appeared before the deadline")
         finally:
             if (
-                original_focus
-                and focused_window(configuration) == target["address"]
-                and cursor_position(configuration) == original_cursor
+                focused_window(configuration) == target["address"]
+                and cursor_position(configuration) == parked_cursor
             ):
-                focus_window(configuration, original_focus)
+                move_cursor(configuration, original_cursor)
+                if original_focus:
+                    focus_window(configuration, original_focus)
 
 
 def main(arguments):
