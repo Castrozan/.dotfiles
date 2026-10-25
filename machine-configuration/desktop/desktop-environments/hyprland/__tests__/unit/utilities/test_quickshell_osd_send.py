@@ -93,6 +93,12 @@ class TestMain:
                 quickshell_osd_send.main()
                 mock_send.assert_called_once_with("brightness", 50)
 
+    def test_preserves_fractional_brightness_below_hardware_floor(self):
+        with patch("quickshell_osd_send.send_osd_value_message") as mock_send:
+            with patch("quickshell_osd_send.sys.argv", ["cmd", "brightness", "0.4"]):
+                quickshell_osd_send.main()
+                mock_send.assert_called_once_with("brightness", 0.4)
+
     def test_dispatches_mute_command(self):
         with patch("quickshell_osd_send.send_osd_mute_message") as mock_send:
             with patch("quickshell_osd_send.sys.argv", ["cmd", "mute", "true"]):

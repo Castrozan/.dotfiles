@@ -11,7 +11,8 @@ Item {
     property bool osdVisible: false
     property string osdType: "volume"
     property int osdValue: 0
-    property int brightnessValue: 0
+    property real brightnessValue: 0
+    property real brightnessMinimum: 0.1
     property bool osdMuted: false
     property bool hasReceivedSocketMessage: false
     property bool hasReceivedBrightnessMessage: false
@@ -32,6 +33,7 @@ Item {
             if (parsed.type === "brightness") {
                 brightnessValue = parsed.value ?? 0;
                 hasReceivedBrightnessMessage = true;
+                queryCurrentBrightnessProcess.running = true;
             } else {
                 osdType = parsed.type ?? "volume";
                 osdValue = parsed.value ?? 0;
@@ -63,13 +65,17 @@ Item {
 
     Process {
         id: queryCurrentBrightnessProcess
-        command: ["brightness", "--get"]
+        command: ["brightness", "--get-state"]
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => {
-                let parsed = parseInt(data.trim());
-                if (!isNaN(parsed))
-                    osdWrapperRoot.brightnessValue = parsed;
+                try {
+                    let state = JSON.parse(data);
+                    osdWrapperRoot.brightnessValue = state.value;
+                    osdWrapperRoot.brightnessMinimum = state.minimum;
+                } catch (error) {
+                    return;
+                }
             }
         }
     }
@@ -152,6 +158,7 @@ Item {
             OsdContent {
                 osdType: "brightness"
                 osdValue: osdWrapperRoot.brightnessValue
+                brightnessMinimum: osdWrapperRoot.brightnessMinimum
 
                 onOsdValueChanged: osdWrapperRoot.brightnessValue = osdValue
                 onInteractionKeepAlive: osdWrapperRoot.osdMessageReceived()

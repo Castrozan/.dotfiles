@@ -1,6 +1,11 @@
 from unittest.mock import patch
 
 import brightness
+import pytest
+
+pytestmark = pytest.mark.usefixtures(
+    "brightness_runtime_defaults", "brightness_hardware_floor"
+)
 
 
 class TestIncreaseBrightnessRaisesHardwareWhenGammaAtMax:
@@ -57,7 +62,7 @@ class TestIncreaseBrightnessRaisesGammaBeforeHardware:
             mock_apply.assert_called_once_with(60)
             mock_write.assert_called_once_with(60)
             mock_set.assert_not_called()
-            mock_osd.assert_called_once_with(60)
+            mock_osd.assert_called_once_with(0.6)
 
     def test_clamps_gamma_to_maximum_and_does_not_touch_hardware(self):
         with (
@@ -74,7 +79,7 @@ class TestIncreaseBrightnessRaisesGammaBeforeHardware:
             mock_apply.assert_called_once_with(100)
             mock_write.assert_called_once_with(100)
             mock_set.assert_not_called()
-            mock_osd.assert_called_once_with(100)
+            mock_osd.assert_called_once_with(1)
 
     def test_falls_back_to_hardware_when_gamma_apply_fails(self):
         with (
@@ -92,4 +97,4 @@ class TestIncreaseBrightnessRaisesGammaBeforeHardware:
 
             mock_write.assert_not_called()
             mock_set.assert_called_once_with(60)
-            mock_osd.assert_called_once_with(60)
+            mock_osd.assert_called_once_with(30)

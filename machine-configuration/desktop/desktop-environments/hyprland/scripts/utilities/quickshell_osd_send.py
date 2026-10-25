@@ -44,7 +44,7 @@ def main() -> None:
         case "volume":
             send_osd_value_message("volume", int(osd_value))
         case "brightness":
-            send_osd_value_message("brightness", int(osd_value))
+            send_osd_value_message("brightness", float(osd_value))
         case "mute":
             send_osd_mute_message("volume", osd_value.lower() == "true")
         case "mic":
