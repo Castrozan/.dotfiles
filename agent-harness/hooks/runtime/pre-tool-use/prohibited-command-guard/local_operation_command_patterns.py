@@ -82,6 +82,13 @@ LOCAL_OPERATION_BASH_COMMAND_PATTERNS = [
         "the devenv skill for more information.",
     ),
     (
+        rf"{COMMAND_INVOCATION_POSITION_PREFIX}(?:[^\s;&|]*/)?launchctl\s+submit"
+        rf"{COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}",
+        "launchctl submit creates a KeepAlive job that launchd relaunches every "
+        "time it exits, forever. Run one-shot work through the harness's "
+        "background execution facility, or steward-rebuild for activation.",
+    ),
+    (
         rf"{COMMAND_INVOCATION_POSITION_PREFIX}herdr\s+agent\s+start\b(?:(?!\s--tab(?=[\s=]))(?!\s--\s)[^;&|\n])*(?:$|[;&|\n]|\s--\s)",
         "herdr agent start splits the focused tab unless --tab pins one. For "
         "same-goal delegation, pin --tab with --no-focus and read the orchestrate "
