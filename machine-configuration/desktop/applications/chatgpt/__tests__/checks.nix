@@ -1,21 +1,18 @@
 {
-  pkgs,
+  self,
+  helpers,
   lib,
   ...
 }:
 let
-  chatgpt = pkgs.callPackage ../package.nix { };
+  chiseHomePackageNames = map lib.getName self.nixosConfigurations.chise.config.home-manager.users.zanoni.home.packages;
 in
-lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-  domain-chatgpt-wrapper-finds-bubblewrap =
-    pkgs.runCommand "check-chatgpt-wrapper-finds-bubblewrap"
-      {
-        nativeBuildInputs = [ pkgs.makeWrapper ];
-      }
-      ''
-        makeWrapper ${pkgs.runtimeShell} "$TMPDIR/chatgpt-shell" ${lib.escapeShellArgs chatgpt.gappsWrapperArgs}
-        PATH= "$TMPDIR/chatgpt-shell" -c \
-          ${lib.escapeShellArg ''test "$(command -v bwrap)" = "${lib.getExe pkgs.bubblewrap}"''}
-        touch "$out"
-      '';
+{
+  domain-chatgpt-sandbox-finds-bubblewrap-on-the-user-path =
+    helpers.mkEvalCheck "domain-chatgpt-sandbox-finds-bubblewrap-on-the-user-path"
+      (
+        lib.elem "bubblewrap" chiseHomePackageNames
+        && lib.elem "chatgpt-resource-managed" chiseHomePackageNames
+      )
+      "ChatGPT's Codex runtime takes PATH from the login shell, so bubblewrap must be a home package wherever the app is installed";
 }

@@ -57,20 +57,6 @@ pkgs.stdenvNoCC.mkDerivation (finalAttributes: {
     pkgs.vulkan-loader
   ];
 
-  gappsWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    (lib.makeBinPath (
-      with pkgs;
-      [
-        bubblewrap
-        curl
-        git
-        xdg-utils
-      ]
-    ))
-  ];
   unpackPhase = ''
     ar p "$src" data.tar.xz | tar -xJf - ./usr
   '';

@@ -26,12 +26,6 @@ let
       ]
   );
   resourceLauncher = pkgs.writeShellScriptBin "chatgpt" ''
-    export PATH="${
-      lib.makeBinPath [
-        pkgs.bubblewrap
-        pkgs.systemd
-      ]
-    }:$PATH"
     export PYTHONPATH="${resourcePolicyModules}:''${PYTHONPATH:-}"
     chatgpt_resource_unit="app-chatgpt-$BASHPID-$RANDOM"
     exec ${pkgs.systemd}/bin/systemd-run --user --scope --quiet --collect \
@@ -72,7 +66,10 @@ in
       };
     }
     (lib.mkIf isNixOS {
-      home.packages = [ resourceManagedChatgpt ];
+      home.packages = [
+        resourceManagedChatgpt
+        pkgs.bubblewrap
+      ];
       xdg.dataFile."applications/chatgpt.desktop".source =
         "${resourceManagedChatgpt}/share/applications/chatgpt.desktop";
     })
