@@ -81,6 +81,10 @@ def click_once(configuration, target, button, directory, original_cursor):
             require_chrome_focus(
                 configuration, target, "Focus changed after cursor movement"
             )
+            if cursor_position(configuration) != position:
+                raise RuntimeError(
+                    "User cursor changed after movement; refusing the consent click"
+                )
             subprocess.run(
                 [configuration["ydotool"], "click", "0xC0"],
                 env={**os.environ, "YDOTOOL_SOCKET": str(socket)},

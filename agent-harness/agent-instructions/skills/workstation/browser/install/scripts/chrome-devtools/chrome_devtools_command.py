@@ -82,7 +82,7 @@ def upstream_command(configuration, session, arguments):
 
 
 def start_worker(configuration, session, mode, arguments=(), timeout=35):
-    session.record_mode(mode)
+    session.record_mode(mode, configuration.upstream_executable)
     command = upstream_command(
         configuration,
         session,
@@ -125,7 +125,7 @@ def inspection_requested(arguments, operation):
 def inspect_worker(configuration, session, arguments, operation):
     if not arguments or arguments == ["--help"] or operation == "start":
         print(
-            "Managed Chrome DevTools CLI: start attaches to Chrome Global; "
+            "Managed Chrome DevTools CLI: connect attaches with scoped approval; "
             "connect verifies pages within 20 seconds; connect --help describes scoped native consent. "
             "start --headless uses a separate profile. Workers start on demand. "
             "stop closes this worker; cleanup closes an agent-owned worker. "
@@ -136,15 +136,28 @@ def inspect_worker(configuration, session, arguments, operation):
     return os.execv(configuration.upstream_executable, command)
 
 
+def start_requested_worker(configuration, session, arguments):
+    mode = "headless" if headless_requested(arguments[1:]) else "attached"
+    if mode == "attached":
+        raise RuntimeError(
+            "Use connect with scoped approval to start an attached worker"
+        )
+    return start_worker(configuration, session, mode, arguments[1:])
+
+
 def invoke_browser(configuration, session, arguments, operation):
     with session.locked():
         if operation == "start":
-            mode = "headless" if headless_requested(arguments[1:]) else "attached"
-            return start_worker(configuration, session, mode, arguments[1:])
+            return start_requested_worker(configuration, session, arguments)
         if not session.running():
+            if session.mode() == "attached":
+                raise RuntimeError(
+                    "Run connect with scoped approval before requesting attached browser tools"
+                )
             result = start_worker(configuration, session, session.mode())
             if result:
                 return result
+        session.require_current_worker(configuration.upstream_executable)
     command = upstream_command(configuration, session, arguments)
     return os.execv(configuration.upstream_executable, command)
 

@@ -77,7 +77,7 @@ def test_blocked_connection_leaves_tools_available_and_rejects_parallel_grants(
     command, events = fixture_commands
     monkeypatch.setenv("BROWSER_BLOCK", "1")
     process = subprocess.Popen(
-        [*command, "connect", "--timeout", "3"],
+        [*command, "connect", "--manual-once", "--timeout", "3"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,

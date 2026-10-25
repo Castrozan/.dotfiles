@@ -65,10 +65,25 @@ class ChromeDevtoolsSession:
             return "attached"
         return mode if mode in ("attached", "headless") else "attached"
 
-    def record_mode(self, mode):
+    def require_current_worker(self, upstream_executable):
+        if self.mode() == "headless":
+            return
+        try:
+            recorded = json.loads(self.state_file.read_text()).get("upstreamExecutable")
+        except (OSError, ValueError, AttributeError):
+            recorded = None
+        if recorded != upstream_executable:
+            raise RuntimeError(
+                "Refusing to reuse an older attached worker; its owner must stop it "
+                "and obtain scoped approval for a new connection"
+            )
+
+    def record_mode(self, mode, upstream_executable=None):
         self.directory.mkdir(mode=0o700, parents=True, exist_ok=True)
         temporary_file = self.state_file.with_suffix(".tmp")
-        temporary_file.write_text(json.dumps({"mode": mode}))
+        temporary_file.write_text(
+            json.dumps({"mode": mode, "upstreamExecutable": upstream_executable})
+        )
         temporary_file.replace(self.state_file)
 
     def clear(self):

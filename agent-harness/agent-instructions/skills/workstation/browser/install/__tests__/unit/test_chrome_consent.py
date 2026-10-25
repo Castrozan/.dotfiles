@@ -80,6 +80,7 @@ def prepared_token(tmp_path, monkeypatch):
     }
     monkeypatch.setattr(target, "current_target", lambda configuration: window)
     monkeypatch.setattr(helper, "move_cursor", lambda *args: None)
+    monkeypatch.setattr(helper, "dismiss_failed_attempt", lambda *args: None)
     target.prepare({}, tmp_path)
     path = next(tmp_path.glob("consent-*.json"))
     return tmp_path, path, path.stem.removeprefix("consent-"), window

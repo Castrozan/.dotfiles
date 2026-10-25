@@ -18,6 +18,7 @@ pkgs.stdenv.mkDerivation {
     ./chrome-devtools-mcp-patches/lazy-devtools-universe.patch
     ./chrome-devtools-mcp-patches/nonblocking-page-titles.patch
     ./chrome-devtools-mcp-patches/preserve-background-throttling.patch
+    ./chrome-devtools-mcp-patches/scoped-reconnection.patch
   ];
 
   nativeBuildInputs = [ pkgs.makeWrapper ];

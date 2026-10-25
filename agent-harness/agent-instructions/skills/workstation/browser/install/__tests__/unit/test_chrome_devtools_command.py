@@ -21,16 +21,8 @@ def configuration(tmp_path, monkeypatch):
     )
 
 
-def test_attached_start_keeps_consent_and_recording(configuration, monkeypatch):
-    calls = []
-    monkeypatch.setattr(
-        command.subprocess,
-        "run",
-        lambda arguments, **options: calls.append(arguments)
-        or SimpleNamespace(returncode=0),
-    )
-    assert command.main(configuration, ["start"]) == 0
-    arguments = calls[0]
+def test_attached_configuration_keeps_consent_and_recording(configuration):
+    arguments = configuration.start_arguments("attached")
     assert "--autoConnect" in arguments
     assert "--headless=false" in arguments
     assert str(configuration.home_directory / ".config/chrome-global") in arguments
@@ -58,9 +50,10 @@ def test_headless_start_uses_its_own_profile(configuration, monkeypatch):
     assert arguments[arguments.index("--executablePath") + 1] == "/chrome"
 
 
-def test_cold_tool_starts_once_then_reuses_worker(configuration, monkeypatch):
+def test_headless_cold_tool_starts_once_then_reuses_worker(configuration, monkeypatch):
     starts = []
     invocations = []
+    ChromeDevtoolsSession.current(configuration.home_directory).record_mode("headless")
     running = {"value": False}
     monkeypatch.setattr(ChromeDevtoolsSession, "running", lambda self: running["value"])
 
@@ -138,13 +131,17 @@ def test_start_failure_prevents_tool_execution(configuration, monkeypatch):
     monkeypatch.setattr(
         command.os, "execv", lambda *arguments: pytest.fail("executed a browser tool")
     )
+    ChromeDevtoolsSession.current(configuration.home_directory).record_mode("headless")
     assert command.main(configuration, ["list_pages"]) == 9
     assert ChromeDevtoolsSession.current(
         configuration.home_directory
     ).state_file.exists()
 
 
-def test_clawde_agent_attaches_to_chrome_global(configuration, monkeypatch):
+@pytest.mark.parametrize("operation", ["start", "list_pages"])
+def test_agent_cannot_start_an_unapproved_attached_connection(
+    configuration, monkeypatch, operation
+):
     monkeypatch.setenv("CLAWDE_AGENT_NAME", "project-manager")
     monkeypatch.setattr(ChromeDevtoolsSession, "running", lambda self: False)
     started = []
@@ -158,9 +155,10 @@ def test_clawde_agent_attaches_to_chrome_global(configuration, monkeypatch):
     monkeypatch.setattr(
         command.os, "execv", lambda executable, arguments: executed.append(arguments)
     )
-    command.main(configuration, ["list_pages"])
-    assert "--autoConnect" in started[0]
-    assert executed[0][-1] == "list_pages"
+    with pytest.raises(RuntimeError, match="scoped approval"):
+        command.main(configuration, [operation])
+    assert started == []
+    assert executed == []
 
 
 def test_help_never_starts_a_worker(configuration, monkeypatch):
