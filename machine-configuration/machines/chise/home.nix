@@ -47,7 +47,6 @@ in
     ../../desktop/appearance/fonts/fonts-home-manager.nix
     ../../desktop/appearance/screensaver/screensaver-home-manager.nix
     ../../desktop/applications/launcher/fuzzel-home-manager.nix
-    ../../desktop/applications/grok-bot/grok-bot-home-manager.nix
     ../../desktop/screen-capture/screen-capture-command-packages-home-manager.nix
 
     ../../development/cost-monitoring/ccost-home-manager.nix

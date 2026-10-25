@@ -134,7 +134,6 @@
       "dbeaver-community"
       "docker"
       "google-chrome"
-      "grok-bot"
       "hammerspoon"
       "itsycal"
       "maccy"
