@@ -32,8 +32,10 @@ let
 
   cycleSettingsForHost =
     hostname:
-    builtins.fromJSON
-      (stewardHomeConfigurationForHost hostname).home.file."clawde/steward/cycle-settings.json".text;
+    builtins.fromJSON (
+      builtins.unsafeDiscardStringContext
+        (stewardHomeConfigurationForHost hostname).home.file."clawde/steward/cycle-settings.json".text
+    );
 
   fleetHosts = [
     "chise"
