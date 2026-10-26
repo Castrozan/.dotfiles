@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  documentation.man.generateCaches = false;
+  documentation.man.cache.enable = false;
 
   systemd = {
     tmpfiles.rules = [ "d /var/cache/man/nixos 0755 root root -" ];

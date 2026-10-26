@@ -59,7 +59,8 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  documentation.man.generateCaches = false;
+  documentation.man.cache.enable = false;
+  documentation.doc.enable = false;
 
   system.stateVersion = nixpkgs-version;
 

@@ -12,6 +12,9 @@ let
           })
         ];
       });
+      pyobjc-framework-Cocoa = previous.pyobjc-framework-Cocoa.overridePythonAttrs {
+        patches = previous.pyobjc-core.patches or [ ];
+      };
     };
   };
   pythonForQuitWindowlessApplicationsDaemon =

@@ -1,7 +1,13 @@
-{ lib, ... }:
+{
+  lib,
+  latest,
+  isDarwin,
+  ...
+}:
 {
   programs.zathura = {
     enable = true;
+    package = lib.mkIf isDarwin latest.zathura;
 
     options = {
       statusbar-h-padding = 0;
