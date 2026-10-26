@@ -23,9 +23,8 @@ let
 in
 {
   production-plugin-desktop-platform = helpers.mkEvalCheck "production-plugin-desktop-platform" (
-    (servers ? desktop-computer-use) == pkgs.stdenv.hostPlatform.isDarwin
-    && (desktopPackages != [ ]) == pkgs.stdenv.hostPlatform.isDarwin
-  ) "The desktop MCP and runtime must be present only on macOS";
+    servers ? desktop-computer-use && desktopPackages != [ ]
+  ) "The desktop MCP and runtime must be present on macOS and Linux";
 
   production-plugin-wellput-consumption =
     pkgs.runCommand "production-plugin-wellput-consumption" { }
