@@ -24,8 +24,7 @@ pkgs.python312Packages.buildPythonApplication {
           pkgs.imagemagick
           pkgs.wl-clipboard
         ]
-      } \
-      --set HYPRUSE_SCREENSHOT_MODE image
+      }
   '';
   doInstallCheck = true;
   installCheckPhase = ''

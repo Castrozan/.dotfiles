@@ -47,11 +47,12 @@ consent.
 
 Connect without asking the user. Run `connect --manual-once` through a yielding execution tool and, while it waits,
 accept Chrome's "Allow remote debugging?" prompt yourself with the `desktop-computer-use` MCP from the `desktop` skill:
-screenshot the screen, locate the prompt's Allow button, click it, and confirm `connect` returns pages. Chrome remembers
-the grant for the life of its process, so the prompt usually appears only after Chrome restarts. On macOS Chrome keeps
-the prompt out of accessibility and screen capture; find it with `list_windows` by that title and click Allow, the
-right-hand button of its bottom row. Read [connection consent](references/connection-consent.md) for the Hyprland
-native helper alternative.
+screenshot the screen, locate the prompt's Allow button, click it, and confirm `connect` returns pages.
+
+Chrome remembers the grant for the life of its process, so the prompt usually appears only after Chrome restarts. On
+macOS Chrome keeps the prompt out of accessibility and screen capture; find it with `list_windows` by that title and
+click Allow, the right-hand button of its bottom row. Read [connection consent](references/connection-consent.md) for
+the Hyprland native helper alternative.
 
 Run connection attempts through an execution tool that yields promptly, retaining its process handle so the agent can
 continue independent work while consent is pending. Do not synchronously block the agent on `list_pages`, retry in a
