@@ -5,6 +5,9 @@
     "rulesync": "https://github.com/Castrozan/rulesync/releases/download/v21.0.0-castrozan.4/rulesync-21.0.0-castrozan.4.tgz"
   },
   "overrides": {
-    "@modelcontextprotocol/sdk": "^1.32.1"
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@modelcontextprotocol/server": "^2.3.0",
+    "follow-redirects": "^1.16.1",
+    "hono": "^4.13.11"
   }
 }
