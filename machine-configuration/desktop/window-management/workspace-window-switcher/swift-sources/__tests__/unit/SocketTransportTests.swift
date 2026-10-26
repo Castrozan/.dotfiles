@@ -83,5 +83,44 @@ enum SocketTransportTests {
     TestMainRunLoop.until { recorder.commands.count == 8 }
     precondition(Array(recorder.commands.suffix(3)) == ["next", "prev", "commit"])
     withExtendedLifetime(server) {}
+    try assertServerKeepsListeningAfterItsCreatorReleasesIt()
+  }
+
+  private static func assertServerKeepsListeningAfterItsCreatorReleasesIt() throws {
+    let directory = URL(fileURLWithPath: "/tmp").appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let path = directory.appendingPathComponent("commands").path
+    let recorder = CommandRecorder()
+    let dispatcher = SocketCommandMainThreadDispatcher(commandHandler: recorder)
+    startServerWithoutRetainingIt(atPath: path, dispatcher: dispatcher)
+    TestMainRunLoop.until { FileManager.default.fileExists(atPath: path) }
+    let sender = Darwin.socket(AF_UNIX, SOCK_DGRAM, 0)
+    defer { Darwin.close(sender) }
+    var address = UnixSocketAddressBuilder.buildSocketAddress(forPath: path)!
+    let length = socklen_t(MemoryLayout<sockaddr_un>.size)
+    let payload = Data("next".utf8)
+    let sent = payload.withUnsafeBytes { bytes in
+      withUnsafePointer(to: &address) { pointer in
+        pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+          Darwin.sendto(sender, bytes.baseAddress, bytes.count, 0, $0, length)
+        }
+      }
+    }
+    precondition(sent == payload.count)
+    TestMainRunLoop.until { recorder.commands == ["next"] }
+  }
+
+  private static func startServerWithoutRetainingIt(
+    atPath path: String, dispatcher: SocketCommandMainThreadDispatcher
+  ) {
+    CommandSocketServer(
+      socketPath: path, socketFileMode: 0o600,
+      datagramReadBufferSize: 4096, kernelReceiveBufferBytes: 4096
+    ) { command in
+      if let parsed = SocketCommandParser.parseTrimmedCommand(command) {
+        dispatcher.dispatchOnMainThread(parsed)
+      }
+    }.startReceivingDatagramsOnBackgroundThread()
   }
 }

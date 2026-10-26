@@ -60,8 +60,8 @@ final class CommandSocketServer {
   }
 
   func startReceivingDatagramsOnBackgroundThread() {
-    DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-      self?.runReceiveLoopUntilTerminated()
+    DispatchQueue.global(qos: .userInteractive).async {
+      self.runReceiveLoopUntilTerminated()
     }
   }
 
@@ -72,11 +72,16 @@ final class CommandSocketServer {
         fileMode: socketFileMode,
         receiveBufferBytes: kernelReceiveBufferBytes
       )
-    else { return }
+    else { exitSoLaunchdRestartsTheDaemon() }
 
     UnixDatagramCommandReceiver.receiveCommands(
       from: serverDescriptor,
       bufferSize: datagramReadBufferSize,
       onCommandReceived: onCommandReceived)
+  }
+
+  private func exitSoLaunchdRestartsTheDaemon() -> Never {
+    FileHandle.standardError.write(Data("cannot listen on \(socketPath)\n".utf8))
+    exit(EXIT_FAILURE)
   }
 }
