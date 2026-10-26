@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 import re
@@ -162,4 +163,34 @@ def test_root_lock_file_is_the_only_flake_lock():
     assert lock_files == ["flake.lock"], (
         "The root flake.lock is the single dependency lock for every machine. "
         f"Found: {lock_files}"
+    )
+
+
+PUBLIC_HTTPS_PACKAGE_SOURCE_PREFIXES = (
+    "https://registry.npmjs.org/",
+    "https://github.com/",
+)
+
+
+def test_npm_lockfiles_resolve_only_from_public_https_sources():
+    offenders = []
+    for path in _walk_repo_paths_filtered():
+        if path.name != "package-lock.json":
+            continue
+        lockfile = json.loads(path.read_text())
+        for package_path, package in lockfile.get("packages", {}).items():
+            resolved = package.get("resolved")
+            if resolved and not resolved.startswith(
+                PUBLIC_HTTPS_PACKAGE_SOURCE_PREFIXES
+            ):
+                offenders.append(
+                    f"{path.relative_to(REPO_ROOT)}: {package_path} -> {resolved}"
+                )
+
+    assert not offenders, (
+        "npm lockfiles must resolve from public HTTPS sources. A lock written "
+        "behind a corporate .npmrc records that private registry, so every other "
+        "machine and CI fails to fetch it, and this public repository publishes "
+        "the internal hostname. Regenerate with "
+        "--registry=https://registry.npmjs.org/.\n" + "\n".join(offenders)
     )
