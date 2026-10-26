@@ -36,7 +36,7 @@ def remaining_time(deadline):
     remaining = deadline - time.monotonic()
     if remaining <= 0:
         raise RuntimeError(
-            "Connection deadline expired; request scoped approval before retrying a new grant"
+            "Connection deadline expired; run connect again for a new grant"
         )
     return remaining
 

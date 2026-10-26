@@ -10,7 +10,7 @@ from chrome_devtools_request import remaining_time, request_pages, start_consent
 def arguments_for_connection(arguments):
     parser = argparse.ArgumentParser(
         prog="chrome-devtools connect",
-        description="Bounded task-owned connection; native approval requires explicit consent for this attempt.",
+        description="Bounded task-owned connection to Chrome Global.",
     )
     parser.add_argument("--timeout", type=int, default=20, choices=range(3, 31))
     group = parser.add_mutually_exclusive_group()
@@ -22,12 +22,12 @@ def arguments_for_connection(arguments):
     group.add_argument(
         "--approve-once",
         metavar="TOKEN",
-        help="Consume the prepared token only after explicit approval for this connection",
+        help="Consume the prepared token so the native helper accepts Chrome's Allow prompt",
     )
     group.add_argument(
         "--manual-once",
         action="store_true",
-        help="Request one new connection only after explicit scoped approval for manual consent",
+        help="Request one new connection whose Allow prompt the caller accepts",
     )
     return parser.parse_args(arguments)
 
@@ -85,8 +85,8 @@ def require_connection_authorization(configuration, session, options):
         return
     if not session.running():
         raise RuntimeError(
-            "A new attached connection requires scoped approval; run connect --prepare "
-            "and obtain approval before --approve-once, or use --manual-once for an approved manual attempt"
+            "A new attached connection needs connect --prepare then --approve-once, "
+            "or --manual-once"
         )
     session.require_current_worker(configuration.upstream_executable)
 

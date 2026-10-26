@@ -73,7 +73,7 @@ def test_worker_cleanup_failure_is_reported(tmp_path, monkeypatch, capsys):
     assert "Owned worker cleanup failed" in capsys.readouterr().out
 
 
-def test_cold_connection_without_scoped_approval_never_requests_access(
+def test_cold_connection_without_a_grant_mode_never_requests_access(
     tmp_path, monkeypatch
 ):
     session = ChromeDevtoolsSession("no-grant", tmp_path, True)
@@ -81,7 +81,7 @@ def test_cold_connection_without_scoped_approval_never_requests_access(
     monkeypatch.setattr(
         connection, "request_pages", lambda *args: calls.append("request") or 0
     )
-    with pytest.raises(RuntimeError, match="scoped approval"):
+    with pytest.raises(RuntimeError, match="needs connect --prepare"):
         connection.connect(
             SimpleNamespace(consent_helper=()),
             session,

@@ -152,7 +152,7 @@ test("a disconnected attached browser requires a new scoped connection", async (
   const original = await manager.ensureBrowser();
   assert.equal(await manager.ensureBrowser(), original);
   original.connected = false;
-  await assert.rejects(manager.ensureBrowser(), /scoped approval/);
+  await assert.rejects(manager.ensureBrowser(), /start a new connection/);
   assert.equal(connections, 1);
   await manager.close();
   assert.equal(disconnections, 0);
@@ -166,7 +166,7 @@ test("a failed attached connection cannot silently request consent again", async
   });
   const manager = new BrowserManager({ autoConnect: true, channel: "stable" });
   await assert.rejects(manager.ensureBrowser(), /Could not connect/);
-  await assert.rejects(manager.ensureBrowser(), /scoped approval/);
+  await assert.rejects(manager.ensureBrowser(), /start a new connection/);
   assert.equal(attempts, 1);
   await manager.close();
 });

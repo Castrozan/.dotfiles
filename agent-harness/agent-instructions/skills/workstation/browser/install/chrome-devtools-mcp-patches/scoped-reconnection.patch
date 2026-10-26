@@ -13,7 +13,7 @@
      }
      async #connect() {
 +        if (this.#serverArgs.autoConnect && this.#connectionAttempted) {
-+            throw new Error('Attached Chrome disconnected; obtain scoped approval and start a new connection.');
++            throw new Error('Attached Chrome disconnected; run chrome-devtools connect to start a new connection.');
 +        }
 +        this.#connectionAttempted = true;
          const { browserUrl: browserURL, wsEndpoint, wsHeaders, autoConnect: isAutoConnect, userDataDir, blockedUrlPattern: blocklist, allowedUrlPattern: allowlist, } = this.#serverArgs;

@@ -155,7 +155,7 @@ def test_agent_cannot_start_an_unapproved_attached_connection(
     monkeypatch.setattr(
         command.os, "execv", lambda executable, arguments: executed.append(arguments)
     )
-    with pytest.raises(RuntimeError, match="scoped approval"):
+    with pytest.raises(RuntimeError, match="Run connect"):
         command.main(configuration, [operation])
     assert started == []
     assert executed == []

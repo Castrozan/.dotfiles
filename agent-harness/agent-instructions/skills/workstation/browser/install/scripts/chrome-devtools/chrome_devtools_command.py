@@ -125,8 +125,8 @@ def inspection_requested(arguments, operation):
 def inspect_worker(configuration, session, arguments, operation):
     if not arguments or arguments == ["--help"] or operation == "start":
         print(
-            "Managed Chrome DevTools CLI: connect attaches with scoped approval; "
-            "connect verifies pages within 20 seconds; connect --help describes scoped native consent. "
+            "Managed Chrome DevTools CLI: connect attaches to Chrome Global; "
+            "connect verifies pages within 20 seconds; connect --help describes native consent. "
             "start --headless uses a separate profile. Workers start on demand. "
             "stop closes this worker; cleanup closes an agent-owned worker. "
             "The agent completion hook performs cleanup for Herdr panes and Codex threads.\n",
@@ -139,9 +139,7 @@ def inspect_worker(configuration, session, arguments, operation):
 def start_requested_worker(configuration, session, arguments):
     mode = "headless" if headless_requested(arguments[1:]) else "attached"
     if mode == "attached":
-        raise RuntimeError(
-            "Use connect with scoped approval to start an attached worker"
-        )
+        raise RuntimeError("Run connect to start an attached worker")
     return start_worker(configuration, session, mode, arguments[1:])
 
 
@@ -152,7 +150,7 @@ def invoke_browser(configuration, session, arguments, operation):
         if not session.running():
             if session.mode() == "attached":
                 raise RuntimeError(
-                    "Run connect with scoped approval before requesting attached browser tools"
+                    "Run connect before requesting attached browser tools"
                 )
             result = start_worker(configuration, session, session.mode())
             if result:

@@ -75,7 +75,7 @@ class ChromeDevtoolsSession:
         if recorded != upstream_executable:
             raise RuntimeError(
                 "Refusing to reuse an older attached worker; its owner must stop it "
-                "and obtain scoped approval for a new connection"
+                "and run connect for a new connection"
             )
 
     def record_mode(self, mode, upstream_executable=None):

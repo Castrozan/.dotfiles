@@ -15,15 +15,14 @@ open tab.
 ### Chrome devtools is stealth by consent
 
 The attached worker connects via `--autoConnect` to the user's normally launched Chrome and retains its profile,
-cookies, logins and extensions. Each new grant requires the user's explicit approval; do not replace that gate with an
-always-on debugging port or automation launch flags on the user's browser.
+cookies, logins and extensions. Each new session raises Chrome's Allow prompt; do not replace it with an always-on
+debugging port or automation launch flags on the user's browser.
 
 ### Chrome devtools consent ownership
 
-Reuse the current task's authorized worker for its lifetime; reconnecting creates another grant boundary. Chrome's
-supported `--autoConnect` flow requests permission for each new session. Do not expose a debugging port, change
-settings, or retain workers across unrelated tasks to avoid that boundary. See
-[connection consent](connection-consent.md).
+Reuse the current task's worker for its lifetime; reconnecting creates another grant boundary. Chrome's supported
+`--autoConnect` flow requests permission for each new session. Do not expose a debugging port, change settings, or
+retain workers across unrelated tasks to avoid that boundary. See [connection consent](connection-consent.md).
 
 Keep one attached operation active at a time. Connection verification has a deadline and runs through a yielding
 execution tool. The bounded helper must be ready before the DevTools call that can wait on Allow; starting it afterwards

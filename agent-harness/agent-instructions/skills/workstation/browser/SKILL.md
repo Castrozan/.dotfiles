@@ -12,10 +12,8 @@ blocking consent prompt, "Could not connect to Chrome," or another recoverable t
 below; none permits a tool switch.
 
 OpenCLI is eligible only as the last resort when every recovery step has failed, Chrome DevTools remains unavailable,
-the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. Attaching to Chrome
-Global can require scoped user approval for a new debugging connection. An unattended task without that approval uses
-`start --headless` or an eligible OpenCLI workflow when the task permits it. Otherwise report the blocked Chrome
-DevTools requirement instead of silently substituting another browser.
+the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. Otherwise report the
+blocked Chrome DevTools requirement instead of silently substituting another browser.
 
 Read [OpenCLI](references/opencli.md) for site commands and eligible isolated workflows.
 [chrome target](references/chrome-target.md) explains the Chrome target's constraints.
@@ -27,10 +25,10 @@ development.
 ### Worker ownership
 
 Read `chrome-devtools --help` and each command's help for syntax. The plugin also carries the executable at
-`native/browser/chrome-devtools`. Use approved `connect` for attached startup and `start --headless` for
-isolated work. Reuse the current task's authorized worker before starting another. Prefer `start --headless` when
-existing logins, open tabs, and visible interaction are unnecessary; headless does not inherit the user's current
-logins. Never borrow another task's worker or change its ownership identifier.
+`native/browser/chrome-devtools`. Use `connect` for attached startup and `start --headless` for isolated work. Reuse the
+current task's worker before starting another. Prefer `start --headless` when existing logins, open tabs, and visible
+interaction are unnecessary; headless does not inherit the user's current logins. Never borrow another task's worker or
+change its ownership identifier.
 
 Keep one worker for a browser task and run `stop` when finished. The completion hook also closes workers owned by the
 current Herdr pane or Codex thread; outside those contexts, explicit `stop` is required. A fresh worker discards page
@@ -42,16 +40,16 @@ state instead of treating exit status alone as success.
 ### Chrome devtools connection and recovery
 
 Use the managed `connect` command to verify a task-owned connection within a deadline; read `connect --help` first. Keep
-the worker across task steps. Its existing authorized CDP transport avoids repeated grants; a running worker alone does
-not prove Chrome is still attached. A cold connection requires scoped approval before any browser request. A dropped
-attached transport fails without requesting a new grant; obtain approval and restart it through `connect`. Chrome's
-remote debugging setting remains user-controlled; do not change settings or launch flags to suppress consent.
+the worker across task steps. Its existing CDP transport avoids repeated grants; a running worker alone does not prove
+Chrome is still attached. A dropped attached transport fails without requesting a new grant; restart it through
+`connect`. Chrome's remote debugging setting remains user-controlled; do not change settings or launch flags to suppress
+consent.
 
-When a new grant is needed, prepare the exact Chrome target and obtain explicit user approval for that connection before
-consuming its one-use token. A standing preference for automation is not approval for future access grants. The native
-helper starts before the potentially blocking request, handles only the matching fresh Chrome consent dialog, then
-exits. Unsupported layouts, stale prompts, ambiguity, or user input abort the attempt; use manual scoped approval in
-those cases. Read [connection consent](references/connection-consent.md) before using native approval.
+Connect without asking the user. On Hyprland, run `connect --prepare` and consume its one-use token with
+`--approve-once`; elsewhere use `--manual-once`. The native helper starts before the potentially blocking request,
+handles only the matching fresh Chrome consent dialog, then exits. Unsupported layouts, stale prompts, ambiguity, or
+user input abort the attempt; fall back to `--manual-once` in those cases. Read
+[connection consent](references/connection-consent.md) before using the native helper.
 
 Run connection attempts through an execution tool that yields promptly, retaining its process handle so the agent can
 continue independent work while consent is pending. Do not synchronously block the agent on `list_pages`, retry in a
