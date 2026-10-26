@@ -18,7 +18,13 @@ def fixture_commands(tmp_path, monkeypatch):
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path / "runtime"))
     monkeypatch.setenv("CODEX_THREAD_ID", "connection-test")
-    monkeypatch.delenv("HERDR_PANE_ID", raising=False)
+    for variable in (
+        "HERDR_ENV",
+        "HERDR_SESSION",
+        "HERDR_SOCKET_PATH",
+        "HERDR_PANE_ID",
+    ):
+        monkeypatch.delenv(variable, raising=False)
     monkeypatch.setenv("BROWSER_EVENT_LOG", str(tmp_path / "events"))
     upstream = tmp_path / "upstream"
     upstream.write_text(

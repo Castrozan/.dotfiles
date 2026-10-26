@@ -8,6 +8,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts/chrome-dev
 import chrome_devtools_session as sessions
 
 
+@pytest.fixture(autouse=True)
+def non_herdr_context(monkeypatch):
+    for variable in (
+        "HERDR_ENV",
+        "HERDR_SESSION",
+        "HERDR_SOCKET_PATH",
+        "HERDR_PANE_ID",
+    ):
+        monkeypatch.delenv(variable, raising=False)
+
+
 def test_manual_scope_is_not_automatically_cleaned(tmp_path, monkeypatch):
     monkeypatch.delenv("HERDR_PANE_ID", raising=False)
     monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
@@ -65,3 +76,22 @@ def test_attached_worker_reuse_requires_matching_backend(tmp_path, stored):
     else:
         with pytest.raises(RuntimeError, match="older attached worker"):
             session.require_current_worker("/current/backend")
+
+
+def test_codex_identifier_remains_unchanged(tmp_path, monkeypatch):
+    import hashlib
+
+    monkeypatch.setenv("CODEX_THREAD_ID", "thread-one")
+    monkeypatch.setenv("HERDR_ENV", "0")
+    monkeypatch.setenv("HERDR_SESSION", "shell-selection-only")
+    expected = hashlib.sha256(b"CODEX_THREAD_ID:thread-one").hexdigest()[:32]
+    assert sessions.ChromeDevtoolsSession.current(tmp_path).identifier == expected
+
+
+def test_manual_identifier_remains_unchanged(tmp_path, monkeypatch):
+    import hashlib
+
+    monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
+    monkeypatch.setattr(sessions.os, "getuid", lambda: 42)
+    expected = hashlib.sha256(b"manual:42").hexdigest()[:32]
+    assert sessions.ChromeDevtoolsSession.current(tmp_path).identifier == expected

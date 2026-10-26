@@ -12,6 +12,9 @@ from chrome_devtools_session import ChromeDevtoolsSession
 
 @pytest.fixture
 def configuration(tmp_path, monkeypatch):
+    monkeypatch.setenv("HERDR_ENV", "1")
+    monkeypatch.setenv("HERDR_SESSION", "browser-tests")
+    monkeypatch.setenv("HERDR_SOCKET_PATH", str(tmp_path / "herdr.sock"))
     monkeypatch.setenv("HERDR_PANE_ID", "browser-test-pane")
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path / "runtime"))

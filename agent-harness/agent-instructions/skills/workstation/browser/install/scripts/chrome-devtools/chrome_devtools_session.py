@@ -4,15 +4,49 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
 
+def valid_context_value(value):
+    return (
+        bool(value)
+        and value == value.strip()
+        and all(character.isprintable() for character in value)
+    )
+
+
+def herdr_scope():
+    pane = os.environ.get("HERDR_PANE_ID")
+    endpoint = os.environ.get("HERDR_SOCKET_PATH")
+    if (
+        os.environ.get("HERDR_ENV") != "1"
+        or not valid_context_value(pane)
+        or not valid_context_value(endpoint)
+        or not Path(endpoint).is_absolute()
+    ):
+        raise RuntimeError(
+            "Herdr ownership requires HERDR_ENV=1, HERDR_PANE_ID and an absolute HERDR_SOCKET_PATH"
+        )
+    return json.dumps(
+        ["herdr", herdr_session_name(), endpoint, pane], separators=(",", ":")
+    )
+
+
+def herdr_session_name():
+    name = os.environ.get("HERDR_SESSION", "default")
+    if name in (".", "..") or not re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", name):
+        raise RuntimeError("Herdr ownership requires a valid HERDR_SESSION")
+    return name
+
+
 def agent_scope():
-    for variable in ("HERDR_PANE_ID", "CODEX_THREAD_ID"):
-        if value := os.environ.get(variable):
-            return f"{variable}:{value}"
+    if os.environ.get("HERDR_ENV") == "1" or os.environ.get("HERDR_PANE_ID"):
+        return herdr_scope()
+    if value := os.environ.get("CODEX_THREAD_ID"):
+        return f"CODEX_THREAD_ID:{value}"
     return None
 
 
