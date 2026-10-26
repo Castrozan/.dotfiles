@@ -26,6 +26,7 @@ inputs.nix-darwin.lib.darwinSystem {
 
   modules = [
     ../../machine-configuration/development/development-environments/devenv-cache-system.nix
+    ../../machine-configuration/security/certificate-trust/certificate-authority-distrust-system.nix
     ../../agent-harness/harnesses/codex/system-managed-hooks.nix
     ../../machine-configuration/machines/${hostname}/system
     inputs.home-manager.darwinModules.home-manager
