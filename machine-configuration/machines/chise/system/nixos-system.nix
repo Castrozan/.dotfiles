@@ -29,6 +29,7 @@ in
     ../../../operating-system/manual-pages/man-cache-nixos.nix
     ../../../operating-system/power-management/lid-switch-nixos.nix
     ../../../security/privilege-escalation/sudo-nixos.nix
+    ../../../security/certificate-trust/certificate-bundle-environment-nixos.nix
     ../../../desktop/input/mouse/mouse-polling-rate-nixos.nix
     ../../../home-automation/home-assistant/home-assistant-nixos.nix
     ../../../terminal/workspace-manager/cockpit-session-bridge/cockpit-session-bridge-nixos.nix

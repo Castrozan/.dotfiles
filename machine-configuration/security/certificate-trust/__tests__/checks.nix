@@ -20,8 +20,33 @@ let
     (import ../apple-certificate-bundle-distrust-nix-darwin.nix {
       inherit lib pkgs;
     }).system.activationScripts.postActivation.text.content;
+
+  systemCertificateBundle = "/etc/ssl/certs/ca-certificates.crt";
+
+  nixosBundleEnvironment = import ../certificate-bundle-environment-nixos.nix;
+
+  darwinBundleEnvironment = import ../certificate-bundle-environment-nix-darwin.nix;
 in
 {
+  domain-security-certificate-trust-nixos-services-read-filtered-bundle =
+    mkEvalCheck "domain-security-certificate-trust-nixos-services-read-filtered-bundle"
+      (
+        nixosBundleEnvironment.environment.variables.NIX_SSL_CERT_FILE == systemCertificateBundle
+        &&
+          nixosBundleEnvironment.systemd.settings.Manager.DefaultEnvironment
+          == "NIX_SSL_CERT_FILE=${systemCertificateBundle}"
+        && lib.hasInfix "NIX_SSL_CERT_FILE=${systemCertificateBundle}" nixosBundleEnvironment.systemd.user.extraConfig
+      )
+      "NixOS exports no NIX_SSL_CERT_FILE, and nixpkgs certifi falls back to its own unfiltered cacert.pem without it, so shells and the system and user service managers must all point it at the filtered system bundle or every requests and httpx client keeps trusting the distrusted roots; it belongs in the manager DefaultEnvironment rather than systemd.globalEnvironment, which rewrites every unit and restarts every service on the next switch";
+
+  domain-security-certificate-trust-darwin-launchd-services-read-filtered-bundle =
+    mkEvalCheck "domain-security-certificate-trust-darwin-launchd-services-read-filtered-bundle"
+      (
+        darwinBundleEnvironment.launchd.user.envVariables.NIX_SSL_CERT_FILE == systemCertificateBundle
+        && !(darwinBundleEnvironment ? launchd.envVariables)
+      )
+      "nix-darwin exports NIX_SSL_CERT_FILE only to shells, so launchd user agents such as the clawde supervisor must receive it too, or nixpkgs certifi inside them falls back to its unfiltered cacert.pem; it must stay out of the system domain, where launchctl setenv fails under System Integrity Protection and aborts activation before home-manager runs";
+
   domain-security-certificate-trust-system-bundle-drops-emsign-ecc-root-g3 =
     pkgs.runCommand "check-domain-security-certificate-trust-system-bundle-drops-emsign-ecc-root-g3"
       { nativeBuildInputs = [ pkgs.openssl ]; }
