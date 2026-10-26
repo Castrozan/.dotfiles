@@ -103,7 +103,6 @@ def prepare(configuration, directory):
                 "token": token,
                 "target": target,
                 "expires_in_seconds": 60,
-                "requires": "Explicit user approval for this Chrome debugging connection before --approve-once",
             }
         ),
         flush=True,
