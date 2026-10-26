@@ -35,6 +35,13 @@ in
       )
       "deniedMcpServers merges from every settings file, so user settings keep these five claude.ai account connectors from loading their MCP tool prefix into each session without a managed-settings.json, whose mere presence loads Claude Code's built-in sec-default guard and makes it skip every user mod on classic.* and prompt.compose events, silently disabling Cache Tax's resume warning and crayon's model teaching; each entry must stay a { serverName = <verbatim display name>; } object, and disableClaudeAiConnectors must stay off because it would also drop the connectors that are wanted, such as Claude Docs";
 
+  betha-preferencias-mcp-denied-from-user-settings =
+    mkEvalCheck "betha-preferencias-mcp-denied-from-user-settings"
+      (builtins.elem {
+        serverName = "plugin:betha-preferencias:preferencias";
+      } userSettings.deniedMcpServers)
+      "the betha-preferencias plugin stays enabled for its preferencias-mcp CLI skill while its MCP server stays off, and every rebuild reseeds deniedMcpServers from this declaration, so an entry added only to the live settings.json disappears on the next rebuild";
+
   darwin-removes-only-the-managed-settings-this-repository-wrote =
     mkEvalCheck "darwin-removes-only-the-managed-settings-this-repository-wrote"
       (

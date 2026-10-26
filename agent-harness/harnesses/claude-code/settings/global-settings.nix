@@ -66,6 +66,7 @@ let
       { serverName = "claude.ai Google Drive"; }
       { serverName = "claude.ai Claude Code Remote"; }
       { serverName = "claude.ai Context7"; }
+      { serverName = "plugin:betha-preferencias:preferencias"; }
     ];
     permissions = {
       defaultMode = "bypassPermissions";
