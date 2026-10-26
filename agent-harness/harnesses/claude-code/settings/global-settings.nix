@@ -67,6 +67,7 @@ let
       { serverName = "claude.ai Claude Code Remote"; }
       { serverName = "claude.ai Context7"; }
       { serverName = "plugin:betha-preferencias:preferencias"; }
+      { serverName = "plugin:betha-core:betha-core"; }
     ];
     permissions = {
       defaultMode = "bypassPermissions";
