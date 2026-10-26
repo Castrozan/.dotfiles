@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -45,6 +46,7 @@ in
   config = lib.mkIf cloudflareTunnelConnectorConfig.enable {
     services.cloudflared = {
       enable = true;
+      package = import ./cloudflared-package.nix { inherit pkgs; };
       tunnels.${cloudflareTunnelConnectorConfig.tunnelId} = {
         inherit (cloudflareTunnelConnectorConfig) credentialsFile;
         default = "http_status:404";

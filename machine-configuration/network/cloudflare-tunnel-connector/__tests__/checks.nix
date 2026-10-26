@@ -6,6 +6,7 @@
 }:
 let
   inherit (helpers) mkEvalCheck;
+  cloudflaredPackage = import ../cloudflared-package.nix { inherit pkgs; };
 
   evalCloudflareTunnelConnector =
     connectorSettings:
@@ -73,9 +74,10 @@ in
     mkEvalCheck "domain-darwin-cloudflare-tunnel-connector-enabled-runs-cloudflared"
       (
         cloudflareTunnelConnectorEnabled.launchd.agents.cloudflare-tunnel-connector.enable
-        && lib.elem "${pkgs.cloudflared}/bin/cloudflared" cloudflareTunnelConnectorEnabledProgramArguments
+        && lib.elem "${cloudflaredPackage}/bin/cloudflared" cloudflareTunnelConnectorEnabledProgramArguments
+        && lib.versionAtLeast cloudflaredPackage.version "2026.10.3"
       )
-      "an enabled darwin connector must run cloudflared under a launchd agent so the owner-only cockpit terminal reaches the loopback bridge over the named tunnel";
+      "an enabled darwin connector must run a cloudflared that distrusts the compromised eMudhra intermediates (2026.10.3 or later) under a launchd agent so the owner-only cockpit terminal reaches the loopback bridge over the named tunnel";
 
   domain-darwin-cloudflare-tunnel-connector-config-routes-declared-origins-to-loopback-with-agenix-credentials =
     mkEvalCheck

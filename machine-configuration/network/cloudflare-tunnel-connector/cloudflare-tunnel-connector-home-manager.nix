@@ -6,6 +6,7 @@
 }:
 let
   cloudflareTunnelConnectorConfig = config.custom.cloudflareTunnelConnector;
+  cloudflaredPackage = import ./cloudflared-package.nix { inherit pkgs; };
   ingressRouteSubmodule = lib.types.submodule {
     options = {
       hostname = lib.mkOption {
@@ -62,7 +63,7 @@ in
       config = {
         Label = "com.dotfiles.cloudflare-tunnel-connector";
         ProgramArguments = [
-          "${pkgs.cloudflared}/bin/cloudflared"
+          "${cloudflaredPackage}/bin/cloudflared"
           "tunnel"
           "--config=${cloudflaredIngressConfiguration}"
           "--no-autoupdate"

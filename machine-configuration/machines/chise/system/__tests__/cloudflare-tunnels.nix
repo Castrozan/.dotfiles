@@ -17,6 +17,7 @@ let
             type = lib.types.attrs;
             default = { };
           };
+          config._module.args.pkgs = pkgs;
           config.custom.cloudflareTunnelConnector = connectorSettings;
         }
       ];
@@ -65,6 +66,11 @@ in
     mkEvalCheck "chise-cloudflare-tunnel-connector-enabled-turns-on-cloudflared"
       cloudflareTunnelConnectorEnabled.services.cloudflared.enable
       "an enabled Cloudflare Tunnel connector must turn cloudflared on so the owner-only cockpit terminal reaches the Jarvis bridge over the named tunnel";
+
+  chise-cloudflare-tunnel-connector-runs-emudhra-distrusting-cloudflared =
+    mkEvalCheck "chise-cloudflare-tunnel-connector-runs-emudhra-distrusting-cloudflared"
+      (lib.versionAtLeast cloudflareTunnelConnectorEnabled.services.cloudflared.package.version "2026.10.2")
+      "an enabled connector must run cloudflared 2026.10.2 or later, which distrusts the compromised eMudhra intermediates, rather than the older nixpkgs build that still trusts them";
 
   chise-cloudflare-tunnel-connector-registers-tunnel-by-id =
     mkEvalCheck "chise-cloudflare-tunnel-connector-registers-tunnel-by-id"
