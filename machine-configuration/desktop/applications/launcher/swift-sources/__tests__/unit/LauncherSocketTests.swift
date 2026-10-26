@@ -67,5 +67,52 @@ enum LauncherSocketTests {
     precondition(commands == ["show", "dismiss", "show"])
     lock.unlock()
     withExtendedLifetime(server) {}
+    try assertServerKeepsListeningAfterItsCreatorReleasesIt()
+  }
+
+  private static func assertServerKeepsListeningAfterItsCreatorReleasesIt() throws {
+    let directory = URL(fileURLWithPath: "/tmp").appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let path = directory.appendingPathComponent("commands").path
+    let received = DispatchSemaphore(value: 0)
+    startServerWithoutRetainingIt(atPath: path) { command in
+      if command == "show" { received.signal() }
+    }
+    let deadline = Date().addingTimeInterval(3)
+    while !FileManager.default.fileExists(atPath: path) && Date() < deadline {
+      Thread.sleep(forTimeInterval: 0.002)
+    }
+    precondition(FileManager.default.fileExists(atPath: path))
+    var address = sockaddr_un()
+    address.sun_family = sa_family_t(AF_UNIX)
+    withUnsafeMutablePointer(to: &address.sun_path) { pointer in
+      pointer.withMemoryRebound(to: CChar.self, capacity: 104) { destination in
+        path.withCString { source in _ = strcpy(destination, source) }
+      }
+    }
+    let sender = Darwin.socket(AF_UNIX, SOCK_DGRAM, 0)
+    defer { Darwin.close(sender) }
+    let payload = Data("show".utf8)
+    let sent = payload.withUnsafeBytes { bytes in
+      withUnsafePointer(to: &address) { pointer in
+        pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+          Darwin.sendto(
+            sender, bytes.baseAddress, bytes.count, 0, $0,
+            socklen_t(MemoryLayout<sockaddr_un>.size))
+        }
+      }
+    }
+    precondition(sent == payload.count)
+    precondition(received.wait(timeout: .now() + 3) == .success)
+  }
+
+  private static func startServerWithoutRetainingIt(
+    atPath path: String, onCommandReceived: @escaping (String) -> Void
+  ) {
+    ApplicationLauncherDaemonCommandSocketServer(
+      socketPath: path, socketFileMode: 0o600,
+      datagramReadBufferSize: 4096, onCommandReceived: onCommandReceived
+    ).startReceivingDatagramsOnBackgroundThread()
   }
 }

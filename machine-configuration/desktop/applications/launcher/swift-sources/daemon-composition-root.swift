@@ -34,9 +34,9 @@ final class ApplicationLauncherDaemonCompositionRoot {
             socketPath: ApplicationLauncherDaemonConfiguration.commandSocketPath,
             socketFileMode: ApplicationLauncherDaemonConfiguration.socketFileMode,
             datagramReadBufferSize: ApplicationLauncherDaemonConfiguration.datagramReadBufferSize,
-            onCommandReceived: { [weak showPickerCommandHandler] commandString in
+            onCommandReceived: { commandString in
                 DispatchQueue.main.async {
-                    showPickerCommandHandler?.handleSocketCommand(commandString)
+                    showPickerCommandHandler.handleSocketCommand(commandString)
                 }
             }
         )
