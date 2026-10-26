@@ -40,8 +40,6 @@ let
     allMcpServerNames = builtins.attrNames mcpServerDefinitions;
   };
 
-  interactivelyInjectedMcpServerDefinitions = { };
-
   selectClawdeAgentMcpServers = serverNames: lib.getAttrs serverNames mcpServerDefinitions;
 
 in
@@ -51,17 +49,25 @@ in
     (import ./inject-mcp-servers-into-claude-config.nix {
       inherit homeDir;
       inherit (mcpServerInjectionPartition) managedMcpServerNames;
-      mcpServerDefinitions = interactivelyInjectedMcpServerDefinitions;
+      mcpServerDefinitions = config.claude.mcpServers;
     })
   ];
 
-  _module.args.selectClawdeAgentMcpServers = selectClawdeAgentMcpServers;
+  options.claude.mcpServers = lib.mkOption {
+    type = lib.types.attrsOf (pkgs.formats.json { }).type;
+    default = { };
+    description = "Private MCP servers injected into the interactive Claude user configuration.";
+  };
 
-  home.packages = browserMcp.packages;
+  config = {
+    _module.args.selectClawdeAgentMcpServers = selectClawdeAgentMcpServers;
 
-  home.activation.importOpencliDefaultProfile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    $DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${../../../agent-instructions/skills/workstation/browser/install/scripts/opencli/import_opencli_profile.py} \
-      ${lib.escapeShellArg "${homeDir}/.pinchtab/profiles/default"} \
-      ${lib.escapeShellArg "${homeDir}/.local/share/opencli/profiles/default"}
-  '';
+    home.packages = browserMcp.packages;
+
+    home.activation.importOpencliDefaultProfile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      $DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${../../../agent-instructions/skills/workstation/browser/install/scripts/opencli/import_opencli_profile.py} \
+        ${lib.escapeShellArg "${homeDir}/.pinchtab/profiles/default"} \
+        ${lib.escapeShellArg "${homeDir}/.local/share/opencli/profiles/default"}
+    '';
+  };
 }
