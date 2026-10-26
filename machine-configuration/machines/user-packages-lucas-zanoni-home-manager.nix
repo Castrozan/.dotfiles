@@ -37,14 +37,13 @@
       # lens TODO: fix lens, im using the snap version for now
       micronaut
       mongosh
-      neofetch
       # nix # leave the manually installed version
       nix-output-monitor
       (import ../development/system-rebuild/nh-package.nix { inherit pkgs; })
       nixd
       nixfmt-rfc-style
       nodejs
-      nodePackages.prettier
+      prettier
       obsidian
       ollama
       pipes

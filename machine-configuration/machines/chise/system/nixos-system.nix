@@ -110,10 +110,10 @@ in
     };
     resolved = {
       enable = true;
-      extraConfig = ''
-        DNSStubListenerExtra=100.94.11.81
-        DNSStubListenerExtra=172.17.0.1
-      '';
+      settings.Resolve.DNSStubListenerExtra = [
+        "100.94.11.81"
+        "172.17.0.1"
+      ];
     };
     openssh = {
       enable = true;

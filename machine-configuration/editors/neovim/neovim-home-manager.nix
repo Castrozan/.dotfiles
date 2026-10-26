@@ -13,8 +13,8 @@ let
     deadnix
 
     typescript-language-server
-    nodePackages.prettier
-    nodePackages.eslint
+    prettier
+    eslint
     vscode-langservers-extracted
 
     rust-analyzer
@@ -66,6 +66,8 @@ in
     extraPackages = pdfViewerTooling;
     viAlias = true;
     vimAlias = true;
+    withPython3 = true;
+    withRuby = true;
     # on the wrapper rather than in home.sessionVariables: panes inherit the environment of the
     # terminal server they were spawned from, which outlives a rebuild, so a session variable
     # reaches neovim only after that server restarts

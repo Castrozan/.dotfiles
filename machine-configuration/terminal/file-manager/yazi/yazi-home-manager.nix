@@ -5,6 +5,7 @@
 
     enableBashIntegration = true;
     enableFishIntegration = false;
+    shellWrapperName = "yy";
 
     settings = {
       mgr = {

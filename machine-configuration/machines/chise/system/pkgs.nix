@@ -57,7 +57,7 @@
       nix-prefetch-github
       nixpkgs-fmt
       nodejs
-      nodePackages.prettier
+      prettier
       obs-studio
       obsidian
       pavucontrol
