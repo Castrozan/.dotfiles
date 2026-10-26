@@ -11,6 +11,8 @@ let
     directoryPrefixes = declaration.directoryPrefixes or [ ];
     gitRemotePatterns = declaration.gitRemotePatterns or [ ];
     instructionFiles = declaration.instructionFiles or [ ];
+    sessionEnvironment = declaration.sessionEnvironment or { };
+    sessionEnvironmentFromFiles = declaration.sessionEnvironmentFromFiles or { };
     claudeCode = declaration.claudeCode or { };
     codex = declaration.codex or { };
     opencode = declaration.opencode or { };

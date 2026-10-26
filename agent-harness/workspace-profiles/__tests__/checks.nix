@@ -13,6 +13,8 @@ let
       directoryPrefixes = [ "~/repo" ];
       gitRemotePatterns = [ "gitlab.example.com" ];
       instructionFiles = [ ];
+      sessionEnvironment.TOOLING_URL = "https://tooling.example.com";
+      sessionEnvironmentFromFiles.TOOLING_TOKEN = "~/.secrets/tooling-token";
       claudeCode.settingsOverlay.enabledPlugins."tooling@internal" = true;
       codex = { };
       opencode = { };
@@ -22,6 +24,8 @@ let
       directoryPrefixes = [ "~/side-projects" ];
       gitRemotePatterns = [ ];
       instructionFiles = [ ];
+      sessionEnvironment = { };
+      sessionEnvironmentFromFiles = { };
       claudeCode = { };
       codex = { };
       opencode = { };
@@ -98,6 +102,15 @@ in
         && containsText dispatchFragment "activatedWorkspaceProfile=personal"
       )
       "a profile without a dispatch branch resolves by name and then silently activates nothing, which reads exactly like the global configuration and hides the failure";
+
+  workspace-profile-dispatch-exports-the-profile-session-environment =
+    mkEvalCheck "workspace-profile-dispatch-exports-the-profile-session-environment"
+      (
+        containsText dispatchFragment "export TOOLING_URL=https://tooling.example.com"
+        && containsText dispatchFragment ''if [ -r "$HOME"/.secrets/tooling-token ]; then''
+        && containsText dispatchFragment ''export TOOLING_TOKEN="$(<"$HOME"/.secrets/tooling-token)"''
+      )
+      "a CLI that replaces a resident MCP server reads its credentials from the shell, so the launch must export the profile environment and read each secret file at launch, never copying its value into the world-readable store";
 
   workspace-profile-dispatch-asks-the-resolver-about-the-launch-directory =
     mkEvalCheck "workspace-profile-dispatch-asks-the-resolver-about-the-launch-directory"
