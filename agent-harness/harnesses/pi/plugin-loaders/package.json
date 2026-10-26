@@ -10,6 +10,9 @@
     "pi-mcp-adapter": "5.1.0"
   },
   "overrides": {
-    "@modelcontextprotocol/client": "^2.3.1"
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@earendil-works/pi-coding-agent": {
+      "undici": "^8.12.2"
+    }
   }
 }

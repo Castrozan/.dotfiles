@@ -28,7 +28,7 @@ pkgs.buildNpmPackage {
     fileset = sourceFiles;
   };
 
-  npmDepsHash = "sha256-KXqjaes7ALV8xhKWyaHheroJVooeqTzCyKZLrA/CxLo=";
+  npmDepsHash = "sha256-RBPc47uy9PjmLjHh7L3fOdTz6NpluQ+vA8Rur8hUYTQ=";
 
   npmFlags = [
     "--ignore-scripts"

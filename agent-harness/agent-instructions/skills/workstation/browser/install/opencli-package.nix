@@ -10,7 +10,7 @@ pkgs.buildNpmPackage {
       ./opencli/package-lock.json
     ];
   };
-  npmDepsHash = "sha256-GZkkWNbFLFdHStpL4tx4g5338g+cGzE1Us+S8uIbiiY=";
+  npmDepsHash = "sha256-AjT70/IFkRzgpvPbhbuTOGLRFKzEmJIdDdn3HXOSimI=";
   npmFlags = [ "--ignore-scripts" ];
   dontNpmBuild = true;
   dontNpmInstall = true;

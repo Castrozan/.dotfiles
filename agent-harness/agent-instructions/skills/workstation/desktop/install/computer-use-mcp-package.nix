@@ -19,7 +19,7 @@ pkgs.buildNpmPackage {
       ./package-lock.json
     ];
   };
-  npmDepsHash = "sha256-2I1KKTCvw2StRoSquD6vxxgNJc+JJZIug0KRaNVUD+g=";
+  npmDepsHash = "sha256-yC/afqcT9NO63cYe6sybxjKDN1CHVFA+vABGRtwRxkg=";
   npmFlags = [
     "--ignore-scripts"
     "--omit=optional"
