@@ -73,11 +73,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792898456,
-        "narHash": "sha256-gzk5Ek9hOGj7PztTUmRSbKFMf+Y8XufoleHtrFMChm4=",
+        "lastModified": 1793048005,
+        "narHash": "sha256-pIZF/1GZR9prHLuVogyzQgB1LIa+/kDPLXo1HDIohzk=",
         "ref": "refs/heads/main",
-        "rev": "c6d8c114cf867eb537c056b44fa507706c75917a",
-        "revCount": 18,
+        "rev": "b2d340577065e212d5d643a01ce50ce87be5c96b",
+        "revCount": 19,
         "type": "git",
         "url": "ssh://git@github.com/Castrozan/arr-stack"
       },
