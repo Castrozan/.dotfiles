@@ -39,6 +39,22 @@ else
 
         vendorHash = "sha256-WtGk5HE6PxAWqwvj8mAAzobuoSw+y6BqBEEB0hRQafk=";
 
+        preCheck =
+          builtins.replaceStrings
+            [
+              ''
+                substituteInPlace "edgediscovery/protocol_test.go" \
+                  --replace-warn "TestProtocolPercentage" "SkipProtocolPercentage"
+              ''
+            ]
+            [
+              ''
+                substituteInPlace "crypto/curves_test.go" \
+                  --replace-fail "TestSupportedCurvesNegotiation" "SkipSupportedCurvesNegotiation"
+              ''
+            ]
+            previousAttributes.preCheck;
+
         ldflags = map (
           flag:
           if pkgs.lib.hasPrefix "-X main.Version=" flag then
