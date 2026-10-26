@@ -50,9 +50,10 @@ command exits: `launch-command-detached-into-new-session <log> chrome-devtools c
 While it waits, accept Chrome's "Allow remote debugging?" prompt yourself with the `desktop-computer-use` MCP from the
 `desktop` skill: screenshot the screen, locate the prompt's Allow button, click it, then read the log for the page list.
 
-Chrome can reuse an earlier grant and return pages with no prompt. On macOS Chrome keeps the prompt out of
-accessibility and screen capture; find it with `list_windows` by that title and click Allow, the right-hand button of
-its bottom row. Read [connection consent](references/connection-consent.md) for the Hyprland native helper alternative.
+Chrome prompts for every new session, so a silent success means someone else clicked Allow. On macOS Chrome keeps the
+prompt out of accessibility and screen capture; find its window with `list_windows` by that title and `left_click` Allow
+with `focus_strategy` none at 64 points left of the window's right edge and 32 above its bottom edge. Read
+[connection consent](references/connection-consent.md) for the Hyprland native helper alternative.
 
 Never block the agent on `connect` or `list_pages`, retry in a loop, or start parallel attached clients. The wrapper
 rejects overlapping attached operations. On failure it cancels the request and cleans only its own worker; inspect any
