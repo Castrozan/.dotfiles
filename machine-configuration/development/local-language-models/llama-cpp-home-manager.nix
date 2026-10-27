@@ -20,8 +20,10 @@ let
       (previous: {
         version = "11870";
         src = previous.src.override {
-          hash = "sha256-QSlOmH2D4c+LgTsOCbf1FZ0T0fiZPw9laXlBEFQkm3U=";
+          tag = "b11870";
+          hash = "sha256-5eFbZ9xRDcrSkmM2RzmLRH0dQPM6BH0XU3O79F3zRPg=";
         };
+        patches = [ ];
         npmRoot = "tools/ui";
         npmDepsHash = "sha256-XLtEZsSFdk+2SyfXzBp8HQ2e27PQPpDCn1YjePU1/9w=";
         cmakeFlags = (previous.cmakeFlags or [ ]) ++ [ "-DCMAKE_CUDA_ARCHITECTURES=86-real" ];
