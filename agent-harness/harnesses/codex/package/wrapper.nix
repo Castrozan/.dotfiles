@@ -7,7 +7,7 @@
   ...
 }:
 let
-  codex-unwrapped = import ./unwrapped-package.nix {
+  codex-unwrapped = import ./unwrapped.nix {
     inherit
       pkgs
       lib
@@ -16,16 +16,16 @@ let
       ;
   };
 
-  interactivePreferencesFile = import ./interactive-instructions.nix {
+  interactivePreferencesFile = import ../interactive-instructions.nix {
     inherit pkgs;
     inherit (config.home) homeDirectory;
   };
 
-  workspaceProfileActivation = import ./workspace-profile-activation.nix {
+  workspaceProfileActivation = import ../workspace-profile-activation.nix {
     inherit pkgs lib interactivePreferencesFile;
   };
 
-  inherit (import ../../workspace-profiles/activation/harness-launch-dispatch.nix { inherit lib; })
+  inherit (import ../../../workspace-profiles/activation/harness-launch-dispatch.nix { inherit lib; })
     mkWorkspaceProfileLaunchDispatch
     ;
 
@@ -37,7 +37,7 @@ let
   workspaceProfileLaunchDispatchFile = pkgs.writeText "codex-workspace-profile-launch-dispatch" workspaceProfileLaunchDispatch;
 
   hookTrustExecutable = pkgs.writeShellScript "codex-approve-discovered-hooks" ''
-    exec ${pkgs.python312}/bin/python3 ${./scripts/hook_trust}/approve.py "$@"
+    exec ${pkgs.python312}/bin/python3 ${../scripts/hook_trust}/approve.py "$@"
   '';
 
   sessionPython = pkgs.python312.withPackages (pythonPackages: [
@@ -47,8 +47,8 @@ let
 
   sessionScripts = pkgs.runCommandLocal "codex-private-session-scripts" { } ''
     mkdir -p "$out"
-    cp ${./scripts/session_server}/*.py "$out/"
-    cp ${../../hooks/runtime/common/codex_app_server_client.py} "$out/codex_app_server_client.py"
+    cp ${../scripts/session_server}/*.py "$out/"
+    cp ${../../../hooks/runtime/common/codex_app_server_client.py} "$out/codex_app_server_client.py"
     PYTHONPATH="$out" PYTHONDONTWRITEBYTECODE=1 ${sessionPython}/bin/python3 -c 'import launch_private_session'
   '';
 
@@ -68,7 +68,7 @@ let
       CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE = "${hookTrustExecutable}";
       CODEX_LAUNCHER_SESSION_EXECUTABLE = "${sessionExecutable}";
     };
-    text = builtins.readFile ./scripts/codex;
+    text = builtins.readFile ../scripts/codex;
   };
 in
 {

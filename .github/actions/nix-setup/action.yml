@@ -52,7 +52,7 @@ runs:
     - uses: nix-community/cache-nix-action@v7
       if: ${{ inputs.cache-key == 'flake-check' }}
       with:
-        primary-key: nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/unwrapped-package.nix', 'agent-harness/harnesses/codex/status-line/**', 'repository/nix-library/fetch-prebuilt-binary.nix', 'machine-configuration/development/local-language-models/**') }}
+        primary-key: nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/package/unwrapped.nix', 'agent-harness/harnesses/codex/status-line/**', 'repository/nix-library/fetch-prebuilt-binary.nix', 'machine-configuration/development/local-language-models/**') }}
         restore-prefixes-first-match: |
           nix-native-${{ runner.os }}-${{ inputs.cache-key }}-
           nix-${{ runner.os }}-${{ inputs.cache-key }}-

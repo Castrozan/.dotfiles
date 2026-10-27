@@ -5,7 +5,7 @@
   inputs,
 }:
 let
-  fetchPrebuiltBinary = import ../../../repository/nix-library/fetch-prebuilt-binary.nix {
+  fetchPrebuiltBinary = import ../../../../repository/nix-library/fetch-prebuilt-binary.nix {
     inherit pkgs;
   };
 
@@ -45,7 +45,7 @@ let
     meta.mainProgram = "codex";
   };
 in
-import ./status-line/package.nix {
+import ../status-line/package.nix {
   inherit
     latest
     lib

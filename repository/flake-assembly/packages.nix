@@ -4,7 +4,7 @@ let
   inherit (pkgs) lib;
 in
 {
-  codex = import ../../agent-harness/harnesses/codex/unwrapped-package.nix {
+  codex = import ../../agent-harness/harnesses/codex/package/unwrapped.nix {
     inherit
       pkgs
       lib

@@ -1,7 +1,7 @@
 { ... }:
 {
   imports = [
-    ./package.nix
+    ./package/wrapper.nix
     ./config.nix
     ./rules.nix
     ./plugins.nix
