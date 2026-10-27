@@ -75,6 +75,7 @@ def test_every_pytest_tier_holding_tests_is_invoked_by_continuous_integration():
 def test_continuous_integration_supplies_the_binaries_the_suite_shells_out_to():
     assert any(
         "test-suite-environment.nix" in str(step.get("run", ""))
+        or "test-suite-environment.nix" in str(job.get("env", {}))
         for job in jobs_invoking_a_pytest_tier().values()
         for step in job.get("steps", [])
     ), (
