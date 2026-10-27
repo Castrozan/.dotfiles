@@ -3,7 +3,10 @@ pythonPackages: with pythonPackages; [
   httpx
   jsonschema
   (scrapy.overridePythonAttrs { doCheck = false; })
-  (trafilatura.overridePythonAttrs { doCheck = false; })
+  (trafilatura.overridePythonAttrs {
+    doCheck = false;
+    pythonImportsCheck = [ ];
+  })
   uvicorn
   yt-dlp
 ]
