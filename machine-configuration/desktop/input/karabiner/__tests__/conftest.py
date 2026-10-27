@@ -141,6 +141,16 @@ def _build_fake_subprocess_run_router(call_route_map):
             return call_route_map.get(
                 "launchctl", _build_completed_process_with_exit_zero()
             )
+        if "Non-Privileged Agents" in first_argument:
+            if second_argument == "core-agents-enabled":
+                return call_route_map.get(
+                    "core_agents_enabled",
+                    _build_completed_process_with_exit_zero("enabled\n"),
+                )
+            if second_argument == "register-core-agents":
+                return call_route_map.get(
+                    "register_core_agents", _build_completed_process_with_exit_zero()
+                )
         return _build_completed_process_with_exit_zero()
 
     return fake_subprocess_run

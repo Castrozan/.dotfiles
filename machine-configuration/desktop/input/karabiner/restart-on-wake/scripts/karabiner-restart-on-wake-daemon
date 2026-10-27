@@ -30,6 +30,14 @@ KARABINER_CLI_BINARY_PATH = (
 )
 KARABINER_CLI_IPC_PROBE_TIMEOUT_SECONDS = 5.0
 
+KARABINER_CORE_AGENTS_REGISTRAR_BINARY_PATH = (
+    "/Library/Application Support/org.pqrs/Karabiner-Elements/"
+    "Karabiner-Elements Non-Privileged Agents v2.app/Contents/MacOS/"
+    "Karabiner-Elements Non-Privileged Agents v2"
+)
+KARABINER_CORE_AGENTS_REGISTERED_REGISTRAR_OUTPUT = "enabled"
+KARABINER_CORE_AGENTS_REGISTRAR_TIMEOUT_SECONDS = 10.0
+
 KARABINER_CLI_IPC_PROBE_FAILURE_KICK_IS_ENABLED = True
 CONSECUTIVE_IPC_PROBE_FAILURES_REQUIRED_BEFORE_KICK = 3
 CONSECUTIVE_SHARED_SECRET_DESYNC_PROBES_REQUIRED_BEFORE_KICK = 2
@@ -200,6 +208,64 @@ def probe_karabiner_cli_ipc_and_return_outcome():
     }
 
 
+def run_karabiner_core_agents_registrar_subcommand_or_none(registrar_subcommand):
+    try:
+        return subprocess.run(
+            [KARABINER_CORE_AGENTS_REGISTRAR_BINARY_PATH, registrar_subcommand],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=KARABINER_CORE_AGENTS_REGISTRAR_TIMEOUT_SECONDS,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return None
+
+
+def are_karabiner_core_agents_registered_or_unknown():
+    registration_status_completion = (
+        run_karabiner_core_agents_registrar_subcommand_or_none("core-agents-enabled")
+    )
+    if registration_status_completion is None:
+        return True
+    return (
+        registration_status_completion.stdout.strip()
+        == KARABINER_CORE_AGENTS_REGISTERED_REGISTRAR_OUTPUT
+    )
+
+
+def reregister_karabiner_core_agents_if_unregistered(is_console_user_server_running):
+    if is_console_user_server_running:
+        return
+    if are_karabiner_core_agents_registered_or_unknown():
+        return
+    registration_completion = run_karabiner_core_agents_registrar_subcommand_or_none(
+        "register-core-agents"
+    )
+    previous_health_state = read_current_health_state_from_file()
+    write_merged_health_state_updates_to_file(
+        {
+            "last_core_agents_registration_epoch": current_epoch_seconds(),
+            "core_agents_registration_count_total": previous_health_state.get(
+                "core_agents_registration_count_total", 0
+            )
+            + 1,
+        }
+    )
+    append_structured_event_log_line(
+        {
+            "event": "core_agents_reregistered",
+            "exit_code": (
+                registration_completion.returncode if registration_completion else None
+            ),
+            "output": (
+                registration_completion.stdout.strip()
+                if registration_completion
+                else None
+            ),
+        }
+    )
+
+
 def kick_karabiner_user_agents_via_launchctl(kick_reason):
     primary_user_id = os.getuid()
     launchd_kickstart_targets_in_restart_order = [
@@ -305,6 +371,7 @@ def run_full_health_probe_and_kick_if_ipc_probe_failed():
             ),
         }
     )
+    reregister_karabiner_core_agents_if_unregistered(is_console_user_server_running)
     reactively_kick_if_ipc_probe_degraded(
         karabiner_cli_ipc_probe_outcome, is_console_user_server_running
     )
