@@ -36,9 +36,9 @@ file_types = ["javascript", "typescript", "jsx", "tsx"]
 environment = [{ name = "PATH", value = "${env.DOTFILES_LINT_TOOL_PATH}" }]
 
 [plugins.definitions.native-biome.drivers.lint]
-script = "biome lint --config-path=.qlty --reporter=json --max-diagnostics=none -- ${target}"
+script = "biome lint --config-path=.qlty --reporter=rdjson --max-diagnostics=none -- ${target}"
 success_codes = [0, 1]
-output_format = "biome"
+output_format = "rdjson"
 batch = true
 config_files = [".qlty/biome.json"]
 
