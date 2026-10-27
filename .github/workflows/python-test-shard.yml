@@ -40,7 +40,7 @@ jobs:
 
       - name: Configure the signed Python environment cache
         run: |
-          cache_configuration=machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+          cache_configuration=machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
           mkdir -p "$HOME/.config/nix"
           printf 'extra-substituters = %s\nextra-trusted-public-keys = %s\n' \
             "$(jq -er .url "$cache_configuration")" \

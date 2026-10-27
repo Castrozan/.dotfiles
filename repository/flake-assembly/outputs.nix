@@ -35,15 +35,22 @@ in
     system = linux;
   };
 
-  packages.${darwin}.wellput-plugin = import ../../agent-harness/agent-instructions/wellput-plugin {
-    inherit
-      (import ./channels.nix {
-        inherit inputs;
-        system = darwin;
-      })
-      pkgs
-      ;
-  };
+  packages.${darwin} =
+    import ./packages.nix {
+      inherit inputs;
+      system = darwin;
+    }
+    // {
+      wellput-plugin = import ../../agent-harness/agent-instructions/wellput-plugin {
+        inherit
+          (import ./channels.nix {
+            inherit inputs;
+            system = darwin;
+          })
+          pkgs
+          ;
+      };
+    };
 
   checks = import ./checks.nix {
     inherit inputs self release;

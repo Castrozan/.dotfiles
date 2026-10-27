@@ -11,7 +11,12 @@ on:
       - machine-configuration/media/media-generation/image-python-packages.nix
       - machine-configuration/media/media-generation/video-ffmpeg-package.nix
       - machine-configuration/terminal/workspace-manager/herdr/**
-      - machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+      - machine-configuration/terminal/emulators/wezterm/patched-wezterm.nix
+      - machine-configuration/terminal/emulators/wezterm/wezterm-patches/**
+      - agent-harness/harnesses/codex/unwrapped-package.nix
+      - agent-harness/harnesses/codex/status-line/**
+      - repository/nix-library/fetch-prebuilt-binary.nix
+      - machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
       - .github/workflows/nix-binary-cache.yml
       - .github/actions/nix-setup/**
   workflow_dispatch: {}
@@ -26,8 +31,18 @@ permissions:
 jobs:
   publish:
     if: ${{ github.repository == 'Castrozan/.dotfiles' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            system: x86_64-linux
+          - runner: macos-latest
+            system: aarch64-darwin
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 180
+    env:
+      NIX_SYSTEM: ${{ matrix.system }}
     permissions:
       contents: read
       id-token: write
@@ -42,7 +57,7 @@ jobs:
 
       - name: Configure the signed binary cache
         run: |
-          cache_configuration=machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+          cache_configuration=machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
           cache_url=$(jq -er .url "$cache_configuration")
           cache_public_key=$(jq -er .publicKey "$cache_configuration")
           mkdir -p "$HOME/.config/nix"
@@ -50,20 +65,24 @@ jobs:
             "$cache_url" "$cache_public_key" >> "$HOME/.config/nix/nix.conf"
 
       - name: Verify the exported derivations match the deployed packages
+        if: ${{ matrix.system == 'x86_64-linux' }}
         run: |
           nix eval --json .#packages.x86_64-linux \
             --apply 'packages: builtins.mapAttrs (_: package: package.drvPath) packages' \
             > exported-derivations.json
-          nix eval --json .#nixosConfigurations.chise.config.home-manager.users.zanoni \
-            --apply 'home: builtins.attrNames (builtins.getContext home.home.activation.linkHerdrAnnotate.data) ++ map (package: package.drvPath) home.home.packages' \
-            > deployed-derivations.json
+          deployed_generation=$(nix eval --raw .#nixosConfigurations.chise.config.home-manager.users.zanoni.home.activationPackage.drvPath)
+          nix-store --query --requisites "$deployed_generation" | jq -R . | jq -s . > deployed-derivations.json
           jq -e --slurp '([.[0][]] - .[1]) == []' \
             exported-derivations.json deployed-derivations.json
 
       - name: Build the patched packages and Python test environment
         run: |
-          nix build .#herdr .#herdr-agent-resume .#herdr-annotate \
+          cached_packages=(herdr herdr-agent-resume herdr-annotate codex wezterm)
+          nix build "${cached_packages[@]/#/.#packages.$NIX_SYSTEM.}" \
             --no-link --print-build-logs --json > binary-cache-packages.json
+          if [ "$NIX_SYSTEM" != x86_64-linux ]; then
+            exit 0
+          fi
           nix build --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' \
             --no-link --print-build-logs --json > binary-cache-test-environment.json
           jq --slurp add binary-cache-packages.json binary-cache-test-environment.json > binary-cache-complete.json
@@ -72,7 +91,7 @@ jobs:
       - name: Upload the package identities
         uses: actions/upload-artifact@v4
         with:
-          name: binary-cache-packages
+          name: binary-cache-packages-${{ matrix.system }}
           path: |
             binary-cache-packages.json
             binary-cache-test-environment.json
@@ -87,7 +106,7 @@ jobs:
           cache_key_file="$RUNNER_TEMP/nix-cache-signing-key"
           trap 'rm -f "$cache_key_file"' EXIT
           printf '%s\n' "$NIX_CACHE_SIGNING_KEY" > "$cache_key_file"
-          expected_public_key=$(jq -er .publicKey machine-configuration/machines/chise/system/configs/nix-binary-cache.json)
+          expected_public_key=$(jq -er .publicKey machine-configuration/development/system-rebuild/dotfiles-binary-cache.json)
           test "$(nix key convert-secret-to-public < "$cache_key_file")" = "$expected_public_key"
           mapfile -t package_outputs < <(jq -r '.[].outputs[]' binary-cache-packages.json)
           nix copy --to "file://$RUNNER_TEMP/nix-binary-cache?secret-key=$cache_key_file&compression=zstd" \
@@ -102,14 +121,24 @@ jobs:
 
       - name: Publish NARs before signed metadata
         run: |
-          cache_bucket=$(jq -er .bucketUri machine-configuration/machines/chise/system/configs/nix-binary-cache.json)
+          cache_bucket=$(jq -er .bucketUri machine-configuration/development/system-rebuild/dotfiles-binary-cache.json)
           gcloud storage rsync "$RUNNER_TEMP/nix-binary-cache/nar" "$cache_bucket/nar" --recursive
           gcloud storage rsync "$RUNNER_TEMP/nix-binary-cache" "$cache_bucket" --exclude='^nar/'
 
   substitute:
     needs: publish
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            system: x86_64-linux
+          - runner: macos-latest
+            system: aarch64-darwin
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
+    env:
+      NIX_SYSTEM: ${{ matrix.system }}
     steps:
       - uses: actions/checkout@v4
 
@@ -121,22 +150,24 @@ jobs:
 
       - name: Realize the packages from signed substitutes on a fresh runner
         run: |
-          cache_configuration=machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+          cache_configuration=machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
           cache_url=$(jq -er .url "$cache_configuration")
           cache_public_key=$(jq -er .publicKey "$cache_configuration")
-          nix build .#herdr .#herdr-agent-resume .#herdr-annotate \
+          cached_packages=(herdr herdr-agent-resume herdr-annotate codex wezterm)
+          nix build "${cached_packages[@]/#/.#packages.$NIX_SYSTEM.}" \
             --no-link --print-build-logs --json --max-jobs 0 \
             --option substituters "$cache_url https://cache.nixos.org" \
             --extra-trusted-public-keys "$cache_public_key" > binary-cache-substitutions.json
 
       - uses: actions/upload-artifact@v4
         with:
-          name: binary-cache-substitutions
+          name: binary-cache-substitutions-${{ matrix.system }}
           path: binary-cache-substitutions.json
 
       - name: Copy the exact Python test environment from the signed cache
+        if: ${{ matrix.system == 'x86_64-linux' }}
         run: |
-          cache_configuration=machine-configuration/machines/chise/system/configs/nix-binary-cache.json
+          cache_configuration=machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
           cache_url=$(jq -er .url "$cache_configuration")
           cache_public_key=$(jq -er .publicKey "$cache_configuration")
           test_environment_output=$(nix eval --impure --raw --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in (import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }).outPath')
@@ -148,6 +179,7 @@ jobs:
             --extra-trusted-public-keys "$cache_public_key" > binary-cache-test-environment-substitutions.json
 
       - uses: actions/upload-artifact@v4
+        if: ${{ matrix.system == 'x86_64-linux' }}
         with:
           name: binary-cache-test-environment-substitutions
           path: binary-cache-test-environment-substitutions.json

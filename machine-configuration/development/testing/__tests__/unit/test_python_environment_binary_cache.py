@@ -10,7 +10,7 @@ import yaml
 REPOSITORY = Path(__file__).resolve().parents[5]
 WORKFLOW = REPOSITORY / ".github/workflows/nix-binary-cache.yml"
 CACHE_CONFIGURATION = Path(
-    "machine-configuration/machines/chise/system/configs/nix-binary-cache.json"
+    "machine-configuration/development/system-rebuild/dotfiles-binary-cache.json"
 )
 
 
@@ -33,7 +33,8 @@ def cache_workflow(tmp_path):
         "    print('/nix/store/test-environment')\n"
         "elif arguments[0] == 'build':\n"
         "    names = ['test-environment'] if '--expr' in arguments else "
-        "['herdr', 'herdr-agent-resume', 'herdr-annotate']\n"
+        "[argument.rsplit('.', 1)[1] for argument in arguments "
+        "if argument.startswith('.#packages.')]\n"
         "    print(json.dumps([{'outputs': {'out': '/nix/store/' + name}} "
         "for name in names]))\n"
     )
@@ -54,6 +55,15 @@ def execute_step(directory, job, name, **environment):
     )
 
 
+DEPLOYED_PATCHED_PACKAGES = [
+    "/nix/store/herdr",
+    "/nix/store/herdr-agent-resume",
+    "/nix/store/herdr-annotate",
+    "/nix/store/codex",
+    "/nix/store/wezterm",
+]
+
+
 def test_the_signed_manifest_retains_deployed_packages_and_the_test_environment(
     cache_workflow,
 ):
@@ -61,15 +71,38 @@ def test_the_signed_manifest_retains_deployed_packages_and_the_test_environment(
         cache_workflow,
         "publish",
         "Build the patched packages and Python test environment",
+        NIX_SYSTEM="x86_64-linux",
     )
     assert process.returncode == 0, process.stderr
     packages = json.loads((cache_workflow / "binary-cache-packages.json").read_text())
     assert [package["outputs"]["out"] for package in packages] == [
-        "/nix/store/herdr",
-        "/nix/store/herdr-agent-resume",
-        "/nix/store/herdr-annotate",
+        *DEPLOYED_PATCHED_PACKAGES,
         "/nix/store/test-environment",
     ]
+
+
+def test_the_darwin_manifest_holds_the_patched_packages_for_its_own_system(
+    cache_workflow,
+):
+    process = execute_step(
+        cache_workflow,
+        "publish",
+        "Build the patched packages and Python test environment",
+        NIX_SYSTEM="aarch64-darwin",
+    )
+    assert process.returncode == 0, process.stderr
+    packages = json.loads((cache_workflow / "binary-cache-packages.json").read_text())
+    assert [package["outputs"]["out"] for package in packages] == DEPLOYED_PATCHED_PACKAGES
+    calls = [
+        json.loads(line)
+        for line in (cache_workflow / "nix-calls.jsonl").read_text().splitlines()
+    ]
+    assert len(calls) == 1
+    assert all(
+        argument.startswith(".#packages.aarch64-darwin.")
+        for argument in calls[0]
+        if argument.startswith(".#")
+    )
 
 
 def test_a_failed_signed_copy_cannot_fall_back_to_local_construction(cache_workflow):
