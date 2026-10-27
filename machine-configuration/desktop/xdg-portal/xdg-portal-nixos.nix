@@ -33,5 +33,10 @@ in
         };
       };
     };
+
+    systemd.user.services.xdg-desktop-portal-gtk.unitConfig.ConditionEnvironment = [
+      "|WAYLAND_DISPLAY"
+      "|DISPLAY"
+    ];
   };
 }

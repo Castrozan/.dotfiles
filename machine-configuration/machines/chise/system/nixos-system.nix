@@ -75,8 +75,6 @@ in
   programs = {
     # Screen locker - needs NixOS-level enable for DRM/PAM permissions
     hyprlock.enable = true;
-    # NOTE: programs.hyprlock pulls in hypridle. We don't want auto-lock,
-    # so hypridle.service is masked via ~/.config/systemd/user/hypridle.service -> /dev/null
     # More hyprland configuration in home/hyprland.nix
     hyprland = {
       enable = true;
@@ -103,6 +101,7 @@ in
   # Services
   services = {
     flatpak.enable = true;
+    hypridle.enable = lib.mkForce false;
     tailscale = {
       useRoutingFeatures = "server";
       extraSetFlags = [ "--advertise-exit-node" ];
