@@ -51,7 +51,7 @@
 
   function _handleSpeechMessage(message, ws) {
     const viewer = findViewer();
-    if (!viewer || !viewer.model) {
+    if (!viewer?.model) {
       console.warn("[bridge] Viewer/model not ready, skipping speech");
       return;
     }

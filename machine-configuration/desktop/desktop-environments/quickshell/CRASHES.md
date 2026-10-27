@@ -53,6 +53,7 @@ systemctl --user status quickshell-bar quickshell-overview quickshell-switcher
 Append to the top when a new crash cluster shows up. Keep entries terse.
 
 ### 2026-10-26 - back to the nixpkgs release
+
 - No crash in `~/.cache/quickshell/crashes/` since 2026-04-04, across the whole master pin (`d4c9297`).
 - `v0.3.0`, `v0.3.1` and `v0.3.2` all contain `d4c9297`, `7208f68` and `f0d0216b`.
 - Action: dropped the master flake input for `pkgs.quickshell` so the package comes from the binary cache. If crashes return, pin the release tag that fixes them rather than master.
