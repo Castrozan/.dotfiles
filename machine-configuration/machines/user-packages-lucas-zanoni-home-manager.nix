@@ -14,7 +14,7 @@
       bash-completion
       bat
       bats
-      latest.bun
+      (import ../development/development-environments/bun-package.nix { inherit latest; })
       cargo
       curl
       delta
@@ -54,7 +54,7 @@
       rustc
       shellcheck
       shfmt
-      tailscale
+      latest.tailscale
       tealdeer
       tree
       unzip
