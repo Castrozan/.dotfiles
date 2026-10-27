@@ -9,11 +9,8 @@ let
     inherit pkgs inputs isNixOS;
   };
 
-  upstreamQuickshellPackage =
-    inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
-
   quickshellPackage = nixglWrap.wrapWithNixGLIntel {
-    package = upstreamQuickshellPackage;
+    package = pkgs.quickshell;
     binaries = [ "quickshell" ];
   };
 in

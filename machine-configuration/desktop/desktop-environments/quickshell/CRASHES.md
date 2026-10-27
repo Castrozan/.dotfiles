@@ -14,7 +14,7 @@ Small fault addresses indicate a null or freed pointer plus a field offset, whic
 
 ## Root cause
 
-Upstream `quickshell` tag `v0.2.1` (2025-10-11) plus `Qt 6.10.x` exhibits use-after-free and nullptr deref in the scene-graph layer. No newer tagged release exists as of 2026-04-13; the fixes live on the `master` branch.
+Upstream `quickshell` tag `v0.2.1` (2025-10-11) plus `Qt 6.10.x` exhibits use-after-free and nullptr deref in the scene-graph layer. The fixes landed on `master` after v0.2.1 and ship in every tag from `v0.3.0` (2026-05-03) on.
 
 Relevant post-v0.2.1 commits:
 - `d4c9297` i3/ipc: null monitor/workspace pointers on destroy
@@ -25,11 +25,7 @@ Relevant post-v0.2.1 commits:
 
 ## Current mitigations
 
-1. **Flake input pinned to upstream master**: the dependencies flake has `quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell?ref=master"` and all three service modules consume `inputs.quickshell.packages.${system}.quickshell` instead of `pkgs.quickshell`. Bump with:
-   ```sh
-   nix flake update dependencies/quickshell
-   rebuild
-   ```
+1. **Release containing the fixes**: all three service modules consume `pkgs.quickshell`, which is `v0.3.0` or later and therefore contains every commit listed above. It substitutes from cache.nixos.org instead of compiling against Qt on each host.
 2. **`QS_DROP_EXPENSIVE_FONTS=1`** in the systemd Environment of every quickshell service. This is upstream's own workaround for font-related scene-graph crashes.
 3. **`Restart=always`, `RestartSec=1s`** on all three services so tmux / Hyprland does not notice a user-visible gap when the in-process restarter fails.
 
@@ -56,6 +52,11 @@ systemctl --user status quickshell-bar quickshell-overview quickshell-switcher
 
 Append to the top when a new crash cluster shows up. Keep entries terse.
 
+### 2026-10-26 - back to the nixpkgs release
+- No crash in `~/.cache/quickshell/crashes/` since 2026-04-04, across the whole master pin (`d4c9297`).
+- `v0.3.0`, `v0.3.1` and `v0.3.2` all contain `d4c9297`, `7208f68` and `f0d0216b`.
+- Action: dropped the master flake input for `pkgs.quickshell` so the package comes from the binary cache. If crashes return, pin the release tag that fixes them rather than master.
+
 ### 2026-04-13 - baseline before master pin
 - 13 crashes in `~/.cache/quickshell/crashes/` going back to 2026-03-05, all on `tag-v0.2.1`.
 - Three crashes on 2026-04-13 alone (12:05, 15:48, 16:23), hours apart, not tied to rebuilds.
@@ -63,7 +64,7 @@ Append to the top when a new crash cluster shows up. Keep entries terse.
 
 ## Escalation
 
-If crashes persist after pinning master and a `nix flake update dependencies/quickshell`:
+If crashes return on the nixpkgs release:
 1. Decode the minidump with `minidump_stackwalk` to see which QML object triggered it.
 2. File upstream at https://git.outfoxxed.me/quickshell/quickshell/issues with the stack trace and the QML path.
 3. If a specific module is implicated, disable that module in `machine-configuration/desktop/desktop-environments/quickshell/bar/program-configuration/Bar.qml` to confirm, then report.
