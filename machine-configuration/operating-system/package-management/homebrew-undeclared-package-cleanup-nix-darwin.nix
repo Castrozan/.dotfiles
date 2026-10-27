@@ -13,8 +13,10 @@ in
     lib.mkAfter ''
       if [ -f "${homebrew.prefix}/bin/brew" ]; then
         echo >&2 "Homebrew uninstalling undeclared packages..."
-        PATH="${homebrew.prefix}/bin:$PATH" sudo --preserve-env=PATH --user=${lib.escapeShellArg homebrew.user} --set-home \
-          env HOMEBREW_NO_AUTO_UPDATE=1 brew bundle cleanup --force --file='${declaredBrewfile}'
+        if ! PATH="${homebrew.prefix}/bin:$PATH" sudo --preserve-env=PATH --user=${lib.escapeShellArg homebrew.user} --set-home \
+          env HOMEBREW_NO_AUTO_UPDATE=1 brew bundle cleanup --force --file='${declaredBrewfile}'; then
+          echo >&2 "warning: Homebrew undeclared-package cleanup failed, activation continues; an outdated keg left root-owned by a root brew service blocks brew cleanup until removed with sudo"
+        fi
       fi
     ''
   );

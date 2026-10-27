@@ -33,10 +33,11 @@ let
     && lib.hasInfix "brew bundle cleanup --force --file=" homebrewActivation
     && lib.hasInfix "--user=test-user" homebrewActivation
     && lib.hasInfix "if [ -f \"/opt/homebrew/bin/brew\" ]" homebrewActivation
+    && lib.hasInfix "if ! PATH=\"/opt/homebrew/bin:$PATH\"" homebrewActivation
     && composedDarwinConfiguration.homebrew.onActivation.cleanup == "none";
 in
 {
   darwin-homebrew-uninstalls-undeclared-packages =
     mkEvalCheck "darwin-homebrew-uninstalls-undeclared-packages" cleanupRunsAfterBundleInstall
-      "Darwin homebrew activation must run brew bundle cleanup --force against the declared Brewfile after the bundle install, guarded on brew existing, because Homebrew 7 removed the --cleanup switch that nix-darwin 25.11 passes for onActivation.cleanup";
+      "Darwin homebrew activation must run brew bundle cleanup --force against the declared Brewfile after the bundle install, guarded on brew existing and without aborting activation on failure, because Homebrew 7 removed the --cleanup switch that nix-darwin 25.11 passes for onActivation.cleanup and its trailing brew cleanup fails on kegs a root brew service left root-owned";
 }
