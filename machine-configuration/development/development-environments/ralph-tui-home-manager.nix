@@ -15,6 +15,8 @@ in
 
     activation.installRalphTui = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       export PATH="${bunPackage}/bin:$PATH"
+      mkdir -p "$HOME/.bun/bin"
+      ln -sfn ${bunPackage}/bin/bun "$HOME/.bun/bin/bun"
       if [ ! -f "$HOME/.bun/bin/ralph-tui" ]; then
         ${bunPackage}/bin/bun install -g ralph-tui 2>/dev/null || true
       fi
