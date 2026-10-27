@@ -109,7 +109,10 @@ jobs:
           printf '%s\n' "$NIX_CACHE_SIGNING_KEY" > "$cache_key_file"
           expected_public_key=$(jq -er .publicKey machine-configuration/development/system-rebuild/dotfiles-binary-cache.json)
           test "$(nix key convert-secret-to-public < "$cache_key_file")" = "$expected_public_key"
-          mapfile -t package_outputs < <(jq -r '.[].outputs[]' binary-cache-packages.json)
+          package_outputs=()
+          while IFS= read -r package_output; do
+            package_outputs+=("$package_output")
+          done < <(jq -r '.[].outputs[]' binary-cache-packages.json)
           nix copy --to "file://$RUNNER_TEMP/nix-binary-cache?secret-key=$cache_key_file&compression=zstd" \
             "${package_outputs[@]}"
 
