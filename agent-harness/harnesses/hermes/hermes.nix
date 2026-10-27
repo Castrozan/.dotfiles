@@ -21,7 +21,7 @@ let
     pkgs.coreutils
     pkgs.git
     pkgs.ripgrep
-    pkgs.nodejs
+    pkgs.nodejs_22
   ];
 
   hermes-agent = pkgs.writeShellApplication {

@@ -42,7 +42,7 @@
       (import ../development/system-rebuild/nh-package.nix { inherit pkgs; })
       nixd
       nixfmt-rfc-style
-      nodejs
+      nodejs_22
       prettier
       obsidian
       ollama

@@ -56,7 +56,7 @@
       nixd
       nix-prefetch-github
       nixpkgs-fmt
-      nodejs
+      nodejs_22
       prettier
       obs-studio
       obsidian
