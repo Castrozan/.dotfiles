@@ -7,7 +7,7 @@
 let
   # ralph-tui >=0.x requires Bun >=1.3.6; nixpkgs stable currently pins 1.3.3,
   # so use the daily-bumped nixpkgs-latest channel for bun specifically.
-  bunPackage = latest.bun;
+  bunPackage = import ./bun-package.nix { inherit latest; };
 in
 {
   home = {

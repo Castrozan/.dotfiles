@@ -15,7 +15,7 @@
       bash
       bash-completion
       bats
-      bun
+      (import ../../../development/development-environments/bun-package.nix { inherit latest; })
       (import ../../../operating-system/resource-monitoring/btop-package.nix { inherit pkgs; })
       cacert
       curl
