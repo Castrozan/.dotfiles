@@ -1,5 +1,12 @@
 { pkgs }:
-(pkgs.python312.withPackages (
+let
+  pythonWithoutCurlCffiNetworkTests = pkgs.python312.override {
+    packageOverrides = _: previousPackages: {
+      curl-cffi = previousPackages.curl-cffi.overridePythonAttrs { doCheck = false; };
+    };
+  };
+in
+(pythonWithoutCurlCffiNetworkTests.withPackages (
   pythonPackages:
   [
     pythonPackages.pytest
