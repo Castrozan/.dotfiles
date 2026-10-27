@@ -22,6 +22,7 @@ jobs:
   python:
     name: Python ${{ inputs.tier }} shard ${{ inputs.shard }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
       artifact-attempt: ${{ steps.identity.outputs.attempt }}
@@ -52,7 +53,7 @@ jobs:
             export REPO_DIR="$PWD"
             mkdir -p .coverage-reports
             export COVERAGE_PROCESS_START="$PWD/repository/verification/cover/coverage.ini"
-            export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/cover/coverage.ini --cov-report="
+            export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/cover/coverage.ini --cov-report= -o faulthandler_timeout=300"
             source repository/verification/runner/discovery.sh
             source repository/verification/runner/pytest.sh
             case "$PYTEST_TIER" in
