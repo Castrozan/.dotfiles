@@ -60,11 +60,21 @@ def native_realization_flags(build_flags):
     return tuple(dict_to_flags(realization_flags))
 
 
+def native_flake_flags(parsed, grouped):
+    return {
+        **grouped.common_flags,
+        **grouped.flake_eval_flags,
+        "offline": parsed.offline,
+        "no_net": parsed.no_net,
+    }
+
+
 def parse_native_options(arguments):
     parsed, grouped = parse_args(["nixos-rebuild", *arguments])
     validate_native_flake(parsed)
     validate_immutable_native_modes(parsed)
-    archive_flags = dict_to_flags(grouped.flake_common_flags)
+    flake_flags = native_flake_flags(parsed, grouped)
+    archive_flags = dict_to_flags(flake_flags)
     evaluation_flags = [
         *archive_flags,
         *dict_to_flags({"show_trace": parsed.show_trace, "include": parsed.include}),
@@ -80,8 +90,7 @@ def parse_native_options(arguments):
         specialisation=parsed.specialisation,
         install_bootloader=parsed.install_bootloader,
         input_overrides=tuple(
-            tuple(override)
-            for override in grouped.flake_common_flags.get("override_input") or ()
+            tuple(override) for override in flake_flags.get("override_input") or ()
         ),
         archive_flags=tuple(archive_flags),
         evaluation_flags=tuple(evaluation_flags),

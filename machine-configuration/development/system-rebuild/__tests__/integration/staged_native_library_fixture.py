@@ -54,14 +54,14 @@ def parse_args(arguments):
     parser.add_argument("--file")
     parser.add_argument("--attr")
     parser.add_argument("--include", action="append")
-    for name in ("impure", "rollback", "upgrade", "upgrade-all", "commit-lock-file", "recreate-lock-file", "refresh", "show-trace", "no-write-lock-file", "install-bootloader", "sudo", "no-reexec"):
+    for name in ("impure", "rollback", "upgrade", "upgrade-all", "commit-lock-file", "recreate-lock-file", "refresh", "show-trace", "no-write-lock-file", "install-bootloader", "sudo", "no-reexec", "offline", "no-net"):
         parser.add_argument("--" + name, action="store_true")
     parser.add_argument("--ask-sudo-password", action="store_true")
     parser.add_argument("--update-input", action="append")
     parsed = parser.parse_args(arguments[1:])
     common = {name: getattr(parsed, name) for name in ("option", "cores", "max_jobs")}
-    flake = {**common, "override_input": parsed.override_input, "no_write_lock_file": parsed.no_write_lock_file}
-    grouped = SimpleNamespace(common_flags=common, build_flags=common, flake_common_flags=flake, flake_build_flags=flake)
+    flake_evaluation = {"override_input": parsed.override_input, "no_write_lock_file": parsed.no_write_lock_file}
+    grouped = SimpleNamespace(common_flags=common, build_flags=common, flake_eval_flags=flake_evaluation, flake_build_flags={**common, **flake_evaluation})
     return parsed, grouped
 """
     )
