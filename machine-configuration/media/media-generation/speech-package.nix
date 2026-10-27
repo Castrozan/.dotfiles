@@ -1,6 +1,6 @@
 { pkgs }:
 let
-  speechPython = pkgs.python312.withPackages (import ./speech-python-packages.nix);
+  speechPython = pkgs.python3.withPackages (import ./speech-python-packages.nix);
   phonemizerEspeak = pkgs.espeak-ng.override { mbrolaSupport = false; };
   model = pkgs.fetchurl {
     url = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.int8.onnx";
