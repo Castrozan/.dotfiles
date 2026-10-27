@@ -40,7 +40,7 @@ jobs:
           - runner: macos-latest
             system: aarch64-darwin
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 180
+    timeout-minutes: 330
     env:
       NIX_SYSTEM: ${{ matrix.system }}
     permissions:
