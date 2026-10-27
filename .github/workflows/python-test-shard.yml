@@ -49,7 +49,7 @@ jobs:
 
       - name: Run Python tests
         run: |
-          nix shell --always-allow-substitutes --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash <<'PYTHON_TESTS'
+          nix shell --always-allow-substitutes --max-silent-time 1200 --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' --command bash <<'PYTHON_TESTS'
             export REPO_DIR="$PWD"
             mkdir -p .coverage-reports
             export COVERAGE_PROCESS_START="$PWD/repository/verification/cover/coverage.ini"

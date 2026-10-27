@@ -9,6 +9,7 @@ on:
       - agent-harness/quality/evaluations/instructions/python-packages.nix
       - agent-harness/quality/evaluations/instructions/github-slugger-python-package.nix
       - machine-configuration/media/media-generation/image-python-packages.nix
+      - machine-configuration/development/cloud-services/agent-api/python-packages.nix
       - machine-configuration/media/media-generation/video-ffmpeg-package.nix
       - machine-configuration/terminal/workspace-manager/herdr/**
       - machine-configuration/terminal/emulators/wezterm/patched-wezterm.nix
@@ -84,7 +85,7 @@ jobs:
             exit 0
           fi
           nix build --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in import ./machine-configuration/development/testing/test-suite-environment.nix { inherit pkgs; }' \
-            --no-link --print-build-logs --json > binary-cache-test-environment.json
+            --no-link --print-build-logs --max-silent-time 1200 --json > binary-cache-test-environment.json
           jq --slurp add binary-cache-packages.json binary-cache-test-environment.json > binary-cache-complete.json
           mv binary-cache-complete.json binary-cache-packages.json
 
