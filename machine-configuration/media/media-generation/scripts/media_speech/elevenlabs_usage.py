@@ -41,7 +41,7 @@ class ElevenLabsUsageReader:
             charge = (
                 None
                 if overage is None
-                else UsageCharge(overage["amount"], overage["currency"].upper())
+                else UsageCharge(overage.amount, overage.currency.upper())
             )
             return ProviderUsage(
                 self.name,
