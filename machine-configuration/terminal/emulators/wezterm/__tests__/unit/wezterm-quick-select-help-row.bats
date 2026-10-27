@@ -11,8 +11,9 @@ readonly QUICK_SELECT_HELP_ROW_PATCH="$WEZTERM_DOMAIN/wezterm-patches/hide-quick
 }
 
 @test "darwin app launchers use the patched wezterm package" {
-	grep -Fq 'ln -s "${patchedWezterm}/Applications/WezTerm.app/$darwinAppBundleExecutable"' "$WEZTERM_HOME_MANAGER_MODULE"
-	! grep -Fq 'ln -s "${latest.wezterm}/Applications/WezTerm.app/$darwinAppBundleExecutable"' "$WEZTERM_HOME_MANAGER_MODULE"
+	grep -Fq 'package = patchedWezterm;' "$WEZTERM_HOME_MANAGER_MODULE"
+	grep -Fq 'package = weztermAfterNixGL;' "$WEZTERM_HOME_MANAGER_MODULE"
+	! grep -Fq 'latest.wezterm' "$WEZTERM_HOME_MANAGER_MODULE"
 }
 
 @test "quick select patch removes the help row and restores the underlying cursor" {

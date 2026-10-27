@@ -21,24 +21,6 @@ let
     ];
   };
 
-  weztermBundledBinariesForDarwinAppLaunchers = pkgs.symlinkJoin {
-    name = "wezterm-darwin-app-bundle";
-    paths = [ weztermAfterNixGL ];
-    postBuild = ''
-      darwinAppBundleContentsMacOS="$out/Applications/WezTerm.app/Contents/MacOS"
-      mkdir -p "$darwinAppBundleContentsMacOS"
-      for darwinAppBundleExecutable in wezterm wezterm-gui wezterm-mux-server strip-ansi-escapes wezterm.sh; do
-        ln -s "${patchedWezterm}/Applications/WezTerm.app/$darwinAppBundleExecutable" \
-          "$darwinAppBundleContentsMacOS/$darwinAppBundleExecutable"
-      done
-    '';
-  };
-
-  weztermPackage =
-    if pkgs.stdenv.hostPlatform.isDarwin then
-      weztermBundledBinariesForDarwinAppLaunchers
-    else
-      weztermAfterNixGL;
 in
 {
   home.file.".config/wezterm/wallpaper.png".source =
@@ -48,7 +30,7 @@ in
 
   programs.wezterm = {
     enable = true;
-    package = weztermPackage;
+    package = weztermAfterNixGL;
     extraConfig = builtins.readFile ./program-configuration/wezterm.lua;
   };
 }
