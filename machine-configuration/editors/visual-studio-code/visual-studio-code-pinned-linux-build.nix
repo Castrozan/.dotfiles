@@ -6,6 +6,11 @@ pkgs.vscode.overrideAttrs (previousAttributes: rec {
     url = "https://update.code.visualstudio.com/${version}/linux-x64/stable";
     sha256 = "sha256-SPZYBS5U4CChwb57N6wPmuOfB+jM2oBcY/BTz9pysr4=";
   };
+  postPatch =
+    builtins.replaceStrings
+      [ "@vscode/ripgrep/bin/rg" ]
+      [ "@vscode/ripgrep-universal/bin/linux-x64/rg" ]
+      previousAttributes.postPatch;
   buildInputs =
     previousAttributes.buildInputs
     ++ (with pkgs; [
