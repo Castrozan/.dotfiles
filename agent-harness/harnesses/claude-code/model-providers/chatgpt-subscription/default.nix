@@ -98,9 +98,9 @@ let
         ];
       };
 
-  gptModelForOpusTier = "gpt-5.6-sol(max)[1m]";
-  gptModelForSonnetTier = "gpt-5.6-sol(medium)";
-  gptModelForHaikuTier = "gpt-5.6-sol(low)";
+  gptModelForOpusTier = "gpt-6.1-sol(max)[1m]";
+  gptModelForSonnetTier = "gpt-6.1-sol(medium)";
+  gptModelForHaikuTier = "gpt-6.1-sol(low)";
 
   claudexLauncher = pkgs.writeShellApplication {
     name = "claudex";

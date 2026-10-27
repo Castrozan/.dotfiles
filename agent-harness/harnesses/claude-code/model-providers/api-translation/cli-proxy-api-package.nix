@@ -4,15 +4,15 @@ let
     inherit pkgs;
   };
 
-  cliProxyApiVersion = "7.2.121";
+  cliProxyApiVersion = "8.0.44";
   cliProxyApiArtifacts = {
     aarch64-darwin = {
       releaseSystem = "darwin_aarch64";
-      sha256 = "sha256-4YsiuHPl0X8xdUDoxo2xzm6BUeyF347inZz0yPk3l8Q=";
+      sha256 = "sha256-ULdeC87IV2uTVh8qspQf8Iryb8knPPaG6cKzN3FrvEY=";
     };
     x86_64-linux = {
       releaseSystem = "linux_amd64";
-      sha256 = "sha256-KpNYQb/MZuGWXdaKrrZSmWM9ad5ZuL4JzlYTZISBK+4=";
+      sha256 = "sha256-OVfDT+SpWjf1mXq2PXjcpDH6FSGZfXwqs73+FprYkwc=";
     };
   };
   cliProxyApiArtifact =

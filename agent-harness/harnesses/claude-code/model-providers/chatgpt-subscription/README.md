@@ -16,9 +16,9 @@ packaged CLIProxyAPI binaries for x86_64 Linux and Apple silicon macOS.
   loopback CONNECT gateway that resolves and dials IPv4 only, avoiding blackholed
   temporary IPv6 routes while leaving the machine's IPv6 configuration untouched.
 - `claudex`: launches Claude Code pointed at the proxy. It forces the main loop to
-  `gpt-5.6-sol(max)[1m]` with `--model` (the shared `settings.json` carries whatever
+  `gpt-6.1-sol(max)[1m]` with `--model` (the shared `settings.json` carries whatever
   model the user last switched to, which would otherwise bypass the opus-alias remap), and maps the
-  sonnet/haiku alias tiers to `gpt-5.6-sol` at medium/low effort for subagent and
+  sonnet/haiku alias tiers to `gpt-6.1-sol` at medium/low effort for subagent and
   background traffic. A `--model` you pass yourself still wins.
 - `claudex-login`: the one-time interactive OAuth step.
 
@@ -48,7 +48,7 @@ claudex
 
 Change the `gptModelFor*Tier` bindings to swap model or effort. The proxy is open on the
 loopback interface (`api-keys: []`), so `ANTHROPIC_AUTH_TOKEN` in the launcher is a
-placeholder the proxy ignores. The haiku tier maps to `gpt-5.6-sol(low)`; every background
+placeholder the proxy ignores. The haiku tier maps to `gpt-6.1-sol(low)`; every background
 Claude Code call spends subscription usage, so lower it to a cheaper Codex slug if that
 matters.
 
