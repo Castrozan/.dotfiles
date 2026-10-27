@@ -300,8 +300,8 @@ and advances one decoded frame at a time. Repeated random seeks make video captu
 slower than the ordinary software encode. The braille grid is derived from the measured glyph
 advance width, so dots stay square and the source is letterboxed rather than stretched.
 
-Source framing follows the clip. Four of the six declared clips are 640x360 and fill the 16:9
-frame edge to edge; `FtutLA63Cp8` and `djV11Xbc914` are 480x360, so they letterbox to 75% of
+Source framing follows the clip. A 640x360 clip fills the 16:9 frame edge to edge; a 480x360
+clip such as `FtutLA63Cp8` or `djV11Xbc914` letterboxes to 75% of
 the frame width. That is intrinsic to a 4:3 source and is left alone deliberately: cropping
 them to 16:9 costs 12.5% off the top and bottom, which clips heads in roughly two of every
 five sampled frames. Swap the clip rather than crop it.
