@@ -68,6 +68,7 @@ in
     vimAlias = true;
     withPython3 = true;
     withRuby = true;
+    sideloadInitLua = true;
     # on the wrapper rather than in home.sessionVariables: panes inherit the environment of the
     # terminal server they were spawned from, which outlives a rebuild, so a session variable
     # reaches neovim only after that server restarts
