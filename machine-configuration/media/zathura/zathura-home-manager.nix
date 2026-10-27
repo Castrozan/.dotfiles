@@ -4,10 +4,23 @@
   isDarwin,
   ...
 }:
+let
+  zathuraWithoutDisplayServerTests =
+    (latest.zathuraPkgs.overrideScope (
+      _final: previous: {
+        zathura_core = previous.zathura_core.overrideAttrs (previousAttributes: {
+          mesonFlags = previousAttributes.mesonFlags ++ [
+            "-Dtests-x11=disabled"
+            "-Dtests-wayland=disabled"
+          ];
+        });
+      }
+    )).zathuraWrapper;
+in
 {
   programs.zathura = {
     enable = true;
-    package = lib.mkIf isDarwin latest.zathura;
+    package = lib.mkIf isDarwin zathuraWithoutDisplayServerTests;
 
     options = {
       statusbar-h-padding = 0;
