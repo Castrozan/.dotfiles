@@ -21,7 +21,7 @@ def main():
     assert configuration["hooks"]["post_tool_call"] == [
         {"command": arguments.hook_command, "timeout": 20}
     ]
-    assert configuration["model"] == {"provider": "openai-codex", "model": "gpt-5.5"}
+    assert configuration["model"] == {"provider": "openai-codex", "model": "gpt-6.1-sol"}
     assert configuration["agent"]["reasoning_effort"] == "xhigh"
     assert configuration["toolsets"] == ["hermes-cli"]
     instructions = configuration["agent"]["system_prompt"]

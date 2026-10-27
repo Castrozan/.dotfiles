@@ -9,7 +9,7 @@ let
   template = pkgs.writeText "hermes-config-template.yaml" ''
     model:
       provider: openai-codex
-      model: gpt-5.5
+      model: gpt-6.1-sol
     agent:
       reasoning_effort: xhigh
     toolsets:

@@ -132,7 +132,7 @@ in
 
     model = lib.mkOption {
       type = lib.types.str;
-      default = "openai-codex/gpt-5.3-codex";
+      default = "openai-codex/gpt-6.1-sol";
     };
 
     whisperModel = lib.mkOption {

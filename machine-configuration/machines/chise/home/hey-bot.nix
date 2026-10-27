@@ -20,6 +20,6 @@
     gatewayUrl = "http://localhost:18789";
     agentId = "main";
     ttsVoice = "en-US-JennyNeural";
-    model = "openai-codex/gpt-5.3-codex";
+    model = "openai-codex/gpt-6.1-sol";
   };
 }

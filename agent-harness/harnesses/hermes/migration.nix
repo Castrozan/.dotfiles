@@ -10,7 +10,7 @@ let
   agentMemoryEntries = [
     "Machine configuration: Lucas's primary machine is a nix-darwin setup managed from ~/.dotfiles. Rebuild is sudoless through a command-scoped NOPASSWD rule, so a bare sudo probe can fail without implying rebuild needs a password."
     "Hermes configuration: Hermes uses the pinned upstream Nix package with bundled runtime assets. The wrapper regenerates config.yaml and SOUL.md from agent-harness/harnesses/hermes on every launch."
-    "Inference configuration: Hermes uses the openai-codex provider with gpt-5.5 and keeps its own OAuth session in ~/.hermes/auth.json. Adopting ~/.codex/auth.json credentials is an explicit Hermes authentication action; it has no API key to manage."
+    "Inference configuration: Hermes uses the openai-codex provider with gpt-6.1-sol and keeps its own OAuth session in ~/.hermes/auth.json. Adopting ~/.codex/auth.json credentials is an explicit Hermes authentication action; it has no API key to manage."
     "Repository concurrency: Multiple agent sessions work in the dotfiles repository concurrently."
   ];
 

@@ -83,7 +83,7 @@ in
     ];
     modelByHarness = {
       claude = "sonnet";
-      codex = "gpt-5.6-terra";
+      codex = "gpt-6.1-terra";
       opencode = "opencode/ling-3.0-flash-fin-free";
     };
     reasoningEffort = "high";

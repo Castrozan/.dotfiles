@@ -14,7 +14,7 @@
   clawde.agents.ril-watcher = {
     enable = false;
     harness = "codex";
-    model = "gpt-5.6-sol";
+    model = "gpt-6.1-sol";
     reasoningEffort = "high";
     launchOnTrigger = true;
     launchGateIntervalSeconds = 1800;
