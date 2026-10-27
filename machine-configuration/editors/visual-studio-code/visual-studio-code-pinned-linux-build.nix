@@ -1,10 +1,10 @@
 { pkgs }:
 pkgs.vscode.overrideAttrs (previousAttributes: rec {
-  version = "1.119.0";
+  version = "1.143.1";
   src = pkgs.fetchurl {
     name = "VSCode_${version}_linux-x64.tar.gz";
     url = "https://update.code.visualstudio.com/${version}/linux-x64/stable";
-    sha256 = "sha256-HcZIRGB0y8U5huxXN9jNrhMD0Jjmn+QNUU60EHGduXo=";
+    sha256 = "sha256-SPZYBS5U4CChwb57N6wPmuOfB+jM2oBcY/BTz9pysr4=";
   };
   buildInputs =
     previousAttributes.buildInputs

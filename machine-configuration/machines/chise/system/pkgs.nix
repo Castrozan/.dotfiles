@@ -112,7 +112,6 @@
     ++ (with latest; [
       brave
       gemini-cli
-      vscode
     ])
     ++ [
       (import ./vivaldi-codec-lib-path-fixed.nix { vivaldiPackages = latest; })
