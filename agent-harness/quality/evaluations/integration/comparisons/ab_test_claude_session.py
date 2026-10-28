@@ -1,4 +1,3 @@
-import json
 import os
 import subprocess
 import sys
@@ -8,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from integration.comparisons.ab_test_models import SessionTrace, ToolCallEvent  # noqa: E402
+from integration.stream_json_events import decode_stream_json_events  # noqa: E402
 from runner.execution.run_evals_subject_binary import resolve_subject_claude_binary  # noqa: E402
 
 
@@ -15,16 +15,8 @@ def parse_stream_json_output(
     raw_output: str,
 ) -> SessionTrace:
     trace = SessionTrace()
-
-    for line in raw_output.strip().split("\n"):
-        if not line.strip():
-            continue
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
+    for event in decode_stream_json_events(raw_output):
         _append_stream_event(trace, event)
-
     return trace
 
 

@@ -1,10 +1,10 @@
-import json
 import os
 import subprocess
 import time
 from pathlib import Path
 
 from integration_models import SessionTrace, ToolCallEvent
+from stream_json_events import decode_stream_json_events
 
 
 def extract_tool_calls_from_assistant_message(
@@ -62,17 +62,8 @@ def _assistant_text_block_content(block):
 
 def parse_stream_json_output(raw_output: str) -> SessionTrace:
     trace = SessionTrace()
-
-    for line in raw_output.strip().split("\n"):
-        if not line.strip():
-            continue
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-
+    for event in decode_stream_json_events(raw_output):
         _append_stream_event(trace, event)
-
     return trace
 
 
