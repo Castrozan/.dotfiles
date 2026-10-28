@@ -43,8 +43,8 @@
       device = "/dev/disk/by-label/NIXOS_BOOT";
       fsType = "vfat";
       options = [
-        "fmask=0022"
-        "dmask=0022"
+        "fmask=0077"
+        "dmask=0077"
       ];
     };
     "/home/zanoni/arr-stack/data" = {
