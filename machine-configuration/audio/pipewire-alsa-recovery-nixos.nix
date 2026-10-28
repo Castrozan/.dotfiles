@@ -14,6 +14,7 @@ in
     description = "Recover PipeWire after persistent ALSA recovery failures";
     after = [ "pipewire.service" ];
     wantedBy = [ "default.target" ];
+    unitConfig.ConditionGroup = "!gdm";
     path = [ pkgs.systemd ];
     serviceConfig = {
       ExecStart = "${pkgs.python312}/bin/python3 -u ${recoveryProgram}";

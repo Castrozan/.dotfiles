@@ -87,7 +87,19 @@
   };
 
   programs = {
-    dconf.enable = true;
+    dconf = {
+      enable = true;
+      profiles.user.databases = [
+        {
+          settings."org/gnome/settings-daemon/plugins/power" = {
+            sleep-inactive-ac-type = "nothing";
+            sleep-inactive-battery-type = "nothing";
+            sleep-inactive-ac-timeout = lib.gvariant.mkInt32 0;
+            sleep-inactive-battery-timeout = lib.gvariant.mkInt32 0;
+          };
+        }
+      ];
+    };
     command-not-found.enable = false;
     ssh.enableAskPassword = false;
   };
@@ -104,7 +116,10 @@
         variant = "nodeadkeys";
       };
     };
-    displayManager.gdm.enable = true;
+    displayManager.gdm = {
+      enable = true;
+      autoSuspend = false;
+    };
     desktopManager.gnome.enable = true;
 
     printing.enable = true;

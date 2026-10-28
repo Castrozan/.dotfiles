@@ -92,6 +92,7 @@ in
         Service = {
           ExecStart = browserServer;
           ExecStartPost = browserReady;
+          SuccessExitStatus = 143;
           TimeoutStartSec = 90;
           TimeoutStopSec = 30;
           Restart = "on-failure";

@@ -30,8 +30,9 @@ in
         && recoveryService.partOf == [ ]
         && recoveryService.serviceConfig.Restart == "on-failure"
         && recoveryService.serviceConfig.MemoryMax == "64M"
+        && recoveryService.unitConfig.ConditionGroup == "!gdm"
       )
-      "the ALSA failure monitor must start with the user session and survive audio restarts with bounded resources";
+      "the ALSA failure monitor must start with the user session, skip the login screen greeter whose journal it cannot read, and survive audio restarts with bounded resources";
 
   domain-audio-streams-follow-default =
     mkEvalCheck "domain-audio-streams-follow-default"
