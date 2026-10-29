@@ -1,5 +1,6 @@
 # NixOS configuration for zanoni
 {
+  config,
   lib,
   pkgs,
   inputs,
@@ -86,6 +87,11 @@ in
       portalPackage =
         inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     };
+    uwsm.waylandCompositors.hyprland-session = {
+      prettyName = "Hyprland";
+      comment = "Hyprland managed by uwsm";
+      binPath = "${config.programs.hyprland.package}/bin/start-hyprland";
+    };
     # Allows running uncompiled binaries from npm, pip and other packages
     nix-ld = {
       enable = true;
@@ -101,6 +107,7 @@ in
 
   # Services
   services = {
+    displayManager.defaultSession = "hyprland-session-uwsm";
     flatpak.enable = true;
     hypridle.enable = lib.mkForce false;
     tailscale = {

@@ -48,8 +48,13 @@ in
 
   domain-hyprland-session-is-managed-by-uwsm =
     mkEvalCheck "domain-hyprland-session-is-managed-by-uwsm"
-      (chiseSystem.programs.hyprland.withUWSM && chiseSystem.programs.uwsm.enable)
-      "chise must launch Hyprland through uwsm. Without it nothing activates graphical-session.target or clears WAYLAND_DISPLAY from the user manager when the compositor exits, so every unit gated on that variable keeps starting into a dead compositor and xdg-desktop-portal-hyprland restart-loops until the next login";
+      (
+        chiseSystem.programs.hyprland.withUWSM
+        && chiseSystem.programs.uwsm.enable
+        && chiseSystem.services.displayManager.defaultSession == "hyprland-session-uwsm"
+        && lib.hasPrefix "/nix/store/" chiseSystem.programs.uwsm.waylandCompositors.hyprland-session.binPath
+      )
+      "chise must launch Hyprland through uwsm by default, from the session entry the NixOS uwsm module writes with absolute paths. Without uwsm nothing activates graphical-session.target or clears WAYLAND_DISPLAY from the user manager when the compositor exits, so every unit gated on that variable keeps starting into a dead compositor and xdg-desktop-portal-hyprland restart-loops until the next login. The entry Hyprland ships instead resolves a bare `uwsm` through TryExec on the GDM daemon PATH, which lacks it, so GDM drops the login as never registered";
 
   domain-hyprland-logout-stops-the-uwsm-session =
     mkEvalCheck "domain-hyprland-logout-stops-the-uwsm-session"
