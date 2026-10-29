@@ -104,8 +104,9 @@ class TestCheckBaselineFreshnessIsTheCallersChoice:
             assert rebuild_benchmarks.baseline.check_baseline(False) is True
 
     def test_rejects_a_stale_baseline_when_freshness_is_required(
-        self, tmp_path, capsys
+        self, tmp_path, capsys, monkeypatch
     ):
+        monkeypatch.setenv("DOTFILES_BENCHMARK_HOST", "kira")
         baseline_file = tmp_path / "stale.json"
         stale = _valid_baseline()
         stale["generated_at"] = "2024-01-01T00:00:00+00:00"
@@ -115,3 +116,15 @@ class TestCheckBaselineFreshnessIsTheCallersChoice:
             assert rebuild_benchmarks.baseline.check_baseline(True) is False
 
         assert "days old" in capsys.readouterr().out
+
+    def test_accepts_a_stale_baseline_recorded_by_another_host(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.setenv("DOTFILES_BENCHMARK_HOST", "chise")
+        baseline_file = tmp_path / "stale.json"
+        stale = _valid_baseline()
+        stale["generated_at"] = "2024-01-01T00:00:00+00:00"
+        baseline_file.write_text(json.dumps(stale))
+
+        with patch.object(rebuild_benchmarks.baseline, "BASELINE_PATH", baseline_file):
+            assert rebuild_benchmarks.baseline.check_baseline(True) is True

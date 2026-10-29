@@ -78,8 +78,10 @@ def check_baseline(require_fresh: bool) -> bool:
         SAVE_BASELINE_COMMAND,
     )
     if require_fresh:
-        validation = benchmark_baseline.with_freshness_required(
-            validation, SAVE_BASELINE_COMMAND
+        validation = benchmark_baseline.with_freshness_required_on_owning_host(
+            validation,
+            SAVE_BASELINE_COMMAND,
+            benchmark_core.configured_benchmark_host(),
         )
     for line in benchmark_report.baseline_report_lines(
         "REBUILD PERFORMANCE BASELINE CHECK", validation

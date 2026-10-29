@@ -81,7 +81,10 @@ def test_a_stale_baseline_fails_only_where_it_can_be_recaptured(
 
     integration = run_tier_function(tier_function, checkout_root, bin_directory)
     owning_host = run_tier_function(
-        tier_function, checkout_root, bin_directory, "--require-fresh"
+        tier_function, checkout_root, bin_directory, "--require-fresh", "kira"
+    )
+    other_host = run_tier_function(
+        tier_function, checkout_root, bin_directory, "--require-fresh", "chise"
     )
 
     assert integration.returncode == 0, (
@@ -93,6 +96,11 @@ def test_a_stale_baseline_fails_only_where_it_can_be_recaptured(
         "the performance tier runs on the owning host, the one place that can "
         "recapture the measurement, so staleness must fail there.\n"
         f"stdout: {owning_host.stdout}\nstderr: {owning_host.stderr}"
+    )
+    assert other_host.returncode == 0, (
+        "a host that did not record the baseline cannot retake it, so its nightly "
+        "must not fail on the baseline's age.\n"
+        f"stdout: {other_host.stdout}\nstderr: {other_host.stderr}"
     )
     assert "days old" in owning_host.stdout, (
         "the failure must name the age that made the tracked baseline unusable.\n"

@@ -109,6 +109,7 @@ def run_tier_function(
     checkout_root: pathlib.Path,
     bin_directory: pathlib.Path,
     tier_arguments: str = "",
+    running_host: str = "",
 ):
     return subprocess.run(
         [
@@ -120,6 +121,7 @@ def run_tier_function(
             "PATH": str(bin_directory),
             "HOME": str(checkout_root.parent),
             "REPO_DIR": str(checkout_root),
+            "DOTFILES_BENCHMARK_HOST": running_host,
         },
         capture_output=True,
         text=True,

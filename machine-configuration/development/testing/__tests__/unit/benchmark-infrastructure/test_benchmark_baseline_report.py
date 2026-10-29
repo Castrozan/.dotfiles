@@ -8,6 +8,7 @@ from benchmark_baseline import (
     BaselineValidation,
     compare_measured_values,
     with_freshness_required,
+    with_freshness_required_on_owning_host,
 )
 from benchmark_report import baseline_report_lines
 
@@ -56,6 +57,26 @@ class TestFreshnessRequirement:
         gated = with_freshness_required(_validation(["structural"], 45), SAVE_COMMAND)
         assert gated.failures[0] == "structural"
         assert len(gated.failures) == 2
+
+
+class TestFreshnessRequirementOnTheOwningHost:
+    def test_rejects_a_stale_baseline_on_the_host_that_recorded_it(self):
+        gated = with_freshness_required_on_owning_host(
+            _validation([], age_days=45), SAVE_COMMAND, "kira"
+        )
+        assert "45 days old" in gated.failures[0]
+
+    def test_leaves_a_stale_baseline_alone_on_a_host_that_cannot_retake_it(self):
+        gated = with_freshness_required_on_owning_host(
+            _validation([], age_days=45), SAVE_COMMAND, "chise"
+        )
+        assert gated.failures == []
+
+    def test_leaves_a_stale_baseline_alone_when_the_running_host_is_unknown(self):
+        gated = with_freshness_required_on_owning_host(
+            _validation([], age_days=45), SAVE_COMMAND, ""
+        )
+        assert gated.failures == []
 
 
 class TestBaselineReportLines:

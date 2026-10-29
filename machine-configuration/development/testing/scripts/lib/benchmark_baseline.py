@@ -57,6 +57,16 @@ def with_freshness_required(
     )
 
 
+def with_freshness_required_on_owning_host(
+    validation: BaselineValidation,
+    save_baseline_command: str,
+    running_host: str,
+) -> BaselineValidation:
+    if validation.document.get("host") != running_host:
+        return validation
+    return with_freshness_required(validation, save_baseline_command)
+
+
 def _freshness_failures(
     age_days: int | None,
     save_baseline_command: str,

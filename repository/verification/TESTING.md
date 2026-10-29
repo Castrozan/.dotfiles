@@ -142,7 +142,9 @@ clear it: clearing it means retaking the measurement, and the nix packaging inje
 therefore never benchmarks — a shared runner's numbers describe no machine this
 repository configures. The nightly deep tiers run `--perf` on the owning host itself,
 so an expired baseline surfaces in the steward inbox on the one machine that can
-retake it, instead of waiting for someone to type the flag.
+retake it, instead of waiting for someone to type the flag. A host never fails on a
+baseline another host recorded: the age gate applies only where `DOTFILES_BENCHMARK_HOST`
+equals the baseline's recorded `host`.
 
 The nightly runner owns every tier continuous integration cannot reach:
 `--integration-scripts`, `--runtime`, `--perf`, `--integration` and `--e2e`. The last
