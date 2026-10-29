@@ -10,8 +10,8 @@ Read [interactive communication](references/interactive-communication.md) for se
 ### Reader understanding policy
 
 Use the full session to supply only the earlier facts needed to understand the answer and act; assume progress updates
-were unread. Honor requested brevity or form, including literal-only output, and stop when the request is answered. Do
-not disguise ordinary replies as JSON to bypass checks.
+were unread. Honor requested brevity or form, including literal-only output, and stop when the request is answered. Lead
+with the requested answer or action. Do not disguise ordinary replies as JSON to bypass checks.
 
 Explain choices through who acts, what changes, scope, and material tradeoffs before internal rationale.
 
@@ -30,10 +30,11 @@ verification and decision thresholds.
 
 ### Representation selection
 
-Choose the smallest useful form: prose for a linear answer, lists for steps, tables for comparisons, diffs for exact
-edits, trees for ownership, state models for transitions, and diagrams or sequences for dependencies and failure paths.
-Show material actors and relationships with necessary context, without repeating a visual’s contents in prose or
-wrapping paragraphs in table rows.
+Choose the smallest useful form: prose for a linear answer, lists for steps, tables for comparisons or exact mappings, a
+compact before-and-after contrast for the same mechanism across a change, focused diffs for exact edits to an existing
+shape, trees for ownership or hierarchy, state models for transitions, and diagrams or sequences for dependencies and
+failure paths. Show material actors and relationships with necessary context, without repeating a visual’s contents in
+prose or wrapping paragraphs in table rows.
 
 ### Confusion recovery
 
@@ -47,4 +48,5 @@ Match demonstrated expertise and preserve a natural voice; remove filler and unr
 
 ### Procedures and explanations
 
-Make procedures complete and ordered from their steps alone, with prerequisites and hazards before the affected actions.
+Make procedures complete and ordered from their steps alone; retain every required action, including the final action.
+Put prerequisites and hazards before the affected actions.
