@@ -79,6 +79,7 @@ in
     hyprland = {
       enable = true;
       xwayland.enable = true;
+      withUWSM = true;
       package = import ../../../desktop/desktop-environments/hyprland/build/patched-hyprland.nix {
         inherit pkgs inputs;
       };

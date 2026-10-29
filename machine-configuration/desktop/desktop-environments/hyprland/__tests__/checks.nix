@@ -2,10 +2,19 @@
   helpers,
   pkgs,
   lib,
+  self,
   ...
 }:
 let
   inherit (helpers) mkEvalCheck;
+
+  chiseSystem = self.nixosConfigurations.chise.config;
+
+  wlogoutConfiguration = helpers.homeManagerTestConfiguration [ ../session/wlogout.nix ];
+
+  wlogoutLogoutAction =
+    (lib.findFirst (entry: entry.label == "logout") null wlogoutConfiguration.programs.wlogout.layout)
+    .action;
 
   cfg = helpers.homeManagerTestConfiguration [ ../session/graphical-services-activation.nix ];
 
@@ -36,4 +45,17 @@ in
     mkEvalCheck "domain-hyprland-summon-chrome-global-uses-hardware-video-decoding-workaround"
       (lib.hasInfix "google-chrome-without-broken-hardware-video-decoding" summonChromeGlobalPackage.text)
       "hypr-summon-chrome-global prepends its own Chrome to PATH before exec'ing google-chrome-stable, so it must point at the wrapped Chrome. Pointing it at latest.google-chrome instead shadows the wrapper for the launcher that actually starts the everyday browser, and HEVC playback silently breaks again while the desktop entry looks correctly configured";
+
+  domain-hyprland-session-is-managed-by-uwsm =
+    mkEvalCheck "domain-hyprland-session-is-managed-by-uwsm"
+      (chiseSystem.programs.hyprland.withUWSM && chiseSystem.programs.uwsm.enable)
+      "chise must launch Hyprland through uwsm. Without it nothing activates graphical-session.target or clears WAYLAND_DISPLAY from the user manager when the compositor exits, so every unit gated on that variable keeps starting into a dead compositor and xdg-desktop-portal-hyprland restart-loops until the next login";
+
+  domain-hyprland-logout-stops-the-uwsm-session =
+    mkEvalCheck "domain-hyprland-logout-stops-the-uwsm-session"
+      (
+        lib.hasInfix "uwsm check is-active" wlogoutLogoutAction
+        && lib.hasInfix "uwsm stop" wlogoutLogoutAction
+      )
+      "Logout must call `uwsm stop` when the session is uwsm-managed. The Hyprland exit dispatcher pulls the compositor out from under its clients and skips the ordered unit shutdown that clears the session environment; it stays only as the fallback for sessions started without uwsm";
 }

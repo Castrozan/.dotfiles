@@ -12,7 +12,7 @@
       }
       {
         label = "logout";
-        action = "hyprctl dispatch exit";
+        action = "if uwsm check is-active; then uwsm stop; else hyprctl dispatch exit; fi";
         text = "Logout";
         keybind = "E";
       }
