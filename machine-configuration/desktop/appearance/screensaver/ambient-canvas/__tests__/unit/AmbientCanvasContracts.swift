@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 
 @main
@@ -32,6 +33,14 @@ enum AmbientCanvasContracts {
     let single = AmbientCanvasShuffledSegmentOrder(sequenceIdentifiers: ["sequence", "sequence"])
     precondition(
       (0..<3).map { _ in single.nextSegmentIndices() } == [[0, 1], [0, 1], [0, 1]])
+    let empty = AmbientCanvasShuffledSegmentOrder(sequenceIdentifiers: [])
+    precondition(empty.nextSegmentIndices().isEmpty)
+    let emptyPlayback = AmbientCanvasShuffledSegmentPlayback(
+      player: AVQueuePlayer(),
+      segments: [],
+      segmentFileUrls: [],
+      playbackDwellOverrideFileUrl: override)
+    emptyPlayback.startFirstSegment()
     let order = AmbientCanvasShuffledSegmentOrder(sequenceIdentifiers: ["birds", "birds", nil, ""])
     var previousChoice: Int?
     var birdSegments: [Int] = []

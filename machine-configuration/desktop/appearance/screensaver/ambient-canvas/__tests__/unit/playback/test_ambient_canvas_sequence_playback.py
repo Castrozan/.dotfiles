@@ -40,6 +40,12 @@ def test_video_sequence_chunks_stay_together_as_one_shuffle_choice():
     ]
 
 
+def test_empty_segment_order_returns_no_indices():
+    segment_order = shuffle_order.ShuffledSegmentOrder([], DeterministicRandomSource())
+
+    assert segment_order.next_segment_indices() == []
+
+
 def test_linux_player_finishes_each_sequence_before_choosing_another():
     assert "for segment_index in segment_order.next_segment_indices():" in (
         PYTHON_PLAYBACK_SOURCE
