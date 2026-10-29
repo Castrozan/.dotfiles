@@ -6,12 +6,12 @@ settings:
   canonical_judge_harness: codex
   subject_models:
     claude: haiku
-    codex: gpt-5.6-sol
+    codex: gpt-6.1-sol
   subject_reasoning_efforts:
     codex: high
   judge_models:
     claude: opus
-    codex: gpt-5.6-luna
+    codex: gpt-6-luna
   judge_reasoning_efforts:
     codex: high
   timeout_seconds: 120
