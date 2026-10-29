@@ -24,29 +24,29 @@ def test_shuffled_segment_order_visits_every_segment_before_repeating():
     segment_order = shuffle_order.ShuffledSegmentOrder(
         [None, None, None], DeterministicRandomSource([2, 0, 1])
     )
-    visited = [segment_order.next_segment_index() for _ in range(3)]
-    assert sorted(visited) == [0, 1, 2]
+    visited = [segment_order.next_segment_indices() for _ in range(3)]
+    assert sorted(visited) == [[0], [1], [2]]
 
 
 def test_shuffled_segment_order_refills_after_one_cycle():
     segment_order = shuffle_order.ShuffledSegmentOrder(
         [None, None], DeterministicRandomSource([1, 0])
     )
-    assert segment_order.next_segment_index() == 1
-    assert segment_order.next_segment_index() == 0
-    assert segment_order.next_segment_index() == 1
+    assert segment_order.next_segment_indices() == [1]
+    assert segment_order.next_segment_indices() == [0]
+    assert segment_order.next_segment_indices() == [1]
 
 
 def test_shuffled_segment_order_never_repeats_across_the_seam():
     order_one = shuffle_order.ShuffledSegmentOrder(
         [None, None, None], DeterministicRandomSource([2, 0, 1])
     )
-    assert order_one.next_segment_index() == 2
-    assert order_one.next_segment_index() == 0
-    refilled = shuffle_order.ShuffledSegmentOrder(
-        [None, None, None], DeterministicRandomSource([2, 0, 1])
-    )
-    assert refilled.next_segment_index() == 2
+    assert [order_one.next_segment_indices() for _ in range(4)] == [
+        [2],
+        [0],
+        [1],
+        [2],
+    ]
 
 
 def test_dwell_override_reads_the_requested_value_from_the_file(tmp_path):

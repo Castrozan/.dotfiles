@@ -80,14 +80,14 @@ def play_shuffled_loop(mpv_client, segments, segment_file_paths, dwell_override_
         [segment.get("sequence") for segment in segments]
     )
     while True:
-        segment_index = segment_order.next_segment_index()
-        segment = segments[segment_index]
-        mpv_client.send_command(
-            ["loadfile", segment_file_paths[segment_index], "replace"]
-        )
-        dwell = resolve_segment_dwell(segment, dwell_override_path)
-        mpv_client.send_command(["set_property", "length", str(dwell)])
-        wait_for_end_of_file(mpv_client)
+        for segment_index in segment_order.next_segment_indices():
+            segment = segments[segment_index]
+            mpv_client.send_command(
+                ["loadfile", segment_file_paths[segment_index], "replace"]
+            )
+            dwell = resolve_segment_dwell(segment, dwell_override_path)
+            mpv_client.send_command(["set_property", "length", str(dwell)])
+            wait_for_end_of_file(mpv_client)
 
 
 def run_player(segment_manifest_path, playback_dwell_override_path):

@@ -19,24 +19,17 @@ class ShuffledSegmentOrder:
                 choice_index = len(self.segment_indices_by_choice)
                 self.segment_indices_by_choice.append([])
             self.segment_indices_by_choice[choice_index].append(segment_index)
-        self.next_segment_position_by_choice = [
-            0 for _ in self.segment_indices_by_choice
-        ]
         self.remaining_choice_indices = []
         self.previously_played_choice_index = None
 
-    def next_segment_index(self):
+    def next_segment_indices(self):
+        if not self.segment_indices_by_choice:
+            return []
         if not self.remaining_choice_indices:
             self.refill_avoiding_immediate_repeat()
         chosen_choice_index = self.remaining_choice_indices.pop(0)
-        segment_indices = self.segment_indices_by_choice[chosen_choice_index]
-        segment_position = self.next_segment_position_by_choice[chosen_choice_index]
-        chosen_segment_index = segment_indices[segment_position]
-        self.next_segment_position_by_choice[chosen_choice_index] = (
-            segment_position + 1
-        ) % len(segment_indices)
         self.previously_played_choice_index = chosen_choice_index
-        return chosen_segment_index
+        return list(self.segment_indices_by_choice[chosen_choice_index])
 
     def refill_avoiding_immediate_repeat(self):
         choice_count = len(self.segment_indices_by_choice)

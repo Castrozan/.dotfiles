@@ -30,23 +30,25 @@ enum AmbientCanvasContracts {
           recordedDwellSeconds: 30, readFrom: override) == expected)
     }
     let single = AmbientCanvasShuffledSegmentOrder(sequenceIdentifiers: ["sequence", "sequence"])
-    precondition((0..<6).map { _ in single.nextSegmentIndex() } == [0, 1, 0, 1, 0, 1])
+    precondition(
+      (0..<3).map { _ in single.nextSegmentIndices() } == [[0, 1], [0, 1], [0, 1]])
     let order = AmbientCanvasShuffledSegmentOrder(sequenceIdentifiers: ["birds", "birds", nil, ""])
     var previousChoice: Int?
     var birdSegments: [Int] = []
     for _ in 0..<30 {
       var choices = Set<Int>()
       for _ in 0..<3 {
-        let segment = order.nextSegmentIndex()
-        let choice = segment < 2 ? 0 : segment
+        let segmentIndices = order.nextSegmentIndices()
+        let choice = segmentIndices[0] < 2 ? 0 : segmentIndices[0]
         precondition(choice != previousChoice)
         precondition(choices.insert(choice).inserted)
-        if segment < 2 { birdSegments.append(segment) }
+        precondition(segmentIndices == (choice == 0 ? [0, 1] : [choice]))
+        if choice == 0 { birdSegments.append(contentsOf: segmentIndices) }
         previousChoice = choice
       }
       precondition(choices == [0, 2, 3])
     }
-    precondition(birdSegments == (0..<30).map { $0 % 2 })
+    precondition(birdSegments == Array(repeating: [0, 1], count: 30).flatMap { $0 })
     print("Ambient canvas manifest, dwell and shuffle contracts passed")
   }
 }

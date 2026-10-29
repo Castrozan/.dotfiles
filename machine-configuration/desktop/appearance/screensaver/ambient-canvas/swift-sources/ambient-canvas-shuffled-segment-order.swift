@@ -2,7 +2,6 @@ import Foundation
 
 final class AmbientCanvasShuffledSegmentOrder {
     private let segmentIndicesByChoice: [[Int]]
-    private var nextSegmentPositionByChoice: [Int]
     private var remainingChoiceIndices: [Int] = []
     private var previouslyPlayedChoiceIndex: Int?
 
@@ -26,24 +25,18 @@ final class AmbientCanvasShuffledSegmentOrder {
             resolvedSegmentIndicesByChoice[choiceIndex].append(segmentIndex)
         }
         segmentIndicesByChoice = resolvedSegmentIndicesByChoice
-        nextSegmentPositionByChoice = Array(
-            repeating: 0,
-            count: resolvedSegmentIndicesByChoice.count
-        )
     }
 
-    func nextSegmentIndex() -> Int {
+    func nextSegmentIndices() -> [Int] {
+        guard !segmentIndicesByChoice.isEmpty else {
+            return []
+        }
         if remainingChoiceIndices.isEmpty {
             refillAvoidingImmediateRepeat()
         }
         let chosenChoiceIndex = remainingChoiceIndices.removeFirst()
-        let segmentIndices = segmentIndicesByChoice[chosenChoiceIndex]
-        let segmentPosition = nextSegmentPositionByChoice[chosenChoiceIndex]
-        let chosenSegmentIndex = segmentIndices[segmentPosition]
-        nextSegmentPositionByChoice[chosenChoiceIndex] =
-            (segmentPosition + 1) % segmentIndices.count
         previouslyPlayedChoiceIndex = chosenChoiceIndex
-        return chosenSegmentIndex
+        return segmentIndicesByChoice[chosenChoiceIndex]
     }
 
     private func refillAvoidingImmediateRepeat() {

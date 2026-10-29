@@ -10,6 +10,7 @@ final class AmbientCanvasShuffledSegmentPlayback {
     private let playbackDwellOverrideFileUrl: URL
     private let segmentOrder: AmbientCanvasShuffledSegmentOrder
     private var segmentIndexByPlayerItem: [ObjectIdentifier: Int] = [:]
+    private var pendingSegmentIndices: [Int] = []
     private var currentSegmentObservation: NSKeyValueObservation?
     private var segmentDwellObserver: Any?
     private var isPlaybackSuspended = false
@@ -70,7 +71,13 @@ final class AmbientCanvasShuffledSegmentPlayback {
 
     private func fillSegmentQueue() {
         while player.items().count < Self.queuedSegmentLookahead {
-            let segmentIndex = segmentOrder.nextSegmentIndex()
+            if pendingSegmentIndices.isEmpty {
+                pendingSegmentIndices = segmentOrder.nextSegmentIndices()
+            }
+            guard !pendingSegmentIndices.isEmpty else {
+                return
+            }
+            let segmentIndex = pendingSegmentIndices.removeFirst()
             let playerItem = AVPlayerItem(asset: segmentAssets[segmentIndex])
             segmentIndexByPlayerItem[ObjectIdentifier(playerItem)] = segmentIndex
             player.insert(playerItem, after: nil)
