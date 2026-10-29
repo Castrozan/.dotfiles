@@ -58,4 +58,14 @@ in
         && lib.hasInfix "uwsm stop" wlogoutLogoutAction
       )
       "Logout must call `uwsm stop` when the session is uwsm-managed. The Hyprland exit dispatcher pulls the compositor out from under its clients and skips the ordered unit shutdown that clears the session environment; it stays only as the fallback for sessions started without uwsm";
+
+  domain-hyprland-is-the-only-desktop-session =
+    mkEvalCheck "domain-hyprland-is-the-only-desktop-session"
+      (
+        !chiseSystem.services.desktopManager.gnome.enable
+        && chiseSystem.services.gnome.gnome-keyring.enable
+        && chiseSystem.services.upower.enable
+        && chiseSystem.security.polkit.enable
+      )
+      "chise runs only Hyprland. With the GNOME desktop enabled GDM falls back to the GNOME session whenever the uwsm entry is unavailable, landing the login in a desktop nothing here is configured for. The keyring, UPower and polkit that GNOME used to pull in stay enabled on their own because the Hyprland session unlocks the login keyring, the quickshell battery reads UPower and the polkit agent needs polkit";
 }
