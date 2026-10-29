@@ -104,10 +104,6 @@
         variant = "nodeadkeys";
       };
     };
-    displayManager.gdm = {
-      enable = true;
-      autoSuspend = false;
-    };
     gnome.gnome-keyring.enable = true;
     upower.enable = true;
 

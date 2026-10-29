@@ -51,10 +51,13 @@ in
       (
         chiseSystem.programs.hyprland.withUWSM
         && chiseSystem.programs.uwsm.enable
-        && chiseSystem.services.displayManager.defaultSession == "hyprland-session-uwsm"
-        && lib.hasPrefix "/nix/store/" chiseSystem.programs.uwsm.waylandCompositors.hyprland-session.binPath
+        && chiseSystem.services.greetd.enable
+        && !chiseSystem.services.displayManager.gdm.enable
+        && lib.hasInfix "/bin/uwsm start -F -- /nix/store/" chiseSystem.services.greetd.settings.default_session.command
+        && lib.hasInfix "/bin/start-hyprland" chiseSystem.services.greetd.settings.default_session.command
+        && chiseSystem.security.pam.services.greetd.enableGnomeKeyring
       )
-      "chise must launch Hyprland through uwsm by default, from the session entry the NixOS uwsm module writes with absolute paths. Without uwsm nothing activates graphical-session.target or clears WAYLAND_DISPLAY from the user manager when the compositor exits, so every unit gated on that variable keeps starting into a dead compositor and xdg-desktop-portal-hyprland restart-loops until the next login. The entry Hyprland ships instead resolves a bare `uwsm` through TryExec on the GDM daemon PATH, which lacks it, so GDM drops the login as never registered";
+      "chise must log in through greetd straight into Hyprland under uwsm, by absolute path. Without uwsm nothing activates graphical-session.target or clears WAYLAND_DISPLAY from the user manager when the compositor exits, so every unit gated on that variable keeps starting into a dead compositor and xdg-desktop-portal-hyprland restart-loops until the next login. GDM brought a GNOME greeter that idle-suspended the machine and rejected the uwsm entry Hyprland ships, whose bare `uwsm` TryExec it resolves on a PATH that lacks it. The greetd PAM stack must unlock the login keyring the session's secret service relies on";
 
   domain-hyprland-logout-stops-the-uwsm-session =
     mkEvalCheck "domain-hyprland-logout-stops-the-uwsm-session"

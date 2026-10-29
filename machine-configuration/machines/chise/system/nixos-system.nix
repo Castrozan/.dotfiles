@@ -87,11 +87,6 @@ in
       portalPackage =
         inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     };
-    uwsm.waylandCompositors.hyprland-session = {
-      prettyName = "Hyprland";
-      comment = "Hyprland managed by uwsm";
-      binPath = "${config.programs.hyprland.package}/bin/start-hyprland";
-    };
     # Allows running uncompiled binaries from npm, pip and other packages
     nix-ld = {
       enable = true;
@@ -105,9 +100,21 @@ in
     };
   };
 
+  security.pam.services.greetd.enableGnomeKeyring = true;
+
   # Services
   services = {
-    displayManager.defaultSession = "hyprland-session-uwsm";
+    greetd = {
+      enable = true;
+      settings.default_session.command = lib.concatStringsSep " " [
+        (lib.getExe pkgs.tuigreet)
+        "--time"
+        "--remember"
+        "--asterisks"
+        "--cmd"
+        "'${lib.getExe config.programs.uwsm.package} start -F -- ${config.programs.hyprland.package}/bin/start-hyprland'"
+      ];
+    };
     flatpak.enable = true;
     hypridle.enable = lib.mkForce false;
     tailscale = {
