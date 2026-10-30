@@ -8,6 +8,11 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from chrome_devtools_arguments import (
+    headless_requested,
+    inspection_requested,
+    validate_session_arguments,
+)
 from chrome_devtools_attached_retention import keeps_attached_worker
 from chrome_devtools_session import ChromeDevtoolsSession
 from chrome_devtools_connect import connect
@@ -56,23 +61,6 @@ class ChromeDevtoolsConfiguration:
         ]
 
 
-def following_argument(arguments, index):
-    return arguments[index + 1] if index + 1 < len(arguments) else "true"
-
-
-def headless_requested(arguments):
-    enabled = False
-    for index, argument in enumerate(arguments):
-        if argument.startswith("--headless="):
-            enabled = argument.partition("=")[2].lower() == "true"
-        elif argument == "--headless":
-            value = following_argument(arguments, index)
-            enabled = value.lower() != "false"
-        elif argument == "--no-headless":
-            enabled = False
-    return enabled
-
-
 def upstream_command(configuration, session, arguments):
     return [
         configuration.upstream_executable,
@@ -106,20 +94,9 @@ def stop_worker(configuration, session, timeout=15):
     return 0
 
 
-def validate_session_arguments(arguments):
-    if any(argument.startswith("--sessionId") for argument in arguments):
-        raise ValueError("Chrome DevTools session ownership is managed automatically")
-
-
 def unused_cleanup(session, operation):
     return operation == "cleanup" and (
         not session.automatic_cleanup or not session.state_file.exists()
-    )
-
-
-def inspection_requested(arguments, operation):
-    return (
-        not arguments or "--help" in arguments or operation in ("--version", "status")
     )
 
 
@@ -164,12 +141,16 @@ def invoke_browser(configuration, session, arguments, operation):
     return os.execv(configuration.upstream_executable, command)
 
 
+def stop_or_clean_up_worker(configuration, session, arguments, operation):
+    with session.locked():
+        if operation == "cleanup" and keeps_attached_worker(session, arguments[1:]):
+            return 0
+        return stop_worker(configuration, session)
+
+
 def run_worker_operation(configuration, session, arguments, operation):
     if operation in ("stop", "cleanup"):
-        with session.locked():
-            if operation == "cleanup" and keeps_attached_worker(session, arguments[1:]):
-                return 0
-            return stop_worker(configuration, session)
+        return stop_or_clean_up_worker(configuration, session, arguments, operation)
     if inspection_requested(arguments, operation):
         return inspect_worker(configuration, session, arguments, operation)
     attached = not (operation == "start" and headless_requested(arguments[1:]))

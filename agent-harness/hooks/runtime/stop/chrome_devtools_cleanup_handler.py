@@ -1,16 +1,21 @@
 import shutil
 import subprocess
 
-ATTACHED_WORKER_IDLE_EXPIRY_SECONDS = 1800
-
 from herdr_pane_client import belongs_to_a_subagent
 from hook_dispatch import HandlerResult
+
+ATTACHED_WORKER_IDLE_EXPIRY_SECONDS = 1800
 
 
 def cleanup_failure_reason(command):
     try:
         result = subprocess.run(
-            [command, "cleanup", "--keep-attached-for", str(ATTACHED_WORKER_IDLE_EXPIRY_SECONDS)],
+            [
+                command,
+                "cleanup",
+                "--keep-attached-for",
+                str(ATTACHED_WORKER_IDLE_EXPIRY_SECONDS),
+            ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
             text=True,
