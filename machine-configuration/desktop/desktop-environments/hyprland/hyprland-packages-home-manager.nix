@@ -21,7 +21,7 @@ in
 
         wl-clipboard
         hyprpaper
-        swww
+        awww
         libnotify
         pamixer
         bemoji

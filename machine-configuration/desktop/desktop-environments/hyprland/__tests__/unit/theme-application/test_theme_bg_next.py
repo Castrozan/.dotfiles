@@ -141,6 +141,6 @@ class TestShowNoWallpapersFallback:
                 ["notify-send", "No wallpapers found", "-t", "2000"]
             )
             mock_run.assert_any_call(
-                ["swww", "clear", "000000"],
+                ["awww", "clear", "000000"],
                 capture_output=True,
             )

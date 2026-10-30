@@ -6,7 +6,7 @@ import theme_bg_apply
 
 
 class TestApplyCurrentBackground:
-    """Uses swww instead of hyprpaper because hyprpaper cannot load GIF wallpapers."""
+    """Uses awww instead of hyprpaper because hyprpaper cannot load GIF wallpapers."""
 
     def test_exits_when_no_symlink(self, tmp_path, monkeypatch):
         monkeypatch.setattr(
@@ -26,7 +26,7 @@ class TestApplyCurrentBackground:
             with pytest.raises(SystemExit):
                 theme_bg_apply.apply_current_background()
 
-    def test_uses_swww_with_no_transition_for_quickshell_overlay(
+    def test_uses_awww_with_no_transition_for_quickshell_overlay(
         self, tmp_path, monkeypatch
     ):
         bg_file = tmp_path / "wallpaper.png"
@@ -40,7 +40,7 @@ class TestApplyCurrentBackground:
 
             mock_run.assert_called_once_with(
                 [
-                    "swww",
+                    "awww",
                     "img",
                     str(bg_link),
                     "--resize",

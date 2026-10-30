@@ -98,4 +98,11 @@ in
     mkEvalCheck "domain-hyprland-session-services-stop-with-the-session"
       (chiseSessionServicesNotStoppedWithTheSession == [ ])
       "Every user service wanted by graphical-session.target must also be PartOf it, so `uwsm stop` and compositor crashes stop it with the session. Otherwise it outlives Hyprland, crashes on the vanished Wayland socket and Restart= loops it into a failed unit, because automatic restarts skip ConditionEnvironment. Offending services: ${toString chiseSessionServicesNotStoppedWithTheSession}";
+
+  domain-hyprland-portal-backend-starts-without-waiting-for-the-frontend =
+    mkEvalCheck "domain-hyprland-portal-backend-starts-without-waiting-for-the-frontend"
+      (
+        !(builtins.elem "xdg-desktop-portal.service" chiseSystem.home-manager.users.zanoni.systemd.user.services.xdg-desktop-portal-hyprland.Unit.After)
+      )
+      "xdg-desktop-portal D-Bus-activates the Hyprland backend while it is still starting. Ordering the backend After the frontend queues that activation behind the frontend's own start job, so every backend interface times out at 25 seconds, the frontend hangs for minutes and the Hyprland portal never starts when graphical-session.target pulls both at login";
 }

@@ -25,7 +25,7 @@ def apply_current_background() -> None:
 
     subprocess.run(
         [
-            "swww", "img", str(CURRENT_BACKGROUND_LINK),
+            "awww", "img", str(CURRENT_BACKGROUND_LINK),
             "--resize", "crop",
             "--transition-type", "none",
         ],

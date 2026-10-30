@@ -36,7 +36,6 @@ in
       Documentation = "https://github.com/hyprwm/xdg-desktop-portal-hyprland";
       After = [
         "graphical-session.target"
-        "xdg-desktop-portal.service"
         "pipewire.service"
       ];
       PartOf = [
