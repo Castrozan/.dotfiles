@@ -8,6 +8,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from chrome_devtools_attached_retention import keeps_attached_worker
 from chrome_devtools_session import ChromeDevtoolsSession
 from chrome_devtools_connect import connect
 
@@ -113,26 +114,6 @@ def validate_session_arguments(arguments):
 def unused_cleanup(session, operation):
     return operation == "cleanup" and (
         not session.automatic_cleanup or not session.state_file.exists()
-    )
-
-
-def attached_idle_allowance(arguments):
-    option = "--keep-attached-for"
-    if option not in arguments:
-        return None
-    index = arguments.index(option)
-    try:
-        return float(arguments[index + 1])
-    except (IndexError, ValueError):
-        raise ValueError(f"{option} needs a number of seconds") from None
-
-
-def keeps_attached_worker(session, arguments):
-    allowance = attached_idle_allowance(arguments)
-    return (
-        allowance is not None
-        and session.mode() == "attached"
-        and session.idle_seconds() < allowance
     )
 
 
