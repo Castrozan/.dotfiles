@@ -25,6 +25,7 @@ in
     Unit = {
       Description = "Quickshell workspace overview";
       After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
       X-Restart-Triggers = [ "${quickshellPackage}" ];
     };

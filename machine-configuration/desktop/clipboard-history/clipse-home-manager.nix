@@ -78,6 +78,7 @@ in
     Unit = {
       Description = "Clipse clipboard manager listener";
       After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
       StartLimitIntervalSec = 30;
       StartLimitBurst = 3;

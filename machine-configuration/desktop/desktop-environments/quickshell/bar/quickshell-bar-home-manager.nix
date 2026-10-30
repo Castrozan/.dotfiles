@@ -29,6 +29,7 @@ in
     Unit = {
       Description = "Quickshell vertical bar";
       After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
       X-Restart-Triggers = [ "${quickshellPackage}" ];
     };

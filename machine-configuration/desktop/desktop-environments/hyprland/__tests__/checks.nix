@@ -10,6 +10,14 @@ let
 
   chiseSystem = self.nixosConfigurations.chise.config;
 
+  chiseSessionServicesNotStoppedWithTheSession = lib.attrNames (
+    lib.filterAttrs (
+      _: service:
+      builtins.elem "graphical-session.target" (service.Install.WantedBy or [ ])
+      && !(builtins.elem "graphical-session.target" (service.Unit.PartOf or [ ]))
+    ) chiseSystem.home-manager.users.zanoni.systemd.user.services
+  );
+
   wlogoutConfiguration = helpers.homeManagerTestConfiguration [ ../session/wlogout.nix ];
 
   wlogoutLogoutAction =
@@ -85,4 +93,9 @@ in
         && chiseSystem.systemd.services.greetd.serviceConfig.StandardError == "journal"
       )
       "tuigreet draws on the same virtual terminal the kernel and systemd print boot status to, and the arr-stack provisioners finish minutes into the boot, so their status lines land on top of the login prompt and garble it. Only errors may reach that console, and greetd's own stderr belongs in the journal";
+
+  domain-hyprland-session-services-stop-with-the-session =
+    mkEvalCheck "domain-hyprland-session-services-stop-with-the-session"
+      (chiseSessionServicesNotStoppedWithTheSession == [ ])
+      "Every user service wanted by graphical-session.target must also be PartOf it, so `uwsm stop` and compositor crashes stop it with the session. Otherwise it outlives Hyprland, crashes on the vanished Wayland socket and Restart= loops it into a failed unit, because automatic restarts skip ConditionEnvironment. Offending services: ${toString chiseSessionServicesNotStoppedWithTheSession}";
 }

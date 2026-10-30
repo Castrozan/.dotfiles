@@ -22,6 +22,7 @@ in
       Description = "Mako notification daemon";
       Documentation = "https://github.com/emersion/mako";
       After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
     };
 

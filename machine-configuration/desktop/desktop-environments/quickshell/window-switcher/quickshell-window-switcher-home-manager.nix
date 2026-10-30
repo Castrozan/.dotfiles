@@ -24,6 +24,7 @@ in
     Unit = {
       Description = "Quickshell window switcher with thumbnails";
       After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
       ConditionEnvironment = "WAYLAND_DISPLAY";
       X-Restart-Triggers = [ "${quickshellPackage}" ];
     };
