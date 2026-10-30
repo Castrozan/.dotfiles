@@ -116,6 +116,26 @@ def unused_cleanup(session, operation):
     )
 
 
+def attached_idle_allowance(arguments):
+    option = "--keep-attached-for"
+    if option not in arguments:
+        return None
+    index = arguments.index(option)
+    try:
+        return float(arguments[index + 1])
+    except (IndexError, ValueError):
+        raise ValueError(f"{option} needs a number of seconds") from None
+
+
+def keeps_attached_worker(session, arguments):
+    allowance = attached_idle_allowance(arguments)
+    return (
+        allowance is not None
+        and session.mode() == "attached"
+        and session.idle_seconds() < allowance
+    )
+
+
 def inspection_requested(arguments, operation):
     return (
         not arguments or "--help" in arguments or operation in ("--version", "status")
@@ -129,7 +149,9 @@ def inspect_worker(configuration, session, arguments, operation):
             "connect verifies pages within 20 seconds; connect --help describes native consent. "
             "start --headless uses a separate profile. Workers start on demand. "
             "stop closes this worker; cleanup closes an agent-owned worker. "
-            "The agent completion hook performs cleanup for Herdr panes and Codex threads.\n",
+            "The agent completion hook runs cleanup --keep-attached-for SECONDS for Herdr panes and Codex threads: "
+            "it keeps an attached worker that was used within that time, so Chrome's consent survives between turns, "
+            "and closes every other worker.\n",
             flush=True,
         )
     command = upstream_command(configuration, session, arguments or ["--help"])
@@ -156,6 +178,7 @@ def invoke_browser(configuration, session, arguments, operation):
             if result:
                 return result
         session.require_current_worker(configuration.upstream_executable)
+        session.touch()
     command = upstream_command(configuration, session, arguments)
     return os.execv(configuration.upstream_executable, command)
 
@@ -163,6 +186,8 @@ def invoke_browser(configuration, session, arguments, operation):
 def run_worker_operation(configuration, session, arguments, operation):
     if operation in ("stop", "cleanup"):
         with session.locked():
+            if operation == "cleanup" and keeps_attached_worker(session, arguments[1:]):
+                return 0
             return stop_worker(configuration, session)
     if inspection_requested(arguments, operation):
         return inspect_worker(configuration, session, arguments, operation)

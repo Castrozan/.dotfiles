@@ -4,6 +4,7 @@ import fcntl
 import hashlib
 import json
 import os
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -88,6 +89,18 @@ class ChromeDevtoolsSession:
 
     def clear(self):
         self.state_file.unlink(missing_ok=True)
+
+    def touch(self):
+        try:
+            os.utime(self.state_file)
+        except OSError:
+            pass
+
+    def idle_seconds(self):
+        try:
+            return time.time() - self.state_file.stat().st_mtime
+        except OSError:
+            return float("inf")
 
     @contextmanager
     def locked(self):

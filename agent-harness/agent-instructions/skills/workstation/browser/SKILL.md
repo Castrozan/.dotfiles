@@ -30,8 +30,9 @@ current task's worker before starting another. Prefer `start --headless` when ex
 interaction are unnecessary; headless does not inherit the user's current logins. Never borrow another task's worker or
 change its ownership identifier.
 
-Keep one worker for a browser task and run `stop` when finished. The completion hook also closes workers owned by the
-current Herdr pane or Codex thread; outside those contexts, explicit `stop` is required. A fresh worker discards page
+Keep one worker for a browser task and run `stop` when finished. The completion hook closes headless workers owned by
+the current Herdr pane or Codex thread, and an attached worker only after 30 minutes without a browser tool call, so
+Chrome's consent survives between turns; outside those contexts, explicit `stop` is required. A fresh worker discards page
 IDs and snapshot refs, so enumerate pages and take a fresh snapshot before continuing an earlier task.
 
 CLI tool failures can print `Error:` while exiting successfully. Read the tool output and verify the resulting browser

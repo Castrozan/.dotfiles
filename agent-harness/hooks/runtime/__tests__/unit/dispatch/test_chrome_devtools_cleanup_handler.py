@@ -38,7 +38,9 @@ def test_completion_uses_owned_cleanup_without_starting_browser(monkeypatch):
         or SimpleNamespace(returncode=0),
     )
     assert cleanup.handle({"hook_event_name": "Stop"}) is None
-    assert calls == [["/bin/chrome-devtools", "cleanup"]]
+    assert calls == [
+        ["/bin/chrome-devtools", "cleanup", "--keep-attached-for", "1800"]
+    ]
 
 
 def test_cleanup_failure_blocks_false_completion(monkeypatch):
