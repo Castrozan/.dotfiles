@@ -76,4 +76,13 @@ in
         && chiseSystem.security.polkit.enable
       )
       "chise runs only Hyprland. With the GNOME desktop enabled GDM falls back to the GNOME session whenever the uwsm entry is unavailable, landing the login in a desktop nothing here is configured for. The keyring, UPower and polkit that GNOME used to pull in stay enabled on their own because the Hyprland session unlocks the login keyring, the quickshell battery reads UPower and the polkit agent needs polkit";
+
+  domain-hyprland-login-prompt-owns-its-console =
+    mkEvalCheck "domain-hyprland-login-prompt-owns-its-console"
+      (
+        chiseSystem.boot.consoleLogLevel <= 3
+        && builtins.elem "systemd.show_status=error" chiseSystem.boot.kernelParams
+        && chiseSystem.systemd.services.greetd.serviceConfig.StandardError == "journal"
+      )
+      "tuigreet draws on the same virtual terminal the kernel and systemd print boot status to, and the arr-stack provisioners finish minutes into the boot, so their status lines land on top of the login prompt and garble it. Only errors may reach that console, and greetd's own stderr belongs in the journal";
 }

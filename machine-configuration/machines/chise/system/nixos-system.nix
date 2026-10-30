@@ -102,6 +102,21 @@ in
 
   security.pam.services.greetd.enableGnomeKeyring = true;
 
+  boot = {
+    consoleLogLevel = 3;
+    initrd.verbose = false;
+    kernelParams = [
+      "quiet"
+      "udev.log_level=3"
+      "systemd.show_status=error"
+    ];
+  };
+
+  systemd.services.greetd.serviceConfig = {
+    Type = "idle";
+    StandardError = "journal";
+  };
+
   # Services
   services = {
     greetd = {
