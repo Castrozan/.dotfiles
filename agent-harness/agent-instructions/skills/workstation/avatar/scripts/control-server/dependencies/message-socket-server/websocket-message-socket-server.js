@@ -44,7 +44,14 @@ class WebSocketMessageSocketConnection extends MessageSocketConnectionPort {
 class WebSocketMessageSocketServer extends MessageSocketServerPort {
   constructor(portNumber) {
     super();
-    this.webSocketServer = new WebSocket.Server({ port: portNumber });
+    this.webSocketServer = new WebSocket.Server({
+      port: portNumber,
+      host: "127.0.0.1",
+      maxPayload: 65536,
+      verifyClient: ({ origin }) =>
+        !origin ||
+        ["http://127.0.0.1:3000", "http://localhost:3000"].includes(origin),
+    });
     this.keepAliveTimer = null;
     this.respondingSockets = new WeakSet();
   }

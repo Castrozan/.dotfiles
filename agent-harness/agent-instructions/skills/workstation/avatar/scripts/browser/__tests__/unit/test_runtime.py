@@ -24,7 +24,11 @@ def runtime(tmp_path, monkeypatch):
         "Path",
         lambda value: tmp_path / "proc" if value == "/proc" else Path(value),
     )
-    monkeypatch.setattr(module.os, "kill", Mock())
+    monkeypatch.setattr(
+        module.os,
+        "kill",
+        Mock(side_effect=lambda *_: (process / "cmdline").unlink(missing_ok=True)),
+    )
     return module, profile, process
 
 
@@ -48,3 +52,50 @@ def test_exited_browser_is_already_stopped(runtime):
     module, profile, process = runtime
     module.stop()
     module.os.kill.assert_not_called()
+
+
+def test_stale_browser_locks_are_removed_without_deleting_profile(runtime):
+    module, profile, process = runtime
+    (profile / "SingletonLock").symlink_to(f"{module.socket.gethostname()}-456")
+    (profile / "SingletonCookie").symlink_to("cookie")
+    (profile / "preferences").write_text("preserved")
+    module.remove_stale_locks(profile)
+    assert not (profile / "SingletonLock").is_symlink()
+    assert (profile / "preferences").read_text() == "preserved"
+
+
+def test_existing_process_prevents_lock_removal(runtime):
+    module, profile, process = runtime
+    (process / "cmdline").write_bytes(b"another-process")
+    (profile / "SingletonLock").symlink_to(f"{module.socket.gethostname()}-123")
+    module.remove_stale_locks(profile)
+    assert (profile / "SingletonLock").is_symlink()
+
+
+def test_zombie_browser_lock_does_not_block_restart(runtime):
+    module, profile, process = runtime
+    (process / "cmdline").write_bytes(b"")
+    (profile / "SingletonLock").symlink_to(f"{module.socket.gethostname()}-123")
+    module.remove_stale_locks(profile)
+    assert not (profile / "SingletonLock").is_symlink()
+
+
+def test_singleton_pid_tracks_the_browser_after_launcher_exits(runtime):
+    module, profile, process = runtime
+    browser = process.parent / "456"
+    browser.mkdir()
+    (browser / "cmdline").write_bytes(f"chromium\0--user-data-dir={profile}\0".encode())
+    (profile / "SingletonLock").symlink_to(f"{module.socket.gethostname()}-456")
+    assert module.owned_process(profile) == 456
+
+
+def test_chromium_process_title_preserves_exact_profile_ownership(runtime):
+    module, profile, process = runtime
+    (process / "cmdline").write_bytes(
+        f"chromium --user-data-dir={profile} --app=http://localhost:3000/\0".encode()
+    )
+    assert module.owned_process(profile) == 123
+    (process / "cmdline").write_bytes(
+        f"chromium --user-data-dir={profile}-another --app=http://localhost:3000/\0".encode()
+    )
+    assert module.owned_process(profile) is None

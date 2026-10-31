@@ -342,6 +342,7 @@
         "herdr": "herdr",
         "herdr-pace": "herdr-pace",
         "hermes": "hermes",
+        "hex": "hex",
         "home-manager": "home-manager_3",
         "hyprland": "hyprland",
         "install-nothing": "install-nothing",
@@ -888,6 +889,31 @@
         "owner": "NousResearch",
         "repo": "hermes-agent",
         "rev": "d337b736aa1e8ebecfab043842d13e4a2d2f48a3",
+        "type": "github"
+      }
+    },
+    "hex": {
+      "inputs": {
+        "home-manager": [
+          "dependencies",
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793464416,
+        "narHash": "sha256-I3dCdkCzTvVP+F21FY8NTggpN169Vq/hYUBoIjtSNOg=",
+        "owner": "anomalyco",
+        "repo": "hex",
+        "rev": "154b4d402e9eb1c15fe6588e9c399dfec8a5ba5a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anomalyco",
+        "repo": "hex",
         "type": "github"
       }
     },

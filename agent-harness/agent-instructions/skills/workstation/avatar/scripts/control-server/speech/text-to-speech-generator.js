@@ -8,13 +8,26 @@ function runEdgeTextToSpeech(commandArguments) {
     const edgeTextToSpeechProcess = spawn("edge-tts", commandArguments, {
       stdio: ["ignore", "pipe", "pipe"],
     });
+    let diagnostics = "";
+    edgeTextToSpeechProcess.stderr.on("data", (chunk) => {
+      diagnostics = (diagnostics + chunk.toString()).slice(-8192);
+    });
     edgeTextToSpeechProcess.on("close", (exitCode) =>
       exitCode === 0
         ? resolve()
-        : reject(new Error(`edge-tts exited ${exitCode}`)),
+        : reject(textToSpeechFailure(exitCode, diagnostics)),
     );
     edgeTextToSpeechProcess.on("error", reject);
   });
+}
+
+function textToSpeechFailure(exitCode, diagnostics) {
+  const rejected = diagnostics.match(/WSServerHandshakeError:\s*(\d{3})/);
+  return new Error(
+    rejected
+      ? `edge-tts returned HTTP ${rejected[1]}`
+      : `edge-tts exited ${exitCode}`,
+  );
 }
 
 class TextToSpeechGenerator {

@@ -1,0 +1,15 @@
+name: Nix build space
+description: Reserve hosted Linux runner disk for Nix builds.
+
+runs:
+  using: composite
+  steps:
+    - name: Remove unused hosted SDKs
+      if: ${{ runner.os == 'Linux' && runner.environment == 'github-hosted' }}
+      shell: bash
+      run: |
+        df -h /
+        df -i /
+        sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /usr/local/.ghcup /opt/ghc
+        df -h /
+        df -i /

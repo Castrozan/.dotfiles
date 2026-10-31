@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Avatar</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      background: #17202c;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    #status {
+      position: fixed;
+      bottom: 8px;
+      left: 12px;
+      color: white;
+      font: 14px sans-serif;
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three/build/three.module.js",
+        "three/addons/": "/vendor/three/examples/jsm/",
+        "@pixiv/three-vrm": "/vendor/vrm/lib/three-vrm.module.js"
+      }
+    }
+  </script>
+  <canvas id="output"></canvas>
+  <div id="status">Loading avatar…</div>
+  <script type="module" src="/renderer.js"></script>
+</html>

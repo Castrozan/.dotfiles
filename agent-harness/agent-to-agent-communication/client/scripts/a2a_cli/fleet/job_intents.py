@@ -63,7 +63,7 @@ def matching_intent(previous, intent):
 def require_dispatchable(agent, host, now):
     facts = (
         agent["present"],
-        agent["state"] == "idle",
+        agent["state"] in {"idle", "done"},
         agent["interactive_ready"],
         not agent["launch_pending"],
         agent["source"] == "live",
@@ -73,7 +73,7 @@ def require_dispatchable(agent, host, now):
     )
     if not all(facts):
         raise ValueError(
-            "dispatch requires a freshly resolved idle live session with readiness metadata"
+            "dispatch requires a freshly resolved idle or done live session with readiness metadata"
         )
     if "a2a.dispatch" not in agent["capabilities"]:
         raise ValueError("session is not currently in A2A")

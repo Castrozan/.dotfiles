@@ -47,6 +47,9 @@ function handleIdentification(role, connection, context) {
 
 function handleRendererEvent(event, context) {
   console.log("📥 Renderer event:", event.type);
+  if (["videoModeChanged", "videoModeError"].includes(event.type)) {
+    context.clientRegistry.sendToAgents(event);
+  }
   if (event.type === "speechEnd") {
     context.avatarState.finishSpeaking();
     console.log("🔄 Speech ended, transitioned to IDLE");

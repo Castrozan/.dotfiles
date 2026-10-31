@@ -19,6 +19,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - uses: ./.github/actions/nix-build-space
+      if: ${{ inputs.cache-key == 'flake-check' }}
+
     - name: Configure private arr-stack input access
       if: ${{ inputs.private-input-key != '' }}
       shell: bash

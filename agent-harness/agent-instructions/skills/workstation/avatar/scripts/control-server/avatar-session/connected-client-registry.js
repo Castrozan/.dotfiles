@@ -1,15 +1,11 @@
 class ConnectedClientRegistry {
   constructor() {
-    this.agentConnection = null;
+    this.agentConnections = new Set();
     this.rendererConnection = null;
   }
 
   registerAgent(connection) {
-    if (this.agentConnection) {
-      console.warn("⚠️ Agent already connected, replacing...");
-      this.agentConnection.close();
-    }
-    this.agentConnection = connection;
+    this.agentConnections.add(connection);
     console.log("✅ Agent connected (controller)");
   }
 
@@ -25,7 +21,7 @@ class ConnectedClientRegistry {
 
   forget(connection) {
     if (this.isAgent(connection)) {
-      this.agentConnection = null;
+      this.agentConnections.delete(connection);
       console.log("❌ Agent disconnected");
       return;
     }
@@ -36,7 +32,7 @@ class ConnectedClientRegistry {
   }
 
   isAgent(connection) {
-    return this.agentConnection === connection;
+    return this.agentConnections.has(connection);
   }
 
   isRenderer(connection) {
@@ -54,14 +50,22 @@ class ConnectedClientRegistry {
     return this.rendererConnection.sendJson(payload);
   }
 
+  sendToAgents(payload) {
+    this.agentConnections.forEach((connection) => {
+      connection.sendJson(payload);
+    });
+  }
+
   closeAll() {
-    this.agentConnection?.close();
+    this.agentConnections.forEach((connection) => {
+      connection.close();
+    });
     this.rendererConnection?.close();
   }
 
   connectionSummary() {
     return {
-      agentConnected: this.agentConnection !== null,
+      agentConnected: this.agentConnections.size > 0,
       rendererConnected: this.rendererConnection !== null,
     };
   }

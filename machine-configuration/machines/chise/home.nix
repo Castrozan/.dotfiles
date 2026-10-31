@@ -63,6 +63,7 @@ in
     ../../terminal/visual-effects/bad-apple/bad-apple-chise-home-manager.nix
     ../../media/media-command-packages-home-manager.nix
     ../../media/media-generation/media-generation-home-manager.nix
+    ../../media/avatar/avatar-home-manager.nix
 
     ../../operating-system/package-management/system-command-packages-home-manager.nix
     ../../operating-system/resource-monitoring/btop-home-manager.nix
@@ -75,6 +76,7 @@ in
     ../../voice/hey-bot-home-manager.nix
     ../../voice/hey-bot-test-home-manager.nix
     ./home/hey-bot.nix
+    ../../voice/hex-home-manager.nix
     ../../voice/voxtype-home-manager.nix
     ../../voice/whisp-away-home-manager.nix
 

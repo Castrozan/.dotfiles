@@ -13,16 +13,17 @@ const {
 } = require("./virtual-camera/screencast-frame-pipeline");
 
 const AVATAR_RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
-const AVATAR_RENDERER_URL = `http://localhost:${AVATAR_RENDERER_PORT}`;
+const AVATAR_RENDERER_URL = `http://localhost:${AVATAR_RENDERER_PORT}/?output=1`;
 
 const numericArgument = (flagName, fallback) =>
   parseInt(
     process.argv.find((_, index, all) => all[index - 1] === flagName) ||
       fallback,
+    10,
   );
 
 const CONFIG = {
-  CDP_PORT: parseInt(process.env.CDP_PORT || "9222"),
+  CDP_PORT: parseInt(process.env.CDP_PORT || "9222", 10),
   V4L2_DEVICE: process.env.V4L2_DEVICE || "/dev/video10",
   FPS: numericArgument("--fps", "15"),
   WIDTH: numericArgument("--width", "1280"),
@@ -40,7 +41,7 @@ const DISMISS_START_MODAL_EXPRESSION = `(() => {
 async function resolveRendererDebuggerUrl() {
   const targetLocator = new ChromeDevtoolsTargetLocator(CONFIG.CDP_PORT);
   const rendererTarget = await targetLocator.findOrOpenPageTarget(
-    `localhost:${AVATAR_RENDERER_PORT}`,
+    `localhost:${AVATAR_RENDERER_PORT}/?output=1`,
     AVATAR_RENDERER_URL,
   );
 
@@ -70,31 +71,44 @@ async function dismissStartModal(session) {
   }
 }
 
-function streamScreencastFrames(session, framePipeline) {
+async function captureFrames(session, framePipeline) {
   let frameCount = 0;
-
-  session.onEvent((message) => {
-    if (message.method !== "Page.screencastFrame") {
-      return;
-    }
-
-    const { sessionId, metadata } = message.params;
-    framePipeline.writeFrame(Buffer.from(message.params.data, "base64"));
-    session.send("Page.screencastFrameAck", { sessionId });
-
-    frameCount++;
-    if (frameCount % (CONFIG.FPS * 5) === 0) {
-      console.log(
-        `📹 Frames captured: ${frameCount} (${metadata.deviceWidth}x${metadata.deviceHeight})`,
-      );
-    }
+  let closed = false;
+  session.onClosed(() => {
+    closed = true;
   });
+  while (!closed) {
+    const started = performance.now();
+    const screenshot = await session.sendAndAwaitResult(
+      "Page.captureScreenshot",
+      {
+        format: CONFIG.FORMAT,
+        quality: CONFIG.SCREENCAST_QUALITY,
+        fromSurface: true,
+        captureBeyondViewport: false,
+      },
+    );
+    if (closed) return;
+    if (framePipeline.writeFrame(Buffer.from(screenshot.data, "base64")))
+      frameCount++;
+    reportFrameCount(frameCount);
+    await new Promise((resolve) =>
+      setTimeout(
+        resolve,
+        Math.max(1, 1000 / CONFIG.FPS - (performance.now() - started)),
+      ),
+    );
+  }
+}
+
+function reportFrameCount(frameCount) {
+  if (frameCount && frameCount % (CONFIG.FPS * 5) === 0)
+    console.log(`Frames captured: ${frameCount}`);
 }
 
 function registerShutdownHandlers(session, framePipeline) {
   process.on("SIGINT", () => {
     console.log("\n🛑 Stopping virtual camera...");
-    session.send("Page.stopScreencast");
     setTimeout(() => {
       framePipeline.end();
       session.close();
@@ -131,21 +145,21 @@ async function startCapture() {
 
   session.onOpen(async () => {
     console.log("✅ Connected to CDP");
+    await session.sendAndAwaitResult("Emulation.setDeviceMetricsOverride", {
+      width: CONFIG.WIDTH,
+      height: CONFIG.HEIGHT,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
     await dismissStartModal(session);
 
-    session.send("Page.startScreencast", {
-      format: CONFIG.FORMAT,
-      quality: CONFIG.SCREENCAST_QUALITY,
-      maxWidth: CONFIG.WIDTH,
-      maxHeight: CONFIG.HEIGHT,
-      everyNthFrame: 1,
+    captureFrames(session, framePipeline).catch((error) => {
+      console.error(error.message);
+      process.exitCode = 1;
+      framePipeline.end();
+      session.close();
     });
-
-    console.log("📡 Screencast started. Streaming to virtual camera...");
-    console.log("   Press Ctrl+C to stop.");
   });
-
-  streamScreencastFrames(session, framePipeline);
 
   session.onClosed(() => {
     console.log("❌ CDP connection closed");

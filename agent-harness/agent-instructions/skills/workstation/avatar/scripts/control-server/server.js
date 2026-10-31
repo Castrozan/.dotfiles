@@ -14,11 +14,15 @@ const {
 } = require("./avatar-session/client-connection-router");
 const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
 
+const {
+  startMicrophoneLevelMeter,
+} = require("./audio-playback/microphone-level-meter");
+
 const RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
 
 const CONFIG = {
-  WS_PORT: parseInt(process.env.AVATAR_WS_PORT || "8765"),
-  HTTP_PORT: parseInt(process.env.AVATAR_HTTP_PORT || "8766"),
+  WS_PORT: parseInt(process.env.AVATAR_WS_PORT || "8765", 10),
+  HTTP_PORT: parseInt(process.env.AVATAR_HTTP_PORT || "8766", 10),
   TTS_VOICE: process.env.AVATAR_TTS_VOICE || "@ttsVoice@",
   TTS_DIR: require("node:path").join(
     require("node:os").homedir(),
@@ -113,15 +117,25 @@ async function main() {
   const httpServer = startAudioFileHttpServer(avatarState, clientRegistry);
   const socketServer = startAvatarSocketServer(context);
 
+  const stopMeter = process.env.AVATAR_AUDIO_MONITOR
+    ? startMicrophoneLevelMeter(
+        clientRegistry,
+        process.env.AVATAR_AUDIO_MONITOR,
+      )
+    : () => {};
+
   printUsageInstructions();
 
-  process.on("SIGINT", () => {
+  const shutdown = () => {
     console.log("\n🛑 Shutting down...");
+    stopMeter();
     clientRegistry.closeAll();
     socketServer.close();
     httpServer.close();
     process.exit(0);
-  });
+  };
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 main().catch((error) => {
