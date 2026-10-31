@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Avatar controls</title>
+  <style>
+    body {
+      font: 18px system-ui;
+      background: #17202c;
+      color: #fff;
+      max-width: 700px;
+      margin: 64px auto;
+      padding: 24px;
+    }
+    button,
+    select {
+      font: inherit;
+      padding: 12px;
+      margin: 8px;
+      border-radius: 8px;
+    }
+    p {
+      line-height: 1.6;
+    }
+  </style>
+  <h1>Avatar controls</h1>
+  <p>
+    The output window feeds Avatar Cam. Enable a physical camera here before
+    switching to it.
+  </p>
+  <div>
+    <button id="enable">Enable camera</button
+    ><button id="disable">Release camera</button
+    ><select id="devices" aria-label="Camera"></select>
+  </div>
+  <div>
+    <button data-mode="avatar">Avatar</button
+    ><button data-mode="camera">Camera</button
+    ><button data-mode="composite">Both</button>
+  </div>
+  <p id="status" role="status">Connecting…</p>
+  <p>
+    Audio starts muted. Use avatar-audio to attach the human microphone and
+    control the two input channels.
+  </p>
+  <script type="module" src="/controls.js"></script>
+</html>

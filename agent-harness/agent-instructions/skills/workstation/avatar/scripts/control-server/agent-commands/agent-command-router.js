@@ -6,8 +6,13 @@ const {
 const { handleSetIdleCommand } = require("./set-idle-command-handler");
 const { handleGetStatusCommand } = require("./get-status-command-handler");
 
+const {
+  handleSetVideoModeCommand,
+} = require("./set-video-mode-command-handler");
+
 const COMMAND_HANDLERS_BY_TYPE = {
   speak: handleSpeakCommand,
+  setVideoMode: handleSetVideoModeCommand,
   setExpression: handleSetExpressionCommand,
   setIdle: handleSetIdleCommand,
   getStatus: handleGetStatusCommand,

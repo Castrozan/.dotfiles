@@ -63,6 +63,7 @@ in
     ../../terminal/visual-effects/bad-apple/bad-apple-chise-home-manager.nix
     ../../media/media-command-packages-home-manager.nix
     ../../media/media-generation/media-generation-home-manager.nix
+    ../../media/avatar/avatar-home-manager.nix
 
     ../../operating-system/package-management/system-command-packages-home-manager.nix
     ../../operating-system/resource-monitoring/btop-home-manager.nix

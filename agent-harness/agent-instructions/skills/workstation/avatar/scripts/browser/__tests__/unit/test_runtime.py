@@ -24,7 +24,11 @@ def runtime(tmp_path, monkeypatch):
         "Path",
         lambda value: tmp_path / "proc" if value == "/proc" else Path(value),
     )
-    monkeypatch.setattr(module.os, "kill", Mock())
+    monkeypatch.setattr(
+        module.os,
+        "kill",
+        Mock(side_effect=lambda *_: (process / "cmdline").unlink(missing_ok=True)),
+    )
     return module, profile, process
 
 
@@ -48,3 +52,20 @@ def test_exited_browser_is_already_stopped(runtime):
     module, profile, process = runtime
     module.stop()
     module.os.kill.assert_not_called()
+
+
+def test_stale_browser_locks_are_removed_without_deleting_profile(runtime):
+    module, profile, process = runtime
+    (profile / "SingletonLock").symlink_to(f"{module.socket.gethostname()}-456")
+    (profile / "SingletonCookie").symlink_to("cookie")
+    (profile / "preferences").write_text("preserved")
+    module.remove_stale_locks(profile)
+    assert not (profile / "SingletonLock").is_symlink()
+    assert (profile / "preferences").read_text() == "preserved"
+
+
+def test_existing_process_prevents_lock_removal(runtime):
+    module, profile, process = runtime
+    (profile / "SingletonLock").symlink_to(f"{module.socket.gethostname()}-123")
+    module.remove_stale_locks(profile)
+    assert (profile / "SingletonLock").is_symlink()

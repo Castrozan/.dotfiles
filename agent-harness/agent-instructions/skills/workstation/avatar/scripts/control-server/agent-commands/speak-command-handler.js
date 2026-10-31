@@ -63,11 +63,6 @@ function playGeneratedSpeech(
       emotion,
       text,
     });
-    if (output === "mic" || output === "both") {
-      playAudioFileToSink(speech.audioPath, MIC_SINK_NAME);
-      console.log(`🔊 Playing audio to: ${MIC_SINK_NAME} (virtual mic)`);
-    }
-    return;
   }
 
   const sinks = resolveRequestedSinks(output, speakerSinkName);

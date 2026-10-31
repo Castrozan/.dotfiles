@@ -19,10 +19,11 @@ const numericArgument = (flagName, fallback) =>
   parseInt(
     process.argv.find((_, index, all) => all[index - 1] === flagName) ||
       fallback,
+    10,
   );
 
 const CONFIG = {
-  CDP_PORT: parseInt(process.env.CDP_PORT || "9222"),
+  CDP_PORT: parseInt(process.env.CDP_PORT || "9222", 10),
   V4L2_DEVICE: process.env.V4L2_DEVICE || "/dev/video10",
   FPS: numericArgument("--fps", "15"),
   WIDTH: numericArgument("--width", "1280"),
@@ -72,6 +73,7 @@ async function dismissStartModal(session) {
 
 function streamScreencastFrames(session, framePipeline) {
   let frameCount = 0;
+  let lastFrameTime = 0;
 
   session.onEvent((message) => {
     if (message.method !== "Page.screencastFrame") {
@@ -79,8 +81,12 @@ function streamScreencastFrames(session, framePipeline) {
     }
 
     const { sessionId, metadata } = message.params;
-    framePipeline.writeFrame(Buffer.from(message.params.data, "base64"));
     session.send("Page.screencastFrameAck", { sessionId });
+    const now = performance.now();
+    if (now - lastFrameTime < 1000 / CONFIG.FPS - 2) return;
+    lastFrameTime = now;
+    if (!framePipeline.writeFrame(Buffer.from(message.params.data, "base64")))
+      return;
 
     frameCount++;
     if (frameCount % (CONFIG.FPS * 5) === 0) {
@@ -131,6 +137,12 @@ async function startCapture() {
 
   session.onOpen(async () => {
     console.log("✅ Connected to CDP");
+    await session.sendAndAwaitResult("Emulation.setDeviceMetricsOverride", {
+      width: CONFIG.WIDTH,
+      height: CONFIG.HEIGHT,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
     await dismissStartModal(session);
 
     session.send("Page.startScreencast", {

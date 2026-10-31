@@ -37,7 +37,7 @@ class ExpressAudioFileHttpServer extends AudioFileHttpServerPort {
 
   listen(portNumber, onListening) {
     this.nodeHttpServer = http.createServer(this.expressApplication);
-    this.nodeHttpServer.listen(portNumber, onListening);
+    this.nodeHttpServer.listen(portNumber, "127.0.0.1", onListening);
   }
 
   close() {

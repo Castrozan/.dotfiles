@@ -14,6 +14,10 @@ const {
 } = require("./avatar-session/client-connection-router");
 const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
 
+const {
+  startMicrophoneLevelMeter,
+} = require("./audio-playback/microphone-level-meter");
+
 const RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
 
 const CONFIG = {
@@ -113,10 +117,18 @@ async function main() {
   const httpServer = startAudioFileHttpServer(avatarState, clientRegistry);
   const socketServer = startAvatarSocketServer(context);
 
+  const stopMeter = process.env.AVATAR_AUDIO_MONITOR
+    ? startMicrophoneLevelMeter(
+        clientRegistry,
+        process.env.AVATAR_AUDIO_MONITOR,
+      )
+    : () => {};
+
   printUsageInstructions();
 
   process.on("SIGINT", () => {
     console.log("\n🛑 Shutting down...");
+    stopMeter();
     clientRegistry.closeAll();
     socketServer.close();
     httpServer.close();

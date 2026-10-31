@@ -6,6 +6,12 @@ class ScreencastFramePipeline {
       "ffmpeg",
       [
         "-y",
+        "-probesize",
+        "32",
+        "-analyzeduration",
+        "0",
+        "-threads",
+        "1",
         "-f",
         "mjpeg",
         "-framerate",
@@ -16,12 +22,16 @@ class ScreencastFramePipeline {
         `scale=${width}:${height}`,
         "-pix_fmt",
         "yuv420p",
+        "-threads:v",
+        "1",
         "-f",
         "v4l2",
         videoDevice,
       ],
       { stdio: ["pipe", "pipe", "pipe"] },
     );
+
+    this.encoder.stdin.on("error", (error) => console.error(error.message));
 
     this.encoder.stderr.on("data", (chunk) => {
       const line = chunk.toString().trim();
@@ -37,7 +47,7 @@ class ScreencastFramePipeline {
   }
 
   writeFrame(frameBuffer) {
-    if (this.encoder.stdin.destroyed) {
+    if (this.encoder.stdin.destroyed || this.encoder.stdin.writableNeedDrain) {
       return false;
     }
     this.encoder.stdin.write(frameBuffer);
