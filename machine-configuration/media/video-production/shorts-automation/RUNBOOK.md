@@ -26,8 +26,14 @@ and video calls are disabled until a separate measured budget is authorized. Use
 registered native compositions; inspect installed help and contract. Compile native compositions for Linux on Chise.
 
 Chise's prepared SDK and native example are under `~/clawde/shorts/native-kit`. Read the example's Cargo manifest,
-source and registration before creating a composition in this run. Keep the pinned SDK unchanged. Use its built-in
-CPU renderer with an MPEG4 intermediate, then encode the final H264/yuv420p video with installed FFmpeg.
+source and registration before creating a composition in this run. Copy the example's absolute `fframes` dependency
+line verbatim and never link the SDK into the run; the build refuses any other path or feature set because each would
+recompile the SDK. From the run directory, compile only with
+`shorts-production build --manifest composition/Cargo.toml`. It reuses the one shared compiled SDK, saves
+`evidence/build.stdout` and `evidence/build.stderr`, writes `bin/<package>` and prints its hash. Never set
+`CARGO_TARGET_DIR`, keep or copy a build cache, or call `rustc` directly; every Cargo target directory left in a run is
+deleted when the run ends. Use the SDK's built-in CPU renderer with an MPEG4 intermediate, then encode the final
+H264/yuv420p video with installed FFmpeg.
 
 Discover the live voice contract using `media-speech providers`, `voices` and `usage`. Direct an expressive American
 ElevenLabs performance with curiosity, surprise, tension and humor where earned. Save usage before and after and the
@@ -90,9 +96,10 @@ visibility. Inspect Studio and the journal after a timeout or ambiguous result b
 
 ### Failure and handoff
 
-Keep research, receipts and artifacts inside this run. Write `hold.json` with the precise failed gate or unavailable
-dependency and do not claim publication. A slot is claimed once, runs do not overlap, and missed slots are not backfilled.
-This fresh scheduled session ends after one attempt. Do not edit dotfiles or launch extra agent sessions to finish it.
+Keep research, receipts and artifacts inside this run; compiled SDK output is not an artifact. Write `hold.json` with
+the precise failed gate or unavailable dependency and do not claim publication. A slot is claimed once, runs do not
+overlap, and missed slots are not backfilled. This fresh scheduled session ends after one attempt. Do not edit dotfiles
+or launch extra agent sessions to finish it.
 
 ### Explicit recovery
 

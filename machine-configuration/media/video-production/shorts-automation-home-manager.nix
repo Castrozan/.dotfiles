@@ -48,7 +48,14 @@ let
     export SHORTS_CONFIGURATION=${configuration}
     exec ${pkgs.python312}/bin/python3 ${directory}/scripts/shorts_browser_start.py
   '';
+  libclang = pkgs.llvmPackages.libclang;
+  nativeBuildEnvironment = lib.optionalString pkgs.stdenv.isLinux ''
+    export CARGO_TARGET_DIR=${config.home.homeDirectory}/clawde/shorts/native-kit/target
+    export LIBCLANG_PATH=${libclang.lib}/lib
+    export BINDGEN_EXTRA_CLANG_ARGS="-isystem ${pkgs.glibc.dev}/include -isystem ${libclang.lib}/lib/clang/${lib.versions.major libclang.version}/include"
+  '';
   production = pkgs.writeShellScriptBin "shorts-production" ''
+    ${nativeBuildEnvironment}
     export PATH=${
       lib.makeBinPath (
         [

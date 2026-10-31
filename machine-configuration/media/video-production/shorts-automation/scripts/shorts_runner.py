@@ -8,6 +8,7 @@ from typing import NamedTuple
 from zoneinfo import ZoneInfo
 
 from shorts_browser import browser_instance, browser_pages
+from shorts_composition import discard_build_caches
 from shorts_store import (
     RUN_STATUS_FILENAME,
     TopicStore,
@@ -173,6 +174,7 @@ def execute_run(directory, configuration):
                 result["browser_cleanup"] = "needs_inspection"
         finally:
             signal.signal(signal.SIGTERM, previous_handler)
+            discard_build_caches(directory)
             if read_document(directory / RUN_STATUS_FILENAME)["status"] == "started":
                 finish_run(directory, "needs_inspection")
 
