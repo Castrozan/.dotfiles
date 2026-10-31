@@ -26,6 +26,8 @@ def main():
     assert configuration["agent"] == {"reasoning_effort": "xhigh"}
     assert configuration["auth"] == {"adopt_external_logins": False}
     assert configuration["approvals"] == {"mode": "off"}
+    plugin_root = arguments.hook_command.removesuffix("/native/hermes/hook-bridge")
+    assert configuration["skills"] == {"external_dirs": [f"{plugin_root}/skills"]}
     assert configuration["toolsets"] == ["hermes-cli"]
 
 

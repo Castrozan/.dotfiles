@@ -21,7 +21,7 @@ let
     ../.
     ../gateway.nix
   ];
-  gatewayService = lib.mapAttrs (_: lib.toList) cfg.systemd.user.services.hermes-gateway.Service;
+  gatewayService = lib.mapAttrs (_: lib.toList) cfg.systemd.user.services.hermes-agent.Service;
 in
 {
   domain-hermes-bin-wrapper =
@@ -46,6 +46,16 @@ in
         cmp ${hermesSoul} ${expectedHermesSoul}
         touch "$out"
       '';
+
+  domain-hermes-opts-out-of-bundled-skills =
+    mkEvalCheck "domain-hermes-opts-out-of-bundled-skills"
+      (builtins.hasAttr ".hermes/.no-bundled-skills" cfg.home.file)
+      "Hermes must carry only the dotfiles skills, so the bundled skill opt-out marker must be deployed";
+
+  domain-hermes-gateway-does-not-use-the-unit-name-hermes-rewrites =
+    mkEvalCheck "domain-hermes-gateway-does-not-use-the-unit-name-hermes-rewrites"
+      (!(builtins.hasAttr "hermes-gateway" cfg.systemd.user.services))
+      "Hermes rewrites hermes-gateway.service on restart, which fails against a Nix-owned read-only unit";
 
   domain-hermes-gateway-is-supervised-with-sudo-reachable =
     mkEvalCheck "domain-hermes-gateway-is-supervised-with-sudo-reachable"

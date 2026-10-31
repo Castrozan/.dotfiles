@@ -1,6 +1,6 @@
 { config, ... }:
 {
-  systemd.user.services.hermes-gateway = {
+  systemd.user.services.hermes-agent = {
     Unit.Description = "Hermes Agent gateway";
     Install.WantedBy = [ "default.target" ];
     Service = {

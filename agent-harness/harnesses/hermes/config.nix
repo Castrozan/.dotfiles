@@ -15,6 +15,9 @@ pkgs.writeText "hermes-config.yaml" ''
     adopt_external_logins: false
   approvals:
     mode: "off"
+  skills:
+    external_dirs:
+      - ${pluginBundle}/plugin/skills
   toolsets:
     - hermes-cli
   security:

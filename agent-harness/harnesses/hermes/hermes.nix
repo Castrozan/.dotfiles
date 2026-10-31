@@ -65,5 +65,6 @@ in
       force = true;
     };
     file.".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin";
+    file.".hermes/.no-bundled-skills".text = "";
   };
 }
