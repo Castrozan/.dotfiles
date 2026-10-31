@@ -19,6 +19,9 @@
     shortcut = "control+option+space";
     model = "parakeet_v3";
     language = "en";
-    settings = builtins.fromJSON (builtins.readFile ./hex-settings.json);
+    settings = (builtins.fromJSON (builtins.readFile ./hex-settings.json)) // {
+      # Follow the system-selected microphone, including a Bluetooth headset.
+      avoid_bluetooth_microphone = false;
+    };
   };
 }
