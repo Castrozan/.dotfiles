@@ -77,7 +77,7 @@ def test_start_is_muted_isolated_and_repeatable(tmp_path, pulse):
     assert not state.get("microphone")
     for name in audio.CHANNELS.values():
         assert ("set-sink-mute", name, "1") in pulse.calls
-        assert ("set-sink-volume", name, "50%") in pulse.calls
+        assert ("set-sink-volume", name, "100%") in pulse.calls
     assert all("default" not in " ".join(call) for call in pulse.calls)
     assert (
         sum(

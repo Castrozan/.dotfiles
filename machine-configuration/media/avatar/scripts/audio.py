@@ -126,7 +126,7 @@ def create_mix(path, state):
     for channel, name in CHANNELS.items():
         load_sink(path, state, name, f"Avatar_{channel.title()}_Input")
         pulse_audio.run("set-sink-mute", name, "1")
-        pulse_audio.run("set-sink-volume", name, "50%")
+        pulse_audio.run("set-sink-volume", name, "100%")
     load_sink(path, state, MIX_SINK, "Avatar_Meeting_Mix")
     for name in CHANNELS.values():
         load_loopback(

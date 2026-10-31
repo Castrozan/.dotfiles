@@ -8,7 +8,7 @@ permission flow can reach the output window.
 Starting the avatar never takes over the screen: its output window opens on the hidden `special:avatar` Hyprland
 workspace and keeps rendering there. Only `avatar-controls` opens a visible window.
 
-Both audio inputs start muted at 50%. `avatar-audio status` shows ownership, mute and level state. Send an application's
+Both audio inputs start muted at unity gain. `avatar-audio status` shows ownership, mute and level state. Send an application's
 playback to `AvatarMic`, for example `PULSE_SINK=AvatarMic paplay --client-name=agent generated.wav`, then use
 `avatar-audio mute agent 0` to enable that channel. `avatar-audio volume agent 70` changes its level; `mute agent 1`
 silences it. PulseAudio's volume percentage uses its normal nonlinear scale.
