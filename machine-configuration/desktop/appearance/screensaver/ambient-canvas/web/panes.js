@@ -77,7 +77,7 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     panes: [
       {
         scene: "bad-apple",
-        options: { videoId: "WWWTWgyYYAk" },
+        options: { videoId: "T9tXkGGY91I" },
       },
     ],
   },
