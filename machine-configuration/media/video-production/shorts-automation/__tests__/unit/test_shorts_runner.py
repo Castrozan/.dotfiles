@@ -57,6 +57,17 @@ def test_browser_pages_are_cleaned_after_every_agent_outcome(
     assert signal.getsignal(signal.SIGTERM) != shorts_runner.terminate_run
 
 
+def test_build_cache_left_by_the_agent_does_not_outlive_the_run(
+    tmp_path, production_run
+):
+    directory, pages, process = production_run
+    cache = directory / "build-cache"
+    cache.mkdir()
+    (cache / "CACHEDIR.TAG").write_text("Signature")
+    shorts_runner.start_run(tmp_path, 9, {})
+    assert not cache.exists()
+
+
 def test_cleanup_error_is_recorded_for_inspection(tmp_path, production_run):
     directory, pages, process = production_run
     pages.cleanup.side_effect = ValueError("browser unavailable")

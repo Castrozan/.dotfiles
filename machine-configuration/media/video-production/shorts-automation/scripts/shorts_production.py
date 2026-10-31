@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 
+import shorts_composition
 import shorts_runner
 import shorts_recovery
 from shorts_quality import digest, inside_run, verify_episode, verify_publication
@@ -93,6 +94,7 @@ def main():
     )
     commands.add_parser("recover-next")
     commands.add_parser("drain-recovery")
+    commands.add_parser("build").add_argument("--manifest", type=Path, required=True)
     for action in ("reserve", "verify", "dispatch", "complete"):
         commands.add_parser(action).add_argument(
             "--episode-file", type=Path, required=True
@@ -105,6 +107,10 @@ def main():
         )
     elif arguments.action == "history":
         result = TopicStore(root).history()
+    elif arguments.action == "build":
+        result = shorts_composition.build_composition(
+            run_directory(root), root, arguments.manifest
+        )
     elif arguments.action in shorts_recovery.ACTIONS:
         result = shorts_recovery.command(
             arguments, root, read_document(os.environ["SHORTS_CONFIGURATION"])

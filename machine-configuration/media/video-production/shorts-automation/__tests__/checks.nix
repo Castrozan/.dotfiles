@@ -12,7 +12,8 @@ in
       __tests__/unit/test_shorts_production.py __tests__/unit/test_shorts_quality.py \
       __tests__/unit/test_shorts_browser.py __tests__/unit/test_shorts_browser_upload.py \
       __tests__/unit/test_shorts_browser_pages.py __tests__/unit/test_shorts_runner.py \
-      __tests__/unit/test_shorts_browser_scoping.py __tests__/unit/test_shorts_browser_transport.py
+      __tests__/unit/test_shorts_browser_scoping.py __tests__/unit/test_shorts_browser_transport.py \
+      __tests__/unit/test_shorts_composition.py
     touch "$out"
   '';
 }
