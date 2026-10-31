@@ -82,8 +82,7 @@ def episode_command(action, root, path):
     return complete_episode(directory, store, episode)
 
 
-def main():
-    os.umask(0o077)
+def build_parser():
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest="action", required=True)
     run = commands.add_parser("run")
@@ -99,25 +98,31 @@ def main():
         commands.add_parser(action).add_argument(
             "--episode-file", type=Path, required=True
         )
-    arguments = parser.parse_args()
-    root = state_directory()
+    return parser
+
+
+def execute_action(arguments, root):
     if arguments.action == "run":
-        result = shorts_runner.start_run(
+        return shorts_runner.start_run(
             root, arguments.slot, read_document(os.environ["SHORTS_CONFIGURATION"])
         )
-    elif arguments.action == "history":
-        result = TopicStore(root).history()
-    elif arguments.action == "build":
-        result = shorts_composition.build_composition(
+    if arguments.action == "history":
+        return TopicStore(root).history()
+    if arguments.action == "build":
+        return shorts_composition.build_composition(
             run_directory(root), root, arguments.manifest
         )
-    elif arguments.action in shorts_recovery.ACTIONS:
-        result = shorts_recovery.command(
+    if arguments.action in shorts_recovery.ACTIONS:
+        return shorts_recovery.command(
             arguments, root, read_document(os.environ["SHORTS_CONFIGURATION"])
         )
-    else:
-        result = episode_command(arguments.action, root, arguments.episode_file)
-    print(json.dumps(result))
+    return episode_command(arguments.action, root, arguments.episode_file)
+
+
+def main():
+    os.umask(0o077)
+    arguments = build_parser().parse_args()
+    print(json.dumps(execute_action(arguments, state_directory())))
 
 
 if __name__ == "__main__":
