@@ -11,7 +11,7 @@ renderer.setPixelRatio(1);
 renderer.outputEncoding = THREE.sRGBEncoding;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#17202c");
-const cameraLayer = new CameraLayer();
+const cameraLayer = new CameraLayer(() => setMode("avatar"));
 const localControls = new BroadcastChannel("avatar-local-controls");
 scene.add(new THREE.HemisphereLight(0xffffff, 0x58617b, 2));
 const camera = new THREE.PerspectiveCamera(30, 1280 / 720, 0.1, 20);
@@ -26,6 +26,7 @@ let socket;
 let lastLevelTime = 0;
 let lastFrameTime = 0;
 let expression = "neutral";
+let idleMode = "breathing";
 
 async function loadAvatar() {
   const gltf = await loader.loadAsync("/model.vrm");
@@ -61,6 +62,12 @@ function render(timestamp) {
       "blink",
       Math.sin((timestamp / 1000) * 1.1) > 0.995 ? 1 : 0,
     );
+    avatar.scene.position.y =
+      idleMode === "floating"
+        ? Math.sin(timestamp / 1500) * 0.03
+        : idleMode === "breathing"
+          ? Math.sin(timestamp / 500) * 0.003
+          : 0;
     avatar.update(delta);
   }
   renderer.setViewport(0, 0, 1280, 720);
@@ -95,6 +102,13 @@ function handleMessage(message) {
     avatar?.expressionManager.setValue(expression, 0);
     expression = message.expression;
     avatar?.expressionManager.setValue(expression, message.intensity ?? 1);
+  } else if (message.type === "setIdle") {
+    idleMode = message.mode;
+  } else if (message.type === "startSpeaking") {
+    handleMessage({
+      type: "updateExpression",
+      expression: message.emotion || "neutral",
+    });
   } else if (message.type === "setVideoMode") {
     try {
       setMode(message.mode);
@@ -125,6 +139,7 @@ function connect() {
 }
 
 async function enableCamera(deviceId) {
+  setMode("avatar");
   await cameraLayer.enable(deviceId);
 }
 

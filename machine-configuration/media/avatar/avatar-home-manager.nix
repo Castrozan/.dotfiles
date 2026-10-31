@@ -27,6 +27,10 @@ let
     }:$PATH
     exec ${pkgs.nodejs_22}/bin/node ${control}/virtual-camera.js --fps 15 --width 1280 --height 720
   '';
+  controls = pkgs.writeShellScriptBin "avatar-controls" ''
+    export PATH=${lib.makeBinPath [ pkgs.chromium ]}:$PATH
+    exec ${pkgs.python312}/bin/python3 ${browserRuntime} controls
+  '';
   command = pkgs.writeShellScriptBin "avatar-command" ''
     export NODE_PATH=${control}/node_modules
     exec ${pkgs.nodejs_22}/bin/node ${./scripts/command.js} "$@"
@@ -59,6 +63,7 @@ in
     home.packages = [
       audio
       command
+      controls
       start
       stop
     ];

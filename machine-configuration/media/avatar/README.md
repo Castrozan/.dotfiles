@@ -1,8 +1,9 @@
 # Avatar meeting media
 
 The avatar runs locally and independently of an agent harness. Its recovered VRM model, portrait assets and rendering
-libraries are pinned by Nix and served locally. Start it with `avatar-start`; open
-[the local controls](http://localhost:3000/controls.html) for camera permission and video modes.
+libraries are pinned by Nix and served locally. Start it with `avatar-start`; run
+`avatar-controls` for camera permission and video modes. The controls must use the avatar-owned browser profile so their
+permission flow can reach the output window.
 
 Both audio inputs start muted at 50%. `avatar-audio status` shows ownership, mute and level state. Send an application's
 playback to `AvatarMic`, for example `PULSE_SINK=AvatarMic paplay generated.wav`, then use
@@ -32,5 +33,8 @@ The avatar stop operation releases its camera, owned browser and audio modules, 
 
 The virtual camera uses [v4l2loopback's exclusive capture mode](https://github.com/v4l2loopback/v4l2loopback), so it appears
 as a capture device only while its producer runs. A meeting application may need to refresh its device list.
+The agent audio path is buffered to match the local camera pipeline; the human path stays low latency.
+Meeting applications can add their own processing delay, so local alignment is not a guarantee for every remote client.
+
 Audio routing uses PipeWire's [loopback](https://docs.pipewire.org/page_pulse_module_loopback.html) and
 [remapped source](https://docs.pipewire.org/page_pulse_module_remap_source.html) modules with explicit endpoints.

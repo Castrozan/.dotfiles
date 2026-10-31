@@ -1,5 +1,6 @@
 import os
 import signal
+import shlex
 import socket
 import subprocess
 import sys
@@ -19,6 +20,10 @@ def start(url):
     profile.mkdir(parents=True, exist_ok=True, mode=0o700)
     endpoint = profile / "DevToolsActivePort"
     if owned_process(profile) is not None:
+        if not endpoint.exists():
+            raise RuntimeError(
+                "The owned avatar browser has no endpoint; stop it before restarting"
+            )
         print(int(endpoint.read_text().splitlines()[0]))
         return
     remove_stale_locks(profile)
@@ -32,6 +37,8 @@ def start(url):
                 "--autoplay-policy=no-user-gesture-required",
                 "--disable-background-timer-throttling",
                 "--disable-renderer-backgrounding",
+                "--disable-backgrounding-occluded-windows",
+                "--ozone-platform=x11",
                 f"--app={url}",
             ],
             stdout=output,
@@ -43,6 +50,9 @@ def start(url):
         if process.poll() is not None:
             raise RuntimeError("The avatar browser did not start a new owned instance")
         if endpoint.exists():
+            (profile / "browser.pid").write_text(
+                str(owned_process(profile) or process.pid)
+            )
             print(int(endpoint.read_text().splitlines()[0]))
             return
         time.sleep(0.1)
@@ -66,30 +76,63 @@ def stop():
     remove_stale_locks(profile)
 
 
-def owned_process(profile):
-    path = profile / "browser.pid"
-    if not path.exists():
-        return
-    identifier = int(path.read_text())
-    try:
-        arguments = (
-            (Path("/proc") / str(identifier) / "cmdline").read_bytes().split(bytes([0]))
-        )
-        if f"--user-data-dir={profile}".encode() in arguments:
-            return identifier
-    except (ProcessLookupError, FileNotFoundError):
-        pass
-
-
-def remove_stale_locks(profile):
+def locked_process_identifier(profile):
     lock = profile / "SingletonLock"
     if not lock.is_symlink():
         return
-    hostname, identifier = str(lock.readlink()).rsplit("-", 1)
-    if hostname != socket.gethostname() or not identifier.isdigit():
+    target = str(lock.readlink()).rsplit("-", 1)
+    if len(target) == 2 and target[0] == socket.gethostname() and target[1].isdigit():
+        return int(target[1])
+
+
+def owned_process(profile):
+    path = profile / "browser.pid"
+    identifiers = [locked_process_identifier(profile)]
+    if path.exists():
+        identifiers.append(int(path.read_text()))
+    for identifier in identifiers:
+        if identifier is None:
+            continue
+        try:
+            arguments = (
+                (Path("/proc") / str(identifier) / "cmdline")
+                .read_bytes()
+                .split(bytes([0]))
+            )
+            if len(arguments) == 2 and arguments[-1] == b"":
+                arguments = [
+                    part.encode() for part in shlex.split(arguments[0].decode())
+                ]
+            if f"--user-data-dir={profile}".encode() in arguments:
+                return identifier
+        except (ProcessLookupError, FileNotFoundError):
+            pass
+
+
+def controls():
+    profile = profile_directory()
+    if owned_process(profile) is None:
+        raise RuntimeError("Start the avatar before opening its controls")
+    subprocess.Popen(
+        [
+            "chromium",
+            f"--user-data-dir={profile}",
+            "--app=http://localhost:3000/controls.html",
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def remove_stale_locks(profile):
+    identifier = locked_process_identifier(profile)
+    if identifier is None:
         return
-    if (Path("/proc") / identifier).exists():
-        return
+    try:
+        if (Path("/proc") / str(identifier) / "cmdline").read_bytes():
+            return
+    except FileNotFoundError:
+        pass
     for name in ("SingletonLock", "SingletonCookie", "SingletonSocket"):
         (profile / name).unlink(missing_ok=True)
 
@@ -99,5 +142,7 @@ if __name__ == "__main__":
         start(sys.argv[2])
     elif sys.argv[1] == "stop":
         stop()
+    elif sys.argv[1] == "controls":
+        controls()
     else:
         raise ValueError("Use start URL or stop")

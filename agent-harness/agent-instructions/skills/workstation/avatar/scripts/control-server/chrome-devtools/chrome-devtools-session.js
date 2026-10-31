@@ -10,18 +10,22 @@ class ChromeDevtoolsSession {
     return messageId;
   }
 
-  sendAndAwaitResult(method, params = {}) {
-    return new Promise((resolve) => {
-      const messageId = this.send(method, params);
+  sendAndAwaitResult(method, params = {}, timeoutMilliseconds = 10000) {
+    return new Promise((resolve, reject) => {
+      const messageId = ++this.lastMessageId;
+      const timer = setTimeout(() => {
+        unsubscribe();
+        reject(new Error(`Chrome did not answer ${method}`));
+      }, timeoutMilliseconds);
       const unsubscribe = this.messageSocketClient.onMessage((rawMessage) => {
-        try {
-          const message = JSON.parse(rawMessage);
-          if (message.id === messageId) {
-            unsubscribe();
-            resolve(message.result);
-          }
-        } catch {}
+        const message = JSON.parse(rawMessage);
+        if (message.id !== messageId) return;
+        unsubscribe();
+        clearTimeout(timer);
+        if (message.error) reject(new Error(message.error.message));
+        else resolve(message.result);
       });
+      this.messageSocketClient.sendJson({ id: messageId, method, params });
     });
   }
 

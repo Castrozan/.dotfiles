@@ -46,7 +46,7 @@ def main():
         subprocess.run(["systemctl", "--user", "stop", "avatar.target"], check=False)
         raise
     print(
-        "Avatar ready. Audio inputs start muted. Controls: http://localhost:3000/controls.html"
+        "Avatar ready. Check mute/levels with avatar-audio status. Run avatar-controls for video controls"
     )
 
 

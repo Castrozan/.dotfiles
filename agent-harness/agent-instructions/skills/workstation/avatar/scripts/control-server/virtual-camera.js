@@ -71,36 +71,40 @@ async function dismissStartModal(session) {
   }
 }
 
-function streamScreencastFrames(session, framePipeline) {
+async function captureFrames(session, framePipeline) {
   let frameCount = 0;
-  let lastFrameTime = 0;
-
-  session.onEvent((message) => {
-    if (message.method !== "Page.screencastFrame") {
-      return;
-    }
-
-    const { sessionId, metadata } = message.params;
-    session.send("Page.screencastFrameAck", { sessionId });
-    const now = performance.now();
-    if (now - lastFrameTime < 1000 / CONFIG.FPS - 2) return;
-    lastFrameTime = now;
-    if (!framePipeline.writeFrame(Buffer.from(message.params.data, "base64")))
-      return;
-
-    frameCount++;
-    if (frameCount % (CONFIG.FPS * 5) === 0) {
-      console.log(
-        `📹 Frames captured: ${frameCount} (${metadata.deviceWidth}x${metadata.deviceHeight})`,
-      );
-    }
+  let closed = false;
+  session.onClosed(() => {
+    closed = true;
   });
+  while (!closed) {
+    const started = performance.now();
+    const screenshot = await session.sendAndAwaitResult(
+      "Page.captureScreenshot",
+      {
+        format: CONFIG.FORMAT,
+        quality: CONFIG.SCREENCAST_QUALITY,
+        fromSurface: true,
+        captureBeyondViewport: false,
+      },
+    );
+    if (closed) return;
+    if (framePipeline.writeFrame(Buffer.from(screenshot.data, "base64")))
+      frameCount++;
+    if (frameCount && frameCount % (CONFIG.FPS * 5) === 0)
+      console.log(`Frames captured: ${frameCount}`);
+    await new Promise((resolve) =>
+      setTimeout(
+        resolve,
+        Math.max(1, 1000 / CONFIG.FPS - (performance.now() - started)),
+      ),
+    );
+  }
 }
 
 function registerShutdownHandlers(session, framePipeline) {
   process.on("SIGINT", () => {
     console.log("\n🛑 Stopping virtual camera...");
-    session.send("Page.stopScreencast");
     setTimeout(() => {
       framePipeline.end();
       session.close();
@@ -145,19 +149,13 @@ async function startCapture() {
     });
     await dismissStartModal(session);
 
-    session.send("Page.startScreencast", {
-      format: CONFIG.FORMAT,
-      quality: CONFIG.SCREENCAST_QUALITY,
-      maxWidth: CONFIG.WIDTH,
-      maxHeight: CONFIG.HEIGHT,
-      everyNthFrame: 1,
+    captureFrames(session, framePipeline).catch((error) => {
+      console.error(error.message);
+      process.exitCode = 1;
+      framePipeline.end();
+      session.close();
     });
-
-    console.log("📡 Screencast started. Streaming to virtual camera...");
-    console.log("   Press Ctrl+C to stop.");
   });
-
-  streamScreencastFrames(session, framePipeline);
 
   session.onClosed(() => {
     console.log("❌ CDP connection closed");

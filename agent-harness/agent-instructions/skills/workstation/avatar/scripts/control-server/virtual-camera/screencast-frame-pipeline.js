@@ -42,7 +42,7 @@ class ScreencastFramePipeline {
 
     this.encoder.on("close", (exitCode) => {
       console.log(`[ffmpeg] Exited with code ${exitCode}`);
-      process.exit(exitCode || 0);
+      process.exit(exitCode || process.exitCode || 0);
     });
   }
 

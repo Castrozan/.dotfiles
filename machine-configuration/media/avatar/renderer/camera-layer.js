@@ -1,7 +1,8 @@
 import * as THREE from "three";
 
 export class CameraLayer {
-  constructor() {
+  constructor(onEnded) {
+    this.onEnded = onEnded;
     this.video = document.createElement("video");
     this.video.muted = true;
     this.video.playsInline = true;
@@ -35,9 +36,20 @@ export class CameraLayer {
       throw new Error("Choose a physical camera rather than Avatar Cam");
     }
     this.stream = stream;
+    stream.getVideoTracks().forEach((track) => {
+      track.addEventListener(
+        "ended",
+        () => {
+          this.disable();
+          this.onEnded();
+        },
+        { once: true },
+      );
+    });
     this.video.srcObject = stream;
     await this.video.play();
     this.material.map = new THREE.VideoTexture(this.video);
+    this.material.map.encoding = THREE.sRGBEncoding;
     this.material.needsUpdate = true;
   }
 
@@ -51,6 +63,14 @@ export class CameraLayer {
   }
 
   render(renderer, timestamp, mouth) {
+    const aspect = this.syntheticCanvas
+      ? 16 / 9
+      : this.video.videoWidth / this.video.videoHeight;
+    this.plane.scale.set(
+      Math.max(1, aspect / (16 / 9)),
+      Math.max(1, 16 / 9 / aspect),
+      1,
+    );
     if (this.syntheticCanvas) {
       const context = this.syntheticCanvas.getContext("2d");
       context.fillStyle = "#2362a8";
