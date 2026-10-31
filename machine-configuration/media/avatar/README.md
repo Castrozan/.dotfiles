@@ -27,8 +27,10 @@ request switching and wait for the renderer's result. Camera modes require a loc
 `avatar-command speak "Text" neutral mic` uses the existing Edge TTS provider and sends the text to that provider.
 Playing an existing local audio file needs no TTS service.
 
-Mute both channels and switch the meeting application's selected microphone/camera before `avatar-stop` removes the
+Stop agent playback, mute both channels and switch the meeting application's selected microphone/camera before `avatar-stop` removes the
 virtual devices. Meeting applications can choose their own fallback device when a selected device disappears.
+Teardown refuses to remove an input sink that still has agent playback connected, keeping the inputs muted so that
+playback cannot fall back to speakers. Stop that playback, then run `avatar-audio stop` to finish cleanup.
 The avatar stop operation releases its camera, owned browser and audio modules, without stopping other applications.
 
 The virtual camera uses [v4l2loopback's exclusive capture mode](https://github.com/v4l2loopback/v4l2loopback), so it appears

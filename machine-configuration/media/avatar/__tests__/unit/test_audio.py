@@ -64,8 +64,8 @@ class Pulse:
 @pytest.fixture
 def pulse(monkeypatch):
     backend = Pulse()
-    monkeypatch.setattr(audio, "pulse", backend.call)
-    monkeypatch.setattr(audio, "pulse_items", backend.items)
+    monkeypatch.setattr(audio.pulse_audio, "run", backend.call)
+    monkeypatch.setattr(audio.pulse_audio, "items", backend.items)
     return backend
 
 
@@ -145,8 +145,27 @@ def test_attach_requires_existing_non_feedback_source(tmp_path, pulse):
 
 def test_parse_modules_handles_multiline_native_modules():
     output = "1\tlibpipewire-module-rt\t{\n    rt.prio = 88\n}\t\n536870916\tmodule-null-sink\tsink_name=AvatarMic rate=48000\t\n"
-    assert audio.parse_modules(output)[-1] == {
+    assert audio.pulse_audio.parse_modules(output)[-1] == {
         "index": 536870916,
         "name": "module-null-sink",
         "argument": "sink_name=AvatarMic rate=48000",
     }
+
+
+def test_active_agent_playback_prevents_fallback_during_stop(
+    tmp_path, pulse, monkeypatch
+):
+    path = tmp_path / "state.json"
+    state = {"modules": []}
+    audio.start(path, state)
+    modules = list(pulse.modules)
+    monkeypatch.setattr(audio.pulse_audio, "active_playbacks", lambda _: ["app-stream"])
+    with pytest.raises(ValueError, match="inputs remain muted"):
+        audio.stop(path, state)
+    assert pulse.modules == modules
+    assert path.exists()
+    for name in audio.CHANNELS.values():
+        assert ("set-sink-mute", name, "1") in pulse.calls
+    monkeypatch.setattr(audio.pulse_audio, "active_playbacks", lambda _: [])
+    audio.stop(path, state)
+    assert not path.exists()

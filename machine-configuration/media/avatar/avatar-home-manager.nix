@@ -45,7 +45,11 @@ let
     exec ${pkgs.python312}/bin/python3 ${./scripts/start.py}
   '';
   stop = pkgs.writeShellScriptBin "avatar-stop" ''
-    exec systemctl --user stop avatar.target
+    systemctl --user stop avatar.target
+    if systemctl --user is-failed --quiet avatar-audio.service; then
+      echo "Avatar audio cleanup is incomplete; inspect avatar-audio status, then retry avatar-audio stop" >&2
+      exit 1
+    fi
   '';
   tools = lib.makeBinPath [
     pkgs.ffmpeg

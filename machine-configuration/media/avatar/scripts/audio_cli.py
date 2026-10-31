@@ -2,10 +2,11 @@ import argparse
 import json
 
 import audio
+import pulse_audio
 
 
 def describe(state):
-    modules = audio.pulse_items("modules")
+    modules = pulse_audio.items("modules")
     return {
         "running": bool(state.get("ready"))
         and all(audio.matches_module(entry, modules) for entry in state["modules"]),
@@ -14,7 +15,7 @@ def describe(state):
         "channels": {
             channel: {key: sink.get(key) for key in ("name", "mute", "volume")}
             for channel, name in audio.CHANNELS.items()
-            for sink in audio.pulse_items("sinks")
+            for sink in pulse_audio.items("sinks")
             if sink["name"] == name
         },
     }
