@@ -89,3 +89,94 @@ def test_failed_page_initialization_cleans_up_without_spending_a_session(
     pages.cleanup.assert_called_once()
     shorts_runner.subprocess.Popen.assert_not_called()
     assert read_document(directory / "status.json")["status"] == "needs_inspection"
+
+
+def configuration():
+    return {
+        "timezone": "America/Sao_Paulo",
+        "hours": [9, 15, 21],
+        "model": "gpt-6.1-sol",
+        "channel_id": "authorized-channel",
+        "browser_profile": "shorts",
+        "browser_profile_id": "authorized-profile",
+    }
+
+
+def agent_launcher(tmp_path, monkeypatch, returncode):
+    write_document(
+        tmp_path / "publisher-ready.json",
+        {
+            "status": "ready",
+            "channel_id": "authorized-channel",
+            "browser_profile": "shorts",
+            "browser_profile_id": "authorized-profile",
+        },
+    )
+    prompt = tmp_path / "goal.txt"
+    prompt.write_text("Produce exactly one video")
+    monkeypatch.setenv("SHORTS_CODEX", "/bin/codex")
+    monkeypatch.setenv("SHORTS_GOAL_PROMPT", str(prompt))
+    process = Mock()
+    process.wait.return_value = returncode
+    start = Mock(return_value=process)
+    monkeypatch.setattr(shorts_runner.subprocess, "Popen", start)
+    monkeypatch.setattr(shorts_runner, "browser_instance", lambda configuration: {})
+    monkeypatch.setattr(shorts_runner, "browser_pages", Mock(return_value=Mock()))
+    return start
+
+
+@pytest.mark.parametrize("channel", [None, "another-channel"])
+def test_unverified_publisher_cannot_launch_or_claim_slot(
+    tmp_path, monkeypatch, channel
+):
+    start = Mock()
+    monkeypatch.setattr(shorts_runner.subprocess, "Popen", start)
+    if channel:
+        write_document(
+            tmp_path / "publisher-ready.json",
+            {"status": "ready", "channel_id": channel, "browser_profile": "shorts"},
+        )
+    result = shorts_runner.start_run(tmp_path, 9, configuration())
+    assert result["status"] == "skipped"
+    assert "Publisher" in result["reason"]
+    assert not (tmp_path / "runs").exists()
+    start.assert_not_called()
+
+
+def test_same_slot_launches_only_one_fresh_agent(tmp_path, monkeypatch):
+    start = agent_launcher(tmp_path, monkeypatch, 0)
+    assert (
+        shorts_runner.start_run(tmp_path, 9, configuration())["status"]
+        == "agent_finished"
+    )
+    assert shorts_runner.start_run(tmp_path, 9, configuration())["status"] == "skipped"
+    assert start.call_count == 1
+    arguments = start.call_args.args[0]
+    assert "resume" not in arguments
+    assert arguments[-2:] == ["--", "Produce exactly one video"]
+    assert "gpt-6.1-sol" in arguments
+    assert "mcp_servers.chrome-devtools.enabled=false" not in arguments
+    assert start.call_args.kwargs["env"]["CLAWDE_AGENT_NAME"] == "shorts-production"
+    assert start.call_args.kwargs["env"]["SHORTS_BROWSER_RUN"].endswith("-0900")
+
+
+def test_failed_agent_leaves_claimed_slot_for_inspection(tmp_path, monkeypatch):
+    agent_launcher(tmp_path, monkeypatch, 1)
+    assert (
+        shorts_runner.start_run(tmp_path, 15, configuration())["status"]
+        == "needs_inspection"
+    )
+    assert shorts_runner.start_run(tmp_path, 15, configuration())["status"] == "skipped"
+
+
+def test_unavailable_browser_does_not_spend_a_production_session(tmp_path, monkeypatch):
+    start = agent_launcher(tmp_path, monkeypatch, 0)
+    monkeypatch.setattr(
+        shorts_runner,
+        "browser_instance",
+        Mock(side_effect=ValueError("Shorts browser unavailable")),
+    )
+    result = shorts_runner.start_run(tmp_path, 15, configuration())
+    assert result == {"status": "skipped", "reason": "Shorts browser unavailable"}
+    start.assert_not_called()
+    assert not (tmp_path / "runs").exists()

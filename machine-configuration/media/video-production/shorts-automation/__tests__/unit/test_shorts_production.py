@@ -1,9 +1,13 @@
+import json
 import sqlite3
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
 
+import shorts_composition
 import shorts_production
+import shorts_recovery
 import shorts_runner
 from shorts_store import TopicStore, write_document
 
@@ -100,86 +104,6 @@ def test_dispatch_cannot_be_repeated(tmp_path, monkeypatch):
         )
 
 
-def agent_launcher(tmp_path, monkeypatch, returncode):
-    write_document(
-        tmp_path / "publisher-ready.json",
-        {
-            "status": "ready",
-            "channel_id": "authorized-channel",
-            "browser_profile": "shorts",
-            "browser_profile_id": "authorized-profile",
-        },
-    )
-    prompt = tmp_path / "goal.txt"
-    prompt.write_text("Produce exactly one video")
-    monkeypatch.setenv("SHORTS_CODEX", "/bin/codex")
-    monkeypatch.setenv("SHORTS_GOAL_PROMPT", str(prompt))
-    process = Mock()
-    process.wait.return_value = returncode
-    start = Mock(return_value=process)
-    monkeypatch.setattr(shorts_runner.subprocess, "Popen", start)
-    monkeypatch.setattr(shorts_runner, "browser_instance", lambda configuration: {})
-    monkeypatch.setattr(shorts_runner, "browser_pages", Mock(return_value=Mock()))
-    return start
-
-
-@pytest.mark.parametrize("channel", [None, "another-channel"])
-def test_unverified_publisher_cannot_launch_or_claim_slot(
-    tmp_path, monkeypatch, channel
-):
-    start = Mock()
-    monkeypatch.setattr(shorts_runner.subprocess, "Popen", start)
-    if channel:
-        write_document(
-            tmp_path / "publisher-ready.json",
-            {"status": "ready", "channel_id": channel, "browser_profile": "shorts"},
-        )
-    result = shorts_runner.start_run(tmp_path, 9, configuration())
-    assert result["status"] == "skipped"
-    assert "Publisher" in result["reason"]
-    assert not (tmp_path / "runs").exists()
-    start.assert_not_called()
-
-
-def test_same_slot_launches_only_one_fresh_agent(tmp_path, monkeypatch):
-    start = agent_launcher(tmp_path, monkeypatch, 0)
-    assert (
-        shorts_runner.start_run(tmp_path, 9, configuration())["status"]
-        == "agent_finished"
-    )
-    assert shorts_runner.start_run(tmp_path, 9, configuration())["status"] == "skipped"
-    assert start.call_count == 1
-    arguments = start.call_args.args[0]
-    assert "resume" not in arguments
-    assert arguments[-2:] == ["--", "Produce exactly one video"]
-    assert "gpt-6.1-sol" in arguments
-    assert "mcp_servers.chrome-devtools.enabled=false" not in arguments
-    assert start.call_args.kwargs["env"]["CLAWDE_AGENT_NAME"] == "shorts-production"
-    assert start.call_args.kwargs["env"]["SHORTS_BROWSER_RUN"].endswith("-0900")
-
-
-def test_failed_agent_leaves_claimed_slot_for_inspection(tmp_path, monkeypatch):
-    agent_launcher(tmp_path, monkeypatch, 1)
-    assert (
-        shorts_runner.start_run(tmp_path, 15, configuration())["status"]
-        == "needs_inspection"
-    )
-    assert shorts_runner.start_run(tmp_path, 15, configuration())["status"] == "skipped"
-
-
-def test_unavailable_browser_does_not_spend_a_production_session(tmp_path, monkeypatch):
-    start = agent_launcher(tmp_path, monkeypatch, 0)
-    monkeypatch.setattr(
-        shorts_runner,
-        "browser_instance",
-        Mock(side_effect=ValueError("Shorts browser unavailable")),
-    )
-    result = shorts_runner.start_run(tmp_path, 15, configuration())
-    assert result == {"status": "skipped", "reason": "Shorts browser unavailable"}
-    start.assert_not_called()
-    assert not (tmp_path / "runs").exists()
-
-
 def test_episode_document_must_be_inside_its_run(tmp_path, monkeypatch):
     directory = tmp_path / "runs" / "slot"
     directory.mkdir(parents=True)
@@ -189,3 +113,79 @@ def test_episode_document_must_be_inside_its_run(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="Evidence must exist inside"):
         shorts_production.episode_command("reserve", tmp_path, outside)
     assert not (tmp_path / "topics.sqlite").exists()
+
+
+def configuration_file(tmp_path, monkeypatch):
+    path = tmp_path / "configuration.json"
+    write_document(path, configuration())
+    monkeypatch.setenv("SHORTS_CONFIGURATION", str(path))
+    return path
+
+
+def test_run_action_starts_the_requested_slot(tmp_path, monkeypatch):
+    configuration_file(tmp_path, monkeypatch)
+    start_run = Mock(return_value={"started": True})
+    monkeypatch.setattr(shorts_runner, "start_run", start_run)
+    arguments = shorts_production.build_parser().parse_args(["run", "--slot", "15"])
+    result = shorts_production.execute_action(arguments, tmp_path)
+    assert result == {"started": True}
+    start_run.assert_called_once_with(tmp_path, 15, configuration())
+
+
+def test_history_action_lists_reserved_topics(tmp_path):
+    TopicStore(tmp_path).reserve(proposal(), "morning")
+    arguments = shorts_production.build_parser().parse_args(["history"])
+    result = shorts_production.execute_action(arguments, tmp_path)
+    assert "tardigrade-vacuum" in json.dumps(result)
+
+
+def test_build_action_composes_inside_the_run_directory(tmp_path, monkeypatch):
+    directory = tmp_path / "runs" / "slot"
+    directory.mkdir(parents=True)
+    monkeypatch.chdir(directory)
+    build_composition = Mock(return_value={"built": True})
+    monkeypatch.setattr(shorts_composition, "build_composition", build_composition)
+    arguments = shorts_production.build_parser().parse_args(
+        ["build", "--manifest", "manifest.json"]
+    )
+    result = shorts_production.execute_action(arguments, tmp_path)
+    assert result == {"built": True}
+    build_composition.assert_called_once_with(
+        directory.resolve(), tmp_path, Path("manifest.json")
+    )
+
+
+@pytest.mark.parametrize("action", shorts_recovery.ACTIONS)
+def test_recovery_actions_are_handled_by_recovery(action, tmp_path, monkeypatch):
+    configuration_file(tmp_path, monkeypatch)
+    command = Mock(return_value={"recovered": action})
+    monkeypatch.setattr(shorts_recovery, "command", command)
+    extra = ["--run-id", "2026-10-31-0900"] if action == "queue-recovery" else []
+    arguments = shorts_production.build_parser().parse_args([action, *extra])
+    result = shorts_production.execute_action(arguments, tmp_path)
+    assert result == {"recovered": action}
+    command.assert_called_once_with(arguments, tmp_path, configuration())
+
+
+@pytest.mark.parametrize("action", ["reserve", "verify", "dispatch", "complete"])
+def test_episode_actions_are_handled_by_episode_command(action, tmp_path, monkeypatch):
+    episode_command = Mock(return_value={"episode": action})
+    monkeypatch.setattr(shorts_production, "episode_command", episode_command)
+    arguments = shorts_production.build_parser().parse_args(
+        [action, "--episode-file", "episode.json"]
+    )
+    result = shorts_production.execute_action(arguments, tmp_path)
+    assert result == {"episode": action}
+    episode_command.assert_called_once_with(action, tmp_path, Path("episode.json"))
+
+
+def test_unknown_action_is_rejected_by_the_parser():
+    with pytest.raises(SystemExit):
+        shorts_production.build_parser().parse_args(["publish"])
+
+
+def test_main_prints_the_action_result_as_json(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("SHORTS_STATE_DIRECTORY", str(tmp_path))
+    monkeypatch.setattr("sys.argv", ["shorts_production", "history"])
+    shorts_production.main()
+    assert json.loads(capsys.readouterr().out) == TopicStore(tmp_path).history()
