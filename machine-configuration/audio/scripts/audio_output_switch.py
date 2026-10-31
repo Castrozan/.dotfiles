@@ -2,6 +2,13 @@ import subprocess
 from pathlib import Path
 
 AUDIO_OUTPUT_ICONS_DIR = Path.home() / ".config" / "audio" / "notification-icons"
+HARDWARE_SINK_PREFIXES = ("alsa_output.", "bluez_output.")
+
+
+def is_hardware_sink(sink_name: str) -> bool:
+    return sink_name.startswith(HARDWARE_SINK_PREFIXES) and not sink_name.endswith(
+        ".monitor"
+    )
 
 
 def list_all_hardware_sink_names() -> list[str]:
@@ -13,7 +20,7 @@ def list_all_hardware_sink_names() -> list[str]:
     sinks = []
     for line in result.stdout.splitlines():
         fields = line.split("\t")
-        if len(fields) >= 2 and not fields[1].endswith(".monitor"):
+        if len(fields) >= 2 and is_hardware_sink(fields[1]):
             sinks.append(fields[1])
     return sinks
 
@@ -61,7 +68,11 @@ def move_all_playing_streams_to_sink(target_sink_name: str) -> None:
         capture_output=True,
         text=True,
     )
-    move_sink_inputs(inputs_output.stdout, target_sink_index)
+    move_sink_inputs(
+        inputs_output.stdout,
+        target_sink_index,
+        find_virtual_sink_indexes(sinks_output.stdout),
+    )
 
 
 def find_sink_index(sinks_output: str, target_sink_name: str) -> str | None:
@@ -72,10 +83,21 @@ def find_sink_index(sinks_output: str, target_sink_name: str) -> str | None:
     return None
 
 
-def move_sink_inputs(inputs_output: str, target_sink_index: str) -> None:
+def find_virtual_sink_indexes(sinks_output: str) -> set[str]:
+    rows = [line.split("\t") for line in sinks_output.splitlines()]
+    return {
+        fields[0]
+        for fields in rows
+        if len(fields) >= 2 and not is_hardware_sink(fields[1])
+    }
+
+
+def move_sink_inputs(
+    inputs_output: str, target_sink_index: str, virtual_sink_indexes: set[str]
+) -> None:
     for line in inputs_output.splitlines():
         fields = line.split("\t")
-        if not fields:
+        if len(fields) >= 2 and fields[1] in virtual_sink_indexes:
             continue
         subprocess.run(
             ["pactl", "move-sink-input", fields[0], target_sink_index],

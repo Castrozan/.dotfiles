@@ -20,7 +20,7 @@ Two independent mechanisms guarantee Bluetooth becomes the default output the mo
 
 WirePlumber's priority system is the first layer. Bluetooth output nodes get session priority 3000 (from `bluetooth-policy.nix`), which beats every ALSA output (~1000 default). WirePlumber auto-selects the highest-priority available node, so BT wins by policy.
 
-The `bluetooth-audio-autoswitch` systemd service is the second layer. It runs `pactl subscribe` in a loop, watching for both `'new' on sink` and `'remove' on sink` events. When a new sink appears with a name matching `bluez_output.*`, it calls `pactl set-default-sink` and then moves all existing streams to the new sink. When any sink is removed (e.g. BT disconnect), it moves all streams to the new default sink. This explicit stream migration is necessary because streams can get pinned to specific sinks — WirePlumber's `follow` policy only moves unpinned streams. The service runs on both NixOS and Ubuntu via PulseAudio protocol.
+The `bluetooth-audio-autoswitch` systemd service is the second layer. It runs `pactl subscribe` in a loop, watching for both `'new' on sink` and `'remove' on sink` events. When a new sink appears with a name matching `bluez_output.*`, it calls `pactl set-default-sink` and then moves all existing streams to the new sink. When any sink is removed (e.g. BT disconnect), it moves all streams to the new default sink. This explicit stream migration is necessary because streams can get pinned to specific sinks — WirePlumber's `follow` policy only moves unpinned streams. Only sink events count: a stream starting or ending is a `sink-input` event and moves nothing. Streams on virtual sinks stay where they are, because reaching one is a deliberate route; only streams on `alsa_output.*` and `bluez_output.*` sinks follow the default. The service runs on both NixOS and Ubuntu via PulseAudio protocol.
 
 Profile toggling between A2DP (stereo, no mic) and HFP (mono, mic enabled) is done through `bin/hypr/bluetooth`, which calls `pactl set-card-profile` on the `bluez_card.*` device. WirePlumber also supports automatic headset profile switching when a VoIP app requests a source, controlled by the `autoswitchToHeadsetProfile` policy value.
 
@@ -39,7 +39,7 @@ WirePlumber's `restore-target` is disabled on both platforms (`bluetooth-policy.
 
 ## Output Switching
 
-The `audio-output-switch` script cycles through available hardware sinks. It lists all non-monitor sinks, finds the current default, advances to the next one in the list, calls `pactl set-default-sink`, and then explicitly moves all playing streams to the new sink. It sends a desktop notification showing the new device's human-readable description. Bound to `SHIFT + XF86AudioStop` in `bindings.conf`.
+The `audio-output-switch` script cycles through available hardware sinks. It lists the hardware sinks, finds the current default, advances to the next one in the list, calls `pactl set-default-sink`, and then moves playing streams on hardware sinks to the new sink. It sends a desktop notification showing the new device's human-readable description. Bound to `SHIFT + XF86AudioStop` in `bindings.conf`.
 
 
 ## Volume Control
@@ -51,7 +51,7 @@ OSD notifications go through a Unix socket at `/tmp/quickshell-osd.sock` as JSON
 
 ## Virtual Audio Devices
 
-The avatar system creates ephemeral virtual devices via `pactl load-module`: a null sink (`AvatarSpeaker`) where TTS audio plays, linked through `pw-link` to a virtual microphone (`AvatarMic`) that appears as a real source in Google Meet/Zoom via `module-remap-source`.
+The avatar system creates ephemeral virtual devices via `pactl load-module`: null sinks `AvatarMic` for agent playback and `AvatarHuman` for the attached physical microphone, mixed through pinned loopbacks into `AvatarMix`, and exposed as the virtual microphone `AvatarMicrophone` through `module-remap-source`. See `machine-configuration/media/avatar/README.md`.
 
 
 ## Clock and Scheduling

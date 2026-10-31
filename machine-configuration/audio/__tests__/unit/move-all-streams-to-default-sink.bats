@@ -33,7 +33,7 @@ announce_sink() {
 }
 
 announce_stream() {
-	echo "$1	14	4	s16le 2ch 48000Hz	RUNNING" >>"$PACTL_SINK_INPUT_TABLE"
+	echo "$1	${2:-14}	4	s16le 2ch 48000Hz	RUNNING" >>"$PACTL_SINK_INPUT_TABLE"
 }
 
 @test "is executable" {
@@ -53,6 +53,19 @@ announce_stream() {
 	run_script_under_test
 
 	grep -qxF "move-sink-input 100 42" "$PACTL_CALL_LOG"
+	grep -qxF "move-sink-input 101 42" "$PACTL_CALL_LOG"
+}
+
+@test "leaves a stream routed to a virtual sink where it is" {
+	announce_sink 42 "$PACTL_DEFAULT_SINK_NAME"
+	announce_sink 50 AvatarMic
+	announce_stream 100 50
+	announce_stream 101 7
+
+	run_script_under_test
+
+	run grep -c "move-sink-input 100" "$PACTL_CALL_LOG"
+	[ "$output" = "0" ]
 	grep -qxF "move-sink-input 101 42" "$PACTL_CALL_LOG"
 }
 

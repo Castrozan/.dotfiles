@@ -90,3 +90,23 @@ announce_sink() {
 	run grep -c "set-default-sink" "$PACTL_CALL_LOG"
 	[ "$output" = "0" ]
 }
+
+@test "leaves routed streams alone when another stream ends" {
+	echo "Event 'remove' on sink-input #2576" >"$PACTL_EVENT_STREAM"
+
+	run_script_under_test
+
+	[ ! -f "$MOVE_STREAMS_CALL_LOG" ]
+}
+
+@test "treats a new stream as no sink event even when its index matches a bluetooth sink" {
+	require_perl_compatible_grep
+	announce_sink 42 bluez_output.AA_BB_CC.1
+	echo "Event 'new' on sink-input #42" >"$PACTL_EVENT_STREAM"
+
+	run_script_under_test
+
+	run grep -c "set-default-sink" "$PACTL_CALL_LOG"
+	[ "$output" = "0" ]
+	[ ! -f "$MOVE_STREAMS_CALL_LOG" ]
+}
