@@ -46,6 +46,11 @@ def start(url):
             start_new_session=True,
         )
     (profile / "browser.pid").write_text(str(process.pid))
+    wait_for_endpoint(profile, process)
+
+
+def wait_for_endpoint(profile, process):
+    endpoint = profile / "DevToolsActivePort"
     for _ in range(100):
         if process.poll() is not None:
             raise RuntimeError("The avatar browser did not start a new owned instance")
@@ -85,25 +90,29 @@ def locked_process_identifier(profile):
         return int(target[1])
 
 
-def owned_process(profile):
-    path = profile / "browser.pid"
+def candidate_identifiers(profile):
     identifiers = [locked_process_identifier(profile)]
+    path = profile / "browser.pid"
     if path.exists():
         identifiers.append(int(path.read_text()))
-    for identifier in identifiers:
+    return identifiers
+
+
+def process_arguments(identifier):
+    arguments = (
+        (Path("/proc") / str(identifier) / "cmdline").read_bytes().split(bytes([0]))
+    )
+    if len(arguments) == 2 and arguments[-1] == b"":
+        return [part.encode() for part in shlex.split(arguments[0].decode())]
+    return arguments
+
+
+def owned_process(profile):
+    for identifier in candidate_identifiers(profile):
         if identifier is None:
             continue
         try:
-            arguments = (
-                (Path("/proc") / str(identifier) / "cmdline")
-                .read_bytes()
-                .split(bytes([0]))
-            )
-            if len(arguments) == 2 and arguments[-1] == b"":
-                arguments = [
-                    part.encode() for part in shlex.split(arguments[0].decode())
-                ]
-            if f"--user-data-dir={profile}".encode() in arguments:
+            if f"--user-data-dir={profile}".encode() in process_arguments(identifier):
                 return identifier
         except (ProcessLookupError, FileNotFoundError):
             pass

@@ -26,14 +26,7 @@ export class CameraLayer {
       video: deviceId ? { deviceId: { exact: deviceId } } : true,
       audio: false,
     });
-    if (
-      stream.getVideoTracks().some((track) => /Avatar Cam/i.test(track.label))
-    ) {
-      stream.getTracks().forEach((track) => {
-        track.stop();
-      });
-      throw new Error("Choose a physical camera rather than Avatar Cam");
-    }
+    this.requireExternalCamera(stream);
     this.stream = stream;
     stream.getVideoTracks().forEach((track) => {
       track.addEventListener(
@@ -50,6 +43,17 @@ export class CameraLayer {
     this.material.map = new THREE.VideoTexture(this.video);
     this.material.map.encoding = THREE.sRGBEncoding;
     this.material.needsUpdate = true;
+  }
+
+  requireExternalCamera(stream) {
+    if (
+      stream.getVideoTracks().some((track) => /Avatar Cam/i.test(track.label))
+    ) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
+      throw new Error("Choose a physical camera rather than Avatar Cam");
+    }
   }
 
   enableSynthetic() {

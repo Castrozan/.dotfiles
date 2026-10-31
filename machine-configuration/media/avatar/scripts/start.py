@@ -8,32 +8,39 @@ import urllib.request
 SERVICES = ("avatar-audio", "avatar-control-server", "avatar-renderer", "avatar-camera")
 
 
+def service_failed():
+    failed = subprocess.run(
+        ["systemctl", "--user", "is-failed", *SERVICES], capture_output=True, text=True
+    )
+    return "failed" in failed.stdout.splitlines()
+
+
+def renderer_ready():
+    try:
+        with urllib.request.urlopen(
+            "http://127.0.0.1:8766/health", timeout=1
+        ) as response:
+            return json.load(response).get("rendererConnected")
+    except (urllib.error.URLError, TimeoutError):
+        return False
+
+
+def camera_ready():
+    capture = subprocess.run(
+        ["v4l2-ctl", "-d", "/dev/video10", "--info"], capture_output=True, text=True
+    )
+    return capture.returncode == 0 and "Video Capture" in capture.stdout
+
+
 def wait_until_ready(timeout=45):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        failed = subprocess.run(
-            ["systemctl", "--user", "is-failed", *SERVICES],
-            capture_output=True,
-            text=True,
-        )
-        if "failed" in failed.stdout.splitlines():
+        if service_failed():
             raise RuntimeError(
                 "An avatar service failed; inspect systemctl --user status avatar-*"
             )
-        try:
-            with urllib.request.urlopen(
-                "http://127.0.0.1:8766/health", timeout=1
-            ) as response:
-                if json.load(response).get("rendererConnected"):
-                    capture = subprocess.run(
-                        ["v4l2-ctl", "-d", "/dev/video10", "--info"],
-                        capture_output=True,
-                        text=True,
-                    )
-                    if capture.returncode == 0 and "Video Capture" in capture.stdout:
-                        return
-        except (urllib.error.URLError, TimeoutError):
-            pass
+        if renderer_ready() and camera_ready():
+            return
         time.sleep(0.25)
     raise TimeoutError("The avatar renderer did not become ready")
 

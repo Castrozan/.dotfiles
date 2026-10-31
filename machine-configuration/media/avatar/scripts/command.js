@@ -1,17 +1,48 @@
 const WebSocket = require("ws");
 
+const builders = {
+  status: () => ({ type: "getStatus" }),
+  mode: (mode) => ({ type: "setVideoMode", mode }),
+  expression: (name) => ({ type: "setExpression", name }),
+  idle: (mode) => ({ type: "setIdle", mode }),
+  speak: (text, emotion = "neutral", output = "mic", voice) => ({
+    type: "speak",
+    text,
+    emotion,
+    output,
+    voice,
+  }),
+};
+
 function parseCommand(arguments_) {
-  const [action, value, emotion = "neutral", output = "mic", voice] =
-    arguments_;
-  if (action === "status") return { type: "getStatus" };
-  if (action === "mode") return { type: "setVideoMode", mode: value };
-  if (action === "expression") return { type: "setExpression", name: value };
-  if (action === "idle") return { type: "setIdle", mode: value };
-  if (action === "speak")
-    return { type: "speak", text: value, emotion, output, voice };
-  throw new Error(
-    "Usage: avatar-command status | mode avatar|camera|composite | expression NAME | idle MODE | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
+  const build = Object.hasOwn(builders, arguments_[0])
+    ? builders[arguments_[0]]
+    : null;
+  if (!build)
+    throw new Error(
+      "Usage: avatar-command status | mode avatar|camera|composite | expression NAME | idle MODE | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
+    );
+  return build(...arguments_.slice(1));
+}
+
+function responseBelongsToCommand(response, command) {
+  return (
+    !["videoModeChanged", "videoModeError"].includes(response.type) ||
+    response.id === command.id
   );
+}
+
+function handleResponse(response, context) {
+  if (response.type === "identifyAck") {
+    context.connection.send(JSON.stringify(context.command));
+    return;
+  }
+  if (response.type === "videoModeRequested") return;
+  if (!responseBelongsToCommand(response, context.command)) return;
+  console.log(JSON.stringify(response));
+  if (["error", "videoModeError"].includes(response.type)) process.exitCode = 1;
+  clearTimeout(context.timeout);
+  context.connection.close();
 }
 
 function sendCommand(command) {
@@ -25,27 +56,13 @@ function sendCommand(command) {
     },
     command.type === "speak" ? 120000 : 10000,
   );
+  const context = { connection, command, timeout };
   connection.on("open", () =>
     connection.send(JSON.stringify({ type: "identify", role: "agent" })),
   );
-  connection.on("message", (bytes) => {
-    const response = JSON.parse(bytes.toString());
-    if (response.type === "identifyAck") {
-      connection.send(JSON.stringify(command));
-      return;
-    }
-    if (response.type === "videoModeRequested") return;
-    if (
-      ["videoModeChanged", "videoModeError"].includes(response.type) &&
-      response.id !== command.id
-    )
-      return;
-    console.log(JSON.stringify(response));
-    if (["error", "videoModeError"].includes(response.type))
-      process.exitCode = 1;
-    clearTimeout(timeout);
-    connection.close();
-  });
+  connection.on("message", (bytes) =>
+    handleResponse(JSON.parse(bytes.toString()), context),
+  );
   connection.on("error", (error) => {
     console.error(error.message);
     process.exitCode = 1;

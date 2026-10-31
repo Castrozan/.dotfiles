@@ -102,3 +102,26 @@ def test_chrome_request_timeout_unsubscribes():
         """
     )
     assert result == {"removed": True, "message": "Chrome did not answer never"}
+
+
+@requires_node
+def test_tts_rejection_reports_http_status_without_provider_url():
+    result = evaluate_node_json(
+        """
+        const Module = require("node:module");
+        const { EventEmitter } = require("node:events");
+        const original = Module._load;
+        Module._load = function(name, ...arguments_) {
+          if (name === "fs") return { promises: { mkdir: async () => {} } };
+          if (name === "child_process") return { spawn: () => {
+            const child = new EventEmitter(); child.stderr = new EventEmitter();
+            process.nextTick(() => { child.stderr.emit("data", Buffer.from("WSServerHandshakeError: 403, url=wss://provider.invalid/?token=private")); child.emit("close", 1); });
+            return child;
+          } };
+          return original.call(this, name, ...arguments_);
+        };
+        const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
+        const result = new TextToSpeechGenerator("unused", "voice").generate("synthetic", "id").catch(error => error.message);
+        """
+    )
+    assert result == "edge-tts returned HTTP 403"

@@ -71,76 +71,80 @@ in
       start
       stop
     ];
-    systemd.user.targets.avatar.Unit = {
-      Description = "Local avatar media";
-      Requires = [
-        "avatar-audio.service"
-        "avatar-control-server.service"
-        "avatar-renderer.service"
-        "avatar-camera.service"
-      ];
-    };
-    systemd.user.services.avatar-audio = {
-      Unit = {
-        Description = "Isolated avatar audio mix";
-        PartOf = [ "avatar.target" ];
-      };
-      Service = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        ExecStart = "${audio}/bin/avatar-audio start";
-        ExecStop = "${audio}/bin/avatar-audio stop";
-      };
-    };
-    systemd.user.services.avatar-control-server = {
-      Unit = serviceUnit // {
-        Description = "Avatar control server";
-      };
-      Service = {
-        ExecStart = "${pkgs.nodejs_22}/bin/node ${control}/server.js";
-        Environment = [
-          "PATH=${tools}"
-          "AVATAR_TTS_VOICE=pt-BR-AntonioNeural"
-          "AVATAR_AUDIO_MONITOR=AvatarMic.monitor"
-          "XDG_RUNTIME_DIR=/run/user/%U"
-        ];
-        Restart = "on-failure";
-      };
-      Install.WantedBy = [ "avatar.target" ];
-    };
-    systemd.user.services.avatar-camera = {
-      Unit = {
-        Description = "Avatar virtual camera";
-        PartOf = [ "avatar.target" ];
-        After = [
-          "avatar-renderer.service"
-          "avatar-control-server.service"
-        ];
+    systemd.user = {
+      targets.avatar.Unit = {
+        Description = "Local avatar media";
         Requires = [
-          "avatar-renderer.service"
+          "avatar-audio.service"
           "avatar-control-server.service"
+          "avatar-renderer.service"
+          "avatar-camera.service"
         ];
       };
-      Service = {
-        ExecStart = toString camera;
-        ExecStopPost = "${pkgs.python312}/bin/python3 ${browserRuntime} stop";
-        Environment = [
-          "PATH=${lib.makeBinPath [ pkgs.chromium ]}"
-          "V4L2_DEVICE=/dev/video10"
-        ];
-        Restart = "on-failure";
+      services = {
+        avatar-audio = {
+          Unit = {
+            Description = "Isolated avatar audio mix";
+            PartOf = [ "avatar.target" ];
+          };
+          Service = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            ExecStart = "${audio}/bin/avatar-audio start";
+            ExecStop = "${audio}/bin/avatar-audio stop";
+          };
+        };
+        avatar-control-server = {
+          Unit = serviceUnit // {
+            Description = "Avatar control server";
+          };
+          Service = {
+            ExecStart = "${pkgs.nodejs_22}/bin/node ${control}/server.js";
+            Environment = [
+              "PATH=${tools}"
+              "AVATAR_TTS_VOICE=pt-BR-AntonioNeural"
+              "AVATAR_AUDIO_MONITOR=AvatarMic.monitor"
+              "XDG_RUNTIME_DIR=/run/user/%U"
+            ];
+            Restart = "on-failure";
+          };
+          Install.WantedBy = [ "avatar.target" ];
+        };
+        avatar-camera = {
+          Unit = {
+            Description = "Avatar virtual camera";
+            PartOf = [ "avatar.target" ];
+            After = [
+              "avatar-renderer.service"
+              "avatar-control-server.service"
+            ];
+            Requires = [
+              "avatar-renderer.service"
+              "avatar-control-server.service"
+            ];
+          };
+          Service = {
+            ExecStart = toString camera;
+            ExecStopPost = "${pkgs.python312}/bin/python3 ${browserRuntime} stop";
+            Environment = [
+              "PATH=${lib.makeBinPath [ pkgs.chromium ]}"
+              "V4L2_DEVICE=/dev/video10"
+            ];
+            Restart = "on-failure";
+          };
+          Install.WantedBy = [ "avatar.target" ];
+        };
+        avatar-renderer = {
+          Unit = serviceUnit // {
+            Description = "Offline avatar renderer";
+          };
+          Service = {
+            ExecStart = toString serve;
+            Restart = "on-failure";
+          };
+          Install.WantedBy = [ "avatar.target" ];
+        };
       };
-      Install.WantedBy = [ "avatar.target" ];
-    };
-    systemd.user.services.avatar-renderer = {
-      Unit = serviceUnit // {
-        Description = "Offline avatar renderer";
-      };
-      Service = {
-        ExecStart = toString serve;
-        Restart = "on-failure";
-      };
-      Install.WantedBy = [ "avatar.target" ];
     };
   };
 }

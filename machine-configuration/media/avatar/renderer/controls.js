@@ -28,13 +28,15 @@ document.querySelector("#disable").onclick = () =>
 channel.onmessage = async (event) => {
   if (event.data.type !== "cameraResult") return;
   status.textContent = event.data.message;
+  devices.replaceChildren(...(await cameraOptions()));
+};
+
+async function cameraOptions() {
   const cameras = (await navigator.mediaDevices.enumerateDevices()).filter(
     (device) =>
       device.kind === "videoinput" && !/Avatar Cam/i.test(device.label),
   );
-  devices.replaceChildren(
-    ...cameras.map(
-      (device) => new Option(device.label || "Camera", device.deviceId),
-    ),
+  return cameras.map(
+    (device) => new Option(device.label || "Camera", device.deviceId),
   );
-};
+}

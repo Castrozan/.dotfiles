@@ -91,8 +91,7 @@ async function captureFrames(session, framePipeline) {
     if (closed) return;
     if (framePipeline.writeFrame(Buffer.from(screenshot.data, "base64")))
       frameCount++;
-    if (frameCount && frameCount % (CONFIG.FPS * 5) === 0)
-      console.log(`Frames captured: ${frameCount}`);
+    reportFrameCount(frameCount);
     await new Promise((resolve) =>
       setTimeout(
         resolve,
@@ -100,6 +99,11 @@ async function captureFrames(session, framePipeline) {
       ),
     );
   }
+}
+
+function reportFrameCount(frameCount) {
+  if (frameCount && frameCount % (CONFIG.FPS * 5) === 0)
+    console.log(`Frames captured: ${frameCount}`);
 }
 
 function registerShutdownHandlers(session, framePipeline) {

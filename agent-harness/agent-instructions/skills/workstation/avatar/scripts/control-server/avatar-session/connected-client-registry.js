@@ -51,11 +51,15 @@ class ConnectedClientRegistry {
   }
 
   sendToAgents(payload) {
-    this.agentConnections.forEach((connection) => connection.sendJson(payload));
+    this.agentConnections.forEach((connection) => {
+      connection.sendJson(payload);
+    });
   }
 
   closeAll() {
-    this.agentConnections.forEach((connection) => connection.close());
+    this.agentConnections.forEach((connection) => {
+      connection.close();
+    });
     this.rendererConnection?.close();
   }
 
