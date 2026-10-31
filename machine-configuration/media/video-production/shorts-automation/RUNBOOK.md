@@ -95,9 +95,10 @@ visibility. Inspect Studio and the journal after a timeout or ambiguous result b
 
 ### Failure and handoff
 
-Keep research, receipts and artifacts inside this run; compiled SDK output is not an artifact. Write `hold.json` with the precise failed gate or unavailable
-dependency and do not claim publication. A slot is claimed once, runs do not overlap, and missed slots are not backfilled.
-This fresh scheduled session ends after one attempt. Do not edit dotfiles or launch extra agent sessions to finish it.
+Keep research, receipts and artifacts inside this run; compiled SDK output is not an artifact. Write `hold.json` with
+the precise failed gate or unavailable dependency and do not claim publication. A slot is claimed once, runs do not
+overlap, and missed slots are not backfilled. This fresh scheduled session ends after one attempt. Do not edit dotfiles
+or launch extra agent sessions to finish it.
 
 ### Explicit recovery
 
