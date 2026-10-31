@@ -82,6 +82,54 @@ window.AMBIENT_CANVAS_PLAYLIST = [
     ],
   },
   {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "a-Jr5JW-EMQ" },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "faqmNf_fZlE" },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "9Go4J1RaeuM" },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "Eq6EYcpWB_c" },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "8OkpRK2_gVs" },
+      },
+    ],
+  },
+  {
+    panes: [
+      {
+        scene: "bad-apple",
+        options: { videoId: "epZaT8B31-g" },
+      },
+    ],
+  },
+  {
     durationSeconds: 30,
     layout: {
       columnTemplate: "2fr 1fr",
