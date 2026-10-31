@@ -158,6 +158,14 @@ in
     cfg
     ;
 }
+// import ./bypass-mode-checks.nix {
+  inherit
+    pkgs
+    lib
+    mkEvalCheck
+    cfg
+    ;
+}
 // import ./hook-flat-deploy-checks.nix {
   inherit
     pkgs

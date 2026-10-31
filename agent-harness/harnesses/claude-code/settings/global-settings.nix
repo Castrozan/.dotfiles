@@ -25,6 +25,7 @@ let
         context = "Chat";
         bindings = {
           "ctrl+e" = "chat:undo";
+          "shift+tab" = null;
         };
       }
       {
@@ -50,7 +51,6 @@ let
       mode = "replace";
       verbs = spinnerVerbs;
     };
-    dangerouslySkipPermissions = true;
     skipDangerousModePermissionPrompt = true;
     includeCoAuthoredBy = false;
     includeGitInstructions = false;
