@@ -1,0 +1,7 @@
+{
+  "history_retention": "off",
+  "sound_effects": false,
+  "recording_audio_behavior": "do_nothing",
+  "release_microphone_while_idle": true,
+  "capture.enabled": false
+}

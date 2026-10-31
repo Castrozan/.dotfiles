@@ -75,6 +75,7 @@ in
     ../../voice/hey-bot-home-manager.nix
     ../../voice/hey-bot-test-home-manager.nix
     ./home/hey-bot.nix
+    ../../voice/hex-home-manager.nix
     ../../voice/voxtype-home-manager.nix
     ../../voice/whisp-away-home-manager.nix
 

@@ -40,6 +40,7 @@
     ../desktop/input/karabiner/karabiner-home-manager.nix
     ../desktop/input/keyboard-layout/keyboard-layout-home-manager.nix
     ../desktop/clipboard-history/maccy-home-manager.nix
+    ../voice/hex-darwin-home-manager.nix
     ../home-automation/home-assistant/home-assistant-remote-home-manager.nix
 
     ../development/cost-monitoring/ccost-home-manager.nix
