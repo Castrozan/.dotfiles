@@ -25,6 +25,8 @@ in
     ../../desktop/desktop-environments/hyprland/hyprland-nixos.nix
     ../../../agent-harness/harnesses/opencode
     ../../../agent-harness/harnesses/pi
+    ../../../agent-harness/harnesses/hermes
+    ../../../agent-harness/harnesses/hermes/gateway.nix
     ../../development/testing/testing-home-manager.nix
     ../../development/local-language-models/llama-cpp-home-manager.nix
 

@@ -131,52 +131,26 @@ def test_humanize_does_not_restate_general_core_decision_thresholds():
         assert retired_duplicate not in interactive_policy
 
 
-def test_hermes_declares_managed_core_and_removes_memory_authority():
+def test_hermes_carries_only_managed_core_and_plugin_skills():
     soul_source = (HERMES_DIRECTORY / "soul.nix").read_text(encoding="utf-8")
-    config_source = (HERMES_DIRECTORY / "interactive-instructions.nix").read_text(
-        encoding="utf-8"
-    )
     launcher_source = (HERMES_DIRECTORY / "scripts" / "hermes-launch").read_text(
         encoding="utf-8"
     )
-    migration_source = (HERMES_DIRECTORY / "migration.nix").read_text(encoding="utf-8")
-    managed_memory_source = migration_source.split("retiredUserMemoryEntryPrefixes", 1)[
-        0
-    ]
+    configuration_source = (HERMES_DIRECTORY / "config.nix").read_text(encoding="utf-8")
+    deployment_source = (HERMES_DIRECTORY / "hermes.nix").read_text(encoding="utf-8")
 
     assert "agent-instructions/rulesync" in soul_source
     assert "hermesagent/.hermes.md" in soul_source
-    assert "agent-instructions/interactive-communication.md" in (config_source)
-    for managed_surface in (
-        "HERMES_AGENT_SOUL",
-        "HERMES_AGENT_MEMORY_SYNCHRONIZER",
-    ):
-        assert managed_surface in launcher_source
-
-    deployment_source = (HERMES_DIRECTORY / "hermes.nix").read_text(encoding="utf-8")
+    assert "HERMES_AGENT_SOUL" in launcher_source
+    assert "system_prompt" not in configuration_source
     assert (
         'file.".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin"'
         in deployment_source
     )
-    for retired_skill_projection in (
+    for retired_surface in (
         "HERMES_AGENT_HUMANIZE_SKILL",
         "HERMES_AGENT_DOCS_SKILL",
+        "HERMES_AGENT_MEMORY_SYNCHRONIZER",
     ):
-        assert retired_skill_projection not in launcher_source
-        assert retired_skill_projection not in deployment_source
-
-    for retired_memory_authority in (
-        "Correction stance:",
-        "Uncertainty:",
-        "Interactive reply shape:",
-        "Before returning control:",
-        "Code style he enforces:",
-        "Scripts:",
-        "Git:",
-    ):
-        assert retired_memory_authority not in managed_memory_source
-
-    assert "keeps its own OAuth session in ~/.hermes/auth.json" in (
-        managed_memory_source
-    )
-    assert "seeds access" not in managed_memory_source
+        assert retired_surface not in launcher_source
+        assert retired_surface not in deployment_source

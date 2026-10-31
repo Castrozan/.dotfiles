@@ -12,16 +12,6 @@ if [ -z "${HERMES_AGENT_LAUNCH_SEEDED:-}" ]; then
 	export HERMES_AGENT_LAUNCH_SEEDED=1
 	install -m 0644 "$HERMES_AGENT_CONFIG_TEMPLATE" "$hermes_home/config.yaml"
 	install -m 0644 "$HERMES_AGENT_SOUL" "$hermes_home/SOUL.md"
-	memories_dir="$hermes_home/memories"
-	mkdir -p "$memories_dir"
-	"$HERMES_AGENT_MEMORY_SYNCHRONIZER_PYTHON" "$HERMES_AGENT_MEMORY_SYNCHRONIZER" \
-		--target "$memories_dir/USER.md" \
-		--source "$HERMES_AGENT_USER_MEMORY" \
-		--retired-entry-prefixes "$HERMES_AGENT_RETIRED_USER_MEMORY_ENTRY_PREFIXES"
-	"$HERMES_AGENT_MEMORY_SYNCHRONIZER_PYTHON" "$HERMES_AGENT_MEMORY_SYNCHRONIZER" \
-		--target "$memories_dir/MEMORY.md" \
-		--source "$HERMES_AGENT_AGENT_MEMORY" \
-		--retired-entry-prefixes "$HERMES_AGENT_RETIRED_AGENT_MEMORY_ENTRY_PREFIXES"
 fi
 
 exec "$HERMES_AGENT_BINARY" "$@"

@@ -80,15 +80,7 @@ let
     builtins.toJSON {
       inherit homeDirectory homeFiles;
       bundle = productionBundle;
-      promptFiles =
-        interactivePromptFiles
-        ++ stewardPromptFiles
-        ++ [
-          {
-            source = import ../../harnesses/hermes/interactive-instructions.nix { inherit pkgs; };
-            destination = "${homeDirectory}/.hermes/config.yaml";
-          }
-        ];
+      promptFiles = interactivePromptFiles ++ stewardPromptFiles;
     }
   );
 in

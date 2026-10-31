@@ -12,26 +12,16 @@ let
     inherit pkgs pluginBundle;
   };
   hermesSoul = import ../soul.nix { inherit pkgs; };
-  hermesMigration = import ../migration.nix { inherit pkgs; };
-  hermesUserMemoryText = builtins.unsafeDiscardStringContext hermesMigration.userMemory.text;
-  hermesAgentMemoryText = builtins.unsafeDiscardStringContext hermesMigration.agentMemory.text;
-  hermesManagedMemoryText = "${hermesUserMemoryText}\n${hermesAgentMemoryText}";
   canonicalCore = builtins.readFile ../../../agent-instructions/core-rules/core.md;
   hermesIdentity = "You are Hermes Agent, an intelligent AI assistant created by Nous Research.";
   expectedHermesSoul = pkgs.writeText "expected-hermes-SOUL.md" "### Harness identity\n\n${hermesIdentity}\n\n${canonicalCore}";
   hermesHookCommandPath = "${pluginBundle}/plugin/native/hermes/hook-bridge";
 
-  cfg = helpers.homeManagerTestConfiguration [ ../. ];
-
-  retiredCoreMemoryFragments = [
-    "Correction stance:"
-    "Uncertainty:"
-    "Interactive reply shape:"
-    "Before returning control:"
-    "Code style he enforces:"
-    "Scripts:"
-    "Git:"
+  cfg = helpers.homeManagerTestConfiguration [
+    ../.
+    ../gateway.nix
   ];
+  gatewayService = lib.mapAttrs (_: lib.toList) cfg.systemd.user.services.hermes-gateway.Service;
 in
 {
   domain-hermes-bin-wrapper =
@@ -44,7 +34,6 @@ in
         nativeBuildInputs = [
           (import ../../../agent-instructions/instruction-projection.nix { inherit pkgs; }).python
         ];
-        PYTHONPATH = ../../../quality/evaluations;
       }
       ''
         python ${./verify-generated-configuration.py} ${hermesConfigTemplate} ${lib.escapeShellArg hermesHookCommandPath}
@@ -58,10 +47,16 @@ in
         touch "$out"
       '';
 
-  domain-hermes-memory-does-not-own-core =
-    mkEvalCheck "domain-hermes-memory-does-not-own-core"
-      (builtins.all (
-        fragment: !(lib.hasInfix fragment hermesManagedMemoryText)
-      ) retiredCoreMemoryFragments)
-      "Hermes mutable memory may retain user facts and preferences but must not restate core, interactive, coding, scripting, or Git authority";
+  domain-hermes-gateway-is-supervised-with-sudo-reachable =
+    mkEvalCheck "domain-hermes-gateway-is-supervised-with-sudo-reachable"
+      (
+        lib.hasInfix "/bin/hermes gateway run --replace --external-supervisor" (
+          lib.concatStrings gatewayService.ExecStart
+        )
+        && gatewayService.Restart == [ "always" ]
+        && gatewayService.RestartPreventExitStatus == [ 78 ]
+        && lib.hasInfix "/run/wrappers/bin" (lib.concatStrings gatewayService.Environment)
+        && !(gatewayService ? NoNewPrivileges)
+      )
+      "The Hermes gateway must run under systemd supervision with the NixOS sudo wrapper on PATH and without NoNewPrivileges";
 }
