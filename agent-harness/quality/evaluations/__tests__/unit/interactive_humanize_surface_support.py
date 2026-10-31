@@ -38,11 +38,6 @@ INTERACTIVE_GENERATOR_PATHS = (
     / "instructions"
     / "interactive-instructions.nix",
     REPO_ROOT / "agent-harness" / "harnesses" / "pi" / "interactive-instructions.nix",
-    REPO_ROOT
-    / "agent-harness"
-    / "harnesses"
-    / "hermes"
-    / "interactive-instructions.nix",
 )
 INTERACTIVE_LAUNCH_SOURCES = (
     REPO_ROOT

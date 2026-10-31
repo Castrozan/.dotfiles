@@ -3,8 +3,6 @@ from pathlib import Path
 
 import yaml
 
-from instructions.ai_instruction_format import inspect_markdown_instruction
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -21,14 +19,16 @@ def main():
     assert configuration["hooks"]["post_tool_call"] == [
         {"command": arguments.hook_command, "timeout": 20}
     ]
-    assert configuration["model"] == {"provider": "openai-codex", "model": "gpt-6.1-sol"}
-    assert configuration["agent"]["reasoning_effort"] == "xhigh"
+    assert configuration["model"] == {
+        "provider": "openai-codex",
+        "model": "gpt-6.1-sol",
+    }
+    assert configuration["agent"] == {"reasoning_effort": "xhigh"}
+    assert configuration["auth"] == {"adopt_external_logins": False}
+    assert configuration["approvals"] == {"mode": "off"}
+    plugin_root = arguments.hook_command.removesuffix("/native/hermes/hook-bridge")
+    assert configuration["skills"] == {"external_dirs": [f"{plugin_root}/skills"]}
     assert configuration["toolsets"] == ["hermes-cli"]
-    instructions = configuration["agent"]["system_prompt"]
-    assert not inspect_markdown_instruction(instructions).violations
-    assert "### Explicit Wellput requests\n" in instructions
-    assert "(SOUL.md#evidence)" in instructions
-    assert "(plugins/dotfiles/skills/wellput/SKILL.md)" in instructions
 
 
 if __name__ == "__main__":
