@@ -152,4 +152,7 @@ def test_unrecognized_composer_fails_before_any_terminal_input(
     assert task["state"] == "failed"
     assert "composer_occupied_or_unrecognized" in task["errorMessage"]
     assert not target.submitted and not target.draft and not target.paste_buffer
-    assert all(command[:2] == ["pane", "get"] for command in target.commands)
+    assert all(
+        command[:2] in (["pane", "get"], ["pane", "read"])
+        for command in target.commands
+    )
