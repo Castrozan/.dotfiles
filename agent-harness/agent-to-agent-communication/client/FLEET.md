@@ -138,11 +138,14 @@ a2a fleet result UNIQUE_INTENT_ID
 a2a fleet verify UNIQUE_INTENT_ID --evidence CHECKED_COMMIT_AND_TEST_REFERENCE
 ```
 
-Dispatch re-resolves A2A and Herdr immediately, requires the exact conversation to be present, idle, interactive-ready
-and not launch-pending, then commits the reservation before calling `a2a send` once with the structural pane target and
-explicit sender. The sent text starts with `[dot-fleet:UNIQUE_INTENT_ID]`, and its hash and correlation survive locally.
+Dispatch re-resolves A2A and Herdr immediately, requires the exact conversation to be present, idle or done,
+interactive-ready and not launch-pending, then commits the reservation before calling `a2a send` once with the structural
+pane target and explicit sender. The sent text starts with `[dot-fleet:UNIQUE_INTENT_ID]`, and its hash and correlation survive locally.
 Herdr 0.9.1 omits false `launch_pending` and `interactive_ready` values; the client applies those defaults while
 requiring explicit true interactive readiness and rejecting malformed pending values.
+Herdr reports an underlying idle agent as `done` until its completion has been viewed. Both statuses are eligible;
+`interactive_ready` records managed startup completion, not composer acceptance. The A2A prompt adapter still checks
+that the visible composer is observably empty, rechecks the target harness, and refuses busy or unrecognized input.
 A2A does not accept an atomic expected-session-ID precondition: a rotation between preflight and send remains a known
 race. Use an owned peer and do not change its lifecycle concurrently. No claim of exactly-once remote delivery is made.
 
