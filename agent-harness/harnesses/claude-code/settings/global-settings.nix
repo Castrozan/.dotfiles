@@ -7,7 +7,6 @@
 }:
 let
   pluginsConfig = import ../plugins/language-server-packages.nix { inherit pkgs; };
-  claudeModsMarketplace = import ../plugins/mods/marketplace.nix { inherit pkgs; };
 
   privateMarketplacePluginsPath =
     ../../../../private-configuration/machines + "/${hostname}/claude-plugins.nix";
@@ -43,7 +42,7 @@ let
   claudeGlobalSettings = lib.recursiveUpdate {
     ultracode = false;
     enableWorkflows = true;
-    enabledPlugins = claudeModsMarketplace.everySessionEnabledPlugins;
+    enabledPlugins."dotfiles@dotagents" = true;
     language = "english";
     spinnerTipsEnabled = false;
     feedbackDrafts = "off";

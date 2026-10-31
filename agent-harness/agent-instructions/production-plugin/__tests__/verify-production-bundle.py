@@ -55,6 +55,13 @@ def verify(bundle: Path) -> None:
     for name in indexed | repository:
         assert (package / "library/skills" / name / "SKILL.md").is_file()
 
+    claude_manifest = json.loads((package / ".claude-plugin/plugin.json").read_text())
+    claude_hooks = package / claude_manifest["hooks"]
+    hooks_module = json.loads(claude_hooks.read_text())["modules"]
+    assert len(hooks_module) == 1
+    assert (claude_hooks.parent / hooks_module[0]).is_file()
+    assert not (package / "hooks/hooks.json").exists()
+
     mcp = json.loads((package / "mcp.json").read_text())
     assert mcp["$schema"] == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
     assert "chrome-devtools" not in mcp["mcpServers"]

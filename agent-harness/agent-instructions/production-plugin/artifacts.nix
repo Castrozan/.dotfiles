@@ -90,6 +90,10 @@ let
         };
       }
       {
+        name = "native/claude-code/compaction-brief";
+        path = ../../harnesses/claude-code/plugins/mods/compaction-brief;
+      }
+      {
         name = "native/wellput";
         path = wellputSource;
       }
