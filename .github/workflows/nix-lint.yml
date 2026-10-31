@@ -53,7 +53,7 @@ jobs:
         include:
           - name: Nix flake checks
             cache-key: flake-check
-            command: nix flake check --keep-going --print-build-logs --show-trace
+            command: nix flake check --keep-going --print-build-logs --show-trace --max-jobs 2 --cores 2
 
           - name: Darwin eval-assertion checks
             cache-key: darwin-eval

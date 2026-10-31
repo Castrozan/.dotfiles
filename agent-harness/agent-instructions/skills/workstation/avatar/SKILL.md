@@ -12,9 +12,9 @@ before reporting readiness. The renderer serves its model and libraries locally.
 ### Audio routing
 
 `AvatarMic` accepts agent application audio; `AvatarMicrophone` is the mixed meeting input. Route only the intended
-application stream, using its output selector or `PULSE_SINK=AvatarMic`. This does not expose an arbitrary voice session's
-audio API. Human attachment is explicit; both input channels start muted. Never route meeting playback into these inputs.
-Physical capture and meeting transmission need the user's applicable authorization.
+application stream, using its output selector or `PULSE_SINK=AvatarMic`. This does not expose an arbitrary voice
+session's audio API. Human attachment is explicit; both input channels start muted. Never route meeting playback into
+these inputs. Physical capture and meeting transmission need the user's applicable authorization.
 
 ### Camera
 
