@@ -46,10 +46,13 @@ let
     exec ${pkgs.python312}/bin/python3 ${./scripts/start.py}
   '';
   stop = pkgs.writeShellScriptBin "avatar-stop" ''
-    stop_status=0
-    systemctl --user stop avatar.target avatar-camera.service avatar-control-server.service avatar-renderer.service avatar-audio.service || stop_status=$?
-    ${audio}/bin/avatar-audio stop || exit $?
-    exit "$stop_status"
+    export PATH=${
+      lib.makeBinPath [
+        audio
+        pkgs.systemd
+      ]
+    }:$PATH
+    ${builtins.readFile ./scripts/avatar-stop}
   '';
   tools = lib.makeBinPath [
     pkgs.ffmpeg
