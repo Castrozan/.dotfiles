@@ -10,9 +10,8 @@ export class CameraLayer {
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
     this.camera.position.z = 1;
     this.material = new THREE.MeshBasicMaterial();
-    this.scene.add(
-      new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.material),
-    );
+    this.plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.material);
+    this.scene.add(this.plane);
     this.stream = null;
     this.syntheticCanvas = null;
   }
