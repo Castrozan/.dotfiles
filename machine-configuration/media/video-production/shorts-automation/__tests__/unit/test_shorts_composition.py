@@ -6,16 +6,25 @@ import pytest
 import shorts_composition
 
 
+def composition_manifest(sdk_path, features='["cli", "build-portable"]'):
+    return (
+        '[package]\nname = "masking-crab"\n\n[dependencies]\n'
+        f'fframes = {{ path = "{sdk_path}", features = {features} }}\n'
+    )
+
+
 @pytest.fixture
 def composition_run(tmp_path, monkeypatch):
     root = tmp_path / "shorts"
     directory = root / "runs" / "slot"
     manifest = directory / "composition" / "Cargo.toml"
     manifest.parent.mkdir(parents=True)
-    manifest.write_text('[package]\nname = "masking-crab"\n')
+    sdk = root / "native-kit" / "fframes" / "fframes"
+    manifest.write_text(composition_manifest(sdk))
     example = root / "native-kit" / "probe"
     example.mkdir(parents=True)
     (example / "Cargo.lock").write_text("canonical lock")
+    (example / "Cargo.toml").write_text(composition_manifest("../fframes/fframes"))
     target = root / "native-kit" / "target"
     monkeypatch.setenv("CARGO_TARGET_DIR", str(target))
     calls = []
@@ -75,6 +84,55 @@ def test_manifest_outside_the_run_is_refused(composition_run):
     with pytest.raises(ValueError, match="inside the current run"):
         shorts_composition.build_composition(directory, root, outside)
     assert calls == []
+
+
+def test_an_sdk_linked_into_the_run_is_refused_before_it_recompiles(composition_run):
+    root, directory, manifest, calls = composition_run
+    (directory / "fframes").symlink_to(root / "native-kit" / "fframes")
+    manifest.write_text(composition_manifest("../fframes/fframes"))
+    with pytest.raises(ValueError, match="shared SDK"):
+        shorts_composition.build_composition(directory, root, "composition/Cargo.toml")
+    assert calls == []
+
+
+def test_a_different_sdk_feature_set_is_refused_before_it_recompiles(composition_run):
+    root, directory, manifest, calls = composition_run
+    sdk = root / "native-kit" / "fframes" / "fframes"
+    manifest.write_text(composition_manifest(sdk, features='["cli"]'))
+    with pytest.raises(ValueError, match="shared SDK"):
+        shorts_composition.build_composition(directory, root, "composition/Cargo.toml")
+    assert calls == []
+
+
+def test_a_composition_without_the_sdk_is_refused(composition_run):
+    root, directory, manifest, calls = composition_run
+    manifest.write_text('[package]\nname = "masking-crab"\n')
+    with pytest.raises(ValueError, match="shared SDK"):
+        shorts_composition.build_composition(directory, root, "composition/Cargo.toml")
+    assert calls == []
+
+
+def test_a_kit_reached_through_a_link_still_names_the_real_sdk(
+    composition_run, tmp_path
+):
+    root, directory, manifest, calls = composition_run
+    kit = tmp_path / "kit"
+    (root / "native-kit").rename(kit)
+    (root / "native-kit").symlink_to(kit)
+    manifest.write_text(composition_manifest(kit / "fframes" / "fframes"))
+    shorts_composition.build_composition(directory, root, "composition/Cargo.toml")
+    assert len(calls) == 2
+
+
+def test_the_sweep_never_follows_a_link_out_of_the_run(tmp_path):
+    kit = tmp_path / "native-kit"
+    (kit / "target" / "release").mkdir(parents=True)
+    (kit / "target" / "CACHEDIR.TAG").write_text("Signature")
+    run = tmp_path / "run"
+    run.mkdir()
+    (run / "native-kit").symlink_to(kit)
+    shorts_composition.discard_build_caches(run)
+    assert (kit / "target" / "release").is_dir()
 
 
 def test_build_caches_are_discarded_at_any_depth(tmp_path):

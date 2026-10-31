@@ -8,6 +8,20 @@ from shorts_quality import digest, inside_run
 
 
 CANONICAL_LOCK = Path("native-kit/probe/Cargo.lock")
+CANONICAL_MANIFEST = Path("native-kit/probe/Cargo.toml")
+
+
+def sdk_dependency(manifest):
+    dependencies = tomllib.loads(manifest.read_text()).get("dependencies", {})
+    dependency = dependencies.get("fframes", {})
+    declared_path = manifest.parent / dependency.get("path", "")
+    return {**dependency, "path": os.path.normpath(declared_path)}
+
+
+def require_shared_sdk(manifest, root):
+    canonical = sdk_dependency((root / CANONICAL_MANIFEST).resolve())
+    if sdk_dependency(manifest) != canonical:
+        raise ValueError(f"Composition must depend on the shared SDK: {canonical}")
 
 
 def cargo(action, manifest, *options, **streams):
@@ -39,6 +53,7 @@ def compile_package(directory, manifest):
 
 def build_composition(directory, root, manifest_path):
     manifest = inside_run(directory, manifest_path)
+    require_shared_sdk(manifest, root)
     package = tomllib.loads(manifest.read_text())["package"]["name"]
     shutil.copyfile(root / CANONICAL_LOCK, manifest.with_name("Cargo.lock"))
     compile_package(directory, manifest)
@@ -50,5 +65,7 @@ def build_composition(directory, root, manifest_path):
 
 
 def discard_build_caches(directory):
+    run = directory.resolve()
     for marker in list(directory.glob("*/**/CACHEDIR.TAG")):
-        shutil.rmtree(marker.parent, ignore_errors=True)
+        if marker.resolve().is_relative_to(run):
+            shutil.rmtree(marker.parent, ignore_errors=True)

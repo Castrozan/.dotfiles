@@ -26,8 +26,9 @@ and video calls are disabled until a separate measured budget is authorized. Use
 registered native compositions; inspect installed help and contract. Compile native compositions for Linux on Chise.
 
 Chise's prepared SDK and native example are under `~/clawde/shorts/native-kit`. Read the example's Cargo manifest,
-source and registration before creating a composition in this run. Keep the pinned SDK and the example's `fframes`
-dependency line unchanged. From the run directory, compile only with
+source and registration before creating a composition in this run. Copy the example's absolute `fframes` dependency
+line verbatim and never link the SDK into the run; the build refuses any other path or feature set because each would
+recompile the SDK. From the run directory, compile only with
 `shorts-production build --manifest composition/Cargo.toml`. It reuses the one shared compiled SDK, saves
 `evidence/build.stdout` and `evidence/build.stderr`, writes `bin/<package>` and prints its hash. Never set
 `CARGO_TARGET_DIR`, keep or copy a build cache, or call `rustc` directly; every Cargo target directory left in a run is
