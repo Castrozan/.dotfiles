@@ -126,6 +126,7 @@ in
           };
           Service = {
             ExecStart = toString camera;
+            ExecStop = "${pkgs.python312}/bin/python3 ${browserRuntime} stop";
             ExecStopPost = "${pkgs.python312}/bin/python3 ${browserRuntime} stop";
             Environment = [
               "PATH=${lib.makeBinPath [ pkgs.chromium ]}"
