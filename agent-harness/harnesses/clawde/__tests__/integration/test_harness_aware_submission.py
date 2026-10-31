@@ -6,7 +6,9 @@ from a2a_test_client import request_json
 @pytest.mark.parametrize(
     "content", ["short", "a" * 1025 + "\nsecond\tline", "x" * 8192]
 )
-def test_native_prompt_submits_codex_input_exactly_once(owned_fleet, content):
+@pytest.mark.parametrize("status", ["idle", "done"])
+def test_native_prompt_submits_codex_input_exactly_once(owned_fleet, content, status):
+    owned_fleet.target.status = status
     response_status, task = request_json(
         owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": content}
     )
@@ -33,7 +35,7 @@ def test_native_prompt_submits_codex_input_exactly_once(owned_fleet, content):
         "[Pasted Content 1024 chars] trailing",
     ],
 )
-@pytest.mark.parametrize("status", ["idle", "working"])
+@pytest.mark.parametrize("status", ["idle", "done", "working"])
 def test_existing_human_draft_fails_before_any_terminal_input(
     owned_fleet, draft, status
 ):
@@ -129,4 +131,28 @@ def test_claude_ansi_borders_enclose_an_empty_composer(transport_package):
     capture = border + "\n❯\u00a0\n" + border + "\nfooter"
     assert transport_package.prompt_adapter.composer_is_observably_empty(
         capture, "claude"
+    )
+
+
+@pytest.mark.parametrize("status", ["idle", "done"])
+def test_unrecognized_composer_fails_before_any_terminal_input(
+    owned_fleet, transport_package, monkeypatch, status
+):
+    target = owned_fleet.target
+    target.status = status
+    monkeypatch.setattr(
+        transport_package.prompt_adapter.HerdrPromptAdapter,
+        "_capture_composer",
+        lambda self: "unrecognized terminal contents",
+    )
+    response_status, task = request_json(
+        owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": "peer work"}
+    )
+    assert response_status == 502
+    assert task["state"] == "failed"
+    assert "composer_occupied_or_unrecognized" in task["errorMessage"]
+    assert not target.submitted and not target.draft and not target.paste_buffer
+    assert all(
+        command[:2] in (["pane", "get"], ["pane", "read"])
+        for command in target.commands
     )
