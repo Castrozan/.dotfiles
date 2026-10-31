@@ -2,6 +2,7 @@
   inputs,
   pkgs,
   latest,
+  lib,
   ...
 }:
 {
@@ -24,4 +25,10 @@
       avoid_bluetooth_microphone = false;
     };
   };
+
+  # Hyprland registers portal shortcuts without assigning their preferred keys.
+  xdg.configFile."hypr-host/input.conf".text = lib.mkAfter ''
+    bindd = CTRL ALT, SPACE, HEX dictation, global, anomaly.hex:dictation-CTRL-ALT-space
+    bindd = CTRL ALT, V, Paste last HEX dictation, global, anomaly.hex:paste-last-CTRL-ALT-v
+  '';
 }
