@@ -13,7 +13,7 @@
     ./model-providers/opencode-go
     ./plugins/automatic-updates-home-manager.nix
     ./plugins/production-plugin-home-manager.nix
-    ./plugins/mods/home-manager.nix
+    ./plugins/retired-marketplaces-home-manager.nix
     ./private.nix
     ./scripts
     ../../workspace-profiles

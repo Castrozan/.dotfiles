@@ -81,11 +81,7 @@ let
 
   settingsFilePathIn =
     harnessCommand:
-    builtins.head (
-      builtins.match ".* command claude --settings ([^ ]+) .*" (
-        builtins.unsafeDiscardStringContext harnessCommand
-      )
-    );
+    builtins.elemAt (builtins.match ".* command claude (--plugin-dir [^ ]+ )?--settings ([^ ]+) .*" (builtins.unsafeDiscardStringContext harnessCommand)) 1;
 
   everyClaudeCommandCarriesTheAgentSettingsFile =
     agentName:
@@ -115,7 +111,10 @@ in
   clawde-interactive-settings-agent-layers-the-profile-over-the-interactive-settings =
     mkEvalCheck "clawde-interactive-settings-agent-layers-the-profile-over-the-interactive-settings"
       (
-        interactiveSessionSettings.enabledPlugins != { }
+        interactiveSessionSettings.pluginConfigs != { }
+        && builtins.all (pkgs.lib.hasInfix "--plugin-dir ${builtins.unsafeDiscardStringContext cfgWithWorkspaceProfileAgent.claude.interactiveSessionModsDirectory} ") (
+          claudeCommandsOf "agent-with-interactive-settings-and-workspace-profile"
+        )
         &&
           launchSettingsOf "agent-with-interactive-settings-and-workspace-profile"
           == pkgs.lib.recursiveUpdate interactiveSessionSettings testProfileSettingsOverlay

@@ -40,6 +40,7 @@ let
     inherit version;
     skills = "./skills";
     mcpServers = "./.claude-plugin/mcp.json";
+    hooks = "./native/claude-code/compaction-brief/hooks/hooks.json";
   };
   inventory = {
     package = manifest.name;

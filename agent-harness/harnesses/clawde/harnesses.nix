@@ -39,10 +39,11 @@ let
         settingsFile = pkgs.writeText "clawde-agent-${agentName}-claude-settings.json" (
           builtins.toJSON agent.claudeLaunchSettings
         );
+        interactiveModsArgument = lib.optionalString agent.claudeInteractiveSessionSettings "--plugin-dir ${config.claude.interactiveSessionModsDirectory} ";
       in
       lib.replaceStrings
         [ " ${binaryInvocation} " ]
-        [ " ${binaryInvocation} --settings ${settingsFile} " ]
+        [ " ${binaryInvocation} ${interactiveModsArgument}--settings ${settingsFile} " ]
         harnessCommand;
 
   launchesAsInteractiveSession =

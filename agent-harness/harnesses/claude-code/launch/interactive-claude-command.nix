@@ -12,11 +12,10 @@ let
 
   claudeExecutable = lib.getExe config.claude.unwrappedPackage;
 
-  claudeModsMarketplace = import ../plugins/mods/marketplace.nix { inherit pkgs; };
+  claudeMods = import ../plugins/mods { inherit pkgs; };
 
   interactiveSessionSettings = {
-    enabledPlugins = claudeModsMarketplace.interactiveSessionEnabledPlugins;
-    pluginConfigs = claudeModsMarketplace.interactiveSessionPluginConfigs;
+    pluginConfigs = claudeMods.interactiveSessionPluginConfigs;
   };
 
   interactiveSessionSettingsFile = pkgs.writeText "claude-interactive-session-settings.json" (
@@ -58,6 +57,7 @@ let
     exec ${claudeExecutable} \
       --dangerously-skip-permissions \
       --append-system-prompt-file "$claudeSystemPromptFile" \
+      --plugin-dir ${claudeMods.interactiveSessionModsDirectory} \
       --settings "$claudeSettingsFile" \
       "$@"
   '';
@@ -76,6 +76,13 @@ in
       default = interactiveSessionSettings;
       readOnly = true;
       description = "The settings the plain claude command layers onto every interactive session before any workspace profile overlay, for a non-interactive launcher that must give its sessions the same plugins and plugin options.";
+    };
+
+    interactiveSessionModsDirectory = lib.mkOption {
+      type = lib.types.path;
+      default = claudeMods.interactiveSessionModsDirectory;
+      readOnly = true;
+      description = "The directory of mods the plain claude command loads with --plugin-dir, for a non-interactive launcher that must give its sessions the same mods.";
     };
 
     interactiveSessionSystemPromptFile = lib.mkOption {

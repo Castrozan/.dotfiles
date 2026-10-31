@@ -1,5 +1,4 @@
 {
-  pkgs,
   lib,
   mkEvalCheck,
   helpers,
@@ -7,38 +6,41 @@
   ...
 }:
 let
-  claudeModsMarketplace = import ../marketplace.nix { inherit pkgs; };
-
   cfg = helpers.homeManagerTestConfiguration [ self.homeManagerModules.claude-code ];
 
   userSettingsEnabledPlugins =
     (builtins.fromJSON cfg.home.file.".claude/settings.json.nix-source".source.baseSettings.text)
     .enabledPlugins;
 
-  installActivation = cfg.home.activation.installClaudeMods;
+  interactiveLauncher = builtins.readFile "${cfg.claude.package}/bin/claude";
+
+  retirementActivation = cfg.home.activation.removeRetiredClaudeMarketplaces;
 in
 {
-  claude-interactive-only-mods-stay-out-of-user-settings =
-    mkEvalCheck "claude-interactive-only-mods-stay-out-of-user-settings"
+  claude-dotfiles-is-the-only-enabled-plugin =
+    mkEvalCheck "claude-dotfiles-is-the-only-enabled-plugin"
       (
-        !lib.any (pluginKey: userSettingsEnabledPlugins ? ${pluginKey}) (
-          builtins.attrNames claudeModsMarketplace.interactiveSessionEnabledPlugins
-        )
+        userSettingsEnabledPlugins == {
+          "dotfiles@dotagents" = true;
+        }
       )
-      "user settings reach every Claude process, including clawde agents that launch the unwrapped binary; an interactive-only mod enabled there would send keep-warm pings, hold channel messages, or rewrite prompts in fleet sessions nobody is watching, so only the interactive wrapper's --settings file may enable these";
+      "user settings reach every Claude process, including clawde agents that launch the unwrapped binary; the compaction brief travels inside the dotfiles plugin, and an interactive mod enabled there would send keep-warm pings, hold channel messages, or rewrite prompts in fleet sessions nobody is watching";
 
-  claude-compaction-brief-reaches-every-session =
-    mkEvalCheck "claude-compaction-brief-reaches-every-session"
-      (userSettingsEnabledPlugins."compaction-brief@dotfiles-mods" or false)
-      "the compaction brief steers what every summary keeps, and fleet agents compact as often as interactive sessions do, so it must be enabled in user settings rather than through the interactive wrapper";
+  claude-interactive-launcher-loads-the-mods-directory =
+    mkEvalCheck "claude-interactive-launcher-loads-the-mods-directory"
+      (lib.hasInfix "--plugin-dir ${builtins.unsafeDiscardStringContext cfg.claude.interactiveSessionModsDirectory}" interactiveLauncher)
+      "the interactive mods have no marketplace, so the launcher flag is the only thing that loads them into a keyboard session";
 
-  claude-mods-install-before-settings-seeding =
-    mkEvalCheck "claude-mods-install-before-settings-seeding"
+  claude-interactive-settings-enable-no-plugin =
+    mkEvalCheck "claude-interactive-settings-enable-no-plugin"
       (
-        builtins.elem "seedClaudeSettingsAsMutableFile" installActivation.before
-        && builtins.all (
-          pluginKey: lib.hasInfix "plugin install ${pluginKey}" installActivation.data
-        ) claudeModsMarketplace.pluginKeys
+        !(cfg.claude.interactiveSessionSettings ? enabledPlugins)
+        && cfg.claude.interactiveSessionSettings.pluginConfigs ? "airquote@inline"
       )
-      "claude plugin install writes each mod into settings.json as enabled; only the settings seeding that runs afterwards resets enabledPlugins to the nix source, so installing after it would leave every interactive-only mod enabled for clawde agents until the next rebuild";
+      "mods loaded with --plugin-dir read their options under the inline plugin key and need no enablement";
+
+  claude-retired-marketplaces-go-before-settings-seeding =
+    mkEvalCheck "claude-retired-marketplaces-go-before-settings-seeding"
+      (builtins.elem "seedClaudeSettingsAsMutableFile" retirementActivation.before)
+      "removing a marketplace rewrites settings.json, so only the seeding that runs afterwards leaves it matching the nix source";
 }
