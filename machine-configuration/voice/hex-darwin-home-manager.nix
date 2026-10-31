@@ -17,6 +17,8 @@ in
       run ${hexCommand} settings set recording_audio_behavior do_nothing
       run ${hexCommand} settings set release_microphone_while_idle true
       run ${hexCommand} settings set capture.enabled false
+      run ${hexCommand} settings set enable_on_launch true
+      run ${hexCommand} launch-at-login on
     else
       warnEcho "Hex is not responding. Open Hex, then rebuild to apply its privacy settings."
     fi

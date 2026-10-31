@@ -16,7 +16,7 @@
         inherit (latest) cargo rustc;
       };
     };
-    autostart = false;
+    autostart = true;
     shortcut = "control+option+space";
     model = "parakeet_v3";
     language = "en";
