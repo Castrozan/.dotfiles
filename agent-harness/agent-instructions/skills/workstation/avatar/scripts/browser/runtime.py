@@ -7,6 +7,8 @@ import sys
 import time
 from pathlib import Path
 
+BROWSER_WINDOW_CLASS = "avatar-browser"
+
 
 def profile_directory():
     return (
@@ -33,6 +35,7 @@ def start(url):
             [
                 "chromium",
                 f"--user-data-dir={profile}",
+                f"--class={BROWSER_WINDOW_CLASS}",
                 "--remote-debugging-port=0",
                 "--autoplay-policy=no-user-gesture-required",
                 "--disable-background-timer-throttling",

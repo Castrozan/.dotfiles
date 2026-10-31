@@ -5,6 +5,12 @@ from unittest.mock import Mock
 
 import pytest
 
+HYPRLAND_WINDOW_RULES = (
+    Path(__file__).resolve().parents[9]
+    / "machine-configuration/desktop/desktop-environments/hyprland"
+    / "program-configuration/conf.d/windows.conf"
+)
+
 
 @pytest.fixture
 def runtime(tmp_path, monkeypatch):
@@ -30,6 +36,23 @@ def runtime(tmp_path, monkeypatch):
         Mock(side_effect=lambda *_: (process / "cmdline").unlink(missing_ok=True)),
     )
     return module, profile, process
+
+
+def test_output_browser_advertises_the_class_the_compositor_hides(runtime, monkeypatch):
+    module, profile, process = runtime
+    launched_arguments = []
+
+    def launch(arguments, **_):
+        launched_arguments.extend(arguments)
+        (profile / "DevToolsActivePort").write_text("9222\n/devtools/browser")
+        return Mock(pid=123, poll=Mock(return_value=None))
+
+    monkeypatch.setattr(module.subprocess, "Popen", launch)
+    module.start("http://localhost:3000/?output=1")
+
+    window_rules = HYPRLAND_WINDOW_RULES.read_text()
+    assert f"--class={module.BROWSER_WINDOW_CLASS}" in launched_arguments
+    assert f"match:class ^({module.BROWSER_WINDOW_CLASS})$" in window_rules
 
 
 def test_stop_closes_only_the_owned_avatar_browser(runtime):

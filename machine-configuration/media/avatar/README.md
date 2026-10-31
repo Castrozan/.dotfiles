@@ -5,6 +5,9 @@ libraries are pinned by Nix and served locally. Start it with `avatar-start`; ru
 `avatar-controls` for camera permission and video modes. The controls must use the avatar-owned browser profile so their
 permission flow can reach the output window.
 
+Starting the avatar never takes over the screen: its output window opens on the hidden `special:avatar` Hyprland
+workspace and keeps rendering there. Only `avatar-controls` opens a visible window.
+
 Both audio inputs start muted at 50%. `avatar-audio status` shows ownership, mute and level state. Send an application's
 playback to `AvatarMic`, for example `PULSE_SINK=AvatarMic paplay generated.wav`, then use
 `avatar-audio mute agent 0` to enable that channel. `avatar-audio volume agent 70` changes its level; `mute agent 1`
@@ -16,6 +19,7 @@ must select `AvatarMicrophone` as its microphone. No defaults or existing applic
 
 A running application may need its own output selector or an explicitly selected PulseAudio sink-input moved to
 `AvatarMic`. Setting an environment variable on a second launch does not reroute an existing application instance.
+Streams routed to `AvatarMic` stay there: desktop audio switching only moves streams on hardware sinks.
 Keep meeting playback on headphones or the normal output; routing meeting playback into the mix creates feedback.
 This generic audio route does not expose a voice session's internal audio API or provide an integration for a remote app
 whose playback never reaches this computer.
