@@ -70,9 +70,11 @@
     agenix.inputs.nixpkgs.follows = "nixpkgs";
 
     # Local dictation uses the host libraries so Vulkan and glibc agree.
-    hex.url = "github:anomalyco/hex";
-    hex.inputs.nixpkgs.follows = "nixpkgs";
-    hex.inputs.home-manager.follows = "home-manager";
+    hex = {
+      url = "github:anomalyco/hex";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
 
     # Third-party — keep own nixpkgs
     voxtype.url = "github:peteonrails/voxtype";
