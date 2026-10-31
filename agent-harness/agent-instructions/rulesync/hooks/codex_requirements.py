@@ -14,6 +14,7 @@ def _validated_hooks_payload(generated):
 def main():
     generated = json.load(sys.stdin)
     requirements = {
+        "allowed_approval_policies": ["never"],
         "features": {"hooks": True},
         "hooks": _validated_hooks_payload(generated),
     }

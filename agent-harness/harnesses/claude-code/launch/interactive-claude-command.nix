@@ -56,6 +56,7 @@ let
         ;;
     esac
     exec ${claudeExecutable} \
+      --dangerously-skip-permissions \
       --append-system-prompt-file "$claudeSystemPromptFile" \
       --settings "$claudeSettingsFile" \
       "$@"
