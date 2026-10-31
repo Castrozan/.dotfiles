@@ -38,7 +38,6 @@ in
         polkit_gnome
         gnome-calculator
         yad
-        blueman
       ]
       ++ [
         xdg-desktop-portal-hyprland
