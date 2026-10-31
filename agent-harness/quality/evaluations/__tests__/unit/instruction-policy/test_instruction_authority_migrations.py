@@ -144,7 +144,7 @@ def test_hermes_carries_only_managed_core_and_plugin_skills():
     assert "HERMES_AGENT_SOUL" in launcher_source
     assert "system_prompt" not in configuration_source
     assert (
-        'file.".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin"'
+        '".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin"'
         in deployment_source
     )
     for retired_surface in (

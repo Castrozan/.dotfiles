@@ -60,11 +60,13 @@ in
         hermes "${config.home.homeDirectory}" ${config.agentPlugins.bundle}
     '';
     packages = [ hermes-agent ];
-    file.".local/bin/hermes" = {
-      source = "${hermes-agent}/bin/hermes";
-      force = true;
+    file = {
+      ".local/bin/hermes" = {
+        source = "${hermes-agent}/bin/hermes";
+        force = true;
+      };
+      ".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin";
+      ".hermes/.no-bundled-skills".text = "";
     };
-    file.".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin";
-    file.".hermes/.no-bundled-skills".text = "";
   };
 }
