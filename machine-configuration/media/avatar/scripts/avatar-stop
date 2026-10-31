@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 stop_status=0
-systemctl --user stop avatar.target avatar-camera.service avatar-control-server.service avatar-renderer.service avatar-audio.service || stop_status=$?
+systemctl --user stop avatar-listener.service avatar.target avatar-camera.service avatar-control-server.service avatar-renderer.service avatar-audio.service || stop_status=$?
 avatar-audio stop || exit $?
 exit "$stop_status"

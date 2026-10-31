@@ -19,57 +19,24 @@ function resolveRequestedSinks(output, speakerSinkName) {
   return sinks;
 }
 
-function forwardSpeechToRenderer(
-  clientRegistry,
-  { id, timing, emotion, text },
-) {
-  clientRegistry.sendToRenderer({
-    type: "startSpeaking",
-    id,
-    timing,
-    emotion,
-    text,
-    audioUrl: `/audio/${id}/voice.mp3`,
-  });
-  console.log(
-    `📤 Forwarded to renderer: startSpeaking (${timing.length} phonemes)`,
-  );
-}
-
-function scheduleReturnToIdle(avatarState, durationSeconds) {
-  setTimeout(
-    () => {
-      if (avatarState.finishSpeakingIfStillSpeaking()) {
-        console.log("🔄 Auto-transitioned to IDLE");
-      }
-    },
-    (durationSeconds + 0.5) * 1000,
-  );
-}
-
-function playGeneratedSpeech(
-  speech,
-  output,
-  clientRegistry,
-  speakerSinkName,
-  id,
-  emotion,
-  text,
-) {
-  if (clientRegistry.hasRenderer()) {
-    forwardSpeechToRenderer(clientRegistry, {
-      id,
-      timing: speech.timing,
-      emotion,
-      text,
-    });
-  }
-
-  const sinks = resolveRequestedSinks(output, speakerSinkName);
-  for (const sinkName of sinks) {
-    playAudioFileToSink(speech.audioPath, sinkName);
-  }
-  console.log(`🔊 Playing audio to: ${sinks.join(", ")}`);
+function performSpeech(command, context) {
+  const { text, emotion, output, voice, id } = command;
+  const { avatarState, clientRegistry, textToSpeechGenerator } = context;
+  return async () => {
+    avatarState.beginSpeaking(emotion);
+    const speech = await textToSpeechGenerator.generate(text, id, voice);
+    if (clientRegistry.hasRenderer()) {
+      clientRegistry.sendToRenderer({ type: "startSpeaking", id, emotion, text });
+    }
+    const playbacks = resolveRequestedSinks(
+      output,
+      context.speakerSinkName,
+    ).map((sinkName) => playAudioFileToSink(speech.audioPath, sinkName));
+    return {
+      finished: Promise.all(playbacks.map((playback) => playback.finished)),
+      stop: () => playbacks.forEach((playback) => playback.stop()),
+    };
+  };
 }
 
 async function handleSpeakCommand(command, connection, context) {
@@ -86,40 +53,22 @@ async function handleSpeakCommand(command, connection, context) {
     return;
   }
 
-  const {
-    avatarState,
-    clientRegistry,
-    textToSpeechGenerator,
-    speakerSinkName,
-  } = context;
-
-  avatarState.beginSpeaking(emotion);
+  const usesAgentChannel = output === "mic" || output === "both";
+  const speech = performSpeech(
+    { text, emotion, output, voice, id },
+    context,
+  );
 
   try {
-    const speech = await textToSpeechGenerator.generate(text, id, voice);
-
-    playGeneratedSpeech(
+    const { status } = await context.speechFloor.enqueue(
+      usesAgentChannel,
       speech,
-      output,
-      clientRegistry,
-      speakerSinkName,
-      id,
-      emotion,
-      text,
     );
-
-    sendResponse(connection, {
-      type: "speakAck",
-      id,
-      duration: speech.duration,
-      output,
-      status: "started",
-    });
-
-    scheduleReturnToIdle(avatarState, speech.duration);
+    sendResponse(connection, { type: "speakAck", id, output, status });
   } catch (error) {
-    avatarState.finishSpeaking();
-    sendError(connection, `TTS generation failed: ${error.message}`);
+    sendError(connection, `Speech failed: ${error.message}`);
+  } finally {
+    context.avatarState.finishSpeaking();
   }
 }
 

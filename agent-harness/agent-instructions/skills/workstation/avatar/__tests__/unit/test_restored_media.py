@@ -105,7 +105,7 @@ def test_chrome_request_timeout_unsubscribes():
 
 
 @requires_node
-def test_tts_rejection_reports_http_status_without_provider_url():
+def test_local_speech_failure_names_the_voice_engine():
     result = evaluate_node_json(
         """
         const Module = require("node:module");
@@ -114,14 +114,29 @@ def test_tts_rejection_reports_http_status_without_provider_url():
         Module._load = function(name, ...arguments_) {
           if (name === "fs") return { promises: { mkdir: async () => {} } };
           if (name === "child_process") return { spawn: () => {
-            const child = new EventEmitter(); child.stderr = new EventEmitter();
-            process.nextTick(() => { child.stderr.emit("data", Buffer.from("WSServerHandshakeError: 403, url=wss://provider.invalid/?token=private")); child.emit("close", 1); });
+            const child = new EventEmitter();
+            child.stderr = new EventEmitter();
+            child.stdin = { end: () => {} };
+            process.nextTick(() => child.emit("close", 3));
             return child;
           } };
           return original.call(this, name, ...arguments_);
         };
         const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
-        const result = new TextToSpeechGenerator("unused", "voice").generate("synthetic", "id").catch(error => error.message);
+        const result = new TextToSpeechGenerator("unused", "voice", "models").generate("synthetic", "id").catch(error => error.message);
         """
     )
-    assert result == "edge-tts returned HTTP 403"
+    assert result == "piper exited 3"
+
+
+@requires_node
+def test_voice_names_cannot_escape_the_model_directory():
+    result = evaluate_node_json(
+        """
+        const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
+        const result = new TextToSpeechGenerator("/tmp/unused", "voice", "models")
+          .generate("synthetic", "id", "../../etc/passwd")
+          .catch((error) => error.message);
+        """
+    )
+    assert result == "Unknown voice: ../../etc/passwd"

@@ -1,39 +1,39 @@
 const { spawn } = require("child_process");
 const fs = require("fs").promises;
 const path = require("path");
-const { parseSpeechTiming } = require("./speech-timing-parser");
 
-function runEdgeTextToSpeech(commandArguments) {
+const VOICE_NAME_PATTERN = /^[A-Za-z0-9_-]+$/;
+const WAV_BYTE_RATE_OFFSET = 28;
+const WAV_HEADER_BYTES = 44;
+
+function runPiper(modelPath, audioPath, text) {
   return new Promise((resolve, reject) => {
-    const edgeTextToSpeechProcess = spawn("edge-tts", commandArguments, {
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    let diagnostics = "";
-    edgeTextToSpeechProcess.stderr.on("data", (chunk) => {
-      diagnostics = (diagnostics + chunk.toString()).slice(-8192);
-    });
-    edgeTextToSpeechProcess.on("close", (exitCode) =>
+    const piper = spawn(
+      "piper",
+      ["--model", modelPath, "--output_file", audioPath],
+      { stdio: ["pipe", "ignore", "pipe"] },
+    );
+    piper.stderr.on("data", () => {});
+    piper.on("close", (exitCode) =>
       exitCode === 0
         ? resolve()
-        : reject(textToSpeechFailure(exitCode, diagnostics)),
+        : reject(new Error(`piper exited ${exitCode}`)),
     );
-    edgeTextToSpeechProcess.on("error", reject);
+    piper.on("error", reject);
+    piper.stdin.end(text);
   });
 }
 
-function textToSpeechFailure(exitCode, diagnostics) {
-  const rejected = diagnostics.match(/WSServerHandshakeError:\s*(\d{3})/);
-  return new Error(
-    rejected
-      ? `edge-tts returned HTTP ${rejected[1]}`
-      : `edge-tts exited ${exitCode}`,
-  );
+function wavDurationSeconds(audio) {
+  const byteRate = audio.readUInt32LE(WAV_BYTE_RATE_OFFSET);
+  return (audio.length - WAV_HEADER_BYTES) / byteRate;
 }
 
 class TextToSpeechGenerator {
-  constructor(outputRootDirectory, defaultVoice) {
+  constructor(outputRootDirectory, defaultVoice, voiceModelDirectory) {
     this.outputRootDirectory = outputRootDirectory;
     this.defaultVoice = defaultVoice;
+    this.voiceModelDirectory = voiceModelDirectory;
   }
 
   async prepareOutputRootDirectory() {
@@ -49,41 +49,19 @@ class TextToSpeechGenerator {
   }
 
   async generate(text, outputId, voiceOverride = null) {
-    const outputDirectory = path.join(this.outputRootDirectory, outputId);
-    const audioPath = path.join(outputDirectory, "voice.mp3");
-    const timingPath = path.join(outputDirectory, "timing.json");
-
-    try {
-      await fs.mkdir(outputDirectory, { recursive: true });
-
-      console.log(
-        `🎤 Generating TTS: "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"`,
-      );
-      await runEdgeTextToSpeech([
-        "--text",
-        text,
-        "--voice",
-        voiceOverride || this.defaultVoice,
-        "--rate",
-        "+0%",
-        "--write-media",
-        audioPath,
-        "--write-subtitles",
-        timingPath,
-      ]);
-
-      const timing = parseSpeechTiming(await fs.readFile(timingPath, "utf-8"));
-
-      return {
-        audioPath,
-        audioUrl: `/audio/${outputId}/voice.mp3`,
-        timing,
-        duration: timing.length > 0 ? timing[timing.length - 1].end : 0,
-      };
-    } catch (error) {
-      console.error("❌ TTS generation failed:", error.message);
-      throw error;
+    const voice = voiceOverride || this.defaultVoice;
+    if (!VOICE_NAME_PATTERN.test(voice)) {
+      throw new Error(`Unknown voice: ${voice}`);
     }
+    const outputDirectory = path.join(this.outputRootDirectory, outputId);
+    const audioPath = path.join(outputDirectory, "voice.wav");
+    const modelPath = path.join(this.voiceModelDirectory, `${voice}.onnx`);
+    await fs.mkdir(outputDirectory, { recursive: true });
+    await runPiper(modelPath, audioPath, text);
+    return {
+      audioPath,
+      duration: wavDurationSeconds(await fs.readFile(audioPath)),
+    };
   }
 }
 

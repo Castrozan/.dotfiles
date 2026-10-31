@@ -18,36 +18,6 @@ const makeFakeConnection = () => {
 
 
 @requires_node
-def test_speech_timing_parser_splits_a_subtitle_block_into_word_timings():
-    result = evaluate_node_json(
-        """
-        const { parseSpeechTiming } = require("./speech/speech-timing-parser");
-        const subtitles = [
-          "1",
-          "00:00:00,000 --> 00:00:02,000",
-          "hello there",
-        ].join("\\n");
-        const result = parseSpeechTiming(subtitles);
-        """
-    )
-    assert [entry["text"] for entry in result] == ["hello", "there"]
-    assert [entry["phoneme"] for entry in result] == ["e", "e"]
-    assert result[0]["start"] == 0.0
-    assert result[1]["end"] == 2.0
-
-
-@requires_node
-def test_speech_timing_parser_returns_empty_for_unparseable_input():
-    result = evaluate_node_json(
-        """
-        const { parseSpeechTiming } = require("./speech/speech-timing-parser");
-        const result = parseSpeechTiming("not a subtitle file at all");
-        """
-    )
-    assert result == []
-
-
-@requires_node
 def test_avatar_state_store_only_returns_to_idle_while_still_speaking():
     result = evaluate_node_json(
         """

@@ -13,6 +13,8 @@ const {
   attachClientConnection,
 } = require("./avatar-session/client-connection-router");
 const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
+const { SpeechFloor } = require("./speech/speech-floor");
+const { AgentChannelGate } = require("./speech/agent-channel-gate");
 
 const {
   startMicrophoneLevelMeter,
@@ -24,6 +26,7 @@ const CONFIG = {
   WS_PORT: parseInt(process.env.AVATAR_WS_PORT || "8765", 10),
   HTTP_PORT: parseInt(process.env.AVATAR_HTTP_PORT || "8766", 10),
   TTS_VOICE: process.env.AVATAR_TTS_VOICE || "@ttsVoice@",
+  TTS_VOICE_DIRECTORY: process.env.AVATAR_TTS_VOICE_DIRECTORY,
   TTS_DIR: require("node:path").join(
     require("node:os").homedir(),
     ".cache",
@@ -104,6 +107,7 @@ async function main() {
   const textToSpeechGenerator = new TextToSpeechGenerator(
     CONFIG.TTS_DIR,
     CONFIG.TTS_VOICE,
+    CONFIG.TTS_VOICE_DIRECTORY,
   );
   await textToSpeechGenerator.prepareOutputRootDirectory();
 
@@ -111,6 +115,7 @@ async function main() {
     avatarState,
     clientRegistry,
     textToSpeechGenerator,
+    speechFloor: new SpeechFloor(new AgentChannelGate()),
     speakerSinkName: CONFIG.SPEAKER_SINK,
   };
 

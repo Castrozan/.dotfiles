@@ -1,10 +1,13 @@
 const WebSocket = require("ws");
 
+const SPEECH_TURN_TIMEOUT_MILLISECONDS = 300000;
+
 const builders = {
   status: () => ({ type: "getStatus" }),
   mode: (mode) => ({ type: "setVideoMode", mode }),
   expression: (name) => ({ type: "setExpression", name }),
   idle: (mode) => ({ type: "setIdle", mode }),
+  "stop-speaking": () => ({ type: "stopSpeaking" }),
   speak: (text, emotion = "neutral", output = "mic", voice) => ({
     type: "speak",
     text,
@@ -20,7 +23,7 @@ function parseCommand(arguments_) {
     : null;
   if (!build)
     throw new Error(
-      "Usage: avatar-command status | mode avatar|camera|composite | expression NAME | idle MODE | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
+      "Usage: avatar-command status | mode avatar|camera|composite | expression NAME | idle MODE | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
     );
   return build(...arguments_.slice(1));
 }
@@ -54,7 +57,7 @@ function sendCommand(command) {
       process.exitCode = 1;
       connection.terminate();
     },
-    command.type === "speak" ? 120000 : 10000,
+    command.type === "speak" ? SPEECH_TURN_TIMEOUT_MILLISECONDS : 10000,
   );
   const context = { connection, command, timeout };
   connection.on("open", () =>

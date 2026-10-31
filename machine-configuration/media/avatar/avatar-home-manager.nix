@@ -54,10 +54,31 @@ let
     }:$PATH
     ${builtins.readFile ./scripts/avatar-stop}
   '';
+  listen = pkgs.writeShellScriptBin "avatar-listen" ''
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.pulseaudio
+        pkgs.systemd
+      ]
+    }:$PATH
+    export PYTHONPATH=${./scripts/listening}
+    exec ${pkgs.python312}/bin/python3 ${./scripts/listening/listen_cli.py} "$@"
+  '';
+  listener = pkgs.writeShellScript "avatar-listener" ''
+    export PATH=${lib.makeBinPath [ pkgs.pulseaudio ]}:$PATH
+    export PYTHONPATH=${./scripts/listening}
+    exec ${pkgs.python312}/bin/python3 ${./scripts/listening/listener.py}
+  '';
+  transcriptionModel = pkgs.fetchurl {
+    url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin";
+    sha256 = "1zifp9gk9220vysx8a00mzf2sy05ni4l6crx95baivhlvp1mpvb0";
+  };
+  speechVoices = import ./speech-voices.nix { inherit pkgs; };
   tools = lib.makeBinPath [
+    audio
     pkgs.ffmpeg
+    pkgs.piper-tts
     pkgs.pulseaudio
-    pkgs.python3Packages.edge-tts
   ];
   serviceUnit = {
     PartOf = [ "avatar.target" ];
@@ -71,6 +92,7 @@ in
       audio
       command
       controls
+      listen
       start
       stop
     ];
@@ -105,7 +127,8 @@ in
             ExecStart = "${pkgs.nodejs_22}/bin/node ${control}/server.js";
             Environment = [
               "PATH=${tools}"
-              "AVATAR_TTS_VOICE=pt-BR-AntonioNeural"
+              "AVATAR_TTS_VOICE=pt_BR-faber-medium"
+              "AVATAR_TTS_VOICE_DIRECTORY=${speechVoices}"
               "AVATAR_AUDIO_MONITOR=AvatarMic.monitor"
               "XDG_RUNTIME_DIR=/run/user/%U"
             ];
@@ -137,6 +160,27 @@ in
             Restart = "on-failure";
           };
           Install.WantedBy = [ "avatar.target" ];
+        };
+        avatar-transcriber = {
+          Unit = {
+            Description = "Local avatar speech transcription";
+            StopWhenUnneeded = true;
+          };
+          Service = {
+            ExecStart = "${pkgs.whisper-cpp}/bin/whisper-server --host 127.0.0.1 --port 8767 --model ${transcriptionModel} --language auto --threads 4";
+            Restart = "on-failure";
+          };
+        };
+        avatar-listener = {
+          Unit = {
+            Description = "Local avatar meeting listener";
+            After = [ "avatar-transcriber.service" ];
+            Requires = [ "avatar-transcriber.service" ];
+          };
+          Service = {
+            ExecStart = toString listener;
+            Restart = "on-failure";
+          };
         };
         avatar-renderer = {
           Unit = serviceUnit // {

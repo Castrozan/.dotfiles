@@ -62,7 +62,7 @@ def test_domain_modules_load_without_any_installed_dependency():
         require("./avatar-session/avatar-state-store");
         require("./avatar-session/connected-client-registry");
         require("./agent-commands/agent-command-router");
-        require("./speech/speech-timing-parser");
+        require("./speech/speech-floor");
         require("./speech/text-to-speech-generator");
         require("./audio-playback/pulse-audio-sink-player");
         require("./chrome-devtools/chrome-devtools-session");

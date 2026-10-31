@@ -34,11 +34,11 @@ setup() {
 	assert_passes_shellcheck
 }
 
-@test "stops the target and every owned service in one job before audio cleanup" {
+@test "stops listening, the target and every owned service in one job before audio cleanup" {
 	run_script_under_test
 
 	[ "$status" -eq 0 ]
-	grep -qxF "systemctl --user stop avatar.target avatar-camera.service avatar-control-server.service avatar-renderer.service avatar-audio.service" "$CALL_LOG"
+	grep -qxF "systemctl --user stop avatar-listener.service avatar.target avatar-camera.service avatar-control-server.service avatar-renderer.service avatar-audio.service" "$CALL_LOG"
 	[ "$(tail -n 1 "$CALL_LOG")" = "avatar-audio stop" ]
 }
 
