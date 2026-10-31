@@ -35,22 +35,15 @@ class ChromeDevtoolsTargetLocator {
     });
   }
 
-  put(routePath, body) {
+  put(routePath) {
     return new Promise((resolve, reject) => {
-      const payload = JSON.stringify(body);
       const request = http.request(
         `${this.baseUrl()}${routePath}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Content-Length": Buffer.byteLength(payload),
-          },
-        },
+        { method: "PUT" },
         (response) => readJsonResponse(response, resolve, reject, true),
       );
       request.on("error", reject);
-      request.end(payload);
+      request.end();
     });
   }
 
@@ -62,7 +55,7 @@ class ChromeDevtoolsTargetLocator {
   }
 
   async openTab(tabUrl) {
-    return this.put("/json/new", { url: tabUrl });
+    return this.put(`/json/new?${encodeURIComponent(tabUrl)}`);
   }
 
   async findOrOpenPageTarget(urlFragment, tabUrl, settleMilliseconds = 3000) {

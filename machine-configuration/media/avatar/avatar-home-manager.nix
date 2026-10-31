@@ -38,6 +38,7 @@ let
   start = pkgs.writeShellScriptBin "avatar-start" ''
     export PATH=${
       lib.makeBinPath [
+        audio
         pkgs.systemd
         pkgs.v4l-utils
       ]

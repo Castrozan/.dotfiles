@@ -13,7 +13,7 @@ const {
 } = require("./virtual-camera/screencast-frame-pipeline");
 
 const AVATAR_RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
-const AVATAR_RENDERER_URL = `http://localhost:${AVATAR_RENDERER_PORT}`;
+const AVATAR_RENDERER_URL = `http://localhost:${AVATAR_RENDERER_PORT}/?output=1`;
 
 const numericArgument = (flagName, fallback) =>
   parseInt(
@@ -41,7 +41,7 @@ const DISMISS_START_MODAL_EXPRESSION = `(() => {
 async function resolveRendererDebuggerUrl() {
   const targetLocator = new ChromeDevtoolsTargetLocator(CONFIG.CDP_PORT);
   const rendererTarget = await targetLocator.findOrOpenPageTarget(
-    `localhost:${AVATAR_RENDERER_PORT}`,
+    `localhost:${AVATAR_RENDERER_PORT}/?output=1`,
     AVATAR_RENDERER_URL,
   );
 

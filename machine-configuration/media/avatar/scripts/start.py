@@ -45,10 +45,21 @@ def wait_until_ready(timeout=45):
     raise TimeoutError("The avatar renderer did not become ready")
 
 
+def audio_ready():
+    result = subprocess.run(["avatar-audio", "status"], capture_output=True, text=True)
+    if result.returncode:
+        return False
+    return json.loads(result.stdout).get("running", False)
+
+
 def main():
     try:
+        if not audio_ready():
+            subprocess.run(["systemctl", "--user", "stop", "avatar.target"], check=True)
         subprocess.run(["systemctl", "--user", "start", "avatar.target"], check=True)
         wait_until_ready()
+        if not audio_ready():
+            raise RuntimeError("The avatar audio graph did not become ready")
     except BaseException:
         subprocess.run(["systemctl", "--user", "stop", "avatar.target"], check=False)
         raise
