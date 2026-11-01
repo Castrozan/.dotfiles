@@ -47,7 +47,7 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
         ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
     )
     result = json.loads(completed.stdout)
-    assert result["state"]["mouthTarget"] == 0.5
+    assert result["state"]["mouthTarget"] == pytest.approx(0.15)
     assert result["state"]["idleMode"] == "floating"
     assert result["state"]["expression"] == "happy"
     assert result["state"]["mode"] == "avatar"

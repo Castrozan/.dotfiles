@@ -1,3 +1,4 @@
+const MOUTH_LEVEL_GAIN = 1.5;
 const MOUTH_OPENING_RATE = 30;
 const MOUTH_CLOSING_RATE = 12;
 
@@ -14,7 +15,7 @@ export class RendererControls {
     this.channel.onmessage = this.handleLocal.bind(this);
     this.handlers = {
       audioLevel: (message) => {
-        state.mouthTarget = Math.max(0, Math.min(1, message.level * 5));
+        state.mouthTarget = Math.max(0, Math.min(1, message.level * MOUTH_LEVEL_GAIN));
         state.lastLevelTime = performance.now();
         window.avatarStatus.levelMessages++;
       },
