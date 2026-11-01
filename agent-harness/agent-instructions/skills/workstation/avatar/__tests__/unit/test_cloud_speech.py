@@ -3,17 +3,34 @@ from control_server_node_runner import evaluate_node_json, requires_node
 GENERATORS = """
 const { ResilientSpeechGenerator } = require("./speech/resilient-speech-generator");
 const calls = [];
+const kokoro = { generate: async (...request) => { calls.push(["kokoro", ...request]); return { audioPath: "kokoro" }; } };
 const local = { generate: async (...request) => { calls.push(["local", ...request]); return { audioPath: "local" }; } };
 """
 
 
 @requires_node
-def test_cloud_failure_falls_back_to_the_local_default_voice():
+def test_cloud_failure_falls_back_to_the_kokoro_default_voice():
     result = evaluate_node_json(
         GENERATORS
         + """
         const cloud = { generate: async () => { throw new Error("offline"); } };
-        const result = new ResilientSpeechGenerator(cloud, local)
+        const result = new ResilientSpeechGenerator(cloud, kokoro, local)
+          .generate("hello", "turn", "cloudVoice", "happy")
+          .then((speech) => ({ audioPath: speech.audioPath, calls }));
+        """
+    )
+    assert result["audioPath"] == "kokoro"
+    assert result["calls"] == [["kokoro", "hello"]]
+
+
+@requires_node
+def test_piper_speaks_only_when_cloud_and_kokoro_both_fail():
+    result = evaluate_node_json(
+        GENERATORS
+        + """
+        const cloud = { generate: async () => { throw new Error("offline"); } };
+        const failingKokoro = { generate: async () => { throw new Error("no model"); } };
+        const result = new ResilientSpeechGenerator(cloud, failingKokoro, local)
           .generate("hello", "turn", "cloudVoice", "happy")
           .then((speech) => ({ audioPath: speech.audioPath, calls }));
         """
@@ -23,12 +40,26 @@ def test_cloud_failure_falls_back_to_the_local_default_voice():
 
 
 @requires_node
-def test_a_local_voice_never_reaches_the_cloud():
+def test_a_kokoro_voice_never_reaches_the_cloud():
     result = evaluate_node_json(
         GENERATORS
         + """
         const cloud = { generate: async () => { calls.push(["cloud"]); return {}; } };
-        const result = new ResilientSpeechGenerator(cloud, local)
+        const result = new ResilientSpeechGenerator(cloud, kokoro, local)
+          .generate("olá", "turn", "pf_dora", "sad")
+          .then(() => calls);
+        """
+    )
+    assert result == [["kokoro", "olá", "pf_dora"]]
+
+
+@requires_node
+def test_a_piper_voice_never_reaches_the_cloud():
+    result = evaluate_node_json(
+        GENERATORS
+        + """
+        const cloud = { generate: async () => { calls.push(["cloud"]); return {}; } };
+        const result = new ResilientSpeechGenerator(cloud, kokoro, local)
           .generate("olá", "turn", "pt_BR-faber-medium", "sad")
           .then(() => calls);
         """
@@ -42,7 +73,7 @@ def test_the_cloud_receives_the_voice_and_emotion():
         GENERATORS
         + """
         const cloud = { generate: async (...request) => { calls.push(request); return {}; } };
-        const result = new ResilientSpeechGenerator(cloud, local)
+        const result = new ResilientSpeechGenerator(cloud, kokoro, local)
           .generate("hi", "turn", undefined, "happy")
           .then(() => calls);
         """
@@ -70,7 +101,7 @@ def test_spoken_vowels_skip_the_delivery_tag_and_read_accents():
 def test_the_speech_result_is_read_after_the_operation_line():
     result = evaluate_node_json(
         """
-        const { parseSpeechResult } = require("./speech/elevenlabs-speech-generator");
+        const { parseSpeechResult } = require("./speech/media-speech-client");
         const result = Promise.resolve(parseSpeechResult('{"operation_id": "a"}\\n{\\n "status": "succeeded"\\n}\\n'));
         """
     )

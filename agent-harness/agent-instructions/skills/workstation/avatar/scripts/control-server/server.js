@@ -13,6 +13,7 @@ const {
   attachClientConnection,
 } = require("./avatar-session/client-connection-router");
 const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
+const { KokoroSpeechGenerator } = require("./speech/kokoro-speech-generator");
 const {
   ElevenLabsSpeechGenerator,
 } = require("./speech/elevenlabs-speech-generator");
@@ -34,6 +35,7 @@ const CONFIG = {
   TTS_VOICE: process.env.AVATAR_TTS_VOICE || "@ttsVoice@",
   TTS_VOICE_DIRECTORY: process.env.AVATAR_TTS_VOICE_DIRECTORY,
   CLOUD_VOICE: process.env.AVATAR_CLOUD_VOICE,
+  KOKORO_VOICE: "pf_dora",
   CLOUD_VOICE_LANGUAGE: process.env.AVATAR_CLOUD_VOICE_LANGUAGE || "pt-br",
   TTS_DIR: require("node:path").join(
     require("node:os").homedir(),
@@ -123,6 +125,7 @@ async function main() {
       CONFIG.CLOUD_VOICE,
       CONFIG.CLOUD_VOICE_LANGUAGE,
     ),
+    new KokoroSpeechGenerator(CONFIG.KOKORO_VOICE, CONFIG.CLOUD_VOICE_LANGUAGE),
     localSpeechGenerator,
   );
 
