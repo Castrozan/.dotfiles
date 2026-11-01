@@ -83,7 +83,8 @@ run_nixos_rebuild() (
 	echo ":: Rebuilding NixOS from ${flake_reference}..."
 	local preparation_directory
 	preparation_directory="$(mktemp -d -t dotfiles-rebuild-prefetch.XXXXXXXX)"
-	trap 'rm -rf -- "$preparation_directory"' EXIT
+	# shellcheck disable=SC2064
+	trap "rm -rf -- '${preparation_directory}'" EXIT
 	"$NIXOS_REBUILD_PREFETCH" "${preparation_directory}/request.json" "$DOTFILES_DIRECTORY" \
 		"$rebuild_action" --flake "$flake_reference" "${lock_flags[@]}" "$@"
 	run_privileged env \
