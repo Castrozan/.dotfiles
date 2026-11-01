@@ -35,6 +35,8 @@ class ListenerVoiceReceiver(VoiceReceiver):
         super()._on_packet(data)
 
     def _admits(self, source):
+        if source == self._bot_ssrc:
+            return False
         with self._lock:
             user_by_source = dict(self._ssrc_to_user)
         admitted = source_belongs_to_listener(

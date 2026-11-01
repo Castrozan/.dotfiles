@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import time
 
 import discord
@@ -16,6 +17,13 @@ logger = logging.getLogger(__name__)
 
 class VoiceCallError(Exception):
     pass
+
+
+def exit_for_supervisor_restart_on_crash(task):
+    if task.cancelled() or task.exception() is None:
+        return
+    logger.error("voice call task crashed", exc_info=task.exception())
+    os._exit(1)
 
 
 class VoiceCall:
@@ -74,6 +82,8 @@ class VoiceCall:
                 asyncio.create_task(self._watch_listener(utterances)),
                 asyncio.create_task(self._transcribe_utterances(utterances)),
             ]
+            for task in self._tasks:
+                task.add_done_callback(exit_for_supervisor_restart_on_crash)
             return self.status()
 
     async def leave(self):

@@ -7,14 +7,22 @@ LISTENER = 100
 STRANGER = 200
 
 
+def voice_packet(source):
+    return b"\x80\x78" + bytes(6) + source.to_bytes(4, "big") + b"payload"
+
+
 def test_reads_the_source_from_the_rtp_header():
-    packet = bytes(8) + (0x01020304).to_bytes(4, "big") + b"payload"
+    packet = voice_packet(0x01020304)
 
     assert rtp_synchronization_source(packet) == 0x01020304
 
 
 def test_a_truncated_packet_has_no_source():
-    assert rtp_synchronization_source(bytes(11)) is None
+    assert rtp_synchronization_source(voice_packet(1)[:11]) is None
+
+
+def test_a_control_packet_has_no_voice_source():
+    assert rtp_synchronization_source(b"\x80\xc8" + voice_packet(1)[2:]) is None
 
 
 def test_a_mapped_listener_source_is_admitted():
