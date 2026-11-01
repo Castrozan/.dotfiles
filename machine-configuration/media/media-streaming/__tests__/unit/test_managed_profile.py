@@ -76,6 +76,18 @@ def test_managed_profile_reconciles_storage_before_network_requests():
     assert "window.stop();" in script[local_reconciliation:remote_loading]
 
 
+def test_managed_profile_hides_addon_installation_only_in_the_streams_list():
+    script = managed_profile.render_managed_profile_script(
+        "https://stream.example.com/server/"
+    ).decode()
+
+    assert (
+        '[class*="streams-list-container-"] [class*="install-button-container-"]'
+        in script
+    )
+    assert "hideLockedAddonInstallation();" in script
+
+
 def test_managed_profile_uses_the_request_origin_streaming_server():
     assert (
         managed_profile.select_streaming_server_url(

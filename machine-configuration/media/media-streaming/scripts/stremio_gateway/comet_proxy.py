@@ -8,7 +8,9 @@ def proxy_comet_request(handler, request_target: str, include_body: bool) -> Non
     try:
         forwarded_protocol = handler.headers.get("X-Forwarded-Proto", "http")
         request_origin = f"{forwarded_protocol}://{handler.headers['Host']}"
+        handler.next_episode_prewarmer.wait_for_warming(request_target)
         response = handler.comet_adapter.response(request_target, request_origin)
+        handler.next_episode_prewarmer.schedule_after(request_target)
         if "/playback/" in request_target and relay_torbox_playback(
             handler, response, include_body
         ):

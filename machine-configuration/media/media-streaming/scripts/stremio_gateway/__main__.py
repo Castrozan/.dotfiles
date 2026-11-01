@@ -12,6 +12,7 @@ from managed_profile import (
     select_streaming_server_url,
 )
 from managed_service_worker import render_managed_service_worker
+from next_episode_prewarm import NextEpisodePrewarmer
 from prowlarr_stream_provider import ProwlarrStreamProvider, read_prowlarr_api_key
 import static_assets
 from stremio_runtime_configuration import (
@@ -25,6 +26,7 @@ class StremioRequestHandler(BaseHTTPRequestHandler):
     static_root: Path
     stream_provider: ProwlarrStreamProvider
     comet_adapter: CometStreamAdapter
+    next_episode_prewarmer: NextEpisodePrewarmer
     public_host: str
     public_streaming_server_url: str
     tailnet_streaming_server_url: str
@@ -165,7 +167,13 @@ def main():
         ),
         required_environment_value("STREMIO_METADATA_URL"),
     )
-    StremioRequestHandler.comet_adapter = load_comet_adapter()
+    comet_adapter = load_comet_adapter()
+    StremioRequestHandler.comet_adapter = comet_adapter
+    next_episode_prewarmer = NextEpisodePrewarmer(
+        lambda target: comet_adapter.response(target, "")
+    )
+    next_episode_prewarmer.start()
+    StremioRequestHandler.next_episode_prewarmer = next_episode_prewarmer
     StremioRequestHandler.public_host = urllib.parse.urlsplit(public_web_url).netloc
     StremioRequestHandler.public_streaming_server_url = (
         f"{public_web_url.rstrip('/')}/server/"

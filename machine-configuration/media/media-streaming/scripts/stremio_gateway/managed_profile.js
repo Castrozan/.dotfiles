@@ -178,5 +178,13 @@
     }
   };
 
+  const hideLockedAddonInstallation = () => {
+    const managedInterfaceStyle = document.createElement("style");
+    managedInterfaceStyle.textContent =
+      '[class*="streams-list-container-"] [class*="install-button-container-"]{display:none}';
+    document.head.append(managedInterfaceStyle);
+  };
+
+  hideLockedAddonInstallation();
   void synchronizeManagedProfile();
 })();
