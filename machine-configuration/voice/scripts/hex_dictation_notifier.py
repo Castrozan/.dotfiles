@@ -42,6 +42,11 @@ class DictationNotifier:
         self._command_runner = command_runner
         self._notification_id = 0
         self._recording = False
+        self._phase_handlers = {
+            "started": self._begin_recording,
+            "transcribing": self._begin_transcribing,
+            **dict.fromkeys(ENDING_PHASES, self._end_dictation),
+        }
 
     @property
     def refresh_timeout_seconds(self) -> float | None:
@@ -50,23 +55,30 @@ class DictationNotifier:
     def handle_event(self, event_line: str) -> None:
         phase = read_dictation_phase(event_line)
         if isinstance(phase, dict):
-            if "failed" in phase:
-                self._recording = False
-                self._show(
-                    Notification("Hex dictation failed", phase["failed"], "critical")
-                )
-        elif phase == "started":
-            self._recording = True
-            self._show(RECORDING)
-        elif phase == "transcribing":
-            self._recording = False
-            self._show(TRANSCRIBING)
-        elif phase in ENDING_PHASES:
-            self._recording = False
-            self._close()
+            self._show_failure(phase)
+        elif phase in self._phase_handlers:
+            self._phase_handlers[phase]()
 
     def refresh(self) -> None:
         self._show(RECORDING)
+
+    def _begin_recording(self) -> None:
+        self._recording = True
+        self._show(RECORDING)
+
+    def _begin_transcribing(self) -> None:
+        self._recording = False
+        self._show(TRANSCRIBING)
+
+    def _end_dictation(self) -> None:
+        self._recording = False
+        self._close()
+
+    def _show_failure(self, phase: dict) -> None:
+        if "failed" not in phase:
+            return
+        self._recording = False
+        self._show(Notification("Hex dictation failed", phase["failed"], "critical"))
 
     def _show(self, notification: Notification) -> None:
         result = self._command_runner(
