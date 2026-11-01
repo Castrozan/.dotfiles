@@ -47,8 +47,8 @@ async function loadAvatar() {
   const head = avatar.humanoid.getNormalizedBoneNode("head");
   const headPosition = new THREE.Vector3();
   head.getWorldPosition(headPosition);
-  camera.position.set(0, headPosition.y - 0.12, 1.8);
-  camera.lookAt(0, headPosition.y - 0.12, 0);
+  camera.position.set(0, headPosition.y - 0.04, 1);
+  camera.lookAt(0, headPosition.y - 0.04, 0);
   for (const [bone, angle] of [
     ["leftUpperArm", 1.15],
     ["rightUpperArm", -1.15],
@@ -67,8 +67,15 @@ function idleHeight(timestamp) {
   return 0;
 }
 
+function swayHead(timestamp) {
+  const head = avatar.humanoid.getNormalizedBoneNode("head");
+  head.rotation.y = Math.sin(timestamp / 2300) * 0.05;
+  head.rotation.x = Math.sin(timestamp / 1700) * 0.02;
+}
+
 function updateAvatar(timestamp, delta) {
   if (!avatar) return;
+  swayHead(timestamp);
   avatar.expressionManager.setValue("aa", state.mouth);
   avatar.expressionManager.setValue(
     "blink",
