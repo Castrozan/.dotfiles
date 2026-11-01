@@ -68,6 +68,7 @@ function idleHeight(timestamp) {
 }
 
 function swayHead(timestamp) {
+  if (!["breathing", "floating"].includes(state.idleMode)) return;
   const head = avatar.humanoid.getNormalizedBoneNode("head");
   head.rotation.y = Math.sin(timestamp / 2300) * 0.05;
   head.rotation.x = Math.sin(timestamp / 1700) * 0.02;
