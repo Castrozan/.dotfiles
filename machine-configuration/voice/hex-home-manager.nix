@@ -1,10 +1,24 @@
 {
+  config,
   inputs,
   pkgs,
   latest,
   lib,
   ...
 }:
+let
+  hexDictationNotifier = pkgs.writeShellApplication {
+    name = "hex-dictation-notifier";
+    runtimeInputs = with pkgs; [
+      coreutils
+      libnotify
+      systemd
+    ];
+    text = ''
+      exec ${pkgs.python312}/bin/python3 ${./scripts/hex_dictation_notifier.py} "$@"
+    '';
+  };
+in
 {
   imports = [ inputs.hex.homeManagerModules.hex ];
 
@@ -24,6 +38,20 @@
       # Follow the system-selected microphone, including a Bluetooth headset.
       avoid_bluetooth_microphone = false;
     };
+  };
+
+  systemd.user.services.hex-dictation-notifier = {
+    Unit = {
+      Description = "Desktop notifications for Hex dictation";
+      After = [ "hex.service" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${lib.getExe hexDictationNotifier} ${config.xdg.dataHome}/hex/logs/live.ndjson";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
   };
 
   # Hyprland registers portal shortcuts without assigning their preferred keys.
