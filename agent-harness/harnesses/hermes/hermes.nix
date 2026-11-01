@@ -7,7 +7,10 @@
 }:
 let
   hermesRuntime = inputs.hermes.packages.${pkgs.stdenv.hostPlatform.system}.minimal.override {
-    extraDependencyGroups = [ "anthropic" ];
+    extraDependencyGroups = [
+      "anthropic"
+      "messaging"
+    ];
   };
 
   configTemplate = import ./config.nix {

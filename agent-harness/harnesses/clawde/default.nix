@@ -9,6 +9,7 @@
     ./harnesses.nix
     ./discord/channel-access.nix
     ./discord/agents-allowed-to-stay-silent.nix
+    ./discord/voice-bridge
     ./agents-denied-destructive-commands.nix
     ./agent-skill-sets.nix
     ./agent-memory-write-tool.nix
