@@ -25,6 +25,10 @@ const loader = new GLTFLoader();
 loader.register((parser) => new VRMLoaderPlugin(parser));
 let avatar;
 let lastFrameTime = 0;
+if (new URLSearchParams(location.search).has("output")) {
+  status.hidden = true;
+  output.style.display = "none";
+}
 const state = {
   mouth: 0,
   mouthTarget: 0,
@@ -54,7 +58,6 @@ async function loadAvatar() {
   }
   status.textContent =
     "Avatar ready · microphone and camera stay under your control";
-  if (new URLSearchParams(location.search).has("output")) status.hidden = true;
   window.avatarStatus.ready = true;
 }
 
@@ -125,10 +128,8 @@ function disableCamera() {
   setMode("avatar");
 }
 
-window.avatarFrameJpeg = (quality) => {
-  render(performance.now());
-  return output.toDataURL("image/jpeg", quality).split(",")[1];
-};
+window.avatarFrameJpeg = (quality) =>
+  output.toDataURL("image/jpeg", quality).split(",")[1];
 
 window.avatarStatus = {
   ready: false,

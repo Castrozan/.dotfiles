@@ -94,9 +94,7 @@ def test_mouth_following_is_stable_on_a_long_frame():
     assert follow_level(0, 1, 10) == pytest.approx(1)
 
 
-def test_every_camera_frame_is_rendered_when_pulled():
+def test_the_hidden_output_page_never_presents_its_canvas():
     renderer = (SOURCE.parent / "renderer.js").read_text()
-    frame_reader = renderer[renderer.index("window.avatarFrameJpeg") :]
-    assert frame_reader.index("render(performance.now())") < frame_reader.index(
-        "toDataURL"
-    )
+    output_page_setup = renderer[renderer.index('.has("output")') :]
+    assert 'output.style.display = "none"' in output_page_setup
