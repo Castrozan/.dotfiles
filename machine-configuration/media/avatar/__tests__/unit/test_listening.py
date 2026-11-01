@@ -166,3 +166,9 @@ def test_a_requested_language_reaches_the_transcriber():
 
 def test_language_stays_automatic_unless_requested():
     assert b'name="language"' not in transcriber.multipart_body("boundary", b"audio")
+
+
+def test_a_vocabulary_prompt_reaches_the_transcriber():
+    assert b'name="prompt"\r\n\r\nSilver\r\n' in transcriber.multipart_body(
+        "boundary", b"audio", prompt="Silver"
+    )

@@ -34,12 +34,17 @@ def multipart_field(boundary, name, value):
     )
 
 
-def multipart_body(boundary, audio, language=None):
-    language_field = multipart_field(boundary, "language", language) if language else ""
+def multipart_body(boundary, audio, language=None, prompt=None):
+    optional_fields = {"language": language, "prompt": prompt}
+    optional_parts = "".join(
+        multipart_field(boundary, name, value)
+        for name, value in optional_fields.items()
+        if value
+    )
     return (
         (
             multipart_field(boundary, "response_format", "json")
-            + language_field
+            + optional_parts
             + f"--{boundary}\r\nContent-Disposition: form-data; "
             f'name="file"; filename="segment.wav"\r\nContent-Type: audio/wav\r\n\r\n'
         ).encode()
@@ -48,7 +53,7 @@ def multipart_body(boundary, audio, language=None):
     )
 
 
-def transcribe(pcm, language=None):
+def transcribe(pcm, language=None, prompt=None):
     boundary = uuid.uuid4().hex
     connection = http.client.HTTPConnection(
         TRANSCRIBER_HOST, TRANSCRIBER_PORT, timeout=REQUEST_TIMEOUT_SECONDS
@@ -57,7 +62,7 @@ def transcribe(pcm, language=None):
         connection.request(
             "POST",
             "/inference",
-            body=multipart_body(boundary, wav_bytes(pcm), language),
+            body=multipart_body(boundary, wav_bytes(pcm), language, prompt),
             headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
         )
         return clean_transcript(json.load(connection.getresponse()).get("text", ""))

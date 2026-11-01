@@ -7,6 +7,7 @@ DISCORD_CHANNEL_COUNT = 2
 WHISPER_SAMPLE_RATE = 16000
 DOWNMIX_TIMEOUT_SECONDS = 10
 LISTENER_LANGUAGE = "pt"
+LISTENER_VOCABULARY_PROMPT = "Silver, Mata Hari."
 
 
 def downmix_discord_audio(ffmpeg_executable, pcm):
@@ -40,5 +41,7 @@ def downmix_discord_audio(ffmpeg_executable, pcm):
 
 def transcribe_discord_audio(ffmpeg_executable, pcm):
     return transcribe(
-        downmix_discord_audio(ffmpeg_executable, pcm), language=LISTENER_LANGUAGE
+        downmix_discord_audio(ffmpeg_executable, pcm),
+        language=LISTENER_LANGUAGE,
+        prompt=LISTENER_VOCABULARY_PROMPT,
     )
