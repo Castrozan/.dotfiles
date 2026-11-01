@@ -16,6 +16,7 @@ def renderer_server(tmp_path):
     threading.Thread(target=server.serve_forever, daemon=True).start()
     yield server.server_address[1]
     server.shutdown()
+    server.server_close()
 
 
 def fetch(port, headers=None):
