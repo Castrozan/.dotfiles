@@ -74,8 +74,6 @@ let
     "heartbeat.md"
     "nixos"
     "`nix"
-    "obsidian"
-    "second brain"
     "webfetch"
     "gh run"
     "claudex"
