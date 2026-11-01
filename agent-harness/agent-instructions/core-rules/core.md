@@ -42,7 +42,7 @@ something, drop it and never raise it again for the rest of the session. Read th
 need rather than the whole of it. Before likely context loss, persist requirements, decisions, changed files, starting
 revision, and verification state under the narrowest owner; restore it before continuing.
 
-Keep durable knowledge in the Obsidian Second Brain; read and file it through the `obsidian` skill.
+Keep durable knowledge in the user's personal knowledge base; load its owning skill before reading or filing it.
 
 ### Coding
 
