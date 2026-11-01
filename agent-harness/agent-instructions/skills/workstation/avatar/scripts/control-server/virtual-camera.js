@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const { readCanvasFrame } = require("./virtual-camera/canvas-frame-reader");
 const {
   ChromeDevtoolsTargetLocator,
 } = require("./chrome-devtools/chrome-devtools-target-locator");
@@ -28,7 +29,6 @@ const CONFIG = {
   FPS: numericArgument("--fps", "15"),
   WIDTH: numericArgument("--width", "1280"),
   HEIGHT: numericArgument("--height", "720"),
-  FORMAT: "jpeg",
   SCREENCAST_QUALITY: 60,
 };
 
@@ -79,18 +79,9 @@ async function captureFrames(session, framePipeline) {
   });
   while (!closed) {
     const started = performance.now();
-    const screenshot = await session.sendAndAwaitResult(
-      "Page.captureScreenshot",
-      {
-        format: CONFIG.FORMAT,
-        quality: CONFIG.SCREENCAST_QUALITY,
-        fromSurface: true,
-        captureBeyondViewport: false,
-      },
-    );
+    const frame = await readCanvasFrame(session, CONFIG.SCREENCAST_QUALITY);
     if (closed) return;
-    if (framePipeline.writeFrame(Buffer.from(screenshot.data, "base64")))
-      frameCount++;
+    if (frame && framePipeline.writeFrame(frame)) frameCount++;
     reportFrameCount(frameCount);
     await new Promise((resolve) =>
       setTimeout(

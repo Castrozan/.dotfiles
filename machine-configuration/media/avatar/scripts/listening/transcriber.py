@@ -1,13 +1,14 @@
+import http.client
 import io
 import json
 import re
-import urllib.request
 import uuid
 import wave
 
 from speech_segmenter import SAMPLE_RATE
 
-INFERENCE_URL = "http://127.0.0.1:8767/inference"
+TRANSCRIBER_HOST = "127.0.0.1"
+TRANSCRIBER_PORT = 8767
 REQUEST_TIMEOUT_SECONDS = 60
 NON_SPEECH_MARKER = re.compile(r"^\s*(\[[^\]]*\]|\([^)]*\)|\*[^*]*\*)?\s*$")
 
@@ -36,10 +37,16 @@ def multipart_body(boundary, audio):
 
 def transcribe(pcm):
     boundary = uuid.uuid4().hex
-    request = urllib.request.Request(
-        INFERENCE_URL,
-        data=multipart_body(boundary, wav_bytes(pcm)),
-        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+    connection = http.client.HTTPConnection(
+        TRANSCRIBER_HOST, TRANSCRIBER_PORT, timeout=REQUEST_TIMEOUT_SECONDS
     )
-    with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
-        return clean_transcript(json.load(response).get("text", ""))
+    try:
+        connection.request(
+            "POST",
+            "/inference",
+            body=multipart_body(boundary, wav_bytes(pcm)),
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        )
+        return clean_transcript(json.load(connection.getresponse()).get("text", ""))
+    finally:
+        connection.close()

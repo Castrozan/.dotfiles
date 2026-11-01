@@ -6,7 +6,11 @@ import { VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 
 const output = document.querySelector("#output");
 const status = document.querySelector("#status");
-const renderer = new THREE.WebGLRenderer({ canvas: output, antialias: false });
+const renderer = new THREE.WebGLRenderer({
+  canvas: output,
+  antialias: false,
+  preserveDrawingBuffer: true,
+});
 renderer.setSize(1280, 720, false);
 renderer.setPixelRatio(1);
 renderer.outputEncoding = THREE.sRGBEncoding;
@@ -120,6 +124,9 @@ function disableCamera() {
   cameraLayer.disable();
   setMode("avatar");
 }
+
+window.avatarFrameJpeg = (quality) =>
+  output.toDataURL("image/jpeg", quality).split(",")[1];
 
 window.avatarStatus = {
   ready: false,

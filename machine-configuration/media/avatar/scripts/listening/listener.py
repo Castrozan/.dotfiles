@@ -6,7 +6,6 @@ import subprocess
 import sys
 import threading
 import time
-import urllib.error
 from pathlib import Path
 
 import speech_segmenter
@@ -63,7 +62,7 @@ def transcribe_when_ready(segment):
     for _ in range(TRANSCRIBER_ATTEMPTS):
         try:
             return transcriber.transcribe(segment)
-        except (urllib.error.URLError, ConnectionError):
+        except OSError:
             time.sleep(TRANSCRIBER_RETRY_SECONDS)
     raise TimeoutError("The local transcriber did not answer")
 

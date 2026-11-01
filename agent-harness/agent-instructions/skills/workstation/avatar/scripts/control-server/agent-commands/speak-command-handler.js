@@ -34,7 +34,9 @@ function performSpeech(command, context) {
     ).map((sinkName) => playAudioFileToSink(speech.audioPath, sinkName));
     return {
       finished: Promise.all(playbacks.map((playback) => playback.finished)),
-      stop: () => playbacks.forEach((playback) => playback.stop()),
+      stop: () => {
+        for (const playback of playbacks) playback.stop();
+      },
     };
   };
 }
