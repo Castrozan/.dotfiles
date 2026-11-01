@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { RendererControls } from "./renderer-controls.js";
+import { followLevel, RendererControls } from "./renderer-controls.js";
 import { CameraLayer } from "./camera-layer.js";
 import { VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 
@@ -23,6 +23,7 @@ let avatar;
 let lastFrameTime = 0;
 const state = {
   mouth: 0,
+  mouthTarget: 0,
   mode: "avatar",
   lastLevelTime: 0,
   expression: "neutral",
@@ -87,7 +88,8 @@ function drawOutput(timestamp) {
 function render(timestamp) {
   const delta = Math.min((timestamp - lastFrameTime) / 1000, 0.1);
   lastFrameTime = timestamp;
-  if (timestamp - state.lastLevelTime > 250) state.mouth = 0;
+  if (timestamp - state.lastLevelTime > 250) state.mouthTarget = 0;
+  state.mouth = followLevel(state.mouth, state.mouthTarget, delta);
   updateAvatar(timestamp, delta);
   drawOutput(timestamp);
   window.avatarStatus.frames++;

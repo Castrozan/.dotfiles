@@ -1,3 +1,11 @@
+const MOUTH_OPENING_RATE = 30;
+const MOUTH_CLOSING_RATE = 12;
+
+export function followLevel(current, target, deltaSeconds) {
+  const rate = target > current ? MOUTH_OPENING_RATE : MOUTH_CLOSING_RATE;
+  return current + (target - current) * (1 - Math.exp(-rate * deltaSeconds));
+}
+
 export class RendererControls {
   constructor(state, actions) {
     this.state = state;
@@ -6,7 +14,7 @@ export class RendererControls {
     this.channel.onmessage = this.handleLocal.bind(this);
     this.handlers = {
       audioLevel: (message) => {
-        state.mouth = Math.max(0, Math.min(1, message.level * 5));
+        state.mouthTarget = Math.max(0, Math.min(1, message.level * 5));
         state.lastLevelTime = performance.now();
         window.avatarStatus.levelMessages++;
       },
@@ -26,7 +34,7 @@ export class RendererControls {
       this.socket.send(JSON.stringify({ type: "identify", role: "renderer" }));
     this.socket.onmessage = (event) => this.dispatch(JSON.parse(event.data));
     this.socket.onclose = () => {
-      this.state.mouth = 0;
+      this.state.mouthTarget = 0;
       setTimeout(() => this.connect(), 1500);
     };
   }

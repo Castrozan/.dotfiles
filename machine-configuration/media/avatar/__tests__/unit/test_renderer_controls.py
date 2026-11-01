@@ -47,7 +47,7 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
         ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
     )
     result = json.loads(completed.stdout)
-    assert result["state"]["mouth"] == 0.5
+    assert result["state"]["mouthTarget"] == 0.5
     assert result["state"]["idleMode"] == "floating"
     assert result["state"]["expression"] == "happy"
     assert result["state"]["mode"] == "avatar"
@@ -64,3 +64,31 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
         "id": "denied",
     }
     assert result["local"][-1]["message"] == "Camera released"
+
+
+def follow_level(current, target, delta):
+    program = f"""
+    const fs = require("node:fs");
+    globalThis.BroadcastChannel = class {{}};
+    (async () => {{
+      const source = fs.readFileSync(process.argv[1], "utf8");
+      const {{ followLevel }} = await import("data:text/javascript," + encodeURIComponent(source));
+      console.log(followLevel({current}, {target}, {delta}));
+    }})();
+    """
+    completed = subprocess.run(
+        ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
+    )
+    return float(completed.stdout)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
+def test_mouth_opens_quickly_but_settles_without_flapping():
+    opening = follow_level(0, 1, 0.033)
+    closing = 1 - follow_level(1, 0, 0.033)
+    assert 0 < closing < opening < 1
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
+def test_mouth_following_is_stable_on_a_long_frame():
+    assert follow_level(0, 1, 10) == pytest.approx(1)

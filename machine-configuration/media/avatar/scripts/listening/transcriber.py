@@ -13,7 +13,7 @@ NON_SPEECH_MARKER = re.compile(r"^\s*(\[[^\]]*\]|\([^)]*\)|\*[^*]*\*)?\s*$")
 
 
 def clean_transcript(text):
-    return "" if NON_SPEECH_MARKER.match(text) else text.strip()
+    return "" if NON_SPEECH_MARKER.match(text) else " ".join(text.split())
 
 
 def wav_bytes(pcm):

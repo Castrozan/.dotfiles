@@ -81,6 +81,10 @@ def test_real_words_survive_with_trimmed_whitespace():
     )
 
 
+def test_wrapped_recognizer_lines_become_one_sentence():
+    assert transcriber.clean_transcript("Bom dia,\n pessoal.") == "Bom dia, pessoal."
+
+
 def test_segments_are_posted_as_wav():
     wav = transcriber.wav_bytes(frame(1000))
     assert wav[:4] == b"RIFF"
