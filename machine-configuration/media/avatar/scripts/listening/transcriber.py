@@ -27,15 +27,28 @@ def wav_bytes(pcm):
     return buffer.getvalue()
 
 
-def multipart_body(boundary, audio):
+def multipart_field(boundary, name, value):
     return (
-        f'--{boundary}\r\nContent-Disposition: form-data; name="response_format"'
-        f"\r\n\r\njson\r\n--{boundary}\r\nContent-Disposition: form-data; "
-        f'name="file"; filename="segment.wav"\r\nContent-Type: audio/wav\r\n\r\n'
-    ).encode() + audio + f"\r\n--{boundary}--\r\n".encode()
+        f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"'
+        f"\r\n\r\n{value}\r\n"
+    )
 
 
-def transcribe(pcm):
+def multipart_body(boundary, audio, language=None):
+    language_field = multipart_field(boundary, "language", language) if language else ""
+    return (
+        (
+            multipart_field(boundary, "response_format", "json")
+            + language_field
+            + f"--{boundary}\r\nContent-Disposition: form-data; "
+            f'name="file"; filename="segment.wav"\r\nContent-Type: audio/wav\r\n\r\n'
+        ).encode()
+        + audio
+        + f"\r\n--{boundary}--\r\n".encode()
+    )
+
+
+def transcribe(pcm, language=None):
     boundary = uuid.uuid4().hex
     connection = http.client.HTTPConnection(
         TRANSCRIBER_HOST, TRANSCRIBER_PORT, timeout=REQUEST_TIMEOUT_SECONDS
@@ -44,7 +57,7 @@ def transcribe(pcm):
         connection.request(
             "POST",
             "/inference",
-            body=multipart_body(boundary, wav_bytes(pcm)),
+            body=multipart_body(boundary, wav_bytes(pcm), language),
             headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
         )
         return clean_transcript(json.load(connection.getresponse()).get("text", ""))

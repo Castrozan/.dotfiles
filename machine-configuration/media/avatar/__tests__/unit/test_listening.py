@@ -156,3 +156,13 @@ def test_transcribe_posts_the_segment_and_returns_the_cleaned_text(monkeypatch):
         "multipart/form-data; boundary="
     )
     connection.close.assert_called_once()
+
+
+def test_a_requested_language_reaches_the_transcriber():
+    assert b'name="language"\r\n\r\npt\r\n' in transcriber.multipart_body(
+        "boundary", b"audio", "pt"
+    )
+
+
+def test_language_stays_automatic_unless_requested():
+    assert b'name="language"' not in transcriber.multipart_body("boundary", b"audio")
