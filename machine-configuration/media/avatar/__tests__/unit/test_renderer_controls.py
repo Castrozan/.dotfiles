@@ -49,7 +49,7 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
         ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
     )
     result = json.loads(completed.stdout)
-    assert result["state"]["mouthTarget"] == pytest.approx(0.22)
+    assert result["state"]["mouthTarget"] == pytest.approx(0.8)
     assert result["state"]["idleMode"] == "floating"
     assert result["state"]["expression"] == "happy"
     assert result["state"]["mode"] == "avatar"
@@ -115,3 +115,34 @@ def test_the_emotion_mouth_stays_away_between_syllables_and_returns_after_speech
         """,
     )
     assert result == {"betweenSyllables": 0, "afterSpeech": 1, "beforeAnySpeech": 1}
+
+
+def voice_openings(levels):
+    return run_renderer_module(
+        "renderer-controls.js",
+        f"""
+        let peak = 0;
+        const openings = {levels}.map((level) => {{
+          peak = rendererModule.followVoicePeak(peak, level);
+          return rendererModule.mouthOpening(level, peak);
+        }});
+        console.log(JSON.stringify(openings));
+        """,
+    )
+
+
+def test_a_quiet_voice_opens_the_mouth_as_far_as_a_loud_one():
+    quiet = voice_openings([0.1, 0.05, 0.1])
+    loud = voice_openings([0.3, 0.15, 0.3])
+    assert quiet == pytest.approx(loud)
+    assert max(quiet) == pytest.approx(0.8)
+
+
+def test_the_mouth_closes_between_syllables():
+    syllable, gap = voice_openings([0.1, 0.0])
+    assert syllable == pytest.approx(0.8)
+    assert gap == 0
+
+
+def test_faint_room_noise_barely_moves_the_mouth():
+    assert voice_openings([0.005]) == pytest.approx([0.05])

@@ -1,12 +1,22 @@
-const MOUTH_LEVEL_GAIN = 2.2;
+const MOUTH_OPENING_AT_PEAK = 0.8;
+const MINIMUM_VOICE_PEAK = 0.08;
+const VOICE_PEAK_DECAY = 0.995;
 const MOUTH_OPENING_RATE = 30;
 const MOUTH_CLOSING_RATE = 12;
-const VOICE_LEVEL_THRESHOLD = 0.05;
+const VOICE_LEVEL_THRESHOLD = 0.02;
 const VOICE_HOLD_MILLISECONDS = 400;
 
 export function followLevel(current, target, deltaSeconds) {
   const rate = target > current ? MOUTH_OPENING_RATE : MOUTH_CLOSING_RATE;
   return current + (target - current) * (1 - Math.exp(-rate * deltaSeconds));
+}
+
+export function followVoicePeak(peak, level) {
+  return Math.max(level, peak * VOICE_PEAK_DECAY, MINIMUM_VOICE_PEAK);
+}
+
+export function mouthOpening(level, voicePeak) {
+  return Math.max(0, (level / voicePeak) * MOUTH_OPENING_AT_PEAK);
 }
 
 export function emotionMouthTarget(timestamp, lastVoiceTime) {
@@ -17,13 +27,15 @@ export class RendererControls {
   constructor(state, actions) {
     this.state = state;
     this.actions = actions;
+    this.voicePeak = 0;
     this.channel = new BroadcastChannel("avatar-local-controls");
     this.channel.onmessage = this.handleLocal.bind(this);
     this.handlers = {
-      audioLevel: (message) => {
-        state.mouthTarget = Math.max(0, Math.min(1, message.level * MOUTH_LEVEL_GAIN));
+      audioLevel: ({ level }) => {
+        this.voicePeak = followVoicePeak(this.voicePeak, level);
+        state.mouthTarget = mouthOpening(level, this.voicePeak);
         state.lastLevelTime = performance.now();
-        if (state.mouthTarget > VOICE_LEVEL_THRESHOLD)
+        if (level > VOICE_LEVEL_THRESHOLD)
           state.lastVoiceTime = state.lastLevelTime;
         window.avatarStatus.levelMessages++;
       },
