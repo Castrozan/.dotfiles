@@ -13,6 +13,13 @@ let
     ];
   };
 
+  hermesOfficialPlugins = pkgs.fetchFromGitHub {
+    owner = "NousResearch";
+    repo = "hermes-official-plugins";
+    rev = "01fa168f3608185e8ce9ab7bcc1dbc60d5fa6731";
+    hash = "sha256-8BV93FwXvLI0SnHjVkwkq7uHIR1ypBgosAksBurta7k=";
+  };
+
   configTemplate = import ./config.nix {
     inherit pkgs;
     pluginBundle = config.agentPlugins.bundle;
@@ -69,6 +76,8 @@ in
         force = true;
       };
       ".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin";
+      ".hermes/plugins/claude-subscription-directsdk".source =
+        "${hermesOfficialPlugins}/claude-subscription-directsdk";
       ".hermes/.no-bundled-skills".text = "";
     };
   };

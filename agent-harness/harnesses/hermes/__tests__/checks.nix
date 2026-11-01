@@ -60,6 +60,15 @@ in
       (builtins.hasAttr ".hermes/.no-bundled-skills" cfg.home.file)
       "Hermes must carry only the dotfiles skills, so the bundled skill opt-out marker must be deployed";
 
+  domain-hermes-reaches-claude-through-the-official-subscription-plugin =
+    pkgs.runCommand "domain-hermes-reaches-claude-through-the-official-subscription-plugin" { }
+      ''
+        grep -q '^kind: model-provider$' ${
+          cfg.home.file.".hermes/plugins/claude-subscription-directsdk".source
+        }/plugin.yaml
+        touch "$out"
+      '';
+
   domain-hermes-gateway-does-not-use-the-unit-name-hermes-rewrites =
     mkEvalCheck "domain-hermes-gateway-does-not-use-the-unit-name-hermes-rewrites"
       (!(builtins.hasAttr "hermes-gateway" cfg.systemd.user.services))
