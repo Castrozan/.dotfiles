@@ -29,11 +29,12 @@ in
       ".local/bin/hermes should be in home.file";
 
   domain-hermes-runtime-carries-discord-voice-receiver =
-    pkgs.runCommand "domain-hermes-runtime-carries-discord-voice-receiver" { } ''
-      HOME=$TMPDIR ${cfg.hermes.unwrappedPackage.hermesVenv}/bin/python3 -c \
-        'import davey; from plugins.platforms.discord.adapter import VoiceReceiver; VoiceReceiver.check_silence'
-      touch "$out"
-    '';
+    pkgs.runCommand "domain-hermes-runtime-carries-discord-voice-receiver" { }
+      ''
+        HOME=$TMPDIR ${cfg.hermes.unwrappedPackage.hermesVenv}/bin/python3 -c \
+          'import davey; from plugins.platforms.discord.adapter import VoiceReceiver; VoiceReceiver.check_silence'
+        touch "$out"
+      '';
 
   domain-hermes-generated-configuration =
     pkgs.runCommand "domain-hermes-generated-configuration"

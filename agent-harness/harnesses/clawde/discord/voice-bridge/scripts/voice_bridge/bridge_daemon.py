@@ -73,6 +73,7 @@ async def run_bridge():
 
 def main():
     logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("discord.voice_state").setLevel(logging.INFO)
     discord.opus.load_opus(os.environ["VOICE_BRIDGE_OPUS_LIBRARY"])
     asyncio.run(run_bridge())
 

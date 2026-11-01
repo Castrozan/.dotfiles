@@ -8,9 +8,11 @@ let
   bridgeSettings = config.clawdeDiscordVoiceBridge;
   scripts = ./scripts;
   transcriberScripts = ../../../../../machine-configuration/media/avatar/scripts/listening;
-  mediaSpeech = import ../../../../../machine-configuration/media/media-generation/speech-package.nix {
-    inherit pkgs;
-  };
+  mediaSpeech =
+    import ../../../../../machine-configuration/media/media-generation/speech-package.nix
+      {
+        inherit pkgs;
+      };
   jessicaElevenLabsVoice = "cgSgspJ2msm6clMCkdW9";
 
   silverVoice = pkgs.writeShellScriptBin "silver-voice" ''
