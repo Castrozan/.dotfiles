@@ -3,6 +3,7 @@ import pytest
 from voice_bridge.listener_stream import (
     DAVE_FRAME_MARKER,
     ListenerKeyAttempt,
+    SustainedSpeechDetector,
     rtp_synchronization_source,
 )
 
@@ -71,3 +72,39 @@ def test_an_unprotected_silence_frame_attributes_nothing():
         attempt.decrypt(0, AUDIO, b"\xf8\xff\xfe")
 
     assert not attempt.opened
+
+
+def detector_after_frames(detector, observed_times):
+    for observed_at in observed_times:
+        detector.observe_voiced_frame(observed_at, 0.02)
+    return detector
+
+
+def test_continuous_voiced_frames_accumulate():
+    detector = detector_after_frames(
+        SustainedSpeechDetector(0.2), [index * 0.02 for index in range(30)]
+    )
+
+    assert round(detector.sustained_seconds(0.58), 2) == 0.6
+
+
+def test_blips_separated_by_silence_never_accumulate():
+    detector = detector_after_frames(
+        SustainedSpeechDetector(0.2), [0.0, 0.02, 0.5, 0.52, 1.0, 1.02]
+    )
+
+    assert round(detector.sustained_seconds(1.02), 2) == 0.04
+
+
+def test_speech_expires_after_the_gap():
+    detector = detector_after_frames(SustainedSpeechDetector(0.2), [0.0, 0.02])
+
+    assert detector.sustained_seconds(0.5) == 0.0
+
+
+def test_forgetting_clears_accumulated_speech():
+    detector = detector_after_frames(SustainedSpeechDetector(0.2), [0.0, 0.02])
+
+    detector.reset()
+
+    assert detector.sustained_seconds(0.03) == 0.0

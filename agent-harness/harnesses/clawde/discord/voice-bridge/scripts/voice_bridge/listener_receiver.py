@@ -1,11 +1,18 @@
+import time
+
 from plugins.platforms.discord.adapter import VoiceReceiver
+from speech_segmenter import SPEECH_LEVEL, frame_level
 
 from voice_bridge.listener_stream import (
     ListenerKeyAttempt,
+    SustainedSpeechDetector,
     rtp_synchronization_source,
 )
 
 DISCORD_PCM_BYTES_PER_SECOND = 192000
+DISCORD_FRAME_BYTES = 3840
+DISCORD_FRAME_SECONDS = 0.02
+MAXIMUM_VOICED_GAP_SECONDS = 0.2
 
 
 class ListenerVoiceReceiver(VoiceReceiver):
@@ -16,11 +23,18 @@ class ListenerVoiceReceiver(VoiceReceiver):
         super().__init__(voice_client, allowed_user_ids={str(listener_user_id)})
         self._listener_user_id = listener_user_id
         self.listener_packet_count = 0
+        self._speech_detector = SustainedSpeechDetector(MAXIMUM_VOICED_GAP_SECONDS)
 
     def buffered_listener_seconds(self):
         with self._lock:
             longest_buffer = max(map(len, self._buffers.values()), default=0)
         return longest_buffer / DISCORD_PCM_BYTES_PER_SECOND
+
+    def sustained_speech_seconds(self):
+        return self._speech_detector.sustained_seconds(time.monotonic())
+
+    def forget_sustained_speech(self):
+        self._speech_detector.reset()
 
     def _on_packet(self, data):
         source = rtp_synchronization_source(data)
@@ -37,6 +51,7 @@ class ListenerVoiceReceiver(VoiceReceiver):
             self._dave_session = dave_session
             self.listener_packet_count += 1
             super()._on_packet(data)
+            self._observe_latest_frame(source)
         elif source_owner is None and dave_session is not None:
             self._attribute_source(source, data, dave_session)
 
@@ -50,3 +65,11 @@ class ListenerVoiceReceiver(VoiceReceiver):
             return
         with self._lock:
             self._ssrc_to_user.pop(source, None)
+
+    def _observe_latest_frame(self, source):
+        with self._lock:
+            latest_frame = bytes(self._buffers[source][-DISCORD_FRAME_BYTES:])
+        if frame_level(latest_frame) >= SPEECH_LEVEL:
+            self._speech_detector.observe_voiced_frame(
+                time.monotonic(), DISCORD_FRAME_SECONDS
+            )

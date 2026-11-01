@@ -11,7 +11,8 @@ from voice_bridge.listener_receiver import ListenerVoiceReceiver
 from voice_bridge.speech_synthesis import SpeechSynthesizer
 
 LISTEN_POLL_SECONDS = 0.05
-BARGE_IN_SECONDS = 0.25
+BARGE_IN_SECONDS = 0.6
+PLAYBACK_GRACE_SECONDS = 0.3
 MAXIMUM_UTTERANCE_SECONDS = 30
 PLAYBACK_LEAD_SILENCE_MILLISECONDS = 200
 
@@ -48,6 +49,7 @@ class VoiceCall:
         self._receiver = None
         self._tasks = []
         self._barged_in = False
+        self._playback_started_at = 0.0
 
     def status(self):
         channel = self._connected_channel()
@@ -118,12 +120,16 @@ class VoiceCall:
 
     def _observe_listener(self, utterances):
         buffered_seconds = self._receiver.buffered_listener_seconds()
-        self._stop_speaking_when_barged_in(buffered_seconds)
+        self._stop_speaking_when_barged_in()
         for pcm in self._finished_utterances(buffered_seconds):
             utterances.put_nowait((pcm, time.time()))
 
-    def _stop_speaking_when_barged_in(self, buffered_seconds):
-        if buffered_seconds >= BARGE_IN_SECONDS and self._voice_client.is_playing():
+    def _stop_speaking_when_barged_in(self):
+        if not self._voice_client.is_playing():
+            return
+        if time.monotonic() - self._playback_started_at < PLAYBACK_GRACE_SECONDS:
+            self._receiver.forget_sustained_speech()
+        elif self._receiver.sustained_speech_seconds() >= BARGE_IN_SECONDS:
             self._barged_in = True
             self._voice_client.stop()
 
@@ -171,9 +177,10 @@ class VoiceCall:
         voice_client = self._voice_client
         if voice_client is None or not voice_client.is_connected():
             raise VoiceCallError("not_in_voice_channel")
-        if self._receiver.buffered_listener_seconds() >= BARGE_IN_SECONDS:
+        if self._receiver.sustained_speech_seconds() >= BARGE_IN_SECONDS:
             return "interrupted"
         self._barged_in = False
+        self._playback_started_at = time.monotonic()
         playback_finished = asyncio.Event()
         loop = asyncio.get_running_loop()
         voice_client.play(

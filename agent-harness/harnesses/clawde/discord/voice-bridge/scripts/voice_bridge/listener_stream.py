@@ -14,6 +14,28 @@ def rtp_synchronization_source(packet):
     return int.from_bytes(packet[RTP_SYNCHRONIZATION_SOURCE_OFFSET:source_end], "big")
 
 
+class SustainedSpeechDetector:
+    def __init__(self, maximum_gap_seconds):
+        self._maximum_gap_seconds = maximum_gap_seconds
+        self._voiced_seconds = 0.0
+        self._last_voiced_at = float("-inf")
+
+    def observe_voiced_frame(self, observed_at, frame_seconds):
+        if observed_at - self._last_voiced_at > self._maximum_gap_seconds:
+            self._voiced_seconds = 0.0
+        self._voiced_seconds += frame_seconds
+        self._last_voiced_at = observed_at
+
+    def sustained_seconds(self, now):
+        if now - self._last_voiced_at > self._maximum_gap_seconds:
+            return 0.0
+        return self._voiced_seconds
+
+    def reset(self):
+        self._voiced_seconds = 0.0
+        self._last_voiced_at = float("-inf")
+
+
 class ListenerKeyAttempt:
     def __init__(self, dave_session, listener_user_id):
         self._dave_session = dave_session
