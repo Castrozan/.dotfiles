@@ -24,9 +24,20 @@ function performSpeech(command, context) {
   const { avatarState, clientRegistry, textToSpeechGenerator } = context;
   return async () => {
     avatarState.beginSpeaking(emotion);
-    const speech = await textToSpeechGenerator.generate(text, id, voice);
+    const speech = await textToSpeechGenerator.generate(
+      text,
+      id,
+      voice,
+      emotion,
+    );
     if (clientRegistry.hasRenderer()) {
-      clientRegistry.sendToRenderer({ type: "startSpeaking", id, emotion, text });
+      clientRegistry.sendToRenderer({
+        type: "startSpeaking",
+        id,
+        emotion,
+        text,
+        vowels: speech.vowels ?? [],
+      });
     }
     const playbacks = resolveRequestedSinks(
       output,
@@ -71,6 +82,7 @@ async function handleSpeakCommand(command, connection, context) {
     sendError(connection, `Speech failed: ${error.message}`);
   } finally {
     context.avatarState.finishSpeaking();
+    context.clientRegistry.sendToRenderer({ type: "speechEnded", id });
   }
 }
 

@@ -1,11 +1,25 @@
 const WebSocket = require("ws");
 
 const SPEECH_TURN_TIMEOUT_MILLISECONDS = 300000;
+const IDENTIFIED_RESPONSES = [
+  "videoModeChanged",
+  "videoModeError",
+  "performanceApplied",
+  "performanceError",
+];
 
 const builders = {
   status: () => ({ type: "getStatus" }),
   mode: (mode) => ({ type: "setVideoMode", mode }),
-  expression: (name) => ({ type: "setExpression", name }),
+  capabilities: () => ({ type: "perform", action: "capabilities" }),
+  expression: (name, intensity = 1) => ({
+    type: "setExpression",
+    name,
+    intensity: Number(intensity),
+  }),
+  gesture: (name) => ({ type: "perform", action: "gesture", name }),
+  pose: (name) => ({ type: "perform", action: "pose", name }),
+  look: (name) => ({ type: "perform", action: "look", name }),
   idle: (mode) => ({ type: "setIdle", mode }),
   "stop-speaking": () => ({ type: "stopSpeaking" }),
   speak: (text, emotion = "neutral", output = "mic", voice) => ({
@@ -23,14 +37,14 @@ function parseCommand(arguments_) {
     : null;
   if (!build)
     throw new Error(
-      "Usage: avatar-command status | mode avatar|camera|composite | expression NAME | idle MODE | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
+      "Usage: avatar-command status | mode avatar|camera|composite | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
     );
   return build(...arguments_.slice(1));
 }
 
 function responseBelongsToCommand(response, command) {
   return (
-    !["videoModeChanged", "videoModeError"].includes(response.type) ||
+    !IDENTIFIED_RESPONSES.includes(response.type) ||
     response.id === command.id
   );
 }
@@ -40,10 +54,12 @@ function handleResponse(response, context) {
     context.connection.send(JSON.stringify(context.command));
     return;
   }
-  if (response.type === "videoModeRequested") return;
+  if (["videoModeRequested", "performanceRequested"].includes(response.type))
+    return;
   if (!responseBelongsToCommand(response, context.command)) return;
   console.log(JSON.stringify(response));
-  if (["error", "videoModeError"].includes(response.type)) process.exitCode = 1;
+  if (["error", "videoModeError", "performanceError"].includes(response.type))
+    process.exitCode = 1;
   clearTimeout(context.timeout);
   context.connection.close();
 }

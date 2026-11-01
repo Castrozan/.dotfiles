@@ -1,12 +1,9 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import {
-  emotionMouthTarget,
-  followLevel,
-  RendererControls,
-} from "./renderer-controls.js";
+import { followLevel, RendererControls } from "./renderer-controls.js";
 import { CameraLayer } from "./camera-layer.js";
-import { emotionMouthName, separateEmotionMouths } from "./emotion-faces.js";
+import { AvatarPerformer } from "./avatar-performer.js";
+import { faceMorphNames } from "./face-expressions.js";
 import { VRMExpression, VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 
 const output = document.querySelector("#output");
@@ -22,13 +19,17 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#17202c");
 const cameraLayer = new CameraLayer(() => setMode("avatar"));
-scene.add(new THREE.HemisphereLight(0xffffff, 0x58617b, 2));
+scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+const keyLight = new THREE.DirectionalLight(0xfff4ea, 0.45);
+keyLight.position.set(-0.6, 1.6, 2);
+scene.add(keyLight);
 const camera = new THREE.PerspectiveCamera(30, 1280 / 720, 0.1, 20);
 camera.position.set(0, 1.35, 2.0);
 camera.lookAt(0, 1.35, 0);
 const loader = new GLTFLoader();
 loader.register((parser) => new VRMLoaderPlugin(parser));
 let avatar;
+let performer;
 let lastFrameTime = 0;
 if (new URLSearchParams(location.search).has("output")) {
   status.hidden = true;
@@ -40,9 +41,6 @@ const state = {
   mode: "avatar",
   lastLevelTime: 0,
   lastVoiceTime: -Infinity,
-  expression: "neutral",
-  expressionIntensity: 0,
-  emotionMouth: 1,
   idleMode: "breathing",
 };
 
@@ -50,7 +48,6 @@ async function loadAvatar() {
   const gltf = await loader.loadAsync("/model.vrm");
   avatar = gltf.userData.vrm;
   VRMUtils.rotateVRM0(avatar);
-  separateEmotionMouths(avatar, (name) => new VRMExpression(name));
   scene.add(avatar.scene);
   avatar.scene.updateMatrixWorld(true);
   const head = avatar.humanoid.getNormalizedBoneNode("head");
@@ -58,45 +55,18 @@ async function loadAvatar() {
   head.getWorldPosition(headPosition);
   camera.position.set(0, headPosition.y - 0.04, 1);
   camera.lookAt(0, headPosition.y - 0.04, 0);
-  for (const [bone, angle] of [
-    ["leftUpperArm", 1.15],
-    ["rightUpperArm", -1.15],
-  ]) {
-    const node = avatar.humanoid.getNormalizedBoneNode(bone);
-    if (node) node.rotation.z = angle;
-  }
+  const gazeTarget = new THREE.Object3D();
+  scene.add(gazeTarget);
+  performer = new AvatarPerformer({
+    vrm: avatar,
+    morphNames: faceMorphNames(gltf.parser.json),
+    gazeTarget,
+    gazeOrigin: camera.position.clone(),
+    createExpression: (name) => new VRMExpression(name),
+  });
   status.textContent =
     "Avatar ready · microphone and camera stay under your control";
   window.avatarStatus.ready = true;
-}
-
-function idleHeight(timestamp) {
-  if (state.idleMode === "floating") return Math.sin(timestamp / 1500) * 0.03;
-  if (state.idleMode === "breathing") return Math.sin(timestamp / 500) * 0.003;
-  return 0;
-}
-
-function swayHead(timestamp) {
-  if (!["breathing", "floating"].includes(state.idleMode)) return;
-  const head = avatar.humanoid.getNormalizedBoneNode("head");
-  head.rotation.y = Math.sin(timestamp / 2300) * 0.05;
-  head.rotation.x = Math.sin(timestamp / 1700) * 0.02;
-}
-
-function updateAvatar(timestamp, delta) {
-  if (!avatar) return;
-  swayHead(timestamp);
-  avatar.expressionManager.setValue("aa", state.mouth);
-  avatar.expressionManager.setValue(
-    emotionMouthName(state.expression),
-    state.expressionIntensity * state.emotionMouth,
-  );
-  avatar.expressionManager.setValue(
-    "blink",
-    Math.sin((timestamp / 1000) * 1.1) > 0.995 ? 1 : 0,
-  );
-  avatar.scene.position.y = idleHeight(timestamp);
-  avatar.update(delta);
 }
 
 function drawOutput(timestamp) {
@@ -118,12 +88,7 @@ function render(timestamp) {
   lastFrameTime = timestamp;
   if (timestamp - state.lastLevelTime > 250) state.mouthTarget = 0;
   state.mouth = followLevel(state.mouth, state.mouthTarget, delta);
-  state.emotionMouth = followLevel(
-    state.emotionMouth,
-    emotionMouthTarget(timestamp, state.lastVoiceTime),
-    delta,
-  );
-  updateAvatar(timestamp, delta);
+  performer?.update(timestamp, delta, state);
   drawOutput(timestamp);
   window.avatarStatus.frames++;
   window.avatarStatus.mouth = state.mouth;
@@ -136,17 +101,6 @@ function setMode(requested) {
     throw new Error("Enable a camera locally first");
   state.mode = requested;
   window.avatarStatus.mode = state.mode;
-}
-
-function setExpression(message) {
-  avatar?.expressionManager.setValue(state.expression, 0);
-  avatar?.expressionManager.setValue(emotionMouthName(state.expression), 0);
-  state.expression = message.expression;
-  state.expressionIntensity = message.intensity ?? 1;
-  avatar?.expressionManager.setValue(
-    state.expression,
-    state.expressionIntensity,
-  );
 }
 
 async function enableCamera(deviceId) {
@@ -170,6 +124,8 @@ window.avatarStatus = {
   mouth: state.mouth,
 };
 window.avatar = {
+  perform: (action, name) => performer.perform(action, name),
+  setExpression: (name, intensity) => performer.setExpression(name, intensity),
   setMode,
   enableCamera,
   disableCamera,
@@ -181,7 +137,11 @@ window.addEventListener("pagehide", disableCamera);
 loadAvatar()
   .then(() =>
     new RendererControls(state, {
-      setExpression,
+      setExpression: ({ expression, intensity }) =>
+        performer.setExpression(expression, intensity ?? 1),
+      beginSpeech: (message) => performer.beginSpeech(message),
+      endSpeech: () => performer.endSpeech(),
+      perform: (action, name) => performer.perform(action, name),
       setMode,
       enableCamera,
       disableCamera,

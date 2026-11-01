@@ -13,6 +13,12 @@ const {
   attachClientConnection,
 } = require("./avatar-session/client-connection-router");
 const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
+const {
+  ElevenLabsSpeechGenerator,
+} = require("./speech/elevenlabs-speech-generator");
+const {
+  ResilientSpeechGenerator,
+} = require("./speech/resilient-speech-generator");
 const { SpeechFloor } = require("./speech/speech-floor");
 const { AgentChannelGate } = require("./speech/agent-channel-gate");
 
@@ -27,6 +33,8 @@ const CONFIG = {
   HTTP_PORT: parseInt(process.env.AVATAR_HTTP_PORT || "8766", 10),
   TTS_VOICE: process.env.AVATAR_TTS_VOICE || "@ttsVoice@",
   TTS_VOICE_DIRECTORY: process.env.AVATAR_TTS_VOICE_DIRECTORY,
+  CLOUD_VOICE: process.env.AVATAR_CLOUD_VOICE,
+  CLOUD_VOICE_LANGUAGE: process.env.AVATAR_CLOUD_VOICE_LANGUAGE || "pt-br",
   TTS_DIR: require("node:path").join(
     require("node:os").homedir(),
     ".cache",
@@ -104,12 +112,19 @@ async function main() {
 
   const avatarState = new AvatarStateStore();
   const clientRegistry = new ConnectedClientRegistry();
-  const textToSpeechGenerator = new TextToSpeechGenerator(
+  const localSpeechGenerator = new TextToSpeechGenerator(
     CONFIG.TTS_DIR,
     CONFIG.TTS_VOICE,
     CONFIG.TTS_VOICE_DIRECTORY,
   );
-  await textToSpeechGenerator.prepareOutputRootDirectory();
+  await localSpeechGenerator.prepareOutputRootDirectory();
+  const textToSpeechGenerator = new ResilientSpeechGenerator(
+    new ElevenLabsSpeechGenerator(
+      CONFIG.CLOUD_VOICE,
+      CONFIG.CLOUD_VOICE_LANGUAGE,
+    ),
+    localSpeechGenerator,
+  );
 
   const context = {
     avatarState,

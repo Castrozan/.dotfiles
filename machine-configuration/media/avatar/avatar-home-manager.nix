@@ -76,6 +76,7 @@ let
   speechVoices = import ./speech-voices.nix { inherit pkgs; };
   tools = lib.makeBinPath [
     audio
+    (import ../media-generation/speech-package.nix { inherit pkgs; })
     pkgs.ffmpeg
     pkgs.piper-tts
     pkgs.pulseaudio
@@ -127,6 +128,7 @@ in
             ExecStart = "${pkgs.nodejs_22}/bin/node ${control}/server.js";
             Environment = [
               "PATH=${tools}"
+              "AVATAR_CLOUD_VOICE=cgSgspJ2msm6clMCkdW9"
               "AVATAR_TTS_VOICE=pt_BR-faber-medium"
               "AVATAR_TTS_VOICE_DIRECTORY=${speechVoices}"
               "AVATAR_AUDIO_MONITOR=AvatarMic.monitor"

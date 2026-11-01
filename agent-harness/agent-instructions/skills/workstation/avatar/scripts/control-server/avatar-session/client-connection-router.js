@@ -47,7 +47,14 @@ function handleIdentification(role, connection, context) {
 
 function handleRendererEvent(event, context) {
   console.log("📥 Renderer event:", event.type);
-  if (["videoModeChanged", "videoModeError"].includes(event.type)) {
+  if (
+    [
+      "videoModeChanged",
+      "videoModeError",
+      "performanceApplied",
+      "performanceError",
+    ].includes(event.type)
+  ) {
     context.clientRegistry.sendToAgents(event);
   }
   if (event.type === "speechEnd") {

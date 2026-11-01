@@ -31,8 +31,9 @@ export class RendererControls {
       setIdle: (message) => {
         state.idleMode = message.mode;
       },
-      startSpeaking: (message) =>
-        actions.setExpression({ expression: message.emotion || "neutral" }),
+      startSpeaking: actions.beginSpeech,
+      speechEnded: actions.endSpeech,
+      perform: this.requestPerformance.bind(this),
       setVideoMode: this.requestVideoMode.bind(this),
     };
   }
@@ -51,6 +52,19 @@ export class RendererControls {
   dispatch(message) {
     if (Object.hasOwn(this.handlers, message.type))
       this.handlers[message.type](message);
+  }
+
+  requestPerformance({ action, name, id }) {
+    try {
+      const result = this.actions.perform(action, name);
+      this.socket.send(
+        JSON.stringify({ type: "performanceApplied", action, name, result, id }),
+      );
+    } catch (error) {
+      this.socket.send(
+        JSON.stringify({ type: "performanceError", message: error.message, id }),
+      );
+    }
   }
 
   requestVideoMode(message) {

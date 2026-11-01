@@ -8,6 +8,7 @@ const {
   handleStopSpeakingCommand,
 } = require("./stop-speaking-command-handler");
 const { handleGetStatusCommand } = require("./get-status-command-handler");
+const { handlePerformCommand } = require("./perform-command-handler");
 
 const {
   handleSetVideoModeCommand,
@@ -20,6 +21,7 @@ const COMMAND_HANDLERS_BY_TYPE = {
   setExpression: handleSetExpressionCommand,
   setIdle: handleSetIdleCommand,
   getStatus: handleGetStatusCommand,
+  perform: handlePerformCommand,
 };
 
 async function routeAgentCommand(rawMessage, connection, context) {

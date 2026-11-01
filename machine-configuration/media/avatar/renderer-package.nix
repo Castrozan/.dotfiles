@@ -9,9 +9,9 @@ let
     hash = "sha512-OXExupt3p/6oT3acM236Z5f6nVGAU0nYz2Al8UZXkaZKwVklaIBTCy0iC+57PFTkdpj+6Urxa9CiWagKg3ihXA==";
   };
   model = pkgs.fetchurl {
-    name = "avatar-original.vrm";
-    url = "https://gateway.pinata.cloud/ipfs/bafybeihx4xjb5mphocdq2os63g43pgnpi46ynolpmhln3oycoasywdnl3u";
-    hash = "sha256-f8pKd/3GCrLHipkHQwdEViYmGAEl+jhut0+y6hXC5Rg=";
+    name = "darkness-shibu.vrm";
+    url = "https://raw.githubusercontent.com/madjin/vrm-samples/e16eb187100149a315ad92c3c9968f1d5baa6c7d/vroid/beta/Darkness_Shibu.vrm";
+    hash = "sha256-C1BXPS0FTZjApvxaXOhy4bLIv/hxhHb/cqmmjEhnT9g=";
   };
 in
 pkgs.runCommand "avatar-renderer" { } ''

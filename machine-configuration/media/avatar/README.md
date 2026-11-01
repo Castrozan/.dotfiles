@@ -1,7 +1,8 @@
 # Avatar meeting media
 
-The avatar runs locally and independently of an agent harness. Its recovered VRM model, portrait assets and rendering
-libraries are pinned by Nix and served locally. Start it with `avatar-start`; run
+The avatar runs locally and independently of an agent harness. Its VRM model, portrait assets and rendering libraries
+are pinned by Nix and served locally. The model is Darkness Shibu from
+[VRoid's sample set](https://github.com/madjin/vrm-samples), CC0 by its embedded VRM licence metadata. Start it with `avatar-start`; run
 `avatar-controls` for camera permission and video modes. The controls must use the avatar-owned browser profile so their
 permission flow can reach the output window.
 
@@ -27,12 +28,20 @@ whose playback never reaches this computer.
 Select `Avatar Cam` as the meeting camera after `avatar-start` is ready. The local controls request physical camera
 permission; no physical camera is opened at startup. `avatar-command mode avatar`, `mode camera` and `mode composite`
 request switching and wait for the renderer's result. Camera modes require a locally enabled camera first.
-`avatar-command expression happy` changes expression; `avatar-command status` reports the control connection.
-`avatar-command speak "Text" neutral mic` speaks with a local Piper voice into the meeting mix; nothing leaves the
-machine. Speech from every agent shares one floor: turns run in arrival order, the agent channel opens only for a turn
+`avatar-command capabilities` lists what the avatar can do. `expression NAME [INTENSITY]` sets the face, `gesture NAME`
+plays a motion, `pose NAME` holds a body pose, `look TARGET` moves the eyes and head, `idle MODE` sets the resting motion,
+and `avatar-command status` reports the control connection. An unknown name fails with an error. An expression keeps its
+brows and eyes during speech while speech owns the mouth; `speak` restores the previous expression when the turn ends.
+
+`avatar-command speak "Text" happy mic` sends that text to ElevenLabs through `media-speech`, with the emotion mapped to a
+delivery direction, then plays it into the meeting mix. Character timing shapes the mouth to the spoken vowels. If the
+cloud fails or takes over 15 seconds, the same turn uses a local Piper voice. Passing a Piper voice from
+`speech-voices.nix` as the fourth argument stays local; any other fourth argument is an ElevenLabs voice ID. Only the text
+an agent chooses to speak leaves the machine: captured audio, transcripts and video never do.
+Speech from every agent shares one floor: turns run in arrival order, the agent channel opens only for a turn
 and returns to its previous mute state, and the command returns when the speech has finished or was cut off.
-`avatar-command stop-speaking` ends the current turn and drops the waiting ones. Pass a voice file name from
-`speech-voices.nix` as the fourth argument to change language. Applications playing local audio need no speech service.
+`avatar-command stop-speaking` ends the current turn and drops the waiting ones. Applications playing local audio need
+no speech service.
 
 Stop agent playback, mute both channels and switch the meeting application's selected microphone/camera before `avatar-stop` removes the
 virtual devices. Meeting applications can choose their own fallback device when a selected device disappears.
