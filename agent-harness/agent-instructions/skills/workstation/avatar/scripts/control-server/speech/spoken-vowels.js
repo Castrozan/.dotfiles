@@ -12,21 +12,22 @@ function vowelShape(character) {
   return VOWEL_SHAPES[base] ?? null;
 }
 
-function spokenVowels({ characters, starts_seconds, ends_seconds }) {
-  const vowels = [];
+function shapesOutsideDeliveryTags(characters) {
   let insideDeliveryTag = false;
-  characters.forEach((character, index) => {
+  return characters.map((character) => {
     if (character === "[") insideDeliveryTag = true;
     const shape = insideDeliveryTag ? null : vowelShape(character);
     if (character === "]") insideDeliveryTag = false;
-    if (shape)
-      vowels.push({
-        shape,
-        start: starts_seconds[index],
-        end: ends_seconds[index],
-      });
+    return shape;
   });
-  return vowels;
+}
+
+function spokenVowels({ characters, starts_seconds, ends_seconds }) {
+  return shapesOutsideDeliveryTags(characters).flatMap((shape, index) =>
+    shape
+      ? [{ shape, start: starts_seconds[index], end: ends_seconds[index] }]
+      : [],
+  );
 }
 
 module.exports = { spokenVowels };

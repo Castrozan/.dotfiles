@@ -19,6 +19,27 @@ function resolveRequestedSinks(output, speakerSinkName) {
   return sinks;
 }
 
+function announceSpeechToRenderer(clientRegistry, command, speech) {
+  if (!clientRegistry.hasRenderer()) return;
+  const { id, emotion, text } = command;
+  clientRegistry.sendToRenderer({
+    type: "startSpeaking",
+    id,
+    emotion,
+    text,
+    vowels: speech.vowels ?? [],
+  });
+}
+
+function controlPlaybacks(playbacks) {
+  return {
+    finished: Promise.all(playbacks.map((playback) => playback.finished)),
+    stop: () => {
+      for (const playback of playbacks) playback.stop();
+    },
+  };
+}
+
 function performSpeech(command, context) {
   const { text, emotion, output, voice, id } = command;
   const { avatarState, clientRegistry, textToSpeechGenerator } = context;
@@ -30,25 +51,12 @@ function performSpeech(command, context) {
       voice,
       emotion,
     );
-    if (clientRegistry.hasRenderer()) {
-      clientRegistry.sendToRenderer({
-        type: "startSpeaking",
-        id,
-        emotion,
-        text,
-        vowels: speech.vowels ?? [],
-      });
-    }
+    announceSpeechToRenderer(clientRegistry, command, speech);
     const playbacks = resolveRequestedSinks(
       output,
       context.speakerSinkName,
     ).map((sinkName) => playAudioFileToSink(speech.audioPath, sinkName));
-    return {
-      finished: Promise.all(playbacks.map((playback) => playback.finished)),
-      stop: () => {
-        for (const playback of playbacks) playback.stop();
-      },
-    };
+    return controlPlaybacks(playbacks);
   };
 }
 
@@ -67,10 +75,7 @@ async function handleSpeakCommand(command, connection, context) {
   }
 
   const usesAgentChannel = output === "mic" || output === "both";
-  const speech = performSpeech(
-    { text, emotion, output, voice, id },
-    context,
-  );
+  const speech = performSpeech({ text, emotion, output, voice, id }, context);
 
   try {
     const { status } = await context.speechFloor.enqueue(

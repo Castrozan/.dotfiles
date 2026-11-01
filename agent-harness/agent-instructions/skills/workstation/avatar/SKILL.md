@@ -26,9 +26,10 @@ v4l2loopback devices advertise capture only while a producer is attached.
 ### Performing
 
 Run `avatar-command capabilities` for the current names. Set the face with `expression NAME [INTENSITY]`, play a motion
-with `gesture NAME`, hold a body pose with `pose NAME`, move the eyes and head with `look TARGET`, and set resting motion
-with `idle MODE`. Unknown names fail, so read the list rather than guess. Pass the emotion to `speak`: it sets the face
-and the voice's delivery for that turn, then the previous expression returns. Use a gesture to punctuate a turn, sparingly.
+with `gesture NAME`, hold a body pose with `pose NAME`, move the eyes and head with `look TARGET`, and set resting
+motion with `idle MODE`. Unknown names fail, so read the list rather than guess. Pass the emotion to `speak`: it sets
+the face and the voice's delivery for that turn, then the previous expression returns. Use a gesture to punctuate a
+turn, sparingly.
 
 `speak` text goes to ElevenLabs through the user's subscription and falls back to a local voice on failure. Pass a local
 voice from `speech-voices.nix` as the fourth argument for words that must stay on this machine. Never put transcript
