@@ -11,7 +11,7 @@ from voice_bridge.control_server import ControlServer
 from voice_bridge.speech_synthesis import SpeechSynthesizer
 from voice_bridge.speech_transcription import transcribe_discord_audio
 from voice_bridge.transcript_feed import TranscriptFeed
-from voice_bridge.voice_call import VoiceCall, VoiceCallError
+from voice_bridge.voice_call import CallAudioServices, VoiceCall, VoiceCallError
 
 
 def discord_client():
@@ -30,13 +30,15 @@ async def run_bridge():
     call = VoiceCall(
         client,
         int(environment["VOICE_BRIDGE_LISTENER_USER_ID"]),
-        ffmpeg,
-        SpeechSynthesizer(
-            environment["VOICE_BRIDGE_MEDIA_SPEECH"],
-            environment["VOICE_BRIDGE_CLOUD_VOICE"],
-            control_socket.parent,
+        CallAudioServices(
+            ffmpeg,
+            SpeechSynthesizer(
+                environment["VOICE_BRIDGE_MEDIA_SPEECH"],
+                environment["VOICE_BRIDGE_CLOUD_VOICE"],
+                control_socket.parent,
+            ),
+            functools.partial(transcribe_discord_audio, ffmpeg),
         ),
-        functools.partial(transcribe_discord_audio, ffmpeg),
         feed,
     )
 

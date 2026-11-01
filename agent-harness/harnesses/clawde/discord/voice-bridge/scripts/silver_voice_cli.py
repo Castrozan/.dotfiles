@@ -55,7 +55,7 @@ def request_join():
             time.sleep(JOIN_RETRY_SECONDS)
 
 
-def join():
+def join(_arguments):
     control_bridge_service("start")
     reply = request_join()
     if "error" in reply:
@@ -63,12 +63,12 @@ def join():
     return reply
 
 
-def leave():
+def leave(_arguments):
     control_bridge_service("stop")
     return {"joined": False}
 
 
-def status():
+def status(_arguments):
     return request_running_bridge(command="status")
 
 
@@ -96,17 +96,25 @@ def parse_arguments():
         description="Carry the listener's speech and Silver's replies through a Discord voice call.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("join", help="Join the voice channel the listener is in.")
-    commands.add_parser("leave", help="Leave the call and stop the bridge.")
-    commands.add_parser("status", help="Report the call as JSON.")
+    commands.add_parser(
+        "join", help="Join the voice channel the listener is in."
+    ).set_defaults(handler=join)
+    commands.add_parser(
+        "leave", help="Leave the call and stop the bridge."
+    ).set_defaults(handler=leave)
+    commands.add_parser("status", help="Report the call as JSON.").set_defaults(
+        handler=status
+    )
     speak_parser = commands.add_parser(
         "speak", help="Say text in the call; returns when finished or interrupted."
     )
+    speak_parser.set_defaults(handler=speak)
     speak_parser.add_argument("text")
     speak_parser.add_argument("--language", choices=("pt-br", "en-us"), default="pt-br")
     follow_parser = commands.add_parser(
         "follow", help="Stream the listener's transcribed lines as JSON."
     )
+    follow_parser.set_defaults(handler=follow)
     follow_parser.add_argument(
         "--after", type=int, help="Replay retained lines after this sequence."
     )
@@ -115,17 +123,7 @@ def parse_arguments():
 
 def main():
     arguments = parse_arguments()
-    match arguments.command:
-        case "join":
-            reply = join()
-        case "leave":
-            reply = leave()
-        case "status":
-            reply = status()
-        case "speak":
-            reply = speak(arguments)
-        case "follow":
-            reply = follow(arguments)
+    reply = arguments.handler(arguments)
     if reply is None:
         return 0
     print(json.dumps(reply, ensure_ascii=False))

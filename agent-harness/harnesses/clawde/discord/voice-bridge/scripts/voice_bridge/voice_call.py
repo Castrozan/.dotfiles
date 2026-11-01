@@ -2,10 +2,13 @@ import asyncio
 import logging
 import os
 import time
+from collections.abc import Callable
+from dataclasses import dataclass
 
 import discord
 
 from voice_bridge.listener_receiver import ListenerVoiceReceiver
+from voice_bridge.speech_synthesis import SpeechSynthesizer
 
 LISTEN_POLL_SECONDS = 0.05
 BARGE_IN_SECONDS = 0.25
@@ -26,15 +29,18 @@ def exit_for_supervisor_restart_on_crash(task):
     os._exit(1)
 
 
+@dataclass(frozen=True)
+class CallAudioServices:
+    ffmpeg: str
+    synthesizer: SpeechSynthesizer
+    transcribe_audio: Callable[[bytes], str]
+
+
 class VoiceCall:
-    def __init__(
-        self, client, listener_user_id, ffmpeg, synthesizer, transcribe_audio, feed
-    ):
+    def __init__(self, client, listener_user_id, audio_services, feed):
         self._client = client
         self._listener_user_id = listener_user_id
-        self._ffmpeg = ffmpeg
-        self._synthesizer = synthesizer
-        self._transcribe_audio = transcribe_audio
+        self._audio_services = audio_services
         self._feed = feed
         self._membership_lock = asyncio.Lock()
         self._speech_lock = asyncio.Lock()
@@ -105,28 +111,37 @@ class VoiceCall:
         while True:
             await asyncio.sleep(LISTEN_POLL_SECONDS)
             channel = self._connected_channel()
-            if channel is None:
-                continue
-            bot_user_id = self._client.user.id
-            self._receiver.update_channel_occupants(
-                set(channel.voice_states) - {bot_user_id}
-            )
-            buffered_seconds = self._receiver.buffered_listener_seconds()
-            if buffered_seconds >= BARGE_IN_SECONDS and self._voice_client.is_playing():
-                self._barged_in = True
-                self._voice_client.stop()
-            completed = self._receiver.check_silence()
-            if buffered_seconds >= MAXIMUM_UTTERANCE_SECONDS:
-                completed += self._receiver.flush_pending()
-            for _user_id, pcm in completed:
-                utterances.put_nowait((pcm, time.time()))
+            if channel is not None:
+                self._observe_listener(channel, utterances)
+
+    def _observe_listener(self, channel, utterances):
+        self._receiver.update_channel_occupants(
+            set(channel.voice_states) - {self._client.user.id}
+        )
+        buffered_seconds = self._receiver.buffered_listener_seconds()
+        self._stop_speaking_when_barged_in(buffered_seconds)
+        for pcm in self._finished_utterances(buffered_seconds):
+            utterances.put_nowait((pcm, time.time()))
+
+    def _stop_speaking_when_barged_in(self, buffered_seconds):
+        if buffered_seconds >= BARGE_IN_SECONDS and self._voice_client.is_playing():
+            self._barged_in = True
+            self._voice_client.stop()
+
+    def _finished_utterances(self, buffered_seconds):
+        completed = self._receiver.check_silence()
+        if buffered_seconds >= MAXIMUM_UTTERANCE_SECONDS:
+            completed += self._receiver.flush_pending()
+        return [pcm for _user_id, pcm in completed]
 
     async def _transcribe_utterances(self, utterances):
         while True:
             pcm, ended_at = await utterances.get()
             started = time.monotonic()
             try:
-                text = await asyncio.to_thread(self._transcribe_audio, pcm)
+                text = await asyncio.to_thread(
+                    self._audio_services.transcribe_audio, pcm
+                )
             except Exception as error:
                 logger.warning("transcription failed: %s", type(error).__name__)
                 self._feed.publish(error="transcription_failed", ended_at=ended_at)
@@ -143,7 +158,9 @@ class VoiceCall:
             raise VoiceCallError("not_in_voice_channel")
         async with self._speech_lock:
             started = time.monotonic()
-            async with self._synthesizer.synthesized_audio(text, language) as path:
+            async with self._audio_services.synthesizer.synthesized_audio(
+                text, language
+            ) as path:
                 synthesis_seconds = time.monotonic() - started
                 outcome = await self._play(path)
             return {
@@ -163,7 +180,7 @@ class VoiceCall:
         voice_client.play(
             discord.FFmpegPCMAudio(
                 audio_path,
-                executable=self._ffmpeg,
+                executable=self._audio_services.ffmpeg,
                 options=f"-af adelay={PLAYBACK_LEAD_SILENCE_MILLISECONDS}:all=1",
             ),
             after=lambda _error: loop.call_soon_threadsafe(playback_finished.set),
