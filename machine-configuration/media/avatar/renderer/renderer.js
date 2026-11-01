@@ -125,8 +125,10 @@ function disableCamera() {
   setMode("avatar");
 }
 
-window.avatarFrameJpeg = (quality) =>
-  output.toDataURL("image/jpeg", quality).split(",")[1];
+window.avatarFrameJpeg = (quality) => {
+  render(performance.now());
+  return output.toDataURL("image/jpeg", quality).split(",")[1];
+};
 
 window.avatarStatus = {
   ready: false,

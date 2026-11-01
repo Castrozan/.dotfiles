@@ -92,3 +92,11 @@ def test_mouth_opens_quickly_but_settles_without_flapping():
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
 def test_mouth_following_is_stable_on_a_long_frame():
     assert follow_level(0, 1, 10) == pytest.approx(1)
+
+
+def test_every_camera_frame_is_rendered_when_pulled():
+    renderer = (SOURCE.parent / "renderer.js").read_text()
+    frame_reader = renderer[renderer.index("window.avatarFrameJpeg") :]
+    assert frame_reader.index("render(performance.now())") < frame_reader.index(
+        "toDataURL"
+    )
