@@ -61,6 +61,7 @@ class TextToSpeechGenerator {
     return {
       audioPath,
       duration: wavDurationSeconds(await fs.readFile(audioPath)),
+      source: "piper",
     };
   }
 }

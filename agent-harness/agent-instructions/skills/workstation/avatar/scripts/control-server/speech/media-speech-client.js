@@ -1,6 +1,6 @@
 const { spawn } = require("node:child_process");
 
-function runMediaSpeech(arguments_, timeoutMilliseconds) {
+function readMediaSpeechOutput(arguments_, timeoutMilliseconds) {
   return new Promise((resolve, reject) => {
     const speech = spawn("media-speech", arguments_, {
       stdio: ["ignore", "pipe", "pipe"],
@@ -22,8 +22,10 @@ function runMediaSpeech(arguments_, timeoutMilliseconds) {
   });
 }
 
-function parseSpeechResult(output) {
-  return JSON.parse(output.slice(output.indexOf("\n") + 1));
+async function runMediaSpeech(arguments_, timeoutMilliseconds) {
+  return JSON.parse(
+    await readMediaSpeechOutput(arguments_, timeoutMilliseconds),
+  );
 }
 
-module.exports = { parseSpeechResult, runMediaSpeech };
+module.exports = { runMediaSpeech };

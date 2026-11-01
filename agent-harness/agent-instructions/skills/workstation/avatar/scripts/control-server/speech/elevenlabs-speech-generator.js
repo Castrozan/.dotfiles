@@ -1,4 +1,4 @@
-const { parseSpeechResult, runMediaSpeech } = require("./media-speech-client");
+const { runMediaSpeech } = require("./media-speech-client");
 const { spokenVowels } = require("./spoken-vowels");
 
 const MODEL = "eleven_v4";
@@ -26,25 +26,23 @@ class ElevenLabsSpeechGenerator {
   }
 
   async generate(text, voice, emotion) {
-    const result = parseSpeechResult(
-      await runMediaSpeech(
-        [
-          "generate",
-          "--provider",
-          "elevenlabs",
-          "--model",
-          MODEL,
-          "--directions",
-          EMOTION_DELIVERY[emotion] ?? NATURAL_DELIVERY,
-          "--language",
-          this.language,
-          "--voice",
-          voice || this.defaultVoice,
-          "--text",
-          text,
-        ],
-        REQUEST_TIMEOUT_MILLISECONDS,
-      ),
+    const result = await runMediaSpeech(
+      [
+        "generate",
+        "--provider",
+        "elevenlabs",
+        "--model",
+        MODEL,
+        "--directions",
+        EMOTION_DELIVERY[emotion] ?? NATURAL_DELIVERY,
+        "--language",
+        this.language,
+        "--voice",
+        voice || this.defaultVoice,
+        "--text",
+        text,
+      ],
+      REQUEST_TIMEOUT_MILLISECONDS,
     );
     return {
       audioPath: result.audio.path,
@@ -53,6 +51,7 @@ class ElevenLabsSpeechGenerator {
         result.alignment.status === "available"
           ? spokenVowels(result.alignment)
           : [],
+      source: "elevenlabs",
     };
   }
 }

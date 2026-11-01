@@ -40,7 +40,7 @@ function controlPlaybacks(playbacks) {
   };
 }
 
-function performSpeech(command, context) {
+function performSpeech(command, context, delivery) {
   const { text, emotion, output, voice, id } = command;
   const { avatarState, clientRegistry, textToSpeechGenerator } = context;
   return async () => {
@@ -51,6 +51,7 @@ function performSpeech(command, context) {
       voice,
       emotion,
     );
+    delivery.source = speech.source;
     announceSpeechToRenderer(clientRegistry, command, speech);
     const playbacks = resolveRequestedSinks(
       output,
@@ -75,14 +76,25 @@ async function handleSpeakCommand(command, connection, context) {
   }
 
   const usesAgentChannel = output === "mic" || output === "both";
-  const speech = performSpeech({ text, emotion, output, voice, id }, context);
+  const delivery = {};
+  const speech = performSpeech(
+    { text, emotion, output, voice, id },
+    context,
+    delivery,
+  );
 
   try {
     const { status } = await context.speechFloor.enqueue(
       usesAgentChannel,
       speech,
     );
-    sendResponse(connection, { type: "speakAck", id, output, status });
+    sendResponse(connection, {
+      type: "speakAck",
+      id,
+      output,
+      status,
+      source: delivery.source,
+    });
   } catch (error) {
     sendError(connection, `Speech failed: ${error.message}`);
   } finally {

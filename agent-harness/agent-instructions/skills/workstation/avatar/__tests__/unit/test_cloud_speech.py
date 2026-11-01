@@ -97,15 +97,50 @@ def test_spoken_vowels_skip_the_delivery_tag_and_read_accents():
     assert result == [{"shape": "oh", "start": 8, "end": 9}]
 
 
+def fake_media_speech(directory):
+    executable = directory / "media-speech"
+    executable.write_text(
+        """#!/bin/sh
+echo '{"operation_id": "a"}' >&2
+printf '{\\n  "status": "succeeded",\\n  "audio": {"path": "/speech.wav", "duration_seconds": 1.5},\\n  "alignment": {"status": "unavailable"}\\n}\\n'
+"""
+    )
+    executable.chmod(0o755)
+    return f'process.env.PATH = "{directory}:" + process.env.PATH;'
+
+
 @requires_node
-def test_the_speech_result_is_read_after_the_operation_line():
+def test_elevenlabs_reads_the_pretty_printed_media_speech_result(tmp_path):
     result = evaluate_node_json(
-        """
-        const { parseSpeechResult } = require("./speech/media-speech-client");
-        const result = Promise.resolve(parseSpeechResult('{"operation_id": "a"}\\n{\\n "status": "succeeded"\\n}\\n'));
+        fake_media_speech(tmp_path)
+        + """
+        const { ElevenLabsSpeechGenerator } = require("./speech/elevenlabs-speech-generator");
+        const result = new ElevenLabsSpeechGenerator("voice", "pt-br").generate("oi", null, "happy");
         """
     )
-    assert result == {"status": "succeeded"}
+    assert result == {
+        "audioPath": "/speech.wav",
+        "duration": 1.5,
+        "vowels": [],
+        "source": "elevenlabs",
+    }
+
+
+@requires_node
+def test_kokoro_reads_the_pretty_printed_media_speech_result(tmp_path):
+    result = evaluate_node_json(
+        fake_media_speech(tmp_path)
+        + """
+        const { KokoroSpeechGenerator } = require("./speech/kokoro-speech-generator");
+        const result = new KokoroSpeechGenerator("pf_dora", "pt-br").generate("oi");
+        """
+    )
+    assert result == {
+        "audioPath": "/speech.wav",
+        "duration": 1.5,
+        "vowels": [],
+        "source": "kokoro",
+    }
 
 
 @requires_node
