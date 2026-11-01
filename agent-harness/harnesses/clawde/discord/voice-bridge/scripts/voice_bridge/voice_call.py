@@ -56,6 +56,9 @@ class VoiceCall:
             "channel": channel.name if channel else None,
             "guild": channel.guild.name if channel else None,
             "last_sequence": self._feed.last_sequence,
+            "listener_packets": self._receiver.listener_packet_count
+            if self._receiver
+            else 0,
         }
 
     def _connected_channel(self):
@@ -110,14 +113,10 @@ class VoiceCall:
     async def _watch_listener(self, utterances):
         while True:
             await asyncio.sleep(LISTEN_POLL_SECONDS)
-            channel = self._connected_channel()
-            if channel is not None:
-                self._observe_listener(channel, utterances)
+            if self._connected_channel() is not None:
+                self._observe_listener(utterances)
 
-    def _observe_listener(self, channel, utterances):
-        self._receiver.update_channel_occupants(
-            set(channel.voice_states) - {self._client.user.id}
-        )
+    def _observe_listener(self, utterances):
         buffered_seconds = self._receiver.buffered_listener_seconds()
         self._stop_speaking_when_barged_in(buffered_seconds)
         for pcm in self._finished_utterances(buffered_seconds):

@@ -1,8 +1,8 @@
 from plugins.platforms.discord.adapter import VoiceReceiver
 
 from voice_bridge.listener_stream import (
+    ListenerKeyAttempt,
     rtp_synchronization_source,
-    source_belongs_to_listener,
 )
 
 DISCORD_PCM_BYTES_PER_SECOND = 192000
@@ -15,10 +15,7 @@ class ListenerVoiceReceiver(VoiceReceiver):
     def __init__(self, voice_client, listener_user_id):
         super().__init__(voice_client, allowed_user_ids={str(listener_user_id)})
         self._listener_user_id = listener_user_id
-        self._channel_occupants = frozenset()
-
-    def update_channel_occupants(self, occupants):
-        self._channel_occupants = frozenset(occupants)
+        self.listener_packet_count = 0
 
     def buffered_listener_seconds(self):
         with self._lock:
@@ -27,21 +24,26 @@ class ListenerVoiceReceiver(VoiceReceiver):
 
     def _on_packet(self, data):
         source = rtp_synchronization_source(data)
-        if source is None or not self._admits(source):
+        if source is None or source == self._bot_ssrc:
             return
         connection = self._vc._connection
         self._secret_key = bytes(connection.secret_key)
-        self._dave_session = connection.dave_session
-        super()._on_packet(data)
-
-    def _admits(self, source):
-        if source == self._bot_ssrc:
-            return False
         with self._lock:
-            user_by_source = dict(self._ssrc_to_user)
-        admitted = source_belongs_to_listener(
-            source, self._listener_user_id, user_by_source, self._channel_occupants
-        )
-        if admitted and source not in user_by_source:
-            self.map_ssrc(source, self._listener_user_id)
-        return admitted
+            source_owner = self._ssrc_to_user.get(source)
+        if source_owner == self._listener_user_id:
+            self._dave_session = connection.dave_session
+            self.listener_packet_count += 1
+            super()._on_packet(data)
+        elif source_owner is None and connection.dave_session is not None:
+            self._attribute_source(source, data, connection.dave_session)
+
+    def _attribute_source(self, source, data, dave_session):
+        attempt = ListenerKeyAttempt(dave_session, self._listener_user_id)
+        self._dave_session = attempt
+        self.map_ssrc(source, self._listener_user_id)
+        super()._on_packet(data)
+        if attempt.opened:
+            self.listener_packet_count += 1
+            return
+        with self._lock:
+            self._ssrc_to_user.pop(source, None)

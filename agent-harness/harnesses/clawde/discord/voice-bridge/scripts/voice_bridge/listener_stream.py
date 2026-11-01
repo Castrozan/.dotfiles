@@ -2,6 +2,7 @@ RTP_HEADER_BYTES = 12
 RTP_SYNCHRONIZATION_SOURCE_OFFSET = 8
 RTP_VERSION = 2
 DISCORD_VOICE_PAYLOAD_TYPE = 0x78
+DAVE_FRAME_MARKER = b"\xfa\xfa"
 
 
 def rtp_synchronization_source(packet):
@@ -13,12 +14,20 @@ def rtp_synchronization_source(packet):
     return int.from_bytes(packet[RTP_SYNCHRONIZATION_SOURCE_OFFSET:source_end], "big")
 
 
-def source_belongs_to_listener(
-    source, listener_user_id, user_by_source, channel_occupants
-):
-    known_user = user_by_source.get(source)
-    if known_user is not None:
-        return known_user == listener_user_id
-    if listener_user_id in user_by_source.values():
-        return False
-    return channel_occupants == {listener_user_id}
+class ListenerKeyAttempt:
+    def __init__(self, dave_session, listener_user_id):
+        self._dave_session = dave_session
+        self._listener_user_id = listener_user_id
+        self.opened = False
+
+    def decrypt(self, _user_id, media_type, frame):
+        if not frame.endswith(DAVE_FRAME_MARKER):
+            raise ValueError("frame_carries_no_sender_key")
+        try:
+            decrypted = self._dave_session.decrypt(
+                self._listener_user_id, media_type, frame
+            )
+        except Exception as error:
+            raise ValueError("frame_not_from_listener") from error
+        self.opened = True
+        return decrypted

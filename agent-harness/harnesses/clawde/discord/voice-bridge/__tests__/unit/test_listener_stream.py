@@ -1,20 +1,34 @@
+import pytest
+
 from voice_bridge.listener_stream import (
+    DAVE_FRAME_MARKER,
+    ListenerKeyAttempt,
     rtp_synchronization_source,
-    source_belongs_to_listener,
 )
 
 LISTENER = 100
-STRANGER = 200
+AUDIO = "audio"
+PROTECTED_FRAME = b"ciphertext" + DAVE_FRAME_MARKER
 
 
 def voice_packet(source):
     return b"\x80\x78" + bytes(6) + source.to_bytes(4, "big") + b"payload"
 
 
-def test_reads_the_source_from_the_rtp_header():
-    packet = voice_packet(0x01020304)
+class FakeDaveSession:
+    def __init__(self, opens_for=None):
+        self._opens_for = opens_for
+        self.attempted_users = []
 
-    assert rtp_synchronization_source(packet) == 0x01020304
+    def decrypt(self, user_id, _media_type, frame):
+        self.attempted_users.append(user_id)
+        if user_id != self._opens_for:
+            raise RuntimeError("Unencrypted passthrough refused")
+        return frame.removesuffix(DAVE_FRAME_MARKER)
+
+
+def test_reads_the_source_from_the_rtp_header():
+    assert rtp_synchronization_source(voice_packet(0x01020304)) == 0x01020304
 
 
 def test_a_truncated_packet_has_no_source():
@@ -25,21 +39,35 @@ def test_a_control_packet_has_no_voice_source():
     assert rtp_synchronization_source(b"\x80\xc8" + voice_packet(1)[2:]) is None
 
 
-def test_a_mapped_listener_source_is_admitted():
-    assert source_belongs_to_listener(1, LISTENER, {1: LISTENER}, {LISTENER, STRANGER})
+def test_a_frame_the_listener_key_opens_attributes_the_source():
+    attempt = ListenerKeyAttempt(FakeDaveSession(opens_for=LISTENER), LISTENER)
+
+    assert attempt.decrypt(0, AUDIO, PROTECTED_FRAME) == b"ciphertext"
+    assert attempt.opened
 
 
-def test_a_mapped_stranger_source_is_refused_even_when_alone():
-    assert not source_belongs_to_listener(1, LISTENER, {1: STRANGER}, {LISTENER})
+def test_the_attempt_always_tries_the_listener_key():
+    session = FakeDaveSession(opens_for=LISTENER)
+
+    ListenerKeyAttempt(session, LISTENER).decrypt(999, AUDIO, PROTECTED_FRAME)
+
+    assert session.attempted_users == [LISTENER]
 
 
-def test_an_unmapped_source_is_refused_when_the_listener_has_another_one():
-    assert not source_belongs_to_listener(2, LISTENER, {1: LISTENER}, {LISTENER})
+def test_a_stranger_frame_stays_closed_without_passing_as_unencrypted():
+    attempt = ListenerKeyAttempt(FakeDaveSession(opens_for=200), LISTENER)
+
+    with pytest.raises(ValueError) as refusal:
+        attempt.decrypt(0, AUDIO, PROTECTED_FRAME)
+
+    assert "Unencrypted" not in str(refusal.value)
+    assert not attempt.opened
 
 
-def test_an_unmapped_source_is_refused_when_a_stranger_shares_the_channel():
-    assert not source_belongs_to_listener(1, LISTENER, {}, {LISTENER, STRANGER})
+def test_an_unprotected_silence_frame_attributes_nothing():
+    attempt = ListenerKeyAttempt(FakeDaveSession(opens_for=LISTENER), LISTENER)
 
+    with pytest.raises(ValueError):
+        attempt.decrypt(0, AUDIO, b"\xf8\xff\xfe")
 
-def test_an_unmapped_source_is_the_listener_when_they_are_alone_in_the_channel():
-    assert source_belongs_to_listener(1, LISTENER, {}, {LISTENER})
+    assert not attempt.opened
