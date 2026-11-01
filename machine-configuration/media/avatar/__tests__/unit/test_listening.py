@@ -1,6 +1,7 @@
 import json
 import stat
 import struct
+from unittest.mock import Mock
 
 import pytest
 
@@ -133,3 +134,25 @@ def test_reading_prints_entries_after_the_sequence(tmp_path, capsys):
     listen_cli.print_entries(transcript_log.read_since(path, 1))
     printed = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
     assert [item["text"] for item in printed] == ["two"]
+
+
+def stub_transcriber_server(monkeypatch, payload):
+    response = Mock()
+    response.read.return_value = json.dumps(payload).encode()
+    connection = Mock()
+    connection.getresponse.return_value = response
+    monkeypatch.setattr(
+        transcriber.http.client, "HTTPConnection", Mock(return_value=connection)
+    )
+    return connection
+
+
+def test_transcribe_posts_the_segment_and_returns_the_cleaned_text(monkeypatch):
+    connection = stub_transcriber_server(monkeypatch, {"text": " bom  dia "})
+    assert transcriber.transcribe(frame(1000)) == "bom dia"
+    method, path = connection.request.call_args.args
+    assert (method, path) == ("POST", "/inference")
+    assert connection.request.call_args.kwargs["headers"]["Content-Type"].startswith(
+        "multipart/form-data; boundary="
+    )
+    connection.close.assert_called_once()
