@@ -40,6 +40,7 @@ def test_every_isolated_dependency_has_exactly_one_adapter_importing_it():
         "express-audio-file-http-server.js"
     ]
     assert sorted(importers_by_package["ws"]) == [
+        "websocket-frame-socket-server.js",
         "websocket-message-socket-client.js",
         "websocket-message-socket-server.js",
     ]
@@ -67,7 +68,7 @@ def test_domain_modules_load_without_any_installed_dependency():
         require("./audio-playback/pulse-audio-sink-player");
         require("./chrome-devtools/chrome-devtools-session");
         require("./chrome-devtools/chrome-devtools-target-locator");
-        require("./virtual-camera/screencast-frame-pipeline");
+        require("./virtual-camera/video-device-frame-pipeline");
         """
     )
 

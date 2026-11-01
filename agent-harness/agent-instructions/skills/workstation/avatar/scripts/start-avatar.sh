@@ -106,7 +106,7 @@ else
 	NODE_PATH="$AVATAR_DIR/control-server/node_modules" \
 		CDP_PORT="$CDP_PORT" \
 		V4L2_DEVICE="$V4L2_DEVICE" \
-		nohup node virtual-camera.js --fps 15 --width 1280 --height 720 >"$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
+		nohup node virtual-camera.js --fps 60 --width 1280 --height 720 >"$LOG_DIR/avatar-virtual-camera.log" 2>&1 &
 	CAMERA_PID=$!
 	sleep 2
 	if kill -0 "$CAMERA_PID" 2>/dev/null; then

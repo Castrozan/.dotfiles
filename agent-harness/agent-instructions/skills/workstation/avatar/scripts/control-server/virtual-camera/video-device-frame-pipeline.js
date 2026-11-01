@@ -1,25 +1,23 @@
-const { spawn } = require("child_process");
+const { spawn } = require("node:child_process");
 
-class ScreencastFramePipeline {
+class VideoDeviceFramePipeline {
   constructor({ framesPerSecond, width, height, videoDevice }) {
     this.encoder = spawn(
       "ffmpeg",
       [
         "-y",
-        "-probesize",
-        "32",
-        "-analyzeduration",
-        "0",
-        "-threads",
-        "1",
         "-f",
-        "mjpeg",
+        "rawvideo",
+        "-pixel_format",
+        "rgba",
+        "-video_size",
+        `${width}x${height}`,
         "-framerate",
         String(framesPerSecond),
         "-i",
         "pipe:0",
         "-vf",
-        `scale=${width}:${height}`,
+        "vflip",
         "-pix_fmt",
         "yuv420p",
         "-threads:v",
@@ -59,4 +57,4 @@ class ScreencastFramePipeline {
   }
 }
 
-module.exports = { ScreencastFramePipeline };
+module.exports = { VideoDeviceFramePipeline };

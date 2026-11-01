@@ -25,7 +25,7 @@ let
         pkgs.chromium
       ]
     }:$PATH
-    exec ${pkgs.nodejs_22}/bin/node ${control}/virtual-camera.js --fps 15 --width 1280 --height 720
+    exec ${pkgs.nodejs_22}/bin/node ${control}/virtual-camera.js --fps 60 --width 1280 --height 720
   '';
   controls = pkgs.writeShellScriptBin "avatar-controls" ''
     export PATH=${lib.makeBinPath [ pkgs.chromium ]}:$PATH

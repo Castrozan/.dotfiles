@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const { readCanvasFrame } = require("./virtual-camera/canvas-frame-reader");
 const {
   ChromeDevtoolsTargetLocator,
 } = require("./chrome-devtools/chrome-devtools-target-locator");
@@ -10,11 +9,16 @@ const {
   WebSocketMessageSocketClient,
 } = require("./dependencies/message-socket-client/websocket-message-socket-client");
 const {
-  ScreencastFramePipeline,
-} = require("./virtual-camera/screencast-frame-pipeline");
+  WebSocketFrameSocketServer,
+} = require("./dependencies/frame-socket-server/websocket-frame-socket-server");
+const {
+  VideoDeviceFramePipeline,
+} = require("./virtual-camera/video-device-frame-pipeline");
 
 const AVATAR_RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
 const AVATAR_RENDERER_URL = `http://localhost:${AVATAR_RENDERER_PORT}/?output=1`;
+const CAMERA_FRAME_PORT = 8768;
+const RGBA_BYTES_PER_PIXEL = 4;
 
 const numericArgument = (flagName, fallback) =>
   parseInt(
@@ -26,10 +30,9 @@ const numericArgument = (flagName, fallback) =>
 const CONFIG = {
   CDP_PORT: parseInt(process.env.CDP_PORT || "9222", 10),
   V4L2_DEVICE: process.env.V4L2_DEVICE || "/dev/video10",
-  FPS: numericArgument("--fps", "15"),
+  FPS: numericArgument("--fps", "60"),
   WIDTH: numericArgument("--width", "1280"),
   HEIGHT: numericArgument("--height", "720"),
-  SCREENCAST_QUALITY: 60,
 };
 
 const DISMISS_START_MODAL_EXPRESSION = `(() => {
@@ -71,25 +74,17 @@ async function dismissStartModal(session) {
   }
 }
 
-async function captureFrames(session, framePipeline) {
-  let frameCount = 0;
-  let closed = false;
-  session.onClosed(() => {
-    closed = true;
+function receiveFrames(framePipeline) {
+  const frameSocketServer = new WebSocketFrameSocketServer({
+    portNumber: CAMERA_FRAME_PORT,
+    frameByteLength: CONFIG.WIDTH * CONFIG.HEIGHT * RGBA_BYTES_PER_PIXEL,
+    allowedOrigins: [`http://localhost:${AVATAR_RENDERER_PORT}`],
   });
-  while (!closed) {
-    const started = performance.now();
-    const frame = await readCanvasFrame(session, CONFIG.SCREENCAST_QUALITY);
-    if (closed) return;
-    if (frame && framePipeline.writeFrame(frame)) frameCount++;
+  let frameCount = 0;
+  frameSocketServer.onFrame((frame) => {
+    if (framePipeline.writeFrame(frame)) frameCount++;
     reportFrameCount(frameCount);
-    await new Promise((resolve) =>
-      setTimeout(
-        resolve,
-        Math.max(1, 1000 / CONFIG.FPS - (performance.now() - started)),
-      ),
-    );
-  }
+  });
 }
 
 function reportFrameCount(frameCount) {
@@ -123,7 +118,7 @@ async function startCapture() {
   const debuggerUrl = await resolveRendererDebuggerUrl();
   console.log(`🔌 Connecting to CDP: ${debuggerUrl}`);
 
-  const framePipeline = new ScreencastFramePipeline({
+  const framePipeline = new VideoDeviceFramePipeline({
     framesPerSecond: CONFIG.FPS,
     width: CONFIG.WIDTH,
     height: CONFIG.HEIGHT,
@@ -143,13 +138,7 @@ async function startCapture() {
       mobile: false,
     });
     await dismissStartModal(session);
-
-    captureFrames(session, framePipeline).catch((error) => {
-      console.error(error.message);
-      process.exitCode = 1;
-      framePipeline.end();
-      session.close();
-    });
+    receiveFrames(framePipeline);
   });
 
   session.onClosed(() => {

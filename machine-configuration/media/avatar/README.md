@@ -34,10 +34,12 @@ and `avatar-command status` reports the control connection. An unknown name fail
 brows and eyes during speech while speech owns the mouth; `speak` restores the previous expression when the turn ends.
 
 `avatar-command speak "Text" happy mic` sends that text to ElevenLabs through `media-speech`, with the emotion mapped to a
-delivery direction, then plays it into the meeting mix. Character timing shapes the mouth to the spoken vowels. If the
-cloud fails or takes over 15 seconds, the same turn uses a local Piper voice. Passing a Piper voice from
-`speech-voices.nix` as the fourth argument stays local; any other fourth argument is an ElevenLabs voice ID. Only the text
-an agent chooses to speak leaves the machine: captured audio, transcripts and video never do.
+delivery direction, then plays it into the meeting mix. Character timing shapes the mouth to the spoken vowels. The
+default voice is Jessica. If the cloud fails or takes over 15 seconds, the same turn uses the local Kokoro voice
+`pf_dora`, which is also female and takes longer to start. Piper speaks only when Kokoro fails too, and every Portuguese
+Piper voice is male. A fourth argument of `pf_dora` or a Piper voice from `speech-voices.nix` stays local; any other
+fourth argument is an ElevenLabs voice ID. Only the text an agent chooses to speak leaves the machine: captured audio,
+transcripts and video never do.
 Speech from every agent shares one floor: turns run in arrival order, the agent channel opens only for a turn
 and returns to its previous mute state, and the command returns when the speech has finished or was cut off.
 `avatar-command stop-speaking` ends the current turn and drops the waiting ones. Applications playing local audio need
@@ -52,6 +54,8 @@ The avatar stop operation releases its camera, owned browser and audio modules, 
 
 The virtual camera uses [v4l2loopback's exclusive capture mode](https://github.com/v4l2loopback/v4l2loopback), so it appears
 as a capture device only while its producer runs. A meeting application may need to refresh its device list.
+The renderer sends raw frames to the camera over a local socket at 60 frames per second; JPEG through DevTools capped it
+near 54.
 The agent audio path is buffered to match the local camera pipeline; the human path stays low latency.
 Meeting applications can add their own processing delay, so local alignment is not a guarantee for every remote client.
 

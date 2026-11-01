@@ -1,9 +1,11 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { followLevel, RendererControls } from "./renderer-controls.js";
+import { CameraFrameStream } from "./camera-frame-stream.js";
 import { CameraLayer } from "./camera-layer.js";
 import { AvatarPerformer } from "./avatar-performer.js";
 import { faceMorphNames } from "./face-expressions.js";
+import { startFrameClock } from "./frame-clock.js";
 import { VRMExpression, VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 
 const output = document.querySelector("#output");
@@ -31,9 +33,18 @@ loader.register((parser) => new VRMLoaderPlugin(parser));
 let avatar;
 let performer;
 let lastFrameTime = 0;
-if (new URLSearchParams(location.search).has("output")) {
+const cameraFrames = new URLSearchParams(location.search).has("output")
+  ? new CameraFrameStream(
+      renderer.getContext(),
+      1280,
+      720,
+      "ws://127.0.0.1:8768",
+    )
+  : null;
+if (cameraFrames) {
   status.hidden = true;
   output.style.display = "none";
+  cameraFrames.connect();
 }
 const state = {
   mouth: 0,
@@ -113,9 +124,6 @@ function disableCamera() {
   setMode("avatar");
 }
 
-window.avatarFrameJpeg = (quality) =>
-  output.toDataURL("image/jpeg", quality).split(",")[1];
-
 window.avatarStatus = {
   ready: false,
   frames: 0,
@@ -152,4 +160,7 @@ loadAvatar()
     status.textContent = error.message;
     window.avatarStatus.error = error.message;
   });
-setInterval(() => render(performance.now()), 1000 / 15);
+startFrameClock(60, () => {
+  render(performance.now());
+  cameraFrames?.sendFrame();
+});
