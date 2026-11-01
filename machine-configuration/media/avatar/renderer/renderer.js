@@ -1,8 +1,13 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { followLevel, RendererControls } from "./renderer-controls.js";
+import {
+  emotionMouthTarget,
+  followLevel,
+  RendererControls,
+} from "./renderer-controls.js";
 import { CameraLayer } from "./camera-layer.js";
-import { VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
+import { emotionMouthName, separateEmotionMouths } from "./emotion-faces.js";
+import { VRMExpression, VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 
 const output = document.querySelector("#output");
 const status = document.querySelector("#status");
@@ -34,7 +39,10 @@ const state = {
   mouthTarget: 0,
   mode: "avatar",
   lastLevelTime: 0,
+  lastVoiceTime: -Infinity,
   expression: "neutral",
+  expressionIntensity: 0,
+  emotionMouth: 1,
   idleMode: "breathing",
 };
 
@@ -42,6 +50,7 @@ async function loadAvatar() {
   const gltf = await loader.loadAsync("/model.vrm");
   avatar = gltf.userData.vrm;
   VRMUtils.rotateVRM0(avatar);
+  separateEmotionMouths(avatar, (name) => new VRMExpression(name));
   scene.add(avatar.scene);
   avatar.scene.updateMatrixWorld(true);
   const head = avatar.humanoid.getNormalizedBoneNode("head");
@@ -79,6 +88,10 @@ function updateAvatar(timestamp, delta) {
   swayHead(timestamp);
   avatar.expressionManager.setValue("aa", state.mouth);
   avatar.expressionManager.setValue(
+    emotionMouthName(state.expression),
+    state.expressionIntensity * state.emotionMouth,
+  );
+  avatar.expressionManager.setValue(
     "blink",
     Math.sin((timestamp / 1000) * 1.1) > 0.995 ? 1 : 0,
   );
@@ -105,6 +118,11 @@ function render(timestamp) {
   lastFrameTime = timestamp;
   if (timestamp - state.lastLevelTime > 250) state.mouthTarget = 0;
   state.mouth = followLevel(state.mouth, state.mouthTarget, delta);
+  state.emotionMouth = followLevel(
+    state.emotionMouth,
+    emotionMouthTarget(timestamp, state.lastVoiceTime),
+    delta,
+  );
   updateAvatar(timestamp, delta);
   drawOutput(timestamp);
   window.avatarStatus.frames++;
@@ -122,8 +140,13 @@ function setMode(requested) {
 
 function setExpression(message) {
   avatar?.expressionManager.setValue(state.expression, 0);
+  avatar?.expressionManager.setValue(emotionMouthName(state.expression), 0);
   state.expression = message.expression;
-  avatar?.expressionManager.setValue(state.expression, message.intensity ?? 1);
+  state.expressionIntensity = message.intensity ?? 1;
+  avatar?.expressionManager.setValue(
+    state.expression,
+    state.expressionIntensity,
+  );
 }
 
 async function enableCamera(deviceId) {

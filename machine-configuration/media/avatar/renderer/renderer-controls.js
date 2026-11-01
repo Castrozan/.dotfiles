@@ -1,10 +1,16 @@
-const MOUTH_LEVEL_GAIN = 1.5;
+const MOUTH_LEVEL_GAIN = 2.2;
 const MOUTH_OPENING_RATE = 30;
 const MOUTH_CLOSING_RATE = 12;
+const VOICE_LEVEL_THRESHOLD = 0.05;
+const VOICE_HOLD_MILLISECONDS = 400;
 
 export function followLevel(current, target, deltaSeconds) {
   const rate = target > current ? MOUTH_OPENING_RATE : MOUTH_CLOSING_RATE;
   return current + (target - current) * (1 - Math.exp(-rate * deltaSeconds));
+}
+
+export function emotionMouthTarget(timestamp, lastVoiceTime) {
+  return timestamp - lastVoiceTime < VOICE_HOLD_MILLISECONDS ? 0 : 1;
 }
 
 export class RendererControls {
@@ -17,6 +23,8 @@ export class RendererControls {
       audioLevel: (message) => {
         state.mouthTarget = Math.max(0, Math.min(1, message.level * MOUTH_LEVEL_GAIN));
         state.lastLevelTime = performance.now();
+        if (state.mouthTarget > VOICE_LEVEL_THRESHOLD)
+          state.lastVoiceTime = state.lastLevelTime;
         window.avatarStatus.levelMessages++;
       },
       updateExpression: actions.setExpression,

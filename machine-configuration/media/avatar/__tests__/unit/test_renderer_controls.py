@@ -47,7 +47,7 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
         ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
     )
     result = json.loads(completed.stdout)
-    assert result["state"]["mouthTarget"] == pytest.approx(0.15)
+    assert result["state"]["mouthTarget"] == pytest.approx(0.22)
     assert result["state"]["idleMode"] == "floating"
     assert result["state"]["expression"] == "happy"
     assert result["state"]["mode"] == "avatar"
@@ -98,3 +98,62 @@ def test_the_hidden_output_page_never_presents_its_canvas():
     renderer = (SOURCE.parent / "renderer.js").read_text()
     output_page_setup = renderer[renderer.index('.has("output")') :]
     assert 'output.style.display = "none"' in output_page_setup
+
+
+def run_renderer_module(module, body):
+    program = f"""
+    import("file://{SOURCE.parent / module}").then(async (rendererModule) => {{
+      {body}
+    }}).catch(error => {{ console.error(error); process.exitCode = 1; }});
+    """
+    completed = subprocess.run(
+        ["node", "-e", program], capture_output=True, text=True, check=True
+    )
+    return json.loads(completed.stdout)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
+def test_an_emotion_leaves_the_mouth_to_speech_while_keeping_the_upper_face():
+    result = run_renderer_module(
+        "emotion-faces.js",
+        """
+        const dictionary = { Fcl_MTH_A: 0, Fcl_BRW_Joy: 1, Fcl_EYE_Joy: 2, Fcl_MTH_Joy: 3,
+          Fcl_BRW_Angry: 1, Fcl_EYE_Angry: 2, Fcl_MTH_Angry: 3, Fcl_BRW_Sorrow: 1,
+          Fcl_EYE_Sorrow: 2, Fcl_MTH_Sorrow: 3, Fcl_BRW_Fun: 1, Fcl_EYE_Fun: 2, Fcl_MTH_Fun: 3,
+          Fcl_BRW_Surprised: 1, Fcl_EYE_Surprised: 2, Fcl_MTH_Surprised: 3 };
+        const mesh = { morphTargetDictionary: dictionary, morphTargetInfluences: [0, 0, 0, 0] };
+        const expressions = {};
+        const manager = {
+          getExpression: (name) => name,
+          unregisterExpression: (name) => { delete expressions[name]; },
+          registerExpression: (expression) => { expressions[expression.name] = expression; },
+        };
+        rendererModule.separateEmotionMouths(
+          { scene: { traverse: (visit) => visit(mesh) }, expressionManager: manager },
+          (name) => ({ name, binds: [], addBind(bind) { this.binds.push(bind); } }),
+        );
+        expressions.happy.binds.forEach((bind) => bind.applyWeight(1));
+        const upperFace = [...mesh.morphTargetInfluences];
+        expressions[rendererModule.emotionMouthName("happy")].binds.forEach(
+          (bind) => bind.applyWeight(0.5),
+        );
+        console.log(JSON.stringify({ upperFace, whole: mesh.morphTargetInfluences }));
+        """,
+    )
+    assert result["upperFace"] == [0, 1, 1, 0]
+    assert result["whole"] == [0, 1, 1, 0.5]
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
+def test_the_emotion_mouth_stays_away_between_syllables_and_returns_after_speech():
+    result = run_renderer_module(
+        "renderer-controls.js",
+        """
+        console.log(JSON.stringify({
+          betweenSyllables: rendererModule.emotionMouthTarget(1300, 1000),
+          afterSpeech: rendererModule.emotionMouthTarget(1500, 1000),
+          beforeAnySpeech: rendererModule.emotionMouthTarget(0, -Infinity),
+        }));
+        """,
+    )
+    assert result == {"betweenSyllables": 0, "afterSpeech": 1, "beforeAnySpeech": 1}
