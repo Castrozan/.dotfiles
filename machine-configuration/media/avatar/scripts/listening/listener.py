@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import os
 import queue
@@ -17,6 +18,8 @@ CAPTURE_RETRY_SECONDS = 1
 TRANSCRIBER_RETRY_SECONDS = 1
 TRANSCRIBER_ATTEMPTS = 30
 PENDING_SEGMENT_LIMIT = 16
+BARGE_IN_SECONDS = 0.6
+SPEECH_IN_PROGRESS_MARKER = "speech-in-progress"
 
 
 def runtime_directory():
@@ -39,57 +42,144 @@ def capture_command(device):
     ]
 
 
-def capture_source(source, device, segments, stopping):
-    while not stopping.is_set():
+class PendingSpeech:
+    def __init__(self, marker):
+        self.marker = marker
+        self.count = 0
+        self.lock = threading.Lock()
+        marker.unlink(missing_ok=True)
+
+    def begin(self):
+        with self.lock:
+            self.count += 1
+            self.marker.touch(mode=0o600)
+
+    def finish(self):
+        with self.lock:
+            self.count -= 1
+            if not self.count:
+                self.marker.unlink(missing_ok=True)
+
+
+@dataclasses.dataclass
+class Listening:
+    segments: queue.Queue
+    stopping: threading.Event
+    pending: PendingSpeech
+    interrupt_speaker: object
+    language: str | None = None
+
+
+class SourceSpeech:
+    def __init__(self, source, listening):
+        self.source = source
+        self.listening = listening
+        self.segmenter = speech_segmenter.SpeechSegmenter()
+        self.interrupted = False
+
+    def feed(self, frame):
+        was_active = self.segmenter.active
+        segment = self.segmenter.feed(frame)
+        if self.segmenter.active:
+            if not was_active:
+                self.listening.pending.begin()
+            self.interrupt_when_sustained()
+        elif was_active:
+            self.interrupted = False
+            self.hand_over(segment)
+
+    def interrupt_when_sustained(self):
+        if (
+            self.segmenter.sustained_seconds >= BARGE_IN_SECONDS
+            and not self.interrupted
+        ):
+            self.interrupted = True
+            self.listening.interrupt_speaker()
+
+    def hand_over(self, segment):
+        if segment is None or not enqueue_segment(
+            self.listening.segments, self.source, segment
+        ):
+            self.listening.pending.finish()
+
+    def abandon(self):
+        if self.segmenter.active:
+            self.listening.pending.finish()
+
+
+def capture_source(source, device, listening):
+    while not listening.stopping.is_set():
         capture = subprocess.Popen(capture_command(device), stdout=subprocess.PIPE)
-        segmenter = speech_segmenter.SpeechSegmenter()
-        while not stopping.is_set() and (frame := capture.stdout.read(FRAME_BYTES)):
-            if segment := segmenter.feed(frame):
-                enqueue_segment(segments, source, segment)
+        speech = SourceSpeech(source, listening)
+        while not listening.stopping.is_set() and (
+            frame := capture.stdout.read(FRAME_BYTES)
+        ):
+            speech.feed(frame)
+        speech.abandon()
         capture.terminate()
         capture.wait()
-        stopping.wait(CAPTURE_RETRY_SECONDS)
+        listening.stopping.wait(CAPTURE_RETRY_SECONDS)
 
 
 def enqueue_segment(segments, source, segment):
     try:
         segments.put_nowait((source, segment))
+        return True
     except queue.Full:
         print(f"Dropped a {source} segment: transcription is behind", file=sys.stderr)
+        return False
 
 
-def transcribe_when_ready(segment):
+def transcribe_when_ready(segment, language):
     for _ in range(TRANSCRIBER_ATTEMPTS):
         try:
-            return transcriber.transcribe(segment)
+            return transcriber.transcribe(segment, language)
         except OSError:
             time.sleep(TRANSCRIBER_RETRY_SECONDS)
     raise TimeoutError("The local transcriber did not answer")
 
 
-def write_transcript(path, segments, stopping):
-    while not stopping.is_set():
+def write_transcript(path, listening):
+    while not listening.stopping.is_set():
         try:
-            source, segment = segments.get(timeout=0.5)
+            source, segment = listening.segments.get(timeout=0.5)
         except queue.Empty:
             continue
-        if text := transcribe_when_ready(segment):
-            transcript_log.append(path, source, text)
+        try:
+            if text := transcribe_when_ready(segment, listening.language):
+                transcript_log.append(path, source, text)
+        finally:
+            listening.pending.finish()
+
+
+def interrupt_speaker():
+    subprocess.Popen(
+        ["avatar-command", "stop-speaking"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
 
 def main():
     directory = runtime_directory()
-    sources = json.loads((directory / "listener.json").read_text())["sources"]
-    stopping = threading.Event()
-    signal.signal(signal.SIGTERM, lambda *_: stopping.set())
-    segments = queue.Queue(maxsize=PENDING_SEGMENT_LIMIT)
-    for source, device in sources.items():
+    configuration = json.loads((directory / "listener.json").read_text())
+    listening = Listening(
+        segments=queue.Queue(maxsize=PENDING_SEGMENT_LIMIT),
+        stopping=threading.Event(),
+        pending=PendingSpeech(directory / SPEECH_IN_PROGRESS_MARKER),
+        interrupt_speaker=interrupt_speaker
+        if configuration.get("barge_in")
+        else lambda: None,
+        language=configuration.get("language"),
+    )
+    signal.signal(signal.SIGTERM, lambda *_: listening.stopping.set())
+    for source, device in configuration["sources"].items():
         threading.Thread(
             target=capture_source,
-            args=(source, device, segments, stopping),
+            args=(source, device, listening),
             daemon=True,
         ).start()
-    write_transcript(directory / "transcript.jsonl", segments, stopping)
+    write_transcript(directory / "transcript.jsonl", listening)
 
 
 if __name__ == "__main__":

@@ -35,6 +35,30 @@ def test_healthy_start_preserves_the_running_runtime(monkeypatch):
     )
 
 
+def test_a_target_is_ready_only_when_all_of_its_own_checks_pass(monkeypatch):
+    monkeypatch.setattr(start, "service_failed", lambda: False)
+    monkeypatch.setattr(start.time, "sleep", Mock())
+    answers = iter([False, True])
+    start.wait_until_ready((lambda: next(answers), lambda: True))
+
+
+def test_a_failed_bring_up_stops_only_the_requested_target(monkeypatch):
+    runner = Mock()
+    monkeypatch.setattr(start.subprocess, "run", runner)
+    monkeypatch.setattr(start, "audio_ready", Mock(return_value=True))
+    monkeypatch.setattr(start, "wait_until_ready", Mock(side_effect=TimeoutError))
+    try:
+        start.bring_up("avatar-conversation.target", ())
+    except TimeoutError:
+        pass
+    assert runner.call_args_list[-1].args[0] == [
+        "systemctl",
+        "--user",
+        "stop",
+        "avatar-conversation.target",
+    ]
+
+
 def test_audio_readiness_requires_a_running_owned_graph(monkeypatch):
     runner = Mock(
         return_value=SimpleNamespace(

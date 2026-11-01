@@ -4,6 +4,7 @@ import audio_state
 
 CHANNELS = {"agent": "AvatarMic", "human": "AvatarHuman"}
 MIX_SINK = "AvatarMix"
+LIP_SYNC_SINK = "AvatarLipSync"
 MEETING_SOURCE = "AvatarMicrophone"
 
 
@@ -59,7 +60,7 @@ def stop(path, state):
 
 
 def ensure_names_available():
-    names = set(CHANNELS.values()) | {MIX_SINK, MEETING_SOURCE}
+    names = set(CHANNELS.values()) | {MIX_SINK, LIP_SYNC_SINK, MEETING_SOURCE}
     existing = {
         item["name"]
         for kind in ("sinks", "sources")
@@ -76,7 +77,7 @@ def validate_microphone(source_name):
         raise ValueError(f"Source does not exist: {source_name}")
     if source_name in {
         MEETING_SOURCE,
-        *(f"{name}.monitor" for name in (*CHANNELS.values(), MIX_SINK)),
+        *(f"{name}.monitor" for name in (*CHANNELS.values(), MIX_SINK, LIP_SYNC_SINK)),
     }:
         raise ValueError("The avatar output cannot feed its own human input")
     return source_name
@@ -128,6 +129,7 @@ def create_mix(path, state):
         pulse_audio.run("set-sink-mute", name, "1")
         pulse_audio.run("set-sink-volume", name, "100%")
     load_sink(path, state, MIX_SINK, "Avatar_Meeting_Mix")
+    load_sink(path, state, LIP_SYNC_SINK, "Avatar_Lip_Sync")
     for name in CHANNELS.values():
         load_loopback(
             path,

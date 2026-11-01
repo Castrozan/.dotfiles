@@ -7,9 +7,10 @@ const {
 } = require("../messaging/client-response-sender");
 
 const MIC_SINK_NAME = "AvatarMic";
+const LIP_SYNC_SINK_NAME = "AvatarLipSync";
 
 function resolveRequestedSinks(output, speakerSinkName) {
-  const sinks = [];
+  const sinks = [LIP_SYNC_SINK_NAME];
   if (output === "mic" || output === "both") {
     sinks.push(MIC_SINK_NAME);
   }

@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 BROWSER_WINDOW_CLASS = "avatar-browser"
+SUPERVISION_POLL_SECONDS = 1
 
 
 def profile_directory():
@@ -66,6 +67,24 @@ def wait_for_endpoint(profile, process):
         time.sleep(0.1)
     process.terminate()
     raise TimeoutError("The avatar browser did not expose its own endpoint")
+
+
+def supervise(url):
+    start(url)
+    while owned_process(profile_directory()) is not None:
+        time.sleep(SUPERVISION_POLL_SECONDS)
+    raise RuntimeError("The avatar browser exited")
+
+
+def endpoint():
+    profile = profile_directory()
+    for _ in range(100):
+        path = profile / "DevToolsActivePort"
+        if owned_process(profile) is not None and path.exists():
+            print(int(path.read_text().splitlines()[0]))
+            return
+        time.sleep(0.1)
+    raise TimeoutError("The avatar browser has no endpoint")
 
 
 def stop():
@@ -150,11 +169,13 @@ def remove_stale_locks(profile):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "start":
-        start(sys.argv[2])
+    if sys.argv[1] == "supervise":
+        supervise(sys.argv[2])
+    elif sys.argv[1] == "endpoint":
+        endpoint()
     elif sys.argv[1] == "stop":
         stop()
     elif sys.argv[1] == "controls":
         controls()
     else:
-        raise ValueError("Use start URL or stop")
+        raise ValueError("Use supervise URL, endpoint, stop or controls")

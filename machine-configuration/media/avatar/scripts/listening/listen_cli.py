@@ -15,9 +15,7 @@ FOLLOW_WAIT_SECONDS = 30
 
 
 def existing_sources():
-    output = subprocess.check_output(
-        ["pactl", "list", "short", "sources"], text=True
-    )
+    output = subprocess.check_output(["pactl", "list", "short", "sources"], text=True)
     return {line.split("\t")[1] for line in output.splitlines()}
 
 
@@ -37,16 +35,20 @@ def systemctl(*arguments):
     subprocess.run(["systemctl", "--user", *arguments], check=True)
 
 
-def start(arguments, directory):
-    sources = selected_sources(arguments.microphone)
+def begin_listening(directory, sources, **settings):
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     systemctl("stop", LISTENER_SERVICE)
     (directory / "transcript.jsonl").unlink(missing_ok=True)
     configuration = directory / "listener.json"
     descriptor = os.open(configuration, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(descriptor, "w") as output:
-        json.dump({"sources": sources}, output)
+        json.dump({"sources": sources, **settings}, output)
     systemctl("start", LISTENER_SERVICE)
+
+
+def start(arguments, directory):
+    sources = selected_sources(arguments.microphone)
+    begin_listening(directory, sources)
     print(json.dumps({"listening": True, "sources": sources}))
 
 
@@ -55,15 +57,19 @@ def stop(arguments, directory):
     print(json.dumps({"listening": False}))
 
 
-def status(arguments, directory):
+def listening():
     active = subprocess.run(
         ["systemctl", "--user", "is-active", "--quiet", LISTENER_SERVICE]
     )
+    return active.returncode == 0
+
+
+def status(arguments, directory):
     configuration = directory / "listener.json"
     print(
         json.dumps(
             {
-                "listening": active.returncode == 0,
+                "listening": listening(),
                 "sources": json.loads(configuration.read_text())["sources"]
                 if configuration.exists()
                 else {},

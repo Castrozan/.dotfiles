@@ -5,7 +5,14 @@ import urllib.error
 import urllib.request
 
 
-SERVICES = ("avatar-audio", "avatar-control-server", "avatar-renderer", "avatar-camera")
+MEETING_TARGET = "avatar.target"
+SERVICES = (
+    "avatar-audio",
+    "avatar-control-server",
+    "avatar-renderer",
+    "avatar-browser",
+    "avatar-camera",
+)
 
 
 def service_failed():
@@ -32,14 +39,14 @@ def camera_ready():
     return capture.returncode == 0 and "Video Capture" in capture.stdout
 
 
-def wait_until_ready(timeout=45):
+def wait_until_ready(readiness_checks, timeout=45):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if service_failed():
             raise RuntimeError(
                 "An avatar service failed; inspect systemctl --user status avatar-*"
             )
-        if renderer_ready() and camera_ready():
+        if all(check() for check in readiness_checks):
             return
         time.sleep(0.25)
     raise TimeoutError("The avatar renderer did not become ready")
@@ -52,17 +59,21 @@ def audio_ready():
     return json.loads(result.stdout).get("running", False)
 
 
-def main():
+def bring_up(target, readiness_checks):
     try:
         if not audio_ready():
-            subprocess.run(["systemctl", "--user", "stop", "avatar.target"], check=True)
-        subprocess.run(["systemctl", "--user", "start", "avatar.target"], check=True)
-        wait_until_ready()
+            subprocess.run(["systemctl", "--user", "stop", MEETING_TARGET], check=True)
+        subprocess.run(["systemctl", "--user", "start", target], check=True)
+        wait_until_ready(readiness_checks)
         if not audio_ready():
             raise RuntimeError("The avatar audio graph did not become ready")
     except BaseException:
-        subprocess.run(["systemctl", "--user", "stop", "avatar.target"], check=False)
+        subprocess.run(["systemctl", "--user", "stop", target], check=False)
         raise
+
+
+def main():
+    bring_up(MEETING_TARGET, (renderer_ready, camera_ready))
     print(
         "Avatar ready. Check mute/levels with avatar-audio status. Run avatar-controls for video controls"
     )

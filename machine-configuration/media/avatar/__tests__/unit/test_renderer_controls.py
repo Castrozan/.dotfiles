@@ -96,10 +96,9 @@ def test_mouth_following_is_stable_on_a_long_frame():
     assert follow_level(0, 1, 10) == pytest.approx(1)
 
 
-def test_the_hidden_output_page_never_presents_its_canvas():
+def test_the_output_page_presents_its_canvas_so_the_desktop_window_shows_the_avatar():
     renderer = (SOURCE.parent / "renderer.js").read_text()
-    output_page_setup = renderer[renderer.index('.has("output")') :]
-    assert 'output.style.display = "none"' in output_page_setup
+    assert 'output.style.display = "none"' not in renderer
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")

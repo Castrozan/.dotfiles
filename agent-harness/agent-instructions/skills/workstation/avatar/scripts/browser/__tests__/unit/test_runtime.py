@@ -122,3 +122,33 @@ def test_chromium_process_title_preserves_exact_profile_ownership(runtime):
         f"chromium --user-data-dir={profile}-another --app=http://localhost:3000/\0".encode()
     )
     assert module.owned_process(profile) is None
+
+
+def test_supervision_fails_when_the_browser_is_gone_so_the_service_restarts_it(
+    runtime, monkeypatch
+):
+    module, _, _ = runtime
+    monkeypatch.setattr(module, "start", Mock())
+    monkeypatch.setattr(module, "owned_process", Mock(return_value=None))
+    with pytest.raises(RuntimeError):
+        module.supervise("http://localhost:3000/?output=1")
+    module.start.assert_called_once()
+
+
+def test_the_endpoint_comes_from_the_running_owned_browser(
+    runtime, monkeypatch, capsys
+):
+    module, profile, _ = runtime
+    (profile / "DevToolsActivePort").write_text("9222\n/devtools")
+    monkeypatch.setattr(module, "owned_process", Mock(return_value=123))
+    module.endpoint()
+    assert capsys.readouterr().out.strip() == "9222"
+
+
+def test_no_endpoint_is_reported_without_an_owned_browser(runtime, monkeypatch):
+    module, profile, _ = runtime
+    (profile / "DevToolsActivePort").write_text("9222")
+    monkeypatch.setattr(module, "owned_process", Mock(return_value=None))
+    monkeypatch.setattr(module.time, "sleep", Mock())
+    with pytest.raises(TimeoutError):
+        module.endpoint()

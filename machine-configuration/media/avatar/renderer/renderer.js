@@ -43,7 +43,6 @@ const cameraFrames = new URLSearchParams(location.search).has("output")
   : null;
 if (cameraFrames) {
   status.hidden = true;
-  output.style.display = "none";
   cameraFrames.connect();
 }
 const state = {

@@ -29,6 +29,14 @@ class SpeechSegmenter:
         self.speech_frames = 0
         self.silent_frames = 0
 
+    @property
+    def active(self):
+        return bool(self.segment)
+
+    @property
+    def sustained_seconds(self):
+        return self.speech_frames * FRAME_SECONDS
+
     def feed(self, frame):
         speaking = frame_level(frame) >= SPEECH_LEVEL
         if not self.segment:
