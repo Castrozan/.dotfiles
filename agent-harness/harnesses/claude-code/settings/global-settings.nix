@@ -39,10 +39,29 @@ let
 
   spinnerVerbs = import ./spinner-verbs.nix;
 
+  neverUsedSkills = [
+    "anthropic-skills:artifact-emulator"
+    "anthropic-skills:built-in-browser"
+    "anthropic-skills:chrome-browser"
+    "anthropic-skills:computer-use"
+    "anthropic-skills:deep-research"
+    "anthropic-skills:docs"
+    "anthropic-skills:docx"
+    "anthropic-skills:google-workspace"
+    "anthropic-skills:import-memory"
+    "anthropic-skills:morning"
+    "anthropic-skills:pdf"
+    "anthropic-skills:pptx"
+    "anthropic-skills:skill-creator"
+    "anthropic-skills:xlsx"
+    "compose-page"
+  ];
+
   claudeGlobalSettings = lib.recursiveUpdate {
     ultracode = false;
     enableWorkflows = true;
     enabledPlugins."dotfiles@dotagents" = true;
+    skillOverrides = lib.genAttrs neverUsedSkills (_: "off");
     language = "english";
     spinnerTipsEnabled = false;
     feedbackDrafts = "off";
