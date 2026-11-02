@@ -13,6 +13,7 @@ from monitor_configuration import OVERRIDE_FILE, TOGGLE_LOCK_FILE
 TOGGLE_LOCK_TIMEOUT_SECONDS = 5
 RECONNECT_INITIAL_DELAY_SECONDS = 1
 RECONNECT_MAX_DELAY_SECONDS = 30
+INTERNAL_MONITOR_OVERRIDE = "monitor = eDP-1, preferred, auto, 1"
 
 
 def write_override_and_reload(content: str) -> None:
@@ -45,7 +46,7 @@ def handle_monitor_removed(monitor_name: str) -> None:
         return
     if is_manual_toggle_in_progress():
         return
-    write_override_and_reload("monitor = eDP-1, preferred, auto, 1")
+    write_override_and_reload(INTERNAL_MONITOR_OVERRIDE)
     migrate_workspaces_from_disabled_monitors()
 
 
@@ -58,9 +59,14 @@ def handle_monitor_added(monitor_name: str) -> None:
     migrate_workspaces_from_disabled_monitors()
 
 
-def check_initial_state() -> None:
-    if not has_external_monitor_connected():
-        write_override_and_reload("monitor = eDP-1, preferred, auto, 1")
+def reconcile_override_with_connected_monitors() -> None:
+    expected_override = (
+        "" if has_external_monitor_connected() else INTERNAL_MONITOR_OVERRIDE
+    )
+    if OVERRIDE_FILE.exists() and OVERRIDE_FILE.read_text() == expected_override:
+        return
+    write_override_and_reload(expected_override)
+    migrate_workspaces_from_disabled_monitors()
 
 
 EVENT_HANDLERS = {
@@ -69,10 +75,11 @@ EVENT_HANDLERS = {
 }
 
 
-def read_and_dispatch_events(event_socket_path: str) -> None:
+def reconcile_and_dispatch_events(event_socket_path: str) -> None:
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
         sock.connect(event_socket_path)
+        reconcile_override_with_connected_monitors()
         with sock.makefile("r") as stream:
             for line in stream:
                 line = line.strip()
@@ -90,11 +97,9 @@ def main() -> None:
     event_socket_path = build_event_socket_path()
     reconnect_delay_seconds = RECONNECT_INITIAL_DELAY_SECONDS
 
-    check_initial_state()
-
     while True:
         try:
-            read_and_dispatch_events(event_socket_path)
+            reconcile_and_dispatch_events(event_socket_path)
             reconnect_delay_seconds = RECONNECT_INITIAL_DELAY_SECONDS
         except OSError:
             pass

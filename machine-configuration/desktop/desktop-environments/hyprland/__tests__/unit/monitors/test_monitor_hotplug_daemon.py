@@ -1,3 +1,4 @@
+import socket
 import time
 
 import monitor_hotplug_daemon as daemon
@@ -100,6 +101,75 @@ class TestHandleMonitorAdded:
         monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", lock_file)
         daemon.handle_monitor_added("HDMI-A-1")
         assert override.read_text() == "original content"
+
+
+class TestReconcileOverrideWithConnectedMonitors:
+    def test_clears_stale_override_when_external_is_connected(
+        self, hyprctl_response_builder, tmp_path, monkeypatch
+    ):
+        override = tmp_path / "override.conf"
+        override.write_text("monitor = eDP-1, preferred, auto, 1")
+        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
+        hyprctl_response_builder("monitors", [{"name": "eDP-1"}, {"name": "DP-1"}])
+        daemon.reconcile_override_with_connected_monitors()
+        assert override.read_text() == ""
+
+    def test_enables_internal_when_no_external_is_connected(
+        self, hyprctl_response_builder, tmp_path, monkeypatch
+    ):
+        override = tmp_path / "override.conf"
+        override.write_text("")
+        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
+        hyprctl_response_builder("monitors", [{"name": "eDP-1"}])
+        daemon.reconcile_override_with_connected_monitors()
+        assert override.read_text() == daemon.INTERNAL_MONITOR_OVERRIDE
+
+    def test_creates_missing_override(
+        self, hyprctl_response_builder, tmp_path, monkeypatch
+    ):
+        override = tmp_path / "override.conf"
+        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
+        hyprctl_response_builder("monitors", [{"name": "eDP-1"}, {"name": "DP-1"}])
+        daemon.reconcile_override_with_connected_monitors()
+        assert override.read_text() == ""
+
+    def test_skips_reload_when_override_is_current(
+        self, hyprctl_response_builder, mock_subprocess_run, tmp_path, monkeypatch
+    ):
+        override = tmp_path / "override.conf"
+        override.write_text("")
+        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
+        hyprctl_response_builder("monitors", [{"name": "eDP-1"}, {"name": "DP-1"}])
+        daemon.reconcile_override_with_connected_monitors()
+        reload_calls = [
+            c for c in mock_subprocess_run.call_args_list if "reload" in str(c)
+        ]
+        assert len(reload_calls) == 0
+
+
+class TestReconcileAndDispatchEvents:
+    def test_event_raised_during_reconcile_is_not_lost(self, tmp_path, monkeypatch):
+        event_socket_path = tmp_path / "events.sock"
+        received_monitor_names = []
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+            listener.bind(str(event_socket_path))
+            listener.listen()
+
+            def publish_event_during_reconcile() -> None:
+                connection, _ = listener.accept()
+                with connection:
+                    connection.sendall(b"monitoradded>>DP-1\n")
+
+            monkeypatch.setattr(
+                daemon,
+                "reconcile_override_with_connected_monitors",
+                publish_event_during_reconcile,
+            )
+            monkeypatch.setitem(
+                daemon.EVENT_HANDLERS, "monitoradded", received_monitor_names.append
+            )
+            daemon.reconcile_and_dispatch_events(str(event_socket_path))
+        assert received_monitor_names == ["DP-1"]
 
 
 class TestEventHandlers:
