@@ -17,6 +17,7 @@ let
         ".zlogout"
         ".zsh_history"
         ".zsh_sessions"
+        ".zcompdump"
         ".zsh"
         ".config/zsh"
         ".cache/zsh"
