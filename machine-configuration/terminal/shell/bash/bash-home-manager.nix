@@ -103,12 +103,14 @@ let
   '';
 in
 {
-  home.activation.removeRetiredShellConfiguration = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    run ${pkgs.coreutils}/bin/rm -rf -- ${lib.escapeShellArgs retiredShellConfigurationPaths}
-  '';
+  home = {
+    activation.removeRetiredShellConfiguration = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      run ${pkgs.coreutils}/bin/rm -rf -- ${lib.escapeShellArgs retiredShellConfigurationPaths}
+    '';
 
-  home.sessionVariables.BASH_ENV = shellAliasesForNonInteractiveBash;
-  home.packages = [ commandHistoryRanker ];
+    sessionVariables.BASH_ENV = shellAliasesForNonInteractiveBash;
+    packages = [ commandHistoryRanker ];
+  };
 
   programs = {
     bash = {
