@@ -6,6 +6,7 @@
 }:
 {
   imports = [
+    ../terminal/shell/bash/bash-nix-darwin.nix
     ../desktop/applications/chatgpt/chatgpt-nix-darwin.nix
     ../voice/hex-nix-darwin.nix
     ../operating-system/package-management/homebrew-undeclared-package-cleanup-nix-darwin.nix

@@ -18,7 +18,7 @@ GLOBAL_OPTIONS_TAKING_A_SEPARATE_VALUE = frozenset(
 
 INTERPRETER_COMMANDS_EXECUTING_PIPED_INPUT = frozenset(
     "bash bun dash deno entr env eval fish ksh nix-shell node parallel perl python "
-    "python2 python3 ruby sh source xargs zsh".split()
+    "python2 python3 ruby sh source xargs".split()
 )
 
 HEREDOC_OPENER_PATTERN = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")

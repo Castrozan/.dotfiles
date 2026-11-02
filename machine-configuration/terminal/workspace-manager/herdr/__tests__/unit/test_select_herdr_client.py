@@ -42,7 +42,7 @@ def _executable(tmp_path, package_name):
     [
         [],
         ["--session", "work"],
-        ["completion", "zsh"],
+        ["completion", "bash"],
         ["config", "reset-keys"],
         ["integration", "install", "codex"],
         ["status", "server"],

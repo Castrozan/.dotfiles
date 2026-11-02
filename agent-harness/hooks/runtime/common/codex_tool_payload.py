@@ -5,7 +5,7 @@ import os
 _CODEX_SHELL_TOOL_NAME = "shell"
 _CODEX_WRITE_TOOL_NAME = "apply_patch"
 _APPLY_PATCH_COMMAND_NAMES = ("apply_patch", "applypatch")
-_SHELL_INTERPRETER_NAMES = ("bash", "sh", "zsh", "dash", "ksh")
+_SHELL_INTERPRETER_NAMES = ("bash", "sh", "dash", "ksh")
 
 CLAUDE_TOOL_NAMES_BY_CODEX_TOOL_NAME = {_CODEX_WRITE_TOOL_NAME: ("Edit", "Write")}
 

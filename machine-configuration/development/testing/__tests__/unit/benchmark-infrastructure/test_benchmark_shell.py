@@ -10,7 +10,7 @@ class TestIsShellAvailable:
 
     def test_returns_false_when_not_found(self):
         with patch("benchmark_shell.shutil.which", return_value=None):
-            assert benchmark_shell.is_shell_available("zsh") is False
+            assert benchmark_shell.is_shell_available("missing-shell") is False
 
 
 class TestMeasureSingleShellStartup:
@@ -69,8 +69,8 @@ class TestDetermineShellsToBenchmark:
         assert result == ["bash"]
 
     def test_returns_specific_shell(self):
-        result = benchmark_shell.determine_shells_to_benchmark("zsh")
-        assert result == ["zsh"]
+        result = benchmark_shell.determine_shells_to_benchmark("sh")
+        assert result == ["sh"]
 
 
 class TestParseArguments:
@@ -84,9 +84,9 @@ class TestParseArguments:
         assert iterations == 5
 
     def test_custom_iterations_and_shell(self):
-        iterations, shells = benchmark_shell.parse_arguments(["20", "zsh"])
+        iterations, shells = benchmark_shell.parse_arguments(["20", "sh"])
         assert iterations == 20
-        assert shells == ["zsh"]
+        assert shells == ["sh"]
 
     def test_invalid_iterations_exits(self):
         try:

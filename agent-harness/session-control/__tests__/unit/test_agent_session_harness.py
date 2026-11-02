@@ -18,7 +18,7 @@ def test_identifies_each_supported_harness(command_line, expected_harness):
 def test_walks_past_shells_to_find_the_agent_harness(monkeypatch):
     process_records = {
         100: (101, "/bin/bash -lc tool"),
-        101: (102, "/bin/zsh"),
+        101: (102, "/bin/sh"),
         102: (1, "/nix/store/example/bin/opencode"),
     }
     monkeypatch.setattr(

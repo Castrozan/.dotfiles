@@ -77,7 +77,7 @@ After applying the rules above, these shapes stream per-line as expected:
 - `python3 -u script.py`
 - `pipeline | grep --line-buffered PATTERN`
 - `pipeline | sed -u 'EXPR'`
-- Native shell builtin output (`bash`/`zsh` `echo`, `printf` with `\n`)
+- Native shell builtin output (`bash` `echo`, `printf` with `\n`)
 - `cat` and `tr` in a pipe (pass-through, don't add buffering)
 
 ## What Monitor cannot do
