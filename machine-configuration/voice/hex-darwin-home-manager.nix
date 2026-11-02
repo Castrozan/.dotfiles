@@ -14,6 +14,7 @@ in
       run ${hexCommand} settings set dictation_hotkey control+option+space
       run ${hexCommand} settings set history_retention off
       run ${hexCommand} settings set sound_effects false
+      run ${hexCommand} settings set show_dock_icon false
       run ${hexCommand} settings set recording_audio_behavior do_nothing
       run ${hexCommand} settings set release_microphone_while_idle true
       run ${hexCommand} settings set capture.enabled false
