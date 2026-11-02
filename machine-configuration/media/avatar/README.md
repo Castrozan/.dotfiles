@@ -70,7 +70,8 @@ plays a motion, `pose NAME` holds a body pose, `look TARGET` moves the eyes and 
 and `avatar-command status` reports the control connection. An unknown name fails with an error. An expression keeps its
 brows and eyes during speech while speech owns the mouth; `speak` restores the previous expression when the turn ends.
 
-`avatar-command speak "Text" happy mic` sends that text to ElevenLabs through `media-speech`, with the emotion mapped to a
+`avatar-command speak "Text" happy` plays to the meeting and to your own output, since a meeting never returns your own
+microphone to you, and sends that text to ElevenLabs through `media-speech`, with the emotion mapped to a
 delivery direction, then plays it into the meeting mix. Character timing shapes the mouth to the spoken vowels. The
 default voice is Jessica. If the cloud fails or takes over 15 seconds, the same turn uses the local Kokoro voice
 `pf_dora`, which is also female and takes longer to start. Piper speaks only when Kokoro fails too, and every Portuguese

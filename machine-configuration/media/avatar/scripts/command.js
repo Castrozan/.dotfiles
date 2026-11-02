@@ -26,7 +26,7 @@ const builders = {
     presented: presence === "shown",
   }),
   "stop-speaking": () => ({ type: "stopSpeaking" }),
-  speak: (text, emotion = "neutral", output = "mic", voice) => ({
+  speak: (text, emotion = "neutral", output = "both", voice) => ({
     type: "speak",
     text,
     emotion,
@@ -48,8 +48,7 @@ function parseCommand(arguments_) {
 
 function responseBelongsToCommand(response, command) {
   return (
-    !IDENTIFIED_RESPONSES.includes(response.type) ||
-    response.id === command.id
+    !IDENTIFIED_RESPONSES.includes(response.type) || response.id === command.id
   );
 }
 
