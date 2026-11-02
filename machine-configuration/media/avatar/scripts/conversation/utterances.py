@@ -6,6 +6,7 @@ import transcript_log
 POLL_SECONDS = 0.1
 SETTLE_SECONDS = 0.5
 UNFINISHED_SPEECH_LIMIT_SECONDS = 120
+CLOSED_MESSAGE = "No conversation is open; run avatar-talk open"
 
 
 class ConversationClosed(Exception):
@@ -30,7 +31,7 @@ def wait_for_first_entries(directory, wait_seconds, still_open):
     deadline = time.monotonic() + wait_seconds
     while True:
         if not still_open():
-            raise ConversationClosed("No conversation is open; run avatar-talk open")
+            raise ConversationClosed(CLOSED_MESSAGE)
         slice_seconds = min(max(deadline - time.monotonic(), 0), 1)
         entries = transcript_log.wait_since(
             transcript, last_heard(directory), slice_seconds

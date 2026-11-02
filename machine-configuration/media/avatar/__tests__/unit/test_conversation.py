@@ -231,7 +231,7 @@ def test_closing_leaves_a_running_meeting_alone(
     assert hides_canvas is not stops_everything
 
 
-def test_asking_opens_speaks_and_prints_only_the_reply(tmp_path, monkeypatch, capsys):
+def test_asking_speaks_and_prints_only_the_reply(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(talk_cli, "conversation_open", lambda: True)
     runner = Mock()
     monkeypatch.setattr(talk_cli.subprocess, "run", runner)
@@ -247,18 +247,18 @@ def test_asking_opens_speaks_and_prints_only_the_reply(tmp_path, monkeypatch, ca
     assert capsys.readouterr().out == "tudo certo\n"
 
 
-def test_asking_with_no_conversation_opens_one_first(tmp_path, monkeypatch):
-    opened = Mock()
-    monkeypatch.setattr(talk_cli, "ensure_open", opened)
-    monkeypatch.setattr(talk_cli.subprocess, "run", Mock())
-    monkeypatch.setattr(utterances, "next_utterance", lambda *_: None)
-    talk_cli.ask(
-        argparse.Namespace(
-            language="pt", text="Oi", emotion="neutral", voice=None, wait=1
-        ),
-        tmp_path,
-    )
-    opened.assert_called_once()
+def test_asking_after_the_user_closed_the_window_never_reopens_it(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
+    runner = Mock()
+    monkeypatch.setattr(talk_cli.subprocess, "run", runner)
+    with pytest.raises(utterances.ConversationClosed):
+        talk_cli.ask(
+            argparse.Namespace(text="Oi", emotion="neutral", voice=None, wait=1),
+            tmp_path,
+        )
+    runner.assert_not_called()
 
 
 def test_saying_plays_aloud_and_reports_the_speech_result(tmp_path, monkeypatch):

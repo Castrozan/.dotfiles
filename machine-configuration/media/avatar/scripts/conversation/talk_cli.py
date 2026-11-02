@@ -40,8 +40,9 @@ def report(directory):
     )
 
 
-def ensure_open(arguments, directory):
+def open_conversation(arguments, directory):
     if conversation_open():
+        report(directory)
         return
     if listen_cli.listening():
         raise RuntimeError("A meeting is being transcribed; stop it before talking")
@@ -62,10 +63,6 @@ def ensure_open(arguments, directory):
     except BaseException:
         close_conversation(arguments, directory)
         raise
-
-
-def open_conversation(arguments, directory):
-    ensure_open(arguments, directory)
     report(directory)
 
 
@@ -106,7 +103,8 @@ def hear(arguments, directory):
 
 
 def ask(arguments, directory):
-    ensure_open(arguments, directory)
+    if not conversation_open():
+        raise utterances.ConversationClosed(utterances.CLOSED_MESSAGE)
     subprocess.run(speech_command(arguments), check=True, stdout=subprocess.DEVNULL)
     hear(arguments, directory)
 
@@ -131,7 +129,6 @@ def parse_arguments():
     opening.add_argument("--language")
     speaking = commands.add_parser("say")
     asking = commands.add_parser("ask")
-    asking.add_argument("--language")
     for parser_with_speech in (speaking, asking):
         parser_with_speech.add_argument("text")
         parser_with_speech.add_argument("emotion", nargs="?", default="neutral")

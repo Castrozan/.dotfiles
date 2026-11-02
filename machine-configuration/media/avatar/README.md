@@ -17,8 +17,8 @@ forwards over ssh to chise, where the avatar and microphone live.
 
 | Command | Result |
 | --- | --- |
-| `avatar-talk ask TEXT [EMOTION]` | Opens if needed, speaks, and prints the reply; one verb per turn |
 | `avatar-talk open [--language CODE]` | Shows the window and opens the microphone; repeating it keeps the conversation |
+| `avatar-talk ask TEXT [EMOTION]` | Speaks and prints the reply; one verb per turn |
 | `avatar-talk hear [--wait SECONDS]` | Blocks for the next complete utterance and prints it; prints nothing on silence |
 | `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher |
 | `avatar-talk say TEXT [EMOTION] [--voice VOICE]` | Speaks aloud and reports `finished` or `interrupted` |
