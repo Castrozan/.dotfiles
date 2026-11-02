@@ -11,7 +11,7 @@ from voice_bridge.control_server import ControlServer
 from voice_bridge.speech_synthesis import SpeechSynthesizer
 from voice_bridge.speech_transcription import transcribe_discord_audio
 from voice_bridge.transcript_feed import TranscriptFeed
-from voice_bridge.voice_call import CallAudioServices, VoiceCall, VoiceCallError
+from voice_bridge.voice_call import CallAudioServices, VoiceCall
 
 
 def discord_client():
@@ -27,9 +27,11 @@ async def run_bridge():
     feed = TranscriptFeed()
     ffmpeg = environment["VOICE_BRIDGE_FFMPEG"]
     control_socket = Path(environment["VOICE_BRIDGE_CONTROL_SOCKET"])
+    listener_user_id = int(environment["VOICE_BRIDGE_LISTENER_USER_ID"])
     call = VoiceCall(
         client,
-        int(environment["VOICE_BRIDGE_LISTENER_USER_ID"]),
+        listener_user_id,
+        int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"]),
         CallAudioServices(
             ffmpeg,
             SpeechSynthesizer(
@@ -44,10 +46,12 @@ async def run_bridge():
 
     @client.event
     async def on_ready():
-        try:
-            await call.join()
-        except VoiceCallError as error:
-            logging.info("not rejoining: %s", error)
+        await call.follow_listener()
+
+    @client.event
+    async def on_voice_state_update(member, before, after):
+        if member.id == listener_user_id and before.channel != after.channel:
+            await call.follow_listener()
 
     control = ControlServer(call, feed)
 

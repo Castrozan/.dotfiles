@@ -57,15 +57,11 @@ def request_join():
 
 def join(_arguments):
     control_bridge_service("start")
-    reply = request_join()
-    if "error" in reply:
-        control_bridge_service("stop")
-    return reply
+    return request_join()
 
 
 def leave(_arguments):
-    control_bridge_service("stop")
-    return {"joined": False}
+    return request_running_bridge(command="leave")
 
 
 def status(_arguments):
@@ -100,7 +96,7 @@ def parse_arguments():
         "join", help="Join the voice channel the listener is in."
     ).set_defaults(handler=join)
     commands.add_parser(
-        "leave", help="Leave the call and stop the bridge."
+        "leave", help="Leave the call; the bridge keeps watching for the next one."
     ).set_defaults(handler=leave)
     commands.add_parser("status", help="Report the call as JSON.").set_defaults(
         handler=status

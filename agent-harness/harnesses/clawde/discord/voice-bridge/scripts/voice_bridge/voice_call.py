@@ -5,16 +5,14 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
-import discord
-
 from voice_bridge.listener_receiver import ListenerVoiceReceiver
 from voice_bridge.speech_synthesis import SpeechSynthesizer
+from voice_bridge.voice_playback import play_audio_file
 
 LISTEN_POLL_SECONDS = 0.05
 BARGE_IN_SECONDS = 0.6
 PLAYBACK_GRACE_SECONDS = 0.3
 MAXIMUM_UTTERANCE_SECONDS = 30
-PLAYBACK_LEAD_SILENCE_MILLISECONDS = 200
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +36,12 @@ class CallAudioServices:
 
 
 class VoiceCall:
-    def __init__(self, client, listener_user_id, audio_services, feed):
+    def __init__(
+        self, client, listener_user_id, answered_guild_id, audio_services, feed
+    ):
         self._client = client
         self._listener_user_id = listener_user_id
+        self._answered_guild_id = answered_guild_id
         self._audio_services = audio_services
         self._feed = feed
         self._membership_lock = asyncio.Lock()
@@ -74,6 +75,13 @@ class VoiceCall:
                 if self._listener_user_id in channel.voice_states:
                     return channel
         return None
+
+    async def follow_listener(self):
+        channel = self._listener_channel()
+        if channel is not None and channel.guild.id == self._answered_guild_id:
+            await self.join()
+        elif self._connected_channel() != channel:
+            await self.leave()
 
     async def join(self):
         async with self._membership_lock:
@@ -181,15 +189,5 @@ class VoiceCall:
             return "interrupted"
         self._barged_in = False
         self._playback_started_at = time.monotonic()
-        playback_finished = asyncio.Event()
-        loop = asyncio.get_running_loop()
-        voice_client.play(
-            discord.FFmpegPCMAudio(
-                audio_path,
-                executable=self._audio_services.ffmpeg,
-                options=f"-af adelay={PLAYBACK_LEAD_SILENCE_MILLISECONDS}:all=1",
-            ),
-            after=lambda _error: loop.call_soon_threadsafe(playback_finished.set),
-        )
-        await playback_finished.wait()
+        await play_audio_file(voice_client, audio_path, self._audio_services.ffmpeg)
         return "interrupted" if self._barged_in else "finished"

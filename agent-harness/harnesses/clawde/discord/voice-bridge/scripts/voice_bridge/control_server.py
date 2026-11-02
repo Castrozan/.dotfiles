@@ -35,6 +35,9 @@ class ControlServer:
             match request["command"]:
                 case "join":
                     return await self._call.join()
+                case "leave":
+                    await self._call.leave()
+                    return self._call.status()
                 case "status":
                     return self._call.status()
                 case "speak":
