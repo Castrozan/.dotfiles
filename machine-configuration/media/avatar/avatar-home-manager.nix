@@ -5,97 +5,16 @@
   ...
 }:
 let
-  control = import ./control-package.nix { inherit pkgs; };
-  renderer = import ./renderer-package.nix { inherit pkgs; };
-  audio = pkgs.writeShellScriptBin "avatar-audio" ''
-    export PATH=${lib.makeBinPath [ pkgs.pulseaudio ]}:$PATH
-    export PYTHONPATH=${./scripts}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/audio_cli.py} "$@"
-  '';
-  serve = pkgs.writeShellScript "avatar-renderer" ''
-    export AVATAR_RENDERER_ROOT=${renderer}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/serve.py}
-  '';
-  browserRuntime = ../../../agent-harness/agent-instructions/skills/workstation/avatar/scripts/browser/runtime.py;
-  camera = pkgs.writeShellScript "avatar-camera" ''
-    export CDP_PORT="$(${pkgs.python312}/bin/python3 ${browserRuntime} endpoint)"
-    export PATH=${
-      lib.makeBinPath [
-        pkgs.ffmpeg
-        pkgs.chromium
-      ]
-    }:$PATH
-    exec ${pkgs.nodejs_22}/bin/node ${control}/virtual-camera.js --fps 60 --width 1280 --height 720
-  '';
-  controls = pkgs.writeShellScriptBin "avatar-controls" ''
-    export PATH=${lib.makeBinPath [ pkgs.chromium ]}:$PATH
-    exec ${pkgs.python312}/bin/python3 ${browserRuntime} controls
-  '';
-  command = pkgs.writeShellScriptBin "avatar-command" ''
-    export NODE_PATH=${control}/node_modules
-    exec ${pkgs.nodejs_22}/bin/node ${./scripts/command.js} "$@"
-  '';
-  start = pkgs.writeShellScriptBin "avatar-start" ''
-    export PATH=${
-      lib.makeBinPath [
-        audio
-        pkgs.systemd
-        pkgs.v4l-utils
-      ]
-    }:$PATH
-    exec ${pkgs.python312}/bin/python3 ${./scripts/start.py}
-  '';
-  stop = pkgs.writeShellScriptBin "avatar-stop" ''
-    export PATH=${
-      lib.makeBinPath [
-        audio
-        pkgs.systemd
-      ]
-    }:$PATH
-    ${builtins.readFile ./scripts/avatar-stop}
-  '';
+  programs = import ./avatar-programs.nix { inherit pkgs lib; };
   windowPresence =
     action: "${pkgs.python312}/bin/python3 ${./scripts/conversation/desktop_window.py} ${action}";
-  listen = pkgs.writeShellScriptBin "avatar-listen" ''
-    export PATH=${
-      lib.makeBinPath [
-        pkgs.pulseaudio
-        pkgs.systemd
-      ]
-    }:$PATH
-    export PYTHONPATH=${./scripts/listening}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/listening/listen_cli.py} "$@"
-  '';
-  listener = pkgs.writeShellScript "avatar-listener" ''
-    export PATH=${
-      lib.makeBinPath [
-        command
-        pkgs.pulseaudio
-      ]
-    }:$PATH
-    export PYTHONPATH=${./scripts/listening}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/listening/listener.py}
-  '';
-  talk = pkgs.writeShellScriptBin "avatar-talk" ''
-    export PATH=${
-      lib.makeBinPath [
-        audio
-        command
-        stop
-        pkgs.pulseaudio
-        pkgs.systemd
-      ]
-    }:$PATH
-    export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/conversation}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"
-  '';
   transcriptionModel = pkgs.fetchurl {
     url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
     sha256 = "1fqi0h90ig4ifpyb44cfc7dmnndv2vy5mr9g22yng9fp6nly91df";
   };
   speechVoices = import ./speech-voices.nix { inherit pkgs; };
   tools = lib.makeBinPath [
-    audio
+    programs.audio
     (import ../media-generation/speech-package.nix { inherit pkgs; })
     pkgs.ffmpeg
     pkgs.piper-tts
@@ -109,7 +28,7 @@ let
 in
 {
   config = lib.mkIf isNixOS {
-    home.packages = [
+    home.packages = with programs; [
       audio
       command
       controls
@@ -150,8 +69,8 @@ in
           Service = {
             Type = "oneshot";
             RemainAfterExit = true;
-            ExecStart = "${audio}/bin/avatar-audio start";
-            ExecStop = "${audio}/bin/avatar-audio stop";
+            ExecStart = "${programs.audio}/bin/avatar-audio start";
+            ExecStop = "${programs.audio}/bin/avatar-audio stop";
           };
         };
         avatar-control-server = {
@@ -159,7 +78,7 @@ in
             Description = "Avatar control server";
           };
           Service = {
-            ExecStart = "${pkgs.nodejs_22}/bin/node ${control}/server.js";
+            ExecStart = "${pkgs.nodejs_22}/bin/node ${programs.control}/server.js";
             Environment = [
               "PATH=${tools}"
               "AVATAR_CLOUD_VOICE=cgSgspJ2msm6clMCkdW9"
@@ -186,8 +105,8 @@ in
             ];
           };
           Service = {
-            ExecStart = "${pkgs.python312}/bin/python3 ${browserRuntime} supervise http://localhost:3000/?output=1";
-            ExecStopPost = "${pkgs.python312}/bin/python3 ${browserRuntime} stop";
+            ExecStart = "${pkgs.python312}/bin/python3 ${programs.browserRuntime} supervise http://localhost:3000/?output=1";
+            ExecStopPost = "${pkgs.python312}/bin/python3 ${programs.browserRuntime} stop";
             Environment = [ "PATH=${lib.makeBinPath [ pkgs.chromium ]}" ];
             KillMode = "mixed";
           };
@@ -201,7 +120,7 @@ in
             Requires = [ "avatar-browser.service" ];
           };
           Service = {
-            ExecStart = toString camera;
+            ExecStart = toString programs.camera;
             Environment = [ "V4L2_DEVICE=/dev/video10" ];
             Restart = "always";
           };
@@ -253,7 +172,7 @@ in
             Requires = [ "avatar-transcriber.service" ];
           };
           Service = {
-            ExecStart = toString listener;
+            ExecStart = toString programs.listener;
             Restart = "on-failure";
           };
         };
@@ -262,7 +181,7 @@ in
             Description = "Offline avatar renderer";
           };
           Service = {
-            ExecStart = toString serve;
+            ExecStart = toString programs.serve;
             Restart = "on-failure";
           };
           Install.WantedBy = [ "avatar.target" ];
