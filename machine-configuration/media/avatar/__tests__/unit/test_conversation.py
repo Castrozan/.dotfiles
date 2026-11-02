@@ -176,8 +176,19 @@ def test_opening_again_keeps_the_conversation_and_what_was_not_heard(
     assert json.loads(capsys.readouterr().out) == {"open": True, "last_heard": 7}
 
 
+def test_opening_refuses_to_replace_a_meeting_transcript(tmp_path, monkeypatch):
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
+    monkeypatch.setattr(listen_cli, "listening", lambda: True)
+    begin = Mock()
+    monkeypatch.setattr(listen_cli, "begin_listening", begin)
+    with pytest.raises(RuntimeError):
+        talk_cli.open_conversation(argparse.Namespace(language=None), tmp_path)
+    begin.assert_not_called()
+
+
 def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch):
     monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
+    monkeypatch.setattr(listen_cli, "listening", lambda: False)
     monkeypatch.setattr(start, "bring_up", Mock())
     begin = Mock()
     monkeypatch.setattr(listen_cli, "begin_listening", begin)
@@ -191,6 +202,7 @@ def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch)
 
 def test_a_failed_open_closes_what_it_started(tmp_path, monkeypatch):
     monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
+    monkeypatch.setattr(listen_cli, "listening", lambda: False)
     monkeypatch.setattr(start, "bring_up", Mock(side_effect=TimeoutError("late")))
     close = Mock()
     monkeypatch.setattr(talk_cli, "close_conversation", close)

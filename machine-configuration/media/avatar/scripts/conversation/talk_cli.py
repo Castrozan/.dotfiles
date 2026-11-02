@@ -44,6 +44,8 @@ def open_conversation(arguments, directory):
     if conversation_open():
         report(directory)
         return
+    if listen_cli.listening():
+        raise RuntimeError("A meeting is being transcribed; stop it before talking")
     try:
         start.bring_up(
             CONVERSATION_TARGET, (start.renderer_ready, room_microphone_ready)
