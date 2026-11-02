@@ -49,12 +49,20 @@ local editorWindow = makeFakeWindow(701, "WezTerm", true)
 local browserWindow = makeFakeWindow(702, "Google Chrome", true)
 local switcherOverlayWindow = makeFakeWindow(703, "workspace-window-switcher-daemon", false)
 local transparentDictationWindow = makeFakeWindow(704, "Hex", false)
+local recordingDictationWindow = makeFakeWindow(705, "Hex", false)
 
-local windowsTheFilterReports = { editorWindow, browserWindow, switcherOverlayWindow, transparentDictationWindow }
+local windowsTheFilterReports = {
+	editorWindow,
+	browserWindow,
+	switcherOverlayWindow,
+	transparentDictationWindow,
+	recordingDictationWindow,
+}
 local windowServerEntries = {
 	{ kCGWindowNumber = 701, kCGWindowOwnerName = "WezTerm", kCGWindowLayer = 0 },
 	{ kCGWindowNumber = 702, kCGWindowOwnerName = "Google Chrome", kCGWindowLayer = 0 },
 	{ kCGWindowNumber = 704, kCGWindowOwnerName = "Hex", kCGWindowLayer = 25, kCGWindowAlpha = 0 },
+	{ kCGWindowNumber = 705, kCGWindowOwnerName = "Hex", kCGWindowLayer = 25, kCGWindowAlpha = 1 },
 	{
 		kCGWindowNumber = 703,
 		kCGWindowOwnerName = switcherOverlayOwnerNameAsTheWindowServerTruncatesIt,
@@ -145,11 +153,13 @@ expectEqual(
 expectEqual("the terminal window is still offered", true, reportedToTheSwitcher[701])
 expectEqual("the browser window is still offered", true, reportedToTheSwitcher[702])
 expectEqual("the invisible dictation HUD is never offered to the switcher", nil, reportedToTheSwitcher[704])
+expectEqual("the recording HUD is never offered to the switcher", nil, reportedToTheSwitcher[705])
 
 local manageable = windowIdsIn(windowQuery.manageableWindows())
 expectEqual("the switcher's own overlay panel is not a manageable window", nil, manageable[703])
 expectEqual("the terminal window is still manageable", true, manageable[701])
 expectEqual("the invisible dictation HUD is not manageable", nil, manageable[704])
+expectEqual("the recording HUD is not manageable", nil, manageable[705])
 
 expectEqual(
 	"the switcher's own overlay panel does not resolve as a focus target",

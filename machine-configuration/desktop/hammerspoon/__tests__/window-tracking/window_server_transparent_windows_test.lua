@@ -11,6 +11,8 @@ hs = {
 				{ kCGWindowNumber = 128, kCGWindowOwnerName = "WezTerm", kCGWindowAlpha = 1 },
 				{ kCGWindowNumber = 129, kCGWindowOwnerName = "Dialog", kCGWindowAlpha = 0.5 },
 				{ kCGWindowNumber = 130, kCGWindowOwnerName = "Unknown opacity" },
+				{ kCGWindowNumber = 8383, kCGWindowOwnerName = "Hex", kCGWindowAlpha = 1, kCGWindowLayer = 25 },
+				{ kCGWindowNumber = 131, kCGWindowOwnerName = "Utility", kCGWindowAlpha = 1, kCGWindowLayer = 19 },
 			}
 		end,
 	},
@@ -22,4 +24,6 @@ assert(ownerNames[8382] == "Hex", "Hex's visible Settings window must remain ava
 assert(ownerNames[128] == "WezTerm", "normal windows must remain available")
 assert(ownerNames[129] == "Dialog", "partially transparent windows must remain available")
 assert(ownerNames[130] == "Unknown opacity", "windows without opacity metadata must remain available")
-print("PASS: window enumeration excludes fully transparent windows")
+assert(ownerNames[8383] == nil, "Hex's visible recording HUD must be excluded")
+assert(ownerNames[131] == "Utility", "utility windows below the status level must remain available")
+print("PASS: window enumeration excludes transparent windows and status overlays")
