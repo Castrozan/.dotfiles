@@ -2,9 +2,10 @@
 
 The avatar runs locally and independently of an agent harness. Its VRM model, portrait assets and rendering libraries
 are pinned by Nix and served locally. The model is Darkness Shibu from
-[VRoid's sample set](https://github.com/madjin/vrm-samples), CC0 by its embedded VRM licence metadata. Start it with `avatar-start`; run
-`avatar-controls` for camera permission and video modes. The controls must use the avatar-owned browser profile so their
-permission flow can reach the output window.
+[VRoid's sample set](https://github.com/madjin/vrm-samples), CC0 by its embedded VRM licence metadata. Start it with `avatar-start`, which also opens her voice
+and the default microphone. `avatar-command mode camera` opens the external camera with no prompt: the avatar-owned
+browser loads only this local renderer, so it accepts camera requests by itself. `avatar-controls` chooses a camera by
+hand.
 
 Starting the avatar never takes over the screen: its output window opens on the hidden `special:avatar` Hyprland
 workspace and keeps rendering there. Only `avatar-controls` opens a visible window.
@@ -41,14 +42,18 @@ depends only on the shared services. This module is NixOS only because its audio
 
 ## Meetings
 
-Both audio inputs start muted at unity gain. `avatar-audio status` shows ownership, mute and level state. Send an application's
-playback to `AvatarMic`, for example `PULSE_SINK=AvatarMic paplay --client-name=agent generated.wav`, then use
-`avatar-audio mute agent 0` to enable that channel. `avatar-audio volume agent 70` changes its level; `mute agent 1`
-silences it. PulseAudio's volume percentage uses its normal nonlinear scale.
+The audio graph starts muted at unity gain, and `avatar-start` then runs `avatar-audio open`: it attaches the default
+microphone and unmutes both inputs, so a meeting that selects `AvatarMicrophone` hears the avatar and the user with no
+further step. Nothing reaches a meeting until it selects that source. `avatar-audio status` shows ownership, mute and
+level state.
 
-Inspect `pactl list short sources` and explicitly attach the intended human input with `avatar-audio attach SOURCE`.
-`avatar-audio mute human 0` enables it; the human and agent mute/volume controls are independent. The meeting application
-must select `AvatarMicrophone` as its microphone. No defaults or existing application streams are changed automatically.
+To use another microphone, run `avatar-audio attach SOURCE` before `avatar-audio open`. The human and agent mute and
+volume controls are independent: `avatar-audio mute human 1` silences the user alone, and `avatar-audio volume agent 70`
+changes the avatar's level on PulseAudio's nonlinear scale. Send other playback to `AvatarMic` with
+`PULSE_SINK=AvatarMic paplay --client-name=agent generated.wav`.
+
+`avatar-command mode camera` and `mode composite` open the external camera, falling back to the built-in one, and
+`mode avatar` releases it. In camera mode the avatar replaces the camera while she speaks, then the camera returns.
 
 A running application may need its own output selector or an explicitly selected PulseAudio sink-input moved to
 `AvatarMic`. Setting an environment variable on a second launch does not reroute an existing application instance.

@@ -117,6 +117,14 @@ def connect_microphone(path, state, source_name):
     audio_state.write_state(path, state)
 
 
+def open_meeting_inputs(path, state):
+    require_owned_graph(state)
+    if not state.get("microphone"):
+        connect_microphone(path, state, pulse_audio.run("get-default-source"))
+    for channel in CHANNELS:
+        set_channel(state, channel, "mute", "0")
+
+
 def graph_is_owned(state, modules):
     return state.get("ready") and all(
         audio_state.matches_module(entry, modules) for entry in state["modules"]

@@ -21,6 +21,7 @@ def test_start_recovers_a_missing_graph_before_claiming_readiness(monkeypatch):
     assert [call.args[0] for call in runner.call_args_list] == [
         ["systemctl", "--user", "stop", "avatar.target"],
         ["systemctl", "--user", "start", "avatar.target"],
+        ["avatar-audio", "open"],
     ]
 
 
@@ -30,9 +31,14 @@ def test_healthy_start_preserves_the_running_runtime(monkeypatch):
     monkeypatch.setattr(start, "audio_ready", Mock(return_value=True))
     monkeypatch.setattr(start, "wait_until_ready", Mock())
     start.main()
-    runner.assert_called_once_with(
-        ["systemctl", "--user", "start", "avatar.target"], check=True
-    )
+    assert runner.call_args_list[0].args[0] == [
+        "systemctl",
+        "--user",
+        "start",
+        "avatar.target",
+    ]
+    assert runner.call_args_list[1].args[0] == ["avatar-audio", "open"]
+    assert runner.call_count == 2
 
 
 def test_a_target_is_ready_only_when_all_of_its_own_checks_pass(monkeypatch):

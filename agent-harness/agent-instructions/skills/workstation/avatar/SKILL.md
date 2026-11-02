@@ -13,15 +13,17 @@ before reporting readiness. The renderer serves its model and libraries locally.
 
 `AvatarMic` accepts agent application audio; `AvatarMicrophone` is the mixed meeting input. Route only the intended
 application stream, using its output selector or `PULSE_SINK=AvatarMic`. This does not expose an arbitrary voice
-session's audio API. Human attachment is explicit; both input channels start muted. Never route meeting playback into
-these inputs. Physical capture and meeting transmission need the user's applicable authorization.
+session's audio API. `avatar-start` opens the agent channel and attaches the default microphone, so a meeting on
+`AvatarMicrophone` hears both voices; `avatar-audio mute human 1` silences the user alone. Never route meeting playback
+into these inputs. Physical capture and meeting transmission need the user's applicable authorization.
 
 ### Camera
 
-The renderer supports avatar, camera and composite modes. Physical camera access requires the local browser permission
-flow first. `setVideoMode` acknowledges a request; wait for `videoModeChanged` or `videoModeError` for its result.
-Start the virtual-camera producer before asking a meeting application to enumerate devices: exclusive-capability
-v4l2loopback devices advertise capture only while a producer is attached.
+`avatar-command mode camera` or `composite` opens the external camera with no prompt, falling back to the built-in one;
+`mode avatar` releases it. In camera mode she replaces the camera while she speaks. `avatar-controls` chooses another
+camera. `setVideoMode` acknowledges a request; wait for `videoModeChanged` or `videoModeError` for its result.
+
+Start the avatar before opening the meeting, or reload its page: Avatar Cam is listed only while its producer runs.
 
 ### Performing
 

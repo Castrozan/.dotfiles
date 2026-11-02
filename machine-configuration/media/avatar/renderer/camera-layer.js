@@ -1,5 +1,15 @@
 import * as THREE from "three";
 
+export function preferredCamera(devices) {
+  const physical = devices.filter(
+    (device) =>
+      device.kind === "videoinput" && !/Avatar Cam/i.test(device.label),
+  );
+  return (
+    physical.find((device) => !/integrated/i.test(device.label)) ?? physical[0]
+  );
+}
+
 export class CameraLayer {
   constructor(onEnded) {
     this.onEnded = onEnded;
@@ -18,6 +28,14 @@ export class CameraLayer {
 
   get active() {
     return Boolean(this.stream || this.syntheticCanvas);
+  }
+
+  async enablePreferred() {
+    const camera = preferredCamera(
+      await navigator.mediaDevices.enumerateDevices(),
+    );
+    if (!camera) throw new Error("No physical camera is connected");
+    await this.enable(camera.deviceId);
   }
 
   async enable(deviceId) {

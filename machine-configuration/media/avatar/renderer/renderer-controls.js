@@ -23,6 +23,10 @@ export function emotionMouthTarget(timestamp, lastVoiceTime) {
   return timestamp - lastVoiceTime < VOICE_HOLD_MILLISECONDS ? 0 : 1;
 }
 
+export function visibleMode(mode, speaking) {
+  return mode === "camera" && speaking ? "avatar" : mode;
+}
+
 export class RendererControls {
   constructor(state, actions) {
     this.state = state;
@@ -44,8 +48,14 @@ export class RendererControls {
         state.idleMode = message.mode;
       },
       setPresented: ({ presented }) => actions.setPresented(presented),
-      startSpeaking: actions.beginSpeech,
-      speechEnded: actions.endSpeech,
+      startSpeaking: (message) => {
+        state.speaking = true;
+        actions.beginSpeech(message);
+      },
+      speechEnded: () => {
+        state.speaking = false;
+        actions.endSpeech();
+      },
       perform: this.requestPerformance.bind(this),
       setVideoMode: this.requestVideoMode.bind(this),
     };
@@ -58,6 +68,7 @@ export class RendererControls {
     this.socket.onmessage = (event) => this.dispatch(JSON.parse(event.data));
     this.socket.onclose = () => {
       this.state.mouthTarget = 0;
+      this.state.speaking = false;
       setTimeout(() => this.connect(), 1500);
     };
   }
@@ -71,18 +82,28 @@ export class RendererControls {
     try {
       const result = this.actions.perform(action, name);
       this.socket.send(
-        JSON.stringify({ type: "performanceApplied", action, name, result, id }),
+        JSON.stringify({
+          type: "performanceApplied",
+          action,
+          name,
+          result,
+          id,
+        }),
       );
     } catch (error) {
       this.socket.send(
-        JSON.stringify({ type: "performanceError", message: error.message, id }),
+        JSON.stringify({
+          type: "performanceError",
+          message: error.message,
+          id,
+        }),
       );
     }
   }
 
-  requestVideoMode(message) {
+  async requestVideoMode(message) {
     try {
-      this.actions.setMode(message.mode);
+      await this.actions.showMode(message.mode);
       this.socket.send(
         JSON.stringify({
           type: "videoModeChanged",

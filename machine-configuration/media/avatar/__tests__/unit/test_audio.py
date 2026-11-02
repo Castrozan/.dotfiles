@@ -19,6 +19,7 @@ class Pulse:
         self.calls = []
         self.next_identifier = 100
         self.failure = None
+        self.default_source = "synthetic-human.monitor"
 
     def items(self, kind):
         return getattr(self, kind)
@@ -27,6 +28,8 @@ class Pulse:
         self.calls.append(arguments)
         if self.failure == arguments[0]:
             raise RuntimeError("injected Pulse failure")
+        if arguments[0] == "get-default-source":
+            return self.default_source
         if arguments[0] == "load-module":
             identifier = self.next_identifier
             self.next_identifier += 1
@@ -121,6 +124,30 @@ def test_start_refuses_unowned_name_collision(tmp_path, pulse):
     with pytest.raises(ValueError, match="Refusing to adopt"):
         audio.start(tmp_path / "state.json", {"modules": []})
     assert not pulse.calls
+
+
+def test_opening_a_meeting_attaches_the_default_microphone_and_unmutes_both_voices(
+    tmp_path, pulse
+):
+    path = tmp_path / "state.json"
+    state = {"modules": []}
+    audio.start(path, state)
+    audio.open_meeting_inputs(path, state)
+    audio.open_meeting_inputs(path, state)
+    assert state["microphone"] == "synthetic-human.monitor"
+    unmuted = [call[1] for call in pulse.calls if call[0::2] == ("set-sink-mute", "0")]
+    assert unmuted == ["AvatarMic", "AvatarHuman"] * 2
+
+
+def test_opening_a_meeting_refuses_a_default_source_that_would_feed_itself(
+    tmp_path, pulse
+):
+    path = tmp_path / "state.json"
+    state = {"modules": []}
+    audio.start(path, state)
+    pulse.default_source = "AvatarMicrophone"
+    with pytest.raises(ValueError, match="cannot feed"):
+        audio.open_meeting_inputs(path, state)
 
 
 def test_attach_requires_existing_non_feedback_source(tmp_path, pulse):

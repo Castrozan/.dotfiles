@@ -1,6 +1,10 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { followLevel, RendererControls } from "./renderer-controls.js";
+import {
+  followLevel,
+  RendererControls,
+  visibleMode,
+} from "./renderer-controls.js";
 import { CameraFrameStream } from "./camera-frame-stream.js";
 import { CameraLayer } from "./camera-layer.js";
 import { AvatarPerformer } from "./avatar-performer.js";
@@ -8,6 +12,7 @@ import { faceMorphNames } from "./face-expressions.js";
 import { startFrameClock } from "./frame-clock.js";
 import { VRMExpression, VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 
+const VIDEO_MODES = ["avatar", "camera", "composite"];
 const output = document.querySelector("#output");
 const status = document.querySelector("#status");
 const renderer = new THREE.WebGLRenderer({
@@ -53,6 +58,7 @@ const state = {
   mouth: 0,
   mouthTarget: 0,
   mode: "avatar",
+  speaking: false,
   lastLevelTime: 0,
   lastVoiceTime: -Infinity,
   idleMode: "breathing",
@@ -84,11 +90,11 @@ async function loadAvatar() {
 }
 
 function drawOutput(timestamp) {
+  const mode = visibleMode(state.mode, state.speaking);
   renderer.setViewport(0, 0, 1280, 720);
-  if (state.mode === "camera")
-    cameraLayer.render(renderer, timestamp, state.mouth);
+  if (mode === "camera") cameraLayer.render(renderer, timestamp, state.mouth);
   else renderer.render(scene, camera);
-  if (state.mode === "composite") {
+  if (mode === "composite") {
     renderer.autoClear = false;
     renderer.clearDepth();
     renderer.setViewport(880, 24, 384, 216);
@@ -109,12 +115,21 @@ function render(timestamp) {
 }
 
 function setMode(requested) {
-  if (!["avatar", "camera", "composite"].includes(requested))
-    throw new Error("Unknown video mode");
+  if (!VIDEO_MODES.includes(requested)) throw new Error("Unknown video mode");
   if (requested !== "avatar" && !cameraLayer.active)
     throw new Error("Enable a camera locally first");
   state.mode = requested;
   window.avatarStatus.mode = state.mode;
+}
+
+async function showMode(requested) {
+  if (requested === "avatar") {
+    disableCamera();
+    return;
+  }
+  if (VIDEO_MODES.includes(requested) && !cameraLayer.active)
+    await cameraLayer.enablePreferred();
+  setMode(requested);
 }
 
 async function enableCamera(deviceId) {
@@ -153,7 +168,7 @@ loadAvatar()
       beginSpeech: (message) => performer.beginSpeech(message),
       endSpeech: () => performer.endSpeech(),
       perform: (action, name) => performer.perform(action, name),
-      setMode,
+      showMode,
       setPresented,
       enableCamera,
       disableCamera,

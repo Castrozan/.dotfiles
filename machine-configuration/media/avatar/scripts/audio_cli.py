@@ -27,7 +27,7 @@ def describe(state):
 def parse_arguments():
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest="action", required=True)
-    for action in ("start", "stop", "status"):
+    for action in ("start", "stop", "status", "open"):
         commands.add_parser(action)
     attach = commands.add_parser("attach")
     attach.add_argument("source")
@@ -59,6 +59,7 @@ def run(arguments, path, state):
     operations = {
         "start": lambda: audio.start(path, state),
         "stop": lambda: audio.stop(path, state),
+        "open": lambda: audio.open_meeting_inputs(path, state),
         "attach": lambda: attach(arguments, path, state),
         "mute": lambda: mute(arguments, path, state),
         "volume": lambda: volume(arguments, path, state),

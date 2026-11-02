@@ -69,3 +69,35 @@ def test_camera_render_release_and_feedback_boundary(scenario):
         assert result["wasActive"] is False
         assert result["stopped"] == 1
         assert "physical camera" in result["error"]
+
+
+def preferred_camera(labels):
+    program = f"""
+    const fs = require("node:fs");
+    const source = fs.readFileSync(process.argv[1], "utf8").replace('import * as THREE from "three";', "");
+    (async () => {{
+      const {{ preferredCamera }} = await import("data:text/javascript," + encodeURIComponent(source));
+      const devices = {json.dumps(labels)}.map((label) => ({{ kind: "videoinput", label }}));
+      devices.push({{ kind: "audioinput", label: "USB Microphone" }});
+      console.log(JSON.stringify(preferredCamera(devices)?.label ?? null));
+    }})();
+    """
+    completed = subprocess.run(
+        ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
+    )
+    return json.loads(completed.stdout)
+
+
+def test_an_external_camera_wins_over_the_built_in_one():
+    assert (
+        preferred_camera(["Integrated Webcam", "Avatar Cam", "USB Camera"])
+        == "USB Camera"
+    )
+
+
+def test_the_built_in_camera_serves_when_nothing_is_plugged_in():
+    assert preferred_camera(["Avatar Cam", "Integrated Webcam"]) == "Integrated Webcam"
+
+
+def test_avatar_cam_is_never_a_camera_to_show():
+    assert preferred_camera(["Avatar Cam"]) is None

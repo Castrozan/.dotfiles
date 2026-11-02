@@ -39,6 +39,7 @@ def start(url):
                 f"--class={BROWSER_WINDOW_CLASS}",
                 "--remote-debugging-port=0",
                 "--autoplay-policy=no-user-gesture-required",
+                "--use-fake-ui-for-media-stream",
                 "--disable-background-timer-throttling",
                 "--disable-renderer-backgrounding",
                 "--disable-backgrounding-occluded-windows",

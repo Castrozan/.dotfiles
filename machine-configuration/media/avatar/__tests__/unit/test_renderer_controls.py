@@ -28,7 +28,7 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
       let chosen;
       const controls = new RendererControls(state, {
         setExpression: value => { state.expression = value.expression; },
-        setMode: mode => { if (mode !== "avatar" && !active) throw new Error("Enable camera first"); state.mode = mode; },
+        showMode: async mode => { if (mode !== "avatar" && !active) throw new Error("Enable camera first"); state.mode = mode; },
         enableCamera: async identifier => { active = true; chosen = identifier; },
         disableCamera: () => { active = false; state.mode = "avatar"; },
         cameraActive: () => active,
@@ -39,9 +39,9 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
       controls.dispatch({ type: "updateExpression", expression: "happy" });
       controls.dispatch({ type: "constructor" });
       await controls.handleLocal({ data: { type: "enableCamera", deviceId: "chosen" } });
-      controls.requestVideoMode({ mode: "composite", id: "allowed" });
+      await controls.requestVideoMode({ mode: "composite", id: "allowed" });
       await controls.handleLocal({ data: { type: "disableCamera" } });
-      controls.requestVideoMode({ mode: "camera", id: "denied" });
+      await controls.requestVideoMode({ mode: "camera", id: "denied" });
       console.log(JSON.stringify({ state, chosen, levels: window.avatarStatus.levelMessages, socket: controls.socket.sent, local: controls.channel.sent }));
     })().catch(error => { console.error(error); process.exitCode = 1; });
     """
@@ -120,6 +120,35 @@ def test_a_presence_message_reaches_the_renderer():
         """,
     )
     assert result == [True, False]
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
+def test_she_replaces_the_camera_only_while_she_speaks():
+    result = run_renderer_module(
+        "renderer-controls.js",
+        """
+        globalThis.window = { avatarStatus: {} };
+        globalThis.BroadcastChannel = class {};
+        const state = {};
+        const controls = new rendererModule.RendererControls(state, {
+          beginSpeech: () => {},
+          endSpeech: () => {},
+        });
+        const seen = () => rendererModule.visibleMode("camera", state.speaking);
+        const before = seen();
+        controls.dispatch({ type: "startSpeaking" });
+        const during = seen();
+        const composite = rendererModule.visibleMode("composite", state.speaking);
+        controls.dispatch({ type: "speechEnded" });
+        console.log(JSON.stringify({ before, during, composite, after: seen() }));
+        """,
+    )
+    assert result == {
+        "before": "camera",
+        "during": "avatar",
+        "composite": "composite",
+        "after": "camera",
+    }
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")

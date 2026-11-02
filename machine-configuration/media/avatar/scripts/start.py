@@ -74,8 +74,9 @@ def bring_up(target, readiness_checks):
 
 def main():
     bring_up(MEETING_TARGET, (renderer_ready, camera_ready))
+    subprocess.run(["avatar-audio", "open"], check=True, stdout=subprocess.DEVNULL)
     print(
-        "Avatar ready. Check mute/levels with avatar-audio status. Run avatar-controls for video controls"
+        "Avatar ready with her voice and the default microphone open. Check levels with avatar-audio status. Switch video with avatar-command mode"
     )
 
 
