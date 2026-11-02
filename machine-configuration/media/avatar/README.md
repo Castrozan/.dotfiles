@@ -12,11 +12,12 @@ workspace and keeps rendering there. Only `avatar-controls` opens a visible wind
 ## Desktop conversation
 
 `avatar-talk` is the interface for talking with the avatar at the desk, with no meeting, virtual camera or virtual
-device selected anywhere. It needs only a shell, so every harness reaches it the same way, and so does an agent on
-another host over ssh.
+device selected anywhere. It needs only a shell, so every harness reaches it the same way. On a Mac the same command
+forwards over ssh to chise, where the avatar and microphone live.
 
 | Command | Result |
 | --- | --- |
+| `avatar-talk ask TEXT [EMOTION]` | Opens if needed, speaks, and prints the reply; one verb per turn |
 | `avatar-talk open [--language CODE]` | Shows the window and opens the microphone; repeating it keeps the conversation |
 | `avatar-talk hear [--wait SECONDS]` | Blocks for the next complete utterance and prints it; prints nothing on silence |
 | `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher |

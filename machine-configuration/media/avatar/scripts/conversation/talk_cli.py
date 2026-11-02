@@ -10,7 +10,7 @@ import utterances
 
 CONVERSATION_TARGET = "avatar-conversation.target"
 ROOM_MICROPHONE = "AvatarRoomMicrophone"
-HEAR_WAIT_SECONDS = 540
+HEAR_WAIT_SECONDS = 100
 FOLLOW_SLICE_SECONDS = 30
 
 
@@ -40,9 +40,8 @@ def report(directory):
     )
 
 
-def open_conversation(arguments, directory):
+def ensure_open(arguments, directory):
     if conversation_open():
-        report(directory)
         return
     if listen_cli.listening():
         raise RuntimeError("A meeting is being transcribed; stop it before talking")
@@ -63,6 +62,10 @@ def open_conversation(arguments, directory):
     except BaseException:
         close_conversation(arguments, directory)
         raise
+
+
+def open_conversation(arguments, directory):
+    ensure_open(arguments, directory)
     report(directory)
 
 
@@ -80,25 +83,32 @@ def close_conversation(arguments, directory):
     print(json.dumps({"open": False}))
 
 
-def say(arguments, directory):
+def speech_command(arguments):
     voice = [arguments.voice] if arguments.voice else []
-    spoken = subprocess.run(
-        [
-            "avatar-command",
-            "speak",
-            arguments.text,
-            arguments.emotion,
-            "speakers",
-            *voice,
-        ]
-    )
-    sys.exit(spoken.returncode)
+    return [
+        "avatar-command",
+        "speak",
+        arguments.text,
+        arguments.emotion,
+        "speakers",
+        *voice,
+    ]
+
+
+def say(arguments, directory):
+    sys.exit(subprocess.run(speech_command(arguments)).returncode)
 
 
 def hear(arguments, directory):
     utterance = utterances.next_utterance(directory, arguments.wait, conversation_open)
     if utterance:
         print(utterance)
+
+
+def ask(arguments, directory):
+    ensure_open(arguments, directory)
+    subprocess.run(speech_command(arguments), check=True, stdout=subprocess.DEVNULL)
+    hear(arguments, directory)
 
 
 def follow(arguments, directory):
@@ -120,11 +130,15 @@ def parse_arguments():
     opening = commands.add_parser("open")
     opening.add_argument("--language")
     speaking = commands.add_parser("say")
-    speaking.add_argument("text")
-    speaking.add_argument("emotion", nargs="?", default="neutral")
-    speaking.add_argument("--voice")
+    asking = commands.add_parser("ask")
+    asking.add_argument("--language")
+    for parser_with_speech in (speaking, asking):
+        parser_with_speech.add_argument("text")
+        parser_with_speech.add_argument("emotion", nargs="?", default="neutral")
+        parser_with_speech.add_argument("--voice")
     hearing = commands.add_parser("hear")
-    hearing.add_argument("--wait", type=float, default=HEAR_WAIT_SECONDS)
+    for parser_with_wait in (asking, hearing):
+        parser_with_wait.add_argument("--wait", type=float, default=HEAR_WAIT_SECONDS)
     for name in ("follow", "status", "close"):
         commands.add_parser(name)
     return parser.parse_args()
@@ -134,6 +148,7 @@ def main():
     arguments = parse_arguments()
     actions = {
         "open": open_conversation,
+        "ask": ask,
         "say": say,
         "hear": hear,
         "follow": follow,

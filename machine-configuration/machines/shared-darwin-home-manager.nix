@@ -7,6 +7,7 @@
     ../network/ssh/ssh-private-home-manager.nix
     ./session-variables-lucas-zanoni-home-manager.nix
     ../../agent-harness/harnesses/clawde/agents/steward.nix
+    ../media/avatar/avatar-remote-home-manager.nix
 
     ./shared-home-manager-core.nix
 
