@@ -19,16 +19,17 @@ def existing_sources():
     return {line.split("\t")[1] for line in output.splitlines()}
 
 
+def default_microphone():
+    return subprocess.check_output(["pactl", "get-default-source"], text=True).strip()
+
+
 def selected_sources(microphone):
-    sources = {"meeting": MEETING_AUDIO}
-    if microphone is None:
-        return sources
+    microphone = microphone or default_microphone()
     if AVATAR_OUTPUTS.match(microphone):
         raise ValueError("The avatar's own output cannot be its microphone")
     if microphone not in existing_sources():
         raise ValueError(f"Source does not exist: {microphone}")
-    sources["human"] = microphone
-    return sources
+    return {"meeting": MEETING_AUDIO, "human": microphone}
 
 
 def systemctl(*arguments):
@@ -48,7 +49,7 @@ def begin_listening(directory, sources, **settings):
 
 def start(arguments, directory):
     sources = selected_sources(arguments.microphone)
-    begin_listening(directory, sources)
+    begin_listening(directory, sources, language=arguments.language)
     print(json.dumps({"listening": True, "sources": sources}))
 
 
@@ -112,6 +113,7 @@ def parse_arguments():
     commands = parser.add_subparsers(dest="action", required=True)
     begin = commands.add_parser("start")
     begin.add_argument("--microphone")
+    begin.add_argument("--language")
     commands.add_parser("stop")
     commands.add_parser("status")
     reading = commands.add_parser("read")

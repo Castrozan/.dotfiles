@@ -63,9 +63,10 @@ one agent holds the conversation at a time. Never leave a conversation open afte
 ### Accompanying a meeting
 
 Any agent on this machine can attend through commands alone: 1) `avatar-start`, whose window stays hidden; 2)
-`avatar-listen start`, adding `--microphone` only when told to hear the user; 3) watch `avatar-listen follow --match
-NAME` in the background, or loop on `avatar-listen read --since LAST --wait 30`; 4) answer with `avatar-command speak
-TEXT EMOTION mic`; 5) `avatar-stop` when the meeting ends. The meeting application must already have the user's
+`avatar-listen start --language CODE`, which hears the meeting as `meeting` and the user as `human`; 3) watch
+`avatar-listen follow --match NAME` in the background, or loop on `avatar-listen read --since LAST --wait 30`; 4) answer
+with `avatar-command speak TEXT EMOTION mic`; 5) `avatar-stop` when the meeting ends. Omit `--language` only when the
+meeting mixes languages: detection on short clips invents others. The meeting application must already have the user's
 `AvatarMicrophone` and `Avatar Cam` selected; agents do not choose its devices.
 
 Speak only when addressed or asked to, in short turns, because every agent shares one floor and `speak` blocks until its

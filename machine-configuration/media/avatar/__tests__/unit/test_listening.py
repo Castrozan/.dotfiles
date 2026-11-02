@@ -1,6 +1,7 @@
 import json
 import stat
 import struct
+from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
@@ -99,8 +100,21 @@ def test_capture_never_falls_back_to_another_device():
     assert "--property=node.dont-fallback=true" in command
 
 
-def test_listening_starts_with_no_physical_microphone():
-    assert listen_cli.selected_sources(None) == {"meeting": "@DEFAULT_MONITOR@"}
+def test_listening_hears_the_meeting_and_the_default_microphone(monkeypatch):
+    monkeypatch.setattr(listen_cli, "default_microphone", lambda: "headset")
+    monkeypatch.setattr(listen_cli, "existing_sources", lambda: {"headset"})
+    assert listen_cli.selected_sources(None) == {
+        "meeting": "@DEFAULT_MONITOR@",
+        "human": "headset",
+    }
+
+
+def test_a_pinned_language_reaches_the_listener(tmp_path, monkeypatch):
+    begin = Mock()
+    monkeypatch.setattr(listen_cli, "begin_listening", begin)
+    monkeypatch.setattr(listen_cli, "selected_sources", lambda _: {"meeting": "any"})
+    listen_cli.start(SimpleNamespace(microphone=None, language="pt"), tmp_path)
+    begin.assert_called_once_with(tmp_path, {"meeting": "any"}, language="pt")
 
 
 def test_a_named_microphone_is_a_separate_human_source(monkeypatch):

@@ -102,9 +102,12 @@ Audio routing uses PipeWire's [loopback](https://docs.pipewire.org/page_pulse_mo
 Local transcription uses whisper.cpp's Vulkan build with the quantized small model: about one second per utterance on
 this machine's integrated GPU with a pinned language, and about a second more with language detection.
 
-`avatar-listen start` transcribes what this computer plays, locally, into a private transcript under the user runtime
-directory, in the language spoken. No microphone is opened unless named with `--microphone SOURCE`, which adds your
-voice as the `human` source. Capture ends rather than moves when its device disappears, then resumes on the current
+`avatar-listen start` transcribes what this computer plays as the `meeting` source and the default microphone as the
+`human` source, locally, into a private transcript under the user runtime directory. `--microphone SOURCE` names another
+microphone. Pass `--language CODE` for a meeting in one language: detection on short clips invents other languages.
+The microphone is not echo-cancelled, so wear a headset or the meeting is transcribed twice.
+
+Capture ends rather than moves when its device disappears, then resumes on the current
 default output, so a Bluetooth drop cannot redirect it to a real microphone. `avatar-listen read --since N --wait 30`
 returns new entries and `avatar-listen follow --match NAME` streams them. `avatar-listen stop` or `avatar-stop` ends
 capture. Starting again replaces the transcript. Other people in a call are being transcribed: tell them.
