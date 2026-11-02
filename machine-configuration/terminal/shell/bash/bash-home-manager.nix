@@ -1,31 +1,6 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ pkgs, ... }:
 let
   commandLauncherScripts = ./scripts/command-launcher;
-
-  retiredShellConfigurationPaths =
-    map (relativePath: "${config.home.homeDirectory}/${relativePath}")
-      [
-        ".zshrc"
-        ".zshenv"
-        ".zprofile"
-        ".zlogin"
-        ".zlogout"
-        ".zsh_history"
-        ".zsh_sessions"
-        ".zcompdump"
-        ".zsh"
-        ".config/zsh"
-        ".cache/zsh"
-        ".local/share/zsh"
-        ".local/state/zsh"
-        ".oh-my-zsh"
-        ".p10k.zsh"
-      ];
 
   commandHistoryRankerBackend = pkgs.hstr.overrideAttrs (previous: {
     pname = "command-history-ranker-backend";
@@ -104,10 +79,6 @@ let
 in
 {
   home = {
-    activation.removeRetiredShellConfiguration = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-      run ${pkgs.coreutils}/bin/rm -rf -- ${lib.escapeShellArgs retiredShellConfigurationPaths}
-    '';
-
     sessionVariables.BASH_ENV = shellAliasesForNonInteractiveBash;
     packages = [ commandHistoryRanker ];
   };
