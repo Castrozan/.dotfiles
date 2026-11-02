@@ -14,6 +14,7 @@ CODE_FILE_EXTENSIONS = frozenset(
         ".nix",
         ".sh",
         ".bash",
+        ".zsh",
         ".fish",
         ".ts",
         ".tsx",
