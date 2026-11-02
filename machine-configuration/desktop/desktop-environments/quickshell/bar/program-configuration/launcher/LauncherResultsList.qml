@@ -53,10 +53,14 @@ Item {
     }
 
     function activateCurrentItem(): void {
+        activateItemAtIndex(currentIndex);
+    }
+
+    function activateItemAtIndex(itemIndex: int): void {
         if (currentResults.length === 0)
             return;
 
-        let safeIndex = Math.min(currentIndex, currentResults.length - 1);
+        let safeIndex = Math.min(itemIndex, currentResults.length - 1);
         let item = currentResults[safeIndex];
 
         switch (currentMode) {
@@ -138,7 +142,7 @@ Item {
                 LauncherAppItem {
                     desktopEntry: delegateLoader.modelData
                     isCurrentItem: delegateLoader.index === launcherResultsListRoot.currentIndex
-                    onActivated: launcherResultsListRoot.activateCurrentItem()
+                    onActivated: launcherResultsListRoot.activateItemAtIndex(delegateLoader.index)
                 }
             }
 
@@ -147,10 +151,7 @@ Item {
                 LauncherActionItem {
                     actionData: delegateLoader.modelData
                     isCurrentItem: delegateLoader.index === launcherResultsListRoot.currentIndex
-                    onActivated: {
-                        launcherResultsListRoot.currentIndex = delegateLoader.index;
-                        launcherResultsListRoot.activateCurrentItem();
-                    }
+                    onActivated: launcherResultsListRoot.activateItemAtIndex(delegateLoader.index)
                 }
             }
         }
@@ -180,10 +181,7 @@ Item {
             wallpaperData: modelData
             isCurrentWallpaper: modelData.path === LauncherWallpapersService.currentWallpaperPath
             isCurrentItem: index === launcherResultsListRoot.currentIndex
-            onActivated: {
-                launcherResultsListRoot.currentIndex = index;
-                launcherResultsListRoot.activateCurrentItem();
-            }
+            onActivated: launcherResultsListRoot.activateItemAtIndex(index)
         }
     }
 
