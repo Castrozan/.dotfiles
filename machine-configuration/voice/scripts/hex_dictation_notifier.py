@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 NOTIFICATION_REFRESH_SECONDS = 20
 ENDING_PHASES = {"pasted", "printed", "discarded", "cancelled", "voice_action"}
+MAC_NOTIFICATION_GROUP = "hex-dictation"
 
 CommandRunner = Callable[[list[str]], subprocess.CompletedProcess]
 
@@ -20,7 +21,7 @@ class Notification:
 
 
 RECORDING = Notification("Hex recording", "Release the keys to transcribe", "critical")
-TRANSCRIBING = Notification("Hex transcribing", "", "normal")
+TRANSCRIBING = Notification("Hex transcribing", "Pasting when ready", "normal")
 
 
 def run_command(command: list[str]) -> subprocess.CompletedProcess:
@@ -37,10 +38,74 @@ def read_dictation_phase(event_line: str) -> str | dict | None:
     return event.get("phase")
 
 
-class DictationNotifier:
+class LinuxNotifications:
     def __init__(self, command_runner: CommandRunner):
         self._command_runner = command_runner
         self._notification_id = 0
+
+    def show(self, notification: Notification) -> None:
+        result = self._command_runner(
+            [
+                "notify-send",
+                "--app-name=Hex",
+                f"--urgency={notification.urgency}",
+                "--print-id",
+                f"--replace-id={self._notification_id}",
+                notification.title,
+                notification.body,
+            ]
+        )
+        if result.returncode == 0:
+            self._notification_id = int(result.stdout)
+
+    def close(self) -> None:
+        if self._notification_id == 0:
+            return
+        self._command_runner(
+            [
+                "busctl",
+                "--user",
+                "call",
+                "org.freedesktop.Notifications",
+                "/org/freedesktop/Notifications",
+                "org.freedesktop.Notifications",
+                "CloseNotification",
+                "u",
+                str(self._notification_id),
+            ]
+        )
+        self._notification_id = 0
+
+
+class MacNotifications:
+    def __init__(self, command_runner: CommandRunner):
+        self._command_runner = command_runner
+        self._visible = False
+
+    def show(self, notification: Notification) -> None:
+        self._command_runner(
+            [
+                "terminal-notifier",
+                "-group",
+                MAC_NOTIFICATION_GROUP,
+                "-title",
+                notification.title,
+                "-message",
+                notification.body,
+            ]
+        )
+        self._visible = True
+
+    def close(self) -> None:
+        if not self._visible:
+            return
+        self._command_runner(["terminal-notifier", "-remove", MAC_NOTIFICATION_GROUP])
+        self._visible = False
+
+
+class DictationNotifier:
+    def __init__(self, notifications: LinuxNotifications | MacNotifications):
+        self._notifications = notifications
         self._recording = False
         self._phase_handlers = {
             "started": self._begin_recording,
@@ -60,58 +125,27 @@ class DictationNotifier:
             self._phase_handlers[phase]()
 
     def refresh(self) -> None:
-        self._show(RECORDING)
+        self._notifications.show(RECORDING)
 
     def _begin_recording(self) -> None:
         self._recording = True
-        self._show(RECORDING)
+        self._notifications.show(RECORDING)
 
     def _begin_transcribing(self) -> None:
         self._recording = False
-        self._show(TRANSCRIBING)
+        self._notifications.show(TRANSCRIBING)
 
     def _end_dictation(self) -> None:
         self._recording = False
-        self._close()
+        self._notifications.close()
 
     def _show_failure(self, phase: dict) -> None:
         if "failed" not in phase:
             return
         self._recording = False
-        self._show(Notification("Hex dictation failed", phase["failed"], "critical"))
-
-    def _show(self, notification: Notification) -> None:
-        result = self._command_runner(
-            [
-                "notify-send",
-                "--app-name=Hex",
-                f"--urgency={notification.urgency}",
-                "--print-id",
-                f"--replace-id={self._notification_id}",
-                notification.title,
-                notification.body,
-            ]
+        self._notifications.show(
+            Notification("Hex dictation failed", phase["failed"], "critical")
         )
-        if result.returncode == 0:
-            self._notification_id = int(result.stdout)
-
-    def _close(self) -> None:
-        if self._notification_id == 0:
-            return
-        self._command_runner(
-            [
-                "busctl",
-                "--user",
-                "call",
-                "org.freedesktop.Notifications",
-                "/org/freedesktop/Notifications",
-                "org.freedesktop.Notifications",
-                "CloseNotification",
-                "u",
-                str(self._notification_id),
-            ]
-        )
-        self._notification_id = 0
 
 
 def forward_lines(stream, lines: queue.Queue) -> None:
@@ -143,8 +177,12 @@ def follow_dictation_events(
 
 def main() -> int:
     event_log_path = sys.argv[1]
+    notifications_class = (
+        MacNotifications if sys.platform == "darwin" else LinuxNotifications
+    )
     return follow_dictation_events(
-        ["tail", "-n0", "-F", event_log_path], DictationNotifier(run_command)
+        ["tail", "-n0", "-F", event_log_path],
+        DictationNotifier(notifications_class(run_command)),
     )
 
 

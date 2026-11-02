@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   hexCommand = lib.escapeShellArgs [
     (lib.getExe' pkgs.coreutils "timeout")
@@ -6,8 +11,23 @@ let
     "8s"
     "/Applications/Hex.app/Contents/MacOS/hex"
   ];
+  hexDictationNotifier = import ./hex-dictation-notifier-package.nix { inherit pkgs lib; };
 in
 {
+  launchd.agents.hex-dictation-notifier = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        (lib.getExe hexDictationNotifier)
+        "${config.home.homeDirectory}/Library/Application Support/hex/logs/live.ndjson"
+      ];
+      KeepAlive = true;
+      RunAtLoad = true;
+      StandardOutPath = "/tmp/hex-dictation-notifier.log";
+      StandardErrorPath = "/tmp/hex-dictation-notifier.log";
+    };
+  };
+
   # The signed 3.0.0 release exposes settings through the running app only.
   home.activation.hexSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ -x /Applications/Hex.app/Contents/MacOS/hex ] && ${hexCommand} status --json >/dev/null 2>&1; then

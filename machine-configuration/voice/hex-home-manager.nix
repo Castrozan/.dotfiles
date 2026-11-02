@@ -7,17 +7,7 @@
   ...
 }:
 let
-  hexDictationNotifier = pkgs.writeShellApplication {
-    name = "hex-dictation-notifier";
-    runtimeInputs = with pkgs; [
-      coreutils
-      libnotify
-      systemd
-    ];
-    text = ''
-      exec ${pkgs.python312}/bin/python3 ${./scripts/hex_dictation_notifier.py} "$@"
-    '';
-  };
+  hexDictationNotifier = import ./hex-dictation-notifier-package.nix { inherit pkgs lib; };
 in
 {
   imports = [ inputs.hex.homeManagerModules.hex ];
