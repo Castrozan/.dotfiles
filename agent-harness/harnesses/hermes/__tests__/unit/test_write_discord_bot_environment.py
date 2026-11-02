@@ -44,6 +44,27 @@ def test_replaces_an_earlier_environment_when_the_token_rotates(tmp_path):
     assert list(tmp_path.glob("*.tmp")) == []
 
 
+def test_keeps_the_values_hermes_saved_across_gateway_restarts(tmp_path):
+    token_path = tmp_path / "token"
+    token_path.write_text("rotated-token")
+    environment_path = tmp_path / ".env"
+    environment_path.write_text(
+        "DISCORD_BOT_TOKEN=old-token\n"
+        "DISCORD_ALLOWED_USERS=7\n"
+        "DISCORD_HOME_CHANNEL=123\n"
+        "DISCORD_HOME_CHANNEL_THREAD_ID=\n"
+    )
+
+    assert run_writer(environment_path, token_path).returncode == 0
+
+    assert environment_path.read_text() == (
+        "DISCORD_HOME_CHANNEL=123\n"
+        "DISCORD_HOME_CHANNEL_THREAD_ID=\n"
+        "DISCORD_BOT_TOKEN=rotated-token\n"
+        "DISCORD_ALLOWED_USERS=42\n"
+    )
+
+
 def test_refuses_an_empty_token_and_keeps_the_earlier_environment(tmp_path):
     token_path = tmp_path / "token"
     token_path.write_text("\n")

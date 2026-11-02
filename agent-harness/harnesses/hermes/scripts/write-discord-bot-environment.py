@@ -3,11 +3,22 @@ import sys
 from pathlib import Path
 
 
-def render_discord_bot_environment(bot_token: str, allowed_discord_user_id: str) -> str:
-    return (
-        f"DISCORD_BOT_TOKEN={bot_token}\n"
-        f"DISCORD_ALLOWED_USERS={allowed_discord_user_id}\n"
-    )
+DECLARED_ENVIRONMENT_KEYS = ("DISCORD_BOT_TOKEN", "DISCORD_ALLOWED_USERS")
+
+
+def render_discord_bot_environment(
+    existing_environment: str, bot_token: str, allowed_discord_user_id: str
+) -> str:
+    runtime_saved_lines = [
+        line
+        for line in existing_environment.splitlines()
+        if line.partition("=")[0] not in DECLARED_ENVIRONMENT_KEYS
+    ]
+    declared_lines = [
+        f"DISCORD_BOT_TOKEN={bot_token}",
+        f"DISCORD_ALLOWED_USERS={allowed_discord_user_id}",
+    ]
+    return "\n".join(runtime_saved_lines + declared_lines) + "\n"
 
 
 def write_private_file(path: Path, content: str) -> None:
@@ -24,9 +35,15 @@ def main() -> None:
     bot_token = Path(token_path).read_text().strip()
     if not bot_token:
         sys.exit(f"Discord bot token is empty: {token_path}")
+    environment_file = Path(environment_path)
+    existing_environment = (
+        environment_file.read_text() if environment_file.exists() else ""
+    )
     write_private_file(
-        Path(environment_path),
-        render_discord_bot_environment(bot_token, allowed_discord_user_id),
+        environment_file,
+        render_discord_bot_environment(
+            existing_environment, bot_token, allowed_discord_user_id
+        ),
     )
 
 
