@@ -80,6 +80,7 @@
         NSWindowResizeTime = 0.001;
         _HIHideMenuBar = true;
         "com.apple.swipescrolldirection" = false;
+        "com.apple.trackpad.forceClick" = false;
       };
       dock = {
         autohide = true;

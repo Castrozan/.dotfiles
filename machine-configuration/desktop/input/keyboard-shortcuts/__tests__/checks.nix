@@ -16,4 +16,8 @@ in
     mkEvalCheck "macbook-macos-input-source-switching-disabled"
       (!symbolicHotKeys."60".enabled && !symbolicHotKeys."61".enabled)
       "input source switching hotkeys (60, 61) must be disabled so Ctrl+Space reaches terminal apps";
+
+  macbook-macos-dictionary-look-up-disabled =
+    mkEvalCheck "macbook-macos-dictionary-look-up-disabled" (!symbolicHotKeys."70".enabled)
+      "dictionary look up hotkey (70, Ctrl+Cmd+D) must be disabled";
 }

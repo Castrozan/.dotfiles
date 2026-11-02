@@ -12,6 +12,9 @@
     "61" = {
       enabled = false;
     };
+    "70" = {
+      enabled = false;
+    };
     "79" = {
       enabled = false;
     };
