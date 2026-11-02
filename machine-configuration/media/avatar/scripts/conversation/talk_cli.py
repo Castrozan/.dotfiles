@@ -50,6 +50,9 @@ def open_conversation(arguments, directory):
         start.bring_up(
             CONVERSATION_TARGET, (start.renderer_ready, room_microphone_ready)
         )
+        subprocess.run(
+            ["avatar-command", "presence", "shown"], capture_output=True, check=True
+        )
         listen_cli.begin_listening(
             directory,
             {"human": ROOM_MICROPHONE},
@@ -68,7 +71,11 @@ def close_conversation(arguments, directory):
         ["avatar-command", "stop-speaking"], capture_output=True, check=False
     )
     subprocess.run(["systemctl", "--user", "stop", CONVERSATION_TARGET], check=True)
-    if not is_active(start.MEETING_TARGET):
+    if is_active(start.MEETING_TARGET):
+        subprocess.run(
+            ["avatar-command", "presence", "hidden"], capture_output=True, check=True
+        )
+    else:
         subprocess.run(["avatar-stop"], check=True, stdout=subprocess.DEVNULL)
     print(json.dumps({"open": False}))
 

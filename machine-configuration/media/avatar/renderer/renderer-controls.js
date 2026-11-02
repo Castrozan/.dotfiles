@@ -43,6 +43,7 @@ export class RendererControls {
       setIdle: (message) => {
         state.idleMode = message.mode;
       },
+      setPresented: ({ presented }) => actions.setPresented(presented),
       startSpeaking: actions.beginSpeech,
       speechEnded: actions.endSpeech,
       perform: this.requestPerformance.bind(this),

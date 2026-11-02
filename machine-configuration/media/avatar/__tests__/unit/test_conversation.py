@@ -192,8 +192,11 @@ def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch)
     monkeypatch.setattr(start, "bring_up", Mock())
     begin = Mock()
     monkeypatch.setattr(listen_cli, "begin_listening", begin)
+    runner = Mock()
+    monkeypatch.setattr(talk_cli.subprocess, "run", runner)
     utterances.remember(tmp_path, 7)
     talk_cli.open_conversation(argparse.Namespace(language="pt"), tmp_path)
+    assert runner.call_args_list[0].args[0] == ["avatar-command", "presence", "shown"]
     begin.assert_called_once_with(
         tmp_path, {"human": "AvatarRoomMicrophone"}, language="pt", barge_in=True
     )
@@ -224,6 +227,8 @@ def test_closing_leaves_a_running_meeting_alone(
     commands = [call.args[0] for call in runner.call_args_list]
     assert ["systemctl", "--user", "stop", "avatar-conversation.target"] in commands
     assert (["avatar-stop"] in commands) is stops_everything
+    hides_canvas = ["avatar-command", "presence", "hidden"] in commands
+    assert hides_canvas is not stops_everything
 
 
 def test_saying_plays_aloud_and_reports_the_speech_result(tmp_path, monkeypatch):

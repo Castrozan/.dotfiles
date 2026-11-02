@@ -41,8 +41,12 @@ const cameraFrames = new URLSearchParams(location.search).has("output")
       "ws://127.0.0.1:8768",
     )
   : null;
+const setPresented = (presented) => {
+  output.style.display = presented ? "" : "none";
+};
 if (cameraFrames) {
   status.hidden = true;
+  setPresented(false);
   cameraFrames.connect();
 }
 const state = {
@@ -150,6 +154,7 @@ loadAvatar()
       endSpeech: () => performer.endSpeech(),
       perform: (action, name) => performer.perform(action, name),
       setMode,
+      setPresented,
       enableCamera,
       disableCamera,
       cameraActive: () => cameraLayer.active,

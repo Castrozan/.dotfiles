@@ -32,6 +32,9 @@ the default output plays, so neither the avatar's voice nor a video playing on t
 Nothing opens the physical microphone until a conversation opens, and `close` or closing the window ends that stream.
 Speaking for 0.6 seconds over the avatar stops it, so interrupting needs no agent turn.
 
+The renderer presents its canvas only during a conversation: a presented canvas in a hidden window intermittently
+stalled the camera near one frame per second, while a hidden canvas held 60.
+
 The window code is the Hyprland boundary in `scripts/conversation/desktop_window.py`; the rest of the conversation
 depends only on the shared services. This module is NixOS only because its audio graph is PipeWire.
 

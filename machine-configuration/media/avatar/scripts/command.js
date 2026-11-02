@@ -21,6 +21,10 @@ const builders = {
   pose: (name) => ({ type: "perform", action: "pose", name }),
   look: (name) => ({ type: "perform", action: "look", name }),
   idle: (mode) => ({ type: "setIdle", mode }),
+  presence: (presence) => ({
+    type: "setPresented",
+    presented: presence === "shown",
+  }),
   "stop-speaking": () => ({ type: "stopSpeaking" }),
   speak: (text, emotion = "neutral", output = "mic", voice) => ({
     type: "speak",
@@ -37,7 +41,7 @@ function parseCommand(arguments_) {
     : null;
   if (!build)
     throw new Error(
-      "Usage: avatar-command status | mode avatar|camera|composite | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
+      "Usage: avatar-command status | mode avatar|camera|composite | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | presence shown|hidden | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
     );
   return build(...arguments_.slice(1));
 }

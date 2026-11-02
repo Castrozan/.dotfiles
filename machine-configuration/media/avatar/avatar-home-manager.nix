@@ -203,7 +203,7 @@ in
           Service = {
             ExecStart = toString camera;
             Environment = [ "V4L2_DEVICE=/dev/video10" ];
-            Restart = "on-failure";
+            Restart = "always";
           };
           Install.WantedBy = [ "avatar.target" ];
         };

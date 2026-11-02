@@ -96,9 +96,30 @@ def test_mouth_following_is_stable_on_a_long_frame():
     assert follow_level(0, 1, 10) == pytest.approx(1)
 
 
-def test_the_output_page_presents_its_canvas_so_the_desktop_window_shows_the_avatar():
+def test_the_output_page_keeps_its_canvas_away_until_it_is_presented():
     renderer = (SOURCE.parent / "renderer.js").read_text()
-    assert 'output.style.display = "none"' not in renderer
+    assert "setPresented(false);" in renderer
+    assert 'output.style.display = presented ? "" : "none";' in renderer
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
+def test_a_presence_message_reaches_the_renderer():
+    result = run_renderer_module(
+        "renderer-controls.js",
+        """
+        globalThis.window = { avatarStatus: {} };
+        globalThis.BroadcastChannel = class {};
+        const presented = [];
+        const controls = new rendererModule.RendererControls(
+          {},
+          { setPresented: (value) => presented.push(value) },
+        );
+        controls.dispatch({ type: "setPresented", presented: true });
+        controls.dispatch({ type: "setPresented", presented: false });
+        console.log(JSON.stringify(presented));
+        """,
+    )
+    assert result == [True, False]
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
