@@ -69,11 +69,16 @@ def wait_for_endpoint(profile, process):
     raise TimeoutError("The avatar browser did not expose its own endpoint")
 
 
+def close_and_exit(*_):
+    stop()
+    sys.exit(0)
+
+
 def supervise(url):
+    signal.signal(signal.SIGTERM, close_and_exit)
     start(url)
     while owned_process(profile_directory()) is not None:
         time.sleep(SUPERVISION_POLL_SECONDS)
-    raise RuntimeError("The avatar browser exited")
 
 
 def endpoint():

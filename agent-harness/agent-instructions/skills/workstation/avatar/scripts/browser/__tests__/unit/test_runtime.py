@@ -124,15 +124,26 @@ def test_chromium_process_title_preserves_exact_profile_ownership(runtime):
     assert module.owned_process(profile) is None
 
 
-def test_supervision_fails_when_the_browser_is_gone_so_the_service_restarts_it(
+def test_closing_the_window_ends_supervision_cleanly_so_nothing_reopens_it(
     runtime, monkeypatch
 ):
     module, _, _ = runtime
     monkeypatch.setattr(module, "start", Mock())
     monkeypatch.setattr(module, "owned_process", Mock(return_value=None))
-    with pytest.raises(RuntimeError):
-        module.supervise("http://localhost:3000/?output=1")
+    monkeypatch.setattr(module.signal, "signal", Mock())
+    module.supervise("http://localhost:3000/?output=1")
     module.start.assert_called_once()
+
+
+def test_terminating_supervision_closes_the_browser_before_exiting(
+    runtime, monkeypatch
+):
+    module, profile, process = runtime
+    (process / "cmdline").write_bytes(f"chromium\0--user-data-dir={profile}\0".encode())
+    with pytest.raises(SystemExit) as exit_information:
+        module.close_and_exit()
+    module.os.kill.assert_called_once_with(123, signal.SIGTERM)
+    assert exit_information.value.code == 0
 
 
 def test_the_endpoint_comes_from_the_running_owned_browser(

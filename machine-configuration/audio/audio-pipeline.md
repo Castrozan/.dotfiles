@@ -51,7 +51,7 @@ OSD notifications go through a Unix socket at `/tmp/quickshell-osd.sock` as JSON
 
 ## Virtual Audio Devices
 
-The avatar system creates ephemeral virtual devices via `pactl load-module`: null sinks `AvatarMic` for agent playback and `AvatarHuman` for the attached physical microphone, mixed through pinned loopbacks into `AvatarMix`, and exposed as the virtual microphone `AvatarMicrophone` through `module-remap-source`. See `machine-configuration/media/avatar/README.md`.
+The avatar system creates ephemeral virtual devices via `pactl load-module`: null sinks `AvatarMic` for agent playback and `AvatarHuman` for the attached physical microphone, mixed through pinned loopbacks into `AvatarMix`, and exposed as the virtual microphone `AvatarMicrophone` through `module-remap-source`. A separate null sink, `AvatarLipSync`, carries each speech turn to the mouth meter and reaches no meeting. See `machine-configuration/media/avatar/README.md`.
 
 
 ## Clock and Scheduling

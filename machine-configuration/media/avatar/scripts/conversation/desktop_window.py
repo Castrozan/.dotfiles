@@ -10,6 +10,8 @@ WINDOW_WIDTH = 640
 WINDOW_HEIGHT = 360
 SCREEN_MARGIN = 24
 WINDOW_WAIT_SECONDS = 15
+PLACEMENT_ATTEMPTS = 25
+PLACEMENT_SETTLE_SECONDS = 0.2
 
 
 def hyprctl_json(*arguments):
@@ -53,6 +55,15 @@ def corner_of(monitor):
     )
 
 
+def place(target, x, y):
+    for _ in range(PLACEMENT_ATTEMPTS):
+        dispatch("movewindowpixel", f"exact {x} {y},{target}")
+        time.sleep(PLACEMENT_SETTLE_SECONDS)
+        if avatar_window()["at"] == [x, y]:
+            return
+    raise TimeoutError("The avatar window did not reach its corner")
+
+
 def show():
     window = wait_for_avatar_window()
     target = f"address:{window['address']}"
@@ -62,7 +73,7 @@ def show():
     if not window["floating"]:
         dispatch("togglefloating", target)
     dispatch("resizewindowpixel", f"exact {WINDOW_WIDTH} {WINDOW_HEIGHT},{target}")
-    dispatch("movewindowpixel", f"exact {x} {y},{target}")
+    place(target, x, y)
     if not window["pinned"]:
         dispatch("pin", target)
 

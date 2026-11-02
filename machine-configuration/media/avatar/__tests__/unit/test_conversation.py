@@ -233,11 +233,13 @@ def client(**fields):
         "address": "0xa",
         "floating": False,
         "pinned": False,
+        "at": [3176, 696],
         **fields,
     }
 
 
 def fake_desktop(monkeypatch, clients):
+    monkeypatch.setattr(desktop_window, "PLACEMENT_SETTLE_SECONDS", 0)
     monitors = [
         {"focused": False},
         {
@@ -277,6 +279,22 @@ def test_showing_twice_does_not_toggle_floating_or_pinning_off(monkeypatch):
     desktop_window.show()
     assert "togglefloating" not in [call.args[0] for call in dispatch.call_args_list]
     assert "pin" not in [call.args[0] for call in dispatch.call_args_list]
+
+
+def test_placement_repeats_until_the_compositor_has_applied_it(monkeypatch):
+    positions = iter([[-9999, -9999], [-9999, -9999], [10, 20]])
+    dispatch = fake_desktop(monkeypatch, [])
+    monkeypatch.setattr(
+        desktop_window, "avatar_window", lambda: {"at": next(positions)}
+    )
+    desktop_window.place("address:0xa", 10, 20)
+    assert dispatch.call_count == 3
+
+
+def test_a_window_that_never_reaches_its_corner_fails_the_show(monkeypatch):
+    fake_desktop(monkeypatch, [client(at=[-9999, -9999])])
+    with pytest.raises(TimeoutError):
+        desktop_window.show()
 
 
 def test_the_controls_window_is_never_taken_for_the_avatar(monkeypatch):

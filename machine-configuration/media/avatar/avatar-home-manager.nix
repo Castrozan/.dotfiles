@@ -135,10 +135,11 @@ in
           "avatar-audio.service"
           "avatar-control-server.service"
           "avatar-renderer.service"
-          "avatar-browser.service"
           "avatar-room-microphone.service"
           "avatar-window.service"
         ];
+        BindsTo = [ "avatar-browser.service" ];
+        After = [ "avatar-browser.service" ];
       };
       services = {
         avatar-audio = {
@@ -188,7 +189,7 @@ in
             ExecStart = "${pkgs.python312}/bin/python3 ${browserRuntime} supervise http://localhost:3000/?output=1";
             ExecStopPost = "${pkgs.python312}/bin/python3 ${browserRuntime} stop";
             Environment = [ "PATH=${lib.makeBinPath [ pkgs.chromium ]}" ];
-            Restart = "on-failure";
+            KillMode = "mixed";
           };
           Install.WantedBy = [ "avatar.target" ];
         };

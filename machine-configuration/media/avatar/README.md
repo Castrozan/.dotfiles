@@ -1,4 +1,4 @@
-# Avatar meeting media
+# Avatar
 
 The avatar runs locally and independently of an agent harness. Its VRM model, portrait assets and rendering libraries
 are pinned by Nix and served locally. The model is Darkness Shibu from
@@ -8,6 +8,34 @@ permission flow can reach the output window.
 
 Starting the avatar never takes over the screen: its output window opens on the hidden `special:avatar` Hyprland
 workspace and keeps rendering there. Only `avatar-controls` opens a visible window.
+
+## Desktop conversation
+
+`avatar-talk` is the interface for talking with the avatar at the desk, with no meeting, virtual camera or virtual
+device selected anywhere. It needs only a shell, so every harness reaches it the same way, and so does an agent on
+another host over ssh.
+
+| Command | Result |
+| --- | --- |
+| `avatar-talk open [--language CODE]` | Shows the window and opens the microphone; repeating it keeps the conversation |
+| `avatar-talk hear [--wait SECONDS]` | Blocks for the next complete utterance and prints it; prints nothing on silence |
+| `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher |
+| `avatar-talk say TEXT [EMOTION] [--voice VOICE]` | Speaks aloud and reports `finished` or `interrupted` |
+| `avatar-talk status` | Reports whether a conversation is open |
+| `avatar-talk close` | Hides or stops the avatar and closes the microphone; a running meeting keeps its services |
+
+`avatar-conversation.target` owns the pieces: `avatar-browser` holds the one renderer window, whether or not the
+virtual camera is attached, `avatar-window` moves it onto the current workspace in a pinned corner, and
+`avatar-room-microphone` is a private PipeWire process running
+[echo cancellation](https://docs.pipewire.org/page_module_echo_cancel.html) in monitor mode. Its reference is everything
+the default output plays, so neither the avatar's voice nor a video playing on the speakers reaches the transcript.
+Nothing opens the physical microphone until a conversation opens, and `close` or closing the window ends that stream.
+Speaking for 0.6 seconds over the avatar stops it, so interrupting needs no agent turn.
+
+The window code is the Hyprland boundary in `scripts/conversation/desktop_window.py`; the rest of the conversation
+depends only on the shared services. This module is NixOS only because its audio graph is PipeWire.
+
+## Meetings
 
 Both audio inputs start muted at unity gain. `avatar-audio status` shows ownership, mute and level state. Send an application's
 playback to `AvatarMic`, for example `PULSE_SINK=AvatarMic paplay --client-name=agent generated.wav`, then use
@@ -61,6 +89,9 @@ Meeting applications can add their own processing delay, so local alignment is n
 
 Audio routing uses PipeWire's [loopback](https://docs.pipewire.org/page_pulse_module_loopback.html) and
 [remapped source](https://docs.pipewire.org/page_pulse_module_remap_source.html) modules with explicit endpoints.
+
+Local transcription uses whisper.cpp's Vulkan build with the quantized small model: about one second per utterance on
+this machine's integrated GPU with a pinned language, and about a second more with language detection.
 
 `avatar-listen start` transcribes what this computer plays, locally, into a private transcript under the user runtime
 directory, in the language spoken. No microphone is opened unless named with `--microphone SOURCE`, which adds your
