@@ -6,11 +6,9 @@
   ...
 }:
 let
-  hermesRuntime = inputs.hermes.packages.${pkgs.stdenv.hostPlatform.system}.minimal.override {
-    extraDependencyGroups = [
-      "anthropic"
-      "messaging"
-    ];
+  hermesRuntime = import ./runtime-package.nix {
+    inherit inputs;
+    inherit (pkgs.stdenv.hostPlatform) system;
   };
 
   hermesOfficialPlugins = pkgs.fetchFromGitHub {

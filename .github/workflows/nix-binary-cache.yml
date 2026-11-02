@@ -16,6 +16,7 @@ on:
       - machine-configuration/terminal/emulators/wezterm/wezterm-patches/**
       - agent-harness/harnesses/codex/package/unwrapped.nix
       - agent-harness/harnesses/codex/status-line/**
+      - agent-harness/harnesses/hermes/runtime-package.nix
       - repository/nix-library/fetch-prebuilt-binary.nix
       - machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
       - .github/workflows/nix-binary-cache.yml
@@ -78,7 +79,7 @@ jobs:
 
       - name: Build the patched packages and Python test environment
         run: |
-          cached_packages=(herdr herdr-agent-resume herdr-annotate codex wezterm)
+          cached_packages=(herdr herdr-agent-resume herdr-annotate codex wezterm hermes)
           nix build "${cached_packages[@]/#/.#packages.$NIX_SYSTEM.}" \
             --no-link --print-build-logs --json > binary-cache-packages.json
           if [ "$NIX_SYSTEM" != x86_64-linux ]; then
@@ -157,7 +158,7 @@ jobs:
           cache_configuration=machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
           cache_url=$(jq -er .url "$cache_configuration")
           cache_public_key=$(jq -er .publicKey "$cache_configuration")
-          cached_packages=(herdr herdr-agent-resume herdr-annotate codex wezterm)
+          cached_packages=(herdr herdr-agent-resume herdr-annotate codex wezterm hermes)
           nix build "${cached_packages[@]/#/.#packages.$NIX_SYSTEM.}" \
             --no-link --print-build-logs --json --max-jobs 0 \
             --option substituters "$cache_url https://cache.nixos.org" \

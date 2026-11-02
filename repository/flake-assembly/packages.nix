@@ -13,6 +13,10 @@ in
       ;
   };
 
+  hermes = import ../../agent-harness/harnesses/hermes/runtime-package.nix {
+    inherit inputs system;
+  };
+
   herdr = import ../../machine-configuration/terminal/workspace-manager/herdr/herdr-package.nix {
     inherit pkgs inputs;
   };
