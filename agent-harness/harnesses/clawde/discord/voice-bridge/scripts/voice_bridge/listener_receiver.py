@@ -40,24 +40,23 @@ class ListenerVoiceReceiver(VoiceReceiver):
         source = rtp_synchronization_source(data)
         if source is None or source == self._bot_ssrc:
             return
-        connection = self._vc._connection
-        self._secret_key = bytes(connection.secret_key)
-        self._route_packet(source, data, connection.dave_session)
+        self._resolve_credentials(self._vc._connection)
+        self._route_packet(source, data)
 
-    def _route_packet(self, source, data, dave_session):
+    def _route_packet(self, source, data):
         with self._lock:
             source_owner = self._ssrc_to_user.get(source)
         if source_owner == self._listener_user_id:
-            self._dave_session = dave_session
             self.listener_packet_count += 1
             super()._on_packet(data)
             self._observe_latest_frame(source)
-        elif source_owner is None and dave_session is not None:
-            self._attribute_source(source, data, dave_session)
+        elif source_owner is None and self._dave_session is not None:
+            self._attribute_source(source, data)
 
-    def _attribute_source(self, source, data, dave_session):
-        attempt = ListenerKeyAttempt(dave_session, self._listener_user_id)
-        self._dave_session = attempt
+    def _attribute_source(self, source, data):
+        attempt = ListenerKeyAttempt(self._dave_session, self._listener_user_id)
+        secret_key, _, protocol_version, downgraded = self._creds
+        self._creds = (secret_key, attempt, protocol_version, downgraded)
         self.map_ssrc(source, self._listener_user_id)
         super()._on_packet(data)
         if attempt.opened:

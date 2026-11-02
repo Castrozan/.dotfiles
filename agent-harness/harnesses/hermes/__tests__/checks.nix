@@ -50,6 +50,16 @@ in
         touch "$out"
       '';
 
+  domain-hermes-runtime-supports-the-discord-voice-bridge-listener =
+    pkgs.runCommand "domain-hermes-runtime-supports-the-discord-voice-bridge-listener" { }
+      ''
+        HOME=$TMPDIR \
+        PYTHONPATH=${../../clawde/discord/voice-bridge/scripts}:${../../../../machine-configuration/media/avatar/scripts/listening} \
+          ${cfg.hermes.unwrappedPackage.hermesVenv}/bin/python3 \
+          ${../../clawde/discord/voice-bridge/__tests__/verify-listener-receiver-credentials.py}
+        touch "$out"
+      '';
+
   domain-hermes-generated-configuration =
     pkgs.runCommand "domain-hermes-generated-configuration"
       {
