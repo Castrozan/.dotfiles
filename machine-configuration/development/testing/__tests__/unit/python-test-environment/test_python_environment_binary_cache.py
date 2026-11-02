@@ -61,6 +61,7 @@ DEPLOYED_PATCHED_PACKAGES = [
     "/nix/store/herdr-annotate",
     "/nix/store/codex",
     "/nix/store/wezterm",
+    "/nix/store/hermes",
 ]
 
 
