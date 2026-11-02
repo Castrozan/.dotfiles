@@ -22,6 +22,20 @@ let
     ../gateway.nix
   ];
   gatewayService = lib.mapAttrs (_: lib.toList) cfg.systemd.user.services.hermes-agent.Service;
+
+  discordBotCfg = helpers.homeManagerTestConfiguration [
+    ../.
+    ../gateway.nix
+    {
+      hermes.discordBots.test-bot = {
+        botTokenSecretName = "discord-bot-token-test";
+        allowedDiscordUserId = "42";
+      };
+    }
+  ];
+  discordBotProvisioning = lib.concatStringsSep "\n" (
+    lib.toList discordBotCfg.systemd.user.services.hermes-agent.Service.ExecStartPre
+  );
 in
 {
   domain-hermes-bin-wrapper =
@@ -86,4 +100,14 @@ in
         && !(gatewayService ? NoNewPrivileges)
       )
       "The Hermes gateway must run under systemd supervision with the NixOS sudo wrapper on PATH and without NoNewPrivileges";
+
+  domain-hermes-gateway-provisions-each-discord-bot-profile =
+    mkEvalCheck "domain-hermes-gateway-provisions-each-discord-bot-profile"
+      (
+        lib.hasInfix "%h/.hermes/profiles/test-bot/.env %h/.secrets/discord-bot-token-test 42" discordBotProvisioning
+        && lib.hasInfix "HERMES_HOME=%h/.hermes/profiles/test-bot " discordBotProvisioning
+        && builtins.hasAttr ".hermes/profiles/test-bot/plugins/dotfiles" discordBotCfg.home.file
+        && builtins.hasAttr ".hermes/profiles/test-bot/.no-bundled-skills" discordBotCfg.home.file
+      )
+      "Every declared Discord bot must get its environment, seeded configuration, plugins and skill opt-out before the gateway starts";
 }
