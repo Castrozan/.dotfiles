@@ -106,7 +106,10 @@ this machine's integrated GPU with a pinned language, and about a second more wi
 `avatar-listen start` transcribes what this computer plays as the `meeting` source and the default microphone as the
 `human` source, locally, into a private transcript under the user runtime directory. `--microphone SOURCE` names another
 microphone. Pass `--language CODE` for a meeting in one language: detection on short clips invents other languages.
-The microphone is not echo-cancelled, so wear a headset or the meeting is transcribed twice.
+The microphone is not echo-cancelled, so wear a headset: a phrase both sources hear within 15 seconds is kept once.
+Entries carry a `speaker` name when a voice enrolled with `avatar-listen enroll NAME --first N --last M` (at least 3
+segments) matches, else null; `avatar-listen voices` lists and `avatar-listen forget NAME` deletes profiles, stored as
+embeddings only.
 
 Capture ends rather than moves when its device disappears, then resumes on the current
 default output, so a Bluetooth drop cannot redirect it to a real microphone. `avatar-listen read --since N --wait 30`

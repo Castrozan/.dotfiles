@@ -9,8 +9,11 @@ import threading
 import time
 from pathlib import Path
 
+import speaker_identity
+from pending_speech import PendingSpeech
 import speech_segmenter
 import transcriber
+import transcript_echo
 import transcript_log
 
 FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
@@ -20,6 +23,7 @@ TRANSCRIBER_ATTEMPTS = 30
 PENDING_SEGMENT_LIMIT = 16
 BARGE_IN_SECONDS = 0.6
 SPEECH_IN_PROGRESS_MARKER = "speech-in-progress"
+EMBEDDINGS_FILE = "embeddings.jsonl"
 
 
 def runtime_directory():
@@ -42,25 +46,6 @@ def capture_command(device):
     ]
 
 
-class PendingSpeech:
-    def __init__(self, marker):
-        self.marker = marker
-        self.count = 0
-        self.lock = threading.Lock()
-        marker.unlink(missing_ok=True)
-
-    def begin(self):
-        with self.lock:
-            self.count += 1
-            self.marker.touch(mode=0o600)
-
-    def finish(self):
-        with self.lock:
-            self.count -= 1
-            if not self.count:
-                self.marker.unlink(missing_ok=True)
-
-
 @dataclasses.dataclass
 class Listening:
     segments: queue.Queue
@@ -68,6 +53,7 @@ class Listening:
     pending: PendingSpeech
     interrupt_speaker: object
     language: str | None = None
+    identify_speakers: bool = False
 
 
 class SourceSpeech:
@@ -140,14 +126,29 @@ def transcribe_when_ready(segment, language):
 
 
 def write_transcript(path, listening):
+    echoes = transcript_echo.EchoFilter()
+    identifier = speaker_identity.SpeakerIdentifier(
+        os.environ.get(speaker_identity.MODEL_ENVIRONMENT_VARIABLE),
+        speaker_identity.VoiceProfiles(speaker_identity.voices_directory()),
+    )
     while not listening.stopping.is_set():
         try:
             source, segment = listening.segments.get(timeout=0.5)
         except queue.Empty:
             continue
         try:
-            if text := transcribe_when_ready(segment, listening.language):
-                transcript_log.append(path, source, text)
+            text = transcribe_when_ready(segment, listening.language)
+            if text and not echoes.is_echo(source, text, time.time()):
+                speaker, embedding = (
+                    identifier.identify(segment)
+                    if listening.identify_speakers
+                    else (None, None)
+                )
+                entry = transcript_log.append(path, source, text, speaker)
+                if embedding:
+                    speaker_identity.append_embedding(
+                        path.with_name(EMBEDDINGS_FILE), entry["sequence"], embedding
+                    )
         finally:
             listening.pending.finish()
 
@@ -171,6 +172,7 @@ def main():
         if configuration.get("barge_in")
         else lambda: None,
         language=configuration.get("language"),
+        identify_speakers=configuration.get("identify_speakers", False),
     )
     signal.signal(signal.SIGTERM, lambda *_: listening.stopping.set())
     for source, device in configuration["sources"].items():

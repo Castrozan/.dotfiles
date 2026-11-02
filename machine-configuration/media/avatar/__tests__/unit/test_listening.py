@@ -114,7 +114,9 @@ def test_a_pinned_language_reaches_the_listener(tmp_path, monkeypatch):
     monkeypatch.setattr(listen_cli, "begin_listening", begin)
     monkeypatch.setattr(listen_cli, "selected_sources", lambda _: {"meeting": "any"})
     listen_cli.start(SimpleNamespace(microphone=None, language="pt"), tmp_path)
-    begin.assert_called_once_with(tmp_path, {"meeting": "any"}, language="pt")
+    begin.assert_called_once_with(
+        tmp_path, {"meeting": "any"}, language="pt", identify_speakers=True
+    )
 
 
 def test_a_named_microphone_is_a_separate_human_source(monkeypatch):

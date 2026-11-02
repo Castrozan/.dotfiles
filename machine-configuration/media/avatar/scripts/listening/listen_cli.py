@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 import listener
+import speaker_identity
 import transcript_log
 
 MEETING_AUDIO = "@DEFAULT_MONITOR@"
@@ -40,6 +41,7 @@ def begin_listening(directory, sources, **settings):
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     systemctl("stop", LISTENER_SERVICE)
     (directory / "transcript.jsonl").unlink(missing_ok=True)
+    (directory / listener.EMBEDDINGS_FILE).unlink(missing_ok=True)
     configuration = directory / "listener.json"
     descriptor = os.open(configuration, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(descriptor, "w") as output:
@@ -49,7 +51,9 @@ def begin_listening(directory, sources, **settings):
 
 def start(arguments, directory):
     sources = selected_sources(arguments.microphone)
-    begin_listening(directory, sources, language=arguments.language)
+    begin_listening(
+        directory, sources, language=arguments.language, identify_speakers=True
+    )
     print(json.dumps({"listening": True, "sources": sources}))
 
 
@@ -108,6 +112,29 @@ def follow(arguments, directory):
         )
 
 
+def enroll(arguments, directory):
+    samples = speaker_identity.enroll(
+        speaker_identity.VoiceProfiles(speaker_identity.voices_directory()),
+        directory / listener.EMBEDDINGS_FILE,
+        arguments.name,
+        arguments.first,
+        arguments.last,
+    )
+    print(json.dumps({"enrolled": arguments.name, "samples": samples}))
+
+
+def voices(arguments, directory):
+    names = speaker_identity.VoiceProfiles(speaker_identity.voices_directory()).names()
+    print(json.dumps({"voices": names}))
+
+
+def forget(arguments, directory):
+    speaker_identity.VoiceProfiles(speaker_identity.voices_directory()).forget(
+        arguments.name
+    )
+    print(json.dumps({"forgotten": arguments.name}))
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="avatar-listen")
     commands = parser.add_subparsers(dest="action", required=True)
@@ -122,6 +149,13 @@ def parse_arguments():
     following = commands.add_parser("follow")
     following.add_argument("--since", type=int, default=0)
     following.add_argument("--match")
+    enrolling = commands.add_parser("enroll")
+    enrolling.add_argument("name")
+    enrolling.add_argument("--first", type=int, required=True)
+    enrolling.add_argument("--last", type=int, required=True)
+    commands.add_parser("voices")
+    forgetting = commands.add_parser("forget")
+    forgetting.add_argument("name")
     return parser.parse_args()
 
 
@@ -133,6 +167,9 @@ def main():
         "status": status,
         "read": read,
         "follow": follow,
+        "enroll": enroll,
+        "voices": voices,
+        "forget": forget,
     }
     try:
         actions[arguments.action](arguments, listener.runtime_directory())

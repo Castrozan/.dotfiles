@@ -2,6 +2,16 @@
 let
   control = import ./control-package.nix { inherit pkgs; };
   renderer = import ./renderer-package.nix { inherit pkgs; };
+  speakerModel = pkgs.fetchurl {
+    url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx";
+    sha256 = "18pb1kqg82x3qa07yd4b6n6yjmvbdmfh7xckjdm5h41sjqbgqg5a";
+  };
+  listenerPython = pkgs.python312.withPackages (
+    packages: with packages; [
+      numpy
+      sherpa-onnx
+    ]
+  );
   audio = pkgs.writeShellScriptBin "avatar-audio" ''
     export PATH=${lib.makeBinPath [ pkgs.pulseaudio ]}:$PATH
     export PYTHONPATH=${./scripts}
@@ -66,8 +76,9 @@ let
         pkgs.pulseaudio
       ]
     }:$PATH
+    export AVATAR_SPEAKER_MODEL=${speakerModel}
     export PYTHONPATH=${./scripts/listening}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/listening/listener.py}
+    exec ${listenerPython}/bin/python3 ${./scripts/listening/listener.py}
   '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
     export PATH=${

@@ -23,12 +23,13 @@ def last_sequence(path):
     return entries[-1]["sequence"] if entries else 0
 
 
-def append(path, source, text):
+def append(path, source, text, speaker=None):
     entry = {
         "sequence": last_sequence(path) + 1,
         "time": time.time(),
         "source": source,
         "text": text,
+        "speaker": speaker,
     }
     descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
     with os.fdopen(descriptor, "a") as transcript:
