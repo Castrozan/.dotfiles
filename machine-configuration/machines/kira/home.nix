@@ -8,6 +8,7 @@ in
     ../shared-darwin-home-manager.nix
 
     ../../../machine-configuration/development/version-control/git-toggle-user-home-manager.nix
+    ../../../machine-configuration/development/version-control/gitlab-contribution-heatmap-refresh-home-manager.nix
 
     ../../../machine-configuration/browsers/firefox/firefox-home-manager.nix
 
