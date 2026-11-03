@@ -1,13 +1,11 @@
 window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
-  function createVideoFrame(canvas, frameIndex, framesPerSecond) {
-    const microsecondsPerFrame = 1000000 / framesPerSecond;
-    const timestamp = Math.round(frameIndex * microsecondsPerFrame);
-    const nextTimestamp = Math.round((frameIndex + 1) * microsecondsPerFrame);
-    return new VideoFrame(canvas, {
-      timestamp,
-      duration: nextTimestamp - timestamp,
+  const createVideoFrame = (canvas, frameIndex, framesPerSecond) =>
+    new VideoFrame(canvas, {
+      timestamp: Math.round((frameIndex * 1000000) / framesPerSecond),
+      duration:
+        Math.round(((frameIndex + 1) * 1000000) / framesPerSecond) -
+        Math.round((frameIndex * 1000000) / framesPerSecond),
     });
-  }
 
   function createConfiguredMuxerAndEncoder(
     outputPixelWidth,

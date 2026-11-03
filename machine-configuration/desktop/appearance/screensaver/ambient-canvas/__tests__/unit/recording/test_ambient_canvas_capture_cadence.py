@@ -88,7 +88,7 @@ window.AMBIENT_CANVAS_RECORD_DRIVER({
     assert frames[-1]["timestamp"] + frames[-1]["duration"] == 3_000_000
     assert all(
         current["timestamp"] + current["duration"] == following["timestamp"]
-        for current, following in zip(frames, frames[1:])
+        for current, following in zip(frames, frames[1:], strict=False)
     )
     assert [index for index, frame in enumerate(frames) if frame["keyFrame"]] == [
         0,
