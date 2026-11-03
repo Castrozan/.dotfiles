@@ -16,6 +16,12 @@ class ControlServer:
     def __init__(self, call, feed):
         self._call = call
         self._feed = feed
+        self._command_handlers = {
+            "join": self._join,
+            "leave": self._leave,
+            "status": self._status,
+            "speak": self._speak,
+        }
 
     async def serve_connection(self, reader, writer):
         try:
@@ -31,20 +37,26 @@ class ControlServer:
             writer.close()
 
     async def _answer(self, request):
+        handler = self._command_handlers.get(request["command"])
+        if handler is None:
+            return {"error": "unknown_command"}
         try:
-            match request["command"]:
-                case "join":
-                    return await self._call.join()
-                case "leave":
-                    await self._call.leave()
-                    return self._call.status()
-                case "status":
-                    return self._call.status()
-                case "speak":
-                    return await self._call.speak(request["text"], request["language"])
+            return await handler(request)
         except (VoiceCallError, SpeechSynthesisError) as error:
             return {"error": str(error)}
-        return {"error": "unknown_command"}
+
+    async def _join(self, _request):
+        return await self._call.join()
+
+    async def _leave(self, _request):
+        await self._call.leave()
+        return self._call.status()
+
+    async def _status(self, _request):
+        return self._call.status()
+
+    async def _speak(self, request):
+        return await self._call.speak(request["text"], request["language"])
 
     async def _stream_transcript(self, request, writer):
         after_sequence = request.get("after")
