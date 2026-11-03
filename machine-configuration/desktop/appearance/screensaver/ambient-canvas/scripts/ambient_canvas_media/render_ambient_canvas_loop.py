@@ -1,14 +1,9 @@
 import argparse
 import os
-import shutil
 import signal
-import subprocess
 import sys
-import tempfile
 
 from ambient_canvas_browser import (
-    resolve_browser_executable_path,
-    resolve_centered_window_geometry,
     resolve_chromium_browser_application,
 )
 from ambient_canvas_theme import (
@@ -18,84 +13,14 @@ from ambient_canvas_theme import (
 from recording.recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
-    build_record_browser_arguments,
-    build_record_index_url,
-    resolve_upload_wait_budget_seconds,
 )
 from recording.recorded_loop_capture_target import (
     compose_recorded_source_identifier,
     resolve_recorded_loop_capture_target,
 )
 from recording.recorded_loop_commit import commit_recorded_segment_manifest
-from recorded_loop_upload_server import start_recorded_loop_upload_server
+from recording.recorded_loop_capture_pool import capture_recorded_playlist
 from scene_video_cache import download_missing_scene_videos
-
-
-def terminate_browser_process(browser_process, throwaway_profile_directory):
-    try:
-        browser_process.terminate()
-        browser_process.wait(timeout=5)
-    except (subprocess.TimeoutExpired, OSError):
-        try:
-            browser_process.kill()
-        except OSError:
-            pass
-    subprocess.run(
-        [shutil.which("pkill") or "/usr/bin/pkill", "-f", throwaway_profile_directory],
-        check=False,
-        capture_output=True,
-    )
-
-
-def drive_record_browser(
-    index_file_path,
-    capture_target,
-    browser_application,
-    duration_seconds,
-    frames_per_second,
-    theme_background_hex,
-):
-    served_web_directory = os.path.dirname(index_file_path)
-    download_missing_scene_videos(
-        served_web_directory, capture_target.scene_video_directory
-    )
-    upload_server = start_recorded_loop_upload_server(
-        capture_target.loop_directory,
-        served_web_directory,
-        capture_target.scene_video_directory,
-    )
-    throwaway_profile_directory = tempfile.mkdtemp(prefix="ambient-canvas-record-")
-    record_page_url = (
-        f"http://127.0.0.1:{upload_server.upload_port}/"
-        f"{os.path.basename(index_file_path)}"
-    )
-    record_index_url = build_record_index_url(
-        record_page_url,
-        f"http://127.0.0.1:{upload_server.upload_port}/upload",
-        duration_seconds,
-        frames_per_second,
-        capture_target.capture_pixel_dimensions,
-        theme_background_hex,
-    )
-    browser_process = subprocess.Popen(
-        build_record_browser_arguments(
-            resolve_browser_executable_path(browser_application),
-            record_index_url,
-            throwaway_profile_directory,
-            resolve_centered_window_geometry(*capture_target.screen_dimensions),
-        ),
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-
-    try:
-        upload_server.manifest_received_event.wait(resolve_upload_wait_budget_seconds())
-    finally:
-        terminate_browser_process(browser_process, throwaway_profile_directory)
-        upload_server.shutdown()
-        shutil.rmtree(throwaway_profile_directory, ignore_errors=True)
-
-    return upload_server
 
 
 def render_recorded_loop(
@@ -114,7 +39,10 @@ def render_recorded_loop(
         return None
 
     os.makedirs(capture_target.loop_directory, exist_ok=True)
-    upload_server = drive_record_browser(
+    download_missing_scene_videos(
+        os.path.dirname(index_file_path), capture_target.scene_video_directory
+    )
+    uploaded_manifest_bytes = capture_recorded_playlist(
         index_file_path,
         capture_target,
         browser_application,
@@ -124,7 +52,7 @@ def render_recorded_loop(
     )
     return commit_recorded_segment_manifest(
         capture_target.loop_directory,
-        upload_server.received_manifest_bytes,
+        uploaded_manifest_bytes,
         source_identifier,
     )
 

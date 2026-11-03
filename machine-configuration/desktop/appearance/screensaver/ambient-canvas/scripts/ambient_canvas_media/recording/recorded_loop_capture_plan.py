@@ -1,4 +1,5 @@
 import urllib.parse
+from typing import NamedTuple
 
 import ambient_canvas_browser
 
@@ -8,6 +9,11 @@ CAPTURE_PIXEL_HEIGHT = 1080
 FALLBACK_CAPTURE_PIXEL_WIDTH = 1920
 MINIMUM_RECORDED_BYTES_PER_SECOND = 2000
 RECORD_PASS_WALL_CLOCK_CEILING_SECONDS = 1800
+
+
+class RecordingWorker(NamedTuple):
+    index: int
+    count: int
 
 
 def resolve_capture_pixel_dimensions(screen_width, screen_height):
@@ -29,10 +35,13 @@ def build_record_index_url(
     frames_per_second,
     capture_pixel_dimensions,
     theme_background_hex,
+    worker,
 ):
     capture_pixel_width, capture_pixel_height = capture_pixel_dimensions
     record_query_parameters = {
         "record": "1",
+        "workerIndex": str(worker.index),
+        "workerCount": str(worker.count),
         "fps": str(frames_per_second),
         "width": str(capture_pixel_width),
         "height": str(capture_pixel_height),

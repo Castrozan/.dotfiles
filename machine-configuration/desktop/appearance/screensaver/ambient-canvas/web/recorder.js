@@ -8,6 +8,8 @@
     Number(recordParameters.get("seconds")) || 0;
   const captureFramesPerSecond = Number(recordParameters.get("fps")) || 60;
   const uploadUrl = recordParameters.get("uploadUrl") || "";
+  const workerIndex = Number(recordParameters.get("workerIndex")) || 0;
+  const workerCount = Number(recordParameters.get("workerCount")) || 1;
   const themeBackgroundHex = recordParameters.get("themeBackground") || "";
   const outputPixelWidth = Number(recordParameters.get("width")) || 1920;
   const outputPixelHeight = Number(recordParameters.get("height")) || 1080;
@@ -26,23 +28,8 @@
     deterministicPlayback: true,
   };
 
-  function nextAnimationFrame() {
-    return new Promise(function resolveOnNextFrame(resolve) {
-      window.requestAnimationFrame(function frameArrived() {
-        resolve();
-      });
-    });
-  }
-
-  function resolveCaptureSignature() {
-    return {
-      width: outputPixelWidth,
-      height: outputPixelHeight,
-      framesPerSecond: captureFramesPerSecond,
-      bitsPerPixelPerFrame: targetBitsPerPixelPerFrame,
-      keyFrameIntervalSeconds: keyFrameIntervalSeconds,
-    };
-  }
+  const nextAnimationFrame = () =>
+    new Promise((resolve) => window.requestAnimationFrame(resolve));
 
   async function recordOneComposition(
     playbackController,
@@ -127,7 +114,13 @@
       await fingerprint.fetchSegmentFingerprintInputs(uploadUrl);
     const alreadyRecordedFingerprints =
       await fingerprint.fetchRecordedSegmentFingerprints(uploadUrl);
-    const captureSignature = resolveCaptureSignature();
+    const captureSignature = {
+      width: outputPixelWidth,
+      height: outputPixelHeight,
+      framesPerSecond: captureFramesPerSecond,
+      bitsPerPixelPerFrame: targetBitsPerPixelPerFrame,
+      keyFrameIntervalSeconds: keyFrameIntervalSeconds,
+    };
     const manifestSegments = [];
 
     for (
@@ -163,7 +156,10 @@
             recordingRange,
           ),
         );
-        if (alreadyRecordedFingerprints.has(segmentFingerprint)) {
+        if (
+          compositionIndex % workerCount !== workerIndex ||
+          alreadyRecordedFingerprints.has(segmentFingerprint)
+        ) {
           continue;
         }
         const encodedBuffer = await recordOneComposition(

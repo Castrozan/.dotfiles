@@ -3,35 +3,20 @@ window.AmbientCanvasRecordingFingerprint =
     const SEGMENT_FINGERPRINT_INPUTS_PATH = "/segment-fingerprint-inputs";
     const RECORDED_SEGMENT_INVENTORY_PATH = "/recorded-segment-fingerprints";
 
-    async function fetchJsonFromRecordServer(
-      uploadUrl,
-      endpointPath,
-      fallbackValue,
-    ) {
-      if (!uploadUrl) {
-        return fallbackValue;
-      }
-      try {
-        const response = await fetch(
-          new URL(endpointPath, uploadUrl).toString(),
+    async function fetchJsonFromRecordServer(uploadUrl, endpointPath) {
+      const response = await fetch(new URL(endpointPath, uploadUrl).toString());
+      if (!response.ok) {
+        throw new Error(
+          "recording metadata request failed: " + response.status,
         );
-        if (!response.ok) {
-          return fallbackValue;
-        }
-        return await response.json();
-      } catch (endpointRequestError) {
-        return fallbackValue;
       }
+      return response.json();
     }
 
     function fetchSegmentFingerprintInputs(uploadUrl) {
       return fetchJsonFromRecordServer(
         uploadUrl,
         SEGMENT_FINGERPRINT_INPUTS_PATH,
-        {
-          scenes: {},
-          pipeline: "",
-        },
       );
     }
 
@@ -39,9 +24,8 @@ window.AmbientCanvasRecordingFingerprint =
       const inventory = await fetchJsonFromRecordServer(
         uploadUrl,
         RECORDED_SEGMENT_INVENTORY_PATH,
-        { fingerprints: [] },
       );
-      return new Set(inventory.fingerprints || []);
+      return new Set(inventory.fingerprints);
     }
 
     function encodeDigestAsHexadecimal(digestBuffer) {

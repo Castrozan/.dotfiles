@@ -12,8 +12,10 @@ def test_resolve_browser_prefers_chrome_when_both_are_installed(monkeypatch):
     monkeypatch.setattr(
         browser.os.path,
         "isdir",
-        lambda path: path
-        in ("/Applications/Google Chrome.app", "/Applications/Brave Browser.app"),
+        lambda path: (
+            path
+            in ("/Applications/Google Chrome.app", "/Applications/Brave Browser.app")
+        ),
     )
     assert browser.resolve_chromium_browser_application() == "Google Chrome"
 
@@ -58,8 +60,11 @@ def test_build_record_index_url_encodes_record_query():
         24,
         (1920, 1080),
         "#241010",
+        capture_plan.RecordingWorker(1, 4),
     )
     assert record_url.startswith("file:///store/index.html?")
+    assert "workerIndex=1" in record_url
+    assert "workerCount=4" in record_url
     assert "record=1" in record_url
     assert "seconds=30" in record_url
     assert "fps=24" in record_url
@@ -77,8 +82,11 @@ def test_build_record_index_url_omits_seconds_so_the_playlist_derives_the_length
         30,
         (1662, 1080),
         "#241010",
+        capture_plan.RecordingWorker(1, 4),
     )
     assert "seconds=" not in record_url
+    assert "workerIndex=1" in record_url
+    assert "workerCount=4" in record_url
     assert "record=1" in record_url
     assert "fps=30" in record_url
     assert "width=1662" in record_url
