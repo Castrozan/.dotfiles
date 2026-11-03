@@ -23,14 +23,20 @@ class EchoFilter:
     def __init__(self):
         self.recent = collections.deque()
 
-    def is_echo(self, source, text, now):
+    def forget_expired(self, now):
         while self.recent and now - self.recent[0][0] > WINDOW_SECONDS:
             self.recent.popleft()
-        words = normalized(text)
-        if any(
+
+    def heard_elsewhere(self, source, words):
+        return any(
             other != source and resembles(words, earlier)
             for _, other, earlier in self.recent
-        ):
+        )
+
+    def is_echo(self, source, text, now):
+        self.forget_expired(now)
+        words = normalized(text)
+        if self.heard_elsewhere(source, words):
             return True
         self.recent.append((now, source, words))
         return False

@@ -30,7 +30,7 @@ def cosine_similarity(first, second):
     norms = math.hypot(*first) * math.hypot(*second)
     if not norms:
         return 0.0
-    return sum(a * b for a, b in zip(first, second)) / norms
+    return sum(a * b for a, b in zip(first, second, strict=True)) / norms
 
 
 def unit_vector(vector):
@@ -39,7 +39,7 @@ def unit_vector(vector):
 
 
 def mean_vector(vectors):
-    return [sum(values) / len(vectors) for values in zip(*vectors)]
+    return [sum(values) / len(vectors) for values in zip(*vectors, strict=True)]
 
 
 class VoiceProfiles:

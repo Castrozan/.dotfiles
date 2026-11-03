@@ -125,6 +125,20 @@ def transcribe_when_ready(segment, language):
     raise TimeoutError("The local transcriber did not answer")
 
 
+def record_segment(path, listening, echoes, identifier, source, segment):
+    text = transcribe_when_ready(segment, listening.language)
+    if not text or echoes.is_echo(source, text, time.time()):
+        return
+    speaker, embedding = (
+        identifier.identify(segment) if listening.identify_speakers else (None, None)
+    )
+    entry = transcript_log.append(path, source, text, speaker)
+    if embedding:
+        speaker_identity.append_embedding(
+            path.with_name(EMBEDDINGS_FILE), entry["sequence"], embedding
+        )
+
+
 def write_transcript(path, listening):
     echoes = transcript_echo.EchoFilter()
     identifier = speaker_identity.SpeakerIdentifier(
@@ -137,18 +151,7 @@ def write_transcript(path, listening):
         except queue.Empty:
             continue
         try:
-            text = transcribe_when_ready(segment, listening.language)
-            if text and not echoes.is_echo(source, text, time.time()):
-                speaker, embedding = (
-                    identifier.identify(segment)
-                    if listening.identify_speakers
-                    else (None, None)
-                )
-                entry = transcript_log.append(path, source, text, speaker)
-                if embedding:
-                    speaker_identity.append_embedding(
-                        path.with_name(EMBEDDINGS_FILE), entry["sequence"], embedding
-                    )
+            record_segment(path, listening, echoes, identifier, source, segment)
         finally:
             listening.pending.finish()
 
