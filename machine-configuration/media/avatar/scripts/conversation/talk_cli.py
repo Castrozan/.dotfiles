@@ -54,7 +54,7 @@ def open_conversation(arguments, directory):
         show_chosen_character(arguments)
         report(directory)
         return
-    if listen_cli.listening():
+    if listen_cli.transcribing_meeting(directory):
         raise RuntimeError("A meeting is being transcribed; stop it before talking")
     try:
         start.bring_up(

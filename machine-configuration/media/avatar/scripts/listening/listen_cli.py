@@ -69,15 +69,23 @@ def listening():
     return active.returncode == 0
 
 
-def status(arguments, directory):
+def configured_sources(directory):
     configuration = directory / "listener.json"
+    if not configuration.exists():
+        return {}
+    return json.loads(configuration.read_text())["sources"]
+
+
+def transcribing_meeting(directory):
+    return listening() and "meeting" in configured_sources(directory)
+
+
+def status(arguments, directory):
     print(
         json.dumps(
             {
                 "listening": listening(),
-                "sources": json.loads(configuration.read_text())["sources"]
-                if configuration.exists()
-                else {},
+                "sources": configured_sources(directory),
                 "last_sequence": transcript_log.last_sequence(
                     directory / "transcript.jsonl"
                 ),

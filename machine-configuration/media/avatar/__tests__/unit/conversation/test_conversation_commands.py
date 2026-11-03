@@ -73,11 +73,30 @@ def test_opening_again_keeps_the_conversation_and_what_was_not_heard(
 def test_opening_refuses_to_replace_a_meeting_transcript(tmp_path, monkeypatch):
     monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
     monkeypatch.setattr(listen_cli, "listening", lambda: True)
+    (tmp_path / "listener.json").write_text(
+        json.dumps({"sources": {"meeting": "@DEFAULT_MONITOR@", "human": "mic"}})
+    )
     begin = Mock()
     monkeypatch.setattr(listen_cli, "begin_listening", begin)
     with pytest.raises(RuntimeError):
         talk_cli.open_conversation(argparse.Namespace(language=None, character=None), tmp_path)
     begin.assert_not_called()
+
+
+def test_opening_replaces_a_conversation_listener_left_running(tmp_path, monkeypatch):
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
+    monkeypatch.setattr(listen_cli, "listening", lambda: True)
+    (tmp_path / "listener.json").write_text(
+        json.dumps({"sources": {"human": "AvatarRoomMicrophone"}})
+    )
+    monkeypatch.setattr(start, "bring_up", Mock())
+    begin = Mock()
+    monkeypatch.setattr(listen_cli, "begin_listening", begin)
+    monkeypatch.setattr(talk_cli.subprocess, "run", Mock())
+    talk_cli.open_conversation(
+        argparse.Namespace(language="pt", character=None), tmp_path
+    )
+    begin.assert_called_once()
 
 
 def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch):
