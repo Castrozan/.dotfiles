@@ -74,18 +74,13 @@ def show():
         dispatch("togglefloating", target)
     dispatch("resizewindowpixel", f"exact {WINDOW_WIDTH} {WINDOW_HEIGHT},{target}")
     place(target, x, y)
-    if not window["pinned"]:
-        dispatch("pin", target)
 
 
 def hide():
     window = avatar_window()
     if window is None:
         return
-    target = f"address:{window['address']}"
-    if window["pinned"]:
-        dispatch("pin", target)
-    dispatch("movetoworkspacesilent", f"{HIDDEN_WORKSPACE},{target}")
+    dispatch("movetoworkspacesilent", f"{HIDDEN_WORKSPACE},address:{window['address']}")
 
 
 if __name__ == "__main__":

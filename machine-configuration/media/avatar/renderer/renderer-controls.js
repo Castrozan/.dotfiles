@@ -58,6 +58,7 @@ export class RendererControls {
       },
       perform: this.requestPerformance.bind(this),
       setVideoMode: this.requestVideoMode.bind(this),
+      setCharacter: this.requestCharacter.bind(this),
     };
   }
 
@@ -115,6 +116,27 @@ export class RendererControls {
       this.socket.send(
         JSON.stringify({
           type: "videoModeError",
+          message: error.message,
+          id: message.id,
+        }),
+      );
+    }
+  }
+
+  async requestCharacter(message) {
+    try {
+      await this.actions.showCharacter(message.name);
+      this.socket.send(
+        JSON.stringify({
+          type: "characterChanged",
+          name: message.name,
+          id: message.id,
+        }),
+      );
+    } catch (error) {
+      this.socket.send(
+        JSON.stringify({
+          type: "characterError",
           message: error.message,
           id: message.id,
         }),

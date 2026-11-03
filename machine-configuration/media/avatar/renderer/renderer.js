@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import {
   followLevel,
   RendererControls,
@@ -7,10 +6,8 @@ import {
 } from "./renderer-controls.js";
 import { CameraFrameStream } from "./camera-frame-stream.js";
 import { CameraLayer } from "./camera-layer.js";
-import { AvatarPerformer } from "./avatar-performer.js";
-import { faceMorphNames } from "./face-expressions.js";
+import { CharacterStage } from "./character-stage.js";
 import { startFrameClock } from "./frame-clock.js";
-import { VRMExpression, VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 
 const VIDEO_MODES = ["avatar", "camera", "composite"];
 const output = document.querySelector("#output");
@@ -33,10 +30,7 @@ scene.add(keyLight);
 const camera = new THREE.PerspectiveCamera(30, 1280 / 720, 0.1, 20);
 camera.position.set(0, 1.35, 2.0);
 camera.lookAt(0, 1.35, 0);
-const loader = new GLTFLoader();
-loader.register((parser) => new VRMLoaderPlugin(parser));
-let avatar;
-let performer;
+const stage = new CharacterStage(scene, camera);
 let lastFrameTime = 0;
 const cameraFrames = new URLSearchParams(location.search).has("output")
   ? new CameraFrameStream(
@@ -65,25 +59,7 @@ const state = {
 };
 
 async function loadAvatar() {
-  const gltf = await loader.loadAsync("/model.vrm");
-  avatar = gltf.userData.vrm;
-  VRMUtils.rotateVRM0(avatar);
-  scene.add(avatar.scene);
-  avatar.scene.updateMatrixWorld(true);
-  const head = avatar.humanoid.getNormalizedBoneNode("head");
-  const headPosition = new THREE.Vector3();
-  head.getWorldPosition(headPosition);
-  camera.position.set(0, headPosition.y - 0.04, 1);
-  camera.lookAt(0, headPosition.y - 0.04, 0);
-  const gazeTarget = new THREE.Object3D();
-  scene.add(gazeTarget);
-  performer = new AvatarPerformer({
-    vrm: avatar,
-    morphNames: faceMorphNames(gltf.parser.json),
-    gazeTarget,
-    gazeOrigin: camera.position.clone(),
-    createExpression: (name) => new VRMExpression(name),
-  });
+  await stage.open();
   status.textContent =
     "Avatar ready · microphone and camera stay under your control";
   window.avatarStatus.ready = true;
@@ -108,7 +84,7 @@ function render(timestamp) {
   lastFrameTime = timestamp;
   if (timestamp - state.lastLevelTime > 250) state.mouthTarget = 0;
   state.mouth = followLevel(state.mouth, state.mouthTarget, delta);
-  performer?.update(timestamp, delta, state);
+  stage.performer?.update(timestamp, delta, state);
   drawOutput(timestamp);
   window.avatarStatus.frames++;
   window.avatarStatus.mouth = state.mouth;
@@ -150,8 +126,9 @@ window.avatarStatus = {
   mouth: state.mouth,
 };
 window.avatar = {
-  perform: (action, name) => performer.perform(action, name),
-  setExpression: (name, intensity) => performer.setExpression(name, intensity),
+  perform: (action, name) => stage.performer.perform(action, name),
+  setExpression: (name, intensity) =>
+    stage.performer.setExpression(name, intensity),
   setMode,
   enableCamera,
   disableCamera,
@@ -164,10 +141,11 @@ loadAvatar()
   .then(() =>
     new RendererControls(state, {
       setExpression: ({ expression, intensity }) =>
-        performer.setExpression(expression, intensity ?? 1),
-      beginSpeech: (message) => performer.beginSpeech(message),
-      endSpeech: () => performer.endSpeech(),
-      perform: (action, name) => performer.perform(action, name),
+        stage.performer.setExpression(expression, intensity ?? 1),
+      beginSpeech: (message) => stage.performer.beginSpeech(message),
+      endSpeech: () => stage.performer.endSpeech(),
+      perform: (action, name) => stage.performer.perform(action, name),
+      showCharacter: (name) => stage.show(name),
       showMode,
       setPresented,
       enableCamera,

@@ -118,7 +118,7 @@ def test_settings_reach_the_listener_configuration(tmp_path, monkeypatch):
 
 def test_the_room_microphone_cancels_everything_the_desktop_plays():
     configuration = (
-        Path(__file__).resolve().parents[2] / "room-microphone.conf"
+        Path(__file__).resolve().parents[3] / "room-microphone.conf"
     ).read_text()
     assert "monitor.mode = true" in configuration
     assert f'"{talk_cli.ROOM_MICROPHONE}"' in configuration

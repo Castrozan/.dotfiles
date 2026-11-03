@@ -40,8 +40,18 @@ def report(directory):
     )
 
 
+def show_chosen_character(arguments):
+    if arguments.character:
+        subprocess.run(
+            ["avatar-command", "character", arguments.character],
+            check=True,
+            stdout=sys.stderr,
+        )
+
+
 def open_conversation(arguments, directory):
     if conversation_open():
+        show_chosen_character(arguments)
         report(directory)
         return
     if listen_cli.listening():
@@ -50,6 +60,7 @@ def open_conversation(arguments, directory):
         start.bring_up(
             CONVERSATION_TARGET, (start.renderer_ready, room_microphone_ready)
         )
+        show_chosen_character(arguments)
         subprocess.run(
             ["avatar-command", "presence", "shown"], capture_output=True, check=True
         )
@@ -127,6 +138,7 @@ def parse_arguments():
     commands = parser.add_subparsers(dest="action", required=True)
     opening = commands.add_parser("open")
     opening.add_argument("--language")
+    opening.add_argument("--character")
     speaking = commands.add_parser("say")
     asking = commands.add_parser("ask")
     for parser_with_speech in (speaking, asking):

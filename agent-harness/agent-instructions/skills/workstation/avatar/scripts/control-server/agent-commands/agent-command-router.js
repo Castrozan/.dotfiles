@@ -4,7 +4,9 @@ const {
   handleSetExpressionCommand,
 } = require("./set-expression-command-handler");
 const { handleSetIdleCommand } = require("./set-idle-command-handler");
-const { handleSetPresentedCommand } = require("./set-presented-command-handler");
+const {
+  handleSetPresentedCommand,
+} = require("./set-presented-command-handler");
 const {
   handleStopSpeakingCommand,
 } = require("./stop-speaking-command-handler");
@@ -14,11 +16,15 @@ const { handlePerformCommand } = require("./perform-command-handler");
 const {
   handleSetVideoModeCommand,
 } = require("./set-video-mode-command-handler");
+const {
+  handleSetCharacterCommand,
+} = require("./set-character-command-handler");
 
 const COMMAND_HANDLERS_BY_TYPE = {
   speak: handleSpeakCommand,
   stopSpeaking: handleStopSpeakingCommand,
   setVideoMode: handleSetVideoModeCommand,
+  setCharacter: handleSetCharacterCommand,
   setExpression: handleSetExpressionCommand,
   setIdle: handleSetIdleCommand,
   setPresented: handleSetPresentedCommand,

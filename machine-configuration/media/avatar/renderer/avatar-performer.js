@@ -1,4 +1,9 @@
-import { BodyPerformance, GESTURES, POSES, idleModes } from "./body-performance.js";
+import {
+  BodyPerformance,
+  GESTURES,
+  POSES,
+  idleModes,
+} from "./body-performance.js";
 import {
   expressionMouthName,
   expressionNames,
@@ -13,8 +18,16 @@ const SHAPE_CHANGE_SECONDS = 0.06;
 const BLINK_MILLISECONDS = 160;
 
 export class AvatarPerformer {
-  constructor({ vrm, morphNames, gazeTarget, gazeOrigin, createExpression }) {
+  constructor({
+    vrm,
+    morphNames,
+    gazeTarget,
+    gazeOrigin,
+    createExpression,
+    characterNames,
+  }) {
     this.vrm = vrm;
+    this.characterNames = characterNames;
     registerFaceExpressions(vrm, morphNames, createExpression);
     vrm.lookAt.target = gazeTarget;
     this.gaze = new Gaze(gazeTarget, gazeOrigin);
@@ -67,6 +80,7 @@ export class AvatarPerformer {
         poses: Object.keys(POSES),
         gaze: Object.keys(GAZE_TARGETS),
         idle: idleModes(),
+        characters: this.characterNames,
       }),
     };
     if (!Object.hasOwn(actions, action))

@@ -6,11 +6,14 @@ const IDENTIFIED_RESPONSES = [
   "videoModeError",
   "performanceApplied",
   "performanceError",
+  "characterChanged",
+  "characterError",
 ];
 
 const builders = {
   status: () => ({ type: "getStatus" }),
   mode: (mode) => ({ type: "setVideoMode", mode }),
+  character: (name) => ({ type: "setCharacter", name }),
   capabilities: () => ({ type: "perform", action: "capabilities" }),
   expression: (name, intensity = 1) => ({
     type: "setExpression",
@@ -41,7 +44,7 @@ function parseCommand(arguments_) {
     : null;
   if (!build)
     throw new Error(
-      "Usage: avatar-command status | mode avatar|camera|composite | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | presence shown|hidden | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
+      "Usage: avatar-command status | mode avatar|camera|composite | character NAME | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | presence shown|hidden | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
     );
   return build(...arguments_.slice(1));
 }
@@ -57,11 +60,21 @@ function handleResponse(response, context) {
     context.connection.send(JSON.stringify(context.command));
     return;
   }
-  if (["videoModeRequested", "performanceRequested"].includes(response.type))
+  if (
+    [
+      "videoModeRequested",
+      "performanceRequested",
+      "characterRequested",
+    ].includes(response.type)
+  )
     return;
   if (!responseBelongsToCommand(response, context.command)) return;
   console.log(JSON.stringify(response));
-  if (["error", "videoModeError", "performanceError"].includes(response.type))
+  if (
+    ["error", "videoModeError", "performanceError", "characterError"].includes(
+      response.type,
+    )
+  )
     process.exitCode = 1;
   clearTimeout(context.timeout);
   context.connection.close();

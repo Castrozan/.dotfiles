@@ -53,6 +53,8 @@ function handleRendererEvent(event, context) {
       "videoModeError",
       "performanceApplied",
       "performanceError",
+      "characterChanged",
+      "characterError",
     ].includes(event.type)
   ) {
     context.clientRegistry.sendToAgents(event);

@@ -1,9 +1,11 @@
 # Avatar
 
 The avatar runs locally and independently of an agent harness. Its VRM model, portrait assets and rendering libraries
-are pinned by Nix and served locally. The model is Darkness Shibu from
-[VRoid's sample set](https://github.com/madjin/vrm-samples), CC0 by its embedded VRM licence metadata. Start it with `avatar-start`, which also opens her voice
-and the default microphone. `avatar-command mode camera` opens the external camera with no prompt: the avatar-owned
+are pinned by Nix and served locally. The characters come from
+[VRoid's sample set](https://github.com/madjin/vrm-samples), each CC0 by its embedded VRM licence metadata, and are
+declared in `renderer-package.nix`. A new one needs a VRM with VRoid's `Fcl_` face morphs, which drive the mouth and
+blink. The first declared character shows at start, and `avatar-command character NAME` swaps it while running. Start
+the avatar with `avatar-start`, which also opens her voice and the default microphone. `avatar-command mode camera` opens the external camera with no prompt: the avatar-owned
 browser loads only this local renderer, so it accepts camera requests by itself. `avatar-controls` chooses a camera by
 hand.
 
@@ -18,7 +20,7 @@ forwards over ssh to chise, where the avatar and microphone live.
 
 | Command | Result |
 | --- | --- |
-| `avatar-talk open [--language CODE]` | Shows the window and opens the microphone; repeating it keeps the conversation |
+| `avatar-talk open [--language CODE] [--character NAME]` | Shows the window and opens the microphone; repeating it keeps the conversation |
 | `avatar-talk ask TEXT [EMOTION]` | Speaks and prints the reply; one verb per turn |
 | `avatar-talk hear [--wait SECONDS]` | Blocks for the next complete utterance and prints it; prints nothing on silence |
 | `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher |
@@ -27,7 +29,7 @@ forwards over ssh to chise, where the avatar and microphone live.
 | `avatar-talk close` | Hides or stops the avatar and closes the microphone; a running meeting keeps its services |
 
 `avatar-conversation.target` owns the pieces: `avatar-browser` holds the one renderer window, whether or not the
-virtual camera is attached, `avatar-window` moves it onto the current workspace in a pinned corner, and
+virtual camera is attached, `avatar-window` moves it to a corner of the current workspace, and
 `avatar-room-microphone` is a private PipeWire process running
 [echo cancellation](https://docs.pipewire.org/page_module_echo_cancel.html) in monitor mode. Its reference is everything
 the default output plays, so neither the avatar's voice nor a video playing on the speakers reaches the transcript.

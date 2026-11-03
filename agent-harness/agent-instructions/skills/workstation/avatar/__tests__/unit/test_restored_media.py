@@ -70,6 +70,26 @@ def test_video_mode_preserves_request_identity():
 
 
 @requires_node
+def test_character_request_reaches_the_renderer_with_its_identity():
+    result = evaluate_node_json(
+        """
+        const { handleSetCharacterCommand } = require("./agent-commands/set-character-command-handler");
+        const sent = [];
+        const forwarded = [];
+        const connection = { isOpen: () => true, sendJson: value => sent.push(value) };
+        handleSetCharacterCommand({ name: "vita", id: "request-1" }, connection, { clientRegistry: { sendToRenderer: value => { forwarded.push(value); return true; } } });
+        handleSetCharacterCommand({ name: "vita", id: "request-2" }, connection, { clientRegistry: { sendToRenderer: () => false } });
+        const result = { forwarded, sent };
+        """
+    )
+    assert result["forwarded"] == [
+        {"type": "setCharacter", "name": "vita", "id": "request-1"}
+    ]
+    assert result["sent"][0]["type"] == "characterRequested"
+    assert "No renderer" in result["sent"][1]["error"]
+
+
+@requires_node
 def test_chrome_request_handles_immediate_replies_and_protocol_errors():
     result = evaluate_node_json(
         """

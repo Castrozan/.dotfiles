@@ -27,11 +27,12 @@ Start the avatar before opening the meeting, or reload its page: Avatar Cam is l
 
 ### Performing
 
-Run `avatar-command capabilities` for the current names. Set the face with `expression NAME [INTENSITY]`, play a motion
-with `gesture NAME`, hold a body pose with `pose NAME`, move the eyes and head with `look TARGET`, and set resting
-motion with `idle MODE`. Unknown names fail, so read the list rather than guess. Pass the emotion to `speak`: it sets
-the face and the voice's delivery for that turn, then the previous expression returns. Use a gesture to punctuate a
-turn, sparingly.
+Run `avatar-command capabilities` for the current names. Choose your character from `characters` with
+`avatar-talk open --character NAME`, or with `character NAME` while running. Set the face with
+`expression NAME [INTENSITY]`, play a motion with `gesture NAME`, hold a body pose with `pose NAME`, move the eyes and
+head with `look TARGET`, and set resting motion with `idle MODE`. Unknown names fail, so read the list rather than
+guess. Pass the emotion to `speak`: it sets the face and the voice's delivery for that turn, then the previous
+expression returns. Use a gesture to punctuate a turn, sparingly.
 
 `speak` text goes to ElevenLabs through the user's subscription and falls back to a local female voice on failure. Its
 result names the `source` that spoke, so check it when the voice matters. Pass `pf_dora` as the fourth argument for

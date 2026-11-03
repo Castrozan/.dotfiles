@@ -10,7 +10,6 @@ def client(**fields):
         "title": "Avatar",
         "address": "0xa",
         "floating": False,
-        "pinned": False,
         "at": [3176, 696],
         **fields,
     }
@@ -48,15 +47,13 @@ def test_showing_floats_the_window_in_the_corner_of_the_focused_screen(monkeypat
         ("togglefloating", "address:0xa"),
         ("resizewindowpixel", "exact 640 360,address:0xa"),
         ("movewindowpixel", "exact 3176 696,address:0xa"),
-        ("pin", "address:0xa"),
     ]
 
 
-def test_showing_twice_does_not_toggle_floating_or_pinning_off(monkeypatch):
-    dispatch = fake_desktop(monkeypatch, [client(floating=True, pinned=True)])
+def test_showing_twice_does_not_toggle_floating_off(monkeypatch):
+    dispatch = fake_desktop(monkeypatch, [client(floating=True)])
     desktop_window.show()
     assert "togglefloating" not in [call.args[0] for call in dispatch.call_args_list]
-    assert "pin" not in [call.args[0] for call in dispatch.call_args_list]
 
 
 def test_placement_repeats_until_the_compositor_has_applied_it(monkeypatch):
@@ -83,11 +80,10 @@ def test_the_controls_window_is_never_taken_for_the_avatar(monkeypatch):
     assert desktop_window.avatar_window()["address"] == "0xa"
 
 
-def test_hiding_unpins_before_returning_to_the_hidden_workspace(monkeypatch):
-    dispatch = fake_desktop(monkeypatch, [client(pinned=True)])
+def test_hiding_returns_the_window_to_the_hidden_workspace(monkeypatch):
+    dispatch = fake_desktop(monkeypatch, [client()])
     desktop_window.hide()
     assert [call.args for call in dispatch.call_args_list] == [
-        ("pin", "address:0xa"),
         ("movetoworkspacesilent", "special:avatar,address:0xa"),
     ]
 

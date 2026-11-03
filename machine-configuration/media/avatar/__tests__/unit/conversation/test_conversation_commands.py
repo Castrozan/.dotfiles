@@ -65,7 +65,7 @@ def test_opening_again_keeps_the_conversation_and_what_was_not_heard(
     bring_up = Mock()
     monkeypatch.setattr(start, "bring_up", bring_up)
     utterances.remember(tmp_path, 7)
-    talk_cli.open_conversation(argparse.Namespace(language=None), tmp_path)
+    talk_cli.open_conversation(argparse.Namespace(language=None, character=None), tmp_path)
     bring_up.assert_not_called()
     assert json.loads(capsys.readouterr().out) == {"open": True, "last_heard": 7}
 
@@ -76,7 +76,7 @@ def test_opening_refuses_to_replace_a_meeting_transcript(tmp_path, monkeypatch):
     begin = Mock()
     monkeypatch.setattr(listen_cli, "begin_listening", begin)
     with pytest.raises(RuntimeError):
-        talk_cli.open_conversation(argparse.Namespace(language=None), tmp_path)
+        talk_cli.open_conversation(argparse.Namespace(language=None, character=None), tmp_path)
     begin.assert_not_called()
 
 
@@ -89,7 +89,7 @@ def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch)
     runner = Mock()
     monkeypatch.setattr(talk_cli.subprocess, "run", runner)
     utterances.remember(tmp_path, 7)
-    talk_cli.open_conversation(argparse.Namespace(language="pt"), tmp_path)
+    talk_cli.open_conversation(argparse.Namespace(language="pt", character=None), tmp_path)
     assert runner.call_args_list[0].args[0] == ["avatar-command", "presence", "shown"]
     begin.assert_called_once_with(
         tmp_path, {"human": "AvatarRoomMicrophone"}, language="pt", barge_in=True
@@ -104,7 +104,7 @@ def test_a_failed_open_closes_what_it_started(tmp_path, monkeypatch):
     close = Mock()
     monkeypatch.setattr(talk_cli, "close_conversation", close)
     with pytest.raises(TimeoutError):
-        talk_cli.open_conversation(argparse.Namespace(language=None), tmp_path)
+        talk_cli.open_conversation(argparse.Namespace(language=None, character=None), tmp_path)
     close.assert_called_once()
 
 
