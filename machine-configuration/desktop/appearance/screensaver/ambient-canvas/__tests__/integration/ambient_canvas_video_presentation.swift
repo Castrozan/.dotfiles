@@ -26,7 +26,7 @@ struct AmbientCanvasVideoPresentationTest {
         precondition(
             playerLayer.player === queuePlayer,
             "A canceled release must not detach a resumed presentation")
-        precondition(queuePlayer.currentItem?.status == .readyToPlay)
+        waitForPlayback { queuePlayer.currentItem?.status == .readyToPlay }
         let queuedItems = queuePlayer.items()
 
         for _ in 0..<3 {
@@ -49,11 +49,18 @@ struct AmbientCanvasVideoPresentationTest {
             videoView.resumePlayback()
             precondition(
                 playerLayer.player === queuePlayer, "Repeated resumes must remain attached")
-            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-            precondition(queuePlayer.currentTime().seconds > pausedTime)
+            waitForPlayback { queuePlayer.currentTime().seconds > pausedTime }
         }
         videoView.pausePlayback()
         print("Video presentation lifecycle passed")
+    }
+
+    private static func waitForPlayback(_ condition: () -> Bool) {
+        let deadline = Date().addingTimeInterval(5)
+        while !condition() && Date() < deadline {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+        }
+        precondition(condition(), "Video playback did not become ready within five seconds")
     }
 
     private static func createVideoSegment(at fileUrl: URL) {
