@@ -12,6 +12,10 @@ let
     ../chrome/chrome-global-linux-home-manager.nix
   ];
 
+  darwinFirefox =
+    (helpers.homeManagerTestConfigurationForDarwin [ ../firefox/firefox-home-manager.nix ])
+    .programs.firefox;
+
   chromeBrokenHardwareVideoDecodingWorkaround =
     import ../chrome/broken-hardware-video-decoding/chrome-broken-hardware-video-decoding-workaround.nix
       {
@@ -71,6 +75,20 @@ in
   domain-browser-firefox-enabled =
     mkEvalCheck "domain-browser-firefox-enabled" cfg.programs.firefox.enable
       "firefox should be enabled";
+
+  domain-browser-linux-firefox-installs-nix-package =
+    mkEvalCheck "domain-browser-linux-firefox-installs-nix-package"
+      (cfg.programs.firefox.package != null)
+      "Linux hosts have no other Firefox install, so home-manager must install the nix package";
+
+  domain-browser-darwin-firefox-has-single-install =
+    mkEvalCheck "domain-browser-darwin-firefox-has-single-install" (darwinFirefox.package == null)
+      "On darwin the Homebrew cask is the only Firefox install. A second nix-store install gets its own install hash, finds the default profile locked to the cask, and cannot record a new profile in the read-only home-manager profiles.ini, so Firefox opens the profile manager instead of a window";
+
+  domain-browser-darwin-firefox-keeps-writable-install-registry =
+    mkEvalCheck "domain-browser-darwin-firefox-keeps-writable-install-registry"
+      (darwinFirefox.profileVersion == null && darwinFirefox.darwinDefaultsId != null)
+      "Darwin Firefox must keep a version-less profiles.ini so it records install-to-profile mappings in the writable installs.ini, and must receive policies through the macOS defaults domain because no nix wrapper carries them";
 
   domain-browser-chrome-desktop-entry = mkEvalCheck "domain-browser-chrome-desktop-entry" (
     cfg.xdg.dataFile ? "applications/chrome-global.desktop"

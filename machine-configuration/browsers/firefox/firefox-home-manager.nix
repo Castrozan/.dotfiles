@@ -1,15 +1,19 @@
 {
+  lib,
   pkgs,
   ...
 }:
+let
+  inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
+in
 {
-  home.sessionVariables = {
+  home.sessionVariables = lib.mkIf isLinux {
     MOZ_DISABLE_RDD_SANDBOX = "1";
   };
 
   programs.firefox = {
     enable = true;
-    package = pkgs.firefox;
+    package = if isDarwin then null else pkgs.firefox;
 
     policies = import ./browser-policies.nix;
 
