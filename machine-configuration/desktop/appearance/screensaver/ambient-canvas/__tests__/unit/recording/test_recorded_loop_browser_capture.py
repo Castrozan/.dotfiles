@@ -1,5 +1,6 @@
 import threading
 import time
+import subprocess
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -99,3 +100,27 @@ def test_browser_launch_failure_closes_upload_server(capture_dependencies):
     server.server_close.assert_called_once()
     assert not profile_directory.exists()
     terminate.assert_not_called()
+
+
+@pytest.mark.parametrize("termination_failure", [None, "timeout", "missing"])
+def test_termination_cleans_only_its_profile_processes(
+    monkeypatch, termination_failure
+):
+    process = Mock()
+    if termination_failure == "timeout":
+        process.wait.side_effect = subprocess.TimeoutExpired("browser", 5)
+    elif termination_failure == "missing":
+        process.terminate.side_effect = OSError("already exited")
+        process.kill.side_effect = OSError("already exited")
+    terminate_children = Mock()
+    monkeypatch.setattr(browser_capture.subprocess, "run", terminate_children)
+    monkeypatch.setattr(browser_capture.shutil, "which", lambda name: "/usr/bin/pkill")
+    browser_capture.terminate_browser_process(
+        process, "/tmp/ambient-canvas-record-owned"
+    )
+    terminate_children.assert_called_once_with(
+        ["/usr/bin/pkill", "-f", "/tmp/ambient-canvas-record-owned"],
+        check=False,
+        capture_output=True,
+    )
+    assert process.kill.call_count == int(termination_failure is not None)

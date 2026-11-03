@@ -76,3 +76,21 @@ def test_conflicting_worker_plans_prevent_publication(monkeypatch):
         ).encode(),
     )
     assert capture_pool.capture_recorded_playlist(*([None] * 6)) is None
+
+
+def test_worker_failure_cancels_its_siblings(monkeypatch):
+    barrier = threading.Barrier(2)
+    cancelled_workers = []
+
+    def drive_browser(*arguments):
+        worker, deadline, cancellation_event = arguments[-3:]
+        barrier.wait(timeout=2)
+        if worker.index == 0:
+            raise OSError("browser failed")
+        assert cancellation_event.wait(timeout=2)
+        cancelled_workers.append(worker.index)
+
+    monkeypatch.setattr(capture_pool, "resolve_recording_worker_count", lambda: 2)
+    monkeypatch.setattr(capture_pool, "drive_record_browser", drive_browser)
+    assert capture_pool.capture_recorded_playlist(*([None] * 6)) is None
+    assert cancelled_workers == [1]

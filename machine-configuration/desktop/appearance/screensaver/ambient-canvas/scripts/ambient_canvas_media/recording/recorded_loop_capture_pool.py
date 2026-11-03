@@ -26,7 +26,9 @@ def capture_recorded_playlist(
     theme_background_hex,
 ):
     worker_count = resolve_recording_worker_count()
-    logging.info("recording_pool_started workers=%s", worker_count)
+    logging.getLogger("ambient_canvas.launcher").info(
+        "recording_pool_started workers=%s", worker_count
+    )
     deadline = time.monotonic() + resolve_upload_wait_budget_seconds()
     cancellation_event = threading.Event()
     with concurrent.futures.ThreadPoolExecutor(max_workers=worker_count) as executor:
