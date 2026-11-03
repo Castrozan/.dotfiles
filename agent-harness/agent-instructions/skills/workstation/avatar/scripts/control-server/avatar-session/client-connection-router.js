@@ -36,6 +36,7 @@ function handleIdentification(role, connection, context) {
 
   if (role === "renderer") {
     clientRegistry.registerRenderer(connection);
+    context.textToSpeechGenerator.selectFirstCharacter();
     acknowledgeIdentification(connection, "renderer");
     sendInitialStateToRenderer(connection, avatarState);
     return;
@@ -58,6 +59,9 @@ function handleRendererEvent(event, context) {
     ].includes(event.type)
   ) {
     context.clientRegistry.sendToAgents(event);
+  }
+  if (event.type === "characterChanged") {
+    context.textToSpeechGenerator.selectCharacter(event.name);
   }
   if (event.type === "speechEnd") {
     context.avatarState.finishSpeaking();

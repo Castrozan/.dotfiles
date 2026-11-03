@@ -6,6 +6,12 @@
 }:
 let
   programs = import ./avatar-programs.nix { inherit pkgs lib; };
+  characters = import ./characters.nix { inherit pkgs; };
+  characterVoices = pkgs.writeText "avatar-character-voices.json" (
+    builtins.toJSON (
+      map (character: { inherit (character) name cloudVoice localVoice; }) characters
+    )
+  );
   windowPresence =
     action: "${pkgs.python312}/bin/python3 ${./scripts/conversation/desktop_window.py} ${action}";
   transcriptionModel = pkgs.fetchurl {
@@ -81,7 +87,8 @@ in
             ExecStart = "${pkgs.nodejs_22}/bin/node ${programs.control}/server.js";
             Environment = [
               "PATH=${tools}"
-              "AVATAR_CLOUD_VOICE=cgSgspJ2msm6clMCkdW9"
+              "AVATAR_CLOUD_VOICE=${(builtins.head characters).cloudVoice}"
+              "AVATAR_CHARACTER_VOICES=${characterVoices}"
               "AVATAR_TTS_VOICE=pt_BR-faber-medium"
               "AVATAR_TTS_VOICE_DIRECTORY=${speechVoices}"
               "AVATAR_AUDIO_MONITOR=AvatarLipSync.monitor"

@@ -3,8 +3,9 @@
 The avatar runs locally and independently of an agent harness. Its VRM model, portrait assets and rendering libraries
 are pinned by Nix and served locally. The characters come from
 [VRoid's sample set](https://github.com/madjin/vrm-samples), each CC0 by its embedded VRM licence metadata, and are
-declared in `renderer-package.nix`. A new one needs a VRM with VRoid's `Fcl_` face morphs, which drive the mouth and
-blink. The first declared character shows at start, and `avatar-command character NAME` swaps it while running. Start
+declared with their cloud and local voices in `characters.nix`. A new one needs a VRM with VRoid's `Fcl_` face morphs,
+which drive the mouth and blink. The first declared character shows at start, and `avatar-command character NAME` swaps
+it and its voice while running. Start
 the avatar with `avatar-start`, which also opens her voice and the default microphone. `avatar-command mode camera` opens the external camera with no prompt: the avatar-owned
 browser loads only this local renderer, so it accepts camera requests by itself. `avatar-controls` chooses a camera by
 hand.

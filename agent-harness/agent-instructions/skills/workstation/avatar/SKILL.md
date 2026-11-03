@@ -34,8 +34,9 @@ head with `look TARGET`, and set resting motion with `idle MODE`. Unknown names 
 guess. Pass the emotion to `speak`: it sets the face and the voice's delivery for that turn, then the previous
 expression returns. Use a gesture to punctuate a turn, sparingly.
 
-`speak` text goes to ElevenLabs through the user's subscription and falls back to a local female voice on failure. Its
-result names the `source` that spoke, so check it when the voice matters. Pass `pf_dora` as the fourth argument for
+`speak` text goes to ElevenLabs through the user's subscription in your character's voice and falls back to that
+character's local voice on failure. Its result names the `source` that spoke, so check it when the voice matters. Pass
+`pf_dora` as the fourth argument for
 words that must stay on this machine. Never put transcript content or anything confidential into cloud speech unless the
 user asked for it.
 

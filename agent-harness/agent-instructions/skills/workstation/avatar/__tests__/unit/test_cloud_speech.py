@@ -20,7 +20,7 @@ def test_cloud_failure_falls_back_to_the_kokoro_default_voice():
         """
     )
     assert result["audioPath"] == "kokoro"
-    assert result["calls"] == [["kokoro", "hello"]]
+    assert result["calls"] == [["kokoro", "hello", None]]
 
 
 @requires_node
