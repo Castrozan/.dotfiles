@@ -163,3 +163,16 @@ class SpeakerIdentifier:
         except Exception as error:
             print(f"Speaker identity failed for a segment: {error}", file=sys.stderr)
             return None, None
+
+
+class DisabledIdentifier:
+    def identify(self, segment):
+        return None, None
+
+
+def configured_identifier(enabled):
+    if not enabled:
+        return DisabledIdentifier()
+    return SpeakerIdentifier(
+        os.environ.get(MODEL_ENVIRONMENT_VARIABLE), VoiceProfiles(voices_directory())
+    )

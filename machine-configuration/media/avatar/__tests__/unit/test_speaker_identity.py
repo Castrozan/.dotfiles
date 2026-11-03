@@ -11,6 +11,12 @@ import transcript_echo
 import transcript_log
 
 
+def test_a_listener_without_identity_names_no_one_and_keeps_no_embedding():
+    identifier = speaker_identity.configured_identifier(False)
+
+    assert identifier.identify(b"\0\0") == (None, None)
+
+
 def test_a_phrase_heard_by_another_source_within_seconds_is_an_echo():
     echoes = transcript_echo.EchoFilter()
     assert not echoes.is_echo("meeting", "Let's start the review, everyone.", 100)

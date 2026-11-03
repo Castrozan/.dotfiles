@@ -125,25 +125,31 @@ def transcribe_when_ready(segment, language):
     raise TimeoutError("The local transcriber did not answer")
 
 
-def record_segment(path, listening, echoes, identifier, source, segment):
-    text = transcribe_when_ready(segment, listening.language)
-    if not text or echoes.is_echo(source, text, time.time()):
-        return
-    speaker, embedding = (
-        identifier.identify(segment) if listening.identify_speakers else (None, None)
-    )
-    entry = transcript_log.append(path, source, text, speaker)
-    if embedding:
-        speaker_identity.append_embedding(
-            path.with_name(EMBEDDINGS_FILE), entry["sequence"], embedding
-        )
+@dataclasses.dataclass
+class TranscriptRecorder:
+    path: Path
+    listening: Listening
+    echoes: transcript_echo.EchoFilter
+    identifier: object
+
+    def record(self, source, segment):
+        text = transcribe_when_ready(segment, self.listening.language)
+        if not text or self.echoes.is_echo(source, text, time.time()):
+            return
+        speaker, embedding = self.identifier.identify(segment)
+        entry = transcript_log.append(self.path, source, text, speaker)
+        if embedding:
+            speaker_identity.append_embedding(
+                self.path.with_name(EMBEDDINGS_FILE), entry["sequence"], embedding
+            )
 
 
 def write_transcript(path, listening):
-    echoes = transcript_echo.EchoFilter()
-    identifier = speaker_identity.SpeakerIdentifier(
-        os.environ.get(speaker_identity.MODEL_ENVIRONMENT_VARIABLE),
-        speaker_identity.VoiceProfiles(speaker_identity.voices_directory()),
+    recorder = TranscriptRecorder(
+        path,
+        listening,
+        transcript_echo.EchoFilter(),
+        speaker_identity.configured_identifier(listening.identify_speakers),
     )
     while not listening.stopping.is_set():
         try:
@@ -151,7 +157,7 @@ def write_transcript(path, listening):
         except queue.Empty:
             continue
         try:
-            record_segment(path, listening, echoes, identifier, source, segment)
+            recorder.record(source, segment)
         finally:
             listening.pending.finish()
 
