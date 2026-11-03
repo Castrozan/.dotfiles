@@ -1,7 +1,6 @@
 from unittest.mock import Mock
 
 import desktop_window
-import pytest
 
 
 def client(**fields):
@@ -10,22 +9,15 @@ def client(**fields):
         "title": "Avatar",
         "address": "0xa",
         "floating": False,
-        "at": [3176, 696],
         **fields,
     }
 
 
 def fake_desktop(monkeypatch, clients):
-    monkeypatch.setattr(desktop_window, "PLACEMENT_SETTLE_SECONDS", 0)
     monitors = [
         {"focused": False},
         {
             "focused": True,
-            "x": 1920,
-            "y": 0,
-            "width": 3840,
-            "height": 2160,
-            "scale": 2.0,
             "activeWorkspace": {"id": 4},
         },
     ]
@@ -39,37 +31,20 @@ def fake_desktop(monkeypatch, clients):
     return dispatch
 
 
-def test_showing_floats_the_window_in_the_corner_of_the_focused_screen(monkeypatch):
+def test_showing_brings_a_normal_window_to_the_focused_workspace(monkeypatch):
     dispatch = fake_desktop(monkeypatch, [client()])
     desktop_window.show()
     assert [call.args for call in dispatch.call_args_list] == [
         ("movetoworkspacesilent", "4,address:0xa"),
-        ("togglefloating", "address:0xa"),
-        ("resizewindowpixel", "exact 640 360,address:0xa"),
-        ("movewindowpixel", "exact 3176 696,address:0xa"),
     ]
 
 
-def test_showing_twice_does_not_toggle_floating_off(monkeypatch):
+def test_showing_tiles_a_window_left_floating(monkeypatch):
     dispatch = fake_desktop(monkeypatch, [client(floating=True)])
     desktop_window.show()
-    assert "togglefloating" not in [call.args[0] for call in dispatch.call_args_list]
-
-
-def test_placement_repeats_until_the_compositor_has_applied_it(monkeypatch):
-    positions = iter([[-9999, -9999], [-9999, -9999], [10, 20]])
-    dispatch = fake_desktop(monkeypatch, [])
-    monkeypatch.setattr(
-        desktop_window, "avatar_window", lambda: {"at": next(positions)}
-    )
-    desktop_window.place("address:0xa", 10, 20)
-    assert dispatch.call_count == 3
-
-
-def test_a_window_that_never_reaches_its_corner_fails_the_show(monkeypatch):
-    fake_desktop(monkeypatch, [client(at=[-9999, -9999])])
-    with pytest.raises(TimeoutError):
-        desktop_window.show()
+    assert ("togglefloating", "address:0xa") in [
+        call.args for call in dispatch.call_args_list
+    ]
 
 
 def test_the_controls_window_is_never_taken_for_the_avatar(monkeypatch):

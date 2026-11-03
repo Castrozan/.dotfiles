@@ -29,7 +29,7 @@ forwards over ssh to chise, where the avatar and microphone live.
 | `avatar-talk close` | Hides or stops the avatar and closes the microphone; a running meeting keeps its services |
 
 `avatar-conversation.target` owns the pieces: `avatar-browser` holds the one renderer window, whether or not the
-virtual camera is attached, `avatar-window` moves it to a corner of the current workspace, and
+virtual camera is attached, `avatar-window` moves it to the current workspace as a normal tiled window, and
 `avatar-room-microphone` is a private PipeWire process running
 [echo cancellation](https://docs.pipewire.org/page_module_echo_cancel.html) in monitor mode. Its reference is everything
 the default output plays, so neither the avatar's voice nor a video playing on the speakers reaches the transcript.
