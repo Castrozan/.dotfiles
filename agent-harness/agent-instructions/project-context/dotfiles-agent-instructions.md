@@ -42,11 +42,8 @@ into the existing module structure rather than adding one-off files. Make it wor
 holds across the harnesses this repo drives: reach Claude Code, Codex and OpenCode together, then Pi and Hermes where
 each one supports the capability.
 
-### One-time migrations
-
-Treat one-time cleanup as a migration, not permanent configuration. Verify it on every affected machine, then remove the
-migration code and retired-path inventories; completed cleanup must not remain in recurring activation hooks or
-maintained scripts. Keep only the desired steady-state configuration.
+Treat one-time cleanup as a migration: verify it on every affected machine, then remove the migration code and
+retired-path inventories, so recurring activation hooks and maintained scripts keep only steady-state configuration.
 
 ### Nvim keymaps
 
