@@ -20,9 +20,10 @@ let
 
   configTemplate = import ./config.nix {
     inherit pkgs;
-    pluginBundle = config.agentPlugins.bundle;
+    pluginDirectory = "${config.home.homeDirectory}/.hermes/plugins/dotfiles";
   };
   soul = import ./soul.nix { inherit pkgs; };
+  soulTemplateFile = ".hermes/.soul-template.md";
 
   runtimeDependencies = [
     pkgs.coreutils
@@ -37,7 +38,7 @@ let
     runtimeEnv = {
       HERMES_AGENT_BINARY = "${hermesRuntime}/bin/hermes";
       HERMES_AGENT_CONFIG_TEMPLATE = "${configTemplate}";
-      HERMES_AGENT_SOUL = "${soul}";
+      HERMES_AGENT_SOUL = "${config.home.homeDirectory}/${soulTemplateFile}";
       HERMES_AGENT_RUNTIME_PATH = lib.makeBinPath runtimeDependencies;
       HERMES_AGENT_BASH = "${pkgs.bash}/bin/bash";
       HERMES_AGENT_LAUNCH_SCRIPT = "${./scripts/hermes-launch}";
@@ -77,6 +78,7 @@ in
       ".hermes/plugins/claude-subscription-directsdk".source =
         "${hermesOfficialPlugins}/claude-subscription-directsdk";
       ".hermes/.no-bundled-skills".text = "";
+      ${soulTemplateFile}.source = soul;
     };
   };
 }

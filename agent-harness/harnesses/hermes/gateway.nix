@@ -13,6 +13,9 @@ let
     "${botProfileDirectory name}/plugins/claude-subscription-directsdk".source =
       config.home.file.".hermes/plugins/claude-subscription-directsdk".source;
     "${botProfileDirectory name}/.no-bundled-skills".text = "";
+    "${botProfileDirectory name}/gateway.json".text = builtins.toJSON {
+      platforms.discord.gateway_restart_notification = false;
+    };
   };
 
   botProfileProvisioning = name: bot: [

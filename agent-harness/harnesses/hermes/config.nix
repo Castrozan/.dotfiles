@@ -1,9 +1,9 @@
 {
   pkgs,
-  pluginBundle,
+  pluginDirectory,
 }:
 let
-  hookCommand = "${pluginBundle}/plugin/native/hermes/hook-bridge";
+  hookCommand = "${pluginDirectory}/native/hermes/hook-bridge";
 in
 pkgs.writeText "hermes-config.yaml" ''
   model:
@@ -17,7 +17,7 @@ pkgs.writeText "hermes-config.yaml" ''
     mode: "off"
   skills:
     external_dirs:
-      - ${pluginBundle}/plugin/skills
+      - ${pluginDirectory}/skills
   toolsets:
     - hermes-cli
   security:

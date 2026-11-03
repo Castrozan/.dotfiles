@@ -7,15 +7,15 @@
 let
   inherit (helpers) mkEvalCheck;
 
-  pluginBundle = "/test/agent-plugin-bundle";
+  pluginDirectory = "/test/.hermes/plugins/dotfiles";
   hermesConfigTemplate = import ../config.nix {
-    inherit pkgs pluginBundle;
+    inherit pkgs pluginDirectory;
   };
   hermesSoul = import ../soul.nix { inherit pkgs; };
   canonicalCore = builtins.readFile ../../../agent-instructions/core-rules/core.md;
   hermesIdentity = "You are Hermes Agent, an intelligent AI assistant created by Nous Research.";
   expectedHermesSoul = pkgs.writeText "expected-hermes-SOUL.md" "### Harness identity\n\n${hermesIdentity}\n\n${canonicalCore}";
-  hermesHookCommandPath = "${pluginBundle}/plugin/native/hermes/hook-bridge";
+  hermesHookCommandPath = "${pluginDirectory}/native/hermes/hook-bridge";
 
   cfg = helpers.homeManagerTestConfiguration [
     ../.
@@ -72,6 +72,19 @@ in
         touch "$out"
       '';
 
+  domain-hermes-launcher-survives-instruction-changes =
+    pkgs.runCommand "domain-hermes-launcher-survives-instruction-changes"
+      {
+        exportReferencesGraph = [
+          "launcherClosure"
+          cfg.hermes.package
+        ];
+      }
+      ''
+        grep -qFe ${builtins.unsafeDiscardStringContext cfg.agentPlugins.bundle} -e hermes-SOUL launcherClosure && exit 1
+        touch "$out"
+      '';
+
   domain-hermes-soul-carries-canonical-core =
     pkgs.runCommand "domain-hermes-soul-carries-canonical-core" { }
       ''
@@ -118,6 +131,9 @@ in
         && lib.hasInfix "HERMES_HOME=%h/.hermes/profiles/test-bot " discordBotProvisioning
         && builtins.hasAttr ".hermes/profiles/test-bot/plugins/dotfiles" discordBotCfg.home.file
         && builtins.hasAttr ".hermes/profiles/test-bot/.no-bundled-skills" discordBotCfg.home.file
+        &&
+          lib.hasInfix "\"gateway_restart_notification\":false"
+            discordBotCfg.home.file.".hermes/profiles/test-bot/gateway.json".text
       )
-      "Every declared Discord bot must get its environment, seeded configuration, plugins and skill opt-out before the gateway starts";
+      "Every declared Discord bot must get its environment, seeded configuration, plugins, skill opt-out and restart silence before the gateway starts";
 }
