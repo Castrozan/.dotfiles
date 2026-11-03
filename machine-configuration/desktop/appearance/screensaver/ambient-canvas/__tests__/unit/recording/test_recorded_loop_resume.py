@@ -2,6 +2,7 @@ import json
 import pathlib
 import subprocess
 import threading
+from types import SimpleNamespace
 
 import pytest
 
@@ -21,8 +22,13 @@ BROWSER_FIXTURE = pathlib.Path(__file__).with_name("recording_resume_browser.js"
 
 @pytest.fixture
 def browser_capture(monkeypatch):
-    upload_limit = [1]
-    encoded_compositions = []
+    scenario = SimpleNamespace(
+        upload_limit=1,
+        composition_count=4,
+        range_count=2,
+        encoded_compositions=[],
+        recordings_by_worker={},
+    )
     outcome_lock = threading.Lock()
 
     def drive_browser(request, worker, *ignored):
@@ -44,7 +50,9 @@ def browser_capture(monkeypatch):
                     str(BROWSER_FIXTURE),
                     str(WEB_DIRECTORY),
                     record_url,
-                    str(upload_limit[0]),
+                    str(scenario.upload_limit),
+                    str(scenario.composition_count),
+                    str(scenario.range_count),
                 ],
                 capture_output=True,
                 text=True,
@@ -53,7 +61,9 @@ def browser_capture(monkeypatch):
             )
             assert completed.returncode in (0, 77), completed.stderr
             with outcome_lock:
-                encoded_compositions.extend(json.loads(completed.stdout))
+                recorded_compositions = json.loads(completed.stdout)
+                scenario.encoded_compositions.extend(recorded_compositions)
+                scenario.recordings_by_worker[worker.index] = recorded_compositions
             return server.received_manifest_bytes
         finally:
             server.shutdown()
@@ -67,7 +77,19 @@ def browser_capture(monkeypatch):
     monkeypatch.setattr(
         render, "download_missing_scene_videos", lambda *arguments: None
     )
-    return upload_limit, encoded_compositions
+    return scenario
+
+
+@pytest.fixture
+def capture_target(tmp_path):
+    return RecordedLoopCaptureTarget(
+        loop_directory=str(tmp_path),
+        scene_video_directory=str(tmp_path / "videos"),
+        playback_dwell_override_path=str(tmp_path / "dwell"),
+        screen_dimensions=(1920, 1080),
+        capture_pixel_dimensions=(1920, 1080),
+        capture_signature="1920x1080",
+    )
 
 
 def render_pass(target, source="current"):
@@ -77,17 +99,10 @@ def render_pass(target, source="current"):
 
 
 def test_interrupted_parallel_pass_resumes_only_missing_segments(
-    tmp_path, browser_capture, monkeypatch
+    tmp_path, browser_capture, monkeypatch, capture_target
 ):
-    upload_limit, encoded_compositions = browser_capture
-    target = RecordedLoopCaptureTarget(
-        loop_directory=str(tmp_path),
-        scene_video_directory=str(tmp_path / "videos"),
-        playback_dwell_override_path=str(tmp_path / "dwell"),
-        screen_dimensions=(1920, 1080),
-        capture_pixel_dimensions=(1920, 1080),
-        capture_signature="1920x1080",
-    )
+    target = capture_target
+    encoded_compositions = browser_capture.encoded_compositions
     store_recorded_segment(str(tmp_path), "stale-source", "mp4", b"old")
     (tmp_path / "loop.segments.json").write_text(
         '{"segments":[{"file":"segments/stale-source.mp4"}]}'
@@ -95,7 +110,7 @@ def test_interrupted_parallel_pass_resumes_only_missing_segments(
     (tmp_path / "loop.source").write_text("old")
     old_manifest = (tmp_path / "loop.segments.json").read_bytes()
     assert render_pass(target) is None
-    assert sorted(encoded_compositions) == [0, 1]
+    assert sorted(encoded_compositions) == [0, 0]
     assert (tmp_path / "loop.segments.json").read_bytes() == old_manifest
     assert (tmp_path / "loop.source").read_text() == "old"
     kept_segments = {
@@ -104,10 +119,10 @@ def test_interrupted_parallel_pass_resumes_only_missing_segments(
         if path.stem != "stale-source"
     }
     assert len(kept_segments) == 2
-    upload_limit[0] = 0
+    browser_capture.upload_limit = 0
     encoded_compositions.clear()
     assert render_pass(target)
-    assert sorted(encoded_compositions) == [0, 1, 2, 2, 3, 3]
+    assert sorted(encoded_compositions) == [1, 1, 2, 2, 3, 3]
     assert all(
         path.stat().st_mtime_ns == modified for path, modified in kept_segments.items()
     )
@@ -125,18 +140,11 @@ def test_interrupted_parallel_pass_resumes_only_missing_segments(
 
 @pytest.mark.parametrize("changed_input", ["size", "source"])
 def test_changed_capture_inputs_never_reuse_old_segments(
-    tmp_path, browser_capture, monkeypatch, changed_input
+    tmp_path, browser_capture, monkeypatch, changed_input, capture_target
 ):
-    upload_limit, encoded_compositions = browser_capture
-    upload_limit[0] = 0
-    target = RecordedLoopCaptureTarget(
-        loop_directory=str(tmp_path),
-        scene_video_directory=str(tmp_path / "videos"),
-        playback_dwell_override_path=str(tmp_path / "dwell"),
-        screen_dimensions=(1920, 1080),
-        capture_pixel_dimensions=(1920, 1080),
-        capture_signature="1920x1080",
-    )
+    target = capture_target
+    encoded_compositions = browser_capture.encoded_compositions
+    browser_capture.upload_limit = 0
     assert render_pass(target)
     old_files = set((tmp_path / "segments").glob("*.mp4"))
     encoded_compositions.clear()
@@ -152,3 +160,17 @@ def test_changed_capture_inputs_never_reuse_old_segments(
     assert render_pass(target, "changed")
     assert len(encoded_compositions) == 8
     assert not old_files.intersection((tmp_path / "segments").glob("*.mp4"))
+
+
+def test_one_long_composition_is_shared_across_all_workers(
+    browser_capture, capture_target, monkeypatch
+):
+    browser_capture.upload_limit = 0
+    browser_capture.composition_count = 1
+    browser_capture.range_count = 8
+    monkeypatch.setattr(capture_pool, "resolve_recording_worker_count", lambda: 4)
+    assert render_pass(capture_target)
+    assert {
+        index: len(recordings)
+        for index, recordings in browser_capture.recordings_by_worker.items()
+    } == {0: 2, 1: 2, 2: 2, 3: 2}

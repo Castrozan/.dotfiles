@@ -67,7 +67,10 @@ window.AmbientCanvasRecordingPlan = {
   ...window.AmbientCanvasRecordingPlan,
   async waitForSegmentAssetsToLoad() {},
   async resolveCompositionRecordingRanges() {
-    return [0, 1].map((startSeconds) => ({ durationSeconds: 1, startSeconds }));
+    return Array.from(
+      { length: Number(process.argv[6]) },
+      (_, startSeconds) => ({ durationSeconds: 1, startSeconds }),
+    );
   },
   buildManifestSegment(fingerprint, range) {
     return { fingerprint, durationSeconds: range.durationSeconds };
@@ -75,7 +78,10 @@ window.AmbientCanvasRecordingPlan = {
 };
 loadSource("recorder.js");
 window.AMBIENT_CANVAS_RECORD_DRIVER({
-  compositions: [0, 1, 2, 3].map((index) => ({ panes: [], index })),
+  compositions: Array.from({ length: Number(process.argv[5]) }, (_, index) => ({
+    panes: [],
+    index,
+  })),
   applyLayout(index) {
     currentComposition = index;
   },

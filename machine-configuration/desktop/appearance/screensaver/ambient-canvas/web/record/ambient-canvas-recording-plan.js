@@ -2,6 +2,7 @@
   const resolveRecordingParameters = (parameters) => {
     const numberOrDefault = (name, fallback) =>
       Number(parameters.get(name)) || fallback;
+    const workerCount = numberOrDefault("workerCount", 1);
     return {
       explicitCaptureDurationSeconds: numberOrDefault("seconds", 0),
       captureFramesPerSecond: numberOrDefault("fps", 60),
@@ -11,19 +12,24 @@
       outputPixelHeight: numberOrDefault("height", 1080),
       worker: {
         index: Number(parameters.get("workerIndex")),
-        count: numberOrDefault("workerCount", 1),
+        scheduledDurationSecondsByWorker: Array(workerCount).fill(0),
       },
     };
   };
 
-  const shouldRecordSegment = (
-    compositionIndex,
+  const assignSegmentRecording = (
+    recordingRange,
     worker,
     segmentFingerprint,
     recordedFingerprints,
   ) => {
+    const scheduledDurations = worker.scheduledDurationSecondsByWorker;
+    const assignedWorkerIndex = scheduledDurations.indexOf(
+      Math.min(...scheduledDurations),
+    );
+    scheduledDurations[assignedWorkerIndex] += recordingRange.durationSeconds;
     return (
-      compositionIndex % worker.count === worker.index &&
+      assignedWorkerIndex === worker.index &&
       !recordedFingerprints.has(segmentFingerprint)
     );
   };
@@ -116,7 +122,7 @@
 
   window.AmbientCanvasRecordingPlan = {
     resolveRecordingParameters,
-    shouldRecordSegment,
+    assignSegmentRecording,
     waitForSegmentAssetsToLoad,
     resolveRecordingRanges,
     resolveCompositionRecordingRanges,

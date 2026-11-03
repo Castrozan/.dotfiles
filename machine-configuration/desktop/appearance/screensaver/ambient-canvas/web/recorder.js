@@ -157,8 +157,8 @@
           ),
         );
         if (
-          !recordingPlan.shouldRecordSegment(
-            compositionIndex,
+          !recordingPlan.assignSegmentRecording(
+            recordingRange,
             worker,
             segmentFingerprint,
             alreadyRecordedFingerprints,
