@@ -14,10 +14,6 @@ let
   );
   windowPresence =
     action: "${pkgs.python312}/bin/python3 ${./scripts/conversation/desktop_window.py} ${action}";
-  transcriptionModel = pkgs.fetchurl {
-    url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
-    sha256 = "1fqi0h90ig4ifpyb44cfc7dmnndv2vy5mr9g22yng9fp6nly91df";
-  };
   speechVoices = import ./speech-voices.nix { inherit pkgs; };
   tools = lib.makeBinPath [
     programs.audio
@@ -161,22 +157,12 @@ in
             Environment = [ "PATH=${lib.makeBinPath [ pkgs.hyprland ]}" ];
           };
         };
-        avatar-transcriber = {
-          Unit = {
-            Description = "Local avatar speech transcription";
-            StopWhenUnneeded = true;
-          };
-          Service = {
-            ExecStart = "${pkgs.whisper-cpp-vulkan}/bin/whisper-server --host 127.0.0.1 --port 8767 --model ${transcriptionModel} --language auto --threads 4";
-            Restart = "on-failure";
-          };
-        };
         avatar-listener = {
           Unit = {
             Description = "Local avatar meeting listener";
             PartOf = [ "avatar-conversation.target" ];
-            After = [ "avatar-transcriber.service" ];
-            Requires = [ "avatar-transcriber.service" ];
+            After = [ "hex.service" ];
+            Wants = [ "hex.service" ];
           };
           Service = {
             ExecStart = toString programs.listener;

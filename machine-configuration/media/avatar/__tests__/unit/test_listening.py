@@ -152,8 +152,11 @@ def test_reading_prints_entries_after_the_sequence(tmp_path, capsys):
     assert [item["text"] for item in printed] == ["two"]
 
 
-def stub_transcriber_server(monkeypatch, payload):
-    response = Mock()
+def stub_hex(monkeypatch, tmp_path, status, payload):
+    discovery = tmp_path / "local-api.json"
+    discovery.write_text(json.dumps({"port": 42267, "token": "secret"}))
+    monkeypatch.setattr(transcriber, "HEX_DISCOVERY_FILE", discovery)
+    response = Mock(status=status)
     response.read.return_value = json.dumps(payload).encode()
     connection = Mock()
     connection.getresponse.return_value = response
@@ -163,28 +166,25 @@ def stub_transcriber_server(monkeypatch, payload):
     return connection
 
 
-def test_transcribe_posts_the_segment_and_returns_the_cleaned_text(monkeypatch):
-    connection = stub_transcriber_server(monkeypatch, {"text": " bom  dia "})
-    assert transcriber.transcribe(frame(1000)) == "bom dia"
-    method, path = connection.request.call_args.args
-    assert (method, path) == ("POST", "/inference")
-    assert connection.request.call_args.kwargs["headers"]["Content-Type"].startswith(
-        "multipart/form-data; boundary="
+def test_transcribe_posts_the_segment_to_hex_and_returns_the_cleaned_text(
+    monkeypatch, tmp_path
+):
+    connection = stub_hex(monkeypatch, tmp_path, 200, {"transcript": " bom  dia "})
+    assert transcriber.transcribe(frame(1000), "pt") == "bom dia"
+    assert connection.request.call_args.args == (
+        "POST",
+        "/transcriptions?model=parakeet_v3&language=pt",
     )
+    headers = connection.request.call_args.kwargs["headers"]
+    assert headers == {"Authorization": "Bearer secret", "Content-Type": "audio/wav"}
     connection.close.assert_called_once()
 
 
-def test_a_requested_language_reaches_the_transcriber():
-    assert b'name="language"\r\n\r\npt\r\n' in transcriber.multipart_body(
-        "boundary", b"audio", "pt"
-    )
-
-
 def test_language_stays_automatic_unless_requested():
-    assert b'name="language"' not in transcriber.multipart_body("boundary", b"audio")
+    assert transcriber.transcription_path(None) == "/transcriptions?model=parakeet_v3"
 
 
-def test_a_vocabulary_prompt_reaches_the_transcriber():
-    assert b'name="prompt"\r\n\r\nSilver\r\n' in transcriber.multipart_body(
-        "boundary", b"audio", prompt="Silver"
-    )
+def test_a_refused_segment_is_retried_as_a_connection_failure(monkeypatch, tmp_path):
+    stub_hex(monkeypatch, tmp_path, 429, {"code": "queue-full"})
+    with pytest.raises(OSError, match="queue-full"):
+        transcriber.transcribe(frame(1000))

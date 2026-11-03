@@ -2,13 +2,15 @@ import http.client
 import io
 import json
 import re
-import uuid
+import urllib.parse
 import wave
+from pathlib import Path
 
 from speech_segmenter import SAMPLE_RATE
 
-TRANSCRIBER_HOST = "127.0.0.1"
-TRANSCRIBER_PORT = 8767
+HEX_DISCOVERY_FILE = Path.home() / ".local/share/hex/local-api.json"
+HEX_HOST = "127.0.0.1"
+HEX_MODEL = "parakeet_v3"
 REQUEST_TIMEOUT_SECONDS = 60
 NON_SPEECH_MARKER = re.compile(r"^\s*(\[[^\]]*\]|\([^)]*\)|\*[^*]*\*)?\s*$")
 
@@ -27,44 +29,30 @@ def wav_bytes(pcm):
     return buffer.getvalue()
 
 
-def multipart_field(boundary, name, value):
-    return (
-        f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"'
-        f"\r\n\r\n{value}\r\n"
-    )
+def transcription_path(language):
+    selection = {"model": HEX_MODEL} | ({"language": language} if language else {})
+    return f"/transcriptions?{urllib.parse.urlencode(selection)}"
 
 
-def multipart_body(boundary, audio, language=None, prompt=None):
-    optional_fields = {"language": language, "prompt": prompt}
-    optional_parts = "".join(
-        multipart_field(boundary, name, value)
-        for name, value in optional_fields.items()
-        if value
-    )
-    return (
-        (
-            multipart_field(boundary, "response_format", "json")
-            + optional_parts
-            + f"--{boundary}\r\nContent-Disposition: form-data; "
-            f'name="file"; filename="segment.wav"\r\nContent-Type: audio/wav\r\n\r\n'
-        ).encode()
-        + audio
-        + f"\r\n--{boundary}--\r\n".encode()
-    )
-
-
-def transcribe(pcm, language=None, prompt=None):
-    boundary = uuid.uuid4().hex
+def transcribe(pcm, language=None):
+    discovery = json.loads(HEX_DISCOVERY_FILE.read_text())
     connection = http.client.HTTPConnection(
-        TRANSCRIBER_HOST, TRANSCRIBER_PORT, timeout=REQUEST_TIMEOUT_SECONDS
+        HEX_HOST, discovery["port"], timeout=REQUEST_TIMEOUT_SECONDS
     )
     try:
         connection.request(
             "POST",
-            "/inference",
-            body=multipart_body(boundary, wav_bytes(pcm), language, prompt),
-            headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+            transcription_path(language),
+            body=wav_bytes(pcm),
+            headers={
+                "Authorization": f"Bearer {discovery['token']}",
+                "Content-Type": "audio/wav",
+            },
         )
-        return clean_transcript(json.load(connection.getresponse()).get("text", ""))
+        response = connection.getresponse()
+        answer = json.load(response)
+        if response.status != 200:
+            raise ConnectionError(f"Hex refused the segment: {answer.get('code')}")
+        return clean_transcript(answer["transcript"])
     finally:
         connection.close()

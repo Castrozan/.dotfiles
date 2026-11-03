@@ -103,8 +103,8 @@ Meeting applications can add their own processing delay, so local alignment is n
 Audio routing uses PipeWire's [loopback](https://docs.pipewire.org/page_pulse_module_loopback.html) and
 [remapped source](https://docs.pipewire.org/page_pulse_module_remap_source.html) modules with explicit endpoints.
 
-Local transcription uses whisper.cpp's Vulkan build with the quantized small model: about one second per utterance on
-this machine's integrated GPU with a pinned language, and about a second more with language detection.
+Local transcription posts each utterance to the running [Hex](https://github.com/anomalyco/hex) service, which keeps
+Parakeet v3 loaded: about two seconds for seventeen seconds of speech, after a first load near eighteen seconds.
 
 `avatar-listen start` transcribes what this computer plays as the `meeting` source and the default microphone as the
 `human` source, locally, into a private transcript under the user runtime directory. `--microphone SOURCE` names another
