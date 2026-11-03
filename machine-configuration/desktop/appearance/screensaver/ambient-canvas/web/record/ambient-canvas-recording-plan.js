@@ -1,13 +1,42 @@
-window.AmbientCanvasRecordingPlan = (function buildRecordingPlan() {
-  function waitForSegmentAssetsToLoad(segmentHandle) {
+{
+  const resolveRecordingParameters = (parameters) => {
+    const numberOrDefault = (name, fallback) =>
+      Number(parameters.get(name)) || fallback;
+    return {
+      explicitCaptureDurationSeconds: numberOrDefault("seconds", 0),
+      captureFramesPerSecond: numberOrDefault("fps", 60),
+      uploadUrl: parameters.get("uploadUrl") ?? "",
+      themeBackgroundHex: parameters.get("themeBackground") ?? "",
+      outputPixelWidth: numberOrDefault("width", 1920),
+      outputPixelHeight: numberOrDefault("height", 1080),
+      worker: {
+        index: Number(parameters.get("workerIndex")),
+        count: numberOrDefault("workerCount", 1),
+      },
+    };
+  };
+
+  const shouldRecordSegment = (
+    compositionIndex,
+    worker,
+    segmentFingerprint,
+    recordedFingerprints,
+  ) => {
+    return (
+      compositionIndex % worker.count === worker.index &&
+      !recordedFingerprints.has(segmentFingerprint)
+    );
+  };
+
+  const waitForSegmentAssetsToLoad = (segmentHandle) => {
     return Promise.all(
       segmentHandle.renderers.map(function awaitOneRenderer(activeRenderer) {
         return activeRenderer.renderer.ready || Promise.resolve();
       }),
     );
-  }
+  };
 
-  function resolveSegmentRecordingSource(segmentHandle) {
+  const resolveSegmentRecordingSource = (segmentHandle) => {
     const recordingSources = segmentHandle.renderers
       .map(function resolveOneSource(activeRenderer) {
         if (!activeRenderer.renderer.resolveRecordingSource) {
@@ -17,13 +46,13 @@ window.AmbientCanvasRecordingPlan = (function buildRecordingPlan() {
       })
       .filter(Boolean);
     return recordingSources.length === 1 ? recordingSources[0] : null;
-  }
+  };
 
-  function normalizeSeconds(seconds) {
+  const normalizeSeconds = (seconds) => {
     return Math.round(seconds * 1000000) / 1000000;
-  }
+  };
 
-  function resolveRecordingRanges(recordingSource, chunkDurationSeconds) {
+  const resolveRecordingRanges = (recordingSource, chunkDurationSeconds) => {
     if (!recordingSource) {
       return [{ startSeconds: 0, durationSeconds: chunkDurationSeconds }];
     }
@@ -48,22 +77,22 @@ window.AmbientCanvasRecordingPlan = (function buildRecordingPlan() {
       });
     }
     return recordingRanges;
-  }
+  };
 
-  function hasPlayableRecordingSource(recordingSource) {
+  const hasPlayableRecordingSource = (recordingSource) => {
     return (
       recordingSource.sequence &&
       Number.isFinite(recordingSource.durationSeconds) &&
       recordingSource.durationSeconds > 0
     );
-  }
+  };
 
-  async function resolveCompositionRecordingRanges(
+  const resolveCompositionRecordingRanges = async (
     playbackController,
     compositionIndex,
     chunkDurationSeconds,
     nextAnimationFrame,
-  ) {
+  ) => {
     playbackController.applyLayout(compositionIndex);
     await nextAnimationFrame();
     const segmentHandle = playbackController.buildSegment(compositionIndex);
@@ -71,9 +100,9 @@ window.AmbientCanvasRecordingPlan = (function buildRecordingPlan() {
     const recordingSource = resolveSegmentRecordingSource(segmentHandle);
     playbackController.destroySegment(segmentHandle);
     return resolveRecordingRanges(recordingSource, chunkDurationSeconds);
-  }
+  };
 
-  function buildManifestSegment(segmentFingerprint, recordingRange) {
+  const buildManifestSegment = (segmentFingerprint, recordingRange) => {
     const manifestSegment = {
       fingerprint: segmentFingerprint,
       extension: "mp4",
@@ -83,12 +112,14 @@ window.AmbientCanvasRecordingPlan = (function buildRecordingPlan() {
       manifestSegment.sequence = recordingRange.sequence;
     }
     return manifestSegment;
-  }
+  };
 
-  return {
+  window.AmbientCanvasRecordingPlan = {
+    resolveRecordingParameters,
+    shouldRecordSegment,
     waitForSegmentAssetsToLoad,
     resolveRecordingRanges,
     resolveCompositionRecordingRanges,
     buildManifestSegment,
   };
-})();
+}

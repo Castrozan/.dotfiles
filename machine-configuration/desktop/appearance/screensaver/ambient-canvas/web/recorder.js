@@ -4,15 +4,16 @@
     return;
   }
 
-  const explicitCaptureDurationSeconds =
-    Number(recordParameters.get("seconds")) || 0;
-  const captureFramesPerSecond = Number(recordParameters.get("fps")) || 60;
-  const uploadUrl = recordParameters.get("uploadUrl") || "";
-  const workerIndex = Number(recordParameters.get("workerIndex")) || 0;
-  const workerCount = Number(recordParameters.get("workerCount")) || 1;
-  const themeBackgroundHex = recordParameters.get("themeBackground") || "";
-  const outputPixelWidth = Number(recordParameters.get("width")) || 1920;
-  const outputPixelHeight = Number(recordParameters.get("height")) || 1080;
+  const recordingPlan = window.AmbientCanvasRecordingPlan;
+  const {
+    explicitCaptureDurationSeconds,
+    captureFramesPerSecond,
+    uploadUrl,
+    themeBackgroundHex,
+    outputPixelWidth,
+    outputPixelHeight,
+    worker,
+  } = recordingPlan.resolveRecordingParameters(recordParameters);
   const targetBitsPerPixelPerFrame = 0.35;
   const keyFrameIntervalSeconds = 2;
   const encoderQueueHighWatermark = 8;
@@ -21,7 +22,6 @@
   const compositor = window.AmbientCanvasRecordingCompositor;
   const encoder = window.AmbientCanvasRecordingEncoder;
   const fingerprint = window.AmbientCanvasRecordingFingerprint;
-  const recordingPlan = window.AmbientCanvasRecordingPlan;
 
   window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES = {
     preserveDrawingBuffer: true,
@@ -157,8 +157,12 @@
           ),
         );
         if (
-          compositionIndex % workerCount !== workerIndex ||
-          alreadyRecordedFingerprints.has(segmentFingerprint)
+          !recordingPlan.shouldRecordSegment(
+            compositionIndex,
+            worker,
+            segmentFingerprint,
+            alreadyRecordedFingerprints,
+          )
         ) {
           continue;
         }

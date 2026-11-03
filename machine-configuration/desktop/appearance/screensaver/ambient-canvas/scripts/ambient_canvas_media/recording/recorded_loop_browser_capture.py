@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+from typing import NamedTuple
 
 from ambient_canvas_browser import (
     resolve_browser_executable_path,
@@ -11,8 +12,17 @@ from ambient_canvas_browser import (
 from recording.recorded_loop_capture_plan import (
     build_record_browser_arguments,
     build_record_index_url,
+    RecordingConfiguration,
 )
+from recording.recorded_loop_capture_target import RecordedLoopCaptureTarget
 from recorded_loop_upload_server import start_recorded_loop_upload_server
+
+
+class BrowserCaptureRequest(NamedTuple):
+    index_file_path: str
+    capture_target: RecordedLoopCaptureTarget
+    browser_application: str
+    configuration: RecordingConfiguration
 
 
 def terminate_browser_process(browser_process, throwaway_profile_directory):
@@ -31,17 +41,9 @@ def terminate_browser_process(browser_process, throwaway_profile_directory):
     )
 
 
-def drive_record_browser(
-    index_file_path,
-    capture_target,
-    browser_application,
-    duration_seconds,
-    frames_per_second,
-    theme_background_hex,
-    worker,
-    deadline,
-    cancellation_event,
-):
+def drive_record_browser(request, worker, deadline, cancellation_event):
+    index_file_path = request.index_file_path
+    capture_target = request.capture_target
     served_web_directory = os.path.dirname(index_file_path)
     upload_server = start_recorded_loop_upload_server(
         capture_target.loop_directory,
@@ -56,17 +58,15 @@ def drive_record_browser(
     record_index_url = build_record_index_url(
         record_page_url,
         f"http://127.0.0.1:{upload_server.upload_port}/upload",
-        duration_seconds,
-        frames_per_second,
         capture_target.capture_pixel_dimensions,
-        theme_background_hex,
+        request.configuration,
         worker,
     )
     browser_process = None
     try:
         browser_process = subprocess.Popen(
             build_record_browser_arguments(
-                resolve_browser_executable_path(browser_application),
+                resolve_browser_executable_path(request.browser_application),
                 record_index_url,
                 throwaway_profile_directory,
                 resolve_centered_window_geometry(*capture_target.screen_dimensions),

@@ -13,6 +13,7 @@ from ambient_canvas_theme import (
 from recording.recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
+    RecordingConfiguration,
 )
 from recording.recorded_loop_capture_target import (
     compose_recorded_source_identifier,
@@ -46,9 +47,9 @@ def render_recorded_loop(
         index_file_path,
         capture_target,
         browser_application,
-        duration_seconds,
-        frames_per_second,
-        theme_background_hex,
+        RecordingConfiguration(
+            duration_seconds, frames_per_second, theme_background_hex
+        ),
     )
     return commit_recorded_segment_manifest(
         capture_target.loop_directory,

@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const webDirectory = process.argv[2];
 const recordUrl = new URL(process.argv[3]);
 const uploadLimit = Number(process.argv[4]);
@@ -7,14 +7,17 @@ const encodedCompositions = [];
 let currentComposition;
 let uploadCount = 0;
 global.window = global;
-global.crypto = require("crypto").webcrypto;
+global.crypto = require("node:crypto").webcrypto;
 window.location = { search: recordUrl.search };
 window.requestAnimationFrame = (callback) => callback();
 window.close = () => {};
 function loadSource(relativePath) {
-  eval(fs.readFileSync(path.join(webDirectory, relativePath), "utf8"));
+  require("node:vm").runInThisContext(
+    fs.readFileSync(path.join(webDirectory, relativePath), "utf8"),
+  );
 }
 loadSource("record/ambient-canvas-recording-encoder.js");
+loadSource("record/ambient-canvas-recording-plan.js");
 loadSource("record/ambient-canvas-recording-fingerprint.js");
 const originalEncoder = window.AmbientCanvasRecordingEncoder;
 window.AmbientCanvasRecordingCompositor = {
@@ -43,8 +46,10 @@ window.AmbientCanvasRecordingEncoder = {
       },
     };
   },
-  async uploadRecordedSegment(...arguments) {
-    const stored = await originalEncoder.uploadRecordedSegment(...arguments);
+  async uploadRecordedSegment(...uploadArguments) {
+    const stored = await originalEncoder.uploadRecordedSegment(
+      ...uploadArguments,
+    );
     if (!stored) throw new Error("segment upload failed");
     uploadCount++;
     if (uploadLimit && uploadCount >= uploadLimit) {
@@ -53,12 +58,13 @@ window.AmbientCanvasRecordingEncoder = {
     }
     return stored;
   },
-  async uploadSegmentManifest(...arguments) {
-    await originalEncoder.uploadSegmentManifest(...arguments);
+  async uploadSegmentManifest(...uploadArguments) {
+    await originalEncoder.uploadSegmentManifest(...uploadArguments);
     process.stdout.write(JSON.stringify(encodedCompositions));
   },
 };
 window.AmbientCanvasRecordingPlan = {
+  ...window.AmbientCanvasRecordingPlan,
   async waitForSegmentAssetsToLoad() {},
   async resolveCompositionRecordingRanges() {
     return [0, 1].map((startSeconds) => ({ durationSeconds: 1, startSeconds }));

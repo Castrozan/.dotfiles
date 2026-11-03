@@ -5,7 +5,10 @@ import sys
 import threading
 import time
 
-from recording.recorded_loop_browser_capture import drive_record_browser
+from recording.recorded_loop_browser_capture import (
+    BrowserCaptureRequest,
+    drive_record_browser,
+)
 from recording.recorded_loop_capture_plan import (
     RecordingWorker,
     resolve_upload_wait_budget_seconds,
@@ -21,10 +24,11 @@ def capture_recorded_playlist(
     index_file_path,
     capture_target,
     browser_application,
-    duration_seconds,
-    frames_per_second,
-    theme_background_hex,
+    configuration,
 ):
+    request = BrowserCaptureRequest(
+        index_file_path, capture_target, browser_application, configuration
+    )
     worker_count = resolve_recording_worker_count()
     logging.getLogger("ambient_canvas.launcher").info(
         "recording_pool_started workers=%s", worker_count
@@ -36,12 +40,7 @@ def capture_recorded_playlist(
             recordings = [
                 executor.submit(
                     drive_record_browser,
-                    index_file_path,
-                    capture_target,
-                    browser_application,
-                    duration_seconds,
-                    frames_per_second,
-                    theme_background_hex,
+                    request,
                     RecordingWorker(worker_index, worker_count),
                     deadline,
                     cancellation_event,

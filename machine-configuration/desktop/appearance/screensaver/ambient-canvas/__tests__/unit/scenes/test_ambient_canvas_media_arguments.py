@@ -56,10 +56,8 @@ def test_build_record_index_url_encodes_record_query():
     record_url = capture_plan.build_record_index_url(
         "file:///store/index.html",
         "http://127.0.0.1:5000/upload",
-        30,
-        24,
         (1920, 1080),
-        "#241010",
+        capture_plan.RecordingConfiguration(30, 24, "#241010"),
         capture_plan.RecordingWorker(1, 4),
     )
     assert record_url.startswith("file:///store/index.html?")
@@ -78,10 +76,8 @@ def test_build_record_index_url_omits_seconds_so_the_playlist_derives_the_length
     record_url = capture_plan.build_record_index_url(
         "file:///store/index.html",
         "http://127.0.0.1:5000/upload",
-        None,
-        30,
         (1662, 1080),
-        "#241010",
+        capture_plan.RecordingConfiguration(None, 30, "#241010"),
         capture_plan.RecordingWorker(1, 4),
     )
     assert "seconds=" not in record_url

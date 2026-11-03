@@ -48,7 +48,9 @@ window.AmbientCanvasRecordingFingerprint = {
   async fetchRecordedSegmentFingerprints() { return new Set(); },
   async resolveCompositionFingerprint() { return 'segment'; },
 };
+eval(require("fs").readFileSync(process.argv[3], "utf8"));
 window.AmbientCanvasRecordingPlan = {
+  ...window.AmbientCanvasRecordingPlan,
   async waitForSegmentAssetsToLoad() {},
   async resolveCompositionRecordingRanges() {
     return [{durationSeconds: 3, startSeconds: 0}];
@@ -76,6 +78,7 @@ window.AMBIENT_CANVAS_RECORD_DRIVER({
             str(
                 RECORDER_PATH.parent / "record" / "ambient-canvas-recording-encoder.js"
             ),
+            str(RECORDER_PATH.parent / "record" / "ambient-canvas-recording-plan.js"),
         ],
         check=True,
         capture_output=True,

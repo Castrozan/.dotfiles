@@ -11,6 +11,12 @@ MINIMUM_RECORDED_BYTES_PER_SECOND = 2000
 RECORD_PASS_WALL_CLOCK_CEILING_SECONDS = 1800
 
 
+class RecordingConfiguration(NamedTuple):
+    duration_seconds: int | None
+    frames_per_second: int
+    theme_background_hex: str
+
+
 class RecordingWorker(NamedTuple):
     index: int
     count: int
@@ -31,10 +37,8 @@ def format_capture_signature(capture_pixel_dimensions):
 def build_record_index_url(
     index_file_url,
     upload_url,
-    duration_seconds,
-    frames_per_second,
     capture_pixel_dimensions,
-    theme_background_hex,
+    configuration,
     worker,
 ):
     capture_pixel_width, capture_pixel_height = capture_pixel_dimensions
@@ -42,14 +46,14 @@ def build_record_index_url(
         "record": "1",
         "workerIndex": str(worker.index),
         "workerCount": str(worker.count),
-        "fps": str(frames_per_second),
+        "fps": str(configuration.frames_per_second),
         "width": str(capture_pixel_width),
         "height": str(capture_pixel_height),
         "uploadUrl": upload_url,
-        "themeBackground": theme_background_hex,
+        "themeBackground": configuration.theme_background_hex,
     }
-    if duration_seconds is not None:
-        record_query_parameters["seconds"] = str(duration_seconds)
+    if configuration.duration_seconds is not None:
+        record_query_parameters["seconds"] = str(configuration.duration_seconds)
     record_query = urllib.parse.urlencode(record_query_parameters)
     return f"{index_file_url}?{record_query}"
 

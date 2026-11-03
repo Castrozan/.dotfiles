@@ -34,7 +34,7 @@ def test_workers_overlap_and_share_one_deadline(monkeypatch):
     monkeypatch.setattr(capture_pool, "resolve_recording_worker_count", lambda: 2)
     monkeypatch.setattr(capture_pool, "drive_record_browser", drive_browser)
     before = time.monotonic()
-    assert capture_pool.capture_recorded_playlist(*([None] * 6)) == manifest_bytes
+    assert capture_pool.capture_recorded_playlist(*([None] * 4)) == manifest_bytes
     assert {worker for worker, deadline in observed_workers} == {
         RecordingWorker(0, 2),
         RecordingWorker(1, 2),
@@ -59,7 +59,7 @@ def test_an_incomplete_worker_prevents_publication(monkeypatch, other_manifest):
             complete_manifest if arguments[-3].index == 0 else other_manifest
         ),
     )
-    assert capture_pool.capture_recorded_playlist(*([None] * 6)) is None
+    assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
 
 
 def test_conflicting_worker_plans_prevent_publication(monkeypatch):
@@ -75,7 +75,7 @@ def test_conflicting_worker_plans_prevent_publication(monkeypatch):
             }
         ).encode(),
     )
-    assert capture_pool.capture_recorded_playlist(*([None] * 6)) is None
+    assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
 
 
 def test_worker_failure_cancels_its_siblings(monkeypatch):
@@ -92,5 +92,5 @@ def test_worker_failure_cancels_its_siblings(monkeypatch):
 
     monkeypatch.setattr(capture_pool, "resolve_recording_worker_count", lambda: 2)
     monkeypatch.setattr(capture_pool, "drive_record_browser", drive_browser)
-    assert capture_pool.capture_recorded_playlist(*([None] * 6)) is None
+    assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
     assert cancelled_workers == [1]

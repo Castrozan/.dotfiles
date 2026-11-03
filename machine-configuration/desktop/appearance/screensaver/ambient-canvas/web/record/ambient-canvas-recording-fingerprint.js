@@ -7,7 +7,7 @@ window.AmbientCanvasRecordingFingerprint =
       const response = await fetch(new URL(endpointPath, uploadUrl).toString());
       if (!response.ok) {
         throw new Error(
-          "recording metadata request failed: " + response.status,
+          `recording metadata request failed: ${response.status}`,
         );
       }
       return response.json();

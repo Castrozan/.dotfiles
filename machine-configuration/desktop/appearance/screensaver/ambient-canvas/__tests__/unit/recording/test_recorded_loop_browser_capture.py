@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pytest
 
 from recording import recorded_loop_browser_capture as browser_capture
-from recording.recorded_loop_capture_plan import RecordingWorker
+from recording.recorded_loop_capture_plan import RecordingWorker, RecordingConfiguration
 
 
 @pytest.fixture
@@ -50,12 +50,12 @@ def capture_dependencies(monkeypatch, tmp_path):
 
 def run_browser(target, cancellation_event, deadline):
     return browser_capture.drive_record_browser(
-        "/web/index.html",
-        target,
-        "browser",
-        None,
-        60,
-        "#041c38",
+        browser_capture.BrowserCaptureRequest(
+            "/web/index.html",
+            target,
+            "browser",
+            RecordingConfiguration(None, 60, "#041c38"),
+        ),
         RecordingWorker(1, 4),
         deadline,
         cancellation_event,
@@ -104,7 +104,7 @@ def test_browser_launch_failure_closes_upload_server(capture_dependencies):
 
 @pytest.mark.parametrize("termination_failure", [None, "timeout", "missing"])
 def test_termination_cleans_only_its_profile_processes(
-    monkeypatch, termination_failure
+    monkeypatch, termination_failure, tmp_path
 ):
     process = Mock()
     if termination_failure == "timeout":
@@ -115,11 +115,10 @@ def test_termination_cleans_only_its_profile_processes(
     terminate_children = Mock()
     monkeypatch.setattr(browser_capture.subprocess, "run", terminate_children)
     monkeypatch.setattr(browser_capture.shutil, "which", lambda name: "/usr/bin/pkill")
-    browser_capture.terminate_browser_process(
-        process, "/tmp/ambient-canvas-record-owned"
-    )
+    profile_directory = str(tmp_path / "ambient-canvas-record-owned")
+    browser_capture.terminate_browser_process(process, profile_directory)
     terminate_children.assert_called_once_with(
-        ["/usr/bin/pkill", "-f", "/tmp/ambient-canvas-record-owned"],
+        ["/usr/bin/pkill", "-f", profile_directory],
         check=False,
         capture_output=True,
     )

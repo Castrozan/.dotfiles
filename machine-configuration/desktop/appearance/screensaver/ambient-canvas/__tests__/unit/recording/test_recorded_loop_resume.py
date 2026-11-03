@@ -25,9 +25,8 @@ def browser_capture(monkeypatch):
     encoded_compositions = []
     outcome_lock = threading.Lock()
 
-    def drive_browser(
-        index_path, target, browser, seconds, fps, theme, worker, *ignored
-    ):
+    def drive_browser(request, worker, *ignored):
+        target = request.capture_target
         server = start_recorded_loop_upload_server(
             target.loop_directory, str(WEB_DIRECTORY), target.scene_video_directory
         )
@@ -35,10 +34,8 @@ def browser_capture(monkeypatch):
             record_url = build_record_index_url(
                 f"http://127.0.0.1:{server.upload_port}/index.html",
                 f"http://127.0.0.1:{server.upload_port}/upload",
-                seconds,
-                fps,
                 target.capture_pixel_dimensions,
-                theme,
+                request.configuration,
                 worker,
             )
             completed = subprocess.run(
