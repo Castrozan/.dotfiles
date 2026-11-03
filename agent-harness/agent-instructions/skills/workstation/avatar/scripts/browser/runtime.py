@@ -40,6 +40,7 @@ def start(url):
                 "--remote-debugging-port=0",
                 "--autoplay-policy=no-user-gesture-required",
                 "--use-fake-ui-for-media-stream",
+                "--test-type",
                 "--disable-background-timer-throttling",
                 "--disable-renderer-backgrounding",
                 "--disable-backgrounding-occluded-windows",

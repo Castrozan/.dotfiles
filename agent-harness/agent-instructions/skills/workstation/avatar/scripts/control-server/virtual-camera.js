@@ -131,12 +131,6 @@ async function startCapture() {
 
   session.onOpen(async () => {
     console.log("✅ Connected to CDP");
-    await session.sendAndAwaitResult("Emulation.setDeviceMetricsOverride", {
-      width: CONFIG.WIDTH,
-      height: CONFIG.HEIGHT,
-      deviceScaleFactor: 1,
-      mobile: false,
-    });
     await dismissStartModal(session);
     receiveFrames(framePipeline);
   });
