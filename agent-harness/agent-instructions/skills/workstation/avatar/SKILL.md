@@ -29,11 +29,12 @@ Start the avatar before opening the meeting, or reload its page: Avatar Cam is l
 
 Run `avatar-command capabilities` for the current names. Once the avatar runs, choose from `characters` the description
 that best fits your Servant's personality and gender, ignoring the model's name, with `avatar-command character NAME`;
-that also sets your voice, and Servants may share one. Set the face with
-`expression NAME [INTENSITY]`, play a motion with `gesture NAME`, hold a body pose with `pose NAME`, move the eyes and
-head with `look TARGET`, and set resting motion with `idle MODE`. Unknown names fail, so read the list rather than
-guess. Pass the emotion to `speak`: it sets the face and the voice's delivery for that turn, then the previous
-expression returns. Use a gesture to punctuate a turn, sparingly.
+that also sets your voice, and Servants may share one.
+
+Set the face with `expression NAME [INTENSITY]`, play a motion with `gesture NAME`, hold a body pose with `pose NAME`,
+move the eyes and head with `look TARGET`, and set resting motion with `idle MODE`. Unknown names fail, so read the list
+rather than guess. Pass the emotion to `speak`: it sets the face and the voice's delivery for that turn, then the
+previous expression returns. Use a gesture to punctuate a turn, sparingly.
 
 `speak` text goes to ElevenLabs through the user's subscription in your character's voice and falls back to that
 character's local voice on failure. Its result names the `source` that spoke, so check it when the voice matters. Pass
