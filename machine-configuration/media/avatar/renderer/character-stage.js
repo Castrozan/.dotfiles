@@ -31,29 +31,31 @@ export class CharacterStage {
     const gltf = await this.loader.loadAsync(`/characters/${name}.vrm`);
     const vrm = gltf.userData.vrm;
     VRMUtils.rotateVRM0(vrm);
-    this.scene.add(vrm.scene);
     vrm.scene.updateMatrixWorld(true);
-    this.frameHead(vrm);
+    const focusHeight = this.focusHeightOf(vrm);
+    const performer = new AvatarPerformer({
+      vrm,
+      morphNames: faceMorphNames(gltf.parser.json),
+      gazeTarget: this.gazeTarget,
+      gazeOrigin: new THREE.Vector3(0, focusHeight, 1),
+      createExpression: (expressionName) => new VRMExpression(expressionName),
+      characterNames: this.names,
+    });
+    this.scene.add(vrm.scene);
+    this.camera.position.set(0, focusHeight, 1);
+    this.camera.lookAt(0, focusHeight, 0);
     if (this.vrm) {
       this.scene.remove(this.vrm.scene);
       VRMUtils.deepDispose(this.vrm.scene);
     }
     this.vrm = vrm;
-    this.performer = new AvatarPerformer({
-      vrm,
-      morphNames: faceMorphNames(gltf.parser.json),
-      gazeTarget: this.gazeTarget,
-      gazeOrigin: this.camera.position.clone(),
-      createExpression: (expressionName) => new VRMExpression(expressionName),
-      characterNames: this.names,
-    });
+    this.performer = performer;
   }
 
-  frameHead(vrm) {
+  focusHeightOf(vrm) {
     const head = vrm.humanoid.getNormalizedBoneNode("head");
     const headPosition = new THREE.Vector3();
     head.getWorldPosition(headPosition);
-    this.camera.position.set(0, headPosition.y - 0.04, 1);
-    this.camera.lookAt(0, headPosition.y - 0.04, 0);
+    return headPosition.y - 0.04;
   }
 }
