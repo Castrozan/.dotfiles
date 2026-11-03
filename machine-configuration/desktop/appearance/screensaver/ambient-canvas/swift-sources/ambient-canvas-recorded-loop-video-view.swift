@@ -6,6 +6,8 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
     private let recordedLoopPlayerLayer = AVPlayerLayer()
     private var recordedLoopPlayerLooper: AVPlayerLooper?
     private var shuffledSegmentPlayback: AmbientCanvasShuffledSegmentPlayback?
+    private var pendingPresentationRelease: DispatchWorkItem?
+    private var isPlaybackPaused = false
 
     private let playbackDwellOverrideFileUrl: URL
 
@@ -14,13 +16,15 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
         super.init(frame: .zero)
         wantsLayer = true
         let backingLayer = CALayer()
-        backingLayer.backgroundColor = AmbientCanvasPlayerWindowController
+        backingLayer.backgroundColor =
+            AmbientCanvasPlayerWindowController
             .deepNavyBackgroundColor.cgColor
         layer = backingLayer
 
         recordedLoopPlayerLayer.player = recordedLoopQueuePlayer
         recordedLoopPlayerLayer.videoGravity = .resizeAspect
-        recordedLoopPlayerLayer.backgroundColor = AmbientCanvasPlayerWindowController
+        recordedLoopPlayerLayer.backgroundColor =
+            AmbientCanvasPlayerWindowController
             .deepNavyBackgroundColor.cgColor
         backingLayer.addSublayer(recordedLoopPlayerLayer)
 
@@ -67,7 +71,19 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
     }
 
     func pausePlayback() {
-        recordedLoopPlayerLayer.player = nil
+        guard !isPlaybackPaused else {
+            return
+        }
+        isPlaybackPaused = true
+        let presentationRelease = DispatchWorkItem { [weak self] in
+            guard let self, self.isPlaybackPaused else {
+                return
+            }
+            self.recordedLoopPlayerLayer.player = nil
+            self.pendingPresentationRelease = nil
+        }
+        pendingPresentationRelease = presentationRelease
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: presentationRelease)
         guard let shuffledSegmentPlayback else {
             recordedLoopQueuePlayer.pause()
             return
@@ -76,7 +92,15 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
     }
 
     func resumePlayback() {
-        recordedLoopPlayerLayer.player = recordedLoopQueuePlayer
+        guard isPlaybackPaused else {
+            return
+        }
+        isPlaybackPaused = false
+        pendingPresentationRelease?.cancel()
+        pendingPresentationRelease = nil
+        if recordedLoopPlayerLayer.player == nil {
+            recordedLoopPlayerLayer.player = recordedLoopQueuePlayer
+        }
         guard let shuffledSegmentPlayback else {
             recordedLoopQueuePlayer.play()
             return

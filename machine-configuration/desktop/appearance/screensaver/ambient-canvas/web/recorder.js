@@ -6,7 +6,7 @@
 
   const explicitCaptureDurationSeconds =
     Number(recordParameters.get("seconds")) || 0;
-  const captureFramesPerSecond = Number(recordParameters.get("fps")) || 30;
+  const captureFramesPerSecond = Number(recordParameters.get("fps")) || 60;
   const uploadUrl = recordParameters.get("uploadUrl") || "";
   const themeBackgroundHex = recordParameters.get("themeBackground") || "";
   const outputPixelWidth = Number(recordParameters.get("width")) || 1920;
@@ -74,7 +74,6 @@
     const totalFrameCount = Math.round(
       durationSeconds * captureFramesPerSecond,
     );
-    const microsecondsPerFrame = 1000000 / captureFramesPerSecond;
     const keyFrameIntervalFrames = Math.round(
       keyFrameIntervalSeconds * captureFramesPerSecond,
     );
@@ -92,10 +91,11 @@
         outputPixelWidth,
         outputPixelHeight,
       );
-      const videoFrame = new VideoFrame(recordContext.canvas, {
-        timestamp: Math.round(frameIndex * microsecondsPerFrame),
-        duration: Math.round(microsecondsPerFrame),
-      });
+      const videoFrame = encoder.createVideoFrame(
+        recordContext.canvas,
+        frameIndex,
+        captureFramesPerSecond,
+      );
       videoEncoder.encode(videoFrame, {
         keyFrame: frameIndex % keyFrameIntervalFrames === 0,
       });

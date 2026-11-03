@@ -1,4 +1,14 @@
 window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
+  function createVideoFrame(canvas, frameIndex, framesPerSecond) {
+    const microsecondsPerFrame = 1000000 / framesPerSecond;
+    const timestamp = Math.round(frameIndex * microsecondsPerFrame);
+    const nextTimestamp = Math.round((frameIndex + 1) * microsecondsPerFrame);
+    return new VideoFrame(canvas, {
+      timestamp,
+      duration: nextTimestamp - timestamp,
+    });
+  }
+
   function createConfiguredMuxerAndEncoder(
     outputPixelWidth,
     outputPixelHeight,
@@ -23,7 +33,7 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
       },
     });
     videoEncoder.configure({
-      codec: "avc1.640028",
+      codec: "avc1.640033",
       width: outputPixelWidth,
       height: outputPixelHeight,
       bitrate: Math.round(
@@ -93,6 +103,7 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
   }
 
   return {
+    createVideoFrame,
     createConfiguredMuxerAndEncoder,
     waitForEncoderQueueToDrain,
     uploadRecordedSegment,
