@@ -46,6 +46,32 @@ def test_renderer_controls_answer_character_requests_with_their_identity():
     ]
 
 
+@requires_node
+def test_renderer_announces_its_character_on_every_connection():
+    program = r"""
+    const fs = require("node:fs");
+    class Socket { constructor() { this.sent = []; } send(value) { this.sent.push(JSON.parse(value)); } }
+    globalThis.BroadcastChannel = class {};
+    globalThis.WebSocket = Socket;
+    (async () => {
+      const source = fs.readFileSync(process.argv[1], "utf8");
+      const { RendererControls } = await import("data:text/javascript," + encodeURIComponent(source));
+      const controls = new RendererControls({}, { currentCharacter: () => "vita" });
+      controls.connect();
+      controls.socket.onopen();
+      console.log(JSON.stringify(controls.socket.sent));
+    })().catch(error => { console.error(error); process.exitCode = 1; });
+    """
+    source = AVATAR_DIRECTORY / "renderer/renderer-controls.js"
+    completed = subprocess.run(
+        ["node", "-e", program, str(source)], capture_output=True, text=True, check=True
+    )
+    assert json.loads(completed.stdout) == [
+        {"type": "identify", "role": "renderer"},
+        {"type": "characterChanged", "name": "vita"},
+    ]
+
+
 def fake_cold_open(tmp_path, monkeypatch):
     monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
     monkeypatch.setattr(listen_cli, "listening", lambda: False)

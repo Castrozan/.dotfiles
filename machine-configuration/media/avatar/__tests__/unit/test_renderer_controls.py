@@ -32,6 +32,7 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
         enableCamera: async identifier => { active = true; chosen = identifier; },
         disableCamera: () => { active = false; state.mode = "avatar"; },
         cameraActive: () => active,
+        currentCharacter: () => "vita",
       });
       controls.connect(); controls.socket.onopen();
       controls.dispatch({ type: "audioLevel", level: 0.1 });

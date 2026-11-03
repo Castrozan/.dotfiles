@@ -64,8 +64,15 @@ export class RendererControls {
 
   connect() {
     this.socket = new WebSocket("ws://127.0.0.1:8765");
-    this.socket.onopen = () =>
+    this.socket.onopen = () => {
       this.socket.send(JSON.stringify({ type: "identify", role: "renderer" }));
+      this.socket.send(
+        JSON.stringify({
+          type: "characterChanged",
+          name: this.actions.currentCharacter(),
+        }),
+      );
+    };
     this.socket.onmessage = (event) => this.dispatch(JSON.parse(event.data));
     this.socket.onclose = () => {
       this.state.mouthTarget = 0;

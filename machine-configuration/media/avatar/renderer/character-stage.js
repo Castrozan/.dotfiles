@@ -14,6 +14,7 @@ export class CharacterStage {
     scene.add(this.gazeTarget);
     this.names = [];
     this.vrm = null;
+    this.name = null;
     this.performer = null;
   }
 
@@ -49,6 +50,7 @@ export class CharacterStage {
       VRMUtils.deepDispose(this.vrm.scene);
     }
     this.vrm = vrm;
+    this.name = name;
     this.performer = performer;
   }
 

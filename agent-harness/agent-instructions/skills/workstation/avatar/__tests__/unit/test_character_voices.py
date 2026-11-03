@@ -57,20 +57,6 @@ def test_an_unknown_character_keeps_the_selected_voice():
 
 
 @requires_node
-def test_a_reloaded_renderer_returns_speech_to_the_first_character():
-    result = evaluate_node_json(
-        CHARACTER_VOICED_GENERATOR
-        + """
-        generator.selectCharacter("second");
-        generator.selectFirstCharacter();
-        generator.generate("oi", "turn", null, "neutral");
-        const result = calls[0][2];
-        """
-    )
-    assert result == "firstCloud"
-
-
-@requires_node
 def test_the_cloud_fallback_keeps_the_character_local_voice():
     result = evaluate_node_json(
         """

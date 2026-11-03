@@ -36,7 +36,6 @@ function handleIdentification(role, connection, context) {
 
   if (role === "renderer") {
     clientRegistry.registerRenderer(connection);
-    context.textToSpeechGenerator.selectFirstCharacter();
     acknowledgeIdentification(connection, "renderer");
     sendInitialStateToRenderer(connection, avatarState);
     return;

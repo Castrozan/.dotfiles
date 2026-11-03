@@ -2,11 +2,7 @@ class CharacterVoicedSpeechGenerator {
   constructor(speechGenerator, characters) {
     this.speechGenerator = speechGenerator;
     this.characters = characters;
-    this.selectFirstCharacter();
-  }
-
-  selectFirstCharacter() {
-    this.selected = this.characters[0];
+    this.selected = characters[0];
   }
 
   selectCharacter(name) {

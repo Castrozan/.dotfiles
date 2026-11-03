@@ -146,6 +146,7 @@ loadAvatar()
       endSpeech: () => stage.performer.endSpeech(),
       perform: (action, name) => stage.performer.perform(action, name),
       showCharacter: (name) => stage.show(name),
+      currentCharacter: () => stage.name,
       showMode,
       setPresented,
       enableCamera,
