@@ -1,8 +1,14 @@
 { pkgs, ... }:
+let
+  forwardToChise =
+    command:
+    pkgs.writeShellScriptBin command ''
+      exec ssh chise ${command} "$(printf '%q ' "$@")"
+    '';
+in
 {
-  home.packages = [
-    (pkgs.writeShellScriptBin "avatar-talk" ''
-      exec ssh chise avatar-talk "$(printf '%q ' "$@")"
-    '')
+  home.packages = map forwardToChise [
+    "avatar-talk"
+    "avatar-command"
   ];
 }
