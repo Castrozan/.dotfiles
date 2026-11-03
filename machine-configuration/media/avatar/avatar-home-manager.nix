@@ -8,9 +8,7 @@ let
   programs = import ./avatar-programs.nix { inherit pkgs lib; };
   characters = import ./characters.nix { inherit pkgs; };
   characterVoices = pkgs.writeText "avatar-character-voices.json" (
-    builtins.toJSON (
-      map (character: { inherit (character) name cloudVoice localVoice; }) characters
-    )
+    builtins.toJSON (map (character: { inherit (character) name cloudVoice localVoice; }) characters)
   );
   windowPresence =
     action: "${pkgs.python312}/bin/python3 ${./scripts/conversation/desktop_window.py} ${action}";
