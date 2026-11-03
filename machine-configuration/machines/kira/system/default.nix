@@ -12,7 +12,6 @@
 
   homebrew.casks = [
     "claude"
-    "firefox"
     "mongodb-compass"
   ];
 }

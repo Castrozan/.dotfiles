@@ -4,7 +4,7 @@
   ...
 }:
 let
-  inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
+  inherit (pkgs.stdenv.hostPlatform) isLinux;
 in
 {
   home.sessionVariables = lib.mkIf isLinux {
@@ -13,7 +13,6 @@ in
 
   programs.firefox = {
     enable = true;
-    package = if isDarwin then null else pkgs.firefox;
 
     policies = import ./browser-policies.nix;
 
