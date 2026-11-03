@@ -14,7 +14,9 @@ COMPOSITOR_SOURCE = (
 FINGERPRINT_SOURCE = (
     AMBIENT_CANVAS_WEB_DIRECTORY / "record" / "ambient-canvas-recording-fingerprint.js"
 ).read_text()
-RECORDER_SOURCE = (AMBIENT_CANVAS_WEB_DIRECTORY / "recorder.js").read_text()
+RECORDING_PLAN_SOURCE = (
+    AMBIENT_CANVAS_WEB_DIRECTORY / "record" / "ambient-canvas-recording-plan.js"
+).read_text()
 PLAYLIST_PATH = AMBIENT_CANVAS_WEB_DIRECTORY / "panes.js"
 SCENES_DIRECTORY = AMBIENT_CANVAS_WEB_DIRECTORY / "scenes"
 AUTHORING_SOURCES = {
@@ -185,6 +187,6 @@ def test_editing_the_palette_re_records_every_segment(tmp_path):
 
 
 def test_the_theme_background_participates_in_every_segment_fingerprint():
-    assert 'recordParameters.get("themeBackground")' in RECORDER_SOURCE
+    assert 'parameters.get("themeBackground")' in RECORDING_PLAN_SOURCE
     assert "themeBackgroundHex" in FINGERPRINT_SOURCE
     assert "themeBackground: themeBackgroundHex" in FINGERPRINT_SOURCE
