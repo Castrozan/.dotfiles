@@ -74,6 +74,7 @@ window.AmbientCanvasDeterministicVideoStepper =
     ) {
       let presentedMediaTimeSeconds = startSeconds;
       let sourceFrameDurationSeconds = 0;
+      let previousTargetSeconds = startSeconds;
 
       async function initialize() {
         const calibrationStartSeconds = resolveCalibrationStartSeconds(
@@ -103,11 +104,12 @@ window.AmbientCanvasDeterministicVideoStepper =
         const targetSeconds = resolveTargetSeconds(localElapsedSeconds);
         if (
           targetSeconds <
-          presentedMediaTimeSeconds - FRAME_TIME_TOLERANCE_SECONDS
+          previousTargetSeconds - FRAME_TIME_TOLERANCE_SECONDS
         ) {
           await seekVideoTo(videoElement, targetSeconds);
           presentedMediaTimeSeconds = targetSeconds;
         }
+        previousTargetSeconds = targetSeconds;
         while (
           presentedMediaTimeSeconds + sourceFrameDurationSeconds <=
           targetSeconds + FRAME_TIME_TOLERANCE_SECONDS
@@ -116,8 +118,6 @@ window.AmbientCanvasDeterministicVideoStepper =
             videoElement,
             presentedMediaTimeSeconds,
           );
-          sourceFrameDurationSeconds =
-            nextMediaTimeSeconds - presentedMediaTimeSeconds;
           presentedMediaTimeSeconds = nextMediaTimeSeconds;
         }
       }
