@@ -105,7 +105,21 @@ def test_generator_receives_the_gitlab_credentials(
     refresh.main(arguments_for(token_file, tmp_path / "exporter"))
 
     assert environments[0]["GITLAB_URL"] == "https://gitlab.example"
-    assert environments[0]["GITLAB_TOKEN"] == "gitlab-secret"
+    assert environments[0]["GITLAB_TOKEN"] == token_file.read_text().strip()
+
+
+def test_non_https_gitlab_url_is_refused_before_any_request(
+    tmp_path, token_file, reachable_gitlab, monkeypatch
+):
+    commands = record_commands(monkeypatch, graphs_differ=True)
+    arguments = arguments_for(token_file, tmp_path / "exporter")
+    arguments[1] = "file:///etc/passwd"
+
+    with pytest.raises(ValueError):
+        refresh.main(arguments)
+
+    assert reachable_gitlab == []
+    assert commands == []
 
 
 def test_unreachable_gitlab_fails_before_touching_the_checkout(

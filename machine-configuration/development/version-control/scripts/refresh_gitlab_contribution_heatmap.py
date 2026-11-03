@@ -30,6 +30,8 @@ def synchronize_exporter_checkout(checkout):
 
 
 def require_reachable_gitlab(gitlab_url, gitlab_token):
+    if not gitlab_url.startswith("https://"):
+        raise ValueError(f"GitLab URL must use https: {gitlab_url}")
     request = Request(
         f"{gitlab_url}/api/v4/user", headers={"PRIVATE-TOKEN": gitlab_token}
     )
