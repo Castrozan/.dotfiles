@@ -12,7 +12,7 @@ export class CharacterStage {
     this.loader.register((parser) => new VRMLoaderPlugin(parser));
     this.gazeTarget = new THREE.Object3D();
     scene.add(this.gazeTarget);
-    this.names = [];
+    this.characters = [];
     this.vrm = null;
     this.name = null;
     this.performer = null;
@@ -20,14 +20,15 @@ export class CharacterStage {
 
   async open() {
     const response = await fetch("/characters.json");
-    this.names = await response.json();
-    await this.show(this.names[0]);
+    this.characters = await response.json();
+    await this.show(this.characters[0].name);
   }
 
   async show(name) {
-    if (!this.names.includes(name))
+    const names = this.characters.map((character) => character.name);
+    if (!names.includes(name))
       throw new Error(
-        `Unknown character ${name}; choose one of ${this.names.join(", ")}`,
+        `Unknown character ${name}; choose one of ${names.join(", ")}`,
       );
     const gltf = await this.loader.loadAsync(`/characters/${name}.vrm`);
     const vrm = gltf.userData.vrm;
@@ -40,7 +41,7 @@ export class CharacterStage {
       gazeTarget: this.gazeTarget,
       gazeOrigin: new THREE.Vector3(0, focusHeight, 1),
       createExpression: (expressionName) => new VRMExpression(expressionName),
-      characterNames: this.names,
+      characters: this.characters,
     });
     this.scene.add(vrm.scene);
     this.camera.position.set(0, focusHeight, 1);

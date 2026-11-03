@@ -24,10 +24,10 @@ export class AvatarPerformer {
     gazeTarget,
     gazeOrigin,
     createExpression,
-    characterNames,
+    characters,
   }) {
     this.vrm = vrm;
-    this.characterNames = characterNames;
+    this.characters = characters;
     registerFaceExpressions(vrm, morphNames, createExpression);
     vrm.lookAt.target = gazeTarget;
     this.gaze = new Gaze(gazeTarget, gazeOrigin);
@@ -80,7 +80,7 @@ export class AvatarPerformer {
         poses: Object.keys(POSES),
         gaze: Object.keys(GAZE_TARGETS),
         idle: idleModes(),
-        characters: this.characterNames,
+        characters: this.characters,
       }),
     };
     if (!Object.hasOwn(actions, action))

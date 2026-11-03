@@ -27,8 +27,9 @@ Start the avatar before opening the meeting, or reload its page: Avatar Cam is l
 
 ### Performing
 
-Run `avatar-command capabilities` for the current names. Choose your character from `characters` with
-`avatar-talk open --character NAME`, or with `character NAME` while running. Set the face with
+Run `avatar-command capabilities` for the current names. Once the avatar runs, choose from `characters` the description
+that best fits your Servant's personality and gender, ignoring the model's name, with `avatar-command character NAME`;
+that also sets your voice, and Servants may share one. Set the face with
 `expression NAME [INTENSITY]`, play a motion with `gesture NAME`, hold a body pose with `pose NAME`, move the eyes and
 head with `look TARGET`, and set resting motion with `idle MODE`. Unknown names fail, so read the list rather than
 guess. Pass the emotion to `speak`: it sets the face and the voice's delivery for that turn, then the previous
