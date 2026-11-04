@@ -30,7 +30,7 @@ def stop_startup_processes(process, directory):
     for identifier in identifiers:
         try:
             os.killpg(identifier, signal.SIGKILL)
-        except ProcessLookupError:
+        except (ProcessLookupError, PermissionError):
             pass
     process.wait(timeout=5)
 
