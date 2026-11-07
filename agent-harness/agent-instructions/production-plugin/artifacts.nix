@@ -46,7 +46,9 @@ let
     {
       name = skillPath name;
       path =
-        if name == "research" then
+        if builtins.elem name skillCatalog.vendoredSkillNames then
+          skillCatalog.skillSourceDirectoryByName.${name}
+        else if name == "research" then
           import ../skills/knowledge/research/pulse/install.nix { inherit pkgs skillDirectory; }
         else
           skillDirectory;
@@ -175,5 +177,6 @@ in
     ];
     indexedSkills = skillCatalog.indexedSkillNamesFor interactiveSkillNames;
     repositorySkills = skillCatalog.dotfilesRepoSkillNames;
+    vendoredSkills = skillCatalog.vendoredSkillNames;
   };
 }

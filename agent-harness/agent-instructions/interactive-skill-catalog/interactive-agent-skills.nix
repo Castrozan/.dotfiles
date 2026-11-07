@@ -7,6 +7,7 @@ let
   inherit (skillSetBuilders)
     allSkillNames
     privateSkillNames
+    vendoredSkillNames
     skillSourceDirectoryByName
     skillDirectorySymlinksAtPrefix
     deployedSkillDirectory
@@ -125,6 +126,7 @@ in
 {
   inherit
     allSkillNames
+    vendoredSkillNames
     skillSourceDirectoryByName
     skillDirectorySymlinksAtPrefix
     deployedSkillDirectory
