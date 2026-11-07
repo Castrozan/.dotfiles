@@ -28,6 +28,8 @@ shared_system_prompt: &shared_system_prompt |
 
   herdr - Operate herdr workspaces, tabs, panes, processes, and persistent interactive agent sessions. Use for layout, process control, inspection, input, waiting, and takeover.
 
+  humanize - Use when writing for people outside a live session, like READMEs, PR or MR descriptions, handoffs, chat messages, emails, long-lived docs, bug reports, status updates, release notes. Not for live session replies.
+
   instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
 
   orchestrate - Delegate same-goal work to another interactive agent, harness, or machine over a2a, herdr, or ssh. Use to spawn parallel peers, dispatch, observe, correct, and repeat.
@@ -622,20 +624,20 @@ tests:
       output_equals:
         - "instructions"
 
-  - name: routing_to_docs_for_a_module_readme
+  - name: routing_to_docs_for_whether_a_readme_earns_its_place
     no_tools: true
     system_prompt: *shared_system_prompt
-    prompt: "Write a README for the new evaluation runner module."
+    prompt: "Does the new evaluation runner module need a README at all, or does the code already say enough? Decide."
     model: sonnet
     held_out: true
     assertions:
       output_equals:
         - "docs"
 
-  - name: routing_to_wellput_for_an_overlong_status_reply
+  - name: routing_to_wellput_for_an_overlong_reply
     no_tools: true
     system_prompt: *shared_system_prompt
-    prompt: "That status update was too long. Give me only the two things I need to act on."
+    prompt: "Your last reply was too long. Give me only the two things I need to act on."
     model: sonnet
     assertions:
       output_equals:
@@ -707,3 +709,12 @@ tests:
     assertions:
       output_equals:
         - "browser"
+
+  - name: routing_to_humanize_for_a_merge_request_description
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Draft the description text for this merge request so a reviewer can scan it; I will open the request myself."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "humanize"
