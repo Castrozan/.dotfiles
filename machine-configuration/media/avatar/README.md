@@ -79,8 +79,8 @@ delivery direction, then plays it into the meeting mix. Character timing shapes 
 default voice is Jessica. If the cloud fails or takes over 15 seconds, the same turn uses the local Kokoro voice
 `pf_dora`, which is also female and takes longer to start. Piper speaks only when Kokoro fails too, and every Portuguese
 Piper voice is male. A fourth argument of `pf_dora` or a Piper voice from `speech-voices.nix` stays local; any other
-fourth argument is an ElevenLabs voice ID. Only the text an agent chooses to speak leaves the machine: captured audio,
-transcripts and video never do.
+fourth argument is an ElevenLabs voice ID. Spoken text and each captured utterance go to ElevenLabs; transcripts and
+video stay on this machine.
 Speech from every agent shares one floor: turns run in arrival order, the agent channel opens only for a turn
 and returns to its previous mute state, and the command returns when the speech has finished or was cut off.
 `avatar-command stop-speaking` ends the current turn and drops the waiting ones. Applications playing local audio need
@@ -103,11 +103,13 @@ Meeting applications can add their own processing delay, so local alignment is n
 Audio routing uses PipeWire's [loopback](https://docs.pipewire.org/page_pulse_module_loopback.html) and
 [remapped source](https://docs.pipewire.org/page_pulse_module_remap_source.html) modules with explicit endpoints.
 
-Local transcription posts each utterance to the running [Hex](https://github.com/anomalyco/hex) service, which keeps
-Parakeet v3 loaded: about two seconds for seventeen seconds of speech, after a first load near eighteen seconds.
+Transcription posts each utterance to ElevenLabs [Scribe](https://elevenlabs.io/docs/capabilities/speech-to-text),
+about one second each, through the key `media-speech` uses, which needs the Speech to Text permission. On room audio it
+beat Hex's Parakeet and Whisper and invented nothing in silence; Parakeet ignores a pinned language and Whisper invents
+"Obrigado." A failed request falls back to the running [Hex](https://github.com/anomalyco/hex) service's Parakeet v3.
 
 `avatar-listen start` transcribes what this computer plays as the `meeting` source and the default microphone as the
-`human` source, locally, into a private transcript under the user runtime directory. `--microphone SOURCE` names another
+`human` source into a private transcript under the user runtime directory. `--microphone SOURCE` names another
 microphone. Pass `--language CODE` for a meeting in one language: detection on short clips invents other languages.
 The microphone is not echo-cancelled, so wear a headset: a phrase both sources hear within 15 seconds is kept once.
 Entries carry a `speaker` name when a voice enrolled with `avatar-listen enroll NAME --first N --last M` (at least 3
@@ -117,4 +119,4 @@ embeddings only.
 Capture ends rather than moves when its device disappears, then resumes on the current
 default output, so a Bluetooth drop cannot redirect it to a real microphone. `avatar-listen read --since N --wait 30`
 returns new entries and `avatar-listen follow --match NAME` streams them. `avatar-listen stop` or `avatar-stop` ends
-capture. Starting again replaces the transcript. Other people in a call are being transcribed: tell them.
+capture. Starting again replaces the transcript. Other people in a call are being transcribed by ElevenLabs: tell them.

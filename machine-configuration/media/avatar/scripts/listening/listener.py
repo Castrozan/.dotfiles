@@ -9,10 +9,10 @@ import threading
 import time
 from pathlib import Path
 
+import cloud_transcriber
 import speaker_identity
 from pending_speech import PendingSpeech
 import speech_segmenter
-import transcriber
 import transcript_echo
 import transcript_log
 
@@ -119,10 +119,10 @@ def enqueue_segment(segments, source, segment):
 def transcribe_when_ready(segment, language):
     for _ in range(TRANSCRIBER_ATTEMPTS):
         try:
-            return transcriber.transcribe(segment, language)
+            return cloud_transcriber.transcribe_with_local_fallback(segment, language)
         except OSError:
             time.sleep(TRANSCRIBER_RETRY_SECONDS)
-    raise TimeoutError("The local transcriber did not answer")
+    raise TimeoutError("No transcriber answered")
 
 
 @dataclasses.dataclass

@@ -72,8 +72,9 @@ Any agent on this machine can attend through commands alone: 1) `avatar-start`, 
 with `avatar-command speak TEXT EMOTION`, which the meeting and the user both hear; 5) `avatar-stop` when the meeting
 ends.
 
-Omit `--language` only when the meeting mixes languages: detection on short clips invents others. The meeting
-application must already have the user's `AvatarMicrophone` and `Avatar Cam` selected; agents do not choose its devices.
+Omit `--language` only when the meeting mixes languages: detection on short clips invents others. ElevenLabs
+transcribes every source, so the people in the call must be told. The meeting application must already have the user's
+`AvatarMicrophone` and `Avatar Cam` selected; agents do not choose its devices.
 
 Enroll a person's voice with `avatar-listen enroll NAME --first N --last M` only after they agree, picking the
 sequences from caption names.

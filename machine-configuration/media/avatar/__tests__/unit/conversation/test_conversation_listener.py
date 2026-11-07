@@ -99,7 +99,9 @@ def test_transcription_failure_still_releases_the_pending_marker(tmp_path, monke
 
 def test_the_requested_language_reaches_the_recognizer(tmp_path, monkeypatch):
     transcribe = Mock(return_value="oi")
-    monkeypatch.setattr(listener.transcriber, "transcribe", transcribe)
+    monkeypatch.setattr(
+        listener.cloud_transcriber, "transcribe_with_local_fallback", transcribe
+    )
     assert listener.transcribe_when_ready(b"pcm", "pt") == "oi"
     transcribe.assert_called_once_with(b"pcm", "pt")
 
