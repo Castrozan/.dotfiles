@@ -42,7 +42,7 @@ A migration shows the exact edit:
 ```
 
 | Deprecated | Replacement | Removed in |
-|---|---|---|
+| --- | --- | --- |
 | `--target` | `--targets` | 3.0 |
 
 **Sources:** [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

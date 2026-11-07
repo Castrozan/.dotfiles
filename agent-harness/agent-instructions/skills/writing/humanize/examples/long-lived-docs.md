@@ -11,7 +11,7 @@ ten to twenty; runbook entry one screen.
 Never mix these on one page; link between them instead.
 
 | Type | Reader need | Must | Must not | Title shape |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Tutorial | Learn by doing | Show a visible result at every step | Explain at length or offer choices | "Build your first X" |
 | How-to guide | Reach a goal, already competent | Ordered actions toward the goal | Teach or list every option | "How to integrate X" |
 | Reference | Look up facts while working | Neutral, consistent structure mirroring the product | Instruct or give opinions | The item's name |

@@ -31,6 +31,7 @@ for hook_module_directory in HOOKS_ROOT.rglob("*"):
         sys.path.insert(0, str(hook_module_directory))
 
 from hook_module_loader import (  # noqa: E402
+    HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     find_hook_module_path,
     import_hyphenated_hook_module,
     run_hook_subprocess,
@@ -148,7 +149,7 @@ def pinned_wellput_hook():
         capture_output=True,
         text=True,
         check=True,
-        timeout=300,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     ).stdout
     return Path(pinned_source) / "hooks/reply_hook.py"
 
