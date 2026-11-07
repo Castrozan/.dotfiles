@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pytest
 
 import listen_cli
-import listener
+import source_capture
 import speech_segmenter
 import transcriber
 import transcript_log
@@ -94,7 +94,7 @@ def test_segments_are_posted_as_wav():
 
 
 def test_capture_never_falls_back_to_another_device():
-    command = listener.capture_command("@DEFAULT_MONITOR@")
+    command = source_capture.capture_command("@DEFAULT_MONITOR@")
     assert "--device=@DEFAULT_MONITOR@" in command
     assert "--property=node.dont-reconnect=true" in command
     assert "--property=node.dont-fallback=true" in command

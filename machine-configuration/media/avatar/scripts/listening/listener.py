@@ -4,7 +4,6 @@ import os
 import queue
 import signal
 import subprocess
-import sys
 import threading
 import time
 from pathlib import Path
@@ -12,16 +11,14 @@ from pathlib import Path
 import cloud_transcriber
 import speaker_identity
 from pending_speech import PendingSpeech
-import speech_segmenter
+import source_capture
 import transcript_echo
 import transcript_log
+import turn_detector
 
-FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
-CAPTURE_RETRY_SECONDS = 1
 TRANSCRIBER_RETRY_SECONDS = 1
 TRANSCRIBER_ATTEMPTS = 30
 PENDING_SEGMENT_LIMIT = 16
-BARGE_IN_SECONDS = 0.6
 SPEECH_IN_PROGRESS_MARKER = "speech-in-progress"
 EMBEDDINGS_FILE = "embeddings.jsonl"
 
@@ -31,19 +28,8 @@ def runtime_directory():
     return Path(base) / "avatar"
 
 
-def capture_command(device):
-    return [
-        "parec",
-        f"--device={device}",
-        "--client-name=avatar-listener",
-        "--property=node.dont-reconnect=true",
-        "--property=node.dont-fallback=true",
-        "--raw",
-        "--format=s16le",
-        f"--rate={speech_segmenter.SAMPLE_RATE}",
-        "--channels=1",
-        "--latency-msec=100",
-    ]
+def every_pause_ends_the_turn(audio):
+    return True
 
 
 @dataclasses.dataclass
@@ -54,66 +40,7 @@ class Listening:
     interrupt_speaker: object
     language: str | None = None
     identify_speakers: bool = False
-
-
-class SourceSpeech:
-    def __init__(self, source, listening):
-        self.source = source
-        self.listening = listening
-        self.segmenter = speech_segmenter.SpeechSegmenter()
-        self.interrupted = False
-
-    def feed(self, frame):
-        was_active = self.segmenter.active
-        segment = self.segmenter.feed(frame)
-        if self.segmenter.active:
-            if not was_active:
-                self.listening.pending.begin()
-            self.interrupt_when_sustained()
-        elif was_active:
-            self.interrupted = False
-            self.hand_over(segment)
-
-    def interrupt_when_sustained(self):
-        if (
-            self.segmenter.sustained_seconds >= BARGE_IN_SECONDS
-            and not self.interrupted
-        ):
-            self.interrupted = True
-            self.listening.interrupt_speaker()
-
-    def hand_over(self, segment):
-        if segment is None or not enqueue_segment(
-            self.listening.segments, self.source, segment
-        ):
-            self.listening.pending.finish()
-
-    def abandon(self):
-        if self.segmenter.active:
-            self.listening.pending.finish()
-
-
-def capture_source(source, device, listening):
-    while not listening.stopping.is_set():
-        capture = subprocess.Popen(capture_command(device), stdout=subprocess.PIPE)
-        speech = SourceSpeech(source, listening)
-        while not listening.stopping.is_set() and (
-            frame := capture.stdout.read(FRAME_BYTES)
-        ):
-            speech.feed(frame)
-        speech.abandon()
-        capture.terminate()
-        capture.wait()
-        listening.stopping.wait(CAPTURE_RETRY_SECONDS)
-
-
-def enqueue_segment(segments, source, segment):
-    try:
-        segments.put_nowait((source, segment))
-        return True
-    except queue.Full:
-        print(f"Dropped a {source} segment: transcription is behind", file=sys.stderr)
-        return False
+    turn_finished: object = every_pause_ends_the_turn
 
 
 def transcribe_when_ready(segment, language):
@@ -132,12 +59,14 @@ class TranscriptRecorder:
     echoes: transcript_echo.EchoFilter
     identifier: object
 
-    def record(self, source, segment):
+    def record(self, source, segment, turn_finished):
         text = transcribe_when_ready(segment, self.listening.language)
         if not text or self.echoes.is_echo(source, text, time.time()):
             return
         speaker, embedding = self.identifier.identify(segment)
-        entry = transcript_log.append(self.path, source, text, speaker)
+        entry = transcript_log.append(
+            self.path, source, text, speaker, turn_finished=turn_finished
+        )
         if embedding:
             speaker_identity.append_embedding(
                 self.path.with_name(EMBEDDINGS_FILE), entry["sequence"], embedding
@@ -153,11 +82,11 @@ def write_transcript(path, listening):
     )
     while not listening.stopping.is_set():
         try:
-            source, segment = listening.segments.get(timeout=0.5)
+            source, segment, turn_finished = listening.segments.get(timeout=0.5)
         except queue.Empty:
             continue
         try:
-            recorder.record(source, segment)
+            recorder.record(source, segment, turn_finished)
         finally:
             listening.pending.finish()
 
@@ -173,6 +102,9 @@ def interrupt_speaker():
 def main():
     directory = runtime_directory()
     configuration = json.loads((directory / "listener.json").read_text())
+    detector = turn_detector.SmartTurnDetector(
+        os.environ[turn_detector.MODEL_ENVIRONMENT_VARIABLE]
+    )
     listening = Listening(
         segments=queue.Queue(maxsize=PENDING_SEGMENT_LIMIT),
         stopping=threading.Event(),
@@ -182,11 +114,12 @@ def main():
         else lambda: None,
         language=configuration.get("language"),
         identify_speakers=configuration.get("identify_speakers", False),
+        turn_finished=detector.finished,
     )
     signal.signal(signal.SIGTERM, lambda *_: listening.stopping.set())
     for source, device in configuration["sources"].items():
         threading.Thread(
-            target=capture_source,
+            target=source_capture.capture_source,
             args=(source, device, listening),
             daemon=True,
         ).start()

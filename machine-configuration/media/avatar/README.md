@@ -37,6 +37,10 @@ the default output plays, so neither the avatar's voice nor a video playing on t
 Nothing opens the physical microphone until a conversation opens, and `close` or closing the window ends that stream.
 Speaking for 0.6 seconds over the avatar stops it, so interrupting needs no agent turn.
 
+A pause alone does not end the speaker's turn. After each pause, [Smart Turn](https://github.com/pipecat-ai/smart-turn)
+v3.2 judges the turn's last 8 seconds of audio locally, and an unfinished turn holds the reply 2.5 seconds for the rest
+of the sentence instead of 0.5. Each transcript entry records that verdict as `turn_finished`.
+
 The renderer presents its canvas only during a conversation: a presented canvas in a hidden window intermittently
 stalled the camera near one frame per second, while a hidden canvas held 60.
 

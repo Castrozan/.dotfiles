@@ -5,6 +5,7 @@ import transcript_log
 
 POLL_SECONDS = 0.1
 SETTLE_SECONDS = 0.5
+UNFINISHED_TURN_SETTLE_SECONDS = 2.5
 UNFINISHED_SPEECH_LIMIT_SECONDS = 120
 CLOSED_MESSAGE = "No conversation is open; run avatar-talk open"
 
@@ -40,16 +41,22 @@ def wait_for_first_entries(directory, wait_seconds, still_open):
             return entries
 
 
+def settle_seconds_after(entries):
+    if entries[-1].get("turn_finished", True):
+        return SETTLE_SECONDS
+    return UNFINISHED_TURN_SETTLE_SECONDS
+
+
 def wait_for_finished_speech(directory, entries):
     transcript = directory / "transcript.jsonl"
     in_progress = directory / listener.SPEECH_IN_PROGRESS_MARKER
-    settled_at = time.monotonic() + SETTLE_SECONDS
+    settled_at = time.monotonic() + settle_seconds_after(entries)
     limit = time.monotonic() + UNFINISHED_SPEECH_LIMIT_SECONDS
     while time.monotonic() < limit:
         latest = transcript_log.read_since(transcript, last_heard(directory))
         if len(latest) > len(entries):
             entries = latest
-            settled_at = time.monotonic() + SETTLE_SECONDS
+            settled_at = time.monotonic() + settle_seconds_after(entries)
         if time.monotonic() >= settled_at and not in_progress.exists():
             break
         time.sleep(POLL_SECONDS)

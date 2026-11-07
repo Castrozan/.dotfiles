@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import listen_cli
 import listener
 import pytest
+import source_capture
 import talk_cli
 
 FRAME = b"\xb8\x0b" * 480
@@ -44,7 +45,7 @@ def test_a_stale_marker_from_a_killed_listener_is_cleared(tmp_path):
 
 def test_sustained_speech_interrupts_the_speaker_once_per_segment(tmp_path):
     listening = listening_with(tmp_path)
-    speech = listener.SourceSpeech("human", listening)
+    speech = source_capture.SourceSpeech("human", listening)
     for _ in range(40):
         speech.feed(FRAME)
     listening.interrupt_speaker.assert_called_once()
@@ -52,7 +53,7 @@ def test_sustained_speech_interrupts_the_speaker_once_per_segment(tmp_path):
 
 def test_a_short_noise_never_interrupts_and_leaves_nothing_pending(tmp_path):
     listening = listening_with(tmp_path)
-    speech = listener.SourceSpeech("human", listening)
+    speech = source_capture.SourceSpeech("human", listening)
     for frame in [FRAME] * 3 + [SILENT_FRAME] * 40:
         speech.feed(frame)
     listening.interrupt_speaker.assert_not_called()
@@ -61,7 +62,7 @@ def test_a_short_noise_never_interrupts_and_leaves_nothing_pending(tmp_path):
 
 def test_a_finished_segment_stays_pending_until_it_is_transcribed(tmp_path):
     listening = listening_with(tmp_path)
-    speech = listener.SourceSpeech("human", listening)
+    speech = source_capture.SourceSpeech("human", listening)
     for frame in [FRAME] * 30 + [SILENT_FRAME] * 40:
         speech.feed(frame)
     assert listening.segments.qsize() == 1
@@ -70,8 +71,8 @@ def test_a_finished_segment_stays_pending_until_it_is_transcribed(tmp_path):
 
 def test_a_segment_dropped_for_a_full_queue_is_not_left_pending(tmp_path):
     listening = listening_with(tmp_path)
-    listening.segments.put_nowait(("human", b"waiting"))
-    speech = listener.SourceSpeech("human", listening)
+    listening.segments.put_nowait(("human", b"waiting", True))
+    speech = source_capture.SourceSpeech("human", listening)
     for frame in [FRAME] * 30 + [SILENT_FRAME] * 40:
         speech.feed(frame)
     assert not (tmp_path / "marker").exists()
@@ -79,7 +80,7 @@ def test_a_segment_dropped_for_a_full_queue_is_not_left_pending(tmp_path):
 
 def test_capture_lost_mid_speech_leaves_nothing_pending(tmp_path):
     listening = listening_with(tmp_path)
-    speech = listener.SourceSpeech("human", listening)
+    speech = source_capture.SourceSpeech("human", listening)
     speech.feed(FRAME)
     speech.abandon()
     assert not (tmp_path / "marker").exists()
@@ -88,7 +89,7 @@ def test_capture_lost_mid_speech_leaves_nothing_pending(tmp_path):
 def test_transcription_failure_still_releases_the_pending_marker(tmp_path, monkeypatch):
     listening = listening_with(tmp_path)
     listening.pending.begin()
-    listening.segments.put_nowait(("human", b"pcm"))
+    listening.segments.put_nowait(("human", b"pcm", True))
     monkeypatch.setattr(
         listener, "transcribe_when_ready", Mock(side_effect=TimeoutError)
     )
