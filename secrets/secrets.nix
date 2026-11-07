@@ -53,6 +53,7 @@ in
   "credentials/obsidian/obsidian-headless-sync-config.age".publicKeys = all_keys;
   "credentials/viu-auth.age".publicKeys = all_keys;
   "credentials/home-assistant-token.age".publicKeys = all_keys;
+  "infrastructure/home-router-admin-credentials.age".publicKeys = all_keys;
   "credentials/media/samaritano-tracker.age".publicKeys = all_keys;
   "credentials/google-totp-secret.age".publicKeys = all_keys;
   "credentials/usage-reporting/gcp-usage-uploader-key.age".publicKeys = all_keys;

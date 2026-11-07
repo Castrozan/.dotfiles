@@ -43,6 +43,7 @@ in
   (secret "infrastructure/gpg-private-key" ../../../secrets/infrastructure/gpg-private-key.age)
   (secret "credentials/viu-auth" ../../../secrets/credentials/viu-auth.age)
   (secret "credentials/home-assistant-token" ../../../secrets/credentials/home-assistant-token.age)
+  (secret "infrastructure/home-router-admin-credentials" ../../../secrets/infrastructure/home-router-admin-credentials.age)
   (secret "credentials/google-totp-secret" ../../../secrets/credentials/google-totp-secret.age)
   (secret "credentials/gcp-usage-uploader-key" ../../../secrets/credentials/usage-reporting/gcp-usage-uploader-key.age)
   (secret "credentials/ingest-producer-secret" ../../../secrets/credentials/usage-reporting/ingest-producer-secret.age)
