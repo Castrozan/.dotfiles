@@ -100,29 +100,6 @@ def test_no_hardcoded_zanoni_home_paths_outside_zanoni_user_tree(
     )
 
 
-def _collect_symlinks_under(directory):
-    return [path for path in directory.rglob("*") if path.is_symlink()]
-
-
-def test_eval_config_symlinks_resolve():
-    eval_suite_directory = (
-        REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "evals"
-    )
-    if not eval_suite_directory.exists():
-        pytest.skip("agent-harness/quality/evaluations/evals not present")
-
-    broken_symlinks = []
-    for symlink_path in _collect_symlinks_under(eval_suite_directory):
-        if not symlink_path.exists():
-            broken_symlinks.append(f"{symlink_path} -> {os.readlink(symlink_path)}")
-
-    assert not broken_symlinks, (
-        "Broken symlink(s) under agent-harness/quality/evaluations/evals. The eval framework "
-        "imports these YAML files; a broken link crashes --list and "
-        "--save-baseline.\n" + "\n".join(broken_symlinks)
-    )
-
-
 REFERENCED_SCRIPT_PATTERN = re.compile(r"\b(launch-project-agent)\b")
 
 

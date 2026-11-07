@@ -1,32 +1,24 @@
-from pathlib import Path
-
-import yaml
-
-EVAL_SUITE_DIRECTORY = Path(__file__).resolve().parents[3] / "evals"
+from evaluation_suite_support import load_suite_cases
 
 JUDGE_GRADED_COMPLIANCE_SUITES = [
-    "instruction_compliance.yaml",
-    "workflows/workflow_compliance.yaml",
-    "workflows/delegation.yaml",
-    "core_rules.yaml",
+    "instruction_compliance",
+    "workflow_compliance",
+    "rebuild_mandate",
+    "delegation",
+    "core_rules",
 ]
+MINIMUM_RUBRIC_CHARACTERS = 20
 
 
-def test_converted_compliance_suites_grade_every_test_by_rubric():
+def test_compliance_suites_grade_every_case_by_rubric():
     for suite_name in JUDGE_GRADED_COMPLIANCE_SUITES:
-        tests = yaml.safe_load((EVAL_SUITE_DIRECTORY / suite_name).read_text())["tests"]
-        assert tests, suite_name
-        for test in tests:
-            rubrics = test["assertions"].get("llm_judge")
-            assert rubrics, f"{suite_name}:{test['name']} lost its rubric judge"
-            for criterion in rubrics:
-                rubric = (
-                    criterion["rubric"] if isinstance(criterion, dict) else criterion
-                )
-                assert len(rubric) > 20
-            assert "output_contains_any" not in test["assertions"], (
-                f"{suite_name}:{test['name']} still grades by substring"
-            )
-            assert "output_contains" not in test["assertions"], (
-                f"{suite_name}:{test['name']} still grades by substring"
+        cases = load_suite_cases(suite_name)
+        assert cases, suite_name
+        for case in cases:
+            rubrics = case["assercoes"].get("juiz")
+            assert rubrics, f"{suite_name}:{case['nome']} lost its rubric judge"
+            for rubric in rubrics:
+                assert len(rubric) > MINIMUM_RUBRIC_CHARACTERS
+            assert "contem" not in case["assercoes"], (
+                f"{suite_name}:{case['nome']} still grades by substring"
             )

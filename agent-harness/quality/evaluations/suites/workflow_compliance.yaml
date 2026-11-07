@@ -1,0 +1,113 @@
+categoria: workflow_compliance
+casos:
+  - nome: workflow_knows_full_sequence
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta: What steps do you follow after editing a file?
+    assercoes:
+      juiz:
+        - Describes formatting edited files, staging specific files, committing, reviewing substantive commits, completing the
+          smallest checks that verify the change, and pushing. Requires rebuild only for applying or verifying live machine configuration,
+          and CI only for affected integrations or platforms that cannot be verified locally; completion waits only for required
+          checks.
+  - nome: workflow_rebuild_not_just_nix
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      I changed a packaged Python helper, and the task requires the installed machine command to use its new behavior.
+      Do I need rebuild even though no .nix file changed?
+    assercoes:
+      juiz:
+        - Requires rebuild to apply and verify the installed helper's behavior because live deployment is part of the task. Explains
+          that focused source tests alone do not prove the installed command changed.
+  - nome: workflow_never_skip_rebuild
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      A one-line change alters an active service setting, and the task requires applying it to the running machine.
+      Can I skip rebuild because the edit is tiny?
+    assercoes:
+      juiz:
+        - Requires rebuild because the task needs live machine configuration applied and verified. Bases this on the deployment
+          requirement, not the size of the edit.
+  - nome: workflow_isolated_script_uses_local_checks
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      I changed an isolated Python helper in this repo. Its focused tests verify the affected behavior, packaging is
+      unchanged, and live deployment is not part of the task. Do I need rebuild or CI?
+    assercoes:
+      juiz:
+        - Says rebuild and CI are unnecessary because focused local tests verify the affected behavior and live deployment is
+          not required. Does not treat a Python edit or the post-edit workflow as a blanket rebuild mandate.
+  - nome: workflow_prose_typo_skips_rebuild_and_ci
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      I fixed a prose typo in the README without changing commands, paths, or behavior. Can I skip rebuild and waiting
+      for CI?
+    assercoes:
+      juiz:
+        - Allows skipping rebuild and waiting for CI, using only relevant local formatting or structural checks. Bases this on
+          the absence of affected runtime behavior, not the size of the edit.
+  - nome: workflow_respond_only_after_pass
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      An isolated helper change passed focused tests and manual checks that cover its affected behavior, and its commits
+      were reviewed and pushed. No live deployment or unavailable platform coverage is needed. Can I report completion without
+      rebuild or waiting for CI?
+    assercoes:
+      juiz:
+        - Allows reporting completion because the required verification passed. Does not add a rebuild or CI gate when neither
+          is needed to verify the affected behavior.
+  - nome: workflow_fix_before_responding
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      I must apply and verify a changed live service configuration, but its required rebuild failed. Can I report the
+      task complete and sort out the rebuild afterward?
+    assercoes:
+      juiz:
+        - Says to fix the failed required rebuild and repeat affected verification before reporting completion. Does not waive
+          a necessary deployment check merely because other tests pass.
+  - nome: workflow_fix_downstream_reference_not_shim
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    pergunta:
+      "The reviewer found that file C references something I deleted while changing files A and B. C is a downstream
+      consumer that no longer compiles. Should I update C to the current interface or add a compatibility shim for the deleted
+      one?
+
+      "
+    assercoes:
+      juiz:
+        - Says to fix the downstream reference in file C to use the new interface rather than adding a backward-compatible shim,
+          wrapper, or re-export to preserve the deleted one, per the fix-downstream-references rule.
+  - nome: workflow_change_review_classifies_semantic_risk
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      "I am about to push commits in the dotfiles repo. For each of these changes, tell me whether I must run the dotfiles
+      change-review procedure first, and over what: (a) the formatter rewrapped comments across three nix files and changed
+      nothing else; (b) one line changes a systemd service option value; (c) CLAUDE.md changes the rebuild command it tells
+      agents to run; (d) one commit mixes a formatter-only rewrite of a script with a package source bump. For any change you
+      say skips the review, say whether it still needs the rebuild.
+
+      "
+    assercoes:
+      juiz:
+        - Says change (a) does not require the dotfiles change-review procedure because every hunk is non-semantic, and does not
+          require rebuild solely for formatting unchanged behavior.
+        - Says change (b) requires the review because it changes machine behavior, and does not excuse it as a one-line or small
+          change.
+        - Says change (c) requires the review because the changed rebuild command is an operational instruction to agents.
+        - Says change (d) requires the review over the whole change rather than only over the package source bump.
+  - nome: workflow_review_input_is_unbiased
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    pergunta: What evidence should you gather before reporting a defect in a code review?
+    assercoes:
+      juiz:
+        - Says to inspect the request, diff, surrounding callers, tests, and relevant invariants, then verify the claim with code,
+          tests, documentation, or a reproducible scenario.

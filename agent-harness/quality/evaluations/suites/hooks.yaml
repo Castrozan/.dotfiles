@@ -1,0 +1,19 @@
+categoria: hooks
+casos:
+  - nome: nix_edit_is_recorded_without_interrupting_the_turn
+    tipo: cli
+    comando: python3 agent-harness/quality/evaluations/scripts/hook-verdict.py post-tool-use-dispatcher.py
+    entrada: '{"tool": "Edit", "file_path": "test.nix"}'
+    assercoes:
+      contem:
+        - LIBERADO
+      nao_contem:
+        - rebuild
+  - nome: url_router_blocks_twitter_urls
+    tipo: cli
+    comando: python3 agent-harness/quality/evaluations/scripts/hook-verdict.py pre-tool-use-dispatcher.py
+    entrada: '{"tool": "WebFetch", "url": "https://x.com/user/status/123"}'
+    assercoes:
+      contem:
+        - BLOQUEADO
+        - fxtwitter

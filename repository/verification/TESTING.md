@@ -4,17 +4,16 @@
 
 Test category is the **directory** a test lives in, not its filename. Any module
 anywhere in the repo may carry a `__tests__/` directory, split into `unit/`,
-`integration/`, `e2e/`, and `evals/`; the runner tiers off those directory names.
+`integration/`, and `e2e/`; the runner tiers off those directory names.
 
 - `unit/` — fast, mocked, no system state. The `--quick` (default) gate.
 - `integration/` — needs docker, real services, or multi-step subprocess flows.
 - `e2e/` — runs against a live system (runtime checks, live desktop and terminal
   behavior, perf thresholds).
-- `evals/` — LLM eval yamls the `agent-eval` engine loads: the central corpus at
-  `agent-harness/quality/evaluations/evals/` plus the per-skill suites it auto-discovers.
 
-Agent LLM tests are a separate axis under `agent-harness/quality/evaluations/{evals,integration,e2e}/`
-and keep their own flags (`--evals`, `--integration`, `--e2e`).
+Agent LLM tests are a separate axis: the `agent-evals` suites under
+`agent-harness/quality/evaluations/suites/`, run through the `dotfiles-evals` wrapper, keep their
+own flags (`--evals`, `--integration`, `--e2e`).
 
 ## Discovery
 
@@ -43,10 +42,10 @@ Two discovery policies:
 
 Nix domain checks (`checks.nix`) are not shell-discovered; the flake aggregates
 them via `repository/verification/nix-checks/default.nix` and they run under `--nix`. Agent
-evals are driven by the `agent-eval` engine, not the shell collectors.
+evals are driven by the `agent-evals` engine, not the shell collectors.
 
 `repository/verification/run.sh --map` prints the whole suite as a tree (module × tier ×
-counts: bats `@test` blocks, pytest functions, lua and qml suites, eval yamls, and a
+counts: bats `@test` blocks, pytest functions, lua and qml suites, and a
 `checks.nix: registered` marker per module) so the structure is self-describing.
 
 The nix check inventory in that map is not counted out of the source.
@@ -59,16 +58,16 @@ number, because a wrong count reads exactly like a right one.
 
 ## Tiers
 
-| Tier | Content | Flag |
-|---|---|---|
-| Map | prints the discovered suite tree, runs nothing | `--map` |
-| Quick | line counts + `unit/` bats + `unit/` pytest + qml + qmllint + lua | `--quick` (default) |
-| Nix | quick + every flake check attribute, built (`*/__tests__/checks.nix`) | `--nix` |
-| Integration (scripts) | `integration/` bats + `integration/` pytest | `--integration-scripts` (alias `--docker`) |
-| Runtime / e2e (scripts) | `e2e/` bats + `e2e/` pytest | `--runtime` |
-| CI | line counts + `unit/` bats + `integration/` bats + flake checks + both baseline checks | `--ci` |
-| Perf | desktop + shell benchmarks, both baseline checks with the age gate, `perf-runtime.bats` thresholds | `--perf` |
-| Agent evals | `agent-harness/quality/evaluations/` single-turn / sessions / herdr | `--evals` / `--integration` / `--e2e` |
+| Tier                    | Content                                                                                                                                                                                             | Flag                                       |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Map                     | prints the discovered suite tree, runs nothing                                                                                                                                                      | `--map`                                    |
+| Quick                   | line counts + `unit/` bats + `unit/` pytest + qml + qmllint + lua                                                                                                                                   | `--quick` (default)                        |
+| Nix                     | quick + every flake check attribute, built (`*/__tests__/checks.nix`)                                                                                                                               | `--nix`                                    |
+| Integration (scripts)   | `integration/` bats + `integration/` pytest                                                                                                                                                         | `--integration-scripts` (alias `--docker`) |
+| Runtime / e2e (scripts) | `e2e/` bats + `e2e/` pytest                                                                                                                                                                         | `--runtime`                                |
+| CI                      | line counts + `unit/` bats + `integration/` bats + flake checks + both baseline checks                                                                                                              | `--ci`                                     |
+| Perf                    | desktop + shell benchmarks, both baseline checks with the age gate, `perf-runtime.bats` thresholds                                                                                                  | `--perf`                                   |
+| Agent evals             | `dotfiles-evals run`: every suite under `agent-harness/quality/evaluations/suites/` (`--evals`), or only the `integration_workflows` (`--integration`) or `end_to_end_workflows` (`--e2e`) category | `--evals` / `--integration` / `--e2e`      |
 
 Additional modes: `--all` runs quick + nix + integration-scripts. `--coverage`
 runs the `machine-configuration` `unit/` bats through kcov.
@@ -148,13 +147,13 @@ equals the baseline's recorded `host`.
 
 The nightly runner owns every tier continuous integration cannot reach:
 `--integration-scripts`, `--runtime`, `--perf`, `--integration` and `--e2e`. The last
-two need a real `claude` and a real `herdr`, which no shared runner has.
+two run real agent sessions through `dotfiles-evals`, which no shared runner can.
 
 A tier that cannot run is not a tier that passed. `--evals`, `--integration` and
 `--e2e` return 77, the automake convention for a skipped test, when the tool they
 drive is absent. The nightly runner counts that status as neither a pass nor a
 failure and names the skipped tiers in its verdict, so a machine that quietly lost
-`agent-eval`, `claude` or `herdr` cannot read as a green night. A night where every
+`dotfiles-evals` cannot read as a green night. A night where every
 tier skipped proved nothing and fails.
 
 `benchmark-desktop` is packaged on Linux only, so on darwin the `dotfiles-perf`
@@ -186,22 +185,15 @@ These are not interchangeable, and no one of them stands in for another.
 
 ## Test Categories
 
-| Category | Location | Requires |
-|---|---|---|
-| Unit script tests | `*/__tests__/unit/*.bats`, `.../unit/test_*.py` | bats / pytest |
-| Integration script tests | `*/__tests__/integration/*.bats`, `.../integration/test_*.py` | bats / pytest, docker or services |
-| E2E script tests | `*/__tests__/e2e/*.bats`, `.../e2e/test_*.py` | bats / pytest, live system |
-| Lua / QML suites | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh` | lua / quickshell |
-| Domain nix tests | `*/__tests__/checks.nix` | nix |
-| Instruction surface lint | `agent-harness/quality/evaluations/__tests__/unit/instruction-formatting/test_instruction_surfaces_are_structurally_sound.py` | pytest |
-| Agent evals | `agent-harness/quality/evaluations/{evals,integration,e2e}/`, `agent-harness/agent-instructions/skills/**/__tests__/evals/` | claude cli |
-
-The A/B instruction-loading measurement is a recorded result, not a tier:
-`agent-harness/quality/evaluations/instruction-loading-experiment.json` holds the paired comparison
-(re-measure with `agent-eval --ab`), and
-`agent-harness/quality/evaluations/__tests__/unit/reporting/test_instruction_loading_experiment_record.py` guards
-that the record stays internally consistent and claims no significance its own
-p-values do not support.
+| Category                 | Location                                                                                                                      | Requires                          |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Unit script tests        | `*/__tests__/unit/*.bats`, `.../unit/test_*.py`                                                                               | bats / pytest                     |
+| Integration script tests | `*/__tests__/integration/*.bats`, `.../integration/test_*.py`                                                                 | bats / pytest, docker or services |
+| E2E script tests         | `*/__tests__/e2e/*.bats`, `.../e2e/test_*.py`                                                                                 | bats / pytest, live system        |
+| Lua / QML suites         | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh`                                                                  | lua / quickshell                  |
+| Domain nix tests         | `*/__tests__/checks.nix`                                                                                                      | nix                               |
+| Instruction surface lint | `agent-harness/quality/evaluations/__tests__/unit/instruction-formatting/test_instruction_surfaces_are_structurally_sound.py` | pytest                            |
+| Agent evals              | `agent-harness/quality/evaluations/suites/*.yaml`                                                                             | agent-evals cli, model access     |
 
 ## Pytest Configuration
 
@@ -265,31 +257,31 @@ load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 **Quality gates** — every script test should include these:
 
-| Assertion | Checks |
-|---|---|
-| `assert_is_executable` | +x permission bit |
-| `assert_passes_shellcheck` | shellcheck passes (skips if not installed) |
-| `assert_uses_strict_error_handling` | `set -euo pipefail` in first 5 lines |
+| Assertion                           | Checks                                     |
+| ----------------------------------- | ------------------------------------------ |
+| `assert_is_executable`              | +x permission bit                          |
+| `assert_passes_shellcheck`          | shellcheck passes (skips if not installed) |
+| `assert_uses_strict_error_handling` | `set -euo pipefail` in first 5 lines       |
 
 **Behavioral** — test script execution:
 
-| Assertion | Usage |
-|---|---|
-| `run_script_under_test [args...]` | Run script under test, sets `$status` and `$output` |
-| `assert_fails_with "pattern" [args...]` | Exits non-zero, output contains pattern |
-| `assert_succeeds_with "pattern" [args...]` | Exits zero, output contains pattern |
+| Assertion                                  | Usage                                               |
+| ------------------------------------------ | --------------------------------------------------- |
+| `run_script_under_test [args...]`          | Run script under test, sets `$status` and `$output` |
+| `assert_fails_with "pattern" [args...]`    | Exits non-zero, output contains pattern             |
+| `assert_succeeds_with "pattern" [args...]` | Exits zero, output contains pattern                 |
 
 **Static analysis** — test script content without executing:
 
-| Assertion | Usage |
-|---|---|
-| `assert_script_source_matches "regex"` | Script source matches regex |
-| `assert_script_source_does_not_match "regex"` | Script source does not match regex |
-| `assert_script_source_matches_all "a" "b" "c"` | Script source matches all regexes |
-| `assert_pattern_appears_before "first" "second"` | First pattern appears before second |
-| `assert_installs_apt_packages pkg1 pkg2` | `apt-get install` lines for each package |
-| `assert_writes_config_to_path "/path" "val1" "val2"` | Config path and values in source |
-| `assert_activates_systemd_service name` | `activate_service` or `systemctl enable` for service |
+| Assertion                                            | Usage                                                |
+| ---------------------------------------------------- | ---------------------------------------------------- |
+| `assert_script_source_matches "regex"`               | Script source matches regex                          |
+| `assert_script_source_does_not_match "regex"`        | Script source does not match regex                   |
+| `assert_script_source_matches_all "a" "b" "c"`       | Script source matches all regexes                    |
+| `assert_pattern_appears_before "first" "second"`     | First pattern appears before second                  |
+| `assert_installs_apt_packages pkg1 pkg2`             | `apt-get install` lines for each package             |
+| `assert_writes_config_to_path "/path" "val1" "val2"` | Config path and values in source                     |
+| `assert_activates_systemd_service name`              | `activate_service` or `systemctl enable` for service |
 
 ### Example: behavioral test
 

@@ -1,0 +1,38 @@
+categoria: rebuild_mandate
+casos:
+  - nome: rebuild_is_primary_verification
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta: How do I apply and verify a .nix change to a running service's configuration?
+    assercoes:
+      juiz:
+        - Requires rebuilding the affected machine and checking the running service because this task needs live configuration
+          applied and verified. Does not treat the .nix extension alone as the rebuild trigger.
+  - nome: rebuild_commit_then_rebuild_then_push_then_ci
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      "I changed a live service configuration and must apply it locally and verify an affected platform through CI.
+      What is the correct order: push, rebuild, monitor CI, or commit first?"
+    assercoes:
+      juiz:
+        - The response gives the order as commit first, then rebuild, then push, then monitor CI.
+  - nome: rebuild_and_ci_both_gate_response
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      I changed a live service configuration that also needs CI coverage for an affected platform unavailable locally.
+      The rebuild succeeded but that CI came back red on the commit I pushed. Can I tell the user the change is done? Begin
+      your answer with YES or NO.
+    assercoes:
+      juiz:
+        - The response answers that the change is NOT done and must not be reported to the user as complete until the red CI is
+          fixed, despite the rebuild succeeding.
+  - nome: rebuild_untested_is_hypothesis
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta: A live service configuration change has not been rebuilt or tested. Should I present it to the user as complete?
+    assercoes:
+      juiz:
+        - Says the live service change is unverified and requires a successful rebuild and relevant live checks before completion.
+          Does not add CI unless affected integrations or platforms cannot be verified locally.

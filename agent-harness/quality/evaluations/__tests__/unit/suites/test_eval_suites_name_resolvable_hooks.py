@@ -1,34 +1,36 @@
-from pathlib import Path
+import shlex
 
-import yaml
+from evaluation_suite_support import every_authored_case
+from instructions.instruction_surface_scanner import REPO_ROOT
 
-from runner.execution.run_evals_hook_test_runner import find_hook_script
-
-EVAL_SUITE_DIRECTORY = Path(__file__).resolve().parents[3] / "evals"
+HOOK_RUNTIME_ROOT = REPO_ROOT / "agent-harness" / "hooks" / "runtime"
+HOOK_VERDICT_SCRIPT = "hook-verdict.py"
 
 
 def hook_references_declared_by_every_suite():
-    for suite in sorted(EVAL_SUITE_DIRECTORY.rglob("*.yaml")):
-        for test in yaml.safe_load(suite.read_text()).get("tests") or []:
-            if test.get("hook"):
-                yield suite.name, test["name"], test["hook"]
+    for suite_path, case in every_authored_case():
+        if case.get("tipo") != "cli":
+            continue
+        arguments = shlex.split(case["comando"])
+        if not any(argument.endswith(HOOK_VERDICT_SCRIPT) for argument in arguments):
+            continue
+        yield suite_path.name, case["nome"], arguments[-1]
 
 
 def test_the_sweep_finds_hooks_to_check():
     assert list(hook_references_declared_by_every_suite()), (
-        "no eval suite declares a hook, so the resolution guard below would pass "
+        "no suite declares a hook case, so the resolution guard below would pass "
         "without checking anything"
     )
 
 
-def test_every_hook_named_by_any_eval_suite_resolves():
+def test_every_hook_named_by_any_suite_resolves():
     unresolved = [
         f"{suite}:{name} names {hook}"
         for suite, name, hook in hook_references_declared_by_every_suite()
-        if find_hook_script(hook) is None
+        if not list(HOOK_RUNTIME_ROOT.rglob(hook))
     ]
     assert not unresolved, (
-        "eval suites name hook scripts that no longer exist; a case whose hook "
-        f"cannot be resolved asserts nothing about the guard it claims to cover: "
-        f"{unresolved}"
+        "suites name hook scripts that no longer exist; a case whose hook cannot be "
+        f"resolved asserts nothing about the guard it claims to cover: {unresolved}"
     )

@@ -1,51 +1,68 @@
-from pathlib import Path
+import shlex
+import subprocess
 
-import yaml
+from evaluation_suite_support import load_suite_cases
+from instructions.instruction_surface_scanner import REPO_ROOT
 
-from runner.execution.run_evals_hook_test_runner import (
-    evaluate_hook_test,
-    find_hook_script,
-)
-
-ADVERSARIAL_SUITE = Path(__file__).resolve().parents[3] / "evals/adversarial.yaml"
-
-
-def load_adversarial_tests():
-    return yaml.safe_load(ADVERSARIAL_SUITE.read_text())["tests"]
+MINIMUM_ADVERSARIAL_CASES = 4
+BLOCKED_VERDICT = "BLOQUEADO"
+ALLOWED_VERDICT = "LIBERADO"
 
 
-def test_the_adversarial_injection_axis_is_not_empty():
-    tests = load_adversarial_tests()
-    assert len(tests) >= 4, (
+def verdict_output(case):
+    completed = subprocess.run(
+        shlex.split(case["comando"]),
+        input=case["entrada"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=True,
+    )
+    return completed.stdout
+
+
+def unmet_expectations(case, output):
+    assertions = case["assercoes"]
+    return [
+        *[
+            f"missing {text!r}"
+            for text in assertions.get("contem", [])
+            if text not in output
+        ],
+        *[
+            f"unexpected {text!r}"
+            for text in assertions.get("nao_contem", [])
+            if text in output
+        ],
+    ]
+
+
+def test_the_adversarial_axis_is_all_deterministic_hook_cases():
+    cases = load_suite_cases("adversarial")
+    assert len(cases) >= MINIMUM_ADVERSARIAL_CASES, (
         "the adversarial injection axis lost coverage; it must keep exercising the "
         "guards that stop an injected instruction from rewriting the agent's own "
         "rules or mass-staging unrelated work"
     )
+    assert all(case["tipo"] == "cli" for case in cases)
 
 
-def test_the_adversarial_axis_keeps_both_a_blocking_case_and_a_benign_control():
-    tests = load_adversarial_tests()
-    blocking = [t for t in tests if t["assertions"].get("hook_blocks") is True]
-    benign = [t for t in tests if t["assertions"].get("hook_blocks") is False]
-    assert blocking, "no blocking case: the axis would pass even with every guard off"
-    assert benign, (
+def test_the_adversarial_axis_keeps_a_blocking_case_and_a_benign_control():
+    verdicts = [
+        case["assercoes"]["contem"][0] for case in load_suite_cases("adversarial")
+    ]
+    assert BLOCKED_VERDICT in verdicts, (
+        "no blocking case: the axis would pass even with every guard off"
+    )
+    assert ALLOWED_VERDICT in verdicts, (
         "no benign control: the axis would pass even if a guard blocked everything"
     )
 
 
-def test_every_adversarial_hook_script_resolves():
-    unresolved = [
-        t["name"]
-        for t in load_adversarial_tests()
-        if find_hook_script(t["hook"]) is None
-    ]
-    assert not unresolved, f"adversarial tests name missing hook scripts: {unresolved}"
-
-
 def test_every_adversarial_guard_still_behaves_as_asserted():
     failures = {}
-    for test in load_adversarial_tests():
-        hook_failures = evaluate_hook_test(test)
-        if hook_failures:
-            failures[test["name"]] = hook_failures
+    for case in load_suite_cases("adversarial"):
+        unmet = unmet_expectations(case, verdict_output(case))
+        if unmet:
+            failures[case["nome"]] = unmet
     assert not failures, f"adversarial guards regressed: {failures}"

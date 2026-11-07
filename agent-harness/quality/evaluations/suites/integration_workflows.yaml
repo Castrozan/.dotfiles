@@ -1,0 +1,237 @@
+categoria: integration_workflows
+casos:
+  - nome: uses_glob_not_find
+    nivel: integracao
+    escreve: true
+    pergunta: "Find all Python files in this project. For each one, read it and
+
+      summarize what it does. Use the Glob tool to find files, not shell
+
+      commands.
+
+      "
+    tempo_limite_segundos: 120
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/main.py
+          conteudo: print('hello')
+        - caminho: src/utils.py
+          conteudo: "def helper(): pass"
+        - caminho: lib/core.py
+          conteudo: "class Core: pass"
+        - caminho: tests/test_main.py
+          conteudo: "def test_main(): assert True"
+    assercoes: {}
+    pendente: true
+  - nome: investigation_before_fix
+    nivel: integracao
+    escreve: true
+    pergunta: 'Bug report: handle_request crashes with KeyError when called with
+
+      {"user_id": 999}. Investigate the full call chain before fixing.
+
+      '
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/api.py
+          conteudo:
+            "from src.database import get_user_by_id\nfrom src.validator import validate_user_input\n\ndef handle_request(request_data):\n\
+            \    validated_data = validate_user_input(request_data)\n    user = get_user_by_id(validated_data[\"user_id\"])\n\
+            \    return {\"status\": \"ok\", \"user\": user}\n"
+        - caminho: src/database.py
+          conteudo: "USERS = {1: {\"name\": \"Alice\"}, 2: {\"name\": \"Bob\"}}\n\ndef get_user_by_id(user_id):\n    return USERS[user_id]\n"
+        - caminho: src/validator.py
+          conteudo:
+            "def validate_user_input(data):\n    if \"user_id\" not in data:\n        raise ValueError(\"missing user_id\"\
+            )\n    return data\n"
+    assercoes: {}
+    pendente: true
+  - nome: no_comments_in_code
+    nivel: integracao
+    escreve: true
+    pergunta:
+      "Refactor the process function in app.py. It should filter negative numbers
+
+      and double the positive ones. Use descriptive function and variable names.
+
+      Do not add any comments.
+
+      "
+    tempo_limite_segundos: 120
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: app.py
+          conteudo:
+            "def process(data):\n    result = []\n    for item in data:\n        if item > 0:\n            result.append(item\
+            \ * 2)\n    return result\n"
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- app.py
+          regex: .
+        - executa: cat app.py
+          nao_regex: '\#\ '
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: '\#\ '
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: '//\ '
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: '/\*\ '
+  - nome: no_comments_unprompted
+    nivel: integracao
+    escreve: true
+    pergunta:
+      "In inventory.py, implement add_stock(item_name, quantity) and remove_stock(item_name, quantity).
+
+      add_stock increases the item's count, creating the entry when it is missing. remove_stock
+
+      decreases the count but never below zero, and deletes the entry entirely once the count reaches
+
+      zero. Use clear, descriptive names.
+
+      "
+    tempo_limite_segundos: 120
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: inventory.py
+          conteudo: "stock_by_item_name = {}
+
+            "
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- inventory.py
+          regex: .
+        - executa: cat inventory.py
+          nao_regex: '\#\ '
+        - executa: cat inventory.py
+          nao_regex: '"""'
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: '\#\ '
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: '"""'
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: "'''"
+  - nome: realistic_bug_fix_multi_file
+    nivel: integracao
+    escreve: true
+    pergunta:
+      "Bug report: register_new_user sends the welcome notification but never
+
+      actually saves the user to the database. After registration, the user
+
+      cannot log in because find_user_by_email returns None.
+
+
+      Investigate the full call chain across all files, find the root cause,
+
+      and fix it. Make sure existing tests still pass and add a test that
+
+      would have caught this bug.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/user_service.py
+          conteudo:
+            "from src.user_repository import find_user_by_email\nfrom src.notification_sender import send_welcome_notification\n\
+            \ndef register_new_user(registration_data):\n    email = registration_data.get(\"email\")\n    existing = find_user_by_email(email)\n\
+            \    if existing:\n        raise ValueError(\"email already registered\")\n    user = {\"email\": email, \"name\"\
+            : registration_data.get(\"name\")}\n    send_welcome_notification(user)\n    return user\n"
+        - caminho: src/user_repository.py
+          conteudo:
+            "USERS_DATABASE = {}\n\ndef find_user_by_email(email):\n    for user_id, user in USERS_DATABASE.items():\n\
+            \        if user[\"email\"] == email:\n            return user\n    return None\n\ndef save_user(user):\n    import\
+            \ uuid\n    user_id = str(uuid.uuid4())\n    USERS_DATABASE[user_id] = user\n    return user_id\n"
+        - caminho: src/notification_sender.py
+          conteudo:
+            "SENT_NOTIFICATIONS = []\n\ndef send_welcome_notification(user):\n    notification = {\n        \"to\": user[\"\
+            email\"],\n        \"subject\": f\"Welcome {user['name']}\",\n        \"body\": \"Thanks for signing up!\",\n    }\n\
+            \    SENT_NOTIFICATIONS.append(notification)\n    return notification\n"
+        - caminho: tests/test_registration.py
+          conteudo:
+            "from src.user_service import register_new_user\nfrom src.user_repository import USERS_DATABASE\n\ndef test_register_new_user_creates_user():\n\
+            \    USERS_DATABASE.clear()\n    result = register_new_user({\"email\": \"test@example.com\", \"name\": \"Test\"})\n\
+            \    assert result[\"email\"] == \"test@example.com\"\n\ndef test_register_duplicate_email_raises():\n    USERS_DATABASE.clear()\n\
+            \    register_new_user({\"email\": \"dup@example.com\", \"name\": \"First\"})\n    try:\n        register_new_user({\"\
+            email\": \"dup@example.com\", \"name\": \"Second\"})\n        assert False, \"should have raised\"\n    except ValueError:\n\
+            \        pass\n"
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/user_service.py
+          regex: .
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: \#\ TODO
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: \#\ FIXME
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: \#\ fix
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: \#\ save
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: \#\ add
+  - nome: refactor_enforces_naming_conventions
+    nivel: integracao
+    escreve: true
+    pergunta:
+      "Refactor src/proc.py. The function and variable names are unreadable
+
+      abbreviations. Replace them with long, descriptive, self-documenting
+
+      names. Do not add any comments - the names themselves must explain
+
+      the code. Split into focused single-responsibility functions if needed.
+
+      "
+    tempo_limite_segundos: 120
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/proc.py
+          conteudo:
+            "def proc(d, t):\n    r = []\n    for i in d:\n        if i[\"ts\"] > t:\n            v = i[\"val\"] * i[\"\
+            qty\"]\n            if v > 100:\n                r.append({\"id\": i[\"id\"], \"total\": v, \"status\": \"high\"})\n\
+            \            else:\n                r.append({\"id\": i[\"id\"], \"total\": v, \"status\": \"low\"})\n    return r\n\
+            \ndef fmt(items):\n    out = \"\"\n    for i in items:\n        out += f\"{i['id']}: {i['total']} ({i['status']})\\\
+            n\"\n    return out\n"
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/proc.py
+          regex: .
+        - executa: cat src/proc.py
+          nao_regex: '\#\ '
+        - executa: cat src/proc.py
+          nao_regex: def\ proc\(
+        - executa: cat src/proc.py
+          nao_regex: def\ fmt\(
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: '\#\ '
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: def\ proc\(
+        - executa: "{ git diff --name-only HEAD; git ls-files -o --exclude-standard; } | sort -u | xargs -r cat"
+          nao_regex: def\ fmt\(
+  - nome: workflow_sequence_nix_edit
+    nivel: integracao
+    escreve: true
+    pergunta: "Add pkgs.curl to the buildInputs list in default.nix.
+
+      Follow the standard workflow after editing.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: default.nix
+          conteudo: "{ pkgs ? import <nixpkgs> {} }:\npkgs.mkShell {\n  buildInputs = [\n    pkgs.hello\n  ];\n}\n"
+    assercoes:
+      comandos_executados:
+        - nix
+      comandos:
+        - executa: cat default.nix
+          regex: pkgs\.curl

@@ -1,0 +1,58 @@
+categoria: builtin_feature_awareness
+casos:
+  - nome: worktrees_knows_builtin_flag
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/development/coding/references/worktrees.md
+    pergunta:
+      I need to run a quick isolated task. Should I always create a manual worktree, or is there a simpler built-in
+      option?
+    assercoes:
+      juiz:
+        - Points at the built-in worktree flag or the EnterWorktree tools as the simpler option for quick throwaway isolation,
+          and reserves the manual worktree workflow for persistent, multi-branch, or pull request work.
+  - nome: deep_work_recovers_from_persisted_state
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/agent-workflows/deep-work/SKILL.md
+    pergunta: What should happen to deep-work context when conversation history is compacted or lost?
+    assercoes:
+      juiz:
+        - Says to recover from the persisted deep-work workspace by reading the prompts, plan, progress, and context files, then
+          continue without asking the user to repeat information already stored there.
+  - nome: claude_skill_knows_builtin_agents
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/workstation/herdr/SKILL.md
+    pergunta:
+      I need several agents editing code in parallel. Nobody needs to watch them and the work does not have to outlive
+      this conversation. Should I spawn a separate herdr Claude agent with 'herdr agent start' for each one, or is there a better
+      fit?
+    assercoes:
+      juiz:
+        - Says a herdr agent is not the right fit here because nobody needs to watch or take over the work, and uses a workflow
+          or native subagents with a separate worktree per editor. Does not rely only on non-overlapping file assignments in a
+          shared checkout.
+  - nome: project_claudemd_no_duplication
+    nivel: unidade
+    system_prompt:
+      You are a configuration auditor. Judge only the CLAUDE.md content quoted in the message, never any file on
+      disk, and say whether it duplicates core behavior instructions or is properly scoped.
+    pergunta:
+      "Audit only the content between the markers below. Do not read any file from disk.
+
+
+      --- BEGIN CLAUDE.md ---
+
+      # Dotfiles Repository
+
+
+      Nix-based dotfiles repository managing system and home configurations across NixOS and standalone home-manager hosts.
+      Use the nix skill for repository patterns, directory organization, rebuild workflow, and anti-patterns. Use the coding
+      skill for implementation and verification. Core behavior instructions live in the global CLAUDE.md, so do not duplicate
+      them here.
+
+      --- END CLAUDE.md ---"
+    assercoes:
+      juiz:
+        - Judges the file as properly scoped to the project and correctly deferring core behavior to the global instructions,
+          rather than calling it incomplete for omitting core instructions.

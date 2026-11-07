@@ -1,0 +1,48 @@
+projeto: dotfiles-agent-instructions
+casos:
+  - agent-harness/quality/evaluations/suites/*.yaml
+  - agent-harness/agent-instructions/skills/**/__tests__/evals/*.yaml
+baseline: agent-harness/quality/evaluations/baseline.json
+relatorio: agent-harness/quality/evaluations/resultado/relatorio.html
+paginas: agent-harness/quality/evaluations/public
+sujeito:
+  cliente: codex
+modelo_padrao:
+  codex: gpt-6.1-sol
+  claude: haiku
+esforco_padrao:
+  codex: high
+  claude: high
+juiz:
+  cliente: codex
+  modelo: gpt-6-luna
+  esforco: high
+  calibracao: agent-harness/quality/evaluations/calibracao.yaml
+descoberta:
+  instrucoes: [AGENTS.md]
+  ignorar:
+    - private-configuration/**
+    - "**/node_modules/**"
+    - "**/__tests__/fixtures/**"
+    - agent-harness/quality/evaluations/resultado/**
+execucoes:
+  unidade: 2
+  integracao: 2
+  ponta-a-ponta: 2
+limites:
+  piso_geral: 0.75
+  piso_critico: 0.85
+  queda_maxima: 0.05
+  validade_dias: 30
+  categorias_criticas:
+    [
+      instruction_compliance,
+      workflow_compliance,
+      rebuild_mandate,
+      delegation,
+      core_rules,
+    ]
+  categorias_obrigatorias: [skill_routing, instruction_compliance, core_rules]
+  execucoes_minimas: 2
+paralelismo: 4
+tempo_limite_segundos: 180

@@ -24,6 +24,28 @@
         "type": "github"
       }
     },
+    "agent-evals": {
+      "inputs": {
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794086532,
+        "narHash": "sha256-+5Yuwr6Ecx9IB7lDFNH8Gzosv92pUnXfMVkOgLcrMFI=",
+        "owner": "Castrozan",
+        "repo": "agent-evals",
+        "rev": "dbb3b9435fdea35602643a675a15b79b3e3a88a6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Castrozan",
+        "repo": "agent-evals",
+        "rev": "dbb3b9435fdea35602643a675a15b79b3e3a88a6",
+        "type": "github"
+      }
+    },
     "aquamarine": {
       "inputs": {
         "hyprutils": [
@@ -332,6 +354,7 @@
     "dependencies": {
       "inputs": {
         "agenix": "agenix",
+        "agent-evals": "agent-evals",
         "arr-stack": "arr-stack",
         "bluetui": "bluetui",
         "cbonsai": "cbonsai",

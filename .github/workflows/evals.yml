@@ -13,7 +13,7 @@ on:
 jobs:
   baseline-regression-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,32 +25,19 @@ jobs:
           cache-key: eval-contracts
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install offline verification dependencies
+      - name: Build the pinned agent-evals
         run: |
-          nix profile install --impure --expr 'let pkgs = builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.nixpkgs.legacyPackages; in pkgs.python312.withPackages (pythonPackages: [ pythonPackages.pyyaml pythonPackages.pytest ])'
+          nix build --impure --out-link agent-evals --expr '(builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.agent-evals.packages).default'
 
-      - name: Test evaluation contracts without model providers
-        run: |
-          python3 -m pytest \
-            agent-harness/quality/evaluations/__tests__/unit/baseline \
-            agent-harness/quality/evaluations/__tests__/unit/fingerprints \
-            agent-harness/quality/evaluations/__tests__/unit/execution/test_run_evals_arguments.py \
-            agent-harness/quality/evaluations/__tests__/unit/execution/test_run_evals_config_loader.py \
-            agent-harness/quality/evaluations/__tests__/unit/execution/test_run_evals_configuration_contract.py \
-            --junitxml=evaluation-contracts.xml
-
-      - name: Check recorded regression evidence and report pending measurements
-        if: ${{ always() }}
+      - name: Check the recorded baseline without model providers
+        env:
+          AGENT_EVALS_CONFIG: agent-harness/quality/evaluations/config.yaml
         shell: bash
-        run: |
-          python3 agent-harness/quality/evaluations/run-evals.py \
-            --check-recorded-baseline | tee recorded-baseline-report.txt
+        run: ./agent-evals/bin/agent-evals check --gravado | tee recorded-baseline-report.txt
 
-      - name: Retain truthful offline evaluation evidence
+      - name: Retain the verdict
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: evaluation-contracts-and-recorded-results
-          path: |
-            evaluation-contracts.xml
-            recorded-baseline-report.txt
+          name: agent-evals-verdict
+          path: recorded-baseline-report.txt

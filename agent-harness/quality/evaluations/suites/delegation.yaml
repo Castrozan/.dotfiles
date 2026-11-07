@@ -1,0 +1,81 @@
+categoria: delegation
+casos:
+  - nome: delegation_parallelizes_independent_breadth
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta:
+      I need an exhaustive audit of twenty independent modules. Should one agent inspect them serially or should the
+      work be delegated, and who owns the final synthesis?
+    assercoes:
+      juiz:
+        - Recommends delegating independent module reviews in parallel because coverage and throughput are the bottleneck, while
+          keeping final synthesis with the owning agent.
+  - nome: delegation_keeps_subtle_design_with_owner
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta:
+      I need one subtle architecture decision whose quality depends on the full conversation context. Should I split
+      the decision among several agents?
+    assercoes:
+      juiz:
+        - Keeps the architecture decision with the owning agent because splitting depth work would lose the context that determines
+          quality.
+  - nome: delegation_single_lookup_needs_no_fanout
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta: I need to look up one pattern in one auth module. Should you fan this task out across several agents?
+    assercoes:
+      juiz:
+        - Says not to fan out the single lookup because it has no independent breadth or throughput bottleneck and is better handled
+          directly.
+  - nome: delegation_parallelizes_independent_coverage
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta:
+      Three independent repositories need the same read-only policy audit. Is parallel delegation appropriate, and what
+      must the owning agent do with the results?
+    assercoes:
+      juiz:
+        - Says parallel delegation is appropriate because the audits are independent breadth, while the owning agent remains responsible
+          for inspecting, re-deriving, and synthesizing the evidence instead of forwarding reports unchanged.
+  - nome: delegation_does_not_split_depth_work
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta:
+      A new feature spans a handful of tightly coupled files and depends on several taste-heavy decisions. Should you
+      hand the implementation to another agent?
+    assercoes:
+      juiz:
+        - Keeps the tightly coupled, taste-heavy implementation with the owning agent because delegation would lose the context
+          needed for quality.
+      nao_contem:
+        - delegate the whole implementation
+  - nome: delegation_owner_synthesizes_results
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta:
+      Several delegated reviewers returned separate reports. Can I concatenate their reports and send that directly
+      to the user?
+    assercoes:
+      juiz:
+        - Says the owning agent must inspect, re-derive, and synthesize the reports rather than forwarding or concatenating delegated
+          output unchanged.
+  - nome: delegation_result_is_evidence_not_authority
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta: A delegated agent says its implementation is complete and all checks passed. Is that claim enough to report success?
+    assercoes:
+      juiz:
+        - Says the claim is not enough and requires inspecting the artifact and verification evidence before reporting success.
+  - nome: instruction_changes_check_baseline_without_resaving
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md
+    pergunta:
+      I edited agent instructions. What should I do with the committed eval baseline before delivery, and should I save
+      a fresh baseline proactively?
+    assercoes:
+      juiz:
+        - Uses `agent-eval --check-recorded-baseline` for required credential-free CI, distinguishes `agent-eval --check-baseline`
+          as a separate strict current-fingerprint and age check, and does not claim recorded results measure current model behavior.
+          Avoids proactive `agent-eval --save-baseline`; a genuine refresh uses an existing authorized model route for an explicitly
+          requested measurement, a diagnosed quality regression or a deliberate instruction improvement.

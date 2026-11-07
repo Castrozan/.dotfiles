@@ -170,17 +170,17 @@ touching any agent, supervisor or heartbeat behavior.
 
 ### Agent instructions
 
-Required CI checks evaluation contracts and the committed baseline (`agent-harness/quality/evaluations/baseline.json`)
-with `agent-eval --check-recorded-baseline`, preserving quality floors and the relative regression limit without model
-credentials. Stale or missing model evidence remains explicitly unmeasured.
+Required CI runs `agent-evals check --gravado` on `agent-harness/quality/evaluations/baseline.json` without model
+credentials, enforcing quality floors and per-case regression; stale or missing evidence stays explicitly unmeasured.
+`dotfiles-evals` is `agent-evals` with this repository's config.
 
-Use `agent-eval --check-baseline` for a separate strict check of current fingerprints and measurement age. Passing the
-recorded-results check does not prove current model behavior.
+Use `dotfiles-evals check` for the strict verdict, which also fails on instructions changed after measurement and on
+expired evidence. Passing `check --gravado` does not prove current model behavior.
 
-Do not proactively run `agent-eval --save-baseline` after instruction edits: the full model suite is slow and routing
-evals flake, so re-saving can commit transient failures. Refresh through an existing authorized model route only for an
-explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement; ordinary CI
-does not require a refresh.
+Do not proactively run `dotfiles-evals baseline --rodar` after instruction edits: the full model suite is slow and
+routing evals flake, so re-recording can commit transient failures. Measure through an existing authorized model route
+only for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement;
+ordinary CI does not require one.
 
 ### Herdr server restart
 

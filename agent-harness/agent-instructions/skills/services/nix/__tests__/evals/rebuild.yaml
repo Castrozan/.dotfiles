@@ -1,44 +1,46 @@
-tests:
-  - name: rebuild_stages_nix_files_first
-    skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
-    extra_skill_paths:
+categoria: skills/nix/rebuild
+casos:
+  - nome: rebuild_stages_nix_files_first
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
       - agent-harness/agent-instructions/skills/services/nix/references/rebuild.md
-    prompt: "I modified a .nix file. What must I do before running rebuild?"
-    model: haiku
-    assertions:
-      llm_judge:
-        - "The response states that the modified .nix file(s) must be staged into the git index (git add) before running rebuild, because nix builds from the git index rather than the working tree."
-
-  - name: rebuild_background_execution
-    skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
-    extra_skill_paths:
+    pergunta: I modified a .nix file. What must I do before running rebuild?
+    assercoes:
+      juiz:
+        - The response states that the modified .nix file(s) must be staged into the git index (git add) before running rebuild,
+          because nix builds from the git index rather than the working tree.
+  - nome: rebuild_background_execution
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
       - agent-harness/agent-instructions/skills/services/nix/references/rebuild.md
-    prompt: "How should I run the rebuild command to avoid timeout issues?"
-    model: haiku
-    assertions:
-      llm_judge:
-        - "The response advises running rebuild in the background with its output redirected to a log file and its progress monitored by tailing that log (the active-waiting pattern) rather than blocking in the foreground, since a from-source rebuild can take 10+ minutes."
-
-  - name: rebuild_output_to_file_not_pipe
-    skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
-    extra_skill_paths:
+    pergunta: How should I run the rebuild command to avoid timeout issues?
+    assercoes:
+      juiz:
+        - The response advises running rebuild in the background with its output redirected to a log file and its progress monitored
+          by tailing that log (the active-waiting pattern) rather than blocking in the foreground, since a from-source rebuild
+          can take 10+ minutes.
+  - nome: rebuild_output_to_file_not_pipe
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
       - agent-harness/agent-instructions/skills/services/nix/references/rebuild.md
-    prompt: "I want to run rebuild in the background. Should I use 'rebuild 2>&1 | tail -20' with run_in_background?"
-    model: haiku
-    assertions:
-      llm_judge:
-        - "The response rejects piping rebuild through `tail` in the background (which buffers output and produces empty results) and instead recommends redirecting rebuild's output to a log file that is tailed separately."
-      output_not_contains:
-        - "yes, that"
-        - "looks good"
-        - "correct approach"
-
-  - name: rebuild_applies_configuration_directly
-    skill_path: agent-harness/agent-instructions/skills/services/nix/SKILL.md
-    extra_skill_paths:
+    pergunta: I want to run rebuild in the background. Should I use 'rebuild 2>&1 | tail -20' with run_in_background?
+    assercoes:
+      juiz:
+        - The response rejects piping rebuild through `tail` in the background (which buffers output and produces empty results)
+          and instead recommends redirecting rebuild's output to a log file that is tailed separately.
+      nao_contem:
+        - yes, that
+        - looks good
+        - correct approach
+  - nome: rebuild_applies_configuration_directly
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
       - agent-harness/agent-instructions/skills/services/nix/references/rebuild.md
-    prompt: "My configuration changes are committed. What command should I run to apply them? Is a dry run required first?"
-    model: haiku
-    assertions:
-      llm_judge:
-        - "The response instructs running rebuild to apply the committed configuration and does not require a dry run first."
+    pergunta: My configuration changes are committed. What command should I run to apply them? Is a dry run required first?
+    assercoes:
+      juiz:
+        - The response instructs running rebuild to apply the committed configuration and does not require a dry run first.

@@ -1,0 +1,38 @@
+categoria: context_management
+casos:
+  - nome: context_budget_loads_only_material_information
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta: The context window still has room. Should I load several unrelated logs now in case they become useful later?
+    assercoes:
+      juiz:
+        - Says not to load unrelated logs speculatively because context is a finite attention budget and information should be
+          loaded only when it can materially change the current reasoning or result.
+  - nome: context_budget_discards_stale_findings
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta:
+      Earlier findings no longer affect the task after the plan changed. Should I keep carrying them in the working
+      context? Begin your answer with YES or NO.
+    assercoes:
+      juiz:
+        - Answers no and says findings that no longer matter should be discarded from the working context so they do not consume
+          attention.
+  - nome: context_budget_uses_bounded_summaries
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta:
+      Why route large file reads and parallel subagent dumps through subagents that return summaries instead of keeping
+      the raw output in the main session?
+    assercoes:
+      juiz:
+        - Explains that raw dumps consume the finite attention budget and that bounded summaries retain the findings that can
+          materially change the current reasoning or result.
+  - nome: context_budget_persists_resume_state
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta: A multi-step task may outlive the current context. What state should be written down before continuing?
+    assercoes:
+      juiz:
+        - Says to persist enough high-signal task state to resume without reconstructing it from memory and to place durable knowledge
+          under the narrowest domain that owns it.

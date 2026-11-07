@@ -58,7 +58,7 @@ let
   generatedAllSkillsDescription =
     (interactiveAgentSkills.renderAllSkillsIndexSkill interactiveAgentSkills.defaultInteractiveSkillNames)
     .description;
-  skillRoutingEvaluationSurface = builtins.readFile ../../quality/evaluations/evals/skill_routing.yaml;
+  skillRoutingEvaluationSurface = builtins.readFile ../../quality/evaluations/suites/skill_routing.yaml;
   skillRoutingEvaluationUsesGeneratedAllSkillsDescription = lib.hasInfix generatedAllSkillsDescription skillRoutingEvaluationSurface;
 
   dotfilesCheckoutAgentInstructionFilesAreDeclared =

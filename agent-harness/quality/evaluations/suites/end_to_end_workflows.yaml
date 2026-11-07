@@ -1,0 +1,979 @@
+categoria: end_to_end_workflows
+casos:
+  - nome: breaking_change_removes_old_function
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta: "Rename the fetch_user function to retrieve_user_by_id. Update all
+
+      call sites and tests. Do not keep the old name as a wrapper or alias.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/users.py
+          conteudo:
+            "USERS_DATABASE = {\n    1: {\"name\": \"Alice\", \"email\": \"alice@example.com\"},\n    2: {\"name\": \"\
+            Bob\", \"email\": \"bob@example.com\"},\n}\n\ndef fetch_user(user_id):\n    return USERS_DATABASE.get(user_id)\n"
+        - caminho: src/api.py
+          conteudo:
+            "from src.users import fetch_user\n\ndef handle_user_request(user_id):\n    user = fetch_user(user_id)\n \
+            \   if not user:\n        return {\"error\": \"not found\"}\n    return {\"user\": user}\n"
+        - caminho: tests/test_users.py
+          conteudo:
+            "from src.users import fetch_user\n\ndef test_fetch_existing_user():\n    user = fetch_user(1)\n    assert\
+            \ user[\"name\"] == \"Alice\"\n\ndef test_fetch_missing_user():\n    user = fetch_user(999)\n    assert user is None\n"
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/users.py
+          regex: .
+        - executa: git status --porcelain -- src/api.py
+          regex: .
+        - executa: git status --porcelain -- tests/test_users.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/users.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/api.py
+  - nome: formatting_runs_after_python_edit
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta:
+      "The add_numbers function in calculator.py needs a multiply_numbers
+
+      sibling function. Add it.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: calculator.py
+          conteudo:
+            "def add_numbers(first_number,second_number):\n    return first_number+second_number\n\ndef subtract_numbers(\
+            \ first_number, second_number ):\n    return first_number - second_number\n"
+        - caminho: AGENTS.md
+          conteudo:
+            "Format each changed Python file with ruff format before responding.
+
+            "
+        - caminho: CLAUDE.md
+          conteudo:
+            "Format each changed Python file with ruff format before responding.
+
+            "
+    assercoes:
+      comandos_executados:
+        - ruff
+      comandos:
+        - executa: git status --porcelain -- calculator.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            calculator.py
+  - nome: git_stages_specific_files_not_all
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta:
+      "The parse_input_string function in src/parser.py should also handle
+
+      semicolons as delimiters, not just commas. Fix it.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/parser.py
+          conteudo: "def parse_input_string(raw_input_string):\n    return raw_input_string.strip().split(\",\")\n"
+        - caminho: src/formatter.py
+          conteudo: "def format_output_as_pipe_separated(parsed_items):\n    return \" | \".join(parsed_items)\n"
+        - caminho: unrelated_file.txt
+          conteudo: This file should not be staged
+    assercoes:
+      comandos_executados_proibidos:
+        - git add -A
+        - git add .
+      comandos:
+        - executa: git status --porcelain -- src/parser.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/parser.py
+  - nome: investigation_traces_full_call_chain
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta: "Bug: handle_checkout crashes when cart has items with price 0.
+
+      Find exactly where and why it fails.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/handler.py
+          conteudo:
+            "from src.service import process_payment\n\ndef handle_checkout(cart):\n    return process_payment(cart[\"\
+            items\"], cart[\"user_id\"])\n"
+        - caminho: src/service.py
+          conteudo:
+            "from src.calculator import compute_total\nfrom src.gateway import charge_card\n\ndef process_payment(items,\
+            \ user_id):\n    total = compute_total(items)\n    return charge_card(user_id, total)\n"
+        - caminho: src/calculator.py
+          conteudo: "def compute_total(items):\n    return sum(item[\"price\"] for item in items)\n"
+        - caminho: src/gateway.py
+          conteudo:
+            "CHARGES = []\n\ndef charge_card(user_id, amount):\n    if amount <= 0:\n        raise ValueError(\"invalid\
+            \ amount\")\n    charge = {\"user_id\": user_id, \"amount\": amount}\n    CHARGES.append(charge)\n    return charge\n"
+    assercoes:
+      comandos_executados_proibidos:
+        - "cat "
+        - "head "
+      comandos:
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/handler.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/service.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/calculator.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/gateway.py
+  - nome: local_information_before_external_fetch
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta: "What tech stack does this project use? What version of FastAPI?
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: README.md
+          conteudo: "# MyApp
+
+
+            A REST API for managing inventory.
+
+
+            ## Stack
+
+            - Python 3.12
+
+            - FastAPI 0.109
+
+            - PostgreSQL 16
+
+            - Redis for caching
+
+
+            ## Setup
+
+            Run `pip install -r requirements.txt` then `uvicorn main:app`
+
+
+            ## API Docs
+
+            Available at /docs when running locally.
+
+            "
+        - caminho: requirements.txt
+          conteudo: "fastapi==0.109.0
+
+            uvicorn==0.27.0
+
+            sqlalchemy==2.0.25
+
+            redis==5.0.1
+
+            pydantic==2.5.3
+
+            "
+    assercoes:
+      comandos_executados_proibidos:
+        - "curl "
+        - "wget "
+  - nome: multi_file_edit_with_specific_git_staging
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta: "Add a __repr__ method to all three model classes in src/models/.
+
+      Each should return a readable string representation.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/models/user.py
+          conteudo: "class User:\n    def __init__(self, name, email):\n        self.name = name\n        self.email = email\n"
+        - caminho: src/models/product.py
+          conteudo: "class Product:\n    def __init__(self, name, price):\n        self.name = name\n        self.price = price\n"
+        - caminho: src/models/order.py
+          conteudo:
+            "class Order:\n    def __init__(self, user, products):\n        self.user = user\n        self.products =\
+            \ products\n"
+    assercoes:
+      comandos_executados_proibidos:
+        - git add -A
+        - git add .
+      comandos:
+        - executa: git status --porcelain -- src/models/user.py
+          regex: .
+        - executa: git status --porcelain -- src/models/product.py
+          regex: .
+        - executa: git status --porcelain -- src/models/order.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/models/user.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/models/product.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/models/order.py
+  - nome: naming_uses_descriptive_names_no_abbreviations
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta:
+      "Add a function to src/app.py that takes a list of user dictionaries
+
+      (each with name, email, age) and returns only users older than 18
+
+      whose email address contains an at sign.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/app.py
+          conteudo: "def main():\n    print(\"starting application\")\n"
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/app.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/app.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" nomes-descritivos
+            src/app.py
+  - nome: no_comments_survives_codex_compaction
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta: Explain what a semaphore is and when a mutex is the better choice.
+    pendente: true
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/ledger_entry_labels.py
+          conteudo: "recorded_ledger_entry_labels = []
+
+            "
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/ledger_entry_labels.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/ledger_entry_labels.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" nomes-descritivos
+            src/ledger_entry_labels.py
+  - nome: no_comments_survives_compaction
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta: Explain what a semaphore is and when a mutex is the better choice.
+    pendente: true
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/account_names.py
+          conteudo: "stored_account_names = []
+
+            "
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/account_names.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/account_names.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" nomes-descritivos
+            src/account_names.py
+  - nome: no_comments_survives_opencode_compaction
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta: Explain what a semaphore is and when a mutex is the better choice.
+    pendente: true
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/invoice_line_titles.py
+          conteudo: "recorded_invoice_line_titles = []
+
+            "
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/invoice_line_titles.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/invoice_line_titles.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" nomes-descritivos
+            src/invoice_line_titles.py
+  - nome: global_rules_apply_alongside_project_claude_md
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta:
+      "Add a get_user endpoint to src/endpoints.py that accepts a user_id
+
+      parameter and returns a user dict. Import from src/models.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/endpoints.py
+          conteudo: "def get_health():\n    return {\"status\": \"ok\"}\n"
+        - caminho: src/models.py
+          conteudo: "class User:\n    def __init__(self, name, email):\n        self.name = name\n        self.email = email\n"
+        - caminho: AGENTS.md
+          conteudo: "This is a Python REST API project.
+
+            Use FastAPI patterns. All endpoints return JSON.
+
+            Test with pytest and httpx.
+
+            "
+        - caminho: CLAUDE.md
+          conteudo: "This is a Python REST API project.
+
+            Use FastAPI patterns. All endpoints return JSON.
+
+            Test with pytest and httpx.
+
+            "
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/endpoints.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/endpoints.py
+  - nome: python_over_bash_for_data_processing
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta: "Write a script that reads data/sales.csv, groups by product,
+
+      calculates total revenue per product, and prints a summary
+
+      sorted by revenue descending.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: data/sales.csv
+          conteudo: "date,product,quantity,price
+
+            2026-01-15,Widget A,10,25.50
+
+            2026-01-15,Widget B,5,42.00
+
+            2026-01-16,Widget A,8,25.50
+
+            2026-01-16,Widget C,3,99.99
+
+            2026-02-01,Widget B,12,42.00
+
+            "
+    assercoes:
+      comandos_executados_proibidos:
+        - "#!/bin/bash"
+        - "#!/usr/bin/env bash"
+  - nome: skill_discovery_browser_for_webpage
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      'Open the login page at https://app.example.internal/login, fill in the username
+
+      field with "demo", and click the Sign In button. This is a live authenticated
+
+      web app I need to interact with, not a page to fetch text from.
+
+      '
+    tempo_limite_segundos: 180
+    ambiente:
+      git: false
+    assercoes:
+      skills_usadas:
+        - browser
+      skills_proibidas:
+        - research
+  - nome: skill_discovery_coding_for_bug_report
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      "Bug report: divide_numbers(10, 0) crashes with ZeroDivisionError instead of
+
+      returning None for a zero denominator. Follow the testing protocol for bug
+
+      reports: first reproduce the failure with a regression test, then fix the
+
+      implementation and run the relevant tests.
+
+      "
+    tempo_limite_segundos: 240
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: calculator.py
+          conteudo: "def divide_numbers(numerator, denominator):\n    return numerator / denominator\n"
+        - caminho: test_calculator.py
+          conteudo: "from calculator import divide_numbers\n\ndef test_divide_basic():\n    assert divide_numbers(6, 3) == 2\n"
+    assercoes:
+      skills_usadas:
+        - coding
+      skills_proibidas:
+        - review
+      comandos:
+        - executa: git status --porcelain -- test_calculator.py
+          regex: .
+        - executa: git status --porcelain -- calculator.py
+          regex: .
+  - nome: skill_discovery_coding_for_commit
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      "I just edited feature.py. Stage just that one file and commit it with a good message.
+
+      Do not stage dirty.py.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: feature.py
+          conteudo: "def add_numbers(a, b):\n    return a + b\n"
+        - caminho: dirty.py
+          conteudo: "x = 1
+
+            "
+    assercoes:
+      skills_usadas:
+        - coding
+      skills_proibidas:
+        - nix
+        - research
+      comandos_executados_proibidos:
+        - git add -A
+        - git add .
+  - nome: skill_discovery_coding_for_worktrees
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      "I want to work on a parallel branch in a separate checkout so my current
+
+      working tree stays untouched while I experiment. Set that up.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: README.md
+          conteudo: demo repo
+    assercoes:
+      skills_usadas:
+        - coding
+      skills_proibidas:
+        - nix
+  - nome: skill_discovery_multiple_skills_in_workflow
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/services/nix/SKILL.md
+      - agent-harness/agent-instructions/skills/services/nix/SKILL.md
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      "I added jq to home/{base,linux,darwin}/example.nix. Stage that single file, commit with
+
+      a conventional message, then apply the configuration so the package is
+
+      actually installed. What is the full correct workflow?
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: flake.nix
+          conteudo: '{ description = "demo"; }
+
+            '
+        - caminho: home/{base,linux,darwin}/example.nix
+          conteudo: "{ pkgs, ... }: { home.packages = [ pkgs.jq ]; }
+
+            "
+    assercoes:
+      skills_usadas:
+        - coding
+        - nix
+      skills_proibidas:
+        - review
+  - nome: skill_discovery_nix_for_container
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/services/nix/SKILL.md
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      "The postgres container on this host keeps restarting. Use this project's
+
+      container management wrapper (not raw docker/podman commands) to inspect
+
+      state, check logs, and say what is going wrong. The wrapper enforces
+
+      ordering to prevent data loss.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: false
+    assercoes:
+      skills_usadas:
+        - nix
+  - nome: skill_discovery_nix_for_rebuild
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/services/nix/SKILL.md
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      "I added a new package to modules/example.nix. Apply my changes to the system.
+
+      What is the right workflow?
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: flake.nix
+          conteudo: '{ description = "demo"; }
+
+            '
+        - caminho: modules/example.nix
+          conteudo: "{ ... }: { environment.systemPackages = []; }
+
+            "
+    assercoes:
+      skills_usadas:
+        - nix
+      skills_proibidas:
+        - coding
+        - research
+  - nome: skill_discovery_quickshell_for_bar
+    nivel: ponta-a-ponta
+    escreve: true
+    pendente: true
+    pergunta:
+      "My Quickshell bar widget I just added renders black instead of the theme
+
+      color, and the shape path is invisible on the second monitor. These are
+
+      known silent-failure categories in this project - what is the checklist
+
+      I should run through?
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: false
+    assercoes:
+      skills_usadas:
+        - all-skills
+      skills_proibidas:
+        - nix
+  - nome: skill_discovery_research_for_external_info
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/knowledge/research/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      "Research the latest Wayland compositors, compare their features, and recommend
+
+      one for a tiling-first power-user setup on NixOS. I need current information,
+
+      not stale documentation.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: false
+    assercoes:
+      skills_usadas:
+        - research
+      skills_proibidas:
+        - nix
+        - browser
+  - nome: skill_discovery_review_for_tldr
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      'Review src/handler.py for bugs using your standard unbiased reviewer rubric,
+
+      then also tell me I should switch to tldr mode for the rest of this session.
+
+      Do both — the review and the mode switch. Apply the actual rubric, not a
+
+      generic "looks fine".
+
+      '
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/handler.py
+          conteudo: "def handle_request(request):\n    result = process(request)\n    return result\n"
+    assercoes:
+      skills_usadas:
+        - review
+      skills_proibidas:
+        - coding
+        - nix
+  - nome: skill_discovery_ril_for_capture_inbox
+    nivel: ponta-a-ponta
+    escreve: true
+    pendente: true
+    pergunta:
+      "Process my ReadItLater inbox and mark any already-handled items. There's a
+
+      specific convention for how processed items are tagged in my vault - apply it.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: false
+    assercoes:
+      skills_usadas:
+        - all-skills
+      skills_proibidas:
+        - nix
+        - review
+  - nome: skill_discovery_natural_coding_calculator_divide_zero
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta:
+      "There's a bug in calculator.py where divide crashes on zero. Fix it.
+
+      "
+    tempo_limite_segundos: 240
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: calculator.py
+          conteudo: "def divide_numbers(numerator, denominator):\n    return numerator / denominator\n"
+        - caminho: test_calculator.py
+          conteudo: "from calculator import divide_numbers\n\ndef test_divide_basic():\n    assert divide_numbers(6, 3) == 2\n"
+    assercoes:
+      skills_usadas:
+        - coding
+      skills_proibidas:
+        - review
+      comandos:
+        - executa: git status --porcelain -- test_calculator.py
+          regex: .
+        - executa: git status --porcelain -- calculator.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            calculator.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            test_calculator.py
+  - nome: skill_discovery_natural_coding_commit_these_changes
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta: "Commit these changes.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: feature.py
+          conteudo: "def add_numbers(a, b):\n    return a + b\n"
+    assercoes:
+      skills_usadas:
+        - coding
+      skills_proibidas:
+        - nix
+        - research
+  - nome: skill_discovery_natural_coding_parallel_branch
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta: "I need a parallel git branch without touching my current tree.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: README.md
+          conteudo: demo repo
+    assercoes:
+      skills_usadas:
+        - coding
+      skills_proibidas:
+        - nix
+  - nome: skill_discovery_natural_nix_apply_edit
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/services/nix/SKILL.md
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta: "I just edited a nix file, apply it.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: flake.nix
+          conteudo: '{ description = "demo"; }
+
+            '
+        - caminho: modules/example.nix
+          conteudo: "{ ... }: { environment.systemPackages = []; }
+
+            "
+    assercoes:
+      skills_usadas:
+        - nix
+      skills_proibidas:
+        - coding
+        - research
+  - nome: skill_discovery_natural_nix_postgres_crashing
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/services/nix/SKILL.md
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta: "My postgres container keeps crashing, figure out why.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: false
+    assercoes:
+      skills_usadas:
+        - nix
+  - nome: skill_discovery_natural_quickshell_bar_black
+    nivel: ponta-a-ponta
+    escreve: true
+    pendente: true
+    pergunta: "My bar just went black after the last change, help me fix it.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: false
+    assercoes:
+      skills_usadas:
+        - all-skills
+      skills_proibidas:
+        - nix
+  - nome: skill_discovery_natural_review_check_diff
+    nivel: ponta-a-ponta
+    escreve: true
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/*/*/SKILL.md
+    pergunta: "Check this diff for bugs.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/handler.py
+          conteudo: "def handle_request(request):\n    result = process(request)\n    return result\n"
+    assercoes:
+      skills_usadas:
+        - review
+      skills_proibidas:
+        - coding
+        - nix
+  - nome: skill_discovery_natural_ril_saved_links
+    nivel: ponta-a-ponta
+    escreve: true
+    pendente: true
+    pergunta:
+      "What did I save to read later? Let's actually do something with it.
+
+      "
+    tempo_limite_segundos: 180
+    ambiente:
+      git: false
+    assercoes:
+      skills_usadas:
+        - all-skills
+      skills_proibidas:
+        - nix
+        - review
+  - nome: srp_splits_monolithic_function
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta:
+      "Refactor src/order_processor.py. The process_order function does too
+
+      much - validation, calculation, and confirmation building. Split it
+
+      into focused functions that each do one thing.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/order_processor.py
+          conteudo:
+            "def process_order(order_data):\n    email = order_data.get(\"email\")\n    if not email or \"@\" not in email:\n\
+            \        raise ValueError(\"invalid email\")\n    items = order_data.get(\"items\", [])\n    if not items:\n     \
+            \   raise ValueError(\"no items\")\n    total = 0\n    for item in items:\n        price = item[\"price\"] * item[\"\
+            quantity\"]\n        if item.get(\"discount\"):\n            price = price * (1 - item[\"discount\"] / 100)\n    \
+            \    total += price\n    tax = total * 0.1\n    total_with_tax = total + tax\n    confirmation = {\n        \"email\"\
+            : email,\n        \"items\": len(items),\n        \"subtotal\": total,\n        \"tax\": tax,\n        \"total\":\
+            \ total_with_tax,\n        \"status\": \"confirmed\",\n    }\n    return confirmation\n"
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- src/order_processor.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/order_processor.py
+  - nome: test_first_when_bug_reported
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta:
+      "Bug report: calculate_discounted_price(100, 110) returns -10.0 instead
+
+      of raising an error. Discount percentages above 100 should not be allowed.
+
+      "
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/discount.py
+          conteudo:
+            "def calculate_discounted_price(original_price, discount_percentage):\n    discount_amount = original_price\
+            \ * discount_percentage / 100\n    return original_price - discount_amount\n"
+        - caminho: tests/test_discount.py
+          conteudo:
+            "from src.discount import calculate_discounted_price\n\ndef test_ten_percent_discount():\n    assert calculate_discounted_price(100,\
+            \ 10) == 90.0\n\ndef test_zero_discount():\n    assert calculate_discounted_price(100, 0) == 100.0\n"
+    assercoes:
+      comandos:
+        - executa: git status --porcelain -- tests/test_discount.py
+          regex: .
+        - executa: git status --porcelain -- src/discount.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/discount.py
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            tests/test_discount.py
+  - nome: workflow_full_edit_sequence
+    nivel: ponta-a-ponta
+    escreve: true
+    pergunta:
+      'Add a farewell_message_for_user function to src/greeter.py that returns
+
+      "Goodbye, {name}!". Follow the standard workflow after editing.
+
+      '
+    tempo_limite_segundos: 300
+    ambiente:
+      git: true
+      arquivos:
+        - caminho: src/greeter.py
+          conteudo: "def greet_user_by_name(name):\n    return f\"Hello, {name}!\"\n"
+        - caminho: AGENTS.md
+          conteudo:
+            "After editing, format each changed Python file with ruff format, stage only
+
+            the specific changed files, and commit the change before responding.
+
+            "
+        - caminho: CLAUDE.md
+          conteudo:
+            "After editing, format each changed Python file with ruff format, stage only
+
+            the specific changed files, and commit the change before responding.
+
+            "
+    assercoes:
+      comandos_executados:
+        - ruff
+        - git add
+        - git commit
+      comandos_executados_proibidos:
+        - git add -A
+        - git add .
+      comandos:
+        - executa: git status --porcelain -- src/greeter.py
+          regex: .
+        - executa:
+            python3 "$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py" sem-comentarios
+            src/greeter.py

@@ -1,0 +1,594 @@
+categoria: skill_routing
+casos:
+  - nome: routing_to_machine_resources
+    nivel: unidade
+    system_prompt: &catalogo |
+      You are a skill router. Given a user request, respond with the exact name of the single most appropriate top-level skill from the list below. Nested capability names inside a description are not valid answers. A request for a capability indexed by all-skills routes to all-skills, which then loads the nested skill. Respond with ONLY the top-level skill name, nothing else.
+      Available skills:
+
+      all-skills - Route requests for these indexed capabilities to all-skills, then load the nested skill it names: agent-api, arr-stack, avatar, ci-watcher, desktop, frontend-design, home-assistant, machine-resources, media-generation, notify, obsidian, page-composer, passwords, phone-status, quickshell, ril, security-audit, todo, twitter, youtube
+
+      agent-session - Restart, compact, or exit the current Claude Code, Codex, or OpenCode session from inside it. Use to apply a configuration change, resume work without waiting for input, compact context, or end a finished session.
+
+      architecture - Boundaries, dependency direction, system design, UML and deployment shape. Use when choosing a structure, adding a module or service, moving a boundary, or reviewing a design.
+
+      browser - Control browser pages and Electron apps through Chrome DevTools CLI or eligible OpenCLI workflows. Not for desktop capture, media, or other GUI.
+
+      coding - Implement and evolve code safely. Use for coding, fixes, tests, commits, Git history and archaeology, or parallel branch work.
+
+      deep-work - Persist task context to disk so big or compaction-prone work survives across sessions. Use for work over ~5 steps, spanning sessions, or when explicitly asked to preserve context; not for quick fixes.
+
+      deliver - Drive a software goal end-to-end: investigate context, design the build process, author a goal prompt, then execute with workflows and subagents until it works live. For big objectives needing a process, not one-off tasks.
+
+      devenv - Enter a project's devenv shell, run commands, update its lock, or clear stale state. Use when a repository carries devenv configuration and needs its toolchain on PATH.
+
+      docs - Documentation standards for when a doc earns its place, what never to write, evergreen phrasing, and policy shape. Use when writing or judging a README, doc, or policy; for authoring AI instruction files read instructions.
+
+      explore - Search current code across text, files, callers, and context in three cycles. Use for repo sweeps, not Git history.
+
+      forge - Manage pull requests, merge requests, reviews and hosted CI using the repository's Git hosting provider.
+
+      goal-prompt - Write a one-line prompt under 3.5k characters for an autonomous or scheduled agent. Use for routine, cron, remote-trigger, or other one-field runs.
+
+      herdr - Operate herdr workspaces, tabs, panes, processes, and persistent interactive agent sessions. Use for layout, process control, inspection, input, waiting, and takeover.
+
+      humanize - Use when writing for people outside a live session, like READMEs, PR or MR descriptions, handoffs, chat messages, emails, long-lived docs, bug reports, status updates, release notes. Not for live session replies.
+
+      instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
+
+      orchestrate - Delegate same-goal work to another interactive agent, harness, or machine over a2a, herdr, or ssh. Use to spawn parallel peers, dispatch, observe, correct, and repeat.
+
+      process-design - Co-design multi-step, multi-agent processes by composing capability blocks from a toolbox (agents, deterministic tools, monitors, gates, memory), redrawing with the human each round, then suggesting a dry run. Use before orchestrating complex agent work.
+
+      research - Research current external information, comparisons, decisions, or themed digests. Use for latest facts, evaluation, verification, "catch me up", or community pulses; not local repository search.
+
+      review - Review code, configurations, AI instructions, or completed work for actionable defects, regressions, security risks, and compliance gaps. Use when inspecting a diff, auditing an instruction surface, or verifying delivery.
+
+      url-shortener - Shorten long public URLs into verified plain links for terminal and keyboard workflows.
+
+      wellput - Use for substantial replies in active agent sessions; exclude file authoring.
+
+      workspace - Switch the Bash working directory to another repo or directory for the session. Use when work must run commands outside the primary repo.
+    pergunta: My laptop is swapping and the fans are loud, what is eating my memory?
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_security_audit
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Run a full security audit of this API service and write up the vulnerabilities you find as a report
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_media_youtube_search
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Search YouTube for NixOS tutorials and add the best one to my playlist
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_personal_twitter_post
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Post a tweet about the new release on my X account
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_personal_twitter_scrape
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Scrape the latest tweets from @nixos_org
+    reservado: true
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_deep_work
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: This is a big task, set up a deep work workspace to track progress
+    assercoes:
+      igual:
+        - deep-work
+  - nome: routing_to_coding_worktree_isolation
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Create a git worktree so I can work on a parallel branch
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_to_tmux_control
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Start a background process in a new herdr pane
+    assercoes:
+      igual:
+        - herdr
+  - nome: routing_to_agent_session_restart
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Restart the current session and preserve context
+    reservado: true
+    assercoes:
+      igual:
+        - agent-session
+  - nome: routing_to_agent_session_compact
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Compact your own session now
+    assercoes:
+      igual:
+        - agent-session
+  - nome: routing_to_agent_session_exit
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Everything is committed, end this session now
+    assercoes:
+      igual:
+        - agent-session
+  - nome: routing_to_browser_web_scraping
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Open the AWS console and check the EC2 instances page
+    assercoes:
+      igual:
+        - browser
+  - nome: routing_to_browser_form_filling
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Fill out the login form on https://example.com with my credentials
+    assercoes:
+      igual:
+        - browser
+  - nome: routing_to_browser_electron_app
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Automate the VS Code Electron app to open a file and run a command
+    assercoes:
+      igual:
+        - browser
+  - nome: routing_to_browser_interactive_scrape
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Open https://example.com/pricing in a browser, click the 'Load More' button, then extract the pricing table
+    assercoes:
+      igual:
+        - browser
+  - nome: routing_to_orchestrate_same_goal_delegation
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Spawn a parallel agent to refactor the utils module while I work on tests
+    reservado: true
+    assercoes:
+      igual:
+        - orchestrate
+  - nome: routing_to_coding_commit_staging
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Stage the changed files and create a commit with a good message
+    reservado: true
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_to_home_assistant_lights
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Turn on the living room lights and set brightness to 50%
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_home_assistant_ac_control
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Set the air conditioner to 22 degrees and fan speed to high
+    reservado: true
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_ril_capture_backlog
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Go through the links I saved this week, one by one, and tell me what to do with each
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_coding_test_verification
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Run the test suite to verify the changes pass
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_to_instructions_skill_creation
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Create a new skill for managing Docker containers with good prompts
+    reservado: true
+    assercoes:
+      igual:
+        - instructions
+  - nome: routing_to_docs_readme_standards
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: I want to add a README to this module. What belongs in it and what should I leave out?
+    assercoes:
+      igual:
+        - docs
+  - nome: routing_to_instructions_skill_routing_failure
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta:
+      The model keeps using WebFetch instead of the twitter skill when I paste Twitter URLs. How do I fix the skill
+      routing?
+    assercoes:
+      igual:
+        - instructions
+  - nome: routing_to_notify_task_completion
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Notify me when the long refactoring task is complete
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_quickshell_bar_module
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Add a new battery widget to the Quickshell bar
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_research_tool_comparison
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Research the latest Wayland compositors and compare their features
+    assercoes:
+      igual:
+        - research
+  - nome: routing_to_research_digest
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Catch me up on the latest local LLM tooling and developer agent news.
+    reservado: true
+    assercoes:
+      igual:
+        - research
+  - nome: routing_to_wellput_for_a_reply_the_reader_could_not_follow
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: I read your last answer twice and still can't tell which option you recommend. Explain it again so I can decide.
+    reservado: true
+    assercoes:
+      igual:
+        - wellput
+  - nome: routing_to_devenv_shell_setup
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Set up a devenv shell with PostgreSQL and Python 3.12 for this project
+    assercoes:
+      igual:
+        - devenv
+  - nome: routing_to_phone_status_battery
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Check my phone battery level and charging status
+    reservado: true
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_ponto_time_tracking
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Fill my ponto entries for this week on Senior
+    reservado: true
+    assercoes:
+      igual:
+        - browser
+  - nome: routing_ambiguous_research_vs_browser
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: What are the best practices for Nix flake design in 2026?
+    reservado: true
+    assercoes:
+      igual:
+        - research
+  - nome: routing_to_coding_commit
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: I want to commit all my staged changes with a conventional commit message
+    reservado: true
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_to_review_for_an_unbiased_reviewer_pass
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations
+    assercoes:
+      igual:
+        - review
+  - nome: routing_to_coding_history_search_commits
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Search git history for all commits related to browser automation
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_to_coding_history_find_when_changed
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: When was the authentication module first added to this repo?
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_to_coding_history_trace_evolution
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Show me how the browser skill evolved over time in this project
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_to_coding_history_investigate_past
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: I need to understand why we switched from playwright to chrome devtools, check the git history
+    reservado: true
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_ambiguous_git_history_vs_research
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Research the latest trends in version control systems
+    assercoes:
+      igual:
+        - research
+  - nome: routing_to_ril_inbox_processing
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Process my saved articles from the ReadItLater inbox
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_personal_tweet_media_fetch
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Fetch the image attached to this tweet by @user
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_ambiguous_browser_vs_personal_tweet_scraping
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: I need to read what a tweet says and see its attached image
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_personal_bare_xcom_url
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: https://x.com/neogoose_btw/status/2040598081763471417
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_personal_bare_twitter_url
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: https://twitter.com/elikiaponde/status/1234567890
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_personal_xcom_url_with_context
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: https://x.com/schizoidcock/status/2040595546411266214 this looks interesting, is it any good?
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_personal_xcom_url_what_does_it_say
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: what does this tweet say? https://x.com/user/status/1234567890123
+    reservado: true
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_review_for_a_diff_before_merge
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Here is the diff on the auth module. Check it for bugs and bad naming before I merge it.
+    assercoes:
+      igual:
+        - review
+  - nome: routing_to_review_for_an_instruction_file_audit
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: I rewrote a SKILL.md and a CLAUDE.md section. Audit them against our instruction authoring standards.
+    reservado: true
+    assercoes:
+      igual:
+        - review
+  - nome: routing_to_architecture_for_a_boundary_decision
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Should the payment retry logic live in its own service or stay inside the order module?
+    assercoes:
+      igual:
+        - architecture
+  - nome: routing_to_coding_for_a_function_cleanup
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: This function does three things and takes a boolean flag argument. Clean it up.
+    assercoes:
+      igual:
+        - coding
+  - nome: routing_to_review_for_the_final_pass
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta:
+      The feature is implemented and its unit tests pass. Do a final pass to confirm what I actually asked for works
+      and nothing else broke.
+    assercoes:
+      igual:
+        - review
+  - nome: routing_to_explore_for_a_repo_sweep
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Where in this repo is the retry timeout configured? Sweep the whole tree and just tell me the answer.
+    reservado: true
+    assercoes:
+      igual:
+        - explore
+  - nome: routing_to_goal_prompt_for_a_scheduled_agent
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Write the single-line brief that a nightly cron agent receives as its only instruction
+    reservado: true
+    assercoes:
+      igual:
+        - goal-prompt
+  - nome: routing_to_forge_open_a_merge_request
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Open a merge request for this branch and request a review from the team.
+    assercoes:
+      igual:
+        - forge
+  - nome: routing_to_forge_read_failing_pipeline
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: The pipeline on my pull request is red. Pull the failing job logs from the hosted CI.
+    reservado: true
+    assercoes:
+      igual:
+        - forge
+  - nome: routing_to_forge_resolve_review_threads
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Reply to the review comments on pull request 412 and resolve the threads I already addressed.
+    assercoes:
+      igual:
+        - forge
+  - nome: routing_to_process_design_before_agents_run
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta:
+      "Before we spin up agents for this migration, let's design the multi-agent process together: which agents, gates
+      and monitors we need."
+    reservado: true
+    assercoes:
+      igual:
+        - process-design
+  - nome: routing_to_process_design_redraw_a_pipeline
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta:
+      Sketch a pipeline of agents and deterministic checks for nightly triage, and let me redraw it with you before
+      anything runs.
+    assercoes:
+      igual:
+        - process-design
+  - nome: routing_to_url_shortener_for_a_terminal_link
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Shorten this long Google Drive link so I can paste it in the terminal.
+    reservado: true
+    assercoes:
+      igual:
+        - url-shortener
+  - nome: routing_to_url_shortener_for_a_query_url
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Turn https://example.com/a/very/long/path?with=query&and=more&parts=here into a short link.
+    assercoes:
+      igual:
+        - url-shortener
+  - nome: routing_to_deliver_an_objective_end_to_end
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta:
+      "Take this objective end to end: investigate the context, design how we build it, and keep executing until it
+      works live."
+    assercoes:
+      igual:
+        - deliver
+  - nome: routing_to_instructions_for_a_new_skill_file
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Write a new SKILL.md that teaches the agent how to manage my backups.
+    assercoes:
+      igual:
+        - instructions
+  - nome: routing_to_docs_for_whether_a_readme_earns_its_place
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Does the new evaluation runner module need a README at all, or does the code already say enough? Decide.
+    reservado: true
+    assercoes:
+      igual:
+        - docs
+  - nome: routing_to_wellput_for_an_overlong_reply
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Your last reply was too long. Give me only the two things I need to act on.
+    assercoes:
+      igual:
+        - wellput
+  - nome: routing_to_architecture_for_where_a_boundary_lives
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Should judge isolation live in the Python port or in the node adapter? Decide where that boundary belongs.
+    reservado: true
+    assercoes:
+      igual:
+        - architecture
+  - nome: routing_to_explore_for_where_hooks_are_configured
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Where in this repository do we configure the Codex hooks? Sweep the tree and tell me.
+    assercoes:
+      igual:
+        - explore
+  - nome: routing_to_research_for_latest_release_notes
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: What changed in the latest Codex release notes?
+    assercoes:
+      igual:
+        - research
+  - nome: routing_to_workspace_for_another_repository
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Switch over to my ~/repo/api project and run its tests there.
+    assercoes:
+      igual:
+        - workspace
+  - nome: routing_to_herdr_for_a_new_pane
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Open a new pane to the right and run the test watcher in it.
+    reservado: true
+    assercoes:
+      igual:
+        - herdr
+  - nome: routing_to_all_skills_for_a_desktop_screenshot
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Take a screenshot of my whole desktop and tell me what is on the second monitor.
+    reservado: true
+    assercoes:
+      igual:
+        - all-skills
+  - nome: routing_to_browser_for_a_logged_in_download
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Log into the vendor portal in Chrome and download last month's invoice.
+    reservado: true
+    assercoes:
+      igual:
+        - browser
+  - nome: routing_to_humanize_for_a_merge_request_description
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: Draft the description text for this merge request so a reviewer can scan it; I will open the request myself.
+    assercoes:
+      igual:
+        - humanize

@@ -1,0 +1,12 @@
+categoria: subagents
+casos:
+  - nome: nix_expert_explains_concepts
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/services/nix/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/services/nix/references/expert.md
+    pergunta: What is a Nix overlay?
+    assercoes:
+      juiz:
+        - Explains an overlay as a function over a package set that adds or overrides packages, taking the final and previous
+          package sets as its arguments.

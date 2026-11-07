@@ -1,26 +1,14 @@
 import re
 from pathlib import Path
 
-import pytest
-import yaml
+from evaluation_suite_support import load_suite_cases
 from instructions.instruction_surface_scanner import (
     frontmatter_key_values,
     public_skill_definition_path,
 )
 
-EVAL_HARNESS_ROOT = Path(__file__).resolve().parents[3]
-SKILLS_ROOT = Path(__file__).resolve().parents[5] / "agent-instructions/skills"
-SKILL_ROUTING_SUITE = EVAL_HARNESS_ROOT / "evals" / "skill_routing.yaml"
-ROUTER_CATALOG_ENTRY = re.compile(
-    r"^([a-z][a-z0-9-]*) - (.+)$",
-    re.MULTILINE,
-)
-
-ROUTER_CATALOGS = [
-    (SKILL_ROUTING_SUITE, "shared_system_prompt", 10),
-]
-
 DEPLOYED_SKILLS_WITHOUT_A_SAME_NAMED_SOURCE = {"all-skills", "wellput"}
+MINIMUM_CATALOG_SKILLS = 10
 INTERACTIVE_SKILL_CATALOG = (
     Path(__file__).resolve().parents[5]
     / "agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix"
@@ -28,37 +16,17 @@ INTERACTIVE_SKILL_CATALOG = (
 DEFAULT_INTERACTIVE_SKILL_LIST = re.compile(
     r"defaultInteractiveSkillNames = \[(.*?)\];", re.DOTALL
 )
+ROUTER_CATALOG_ENTRY = re.compile(r"^([a-z][a-z0-9-]*) - (.+)$", re.MULTILINE)
 
 
-def load_skill_routing_config():
-    return yaml.safe_load(SKILL_ROUTING_SUITE.read_text())
+def routing_cases():
+    return load_suite_cases("skill_routing")
 
 
-def router_catalog_skill_names(config, prompt_key):
-    return [name for name, _ in ROUTER_CATALOG_ENTRY.findall(config[prompt_key])]
-
-
-def router_catalog_descriptions(config, prompt_key):
-    return dict(ROUTER_CATALOG_ENTRY.findall(config[prompt_key]))
-
-
-@pytest.mark.parametrize("config_path,prompt_key,minimum", ROUTER_CATALOGS)
-def test_every_skill_in_a_router_catalog_exists_on_disk(
-    config_path, prompt_key, minimum
-):
-    config = yaml.safe_load(config_path.read_text())
-    catalog = router_catalog_skill_names(config, prompt_key)
-    assert len(catalog) >= minimum
-    missing = [
-        name
-        for name in catalog
-        if name not in DEPLOYED_SKILLS_WITHOUT_A_SAME_NAMED_SOURCE
-        and public_skill_definition_path(name) is None
-    ]
-    assert not missing, (
-        f"{config_path.name} offers skills that no longer exist: {missing}; a routing "
-        f"test can never pass once its expected answer has been deleted or renamed"
-    )
+def router_catalog_descriptions():
+    prompts = {case["system_prompt"] for case in routing_cases()}
+    assert len(prompts) == 1, "every routing case must share one router catalog"
+    return dict(ROUTER_CATALOG_ENTRY.findall(prompts.pop()))
 
 
 def deployed_default_skill_names():
@@ -69,10 +37,24 @@ def deployed_default_skill_names():
     return set(re.findall(r'"([a-z][a-z0-9-]*)"', skill_list.group(1)))
 
 
-def test_router_catalog_offers_exactly_the_deployed_default_skills():
-    catalog = set(
-        router_catalog_skill_names(load_skill_routing_config(), "shared_system_prompt")
+def test_every_skill_in_the_router_catalog_exists_on_disk():
+    catalog = router_catalog_descriptions()
+    assert len(catalog) >= MINIMUM_CATALOG_SKILLS
+    missing = [
+        name
+        for name in catalog
+        if name not in DEPLOYED_SKILLS_WITHOUT_A_SAME_NAMED_SOURCE
+        and public_skill_definition_path(name) is None
+    ]
+    assert not missing, (
+        f"the routing catalog offers skills that no longer exist: {missing}; a "
+        f"routing case can never pass once its expected answer has been deleted or "
+        f"renamed"
     )
+
+
+def test_router_catalog_offers_exactly_the_deployed_default_skills():
+    catalog = set(router_catalog_descriptions())
     deployed = deployed_default_skill_names() | {"all-skills"}
     assert catalog == deployed, (
         "the routing catalog must mirror the skills every session loads; "
@@ -80,35 +62,25 @@ def test_router_catalog_offers_exactly_the_deployed_default_skills():
     )
 
 
-@pytest.mark.parametrize("config_path,prompt_key,minimum", ROUTER_CATALOGS)
-def test_every_expected_routing_answer_is_offered_by_its_catalog(
-    config_path, prompt_key, minimum
-):
-    config = yaml.safe_load(config_path.read_text())
-    catalog = set(router_catalog_skill_names(config, prompt_key))
+def test_every_expected_routing_answer_is_offered_by_the_catalog():
+    catalog = set(router_catalog_descriptions())
     unofferable = sorted(
         {
             expected
-            for test in config["tests"]
-            for expected in test["assertions"].get("output_equals", [])
+            for case in routing_cases()
+            for expected in case["assercoes"]["igual"]
             if expected not in catalog
         }
     )
     assert not unofferable, (
-        f"{config_path.name} routing tests expect an answer the router prompt never "
-        f"offers: {unofferable}; the test grades the catalog, not the model"
+        f"routing cases expect an answer the router prompt never offers: "
+        f"{unofferable}; the case grades the catalog, not the model"
     )
 
 
-@pytest.mark.parametrize("config_path,prompt_key,minimum", ROUTER_CATALOGS)
-def test_router_catalog_uses_current_skill_descriptions(
-    config_path, prompt_key, minimum
-):
-    config = yaml.safe_load(config_path.read_text())
-    catalog = router_catalog_descriptions(config, prompt_key)
-    assert len(catalog) >= minimum
+def test_router_catalog_uses_current_skill_descriptions():
     mismatches = {}
-    for name, routed_description in catalog.items():
+    for name, routed_description in router_catalog_descriptions().items():
         skill_file = public_skill_definition_path(name)
         if skill_file is None:
             continue
@@ -125,17 +97,11 @@ def test_router_catalog_uses_current_skill_descriptions(
     )
 
 
-def test_skill_routing_grades_by_exact_match_not_substring():
-    tests = yaml.safe_load(SKILL_ROUTING_SUITE.read_text())["tests"]
-    assert tests
-    for test in tests:
-        assertions = test["assertions"]
-        assert "output_equals" in assertions, (
-            f"{test['name']} lost its exact-match grading"
+def test_skill_routing_grades_by_exact_match_only():
+    cases = routing_cases()
+    assert cases
+    for case in cases:
+        assert set(case["assercoes"]) == {"igual"}, (
+            f"{case['nome']} must grade by exact match alone"
         )
-        assert "output_contains_any" not in assertions, (
-            f"{test['name']} still grades by substring"
-        )
-        assert "output_contains" not in assertions
-        assert "output_not_contains" not in assertions
-        assert len(assertions["output_equals"]) >= 1
+        assert case["assercoes"]["igual"]

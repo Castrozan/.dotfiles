@@ -2,41 +2,28 @@
 
 readonly TIER_SKIPPED_STATUS=77
 
-_run_evals_tier() {
-	if ! command -v agent-eval &>/dev/null; then
-		echo "SKIP: agent-eval not installed, skipping agent evals" >&2
+_run_agent_evals() {
+	local tier_title=$1
+	shift
+
+	if ! command -v dotfiles-evals &>/dev/null; then
+		echo "SKIP: dotfiles-evals not installed, skipping $tier_title" >&2
 		return $TIER_SKIPPED_STATUS
 	fi
 
-	echo "--- Agent Evals (LLM) ---"
-	# Through the packaged command, never the raw script: agent-eval puts the unwrapped claude ahead of the
-	# interactive wrapper, and a wrapped subject scores the live machine instead of the declared instruction paths.
-	agent-eval
+	echo "--- $tier_title ---"
+	(cd "$REPO_DIR" && dotfiles-evals run "$@")
 	echo ""
+}
+
+_run_evals_tier() {
+	_run_agent_evals "Agent Evals (LLM)"
 }
 
 _run_integration_tier() {
-	if ! command -v claude &>/dev/null; then
-		echo "SKIP: claude CLI not installed, skipping integration tests" >&2
-		return $TIER_SKIPPED_STATUS
-	fi
-
-	echo "--- Integration Tests (real Claude sessions) ---"
-	"$REPO_DIR/agent-harness/quality/evaluations/integration/run-integration-tests.py"
-	echo ""
+	_run_agent_evals "Integration Workflow Evals (real agent sessions)" --categoria integration_workflows
 }
 
 _run_e2e_tier() {
-	if ! command -v claude &>/dev/null; then
-		echo "SKIP: claude CLI not installed, skipping E2E tests" >&2
-		return $TIER_SKIPPED_STATUS
-	fi
-	if ! command -v herdr &>/dev/null; then
-		echo "SKIP: herdr not installed, skipping E2E tests" >&2
-		return $TIER_SKIPPED_STATUS
-	fi
-
-	echo "--- E2E Tests (herdr interactive Claude sessions) ---"
-	"$REPO_DIR/agent-harness/quality/evaluations/e2e/run-e2e-tests.py"
-	echo ""
+	_run_agent_evals "End-to-end Workflow Evals (real agent sessions)" --categoria end_to_end_workflows
 }

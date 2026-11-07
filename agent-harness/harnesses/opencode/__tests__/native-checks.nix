@@ -6,12 +6,6 @@
 let
   generatedInstructions = import ../../../agent-instructions/rulesync { inherit pkgs; };
   rulesync = import ../../../agent-instructions/rulesync/package.nix { inherit pkgs; };
-  evaluationRuntime =
-    pkgs.callPackage ../../../quality/evaluations/node-provider-runtime/package.nix
-      {
-        nodejs = pkgs.nodejs_22;
-      };
-
 in
 {
   domain-opencode-native-cli-configuration =
@@ -47,22 +41,4 @@ in
           ${cfg.opencode.unwrappedPackage}/bin/opencode ${generatedInstructions}/opencode/.opencode/agents ${rulesync}/bin/rulesync
         touch "$out"
       '';
-
-  domain-opencode-native-evaluation-runtime =
-    pkgs.runCommand "domain-opencode-native-evaluation-runtime"
-      {
-        nativeBuildInputs = [
-          pkgs.python312
-          pkgs.nodejs_22
-        ];
-      }
-      ''
-        export PYTHONPATH=${./.}:${../../../agent-instructions/rulesync/__tests__}
-        python3 ${./.}/verify-native-evaluation-runtime.py \
-          ${cfg.opencode.unwrappedPackage}/bin/opencode \
-          ${evaluationRuntime}/lib/node_modules/agent-eval-node-provider-runtime/provider-runtime.mjs \
-          ${generatedInstructions}/opencode/.opencode/agents
-        touch "$out"
-      '';
-
 }

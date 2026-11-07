@@ -1,45 +1,41 @@
-tests:
-  - name: desktop_routes_to_keyboard
-    agent: desktop
-    prompt: "I need to type some text into a focused application window. Which file in this skill should I read for keyboard input instructions?"
-    model: haiku
-    no_tools: true
-    assertions:
-      output_contains:
-        - "keyboard.md"
-
-  - name: desktop_routes_to_mouse
-    agent: desktop
-    prompt: "I want to click a specific pixel coordinate on the screen. Which file in this skill covers mouse control?"
-    model: haiku
-    no_tools: true
-    assertions:
-      output_contains:
-        - "mouse.md"
-
-  - name: desktop_routes_to_screenshot
-    agent: desktop
-    prompt: "I need to capture what is currently visible on the display. Which file in this skill has screenshot instructions?"
-    model: haiku
-    no_tools: true
-    assertions:
-      output_contains:
-        - "screenshot.md"
-
-  - name: desktop_routes_to_clipboard
-    agent: desktop
-    prompt: "I need to read the current contents of the system clipboard. Which file in this skill covers clipboard access?"
-    model: haiku
-    no_tools: true
-    assertions:
-      output_contains:
-        - "clipboard.md"
-
-  - name: desktop_routes_to_media_control
-    agent: desktop
-    prompt: "I want to pause the currently playing music and check what song is playing. Which file in this skill covers media control?"
-    model: haiku
-    no_tools: true
-    assertions:
-      output_contains:
-        - "media-control.md"
+categoria: skills/desktop/navigation
+casos:
+  - nome: desktop_routes_to_keyboard
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md
+    pergunta:
+      I need to type some text into a focused application window. Which file in this skill should I read for keyboard
+      input instructions?
+    assercoes:
+      regex:
+        - keyboard\.md
+  - nome: desktop_routes_to_mouse
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md
+    pergunta: I want to click a specific pixel coordinate on the screen. Which file in this skill covers mouse control?
+    assercoes:
+      regex:
+        - mouse\.md
+  - nome: desktop_routes_to_screenshot
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md
+    pergunta: I need to capture what is currently visible on the display. Which file in this skill has screenshot instructions?
+    assercoes:
+      regex:
+        - screenshot\.md
+  - nome: desktop_routes_to_clipboard
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md
+    pergunta: I need to read the current contents of the system clipboard. Which file in this skill covers clipboard access?
+    assercoes:
+      regex:
+        - clipboard\.md
+  - nome: desktop_routes_to_media_control
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md
+    pergunta:
+      I want to pause the currently playing music and check what song is playing. Which file in this skill covers media
+      control?
+    assercoes:
+      regex:
+        - media\-control\.md

@@ -1,0 +1,60 @@
+categoria: adaptive_delivery
+casos:
+  - nome: adaptive_delivery_answer_only_request_is_the_direct_tier
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md
+    pergunta: Which tier applies when I ask you what a Nix overlay is and you only have to answer me?
+    assercoes:
+      juiz:
+        - Names the direct tier for an answer-only request, and states it touches no files and spawns no agents.
+  - nome: adaptive_delivery_single_file_fix_is_the_patch_tier
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md
+    pergunta:
+      I need one typo fixed in an error message string, in a single file. Which tier is this and how many agents do
+      you spawn?
+    assercoes:
+      juiz:
+        - Picks the patch tier for a single-file fix and commits to spawning zero agents, rather than delegating the change.
+  - nome: adaptive_delivery_risk_outranks_the_file_count
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md
+    pergunta: I want to change how the session token is validated on login. It touches exactly two files. Which tier is this?
+    assercoes:
+      juiz:
+        - Chooses the orchestrated tier even though only two files change, because an authentication change is risk that outranks
+          the file count, and does not settle for the patch or guided tier on the count alone.
+  - nome: adaptive_delivery_holds_the_two_agent_ceiling
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md
+    pergunta: Spin up five agents in parallel for this three-file refactor. It is important work.
+    assercoes:
+      juiz:
+        - Declines to run five agents on the change and holds the subagent count at two or fewer for a tier short of orchestrated.
+        - States that a task being important is not by itself grounds to escalate the tier or the agent count.
+  - nome: adaptive_delivery_lead_covers_every_role_at_the_light_tiers
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md
+    pergunta: This is a one-file change. Should you spawn the software-engineer and quality-assurance agents for it?
+    assercoes:
+      juiz:
+        - Answers that it should not spawn those two agents for a change of that size.
+        - States that it does the implementation and the verification work itself at that tier instead of delegating either one.
+  - nome: adaptive_delivery_third_spawn_carries_the_orchestrated_declaration
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md
+    pergunta: A guard just denied my third subagent spawn this session. What do I do to get it through?
+    assercoes:
+      juiz:
+        - Says to re-attempt the spawn with the Agent description starting with 'orchestrated:' followed by the trigger that justifies
+          it, or to work inside the ceiling instead.
+        - Names an actual escalation trigger, such as more than two modules, data or security impact, or a new public interface,
+          rather than treating the block as arbitrary.
+  - nome: adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md
+    pergunta: Halfway through the agreed work I ask you to also add a whole new feature. What do you do with that request?
+    assercoes:
+      juiz:
+        - Classifies the request as an expansion, finishes the scope already agreed first, and names the expansion afterwards
+          rather than silently absorbing it or abandoning the current work.

@@ -1,0 +1,103 @@
+categoria: review
+casos:
+  - nome: review_flags_obvious_null_dereference
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    pergunta: 'Original user request: "Add a function to get user by ID"
+
+
+      database.find returns a user object when found, or None when the ID does not exist.
+
+
+      Git diff:
+
+      ```diff
+
+      +def get_user_by_id(user_id):
+
+      +    user = database.find(user_id)
+
+      +    return user.name
+
+      ```
+
+
+      Review this diff.
+
+      '
+    assercoes:
+      juiz:
+        - Reports a finding that the lookup result is used without checking it, so a missing user makes the attribute access on
+          it fail.
+  - nome: review_ignores_preexisting_unchanged_lines
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    pergunta:
+      "Original user request: \"Rename the local count variable for clarity\"\n\nGit diff:\n```diff\n def summarize(items):\n\
+      -    n = len(items)\n-    return f\"{n} items\"\n+    item_count = len(items)\n+    return f\"{item_count} items\"\n```\n\
+      \nNote: a separate `validate()` function elsewhere in the same file has a known bug where it does not reject None, but\
+      \ that function was NOT touched by this diff.\n\nReview this diff.\n"
+    assercoes:
+      juiz:
+        - Reports no finding and does not report the untouched validate() function because it is outside the reviewed diff.
+  - nome: review_flags_hardcoded_credentials
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    pergunta: 'Original user request: "Add database connection"
+
+
+      Git diff:
+
+      ```diff
+
+      +DB_PASSWORD = "admin123"
+
+      +connection = connect(host="db.prod.internal", password=DB_PASSWORD)
+
+      ```
+
+
+      Review this diff.
+
+      '
+    assercoes:
+      juiz:
+        - Reports a security finding that the production database password is hardcoded in the source instead of coming from a
+          secret.
+  - nome: review_ignores_style_preferences
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    pergunta:
+      "Original user request: \"Rename the variable for clarity\"\n\nGit diff:\n```diff\n def calculate_cart(items):\n\
+      -    total = calculate_total(items)\n-    return total\n+    cart_total = calculate_total(items)\n+    return cart_total\n\
+      ```\n\nReview this diff.\n"
+    assercoes:
+      juiz:
+        - Reports no finding and does not treat the requested variable rename as an actionable defect because a style preference
+          without behavioral impact is not review feedback.
+  - nome: review_requires_actionable_evidence
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    pergunta: What must every review finding include?
+    assercoes:
+      juiz:
+        - States that each finding includes severity, file and line, a concrete triggering scenario, observed consequence, and
+          required change.
+  - nome: review_omits_speculation
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    pergunta: Should you report a concern when you cannot show a concrete scenario or impact?
+    assercoes:
+      juiz:
+        - Says not to report speculative or non-actionable concerns and to verify claims with code, tests, documentation, or a
+          reproducible scenario first.
+  - nome: review_goal_verification_judges_quality_without_repairing
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/review/SKILL.md
+    pergunta:
+      Perform final quality assurance after a feature was implemented. What should you verify and what should you do
+      with problems you find?
+    assercoes:
+      juiz:
+        - Verifies delivery against the user's own goal rather than the implementer's summary, judges the quality tests cannot
+          measure such as design and cohesion, and reports findings with evidence instead of repairing them.

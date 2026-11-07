@@ -1,6 +1,5 @@
 import json
 from pathlib import PurePosixPath
-from types import SimpleNamespace
 
 import pytest
 
@@ -10,8 +9,6 @@ from instructions.instruction_projection import (
 )
 from instructions.instruction_surface_scanner import REPO_ROOT
 from instructions.reply_format_instructions import REPLY_FORMAT_CONFIGURATION_PATH
-from runner import run_evals_config_loader
-from runner.baseline.run_evals_fingerprint import digest_instruction_paths
 
 
 @pytest.fixture
@@ -102,61 +99,3 @@ def test_complete_interactive_instructions_fit_projection_limits(additional_sour
 
     assert "### Peer communication" in rendered
     assert "home/agent/.claude/CLAUDE.md#evidence)" in rendered
-
-
-def test_evaluation_loader_uses_the_worktree_configuration(
-    tmp_path, monkeypatch, configured_reply_formats
-):
-    configuration_path = tmp_path / REPLY_FORMAT_CONFIGURATION_PATH
-    configuration_path.parent.mkdir(parents=True)
-    configuration_path.write_text(json.dumps(configured_reply_formats))
-    instruction = tmp_path / "interactive.md"
-    instruction.write_text("### Response shape\n\n{{reply_format}}\n")
-    monkeypatch.setattr(run_evals_config_loader, "REPO_ROOT", tmp_path)
-
-    prompt = run_evals_config_loader.resolve_system_prompt_for_test(
-        {"skill_path": "interactive.md"}
-    )
-
-    assert "37 prose words or fewer" in prompt
-    assert "{{reply_format}}" not in prompt
-
-
-def test_historical_prompts_read_configuration_from_the_same_revision(
-    monkeypatch, configured_reply_formats
-):
-    calls = []
-
-    def git_show(command, **arguments):
-        calls.append(command)
-        content = (
-            json.dumps(configured_reply_formats)
-            if command[-1].endswith(".json")
-            else "{{reply_format}}"
-        )
-        return SimpleNamespace(returncode=0, stdout=content)
-
-    monkeypatch.setattr(run_evals_config_loader.subprocess, "run", git_show)
-
-    prompt = run_evals_config_loader.load_skill_body_from_git_ref(
-        "interactive.md", "previous"
-    )
-
-    assert "37 prose words or fewer" in prompt
-    assert calls[-1] == ["git", "show", f"previous:{REPLY_FORMAT_CONFIGURATION_PATH}"]
-
-
-def test_configuration_changes_invalidate_instruction_evidence(
-    tmp_path, configured_reply_formats
-):
-    configuration_path = tmp_path / REPLY_FORMAT_CONFIGURATION_PATH
-    configuration_path.parent.mkdir(parents=True)
-    configuration_path.write_text(json.dumps(configured_reply_formats))
-    instruction = tmp_path / "interactive.md"
-    instruction.write_text("{{reply_format}}")
-    previous = digest_instruction_paths(tmp_path, {instruction})
-
-    configured_reply_formats["formats"]["confirmation"]["maximum_words"] += 1
-    configuration_path.write_text(json.dumps(configured_reply_formats))
-
-    assert digest_instruction_paths(tmp_path, {instruction}) != previous

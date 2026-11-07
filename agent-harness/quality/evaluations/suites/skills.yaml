@@ -1,0 +1,14 @@
+categoria: skills
+casos:
+  - nome: commit_skill_matches_repository_conventions
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/development/coding/references/git.md
+    pergunta:
+      In an unfamiliar repository, how do you choose which files to stage and the commit message format? If it uses
+      Conventional Commits, show that format.
+    assercoes:
+      juiz:
+        - "Says to inspect and match the repository's commit convention, describes `type(scope): subject` with an imperative
+          lowercase subject when Conventional Commits are used, and stages only specific task-owned files."
