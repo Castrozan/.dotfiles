@@ -154,7 +154,9 @@ def test_closing_leaves_a_running_meeting_alone(
     assert hides_canvas is not stops_everything
 
 
-def test_asking_speaks_and_prints_only_the_reply(tmp_path, monkeypatch, capsys):
+def test_asking_speaks_and_prints_only_the_reply_tagged_as_voice(
+    tmp_path, monkeypatch, capsys
+):
     monkeypatch.setattr(talk_cli, "conversation_open", lambda: True)
     runner = Mock()
     monkeypatch.setattr(talk_cli.subprocess, "run", runner)
@@ -167,7 +169,7 @@ def test_asking_speaks_and_prints_only_the_reply(tmp_path, monkeypatch, capsys):
     )
     assert runner.call_args.args[0][:4] == ["avatar-command", "speak", "Oi", "happy"]
     assert runner.call_args.kwargs["stdout"] == talk_cli.subprocess.DEVNULL
-    assert capsys.readouterr().out == "tudo certo\n"
+    assert capsys.readouterr().out == "[voice] tudo certo\n"
 
 
 def test_asking_after_the_user_closed_the_window_never_reopens_it(

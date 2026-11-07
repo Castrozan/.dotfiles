@@ -13,6 +13,7 @@ CONVERSATION_TARGET = "avatar-conversation.target"
 ROOM_MICROPHONE = "AvatarRoomMicrophone"
 HEAR_WAIT_SECONDS = 100
 FOLLOW_SLICE_SECONDS = 30
+VOICE_TAG = "[voice]"
 
 
 def conversation_open():
@@ -101,10 +102,14 @@ def say(arguments, directory):
     sys.exit(subprocess.run(speech_command(arguments)).returncode)
 
 
+def voice_line(utterance):
+    return f"{VOICE_TAG} {utterance}"
+
+
 def hear(arguments, directory):
     utterance = utterances.next_utterance(directory, arguments.wait, conversation_open)
     if utterance:
-        print(utterance)
+        print(voice_line(utterance))
 
 
 def ask(arguments, directory):
@@ -120,7 +125,7 @@ def follow(arguments, directory):
             directory, FOLLOW_SLICE_SECONDS, conversation_open
         )
         if utterance:
-            print(utterance, flush=True)
+            print(voice_line(utterance), flush=True)
 
 
 def status(arguments, directory):

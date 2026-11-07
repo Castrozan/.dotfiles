@@ -45,9 +45,9 @@ user asked for it.
 ### Talking with the user
 
 Every agent on every host runs the same commands; on a Mac `avatar-talk` forwards to chise over ssh, where the avatar
-and microphone live. A conversation takes three verbs: 1) `avatar-talk open`, which shows the avatar and
-opens the microphone; 2) `avatar-talk ask "TEXT" EMOTION` for each turn, which speaks, waits up to 100 seconds and
-prints what the user said, printing nothing on silence; 3) `avatar-talk close` when the user says goodbye.
+and microphone live. A conversation takes three verbs: 1) `avatar-talk open`, which shows the avatar and opens the
+microphone; 2) `avatar-talk ask "TEXT" EMOTION` for each turn, which speaks, waits up to 100 seconds and prints what the
+user said after a `[voice]` tag, printing nothing on silence; 3) `avatar-talk close` when the user says goodbye.
 
 Talking over the avatar stops it by itself, so the reply still arrives. `avatar-talk hear` keeps waiting without
 speaking, and `avatar-talk say "TEXT" EMOTION` speaks without waiting. Leave the language unpinned, as the user chose:
