@@ -42,8 +42,9 @@ into the existing module structure rather than adding one-off files. Make it wor
 holds across the harnesses this repo drives: reach Claude Code, Codex and OpenCode together, then Pi and Hermes where
 each one supports the capability.
 
-Treat one-time cleanup as a migration: verify it on every affected machine, then remove the migration code and
-retired-path inventories, so recurring activation hooks and maintained scripts keep only steady-state configuration.
+Clear state left behind by removed configuration with a one-off command or script on each affected machine, then
+verify it is gone. Never commit cleanup code that runs once and then stays as dead code. This cleanup is the one
+exception to never mutating a machine by hand.
 
 ### Nvim keymaps
 

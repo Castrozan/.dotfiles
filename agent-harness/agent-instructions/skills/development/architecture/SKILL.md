@@ -13,8 +13,8 @@ defect, not a style choice.
 ### Size the design to the evidence
 
 Build what the current requirement needs plus the seam where the next one is already known to land. An abstraction with
-one caller is a guess; a duplicated decision with three callers is debt. Moving a boundary later costs less than
-defending one chosen early, so prefer the structure that is cheap to cut again. Treat familiar patterns and existing
+one caller is a guess; a duplicated decision with three callers is debt. Shape each boundary so new behavior extends it
+without rewriting it, and so replacing it stays cheap if requirements change. Treat familiar patterns and existing
 architecture as candidates constrained by evidence, not as reasons to stop evaluating the boundary.
 
 ### Decide state and failure before the happy path

@@ -51,8 +51,7 @@ configuration, and indirection. Grow the system in layers. Start from the smalle
 add each new capability on top of a product that already works. Never trade a working product for unfinished
 complexity.
 
-Make architectural decisions for the long term. Do not accept a stopgap that only works for now and is meant to be
-replaced later. Keep components modular and concerns clearly separated.
+Make architectural decisions for the long term. Keep components modular and concerns clearly separated.
 
 Do not preserve backward compatibility. Remove obsolete paths instead of adding compatibility layers, fallbacks, or
 migrations. Preserve backward compatibility only when the user asks for it.

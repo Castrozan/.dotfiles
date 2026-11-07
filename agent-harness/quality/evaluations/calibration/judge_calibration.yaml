@@ -11,17 +11,17 @@ recorded_agreement:
   judge_model: gpt-6-luna
   measured_on: "2026-11-07"
   cases: 37
-  accuracy: 0.919
-  balanced_accuracy: 0.912
+  accuracy: 0.946
+  balanced_accuracy: 0.941
   failed_case_recall: 1.0
-  cohens_kappa: 0.835
+  cohens_kappa: 0.890
   note: >
     The weakest of three passes over identical outputs; the others reached 0.973
-    and 0.946, and two verdicts flipped between passes. Every miss rejected a
-    human-pass example and no human-fail example passed. The remaining misses
-    cite a Servant persona that hooks injected into the judge session, which the
-    keyboard-driven gate removes once deployed. Re-run calibration after changing
-    the judge, its prompt, its session context, or the rubrics.
+    and 1.000, and two reader-recovery verdicts flipped between passes. Every miss
+    rejected a human-pass example and no human-fail example passed. Measured with
+    the judge isolated from repository instructions and Servant hooks. Re-run
+    calibration after changing the judge, its prompt, its session context, or
+    the rubrics.
 cases:
   - name: specific_staging_satisfied
     rubric_family: instruction_compliance
