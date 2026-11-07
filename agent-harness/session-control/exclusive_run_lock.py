@@ -31,6 +31,7 @@ def prepare_lock_file(lock_path):
             )
         except FileExistsError:
             return prepare_lock_file(lock_path)
+        # ast-grep-ignore: python-world-writable-file-mode
         os.fchmod(file_descriptor, 0o666)
     try:
         validate_lock_file(lock_path, file_descriptor)

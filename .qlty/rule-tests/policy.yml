@@ -89,3 +89,13 @@ invalid:
   - "const options = (([1] as unknown) as const) as const;"
   - "const card = <UserCard user={input as unknown as User} />;"
   - "const card = (<UserCard /> as unknown) as Element;"
+---
+id: python-world-writable-file-mode
+valid:
+  - "os.fchmod(file_descriptor, 0o600)"
+  - "os.lchmod(path, 0o644)"
+  - "os.fchmod(file_descriptor, mode)"
+invalid:
+  - "os.fchmod(file_descriptor, 0o666)"
+  - "os.lchmod(path, 0o777)"
+  - "os.fchmod(file_descriptor, 0o662)"

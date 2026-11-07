@@ -116,3 +116,15 @@ rule:
                 any:
                   - matches: assertion
                   - kind: parenthesized_expression
+---
+id: python-world-writable-file-mode
+language: Python
+severity: error
+message: Grant write permission only to the owner.
+rule:
+  pattern: os.$METHOD($TARGET, $MODE)
+constraints:
+  METHOD:
+    regex: ^(fchmod|lchmod)$
+  MODE:
+    regex: ^0o[0-7]*[2367]$
