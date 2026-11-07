@@ -77,6 +77,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Scrape the latest tweets from @nixos_org"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "all-skills"
@@ -113,6 +114,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Restart the current session and preserve context"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "agent-session"
@@ -176,6 +178,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Spawn a parallel agent to refactor the utils module while I work on tests"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "orchestrate"
@@ -185,6 +188,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Stage the changed files and create a commit with a good message"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "coding"
@@ -203,6 +207,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Set the air conditioner to 22 degrees and fan speed to high"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "all-skills"
@@ -230,6 +235,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Create a new skill for managing Docker containers with good prompts"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "instructions"
@@ -284,6 +290,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Catch me up on the latest local LLM tooling and developer agent news."
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "research"
@@ -293,6 +300,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "I read your last answer twice and still can't tell which option you recommend. Explain it again so I can decide."
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "wellput"
@@ -311,6 +319,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Check my phone battery level and charging status"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "all-skills"
@@ -320,6 +329,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Fill my ponto entries for this week on Senior"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "browser"
@@ -329,6 +339,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "What are the best practices for Nix flake design in 2026?"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "research"
@@ -338,6 +349,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "I want to commit all my staged changes with a conventional commit message"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "coding"
@@ -383,6 +395,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "I need to understand why we switched from playwright to chrome devtools, check the git history"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "coding"
@@ -455,6 +468,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "what does this tweet say? https://x.com/user/status/1234567890123"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "all-skills"
@@ -473,6 +487,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "I rewrote a SKILL.md and a CLAUDE.md section. Audit them against our instruction authoring standards."
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "review"
@@ -509,6 +524,7 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Where in this repo is the retry timeout configured? Sweep the whole tree and just tell me the answer."
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "explore"
@@ -517,6 +533,177 @@ tests:
     system_prompt: *shared_system_prompt
     prompt: "Write the single-line brief that a nightly cron agent receives as its only instruction"
     model: sonnet
+    held_out: true
     assertions:
       output_equals:
         - "goal-prompt"
+
+  - name: routing_to_forge_open_a_merge_request
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Open a merge request for this branch and request a review from the team."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "forge"
+
+  - name: routing_to_forge_read_failing_pipeline
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "The pipeline on my pull request is red. Pull the failing job logs from the hosted CI."
+    model: sonnet
+    held_out: true
+    assertions:
+      output_equals:
+        - "forge"
+
+  - name: routing_to_forge_resolve_review_threads
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Reply to the review comments on pull request 412 and resolve the threads I already addressed."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "forge"
+
+  - name: routing_to_process_design_before_agents_run
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Before we spin up agents for this migration, let's design the multi-agent process together: which agents, gates and monitors we need."
+    model: sonnet
+    held_out: true
+    assertions:
+      output_equals:
+        - "process-design"
+
+  - name: routing_to_process_design_redraw_a_pipeline
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Sketch a pipeline of agents and deterministic checks for nightly triage, and let me redraw it with you before anything runs."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "process-design"
+
+  - name: routing_to_url_shortener_for_a_terminal_link
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Shorten this long Google Drive link so I can paste it in the terminal."
+    model: sonnet
+    held_out: true
+    assertions:
+      output_equals:
+        - "url-shortener"
+
+  - name: routing_to_url_shortener_for_a_query_url
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Turn https://example.com/a/very/long/path?with=query&and=more&parts=here into a short link."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "url-shortener"
+
+  - name: routing_to_deliver_an_objective_end_to_end
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Take this objective end to end: investigate the context, design how we build it, and keep executing until it works live."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "deliver"
+
+  - name: routing_to_instructions_for_a_new_skill_file
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Write a new SKILL.md that teaches the agent how to manage my backups."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "instructions"
+
+  - name: routing_to_docs_for_a_module_readme
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Write a README for the new evaluation runner module."
+    model: sonnet
+    held_out: true
+    assertions:
+      output_equals:
+        - "docs"
+
+  - name: routing_to_wellput_for_an_overlong_status_reply
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "That status update was too long. Give me only the two things I need to act on."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "wellput"
+
+  - name: routing_to_architecture_for_where_a_boundary_lives
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Should judge isolation live in the Python port or in the node adapter? Decide where that boundary belongs."
+    model: sonnet
+    held_out: true
+    assertions:
+      output_equals:
+        - "architecture"
+
+  - name: routing_to_explore_for_where_hooks_are_configured
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Where in this repository do we configure the Codex hooks? Sweep the tree and tell me."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "explore"
+
+  - name: routing_to_research_for_latest_release_notes
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "What changed in the latest Codex release notes?"
+    model: sonnet
+    assertions:
+      output_equals:
+        - "research"
+
+  - name: routing_to_workspace_for_another_repository
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Switch over to my ~/repo/api project and run its tests there."
+    model: sonnet
+    assertions:
+      output_equals:
+        - "workspace"
+
+  - name: routing_to_herdr_for_a_new_pane
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Open a new pane to the right and run the test watcher in it."
+    model: sonnet
+    held_out: true
+    assertions:
+      output_equals:
+        - "herdr"
+
+  - name: routing_to_all_skills_for_a_desktop_screenshot
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Take a screenshot of my whole desktop and tell me what is on the second monitor."
+    model: sonnet
+    held_out: true
+    assertions:
+      output_equals:
+        - "all-skills"
+
+  - name: routing_to_browser_for_a_logged_in_download
+    no_tools: true
+    system_prompt: *shared_system_prompt
+    prompt: "Log into the vendor portal in Chrome and download last month's invoice."
+    model: sonnet
+    held_out: true
+    assertions:
+      output_equals:
+        - "browser"
