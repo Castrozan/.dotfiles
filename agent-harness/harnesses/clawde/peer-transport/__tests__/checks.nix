@@ -75,6 +75,7 @@ in
         cd ${self}
         python -m pytest -q -p no:cacheprovider \
           ${harnessTests}/integration/test_harness_aware_submission.py \
+          ${harnessTests}/integration/test_claude_composer_detection.py \
           ${harnessTests}/integration/test_submission_observation.py \
           ${harnessTests}/integration/test_a2a_work_delivery.py \
           ${harnessTests}/integration/test_busy_work_rejection.py \
