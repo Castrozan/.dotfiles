@@ -19,6 +19,35 @@ DIRECTORY_WITH_ONE_AGENT = {
 }
 
 
+class AnsweringResponse:
+    def __init__(self, body: bytes) -> None:
+        self.status = 200
+        self._body = body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exception):
+        return False
+
+    def read(self) -> bytes:
+        return self._body
+
+
+class TestDecodingSuccessfulAnswers:
+    @pytest.mark.parametrize("body", [b"upstream unavailable", b"[]", b"null"])
+    def test_a_successful_answer_that_is_not_a_json_object_is_a_failure(
+        self, monkeypatch, body
+    ):
+        monkeypatch.setattr(
+            peer_transport.urllib.request,
+            "urlopen",
+            lambda *_args, **_kwargs: AnsweringResponse(body),
+        )
+        with pytest.raises(PeerRequestFailure, match="127.0.0.1:7000"):
+            peer_transport.request_peer_json("GET", "http://127.0.0.1:7000/agents")
+
+
 class TestReadingTheLiveDirectory:
     def test_the_daemon_answer_is_keyed_by_agent_name(self, monkeypatch):
         monkeypatch.setattr(
@@ -29,11 +58,14 @@ class TestReadingTheLiveDirectory:
                 {"agents": list(DIRECTORY_WITH_ONE_AGENT.values())},
             ),
         )
-        assert read_agent_directory("http://127.0.0.1:7000")["golden"][
-            "harness"
-        ] == "claude"
+        assert (
+            read_agent_directory("http://127.0.0.1:7000")["golden"]["harness"]
+            == "claude"
+        )
 
-    def test_a_daemon_that_is_not_running_names_the_endpoint_it_tried(self, monkeypatch):
+    def test_a_daemon_that_is_not_running_names_the_endpoint_it_tried(
+        self, monkeypatch
+    ):
         def refuse(*_args, **_kwargs):
             raise PeerRequestFailure("http://127.0.0.1:7000/agents is unreachable")
 

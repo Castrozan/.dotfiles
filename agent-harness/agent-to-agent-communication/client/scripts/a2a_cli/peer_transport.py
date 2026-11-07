@@ -18,6 +18,23 @@ class PeerRequestFailure(Exception):
     pass
 
 
+def decoded_json_object(raw_body: bytes) -> dict | None:
+    try:
+        document = json.loads(raw_body.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    return document if isinstance(document, dict) else None
+
+
+def successful_json_object_answer(url: str, response) -> tuple[int, dict]:
+    document = decoded_json_object(response.read())
+    if document is None:
+        raise PeerRequestFailure(
+            f"{url} answered {response.status} without a JSON object"
+        )
+    return response.status, document
+
+
 def request_peer_json(
     method: str,
     url: str,
@@ -30,12 +47,9 @@ def request_peer_json(
         request.add_header("Content-Type", "application/json")
     try:
         with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-            return response.status, json.loads(response.read().decode("utf-8"))
+            return successful_json_object_answer(url, response)
     except urllib.error.HTTPError as http_error:
-        try:
-            return http_error.code, json.loads(http_error.read().decode("utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            return http_error.code, {}
+        return http_error.code, decoded_json_object(http_error.read()) or {}
     except (urllib.error.URLError, TimeoutError, ConnectionError) as transport_failure:
         raise PeerRequestFailure(
             f"{url} is unreachable: {transport_failure}"
