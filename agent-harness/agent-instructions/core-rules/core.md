@@ -44,6 +44,24 @@ revision, and verification state under the narrowest owner; restore it before co
 
 Keep durable knowledge in the user's personal knowledge base; load its owning skill before reading or filing it.
 
+### Design
+
+Choose the simplest implementation that fully meets the current requirements. Avoid speculative abstractions,
+configuration, and indirection. Grow the system in layers. Start from the smallest version that works end to end, and
+add each new capability on top of a product that already works. Never trade a working product for unfinished
+complexity.
+
+Make architectural decisions for the long term. Do not accept a stopgap that only works for now and is meant to be
+replaced later. Keep components modular and concerns clearly separated.
+
+Do not preserve backward compatibility. Remove obsolete paths instead of adding compatibility layers, fallbacks, or
+migrations.
+
+Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Do not
+reimplement common functionality without a clear reason. Lean on the dependencies already in the project before writing
+your own implementation or adding packages. Do not assume a library lacks a capability without checking its
+documentation and types.
+
 ### Coding
 
 When creating or changing owned code, add no comments, docstrings, section banners, commented-out code, TODO notes, or
@@ -53,16 +71,13 @@ syntax directives are not explanatory comments.
 
 Before writing, name the coding practice, the SOLID principle, and the architecture or design pattern you will apply;
 use established ones and invent none. Use complete descriptive domain names; never abbreviate merely for length. Keep
-changes cohesive and one responsibility per unit of code; prefer guard clauses and data types for values that travel
-together.
+changes cohesive; prefer guard clauses and data types for values that travel together.
 
 Depend on stable interfaces, not on details. Keep drivers, frameworks, and transports at the edge. Give a caller only
 the capability it uses, and extend behavior where it is owned.
 
-Extract a shared rule only after repeated use proves the same reason to change. Add no compatibility wrappers,
-deprecated aliases, re-exports, generalized extension points, speculative switches, feature flags, or backward
-compatibility unless the user asks for it. Isolate workarounds and hacky solutions behind one narrow, removable
-boundary.
+Extract a shared rule only after repeated use proves the same reason to change. Isolate workarounds and hacky solutions
+behind one narrow, removable boundary.
 
 Before fixing a defect, establish a focused causal reproducer when practical; for new behavior, define the smallest
 testable contract.

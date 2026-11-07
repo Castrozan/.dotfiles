@@ -68,7 +68,7 @@ let
   globalCoreInstructions = builtins.readFile ../core-rules/core.md;
   normalizedGlobalCoreInstructions = lib.toLower globalCoreInstructions;
   globalCoreHasNoFrontmatter = !(lib.hasPrefix "---\n" globalCoreInstructions);
-  globalCoreMaximumBytes = 5000;
+  globalCoreMaximumBytes = 6000;
   globalCoreForbiddenFragments = [
     ".dotfiles"
     "heartbeat.md"
