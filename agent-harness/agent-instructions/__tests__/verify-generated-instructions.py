@@ -66,6 +66,7 @@ def verify_projections(manifest, filesystem_root: Path) -> None:
         ],
         check=True,
     )
+    assert workflow.read_text().startswith("export const meta = {")
     assert "const ITEMS_SCHEMA =" in workflow.read_text()
     assert "const researchSourcePrompts =" in workflow.read_text()
     instructions = list(

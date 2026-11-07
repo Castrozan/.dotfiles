@@ -8,8 +8,10 @@ PRELUDE_TEMPLATE_LINES = PRELUDE_TEMPLATE_PATH.read_text().strip().splitlines()
 PRELUDE_START_MARKER = PRELUDE_TEMPLATE_LINES[0]
 PRELUDE_END_MARKER = PRELUDE_TEMPLATE_LINES[-1]
 AGENT_CEILING_PLACEHOLDER = "__AGENT_CEILING__"
-OUTPUT_TOKEN_CEILING_PLACEHOLDER = "__OUTPUT_TOKEN_CEILING__"
+OUTPUT_CEILING_PLACEHOLDER = "__OUTPUT_TOKEN_CEILING__"
 META_DECLARATION_PATTERN = re.compile(r"export\s+const\s+meta\s*=\s*\{")
+TRAILING_SEMICOLON_PATTERN = re.compile(r"[ \t]*;")
+BRACE_DEPTH_CHANGES = {"{": 1, "}": -1}
 PRELUDE_BYPASSING_CONSTRUCT_PATTERNS = {
     "globalThis": re.compile(r"(?<![\w$.])globalThis\b"),
     "eval()": re.compile(r"(?<![\w$.])eval\s*\("),
@@ -34,47 +36,72 @@ def _end_of_comment(source, index):
     return len(source) if block_end == -1 else block_end + 2
 
 
-def code_with_literals_and_comments_blanked(source):
-    characters = list(source)
-    mode_stack = [CODE_MODE]
-    expression_brace_depths = [0]
-    index = 0
-    while index < len(source):
-        mode = mode_stack[-1]
-        character = source[index]
-        if mode == CODE_MODE:
-            if source.startswith("//", index) or source.startswith("/*", index):
-                comment_end = _end_of_comment(source, index)
-                _blank(characters, index, comment_end)
-                index = comment_end
-                continue
-            if character in "'\"`":
-                mode_stack.append(character)
-            elif character == "{":
-                expression_brace_depths[-1] += 1
-            elif character == "}":
-                if expression_brace_depths[-1] == 0 and len(mode_stack) > 1:
-                    mode_stack.pop()
-                    expression_brace_depths.pop()
-                else:
-                    expression_brace_depths[-1] -= 1
-            index += 1
-            continue
-        if character == "\\":
-            _blank(characters, index, index + 2)
-            index += 2
-            continue
-        if mode == TEMPLATE_QUOTE and source.startswith("${", index):
-            mode_stack.append(CODE_MODE)
-            expression_brace_depths.append(0)
-            index += 2
-            continue
-        if character == mode:
-            mode_stack.pop()
+class _LiteralAndCommentBlanker:
+    def __init__(self, source):
+        self.source = source
+        self.characters = list(source)
+        self.mode_stack = [CODE_MODE]
+        self.expression_brace_depths = [0]
+
+    def blanked(self):
+        index = 0
+        while index < len(self.source):
+            index = self._step(index)
+        return "".join(self.characters)
+
+    def _step(self, index):
+        if self.mode_stack[-1] == CODE_MODE:
+            return self._step_in_code(index)
+        return self._step_in_literal(index)
+
+    def _step_in_code(self, index):
+        if self.source.startswith(("//", "/*"), index):
+            comment_end = _end_of_comment(self.source, index)
+            _blank(self.characters, index, comment_end)
+            return comment_end
+        character = self.source[index]
+        if character in "'\"`":
+            self.mode_stack.append(character)
+        elif character == "{":
+            self.expression_brace_depths[-1] += 1
+        elif character == "}":
+            self._close_brace()
+        return index + 1
+
+    def _close_brace(self):
+        if self.expression_brace_depths[-1] == 0 and len(self.mode_stack) > 1:
+            self.mode_stack.pop()
+            self.expression_brace_depths.pop()
         else:
-            _blank(characters, index, index + 1)
-        index += 1
-    return "".join(characters)
+            self.expression_brace_depths[-1] -= 1
+
+    def _step_in_literal(self, index):
+        quote = self.mode_stack[-1]
+        if self.source[index] == "\\":
+            _blank(self.characters, index, index + 2)
+            return index + 2
+        if quote == TEMPLATE_QUOTE and self.source.startswith("${", index):
+            self.mode_stack.append(CODE_MODE)
+            self.expression_brace_depths.append(0)
+            return index + 2
+        if self.source[index] == quote:
+            self.mode_stack.pop()
+        else:
+            _blank(self.characters, index, index + 1)
+        return index + 1
+
+
+def code_with_literals_and_comments_blanked(source):
+    return _LiteralAndCommentBlanker(source).blanked()
+
+
+def _closing_brace_index(code, opening_brace_index):
+    brace_depth = 0
+    for index in range(opening_brace_index, len(code)):
+        brace_depth += BRACE_DEPTH_CHANGES.get(code[index], 0)
+        if brace_depth == 0:
+            return index
+    return None
 
 
 def meta_declaration_end(script):
@@ -82,20 +109,11 @@ def meta_declaration_end(script):
     meta_declaration = META_DECLARATION_PATTERN.search(code)
     if meta_declaration is None:
         return None
-    brace_depth = 0
-    for index in range(meta_declaration.end() - 1, len(code)):
-        if code[index] == "{":
-            brace_depth += 1
-        elif code[index] == "}":
-            brace_depth -= 1
-            if brace_depth == 0:
-                declaration_end = index + 1
-                following_code = code[declaration_end:]
-                trailing_semicolon = re.match(r"[ \t]*;", following_code)
-                return declaration_end + (
-                    trailing_semicolon.end() if trailing_semicolon else 0
-                )
-    return None
+    closing_brace_index = _closing_brace_index(code, meta_declaration.end() - 1)
+    if closing_brace_index is None:
+        return None
+    trailing_semicolon = TRAILING_SEMICOLON_PATTERN.match(code, closing_brace_index + 1)
+    return trailing_semicolon.end() if trailing_semicolon else closing_brace_index + 1
 
 
 def script_without_budget_prelude(script):
@@ -123,7 +141,7 @@ def rendered_budget_prelude(agent_ceiling, output_token_ceiling):
     return (
         PRELUDE_TEMPLATE_PATH.read_text()
         .replace(AGENT_CEILING_PLACEHOLDER, str(agent_ceiling))
-        .replace(OUTPUT_TOKEN_CEILING_PLACEHOLDER, str(output_token_ceiling))
+        .replace(OUTPUT_CEILING_PLACEHOLDER, str(output_token_ceiling))
     )
 
 

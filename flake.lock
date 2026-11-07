@@ -73,11 +73,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793138675,
-        "narHash": "sha256-0ulkeJy0Byqa+kuH2FPKZCpDVP25rEA48J3wiLT+GZM=",
+        "lastModified": 1794088864,
+        "narHash": "sha256-FjNCvfHrkKzJ3fmK5j5WyUELxX6aripPCakOncpXaY4=",
         "ref": "refs/heads/main",
-        "rev": "c2a9ef72dd41a5f4884e7e682e62282b7d95d0e2",
-        "revCount": 21,
+        "rev": "18dfe858cfe2bdf1bb6c8946f4c6d6a52f2105ba",
+        "revCount": 24,
         "type": "git",
         "url": "ssh://git@github.com/Castrozan/arr-stack"
       },
@@ -238,17 +238,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1792342975,
-        "narHash": "sha256-YCdlITkI2jVfLaxrImWyKWDgZMDGVwnf4t3cJEIkkAQ=",
+        "lastModified": 1794091040,
+        "narHash": "sha256-a0FkQjTKNJDw5giASlj+huw+2GJzrAEL3t9FZIb+yGE=",
         "owner": "Castrozan",
         "repo": "clawde",
-        "rev": "fe6f2a5d5e90cd09ce06d046337769c9b3b12b83",
+        "rev": "cb42491801a1529750d3ab4557c7c0c59bccea33",
         "type": "github"
       },
       "original": {
         "owner": "Castrozan",
         "repo": "clawde",
-        "rev": "fe6f2a5d5e90cd09ce06d046337769c9b3b12b83",
+        "rev": "cb42491801a1529750d3ab4557c7c0c59bccea33",
         "type": "github"
       }
     },

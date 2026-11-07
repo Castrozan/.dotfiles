@@ -27,7 +27,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 const workflow = process.argv[1];
 const sources = workflow.endsWith('research-pulse.workflow.js')
-  ? ['schemas.js', 'source-prompts.js'].map(name => join(dirname(workflow), 'pulse', name)).concat(workflow)
+  ? ['meta.js', 'schemas.js', 'source-prompts.js'].map(name => join(dirname(workflow), 'pulse', name)).concat(workflow)
   : [workflow];
 const source = sources.map(path => readFileSync(path, 'utf8')).join('\n').replace('export const meta =', 'const meta =');
 const payload = JSON.parse(process.argv[2]);

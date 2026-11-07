@@ -39,7 +39,7 @@ in
         && system.config.custom.arrStackOnDemandSupervisor.keepChainAlwaysOn
         && builtins.elem settings.dataMountUnit services.arr-download-cleanup.bindsTo
         && builtins.elem "home-manager-zanoni.service" services.arr-stack-front-ends-compose.requires
-        && builtins.elem "arr-stack-drive-guard.service" services.miwayomi-compose.requires
+        && builtins.elem "arr-stack-drive-guard.service" services.arr-stack-front-ends-compose.requires
       )
       "The external module must retain Chise's existing media owner, GPU, mount guard and always-on download chain";
 
@@ -69,7 +69,7 @@ in
     mkEvalCheck "chise-arr-stack-preserves-secret-reconciliation"
       (
         builtins.elem settings.secrets.qbittorrentPassword.source services.arr-config-provisioner.restartTriggers
-        && builtins.elem settings.secrets.extensionRepositories.source services.miwayomi-extension-repositories.restartTriggers
+        && builtins.elem settings.secrets.extensionRepositories.source services.suwayomi-extension-repositories.restartTriggers
         && builtins.elem settings.secrets.smtpPassword.source services.jellyseerr-email-notifications.restartTriggers
         &&
           system.config.custom.stremioStreamingServer.streamCacheDirectory

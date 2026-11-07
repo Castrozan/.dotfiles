@@ -55,11 +55,8 @@ in
   ) "Codex must seed writable profiles after removing the previous generation's symlinks";
 
   codex-package-retains-upstream-companions =
-    assert lib.assertMsg (
-      codexPackage.drvAttrs ? cargoDeps
-      && builtins.length codexPackage.drvAttrs.patches == 2
-      && codexPackage.drvAttrs.doCheck
-    ) "Codex must test its footer patches and retain the matching upstream companion assets";
+    assert lib.assertMsg (!(codexPackage.drvAttrs ? cargoDeps))
+      "Codex must ship the upstream release binary with its companion assets instead of compiling from source";
     pkgs.runCommand "check-codex-package-retains-upstream-companions" { } ''
       export HOME="$TMPDIR"
       codexExecutable=${lib.getExe codexPackage}

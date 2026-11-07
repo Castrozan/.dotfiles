@@ -17,7 +17,7 @@ in
     unitConfig.ConditionUser = "!@system";
     path = [ pkgs.systemd ];
     serviceConfig = {
-      ExecStart = "${pkgs.python312}/bin/python3 -u ${recoveryProgram}";
+      ExecStart = "${pkgs.python312}/bin/python3 -P -u ${recoveryProgram}";
       Restart = "on-failure";
       RestartSec = 5;
       MemoryMax = "64M";

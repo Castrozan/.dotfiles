@@ -47,6 +47,16 @@ def _read_workflow_file(workflow_path):
         return None
 
 
+def _saved_workflow_source(workflow_name, working_directory):
+    for workflows_root in (Path(working_directory), Path.home()):
+        saved_workflow_source = _read_workflow_file(
+            workflows_root / SAVED_WORKFLOW_DIRECTORY / f"{workflow_name}.js"
+        )
+        if saved_workflow_source is not None:
+            return saved_workflow_source
+    return None
+
+
 def resolve_workflow_source(tool_input, working_directory):
     inline_script = tool_input.get("script")
     if inline_script:
@@ -57,13 +67,7 @@ def resolve_workflow_source(tool_input, working_directory):
     workflow_name = tool_input.get("name")
     if not workflow_name:
         return None
-    for workflows_root in (Path(working_directory), Path.home()):
-        saved_workflow_source = _read_workflow_file(
-            workflows_root / SAVED_WORKFLOW_DIRECTORY / f"{workflow_name}.js"
-        )
-        if saved_workflow_source is not None:
-            return saved_workflow_source
-    return None
+    return _saved_workflow_source(workflow_name, working_directory)
 
 
 def reserve_workflow_ceilings(hook_input, tool_input):
@@ -129,28 +133,30 @@ def ceilings_context(ceilings):
     )
 
 
-def handle(hook_input):
-    if hook_input.get("tool_name", "") != WORKFLOW_TOOL_NAME:
-        return None
-    tool_input = hook_input.get("tool_input", {}) or {}
-    workflow_source = resolve_workflow_source(
-        tool_input, hook_input.get("cwd") or str(Path.cwd())
-    )
-    if workflow_source is None:
-        return refuse(unresolvable_source_message())
-    unguarded_script = workflow_script_budget_prelude.script_without_budget_prelude(
-        workflow_source
-    )
+def unguardable_script_message(unguarded_script):
     bypassing_constructs = workflow_script_budget_prelude.prelude_bypassing_constructs(
         unguarded_script
     )
     if bypassing_constructs:
-        return refuse(bypassing_constructs_message(bypassing_constructs))
+        return bypassing_constructs_message(bypassing_constructs)
     if workflow_script_budget_prelude.meta_declaration_end(unguarded_script) is None:
-        return refuse(missing_meta_message())
-    ceilings = reserve_workflow_ceilings(hook_input, tool_input)
-    if ceilings is None:
-        return refuse(tier_ceiling_reached_message())
+        return missing_meta_message()
+    return None
+
+
+def unguarded_script_or_refusal(hook_input, tool_input):
+    workflow_source = resolve_workflow_source(
+        tool_input, hook_input.get("cwd") or str(Path.cwd())
+    )
+    if workflow_source is None:
+        return None, unresolvable_source_message()
+    unguarded_script = workflow_script_budget_prelude.script_without_budget_prelude(
+        workflow_source
+    )
+    return unguarded_script, unguardable_script_message(unguarded_script)
+
+
+def guarded_tool_input(tool_input, unguarded_script, ceilings):
     guarded_input = {
         key: value
         for key, value in tool_input.items()
@@ -159,6 +165,26 @@ def handle(hook_input):
     guarded_input["script"] = workflow_script_budget_prelude.script_with_budget_prelude(
         unguarded_script, ceilings.agent_ceiling, ceilings.output_token_ceiling
     )
+    return guarded_input
+
+
+def workflow_tool_input(hook_input):
+    return hook_input.get("tool_input", {}) or {}
+
+
+def handle(hook_input):
+    if hook_input.get("tool_name", "") != WORKFLOW_TOOL_NAME:
+        return None
+    tool_input = workflow_tool_input(hook_input)
+    unguarded_script, refusal_message = unguarded_script_or_refusal(
+        hook_input, tool_input
+    )
+    if refusal_message is not None:
+        return refuse(refusal_message)
+    ceilings = reserve_workflow_ceilings(hook_input, tool_input)
+    if ceilings is None:
+        return refuse(tier_ceiling_reached_message())
     return HandlerResult(
-        additional_context=ceilings_context(ceilings), updated_input=guarded_input
+        additional_context=ceilings_context(ceilings),
+        updated_input=guarded_tool_input(tool_input, unguarded_script, ceilings),
     )
