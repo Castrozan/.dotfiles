@@ -21,6 +21,7 @@ from runner.judging.run_evals_judge_calibration import (
     load_calibration_cases,
 )
 from runner.execution.run_evals_provider_usage import provider_usage_summary
+from reporting.run_evals_run_record import open_run_record
 from reporting.run_evals_reporting import (
     print_ab_summary,
     print_calibration_summary,
@@ -91,10 +92,12 @@ def run_ab_evaluation(config: dict, args, execution_profile: dict) -> int:
 
 def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
     current_fingerprints = evaluation_test_fingerprints(config)
+    run_record = open_run_record()
     with temporary_eval_worktree():
         results_per_epoch = []
         for epoch_index in range(args.epochs):
-            print(f"\n--- epoch {epoch_index + 1}/{args.epochs} ---")
+            epoch = epoch_index + 1
+            print(f"\n--- epoch {epoch}/{args.epochs} ---")
             epoch_results = run_tests(
                 config,
                 category=args.category,
@@ -105,11 +108,13 @@ def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
                 harness=args.harness,
                 judge_harness=args.judge_harness,
                 partition=args.partition,
+                on_result=lambda result, epoch=epoch: run_record.record(result, epoch),
             )
             raise_for_evaluation_errors(epoch_results, "repeated evaluation")
             results_per_epoch.append(epoch_results)
     per_test = aggregate_repeated_runs(results_per_epoch)
     no_hard_failures = print_epoch_summary(per_test, args.epochs)
+    print(f"Per-case results: {run_record.results_path}")
     token_usage = collect_and_print_provider_usage()
     if args.save_baseline:
         baseline = build_epoch_enriched_baseline(
@@ -135,6 +140,7 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
     )
     if not should_run:
         return 0
+    run_record = open_run_record()
     with temporary_eval_worktree():
         results = run_tests(
             config,
@@ -146,15 +152,25 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
             harness=args.harness,
             judge_harness=args.judge_harness,
             selected_test_keys=selected_test_keys,
-            on_result=checkpoint.record if checkpoint else None,
+            on_result=_record_each_result(run_record, checkpoint),
             partition=args.partition,
         )
     all_passed = print_results(results, harness=args.harness)
+    print(f"Per-case results: {run_record.results_path}")
     collect_and_print_provider_usage()
     if args.save_baseline:
         raise_for_evaluation_errors(results, "baseline evidence")
         checkpoint.announce()
     return 0 if all_passed else 1
+
+
+def _record_each_result(run_record, checkpoint):
+    def record(result):
+        run_record.record(result)
+        if checkpoint:
+            checkpoint.record(result)
+
+    return record
 
 
 def _prepare_baseline_checkpoint(config: dict, args, execution_profile: dict):

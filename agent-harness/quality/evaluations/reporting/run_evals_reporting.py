@@ -46,7 +46,7 @@ def _print_result_details(result: TestResult) -> None:
         for failure in result.assertions_failed:
             print(f"    - {failure}")
         if result.output:
-            print(f"    Output: {result.output}")
+            print(f"    Output: {result.output[:500]}")
 
 
 def print_epoch_summary(per_test: list[dict], epochs: int) -> bool:
