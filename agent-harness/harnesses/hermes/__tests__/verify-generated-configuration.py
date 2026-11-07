@@ -29,6 +29,7 @@ def main():
     plugin_root = arguments.hook_command.removesuffix("/native/hermes/hook-bridge")
     assert configuration["skills"] == {"external_dirs": [f"{plugin_root}/skills"]}
     assert configuration["toolsets"] == ["hermes-cli"]
+    assert configuration["webapp"] == {"enabled": True}
 
 
 if __name__ == "__main__":
