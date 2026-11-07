@@ -83,6 +83,7 @@ in
     ../../voice/whisp-away-home-manager.nix
 
     ../../terminal/visual-effects/cbonsai/cbonsai-chise-home-manager.nix
+    ../../gaming/horizon/horizon-home-manager.nix
     ../../gaming/install-nothing/install-nothing-home-manager.nix
     ../../gaming/minecraft/minecraft-home-manager.nix
     ../../gaming/vesktop/vesktop-home-manager.nix

@@ -12,6 +12,7 @@ let
     ../../terminal/visual-effects/cbonsai/cbonsai-chise-home-manager.nix
     ../install-nothing/install-nothing-home-manager.nix
     ../minecraft/minecraft-home-manager.nix
+    ../horizon/horizon-home-manager.nix
   ];
 
   hasFile = name: builtins.hasAttr name cfg.home.file;
@@ -21,6 +22,10 @@ in
   domain-gaming-minecraft-prism-launcher =
     mkEvalCheck "domain-gaming-minecraft-prism-launcher" (hasPackage "prismlauncher")
       "Prism Launcher should be installed as the community-maintained Minecraft instance manager";
+
+  domain-gaming-horizon-launcher =
+    mkEvalCheck "domain-gaming-horizon-launcher" (hasPackage "horizon-launcher")
+      "Horizon launcher should be installed to play the Rust rewrite of Minecraft: Java Edition";
 
   domain-gaming-vesktop-config =
     mkEvalCheck "domain-gaming-vesktop-config" (hasFile ".config/vesktop/settings/settings.json")
