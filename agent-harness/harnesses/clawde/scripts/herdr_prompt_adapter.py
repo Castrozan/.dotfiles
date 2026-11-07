@@ -78,13 +78,19 @@ def _prompt_content_is_empty(row, prefix, harness):
     text = "".join(character for character, _ in row)
     content = row[text.index(prefix) + len(prefix) :]
     visible_content = _visible_prompt_content(content)
-    return not visible_content or _is_dim_codex_placeholder(
-        harness, content, visible_content
+    return (
+        not visible_content
+        or _is_dim_codex_placeholder(harness, content, visible_content)
+        or _is_dim_claude_suggestion(harness, visible_content)
     )
 
 
 def _visible_prompt_content(content):
     return [(character, dim) for character, dim in content if not character.isspace()]
+
+
+def _is_dim_claude_suggestion(harness, visible_content):
+    return harness == "claude" and all(dim for _, dim in visible_content)
 
 
 def _is_dim_codex_placeholder(harness, content, visible_content):

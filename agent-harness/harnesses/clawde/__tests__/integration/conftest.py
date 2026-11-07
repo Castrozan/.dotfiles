@@ -68,6 +68,7 @@ def owned_fleet(transport_package, monkeypatch):
         status="idle",
         harness="codex",
         draft="",
+        suggestion="",
         paste_buffer="",
         commands=[],
         queued=[],
@@ -93,6 +94,8 @@ def owned_fleet(transport_package, monkeypatch):
                 draft = target.draft or target.paste_buffer
                 if not draft and target.harness == "codex":
                     draft = "\x1b[2mAsk Codex to do anything\x1b[0m"
+                if not draft and target.suggestion:
+                    draft = f"\x1b[2m{target.suggestion}\x1b[0m"
                 delivered = target.queued + target.submitted
                 history = "\n".join(delivered)
                 boundary = "─" * 80 if target.harness == "claude" else ""
