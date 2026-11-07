@@ -24,9 +24,19 @@ def verify_projections(manifest, filesystem_root: Path) -> None:
     filesystem_root = filesystem_root.resolve()
     home = filesystem_root / manifest["homeDirectory"].lstrip("/")
     bundle = Path(manifest["bundle"])
+    materialized_package = (
+        filesystem_root / bundle.relative_to(bundle.anchor) / "plugin"
+    )
     shutil.copytree(
         bundle, filesystem_root / bundle.relative_to(bundle.anchor), symlinks=True
     )
+    inventory = json.loads(
+        (materialized_package / "artifact-inventory.json").read_text()
+    )
+    vendored_skill_directories = [
+        (materialized_package / "library/skills" / name).resolve()
+        for name in inventory["discovery"]["vendoredSkills"]
+    ]
     directories = [home]
     for name, source in manifest["homeFiles"].items():
         source = Path(source)
@@ -64,10 +74,16 @@ def verify_projections(manifest, filesystem_root: Path) -> None:
             path
             for directory in directories
             for path in directory.rglob("*.md")
-            if path.name in {"SKILL.md", "AGENTS.md", "CLAUDE.md", "SOUL.md"}
-            or "references" in path.parts
-            or path.is_relative_to(home / ".claude/agents")
-            or path.is_relative_to(home / ".config/opencode/agent")
+            if not any(
+                path.resolve().is_relative_to(vendored_skill_directory)
+                for vendored_skill_directory in vendored_skill_directories
+            )
+            and (
+                path.name in {"SKILL.md", "AGENTS.md", "CLAUDE.md", "SOUL.md"}
+                or "references" in path.parts
+                or path.is_relative_to(home / ".claude/agents")
+                or path.is_relative_to(home / ".config/opencode/agent")
+            )
         }
     )
     for prompt in manifest["promptFiles"]:

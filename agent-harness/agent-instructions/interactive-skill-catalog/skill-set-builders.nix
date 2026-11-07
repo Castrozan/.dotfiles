@@ -50,9 +50,19 @@ let
 
   wellputSource = import ../wellput-plugin/upstream.nix { inherit pkgs; };
 
-  skillSourceDirectoryByName = authoredSkillSourceDirectoryByName // {
-    wellput = "${wellputSource}/skills/wellput";
-  };
+  vendoredSkillSourceDirectoryByName = import ../vendored-skills/upstream.nix { inherit pkgs; };
+
+  vendoredSkillNames = builtins.attrNames vendoredSkillSourceDirectoryByName;
+
+  skillSourceDirectoryByName =
+    assert builtins.all (
+      skillName: !(builtins.hasAttr skillName authoredSkillSourceDirectoryByName)
+    ) vendoredSkillNames;
+    authoredSkillSourceDirectoryByName
+    // vendoredSkillSourceDirectoryByName
+    // {
+      wellput = "${wellputSource}/skills/wellput";
+    };
 
   allSkillNames = builtins.attrNames skillSourceDirectoryByName;
 
@@ -92,7 +102,9 @@ let
         destinations = deploymentDestinations homeFileSkillsPrefix skillNames;
       };
     in
-    if skillName == "research" then
+    if builtins.elem skillName vendoredSkillNames then
+      skillSourceDirectoryByName.${skillName}
+    else if skillName == "research" then
       import ../skills/knowledge/research/pulse/install.nix { inherit pkgs skillDirectory; }
     else
       skillDirectory;
@@ -112,6 +124,7 @@ in
   inherit
     allSkillNames
     privateSkillNames
+    vendoredSkillNames
     skillSourceDirectoryByName
     skillDirectorySymlinksAtPrefix
     deployedSkillDirectory
