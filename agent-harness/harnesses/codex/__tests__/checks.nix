@@ -131,7 +131,9 @@ in
     pkgs.runCommand "check-codex-config-declares-every-canonical-subagent-role"
       { nativeBuildInputs = [ pkgs.python312 ]; }
       ''
-        python - ${cfg.home.file.".codex/config.toml.nix-source".source} ${../../../agent-instructions/rulesync/sources/subagents} <<'PYTHON'
+        python - ${
+          cfg.home.file.".codex/config.toml.nix-source".source
+        } ${../../../agent-instructions/rulesync/sources/subagents} <<'PYTHON'
         from pathlib import Path
         import sys
         import tomllib
