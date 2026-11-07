@@ -34,11 +34,7 @@ async def run_bridge():
         int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"]),
         CallAudioServices(
             ffmpeg,
-            SpeechSynthesizer(
-                environment["VOICE_BRIDGE_MEDIA_SPEECH"],
-                environment["VOICE_BRIDGE_CLOUD_VOICE"],
-                control_socket.parent,
-            ),
+            SpeechSynthesizer(environment["VOICE_BRIDGE_CLOUD_VOICE"]),
             functools.partial(transcribe_discord_audio, ffmpeg),
         ),
         feed,

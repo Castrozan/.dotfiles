@@ -8,11 +8,6 @@ let
   bridgeSettings = config.clawdeDiscordVoiceBridge;
   scripts = ./scripts;
   transcriberScripts = ../../../../../machine-configuration/media/avatar/scripts/listening;
-  mediaSpeech =
-    import ../../../../../machine-configuration/media/media-generation/speech-package.nix
-      {
-        inherit pkgs;
-      };
   jessicaElevenLabsVoice = "cgSgspJ2msm6clMCkdW9";
 
   silverVoice = pkgs.writeShellScriptBin "silver-voice" ''
@@ -63,7 +58,6 @@ in
           "VOICE_BRIDGE_LISTENER_USER_ID=${bridgeSettings.listenerDiscordUserId}"
           "VOICE_BRIDGE_ANSWERED_GUILD_ID=${bridgeSettings.answeredGuildId}"
           "VOICE_BRIDGE_TOKEN_FILE=%h/.secrets/${bridgeSettings.botTokenSecretName}"
-          "VOICE_BRIDGE_MEDIA_SPEECH=${mediaSpeech}/bin/media-speech"
           "VOICE_BRIDGE_CLOUD_VOICE=${jessicaElevenLabsVoice}"
         ];
         RuntimeDirectory = "silver-voice";

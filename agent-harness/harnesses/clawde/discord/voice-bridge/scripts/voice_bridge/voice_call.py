@@ -6,8 +6,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from voice_bridge.listener_receiver import ListenerVoiceReceiver
-from voice_bridge.speech_synthesis import SpeechSynthesizer
-from voice_bridge.voice_playback import play_audio_file
+from voice_bridge.speech_synthesis import SPEECH_SAMPLE_RATE, SpeechSynthesizer
+from voice_bridge.voice_playback import play_audio_stream
 
 LISTEN_POLL_SECONDS = 0.05
 BARGE_IN_SECONDS = 0.6
@@ -171,17 +171,17 @@ class VoiceCall:
             raise VoiceCallError("not_in_voice_channel")
         async with self._speech_lock:
             started = time.monotonic()
-            async with self._audio_services.synthesizer.synthesized_audio(
+            async with self._audio_services.synthesizer.streamed_audio(
                 text, language
-            ) as path:
+            ) as audio_stream:
                 synthesis_seconds = time.monotonic() - started
-                outcome = await self._play(path)
+                outcome = await self._play(audio_stream)
             return {
                 "outcome": outcome,
                 "synthesis_seconds": round(synthesis_seconds, 3),
             }
 
-    async def _play(self, audio_path):
+    async def _play(self, audio_stream):
         voice_client = self._voice_client
         if voice_client is None or not voice_client.is_connected():
             raise VoiceCallError("not_in_voice_channel")
@@ -189,5 +189,7 @@ class VoiceCall:
             return "interrupted"
         self._barged_in = False
         self._playback_started_at = time.monotonic()
-        await play_audio_file(voice_client, audio_path, self._audio_services.ffmpeg)
+        await play_audio_stream(
+            voice_client, audio_stream, SPEECH_SAMPLE_RATE, self._audio_services.ffmpeg
+        )
         return "interrupted" if self._barged_in else "finished"
