@@ -1,13 +1,12 @@
 import subprocess
 
-from transcriber import transcribe
+from cloud_transcriber import transcribe_with_local_fallback
 
 DISCORD_SAMPLE_RATE = 48000
 DISCORD_CHANNEL_COUNT = 2
 WHISPER_SAMPLE_RATE = 16000
 DOWNMIX_TIMEOUT_SECONDS = 10
 LISTENER_LANGUAGE = "pt"
-LISTENER_VOCABULARY_PROMPT = "Silver, Mata Hari."
 
 
 def downmix_discord_audio(ffmpeg_executable, pcm):
@@ -40,8 +39,6 @@ def downmix_discord_audio(ffmpeg_executable, pcm):
 
 
 def transcribe_discord_audio(ffmpeg_executable, pcm):
-    return transcribe(
-        downmix_discord_audio(ffmpeg_executable, pcm),
-        language=LISTENER_LANGUAGE,
-        prompt=LISTENER_VOCABULARY_PROMPT,
+    return transcribe_with_local_fallback(
+        downmix_discord_audio(ffmpeg_executable, pcm), LISTENER_LANGUAGE
     )

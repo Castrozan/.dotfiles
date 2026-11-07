@@ -57,6 +57,11 @@ in
         PYTHONPATH=${../../clawde/discord/voice-bridge/scripts}:${../../../../machine-configuration/media/avatar/scripts/listening} \
           ${cfg.hermes.unwrappedPackage.hermesVenv}/bin/python3 \
           ${../../clawde/discord/voice-bridge/__tests__/verify-listener-receiver-credentials.py}
+        HOME=$TMPDIR \
+        PYTHONPATH=${../../clawde/discord/voice-bridge/scripts}:${../../../../machine-configuration/media/avatar/scripts/listening} \
+          ${cfg.hermes.unwrappedPackage.hermesVenv}/bin/python3 \
+          ${../../clawde/discord/voice-bridge/__tests__/verify-speech-transcription-contract.py} \
+          ${pkgs.ffmpeg}/bin/ffmpeg
         touch "$out"
       '';
 
