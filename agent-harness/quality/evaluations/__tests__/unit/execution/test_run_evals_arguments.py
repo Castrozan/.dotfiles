@@ -24,6 +24,8 @@ from runner.run_evals_arguments import parse_arguments
         ["run-evals.py", "--harness", "claude", "--save-baseline"],
         ["run-evals.py", "--smoke", "--save-baseline"],
         ["run-evals.py", "--partition", "train", "--save-baseline"],
+        ["run-evals.py", "--partition", "held-out", "--smoke"],
+        ["run-evals.py", "--partition", "held-out", "--ab", "--category", "c"],
         ["run-evals.py", "--all-tests"],
         ["run-evals.py", "--epochs", "3", "--save-baseline"],
         [

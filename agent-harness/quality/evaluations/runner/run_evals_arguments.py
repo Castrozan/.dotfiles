@@ -155,6 +155,8 @@ def _validate_smoke_baseline_arguments(args, parser) -> None:
 def _validate_partition_arguments(args, parser) -> None:
     if args.partition and (args.save_baseline or args.save_ab_profile):
         parser.error("a hillclimb partition cannot be saved as suite evidence")
+    if args.partition and (args.ab or args.smoke):
+        parser.error("--partition applies only to suite runs, not --ab or --smoke")
 
 
 def _validate_mode_arguments(args, parser) -> None:

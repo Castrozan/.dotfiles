@@ -1,6 +1,6 @@
 import json
 
-from reporting.run_evals_run_record import open_run_record
+from reporting.run_evals_run_record import DiscardedRunRecord, open_run_record
 from runner.execution.run_evals_test_runner import TestResult
 
 
@@ -48,3 +48,11 @@ def test_separate_runs_never_share_a_results_file(tmp_path):
     second = open_run_record(tmp_path)
 
     assert first.results_path != second.results_path
+
+
+def test_a_dry_run_record_writes_nothing():
+    run_record = DiscardedRunRecord()
+
+    run_record.record(_result("dry", "[DRY RUN]"))
+
+    assert run_record.results_path is None

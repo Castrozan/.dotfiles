@@ -22,7 +22,7 @@ from runner.judging.run_evals_judge_calibration import (
     verdict_flips,
 )
 from runner.execution.run_evals_provider_usage import provider_usage_summary
-from reporting.run_evals_run_record import open_run_record
+from reporting.run_evals_run_record import DiscardedRunRecord, open_run_record
 from reporting.run_evals_reporting import (
     print_ab_summary,
     print_calibration_summary,
@@ -102,7 +102,7 @@ def run_ab_evaluation(config: dict, args, execution_profile: dict) -> int:
 
 def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
     current_fingerprints = evaluation_test_fingerprints(config)
-    run_record = open_run_record()
+    run_record = _run_record_for(args)
     with temporary_eval_worktree():
         results_per_epoch = []
         for epoch_index in range(args.epochs):
@@ -124,7 +124,7 @@ def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
             results_per_epoch.append(epoch_results)
     per_test = aggregate_repeated_runs(results_per_epoch)
     no_hard_failures = print_epoch_summary(per_test, args.epochs)
-    print(f"Per-case results: {run_record.results_path}")
+    _announce_run_record(run_record)
     token_usage = collect_and_print_provider_usage()
     if args.save_baseline:
         baseline = build_epoch_enriched_baseline(
@@ -150,7 +150,7 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
     )
     if not should_run:
         return 0
-    run_record = open_run_record()
+    run_record = _run_record_for(args)
     with temporary_eval_worktree():
         results = run_tests(
             config,
@@ -166,12 +166,21 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
             partition=args.partition,
         )
     all_passed = print_results(results, harness=args.harness)
-    print(f"Per-case results: {run_record.results_path}")
+    _announce_run_record(run_record)
     collect_and_print_provider_usage()
     if args.save_baseline:
         raise_for_evaluation_errors(results, "baseline evidence")
         checkpoint.announce()
     return 0 if all_passed else 1
+
+
+def _run_record_for(args):
+    return DiscardedRunRecord() if args.dry_run else open_run_record()
+
+
+def _announce_run_record(run_record) -> None:
+    if run_record.results_path:
+        print(f"Per-case results: {run_record.results_path}")
 
 
 def _record_each_result(run_record, checkpoint):

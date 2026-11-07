@@ -31,6 +31,13 @@ class EvaluationRunRecord:
             results_file.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
+class DiscardedRunRecord:
+    results_path = None
+
+    def record(self, result, epoch: int = 1) -> None:
+        pass
+
+
 def open_run_record(root: Path = RUN_RECORD_ROOT) -> EvaluationRunRecord:
     root.mkdir(parents=True, exist_ok=True)
     started_at = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
