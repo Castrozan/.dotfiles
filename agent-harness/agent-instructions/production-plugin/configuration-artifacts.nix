@@ -58,6 +58,10 @@ in
     path = "${hooks}/codexcli/.codex/hooks.json";
   }
   {
+    name = "native/codex/agents";
+    path = "${configuration}/codexcli/.codex/agents";
+  }
+  {
     name = "native/opencode/agents";
     path = "${configuration}/opencode/.opencode/agents";
   }

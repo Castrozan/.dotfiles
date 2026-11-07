@@ -4,6 +4,12 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import NamedTuple
+
+
+class NativeAgentLocation(NamedTuple):
+    directory: str
+    extension: str
 
 
 TARGET_RULE_FILES = {
@@ -12,29 +18,31 @@ TARGET_RULE_FILES = {
     "opencode": "AGENTS.md",
     "hermesagent": ".hermes.md",
 }
-TARGET_AGENT_DIRECTORIES = {
-    "claudecode": ".claude/agents",
-    "opencode": ".opencode/agents",
+TARGET_AGENT_LOCATIONS = {
+    "claudecode": NativeAgentLocation(".claude/agents", ".md"),
+    "codexcli": NativeAgentLocation(".codex/agents", ".toml"),
+    "opencode": NativeAgentLocation(".opencode/agents", ".md"),
 }
 GENERATION_TIMEOUT_SECONDS = 30
 
 
 def validate_output(source: Path, output: Path, core_instructions: Path) -> None:
-    agent_files = {path.name for path in (source / "subagents").glob("*.md")}
-    if not agent_files:
+    agent_names = {path.stem for path in (source / "subagents").glob("*.md")}
+    if not agent_names:
         raise ValueError("Canonical subagent definitions are missing")
     for target, rule_file in TARGET_RULE_FILES.items():
         _validate_target_output(
-            target, rule_file, agent_files, output, core_instructions
+            target, rule_file, agent_names, output, core_instructions
         )
 
 
-def _validate_target_output(target, rule_file, agent_files, output, core_instructions):
+def _validate_target_output(target, rule_file, agent_names, output, core_instructions):
     directory = output / target
     expected = {rule_file}
-    if target in TARGET_AGENT_DIRECTORIES:
+    if target in TARGET_AGENT_LOCATIONS:
+        location = TARGET_AGENT_LOCATIONS[target]
         expected.update(
-            f"{TARGET_AGENT_DIRECTORIES[target]}/{name}" for name in agent_files
+            f"{location.directory}/{name}{location.extension}" for name in agent_names
         )
     actual = {
         path.relative_to(directory).as_posix()
@@ -69,7 +77,7 @@ def build_configuration(
                     "NO_COLOR": "1",
                 }
                 features = (
-                    "rules,subagents" if target in TARGET_AGENT_DIRECTORIES else "rules"
+                    "rules,subagents" if target in TARGET_AGENT_LOCATIONS else "rules"
                 )
                 subprocess.run(
                     [

@@ -67,13 +67,13 @@ in
       )
       "both defaults must resolve against a provider this machine can authenticate: `opencode-go` through the agenix key on the paid Go plan, or `opencode` through the logged-in OpenAI OAuth token, so opencode opens on a model it can actually call";
 
-  domain-opencode-default-models-use-the-shared-go-provider =
-    mkEvalCheck "domain-opencode-default-models-use-the-shared-go-provider"
+  domain-opencode-default-models-use-free-zen-models =
+    mkEvalCheck "domain-opencode-default-models-use-free-zen-models"
       (
         deployedOpencodeSettings.model == "opencode/big-pickle"
-        && deployedOpencodeSettings.agents.title.model == "opencode-go/${opencodeGoProvider.models.haiku}"
+        && deployedOpencodeSettings.agents.title.model == "opencode/deepseek-v4.1-flash-free"
       )
-      "the interactive default runs opencode's big-pickle model while title generation stays on the shared Go provider's cheap haiku model";
+      "the interactive default runs opencode's free big-pickle model and title generation runs the free deepseek flash model, so neither depends on the paid Go plan";
 
   domain-opencode-go-provider-exposes-one-model-selection =
     mkEvalCheck "domain-opencode-go-provider-exposes-one-model-selection"

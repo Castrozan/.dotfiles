@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 from pathlib import Path
 
 import yaml
@@ -60,6 +61,33 @@ def verify_generated_configuration(
             assert generated_body == canonical_body, (
                 f"Native instructions changed: {target}/{name}"
             )
+    verify_generated_codex_agents(configuration, source)
+
+
+def verify_generated_codex_agents(configuration: Path, source: Path) -> None:
+    generated_directory = configuration / "codexcli" / ".codex/agents"
+    generated_names = {path.stem for path in generated_directory.glob("*.toml")}
+    assert generated_names == EXPECTED_AGENT_NAMES, (
+        f"Unexpected native agents for codexcli: {generated_names}"
+    )
+    for name in sorted(EXPECTED_AGENT_NAMES):
+        canonical_metadata, canonical_body = read_agent(
+            source / "subagents" / f"{name}.md"
+        )
+        generated_role = tomllib.loads(
+            (generated_directory / f"{name}.toml").read_text()
+        )
+        expected_role = canonical_metadata["codexcli"] | {
+            "name": canonical_metadata["name"],
+            "description": canonical_metadata["description"],
+        }
+        generated_instructions = generated_role.pop("developer_instructions")
+        assert generated_role == expected_role, (
+            f"Native metadata changed: codexcli/{name}"
+        )
+        assert generated_instructions.strip() == canonical_body, (
+            f"Native instructions changed: codexcli/{name}"
+        )
 
 
 def verify_malformed_agent_rejection(
@@ -157,7 +185,7 @@ def main() -> None:
         arguments.core_instructions,
     )
     print(
-        "Verified four core rule outputs, three Claude agents, three OpenCode agents, "
+        "Verified four core rule outputs, three Claude, Codex and OpenCode agents each, "
         "malformed-agent rejection, partial-output cleanup and ambient-state preservation"
     )
 

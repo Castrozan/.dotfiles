@@ -5,11 +5,8 @@
   ...
 }:
 let
-  homeDir = config.home.homeDirectory;
-  opencodeGo = import ./go-provider.nix { homeDirectory = homeDir; };
-
   defaultOpencodeModel = "opencode/big-pickle";
-  titleGenerationModel = "opencode-go/${opencodeGo.models.haiku}";
+  titleGenerationModel = "opencode/deepseek-v4.1-flash-free";
 
   opencodePluginSettings = pkgs.runCommand "opencode-plugin-settings.json" { } ''
     ${pkgs.jq}/bin/jq -r '

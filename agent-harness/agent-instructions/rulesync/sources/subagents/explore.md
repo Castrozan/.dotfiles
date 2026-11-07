@@ -1,13 +1,17 @@
 ---
-targets: [claudecode, opencode]
+targets: [claudecode, codexcli, opencode]
 name: explore
 description: Read-only codebase search that returns the conclusion, not the files. Use when answering a question means sweeping files, directories or naming conventions and only the finding is needed.
 claudecode:
   disallowedTools: Write, Edit, NotebookEdit
   model: haiku
   skills: explore
+codexcli:
+  model_reasoning_effort: low
+  sandbox_mode: read-only
 opencode:
   mode: subagent
+  model: opencode/deepseek-v4.1-flash-free
   permission:
     "*": allow
     edit: deny

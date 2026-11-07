@@ -1,11 +1,14 @@
 ---
-targets: [claudecode, opencode]
+targets: [claudecode, codexcli, opencode]
 name: quality-assurance
 description: Judges delivered work against the user's stated goal and the quality bar no test can measure; reports verdicts and never repairs. Use as the final judgment pass over finished work.
 claudecode:
   tools: Read, Grep, Glob, Bash
   model: sonnet
   skills: review, coding
+codexcli:
+  model_reasoning_effort: medium
+  sandbox_mode: read-only
 opencode:
   mode: subagent
   permission:
