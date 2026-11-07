@@ -20,8 +20,6 @@ pkgs.writeText "hermes-config.yaml" ''
       - ${pluginDirectory}/skills
   toolsets:
     - hermes-cli
-  webapp:
-    enabled: true
   security:
     allow_lazy_installs: false
   plugins:
