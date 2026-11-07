@@ -1,81 +1,90 @@
-window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
-  const SEEK_TIMEOUT_MILLISECONDS = 4000;
-  const SEEK_TOLERANCE_SECONDS = 0.004;
-  const END_OF_VIDEO_GUARD_SECONDS = 0.05;
+const SEEKABLE_VIDEO_SEEK_TIMEOUT_MILLISECONDS = 4000;
+const SEEKABLE_VIDEO_SEEK_TOLERANCE_SECONDS = 0.004;
+const SEEKABLE_VIDEO_END_OF_VIDEO_GUARD_SECONDS = 0.05;
 
-  function waitForVideoReady(videoElement) {
-    return new Promise(function resolveWhenReady(resolve) {
-      if (videoElement.readyState >= 2) {
-        resolve();
+function seekableVideoWaitForReady(videoElement) {
+  return new Promise(function resolveWhenReady(resolve) {
+    if (videoElement.readyState >= 2) {
+      resolve();
+      return;
+    }
+    function settle() {
+      videoElement.removeEventListener("loadeddata", settle);
+      videoElement.removeEventListener("error", settle);
+      resolve();
+    }
+    videoElement.addEventListener("loadeddata", settle);
+    videoElement.addEventListener("error", settle);
+  });
+}
+
+function seekableVideoResolveLoopedSeekSeconds(
+  videoElement,
+  startSeconds,
+  localElapsedSeconds,
+) {
+  const requestedSeconds = startSeconds + localElapsedSeconds;
+  if (!videoElement.duration || !isFinite(videoElement.duration)) {
+    return requestedSeconds;
+  }
+  const playableEndSeconds =
+    videoElement.duration - SEEKABLE_VIDEO_END_OF_VIDEO_GUARD_SECONDS;
+  const loopableSeconds = playableEndSeconds - startSeconds;
+  if (loopableSeconds <= 0 || requestedSeconds < playableEndSeconds) {
+    return requestedSeconds;
+  }
+  return startSeconds + (localElapsedSeconds % loopableSeconds);
+}
+
+function seekableVideoResolvePlayableDurationSeconds(videoElement) {
+  if (!videoElement.duration || !isFinite(videoElement.duration)) {
+    return 0;
+  }
+  return Math.max(
+    0,
+    videoElement.duration - SEEKABLE_VIDEO_END_OF_VIDEO_GUARD_SECONDS,
+  );
+}
+
+function seekableVideoSeekTo(videoElement, targetSeconds) {
+  if (!videoElement.duration || !isFinite(videoElement.duration)) {
+    return Promise.resolve();
+  }
+  const clampedSeconds = Math.min(
+    Math.max(0, targetSeconds),
+    Math.max(
+      0,
+      videoElement.duration - SEEKABLE_VIDEO_END_OF_VIDEO_GUARD_SECONDS,
+    ),
+  );
+  if (
+    Math.abs(videoElement.currentTime - clampedSeconds) <
+    SEEKABLE_VIDEO_SEEK_TOLERANCE_SECONDS
+  ) {
+    return Promise.resolve();
+  }
+  return new Promise(function resolveWhenSeeked(resolve) {
+    let hasSettled = false;
+    let timeoutId = 0;
+    function settle() {
+      if (hasSettled) {
         return;
       }
-      function settle() {
-        videoElement.removeEventListener("loadeddata", settle);
-        videoElement.removeEventListener("error", settle);
-        resolve();
-      }
-      videoElement.addEventListener("loadeddata", settle);
-      videoElement.addEventListener("error", settle);
-    });
-  }
-
-  function resolveLoopedSeekSeconds(
-    videoElement,
-    startSeconds,
-    localElapsedSeconds,
-  ) {
-    const requestedSeconds = startSeconds + localElapsedSeconds;
-    if (!videoElement.duration || !isFinite(videoElement.duration)) {
-      return requestedSeconds;
+      hasSettled = true;
+      videoElement.removeEventListener("seeked", settle);
+      window.clearTimeout(timeoutId);
+      resolve();
     }
-    const playableEndSeconds =
-      videoElement.duration - END_OF_VIDEO_GUARD_SECONDS;
-    const loopableSeconds = playableEndSeconds - startSeconds;
-    if (loopableSeconds <= 0 || requestedSeconds < playableEndSeconds) {
-      return requestedSeconds;
-    }
-    return startSeconds + (localElapsedSeconds % loopableSeconds);
-  }
-
-  function resolvePlayableDurationSeconds(videoElement) {
-    if (!videoElement.duration || !isFinite(videoElement.duration)) {
-      return 0;
-    }
-    return Math.max(0, videoElement.duration - END_OF_VIDEO_GUARD_SECONDS);
-  }
-
-  function seekVideoTo(videoElement, targetSeconds) {
-    if (!videoElement.duration || !isFinite(videoElement.duration)) {
-      return Promise.resolve();
-    }
-    const clampedSeconds = Math.min(
-      Math.max(0, targetSeconds),
-      Math.max(0, videoElement.duration - END_OF_VIDEO_GUARD_SECONDS),
+    timeoutId = window.setTimeout(
+      settle,
+      SEEKABLE_VIDEO_SEEK_TIMEOUT_MILLISECONDS,
     );
-    if (
-      Math.abs(videoElement.currentTime - clampedSeconds) <
-      SEEK_TOLERANCE_SECONDS
-    ) {
-      return Promise.resolve();
-    }
-    return new Promise(function resolveWhenSeeked(resolve) {
-      let hasSettled = false;
-      let timeoutId = 0;
-      function settle() {
-        if (hasSettled) {
-          return;
-        }
-        hasSettled = true;
-        videoElement.removeEventListener("seeked", settle);
-        window.clearTimeout(timeoutId);
-        resolve();
-      }
-      timeoutId = window.setTimeout(settle, SEEK_TIMEOUT_MILLISECONDS);
-      videoElement.addEventListener("seeked", settle);
-      videoElement.currentTime = clampedSeconds;
-    });
-  }
+    videoElement.addEventListener("seeked", settle);
+    videoElement.currentTime = clampedSeconds;
+  });
+}
 
+window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
   function createSeekableVideoSource(
     videoUrl,
     startSeconds,
@@ -91,9 +100,9 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
       ? window.AmbientCanvasDeterministicVideoStepper.createDeterministicVideoStepper(
           videoElement,
           startSeconds,
-          seekVideoTo,
+          seekableVideoSeekTo,
           function resolveTargetSeconds(localElapsedSeconds) {
-            return resolveLoopedSeekSeconds(
+            return seekableVideoResolveLoopedSeekSeconds(
               videoElement,
               startSeconds,
               localElapsedSeconds,
@@ -102,7 +111,7 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
         )
       : null;
 
-    const readyPromise = waitForVideoReady(videoElement).then(
+    const readyPromise = seekableVideoWaitForReady(videoElement).then(
       function positionAtStart() {
         if (seeksDeterministically) {
           return deterministicVideoStepper.initialize();
@@ -117,7 +126,7 @@ window.AmbientCanvasSeekableVideoSource = (function buildSeekableVideoSource() {
       ready: readyPromise,
       element: videoElement,
       resolvePlayableDurationSeconds() {
-        return resolvePlayableDurationSeconds(videoElement);
+        return seekableVideoResolvePlayableDurationSeconds(videoElement);
       },
       prepareFrame(localElapsedSeconds) {
         if (!seeksDeterministically) {

@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,10 +19,19 @@ def directory_is_within_prefix(directory: Path, directory_prefix: Path) -> bool:
     return directory == directory_prefix or directory_prefix in directory.parents
 
 
-def _match_is_not_longer(canonical_prefix, longest_match):
-    return longest_match is not None and len(canonical_prefix.parts) <= len(
-        longest_match.directory_prefix.parts
-    )
+def _directory_prefix_matches(
+    profiles: tuple[WorkspaceProfileRoute, ...],
+    canonical_working_directory: Path,
+) -> Iterator[DirectoryPrefixMatch]:
+    for profile in profiles:
+        for declared_prefix in profile.directory_prefixes:
+            canonical_prefix = canonical_directory(Path(declared_prefix))
+            if directory_is_within_prefix(
+                canonical_working_directory, canonical_prefix
+            ):
+                yield DirectoryPrefixMatch(
+                    profile=profile, directory_prefix=canonical_prefix
+                )
 
 
 def match_longest_directory_prefix(
@@ -29,17 +39,8 @@ def match_longest_directory_prefix(
     working_directory: Path,
 ) -> DirectoryPrefixMatch | None:
     canonical_working_directory = canonical_directory(working_directory)
-    longest_match: DirectoryPrefixMatch | None = None
-    for profile in profiles:
-        for declared_prefix in profile.directory_prefixes:
-            canonical_prefix = canonical_directory(Path(declared_prefix))
-            if not directory_is_within_prefix(
-                canonical_working_directory, canonical_prefix
-            ):
-                continue
-            if _match_is_not_longer(canonical_prefix, longest_match):
-                continue
-            longest_match = DirectoryPrefixMatch(
-                profile=profile, directory_prefix=canonical_prefix
-            )
-    return longest_match
+    return max(
+        _directory_prefix_matches(profiles, canonical_working_directory),
+        key=lambda match: len(match.directory_prefix.parts),
+        default=None,
+    )

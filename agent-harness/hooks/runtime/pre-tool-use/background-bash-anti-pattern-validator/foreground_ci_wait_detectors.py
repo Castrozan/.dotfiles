@@ -42,17 +42,18 @@ def segment_containing_offset(command_string, offset):
 
 
 def command_waits_on_ci_in_the_foreground(command_string):
-    for pattern in COMMANDS_THAT_BLOCK_UNTIL_CI_FINISHES:
-        for match in re.finditer(pattern, command_string):
-            invocation_segment = segment_containing_offset(
-                command_string, match.start()
-            )
-            if re.search(HELP_FLAGS_THAT_RETURN_IMMEDIATELY, invocation_segment):
-                continue
-            if offset_lies_in_text_the_shell_never_runs(command_string, match.start()):
-                continue
-            return True
-    return False
+    return any(
+        _ci_wait_invocation_runs_in_the_foreground(command_string, match.start())
+        for pattern in COMMANDS_THAT_BLOCK_UNTIL_CI_FINISHES
+        for match in re.finditer(pattern, command_string)
+    )
+
+
+def _ci_wait_invocation_runs_in_the_foreground(command_string, offset):
+    invocation_segment = segment_containing_offset(command_string, offset)
+    if re.search(HELP_FLAGS_THAT_RETURN_IMMEDIATELY, invocation_segment):
+        return False
+    return not offset_lies_in_text_the_shell_never_runs(command_string, offset)
 
 
 def command_polls_ci_in_a_foreground_loop(command_string):

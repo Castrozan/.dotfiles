@@ -36,21 +36,25 @@ def normalize_stream(stream: dict) -> dict:
     return normalized_stream
 
 
+def _normalized_source_or_none(source):
+    if not isinstance(source, str):
+        return None
+    if source.startswith(("tracker:", "dht:")):
+        return source
+    if source.startswith(TRACKER_SCHEMES):
+        return f"tracker:{source}"
+    return None
+
+
 def _normalized_sources(sources):
     normalized_sources = []
     seen_sources = set()
     for source in sources:
-        if not isinstance(source, str):
+        normalized_source = _normalized_source_or_none(source)
+        if normalized_source is None or normalized_source in seen_sources:
             continue
-        if source.startswith(("tracker:", "dht:")):
-            normalized_source = source
-        elif source.startswith(TRACKER_SCHEMES):
-            normalized_source = f"tracker:{source}"
-        else:
-            continue
-        if normalized_source not in seen_sources:
-            normalized_sources.append(normalized_source)
-            seen_sources.add(normalized_source)
+        normalized_sources.append(normalized_source)
+        seen_sources.add(normalized_source)
     return normalized_sources, seen_sources
 
 

@@ -91,6 +91,21 @@ def window_was_never_placed_on_a_screen(window_bounds, screen_bottom_left_corner
     return bottom_left_corner in screen_bottom_left_corners
 
 
+def window_is_a_visible_application_window(
+    window_info, menu_bar_height, screen_bottom_left_corners
+):
+    if window_info.get(Quartz.kCGWindowLayer, -1) != 0:
+        return False
+    window_bounds = window_info.get(Quartz.kCGWindowBounds, {})
+    if window_bounds.get("Width", 0) <= 0:
+        return False
+    if window_bounds.get("Height", 0) <= menu_bar_height:
+        return False
+    return not window_was_never_placed_on_a_screen(
+        window_bounds, screen_bottom_left_corners
+    )
+
+
 def get_process_identifiers_with_visible_windows(
     menu_bar_height, screen_bottom_left_corners
 ):
@@ -98,24 +113,18 @@ def get_process_identifiers_with_visible_windows(
         Quartz.kCGWindowListOptionAll | Quartz.kCGWindowListExcludeDesktopElements,
         Quartz.kCGNullWindowID,
     )
-    process_identifiers = set()
-    for window_info in window_info_list or []:
-        window_layer = window_info.get(Quartz.kCGWindowLayer, -1)
-        if window_layer != 0:
-            continue
-        window_bounds = window_info.get(Quartz.kCGWindowBounds, {})
-        if window_bounds.get("Width", 0) <= 0:
-            continue
-        if window_bounds.get("Height", 0) <= menu_bar_height:
-            continue
-        if window_was_never_placed_on_a_screen(
-            window_bounds, screen_bottom_left_corners
-        ):
-            continue
-        process_identifier = window_info.get(Quartz.kCGWindowOwnerPID)
-        if process_identifier:
-            process_identifiers.add(process_identifier)
-    return process_identifiers
+    visible_window_infos = [
+        window_info
+        for window_info in window_info_list or []
+        if window_is_a_visible_application_window(
+            window_info, menu_bar_height, screen_bottom_left_corners
+        )
+    ]
+    return {
+        window_info.get(Quartz.kCGWindowOwnerPID)
+        for window_info in visible_window_infos
+        if window_info.get(Quartz.kCGWindowOwnerPID)
+    }
 
 
 def process_is_still_alive(process_identifier):
@@ -159,6 +168,73 @@ def forget_applications_that_exited(
             del window_history_by_process_identifier[process_identifier]
 
 
+def is_application_excluded_from_quitting(application):
+    return application.bundleIdentifier() in EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS
+
+
+def request_quit_of_application_without_windows(
+    application, process_identifier, history, current_time
+):
+    seconds_without_a_window = seconds_the_application_has_been_without_a_window(
+        history, current_time
+    )
+    history.quit_requested_at = current_time
+    application_name = application.localizedName() or "unknown"
+    print(
+        f"Quitting {application_name} (PID {process_identifier})"
+        f" - no windows for {seconds_without_a_window:.0f}s",
+        flush=True,
+    )
+    application.terminate()
+
+
+def review_application_window_history(
+    application,
+    process_identifiers_with_windows,
+    window_history_by_process_identifier,
+    current_time,
+):
+    process_identifier = application.processIdentifier()
+    history = window_history_by_process_identifier.setdefault(
+        process_identifier,
+        ApplicationWindowHistory(first_seen_at=current_time),
+    )
+
+    if process_identifier in process_identifiers_with_windows:
+        history.last_seen_with_a_window_at = current_time
+        history.quit_requested_at = None
+        return
+
+    if should_request_quit(history, current_time):
+        request_quit_of_application_without_windows(
+            application, process_identifier, history, current_time
+        )
+
+
+def poll_running_applications_once(window_history_by_process_identifier):
+    wait_for_the_next_poll_while_the_workspace_receives_notifications()
+
+    running_applications = get_running_regular_applications()
+    process_identifiers_with_windows = get_process_identifiers_with_visible_windows(
+        get_tallest_menu_bar_height(), get_screen_bottom_left_corners()
+    )
+    current_time = time.time()
+
+    for application in running_applications:
+        if is_application_excluded_from_quitting(application):
+            continue
+        review_application_window_history(
+            application,
+            process_identifiers_with_windows,
+            window_history_by_process_identifier,
+            current_time,
+        )
+
+    forget_applications_that_exited(
+        window_history_by_process_identifier, running_applications
+    )
+
+
 def main():
     signal.signal(signal.SIGTERM, lambda _signum, _frame: sys.exit(0))
 
@@ -166,55 +242,7 @@ def main():
 
     while True:
         with autorelease_pool():
-            wait_for_the_next_poll_while_the_workspace_receives_notifications()
-
-            running_applications = get_running_regular_applications()
-            process_identifiers_with_windows = (
-                get_process_identifiers_with_visible_windows(
-                    get_tallest_menu_bar_height(), get_screen_bottom_left_corners()
-                )
-            )
-            current_time = time.time()
-
-            for application in running_applications:
-                process_identifier = application.processIdentifier()
-
-                if (
-                    application.bundleIdentifier()
-                    in EXCLUDED_APPLICATION_BUNDLE_IDENTIFIERS
-                ):
-                    continue
-
-                history = window_history_by_process_identifier.setdefault(
-                    process_identifier,
-                    ApplicationWindowHistory(first_seen_at=current_time),
-                )
-
-                if process_identifier in process_identifiers_with_windows:
-                    history.last_seen_with_a_window_at = current_time
-                    history.quit_requested_at = None
-                    continue
-
-                if not should_request_quit(history, current_time):
-                    continue
-
-                seconds_without_a_window = (
-                    seconds_the_application_has_been_without_a_window(
-                        history, current_time
-                    )
-                )
-                history.quit_requested_at = current_time
-                application_name = application.localizedName() or "unknown"
-                print(
-                    f"Quitting {application_name} (PID {process_identifier})"
-                    f" - no windows for {seconds_without_a_window:.0f}s",
-                    flush=True,
-                )
-                application.terminate()
-
-            forget_applications_that_exited(
-                window_history_by_process_identifier, running_applications
-            )
+            poll_running_applications_once(window_history_by_process_identifier)
 
 
 if __name__ == "__main__":

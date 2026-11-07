@@ -148,11 +148,7 @@ def count_invalid_shared_secret_errors_since_last_core_service_connect():
     )
 
 
-def probe_karabiner_cli_ipc_and_return_outcome():
-    probe_started_at_epoch_seconds = current_epoch_seconds()
-    profile_name_or_none = None
-    grabbed_keyboard_device_count_or_none = None
-    probe_failure_reason_or_none = None
+def read_current_profile_name_or_failure_reason():
     try:
         profile_name_completion = subprocess.run(
             [KARABINER_CLI_BINARY_PATH, "--show-current-profile-name"],
@@ -161,43 +157,61 @@ def probe_karabiner_cli_ipc_and_return_outcome():
             text=True,
             timeout=KARABINER_CLI_IPC_PROBE_TIMEOUT_SECONDS,
         )
-        if profile_name_completion.returncode != 0:
-            probe_failure_reason_or_none = (
-                f"show-current-profile-name exit {profile_name_completion.returncode}"
-            )
-        else:
-            profile_name_or_none = profile_name_completion.stdout.strip() or None
     except subprocess.TimeoutExpired:
-        probe_failure_reason_or_none = "show-current-profile-name timed out"
+        return None, "show-current-profile-name timed out"
     except FileNotFoundError:
-        probe_failure_reason_or_none = "karabiner_cli binary not found"
+        return None, "karabiner_cli binary not found"
+    if profile_name_completion.returncode != 0:
+        return (
+            None,
+            f"show-current-profile-name exit {profile_name_completion.returncode}",
+        )
+    return profile_name_completion.stdout.strip() or None, None
+
+
+def count_grabbed_keyboard_devices_or_failure_reason():
+    try:
+        connected_devices_completion = subprocess.run(
+            [KARABINER_CLI_BINARY_PATH, "--list-connected-devices"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=KARABINER_CLI_IPC_PROBE_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return None, "list-connected-devices timed out"
+    except FileNotFoundError as probe_error:
+        return None, f"list-connected-devices parse error: {probe_error}"
+    if connected_devices_completion.returncode != 0:
+        return (
+            None,
+            f"list-connected-devices exit {connected_devices_completion.returncode}",
+        )
+    try:
+        connected_devices = json.loads(connected_devices_completion.stdout)
+    except json.JSONDecodeError as probe_error:
+        return None, f"list-connected-devices parse error: {probe_error}"
+    return (
+        sum(
+            1
+            for device in connected_devices
+            if device.get("device_identifiers", {}).get("is_keyboard")
+        ),
+        None,
+    )
+
+
+def probe_karabiner_cli_ipc_and_return_outcome():
+    probe_started_at_epoch_seconds = current_epoch_seconds()
+    profile_name_or_none, probe_failure_reason_or_none = (
+        read_current_profile_name_or_failure_reason()
+    )
+    grabbed_keyboard_device_count_or_none = None
     if probe_failure_reason_or_none is None:
-        try:
-            connected_devices_completion = subprocess.run(
-                [KARABINER_CLI_BINARY_PATH, "--list-connected-devices"],
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=KARABINER_CLI_IPC_PROBE_TIMEOUT_SECONDS,
-            )
-            if connected_devices_completion.returncode != 0:
-                probe_failure_reason_or_none = (
-                    f"list-connected-devices exit"
-                    f" {connected_devices_completion.returncode}"
-                )
-            else:
-                connected_devices = json.loads(connected_devices_completion.stdout)
-                grabbed_keyboard_device_count_or_none = sum(
-                    1
-                    for device in connected_devices
-                    if device.get("device_identifiers", {}).get("is_keyboard")
-                )
-        except subprocess.TimeoutExpired:
-            probe_failure_reason_or_none = "list-connected-devices timed out"
-        except (json.JSONDecodeError, FileNotFoundError) as probe_error:
-            probe_failure_reason_or_none = (
-                f"list-connected-devices parse error: {probe_error}"
-            )
+        (
+            grabbed_keyboard_device_count_or_none,
+            probe_failure_reason_or_none,
+        ) = count_grabbed_keyboard_devices_or_failure_reason()
     probe_latency_seconds = current_epoch_seconds() - probe_started_at_epoch_seconds
     return {
         "succeeded": probe_failure_reason_or_none is None,

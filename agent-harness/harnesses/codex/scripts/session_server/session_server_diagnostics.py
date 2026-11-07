@@ -21,6 +21,8 @@ class SessionServerDiagnostics:
         self._closed = False
         self._capture_thread = None
         self._descriptors = []
+        self._storage_available = True
+        self._shutdown_deadline = None
         try:
             self._stderr_reader, self.stderr_descriptor = os.pipe()
             self._descriptors.extend((self._stderr_reader, self.stderr_descriptor))
@@ -99,29 +101,49 @@ class SessionServerDiagnostics:
             offset += written_bytes
 
     def _capture(self) -> None:
-        storage_available = True
-        shutdown_deadline = None
         try:
             with selectors.DefaultSelector() as selector:
                 selector.register(self._stderr_reader, selectors.EVENT_READ)
                 selector.register(self._shutdown_reader, selectors.EVENT_READ)
-                while shutdown_deadline is None or time.monotonic() < shutdown_deadline:
-                    events = selector.select(None if shutdown_deadline is None else 0)
-                    if not events:
-                        return
-                    for key, _ in events:
-                        if key.fd == self._shutdown_reader:
-                            os.read(self._shutdown_reader, 1)
-                            selector.unregister(self._shutdown_reader)
-                            shutdown_deadline = time.monotonic() + 1.0
-                            continue
-                        output = os.read(self._stderr_reader, DIAGNOSTIC_READ_BYTES)
-                        if not output:
-                            return
-                        if storage_available:
-                            try:
-                                self._append(output)
-                            except OSError:
-                                storage_available = False
+                self._pump_until_shutdown(selector)
         except OSError:
             return
+
+    def _pump_until_shutdown(self, selector: selectors.BaseSelector) -> None:
+        while self._shutdown_window_is_open():
+            events = selector.select(self._selection_timeout_seconds())
+            if not events:
+                return
+            for key, _ in events:
+                if not self._handle_ready_descriptor(selector, key.fd):
+                    return
+
+    def _shutdown_window_is_open(self) -> bool:
+        return (
+            self._shutdown_deadline is None
+            or time.monotonic() < self._shutdown_deadline
+        )
+
+    def _selection_timeout_seconds(self):
+        return None if self._shutdown_deadline is None else 0
+
+    def _handle_ready_descriptor(
+        self, selector: selectors.BaseSelector, descriptor: int
+    ) -> bool:
+        if descriptor == self._shutdown_reader:
+            os.read(self._shutdown_reader, 1)
+            selector.unregister(self._shutdown_reader)
+            self._shutdown_deadline = time.monotonic() + 1.0
+            return True
+        output = os.read(self._stderr_reader, DIAGNOSTIC_READ_BYTES)
+        if not output:
+            return False
+        if self._storage_available:
+            self._store_output(output)
+        return True
+
+    def _store_output(self, output: bytes) -> None:
+        try:
+            self._append(output)
+        except OSError:
+            self._storage_available = False

@@ -55,25 +55,33 @@ def relay_bidirectionally(
 
         while connection_selector.get_map():
             for selection_key, _ in connection_selector.select():
-                source_connection = selection_key.fileobj
-                destination_connection = selection_key.data
-                try:
-                    payload = source_connection.recv(SOCKET_COPY_BUFFER_BYTES)
-                except OSError:
+                if not relay_ready_payload(connection_selector, selection_key):
                     return
 
-                if payload:
-                    try:
-                        destination_connection.sendall(payload)
-                    except OSError:
-                        return
-                    continue
 
-                connection_selector.unregister(source_connection)
-                try:
-                    destination_connection.shutdown(socket.SHUT_WR)
-                except OSError:
-                    pass
+def relay_ready_payload(
+    connection_selector: selectors.BaseSelector, selection_key: selectors.SelectorKey
+) -> bool:
+    source_connection = selection_key.fileobj
+    destination_connection = selection_key.data
+    try:
+        payload = source_connection.recv(SOCKET_COPY_BUFFER_BYTES)
+    except OSError:
+        return False
+
+    if payload:
+        try:
+            destination_connection.sendall(payload)
+        except OSError:
+            return False
+        return True
+
+    connection_selector.unregister(source_connection)
+    try:
+        destination_connection.shutdown(socket.SHUT_WR)
+    except OSError:
+        pass
+    return True
 
 
 class IPv4ConnectProxyRequestHandler(socketserver.StreamRequestHandler):

@@ -88,34 +88,24 @@ def read_image_request(args):
 
 def execute_image_command(args):
     if args.command == "providers":
-        result = describe_image_providers()
-    else:
-        service = ImageService(args.state_directory.expanduser().absolute())
-        if args.command == "inspect":
-            result = service.inspect(args.operation_id)
-        else:
-            request = read_image_request(args)
-            provider = create_image_provider(args.provider)
-            if args.command == "validate":
-                provider.preflight(request)
-                result = {
-                    "status": "valid",
-                    "provider": provider.name,
-                    "model": request.model,
-                }
-            else:
-                operation_id = (
-                    str(uuid.uuid4())
-                    if args.operation_id is None
-                    else args.operation_id
-                )
-                print(
-                    json.dumps({"operation_id": operation_id}),
-                    file=sys.stderr,
-                    flush=True,
-                )
-                result = service.generate(operation_id, request, provider)
-    return result
+        return describe_image_providers()
+    service = ImageService(args.state_directory.expanduser().absolute())
+    if args.command == "inspect":
+        return service.inspect(args.operation_id)
+    request = read_image_request(args)
+    provider = create_image_provider(args.provider)
+    if args.command == "validate":
+        provider.preflight(request)
+        return {"status": "valid", "provider": provider.name, "model": request.model}
+    return run_image_generation(service, args.operation_id, request, provider)
+
+
+def run_image_generation(service, requested_operation_id, request, provider):
+    operation_id = (
+        str(uuid.uuid4()) if requested_operation_id is None else requested_operation_id
+    )
+    print(json.dumps({"operation_id": operation_id}), file=sys.stderr, flush=True)
+    return service.generate(operation_id, request, provider)
 
 
 def main(arguments=None):

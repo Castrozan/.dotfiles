@@ -75,25 +75,38 @@ async def write_all_owner_input_to_pseudoterminal(
         unwritten_owner_input = unwritten_owner_input[written_byte_count:]
 
 
+def apply_owner_control_message_to_pseudoterminal(
+    master_file_descriptor, owner_control_message
+):
+    requested_window_size = parse_owner_control_message(owner_control_message)
+    if requested_window_size is None:
+        return
+    apply_pseudoterminal_window_size(
+        master_file_descriptor,
+        requested_window_size.columns,
+        requested_window_size.rows,
+    )
+
+
+async def forward_owner_message_to_pseudoterminal(
+    master_file_descriptor, owner_message, event_loop
+):
+    if isinstance(owner_message, str):
+        apply_owner_control_message_to_pseudoterminal(
+            master_file_descriptor, owner_message
+        )
+        return
+    await write_all_owner_input_to_pseudoterminal(
+        master_file_descriptor, owner_message, event_loop
+    )
+
+
 async def stream_websocket_input_to_pseudoterminal(
     master_file_descriptor, websocket_connection, event_loop
 ):
     async for owner_message in websocket_connection:
-        if isinstance(owner_message, str):
-            requested_window_size = parse_owner_control_message(owner_message)
-            if requested_window_size is None:
-                continue
-            try:
-                apply_pseudoterminal_window_size(
-                    master_file_descriptor,
-                    requested_window_size.columns,
-                    requested_window_size.rows,
-                )
-            except OSError:
-                return
-            continue
         try:
-            await write_all_owner_input_to_pseudoterminal(
+            await forward_owner_message_to_pseudoterminal(
                 master_file_descriptor, owner_message, event_loop
             )
         except OSError:

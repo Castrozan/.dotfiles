@@ -48,6 +48,20 @@ def stop_launch_agent(domain: str) -> None:
         time.sleep(0.5)
 
 
+def make_generation_tree_writable(generation: Path) -> None:
+    for entry in [generation, *generation.rglob("*")]:
+        if not entry.is_symlink():
+            entry.chmod(entry.stat().st_mode | stat.S_IWUSR)
+
+
+def remove_abandoned_generation(generation: Path) -> None:
+    if generation.is_symlink():
+        generation.unlink()
+        return
+    make_generation_tree_writable(generation)
+    shutil.rmtree(generation)
+
+
 def remove_abandoned_generations(temporary_root: Path) -> None:
     generations = temporary_root / "agenix.d"
     if not generations.is_dir():
@@ -56,13 +70,7 @@ def remove_abandoned_generations(temporary_root: Path) -> None:
     for generation in generations.iterdir():
         if generation.resolve() == live_generation or not generation.is_dir():
             continue
-        if generation.is_symlink():
-            generation.unlink()
-            continue
-        for entry in [generation, *generation.rglob("*")]:
-            if not entry.is_symlink():
-                entry.chmod(entry.stat().st_mode | stat.S_IWUSR)
-        shutil.rmtree(generation)
+        remove_abandoned_generation(generation)
 
 
 def bootstrap_launch_agent(domain: str, plist_path: Path) -> None:

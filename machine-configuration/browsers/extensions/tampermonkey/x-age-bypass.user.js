@@ -103,6 +103,36 @@ JSON.parse = function () {
   return result;
 };
 
+function isTombstoneConfigModule(moduleFactory) {
+  return moduleFactory
+    .toString()
+    .includes("sensitiveMediaVisibilityResultsTombstoneConfig=");
+}
+
+function unblurTombstoneConfigOfModule(module) {
+  try {
+    const t = module.exports?.Z || module.exports?.default || module.exports;
+    if (t?.sensitiveMediaVisibilityResultsTombstoneConfig) {
+      t.sensitiveMediaVisibilityResultsTombstoneConfig.withBlurredMedia = false;
+    }
+  } catch {}
+}
+
+function wrapTombstoneConfigModule(originalModuleFactory) {
+  return (module, exports, require) => {
+    originalModuleFactory(module, exports, require);
+    unblurTombstoneConfigOfModule(module);
+  };
+}
+
+function patchTombstoneConfigModules(modules) {
+  for (const id in modules) {
+    if (Object.hasOwn(modules, id) && isTombstoneConfigModule(modules[id])) {
+      modules[id] = wrapTombstoneConfigModule(modules[id]);
+    }
+  }
+}
+
 // Hook webpack — patches the tombstone overlay component
 function hookWebpack() {
   const wp = window.webpackChunk_twitter_responsive_web;
@@ -113,24 +143,7 @@ function hookWebpack() {
 
   const origWpPush = wp.push;
   wp.push = function (chunk) {
-    const modules = chunk[1];
-    for (const id in modules) {
-      if (!modules.hasOwnProperty(id)) continue;
-      const code = modules[id].toString();
-      if (code.includes("sensitiveMediaVisibilityResultsTombstoneConfig=")) {
-        const orig = modules[id];
-        modules[id] = function (module, exports, require) {
-          orig(module, exports, require);
-          try {
-            const t =
-              module.exports?.Z || module.exports?.default || module.exports;
-            if (t?.sensitiveMediaVisibilityResultsTombstoneConfig) {
-              t.sensitiveMediaVisibilityResultsTombstoneConfig.withBlurredMedia = false;
-            }
-          } catch {}
-        };
-      }
-    }
+    patchTombstoneConfigModules(chunk[1]);
     return origWpPush.call(this, chunk);
   };
 }

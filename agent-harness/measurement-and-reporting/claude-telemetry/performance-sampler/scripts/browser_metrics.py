@@ -12,32 +12,42 @@ def parse_browser_total_rss(ps_output: str) -> dict:
     )
 
 
+def _parse_brave_renderer_line(line: str) -> tuple[int, str] | None:
+    line_parts = line.strip().split(None, 1)
+    if len(line_parts) != 2:
+        return None
+    process_rss_text, command_text = line_parts
+    if BRAVE_RENDERER_COMMAND_MARKER not in command_text:
+        return None
+    try:
+        return int(process_rss_text), command_text
+    except ValueError:
+        return None
+
+
+def _brave_renderer_processes(ps_output: str) -> list[tuple[int, str]]:
+    parsed_lines = (_parse_brave_renderer_line(line) for line in ps_output.splitlines())
+    return [parsed_line for parsed_line in parsed_lines if parsed_line is not None]
+
+
 def parse_brave_renderer_breakdown(ps_output: str) -> dict:
-    renderer_count = 0
-    renderer_rss_kilobytes = 0
-    extension_renderer_count = 0
-    extension_renderer_rss_kilobytes = 0
-    for line in ps_output.splitlines():
-        line_parts = line.strip().split(None, 1)
-        if len(line_parts) != 2:
-            continue
-        command_text = line_parts[1]
-        if BRAVE_RENDERER_COMMAND_MARKER not in command_text:
-            continue
-        try:
-            process_rss_kilobytes = int(line_parts[0])
-        except ValueError:
-            continue
-        renderer_count += 1
-        renderer_rss_kilobytes += process_rss_kilobytes
-        if BRAVE_EXTENSION_PROCESS_FLAG in command_text:
-            extension_renderer_count += 1
-            extension_renderer_rss_kilobytes += process_rss_kilobytes
+    renderer_processes = _brave_renderer_processes(ps_output)
+    extension_rss_kilobytes = [
+        process_rss_kilobytes
+        for process_rss_kilobytes, command_text in renderer_processes
+        if BRAVE_EXTENSION_PROCESS_FLAG in command_text
+    ]
     return {
-        "renderers": renderer_count,
-        "renderer_megabytes": round(renderer_rss_kilobytes / 1024, 1),
-        "extension_renderers": extension_renderer_count,
-        "extension_megabytes": round(extension_renderer_rss_kilobytes / 1024, 1),
+        "renderers": len(renderer_processes),
+        "renderer_megabytes": round(
+            sum(
+                process_rss_kilobytes for process_rss_kilobytes, _ in renderer_processes
+            )
+            / 1024,
+            1,
+        ),
+        "extension_renderers": len(extension_rss_kilobytes),
+        "extension_megabytes": round(sum(extension_rss_kilobytes) / 1024, 1),
     }
 
 

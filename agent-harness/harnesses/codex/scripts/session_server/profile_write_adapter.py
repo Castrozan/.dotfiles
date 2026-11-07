@@ -34,23 +34,35 @@ def partition_profile_edits(edits):
     return settings, native_edits
 
 
+def try_exclusive_lock(lock) -> bool:
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        return False
+    return True
+
+
+def acquire_exclusive_lock(lock) -> None:
+    deadline = time.monotonic() + 1.0
+    while not try_exclusive_lock(lock):
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Codex profile remained locked for 1s")
+        time.sleep(0.02)
+
+
+def apply_profile_settings(configuration, settings: dict[str, str | None]) -> None:
+    for key, value in settings.items():
+        if value is None:
+            configuration.pop(key, None)
+        else:
+            configuration[key] = value
+
+
 def save_profile_settings(profile_path: Path, settings: dict[str, str | None]) -> None:
     with profile_path.with_suffix(".toml.lock").open("a") as lock:
-        deadline = time.monotonic() + 1.0
-        while True:
-            try:
-                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                break
-            except BlockingIOError:
-                if time.monotonic() >= deadline:
-                    raise TimeoutError("Codex profile remained locked for 1s")
-                time.sleep(0.02)
+        acquire_exclusive_lock(lock)
         configuration = tomlkit.parse(profile_path.read_text())
-        for key, value in settings.items():
-            if value is None:
-                configuration.pop(key, None)
-            else:
-                configuration[key] = value
+        apply_profile_settings(configuration, settings)
         with tempfile.NamedTemporaryFile(
             mode="w", dir=profile_path.parent, delete=False
         ) as output:

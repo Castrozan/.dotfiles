@@ -1,33 +1,35 @@
-(function runAmbientCanvasPlayer() {
-  const grid = document.getElementById("ambient-canvas-grid");
-  const playlist = window.AMBIENT_CANVAS_PLAYLIST || [];
-  const globalRotationSeconds = window.AMBIENT_CANVAS_ROTATION_SECONDS || 20;
-  const sceneFactories = window.AMBIENT_CANVAS_SCENE_FACTORIES || {};
+{
+  const playerGrid = document.getElementById("ambient-canvas-grid");
+  const playerPlaylist = window.AMBIENT_CANVAS_PLAYLIST || [];
+  const playerGlobalRotationSeconds =
+    window.AMBIENT_CANVAS_ROTATION_SECONDS || 20;
+  const playerSceneFactories = window.AMBIENT_CANVAS_SCENE_FACTORIES || {};
+  const playerState = {
+    currentDevicePixelRatio: window.devicePixelRatio || 1,
+    activeSegmentHandle: null,
+    activeSegmentIndex: null,
+    startTimestampMilliseconds: null,
+  };
 
-  if (!grid || playlist.length === 0) {
-    return;
-  }
+  const playerCompositionDurationSeconds = (composition) =>
+    composition.durationSeconds || playerGlobalRotationSeconds;
 
-  let currentDevicePixelRatio = window.devicePixelRatio || 1;
+  const playerTotalCycleSeconds = playerPlaylist.reduce(
+    function accumulateCycleSeconds(precedingSeconds, composition) {
+      return precedingSeconds + playerCompositionDurationSeconds(composition);
+    },
+    0,
+  );
 
-  function compositionDurationSeconds(composition) {
-    return composition.durationSeconds || globalRotationSeconds;
-  }
-
-  const totalCycleSeconds = playlist.reduce(function accumulateCycleSeconds(
-    precedingSeconds,
-    composition,
-  ) {
-    return precedingSeconds + compositionDurationSeconds(composition);
-  }, 0);
-
-  function resolveSegment(elapsedSeconds) {
+  const playerResolveSegment = (elapsedSeconds) => {
     const wrappedElapsedSeconds =
-      ((elapsedSeconds % totalCycleSeconds) + totalCycleSeconds) %
-      totalCycleSeconds;
+      ((elapsedSeconds % playerTotalCycleSeconds) + playerTotalCycleSeconds) %
+      playerTotalCycleSeconds;
     let precedingSeconds = 0;
-    for (let index = 0; index < playlist.length; index += 1) {
-      const durationSeconds = compositionDurationSeconds(playlist[index]);
+    for (let index = 0; index < playerPlaylist.length; index += 1) {
+      const durationSeconds = playerCompositionDurationSeconds(
+        playerPlaylist[index],
+      );
       if (wrappedElapsedSeconds < precedingSeconds + durationSeconds) {
         return {
           index: index,
@@ -36,79 +38,61 @@
       }
       precedingSeconds += durationSeconds;
     }
-    const lastIndex = playlist.length - 1;
+    const lastIndex = playerPlaylist.length - 1;
     return {
       index: lastIndex,
-      localElapsedSeconds: compositionDurationSeconds(playlist[lastIndex]),
+      localElapsedSeconds: playerCompositionDurationSeconds(
+        playerPlaylist[lastIndex],
+      ),
     };
-  }
+  };
 
-  function applyLayout(compositionIndex) {
-    const layout = playlist[compositionIndex].layout;
+  const playerApplyLayout = (compositionIndex) => {
+    const layout = playerPlaylist[compositionIndex].layout;
     if (!layout) {
-      grid.style.gridTemplateColumns = "1fr";
-      grid.style.gridTemplateRows = "1fr";
-      grid.style.gridTemplateAreas = "";
+      playerGrid.style.gridTemplateColumns = "1fr";
+      playerGrid.style.gridTemplateRows = "1fr";
+      playerGrid.style.gridTemplateAreas = "";
       return;
     }
-    grid.style.gridTemplateColumns = layout.columnTemplate;
-    grid.style.gridTemplateRows = layout.rowTemplate;
-    grid.style.gridTemplateAreas = layout.areaRows
+    playerGrid.style.gridTemplateColumns = layout.columnTemplate;
+    playerGrid.style.gridTemplateRows = layout.rowTemplate;
+    playerGrid.style.gridTemplateAreas = layout.areaRows
       .map(function quoteAreaRow(areaRow) {
         return '"' + areaRow + '"';
       })
       .join(" ");
-  }
+  };
 
-  function sizeCanvasToPane(canvasElement) {
+  const playerSizeCanvasToPane = (canvasElement) => {
     const bounds = canvasElement.getBoundingClientRect();
     canvasElement.width = Math.max(
       1,
-      Math.floor(bounds.width * currentDevicePixelRatio),
+      Math.floor(bounds.width * playerState.currentDevicePixelRatio),
     );
     canvasElement.height = Math.max(
       1,
-      Math.floor(bounds.height * currentDevicePixelRatio),
+      Math.floor(bounds.height * playerState.currentDevicePixelRatio),
     );
-  }
+  };
 
-  function buildSegment(compositionIndex, recordingOptionOverrides) {
-    const renderers = [];
-    for (const paneConfiguration of playlist[compositionIndex].panes) {
-      const sceneFactory = sceneFactories[paneConfiguration.scene];
-      if (!sceneFactory) {
-        console.error(
-          "ambient-canvas: unknown scene " + paneConfiguration.scene,
-        );
-        continue;
-      }
-      const activeRenderer = buildPaneRenderer(
-        paneConfiguration,
-        sceneFactory,
-        recordingOptionOverrides,
-      );
-      if (activeRenderer) renderers.push(activeRenderer);
-    }
-    return { renderers: renderers, compositionIndex: compositionIndex };
-  }
-
-  function buildPaneRenderer(
+  const playerBuildPaneRenderer = (
     paneConfiguration,
     sceneFactory,
     recordingOptionOverrides,
-  ) {
+  ) => {
     const canvasElement = document.createElement("canvas");
     canvasElement.className = "ambient-canvas-pane";
     if (paneConfiguration.area) {
       canvasElement.style.gridArea = paneConfiguration.area;
     }
-    grid.appendChild(canvasElement);
-    sizeCanvasToPane(canvasElement);
+    playerGrid.appendChild(canvasElement);
+    playerSizeCanvasToPane(canvasElement);
     const rendererOptions = Object.assign(
-      { devicePixelRatio: currentDevicePixelRatio },
-      paneConfiguration.options || {},
-      window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES || {},
-      recordingOptionOverrides || {},
+      { devicePixelRatio: playerState.currentDevicePixelRatio },
+      paneConfiguration.options,
+      window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES,
+      recordingOptionOverrides,
     );
     try {
       return {
@@ -116,7 +100,7 @@
         renderer: sceneFactory(canvasElement, rendererOptions),
       };
     } catch (sceneInitializationError) {
-      grid.removeChild(canvasElement);
+      playerGrid.removeChild(canvasElement);
       console.error(
         "ambient-canvas: scene " +
           paneConfiguration.scene +
@@ -125,9 +109,29 @@
       );
       return null;
     }
-  }
+  };
 
-  function destroySegment(segmentHandle) {
+  const playerBuildSegment = (compositionIndex, recordingOptionOverrides) => {
+    const renderers = [];
+    for (const paneConfiguration of playerPlaylist[compositionIndex].panes) {
+      const sceneFactory = playerSceneFactories[paneConfiguration.scene];
+      if (!sceneFactory) {
+        console.error(
+          "ambient-canvas: unknown scene " + paneConfiguration.scene,
+        );
+        continue;
+      }
+      const activeRenderer = playerBuildPaneRenderer(
+        paneConfiguration,
+        sceneFactory,
+        recordingOptionOverrides,
+      );
+      if (activeRenderer) renderers.push(activeRenderer);
+    }
+    return { renderers: renderers, compositionIndex: compositionIndex };
+  };
+
+  const playerDestroySegment = (segmentHandle) => {
     if (!segmentHandle) {
       return;
     }
@@ -135,64 +139,61 @@
       if (activeRenderer.renderer.dispose) {
         activeRenderer.renderer.dispose();
       }
-      if (activeRenderer.canvasElement.parentNode === grid) {
-        grid.removeChild(activeRenderer.canvasElement);
+      if (activeRenderer.canvasElement.parentNode === playerGrid) {
+        playerGrid.removeChild(activeRenderer.canvasElement);
       }
     }
-  }
+  };
 
-  if (window.AMBIENT_CANVAS_RECORD_DRIVER) {
-    window.AMBIENT_CANVAS_RECORD_DRIVER({
-      compositions: playlist,
-      compositionDurationSeconds: compositionDurationSeconds,
-      applyLayout: applyLayout,
-      buildSegment: buildSegment,
-      destroySegment: destroySegment,
-    });
-    return;
-  }
+  const playerActivateSegment = (compositionIndex) => {
+    playerDestroySegment(playerState.activeSegmentHandle);
+    playerApplyLayout(compositionIndex);
+    playerState.activeSegmentHandle = playerBuildSegment(compositionIndex);
+    playerState.activeSegmentIndex = compositionIndex;
+  };
 
-  let activeSegmentHandle = null;
-  let activeSegmentIndex = null;
-
-  function activateSegment(compositionIndex) {
-    destroySegment(activeSegmentHandle);
-    applyLayout(compositionIndex);
-    activeSegmentHandle = buildSegment(compositionIndex);
-    activeSegmentIndex = compositionIndex;
-  }
-
-  function handleWindowResize() {
-    currentDevicePixelRatio = window.devicePixelRatio || 1;
-    if (!activeSegmentHandle) {
+  const playerHandleWindowResize = () => {
+    playerState.currentDevicePixelRatio = window.devicePixelRatio || 1;
+    if (!playerState.activeSegmentHandle) {
       return;
     }
-    for (const activeRenderer of activeSegmentHandle.renderers) {
-      sizeCanvasToPane(activeRenderer.canvasElement);
+    for (const activeRenderer of playerState.activeSegmentHandle.renderers) {
+      playerSizeCanvasToPane(activeRenderer.canvasElement);
       activeRenderer.renderer.resize(
         activeRenderer.canvasElement.width,
         activeRenderer.canvasElement.height,
       );
     }
-  }
+  };
 
-  let startTimestampMilliseconds = null;
-  function renderFrame(timestampMilliseconds) {
-    if (startTimestampMilliseconds === null) {
-      startTimestampMilliseconds = timestampMilliseconds;
+  const playerRenderFrame = (timestampMilliseconds) => {
+    if (playerState.startTimestampMilliseconds === null) {
+      playerState.startTimestampMilliseconds = timestampMilliseconds;
     }
     const elapsedSeconds =
-      (timestampMilliseconds - startTimestampMilliseconds) / 1000.0;
-    const segment = resolveSegment(elapsedSeconds);
-    if (segment.index !== activeSegmentIndex) {
-      activateSegment(segment.index);
+      (timestampMilliseconds - playerState.startTimestampMilliseconds) / 1000.0;
+    const segment = playerResolveSegment(elapsedSeconds);
+    if (segment.index !== playerState.activeSegmentIndex) {
+      playerActivateSegment(segment.index);
     }
-    for (const activeRenderer of activeSegmentHandle.renderers) {
+    for (const activeRenderer of playerState.activeSegmentHandle.renderers) {
       activeRenderer.renderer.render(segment.localElapsedSeconds);
     }
-    window.requestAnimationFrame(renderFrame);
-  }
+    window.requestAnimationFrame(playerRenderFrame);
+  };
 
-  window.addEventListener("resize", handleWindowResize);
-  window.requestAnimationFrame(renderFrame);
-})();
+  if (playerGrid && playerPlaylist.length > 0) {
+    if (window.AMBIENT_CANVAS_RECORD_DRIVER) {
+      window.AMBIENT_CANVAS_RECORD_DRIVER({
+        compositions: playerPlaylist,
+        compositionDurationSeconds: playerCompositionDurationSeconds,
+        applyLayout: playerApplyLayout,
+        buildSegment: playerBuildSegment,
+        destroySegment: playerDestroySegment,
+      });
+    } else {
+      window.addEventListener("resize", playerHandleWindowResize);
+      window.requestAnimationFrame(playerRenderFrame);
+    }
+  }
+}

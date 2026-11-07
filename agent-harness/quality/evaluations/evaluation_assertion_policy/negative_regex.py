@@ -1,4 +1,5 @@
 import re
+from collections.abc import Iterator
 
 BARE_TOKEN_PATTERN = re.compile(r"[A-Za-z][A-Za-z0-9_-]*")
 
@@ -62,16 +63,44 @@ def _is_top_level_alternative(
     return not inside_character_class and depth == 0 and character == "|"
 
 
-def _opens_parenthesis(character: str, inside_character_class: bool) -> bool:
-    return not inside_character_class and character == "("
-
-
-def _closes_parenthesis(character: str, inside_character_class: bool) -> bool:
-    return not inside_character_class and character == ")"
-
-
 def _closes_character_class(character: str, inside_character_class: bool) -> bool:
     return character == "]" and inside_character_class
+
+
+def _unescaped_characters(expression: str) -> Iterator[tuple[int, str]]:
+    escaped = False
+    for index, character in enumerate(expression):
+        if escaped:
+            escaped = False
+        elif character == "\\":
+            escaped = True
+        else:
+            yield index, character
+
+
+def _unescaped_characters_outside_character_classes(
+    expression: str,
+) -> Iterator[tuple[int, str]]:
+    inside_character_class = False
+    for index, character in _unescaped_characters(expression):
+        if character == "[":
+            inside_character_class = True
+        elif _closes_character_class(character, inside_character_class):
+            inside_character_class = False
+        elif not inside_character_class:
+            yield index, character
+
+
+def _outermost_closing_parenthesis_index(expression: str) -> int | None:
+    parenthesis_depth = 0
+    for index, character in _unescaped_characters_outside_character_classes(expression):
+        if character == "(":
+            parenthesis_depth += 1
+        elif character == ")":
+            parenthesis_depth -= 1
+            if parenthesis_depth == 0:
+                return index
+    return None
 
 
 def expression_inside_enclosing_group(expression: str) -> str | None:
@@ -81,25 +110,12 @@ def expression_inside_enclosing_group(expression: str) -> str | None:
         group_content_start = 1
     else:
         return None
-    parenthesis_depth = 0
-    inside_character_class = False
-    escaped = False
-    for index, character in enumerate(expression):
-        if escaped:
-            escaped = False
-        elif character == "\\":
-            escaped = True
-        elif character == "[":
-            inside_character_class = True
-        elif _closes_character_class(character, inside_character_class):
-            inside_character_class = False
-        elif _opens_parenthesis(character, inside_character_class):
-            parenthesis_depth += 1
-        elif _closes_parenthesis(character, inside_character_class):
-            parenthesis_depth -= 1
-            if parenthesis_depth == 0:
-                return _enclosing_group_content(expression, index, group_content_start)
-    return None
+    closing_parenthesis_index = _outermost_closing_parenthesis_index(expression)
+    if closing_parenthesis_index is None:
+        return None
+    return _enclosing_group_content(
+        expression, closing_parenthesis_index, group_content_start
+    )
 
 
 def _enclosing_group_content(expression: str, index: int, content_start: int):

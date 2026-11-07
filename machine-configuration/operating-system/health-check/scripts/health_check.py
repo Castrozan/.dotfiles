@@ -39,6 +39,27 @@ def usage_text(probe_timeout_seconds: str) -> str:
     )
 
 
+def is_category_option(argument: str) -> bool:
+    return argument.partition("=")[0] == "--category"
+
+
+def take_category_filter(argument: str, pending_arguments: list[str]) -> str:
+    if argument.startswith("--category="):
+        return argument.removeprefix("--category=")
+    if not pending_arguments:
+        print("missing value for --category", file=sys.stderr)
+        raise SystemExit(1)
+    return pending_arguments.pop(0)
+
+
+def exit_on_help_or_unknown_argument(argument: str, probe_timeout_seconds: str) -> None:
+    if argument in ("-h", "--help"):
+        sys.stdout.write(usage_text(probe_timeout_seconds))
+        raise SystemExit(0)
+    print(f"unknown arg: {argument}", file=sys.stderr)
+    raise SystemExit(UNKNOWN_ARGUMENT_EXIT_CODE)
+
+
 def parse_arguments(arguments: list[str], probe_timeout_seconds: str) -> Invocation:
     json_mode = False
     summary_mode = False
@@ -50,19 +71,10 @@ def parse_arguments(arguments: list[str], probe_timeout_seconds: str) -> Invocat
             json_mode = True
         elif argument == "--summary":
             summary_mode = True
-        elif argument == "--category":
-            if not pending_arguments:
-                print("missing value for --category", file=sys.stderr)
-                raise SystemExit(1)
-            category_filter = pending_arguments.pop(0)
-        elif argument.startswith("--category="):
-            category_filter = argument.removeprefix("--category=")
-        elif argument in ("-h", "--help"):
-            sys.stdout.write(usage_text(probe_timeout_seconds))
-            raise SystemExit(0)
+        elif is_category_option(argument):
+            category_filter = take_category_filter(argument, pending_arguments)
         else:
-            print(f"unknown arg: {argument}", file=sys.stderr)
-            raise SystemExit(UNKNOWN_ARGUMENT_EXIT_CODE)
+            exit_on_help_or_unknown_argument(argument, probe_timeout_seconds)
     return Invocation(json_mode, summary_mode, category_filter)
 
 

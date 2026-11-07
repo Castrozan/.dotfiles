@@ -21,25 +21,41 @@ def resolve_terminal_size():
         return 80, 24
 
 
+def send_termination_signal(child_pid, termination_signal):
+    try:
+        os.kill(child_pid, termination_signal)
+    except ProcessLookupError:
+        return False
+    return True
+
+
+def child_has_exited(child_pid):
+    try:
+        waited_pid, _ = os.waitpid(child_pid, os.WNOHANG)
+    except ChildProcessError:
+        return True
+    return waited_pid == child_pid
+
+
+def wait_for_child_exit(child_pid):
+    deadline = time.monotonic() + CHILD_TERMINATION_GRACE_SECONDS
+    while time.monotonic() < deadline:
+        if child_has_exited(child_pid):
+            return True
+        time.sleep(0.02)
+    return False
+
+
 def terminate_child(child_pid, master_fd):
     try:
         os.close(master_fd)
     except OSError:
         pass
     for termination_signal in (signal.SIGTERM, signal.SIGKILL):
-        try:
-            os.kill(child_pid, termination_signal)
-        except ProcessLookupError:
+        if not send_termination_signal(child_pid, termination_signal):
             return
-        deadline = time.monotonic() + CHILD_TERMINATION_GRACE_SECONDS
-        while time.monotonic() < deadline:
-            try:
-                waited_pid, _ = os.waitpid(child_pid, os.WNOHANG)
-            except ChildProcessError:
-                return
-            if waited_pid == child_pid:
-                return
-            time.sleep(0.02)
+        if wait_for_child_exit(child_pid):
+            return
 
 
 def capture_command_chunks(command, capture_seconds, columns, lines, echo=True):

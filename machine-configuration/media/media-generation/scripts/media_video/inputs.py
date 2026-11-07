@@ -80,20 +80,28 @@ def verify_retained_inputs(directory, retained, deadline=None):
     if not isinstance(retained, list) or not 4 <= len(retained) <= 515:
         raise VideoError("invalid_receipt")
     for entry in retained:
-        if not isinstance(entry, dict) or not isinstance(entry.get("path"), str):
-            raise VideoError("invalid_receipt")
-        relative = Path(entry["path"])
-        if (
-            relative.is_absolute()
-            or ".." in relative.parts
-            or not relative.is_relative_to("inputs")
-            or str(relative) != entry["path"]
-        ):
-            raise VideoError("invalid_receipt")
-        path = directory / relative
-        try:
-            digest = file_digest(path, deadline)
-        except FileNotFoundError:
-            raise VideoError("input_unavailable") from None
-        if digest != entry.get("sha256"):
-            raise VideoError("input_checksum_mismatch")
+        verify_retained_input(directory, entry, deadline)
+
+
+def verify_retained_input(directory, entry, deadline):
+    if not isinstance(entry, dict) or not isinstance(entry.get("path"), str):
+        raise VideoError("invalid_receipt")
+    path = directory / retained_relative_path(entry["path"])
+    try:
+        digest = file_digest(path, deadline)
+    except FileNotFoundError:
+        raise VideoError("input_unavailable") from None
+    if digest != entry.get("sha256"):
+        raise VideoError("input_checksum_mismatch")
+
+
+def retained_relative_path(path_text):
+    relative = Path(path_text)
+    if (
+        relative.is_absolute()
+        or ".." in relative.parts
+        or not relative.is_relative_to("inputs")
+        or str(relative) != path_text
+    ):
+        raise VideoError("invalid_receipt")
+    return relative

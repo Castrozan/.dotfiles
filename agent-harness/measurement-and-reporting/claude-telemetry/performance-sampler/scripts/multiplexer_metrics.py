@@ -112,26 +112,34 @@ def collect_herdr_binary_staleness() -> list:
     ]
 
 
+def _opencode_process_rss_kilobytes(line: str) -> int | None:
+    line_parts = line.strip().split(None, 1)
+    if len(line_parts) != 2:
+        return None
+    process_rss_text, command_name = line_parts
+    if command_name.split("/")[-1] != "opencode":
+        return None
+    try:
+        return int(process_rss_text)
+    except ValueError:
+        return None
+
+
 def collect_opencode_process() -> list:
     ps_output = run_command_capturing_stdout(["ps", "-axo", "rss=,comm="])
-    aggregate_rss_kilobytes = 0
-    found_opencode_process = False
-    for line in ps_output.splitlines():
-        line_parts = line.strip().split(None, 1)
-        if len(line_parts) != 2:
-            continue
-        if line_parts[1].split("/")[-1] == "opencode":
-            try:
-                aggregate_rss_kilobytes += int(line_parts[0])
-                found_opencode_process = True
-            except ValueError:
-                continue
-    if not found_opencode_process:
+    opencode_rss_kilobytes = [
+        process_rss_kilobytes
+        for process_rss_kilobytes in (
+            _opencode_process_rss_kilobytes(line) for line in ps_output.splitlines()
+        )
+        if process_rss_kilobytes is not None
+    ]
+    if not opencode_rss_kilobytes:
         return []
     return [
         {
             "metric": "opencode_rss_megabytes",
-            "value": round(aggregate_rss_kilobytes / 1024, 1),
+            "value": round(sum(opencode_rss_kilobytes) / 1024, 1),
             "labels": {},
         }
     ]

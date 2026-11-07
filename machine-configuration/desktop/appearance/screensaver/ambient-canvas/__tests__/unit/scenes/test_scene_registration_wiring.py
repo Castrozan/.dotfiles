@@ -121,10 +121,10 @@ def test_sixteen_segment_paints_monochrome_without_a_full_frame_filter():
     field_source = SCENE_SOURCES[
         AMBIENT_CANVAS_WEB_DIRECTORY / "scenes/sixteen-segment/sixteen_segment_field.js"
     ]
-    assert "resolveMonochromeFillStyle" in scene_source
+    assert "sixteenSegmentResolveMonochromeFillStyle" in scene_source
     assert "resolveMonochromeChannel" in field_source
     assert (
-        "const BACKGROUND_FILL_STYLE = window.AmbientCanvasPalette.backgroundHex;"
+        "const SIXTEEN_SEGMENT_BACKGROUND_FILL_STYLE = window.AmbientCanvasPalette.backgroundHex;"
         in scene_source
     )
     assert "drawingContext.filter" not in scene_source

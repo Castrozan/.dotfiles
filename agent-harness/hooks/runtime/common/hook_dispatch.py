@@ -150,22 +150,24 @@ def run_handlers(hook_input: dict, handlers, surface=CLAUDE_SURFACE):
     outcome = MergedHookOutcome()
     tool_name = _normalized_tool_name(hook_input)
     for handler in handlers:
-        if not handler_runs_on_surface(handler, surface):
-            continue
-        if not handler_matches_tool(handler, tool_name):
-            continue
-        try:
-            result = handler.imported_handle()(hook_input)
-        except Exception as handler_error:
-            outcome.system_message_fragments.append(
-                f"Hook handler {describe_handler(handler)} failed and was skipped: "
-                f"{type(handler_error).__name__}: {handler_error}"
-            )
-            continue
-        if result is None:
-            continue
-        _merge_handler_result(outcome, result)
+        if handler_runs_on_surface(handler, surface) and handler_matches_tool(
+            handler, tool_name
+        ):
+            _collect_handler_result(outcome, handler, hook_input)
     return outcome
+
+
+def _collect_handler_result(outcome, handler, hook_input: dict) -> None:
+    try:
+        result = handler.imported_handle()(hook_input)
+    except Exception as handler_error:
+        outcome.system_message_fragments.append(
+            f"Hook handler {describe_handler(handler)} failed and was skipped: "
+            f"{type(handler_error).__name__}: {handler_error}"
+        )
+        return
+    if result is not None:
+        _merge_handler_result(outcome, result)
 
 
 def _normalized_tool_name(hook_input: dict) -> str:

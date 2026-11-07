@@ -1,85 +1,70 @@
-(function installAmbientCanvasDeterministicRecorder() {
-  const recordParameters = new URLSearchParams(window.location.search);
-  if (!recordParameters.has("record")) {
-    return;
-  }
+{
+  const recorderParameters = new URLSearchParams(window.location.search);
+  const recorderPlan = window.AmbientCanvasRecordingPlan;
+  const recorderTargetBitsPerPixelPerFrame = 0.35;
+  const recorderKeyFrameIntervalSeconds = 2;
+  const recorderEncoderQueueHighWatermark = 8;
+  const recorderEncoderQueueDrainTarget = 4;
 
-  const recordingPlan = window.AmbientCanvasRecordingPlan;
-  const {
-    explicitCaptureDurationSeconds,
-    captureFramesPerSecond,
-    uploadUrl,
-    themeBackgroundHex,
-    outputPixelWidth,
-    outputPixelHeight,
-    worker,
-  } = recordingPlan.resolveRecordingParameters(recordParameters);
-  const targetBitsPerPixelPerFrame = 0.35;
-  const keyFrameIntervalSeconds = 2;
-  const encoderQueueHighWatermark = 8;
-  const encoderQueueDrainTarget = 4;
+  const recorderCompositor = window.AmbientCanvasRecordingCompositor;
+  const recorderEncoder = window.AmbientCanvasRecordingEncoder;
+  const recorderFingerprint = window.AmbientCanvasRecordingFingerprint;
 
-  const compositor = window.AmbientCanvasRecordingCompositor;
-  const encoder = window.AmbientCanvasRecordingEncoder;
-  const fingerprint = window.AmbientCanvasRecordingFingerprint;
-
-  window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES = {
-    preserveDrawingBuffer: true,
-    deterministicPlayback: true,
-  };
-
-  const nextAnimationFrame = () =>
+  const recorderNextAnimationFrame = () =>
     new Promise((resolve) => window.requestAnimationFrame(resolve));
 
-  async function recordOneComposition(
+  const recorderRecordOneComposition = async (
+    recordingParameters,
+    renderSurface,
     playbackController,
     compositionIndex,
-    durationSeconds,
-    recordingStartSeconds,
-    deterministicGrid,
-    recordContext,
-  ) {
+    recordingRange,
+  ) => {
+    const { outputPixelWidth, outputPixelHeight, captureFramesPerSecond } =
+      recordingParameters;
     playbackController.applyLayout(compositionIndex);
-    await nextAnimationFrame();
+    await recorderNextAnimationFrame();
     const segmentHandle = playbackController.buildSegment(compositionIndex, {
-      startSeconds: recordingStartSeconds,
+      startSeconds: recordingRange.startSeconds,
     });
-    await recordingPlan.waitForSegmentAssetsToLoad(segmentHandle);
-    const panePlacements = compositor.resolveFixedResolutionPanePlacements(
-      segmentHandle.renderers,
-      deterministicGrid,
-      outputPixelWidth,
-      outputPixelHeight,
-    );
+    await recorderPlan.waitForSegmentAssetsToLoad(segmentHandle);
+    const panePlacements =
+      recorderCompositor.resolveFixedResolutionPanePlacements(
+        segmentHandle.renderers,
+        renderSurface.deterministicGrid,
+        outputPixelWidth,
+        outputPixelHeight,
+      );
 
-    const { muxer, videoEncoder } = encoder.createConfiguredMuxerAndEncoder(
-      outputPixelWidth,
-      outputPixelHeight,
-      captureFramesPerSecond,
-      targetBitsPerPixelPerFrame,
-    );
+    const { muxer, videoEncoder } =
+      recorderEncoder.createConfiguredMuxerAndEncoder(
+        outputPixelWidth,
+        outputPixelHeight,
+        captureFramesPerSecond,
+        recorderTargetBitsPerPixelPerFrame,
+      );
     const totalFrameCount = Math.round(
-      durationSeconds * captureFramesPerSecond,
+      recordingRange.durationSeconds * captureFramesPerSecond,
     );
     const keyFrameIntervalFrames = Math.round(
-      keyFrameIntervalSeconds * captureFramesPerSecond,
+      recorderKeyFrameIntervalSeconds * captureFramesPerSecond,
     );
 
     for (let frameIndex = 0; frameIndex < totalFrameCount; frameIndex++) {
       const localElapsedSeconds = frameIndex / captureFramesPerSecond;
-      await compositor.prepareFixedResolutionFrame(
+      await recorderCompositor.prepareFixedResolutionFrame(
         panePlacements,
         localElapsedSeconds,
       );
-      compositor.renderFixedResolutionFrame(
-        recordContext,
+      recorderCompositor.renderFixedResolutionFrame(
+        renderSurface.recordContext,
         panePlacements,
         localElapsedSeconds,
         outputPixelWidth,
         outputPixelHeight,
       );
-      const videoFrame = encoder.createVideoFrame(
-        recordContext.canvas,
+      const videoFrame = recorderEncoder.createVideoFrame(
+        renderSurface.recordContext.canvas,
         frameIndex,
         captureFramesPerSecond,
       );
@@ -87,10 +72,10 @@
         keyFrame: frameIndex % keyFrameIntervalFrames === 0,
       });
       videoFrame.close();
-      if (videoEncoder.encodeQueueSize > encoderQueueHighWatermark) {
-        await encoder.waitForEncoderQueueToDrain(
+      if (videoEncoder.encodeQueueSize > recorderEncoderQueueHighWatermark) {
+        await recorderEncoder.waitForEncoderQueueToDrain(
           videoEncoder,
-          encoderQueueDrainTarget,
+          recorderEncoderQueueDrainTarget,
         );
       }
     }
@@ -99,27 +84,33 @@
     await videoEncoder.flush();
     muxer.finalize();
     return muxer.target.buffer;
-  }
+  };
 
-  async function driveDeterministicRecording(playbackController) {
-    const deterministicGrid = compositor.forceDeterministicGridLayout(
-      outputPixelWidth,
-      outputPixelHeight,
-    );
-    const recordContext = compositor.createRecordCanvasContext(
-      outputPixelWidth,
-      outputPixelHeight,
-    );
+  const recorderDriveDeterministicRecording = async (
+    recordingParameters,
+    playbackController,
+  ) => {
+    const renderSurface = {
+      deterministicGrid: recorderCompositor.forceDeterministicGridLayout(
+        recordingParameters.outputPixelWidth,
+        recordingParameters.outputPixelHeight,
+      ),
+      recordContext: recorderCompositor.createRecordCanvasContext(
+        recordingParameters.outputPixelWidth,
+        recordingParameters.outputPixelHeight,
+      ),
+    };
+    const { uploadUrl, themeBackgroundHex, worker } = recordingParameters;
     const fingerprintInputs =
-      await fingerprint.fetchSegmentFingerprintInputs(uploadUrl);
+      await recorderFingerprint.fetchSegmentFingerprintInputs(uploadUrl);
     const alreadyRecordedFingerprints =
-      await fingerprint.fetchRecordedSegmentFingerprints(uploadUrl);
+      await recorderFingerprint.fetchRecordedSegmentFingerprints(uploadUrl);
     const captureSignature = {
-      width: outputPixelWidth,
-      height: outputPixelHeight,
-      framesPerSecond: captureFramesPerSecond,
-      bitsPerPixelPerFrame: targetBitsPerPixelPerFrame,
-      keyFrameIntervalSeconds: keyFrameIntervalSeconds,
+      width: recordingParameters.outputPixelWidth,
+      height: recordingParameters.outputPixelHeight,
+      framesPerSecond: recordingParameters.captureFramesPerSecond,
+      bitsPerPixelPerFrame: recorderTargetBitsPerPixelPerFrame,
+      keyFrameIntervalSeconds: recorderKeyFrameIntervalSeconds,
     };
     const manifestSegments = [];
 
@@ -130,19 +121,19 @@
     ) {
       const composition = playbackController.compositions[compositionIndex];
       const chunkDurationSeconds =
-        explicitCaptureDurationSeconds > 0
-          ? explicitCaptureDurationSeconds
+        recordingParameters.explicitCaptureDurationSeconds > 0
+          ? recordingParameters.explicitCaptureDurationSeconds
           : playbackController.compositionDurationSeconds(composition);
       const recordingRanges =
-        await recordingPlan.resolveCompositionRecordingRanges(
+        await recorderPlan.resolveCompositionRecordingRanges(
           playbackController,
           compositionIndex,
           chunkDurationSeconds,
-          nextAnimationFrame,
+          recorderNextAnimationFrame,
         );
       for (const recordingRange of recordingRanges) {
         const segmentFingerprint =
-          await fingerprint.resolveCompositionFingerprint(
+          await recorderFingerprint.resolveCompositionFingerprint(
             composition,
             recordingRange.durationSeconds,
             fingerprintInputs,
@@ -151,13 +142,10 @@
             recordingRange.startSeconds,
           );
         manifestSegments.push(
-          recordingPlan.buildManifestSegment(
-            segmentFingerprint,
-            recordingRange,
-          ),
+          recorderPlan.buildManifestSegment(segmentFingerprint, recordingRange),
         );
         if (
-          !recordingPlan.assignSegmentRecording(
+          !recorderPlan.assignSegmentRecording(
             recordingRange,
             worker,
             segmentFingerprint,
@@ -166,15 +154,14 @@
         ) {
           continue;
         }
-        const encodedBuffer = await recordOneComposition(
+        const encodedBuffer = await recorderRecordOneComposition(
+          recordingParameters,
+          renderSurface,
           playbackController,
           compositionIndex,
-          recordingRange.durationSeconds,
-          recordingRange.startSeconds,
-          deterministicGrid,
-          recordContext,
+          recordingRange,
         );
-        await encoder.uploadRecordedSegment(
+        await recorderEncoder.uploadRecordedSegment(
           encodedBuffer,
           segmentFingerprint,
           recordingRange.durationSeconds,
@@ -184,17 +171,29 @@
       }
     }
 
-    await encoder.uploadSegmentManifest(manifestSegments, uploadUrl);
-  }
-
-  window.AMBIENT_CANVAS_RECORD_DRIVER = function startDeterministicRecording(
-    playbackController,
-  ) {
-    driveDeterministicRecording(playbackController).catch(
-      function reportRecordingFailure(recordingError) {
-        console.error("ambient-canvas record: driver failed", recordingError);
-        encoder.uploadSegmentManifest([], uploadUrl);
-      },
-    );
+    await recorderEncoder.uploadSegmentManifest(manifestSegments, uploadUrl);
   };
-})();
+
+  if (recorderParameters.has("record")) {
+    const recordingParameters =
+      recorderPlan.resolveRecordingParameters(recorderParameters);
+    window.AMBIENT_CANVAS_RENDERER_OPTION_OVERRIDES = {
+      preserveDrawingBuffer: true,
+      deterministicPlayback: true,
+    };
+    window.AMBIENT_CANVAS_RECORD_DRIVER = function startDeterministicRecording(
+      playbackController,
+    ) {
+      recorderDriveDeterministicRecording(
+        recordingParameters,
+        playbackController,
+      ).catch(function reportRecordingFailure(recordingError) {
+        console.error("ambient-canvas record: driver failed", recordingError);
+        recorderEncoder.uploadSegmentManifest(
+          [],
+          recordingParameters.uploadUrl,
+        );
+      });
+    };
+  }
+}

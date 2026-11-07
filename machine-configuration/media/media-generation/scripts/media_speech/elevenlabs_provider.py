@@ -16,6 +16,38 @@ from media_speech.discovery import (
 )
 
 
+def build_voice_search_client(api_key, injected_client):
+    from elevenlabs.client import ElevenLabs
+
+    if not api_key:
+        raise SpeechError("missing_credentials")
+    return injected_client or ElevenLabs(api_key=api_key, timeout=30)
+
+
+def validate_voice_search_response(response):
+    if not isinstance(response.has_more, bool) or not isinstance(response.voices, list):
+        raise SpeechError("invalid_provider_response")
+    if response.has_more:
+        if not response.next_page_token:
+            raise SpeechError("invalid_provider_response")
+        VoiceQuery(page_token=response.next_page_token)
+
+
+def build_voice_page(response):
+    validate_voice_search_response(response)
+    return SpeechVoicePage(
+        tuple(
+            SpeechVoice(
+                voice.voice_id,
+                voice.name or voice.voice_id,
+                preview_url=voice.preview_url,
+            )
+            for voice in response.voices
+        ),
+        response.next_page_token if response.has_more else None,
+    )
+
+
 class ElevenLabsSpeechProvider:
     name = "elevenlabs"
     model = "eleven_multilingual_v2"
@@ -46,14 +78,11 @@ class ElevenLabsSpeechProvider:
             raise SpeechError("missing_credentials")
 
     def list_voices(self, query: VoiceQuery):
-        from elevenlabs.client import ElevenLabs
         from elevenlabs.core.api_error import ApiError
         from httpx import RequestError
         from pydantic import ValidationError
 
-        if not self.api_key:
-            raise SpeechError("missing_credentials")
-        client = self.client or ElevenLabs(api_key=self.api_key, timeout=30)
+        client = build_voice_search_client(self.api_key, self.client)
         try:
             response = client.voices.search(
                 page_size=query.page_size,
@@ -61,25 +90,7 @@ class ElevenLabsSpeechProvider:
                 search=query.search,
                 request_options={"max_retries": 0},
             )
-            if not isinstance(response.has_more, bool) or not isinstance(
-                response.voices, list
-            ):
-                raise SpeechError("invalid_provider_response")
-            if response.has_more and not response.next_page_token:
-                raise SpeechError("invalid_provider_response")
-            if response.has_more:
-                VoiceQuery(page_token=response.next_page_token)
-            return SpeechVoicePage(
-                tuple(
-                    SpeechVoice(
-                        voice.voice_id,
-                        voice.name or voice.voice_id,
-                        preview_url=voice.preview_url,
-                    )
-                    for voice in response.voices
-                ),
-                response.next_page_token if response.has_more else None,
-            )
+            return build_voice_page(response)
         except ApiError as error:
             categories = {
                 401: "authentication_failed",
@@ -89,9 +100,7 @@ class ElevenLabsSpeechProvider:
             raise SpeechError(
                 categories.get(error.status_code, "provider_failed")
             ) from None
-        except (ValidationError, ValueError, AttributeError, TypeError):
-            raise SpeechError("invalid_provider_response") from None
-        except SpeechError:
+        except (ValidationError, ValueError, AttributeError, TypeError, SpeechError):
             raise SpeechError("invalid_provider_response") from None
         except RequestError:
             raise SpeechError("provider_unavailable") from None

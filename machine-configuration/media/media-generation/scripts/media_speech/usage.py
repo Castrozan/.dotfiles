@@ -1,4 +1,5 @@
 import math
+import string
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from typing import Protocol
@@ -16,6 +17,74 @@ def validate_usage_label(value):
         raise SpeechError("invalid_usage")
 
 
+def validate_usage_status(status):
+    if status not in {"available", "not_applicable", "unavailable"}:
+        raise SpeechError("invalid_usage")
+
+
+def validate_usage_metrics(metrics):
+    if not isinstance(metrics, tuple):
+        raise SpeechError("invalid_usage")
+    for metric in metrics:
+        validate_usage_label(metric)
+    if len(set(metrics)) != len(metrics):
+        raise SpeechError("invalid_usage")
+
+
+def is_usage_amount(amount):
+    if type(amount) is float:
+        return math.isfinite(amount) and amount >= 0
+    return type(amount) is int and amount >= 0
+
+
+def validate_usage_amount(amount):
+    if amount is not None and not is_usage_amount(amount):
+        raise SpeechError("invalid_usage")
+
+
+def validate_resets_at_unix(resets_at_unix):
+    if resets_at_unix is not None and (
+        type(resets_at_unix) is not int or resets_at_unix < 0
+    ):
+        raise SpeechError("invalid_usage")
+
+
+def validate_observed_at_unix(observed_at_unix):
+    if type(observed_at_unix) is not int or observed_at_unix <= 0:
+        raise SpeechError("invalid_usage")
+
+
+def validate_quotas(quotas):
+    if not isinstance(quotas, tuple) or any(
+        not isinstance(quota, UsageQuota) for quota in quotas
+    ):
+        raise SpeechError("invalid_usage")
+    if len({quota.name for quota in quotas}) != len(quotas):
+        raise SpeechError("invalid_usage")
+
+
+def validate_overage(overage_charge, overage_enabled):
+    if overage_charge is not None and not isinstance(overage_charge, UsageCharge):
+        raise SpeechError("invalid_usage")
+    if overage_enabled is not None and type(overage_enabled) is not bool:
+        raise SpeechError("invalid_usage")
+
+
+def is_usage_charge_amount(amount):
+    if not isinstance(amount, str) or len(amount) > 100:
+        return False
+    decimal_amount = Decimal(amount)
+    return decimal_amount.is_finite() and decimal_amount >= 0
+
+
+def is_currency_code(currency):
+    return (
+        isinstance(currency, str)
+        and len(currency) == 3
+        and all(character in string.ascii_uppercase for character in currency)
+    )
+
+
 @dataclass(frozen=True)
 class UsageCapabilities:
     status: str
@@ -24,14 +93,8 @@ class UsageCapabilities:
 
     def __post_init__(self):
         validate_usage_label(self.scope)
-        if self.status not in {"available", "not_applicable", "unavailable"}:
-            raise SpeechError("invalid_usage")
-        if not isinstance(self.metrics, tuple):
-            raise SpeechError("invalid_usage")
-        for metric in self.metrics:
-            validate_usage_label(metric)
-        if len(set(self.metrics)) != len(self.metrics):
-            raise SpeechError("invalid_usage")
+        validate_usage_status(self.status)
+        validate_usage_metrics(self.metrics)
         if (self.status == "available") != bool(self.metrics):
             raise SpeechError("invalid_usage")
 
@@ -48,17 +111,9 @@ class UsageQuota:
     def __post_init__(self):
         validate_usage_label(self.name)
         validate_usage_label(self.unit)
-        for value in (self.used, self.limit):
-            if value is not None and (
-                type(value) not in (int, float)
-                or value < 0
-                or (type(value) is float and not math.isfinite(value))
-            ):
-                raise SpeechError("invalid_usage")
-        if self.resets_at_unix is not None and (
-            type(self.resets_at_unix) is not int or self.resets_at_unix < 0
-        ):
-            raise SpeechError("invalid_usage")
+        validate_usage_amount(self.used)
+        validate_usage_amount(self.limit)
+        validate_resets_at_unix(self.resets_at_unix)
         remaining = (
             None
             if self.used is None or self.limit is None
@@ -74,17 +129,8 @@ class UsageCharge:
 
     def __post_init__(self):
         try:
-            if not isinstance(self.amount, str) or len(self.amount) > 100:
-                raise ValueError
-            amount = Decimal(self.amount)
-            if not amount.is_finite() or amount < 0:
-                raise ValueError
-            if (
-                not isinstance(self.currency, str)
-                or len(self.currency) != 3
-                or not self.currency.isascii()
-                or not self.currency.isalpha()
-                or self.currency != self.currency.upper()
+            if not is_usage_charge_amount(self.amount) or not is_currency_code(
+                self.currency
             ):
                 raise ValueError
         except (InvalidOperation, ValueError):
@@ -109,24 +155,12 @@ class ProviderUsage:
         for label in (self.plan, self.account_status):
             if label is not None:
                 validate_usage_label(label)
-        if self.status not in {"available", "not_applicable", "unavailable"}:
-            raise SpeechError("invalid_usage")
-        if type(self.observed_at_unix) is not int or self.observed_at_unix <= 0:
-            raise SpeechError("invalid_usage")
-        if not isinstance(self.quotas, tuple) or any(
-            not isinstance(quota, UsageQuota) for quota in self.quotas
-        ):
-            raise SpeechError("invalid_usage")
-        if len({quota.name for quota in self.quotas}) != len(self.quotas):
-            raise SpeechError("invalid_usage")
+        validate_usage_status(self.status)
+        validate_observed_at_unix(self.observed_at_unix)
+        validate_quotas(self.quotas)
         if (self.status == "available") != bool(self.quotas):
             raise SpeechError("invalid_usage")
-        if self.overage_charge is not None and not isinstance(
-            self.overage_charge, UsageCharge
-        ):
-            raise SpeechError("invalid_usage")
-        if self.overage_enabled is not None and type(self.overage_enabled) is not bool:
-            raise SpeechError("invalid_usage")
+        validate_overage(self.overage_charge, self.overage_enabled)
 
 
 class ProviderUsageReader(Protocol):

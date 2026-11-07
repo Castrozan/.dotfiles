@@ -59,29 +59,35 @@ def _option_takes_a_separate_value(argument, following_argument):
     return False
 
 
+def _option_consumed_argument_count(argument_vector, argument_index) -> int:
+    following_argument = (
+        argument_vector[argument_index + 1]
+        if argument_index + 1 < len(argument_vector)
+        else None
+    )
+    if _option_takes_a_separate_value(
+        argument_vector[argument_index], following_argument
+    ):
+        return 2
+    return 1
+
+
 def _collection_paths(argument_vector):
-    arguments = argument_vector
     paths = []
     argument_index = 0
-    while argument_index < len(arguments):
-        argument = arguments[argument_index]
+    while argument_index < len(argument_vector):
+        argument = argument_vector[argument_index]
         if argument == "--":
-            return paths + arguments[argument_index + 1 :]
-        option = argument.partition("=")[0]
-        if option in PYTEST_INFORMATION_OPTIONS:
+            return paths + argument_vector[argument_index + 1 :]
+        if argument.partition("=")[0] in PYTEST_INFORMATION_OPTIONS:
             return None
         if argument.startswith("-"):
-            following_argument = (
-                arguments[argument_index + 1]
-                if argument_index + 1 < len(arguments)
-                else None
+            argument_index += _option_consumed_argument_count(
+                argument_vector, argument_index
             )
-            argument_index += (
-                2 if _option_takes_a_separate_value(argument, following_argument) else 1
-            )
-            continue
-        paths.append(argument)
-        argument_index += 1
+        else:
+            paths.append(argument)
+            argument_index += 1
     return paths
 
 
