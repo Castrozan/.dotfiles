@@ -42,13 +42,11 @@ def test_invalid_configuration_is_rejected_before_any_reply(
 
 
 def test_invalid_configuration_cannot_silently_disable_the_stop_guard(
-    tmp_path, exported_wellput_hook
+    tmp_path, pinned_wellput_hook
 ):
     flatten_into_single_runtime_directory(tmp_path)
     path = tmp_path / "wellput.json"
-    document = json.loads(
-        (exported_wellput_hook.parents[1] / "wellput.json").read_text()
-    )
+    document = json.loads((pinned_wellput_hook.parents[1] / "wellput.json").read_text())
     document["restrictions"][0].pop("required_pattern")
     path.write_text(json.dumps(document))
 

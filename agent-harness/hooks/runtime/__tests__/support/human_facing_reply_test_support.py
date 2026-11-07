@@ -11,14 +11,7 @@ from reply_rule_catalog import template_violations_in_reply  # noqa: E402,F401
 from reply_rule_feedback import bounce_guidance  # noqa: E402,F401
 
 INTERACTIVE_COMMUNICATION_PATH = (
-    REPO_ROOT
-    / "agent-harness"
-    / "agent-instructions"
-    / "skills"
-    / "writing"
-    / "humanize"
-    / "references"
-    / "interactive-communication.md"
+    REPO_ROOT / "agent-harness" / "agent-instructions" / "interactive-communication.md"
 )
 
 LABELED_REPLY = (

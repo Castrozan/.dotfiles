@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 
 from runner.comparisons.run_evals_ab import run_instruction_loading_experiment
-from runner.comparisons.run_evals_ab_record import save_ab_profile
 from runner.baseline.run_evals_baseline_incremental import BaselineCheckpoint
 from runner.baseline.run_evals_baseline_store import read_baseline
 from runner.baseline.run_evals_baseline_record import (
@@ -87,16 +86,7 @@ def run_ab_evaluation(config: dict, args, execution_profile: dict) -> int:
             judge_harness=args.judge_harness,
         )
     print_ab_summary(comparison)
-    token_usage = collect_and_print_provider_usage()
-    if args.save_ab_profile:
-        save_ab_profile(
-            comparison,
-            args.category,
-            args.compare_ref,
-            execution_profile,
-            token_usage,
-            evaluation_test_fingerprints(config),
-        )
+    collect_and_print_provider_usage()
     return 0
 
 

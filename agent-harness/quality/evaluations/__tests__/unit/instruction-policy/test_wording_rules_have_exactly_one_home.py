@@ -9,9 +9,7 @@ CORE_CODING_AUTHORITY = frozenset(
     {"agent-harness/agent-instructions/core-rules/core.md"}
 )
 INTERACTIVE_INSTRUCTIONS = frozenset(
-    {
-        "agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md"
-    }
+    {"agent-harness/agent-instructions/interactive-communication.md"}
 )
 MIGRATED_CODING_SURFACES = frozenset(
     {

@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
-from runner.baseline.run_evals_baseline_policy import preserved_evidence_profiles
 from runner.baseline.run_evals_baseline_record import (
     BASELINE_PATH,
     get_current_git_commit,
@@ -108,7 +107,6 @@ def merge_baseline_results(
             execution_profile_id: execution_profile,
         },
         "token_usage": token_usage,
-        "evidence_profiles": preserved_evidence_profiles(existing_baseline),
     }
 
 

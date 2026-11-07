@@ -1,9 +1,6 @@
 REQUIRED_BASELINE_CATEGORIES = {
     "communication",
-    "skills/humanize/reader_recovery",
 }
-REQUIRED_HUMANIZE_PROFILE = "skills/humanize/reader_recovery"
-MINIMUM_HUMANIZE_PROFILE_EPOCHS = 3
 MINIMUM_COMMUNICATION_PASS_RATE = 0.8
 
 
@@ -18,12 +15,6 @@ def compliance_passed_and_total(
     passed = sum(bucket.get("passed", 0) for bucket in buckets)
     total = sum(bucket.get("passed", 0) + bucket.get("failed", 0) for bucket in buckets)
     return passed, total
-
-
-def preserved_evidence_profiles(
-    baseline: dict,
-) -> dict:
-    return baseline.get("evidence_profiles", {})
 
 
 def baseline_test_evidence_status(
@@ -87,8 +78,6 @@ def recorded_baseline_policy_failures(
         failures,
     )
     _append_required_category_failures(baseline, failures)
-    profile = baseline.get("evidence_profiles", {}).get(REQUIRED_HUMANIZE_PROFILE)
-    _append_humanize_profile_failures(profile, failures)
     return failures
 
 
@@ -140,24 +129,3 @@ def _append_required_category_failures(baseline: dict, failures: list[str]) -> N
             f"Communication pass rate is below {MINIMUM_COMMUNICATION_PASS_RATE:.0%}"
         )
 
-
-def _append_humanize_profile_failures(
-    profile: dict | None, failures: list[str]
-) -> None:
-    if not profile:
-        return
-    if profile.get("epochs", 0) < MINIMUM_HUMANIZE_PROFILE_EPOCHS:
-        failures.append(
-            "Humanize recovery profile needs at least "
-            f"{MINIMUM_HUMANIZE_PROFILE_EPOCHS} epochs"
-        )
-    if profile.get("candidate_pass_rate", 0) < 0.9:
-        failures.append("Humanize recovery candidate pass rate is below 90%")
-    _append_humanize_outcome_failures(profile, failures)
-
-
-def _append_humanize_outcome_failures(profile: dict, failures: list[str]) -> None:
-    if profile.get("delta", -1) < 0:
-        failures.append("Humanize recovery candidate trails its Git-ref control")
-    if profile.get("candidate_hard_failures"):
-        failures.append("Humanize recovery profile contains a hard-failed case")

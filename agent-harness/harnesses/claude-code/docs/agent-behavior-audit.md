@@ -114,8 +114,8 @@ finding` describes the primary current placement defect, not the final migration
 | S02 | `agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md`: tier selection, mid-task asks, owning-agent role |
 | S03 | `agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md`: configuration, scripts, testing, workflow, runtime application, disruptive approval |
 | S04 | `agent-harness/harnesses/claude-code/docs/agent-behavior.md`: design and write contract |
-| S05 | `agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md`: peer communication, artifact links, completion, response shape |
-| S06 | `agent-harness/agent-instructions/skills/writing/humanize/SKILL.md`: source fidelity, answer priority, certainty, reader recovery |
+| S05 | `agent-harness/agent-instructions/interactive-communication.md`: peer communication, artifact links, completion |
+| S06 | Pinned Wellput plugin, `agent-harness/agent-instructions/wellput-plugin/upstream.nix`: source fidelity, answer priority, certainty, reader recovery, response shape |
 | S07 | `agent-harness/agent-instructions/skills/development/coding/SKILL.md`: implementation, dependencies, abstraction, workarounds, performance |
 | S08 | `agent-harness/agent-instructions/skills/development/coding/references/testing.md`: philosophy, reproducer, coverage, verification |
 | S09 | `agent-harness/agent-instructions/skills/development/coding/references/git.md`: context, ownership, staging, commits, red flags |

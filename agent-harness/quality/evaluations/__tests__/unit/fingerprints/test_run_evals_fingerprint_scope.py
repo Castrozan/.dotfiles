@@ -1,7 +1,6 @@
 from runner.baseline.run_evals_fingerprint import (
     evaluation_category_names,
     evaluation_fingerprints,
-    humanize_recovery_fingerprints,
 )
 
 
@@ -26,46 +25,6 @@ def test_evaluation_fingerprint_changes_with_suite_and_instruction_content(tmp_p
 
     assert original["instructions"] != instruction_changed["instructions"]
     assert instruction_changed["suite"] != suite_changed["suite"]
-
-
-def test_humanize_profile_fingerprint_ignores_unrelated_eval_suites(tmp_path):
-    recovery_directory = (
-        tmp_path
-        / "agent-harness/agent-instructions/skills/writing/humanize/__tests__/evals"
-    )
-    skill_directory = recovery_directory.parents[1]
-    eval_directory = tmp_path / "agent-harness/quality/evaluations/evals"
-    calibration_directory = tmp_path / "agent-harness/quality/evaluations/calibration"
-    recovery_directory.mkdir(parents=True)
-    eval_directory.mkdir(parents=True)
-    calibration_directory.mkdir(parents=True)
-    (skill_directory / "SKILL.md").write_text("reader policy")
-    (recovery_directory / "reader_recovery.yaml").write_text(
-        "tests:\n  - name: recovery\n"
-        "    skill_path: agent-harness/agent-instructions/skills/writing/humanize/SKILL.md\n"
-    )
-    unrelated = eval_directory / "unrelated.yaml"
-    unrelated.write_text("tests: []\n")
-    calibration = calibration_directory / "judge_calibration.yaml"
-    calibration.write_text("cases: []\n")
-
-    original = humanize_recovery_fingerprints(tmp_path)
-    unrelated.write_text("tests:\n  - name: unrelated\n")
-
-    assert humanize_recovery_fingerprints(tmp_path) == original
-    runner = eval_directory.parent / "runner/judging/run_evals_judge.py"
-    runner.parent.mkdir(parents=True)
-    runner.write_text("def grade(): return True\n")
-    assert humanize_recovery_fingerprints(tmp_path) != original
-    runner.unlink()
-    checkpoint = (
-        eval_directory.parent / "runner/baseline/run_evals_baseline_incremental.py"
-    )
-    checkpoint.parent.mkdir(parents=True)
-    checkpoint.write_text("def checkpoint(): return True\n")
-    assert humanize_recovery_fingerprints(tmp_path) == original
-    calibration.write_text("cases:\n  - name: changed\n")
-    assert humanize_recovery_fingerprints(tmp_path) != original
 
 
 def test_evaluation_category_inventory_tracks_regular_and_skill_suites(tmp_path):

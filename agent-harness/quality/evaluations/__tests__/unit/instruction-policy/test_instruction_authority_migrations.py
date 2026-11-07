@@ -29,16 +29,7 @@ CORE_COMPLEMENT_REQUIREMENTS = {
     INSTRUCTION_DIRECTORY / "skills" / "development" / "explore" / "SKILL.md": (
         "#evidence)",
     ),
-    INSTRUCTION_DIRECTORY / "skills" / "writing" / "humanize" / "SKILL.md": (
-        "#evidence)",
-        "#autonomy)",
-    ),
-    INSTRUCTION_DIRECTORY
-    / "skills"
-    / "writing"
-    / "humanize"
-    / "references"
-    / "interactive-communication.md": (
+    INSTRUCTION_DIRECTORY / "interactive-communication.md": (
         "#evidence)",
         "#autonomy)",
         "#completion)",
@@ -63,14 +54,7 @@ CORE_COMPLEMENT_REQUIREMENTS = {
     / "references"
     / "subagent-briefs.md": ("#delegation)",),
 }
-HUMANIZE_INTERACTIVE_PATH = (
-    INSTRUCTION_DIRECTORY
-    / "skills"
-    / "writing"
-    / "humanize"
-    / "references"
-    / "interactive-communication.md"
-)
+INTERACTIVE_CONTRACT_PATH = INSTRUCTION_DIRECTORY / "interactive-communication.md"
 HERMES_DIRECTORY = REPO_ROOT / "agent-harness" / "harnesses" / "hermes"
 
 
@@ -120,8 +104,8 @@ def test_every_migrated_complement_points_to_its_core_authority():
     assert not missing_links
 
 
-def test_humanize_does_not_restate_general_core_decision_thresholds():
-    interactive_policy = normalized_text(HUMANIZE_INTERACTIVE_PATH)
+def test_interactive_contract_does_not_restate_general_core_decision_thresholds():
+    interactive_policy = normalized_text(INTERACTIVE_CONTRACT_PATH)
 
     for retired_duplicate in (
         "When challenged, verify the relevant evidence before defending or retracting",

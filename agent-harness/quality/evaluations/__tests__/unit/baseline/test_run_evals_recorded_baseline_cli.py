@@ -41,7 +41,6 @@ def test_recorded_cli_checks_the_repository_before_any_model_provider(monkeypatc
     "measurement_argument",
     (
         "--save-baseline",
-        "--save-ab-profile",
         "--ab",
         "--calibrate-judge",
         "--check-baseline",

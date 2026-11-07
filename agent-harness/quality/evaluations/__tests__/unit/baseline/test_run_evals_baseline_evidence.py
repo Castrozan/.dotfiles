@@ -1,5 +1,4 @@
 from runner.baseline.run_evals_baseline_policy import (
-    REQUIRED_HUMANIZE_PROFILE,
     baseline_evidence_failures,
     baseline_test_evidence_status,
 )
@@ -10,16 +9,12 @@ EXECUTION_PROFILE = {
 }
 CURRENT_TEST_FINGERPRINTS = {
     "communication::communication_case": "communication-sha",
-    "skills/humanize/reader_recovery::recovery_case": "recovery-sha",
+    "skills/example/recovery::recovery_case": "recovery-sha",
 }
 
 
 def valid_baseline():
     fingerprints = {"suite": "suite-sha", "instructions": "instruction-sha"}
-    humanize_fingerprints = {
-        "suite": "humanize-suite-sha",
-        "instructions": "humanize-instruction-sha",
-    }
     return {
         "categories": {
             "communication": {
@@ -33,7 +28,7 @@ def valid_baseline():
                     }
                 ],
             },
-            "skills/humanize/reader_recovery": {
+            "skills/example/recovery": {
                 "passed": 21,
                 "failed": 0,
                 "tests": [
@@ -47,20 +42,10 @@ def valid_baseline():
         },
         "fingerprints": fingerprints,
         "execution_profile": EXECUTION_PROFILE,
-        "evidence_profiles": {
-            REQUIRED_HUMANIZE_PROFILE: {
-                "epochs": 3,
-                "candidate_pass_rate": 0.95,
-                "delta": 0.05,
-                "candidate_hard_failures": [],
-                "fingerprints": humanize_fingerprints,
-                "execution_profile": EXECUTION_PROFILE,
-            }
-        },
     }
 
 
-def test_baseline_evidence_accepts_current_repeated_recovery_measurement():
+def test_baseline_evidence_accepts_current_measurement():
     baseline = valid_baseline()
     assert (
         baseline_evidence_failures(
@@ -78,7 +63,7 @@ def test_partial_baseline_preserves_its_current_evidence_floor():
     del baseline["categories"]["communication"]
     current = {
         **CURRENT_TEST_FINGERPRINTS,
-        "skills/humanize/reader_recovery::recovery_case": "changed-sha",
+        "skills/example/recovery::recovery_case": "changed-sha",
     }
 
     status = baseline_test_evidence_status(baseline, current)
@@ -90,7 +75,7 @@ def test_partial_baseline_preserves_its_current_evidence_floor():
     )
 
     assert status["missing"] == {"communication::communication_case"}
-    assert status["stale"] == {"skills/humanize/reader_recovery::recovery_case"}
+    assert status["stale"] == {"skills/example/recovery::recovery_case"}
     assert failures == [
         "Current evaluation evidence covers 0 tests, below the baseline floor of 1"
     ]
@@ -126,7 +111,7 @@ def test_baseline_evidence_allows_missing_and_rejects_obsolete_category_buckets(
         CURRENT_TEST_FINGERPRINTS,
         {
             "communication",
-            "skills/humanize/reader_recovery",
+            "skills/example/recovery",
             "new_category",
         },
         EXECUTION_PROFILE,

@@ -99,15 +99,12 @@ def test_bounce_guidance_names_the_violation_and_demands_a_repair_in_place():
     assert "load the humanize skill" not in guidance.lower()
 
 
-def test_interactive_instructions_route_substantive_output_to_humanize():
-    policy = INTERACTIVE_COMMUNICATION_PATH.read_text(encoding="utf-8").lower()
+def test_interactive_instructions_load_wellput_when_explicitly_requested():
+    policy = " ".join(
+        INTERACTIVE_COMMUNICATION_PATH.read_text(encoding="utf-8").split()
+    )
 
-    assert "load [humanize](../skill.md) before substantial replies" in policy
-
-
-def test_interactive_contract_treats_explicit_short_requests_as_binding():
-    skill = INTERACTIVE_COMMUNICATION_PATH.parents[1] / "SKILL.md"
-    policy = " ".join(skill.read_text(encoding="utf-8").lower().split())
-
-    assert "honor requested brevity or form" in policy
-    assert "stop when the request is answered" in policy
+    assert (
+        "explicitly asked to use the `wellput` skill, load it before any other action"
+        in policy
+    )

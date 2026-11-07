@@ -6,7 +6,6 @@ from runner.baseline.run_evals_fingerprint import (
     evaluation_fingerprints,
 )
 from runner.baseline.run_evals_baseline_record import BASELINE_PATH
-from runner.baseline.run_evals_baseline_policy import preserved_evidence_profiles
 from runner.run_evals_execution_profile import execution_profile_identifier
 
 
@@ -140,7 +139,6 @@ def build_epoch_enriched_baseline(
             execution_profile_id: execution_profile,
         },
         "token_usage": token_usage,
-        "evidence_profiles": preserved_evidence_profiles(existing_baseline),
         "sampling": _sampling_metadata(
             epochs, total_samples, total_sample_passes, per_test
         ),

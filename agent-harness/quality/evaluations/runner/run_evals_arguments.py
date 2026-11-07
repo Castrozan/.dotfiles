@@ -67,11 +67,6 @@ def parse_arguments():
         help="With --ab, load the control instruction paths from this Git ref",
     )
     parser.add_argument(
-        "--save-ab-profile",
-        action="store_true",
-        help="Save a repeated A/B result that passes the evidence gates",
-    )
-    parser.add_argument(
         "--calibrate-judge",
         action="store_true",
         help="Measure the rubric judge against labeled calibration cases",
@@ -105,7 +100,6 @@ def parse_arguments():
 def _validate_recorded_check_arguments(args, parser) -> None:
     measurement_modes = (
         args.save_baseline,
-        args.save_ab_profile,
         args.ab,
         args.calibrate_judge,
         args.check_baseline,
@@ -117,18 +111,10 @@ def _validate_recorded_check_arguments(args, parser) -> None:
 def _validate_ab_arguments(args, parser) -> None:
     if args.compare_ref and not args.ab:
         parser.error("--compare-ref requires --ab")
-    if args.save_ab_profile and _ab_profile_arguments_are_invalid(args):
-        parser.error(
-            "--save-ab-profile requires --ab, --compare-ref, --category, and repeated epochs"
-        )
-
-
-def _ab_profile_arguments_are_invalid(args) -> bool:
-    return not (args.ab and args.compare_ref and args.category and args.epochs > 1)
 
 
 def _validate_dry_run_evidence_arguments(args, parser) -> None:
-    if args.dry_run and (args.save_baseline or args.save_ab_profile):
+    if args.dry_run and args.save_baseline:
         parser.error("dry-run results cannot be saved as evidence")
 
 
@@ -153,19 +139,19 @@ def _validate_smoke_baseline_arguments(args, parser) -> None:
 
 
 def _validate_partition_arguments(args, parser) -> None:
-    if args.partition and (args.save_baseline or args.save_ab_profile):
+    if args.partition and args.save_baseline:
         parser.error("a hillclimb partition cannot be saved as suite evidence")
     if args.partition and (args.ab or args.smoke):
         parser.error("--partition applies only to suite runs, not --ab or --smoke")
 
 
 def _validate_mode_arguments(args, parser) -> None:
-    if args.list_affected and (args.save_baseline or args.save_ab_profile):
+    if args.list_affected and args.save_baseline:
         parser.error("--list-affected cannot save evidence")
 
 
 def _validate_evidence_harnesses(args, parser) -> None:
-    if (args.save_baseline or args.save_ab_profile) and (
+    if args.save_baseline and (
         args.harness != "codex" or args.judge_harness != "codex"
     ):
         parser.error("committed baseline evidence requires Codex subject and judge")

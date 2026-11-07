@@ -14,27 +14,6 @@ import yaml
 
 from runner.run_evals_worktree_and_environment import REPO_ROOT
 
-HUMANIZE_RECOVERY_SUITE_PATH = Path(
-    "agent-harness/agent-instructions/skills/writing/humanize/__tests__/evals/reader_recovery.yaml"
-)
-JUDGE_CALIBRATION_PATH = Path(
-    "agent-harness/quality/evaluations/calibration/judge_calibration.yaml"
-)
-HUMANIZE_EVIDENCE_RUNNER_COMPONENTS = (
-    "runner/comparisons/run_evals_ab.py",
-    "runner/judging/run_evals_assertions.py",
-    "runner/run_evals_config_loader.py",
-    "instructions/reply_format_instructions.py",
-    "runner/judging/run_evals_judge.py",
-    "runner/sampling/run_evals_significance.py",
-    "runner/execution/run_evals_subject_port.py",
-    "runner/execution/run_evals_test_runner.py",
-    "node-provider-runtime/package.json",
-    "node-provider-runtime/package-lock.json",
-    "node-provider-runtime/provider-adapters.mjs",
-    "node-provider-runtime/provider-runners.mjs",
-    "node-provider-runtime/provider-runtime.mjs",
-)
 
 
 YAML_FILE_PATTERN = "*.yaml"
@@ -132,15 +111,6 @@ def evaluation_category_names(repo_root: Path = REPO_ROOT) -> set[str]:
     return categories
 
 
-def humanize_evidence_runner_paths(repo_root: Path) -> set[Path]:
-    evaluation_root = repo_root / "agent-harness" / "quality" / "evaluations"
-    return {
-        path
-        for relative_path in HUMANIZE_EVIDENCE_RUNNER_COMPONENTS
-        if (path := evaluation_root / relative_path).is_file()
-    }
-
-
 def referenced_instruction_paths(repo_root: Path, suite_paths: set[Path]) -> set[Path]:
     paths = set()
     for suite_path in suite_paths:
@@ -168,18 +138,3 @@ def evaluation_fingerprints(repo_root: Path = REPO_ROOT) -> dict[str, str]:
         "instructions": digest_instruction_paths(repo_root, instruction_paths),
     }
 
-
-def humanize_recovery_fingerprints(
-    repo_root: Path = REPO_ROOT,
-) -> dict[str, str]:
-    suite_paths = {
-        repo_root / HUMANIZE_RECOVERY_SUITE_PATH,
-        repo_root / JUDGE_CALIBRATION_PATH,
-    }
-    instruction_paths = referenced_instruction_paths(repo_root, suite_paths)
-    return {
-        "suite": digest_paths(
-            repo_root, suite_paths | humanize_evidence_runner_paths(repo_root)
-        ),
-        "instructions": digest_instruction_paths(repo_root, instruction_paths),
-    }

@@ -96,16 +96,15 @@ skill roots.
 ## What has no native equivalent
 
 Exactly one mechanism survives: the interactive-only system prompt composed from
-`humanize/references/interactive-communication.md` and `adaptive-implementation-delivery-process.md`. The complete humanize policy stays
-in its native `SKILL.md` and loads only when substantial human-facing writing requires it.
+`agent-instructions/interactive-communication.md` and `adaptive-implementation-delivery-process.md`. The reply policy
+lives in the pinned Wellput plugin and loads through its own skill and hooks.
 `~/.claude/CLAUDE.md` would reach jenny too. There is no settings key for the interactive contract. A `SessionStart`
 hook injects context that compaction may drop. These rules must hold as the conversation grows long, so the context tier
 is the wrong tier. A launch flag is required, which means a wrapper survives at two lines: export the marker, exec
 `claude --append-system-prompt-file <store path> "$@"`.
 
 The launcher reads each always-on source directly into that prompt. It generates no intermediate policy surface. The
-Stop hook limits itself to deterministic validation of the injected contract and routes a failed reply to the humanize
-skill instead of carrying that policy itself.
+Stop hook delegates reply validation to Wellput's hook instead of carrying that policy itself.
 
 The marker must ship with the rules. Inverting detection to "interactive unless `CLAWDE_AGENT_NAME` is set" is wrong: a
 bare `claude` would then be format-guarded by the Stop hook without ever having received the format rules it is judged

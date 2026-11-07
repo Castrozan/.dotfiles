@@ -2,9 +2,6 @@ import json
 import subprocess
 from datetime import datetime, timezone
 
-from runner.baseline.run_evals_baseline_policy import (
-    preserved_evidence_profiles,
-)
 from runner.baseline.run_evals_baseline_store import (
     BASELINE_PATH,
     write_baseline_checkpoint,
@@ -83,7 +80,6 @@ def merge_baseline_categories(
             execution_profile_id: execution_profile,
         },
         "token_usage": token_usage,
-        "evidence_profiles": preserved_evidence_profiles(existing_baseline),
     }
 
 

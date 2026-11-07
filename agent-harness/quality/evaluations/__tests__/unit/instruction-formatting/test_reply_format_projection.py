@@ -84,10 +84,7 @@ def test_copied_skills_expand_the_same_configuration(
     ],
 )
 def test_complete_interactive_instructions_fit_projection_limits(additional_sources):
-    source = (
-        REPO_ROOT
-        / "agent-harness/agent-instructions/skills/writing/humanize/references/interactive-communication.md"
-    )
+    source = REPO_ROOT / "agent-harness/agent-instructions/interactive-communication.md"
     rendered = project_instruction_documents(
         [
             {"source": str(path), "text": path.read_text()}
@@ -97,17 +94,14 @@ def test_complete_interactive_instructions_fit_projection_limits(additional_sour
             "/nix/store/00000000000000000000000000000000-interactive-instructions.md"
         ),
         {
-            PurePosixPath(source.parents[4] / "core-rules/core.md"): PurePosixPath(
+            PurePosixPath(source.parent / "core-rules/core.md"): PurePosixPath(
                 "/home/agent/.claude/CLAUDE.md"
-            ),
-            PurePosixPath(source.parents[1]): PurePosixPath(
-                "/home/agent/.local/share/agent-plugins/dotfiles/plugin/skills/humanize"
             ),
         },
     )
 
-    assert "Every rendered table starts with a `#` index column" in rendered
-    assert "{{reply_format}}" not in rendered
+    assert "### Peer communication" in rendered
+    assert "home/agent/.claude/CLAUDE.md#evidence)" in rendered
 
 
 def test_evaluation_loader_uses_the_worktree_configuration(

@@ -1,18 +1,20 @@
+import re
+
 from instructions.instruction_surface_scanner import REPO_ROOT
 from instructions.reply_format_instructions import expand_reply_format_instructions
 
 
-HUMANIZE_DIRECTORY = (
+HUMANIZE_SKILL_PATH = (
     REPO_ROOT
     / "agent-harness"
     / "agent-instructions"
     / "skills"
     / "writing"
     / "humanize"
+    / "SKILL.md"
 )
-HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
 INTERACTIVE_POLICY_PATH = (
-    HUMANIZE_DIRECTORY / "references" / "interactive-communication.md"
+    REPO_ROOT / "agent-harness" / "agent-instructions" / "interactive-communication.md"
 )
 MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES = 5500
 MAXIMUM_ON_DEMAND_HUMANIZE_PACKAGE_BYTES = 19000
@@ -57,7 +59,9 @@ def interactive_policy_section(tag: str) -> str:
     policy = expand_reply_format_instructions(
         INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
     )
-    section = policy.split("### " + tag.replace("_", " ").capitalize() + "\n", 1)[
-        1
-    ].split("\n### ", 1)[0]
+    heading = re.compile(
+        r"^### " + re.escape(tag.replace("_", " ")) + r"\n",
+        re.IGNORECASE | re.MULTILINE,
+    )
+    section = heading.split(policy, 1)[1].split("\n### ", 1)[0]
     return " ".join(section.split())

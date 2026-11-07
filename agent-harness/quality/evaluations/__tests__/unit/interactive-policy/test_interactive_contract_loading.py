@@ -1,4 +1,4 @@
-from interactive_humanize_surface_support import (
+from interactive_surface_support import (
     HUMANIZE_SKILL_PATH,
     INTERACTIVE_GENERATOR_PATHS,
     INTERACTIVE_LAUNCH_SOURCES,
@@ -29,11 +29,11 @@ def test_each_harness_marks_the_same_interactive_session_boundary():
         )
 
 
-def test_explicit_humanize_request_loads_before_other_actions():
-    humanize_loading = interactive_policy_section("humanize_policy_loading")
+def test_explicit_wellput_request_loads_before_other_actions():
+    wellput_loading = interactive_policy_section("explicit_wellput_requests")
 
-    assert "explicitly requests Humanize" in humanize_loading
-    assert "before any other action" in humanize_loading
+    assert "explicitly asked to use the `wellput` skill" in wellput_loading
+    assert "before any other action" in wellput_loading
 
 
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():

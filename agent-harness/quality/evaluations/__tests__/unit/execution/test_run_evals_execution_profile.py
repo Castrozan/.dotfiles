@@ -2,9 +2,7 @@ import pytest
 
 from runner.baseline import run_evals_baseline_record
 from runner.baseline.run_evals_baseline_policy import (
-    REQUIRED_HUMANIZE_PROFILE,
     baseline_evidence_failures,
-    preserved_evidence_profiles,
 )
 from runner.baseline.run_evals_baseline_record import merge_baseline_categories
 from runner.run_evals_execution_profile import build_execution_profile
@@ -90,35 +88,10 @@ def test_category_merge_rejects_a_mismatched_or_missing_existing_profile():
             )
 
 
-def test_historical_evidence_profiles_preserve_their_own_provenance():
-    baseline = {
-        "evidence_profiles": {
-            "a": {"fingerprints": FINGERPRINTS, "execution_profile": EXECUTION_PROFILE},
-            "b": {
-                "fingerprints": FINGERPRINTS,
-                "execution_profile": OTHER_EXECUTION_PROFILE,
-            },
-            "c": {"fingerprints": FINGERPRINTS},
-        }
-    }
-    preserved = preserved_evidence_profiles(baseline)
-    assert set(preserved) == {"a", "b", "c"}
-
-
 def test_baseline_policy_rejects_a_mismatched_execution_profile():
     baseline = {
         "categories": {},
         "execution_profile": EXECUTION_PROFILE,
-        "evidence_profiles": {
-            REQUIRED_HUMANIZE_PROFILE: {
-                "epochs": 3,
-                "candidate_pass_rate": 0.95,
-                "delta": 0.05,
-                "candidate_hard_failures": [],
-                "fingerprints": FINGERPRINTS,
-                "execution_profile": EXECUTION_PROFILE,
-            }
-        },
     }
     failures = baseline_evidence_failures(
         baseline,
@@ -127,31 +100,3 @@ def test_baseline_policy_rejects_a_mismatched_execution_profile():
         OTHER_EXECUTION_PROFILE,
     )
     assert any("execution profile" in failure for failure in failures)
-
-
-def test_baseline_policy_accepts_historical_evidence_profile_provenance():
-    baseline = {
-        "categories": {},
-        "execution_profile": EXECUTION_PROFILE,
-        "evidence_profiles": {
-            REQUIRED_HUMANIZE_PROFILE: {
-                "epochs": 3,
-                "candidate_pass_rate": 0.95,
-                "delta": 0.05,
-                "candidate_hard_failures": [],
-                "fingerprints": FINGERPRINTS,
-                "execution_profile": OTHER_EXECUTION_PROFILE,
-            }
-        },
-    }
-
-    failures = baseline_evidence_failures(
-        baseline,
-        FINGERPRINTS,
-        set(baseline["categories"]),
-        EXECUTION_PROFILE,
-    )
-
-    assert failures == [
-        "Current evaluation evidence covers 0 tests, below the baseline floor of 1"
-    ]

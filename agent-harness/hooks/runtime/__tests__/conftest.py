@@ -1,5 +1,5 @@
 import json
-import runpy
+import subprocess
 import sys
 from pathlib import Path
 
@@ -14,6 +14,14 @@ sys.path.insert(
 )
 
 HOOKS_ROOT = Path(__file__).resolve().parent.parent
+WELLPUT_UPSTREAM_PIN_PATH = (
+    HOOKS_ROOT.parents[1] / "agent-instructions/wellput-plugin/upstream.nix"
+)
+PINNED_WELLPUT_SOURCE_EXPRESSION = (
+    "import @upstream@ { pkgs.fetchFromGitHub = source: builtins.fetchTarball { "
+    'url = "https://github.com/${source.owner}/${source.repo}/archive/${source.rev}.tar.gz"; '
+    "sha256 = source.hash; }; }"
+)
 DIRECTORIES_EXCLUDED_FROM_DEPLOY = ("__pycache__", "__tests__")
 for hook_module_directory in HOOKS_ROOT.rglob("*"):
     if hook_module_directory.is_dir() and not any(
@@ -125,17 +133,26 @@ def invoke_record_skill_invocation_hook(tmp_path, monkeypatch):
 
 
 @pytest.fixture(scope="session")
-def exported_wellput_hook(tmp_path_factory):
-    helper = (
-        HOOKS_ROOT.parents[1]
-        / "agent-instructions/wellput-plugin/__tests__/wellput_fixture.py"
-    )
-    plugin = runpy.run_path(str(helper))["export_plugin_fixture"](
-        tmp_path_factory.mktemp("wellput-hook")
-    )
-    return plugin / "hooks/reply_hook.py"
+def pinned_wellput_hook():
+    pinned_source = subprocess.run(
+        [
+            "nix",
+            "eval",
+            "--raw",
+            "--impure",
+            "--expr",
+            PINNED_WELLPUT_SOURCE_EXPRESSION.replace(
+                "@upstream@", str(WELLPUT_UPSTREAM_PIN_PATH)
+            ),
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=300,
+    ).stdout
+    return Path(pinned_source) / "hooks/reply_hook.py"
 
 
 @pytest.fixture(autouse=True)
-def configured_wellput_hook(exported_wellput_hook, monkeypatch):
-    monkeypatch.setenv("DOTFILES_WELLPUT_HOOK", str(exported_wellput_hook))
+def configured_wellput_hook(pinned_wellput_hook, monkeypatch):
+    monkeypatch.setenv("DOTFILES_WELLPUT_HOOK", str(pinned_wellput_hook))
