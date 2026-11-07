@@ -68,6 +68,20 @@ def test_build_judge_parses_the_cli_verdict():
     assert passed is True
 
 
+def test_a_judge_without_a_request_is_never_shown_an_empty_one():
+    prompts = []
+
+    def fake_cli(prompt, model="opus", no_tools=False):
+        prompts.append(prompt)
+        return "VERDICT: PASS", True
+
+    build_llm_judge("opus", fake_cli)("rubric", "output")
+    build_llm_judge("opus", fake_cli, subject_prompt="Fix the bug")("rubric", "output")
+
+    assert "Original request" not in prompts[0]
+    assert "Original request:\nFix the bug" in prompts[1]
+
+
 def test_build_judge_reports_invocation_failure_as_infrastructure_error():
     def fake_cli(prompt, model="opus", no_tools=False):
         return "boom", False

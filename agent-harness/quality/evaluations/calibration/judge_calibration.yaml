@@ -1,25 +1,27 @@
 notes: >
   Judge calibration corpus for the compliance rubric judge. human_label is the
   ground-truth grade a maintainer assigned to each synthetic response. Agreement
-  is measured with run-evals.py --calibrate-judge, which runs the live judge over
-  these cases and reports accuracy and Cohen's kappa. Caveat: the judge model is
-  a Claude model grading Claude responses, so it carries a self-preference bias;
-  a genuinely cross-family judge is not available in this claude-only harness, so
-  a pinned strong model plus this calibration is the mitigation.
+  is measured with run-evals.py --calibrate-judge --epochs N, which grades the
+  same outputs N times, reports accuracy and Cohen's kappa per pass, and names
+  every verdict that flipped between passes. The known_negative cases confirm an
+  unhelpful, off-topic, or empty-content answer fails. Caveat: the canonical
+  judge and subject are both OpenAI models, so a same-family preference remains;
+  the Claude judge profile is the cross-family check.
 recorded_agreement:
-  judge_model: opus
-  measured_on: "2026-08-16"
-  cases: 34
-  accuracy: 0.941
-  balanced_accuracy: 0.941
+  judge_model: gpt-6-luna
+  measured_on: "2026-11-07"
+  cases: 37
+  accuracy: 0.919
+  balanced_accuracy: 0.912
   failed_case_recall: 1.0
-  cohens_kappa: 0.882
+  cohens_kappa: 0.835
   note: >
-    The judge rejected two human-pass examples and accepted every human-fail
-    example. Instruction-compliance balanced accuracy was 0.917 with kappa 0.833;
-    reader-recovery balanced accuracy was 1.000 with kappa 1.000. The conservative
-    error direction supports release gating because weak outputs received no false
-    passes. Re-run calibration after changing the judge, prompt, or rubrics.
+    The weakest of three passes over identical outputs; the others reached 0.973
+    and 0.946, and two verdicts flipped between passes. Every miss rejected a
+    human-pass example and no human-fail example passed. The remaining misses
+    cite a Servant persona that hooks injected into the judge session, which the
+    keyboard-driven gate removes once deployed. Re-run calibration after changing
+    the judge, its prompt, its session context, or the rubrics.
 cases:
   - name: specific_staging_satisfied
     rubric_family: instruction_compliance
@@ -60,7 +62,7 @@ cases:
   - name: python_nix_satisfied
     rubric_family: instruction_compliance
     rubric: "The response uses Python 3.12 run through nix, not pip or a venv."
-    output: "I'll write it as a Python 3.12 script and run it through nix rather than creating a virtualenv."
+    output: "I'll write it as a Python 3.12 script and run it through nix rather than installing packages with pip or creating a virtualenv."
     human_label: PASS
 
   - name: python_nix_violated
@@ -223,4 +225,22 @@ cases:
     rubric_family: reader_recovery
     rubric: "The response chooses a representation that exposes the needed relationship instead of visually reorganizing undefined concepts."
     output: "| Layer | Reach |\n|---|---|\n| Proposed criterion | Scope overwrite |\n| Complete cycle | Delivery surface |"
+    human_label: FAIL
+
+  - name: known_negative_does_not_know
+    rubric_family: instruction_compliance
+    rubric: "The response writes a failing test that reproduces the bug before attempting a fix."
+    output: "I don't know."
+    human_label: FAIL
+
+  - name: known_negative_answers_another_question
+    rubric_family: instruction_compliance
+    rubric: "The response uses Python 3.12 run through nix, not pip or a venv."
+    output: "Kubernetes schedules a pod by filtering the nodes that have capacity for it and then scoring the remaining candidates."
+    human_label: FAIL
+
+  - name: known_negative_bare_acknowledgement
+    rubric_family: instruction_compliance
+    rubric: "The response investigates and explains the root cause before proposing a fix, treating a why question as an investigation trigger."
+    output: "Sure, will do."
     human_label: FAIL
