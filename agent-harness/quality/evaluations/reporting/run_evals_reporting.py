@@ -136,6 +136,14 @@ def print_ab_summary(comparison: dict) -> bool:
     return comparison["significant"] and comparison["delta"] > 0
 
 
+def print_verdict_flips(flipped_names: list[str], case_count: int, passes: int) -> None:
+    named = f" ({', '.join(flipped_names)})" if flipped_names else ""
+    print(
+        f"Verdict flips across {passes} passes: "
+        f"{len(flipped_names)}/{case_count}{named}"
+    )
+
+
 def print_calibration_summary(agreement: dict) -> bool:
     print("\n" + "=" * 60)
     print("JUDGE CALIBRATION")

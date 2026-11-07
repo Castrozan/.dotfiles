@@ -85,6 +85,7 @@ def _meets_agreement_gate(
 def judge_agreement(labeled_cases: list[dict], judge, max_workers: int = 4) -> dict:
     predictions = []
     disagreements = []
+    verdicts = {}
 
     def grade(case):
         judged_passed, reason = judge(case["rubric"], case["output"])
@@ -95,6 +96,7 @@ def judge_agreement(labeled_cases: list[dict], judge, max_workers: int = 4) -> d
 
     for case, judged_passed, reason in graded_cases:
         human_passed = case["human_label"].strip().upper() == "PASS"
+        verdicts[case.get("name", "unnamed")] = judged_passed
         prediction = {
             "human": human_passed,
             "judge": judged_passed,
@@ -119,4 +121,15 @@ def judge_agreement(labeled_cases: list[dict], judge, max_workers: int = 4) -> d
         for family in sorted({item["family"] for item in predictions})
     }
     result["disagreements"] = disagreements
+    result["verdicts"] = verdicts
     return result
+
+
+def verdict_flips(passes: list[dict]) -> list[str]:
+    if len(passes) < 2:
+        return []
+    return sorted(
+        name
+        for name in passes[0]["verdicts"]
+        if len({grading["verdicts"][name] for grading in passes}) > 1
+    )

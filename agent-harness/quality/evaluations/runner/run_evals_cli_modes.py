@@ -19,6 +19,7 @@ from runner.judging.run_evals_judge import build_llm_judge
 from runner.judging.run_evals_judge_calibration import (
     judge_agreement,
     load_calibration_cases,
+    verdict_flips,
 )
 from runner.execution.run_evals_provider_usage import provider_usage_summary
 from reporting.run_evals_run_record import open_run_record
@@ -28,6 +29,7 @@ from reporting.run_evals_reporting import (
     print_epoch_summary,
     print_provider_usage,
     print_results,
+    print_verdict_flips,
 )
 from runner.sampling.run_evals_sampling import (
     aggregate_repeated_runs,
@@ -54,12 +56,20 @@ def run_judge_calibration(config: dict, args) -> int:
             settings.get("judge_reasoning_efforts", {}).get(args.judge_harness),
         ),
     )
-    agreement = judge_agreement(
-        load_calibration_cases(),
-        judge,
-        max_workers=args.workers or settings.get("parallel_workers", 4),
-    )
-    passed = print_calibration_summary(agreement)
+    cases = load_calibration_cases()
+    passes = [
+        judge_agreement(
+            cases,
+            judge,
+            max_workers=args.workers or settings.get("parallel_workers", 4),
+        )
+        for _ in range(args.epochs)
+    ]
+    passed = all([print_calibration_summary(agreement) for agreement in passes])
+    if len(passes) > 1:
+        print_verdict_flips(
+            verdict_flips(passes), len(passes[0]["verdicts"]), len(passes)
+        )
     collect_and_print_provider_usage()
     return 0 if passed else 1
 

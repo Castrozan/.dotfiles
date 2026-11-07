@@ -13,6 +13,7 @@ from runner.judging.run_evals_judge_calibration import (
     cohens_kappa,
     judge_agreement,
     load_calibration_cases,
+    verdict_flips,
 )
 
 RECORDED_KAPPA_FLOOR = 0.7
@@ -179,3 +180,21 @@ def test_rebuild_mandate_suite_stays_rubric_judged():
         for criterion in rubrics:
             rubric = criterion["rubric"] if isinstance(criterion, dict) else criterion
             assert len(rubric) > 20
+
+
+def test_grading_the_same_outputs_twice_names_every_flipped_verdict():
+    cases = [
+        {"name": "steady", "rubric": "r", "output": "steady", "human_label": "PASS"},
+        {"name": "wobbly", "rubric": "r", "output": "wobbly", "human_label": "PASS"},
+    ]
+    first_pass = {"steady": True, "wobbly": True}
+    second_pass = {"steady": True, "wobbly": False}
+
+    passes = [
+        judge_agreement(cases, lambda rubric, output: (verdicts[output], "reason"))
+        for verdicts in (first_pass, second_pass)
+    ]
+
+    assert passes[0]["verdicts"] == first_pass
+    assert verdict_flips(passes) == ["wobbly"]
+    assert verdict_flips(passes[:1]) == []
