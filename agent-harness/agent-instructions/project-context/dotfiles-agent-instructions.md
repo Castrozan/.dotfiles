@@ -96,13 +96,16 @@ prefer incremental updates over whole-state recomputation.
 
 ### Testing
 
-Use the smallest checks that verify the change. Run `rebuild` only to apply or verify live machine configuration.
-Require CI only for affected integrations or platforms that cannot be verified locally.
+Use the smallest checks that verify the change. Require CI only for affected integrations or platforms that cannot be
+verified locally.
+
+Evaluate and build Nix only through `rebuild`. Never run a separate `nix build`, `nix eval` or `nix flake check` for a
+package, option or check: each one evaluates the whole flake again in its own process and holds gigabytes beside any
+rebuild already running. CI verifies Nix checks that `rebuild` does not build.
 
 Reach for `repository/verification/run.sh` only to reproduce a job CI turned red, or to iterate on a test you are
 writing. The same goes for a whole pytest tier directory (`*/__tests__/unit`, `*/__tests__/integration`), bare `pytest`,
-`pytest agents`, `pytest .`, and `nix flake check`: run a specific test file or the targeted Nix evaluation or build
-needed to verify the change.
+`pytest agents` and `pytest .`: run the specific test file needed to verify the change.
 
 Test every Neovim change live in a new Herdr pane; automated and headless checks do not replace this manual test.
 
