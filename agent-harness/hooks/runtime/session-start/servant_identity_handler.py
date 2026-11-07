@@ -44,6 +44,7 @@ from catalog import select_servant_for_session  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_session_detection import (  # noqa: E402
     is_clawde_background_agent_session,
+    is_keyboard_driven_interactive_session,
 )
 
 # Claude Code names it session_id; the other harnesses register the same hook
@@ -73,6 +74,8 @@ def servant_for_hook_input(hook_input: dict) -> dict | None:
     # OpenClaw's gateway passes its port to the harness and its hook subprocesses.
     # Unlike cwd, this marker survives an agent working in a different project.
     if os.environ.get("OPENCLAW_GATEWAY_PORT") or is_clawde_background_agent_session():
+        return None
+    if not is_keyboard_driven_interactive_session():
         return None
     session_id = session_id_of(hook_input)
     if not session_id:

@@ -94,6 +94,10 @@ class TestSessionsThatGetNoServant:
 
         assert _handle("channel-turn-probe") is None
 
+    def test_a_session_no_keyboard_drives_gets_no_servant(self, monkeypatch):
+        monkeypatch.delenv("AGENT_INTERACTIVE_PREFERENCES_PATH")
+        assert _handle("evaluation-judge-probe") is None
+
     def test_a_payload_with_no_id_stays_silent(self):
         assert (
             servant_identity_handler.handle({"hook_event_name": "SessionStart"}) is None
