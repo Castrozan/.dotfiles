@@ -15,8 +15,8 @@ state or failure ownership, or introducing implementation detail whose correct o
 
 ### Performance procedure
 
-Define the representative workload, metric, baseline, and bounded expectation before optimizing. Compare the changed path before and after, and
-inspect render or polling paths for unbounded work and repeated whole-state recomputation.
+Define the representative workload, metric, baseline, and bounded expectation before optimizing. Compare the changed
+path before and after, and inspect render or polling paths for unbounded work and repeated whole-state recomputation.
 
 ### Verification routing
 
