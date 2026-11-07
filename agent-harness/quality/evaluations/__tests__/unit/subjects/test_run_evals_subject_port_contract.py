@@ -47,6 +47,7 @@ def test_invocation_is_a_normalized_payload_without_provider_concepts():
         "max_turns": 2,
         "no_tools": False,
         "result_file": "/tmp/result.json",
+        "isolated_context": False,
     }
 
 

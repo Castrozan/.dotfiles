@@ -39,6 +39,7 @@ function _addClaudeOptionalOptions(options, invocation) {
   if (invocation.system_prompt) options.systemPrompt = invocation.system_prompt;
   if (invocation.model_reasoning_effort)
     options.effort = invocation.model_reasoning_effort;
+  if (invocation.isolated_context) options.settingSources = [];
 }
 
 export function claudeResultOutcome(message) {
@@ -76,6 +77,10 @@ export function codexOptions(invocation) {
     config.mcp_servers = {};
     config.tools = { view_image: false, web_search: false };
     config.features = { ...CODEX_NO_TOOLS_FEATURES };
+  }
+  if (invocation.isolated_context) {
+    config.features = { ...config.features, hooks: false };
+    config.project_doc_max_bytes = 0;
   }
   if (Object.keys(config).length > 0) options.config = config;
   return options;

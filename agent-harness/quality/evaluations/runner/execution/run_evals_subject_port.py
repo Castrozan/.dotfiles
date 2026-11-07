@@ -39,6 +39,7 @@ def build_provider_invoker(
             max_turns=1,
             no_tools=no_tools,
             invocation_role="judge",
+            isolated_context=True,
         )
 
     return invoke
@@ -85,6 +86,7 @@ def build_subject_invocation(
     no_tools: bool,
     working_directory: Path | None,
     result_file: str,
+    isolated_context: bool = False,
 ) -> dict:
     return {
         "harness": harness,
@@ -99,6 +101,7 @@ def build_subject_invocation(
         "max_turns": max_turns,
         "no_tools": no_tools,
         "result_file": result_file,
+        "isolated_context": isolated_context,
     }
 
 
@@ -135,10 +138,16 @@ def invoke_subject(
     no_tools: bool = False,
     working_directory: Path | None = None,
     invocation_role: str = "subject",
+    isolated_context: bool = False,
 ) -> tuple[str, bool]:
     runtime_command = resolve_node_runtime()
 
-    with tempfile.TemporaryDirectory(prefix="agent-eval-result-") as result_directory:
+    with (
+        tempfile.TemporaryDirectory(prefix="agent-eval-result-") as result_directory,
+        tempfile.TemporaryDirectory(prefix="agent-eval-isolated-") as empty_directory,
+    ):
+        if isolated_context:
+            working_directory = Path(empty_directory)
         result_file_path = Path(result_directory) / "result.json"
         invocation = build_subject_invocation(
             harness=harness,
@@ -151,6 +160,7 @@ def invoke_subject(
             no_tools=no_tools,
             working_directory=working_directory,
             result_file=str(result_file_path),
+            isolated_context=isolated_context,
         )
         runtime_options = subject_runtime.SubjectRuntimeOptions(
             runtime_command,
