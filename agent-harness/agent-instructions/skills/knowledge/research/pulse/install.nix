@@ -1,6 +1,7 @@
 { pkgs, skillDirectory }:
 let
   workflow = pkgs.concatText "research-pulse.workflow.js" [
+    ./meta.js
     ./schemas.js
     ./source-prompts.js
     ../research-pulse.workflow.js
