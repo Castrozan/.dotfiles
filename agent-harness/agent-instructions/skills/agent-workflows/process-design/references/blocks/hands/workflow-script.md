@@ -17,8 +17,8 @@ across a human gate, because a started workflow takes no input, and where routin
 
 ### Instruction
 
-Type every step's output with a schema so code routes on it, try the workflow on a small slice before the full run,
-retry per step instead of tuning prompts for bulk transforms, keep the script deterministic so it replays, and run one
+Type every step's output with a schema so code routes on it, and try the workflow on a small slice before the full run.
+Retry per step instead of tuning prompts for bulk transforms, keep the script deterministic so it replays, and run one
 workflow per segment between gates.
 
 ### Pitfalls

@@ -6,9 +6,9 @@ description: "Manage the chise media stack: Jellyfin friend accounts, Jellyseerr
 ### Commands
 
 Three CLIs, chise only: `arr-users` manages friend accounts and `arr-status [title]` prints one line per Jellyseerr
-request with its stage and any live download progress. `arr-media` manages public movie and TV requests. Run each
-with `--help` for the exact interface; do not reconstruct flags from memory. On any host other than chise these commands
-do not exist.
+request with its stage and any live download progress. `arr-media` manages public movie and TV requests. Run each with
+`--help` for the exact interface; do not reconstruct flags from memory. On any host other than chise these commands do
+not exist.
 
 ### Public movie and TV requests
 
@@ -30,8 +30,8 @@ command fails.
 
 Only the verified Discord operator may use `arr-media remove` to remove one public movie or entire TV series and ask
 Radarr or Sonarr to delete its library files. Match the title, year and media type first. Clarify ambiguous targets or
-unclear deletion intent. The command rejects guests and private libraries; `cancel` only withdraws a request.
-Report the confirmed library removal and file-deletion request accurately; neither means torrent data was purged.
+unclear deletion intent. The command rejects guests and private libraries; `cancel` only withdraws a request. Report the
+confirmed library removal and file-deletion request accurately; neither means torrent data was purged.
 
 ### Account model
 
@@ -46,9 +46,9 @@ not claim to recall it later.
 Which Jellyfin libraries an account sees is declared in the host's `services.arrStack.accounts` and re-applied to every
 account on each rebuild, administrators included, by pinning `EnableAllFolders: false` and writing an explicit
 `EnabledFolders` list. It is a named allowlist rather than a role test, and the reconcile never changes who is an
-administrator. Edit those Nix options rather than a Jellyfin dashboard checkbox; a dashboard edit does not survive
-the next rebuild. The reconcile refuses to write any policy at all when a declared library is missing from Jellyfin,
-because a half-read library list would silently narrow or widen what everyone sees.
+administrator. Edit those Nix options rather than a Jellyfin dashboard checkbox; a dashboard edit does not survive the
+next rebuild. The reconcile refuses to write any policy at all when a declared library is missing from Jellyfin, because
+a half-read library list would silently narrow or widen what everyone sees.
 
 ### Jellyseerr account permissions
 
@@ -57,7 +57,7 @@ Jellyseerr account to request-and-auto-approve, reconciled on each rebuild, so a
 rather than a chore someone owes.
 
 Jellyseerr scopes approval and request visibility globally, with no per-library term in either, so an account that may
-approve reads and approves every request; universal auto-approve is what replaces a scoped approver, and the reconcile
+approve reads and approves every request. Universal auto-approve is what replaces a scoped approver, and the reconcile
 keeps exactly one declared administrator so the capability exists without anyone routinely holding it.
 
 Requesting from an admin session also bypasses the per-account request defaults, which are evaluated only for ordinary
@@ -66,11 +66,11 @@ requesters, so route a request by logging in as the intended account.
 ### Guards and traps
 
 `arr-users` refuses to delete, disable, or reset any account whose Jellyfin policy is administrator, so it cannot lock
-out or wipe an admin or the Jellyseerr service user; that guard is deliberate, never work around it. `create` fails
-rather than overwrite when the name already exists. `arr-status` degrades instead of erroring: an item reads
-`processing (download chain idle)` when the on-demand supervisor has stopped the download chain, and a title that fails
-to resolve shows as `tmdb:<id>`; only Jellyseerr being unreachable is a hard failure. An \*arr app holds a title under
-exactly one root folder, so a title the stack already holds can make a new request for it fail rather than relocate it.
+out or wipe an admin or the Jellyseerr service user. That guard is deliberate, never work around it. `create` fails
+rather than overwrite when the name already exists. `arr-status` degrades instead of erroring. An item reads `processing
+(download chain idle)` when the on-demand supervisor has stopped the download chain. A title that fails to resolve shows
+as `tmdb:<id>`. Only Jellyseerr being unreachable is a hard failure. An \*arr app holds a title under exactly one root
+folder, so a title the stack already holds can make a new request for it fail rather than relocate it.
 
 ### Manga is a separate pipeline
 
@@ -89,8 +89,8 @@ port remains bound to the tailnet.
 
 ### Declarative boundary
 
-Friend permissions and stack config live in the host's `services.arrStack` options; reusable implementation lives in
-the external arr-stack flake. Change host policy in dotfiles and rebuild. Never change a friend's access or the stack by
+Friend permissions and stack config live in the host's `services.arrStack` options; reusable implementation lives in the
+external arr-stack flake. Change host policy in dotfiles and rebuild. Never change a friend's access or the stack by
 clicking in the Jellyfin or Jellyseerr dashboard, which drifts from the repo and is erased on the next rebuild. Jellyfin
 admin access is an agenix secret, so the tools keep working after a wipe-and-rebuild.
 
@@ -104,4 +104,4 @@ the full roster or request history into a reply.
 
 For traps that cost real debugging: a request that stalls forever because its one search hit zero active indexers, a
 completed download blocked by a title mismatch that the default queue query hides, and credentials that exist but never
-autofill; read [knowledge](references/knowledge.md).
+autofill. Read [knowledge](references/knowledge.md).

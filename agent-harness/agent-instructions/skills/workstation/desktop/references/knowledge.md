@@ -1,17 +1,17 @@
 ### Macos window queries lie
 
 Three system APIs report window and application state that is confidently wrong, and each has cost a wrong diagnosis.
-The window list returns, for nearly every regular application, one borderless layer-zero window per Space at the screen
-origin, full width and exactly as tall as the menu bar, with an empty name, so a window count says "has windows" for an
-application that has none; filter on that geometry.
+The window list returns one borderless layer-zero window per Space at the screen origin for nearly every regular
+application. It is full width, exactly as tall as the menu bar, and has an empty name. A window count therefore says
+"has windows" for an application that has none; filter on that geometry.
 
-The running-applications list is maintained from run-loop notifications rather than queried live, so a daemon that polls
+The running-applications list is maintained from run-loop notifications rather than queried live. A daemon that polls
 with a bare sleep and never spins a run loop keeps returning processes that already exited and misses ones that
-appeared; spin the run loop and confirm liveness directly.
+appeared. Spin the run loop and confirm liveness directly.
 
-Reading the screen size through Finder's desktop bounds is unusable here, because it needs an automation grant the
-caller does not hold under launchd and silently takes the fallback, while over SSH it does not fail at all but hangs
-forever; query the hardware profile instead.
+Reading the screen size through Finder's desktop bounds is unusable here. Under launchd it needs an automation grant the
+caller does not hold and silently takes the fallback. Over SSH it does not fail at all but hangs forever. Query the
+hardware profile instead.
 
 ### The accessibility layer under reports at cold start
 
@@ -38,8 +38,8 @@ Autoupdate is the same shape: the managed-preference policy that disables it is 
 and fails silently, so the browser updates anyway; removing the updater and blocking its install roots is what actually
 holds.
 
-A terminal emulator resolves and pins its config path at startup, and since a rebuild swaps the symlink to a brand-new
-store path the running process watches a file that will never change, so config edits do not apply until it restarts.
+A terminal emulator resolves and pins its config path at startup. A rebuild swaps the symlink to a brand-new store path,
+so the running process watches a file that will never change. Config edits therefore do not apply until it restarts.
 
 ### Locale dependent window titles
 
@@ -56,7 +56,7 @@ redundant and can be turned off at the source.
 
 ### No screen capture over ssh on a headless mac
 
-On a Mac driven only over SSH there is no working path to a screenshot of rendered window content: the capture tool
-exits with an image-creation failure because the SSH process sits outside the GUI audit session, running it as the
+On a Mac driven only over SSH there is no working path to a screenshot of rendered window content. The capture tool
+exits with an image-creation failure because the SSH process sits outside the GUI audit session. Running it as the
 console user through launchd fails on the missing privacy grant, and the automation framework cannot obtain one either.
 Verify rendered output from the artifacts the renderer already writes rather than by capturing the screen.

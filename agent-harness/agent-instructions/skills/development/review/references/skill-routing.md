@@ -24,8 +24,8 @@ When direct tools outcompete skills (model tries WebFetch on a URL that needs a 
 blocks the tool and redirects. Look in the hooks directory for existing URL-routing hooks as a pattern. The hook
 receives tool input on stdin as JSON, inspects the URL, and exits 2 with a stderr redirect message. The redirect message
 must be actionable: give the model the exact command or API call, not just the skill name (Skill(name) may fail in fresh
-sessions), inline the minimal working command so the model can act immediately, and use wildcard matchers for MCP
-servers with multiple tools to avoid gaps.
+sessions). Inline the minimal working command so the model can act immediately. Use wildcard matchers for MCP servers
+with multiple tools to avoid gaps.
 
 ### Fix with eval tests
 

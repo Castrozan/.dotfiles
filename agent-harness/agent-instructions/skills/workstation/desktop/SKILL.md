@@ -6,14 +6,14 @@ description: Control native desktop apps, keyboard, mouse, screenshots, clipboar
 ### Native app computer use
 
 On macOS, use the shared `desktop-computer-use` MCP: start with `doctor`, inspect controls through `get_ui_tree`, and
-follow its tool descriptions for targeting and screenshot coordinates. macOS requires Accessibility and Screen Recording
-grants for the terminal or agent host; installation alone cannot grant them.
+follow its tool descriptions for targeting and screenshot coordinates. The terminal or agent host needs macOS
+Accessibility and Screen Recording grants; installation alone cannot grant them.
 
 On Hyprland, run the `hypruse` CLI from the shell; `hypruse VERB --help` is the ground truth for flags. Start with
 `hypruse desktop` and act on window addresses: `hypr` and `launch` for windows, `click_ui NAME --window ADDR` for a
-named control, `--window ADDR` on every `keyboard` call. Agents share the `marks` numbering, so run `marks` right
-before `click_ui --mark N`. A capture prints an image path and its geometry; read that file to see it. Exit 3 is a
-final refusal to report, never to route around. Verify the visible result after every action.
+named control, `--window ADDR` on every `keyboard` call. Agents share the `marks` numbering, so run `marks` right before
+`click_ui --mark N`. A capture prints an image path and its geometry; read that file to see it. Exit 3 is a final
+refusal to report, never to route around. Verify the visible result after every action.
 
 ### Cross platform capability routing
 

@@ -8,6 +8,9 @@ from markdown_it.token import Token
 from instructions.instruction_format_diagnostics import InstructionFormatViolation
 from instructions.instruction_markdown_frontmatter import parse_instruction_body
 from instructions.validation import instruction_block_validation
+from instructions.validation.instruction_sentence_validation import (
+    inspect_sentence_lengths,
+)
 
 MAXIMUM_INSTRUCTION_PROSE_LINES = 150
 MAXIMUM_SECTION_PROSE_LINES = 20
@@ -27,11 +30,15 @@ class InstructionLink:
 @dataclass
 class InstructionInspection:
     violations: list[InstructionFormatViolation] = field(default_factory=list)
+    warnings: list[InstructionFormatViolation] = field(default_factory=list)
     anchors: list[str] = field(default_factory=list)
     links: list[InstructionLink] = field(default_factory=list)
 
     def reject(self, rule: str, line_number: int, detail: str) -> None:
         self.violations.append(InstructionFormatViolation(rule, line_number, detail))
+
+    def warn(self, rule: str, line_number: int, detail: str) -> None:
+        self.warnings.append(InstructionFormatViolation(rule, line_number, detail))
 
 
 def inspect_inline_prose(
@@ -136,6 +143,7 @@ def _inspect_markdown_blocks(body, tokens, inspection):
                 total_prose_lines,
                 inspection,
             )
+            inspect_sentence_lengths(following[0], line_number, inspection)
         inspect_inline_prose(following[0], line_number, inspection)
         consumed_lines.update(range(*opening.map))
     instruction_block_validation.report_unconsumed_instruction_lines(

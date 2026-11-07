@@ -31,8 +31,8 @@ block. Case-insensitive first, exact once you know the casing.
 ### File and structure search
 
 Glob finds by path shape when you know the naming convention but not the location. `tree` on a directory beats a dozen
-Globs when you are learning an unfamiliar layout, and `fd` is there for name searches with type or extension filters
-that Glob cannot express.
+Globs when you are learning an unfamiliar layout. `fd` is there for name searches with type or extension filters that
+Glob cannot express.
 
 ### History belongs to coding
 

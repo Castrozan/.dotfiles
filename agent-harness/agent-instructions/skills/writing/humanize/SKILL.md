@@ -28,8 +28,8 @@ documentation is worse than none, so state only what you verified and mark a gue
 
 ### Representation selection
 
-Show what prose struggles to carry, choosing the smallest useful form: prose for a linear answer, numbered lists for
-steps, tables for comparisons and option matrices, diffs for exact edits, trees for ownership, state models for
+Show what prose struggles to carry, choosing the smallest useful form. Use prose for a linear answer, numbered lists for
+steps, tables for comparisons and option matrices, and diffs for exact edits. Use trees for ownership, state models for
 transitions, and diagrams or sequences for dependencies and failure paths. Show material actors and relationships
 without repeating a visual's contents in prose or wrapping paragraphs in table rows.
 
@@ -37,8 +37,8 @@ Use a cropped screenshot or short recording for visual state and interactions, n
 output. Keep each Mermaid diagram small and split a large one. Fold logs and long output into a `<details>` block, and
 use at most two alerts per document.
 
-Give every image alt text under 155 characters that states its meaning, and never let color alone carry a status: pair
-a status emoji with a word. GitHub and GitLab render Mermaid, `<details>`, and alerts; chat apps do not, so attach an
+Give every image alt text under 155 characters that states its meaning, and never let color alone carry a status: pair a
+status emoji with a word. GitHub and GitLab render Mermaid, `<details>`, and alerts; chat apps do not, so attach an
 image there instead.
 
 ### Length

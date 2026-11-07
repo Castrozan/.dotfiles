@@ -17,9 +17,9 @@ the event can be pushed by a monitor, or when the job must outlive the session.
 
 ### Instruction
 
-Self-pace: wait briefly while things change and long while quiet, keep intervals under the prompt-cache lifetime or well
-above it, compare each poll with the baseline and thresholds, act on a breach, and stop the loop yourself at the stated
-exit.
+Self-pace: wait briefly while things change and long while quiet, and keep intervals under the prompt-cache lifetime or
+well above it. Compare each poll with the baseline and thresholds, act on a breach, and stop the loop yourself at the
+stated exit.
 
 ### Pitfalls
 

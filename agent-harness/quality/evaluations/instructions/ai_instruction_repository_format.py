@@ -99,6 +99,17 @@ def _instruction_description_violations(description):
     return violations
 
 
+def repository_instruction_format_warnings() -> dict[str, list[str]]:
+    warnings: dict[str, list[str]] = {}
+    for path in every_linted_markdown_file():
+        inspection = inspect_markdown_instruction(path.read_text())
+        if inspection.warnings:
+            warnings[str(path.relative_to(REPO_ROOT))] = [
+                warning.render() for warning in inspection.warnings
+            ]
+    return dict(sorted(warnings.items()))
+
+
 def repository_instruction_format_violations() -> dict[str, list[str]]:
     paths = every_linted_markdown_file()
     violations: dict[str, list[str]] = {}

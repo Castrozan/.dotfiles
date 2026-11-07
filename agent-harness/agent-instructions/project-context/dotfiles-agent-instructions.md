@@ -25,8 +25,8 @@ live at `references/knowledge.md` beneath each skill.
 
 This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the
 clawde-agents module and built from the clawde flake input where its behavior lives. You still push your own commits,
-but push only what fast-forwards: leave a diverged history, a rebase, or a submodule gitlink conflict to the steward
-rather than reconciling it by hand, which races its live loop, unless explicitly told to act in the steward's place.
+but push only what fast-forwards. Leave a diverged history, a rebase, or a submodule gitlink conflict to the steward.
+Reconciling them by hand races its live loop, so do it only when explicitly told to act in the steward's place.
 
 A checkout that is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile;
 never surface it as a task pending on the human. Treat CI failures on `main` during active WIP as expected. Check
@@ -42,9 +42,9 @@ into the existing module structure rather than adding one-off files. Make it wor
 holds across the harnesses this repo drives: reach Claude Code, Codex and OpenCode together, then Pi and Hermes where
 each one supports the capability.
 
-Clear state left behind by removed configuration with a one-off command or script on each affected machine, then
-verify it is gone. Never commit cleanup code that runs once and then stays as dead code. This cleanup is the one
-exception to never mutating a machine by hand.
+Clear state left behind by removed configuration with a one-off command or script on each affected machine, then verify
+it is gone. Never commit cleanup code that runs once and then stays as dead code. This cleanup is the one exception to
+never mutating a machine by hand.
 
 ### Nvim keymaps
 
@@ -65,15 +65,15 @@ every other key collision, so an MCP dropped from its nix source disappears from
 
 ### Machine local wrapper
 
-On chise only, the live system is not built straight from this repo: a machine-local entrypoint flake at
-`~/zanoni-system` (outside this tree) imports the public chise config from here and layers a private overlay on top, and
+On chise only, the live system is not built straight from this repo. A machine-local entrypoint flake at
+`~/zanoni-system` (outside this tree) imports the public chise config from here and layers a private overlay on top.
 `rebuild` builds that entrypoint, not this repo directly. So a service, unit, secret, or option that is live on chise
 but absent from this repo is most likely owned by that overlay, not missing: check `~/zanoni-system` before declaring it
 undeclared or re-adding it here.
 
-That entrypoint is its own standalone private git repo, with its own origin, not this repo and not a submodule of it, no
-CI and no peer stewards; the chise steward keeps it reconciled with its origin fast-forward-only, so commit a wrapper
-change into that repo rather than assuming a rebuild alone captures it.
+That entrypoint is its own standalone private git repo with its own origin, no CI and no peer stewards. It is not this
+repo and not a submodule of it. The chise steward keeps it reconciled with its origin fast-forward-only, so commit a
+wrapper change into that repo rather than assuming a rebuild alone captures it.
 
 Keep `~/zanoni-system` limited to private OpenClaw integration and secrets. Generic host, provider, and harness
 configuration belongs in this repo; do not make public configuration depend on the private wrapper. Chise-specific;
@@ -104,8 +104,7 @@ writing. The same goes for a whole pytest tier directory (`*/__tests__/unit`, `*
 `pytest agents`, `pytest .`, and `nix flake check`: run a specific test file or the targeted Nix evaluation or build
 needed to verify the change.
 
-Test every Neovim change live in a newly created Herdr pane; automated and headless checks do not replace this manual
-test.
+Test every Neovim change live in a new Herdr pane; automated and headless checks do not replace this manual test.
 
 ### Change review scope
 
@@ -116,11 +115,12 @@ instead. Commit first: this checkout is shared, so a review of the working tree 
 and a confirmed finding belongs in a follow-up commit rather than an amend a peer may already have built on.
 
 A change is substantive when a wrong edit would survive formatting and still change machine or agent behavior, a build,
-a deployment, a dependency, an interface, a test, security, a secret, what this public repository exposes, or an
-operational instruction, or when correctness depends on several files changing together.
+a deployment, or a dependency. The same holds for a wrong edit to an interface, a test, security, a secret, what this
+public repository exposes, or an operational instruction. A change is also substantive when correctness depends on
+several files changing together.
 
-Skip the review only when every hunk is demonstrably non-semantic, meaning a formatting or prose correction that alters
-no command, path, identifier, factual claim, policy or behavior; review the whole change when substantive and
+Skip the review only when every hunk is demonstrably non-semantic. That means a formatting or prose correction that
+alters no command, path, identifier, factual claim, policy or behavior. Review the whole change when substantive and
 non-substantive hunks are mixed or the classification stays uncertain. Changed line and file counts never decide this,
 and skipping review does not waive verification required by [testing](#testing).
 
@@ -138,10 +138,10 @@ After editing files in the dotfiles repo, execute this sequence before respondin
 file with git add specific-file, never -A; 3) commit; 4) review the commits you just added when they are substantive
 (see [change review scope](#change-review-scope)); 5) run the local verification required by [testing](#testing);
 
-6\) push; 7) when [testing](#testing) requires CI, continue with independent work while CI runs, and check the verdict
-only when other work is exhausted and a response to the user is due - load the forge and CI watcher skills, resolve the
-effective upstream and find runs for the full commit SHA; start a background watcher for every relevant run and accept
-only terminal success as green; a just-pushed commit can have no run for a few seconds, so retry an empty list rather
+6\) push; 7) when [testing](#testing) requires CI, continue with independent work while CI runs. Check the verdict only
+when other work is exhausted and a response to the user is due. Load the forge and CI watcher skills, resolve the
+effective upstream and find runs for the full commit SHA. Start a background watcher for every relevant run and accept
+only terminal success as green. A just-pushed commit can have no run for a few seconds, so retry an empty list rather
 than reading it as a verdict;
 
 8\) if required verification fails: fix and repeat the affected steps; 9) respond once the required checks pass. Every
@@ -159,10 +159,10 @@ A clawde agent's runtime config - heartbeat gate, interval, prompt, launch comma
 per-agent file the wrapper re-reads on every restart, so a rebuild's warm redeploy applies config changes in place, no
 respawn needed.
 
-The exception is a change to the agent-wrapper code itself: the running wrapper keeps executing the code it launched
-with, so wrapper-code changes stay dormant until the window is fully respawned (reboot, or kill the window so the
-supervisor recreates it from the new spec). Never assume rebuilt wrapper code is live on the running agents - check the
-live process and respawn if it still runs the old code.
+The exception is a change to the agent-wrapper code itself. The running wrapper keeps executing the code it launched
+with, so wrapper-code changes stay dormant until the window is fully respawned. A respawn is a reboot, or killing the
+window so the supervisor recreates it from the new spec. Never assume rebuilt wrapper code is live on the running agents
+\- check the live process and respawn if it still runs the old code.
 
 Every other fleet trap that leaves no trace in the source - resume identity, supervisor reconciliation, channel gating,
 the steward loop, the shared server cgroup - is in `agent-harness/harnesses/clawde/knowledge.md`; read it before

@@ -33,10 +33,11 @@ appear, inspect the resolved wrapper revision and verify the deployed runtime in
 
 ### A oneshot that runs long hangs every rebuild that restarts it
 
-Activation waits for a restarted `Type=oneshot` to finish its `ExecStart` before it moves on, so any oneshot that can
-legitimately run for minutes, one that polls for a condition or works through a queue, freezes the whole rebuild for its
-full duration the moment a `restartTriggers` entry or a changed unit definition marks it for restart. Nothing reports
-this as an error; the rebuild simply sits there, and killing the rebuild leaves activation half applied.
+Activation waits for a restarted `Type=oneshot` to finish its `ExecStart` before it moves on. Any oneshot that can
+legitimately run for minutes, one that polls for a condition or works through a queue, therefore freezes the whole
+rebuild for its full duration. That happens the moment a `restartTriggers` entry or a changed unit definition marks it
+for restart. Nothing reports this as an error; the rebuild simply sits there, and killing the rebuild leaves activation
+half applied.
 
 A timer-driven oneshot never needs the restart anyway, because its next fire runs the new configuration, so declare it
 `restartIfChanged = false` with `stopIfChanged = false` and drop the secret restart trigger, which is redundant once
@@ -66,10 +67,10 @@ running applications; later switches replace the managed link.
 ### Agenix stalls on a stale temporary file
 
 The home-manager agenix activation agent can loop on a stale read-only temporary file it recreates and cannot overwrite,
-dying on that secret before reaching any later one, so no newly added secret decrypts machine-wide while older ones from
-a previous generation stay present and make everything look healthy. The activation log names the blocking secret. Clear
-the offending temporary file or the whole generation directory, kickstart the agent, and verify by decrypting the secret
-directly.
+dying on that secret before reaching any later one. No newly added secret then decrypts machine-wide, while older ones
+from a previous generation stay present and make everything look healthy. The activation log names the blocking secret.
+Clear the offending temporary file or the whole generation directory, kickstart the agent, and verify by decrypting the
+secret directly.
 
 ### The agenix recipients here are user keys not host keys
 
@@ -128,10 +129,10 @@ prefix by exactly one workflow, and adding a second publisher to that prefix clo
 On darwin the user's session path prepends `/run/current-system/sw/bin`, the default nix profile, `/usr/bin` and `/bin`
 in that order, all ahead of the home-manager profile at `/etc/profiles/per-user/<user>/bin`. Every home-manager package
 whose command name also exists in macOS therefore never wins: git, curl, tar, jq, vim and python3 all resolve to Apple's
-copy while the declared one sits unreachable further down the path, and nothing about that is visible in the module that
+copy. The declared one sits unreachable further down the path, and nothing about that is visible in the module that
 declared it.
 
 The ordering is load-bearing rather than accidental, because the same home profile carries a gcc wrapper as `cc`,
-cctools as `ld` and `as` and llvm as `ar`; hoisting it above `/usr/bin` would hand every native build on the machine a
+cctools as `ld` and `as` and llvm as `ar`. Hoisting it above `/usr/bin` would hand every native build on the machine a
 different toolchain. A command that has to beat a macOS binary belongs in `environment.systemPackages`, whose profile is
 already first on that path, not in `home.packages`.

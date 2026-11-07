@@ -23,7 +23,7 @@ briefing push consumes.
 ### Resume
 
 When the task is a resumable job, work begun this session that Lucas or a later agent will continue, put `claude
---resume <id>` on the first line of `--description` so he gets a copy-paste one-liner back into this session with its
+--resume <id>` on the first line of `--description`. He then gets a copy-paste one-liner back into this session with its
 full context. Take the id from the `CLAUDE_CODE_SESSION_ID` env var and write its literal value into the description,
 never the variable name, which in Lucas's own shell expands to nothing or a different session and resumes the wrong one.
 The transcript is host-local, so the command only works on the machine that filed the task; name that host when it is

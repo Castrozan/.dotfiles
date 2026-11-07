@@ -27,7 +27,7 @@ rather than passing an empty brief.
 The workflow returns the thesis, the section spine, the per-section gate outcomes, and the assembled `page`. Write
 `page` to the file the brief names, or a sensible path in the target project, and report the thesis plus which sections
 the final gate accepted or revised so the meaning trail stays visible. Do not edit the returned markup to satisfy a
-requirement the gate ignores: the gate judges content meaning, not visual-spec compliance, so a missed theme or token
+requirement the gate ignores. The gate judges content meaning, not visual-spec compliance, so a missed theme or token
 belongs back in `constraints` on a re-invocation, not in a hand-patch that detaches the page from its proof.
 
 ### Workflow authority

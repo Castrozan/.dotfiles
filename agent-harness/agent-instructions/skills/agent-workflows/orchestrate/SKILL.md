@@ -38,8 +38,8 @@ lets one peer commit another's changes.
 ### Reaching a peer on this machine
 
 One daemon per machine watches the multiplexer and treats every pane running an agent as a peer, declared or ad hoc, so
-the reachable set changes as sessions open and close. `a2a list` is that live directory, `a2a ask` submits a task and
-blocks until the peer answers, `a2a send` returns a task id to follow with `a2a status`, and `a2a cancel` interrupts the
+the reachable set changes as sessions open and close. `a2a list` is that live directory. `a2a ask` submits a task and
+blocks until the peer answers. `a2a send` returns a task id to follow with `a2a status`. `a2a cancel` interrupts the
 turn without killing the session.
 
 herdr drives the same pane directly and shows what the task view flattens: reported status, full scrollback, a
@@ -59,10 +59,10 @@ here.
 ### Peer names drift
 
 A peer's address is its tab label, else its working directory's basename, else its pane id, and it silently gains a
-pane-id suffix the moment a second pane claims the same name, so a cached name can later reach a different session or
-none. Re-resolve from `a2a list` immediately before every dispatch rather than reusing a name from earlier in the task.
-Renaming the agent in herdr does not change that address; rename the tab when you want a stable one for a session you
-spawned.
+pane-id suffix the moment a second pane claims the same name. A cached name can therefore later reach a different
+session or none. Re-resolve from `a2a list` immediately before every dispatch rather than reusing a name from earlier in
+the task. Renaming the agent in herdr does not change that address; rename the tab when you want a stable one for a
+session you spawned.
 
 ### The drive loop
 
@@ -91,7 +91,7 @@ same peer.
 ### Completion is inferred not reported
 
 A task completes when the multiplexer reports the peer working and then stopping, or after roughly half a minute with no
-new output line, so a long silent turn completes the task while the peer is still working and hands you a partial
+new output line. A long silent turn therefore completes the task while the peer is still working and hands you a partial
 answer. Treat any answer as a signal, then confirm against reported status or a fresh read before acting on it. When you
 need a deterministic end, tell the peer to finish its turn with a delimiter line you can match on.
 
@@ -117,15 +117,15 @@ without reporting anything.
 
 ### Durable fleet continuity
 
-Use `a2a fleet status` for cached host and exact pane/conversation evidence without network calls or routine
-updates. The standalone `dot-fleet` client accepts the same arguments without the `a2a fleet` prefix. State lives
-in `${XDG_STATE_HOME:-~/.local/state}/dot-fleet/registry.sqlite3`; `--db PATH` selects isolated state. Register
-only reviewed host mappings with `confirm-host HOST --transport SSH_ALIAS --evidence REF`, using `local` for the
-confirmed collector.
+Use `a2a fleet status` for cached host and exact pane/conversation evidence without network calls or routine updates.
+The standalone `dot-fleet` client accepts the same arguments without the `a2a fleet` prefix. State lives in
+`${XDG_STATE_HOME:-~/.local/state}/dot-fleet/registry.sqlite3`; `--db PATH` selects isolated state. Register only
+reviewed host mappings with `confirm-host HOST --transport SSH_ALIAS --evidence REF`, using `local` for the confirmed
+collector.
 
 Run `status --refresh HOST OTHER_HOST` only when current evidence is needed: at most four confirmed hosts, two metadata
 commands each, five seconds per command, thirty-second network budget, bounded output and no retries. `ingest HOST FILE`
-accepts a timestamped object containing `observed_at`, `evidence`, exact `a2a list --json` under `a2a`, and complete
+accepts a timestamped object. It contains `observed_at`, `evidence`, exact `a2a list --json` under `a2a`, and complete
 `herdr api snapshot` under `herdr`. Imports remain cached and cannot alone authorize dispatch.
 
 ### Fleet identity and readiness
@@ -135,18 +135,18 @@ agent evidence; failed observation does not imply failed work. Idle and service 
 readiness, mailbox consumption or model productivity. A rotated conversation retains history but not prior ownership.
 Assign only an observed tuple with `assign HOST PANE_ID SESSION_ID --owner dot --task TASK_REF`.
 
-Check installed command help before creating sessions: Herdr 0.9.1 uses
-`agent start NAME --kind codex --pane OWNED_PANE --timeout 30000` instead of the placement syntax above. Resume only an
-exact Herdr-reported ID through the existing owned-session workflow. `agent-session restart` is self-targeted and
-refuses supervised ownership; do not inspect private session stores or use the most-recent conversation fallback.
+Check installed command help before creating sessions: Herdr 0.9.1 uses `agent start NAME --kind codex --pane OWNED_PANE
+--timeout 30000` instead of the placement syntax above. Resume only an exact Herdr-reported ID through the existing
+owned-session workflow. `agent-session restart` is self-targeted and refuses supervised ownership; do not inspect
+private session stores or use the most-recent conversation fallback.
 
 ### Fleet receipts and results
 
-For an authorized self-contained target-accessible brief, use `dispatch HOST PANE SESSION --owner dot --task
-TASK_REF --request-id ID --prompt 'Read /target/brief and implement it.' --execute` on one shell line. The durable
-intent is reserved before one A2A send; `[dot-fleet:ID]` travels in the prompt. An identical repeated ID never
-resends. One unresolved task holds each pane; limit coordinator fan-out to two. Use owned targets and avoid
-concurrent lifecycle changes because A2A has no atomic expected-conversation-ID send precondition.
+For an authorized self-contained target-accessible brief, use `dispatch HOST PANE SESSION --owner dot --task TASK_REF
+--request-id ID --prompt 'Read /target/brief and implement it.' --execute` on one shell line. The durable intent is
+reserved before one A2A send; `[dot-fleet:ID]` travels in the prompt. An identical repeated ID never resends. One
+unresolved task holds each pane; limit coordinator fan-out to two. Use owned targets and avoid concurrent lifecycle
+changes because A2A has no atomic expected-conversation-ID send precondition.
 
 Use `result ID` for one bounded read. A receipt or exact ACK is not completion. `reported_completed` is heuristic;
 inspect the artifact, tests and session before `verify ID --evidence CHECKED_RESULT_REF`. A lost receipt or remote task
@@ -162,7 +162,7 @@ Collect a full snapshot after invalidation or reconnect. Keep on-demand refresh 
 events; alternatively attach metadata collection to the existing fifteen-minute maintenance. Do not add duplicate
 timers, nightly tests, paid inference for polling or routine notifications.
 
-No service or session lifecycle is activated by this client. Never clear drafts, send extra Enter or switch transport
-to bypass a refusal. Preserve exact target, blocker and pending/denied/uncertain outcome, then reconcile before another
+No service or session lifecycle is activated by this client. Never clear drafts, send extra Enter or switch transport to
+bypass a refusal. Preserve exact target, blocker and pending/denied/uncertain outcome, then reconcile before another
 intent. The repository runbook `agent-harness/agent-to-agent-communication/client/FLEET.md` documents formats and the
 separate deployment proposal. Local synthetic tests do not establish live fleet readiness or deployed behavior.

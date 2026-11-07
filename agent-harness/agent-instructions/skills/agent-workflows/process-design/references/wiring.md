@@ -1,8 +1,8 @@
 ### Control flow
 
 Name the wiring between blocks with the Workflow Patterns vocabulary: sequence; parallel split with synchronization;
-exclusive choice; multi-choice; multiple instances with a count known only at runtime, which is the fan-out over
-discovered items; and a structured loop with an exit condition and a cap.
+exclusive choice; multi-choice. Also use multiple instances with a count known only at runtime, which is the fan-out
+over discovered items, and a structured loop with an exit condition and a cap.
 
 Use the discriminator or N-of-M join when the first or the first N results suffice, paired with cancellation of the
 remaining siblings. Use deferred choice when whichever event arrives first decides the path, such as a watcher racing a

@@ -17,7 +17,7 @@ The process outlives one context or has more than one actor. A short single-cont
 ### Instruction
 
 Only the driver writes the tracker. Keep a progress log plus a structured list of items whose pass flag is the only
-field agents flip, update it after every decision, action, and approval, commit it as a checkpoint where it lives in
+field agents flip. Update it after every decision, action, and approval, commit it as a checkpoint where it lives in
 git, and read it first after every restart or compaction.
 
 ### Pitfalls

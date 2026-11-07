@@ -36,8 +36,8 @@ the failure mode this routine exists to replace.
 
 The first link in the capture body is the canonical source. Open that, never a search for the topic. Route by channel:
 x.com through the twitter skill for thread and quote context, YouTube through the youtube skill for the transcript, an
-ordinary article through `curl -sS`, and anything that serves an empty shell to `curl` because it renders client side or
-sits behind a login, Instagram and LinkedIn among them, through an already logged-in browser.
+ordinary article through `curl -sS`. Anything that serves an empty shell to `curl` goes through an already logged-in
+browser, because it renders client side or sits behind a login, Instagram and LinkedIn among them.
 
 Interactively that is chrome-devtools against the user's live browser, never the browser skill. Reserve the browser
 skill for unattended runs, because chrome-devtools drives the user's own session and stalls the run waiting on an
@@ -82,9 +82,9 @@ actually ran rather than that it should work.
 On chise never switch a bare worktree, since this machine deploys through a private entrypoint the worktree lacks and a
 bare switch strips it; build there and leave activation to the review.
 
-Open the pull request from the main checkout with `--head`, one capture per pull request so a bad idea reverts alone,
-and merge it only as the execution of an approving review, never on your own judgement and never to clear a
-stale-looking queue.
+Open the pull request from the main checkout with `--head`, one capture per pull request so a bad idea reverts alone.
+Merge it only as the execution of an approving review, never on your own judgement and never to clear a stale-looking
+queue.
 
 ### Filing
 
@@ -139,7 +139,7 @@ Anything else is a question, so answer it in a reply and change nothing else.
 
 Interpreting free text is the one place this loop can do real damage, since a misread of hesitation as approval merges
 something the user did not want. So bias every uncertain reading toward asking. Approval has to be unmistakable and
-about this pull request as it stands; praise for the idea, a question that happens to sound positive, or an approval
+about this pull request as it stands. Praise for the idea, a question that happens to sound positive, or an approval
 hedged on a change you have not made yet are all questions, not approvals.
 
 When a comment carries both an objection and an approval, the objection wins. Never treat silence, a reaction emoji, or

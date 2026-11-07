@@ -24,9 +24,9 @@ the current goal in panes of the existing tab. Before delegating any part of tha
 `pane run` starts no named agent, so name one afterwards with `herdr agent rename <pane id> <name>`; until then the pane
 id is the only target that resolves, because `agent list` does not carry the pane the instant `pane run` returns.
 
-Synchronize on reported state, not scraped output: `herdr agent wait <target> --status idle|working|blocked [--timeout
-MS]` blocks until the agent reaches that state and takes a pane id before detection lands, so wait for `idle` to cover
-the harness boot before the first prompt and after every turn instead of polling `agent read`.
+Synchronize on reported state, not scraped output. `herdr agent wait <target> --status idle|working|blocked [--timeout
+MS]` blocks until the agent reaches that state and takes a pane id before detection lands. Wait for `idle` to cover the
+harness boot before the first prompt and after every turn instead of polling `agent read`.
 
 Read output with `herdr agent read <target> [--source visible|recent|recent-unwrapped] [--lines N]`. A target is the
 agent name, a terminal id, or a pane id.
@@ -51,8 +51,8 @@ here or on another machine or harness, belongs to the `orchestrate` skill.
 
 Restart the current supported session with `agent-session restart`; Herdr resumes its exact recorded conversation in the
 same pane. Quitting inside a harness can leave its pane as an idle shell, so a later reference can focus a dead pane;
-detect liveness by process, not presence. A pane is idle when its `foreground_process_group_id`
-equals its `shell_pid` in `herdr pane process-info`; relaunch into it instead of assuming the agent is alive.
+detect liveness by process, not presence. A pane is idle when its `foreground_process_group_id` equals its `shell_pid`
+in `herdr pane process-info`; relaunch into it instead of assuming the agent is alive.
 
 ### Oneshot is gated
 

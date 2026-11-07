@@ -5,15 +5,17 @@ ask whether every agent knows its task and role boundaries, whether any step can
 history survives each handoff, and whether every loop and the whole process know when to terminate.
 
 For inter-agent misalignment, ask whether a confused agent can ask for clarification, whether a worker can derail from
-its brief, whether any agent withholds information another needs, whether inputs from other agents are actually
-consumed, and whether stated reasoning matches the action taken. For task verification, ask whether verification exists,
-whether it checks the high-level objective rather than only low-level form, and whether it can terminate prematurely.
+its brief, and whether any agent withholds information another needs. Also ask whether inputs from other agents are
+actually consumed, and whether stated reasoning matches the action taken. For task verification, ask whether
+verification exists, whether it checks the high-level objective rather than only low-level form, and whether it can
+terminate prematurely.
 
 ### Pre-mortem
 
 Assume the process ran and failed badly, then list the most plausible reasons: wrong decomposition, a silent worker
-failure, a verifier that agreed with a wrong answer, an unbounded loop, a budget overrun, a human gate nobody answered,
-a watcher that never fired. Turn each reason into a concrete design change or an explicit accepted risk.
+failure, a verifier that agreed with a wrong answer, and an unbounded loop. Also list a budget overrun, a human gate
+nobody answered, and a watcher that never fired. Turn each reason into a concrete design change or an explicit accepted
+risk.
 
 ### Coupling pass
 
@@ -24,16 +26,16 @@ structure matrix idea applied to agents, and it is the main defense against para
 ### Exception matrix
 
 For every node, confirm a handling exists for work failure, deadline, guardrail violation, and external cancellation, as
-listed in the [wiring](wiring.md#failure-handling). A node whose failure has no path stalls the whole
-process or fails silently; draw the failure edge or document why the failure cannot occur.
+listed in the [wiring](wiring.md#failure-handling). A node whose failure has no path stalls the whole process or fails
+silently; draw the failure edge or document why the failure cannot occur.
 
 ### Anti-patterns
 
 Reject these on sight: multiple agents for sequential or tightly coupled work; parallel writers to shared state; agent
-count not scaled to complexity; vague briefs that cause duplicated work or gaps; loops without an exit condition and a
-cap; a verifier sharing the generator's context; decentralized coordination with no central verification; debate where
-voting suffices; topology added before prompts are tuned; context dropped at handoffs or children never reporting
-upward; consequential actions with no human gate; open-ended negotiating swarms.
+count not scaled to complexity; vague briefs that cause duplicated work or gaps. Also reject loops without an exit
+condition and a cap; a verifier sharing the generator's context; decentralized coordination with no central
+verification; debate where voting suffices. Also reject topology added before prompts are tuned; context dropped at
+handoffs or children never reporting upward; consequential actions with no human gate; open-ended negotiating swarms.
 
 ### Evaluation plan
 

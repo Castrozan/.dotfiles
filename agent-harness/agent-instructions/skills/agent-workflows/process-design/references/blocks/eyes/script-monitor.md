@@ -17,9 +17,9 @@ default watcher; add agent eyes only for judgment.
 
 ### Instruction
 
-Run one monitor per signal, emit one line per meaningful event because every line wakes the agent, filter noisy feeds,
-give each an until condition, list every monitor in the tracker, re-arm at its deadline, and never start a duplicate of
-a running monitor.
+Run one monitor per signal, emit one line per meaningful event because every line wakes the agent, and filter noisy
+feeds. Give each an until condition, list every monitor in the tracker, re-arm at its deadline, and never start a
+duplicate of a running monitor.
 
 ### Pitfalls
 

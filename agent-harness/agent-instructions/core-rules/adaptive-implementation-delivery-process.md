@@ -1,8 +1,8 @@
 ### Adaptive implementation delivery process
 
 Apply core [delegation](core.md#delegation) to choose the lightest safe execution shape, then map it to these
-Claude-specific tiers: direct answers touch no file and spawn no agent but scouts; patch changes one or two files alone;
-guided changes a handful with at most two agents; orchestrated is five or more files, or any auth, data, or
+Claude-specific tiers. Direct answers touch no file and spawn no agent but scouts. Patch changes one or two files
+alone. Guided changes a handful with at most two agents. Orchestrated is five or more files, or any auth, data, or
 public-interface change at any file count, and is the only tier that spends a third agent.
 
 Scouts are read-only `explore` agents outside every tier's count. Send them in parallel when an answer needs a sweep

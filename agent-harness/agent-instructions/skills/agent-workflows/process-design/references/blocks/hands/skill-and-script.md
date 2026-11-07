@@ -19,8 +19,8 @@ must happen without exception belongs in a hook.
 ### Instruction
 
 Call the script, never reimplement its action inline. Write the skill description as routing metadata saying what it
-does and when, keep the body short with references one level deep, run the dry-run first, keep a backup or resumable log
-per batch, and read the status subcommand as the observable that monitors and verifiers use.
+does and when, and keep the body short with references one level deep. Run the dry-run first, keep a backup or resumable
+log per batch, and read the status subcommand as the observable that monitors and verifiers use.
 
 ### Pitfalls
 

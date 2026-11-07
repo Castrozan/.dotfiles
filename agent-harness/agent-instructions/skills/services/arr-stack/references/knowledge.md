@@ -9,15 +9,15 @@ back, and treat a long-pending request as a missed search rather than a broken p
 ### A finished download that never imports is a title mismatch
 
 When a grab reaches full completion in the client but the media file never appears, the usual cause is a title mismatch
-that blocks automatic import, because the release name parses to a different title than the metadata provider's even
-though the same application grabbed it. The trap is diagnostic rather than structural: the blocking queue item is
-invisible in the default queue response and appears only when unknown items are explicitly included. Query with that
-flag before concluding the queue is empty.
+that blocks automatic import. The release name parses to a different title than the metadata provider's, even though the
+same application grabbed it. The trap is diagnostic rather than structural: the blocking queue item is invisible in the
+default queue response and appears only when unknown items are explicitly included. Query with that flag before
+concluding the queue is empty.
 
 ### Credentials that are present but never autofill
 
 A password manager reporting nothing for these applications has, at least once, been a client-side matching setting
-rather than a missing entry: a global URI match set to exact silently kills autofill for every URL that carries a path,
+rather than a missing entry. A global URI match set to exact silently kills autofill for every URL that carries a path,
 which is all of them here. Check the vault contents and the match mode before concluding a credential was never saved.
 
 ### Fetching additional data is ffmpeg lifting subtitles out of the container
@@ -28,8 +28,8 @@ media file to lift every embedded text track out of the container, so the wait t
 size and costs tens of seconds off a spinning disk.
 
 The extraction is cached per file forever, which is why the stall hits only whoever opens a title first and never
-reproduces on a second try. Paying that in advance is what the subtitle extraction warmer module is for, so when the
-spinner returns read its unit log before suspecting the player: a sweep that deferred to live playback and a genuinely
+reproduces on a second try. Paying that in advance is what the subtitle extraction warmer module is for. When the
+spinner returns, read its unit log before suspecting the player. A sweep that deferred to live playback and a genuinely
 new file are indistinguishable from the client side.
 
 ### Logging into a source means driving the browser that lives inside the server

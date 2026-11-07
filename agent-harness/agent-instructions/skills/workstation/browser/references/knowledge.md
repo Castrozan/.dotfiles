@@ -1,11 +1,11 @@
 ### Virtualized threads return only the visible tail
 
-A long conversation thread on a modern chat site virtualizes its middle out of the DOM, so a one-shot query for message
-nodes returns only what is near the viewport and gives no signal that anything is missing: a forty-nine message thread
-came back as eleven nodes that looked like a complete short conversation. Scrolling to the top and re-querying does not
-fix it either, since that swaps the head in and drops the tail. Recover the whole thread with an incremental scroll
-sweep that accumulates unique nodes across steps, and sanity-check the recovered count against the thread's own
-numbering or its scrollbar before trusting the read.
+A long conversation thread on a modern chat site virtualizes its middle out of the DOM. A one-shot query for message
+nodes therefore returns only what is near the viewport and gives no signal that anything is missing. In one case a
+forty-nine message thread came back as eleven nodes that looked like a complete short conversation. Scrolling to the top
+and re-querying does not fix it either, since that swaps the head in and drops the tail. Recover the whole thread with
+an incremental scroll sweep that accumulates unique nodes across steps, and sanity-check the recovered count against the
+thread's own numbering or its scrollbar before trusting the read.
 
 ### Server driven uis scroll inside a container
 

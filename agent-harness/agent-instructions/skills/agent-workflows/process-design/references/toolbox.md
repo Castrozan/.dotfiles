@@ -1,10 +1,9 @@
 ### Blocks
 
 A process is a composition of capability blocks picked from this toolbox. Each block lives in its own file whose
-frontmatter names its group, the ports it provides, and the ports it needs, and whose body says what it gives, when to
-use it, the instruction the composed process carries, its pitfalls, and how each harness implements it. Name a
-composition by its blocks, such as main and helpers with skill and script, script monitor, canary and waves, budget, and
-tracker.
+frontmatter names its group, the ports it provides, and the ports it needs. Its body says what it gives, when to use it,
+the instruction the composed process carries, its pitfalls, and how each harness implements it. Name a composition by
+its blocks, such as main and helpers with skill and script, script monitor, canary and waves, budget, and tracker.
 
 Every agent block also carries two attributes: a model tier chosen by the difficulty of its role, and its share of the
 budget. The [consultant](blocks/agents/consultant.md) block owns the tiering rule.
@@ -13,16 +12,16 @@ budget. The [consultant](blocks/agents/consultant.md) block owns the tiering rul
 
 Structure ports: a `driver` is the agent that owns the process loop and every side effect; `subagents` is its ability to
 spawn helpers; a `peer` is another main agent reachable by messages. Data ports: a `goal` is the objective with
-acceptance criteria, which the human's framing always provides; a `brief` is a delegation prompt; an `artifact` is a
-reference to a produced file, change, or record, never its raw content; a `finding` is condensed read-only evidence; a
-`verdict` is pass or fail, or MERGE or BLOCK, with reasons; a `handoff` is a phase summary; `state` is durable process
-memory; a `trace` is a record of what ran.
+acceptance criteria, which the human's framing always provides. A `brief` is a delegation prompt. An `artifact` is a
+reference to a produced file, change, or record, never its raw content. A `finding` is condensed read-only evidence. A
+`verdict` is pass or fail, or MERGE or BLOCK, with reasons. A `handoff` is a phase summary. `state` is durable process
+memory. A `trace` is a record of what ran.
 
-Capability ports: an `action` is a deterministic capability; an `observable` is a status the process can read, which an
-external system's own status command or dashboard also provides; an `event` is a wake signal; a `watch` acts on
-observables or events; an `approval` is a recorded yes that only a human can give; a `policy` is a deterministic block;
-a `budget` is a set of ceilings; `isolation` and `containment` separate writers from each other and the process from
-the machine. The `rollout`, `rehearsal`, and `outcome` ports are the products of canary and waves, dry run, and report.
+Capability ports: an `action` is a deterministic capability. An `observable` is a status the process can read, which an
+external system's own status command or dashboard also provides. An `event` is a wake signal. A `watch` acts on
+observables or events. An `approval` is a recorded yes that only a human can give. A `policy` is a deterministic block.
+A `budget` is a set of ceilings. `isolation` and `containment` separate writers from each other and the process from the
+machine. The `rollout`, `rehearsal`, and `outcome` ports are the products of canary and waves, dry run, and report.
 
 ### Composition rules
 

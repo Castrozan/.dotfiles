@@ -16,8 +16,8 @@ staging. Avoid it for judgment calls, and never make it the only security bounda
 
 ### Instruction
 
-State the rule, its predicate, and its message; block before the tool runs, keep one hook per rewrite of a tool's input,
-pair it with a sandbox for containment, and test that it blocks the forbidden call and allows the legitimate one.
+State the rule, its predicate, and its message. Block before the tool runs, keep one hook per rewrite of a tool's input,
+and pair it with a sandbox for containment. Test that it blocks the forbidden call and allows the legitimate one.
 
 ### Pitfalls
 

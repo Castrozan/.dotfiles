@@ -1,10 +1,10 @@
 ### Claude project directory slug
 
 A Claude Code transcript lives at `~/.claude/projects/<slug>/<session-id>.jsonl` where the slug replaces every
-non-alphanumeric character in the absolute cwd with a dash, not just the separators, so a dot in the username and a
-leading dot on the directory both become dashes and produce a double dash. Reproduce it with
-`re.sub(r"[^a-zA-Z0-9]", "-", path)`. Any code that reconstructs this path by replacing slashes alone will silently look
-in a directory that does not exist.
+non-alphanumeric character in the absolute cwd with a dash, not just the separators. A dot in the username and a leading
+dot on the directory both become dashes and produce a double dash. Reproduce it with `re.sub(r"[^a-zA-Z0-9]", "-",
+path)`. Any code that reconstructs this path by replacing slashes alone will silently look in a directory that does not
+exist.
 
 ### Anchor every command to an absolute path
 
@@ -29,7 +29,7 @@ cheap, and re-read the vendor's current pricing page before quoting any figure, 
 
 ### Claude workflow agent calls take no turn ceiling
 
-A workflow `agent()` call accepts only label, phase, schema, model, effort, isolation and agent type; it silently
+A workflow `agent()` call accepts only label, phase, schema, model, effort, isolation and agent type. It silently
 discards anything else, so the `maxTurns` that reads like a ceiling does nothing and the call runs until the model stops
 on its own. A review pass written with `maxTurns: 8` was measured at 194 assistant turns and 95 tool calls across seven
 minutes, of which twelve seconds was tool execution and the rest was serial round trips. Bound such a call through its
@@ -38,8 +38,8 @@ cap.
 
 ### Claude statusline renders on conversation updates only
 
-Claude Code's statusline command re-runs when a session's conversation state changes and never on a wall-clock timer, so
-an idle pane keeps its last rendered line indefinitely and a wrong number there is almost always a frozen render rather
+Claude Code's statusline command re-runs when a session's conversation state changes and never on a wall-clock timer. An
+idle pane keeps its last rendered line indefinitely, so a wrong number there is almost always a frozen render rather
 than a computation bug. Diagnose it by comparing a monotonically changing field across panes: if they disagree, the
 panes are idle and no change to the statusline script can fix it, because the harness owns the render trigger.
 Separately, GNU `stat` flags do not exist on darwin, so a statusline script that uses them is dead there.
@@ -97,15 +97,15 @@ skill-set file entry recursive.
 ### Probe an environment gate past the packaged wrapper
 
 A packaged harness binary is reached through a generated wrapper that exports every declared environment variable before
-it execs, so clearing one in the calling shell and launching the harness proves nothing: the wrapper puts it back and
+it execs, so clearing one in the calling shell and launching the harness proves nothing. The wrapper puts it back and
 the probe reads as if the variable were not the gate. Probe such a gate by running the unwrapped binary, or a copy of
 the wrapper with that export filtered out, and confirm the variable's absence in the running process rather than in the
 shell that started it.
 
 ### Opencode ignores a prompt handed to a resumed session
 
-Claude Code and codex both take a prompt argument beside the session they resume, and both submit it on startup, which
-would spare a restart from typing into a live interface at all. opencode accepts the same shape and drops it: neither
+Claude Code and codex both take a prompt argument beside the session they resume, and both submit it on startup. That
+would spare a restart from typing into a live interface at all. opencode accepts the same shape and drops it. Neither
 `--session <id> --prompt` nor `--continue --prompt` submits anything, and the session opens with an empty composer. A
 restart that must cover all three harnesses therefore types the prompt into the resumed interface, and adding the prompt
 to the resume command is not the simplification it looks like.

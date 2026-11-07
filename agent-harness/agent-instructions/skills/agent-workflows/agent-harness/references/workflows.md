@@ -19,7 +19,7 @@ judgment adds no value.
 ### Feed each pass the artifact instead of letting it rediscover one
 
 A pass that must inspect a diff, a tree, or a result set spends nearly all of its wall clock on serial tool round trips,
-not on judgment, so the cheapest large win is collecting that artifact once and handing every later pass its path.
+not on judgment. The cheapest large win is collecting that artifact once and handing every later pass its path.
 Prescribe the single command that writes it and forbid the per-item variant by name, because a model handed a file list
 will otherwise inspect one file per turn and turn a two-call workflow into hundreds of round trips. Tool output above
 roughly thirty kilobytes is replaced by a short preview and a file path, so write a large artifact to disk and read it

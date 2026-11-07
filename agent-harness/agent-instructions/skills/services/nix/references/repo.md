@@ -56,10 +56,10 @@ per-user-on-the-host bits
 
 ### Repository special directories
 
-secrets/\*.age - agenix encrypted secrets secrets/secrets.nix - public key mappings private-configuration/ - private git
-submodule holding the private half of these same domains under the same capability rule; machines/`<alias>`/ mirrors the
-per-machine split above agent-harness/agent-instructions/ - instruction surfaces and shared skills deployed to every AI
-tool
+secrets/\*.age - agenix encrypted secrets. `secrets/secrets.nix` - public key mappings. `private-configuration/` -
+private git submodule holding the private half of these same domains under the same capability rule; machines/`<alias>`/
+mirrors the per-machine split above. `agent-harness/agent-instructions/` - instruction surfaces and shared skills
+deployed to every AI tool
 
 ### Rebuild execution
 
@@ -79,8 +79,8 @@ it.
 ### Anti patterns
 
 Reject: config in home.nix (goes in module), packages via specialArgsBase (use inputs), secrets without pathExists
-guard, scripts in random locations, hardcoded usernames, new file without import, rebuild without staging, git add -A,
-committing directly, builtins.pathExists /etc/NIXOS for NixOS detection (use isNixOS specialArg).
+guard, scripts in random locations, hardcoded usernames. Reject also: new file without import, rebuild without staging,
+git add -A, committing directly, builtins.pathExists /etc/NIXOS for NixOS detection (use isNixOS specialArg).
 
 ### Delegation to expert
 

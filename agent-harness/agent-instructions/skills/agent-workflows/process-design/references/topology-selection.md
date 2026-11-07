@@ -33,6 +33,6 @@ own worktree or branch with disjoint files and add an explicit integration step 
 ### Combining patterns
 
 Real processes combine patterns, one per stage: a router picks the path, a fan-out of read-only searchers gathers
-evidence, a synthesizer reduces it, maker-checker hardens the artifact, a human gate approves the irreversible step, and
-a watcher confirms the outcome live. Choose each stage's pattern from its own task class rather than imposing one
+evidence, and a synthesizer reduces it. Maker-checker hardens the artifact, a human gate approves the irreversible step,
+and a watcher confirms the outcome live. Choose each stage's pattern from its own task class rather than imposing one
 topology on the whole process.

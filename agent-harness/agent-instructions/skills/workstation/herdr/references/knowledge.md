@@ -34,19 +34,21 @@ snapshot after handoff before attaching or controlling the pane; terminal-id con
 
 ### A lingering ctrl turns a prefix chord into a dead key
 
-The prefix right-hand side matches on exact modifier equality, with a fallback for a lone shift and none for control, so
-a chord typed before the finger leaves control arrives as control plus the letter and matches the plain-letter binding
-on nothing. An unmatched right-hand side leaves prefix mode silently and never reaches the pane, so the chord reads as a
-dead key rather than a stray character and fails only intermittently. Give such an action both spellings as an array.
-Where the control spelling already carries a binding the fast chord fires that other action instead of nothing, and a
+The prefix right-hand side matches on exact modifier equality, with a fallback for a lone shift and none for control. A
+chord typed before the finger leaves control therefore arrives as control plus the letter and matches the plain-letter
+binding on nothing. An unmatched right-hand side leaves prefix mode silently and never reaches the pane, so the chord
+reads as a dead key rather than a stray character and fails only intermittently. Give such an action both spellings as
+an array.
+
+Where the control spelling already carries a binding, the fast chord fires that other action instead of nothing. A
 letter whose control code owns a key of its own is uncoverable, since the host input parser reads 0x09 as a bare tab.
 
 ### Pane run wedges after a full screen tui
 
 The pane-run verb delivers its command as a bracketed paste. A shell that just came back from a full-screen TUI killed
-without restoring the terminal cannot consume the paste framing: the command lands with a literal paste marker, the
-trailing return is swallowed as a newline inside the paste, and the buffer grows into a multi-line input. Drive such a
-pane with the agent-send verb plus a separate carriage return instead.
+without restoring the terminal cannot consume the paste framing. The command lands with a literal paste marker. The
+trailing return is swallowed as a newline inside the paste. The buffer grows into a multi-line input. Drive such a pane
+with the agent-send verb plus a separate carriage return instead.
 
 ### Agent resume across reboots is native
 
@@ -59,8 +61,8 @@ so a pane needing a different launcher still needs the fallback manifest.
 ### A claude pane reads idle until its osc title arrives
 
 Claude Code keeps its prompt box rendered while it works, so the `live_prompt_box` rule matches all through a turn and
-the pane reports idle. The one rule that outranks it, `osc_title_working`, reads the OSC title region, and Claude Code
-writes that title only while `CLAUDE_CODE_DISABLE_TERMINAL_TITLE` is unset: that variable is the whole gate, read once
+the pane reports idle. The one rule that outranks it, `osc_title_working`, reads the OSC title region. Claude Code
+writes that title only while `CLAUDE_CODE_DISABLE_TERMINAL_TITLE` is unset. That variable is the whole gate, read once
 when the REPL mounts, and it suppresses the working title and the idle title together.
 
 herdr records the title faithfully once one is sent, so an empty title region means the harness wrote nothing rather
@@ -69,19 +71,19 @@ and every gate built on a working pane goes with it.
 
 ### A pane names itself from the title its harness wrote
 
-Never rename your own pane or tab to advertise what you are working on: herdr reads the OSC title the harness already
-writes, strips the leading status glyph, and shows it on the pane border under any hook title or manual label. A tab
-nobody renamed that holds one pane wears that title as its label and hands it back the moment a human types one, so a
-tab still showing its number means the harness wrote no OSC title. `tab.rename` with an empty label clears a custom name
-and returns the tab to that derived label. Workspace labels stay the human's.
+Never rename your own pane or tab to advertise what you are working on, because herdr reads the OSC title the harness
+already writes. It strips the leading status glyph and shows the title on the pane border under any hook title or manual
+label. A tab nobody renamed that holds one pane wears that title as its label. The tab hands the label back the moment a
+human types one. A tab still showing its number therefore means the harness wrote no OSC title. `tab.rename` with an
+empty label clears a custom name and returns the tab to that derived label. Workspace labels stay the human's.
 
 ### A reported state loses to screen detection
 
 `pane.report_agent` sets agent and state together on a pane herdr has not detected, and on a pane whose agent carries a
 detection manifest it answers ok and changes nothing, whatever source or sequence number it passes. A hook that pushes
-turn state can therefore never compensate for a detector that reads the rendering wrong: repair what the manifest
-matches, or ship a local manifest override, and read `herdr agent explain` for the winning rule and its per-region
-evidence before writing any reporter at all.
+turn state can therefore never compensate for a detector that reads the rendering wrong. Repair what the manifest
+matches, or ship a local manifest override. Read `herdr agent explain` for the winning rule and its per-region evidence
+before writing any reporter at all.
 
 ### Panes inherit a display less environment
 
@@ -90,8 +92,8 @@ environment carries no `WAYLAND_DISPLAY`, `DISPLAY` or `XAUTHORITY` and every pa
 interactive bash rc repairs.
 
 In a pane that missed the repair, compositor-dependent work fails as if the tool rejected its input rather than an
-environment fault: Claude Code reads a clipboard image by shelling out to `wl-paste` and `xclip`, so it refuses every
-pasted image without ever naming the missing display.
+environment fault. Claude Code reads a clipboard image by shelling out to `wl-paste` and `xclip`. It therefore refuses
+every pasted image without ever naming the missing display.
 
 Do not reach for `remote_image_paste`, which is hard-gated on the remote-client environment variable and yields no key
 on a local client, leaving a `config.toml` binding inert.
@@ -99,9 +101,9 @@ on a local client, leaving a `config.toml` binding inert.
 ### A resumed harness drops what you type before its first frame
 
 A harness relaunched into a pane throws away input typed before it paints, and no agent report can time that moment.
-herdr names the agent from the process the instant it starts, leaves the dead agent's last status on a pane whose agent
-it has already released, and detects codex as idle for that harness's whole life, so a wait on agent or status is
-satisfied while the pane is still a shell and spills the text into the shell instead.
+Meanwhile, herdr names the agent from the process the instant it starts. It leaves the dead agent's last status on a
+pane whose agent it has already released. It detects codex as idle for that harness's whole life. A wait on agent or
+status is therefore satisfied while the pane is still a shell, and spills the text into the shell instead.
 
 The pane's own output is the one readiness signal every harness gives: the resume command taking the terminal off the
 shell, then the screen repainting at least once and going quiet. Measure that quiet window from the first repaint rather

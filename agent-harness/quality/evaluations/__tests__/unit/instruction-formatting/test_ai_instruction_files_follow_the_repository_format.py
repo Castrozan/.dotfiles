@@ -1,9 +1,12 @@
+import warnings
+
 import pytest
 from instructions.ai_instruction_format import inspect_markdown_instruction
 
 from instructions.ai_instruction_references import noncanonical_skill_reference_paths
 from instructions.ai_instruction_repository_format import (
     repository_instruction_format_violations,
+    repository_instruction_format_warnings,
 )
 from instructions.ai_instruction_repository_format import (
     instruction_identity_violations,
@@ -64,6 +67,15 @@ def test_skill_reference_paths_reject_absolute_and_repository_root_forms(tmp_pat
         "/tmp/example/references/testing.md",
         "agent-harness/skills/example/references/testing.md",
     ]
+
+
+@pytest.mark.filterwarnings("default:instruction sentence advice")
+def test_ai_instruction_files_report_sentences_past_the_advised_length():
+    for path, messages in repository_instruction_format_warnings().items():
+        for message in messages:
+            warnings.warn(
+                f"instruction sentence advice: {path}: {message}", stacklevel=1
+            )
 
 
 def test_ai_instruction_files_follow_the_repository_format():

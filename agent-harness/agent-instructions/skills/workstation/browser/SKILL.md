@@ -15,8 +15,8 @@ OpenCLI is eligible only as the last resort when every recovery step has failed,
 the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. Otherwise report the
 blocked Chrome DevTools requirement instead of silently substituting another browser.
 
-Read [OpenCLI](references/opencli.md) for site commands and eligible isolated workflows.
-[chrome target](references/chrome-target.md) explains the Chrome target's constraints.
+Read [OpenCLI](references/opencli.md) for site commands and eligible isolated workflows. [chrome
+target](references/chrome-target.md) explains the Chrome target's constraints.
 
 Use OpenCLI site adapters for repeatable site reads when an isolated profile meets the request; this does not broaden
 eligibility for generic browser fallback. Read [OpenCLI](references/opencli.md) for job ownership and adapter
@@ -31,8 +31,8 @@ interaction are unnecessary; headless does not inherit the user's current logins
 change its ownership identifier.
 
 Keep one worker for a browser task and run `stop` when finished. The completion hook closes headless workers owned by
-the current Herdr pane or Codex thread, and an attached worker only after 30 minutes without a browser tool call, so
-Chrome's consent survives between turns; outside those contexts, explicit `stop` is required. A fresh worker discards
+the current Herdr pane or Codex thread. It closes an attached worker only after 30 minutes without a browser tool call,
+so Chrome's consent survives between turns. Outside those contexts, explicit `stop` is required. A fresh worker discards
 page IDs and snapshot refs, so enumerate pages and take a fresh snapshot before continuing an earlier task.
 
 CLI tool failures can print `Error:` while exiting successfully. Read the tool output and verify the resulting browser
@@ -52,8 +52,8 @@ While it waits, accept Chrome's "Allow remote debugging?" prompt yourself throug
 screen, locate the prompt's Allow button, click it, then read the log for the page list.
 
 Chrome prompts for every new session, so a silent success means someone else clicked Allow. On macOS Chrome keeps the
-prompt out of accessibility and screen capture; find its window with `list_windows` by that title and `left_click` Allow
-with `focus_strategy` none at 64 points left of the window's right edge and 32 above its bottom edge. Read
+prompt out of accessibility and screen capture. Find its window with `list_windows` by that title. Then `left_click`
+Allow with `focus_strategy` none at 64 points left of the window's right edge and 32 above its bottom edge. Read
 [connection consent](references/connection-consent.md) for the Hyprland native helper alternative.
 
 Never block the agent on `connect` or `list_pages`, retry in a loop, or start parallel attached clients. The wrapper
@@ -87,6 +87,6 @@ Background rendering throttling can otherwise make input time out; activation in
 
 ### Knowledge
 
-For traps that cost real debugging: threads that virtualize their middle out of the DOM so a one-shot query silently
-returns a partial read, pages that scroll inside a container rather than the window, and why an authenticated site needs
-the real browser target; read [knowledge](references/knowledge.md).
+For traps that cost real debugging, read [knowledge](references/knowledge.md). It covers threads that virtualize their
+middle out of the DOM so a one-shot query silently returns a partial read. It covers pages that scroll inside a
+container rather than the window. It also covers why an authenticated site needs the real browser target.

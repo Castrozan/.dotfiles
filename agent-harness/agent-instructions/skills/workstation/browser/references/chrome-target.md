@@ -9,7 +9,7 @@ constraints; it does not broaden fallback eligibility.
 The attached target is the managed `chrome-devtools` CLI pointed at the dedicated Chrome Global profile
 (`~/.config/chrome-global`) on every host, carrying that browser's own cookies, logins, and extensions. Prefer it when
 the task needs the user's actual everyday accounts or hits a bot-detecting site (Google, banking, anything behind
-Cloudflare or PerimeterX); it is the user's real logged-in session, so treat it as the user's own and never clobber the
+Cloudflare or PerimeterX). It is the user's real logged-in session, so treat it as the user's own and never clobber the
 open tab.
 
 ### Chrome devtools is stealth by consent
@@ -30,8 +30,8 @@ leave the agent unable to act. A timeout cancels this attempt and cleans its wor
 
 ### Real browser never clobber the users open tab
 
-The CDP target attaches to a real browser whose selected page on connect is the user's live foreground tab, and
-`navigate_page` replaces that tab's content in place instead of opening a new one, so navigating the selected tab
+The CDP target attaches to a real browser whose selected page on connect is the user's live foreground tab.
+`navigate_page` replaces that tab's content in place instead of opening a new one. Navigating the selected tab therefore
 silently destroys whatever the user had open there. Always open work with `new_page` and `background: true`, which loads
 a fresh tab without stealing the user's focus, or `select_page` onto a tab you already own; reserve `navigate_page` for
 a tab you opened yourself. This is intended chrome-devtools-mcp behavior through the latest release, not a bug a version
@@ -50,6 +50,6 @@ rendering or recording until the tab is visible.
 ### OpenCLI tradeoffs
 
 OpenCLI runs a separate persistent-profile Chrome with none of the user's real-browser logins. It can satisfy eligible
-isolated work after Chrome DevTools recovery fails, but it cannot substitute for an explicitly requested Chrome DevTools
+isolated work after Chrome DevTools recovery fails. It cannot substitute for an explicitly requested Chrome DevTools
 session or authenticated work that depends on the real profile. `SKILL.md` owns the last-resort gate;
 [OpenCLI](opencli.md) owns the workflow after that gate passes.

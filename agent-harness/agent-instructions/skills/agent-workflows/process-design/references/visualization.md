@@ -9,10 +9,12 @@ small investigation process.
 
 Use `flowchart` with one `subgraph` lane per actor that runs concurrently with the main path, such as background workers
 and watchers. Draw human gates and other sequential checkpoints inline on the main path instead of in their own lane,
-because a gate lane forces every approval edge across the whole diagram. Give each element one shape: stadium
-`(["..."])` for start and end, rounded `("...")` for agent steps, rectangle `["..."]` for deterministic steps, rhombus
-`{"..."}` for routers, circle `(("..."))` for splits and joins, hexagon `{{"..."}}` for human gates, asymmetric
-`>"..."]` for watchers, cylinder `[("...")]` for persisted state, and subroutine `[["..."]]` for sub-processes.
+because a gate lane forces every approval edge across the whole diagram.
+
+Give each element one shape. Use stadium `(["..."])` for start and end, rounded `("...")` for agent steps, rectangle
+`["..."]` for deterministic steps, and rhombus `{"..."}` for routers. Use circle `(("..."))` for splits and joins,
+hexagon `{{"..."}}` for human gates, asymmetric `>"..."]` for watchers, cylinder `[("...")]` for persisted state, and
+subroutine `[["..."]]` for sub-processes.
 
 Draw control flow as `-->`, conditional branches as `-->|"condition"|`, failure and escalation paths as dashed `-.->`,
 loop-backs as thick `==>` labeled with their cap, and reads or writes of persisted state as `--o`. Label every join with
@@ -33,8 +35,8 @@ such as irreversible actions to `critical`.
 
 When the reader sees only a terminal, also draw the process in Unicode box drawing, so it reads without any renderer and
 diffs cleanly. Draw it as a C4 dynamic view: the human owner on top, each block as a container labeled with its block
-name inside the system boundary, external systems in a bottom row, and relationships numbered in step order with a step
-key beneath. Size it to one full screen, about 150 columns by 60 lines: a vertical flow of every step overflows the
+name inside the system boundary. Put external systems in a bottom row, and number relationships in step order with a
+step key beneath. Size it to one full screen, about 150 columns by 60 lines: a vertical flow of every step overflows the
 screen, and a compressed one drops the labels that make it readable. Keep every gate, cap, and join rule in an arrow
 label or the step key.
 

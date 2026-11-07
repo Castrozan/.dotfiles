@@ -1,7 +1,7 @@
 ### Extension decision
 
 Use a skill when the AI should auto-detect relevance, when workflow guidance and progressive disclosure help, and when
-behavior depends on what the agent finds at runtime; use a script when the user wants explicit control over a simple
+behavior depends on what the agent finds at runtime. Use a script when the user wants explicit control over a simple
 repeatable, template-based action with fixed inputs and outputs.
 
 ### Skill format
@@ -34,9 +34,9 @@ must stay in sync.
 If a script's name and '--help' already tell the agent how to use it, the skill must not repeat that information; when a
 skill wraps scripts, the body is traps and boundaries, not a reference card for the CLI surface. The exception is
 genuinely non-obvious hard constraints where wrong syntax silently succeeds (branch naming formats, socket paths that
-fail silently, staging rules that cause data loss), which earn their token cost because the agent cannot discover them
-by running '--help' or reading source; the test is "would the agent silently produce wrong results without this line?",
-and if no, cut it.
+fail silently, staging rules that cause data loss). They earn their token cost because the agent cannot discover them by
+running '--help' or reading source. The test is "would the agent silently produce wrong results without this line?", and
+if no, cut it.
 
 ### Skill authoring preflight
 

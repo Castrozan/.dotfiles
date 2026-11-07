@@ -67,6 +67,6 @@ artifact and observed behavior, and let contradictory runtime evidence invalidat
 
 ### Discipline
 
-Keep every increment reversible enough that a bad slice can be backed out cleanly; surface owner-only or irreversible
-decisions before crossing them; reuse the goal's shared primitives rather than forking parallel state; and keep the
-tracker current so interruption resumes from durable evidence rather than reconstructed memory.
+Keep every increment reversible enough that a bad slice can be backed out cleanly. Surface owner-only or irreversible
+decisions before crossing them. Reuse the goal's shared primitives rather than forking parallel state. Keep the tracker
+current so interruption resumes from durable evidence rather than reconstructed memory.
