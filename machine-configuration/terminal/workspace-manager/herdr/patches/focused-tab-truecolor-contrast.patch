@@ -1,0 +1,27 @@
+--- a/src/client/shell/accent_contrast.rs
++++ b/src/client/shell/accent_contrast.rs
+@@ -11,7 +11,7 @@
+     })
+     .inferred_appearance()
+     {
+-        crate::terminal_theme::HostAppearance::Light => ratatui::style::Color::Black,
+-        crate::terminal_theme::HostAppearance::Dark => ratatui::style::Color::White,
++        crate::terminal_theme::HostAppearance::Light => ratatui::style::Color::Rgb(0, 0, 0),
++        crate::terminal_theme::HostAppearance::Dark => ratatui::style::Color::Rgb(255, 255, 255),
+     }
+ }
+--- a/src/client/shell/tests/accent_contrast.rs
++++ b/src/client/shell/tests/accent_contrast.rs
+@@ -17,10 +17,10 @@
+ 
+     assert_eq!(
+         focused_tab_foreground(ratatui::style::Color::Rgb(230, 230, 230)),
+-        Some(ratatui::style::Color::Black)
++        Some(ratatui::style::Color::Rgb(0, 0, 0))
+     );
+     assert_eq!(
+         focused_tab_foreground(ratatui::style::Color::Rgb(20, 25, 40)),
+-        Some(ratatui::style::Color::White)
++        Some(ratatui::style::Color::Rgb(255, 255, 255))
+     );
+ }

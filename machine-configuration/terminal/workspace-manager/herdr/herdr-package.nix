@@ -4,6 +4,7 @@ inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (
     ./patches/selection-action.patch
     ./patches/navigator-current-workspace.patch
     ./patches/agent-exit-pane-cleanup.patch
+    ./patches/focused-tab-truecolor-contrast.patch
   ];
   postPatch = (previous.postPatch or "") + ''
     mkdir -p tests
