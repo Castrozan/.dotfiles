@@ -115,7 +115,8 @@ def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch)
     talk_cli.open_conversation(
         argparse.Namespace(language="pt", character=None), tmp_path
     )
-    assert runner.call_args_list[0].args[0] == ["avatar-command", "presence", "shown"]
+    commands = [call.args[0] for call in runner.call_args_list]
+    assert ["avatar-command", "presence", "shown"] not in commands
     begin.assert_called_once_with(
         tmp_path, {"human": "AvatarRoomMicrophone"}, language="pt", barge_in=True
     )
@@ -143,6 +144,8 @@ def test_closing_leaves_a_running_meeting_alone(
 ):
     runner = Mock()
     monkeypatch.setattr(talk_cli.subprocess, "run", runner)
+    hide = Mock()
+    monkeypatch.setattr(talk_cli.desktop_window, "hide", hide)
     monkeypatch.setattr(
         talk_cli.user_units, "unit_active", lambda unit: meeting_running
     )
@@ -152,6 +155,31 @@ def test_closing_leaves_a_running_meeting_alone(
     assert (["avatar-stop"] in commands) is stops_everything
     hides_canvas = ["avatar-command", "presence", "hidden"] in commands
     assert hides_canvas is not stops_everything
+    assert hide.called is not stops_everything
+
+
+def test_the_window_appears_only_when_the_agent_shows_it(tmp_path, monkeypatch):
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda: True)
+    show = Mock()
+    hide = Mock()
+    runner = Mock()
+    monkeypatch.setattr(talk_cli.desktop_window, "show", show)
+    monkeypatch.setattr(talk_cli.desktop_window, "hide", hide)
+    monkeypatch.setattr(talk_cli.subprocess, "run", runner)
+    talk_cli.show_window(argparse.Namespace(), tmp_path)
+    talk_cli.hide_window(argparse.Namespace(), tmp_path)
+    show.assert_called_once_with()
+    hide.assert_called_once_with()
+    assert [call.args[0][2] for call in runner.call_args_list] == ["shown", "hidden"]
+
+
+def test_showing_the_window_needs_an_open_conversation(tmp_path, monkeypatch):
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
+    show = Mock()
+    monkeypatch.setattr(talk_cli.desktop_window, "show", show)
+    with pytest.raises(utterances.ConversationClosed):
+        talk_cli.show_window(argparse.Namespace(), tmp_path)
+    show.assert_not_called()
 
 
 def test_asking_speaks_and_prints_only_the_reply_tagged_as_voice(

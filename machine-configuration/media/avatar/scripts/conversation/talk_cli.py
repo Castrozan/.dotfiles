@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 
+import desktop_window
 import listen_cli
 import listener
 import start
@@ -56,9 +57,6 @@ def open_conversation(arguments, directory):
             CONVERSATION_TARGET, (start.renderer_ready, room_microphone_ready)
         )
         show_chosen_character(arguments)
-        subprocess.run(
-            ["avatar-command", "presence", "shown"], capture_output=True, check=True
-        )
         listen_cli.begin_listening(
             directory,
             {"human": ROOM_MICROPHONE},
@@ -78,9 +76,7 @@ def close_conversation(arguments, directory):
     )
     subprocess.run(["systemctl", "--user", "stop", CONVERSATION_TARGET], check=True)
     if user_units.unit_active(start.MEETING_TARGET):
-        subprocess.run(
-            ["avatar-command", "presence", "hidden"], capture_output=True, check=True
-        )
+        hide_window(arguments, directory)
     else:
         subprocess.run(["avatar-stop"], check=True, stdout=subprocess.DEVNULL)
     print(json.dumps({"open": False}))
@@ -132,6 +128,24 @@ def status(arguments, directory):
     report(directory)
 
 
+def set_canvas_presence(presence):
+    subprocess.run(
+        ["avatar-command", "presence", presence], capture_output=True, check=True
+    )
+
+
+def show_window(arguments, directory):
+    if not conversation_open():
+        raise utterances.ConversationClosed(utterances.CLOSED_MESSAGE)
+    desktop_window.show()
+    set_canvas_presence("shown")
+
+
+def hide_window(arguments, directory):
+    desktop_window.hide()
+    set_canvas_presence("hidden")
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="avatar-talk")
     commands = parser.add_subparsers(dest="action", required=True)
@@ -147,7 +161,7 @@ def parse_arguments():
     hearing = commands.add_parser("hear")
     for parser_with_wait in (asking, hearing):
         parser_with_wait.add_argument("--wait", type=float, default=HEAR_WAIT_SECONDS)
-    for name in ("follow", "status", "close"):
+    for name in ("follow", "status", "show", "hide", "close"):
         commands.add_parser(name)
     return parser.parse_args()
 
@@ -161,6 +175,8 @@ def main():
         "hear": hear,
         "follow": follow,
         "status": status,
+        "show": show_window,
+        "hide": hide_window,
         "close": close_conversation,
     }
     try:

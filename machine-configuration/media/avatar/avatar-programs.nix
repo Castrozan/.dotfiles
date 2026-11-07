@@ -92,6 +92,7 @@ let
         audio
         command
         stop
+        pkgs.hyprland
         pkgs.pulseaudio
         pkgs.systemd
       ]

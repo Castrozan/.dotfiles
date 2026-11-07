@@ -67,3 +67,11 @@ def test_hiding_a_window_that_is_already_gone_succeeds(monkeypatch):
     dispatch = fake_desktop(monkeypatch, [])
     desktop_window.hide()
     dispatch.assert_not_called()
+
+
+def test_the_desktop_is_reached_without_its_session_environment(monkeypatch):
+    runner = Mock()
+    monkeypatch.setattr(desktop_window.subprocess, "run", runner)
+    monkeypatch.delenv("HYPRLAND_INSTANCE_SIGNATURE", raising=False)
+    desktop_window.dispatch("movetoworkspacesilent", "special:avatar,address:0xa")
+    assert runner.call_args.args[0][:3] == ["hyprctl", "--instance", "0"]

@@ -10,8 +10,6 @@ let
   characterVoices = pkgs.writeText "avatar-character-voices.json" (
     builtins.toJSON (map (character: { inherit (character) name cloudVoice localVoice; }) characters)
   );
-  windowPresence =
-    action: "${pkgs.python312}/bin/python3 ${./scripts/conversation/desktop_window.py} ${action}";
   transcriptionModel = pkgs.fetchurl {
     url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
     sha256 = "1fqi0h90ig4ifpyb44cfc7dmnndv2vy5mr9g22yng9fp6nly91df";
@@ -59,7 +57,6 @@ in
           "avatar-control-server.service"
           "avatar-renderer.service"
           "avatar-room-microphone.service"
-          "avatar-window.service"
         ];
         BindsTo = [ "avatar-browser.service" ];
         After = [ "avatar-browser.service" ];
@@ -139,24 +136,6 @@ in
           Service = {
             ExecStart = "${pkgs.pipewire}/bin/pipewire -c ${./room-microphone.conf}";
             Restart = "on-failure";
-          };
-        };
-        avatar-window = {
-          Unit = {
-            Description = "Avatar window on the desktop";
-            PartOf = [
-              "avatar-conversation.target"
-              "avatar-browser.service"
-            ];
-            After = [ "avatar-browser.service" ];
-            Requires = [ "avatar-browser.service" ];
-          };
-          Service = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-            ExecStart = windowPresence "show";
-            ExecStop = windowPresence "hide";
-            Environment = [ "PATH=${lib.makeBinPath [ pkgs.hyprland ]}" ];
           };
         };
         avatar-transcriber = {

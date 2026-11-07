@@ -7,14 +7,24 @@ WINDOW_CLASS = "avatar-browser"
 CONTROLS_TITLE = "localhost_/controls.html"
 HIDDEN_WORKSPACE = "special:avatar"
 WINDOW_WAIT_SECONDS = 15
+FIRST_HYPRLAND_INSTANCE = "0"
 
 
 def hyprctl_json(*arguments):
-    return json.loads(subprocess.check_output(["hyprctl", "-j", *arguments], text=True))
+    return json.loads(
+        subprocess.check_output(
+            ["hyprctl", "--instance", FIRST_HYPRLAND_INSTANCE, "-j", *arguments],
+            text=True,
+        )
+    )
 
 
 def dispatch(*arguments):
-    subprocess.run(["hyprctl", "dispatch", *arguments], check=True, capture_output=True)
+    subprocess.run(
+        ["hyprctl", "--instance", FIRST_HYPRLAND_INSTANCE, "dispatch", *arguments],
+        check=True,
+        capture_output=True,
+    )
 
 
 def avatar_window():

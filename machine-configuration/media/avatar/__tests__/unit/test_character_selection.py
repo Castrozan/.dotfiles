@@ -80,7 +80,7 @@ def fake_cold_open(tmp_path, monkeypatch):
     utterances.remember(tmp_path, 0)
 
 
-def test_opening_shows_the_chosen_character_before_presenting_the_window(
+def test_opening_chooses_the_character_without_presenting_the_window(
     tmp_path, monkeypatch
 ):
     fake_cold_open(tmp_path, monkeypatch)
@@ -89,10 +89,9 @@ def test_opening_shows_the_chosen_character_before_presenting_the_window(
     talk_cli.open_conversation(
         argparse.Namespace(language="pt", character="vita"), tmp_path
     )
-    assert [call.args[0] for call in runner.call_args_list[:2]] == [
-        ["avatar-command", "character", "vita"],
-        ["avatar-command", "presence", "shown"],
-    ]
+    commands = [call.args[0] for call in runner.call_args_list]
+    assert commands[0] == ["avatar-command", "character", "vita"]
+    assert ["avatar-command", "presence", "shown"] not in commands
 
 
 def test_opening_without_a_choice_keeps_the_current_character(tmp_path, monkeypatch):

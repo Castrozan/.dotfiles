@@ -27,14 +27,16 @@ forwards over ssh to chise, where the avatar and microphone live.
 | `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher |
 | `avatar-talk say TEXT [EMOTION] [--voice VOICE]` | Speaks aloud and reports `finished` or `interrupted` |
 | `avatar-talk status` | Reports whether a conversation is open |
+| `avatar-talk show` / `hide` | Brings the avatar window to the current workspace, or hides it again |
 | `avatar-talk close` | Hides or stops the avatar and closes the microphone; a running meeting keeps its services |
 
 `avatar-conversation.target` owns the pieces: `avatar-browser` holds the one renderer window, whether or not the
-virtual camera is attached, `avatar-window` moves it to the current workspace as a normal tiled window, and
-`avatar-room-microphone` is a private PipeWire process running
+virtual camera is attached, and `avatar-room-microphone` is a private PipeWire process running
 [echo cancellation](https://docs.pipewire.org/page_module_echo_cancel.html) in monitor mode. Its reference is everything
 the default output plays, so neither the avatar's voice nor a video playing on the speakers reaches the transcript.
 Nothing opens the physical microphone until a conversation opens, and `close` or closing the window ends that stream.
+The window stays on the hidden `special:avatar` workspace until the agent shows it, because the user wants the avatar
+on screen only when an agent chooses to show it.
 Speaking for 0.6 seconds over the avatar stops it, so interrupting needs no agent turn.
 
 A pause alone does not end the speaker's turn. After each pause, [Smart Turn](https://github.com/pipecat-ai/smart-turn)
@@ -44,11 +46,12 @@ is computed in numpy, matching `transformers` to 1e-6, because `transformers` wo
 the default Python rather than 3.12 because only the default Python's `onnxruntime` is in the binary cache; the 3.12
 one compiles for hours.
 
-The renderer presents its canvas only during a conversation: a presented canvas in a hidden window intermittently
+The renderer presents its canvas only while an agent shows the window: a presented canvas in a hidden window intermittently
 stalled the camera near one frame per second, while a hidden canvas held 60.
 
 The window code is the Hyprland boundary in `scripts/conversation/desktop_window.py`; the rest of the conversation
-depends only on the shared services. This module is NixOS only because its audio graph is PipeWire.
+depends only on the shared services. It addresses the first Hyprland instance by index, because a command forwarded
+over ssh carries no `HYPRLAND_INSTANCE_SIGNATURE`. This module is NixOS only because its audio graph is PipeWire.
 
 ## Meetings
 
