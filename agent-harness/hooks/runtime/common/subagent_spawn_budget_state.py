@@ -12,7 +12,7 @@ STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE = "SUBAGENT_SPAWN_BUDGET_STATE_DIR
 ALLOWED_SPAWN_COUNT_KEY = "allowed_subagent_spawn_count"
 ORCHESTRATED_TIER_DECLARED_KEY = "orchestrated_tier_declared"
 SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER = 2
-ORCHESTRATED_TIER_DECLARATION_TOKEN = "orchestrated"
+ORCHESTRATED_TIER_DECLARATION_PREFIX = "orchestrated"
 
 
 def declares_the_orchestrated_tier(tool_input):
@@ -20,7 +20,7 @@ def declares_the_orchestrated_tier(tool_input):
         (tool_input.get("description", "") or "")
         .strip()
         .lower()
-        .startswith(ORCHESTRATED_TIER_DECLARATION_TOKEN)
+        .startswith(ORCHESTRATED_TIER_DECLARATION_PREFIX)
     )
 
 

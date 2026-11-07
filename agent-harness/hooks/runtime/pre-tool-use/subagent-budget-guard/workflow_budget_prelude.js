@@ -40,6 +40,7 @@ const workflowBudgetGuardStop = (ceilingDescription) => {
   log(stopMessage);
   throw new Error(stopMessage);
 };
+// biome-ignore lint/correctness/noUnusedVariables: this binding shadows the runtime agent for the workflow script appended after the prelude
 const agent = (...agentArguments) => {
   workflowBudgetGuardSettleSpending();
   if (workflowBudgetGuardAgentCount >= workflowBudgetGuardAgentCeiling) {
