@@ -61,9 +61,9 @@ def clawde_workspaces(monkeypatch, tmp_path):
 @pytest.fixture
 def herdr_reports(monkeypatch, clawde_workspaces):
     panes = [
-        live_pane("wW:pN7", "/home/zanoni/.dotfiles", INTERACTIVE_SESSION),
+        live_pane("wW:pN7", "/home/operator/.dotfiles", INTERACTIVE_SESSION),
         live_pane("wV:pF1", str(clawde_workspaces / "monster"), CLAWDE_SESSION),
-        live_pane("wV:pF2", "/home/zanoni", harness="codex"),
+        live_pane("wV:pF2", "/home/operator", harness="codex"),
     ]
 
     def list_panes(arguments, **options):
