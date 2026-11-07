@@ -31,7 +31,6 @@ export class DashboardComponent {
 
   readonly reportLinks = [
     { href: `${DASHBOARD_CONFIGURATION.reportsBaseUrl}baseline/`, label: 'baseline' },
-    { href: `${DASHBOARD_CONFIGURATION.reportsBaseUrl}quality/`, label: 'quality' },
     { href: `${DASHBOARD_CONFIGURATION.reportsBaseUrl}coverage/`, label: 'coverage' },
   ];
   readonly baselineReportUrl = `${DASHBOARD_CONFIGURATION.reportsBaseUrl}baseline/`;
