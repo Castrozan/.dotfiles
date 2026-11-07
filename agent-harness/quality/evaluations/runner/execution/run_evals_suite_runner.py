@@ -1,4 +1,5 @@
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from dataclasses import dataclass
 
 from reporting.run_evals_progress import EvaluationProgressReporter
 from runner.execution.run_evals_test_runner import TestResult, run_test
@@ -7,51 +8,62 @@ from runner.execution.run_evals_test_selection import selected_tests
 DEFAULT_PARALLEL_WORKERS = 2
 
 
+@dataclass(frozen=True)
+class SuiteRunOptions:
+    category: str | None = None
+    test_name: str | None = None
+    dry_run: bool = False
+    smoke_only: bool = False
+    max_workers_override: int | None = None
+    instruction_ref: str | None = None
+    harness: str = "claude"
+    judge_harness: str = "claude"
+    selected_test_keys: set[str] | None = None
+    partition: str | None = None
+
+
+DEFAULT_SUITE_RUN_OPTIONS = SuiteRunOptions()
+
+
 def run_tests(
-    config: dict,
-    category: str | None = None,
-    test_name: str | None = None,
-    dry_run: bool = False,
-    smoke_only: bool = False,
-    max_workers_override: int | None = None,
-    instruction_ref: str | None = None,
-    harness: str = "claude",
-    judge_harness: str = "claude",
-    selected_test_keys: set[str] | None = None,
-    on_result=None,
-    partition: str | None = None,
+    config: dict, options: SuiteRunOptions = DEFAULT_SUITE_RUN_OPTIONS, on_result=None
 ) -> list[TestResult]:
     settings = config.get("settings", {})
-    if smoke_only:
+    if options.smoke_only:
         return _run_smoke_test(
-            config, settings, dry_run, harness, judge_harness, on_result
+            config,
+            settings,
+            options.dry_run,
+            options.harness,
+            options.judge_harness,
+            on_result,
         )
     tests_to_run = selected_tests(
         config,
-        category,
-        test_name,
-        selected_test_keys=selected_test_keys,
-        partition=partition,
+        options.category,
+        options.test_name,
+        selected_test_keys=options.selected_test_keys,
+        partition=options.partition,
     )
-    if dry_run or len(tests_to_run) <= 1:
+    if options.dry_run or len(tests_to_run) <= 1:
         return _run_sequential_tests(
             tests_to_run,
             settings,
-            dry_run,
-            instruction_ref,
-            harness,
-            judge_harness,
+            options.dry_run,
+            options.instruction_ref,
+            options.harness,
+            options.judge_harness,
             on_result,
         )
-    max_workers = max_workers_override or settings.get(
+    max_workers = options.max_workers_override or settings.get(
         "parallel_workers", DEFAULT_PARALLEL_WORKERS
     )
     return _run_parallel_tests(
         tests_to_run,
         settings,
-        instruction_ref,
-        harness,
-        judge_harness,
+        options.instruction_ref,
+        options.harness,
+        options.judge_harness,
         max_workers,
         on_result,
     )

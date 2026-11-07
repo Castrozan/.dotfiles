@@ -5,7 +5,7 @@ from runner.sampling.run_evals_significance import (
     paired_hierarchical_bootstrap,
 )
 from runner.baseline.run_evals_evidence import raise_for_evaluation_errors
-from runner.execution.run_evals_suite_runner import run_tests
+from runner.execution.run_evals_suite_runner import SuiteRunOptions, run_tests
 
 INSTRUCTION_SURFACE_FIELDS = (
     "system_prompt",
@@ -56,22 +56,26 @@ def run_instruction_loading_experiment(
     def run_candidate():
         return run_tests(
             config,
-            category=category,
-            max_workers_override=max_workers_override,
-            dry_run=dry_run,
-            harness=harness,
-            judge_harness=judge_harness,
+            SuiteRunOptions(
+                category=category,
+                max_workers_override=max_workers_override,
+                dry_run=dry_run,
+                harness=harness,
+                judge_harness=judge_harness,
+            ),
         )
 
     def run_control():
         return run_tests(
             control_config,
-            category=category,
-            max_workers_override=max_workers_override,
-            instruction_ref=comparison_ref,
-            dry_run=dry_run,
-            harness=harness,
-            judge_harness=judge_harness,
+            SuiteRunOptions(
+                category=category,
+                max_workers_override=max_workers_override,
+                instruction_ref=comparison_ref,
+                dry_run=dry_run,
+                harness=harness,
+                judge_harness=judge_harness,
+            ),
         )
 
     for epoch_index in range(epochs):

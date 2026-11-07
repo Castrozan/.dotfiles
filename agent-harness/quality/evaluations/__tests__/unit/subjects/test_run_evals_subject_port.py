@@ -7,6 +7,7 @@ from runner import run_evals_worktree_and_environment as evaluation_environment
 from runner.execution.run_evals_subject_port import (
     NODE_RUNTIME_BINARY,
     NODE_RUNTIME_OVERRIDE,
+    SubjectRequest,
     invoke_subject,
     is_retryable_failure,
     resolve_node_runtime,
@@ -60,7 +61,9 @@ def test_success_returns_the_output_string(monkeypatch):
         lambda path: {"output": "the answer", "error": None},
     )
 
-    output, invoked = invoke_subject("claude", prompt="q", model="haiku")
+    output, invoked = invoke_subject(
+        "claude", SubjectRequest(prompt="q", model="haiku")
+    )
 
     assert invoked is True
     assert output == "the answer"
@@ -88,7 +91,7 @@ def test_provider_error_with_a_retryable_marker_is_retried(monkeypatch):
         lambda path: next(results),
     )
 
-    output, invoked = invoke_subject("claude", prompt="q")
+    output, invoked = invoke_subject("claude", SubjectRequest(prompt="q"))
 
     assert invoked is True
     assert output == "ok"
@@ -109,7 +112,7 @@ def test_provider_error_with_a_non_retryable_marker_is_not_retried(monkeypatch):
         lambda path: {"output": None, "error": "usage limit reached"},
     )
 
-    output, invoked = invoke_subject("claude", prompt="q")
+    output, invoked = invoke_subject("claude", SubjectRequest(prompt="q"))
 
     assert invoked is False
     assert "usage limit" in output
@@ -125,7 +128,7 @@ def test_empty_output_is_retried(monkeypatch):
     monkeypatch.setattr(subject_port.time, "sleep", lambda *args: None)
     monkeypatch.setattr(subject_port, "read_result_file", lambda path: next(results))
 
-    output, invoked = invoke_subject("opencode", prompt="q")
+    output, invoked = invoke_subject("opencode", SubjectRequest(prompt="q"))
 
     assert invoked is True
     assert output == "recovered"
@@ -151,7 +154,7 @@ def test_timeout_surfaces_a_transient_failure_then_retries(monkeypatch):
         lambda path: {"output": "recovered", "error": None},
     )
 
-    output, invoked = invoke_subject("claude", prompt="q", timeout=5)
+    output, invoked = invoke_subject("claude", SubjectRequest(prompt="q", timeout=5))
 
     assert invoked is True
     assert output == "recovered"
@@ -179,7 +182,7 @@ def test_each_retry_starts_without_a_stale_result(monkeypatch, tmp_path):
         lambda path: {"output": "fresh", "error": None},
     )
 
-    output, invoked = invoke_subject("claude", prompt="q")
+    output, invoked = invoke_subject("claude", SubjectRequest(prompt="q"))
 
     assert invoked is True
     assert output == "fresh"

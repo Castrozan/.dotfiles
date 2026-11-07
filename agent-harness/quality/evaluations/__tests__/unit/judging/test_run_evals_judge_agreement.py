@@ -62,7 +62,10 @@ def test_grading_the_same_outputs_twice_names_every_flipped_verdict():
     second_pass = {"steady": True, "wobbly": False}
 
     passes = [
-        judge_agreement(cases, lambda rubric, output: (verdicts[output], "reason"))
+        judge_agreement(
+            cases,
+            lambda rubric, output, verdicts=verdicts: (verdicts[output], "reason"),
+        )
         for verdicts in (first_pass, second_pass)
     ]
 

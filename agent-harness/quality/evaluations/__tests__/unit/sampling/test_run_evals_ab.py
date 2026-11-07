@@ -54,15 +54,7 @@ def test_outcomes_by_name_maps_pass_state():
 
 
 def test_experiment_pairs_instructed_run_against_stripped_control(monkeypatch):
-    def fake_run_tests(
-        config,
-        category=None,
-        max_workers_override=None,
-        instruction_ref=None,
-        dry_run=False,
-        harness="claude",
-        judge_harness="claude",
-    ):
+    def fake_run_tests(config, options):
         instructed = any(
             "skill_path" in test for tests in config["tests"].values() for test in tests
         )
@@ -92,17 +84,9 @@ def test_experiment_pairs_instructed_run_against_stripped_control(monkeypatch):
 def test_repeated_experiment_alternates_arm_order_and_compares_a_git_ref(monkeypatch):
     calls = []
 
-    def fake_run_tests(
-        config,
-        category=None,
-        max_workers_override=None,
-        instruction_ref=None,
-        dry_run=False,
-        harness="claude",
-        judge_harness="claude",
-    ):
-        calls.append(instruction_ref or "candidate")
-        passed = instruction_ref is None
+    def fake_run_tests(config, options):
+        calls.append(options.instruction_ref or "candidate")
+        passed = options.instruction_ref is None
         return [_result("recovery", passed)]
 
     monkeypatch.setattr(run_evals_ab, "run_tests", fake_run_tests)
@@ -133,17 +117,9 @@ def test_repeated_experiment_alternates_arm_order_and_compares_a_git_ref(monkeyp
 
 
 def test_experiment_refuses_to_grade_an_invocation_error(monkeypatch):
-    def fake_run_tests(
-        config,
-        category=None,
-        max_workers_override=None,
-        instruction_ref=None,
-        dry_run=False,
-        harness="claude",
-        judge_harness="claude",
-    ):
+    def fake_run_tests(config, options):
         result = _result("recovery", True)
-        if instruction_ref:
+        if options.instruction_ref:
             result.passed = False
             result.error = "session limit reached"
         return [result]
@@ -164,16 +140,8 @@ def test_experiment_refuses_to_grade_an_invocation_error(monkeypatch):
 def test_dry_run_reaches_both_experiment_arms(monkeypatch):
     dry_run_values = []
 
-    def fake_run_tests(
-        config,
-        category=None,
-        max_workers_override=None,
-        instruction_ref=None,
-        dry_run=False,
-        harness="claude",
-        judge_harness="claude",
-    ):
-        dry_run_values.append(dry_run)
+    def fake_run_tests(config, options):
+        dry_run_values.append(options.dry_run)
         return [_result("recovery", True)]
 
     monkeypatch.setattr(run_evals_ab, "run_tests", fake_run_tests)

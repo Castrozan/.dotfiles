@@ -41,7 +41,7 @@ from runner.sampling.run_evals_sampling import (
     build_epoch_enriched_baseline,
 )
 from runner.execution.run_evals_subject_port import build_provider_invoker
-from runner.execution.run_evals_suite_runner import run_tests
+from runner.execution.run_evals_suite_runner import SuiteRunOptions, run_tests
 from runner.run_evals_worktree_and_environment import temporary_eval_worktree
 
 
@@ -96,6 +96,20 @@ def run_ab_evaluation(config: dict, args, execution_profile: dict) -> int:
     return 0
 
 
+def suite_run_options(args, selected_test_keys=None) -> SuiteRunOptions:
+    return SuiteRunOptions(
+        category=args.category,
+        test_name=args.test,
+        dry_run=args.dry_run,
+        smoke_only=args.smoke,
+        max_workers_override=args.workers,
+        harness=args.harness,
+        judge_harness=args.judge_harness,
+        selected_test_keys=selected_test_keys,
+        partition=args.partition,
+    )
+
+
 def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
     current_fingerprints = evaluation_test_fingerprints(config)
     run_record = run_record_for(args.dry_run)
@@ -106,14 +120,7 @@ def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
             print(f"\n--- epoch {epoch}/{args.epochs} ---")
             epoch_results = run_tests(
                 config,
-                category=args.category,
-                test_name=args.test,
-                dry_run=args.dry_run,
-                smoke_only=args.smoke,
-                max_workers_override=args.workers,
-                harness=args.harness,
-                judge_harness=args.judge_harness,
-                partition=args.partition,
+                suite_run_options(args),
                 on_result=lambda result, epoch=epoch: run_record.record(result, epoch),
             )
             raise_for_evaluation_errors(epoch_results, "repeated evaluation")
@@ -150,16 +157,8 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
     with temporary_eval_worktree():
         results = run_tests(
             config,
-            category=args.category,
-            test_name=args.test,
-            dry_run=args.dry_run,
-            smoke_only=args.smoke,
-            max_workers_override=args.workers,
-            harness=args.harness,
-            judge_harness=args.judge_harness,
-            selected_test_keys=selected_test_keys,
+            suite_run_options(args, selected_test_keys),
             on_result=record_each_result(run_record, checkpoint),
-            partition=args.partition,
         )
     all_passed = print_results(results, harness=args.harness)
     announce_run_record(run_record)

@@ -128,13 +128,18 @@ def test_provider_calls_use_the_active_worktree_and_restore_after_failure(
             with ThreadPoolExecutor(max_workers=2) as executor:
                 calls = [
                     executor.submit(
-                        subject_port.invoke_subject, harness, prompt="question"
+                        subject_port.invoke_subject,
+                        harness,
+                        subject_port.SubjectRequest(prompt="question"),
                     )
                     for harness in ("claude", "codex")
                 ]
                 assert all(call.result() == ("answer", True) for call in calls)
             subject_port.invoke_subject(
-                "opencode", prompt="question", working_directory=repository_path
+                "opencode",
+                subject_port.SubjectRequest(
+                    prompt="question", working_directory=repository_path
+                ),
             )
             raise RuntimeError("evaluation failed")
 

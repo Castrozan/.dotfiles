@@ -2,6 +2,7 @@ from runner.execution import run_evals_subject_port as subject_port
 from runner.execution import run_evals_test_runner
 from runner import run_evals_worktree_and_environment as evaluation_environment
 from runner.execution.run_evals_subject_port import (
+    SubjectRequest,
     build_subject_invocation,
     model_for_harness,
 )
@@ -23,18 +24,19 @@ def test_alternate_harness_receives_its_named_model_only():
     assert model_for_harness(named, "claude", defaults) == "sonnet"
 
 
-def test_invocation_is_a_normalized_payload_without_provider_concepts():
+def test_invocation_is_a_normalized_payload_without_provider_concepts(tmp_path):
+    result_file = str(tmp_path / "result.json")
     invocation = build_subject_invocation(
         "codex",
-        prompt="do it",
-        model="gpt-5",
-        model_reasoning_effort="low",
-        system_prompt="SYS",
-        timeout=90,
-        max_turns=2,
-        no_tools=False,
-        working_directory=None,
-        result_file="/tmp/result.json",
+        SubjectRequest(
+            prompt="do it",
+            model="gpt-5",
+            model_reasoning_effort="low",
+            system_prompt="SYS",
+            timeout=90,
+            max_turns=2,
+        ),
+        result_file,
     )
     assert invocation == {
         "harness": "codex",
@@ -46,7 +48,7 @@ def test_invocation_is_a_normalized_payload_without_provider_concepts():
         "timeout": 90,
         "max_turns": 2,
         "no_tools": False,
-        "result_file": "/tmp/result.json",
+        "result_file": result_file,
         "isolated_context": False,
     }
 
@@ -54,8 +56,8 @@ def test_invocation_is_a_normalized_payload_without_provider_concepts():
 def test_subject_runner_passes_the_declared_turn_limit(monkeypatch):
     invocation = {}
 
-    def invoke(harness, **keyword_arguments):
-        invocation.update(keyword_arguments)
+    def invoke(harness, request, invocation_role):
+        invocation.update(vars(request))
         return "candidate answer", True
 
     monkeypatch.setattr(subject_port, "invoke_subject", invoke)

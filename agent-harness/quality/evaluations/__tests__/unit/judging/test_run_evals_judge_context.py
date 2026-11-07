@@ -16,8 +16,8 @@ def test_judging_receives_the_original_request_and_preserves_its_explanation(
         )
     )
 
-    def invoke(harness, **arguments):
-        invocations.append(arguments)
+    def invoke(harness, request, invocation_role):
+        invocations.append(vars(request))
         return next(outputs)
 
     monkeypatch.setattr(subject_port, "invoke_subject", invoke)

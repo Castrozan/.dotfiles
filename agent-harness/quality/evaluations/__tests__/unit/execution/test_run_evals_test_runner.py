@@ -82,7 +82,7 @@ def test_model_invocation_failure_is_reported_without_judging_its_error_text(
     monkeypatch.setattr(
         subject_port,
         "invoke_subject",
-        lambda harness, **kwargs: ("session limit reached", False),
+        lambda harness, request, invocation_role: ("session limit reached", False),
     )
 
     result = run_evals_test_runner.run_test(
@@ -104,7 +104,7 @@ def test_judge_invocation_failure_is_an_evaluation_error(monkeypatch):
     monkeypatch.setattr(
         subject_port,
         "invoke_subject",
-        lambda harness, **kwargs: next(invocations),
+        lambda harness, request, invocation_role: next(invocations),
     )
 
     result = run_evals_test_runner.run_test(
@@ -124,7 +124,8 @@ def test_judge_invocation_failure_is_an_evaluation_error(monkeypatch):
 def test_codex_subject_and_judge_use_their_pinned_models_and_reasoning(monkeypatch):
     invocations = []
 
-    def invoke(harness, **kwargs):
+    def invoke(harness, request, invocation_role):
+        kwargs = {**vars(request), "invocation_role": invocation_role}
         invocations.append((harness, kwargs))
         if kwargs["invocation_role"] == "judge":
             return "VERDICT: PASS", True
@@ -163,7 +164,8 @@ def test_codex_subject_and_judge_use_their_pinned_models_and_reasoning(monkeypat
 def test_opencode_subject_and_judge_can_use_provider_default_models(monkeypatch):
     invocations = []
 
-    def invoke(harness, **keyword_arguments):
+    def invoke(harness, request, invocation_role):
+        keyword_arguments = {**vars(request), "invocation_role": invocation_role}
         invocations.append((harness, keyword_arguments))
         if keyword_arguments["invocation_role"] == "judge":
             return "VERDICT: PASS", True

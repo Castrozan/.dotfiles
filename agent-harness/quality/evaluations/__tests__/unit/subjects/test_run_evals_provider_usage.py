@@ -4,7 +4,7 @@ from runner.execution.run_evals_provider_usage import (
     provider_usage_summary,
     reset_provider_usage,
 )
-from runner.execution.run_evals_subject_port import invoke_subject
+from runner.execution.run_evals_subject_port import SubjectRequest, invoke_subject
 
 
 def test_usage_is_normalized_by_role_and_harness(monkeypatch):
@@ -30,7 +30,9 @@ def test_usage_is_normalized_by_role_and_harness(monkeypatch):
     )
     reset_provider_usage()
 
-    output, invoked = invoke_subject("codex", prompt="q", invocation_role="judge")
+    output, invoked = invoke_subject(
+        "codex", SubjectRequest(prompt="q"), invocation_role="judge"
+    )
 
     assert invoked is True
     assert output == "graded"
