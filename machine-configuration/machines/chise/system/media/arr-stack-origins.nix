@@ -15,12 +15,6 @@ let
       loginLocationRegexes = [ "^/api/v1/auth/(jellyfin|plex|local)" ];
     }
     {
-      hostname = "anime.lucaszanoni.com";
-      proxyPort = 9447;
-      upstreamUrl = "http://${chiseTailnetBindAddress}:4568";
-      loginLocationRegexes = [ ];
-    }
-    {
       hostname = "suwayomi.lucaszanoni.com";
       proxyPort = 9452;
       upstreamUrl = "http://${chiseTailnetBindAddress}:4567";

@@ -48,11 +48,6 @@ in
       sender = "castro.lucas290@gmail.com";
       recipient = "castro.lucas290@gmail.com";
     };
-    removedExtensionPackages = [
-      "eu.kanade.tachiyomi.animeextension.en.animepahe"
-      "eu.kanade.tachiyomi.animeextension.en.kayoanime"
-      "eu.kanade.tachiyomi.extension.en.bakkin"
-    ];
     secrets = {
       jellyfinApiKey = secret "jellyfin-admin-api-key";
       qbittorrentPassword = secret "arr-qbittorrent-password";
