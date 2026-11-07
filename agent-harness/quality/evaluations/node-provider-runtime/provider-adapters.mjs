@@ -37,6 +37,8 @@ function _addClaudeOptionalOptions(options, invocation) {
   if (invocation.model) options.model = invocation.model;
   if (invocation.max_turns) options.maxTurns = invocation.max_turns;
   if (invocation.system_prompt) options.systemPrompt = invocation.system_prompt;
+  if (invocation.model_reasoning_effort)
+    options.effort = invocation.model_reasoning_effort;
 }
 
 export function claudeResultOutcome(message) {

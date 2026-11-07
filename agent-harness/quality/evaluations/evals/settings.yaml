@@ -8,11 +8,13 @@ settings:
     claude: haiku
     codex: gpt-6.1-sol
   subject_reasoning_efforts:
+    claude: high
     codex: high
   judge_models:
     claude: opus
     codex: gpt-6-luna
   judge_reasoning_efforts:
+    claude: high
     codex: high
   timeout_seconds: 120
 

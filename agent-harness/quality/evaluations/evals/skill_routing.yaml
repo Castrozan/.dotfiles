@@ -22,19 +22,25 @@ shared_system_prompt: &shared_system_prompt |
 
   explore - Search current code across text, files, callers, and context in three cycles. Use for repo sweeps, not Git history.
 
+  forge - Manage pull requests, merge requests, reviews and hosted CI using the repository's Git hosting provider.
+
   goal-prompt - Write a one-line prompt under 3.5k characters for an autonomous or scheduled agent. Use for routine, cron, remote-trigger, or other one-field runs.
 
   herdr - Operate herdr workspaces, tabs, panes, processes, and persistent interactive agent sessions. Use for layout, process control, inspection, input, waiting, and takeover.
-
-  humanize - Use for substantial replies to people in active agent sessions. Skip one- or two-sentence confirmations, factual answers, and file authoring.
 
   instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
 
   orchestrate - Delegate same-goal work to another interactive agent, harness, or machine over a2a, herdr, or ssh. Use to spawn parallel peers, dispatch, observe, correct, and repeat.
 
+  process-design - Co-design multi-step, multi-agent processes by composing capability blocks from a toolbox (agents, deterministic tools, monitors, gates, memory), redrawing with the human each round, then suggesting a dry run. Use before orchestrating complex agent work.
+
   research - Research current external information, comparisons, decisions, or themed digests. Use for latest facts, evaluation, verification, "catch me up", or community pulses; not local repository search.
 
   review - Review code, configurations, AI instructions, or completed work for actionable defects, regressions, security risks, and compliance gaps. Use when inspecting a diff, auditing an instruction surface, or verifying delivery.
+
+  url-shortener - Shorten long public URLs into verified plain links for terminal and keyboard workflows.
+
+  wellput - Use for substantial replies in active agent sessions; exclude file authoring.
 
   workspace - Switch the Bash working directory to another repo or directory for the session. Use when work must run commands outside the primary repo.
 
@@ -282,14 +288,14 @@ tests:
       output_equals:
         - "research"
 
-  - name: routing_to_humanize_merge_request_description
+  - name: routing_to_wellput_for_a_reply_the_reader_could_not_follow
     no_tools: true
     system_prompt: *shared_system_prompt
-    prompt: "Rewrite this merge request description so a reviewer can scan it quickly without losing any caveats"
+    prompt: "I read your last answer twice and still can't tell which option you recommend. Explain it again so I can decide."
     model: sonnet
     assertions:
       output_equals:
-        - "humanize"
+        - "wellput"
 
   - name: routing_to_devenv_shell_setup
     no_tools: true

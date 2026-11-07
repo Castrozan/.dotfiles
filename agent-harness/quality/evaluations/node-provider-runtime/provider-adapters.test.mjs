@@ -60,6 +60,14 @@ test("claude no_tools forbids every tool", () => {
   assert.deepEqual(options.allowedTools, []);
 });
 
+test("claude maps the reasoning effort and omits it when not given", () => {
+  assert.equal(
+    claudeQueryOptions(invocation({ model_reasoning_effort: "high" })).effort,
+    "high",
+  );
+  assert.equal(claudeQueryOptions(invocation()).effort, undefined);
+});
+
 test("claude with no model or system prompt omits both", () => {
   const options = claudeQueryOptions(invocation());
   assert.equal(options.model, undefined);

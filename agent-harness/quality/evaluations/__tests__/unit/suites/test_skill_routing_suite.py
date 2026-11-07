@@ -20,7 +20,14 @@ ROUTER_CATALOGS = [
     (SKILL_ROUTING_SUITE, "shared_system_prompt", 10),
 ]
 
-GENERATED_SKILL_NAMES = {"all-skills"}
+DEPLOYED_SKILLS_WITHOUT_A_SAME_NAMED_SOURCE = {"all-skills", "wellput"}
+INTERACTIVE_SKILL_CATALOG = (
+    Path(__file__).resolve().parents[5]
+    / "agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix"
+)
+DEFAULT_INTERACTIVE_SKILL_LIST = re.compile(
+    r"defaultInteractiveSkillNames = \[(.*?)\];", re.DOTALL
+)
 
 
 def load_skill_routing_config():
@@ -45,12 +52,31 @@ def test_every_skill_in_a_router_catalog_exists_on_disk(
     missing = [
         name
         for name in catalog
-        if name not in GENERATED_SKILL_NAMES
+        if name not in DEPLOYED_SKILLS_WITHOUT_A_SAME_NAMED_SOURCE
         and public_skill_definition_path(name) is None
     ]
     assert not missing, (
         f"{config_path.name} offers skills that no longer exist: {missing}; a routing "
         f"test can never pass once its expected answer has been deleted or renamed"
+    )
+
+
+def deployed_default_skill_names():
+    skill_list = DEFAULT_INTERACTIVE_SKILL_LIST.search(
+        INTERACTIVE_SKILL_CATALOG.read_text()
+    )
+    assert skill_list, "interactive-agent-skills.nix lost defaultInteractiveSkillNames"
+    return set(re.findall(r'"([a-z][a-z0-9-]*)"', skill_list.group(1)))
+
+
+def test_router_catalog_offers_exactly_the_deployed_default_skills():
+    catalog = set(
+        router_catalog_skill_names(load_skill_routing_config(), "shared_system_prompt")
+    )
+    deployed = deployed_default_skill_names() | {"all-skills"}
+    assert catalog == deployed, (
+        "the routing catalog must mirror the skills every session loads; "
+        f"missing: {sorted(deployed - catalog)}, not deployed: {sorted(catalog - deployed)}"
     )
 
 
