@@ -3,6 +3,7 @@ import json
 import pytest
 
 from hook_dispatch_test_support import (
+    HandlerResult,
     HookHandler,
     block_and_system_message_handler,
     context_and_system_message_handler,
@@ -117,6 +118,31 @@ def test_emit_pretooluse_decision_carries_allow_with_updated_input(capsys):
             "hookEventName": "PreToolUse",
             "permissionDecision": "allow",
             "updatedInput": {"command": "cd /x && ls"},
+        },
+        "continue": True,
+    }
+
+
+def test_emit_pretooluse_decision_carries_a_rewrite_that_leaves_permission_alone(
+    capsys,
+):
+    emit_pretooluse_decision(
+        run_handlers(
+            {},
+            [
+                HookHandler(
+                    handle=lambda hook_input: HandlerResult(
+                        updated_input={"script": "guarded"}
+                    )
+                )
+            ],
+        )
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "updatedInput": {"script": "guarded"},
         },
         "continue": True,
     }

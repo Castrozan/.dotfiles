@@ -21,17 +21,6 @@ from interactive_session_detection import (  # noqa: E402
 )
 
 SUBAGENT_SPAWN_TOOL_NAME = "Agent"
-SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER = 2
-ORCHESTRATED_TIER_DECLARATION_TOKEN = "orchestrated"
-
-
-def declares_the_orchestrated_tier(tool_input):
-    return (
-        (tool_input.get("description", "") or "")
-        .strip()
-        .lower()
-        .startswith(ORCHESTRATED_TIER_DECLARATION_TOKEN)
-    )
 
 
 def build_ceiling_reached_message(allowed_spawn_count):
@@ -53,16 +42,18 @@ def handle(hook_input):
     if not is_keyboard_driven_interactive_session():
         return None
     session_id = hook_input.get("session_id", "")
-    spawn_declares_the_orchestrated_tier = declares_the_orchestrated_tier(
-        hook_input.get("tool_input", {}) or {}
+    spawn_declares_the_orchestrated_tier = (
+        subagent_spawn_budget_state.declares_the_orchestrated_tier(
+            hook_input.get("tool_input", {}) or {}
+        )
     )
     if not subagent_spawn_budget_state.reserve_subagent_spawn(
         session_id,
         spawn_declares_the_orchestrated_tier,
-        SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER,
+        subagent_spawn_budget_state.SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER,
     ):
         ceiling_reached_message = build_ceiling_reached_message(
-            SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER
+            subagent_spawn_budget_state.SUBAGENT_CEILING_BELOW_THE_ORCHESTRATED_TIER
         )
         return HandlerResult(
             decision="deny",

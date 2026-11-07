@@ -89,6 +89,11 @@ PRE_TOOL_USE_HANDLERS = [
         tool_matcher="Agent",
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
+    HookHandler(
+        handler_module_name="workflow_budget_guard_handler",
+        tool_matcher="Workflow",
+        surfaces=(CLAUDE_SURFACE,),
+    ),
 ]
 
 
