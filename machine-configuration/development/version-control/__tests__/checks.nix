@@ -46,6 +46,16 @@ in
       )
       "lazygit should render diffs through delta, unified first and side-by-side on the pager cycle key";
 
+  domain-dev-lazygit-copies-through-terminal-clipboard-escape =
+    mkEvalCheck "domain-dev-lazygit-copies-through-terminal-clipboard-escape"
+      (
+        let
+          copyCommand = configuration.programs.lazygit.settings.os.copyToClipboardCmd;
+        in
+        lib.hasInfix "]52;c;" copyCommand && lib.hasSuffix "> /dev/tty" copyCommand
+      )
+      "lazygit should copy through the OSC 52 terminal escape so the attached terminal owns the clipboard, independent of the display environment lazygit was launched with";
+
   domain-dev-git-editor-is-the-terminal-gated-launcher =
     mkEvalCheck "domain-dev-git-editor-is-the-terminal-gated-launcher"
       (lib.hasSuffix "git-message-editor" gitCoreSettings.editor)
