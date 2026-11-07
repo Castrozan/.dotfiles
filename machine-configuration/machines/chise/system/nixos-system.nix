@@ -19,6 +19,7 @@ in
     ../../../development/virtualization/virtualization-nixos.nix
     ../../../development/testing/python-interpreter-nixos.nix
     ../../../desktop/appearance/fonts/fonts-nixos.nix
+    ../../../gaming/horizon/horizon-nixos.nix
     ../../../gaming/steam/steam-nixos.nix
     ../../../media/media-streaming/stremio-streaming-server-nixos.nix
     ../../../media/media-streaming/stremio-comet-nixos.nix

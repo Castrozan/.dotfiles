@@ -27,6 +27,16 @@ in
     mkEvalCheck "domain-gaming-horizon-launcher" (hasPackage "horizon-launcher")
       "Horizon launcher should be installed to play the Rust rewrite of Minecraft: Java Edition";
 
+  domain-gaming-horizon-multiplayer-ports =
+    mkEvalCheck "domain-gaming-horizon-multiplayer-ports"
+      (
+        (import ../horizon/horizon-nixos.nix { }).networking.firewall.allowedTCPPorts == [
+          25565
+          25580
+        ]
+      )
+      "friends must reach Horizon's dedicated server port and its Play with Friends invite port through the host firewall";
+
   domain-gaming-vesktop-config =
     mkEvalCheck "domain-gaming-vesktop-config" (hasFile ".config/vesktop/settings/settings.json")
       "vesktop config should be deployed";
