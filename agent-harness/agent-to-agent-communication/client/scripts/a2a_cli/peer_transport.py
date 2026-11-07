@@ -71,7 +71,7 @@ def peers_matching_target(agent_directory: dict, agent_target: str) -> list[dict
         [
             entry
             for entry in peers
-            if entry.get("servant", "").casefold() == target_casefolded
+            if entry.get("servant") and entry["servant"].casefold() == target_casefolded
         ],
     ):
         if matches:

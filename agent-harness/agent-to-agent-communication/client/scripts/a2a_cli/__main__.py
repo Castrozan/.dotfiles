@@ -23,6 +23,9 @@ from .peer_transport import (
 )
 
 
+PEER_TARGET_HELP = "peer name, paneId, Servant name, or harness session id"
+
+
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="a2a",
@@ -40,7 +43,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     send_parser = subcommands.add_parser(
         "send", help="submit a task and print its id without waiting"
     )
-    send_parser.add_argument("agent")
+    send_parser.add_argument("agent", help=PEER_TARGET_HELP)
     send_parser.add_argument("text")
     send_parser.add_argument(
         "--sender",
@@ -51,7 +54,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ask_parser = subcommands.add_parser(
         "ask", help="submit a task and block until the agent answers"
     )
-    ask_parser.add_argument("agent")
+    ask_parser.add_argument("agent", help=PEER_TARGET_HELP)
     ask_parser.add_argument("text")
     ask_parser.add_argument(
         "--sender",
@@ -63,12 +66,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ask_parser.set_defaults(handler=command_ask)
 
     status_parser = subcommands.add_parser("status", help="read one task by id")
-    status_parser.add_argument("agent")
+    status_parser.add_argument("agent", help=PEER_TARGET_HELP)
     status_parser.add_argument("task_id")
     status_parser.set_defaults(handler=command_status)
 
     cancel_parser = subcommands.add_parser("cancel", help="interrupt one running task")
-    cancel_parser.add_argument("agent")
+    cancel_parser.add_argument("agent", help=PEER_TARGET_HELP)
     cancel_parser.add_argument("task_id")
     cancel_parser.set_defaults(handler=command_cancel)
 
@@ -76,7 +79,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "notify",
         help="queue peer messages for delivery when the agent is idle",
     )
-    notify_parser.add_argument("agent", help="current peer name or stable paneId")
+    notify_parser.add_argument("agent", help=PEER_TARGET_HELP)
     notify_parser.add_argument("text")
     notify_parser.add_argument("--sender", required=True, help="sender name")
     notify_parser.set_defaults(handler=command_notify)
@@ -84,14 +87,14 @@ def build_argument_parser() -> argparse.ArgumentParser:
     inbox_parser = subcommands.add_parser(
         "inbox", help="read unread peer data without consuming or submitting it"
     )
-    inbox_parser.add_argument("agent", help="current peer name or stable paneId")
+    inbox_parser.add_argument("agent", help=PEER_TARGET_HELP)
     inbox_parser.set_defaults(handler=command_inbox)
 
     acknowledge_parser = subcommands.add_parser(
         "ack",
         help="explicitly acknowledge a notification; repeated acknowledgement is safe",
     )
-    acknowledge_parser.add_argument("agent", help="current peer name or stable paneId")
+    acknowledge_parser.add_argument("agent", help=PEER_TARGET_HELP)
     acknowledge_parser.add_argument("notification_id")
     acknowledge_parser.set_defaults(handler=command_acknowledge)
     add_fleet_parser(subcommands)

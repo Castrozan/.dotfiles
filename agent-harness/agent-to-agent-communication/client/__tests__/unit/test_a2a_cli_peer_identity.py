@@ -174,3 +174,8 @@ class TestAddressingByIdentity:
         directory = {"evals-hillclimb": peer("evals-hillclimb", "Iskandar")}
         with pytest.raises(PeerRequestFailure, match="evals-hillclimb \\(Iskandar\\)"):
             resolve_peer_endpoint(directory, "nobody")
+
+    def test_an_empty_target_reaches_no_peer_lacking_a_servant(self):
+        directory = {"shell-pane": peer("shell-pane")}
+        with pytest.raises(PeerRequestFailure, match="unknown agent"):
+            resolve_peer_endpoint(directory, "")
