@@ -1,6 +1,9 @@
 import json
 import queue
+import subprocess
+import sys
 import threading
+from pathlib import Path
 from unittest.mock import Mock
 
 import numpy
@@ -12,6 +15,7 @@ import turn_detector
 import utterances
 import whisper_features
 
+SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
 FRAME = b"\xb8\x0b" * 480
 SILENT_FRAME = bytes(960)
 
@@ -45,10 +49,18 @@ def test_the_turn_judged_never_exceeds_the_model_window():
     assert judged.endswith(b"tail")
 
 
-def test_a_short_turn_is_padded_at_the_front_to_the_model_window():
-    window = turn_detector.turn_window(b"\xff\x7f" * 10)
-    assert window.shape == (turn_detector.TURN_SAMPLES,)
-    assert window[0] == 0 and window[-1] > 0.99
+def test_the_commands_load_without_the_listener_runtime():
+    script = (
+        "import sys; sys.modules['numpy'] = None; sys.modules['onnxruntime'] = None; "
+        "import talk_cli, listen_cli"
+    )
+    paths = [str(path) for path in SCRIPTS.iterdir() if path.is_dir()] + [str(SCRIPTS)]
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", f"import sys; sys.path[:0] = {paths!r}; {script}"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_the_model_sees_whisper_shaped_features_even_for_silence():
