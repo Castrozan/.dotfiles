@@ -3,6 +3,7 @@ import pytest
 from runner.sampling.run_evals_statistics import (
     format_pass_rate_with_confidence_interval,
     pass_at_k,
+    pass_rate_noise_floor,
     wilson_score_interval,
 )
 
@@ -64,3 +65,9 @@ def test_pass_at_k_is_certain_when_failures_are_fewer_than_k():
 def test_pass_at_k_guards_degenerate_inputs():
     assert pass_at_k(0, 0, 1) == 0.0
     assert pass_at_k(10, 5, 0) == 0.0
+
+
+def test_noise_floor_shrinks_with_cases_times_epochs():
+    assert pass_rate_noise_floor(25, 2) == pytest.approx(0.1414, abs=1e-3)
+    assert pass_rate_noise_floor(100, 2) == pytest.approx(0.0707, abs=1e-3)
+    assert pass_rate_noise_floor(0, 3) == 1.0

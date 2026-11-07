@@ -1,6 +1,7 @@
 from runner.sampling.run_evals_sampling import suite_pass_at_k
 from runner.sampling.run_evals_statistics import (
     format_pass_rate_with_confidence_interval,
+    pass_rate_noise_floor,
 )
 from runner.execution.run_evals_test_runner import TestResult
 
@@ -64,9 +65,26 @@ def print_epoch_summary(per_test: list[dict], epochs: int) -> bool:
     if epochs >= 2:
         print(f"  suite pass@2: {suite_pass_at_k(per_test, 2):.1%}")
     print(f"  flaky: {len(flaky_tests)}   hard-failed: {len(hard_failed_tests)}")
+    _print_noise_floor_against_headroom(per_test, epochs)
     print("-" * 60 + "\n")
 
     return len(hard_failed_tests) == 0
+
+
+def _print_noise_floor_against_headroom(per_test: list[dict], epochs: int) -> None:
+    samples = sum(test["total"] for test in per_test)
+    sample_passes = sum(test["passes"] for test in per_test)
+    noise_floor = pass_rate_noise_floor(len(per_test), epochs)
+    headroom = 1 - sample_passes / samples if samples else 0.0
+    print(
+        f"  noise floor: +/-{noise_floor * 100:.1f} pts over {len(per_test)} cases "
+        f"x {epochs} epochs; headroom: {headroom * 100:.1f} pts"
+    )
+    if headroom <= noise_floor:
+        print(
+            "  WARNING: the headroom sits inside the noise; add harder cases or "
+            "epochs before trusting a hillclimb gain"
+        )
 
 
 def _flaky_tests(per_test: list[dict]) -> list[dict]:

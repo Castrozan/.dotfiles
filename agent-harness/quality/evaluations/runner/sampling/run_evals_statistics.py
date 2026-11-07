@@ -24,6 +24,13 @@ def pass_at_k(num_samples, num_correct, k):
     return 1.0 - product
 
 
+def pass_rate_noise_floor(case_count, epochs):
+    samples = case_count * epochs
+    if samples <= 0:
+        return 1.0
+    return 1 / math.sqrt(samples)
+
+
 def format_pass_rate_with_confidence_interval(successes, total):
     if total == 0:
         return "Pass rate: n/a (no results)"

@@ -150,3 +150,24 @@ def test_usage_and_category_listing_preserve_counts(capsys):
     assert "routing (1 tests)" in output
     assert "- skill" in output
     assert "- alive" in output
+
+
+def test_epoch_summary_warns_when_the_headroom_sits_inside_the_noise(capsys):
+    saturated = [
+        {"name": f"case_{index}", "passes": 3, "total": 3, "flaky": False}
+        | {"lower": 0.4, "upper": 1.0}
+        for index in range(10)
+    ]
+    reporting.print_epoch_summary(saturated, 3)
+    output = capsys.readouterr().out
+    assert "noise floor: +/-18.3 pts over 10 cases x 3 epochs" in output
+    assert "headroom: 0.0 pts" in output
+    assert "inside the noise" in output
+
+    climbable = [
+        {"name": f"case_{index}", "passes": index % 2, "total": 1, "flaky": False}
+        | {"lower": 0.0, "upper": 1.0}
+        for index in range(400)
+    ]
+    reporting.print_epoch_summary(climbable, 1)
+    assert "inside the noise" not in capsys.readouterr().out
