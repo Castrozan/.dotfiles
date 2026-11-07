@@ -59,15 +59,15 @@ def too_large_report(files, subtree, total_lines):
     for relative_path, lines in files:
         remainder = Path(relative_path).relative_to(subtree).parts
         lines_by_child[str(Path(subtree, remainder[0]))] += len(lines)
+    subdirectory_sizes = ", ".join(
+        f"{child} ({count} lines)" for child, count in lines_by_child.most_common()
+    )
     return {
         "error": (
             f"{subtree} holds {total_lines} lines, more than {MAXIMUM_SLICES} slices of "
-            f"{TARGET_LINES_PER_SLICE}; audit one of its subdirectories instead"
-        ),
-        "subdirectories": [
-            {"path": child, "lines": count}
-            for child, count in lines_by_child.most_common()
-        ],
+            f"{TARGET_LINES_PER_SLICE}; audit one of its subdirectories instead: "
+            f"{subdirectory_sizes}"
+        )
     }
 
 
@@ -94,10 +94,17 @@ def write_slice_artifacts(files, slice_count):
     return artifact_paths
 
 
+def subtree_inside_root(root, requested_subtree):
+    requested_path = Path(requested_subtree).expanduser()
+    if requested_path.is_absolute():
+        requested_path = requested_path.resolve().relative_to(root)
+    return str(requested_path).strip("/")
+
+
 def main():
     arguments = parse_command_line()
     root = Path(arguments.root).expanduser().resolve()
-    subtree = arguments.subtree.strip("/")
+    subtree = subtree_inside_root(root, arguments.subtree)
     files = subtree_files_with_lines(root, subtree)
     total_lines = sum(len(lines) for _, lines in files)
     if not files:

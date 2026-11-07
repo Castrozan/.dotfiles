@@ -93,11 +93,19 @@ def test_a_subtree_too_large_names_its_subdirectories_instead(
         write(f"tree/branch_{index % 2}/file_{index}.py", lines_of(3000, "line"))
     report = run_slicer(monkeypatch, capsys, root, "tree/")
     assert "slices" not in report
-    assert "audit one of its subdirectories" in report["error"]
-    assert {entry["path"] for entry in report["subdirectories"]} == {
-        "tree/branch_0",
-        "tree/branch_1",
-    }
+    assert report["error"].endswith(
+        "audit one of its subdirectories instead: "
+        "tree/branch_0 (21000 lines), tree/branch_1 (21000 lines)"
+    )
+
+
+def test_an_absolute_subtree_is_read_relative_to_the_root(
+    checkout, monkeypatch, capsys
+):
+    root, write = checkout
+    write("module/kept.py", "kept\n")
+    report = run_slicer(monkeypatch, capsys, root, str(root / "module"))
+    assert report["files"] == 1
 
 
 def test_an_empty_subtree_reports_an_error(checkout, monkeypatch, capsys):
