@@ -10,6 +10,7 @@ from codex_app_server_client import CodexThreadTitle
 def session_client(monkeypatch, tmp_path):
     monkeypatch.delenv("CLAWDE_AGENT_NAME", raising=False)
     monkeypatch.delenv("OPENCLAW_GATEWAY_PORT", raising=False)
+    monkeypatch.setenv("AGENT_INTERACTIVE_PREFERENCES_PATH", "/nix/store/p.md")
     monkeypatch.setenv("CODEX_SESSION_SOCKET_PATH", str(tmp_path / "private.sock"))
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
     client = Mock()
