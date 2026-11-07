@@ -51,11 +51,7 @@ in
     home.packages = [ silverVoice ];
 
     systemd.user.services.silver-voice-bridge = {
-      Unit = {
-        Description = "Silver Discord voice bridge";
-        After = [ "avatar-transcriber.service" ];
-        Requires = [ "avatar-transcriber.service" ];
-      };
+      Unit.Description = "Silver Discord voice bridge";
       Install.WantedBy = [ "default.target" ];
       Service = {
         ExecStart = "${config.hermes.unwrappedPackage.hermesVenv}/bin/python3 -m voice_bridge.bridge_daemon";
