@@ -1,21 +1,24 @@
 ### Adaptive implementation delivery process
 
 Apply core [delegation](core.md#delegation) to choose the lightest safe execution shape, then map it to these
-Claude-specific tiers: direct answers touch no file and spawn no agent; patch changes one or two files alone; guided
-changes a handful with at most two agents; orchestrated is five or more files, or any auth, data, or public-interface
-change at any file count, and is the only tier that spends a third agent.
+Claude-specific tiers: direct answers touch no file and spawn no agent but scouts; patch changes one or two files alone;
+guided changes a handful with at most two agents; orchestrated is five or more files, or any auth, data, or
+public-interface change at any file count, and is the only tier that spends a third agent.
+
+Scouts are read-only `explore` agents outside every tier's count. Send them in parallel when an answer needs a sweep
+across many files, areas, or submodules, and make one or two targeted reads yourself.
 
 Risk outranks counts, so a two-file auth change is orchestrated. A user request for `AIDP patch` or the lightest safe
 AIDP mode overrides the mapping.
 
 ### How the ceiling holds
 
-A PreToolUse guard counts subagent spawns per interactive session and denies the third while the session is still below
-orchestrated, so no tier below it costs you a word of ceremony. Unlock the rest of the session by re-attempting that
-denied spawn with the `Agent` description starting with `orchestrated:` and the trigger that earned it. The triggers are
-more than two modules, requirements you cannot restate, data or security impact, or a new public interface. Never
-escalate because a task sounds important, and de-escalate out loud when the reason stops holding. Lower a delegate's
-effort before lowering its model.
+A PreToolUse guard counts subagent spawns other than scouts per interactive session and denies the third while the
+session is still below orchestrated, so no tier below it costs you a word of ceremony. Unlock the rest of the session by
+re-attempting that denied spawn with the `Agent` description starting with `orchestrated:` and the trigger that earned
+it. The triggers are more than two modules, requirements you cannot restate, data or security impact, or a new public
+interface. Never escalate because a task sounds important, and de-escalate out loud when the reason stops holding. Lower
+a delegate's effort before lowering its model.
 
 ### Mid task asks
 

@@ -21,6 +21,12 @@ from interactive_session_detection import (  # noqa: E402
 )
 
 SUBAGENT_SPAWN_TOOL_NAME = "Agent"
+READ_ONLY_SCOUT_AGENT_NAME = "explore"
+
+
+def spawns_a_read_only_scout(tool_input):
+    subagent_type = (tool_input.get("subagent_type", "") or "").strip().lower()
+    return subagent_type.rsplit(":", 1)[-1] == READ_ONLY_SCOUT_AGENT_NAME
 
 
 def build_ceiling_reached_message(allowed_spawn_count):
@@ -32,7 +38,8 @@ def build_ceiling_reached_message(allowed_spawn_count):
         f"does not, and depth work loses the caller's context at the prompt boundary when it is fanned "
         f"out. Either work inside the ceiling and do the rest yourself, or re-attempt this spawn with "
         f"the Agent description starting with 'orchestrated:' followed by the trigger that justifies "
-        f"it, which unlocks the remaining spawns for this session."
+        f"it, which unlocks the remaining spawns for this session. Read-only explore scouts never "
+        f"count against the ceiling."
     )
 
 
@@ -41,11 +48,12 @@ def handle(hook_input):
         return None
     if not is_keyboard_driven_interactive_session():
         return None
+    tool_input = hook_input.get("tool_input", {}) or {}
+    if spawns_a_read_only_scout(tool_input):
+        return None
     session_id = hook_input.get("session_id", "")
     spawn_declares_the_orchestrated_tier = (
-        subagent_spawn_budget_state.declares_the_orchestrated_tier(
-            hook_input.get("tool_input", {}) or {}
-        )
+        subagent_spawn_budget_state.declares_the_orchestrated_tier(tool_input)
     )
     if not subagent_spawn_budget_state.reserve_subagent_spawn(
         session_id,
