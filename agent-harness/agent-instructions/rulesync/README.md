@@ -1,7 +1,7 @@
 # Rulesync configuration generation
 
-Rulesync compiles the shared core instructions and the public Claude Code and
-OpenCode agent definitions during the Nix build. It also generates Claude Code,
+Rulesync compiles the shared core instructions and the public Claude Code, Codex
+and OpenCode agent definitions during the Nix build. It also generates Claude Code,
 Codex and OpenCode V2 hooks from the shared hook source. Nix owns native deployment
 and activation; Python dispatchers retain policy decisions. Sentry continues to
 produce plugin discovery from the complete package.
@@ -9,7 +9,7 @@ produce plugin discovery from the complete package.
 | Configuration                | Authoritative input                               | Delivery                                                                                                            |
 | ---------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Shared core                  | Existing core instructions                        | Rulesync root rules, deployed at the existing Claude, Codex and OpenCode global paths and composed into Hermes SOUL |
-| Public agents                | Canonical Rulesync subagents                      | Native Claude and OpenCode definitions with explicit target metadata                                                |
+| Public agents                | Canonical Rulesync subagents                      | Native Claude, Codex and OpenCode definitions with explicit target metadata; Codex declares each role in its config |
 | Skills and supporting assets | Existing skill catalog and instruction projection | Complete package, with original discovery scopes and opaque assets preserved                                        |
 | MCP                          | Existing portable server declarations             | Sentry discovery and existing native launchers                                                                      |
 | Hooks                        | Shared Rulesync hook source with target overrides | Claude settings, managed Codex requirements and the generated OpenCode V2 plugin                                    |
@@ -18,7 +18,8 @@ produce plugin discovery from the complete package.
 The generated configuration and its Rulesync inputs travel inside the production
 plugin. Generated native agent metadata is checked against each canonical target
 section; the body is preserved apart from boundary newlines. Native OpenCode names
-come from the canonical definition. Core instruction bytes remain unchanged.
+come from the canonical definition. Codex spawns a role only when its managed
+configuration declares it under `[agents.<name>]`. Core instruction bytes remain unchanged.
 Interactive instructions and repository instructions retain their existing scope.
 
 ## Build isolation and validation
