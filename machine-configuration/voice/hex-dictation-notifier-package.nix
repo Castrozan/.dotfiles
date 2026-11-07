@@ -10,6 +10,6 @@ pkgs.writeShellApplication {
   ]
   ++ lib.optionals pkgs.stdenv.isDarwin [ pkgs.terminal-notifier ];
   text = ''
-    exec ${pkgs.python312}/bin/python3 ${./scripts/hex_dictation_notifier.py} "$@"
+    exec ${pkgs.python312}/bin/python3 -P ${./scripts/hex_dictation_notifier.py} "$@"
   '';
 }

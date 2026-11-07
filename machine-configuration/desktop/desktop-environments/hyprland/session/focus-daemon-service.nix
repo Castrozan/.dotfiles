@@ -10,7 +10,7 @@ let
     in
     pkgs.writeShellScriptBin "hypr-focus-daemon" ''
       export PYTHONPATH="${hyprlandPythonLibraryPath}:''${PYTHONPATH:-}"
-      exec ${pkgs.python312}/bin/python3 ${pythonSource} "$@"
+      exec ${pkgs.python312}/bin/python3 -P ${pythonSource} "$@"
     '';
 in
 {

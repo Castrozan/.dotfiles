@@ -23,7 +23,7 @@ let
     pkgs.writeShellScriptBin name ''
       ${pathPrefix}
       export PYTHONPATH="${hyprlandPythonLibraryPath}:''${PYTHONPATH:-}"
-      exec ${pkgs.python312}/bin/python3 ${pythonSource} "$@"
+      exec ${pkgs.python312}/bin/python3 -P ${pythonSource} "$@"
     '';
 
 in
