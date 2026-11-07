@@ -62,7 +62,7 @@ def test_an_orchestrated_declaration_raises_the_ceiling(
         )
     )
     assert "32 agent() calls" in result.additional_context
-    assert "400000 output tokens" in result.additional_context
+    assert "400000 Opus-equivalent output tokens" in result.additional_context
     assert result.updated_input["description"].startswith("orchestrated:")
 
 

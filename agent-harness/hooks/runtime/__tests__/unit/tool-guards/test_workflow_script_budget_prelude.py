@@ -49,6 +49,34 @@ def test_the_output_token_ceiling_stops_agents_at_runtime():
     ) == ["done", "done", "refused", "refused", "refused"]
 
 
+def counting_script_pinned_to(model_name):
+    return COUNTING_WORKFLOW_SCRIPT.replace(
+        "(attempt ${attempt})`)",
+        f'(attempt ${{attempt}})`, {{ model: "{model_name}" }})',
+    )
+
+
+def test_haiku_output_counts_at_its_price_weight():
+    guarded_script = workflow_script_budget_prelude.script_with_budget_prelude(
+        counting_script_pinned_to("haiku"), agent_ceiling=10, output_token_ceiling=100
+    )
+    assert (
+        run_guarded_script_under_node(guarded_script, output_tokens_per_agent=60)
+        == ["done"] * 5
+    )
+
+
+def test_an_opus_pin_counts_at_full_weight():
+    guarded_script = workflow_script_budget_prelude.script_with_budget_prelude(
+        counting_script_pinned_to("claude-opus-5-5"),
+        agent_ceiling=10,
+        output_token_ceiling=100,
+    )
+    assert run_guarded_script_under_node(
+        guarded_script, output_tokens_per_agent=60
+    ) == ["done", "done", "refused", "refused", "refused"]
+
+
 def test_guarding_a_guarded_script_keeps_exactly_one_prelude(
     interactive_session_with_isolated_state,
 ):

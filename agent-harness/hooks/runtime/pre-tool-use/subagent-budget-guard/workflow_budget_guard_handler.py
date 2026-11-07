@@ -117,14 +117,14 @@ def tier_ceiling_reached_message():
         f"same ceiling. Do the rest yourself, or re-attempt this Workflow call with its "
         f"'description' starting with 'orchestrated:' followed by the trigger that justifies it, "
         f"which raises the ceiling to {ORCHESTRATED_WORKFLOW_AGENT_CEILING} agents and "
-        f"{ORCHESTRATED_WORKFLOW_OUTPUT_TOKEN_CEILING} output tokens per run."
+        f"{ORCHESTRATED_WORKFLOW_OUTPUT_TOKEN_CEILING} Opus-equivalent output tokens per run, with Haiku output weighted 0.025 and Sonnet 0.5."
     )
 
 
 def ceilings_context(ceilings):
     return (
         f"The workflow budget guard bounds this run to {ceilings.agent_ceiling} agent() calls and "
-        f"{ceilings.output_token_ceiling} output tokens; past either, agent() throws and the "
+        f"{ceilings.output_token_ceiling} Opus-equivalent output tokens (Haiku output weighted 0.025, Sonnet 0.5); past either, agent() throws and the "
         f"refusal appears in the run log, so report any work it cut short."
     )
 
