@@ -45,14 +45,14 @@ user asked for it.
 ### Talking with the user
 
 Every agent on every host runs the same commands; on a Mac `avatar-talk` forwards to chise over ssh, where the avatar
-and microphone live. A conversation takes three verbs: 1) `avatar-talk open --language pt`, which shows the avatar and
+and microphone live. A conversation takes three verbs: 1) `avatar-talk open`, which shows the avatar and
 opens the microphone; 2) `avatar-talk ask "TEXT" EMOTION` for each turn, which speaks, waits up to 100 seconds and
 prints what the user said, printing nothing on silence; 3) `avatar-talk close` when the user says goodbye.
 
 Talking over the avatar stops it by itself, so the reply still arrives. `avatar-talk hear` keeps waiting without
-speaking, and `avatar-talk say "TEXT" EMOTION` speaks without waiting. Omit `--language` when the user mixes languages;
-detection adds about a second per turn. A harness with a background output watcher runs `avatar-talk follow` instead of
-repeated `hear`; it prints one line per utterance.
+speaking, and `avatar-talk say "TEXT" EMOTION` speaks without waiting. Leave the language unpinned, as the user chose:
+each line is detected on its own, so Portuguese, English and Japanese all work. A harness with a background output
+watcher runs `avatar-talk follow` instead of repeated `hear`; it prints one line per utterance.
 
 Closing the avatar window ends the conversation: `ask` and `hear` then fail with `No conversation is open`, so run
 `avatar-talk close` and leave it closed.
