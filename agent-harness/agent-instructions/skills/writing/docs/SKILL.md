@@ -6,8 +6,7 @@ description: Documentation standards for when a doc earns its place, what never 
 ### Core coding authority
 
 Core [coding](../../../core-rules/core.md#coding) owns code naming and comment behavior. This skill decides whether
-separate documentation is justified and how to keep it useful without becoming a second coding-policy authority;
-[humanize](../humanize/SKILL.md) owns how to write it for its readers.
+separate documentation is justified and how to keep it useful without becoming a second coding-policy authority.
 
 ### Never write
 

@@ -5,8 +5,8 @@ description: Use when writing for people outside a live session, like READMEs, P
 
 ### Scope
 
-Write for a person who reads later, with no chance to ask you what you meant. Live session replies belong to `wellput`,
-whether a document should exist at all belongs to `docs`, and commit messages belong to `coding`.
+Write for a person who reads later, with no chance to ask you what you meant. Live session replies belong to `wellput`
+and commit messages belong to `coding`.
 
 ### Reader first
 

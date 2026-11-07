@@ -45,7 +45,7 @@ def test_humanize_owns_documents_read_later_and_defers_live_replies():
 
     assert "outside a live session" in description
     assert "Not for live session replies" in description
-    for owner in ("`wellput`", "`docs`", "`coding`"):
+    for owner in ("`wellput`", "`coding`"):
         assert owner in humanize_skill
     for retired_section in (
         "### Confusion recovery",
