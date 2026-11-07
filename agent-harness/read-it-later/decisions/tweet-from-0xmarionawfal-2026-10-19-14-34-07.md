@@ -1,7 +1,7 @@
 # Tweet from 0xMarioNawfal — Cloudflare security-audit skill
 
 Capture: `ReadItLater Inbox/Tweet from 0xMarioNawfal (2026-10-19 14-34-07).md`
-Origin: https://x.com/RoundtableSpace/status/2112125353594401162
+Origin: <https://x.com/RoundtableSpace/status/2112125353594401162>
 Verdict: **adopt**
 
 ## The origin as resolved
@@ -11,7 +11,7 @@ Read through the twitter skill (`twikit-cli tweet 2112125353594401162`), not a s
 truncated: "Cloudflare open-sourced the security audit skill that seeded its own vulnerability hunting harness. Your
 coding agent can now run it on your code. How it works, in 6 phases: maps your codebase, hunts for bugs area by area so
 nothing gets skipped, sends every finding to a..." The tweet is a pointer; the thing itself is the repository it names,
-https://github.com/cloudflare/security-audit-skill, read directly at commit
+<https://github.com/cloudflare/security-audit-skill>, read directly at commit
 `c1c8a8c1471069fb0e188eeaff69b8e8db6564a8` (MIT, Copyright 2025-2026 Cloudflare, Inc.).
 
 ## What it actually is
