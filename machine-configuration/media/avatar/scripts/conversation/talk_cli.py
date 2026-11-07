@@ -6,6 +6,7 @@ import sys
 import listen_cli
 import listener
 import start
+import user_units
 import utterances
 
 CONVERSATION_TARGET = "avatar-conversation.target"
@@ -14,15 +15,8 @@ HEAR_WAIT_SECONDS = 100
 FOLLOW_SLICE_SECONDS = 30
 
 
-def is_active(unit):
-    return (
-        subprocess.run(["systemctl", "--user", "is-active", "--quiet", unit]).returncode
-        == 0
-    )
-
-
 def conversation_open():
-    return is_active(CONVERSATION_TARGET) and listen_cli.listening()
+    return user_units.unit_active(CONVERSATION_TARGET) and listen_cli.listening()
 
 
 def room_microphone_ready():
@@ -82,7 +76,7 @@ def close_conversation(arguments, directory):
         ["avatar-command", "stop-speaking"], capture_output=True, check=False
     )
     subprocess.run(["systemctl", "--user", "stop", CONVERSATION_TARGET], check=True)
-    if is_active(start.MEETING_TARGET):
+    if user_units.unit_active(start.MEETING_TARGET):
         subprocess.run(
             ["avatar-command", "presence", "hidden"], capture_output=True, check=True
         )

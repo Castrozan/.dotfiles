@@ -8,6 +8,7 @@ import sys
 import listener
 import speaker_identity
 import transcript_log
+import user_units
 
 MEETING_AUDIO = "@DEFAULT_MONITOR@"
 AVATAR_OUTPUTS = re.compile(r"^(AvatarMicrophone$|Avatar\w*\.monitor$)")
@@ -63,10 +64,7 @@ def stop(arguments, directory):
 
 
 def listening():
-    active = subprocess.run(
-        ["systemctl", "--user", "is-active", "--quiet", LISTENER_SERVICE]
-    )
-    return active.returncode == 0
+    return user_units.unit_active(LISTENER_SERVICE)
 
 
 def configured_sources(directory):

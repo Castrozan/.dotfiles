@@ -143,7 +143,9 @@ def test_closing_leaves_a_running_meeting_alone(
 ):
     runner = Mock()
     monkeypatch.setattr(talk_cli.subprocess, "run", runner)
-    monkeypatch.setattr(talk_cli, "is_active", lambda unit: meeting_running)
+    monkeypatch.setattr(
+        talk_cli.user_units, "unit_active", lambda unit: meeting_running
+    )
     talk_cli.close_conversation(argparse.Namespace(), tmp_path)
     commands = [call.args[0] for call in runner.call_args_list]
     assert ["systemctl", "--user", "stop", "avatar-conversation.target"] in commands
