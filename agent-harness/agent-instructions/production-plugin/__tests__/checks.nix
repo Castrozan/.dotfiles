@@ -22,9 +22,10 @@ let
   desktopPackages = (import ../../skills/workstation/desktop/install { inherit pkgs; }).packages;
 in
 {
-  production-plugin-desktop-platform = helpers.mkEvalCheck "production-plugin-desktop-platform" (
-    servers ? desktop-computer-use && desktopPackages != [ ]
-  ) "The desktop MCP and runtime must be present on macOS and Linux";
+  production-plugin-desktop-platform =
+    helpers.mkEvalCheck "production-plugin-desktop-platform"
+      (desktopPackages != [ ] && servers ? desktop-computer-use == pkgs.stdenv.hostPlatform.isDarwin)
+      "The desktop runtime must be present on macOS and Linux, with the desktop MCP served only on macOS";
 
   production-plugin-wellput-consumption =
     pkgs.runCommand "production-plugin-wellput-consumption" { }

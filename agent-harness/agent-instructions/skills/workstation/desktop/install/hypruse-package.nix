@@ -12,7 +12,7 @@ pkgs.python312Packages.buildPythonApplication {
   build-system = [ pkgs.python312Packages.hatchling ];
   dependencies = [ pkgs.python312Packages.mcp ];
   nativeBuildInputs = [ pkgs.makeWrapper ];
-  pythonImportsCheck = [ "hypruse.server" ];
+  pythonImportsCheck = [ "hypruse.verbs" ];
   postFixup = ''
     wrapProgram "$out/bin/hypruse" \
       --prefix PATH : ${
@@ -28,10 +28,11 @@ pkgs.python312Packages.buildPythonApplication {
   '';
   doInstallCheck = true;
   installCheckPhase = ''
-    ${pkgs.python312.interpreter} ${./__tests__/mcp-smoke.py} "$out/bin/hypruse" desktop screenshot ui pointer keyboard
+    "$out/bin/hypruse" --help | grep -q 'click_ui NAME'
+    "$out/bin/hypruse" desktop --help >/dev/null
   '';
   meta = {
-    description = "Native Hyprland desktop control over MCP";
+    description = "Native Hyprland desktop control through shell verbs";
     homepage = "https://github.com/IlyasKhallouki/hypruse";
     license = pkgs.lib.licenses.mit;
     platforms = pkgs.lib.platforms.linux;

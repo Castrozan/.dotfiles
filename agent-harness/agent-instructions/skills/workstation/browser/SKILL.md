@@ -48,8 +48,8 @@ consent.
 
 Connect without asking the user. Start the attempt detached, because a backgrounded tool call can block until the
 command exits: `launch-command-detached-into-new-session <log> chrome-devtools connect --manual-once --timeout 30`.
-While it waits, accept Chrome's "Allow remote debugging?" prompt yourself with the `desktop-computer-use` MCP from the
-`desktop` skill: screenshot the screen, locate the prompt's Allow button, click it, then read the log for the page list.
+While it waits, accept Chrome's "Allow remote debugging?" prompt yourself through the `desktop` skill: screenshot the
+screen, locate the prompt's Allow button, click it, then read the log for the page list.
 
 Chrome prompts for every new session, so a silent success means someone else clicked Allow. On macOS Chrome keeps the
 prompt out of accessibility and screen capture; find its window with `list_windows` by that title and `left_click` Allow
