@@ -64,3 +64,15 @@ def test_a_failed_stream_names_its_cause(monkeypatch, error, category):
 
     with pytest.raises(speech_synthesis.SpeechSynthesisError, match=category):
         asyncio.run(play())
+
+
+class DroppedConnection:
+    def read(self, size):
+        raise TimeoutError
+
+    def close(self):
+        pass
+
+
+def test_a_dropped_connection_ends_the_speech_instead_of_stalling_playback():
+    assert speech_synthesis.SpeechStream(DroppedConnection()).read(8192) == b""

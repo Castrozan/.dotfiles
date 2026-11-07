@@ -1,13 +1,14 @@
 import asyncio
 import contextlib
+import http.client
 import json
+import logging
 import os
 import urllib.error
 import urllib.request
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import BinaryIO
 
 STREAMING_SPEECH_URL = (
     "https://api.elevenlabs.io/v1/text-to-speech/{voice}/stream?output_format=pcm_48000"
@@ -16,6 +17,8 @@ SPEECH_MODEL = "eleven_flash_v2_5"
 SPEECH_SAMPLE_RATE = 48000
 SYNTHESIS_TIMEOUT_SECONDS = 15
 API_KEY_FILE = Path.home() / ".secrets" / "elevenlabs-api-key"
+
+logger = logging.getLogger(__name__)
 
 
 class SpeechSynthesisError(Exception):
@@ -49,12 +52,27 @@ def synthesis_failure(error):
     return SpeechSynthesisError(f"elevenlabs_unreachable_{type(error).__name__}")
 
 
+class SpeechStream:
+    def __init__(self, response):
+        self._response = response
+
+    def read(self, size=-1):
+        try:
+            return self._response.read(size)
+        except (OSError, http.client.HTTPException) as error:
+            logger.warning("speech stream ended early: %s", type(error).__name__)
+            return b""
+
+    def close(self):
+        self._response.close()
+
+
 @dataclass(frozen=True)
 class SpeechSynthesizer:
     voice: str
 
     @contextlib.asynccontextmanager
-    async def streamed_audio(self, text, language) -> AsyncIterator[BinaryIO]:
+    async def streamed_audio(self, text, language) -> AsyncIterator[SpeechStream]:
         stream = await asyncio.to_thread(self._open_stream, text, language)
         try:
             yield stream
@@ -66,6 +84,9 @@ class SpeechSynthesizer:
             self.voice, text, language, elevenlabs_api_key()
         )
         try:
-            return urllib.request.urlopen(request, timeout=SYNTHESIS_TIMEOUT_SECONDS)
+            response = urllib.request.urlopen(
+                request, timeout=SYNTHESIS_TIMEOUT_SECONDS
+            )
         except OSError as error:
             raise synthesis_failure(error) from error
+        return SpeechStream(response)
