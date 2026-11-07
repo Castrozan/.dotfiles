@@ -27,6 +27,14 @@ def test_a_segment_is_sent_to_scribe_with_the_pinned_language(monkeypatch):
     assert b"RIFF" in request.data
 
 
+def test_every_recognized_term_is_its_own_keyterm_field(monkeypatch):
+    urlopen = stub_scribe(monkeypatch, {"text": "Hex"})
+    cloud_transcriber.transcribe(b"\x00\x00" * 1600, "pt")
+    data = urlopen.call_args.args[0].data
+    assert data.count(b'name="keyterms"') == len(cloud_transcriber.RECOGNIZED_TERMS)
+    assert b'name="keyterms"\r\n\r\nElevenLabs\r\n' in data
+
+
 def test_language_stays_automatic_unless_requested(monkeypatch):
     urlopen = stub_scribe(monkeypatch, {"text": "hello"})
     cloud_transcriber.transcribe(b"\x00\x00" * 1600)
