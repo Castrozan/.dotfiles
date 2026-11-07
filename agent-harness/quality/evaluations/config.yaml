@@ -7,6 +7,21 @@ relatorio: agent-harness/quality/evaluations/resultado/relatorio.html
 paginas: agent-harness/quality/evaluations/public
 sujeito:
   cliente: codex
+  ambiente_removido:
+    - AGENT_INTERACTIVE_PREFERENCES_PATH
+    - CLAWDE_AGENT_NAME
+    - HERDR_ENV
+    - HERDR_PANE_ID
+    - HERDR_TAB_ID
+    - HERDR_WORKSPACE_ID
+    - HERDR_SOCKET_PATH
+    - CLAUDE_CODE_SESSION_ID
+    - CLAUDE_CODE_SESSION_ATTENDED
+    - CLAUDE_CODE_CHILD_SESSION
+    - CLAUDE_CODE_MESSAGING_SOCKET
+    - CLAUDE_CODE_MESSAGING_TOKEN
+    - CODEX_THREAD_ID
+    - CODEX_SESSION_SOCKET_PATH
 modelo_padrao:
   codex: gpt-6.1-sol
   claude: haiku

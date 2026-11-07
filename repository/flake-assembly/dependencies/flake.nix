@@ -37,7 +37,7 @@
     clawde.url = "github:Castrozan/clawde/cb42491801a1529750d3ab4557c7c0c59bccea33";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 
-    agent-evals.url = "github:Castrozan/agent-evals/dbb3b9435fdea35602643a675a15b79b3e3a88a6";
+    agent-evals.url = "github:Castrozan/agent-evals/3282d9978d6293b5eb1dedd91093e5255347a1b4";
     agent-evals.inputs.nixpkgs.follows = "nixpkgs";
 
     hermes.url = "github:NousResearch/hermes-agent/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19";
