@@ -15,7 +15,6 @@ on:
       - machine-configuration/terminal/emulators/wezterm/patched-wezterm.nix
       - machine-configuration/terminal/emulators/wezterm/wezterm-patches/**
       - agent-harness/harnesses/codex/package/unwrapped.nix
-      - agent-harness/harnesses/codex/status-line/**
       - agent-harness/harnesses/hermes/runtime-package.nix
       - repository/nix-library/fetch-prebuilt-binary.nix
       - machine-configuration/development/system-rebuild/dotfiles-binary-cache.json

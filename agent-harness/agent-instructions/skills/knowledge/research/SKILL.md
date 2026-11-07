@@ -65,6 +65,9 @@ answer contains dates, links, decisive tradeoffs, and a clear recommendation.
 For a research digest, community pulse, or "catch me up" request, collect recent topic-specific evidence across GitHub,
 papers, practitioner discussion, and X. Extract the topic verbatim, read `research-pulse-seed-accounts.json`, and run
 `research-pulse.workflow.js` through `Workflow` when its runner is available with `topic`, `accounts`, and `maxItems`.
-Relay its digest and disclose low `sourcesHit` or empty `itemCount`; otherwise perform the same source sweep directly.
+Where `Workflow` is unavailable, run `dotfiles-research-pulse --topic <topic>`, which runs the same workflow through
+Claude Code. Relay its digest and disclose low `sourcesHit` or empty `itemCount`; when neither can run, perform the same
+source sweep directly.
+
 Treat the seed accounts as a relevance hint, never a source allowlist, deduplicate by underlying item, and rank by topic
 fit instead of padding the result.

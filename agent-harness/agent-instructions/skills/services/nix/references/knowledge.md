@@ -11,9 +11,7 @@ the binary's mtime or source hash, and read the compile step's own output.
 
 The build resolves the submodule at the gitlink commit recorded in the superproject, not at the submodule's working-tree
 HEAD, so committing inside the submodule is invisible until the bumped gitlink is also staged and committed in the
-superproject. Verifying with `nix eval` has the mirror-image trap: without `?submodules=1` the flake source copied to
-the store has no submodule at all, every path-existence check reads false, and the evaluation returns a confident
-false-negative green.
+superproject.
 
 ### Landing a submodule change past a peer
 

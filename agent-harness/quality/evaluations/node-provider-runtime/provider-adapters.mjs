@@ -33,19 +33,29 @@ export function claudeQueryOptions(invocation) {
   return options;
 }
 
+const CLAUDE_OPTION_NAMES_BY_INVOCATION_FIELD = [
+  ["model", "model"],
+  ["max_turns", "maxTurns"],
+  ["system_prompt", "systemPrompt"],
+  ["model_reasoning_effort", "effort"],
+];
+
 function _addClaudeOptionalOptions(options, invocation) {
-  if (invocation.model) options.model = invocation.model;
-  if (invocation.max_turns) options.maxTurns = invocation.max_turns;
-  if (invocation.system_prompt) options.systemPrompt = invocation.system_prompt;
-  if (invocation.model_reasoning_effort)
-    options.effort = invocation.model_reasoning_effort;
+  for (const [
+    invocationField,
+    optionName,
+  ] of CLAUDE_OPTION_NAMES_BY_INVOCATION_FIELD) {
+    if (invocation[invocationField])
+      options[optionName] = invocation[invocationField];
+  }
   if (invocation.isolated_context) options.settingSources = [];
 }
 
 export function claudeResultOutcome(message) {
   const errors = (message.errors ?? []).join("\n");
   const usage = normalizeClaudeModelUsage(message.modelUsage);
-  if (message.is_error === true) return _claudeErrorOutcome(message, errors, usage);
+  if (message.is_error === true)
+    return _claudeErrorOutcome(message, errors, usage);
   const outcome = { output: message.result, error: null };
   if (usage) outcome.usage = usage;
   return outcome;
@@ -68,6 +78,12 @@ export function codexOptions(invocation) {
   const options = {};
   const binary = process.env.AGENT_EVAL_CODEX_BINARY;
   if (binary) options.codexPathOverride = binary;
+  const config = _codexConfig(invocation);
+  if (Object.keys(config).length > 0) options.config = config;
+  return options;
+}
+
+function _codexConfig(invocation) {
   const config = {};
   if (invocation.system_prompt) {
     config.developer_instructions = invocation.system_prompt;
@@ -82,8 +98,7 @@ export function codexOptions(invocation) {
     config.features = { ...config.features, hooks: false };
     config.project_doc_max_bytes = 0;
   }
-  if (Object.keys(config).length > 0) options.config = config;
-  return options;
+  return config;
 }
 
 export function codexThreadOptions(invocation) {
@@ -173,7 +188,8 @@ export function openCodeMessageOutcome(messages) {
 export function normalizeRequestError(error) {
   if (typeof error === "string") return error;
   if (error instanceof Error) return error.message;
-  if (error && typeof error === "object") return _normalizeObjectRequestError(error);
+  if (error && typeof error === "object")
+    return _normalizeObjectRequestError(error);
   return String(error);
 }
 

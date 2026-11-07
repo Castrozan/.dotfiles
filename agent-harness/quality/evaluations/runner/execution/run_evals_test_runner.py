@@ -54,13 +54,15 @@ def run_test(
 
     output, success = subject_port.invoke_subject(
         harness,
-        prompt=prompt,
-        model=model,
-        model_reasoning_effort=model_reasoning_effort,
-        system_prompt=resolved_system_prompt,
-        timeout=timeout,
-        max_turns=test.get("max_turns"),
-        no_tools=test.get("no_tools", False),
+        subject_port.SubjectRequest(
+            prompt=prompt,
+            model=model,
+            model_reasoning_effort=model_reasoning_effort,
+            system_prompt=resolved_system_prompt,
+            timeout=timeout,
+            max_turns=test.get("max_turns"),
+            no_tools=test.get("no_tools", False),
+        ),
         invocation_role="subject",
     )
 

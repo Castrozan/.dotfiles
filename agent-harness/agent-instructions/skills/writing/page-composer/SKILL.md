@@ -5,7 +5,8 @@ description: Build a web page section by section through the compose-page workfl
 
 ### Workflow boundary
 
-Build the page the user describes by invoking the `compose-page` workflow (Workflow tool, name `compose-page`). Never
+Build the page the user describes by invoking the `compose-page` workflow (Workflow tool, name `compose-page`; where
+`Workflow` is unavailable, `dotfiles-compose-page --brief <brief> --output <path> --constraints <constraints>`). Never
 hand-scaffold the markup yourself, which reproduces the random-skeleton-of-placeholders failure this skill exists to
 prevent.
 

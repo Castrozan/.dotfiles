@@ -13,36 +13,15 @@ def completed_workflow(stdout: str, stderr: str = "") -> subprocess.CompletedPro
     )
 
 
-def test_workflow_name_comes_from_the_packaged_command(monkeypatch):
-    monkeypatch.setenv(
-        run_dotfiles_workflow.WORKFLOW_NAME_VARIABLE, "dotfiles-housekeeping"
-    )
-
-    assert run_dotfiles_workflow.resolve_workflow_name() == "dotfiles-housekeeping"
-
-
-def test_running_the_script_directly_names_the_packaged_command(monkeypatch):
-    monkeypatch.delenv(run_dotfiles_workflow.WORKFLOW_NAME_VARIABLE, raising=False)
-
+def test_a_root_that_is_not_a_directory_fails_with_a_message(tmp_path):
     with pytest.raises(SystemExit) as failure:
-        run_dotfiles_workflow.resolve_workflow_name()
+        run_dotfiles_workflow.resolve_repository_root(str(tmp_path / "missing"))
 
-    assert "dotfiles-*" in str(failure.value)
-
-
-def test_help_is_titled_with_the_packaged_command(capsys):
-    with pytest.raises(SystemExit):
-        run_dotfiles_workflow.parse_command_line("dotfiles-housekeeping", ["--help"])
-
-    assert "usage: dotfiles-housekeeping" in capsys.readouterr().out
+    assert "is not a directory" in str(failure.value)
 
 
-def test_slash_command_carries_the_resolved_root():
-    slash_command = run_dotfiles_workflow.build_slash_command(
-        "dotfiles-housekeeping", Path("/checkouts/dotfiles")
-    )
-
-    assert slash_command == ('/dotfiles-housekeeping {"root": "/checkouts/dotfiles"}')
+def test_the_lead_keeps_its_turn_open_until_the_run_ends():
+    assert "dotfiles-workflow-wait" in run_dotfiles_workflow.VERBATIM_RELAY_INSTRUCTION
 
 
 def test_root_defaults_to_the_checkout_of_the_current_directory(monkeypatch):
@@ -140,7 +119,7 @@ def test_workflow_runs_anchored_at_the_repository_root(monkeypatch):
     monkeypatch.setattr(run_dotfiles_workflow.subprocess, "run", record)
 
     run_dotfiles_workflow.run_workflow(
-        "/nix/store/claude", "/dotfiles-housekeeping {}", Path("/checkouts/dotfiles")
+        "/nix/store/claude", "Call the Workflow tool", Path("/checkouts/dotfiles")
     )
 
     assert recorded_invocation["cwd"] == Path("/checkouts/dotfiles")

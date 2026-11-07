@@ -38,9 +38,9 @@ def test_judge_calibration_honors_the_requested_worker_limit(monkeypatch):
 
 
 def test_repeated_runs_record_every_case_under_its_epoch(monkeypatch, tmp_path):
-    def one_case_run(config, **options):
+    def one_case_run(config, options, on_result):
         result = TestResult("case", True, 0.1, "full output", [], category="c")
-        options["on_result"](result)
+        on_result(result)
         return [result]
 
     arguments = SimpleNamespace(

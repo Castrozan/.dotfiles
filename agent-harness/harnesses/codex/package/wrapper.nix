@@ -2,19 +2,10 @@
   pkgs,
   lib,
   config,
-  latest,
-  inputs,
   ...
 }:
 let
-  codex-unwrapped = import ./unwrapped.nix {
-    inherit
-      pkgs
-      lib
-      latest
-      inputs
-      ;
-  };
+  codex-unwrapped = import ./unwrapped.nix { inherit pkgs; };
 
   interactivePreferencesFile = import ../interactive-instructions.nix {
     inherit pkgs;

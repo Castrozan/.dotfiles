@@ -96,13 +96,12 @@ prefer incremental updates over whole-state recomputation.
 
 ### Testing
 
-Use the smallest checks that verify the change. Run `rebuild` only to apply or verify live machine configuration.
-Require CI only for affected integrations or platforms that cannot be verified locally.
+Use the smallest checks that verify the change. Evaluate and build Nix only through `rebuild`; CI covers the Nix checks
+it does not build. Require CI only for affected integrations or platforms that local checks cannot verify.
 
 Reach for `repository/verification/run.sh` only to reproduce a job CI turned red, or to iterate on a test you are
 writing. The same goes for a whole pytest tier directory (`*/__tests__/unit`, `*/__tests__/integration`), bare `pytest`,
-`pytest agents`, `pytest .`, and `nix flake check`: run a specific test file or the targeted Nix evaluation or build
-needed to verify the change.
+`pytest agents` and `pytest .`: run the specific test file needed to verify the change.
 
 Test every Neovim change live in a new Herdr pane; automated and headless checks do not replace this manual test.
 
@@ -127,10 +126,11 @@ and skipping review does not waive verification required by [testing](#testing).
 ### Workflows
 
 Treat a workflow's model calls as delegation that consumes the task's agent budget, and keep every dotfiles workflow at
-a fixed call ceiling with no per-item model calls. Author further dotfiles workflows as `dotfiles-*` under
-`agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
-fan-out. Give each one a matching `dotfiles-*` command in `agent-harness/workflow-commands/`, because that command is
-how every harness other than Claude Code reaches the workflow at all.
+a fixed call ceiling with no per-item model calls outside the breadth exception of the `agent-harness` workflows
+reference. Author further dotfiles workflows as `dotfiles-*` under `agent-harness/harnesses/claude-code/workflows/`,
+deployed to `~/.claude/workflows/`, rather than ad-hoc subagent fan-out. Give each one a matching `dotfiles-*` command
+in `agent-harness/workflow-commands/`, because that command is how every harness other than Claude Code reaches the
+workflow at all.
 
 ### Workflow
 

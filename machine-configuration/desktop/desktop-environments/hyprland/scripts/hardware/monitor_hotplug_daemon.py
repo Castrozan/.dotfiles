@@ -2,93 +2,24 @@ import socket
 import time
 from pathlib import Path
 
-from hyprland_ipc import (
-    get_all_monitors,
-    migrate_workspaces_from_disabled_monitors,
-    run_hyprctl,
-)
 from hyprland_runtime import build_event_socket_path
-from monitor_configuration import OVERRIDE_FILE, TOGGLE_LOCK_FILE
+from monitor_configuration import reconcile_with_connected_monitors
 
-TOGGLE_LOCK_TIMEOUT_SECONDS = 5
 RECONNECT_INITIAL_DELAY_SECONDS = 1
 RECONNECT_MAX_DELAY_SECONDS = 30
-INTERNAL_MONITOR_OVERRIDE = "monitor = eDP-1, preferred, auto, 1"
-
-
-def write_override_and_reload(content: str) -> None:
-    OVERRIDE_FILE.write_text(content)
-    run_hyprctl("reload")
-
-
-def has_external_monitor_connected() -> bool:
-    monitors = get_all_monitors(include_disabled=True)
-    if not monitors:
-        return False
-    return any(
-        not monitor_config.get("name", "").startswith("eDP")
-        for monitor_config in monitors
-    )
-
-
-def is_manual_toggle_in_progress() -> bool:
-    if not TOGGLE_LOCK_FILE.exists():
-        return False
-    try:
-        lock_timestamp = float(TOGGLE_LOCK_FILE.read_text())
-        return (time.time() - lock_timestamp) < TOGGLE_LOCK_TIMEOUT_SECONDS
-    except (ValueError, OSError):
-        return False
-
-
-def handle_monitor_removed(monitor_name: str) -> None:
-    if monitor_name.startswith("eDP"):
-        return
-    if is_manual_toggle_in_progress():
-        return
-    write_override_and_reload(INTERNAL_MONITOR_OVERRIDE)
-    migrate_workspaces_from_disabled_monitors()
-
-
-def handle_monitor_added(monitor_name: str) -> None:
-    if monitor_name.startswith("eDP"):
-        return
-    if is_manual_toggle_in_progress():
-        return
-    write_override_and_reload("")
-    migrate_workspaces_from_disabled_monitors()
-
-
-def reconcile_override_with_connected_monitors() -> None:
-    expected_override = (
-        "" if has_external_monitor_connected() else INTERNAL_MONITOR_OVERRIDE
-    )
-    if OVERRIDE_FILE.exists() and OVERRIDE_FILE.read_text() == expected_override:
-        return
-    write_override_and_reload(expected_override)
-    migrate_workspaces_from_disabled_monitors()
-
-
-EVENT_HANDLERS = {
-    "monitorremoved": handle_monitor_removed,
-    "monitoradded": handle_monitor_added,
-}
+MONITOR_CHANGE_EVENTS = frozenset({"monitoradded", "monitorremoved"})
 
 
 def reconcile_and_dispatch_events(event_socket_path: str) -> None:
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
         sock.connect(event_socket_path)
-        reconcile_override_with_connected_monitors()
+        reconcile_with_connected_monitors()
         with sock.makefile("r") as stream:
             for line in stream:
-                line = line.strip()
-                if ">>" not in line:
-                    continue
-                event, _, data = line.partition(">>")
-                handler = EVENT_HANDLERS.get(event)
-                if handler:
-                    handler(data)
+                event, separator, _ = line.strip().partition(">>")
+                if separator and event in MONITOR_CHANGE_EVENTS:
+                    reconcile_with_connected_monitors()
     finally:
         sock.close()
 

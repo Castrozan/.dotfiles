@@ -1,15 +1,14 @@
 export const meta = {
   name: "dotfiles-housekeeping",
   description:
-    "Two-pass whole-tree housekeeping sweep of the dotfiles repo: find standing rot outside existing checks, then independently refute and rank the candidates.",
+    "Slice one dotfiles subtree, read every slice twice for standing rot and real defects, then independently refute and rank the candidates.",
   whenToUse:
-    "For an explicit housekeeping audit of stale markers, dead code, orphaned files, instruction drift, convention debt, chronic infrastructure traps, and test gaps. Uses at most two model calls, reports only, and writes nothing.",
+    "For an explicit housekeeping audit of one subtree: stale markers, dead code, orphaned files, instruction drift, convention debt, chronic infrastructure traps, test gaps, and real defects. Pass args {root, subtree}. Reports only and writes nothing. Uses one slicer, up to 24 Haiku readers, and five Sonnet verifiers.",
   phases: [
-    { title: "Sweep", detail: "scan every standing-rot dimension" },
-    {
-      title: "Verify",
-      detail: "independently refute candidates and synthesize triage",
-    },
+    { title: "Slice", detail: "numbered artifacts of the subtree" },
+    { title: "Read", detail: "one reader per slice" },
+    { title: "Second look", detail: "one reviewer per slice" },
+    { title: "Verify", detail: "five verifiers refute the candidates" },
   ],
 };
 
@@ -20,78 +19,182 @@ const COVERAGE_EXCLUSIONS =
   "### Coverage exclusions\n\nReport only standing rot that no existing check catches. Skip nix idiom, dead bindings, and nix formatting owned by\nstatix, deadnix, and nixfmt. Skip line-count violations, code formatting, hardcoded home paths, identifying names,\nbroken evaluation symlinks, instruction structure, prohibited blanket staging, and anything a repository check or the\npre-push change-review procedure already owns. Skip pure preference.";
 
 const SWEEP_DIMENSIONS =
-  "### Sweep dimensions\n\nApply all six dimensions in one pass: 1) TODO, FIXME, WIP, XXX, or HACK markers and commented-out code, excluding\nshebangs, load-bearing expressions, and intentional backlog; 2) unused scripts, files, and broken symlinks, proving\nabsence through imports, globs, filesets, generators, runtime discovery, and PATH lookup; 3) stale, contradictory, or\nduplicated policy and pointers across core, project context, skills, agents, hooks, evals, and docs;\n\n4\\) long scripts\nembedded in nix, compatibility shims, aliases, re-exports, bash used for stateful logic, and unguarded platform-specific\nconfiguration; 5) committed private submodule gitlinks that point to unpushed commits, orphaned agent sessions, settings\nseed ownership gaps, and flake evaluations that omit required submodules; 6) scripts, behavior-bearing modules, or\nrecent bug fixes without focused regression coverage, excluding declarative configuration already proven by rebuild.";
+  "### Sweep dimensions\n\nApply all seven dimensions in one pass: 1) TODO, FIXME, WIP, XXX, or HACK markers and commented-out code, excluding\nshebangs, load-bearing expressions, and intentional backlog; 2) unused scripts, files, and broken symlinks, proving\nabsence through imports, globs, filesets, generators, runtime discovery, and PATH lookup; 3) stale, contradictory, or\nduplicated policy and pointers across core, project context, skills, agents, hooks, evals, and docs;\n\n4\\) long scripts\nembedded in nix, compatibility shims, aliases, re-exports, bash used for stateful logic, and unguarded platform-specific\nconfiguration; 5) committed private submodule gitlinks that point to unpushed commits, orphaned agent sessions, settings\nseed ownership gaps, and flake evaluations that omit required submodules; 6) scripts, behavior-bearing modules, or\nrecent bug fixes without focused regression coverage, excluding declarative configuration already proven by rebuild;\n\n7\\) real defects: inverted or off-by-one comparisons, wrong boolean operators, dropped negations, wrong defaults or\nconstants, and broken empty-input handling.";
 
-const FINDINGS_SCHEMA = {
+const FINDING_PROPERTIES = {
+  dimension: { type: "string" },
+  file: { type: "string" },
+  line: { type: "integer" },
+  severity: { enum: ["critical", "high", "medium", "low"] },
+  title: { type: "string" },
+  detail: { type: "string" },
+  confidence: { type: "integer", minimum: 1, maximum: 5 },
+};
+const listSchema = (listName, itemProperties, maxItems) => ({
   type: "object",
   properties: {
-    findings: {
+    [listName]: {
       type: "array",
-      maxItems: 8,
+      maxItems,
       items: {
         type: "object",
-        properties: {
-          dimension: { type: "string" },
-          file: { type: "string" },
-          line: { type: "string" },
-          severity: { enum: ["critical", "high", "medium", "low"] },
-          title: { type: "string" },
-          detail: { type: "string" },
-          suggestion: { type: "string" },
-        },
-        required: ["dimension", "file", "severity", "title", "detail"],
+        properties: itemProperties,
+        required: Object.keys(itemProperties),
       },
     },
   },
-  required: ["findings"],
+  required: [listName],
+});
+const VERDICT_PROPERTIES = {
+  index: { type: "integer" },
+  confirmed: { type: "boolean" },
+  reason: { type: "string" },
+};
+const FINDINGS_SCHEMA = listSchema("findings", FINDING_PROPERTIES, 15);
+const VERDICTS_SCHEMA = listSchema("verdicts", VERDICT_PROPERTIES, 40);
+const SLICES_SCHEMA = {
+  type: "object",
+  properties: {
+    slices: { type: "array", items: { type: "string" } },
+    error: { type: "string" },
+  },
 };
 
-phase("Sweep");
-const candidates = await agent(
-  `### Sweep
+const MAXIMUM_SLICES = 12;
+const VERIFIER_COUNT = 5;
+const MAXIMUM_CANDIDATES = 40;
+const MAXIMUM_REPORTED_FINDINGS = 15;
+const SEVERITY_ORDER = ["critical", "high", "medium", "low"];
+const severityRank = (finding) => SEVERITY_ORDER.indexOf(finding.severity);
+const SLICER = { model: "haiku", effort: "low", schema: SLICES_SCHEMA };
+const READER = { model: "haiku", effort: "low", schema: FINDINGS_SCHEMA };
+const SECOND_LOOK = { model: "haiku", effort: "low", schema: FINDINGS_SCHEMA };
+const VERIFIER = { model: "sonnet", effort: "medium", schema: VERDICTS_SCHEMA };
+const root = args?.root ?? ".";
+const subtree = args?.subtree ?? "";
+const SWEEP_TASK =
+  "Sweep this slice of the dotfiles repository for standing rot and real defects.";
+const secondLookTask = (firstFindings) =>
+  `Take a second look and report only what the first reader missed. It reported the findings below.\n\n${instructionData(firstFindings)}.\n\n`;
 
-Sweep the dotfiles repository for standing rot.
+const readerBrief = (artifactPath, task) => `### Housekeeping slice
+
+${task}
+The slice artifact is the file named on the next line.
+
+${instructionData(artifactPath)}.
+
+It holds every file of the slice under a "=== path" header, each line prefixed with its line number inside that file.
+Read the whole artifact, in chunks when it is long, and report each finding with the file path from its header and the
+line number printed beside it.
 
 ${SWEEP_DIMENSIONS}
 
 ${COVERAGE_EXCLUSIONS}
 
-### Findings
+Try to refute each concern before returning it. Keep each detail under 60 words and rate your confidence from 1 to 5.`;
 
-Search the actual tree and history as needed. Try to refute each concern before returning it. Report at most eight
-actionable findings with a concrete file, location, evidence, and fix. Treat a committed secret or silent deployment
-failure as critical and an isolated stale marker as low. Keep each detail under 80 words. Batch your searches and spend
-at most eight tool calls.`,
-  {
-    label: "sweep",
-    phase: "Sweep",
-    schema: FINDINGS_SCHEMA,
-    model: "haiku",
-    effort: "low",
-  },
-);
+const verifierBrief = (batch) => `### Verification
 
-phase("Verify");
-const report = await agent(
-  `### Verification
+Independently verify these dotfiles housekeeping candidates by reading the actual checkout and its history. The checkout
+root is the path on the next line.
 
-Independently verify this dotfiles housekeeping candidate set by reading the actual tree and history. Try hard to refute
-every candidate. Keep one only when it is standing rot worth cleaning and no existing formatter, linter, test, diff
+${instructionData(root)}.
+
+Try hard to refute every candidate. Confirm one only when it is real and no existing formatter, linter, test, diff
 reviewer, import mechanism, glob, generator, intentional backlog, or steward behavior already owns or explains it.
-Return a markdown triage report under 400 words with no more than five confirmed findings, critical first. Each finding
-must name its dimension, file and location, evidence, and smallest cleanup. If none survive, say the tree looks clean
-and name the six dimensions reviewed. Batch your searches and spend at most eight tool calls.
 
 ### Candidates
 
-${instructionData(candidates?.findings ?? [])}.
-`,
-  {
-    label: "verify",
-    phase: "Verify",
-    model: "sonnet",
-    effort: "medium",
-  },
+${instructionData(batch.map(({ index, file, line, dimension, title, detail }) => ({ index, file, line, dimension, title, detail })))}.
+
+Return one verdict per candidate index.`;
+
+if (!subtree) {
+  return "Housekeeping did not run: pass args {root, subtree} naming one subtree of the checkout.";
+}
+
+phase("Slice");
+const sliced = await agent(
+  `### Slice
+
+Run the dotfiles-housekeeping-slices command with its --root and --subtree options set to the two values below.
+
+${instructionData({ root, subtree })}.
+
+Return its JSON output as structured data.`,
+  { label: "slice", phase: "Slice", ...SLICER },
+);
+if (!sliced?.slices?.length) {
+  return `Housekeeping did not run: ${sliced?.error ?? "the slicer returned no slices"}.`;
+}
+const slicePaths = sliced.slices.slice(0, MAXIMUM_SLICES);
+if (sliced.slices.length > MAXIMUM_SLICES)
+  log(`audited ${MAXIMUM_SLICES} slices`);
+
+const perSlice = await pipeline(
+  slicePaths,
+  (artifactPath, _, sliceIndex) =>
+    agent(readerBrief(artifactPath, SWEEP_TASK), {
+      label: `read-${sliceIndex}`,
+      phase: "Read",
+      ...READER,
+    }),
+  (readerResult, artifactPath, sliceIndex) =>
+    agent(
+      readerBrief(artifactPath, secondLookTask(readerResult?.findings ?? [])),
+      { label: `second-${sliceIndex}`, phase: "Second look", ...SECOND_LOOK },
+    ).then((reviewerResult) => [
+      ...(readerResult?.findings ?? []),
+      ...(reviewerResult?.findings ?? []),
+    ]),
 );
 
-return report;
+const isNear = (left, right) =>
+  left.file === right.file && Math.abs(left.line - right.line) <= 2;
+const isFirstAtItsSite = (finding, position, all) =>
+  all.findIndex((kept) => isNear(kept, finding)) === position;
+const distinct = perSlice.filter(Boolean).flat().filter(isFirstAtItsSite);
+const candidates = distinct
+  .filter((finding) => finding.confidence >= 3)
+  .sort((left, right) => right.confidence - left.confidence)
+  .slice(0, MAXIMUM_CANDIDATES)
+  .map((finding, index) => ({ ...finding, index }));
+log(
+  `${distinct.length} distinct findings, ${candidates.length} sent to verification`,
+);
+
+const batches = Array.from({ length: VERIFIER_COUNT }, (_, batchIndex) =>
+  candidates.filter(({ index }) => index % VERIFIER_COUNT === batchIndex),
+).filter((batch) => batch.length > 0);
+const verdictLists = await parallel(
+  batches.map(
+    (batch, batchIndex) => () =>
+      agent(verifierBrief(batch), {
+        label: `verify-${batchIndex}`,
+        phase: "Verify",
+        ...VERIFIER,
+      }),
+  ),
+);
+
+const confirmedIndexes = new Set(
+  verdictLists
+    .filter(Boolean)
+    .flatMap((verdictList) => verdictList.verdicts ?? [])
+    .filter((verdict) => verdict.confirmed)
+    .map((verdict) => verdict.index),
+);
+const confirmed = candidates
+  .filter((candidate) => confirmedIndexes.has(candidate.index))
+  .sort((left, right) => severityRank(left) - severityRank(right));
+const summary = `Housekeeping of ${subtree}: ${slicePaths.length} slices read twice, ${candidates.length} candidates, ${confirmed.length} confirmed.`;
+const reportLine = (finding) =>
+  `- **${finding.severity}** ${finding.file}:${finding.line} (${finding.dimension}): ${finding.title}. ${finding.detail}`;
+const shown = confirmed.slice(0, MAXIMUM_REPORTED_FINDINGS);
+const hidden = confirmed.length - shown.length;
+return [
+  summary,
+  ...shown.map(reportLine),
+  ...(hidden > 0 ? [`${hidden} more confirmed findings not shown.`] : []),
+].join("\n");

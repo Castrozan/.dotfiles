@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from runner import run_evals_worktree_and_environment as evaluation_environment
@@ -24,6 +25,19 @@ RESULT_WRITE_POLL_INTERVAL_SECONDS = 0.05
 RESULT_WRITE_TIMEOUT_SECONDS = 5
 
 
+@dataclass(frozen=True)
+class SubjectRequest:
+    prompt: str
+    model: str | None = None
+    model_reasoning_effort: str | None = None
+    system_prompt: str | None = None
+    timeout: int = 120
+    max_turns: int | None = None
+    no_tools: bool = False
+    working_directory: Path | None = None
+    isolated_context: bool = False
+
+
 def build_provider_invoker(
     harness: str,
     timeout: int = 120,
@@ -32,14 +46,16 @@ def build_provider_invoker(
     def invoke(judge_prompt, model="opus", no_tools=False):
         return invoke_subject(
             harness,
-            prompt=judge_prompt,
-            model=model,
-            model_reasoning_effort=model_reasoning_effort,
-            timeout=timeout,
-            max_turns=1,
-            no_tools=no_tools,
+            SubjectRequest(
+                prompt=judge_prompt,
+                model=model,
+                model_reasoning_effort=model_reasoning_effort,
+                timeout=timeout,
+                max_turns=1,
+                no_tools=no_tools,
+                isolated_context=True,
+            ),
             invocation_role="judge",
-            isolated_context=True,
         )
 
     return invoke
@@ -75,33 +91,22 @@ def model_for_harness(
 
 
 def build_subject_invocation(
-    harness: str,
-    *,
-    prompt: str,
-    model: str | None,
-    model_reasoning_effort: str | None,
-    system_prompt: str | None,
-    timeout: int,
-    max_turns: int | None,
-    no_tools: bool,
-    working_directory: Path | None,
-    result_file: str,
-    isolated_context: bool = False,
+    harness: str, request: SubjectRequest, result_file: str
 ) -> dict:
     return {
         "harness": harness,
-        "prompt": prompt,
-        "model": model,
-        "model_reasoning_effort": model_reasoning_effort,
-        "system_prompt": system_prompt,
+        "prompt": request.prompt,
+        "model": request.model,
+        "model_reasoning_effort": request.model_reasoning_effort,
+        "system_prompt": request.system_prompt,
         "working_directory": str(
-            working_directory or evaluation_environment.EVAL_WORKING_DIRECTORY
+            request.working_directory or evaluation_environment.EVAL_WORKING_DIRECTORY
         ),
-        "timeout": timeout,
-        "max_turns": max_turns,
-        "no_tools": no_tools,
+        "timeout": request.timeout,
+        "max_turns": request.max_turns,
+        "no_tools": request.no_tools,
         "result_file": result_file,
-        "isolated_context": isolated_context,
+        "isolated_context": request.isolated_context,
     }
 
 
@@ -127,18 +132,7 @@ def read_result_file(result_file_path: Path) -> dict:
 
 
 def invoke_subject(
-    harness: str,
-    *,
-    prompt: str,
-    model: str | None = None,
-    model_reasoning_effort: str | None = None,
-    system_prompt: str | None = None,
-    timeout: int = 120,
-    max_turns: int | None = None,
-    no_tools: bool = False,
-    working_directory: Path | None = None,
-    invocation_role: str = "subject",
-    isolated_context: bool = False,
+    harness: str, request: SubjectRequest, invocation_role: str = "subject"
 ) -> tuple[str, bool]:
     runtime_command = resolve_node_runtime()
 
@@ -146,22 +140,10 @@ def invoke_subject(
         tempfile.TemporaryDirectory(prefix="agent-eval-result-") as result_directory,
         tempfile.TemporaryDirectory(prefix="agent-eval-isolated-") as empty_directory,
     ):
-        if isolated_context:
-            working_directory = Path(empty_directory)
+        if request.isolated_context:
+            request = replace(request, working_directory=Path(empty_directory))
         result_file_path = Path(result_directory) / "result.json"
-        invocation = build_subject_invocation(
-            harness=harness,
-            prompt=prompt,
-            model=model,
-            model_reasoning_effort=model_reasoning_effort,
-            system_prompt=system_prompt,
-            timeout=timeout,
-            max_turns=max_turns,
-            no_tools=no_tools,
-            working_directory=working_directory,
-            result_file=str(result_file_path),
-            isolated_context=isolated_context,
-        )
+        invocation = build_subject_invocation(harness, request, str(result_file_path))
         runtime_options = subject_runtime.SubjectRuntimeOptions(
             runtime_command,
             invocation_role,

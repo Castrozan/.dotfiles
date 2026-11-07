@@ -4,34 +4,57 @@ import os
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
+COMMAND_NAME_VARIABLE = "DOTFILES_WORKFLOW_COMMAND"
 WORKFLOW_NAME_VARIABLE = "DOTFILES_WORKFLOW_NAME"
+WORKFLOW_SCRIPT_PATH_VARIABLE = "DOTFILES_WORKFLOW_SCRIPT_PATH"
+ARGUMENT_NAMES_VARIABLE = "DOTFILES_WORKFLOW_ARGUMENTS"
 INTERACTIVE_SESSION_VARIABLES = frozenset(
     {"AGENT_INTERACTIVE_PREFERENCES_PATH", "CLAUDECODE"}
 )
 WORKFLOW_TIMEOUT_SECONDS = 1800
 VERBATIM_RELAY_INSTRUCTION = (
-    "Return the workflow's report as your entire final message, verbatim. "
-    "Add no summary, preamble, commentary, or closing line."
+    "Keep your turn open while the workflow runs: once the Workflow tool returns "
+    "its run ID, run the Bash command dotfiles-workflow-wait <run ID> with a "
+    "600000 ms timeout, and run it again each time it prints still running. "
+    "Return the report it prints under the status line as your entire final "
+    "message, verbatim. Add no summary, preamble, commentary, or closing line."
 )
 
 
-def resolve_workflow_name() -> str:
+@dataclass(frozen=True)
+class WorkflowCommand:
+    command_name: str
+    workflow_reference: dict[str, str]
+    argument_names: tuple[str, ...]
+
+
+def resolve_workflow_command() -> WorkflowCommand:
+    command_name = os.environ.get(COMMAND_NAME_VARIABLE, "")
     workflow_name = os.environ.get(WORKFLOW_NAME_VARIABLE, "")
-    if not workflow_name:
+    script_path = os.environ.get(WORKFLOW_SCRIPT_PATH_VARIABLE, "")
+    if not command_name or bool(workflow_name) == bool(script_path):
         raise SystemExit(
-            f"{WORKFLOW_NAME_VARIABLE} is unset: run the packaged dotfiles-* command "
-            "rather than this script"
+            f"{COMMAND_NAME_VARIABLE} and exactly one of {WORKFLOW_NAME_VARIABLE} or "
+            f"{WORKFLOW_SCRIPT_PATH_VARIABLE} must be set: run the packaged "
+            "dotfiles-* command rather than this script"
         )
-    return workflow_name
+    return WorkflowCommand(
+        command_name=command_name,
+        workflow_reference=(
+            {"name": workflow_name} if workflow_name else {"scriptPath": script_path}
+        ),
+        argument_names=tuple(os.environ.get(ARGUMENT_NAMES_VARIABLE, "").split()),
+    )
 
 
 def parse_command_line(
-    workflow_name: str, command_line_arguments: list[str]
+    command: WorkflowCommand, command_line_arguments: list[str]
 ) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog=workflow_name,
+        prog=command.command_name,
         description=(
             "Run a dotfiles workflow from any agent harness and print its report."
         ),
@@ -44,12 +67,18 @@ def parse_command_line(
             "defaulting to the checkout the current directory belongs to"
         ),
     )
+    for argument_name in command.argument_names:
+        if argument_name != "root":
+            parser.add_argument(f"--{argument_name}", default="")
     return parser.parse_args(command_line_arguments)
 
 
 def resolve_repository_root(requested_root: str) -> Path:
     if requested_root:
-        return Path(requested_root).expanduser().resolve()
+        requested_directory = Path(requested_root).expanduser().resolve()
+        if not requested_directory.is_dir():
+            raise SystemExit(f"--root {requested_root} is not a directory")
+        return requested_directory
     checkout_toplevel = subprocess.run(
         ["git", "rev-parse", "--show-toplevel"],
         capture_output=True,
@@ -64,9 +93,22 @@ def resolve_repository_root(requested_root: str) -> Path:
     return Path(checkout_toplevel.stdout.strip())
 
 
-def build_slash_command(workflow_name: str, repository_root: Path) -> str:
-    workflow_arguments = {"root": str(repository_root)}
-    return f"/{workflow_name} {json.dumps(workflow_arguments)}"
+def build_workflow_prompt(
+    command: WorkflowCommand, repository_root: Path, arguments: argparse.Namespace
+) -> str:
+    workflow_arguments = {
+        argument_name: (
+            str(repository_root)
+            if argument_name == "root"
+            else getattr(arguments, argument_name)
+        )
+        for argument_name in command.argument_names
+    }
+    workflow_input = {
+        **command.workflow_reference,
+        "args": {name: value for name, value in workflow_arguments.items() if value},
+    }
+    return f"Call the Workflow tool exactly once with this input: {json.dumps(workflow_input)}"
 
 
 def resolve_claude_binary() -> str:
@@ -85,13 +127,13 @@ def build_non_interactive_environment() -> dict[str, str]:
 
 
 def run_workflow(
-    claude_binary: str, slash_command: str, repository_root: Path
+    claude_binary: str, workflow_prompt: str, repository_root: Path
 ) -> subprocess.CompletedProcess:
     return subprocess.run(
         [
             claude_binary,
             "--print",
-            slash_command,
+            workflow_prompt,
             "--output-format",
             "json",
             "--strict-mcp-config",
@@ -133,13 +175,19 @@ def extract_report(completed_workflow: subprocess.CompletedProcess) -> str:
 
 
 def main() -> int:
-    workflow_name = resolve_workflow_name()
-    arguments = parse_command_line(workflow_name, sys.argv[1:])
-    repository_root = resolve_repository_root(arguments.root)
-    slash_command = build_slash_command(workflow_name, repository_root)
+    command = resolve_workflow_command()
+    arguments = parse_command_line(command, sys.argv[1:])
+    repository_root = (
+        resolve_repository_root(arguments.root)
+        if arguments.root or "root" in command.argument_names
+        else Path.cwd()
+    )
+    workflow_prompt = build_workflow_prompt(command, repository_root, arguments)
     claude_binary = resolve_claude_binary()
     try:
-        completed_workflow = run_workflow(claude_binary, slash_command, repository_root)
+        completed_workflow = run_workflow(
+            claude_binary, workflow_prompt, repository_root
+        )
     except subprocess.TimeoutExpired:
         raise SystemExit(
             f"the workflow exceeded its {WORKFLOW_TIMEOUT_SECONDS} second ceiling"

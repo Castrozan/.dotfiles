@@ -1,4 +1,9 @@
-{ lib, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 let
   workflowFilesFromInstall =
     install:
@@ -21,7 +26,13 @@ let
   );
 
   pageComposerInstall = import ../../../agent-instructions/skills/writing/page-composer/install { };
+
+  housekeepingSlicesCommand = pkgs.writeShellScriptBin "dotfiles-housekeeping-slices" ''
+    export PATH="${lib.makeBinPath [ pkgs.git ]}:$PATH"
+    exec ${pkgs.python312}/bin/python3 ${./scripts/dotfiles_housekeeping_slices.py} "$@"
+  '';
 in
 {
   home.file = localWorkflowFiles // workflowFilesFromInstall pageComposerInstall;
+  home.packages = [ housekeepingSlicesCommand ];
 }
