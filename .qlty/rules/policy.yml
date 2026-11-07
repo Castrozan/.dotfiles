@@ -120,7 +120,7 @@ rule:
 id: python-world-writable-file-mode
 language: Python
 severity: error
-message: Grant write permission only to the owner.
+message: Remove write permission for other users.
 rule:
   pattern: os.$METHOD($TARGET, $MODE)
 constraints:
