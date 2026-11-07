@@ -110,26 +110,22 @@ ${instructionData(batch.map(({ index, file, line, dimension, title, detail }) =>
 
 Return one verdict per candidate index.`;
 
-if (!subtree) {
-  return "Housekeeping did not run: pass args {root, subtree} naming one subtree of the checkout.";
-}
-
 phase("Slice");
-const sliced = await agent(
-  `### Slice
+const sliced = !subtree
+  ? { error: "pass args {root, subtree} naming one subtree of the checkout" }
+  : await agent(
+      `### Slice
 
 Run the dotfiles-housekeeping-slices command with its --root and --subtree options set to the two values below.
 
 ${instructionData({ root, subtree })}.
 
 Return its JSON output as structured data.`,
-  { label: "slice", phase: "Slice", ...SLICER },
-);
-if (!sliced?.slices?.length) {
-  return `Housekeeping did not run: ${sliced?.error ?? "the slicer returned no slices"}.`;
-}
-const slicePaths = sliced.slices.slice(0, MAXIMUM_SLICES);
-if (sliced.slices.length > MAXIMUM_SLICES)
+      { label: "slice", phase: "Slice", ...SLICER },
+    );
+const allSlicePaths = sliced?.slices ?? [];
+const slicePaths = allSlicePaths.slice(0, MAXIMUM_SLICES);
+if (allSlicePaths.length > MAXIMUM_SLICES)
   log(`audited ${MAXIMUM_SLICES} slices`);
 
 const perSlice = await pipeline(
@@ -193,8 +189,11 @@ const reportLine = (finding) =>
   `- **${finding.severity}** ${finding.file}:${finding.line} (${finding.dimension}): ${finding.title}. ${finding.detail}`;
 const shown = confirmed.slice(0, MAXIMUM_REPORTED_FINDINGS);
 const hidden = confirmed.length - shown.length;
-return [
-  summary,
-  ...shown.map(reportLine),
-  ...(hidden > 0 ? [`${hidden} more confirmed findings not shown.`] : []),
-].join("\n");
+const report = slicePaths.length
+  ? [
+      summary,
+      ...shown.map(reportLine),
+      ...(hidden > 0 ? [`${hidden} more confirmed findings not shown.`] : []),
+    ].join("\n")
+  : `Housekeeping did not run: ${sliced?.error ?? "the slicer returned no slices"}.`;
+return report;

@@ -71,23 +71,29 @@ def too_large_report(files, subtree, total_lines):
     }
 
 
-def write_slice_artifacts(files, slice_count):
-    artifact_directory = Path(tempfile.mkdtemp(prefix="dotfiles-housekeeping-"))
+def numbered_file_section(relative_path, lines):
+    numbered = "\n".join(f"{number:5d}  {text}" for number, text in enumerate(lines, 1))
+    return f"=== {relative_path} ({len(lines)} lines)\n{numbered}"
+
+
+def grouped_slice_sections(files, slice_count):
     lines_per_slice = math.ceil(sum(len(lines) for _, lines in files) / slice_count)
     slices, current_sections, current_lines = [], [], 0
     for relative_path, lines in files:
-        numbered = "\n".join(
-            f"{number:5d}  {text}" for number, text in enumerate(lines, 1)
-        )
-        current_sections.append(f"=== {relative_path} ({len(lines)} lines)\n{numbered}")
+        current_sections.append(numbered_file_section(relative_path, lines))
         current_lines += len(lines)
         if current_lines >= lines_per_slice and len(slices) < slice_count - 1:
             slices.append(current_sections)
             current_sections, current_lines = [], 0
     if current_sections:
         slices.append(current_sections)
+    return slices
+
+
+def write_slice_artifacts(files, slice_count):
+    artifact_directory = Path(tempfile.mkdtemp(prefix="dotfiles-housekeeping-"))
     artifact_paths = []
-    for slice_index, sections in enumerate(slices):
+    for slice_index, sections in enumerate(grouped_slice_sections(files, slice_count)):
         artifact_path = artifact_directory / f"slice-{slice_index}.txt"
         artifact_path.write_text("\n\n".join(sections) + "\n")
         artifact_paths.append(str(artifact_path))
