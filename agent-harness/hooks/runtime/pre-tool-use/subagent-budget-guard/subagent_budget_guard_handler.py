@@ -29,6 +29,14 @@ def spawns_a_read_only_scout(tool_input):
     return subagent_type.rsplit(":", 1)[-1] == READ_ONLY_SCOUT_AGENT_NAME
 
 
+def spawn_counts_against_the_ceiling(hook_input):
+    return (
+        hook_input.get("tool_name", "") == SUBAGENT_SPAWN_TOOL_NAME
+        and is_keyboard_driven_interactive_session()
+        and not spawns_a_read_only_scout(hook_input.get("tool_input", {}) or {})
+    )
+
+
 def build_ceiling_reached_message(allowed_spawn_count):
     return (
         f"BLOCKED: this session has already spawned {allowed_spawn_count} subagents, which is the "
@@ -44,16 +52,13 @@ def build_ceiling_reached_message(allowed_spawn_count):
 
 
 def handle(hook_input):
-    if hook_input.get("tool_name", "") != SUBAGENT_SPAWN_TOOL_NAME:
-        return None
-    if not is_keyboard_driven_interactive_session():
-        return None
-    tool_input = hook_input.get("tool_input", {}) or {}
-    if spawns_a_read_only_scout(tool_input):
+    if not spawn_counts_against_the_ceiling(hook_input):
         return None
     session_id = hook_input.get("session_id", "")
     spawn_declares_the_orchestrated_tier = (
-        subagent_spawn_budget_state.declares_the_orchestrated_tier(tool_input)
+        subagent_spawn_budget_state.declares_the_orchestrated_tier(
+            hook_input.get("tool_input", {}) or {}
+        )
     )
     if not subagent_spawn_budget_state.reserve_subagent_spawn(
         session_id,
