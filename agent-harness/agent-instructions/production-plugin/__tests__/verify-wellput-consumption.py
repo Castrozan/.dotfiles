@@ -38,8 +38,8 @@ def verify(bundle):
     assert (package / "skills/wellput/SKILL.md").read_bytes() == (
         upstream / "skills/wellput/SKILL.md"
     ).read_bytes()
-    assert not (package / "skills/humanize").exists()
-    assert not (package / "library/skills/humanize").exists()
+    assert (package / "skills/humanize/SKILL.md").is_file()
+    assert (package / "skills/humanize/examples/pull-request.md").is_file()
     assert not (scripts / "reply_rule_catalog.py").exists()
     assert not (scripts / "end_of_turn_format_guard_handler.py").exists()
     environment = {

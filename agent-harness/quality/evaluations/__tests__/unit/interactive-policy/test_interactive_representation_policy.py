@@ -1,7 +1,6 @@
 import re
 
 from instructions.instruction_surface_scanner import REPO_ROOT
-from instructions.reply_format_instructions import expand_reply_format_instructions
 
 CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH = (
     REPO_ROOT
@@ -12,16 +11,6 @@ CANONICAL_HUMAN_COMMUNICATION_POLICY_PATH = (
     / "humanize"
     / "SKILL.md"
 )
-INTERACTIVE_COMMUNICATION_POLICY_PATH = (
-    REPO_ROOT
-    / "agent-harness"
-    / "agent-instructions"
-    / "skills"
-    / "writing"
-    / "humanize"
-    / "references"
-    / "interactive-communication.md"
-)
 
 
 def representation_selection_policy() -> str:
@@ -31,7 +20,7 @@ def representation_selection_policy() -> str:
         preferences,
         re.DOTALL,
     )
-    assert match, "interactive sessions need one always-loaded representation policy"
+    assert match, "humanize needs one representation selection policy"
     return re.sub(r"\s+", " ", match.group(1)).strip().lower()
 
 
@@ -63,11 +52,3 @@ def test_representation_policy_maps_reader_needs_to_the_smallest_useful_form():
         "table rows",
     ):
         assert required_behavior in policy
-
-
-def test_the_generated_contract_points_to_the_representation_owner():
-    policy = expand_reply_format_instructions(
-        INTERACTIVE_COMMUNICATION_POLICY_PATH.read_text(encoding="utf-8")
-    ).lower()
-    assert "#representation-selection)" in policy
-    assert "smallest useful form" in representation_selection_policy()

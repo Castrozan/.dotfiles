@@ -16,12 +16,20 @@ HUMANIZE_DIRECTORY = (
     / "humanize"
 )
 HUMANIZE_SKILL_PATH = HUMANIZE_DIRECTORY / "SKILL.md"
-INTERACTIVE_POLICY_PATH = (
-    HUMANIZE_DIRECTORY / "references" / "interactive-communication.md"
+HUMANIZE_CASE_EXAMPLES = (
+    "readme.md",
+    "pull-request.md",
+    "handoff.md",
+    "chat-message.md",
+    "email.md",
+    "long-lived-docs.md",
+    "bug-report.md",
+    "status-update.md",
+    "release-notes.md",
 )
 REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
 REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
-MAXIMUM_HUMANIZE_SKILL_BYTES = 4000
+MAXIMUM_HUMANIZE_SKILL_BYTES = 6000
 
 REMOVED_GENERATED_SURFACES = (
     CORE_COMMUNICATION_DIRECTORY / "interactive-human-communication.md",
@@ -31,40 +39,23 @@ REMOVED_GENERATED_SURFACES = (
 )
 
 
-def test_humanize_package_owns_interactive_and_output_policies():
-    interactive_policy = INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
+def test_humanize_owns_documents_read_later_and_defers_live_replies():
     humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
+    description = (frontmatter_key_values(humanize_skill) or {}).get("description", "")
 
-    for tag in (
-        "humanize_policy_loading",
-        "peer_communication",
-        "work_in_progress_updates",
-        "artifact_links",
-        "exhaust_before_returning",
-        "response_shape",
+    assert "outside a live session" in description
+    assert "Not for live session replies" in description
+    for owner in ("`wellput`", "`docs`", "`coding`"):
+        assert owner in humanize_skill
+    for retired_section in (
+        "### Confusion recovery",
+        "### Human register",
+        "### Interactive communication",
     ):
-        assert "### " + tag.replace("_", " ").capitalize() in interactive_policy
-
-    for tag in (
-        "reader_understanding_policy",
-        "source_fidelity",
-        "representation_selection",
-        "confusion_recovery",
-        "procedures_and_explanations",
-        "human_register",
-    ):
-        assert "### " + tag.replace("_", " ").capitalize() in humanize_skill
-
-    for removed_tag in (
-        "controlled-language-application",
-        "supplied-fact-precedence",
-        "task-and-reader-model",
-        "procedures-explanations-and-warnings",
-        "controlled-language-adaptation",
-        "human-facing-channel-rules",
-        "durable-report-rules",
-    ):
-        assert "### " + removed_tag.replace("_", " ").capitalize() not in humanize_skill
+        assert retired_section not in humanize_skill
+    assert not (
+        HUMANIZE_DIRECTORY / "references" / "interactive-communication.md"
+    ).exists()
 
     humanize_skill_bytes = len(humanize_skill.encode("utf-8"))
     assert humanize_skill_bytes <= MAXIMUM_HUMANIZE_SKILL_BYTES, (
@@ -73,6 +64,17 @@ def test_humanize_package_owns_interactive_and_output_policies():
     )
 
     assert not (HOOK_DOMAIN_DIRECTORY / "interactive-communication.md").exists()
+
+
+def test_humanize_links_a_worked_example_for_every_case():
+    humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
+
+    for example in HUMANIZE_CASE_EXAMPLES:
+        assert f"](examples/{example})" in humanize_skill
+        assert (HUMANIZE_DIRECTORY / "examples" / example).is_file()
+        assert "\n```" in (HUMANIZE_DIRECTORY / "examples" / example).read_text(
+            encoding="utf-8"
+        )
 
 
 def test_no_generated_policy_surface_sits_between_owners_and_consumers():
@@ -89,64 +91,6 @@ def test_hooks_enforce_the_policy_without_rendering_instruction_surfaces():
     assert "rendered_markdown_surface" not in feedback
 
 
-def test_humanize_owns_session_replies_and_excludes_file_authoring():
-    skill_text = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
-    description = (frontmatter_key_values(skill_text) or {}).get("description", "")
-
-    normalized_description = description.lower()
-    assert "active agent sessions" in normalized_description
-    assert "substantial replies" in normalized_description
-    assert "file authoring" in normalized_description
-    assert "### Durable artifacts" not in skill_text
-    assert "Use the `docs` skill" not in skill_text
-    assert "enforced-wording-rules.md" not in skill_text
-    assert "human-communication-policy.md" not in skill_text
-    assert not (HUMANIZE_DIRECTORY / "human-communication-policy.md").exists()
-    for superseded_chapter in (
-        "channels.md",
-        "simplified-technical-english.md",
-        "tells.md",
-    ):
-        assert not (HUMANIZE_DIRECTORY / superseded_chapter).exists()
-
-
 def test_superseded_split_interactive_surfaces_are_removed():
     assert not (CORE_COMMUNICATION_DIRECTORY / "interactive-preferences.md").exists()
     assert not (CORE_COMMUNICATION_DIRECTORY / "enforced-reply-rules.md").exists()
-
-
-def test_humanize_explains_unresolved_choices_before_internal_rationale():
-    skill_text = " ".join(
-        HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower().split()
-    )
-
-    for required_behavior in (
-        "who acts",
-        "what changes",
-        "scope",
-        "material tradeoffs",
-        "before internal rationale",
-    ):
-        assert required_behavior in skill_text
-
-
-def test_humanize_uses_established_language_before_coining_terms():
-    skill_text = " ".join(
-        HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower().split()
-    )
-
-    for required_behavior in (
-        "established terms consistently",
-        "concrete referents",
-        "reader's terms",
-    ):
-        assert required_behavior in skill_text
-
-
-def test_humanize_integrates_new_information_without_recency_priority():
-    skill_text = " ".join(
-        HUMANIZE_SKILL_PATH.read_text(encoding="utf-8").lower().split()
-    )
-
-    for required_behavior in ("full session",):
-        assert required_behavior in skill_text

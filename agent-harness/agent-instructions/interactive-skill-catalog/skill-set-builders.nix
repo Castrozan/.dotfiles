@@ -50,11 +50,9 @@ let
 
   wellputSource = import ../wellput-plugin/upstream.nix { inherit pkgs; };
 
-  skillSourceDirectoryByName =
-    (builtins.removeAttrs authoredSkillSourceDirectoryByName [ "humanize" ])
-    // {
-      wellput = "${wellputSource}/skills/wellput";
-    };
+  skillSourceDirectoryByName = authoredSkillSourceDirectoryByName // {
+    wellput = "${wellputSource}/skills/wellput";
+  };
 
   allSkillNames = builtins.attrNames skillSourceDirectoryByName;
 

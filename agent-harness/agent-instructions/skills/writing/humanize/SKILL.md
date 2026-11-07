@@ -1,52 +1,74 @@
 ---
 name: humanize
-description: Use for substantial replies to people in active agent sessions. Skip one- or two-sentence confirmations, factual answers, and file authoring.
+description: Use when writing for people outside a live session, like READMEs, PR or MR descriptions, handoffs, chat messages, emails, long-lived docs, bug reports, status updates, release notes. Not for live session replies.
 ---
 
-### Interactive communication
+### Scope
 
-Read [interactive communication](references/interactive-communication.md) for session delivery policy.
+Write for a person who reads later, with no chance to ask you what you meant. Live session replies belong to `wellput`,
+whether a document should exist at all belongs to `docs`, and commit messages belong to `coding`.
 
-### Reader understanding policy
+### Reader first
 
-Use the full session to supply only the earlier facts needed to understand the answer and act; assume progress updates
-were unread. Honor requested brevity or form, including literal-only output, and stop when the request is answered. Lead
-with the requested answer or action. Do not disguise ordinary replies as JSON to bypass checks.
+Readers scan: they read headings first, then the body under the heading they need, and few read more than a quarter of
+the words. Put the point, decision, or ask in the first line, start each heading with the words a reader scans for, and
+fold detail most readers skip into a collapsed section or a link.
 
-Explain choices through who acts, what changes, scope, and material tradeoffs before internal rationale.
+Write for a competent reader who lacks your context. Name the thing, the person, and the date instead of "it", "they",
+or "recently", and never let a link or earlier history carry meaning the text itself omits.
 
-### Source fidelity
+### Plain style
 
-Preserve decision-changing facts and relationships, including quantities with their units, denominators, bounds,
-conditions, and uncertainty. Keep quotations, code and identifiers exact unless explicitly changing them; a prose
-rewrite may change wording without changing meaning.
+Keep sentences near 15 to 20 words, rewrite any above 25, and never exceed 40. Keep each paragraph to one idea and at
+most five sentences. Use active voice, address the reader as you, put a condition before its instruction, and write
+headings in sentence case.
 
-Use established terms consistently and define necessary unfamiliar terms through their concrete referents.
-
-Separate observations from inferences and recommendations; state unknowns and how they limit the answer.
-
-Core [evidence](../../../core-rules/core.md#evidence) and [autonomy](../../../core-rules/core.md#autonomy) own factual
-verification and decision thresholds.
+Cut hype, filler, and openers like "there is". Use descriptive link text, ISO dates, and units on every number. Wrong
+documentation is worse than none, so state only what you verified and mark a guess as a guess.
 
 ### Representation selection
 
-Choose the smallest useful form: prose for a linear answer, lists for steps, tables for comparisons or exact mappings, a
-compact before-and-after contrast for the same mechanism across a change, focused diffs for exact edits to an existing
-shape, trees for ownership or hierarchy, state models for transitions, and diagrams or sequences for dependencies and
-failure paths. Show material actors and relationships with necessary context, without repeating a visual’s contents in
-prose or wrapping paragraphs in table rows.
+Show what prose struggles to carry, choosing the smallest useful form: prose for a linear answer, numbered lists for
+steps, tables for comparisons and option matrices, diffs for exact edits, trees for ownership, state models for
+transitions, and diagrams or sequences for dependencies and failure paths. Show material actors and relationships
+without repeating a visual's contents in prose or wrapping paragraphs in table rows.
 
-### Confusion recovery
+Use a cropped screenshot or short recording for visual state and interactions, never an image of text, code, or terminal
+output. Keep each Mermaid diagram small and split a large one. Fold logs and long output into a `<details>` block, and
+use at most two alerts per document.
 
-When the explanation is unclear, answer the unresolved question with exact actors and relationships using the reader's
-terms; changing vocabulary alone may preserve the confusion. Distinguish anger about an outcome from confusion about an
-explanation; ask only when missing context changes the answer.
+Give every image alt text under 155 characters that states its meaning, and never let color alone carry a status: pair
+a status emoji with a word. GitHub and GitLab render Mermaid, `<details>`, and alerts; chat apps do not, so attach an
+image there instead.
 
-### Human register
+### Length
 
-Match demonstrated expertise and preserve a natural voice; remove filler and unrequested offers that delay the answer.
+Start from the budget of the matching case, write the draft, then cut toward half. When content outgrows the budget,
+move it into a linked document and leave a one-line summary in its place.
 
-### Procedures and explanations
+### Cases and examples
 
-Make procedures complete and ordered from their steps alone; retain every required action, including the final action.
-Put prerequisites and hazards before the affected actions.
+Read the matching case file before writing: each shows the shape, budget, visuals, and a worked example.
+
+[README](examples/readme.md): one-line description under 120 characters, a quickstart of at most five commands, 300 to
+1,500 words.
+
+[Pull or merge request](examples/pull-request.md): imperative title under 72 characters, 50 to 300 words, and
+before-and-after evidence for visible changes.
+
+[Handoff](examples/handoff.md): 150 to 400 words for a shift and up to 800 for leave, one line per open item with an
+owner and a next action.
+
+[Chat message](examples/chat-message.md): the ask in the first line, at most 60 words for a question and 150 for an
+update.
+
+[Email](examples/email.md): action and deadline in the subject, the ask in the first line, under 150 words.
+
+[Long-lived documentation](examples/long-lived-docs.md): one Diátaxis type per page, an ADR of one to two pages, and a
+runbook entry that fits one screen.
+
+[Bug report](examples/bug-report.md): summary under 60 characters, numbered steps, and expected against actual results.
+
+[Status update](examples/status-update.md): status word and needed decision first, 150 to 400 words.
+
+[Release notes](examples/release-notes.md): breaking changes first and at most 20 words per entry.
