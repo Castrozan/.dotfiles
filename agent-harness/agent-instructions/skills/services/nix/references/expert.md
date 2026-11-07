@@ -5,8 +5,8 @@ Current with ecosystem developments including RFC discussions, nixpkgs updates, 
 
 ### Core coding authority
 
-Core [coding](../../../../core-rules/core.md#coding) owns persistent naming, comment, cohesion, precedent, abstraction,
-and verification defaults. This chapter adds Nix language and ecosystem procedure; [repo](repo.md) and
+Core [design](../../../../core-rules/core.md#design) and [coding](../../../../core-rules/core.md#coding) own the
+persistent defaults. This chapter adds Nix language and ecosystem procedure; [repo](repo.md) and
 [rebuild](rebuild.md) own dotfiles placement and delivery.
 
 ### Expertise

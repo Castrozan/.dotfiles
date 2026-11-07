@@ -26,12 +26,11 @@ behavioral evidence, historical evidence, or competing authority. A complement a
 exception and points to the canonical rule. A competing source independently decides the same behavior. Reject the
 favored classification when live delivery, a different trigger, or a narrower scope disproves it.
 
-### Migration
+### Authority move
 
-Establish the new authority and its runtime delivery before deleting the old one. Replace competing prose with an
-explicit pointer, retain only scoped procedure and exceptions, and migrate existing mutable state by an exact owned key,
-prefix, or version while preserving unknown state. Keep delivery, enforcement, and evidence separate. Do not claim
-migration from source shape alone when a resumed session or mutable store can retain the retired rule.
+Establish the new authority and its runtime delivery before deleting the old one. Remove the retired rule from mutable
+state by an exact owned key, prefix, or version. Keep delivery, enforcement, and evidence separate. Do not claim the
+move complete from source shape alone when a resumed session or mutable store can retain the retired rule.
 
 ### Verification
 

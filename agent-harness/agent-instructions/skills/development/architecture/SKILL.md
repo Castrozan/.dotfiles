@@ -37,6 +37,6 @@ reshapes the code.
 
 ### Core coding authority
 
-Core [coding](../../../core-rules/core.md#coding) owns persistent naming, comment, cohesion, dependency, precedent, and
-abstraction defaults. Use this skill to settle structural ownership, state, failure, deployment, and boundary decisions;
+Core [design](../../../core-rules/core.md#design) and [coding](../../../core-rules/core.md#coding) own the persistent
+defaults. Use this skill to settle structural ownership, state, failure, deployment, and boundary decisions;
 let repository instructions own module layout, scripting language, and local conventions.

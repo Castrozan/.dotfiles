@@ -88,7 +88,7 @@ def test_agent_harness_routes_instruction_authority_diagnosis_to_one_recipe():
         "runtime_trace",
         "owner_selection",
         "relationship_classification",
-        "migration",
+        "authority_move",
         "verification",
     ):
         assert "### " + section.replace("_", " ").capitalize() in recipe

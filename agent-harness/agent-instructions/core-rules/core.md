@@ -76,8 +76,9 @@ changes cohesive; prefer guard clauses and data types for values that travel tog
 Depend on stable interfaces, not on details. Keep drivers, frameworks, and transports at the edge. Give a caller only
 the capability it uses, and extend behavior where it is owned.
 
-Extract a shared rule only after repeated use proves the same reason to change. Isolate workarounds and hacky solutions
-behind one narrow, removable boundary.
+Extract a shared rule only after repeated use proves the same reason to change. Add a workaround or hack only when an
+external limitation leaves no proper fix, and extract it behind one narrow boundary named for that limitation so it can
+be deleted when the limitation ends. A workaround you could remove now was never needed.
 
 Before fixing a defect, establish a focused causal reproducer when practical; for new behavior, define the smallest
 testable contract.
