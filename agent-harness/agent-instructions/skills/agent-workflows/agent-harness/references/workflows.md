@@ -28,8 +28,10 @@ back rather than expecting one command to return it.
 ### Breadth exception
 
 Use a larger or dynamic fan-out only when the user explicitly requests the workflow and independent breadth is the
-product, such as distinct research sources. Cap the input cardinality, model tier, candidate count, response length,
-maximum turns, and total calls. Never put an agent call inside a loop over findings, files, sections, or other
+product, such as distinct research sources or an audit of a subtree too large for one careful read. Cap the input
+cardinality, model tier, candidate count, response length, maximum turns, and total calls, keeping the total under the
+Workflow budget guard's agent ceiling. Fan out only over deterministic slices of the capped input and over a fixed
+number of verifier batches. Never put an agent call inside a loop over findings, files, sections, or other
 model-produced data.
 
 ### Enforcement

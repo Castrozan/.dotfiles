@@ -129,10 +129,11 @@ and skipping review does not waive verification required by [testing](#testing).
 ### Workflows
 
 Treat a workflow's model calls as delegation that consumes the task's agent budget, and keep every dotfiles workflow at
-a fixed call ceiling with no per-item model calls. Author further dotfiles workflows as `dotfiles-*` under
-`agent-harness/harnesses/claude-code/workflows/`, deployed to `~/.claude/workflows/`, rather than ad-hoc subagent
-fan-out. Give each one a matching `dotfiles-*` command in `agent-harness/workflow-commands/`, because that command is
-how every harness other than Claude Code reaches the workflow at all.
+a fixed call ceiling with no per-item model calls outside the breadth exception of the `agent-harness` workflows
+reference. Author further dotfiles workflows as `dotfiles-*` under `agent-harness/harnesses/claude-code/workflows/`,
+deployed to `~/.claude/workflows/`, rather than ad-hoc subagent fan-out. Give each one a matching `dotfiles-*` command
+in `agent-harness/workflow-commands/`, because that command is how every harness other than Claude Code reaches the
+workflow at all.
 
 ### Workflow
 

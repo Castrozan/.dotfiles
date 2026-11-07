@@ -45,6 +45,21 @@ def test_slash_command_carries_the_resolved_root():
     assert slash_command == ('/dotfiles-housekeeping {"root": "/checkouts/dotfiles"}')
 
 
+def test_slash_command_carries_a_requested_subtree():
+    slash_command = run_dotfiles_workflow.build_slash_command(
+        "dotfiles-housekeeping", Path("/checkouts/dotfiles"), "agent-harness/hooks"
+    )
+
+    assert slash_command == (
+        '/dotfiles-housekeeping {"root": "/checkouts/dotfiles", '
+        '"subtree": "agent-harness/hooks"}'
+    )
+
+
+def test_the_lead_keeps_its_turn_open_until_the_run_ends():
+    assert "dotfiles-workflow-wait" in run_dotfiles_workflow.VERBATIM_RELAY_INSTRUCTION
+
+
 def test_root_defaults_to_the_checkout_of_the_current_directory(monkeypatch):
     monkeypatch.setattr(
         run_dotfiles_workflow.subprocess,

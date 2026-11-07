@@ -18,9 +18,16 @@ let
       export DOTFILES_WORKFLOW_NAME="${workflowName}"
       exec ${pkgs.python312}/bin/python3 ${workflowCommandDirectory}/run_dotfiles_workflow.py "$@"
     '';
+
+  workflowWaitCommand = pkgs.writeShellScriptBin "dotfiles-workflow-wait" ''
+    exec ${pkgs.python312}/bin/python3 ${workflowCommandDirectory}/wait_for_dotfiles_workflow.py "$@"
+  '';
 in
 {
-  home.packages = map mkWorkflowCommand [
+  home.packages = [
+    workflowWaitCommand
+  ]
+  ++ map mkWorkflowCommand [
     "dotfiles-housekeeping"
   ];
 }

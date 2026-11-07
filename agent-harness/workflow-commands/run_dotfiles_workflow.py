@@ -12,8 +12,11 @@ INTERACTIVE_SESSION_VARIABLES = frozenset(
 )
 WORKFLOW_TIMEOUT_SECONDS = 1800
 VERBATIM_RELAY_INSTRUCTION = (
-    "Return the workflow's report as your entire final message, verbatim. "
-    "Add no summary, preamble, commentary, or closing line."
+    "Keep your turn open while the workflow runs: once the Workflow tool returns "
+    "its run ID, run the Bash command dotfiles-workflow-wait <run ID> with a "
+    "600000 ms timeout, and run it again each time it prints still running. "
+    "Return the report it prints under the status line as your entire final "
+    "message, verbatim. Add no summary, preamble, commentary, or closing line."
 )
 
 
@@ -44,6 +47,11 @@ def parse_command_line(
             "defaulting to the checkout the current directory belongs to"
         ),
     )
+    parser.add_argument(
+        "--subtree",
+        default="",
+        help="path inside the checkout to audit, for workflows that audit one subtree",
+    )
     return parser.parse_args(command_line_arguments)
 
 
@@ -64,8 +72,12 @@ def resolve_repository_root(requested_root: str) -> Path:
     return Path(checkout_toplevel.stdout.strip())
 
 
-def build_slash_command(workflow_name: str, repository_root: Path) -> str:
+def build_slash_command(
+    workflow_name: str, repository_root: Path, subtree: str = ""
+) -> str:
     workflow_arguments = {"root": str(repository_root)}
+    if subtree:
+        workflow_arguments["subtree"] = subtree
     return f"/{workflow_name} {json.dumps(workflow_arguments)}"
 
 
@@ -136,7 +148,9 @@ def main() -> int:
     workflow_name = resolve_workflow_name()
     arguments = parse_command_line(workflow_name, sys.argv[1:])
     repository_root = resolve_repository_root(arguments.root)
-    slash_command = build_slash_command(workflow_name, repository_root)
+    slash_command = build_slash_command(
+        workflow_name, repository_root, arguments.subtree
+    )
     claude_binary = resolve_claude_binary()
     try:
         completed_workflow = run_workflow(claude_binary, slash_command, repository_root)

@@ -17,6 +17,11 @@ WORKFLOWS = (
     "agent-harness/agent-instructions/skills/writing/page-composer/compose-page.js",
     "agent-harness/agent-instructions/skills/knowledge/research/research-pulse.workflow.js",
 )
+EXPECTED_CALL_COUNTS = {
+    "dotfiles-housekeeping.js": 4,
+    "compose-page.js": 2,
+    "research-pulse.workflow.js": 9,
+}
 WORKFLOW_CAPTURE = r"""
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -30,12 +35,20 @@ const calls = [];
 const item = {title: payload, url: 'https://example.com/', score: 9};
 const agent = async (prompt, options) => {
   calls.push({prompt, label: options.label});
-  return {findings: [{detail: payload}], sections: [{id: 'one', markup: payload}], items: [item]};
+  return {
+    findings: [{detail: payload, file: 'module.py', line: 1, confidence: 5}], sections: [{id: 'one', markup: payload}], items: [item],
+    slices: [payload], verdicts: [],
+  };
 };
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-await new AsyncFunction('args', 'agent', 'phase', 'parallel', 'log', source)(
-  {brief: payload, output: payload, constraints: payload, topic: payload, accounts: [payload]},
-  agent, () => {}, tasks => Promise.all(tasks.map(task => task())), () => {}
+const pipeline = (items, ...stages) => Promise.all(items.map(async (item, index) => {
+  let result = item;
+  for (const stage of stages) result = await stage(result, item, index);
+  return result;
+}));
+await new AsyncFunction('args', 'agent', 'phase', 'parallel', 'pipeline', 'log', source)(
+  {brief: payload, output: payload, constraints: payload, topic: payload, accounts: [payload], root: payload, subtree: payload},
+  agent, () => {}, tasks => Promise.all(tasks.map(task => task())), pipeline, () => {}
 );
 process.stdout.write(JSON.stringify(calls));
 """
@@ -84,7 +97,7 @@ def test_actual_workflow_prompts_keep_instructions_in_the_positive_grammar(
         text=True,
     )
     calls = json.loads(result.stdout)
-    assert len(calls) == (9 if "research-pulse" in workflow else 2)
+    assert len(calls) == EXPECTED_CALL_COUNTS[workflow.rsplit("/", 1)[-1]]
     for call in calls:
         violations = inspect_markdown_instruction(call["prompt"]).violations
         assert not violations, (

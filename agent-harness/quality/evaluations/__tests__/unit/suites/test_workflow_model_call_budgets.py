@@ -24,19 +24,36 @@ RESEARCH_PULSE_WORKFLOW_PATH = (
     / "research"
     / "research-pulse.workflow.js"
 )
+WORKFLOW_BUDGET_GUARD_HANDLER_PATH = (
+    REPO_ROOT
+    / "agent-harness"
+    / "hooks"
+    / "runtime"
+    / "pre-tool-use"
+    / "subagent-budget-guard"
+    / "workflow_budget_guard_handler.py"
+)
+BREADTH_WORKFLOW_PATHS = [DOTFILES_WORKFLOW_DIRECTORY / "dotfiles-housekeeping.js"]
 MAXIMUM_MODEL_CALLS_PER_ROUTINE_WORKFLOW = 2
 MAXIMUM_RESEARCH_SOURCE_CALLS = 7
 SUPPORTED_EFFORT_LEVELS = "low|medium|high|xhigh|max"
 
 
 def routine_workflow_paths():
-    return sorted(DOTFILES_WORKFLOW_DIRECTORY.glob("dotfiles-*.js")) + [
-        PAGE_COMPOSER_WORKFLOW_PATH
-    ]
+    dotfiles_workflow_paths = sorted(DOTFILES_WORKFLOW_DIRECTORY.glob("dotfiles-*.js"))
+    return [
+        workflow_path
+        for workflow_path in dotfiles_workflow_paths
+        if workflow_path not in BREADTH_WORKFLOW_PATHS
+    ] + [PAGE_COMPOSER_WORKFLOW_PATH]
 
 
 def every_workflow_path():
-    return routine_workflow_paths() + [RESEARCH_PULSE_WORKFLOW_PATH]
+    return (
+        routine_workflow_paths()
+        + BREADTH_WORKFLOW_PATHS
+        + [RESEARCH_PULSE_WORKFLOW_PATH]
+    )
 
 
 def model_call_count(source):
@@ -75,8 +92,8 @@ def test_routine_workflows_stay_within_their_model_call_budget():
         ), f"{workflow_path.name} maps data before its final agent call"
 
 
-def test_routine_workflows_pin_the_model_and_the_effort_of_every_call():
-    for workflow_path in routine_workflow_paths():
+def test_fixed_workflows_pin_the_model_and_the_effort_of_every_call():
+    for workflow_path in routine_workflow_paths() + BREADTH_WORKFLOW_PATHS:
         source = workflow_path.read_text()
         calls = model_call_count(source)
         pinned_models = len(re.findall(r'model: "(?:haiku|sonnet|opus)"', source))
@@ -121,3 +138,28 @@ def test_the_explicit_research_fanout_pins_every_call_to_a_bounded_model():
     sources = source.split("return [", 1)[1].split("];", 1)[0]
     source_call_count = len(re.findall(r'^\s+key: "', sources, re.MULTILINE))
     assert source_call_count <= MAXIMUM_RESEARCH_SOURCE_CALLS
+
+
+def declared_integer(source, constant_name):
+    return int(re.search(rf"\b{constant_name} = ([0-9_]+)", source).group(1))
+
+
+def test_breadth_workflows_fit_their_fan_out_under_the_workflow_budget_guard():
+    orchestrated_agent_ceiling = declared_integer(
+        WORKFLOW_BUDGET_GUARD_HANDLER_PATH.read_text(),
+        "ORCHESTRATED_WORKFLOW_AGENT_CEILING",
+    )
+    for workflow_path in BREADTH_WORKFLOW_PATHS:
+        source = workflow_path.read_text()
+        assert model_call_count(source) == 4
+        maximum_agents = (
+            1
+            + 2 * declared_integer(source, "MAXIMUM_SLICES")
+            + declared_integer(source, "VERIFIER_COUNT")
+        )
+        assert maximum_agents <= orchestrated_agent_ceiling, (
+            f"{workflow_path.name} can spawn {maximum_agents} agents, more than the "
+            f"guard's orchestrated ceiling of {orchestrated_agent_ceiling}"
+        )
+        for unbounded_call_pattern in ("while (", "for await ("):
+            assert unbounded_call_pattern not in source
