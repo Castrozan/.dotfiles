@@ -10,7 +10,7 @@ from runner.baseline.run_evals_fingerprint import instruction_wording
 from runner.run_evals_worktree_and_environment import REPO_ROOT
 
 
-EXECUTION_FIELDS = frozenset({"model", "models", "max_turns"})
+EXECUTION_FIELDS = frozenset({"model", "models", "max_turns", "held_out"})
 INSTRUCTION_LOCATION_FIELDS = frozenset({"agent", "extra_skill_paths", "skill_path"})
 
 

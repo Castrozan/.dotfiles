@@ -23,6 +23,11 @@ def parse_arguments():
         help="Checkpoint stale or missing results into the baseline",
     )
     parser.add_argument(
+        "--partition",
+        choices=("train", "held-out"),
+        help="Run only the cases a hillclimb may read, or only its held-out cases",
+    )
+    parser.add_argument(
         "--all-tests",
         action="store_true",
         help="With --save-baseline, refresh every selected test",
@@ -90,6 +95,7 @@ def parse_arguments():
     _validate_repeated_baseline_sampling(args, parser)
     _validate_single_test_repeat(args, parser)
     _validate_smoke_baseline_arguments(args, parser)
+    _validate_partition_arguments(args, parser)
     _validate_mode_arguments(args, parser)
     _validate_evidence_harnesses(args, parser)
     _validate_recorded_check_arguments(args, parser)
@@ -144,6 +150,11 @@ def _validate_single_test_repeat(args, parser) -> None:
 def _validate_smoke_baseline_arguments(args, parser) -> None:
     if args.smoke and args.save_baseline:
         parser.error("smoke results cannot replace behavioral baseline evidence")
+
+
+def _validate_partition_arguments(args, parser) -> None:
+    if args.partition and (args.save_baseline or args.save_ab_profile):
+        parser.error("a hillclimb partition cannot be saved as suite evidence")
 
 
 def _validate_mode_arguments(args, parser) -> None:

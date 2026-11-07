@@ -35,6 +35,8 @@ def _test_contract_failures(test: dict) -> list[str]:
     failures = []
     if not test.get("name"):
         failures.append("missing name")
+    if not isinstance(test.get("held_out", False), bool):
+        failures.append("held_out must be true or false")
     return (
         failures
         + _assertion_contract_failures(test)

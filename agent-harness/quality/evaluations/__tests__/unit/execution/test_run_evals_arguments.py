@@ -23,6 +23,7 @@ from runner.run_evals_arguments import parse_arguments
         ],
         ["run-evals.py", "--harness", "claude", "--save-baseline"],
         ["run-evals.py", "--smoke", "--save-baseline"],
+        ["run-evals.py", "--partition", "train", "--save-baseline"],
         ["run-evals.py", "--all-tests"],
         ["run-evals.py", "--epochs", "3", "--save-baseline"],
         [
@@ -98,3 +99,15 @@ def test_affected_inventory_is_a_read_only_mode(monkeypatch):
 
     assert arguments.list_affected is True
     assert arguments.save_baseline is False
+
+
+def test_a_hillclimb_partition_selects_train_or_held_out_cases(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["run-evals.py", "--category", "skill_routing", "--partition", "held-out"],
+    )
+
+    arguments = parse_arguments()
+
+    assert arguments.partition == "held-out"

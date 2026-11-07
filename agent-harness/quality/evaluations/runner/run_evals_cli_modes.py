@@ -104,6 +104,7 @@ def run_repeated_evaluation(config: dict, args, execution_profile: dict) -> int:
                 max_workers_override=args.workers,
                 harness=args.harness,
                 judge_harness=args.judge_harness,
+                partition=args.partition,
             )
             raise_for_evaluation_errors(epoch_results, "repeated evaluation")
             results_per_epoch.append(epoch_results)
@@ -146,6 +147,7 @@ def run_single_evaluation(config: dict, args, execution_profile: dict) -> int:
             judge_harness=args.judge_harness,
             selected_test_keys=selected_test_keys,
             on_result=checkpoint.record if checkpoint else None,
+            partition=args.partition,
         )
     all_passed = print_results(results, harness=args.harness)
     collect_and_print_provider_usage()
