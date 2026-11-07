@@ -12,6 +12,7 @@ let
     ./opencode-server.mjs
     ./provider-usage.mjs
     ./provider-adapters.test.mjs
+    ./provider-judge-isolation.test.mjs
     ./provider-usage.test.mjs
     ./opencode-adapter.test.mjs
     ./provider-load-smoke.test.mjs

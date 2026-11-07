@@ -1,5 +1,6 @@
 import pytest
 
+from reporting import run_evals_calibration_reporting as calibration_reporting
 from reporting import run_evals_reporting as reporting
 from runner.execution.run_evals_test_runner import TestResult
 
@@ -113,13 +114,13 @@ def test_calibration_reports_confusion_and_disagreements(capsys):
         ],
         meets_gate=False,
     )
-    assert not reporting.print_calibration_summary(agreement)
+    assert not calibration_reporting.print_calibration_summary(agreement)
     output = capsys.readouterr().out
     assert "Confusion: TP 1, TN 1, FP 1, FN 1" in output
     assert "human=FAIL judge=PASS (missed)" in output
     assert "human=PASS judge=FAIL (extra)" in output
     agreement.update(meets_gate=True, disagreements=[])
-    assert reporting.print_calibration_summary(agreement)
+    assert calibration_reporting.print_calibration_summary(agreement)
     assert "Disagreements:" not in capsys.readouterr().out
 
 

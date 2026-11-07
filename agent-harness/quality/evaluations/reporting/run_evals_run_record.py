@@ -43,3 +43,21 @@ def open_run_record(root: Path = RUN_RECORD_ROOT) -> EvaluationRunRecord:
     started_at = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_directory = Path(tempfile.mkdtemp(prefix=f"{started_at}-", dir=root))
     return EvaluationRunRecord(run_directory / "results.jsonl")
+
+
+def run_record_for(dry_run: bool):
+    return DiscardedRunRecord() if dry_run else open_run_record()
+
+
+def announce_run_record(run_record) -> None:
+    if run_record.results_path:
+        print(f"Per-case results: {run_record.results_path}")
+
+
+def record_each_result(run_record, checkpoint):
+    def record(result):
+        run_record.record(result)
+        if checkpoint:
+            checkpoint.record(result)
+
+    return record

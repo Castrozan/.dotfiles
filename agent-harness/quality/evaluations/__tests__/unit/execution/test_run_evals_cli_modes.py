@@ -64,8 +64,8 @@ def test_repeated_runs_record_every_case_under_its_epoch(monkeypatch, tmp_path):
     )
     monkeypatch.setattr(
         run_evals_cli_modes,
-        "open_run_record",
-        lambda: run_evals_run_record.open_run_record(tmp_path),
+        "run_record_for",
+        lambda dry_run: run_evals_run_record.open_run_record(tmp_path),
     )
     monkeypatch.setattr(
         run_evals_cli_modes, "collect_and_print_provider_usage", lambda: {}

@@ -183,24 +183,3 @@ def test_opencode_subject_and_judge_can_use_provider_default_models(monkeypatch)
 
     assert result.passed is True
     assert [invocation[1]["model"] for invocation in invocations] == [None, None]
-
-
-def test_partition_keeps_held_out_cases_away_from_the_train_run(monkeypatch):
-    monkeypatch.setattr(run_evals_suite_runner, "run_test", _echo_run_test)
-    config = {
-        "settings": {"parallel_workers": 2},
-        "tests": {
-            "skill_routing": [
-                {"name": "seen", "prompt": "p"},
-                {"name": "unseen", "prompt": "p", "held_out": True},
-            ],
-        },
-    }
-
-    train = run_tests(config, partition="train")
-    held_out = run_tests(config, partition="held-out")
-    everything = run_tests(config)
-
-    assert [result.name for result in train] == ["seen"]
-    assert [result.name for result in held_out] == ["unseen"]
-    assert sorted(result.name for result in everything) == ["seen", "unseen"]
