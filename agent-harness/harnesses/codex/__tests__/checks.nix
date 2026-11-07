@@ -127,6 +127,24 @@ in
         touch "$out"
       '';
 
+  codex-config-declares-every-canonical-subagent-role =
+    pkgs.runCommand "check-codex-config-declares-every-canonical-subagent-role"
+      { nativeBuildInputs = [ pkgs.python312 ]; }
+      ''
+        python - ${cfg.home.file.".codex/config.toml.nix-source".source} ${../../../agent-instructions/rulesync/sources/subagents} <<'PYTHON'
+        from pathlib import Path
+        import sys
+        import tomllib
+        configuration = tomllib.loads(Path(sys.argv[1]).read_text())
+        canonical_names = {path.stem for path in Path(sys.argv[2]).glob("*.md")}
+        assert canonical_names, "no canonical subagents found"
+        assert configuration["agents"] == {
+            name: {"config_file": f"agents/{name}.toml"} for name in canonical_names
+        }, configuration["agents"]
+        PYTHON
+        touch "$out"
+      '';
+
   codex-config-leaves-model-runtime-owned =
     mkEvalCheck "codex-config-leaves-model-runtime-owned" (!(lib.hasInfix "model = " codexConfigModule))
       "Codex model selection must remain runtime-owned so a rebuild preserves the user's remembered model";

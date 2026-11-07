@@ -8,7 +8,6 @@ claudecode:
   skills: explore
 codexcli:
   model_reasoning_effort: low
-  sandbox_mode: read-only
 opencode:
   mode: subagent
   model: opencode/deepseek-v4.1-flash-free

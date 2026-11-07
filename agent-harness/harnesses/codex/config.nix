@@ -67,6 +67,13 @@ let
       lib.filterAttrs (_: server: server.bearerTokenFile != null) config.codex.mcpServers
     )
   );
+  canonicalSubagentNames = map (lib.removeSuffix ".md") (
+    builtins.attrNames (
+      lib.filterAttrs (fileName: fileType: fileType == "regular" && lib.hasSuffix ".md" fileName) (
+        builtins.readDir ../../agent-instructions/rulesync/sources/subagents
+      )
+    )
+  );
   codexConfigSource = codexConfigTomlFormat.generate "codex-config.toml" {
     approval_policy = "never";
     check_for_update_on_startup = false;
@@ -111,6 +118,9 @@ let
       "${homeDir}/.dotfiles".trust_level = "trusted";
     };
     mcp_servers = configuredMcpServers;
+    agents = lib.genAttrs canonicalSubagentNames (subagentName: {
+      config_file = "agents/${subagentName}.toml";
+    });
     plugins."betha-desenvolvimento@betha-agent-marketplace".mcp_servers."chrome-devtools".enabled =
       false;
     plugins."betha-chrome-devtools@betha-agent-marketplace".mcp_servers."chrome-devtools".enabled =
