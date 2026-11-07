@@ -10,17 +10,21 @@ PANE_LIST_TIMEOUT_SECONDS = 2.0
 HARNESSES_REPORTING_SESSION_IDENTIFIERS = frozenset({"claude", "codex", "opencode"})
 
 
+def reports_a_harness_session(agent_session: object) -> bool:
+    return (
+        isinstance(agent_session, dict)
+        and agent_session.get("kind") == "id"
+        and agent_session.get("agent") in HARNESSES_REPORTING_SESSION_IDENTIFIERS
+    )
+
+
 def harness_session_identifier(agent_session: object) -> str | None:
-    if not isinstance(agent_session, dict):
-        return None
-    if agent_session.get("kind") != "id":
-        return None
-    if agent_session.get("agent") not in HARNESSES_REPORTING_SESSION_IDENTIFIERS:
+    if not reports_a_harness_session(agent_session):
         return None
     session_identifier = agent_session.get("value")
-    if not isinstance(session_identifier, str) or not session_identifier:
-        return None
-    return session_identifier
+    if isinstance(session_identifier, str) and session_identifier:
+        return session_identifier
+    return None
 
 
 def read_live_panes() -> list[dict]:

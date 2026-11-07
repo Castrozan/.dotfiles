@@ -17,6 +17,19 @@ from .peer_transport import (
 from .sender_identity import signed_input_text
 
 
+def peer_directory_row(name: str, agent: dict) -> str:
+    return "\t".join(
+        [
+            name,
+            agent.get("servant") or "-",
+            agent.get("harness", ""),
+            agent.get("paneId", ""),
+            agent.get("sessionId") or "-",
+            agent.get("description", ""),
+        ]
+    )
+
+
 def command_list(arguments: argparse.Namespace, agent_directory: dict) -> int:
     if not agent_directory:
         print(
@@ -28,18 +41,7 @@ def command_list(arguments: argparse.Namespace, agent_directory: dict) -> int:
         print(json.dumps(agent_directory, indent=2))
         return 0
     for name, agent in sorted(agent_directory.items()):
-        print(
-            "\t".join(
-                [
-                    name,
-                    agent.get("servant") or "-",
-                    agent.get("harness", ""),
-                    agent.get("paneId", ""),
-                    agent.get("sessionId") or "-",
-                    agent.get("description", ""),
-                ]
-            )
-        )
+        print(peer_directory_row(name, agent))
     return 0
 
 
