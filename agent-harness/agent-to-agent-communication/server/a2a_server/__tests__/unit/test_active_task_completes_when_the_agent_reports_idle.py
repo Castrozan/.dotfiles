@@ -78,6 +78,16 @@ class TestCompletionFromTheReportedAgentStatus:
         coordinator._observe_once_and_apply_to_active_task()
         assert coordinator._task_store.get_task(task.id).state == "completed"
 
+    def test_a_silent_agent_reporting_busy_keeps_the_task_working(self):
+        coordinator = ActiveTaskCoordinator(
+            TaskStore(),
+            ReplayingAgentBackend([observation_with_reported_busy_state(True)]),
+            auto_complete_idle_timeout_seconds=0.0,
+        )
+        task, _ = coordinator.submit_new_task_if_idle("do the thing")
+        coordinator._observe_once_and_apply_to_active_task()
+        assert coordinator._task_store.get_task(task.id).state == "working"
+
     def test_a_second_task_does_not_inherit_the_first_task_busy_observation(self):
         coordinator = coordinator_over(
             [

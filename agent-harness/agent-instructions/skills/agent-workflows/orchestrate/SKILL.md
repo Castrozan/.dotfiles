@@ -98,9 +98,9 @@ same peer.
 
 ### Completion is inferred not reported
 
-A task completes when the multiplexer reports the peer working and then stopping, or after roughly half a minute with no
-new output line. A long silent turn therefore completes the task while the peer is still working and hands you a partial
-answer. Treat any answer as a signal, then confirm against reported status or a fresh read before acting on it. When you
+A task completes when the multiplexer reports the peer working and then stopping. A peer with no reported status
+completes after roughly half a minute without a new output line, so a long silent turn there hands you a partial answer
+while the peer still works. Treat any answer as a signal, then confirm against reported status or a fresh read before acting on it. When you
 need a deterministic end, tell the peer to finish its turn with a delimiter line you can match on.
 
 ### Answers are scraped not returned

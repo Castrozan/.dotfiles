@@ -99,6 +99,8 @@ class ActiveTaskCoordinator:
         if self._reported_agent_status_says_the_turn_is_over(observation):
             self._task_store.transition_task_state(active_task_id, "completed")
             return
+        if observation.agent_is_busy:
+            return
         idle_for_seconds = time.time() - observation.last_activity_at_epoch_seconds
         if idle_for_seconds >= self._auto_complete_idle_timeout_seconds:
             self._task_store.transition_task_state(active_task_id, "completed")
