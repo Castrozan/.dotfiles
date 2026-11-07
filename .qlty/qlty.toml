@@ -124,3 +124,6 @@ name = "native-gitleaks"
 
 [smells]
 mode = "block"
+
+[smells.function_complexity]
+threshold = 11
