@@ -146,7 +146,13 @@ in
       }) config.codex.mcpServers;
 
     home = {
-      file.".codex/config.toml.nix-source".source = codexConfigSource;
+      file = {
+        ".codex/config.toml.nix-source".source = codexConfigSource;
+        ".codex/agents" = {
+          source = "${config.agentPlugins.bundle}/plugin/native/codex/agents";
+          recursive = true;
+        };
+      };
 
       activation = {
         removeCodexNotificationHelper = lib.mkIf isDarwin (
