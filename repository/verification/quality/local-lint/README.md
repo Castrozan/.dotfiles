@@ -40,7 +40,7 @@ exceptions and lowers recorded scores. It refuses to absorb new findings or
 write after an analyzer failure. Initialization requires a complete scan.
 Reports omit source snippets, and secret findings redact detected values.
 
-## Coverage migration
+## Coverage
 
 `dotfiles-coverage-check` uses diff-cover with standard Cobertura XML reports:
 
@@ -51,10 +51,8 @@ dotfiles-coverage-check .coverage-reports/python-coverage.xml \
 
 CI requires at least 65% coverage of changed executable lines represented in
 the Python and Swift reports. Files without coverage data remain unmeasured.
-The comparison uses the pull request base or the preceding push revision;
-it replaces Sonar's hosted new-code window. New duplication findings are
-blocked rather than measured against Sonar's 3% density threshold. Sonar's
-manual security-hotspot review percentage has no local equivalent; local
-security and secret findings use the same blocking gate as other findings.
+The comparison uses the pull request base or the preceding push revision.
+New duplication, security, and secret findings use the same blocking gate as
+other findings.
 
 Qlty CLI runs independently of the hosted Qlty Cloud service.
