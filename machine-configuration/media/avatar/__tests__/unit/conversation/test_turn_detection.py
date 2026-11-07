@@ -3,11 +3,14 @@ import queue
 import threading
 from unittest.mock import Mock
 
+import numpy
+
 import listener
 import source_capture
 import transcript_log
 import turn_detector
 import utterances
+import whisper_features
 
 FRAME = b"\xb8\x0b" * 480
 SILENT_FRAME = bytes(960)
@@ -40,6 +43,26 @@ def test_the_turn_judged_never_exceeds_the_model_window():
     judged = finished.call_args.args[0]
     assert len(judged) == turn_detector.TURN_BYTES
     assert judged.endswith(b"tail")
+
+
+def test_a_short_turn_is_padded_at_the_front_to_the_model_window():
+    window = turn_detector.turn_window(b"\xff\x7f" * 10)
+    assert window.shape == (turn_detector.TURN_SAMPLES,)
+    assert window[0] == 0 and window[-1] > 0.99
+
+
+def test_the_model_sees_whisper_shaped_features_even_for_silence():
+    features = whisper_features.log_mel_features(
+        numpy.zeros(turn_detector.TURN_SAMPLES, dtype=numpy.float32)
+    )
+    assert features.shape == (1, 80, 800)
+    assert features.dtype == numpy.float32
+    assert numpy.isfinite(features).all()
+
+
+def test_every_mel_band_covers_part_of_the_spectrum():
+    assert whisper_features.MEL_FILTERS.shape == (201, 80)
+    assert (whisper_features.MEL_FILTERS.max(axis=0) > 0).all()
 
 
 def test_a_segment_carries_whether_the_speaker_finished(tmp_path):
