@@ -9,17 +9,17 @@ let
     inherit pkgs;
   };
 
-  version = "1.1.0";
+  version = "1.5.0";
 
   piUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseAssetName = "pi-linux-x64.tar.gz";
-      sha256 = "sha256-P6qUZmzThJ03rzIP90lAfQJxsHqblPQgyH4whm4Q4ok=";
+      sha256 = "sha256-34cLoONEy3szWNjY8ZOXuLjSJahml4RzataKXCFp1Ts=";
       buildInputs = [ pkgs.xorg.libxcb ];
     };
     "aarch64-darwin" = {
       releaseAssetName = "pi-darwin-arm64.tar.gz";
-      sha256 = "sha256-NFWxPeNcFaWJPN68kiZ4GZ6Qp86ZsGy8I/N4YOkNY8c=";
+      sha256 = "sha256-qb8NgtWNKn0zf0rkFxtfyev/5CUJUnqDE2TEtlrfLN8=";
       buildInputs = [ ];
     };
   };

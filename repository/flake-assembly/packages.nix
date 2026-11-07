@@ -4,14 +4,7 @@ let
   inherit (pkgs) lib;
 in
 {
-  codex = import ../../agent-harness/harnesses/codex/package/unwrapped.nix {
-    inherit
-      pkgs
-      lib
-      latest
-      inputs
-      ;
-  };
+  codex = import ../../agent-harness/harnesses/codex/package/unwrapped.nix { inherit pkgs; };
 
   hermes = import ../../agent-harness/harnesses/hermes/runtime-package.nix {
     inherit inputs system;

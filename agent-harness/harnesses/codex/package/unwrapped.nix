@@ -1,20 +1,15 @@
-{
-  pkgs,
-  lib,
-  latest,
-  inputs,
-}:
+{ pkgs }:
 let
   fetchPrebuiltBinary = import ../../../../repository/nix-library/fetch-prebuilt-binary.nix {
     inherit pkgs;
   };
 
-  version = "0.162.0";
+  version = "0.167.0";
 
   codexUpstreamReleaseDescriptorBySystem = {
     "x86_64-linux" = {
       releaseTargetTriple = "x86_64-unknown-linux-musl";
-      sha256 = "4f573944c1d2059109d75a2f4d0cc9c03697288224a5e407717a9de98fc010c5";
+      sha256 = "3bbf75e83de6b58aed28f2cf6e33ad423ec31fd4700a1457b94be557ea5a7c6e";
       buildInputs = with pkgs; [
         openssl
         libcap
@@ -24,7 +19,7 @@ let
     };
     "aarch64-darwin" = {
       releaseTargetTriple = "aarch64-apple-darwin";
-      sha256 = "5809ee90a9c3b59d438bb2663aefa0b43d86f825438b65d4504b31f82343628b";
+      sha256 = "af45ed45d940d7998809622c1c0296d3098ed7d7fad695284422c228bd454517";
       buildInputs = [ ];
     };
   };
@@ -34,23 +29,13 @@ let
   codexReleaseAssetUrl =
     assetName:
     "https://github.com/openai/codex/releases/download/rust-v${version}/${assetName}-${currentHostSystem.releaseTargetTriple}.tar.gz";
-
-  codexReleasePackage = fetchPrebuiltBinary {
-    pname = "codex";
-    inherit version;
-    url = codexReleaseAssetUrl "codex-package";
-    inherit (currentHostSystem) sha256 buildInputs;
-    archivePrefixToInstall = ".";
-    preserveCodeSignature = pkgs.stdenv.hostPlatform.isDarwin;
-    meta.mainProgram = "codex";
-  };
 in
-import ../status-line/package.nix {
-  inherit
-    latest
-    lib
-    inputs
-    version
-    ;
-  releasePackage = codexReleasePackage;
+fetchPrebuiltBinary {
+  pname = "codex";
+  inherit version;
+  url = codexReleaseAssetUrl "codex-package";
+  inherit (currentHostSystem) sha256 buildInputs;
+  archivePrefixToInstall = ".";
+  preserveCodeSignature = pkgs.stdenv.hostPlatform.isDarwin;
+  meta.mainProgram = "codex";
 }

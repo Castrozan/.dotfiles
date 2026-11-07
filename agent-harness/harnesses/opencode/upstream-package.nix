@@ -3,16 +3,16 @@ let
   fetchPrebuiltBinary = import ../../../repository/nix-library/fetch-prebuilt-binary.nix {
     inherit pkgs;
   };
-  version = "2.0.28";
+  version = "2.2.6";
   releases = {
     "x86_64-linux" = {
       platform = "linux-x64";
-      sha256 = "sha256-dvhQW6r1aWXtKPMFt0xSa1TszRj+eMgWIaQJDMAmyfk=";
+      sha256 = "sha256-381p8dURrhDtYmdotB2EuBAMxKpkzstp2ji6einTNVE=";
       buildInputs = [ ];
     };
     "aarch64-darwin" = {
       platform = "darwin-arm64";
-      sha256 = "sha256-PPIpzDrdHxyqd+V6J8mDTYF52/u2lPnzboat1rkrUSE=";
+      sha256 = "sha256-YT67dN2O/3Z7udRCo3tAxNmUa6J/FTiYUGihuWeBN6M=";
       buildInputs = [ ];
     };
   };
