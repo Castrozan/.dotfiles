@@ -8,7 +8,6 @@ claudecode:
   skills: review, coding
 codexcli:
   model_reasoning_effort: medium
-  sandbox_mode: read-only
 opencode:
   mode: subagent
   permission:
