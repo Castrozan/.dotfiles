@@ -56,21 +56,51 @@ def read_agent_directory(daemon_endpoint: str) -> dict:
     return {entry["name"]: entry for entry in document.get("agents", [])}
 
 
-def resolve_peer_endpoint(agent_directory: dict, agent_target: str) -> str:
-    agent = next(
-        (
+def peer_label(agent: dict) -> str:
+    servant_name = agent.get("servant")
+    return f"{agent['name']} ({servant_name})" if servant_name else agent["name"]
+
+
+def peers_matching_target(agent_directory: dict, agent_target: str) -> list[dict]:
+    peers = list(agent_directory.values())
+    target_casefolded = agent_target.casefold()
+    for matches in (
+        [entry for entry in peers if entry.get("paneId") == agent_target],
+        [agent_directory[agent_target]] if agent_target in agent_directory else [],
+        [entry for entry in peers if entry.get("sessionId") == agent_target],
+        [
             entry
-            for entry in agent_directory.values()
-            if entry.get("paneId") == agent_target
-        ),
-        agent_directory.get(agent_target),
-    )
-    if agent is None:
-        attached_agent_names = ", ".join(sorted(agent_directory)) or "none attached"
-        raise PeerRequestFailure(
-            f"unknown agent {agent_target!r}; attached agents: {attached_agent_names}"
+            for entry in peers
+            if entry.get("servant", "").casefold() == target_casefolded
+        ],
+    ):
+        if matches:
+            return matches
+    return []
+
+
+def resolve_peer_endpoint(agent_directory: dict, agent_target: str) -> str:
+    matches = peers_matching_target(agent_directory, agent_target)
+    if len(matches) > 1:
+        candidates = ", ".join(
+            f"{peer_label(entry)} at {entry.get('paneId', 'unknown pane')}"
+            for entry in sorted(matches, key=lambda entry: entry["name"])
         )
-    return agent["endpoint"].rstrip("/")
+        raise PeerRequestFailure(
+            f"{agent_target!r} names more than one live peer: {candidates}; "
+            "address one by its peer name or paneId"
+        )
+    if not matches:
+        attached_agents = (
+            ", ".join(
+                peer_label(agent_directory[name]) for name in sorted(agent_directory)
+            )
+            or "none attached"
+        )
+        raise PeerRequestFailure(
+            f"unknown agent {agent_target!r}; attached agents: {attached_agents}"
+        )
+    return matches[0]["endpoint"].rstrip("/")
 
 
 def notify_peer(endpoint: str, claimed_sender: str, content: str) -> dict:

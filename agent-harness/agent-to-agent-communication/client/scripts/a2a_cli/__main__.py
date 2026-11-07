@@ -14,6 +14,7 @@ from .commands import (
     command_status,
 )
 from .fleet.cli import add_parser as add_fleet_parser
+from .peer_identity import with_peer_identities
 from .peer_transport import (
     DEFAULT_ANSWER_TIMEOUT_SECONDS,
     DEFAULT_DAEMON_ENDPOINT,
@@ -102,7 +103,9 @@ def main() -> int:
     if arguments.command == "fleet":
         return arguments.handler(arguments)
     try:
-        return arguments.handler(arguments, read_agent_directory(arguments.daemon))
+        return arguments.handler(
+            arguments, with_peer_identities(read_agent_directory(arguments.daemon))
+        )
     except PeerRequestFailure as failure:
         print(f"a2a: {failure}", file=sys.stderr)
         return 1

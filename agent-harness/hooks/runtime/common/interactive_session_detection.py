@@ -13,9 +13,13 @@ def clawde_agent_workspaces_directory() -> str:
     )
 
 
-def is_session_running_inside_a_clawde_agent_workspace() -> bool:
+def is_inside_a_clawde_agent_workspace(working_directory: str) -> bool:
     workspaces_directory = clawde_agent_workspaces_directory()
-    return os.path.realpath(os.getcwd()).startswith(workspaces_directory + os.sep)
+    return os.path.realpath(working_directory).startswith(workspaces_directory + os.sep)
+
+
+def is_session_running_inside_a_clawde_agent_workspace() -> bool:
+    return is_inside_a_clawde_agent_workspace(os.getcwd())
 
 
 def is_clawde_background_agent_session() -> bool:

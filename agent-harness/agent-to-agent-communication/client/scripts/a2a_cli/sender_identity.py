@@ -7,6 +7,7 @@ import subprocess
 from catalog import select_servant_for_session
 from interactive_session_detection import is_clawde_background_agent_session
 
+from .peer_identity import harness_session_identifier
 from .peer_transport import PeerRequestFailure
 
 PANE_REQUEST_TIMEOUT_SECONDS = 1.0
@@ -15,20 +16,9 @@ PANE_REQUEST_TIMEOUT_SECONDS = 1.0
 def session_identifier_from_pane_response(response_text: str) -> str | None:
     try:
         session = json.loads(response_text)["result"]["pane"]["agent_session"]
-        if (session.get("kind"), session.get("agent")) not in (
-            ("id", "claude"),
-            ("id", "codex"),
-            ("id", "opencode"),
-        ):
-            return None
-        session_identifier = session.get("value")
-        return (
-            session_identifier
-            if isinstance(session_identifier, str) and session_identifier
-            else None
-        )
-    except (ValueError, KeyError, TypeError, AttributeError):
+    except (ValueError, KeyError, TypeError):
         return None
+    return harness_session_identifier(session)
 
 
 def read_sending_session_identifier(pane_identifier: str) -> str | None:

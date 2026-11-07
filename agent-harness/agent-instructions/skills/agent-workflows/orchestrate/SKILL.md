@@ -64,6 +64,14 @@ session or none. Re-resolve from `a2a list` immediately before every dispatch ra
 the task. Renaming the agent in herdr does not change that address; rename the tab when you want a stable one for a
 session you spawned.
 
+### Addressing a peer by Servant
+
+Every `a2a` target also accepts a peer's Servant name, in any case, or its harness session id; `a2a list` shows both
+beside the peer name. A Servant belongs to the conversation rather than the tab, so a tab rename leaves it intact.
+
+Two live peers can draw the same Servant, and the command then refuses and names every candidate; choose one by peer
+name or pane id. Clawde agents carry no Servant, so address them by peer name.
+
 ### The drive loop
 
 Run this loop per goal, one turn at a time: 1) fix the goal and the evidence that would settle it before dispatching; 2)

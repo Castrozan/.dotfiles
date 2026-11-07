@@ -32,8 +32,10 @@ def command_list(arguments: argparse.Namespace, agent_directory: dict) -> int:
             "\t".join(
                 [
                     name,
+                    agent.get("servant") or "-",
                     agent.get("harness", ""),
                     agent.get("paneId", ""),
+                    agent.get("sessionId") or "-",
                     agent.get("description", ""),
                 ]
             )
