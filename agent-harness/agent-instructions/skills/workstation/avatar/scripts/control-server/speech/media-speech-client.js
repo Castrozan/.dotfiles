@@ -1,5 +1,12 @@
 const { spawn } = require("node:child_process");
 
+const STACK_DUMP_MILLISECONDS = 500;
+
+function stopWithStackDump(speech) {
+  speech.kill("SIGUSR1");
+  setTimeout(() => speech.kill("SIGTERM"), STACK_DUMP_MILLISECONDS);
+}
+
 function readMediaSpeechOutput(arguments_, timeoutMilliseconds) {
   return new Promise((resolve, reject) => {
     const speech = spawn("media-speech", arguments_, {
@@ -8,7 +15,7 @@ function readMediaSpeechOutput(arguments_, timeoutMilliseconds) {
     let output = "";
     let failure = "";
     const timeout = setTimeout(
-      () => speech.kill("SIGTERM"),
+      () => stopWithStackDump(speech),
       timeoutMilliseconds,
     );
     speech.stdout.on("data", (chunk) => (output += chunk));

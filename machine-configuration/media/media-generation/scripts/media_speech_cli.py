@@ -1,5 +1,7 @@
+import faulthandler
 import json
 import os
+import signal
 import sys
 import uuid
 from dataclasses import asdict
@@ -109,6 +111,10 @@ def execute_speech_command(args):
     return generate_speech(args, service)
 
 
+def dump_stack_on_request():
+    faulthandler.register(signal.SIGUSR1, all_threads=True)
+
+
 def main(arguments=None):
     args = build_parser().parse_args(arguments)
     try:
@@ -129,4 +135,5 @@ def main(arguments=None):
 
 
 if __name__ == "__main__":
+    dump_stack_on_request()
     raise SystemExit(main())

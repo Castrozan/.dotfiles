@@ -1,9 +1,13 @@
 import json
+import subprocess
+import sys
 import threading
 import wave
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
+from pathlib import Path
 
+import media_speech_cli
 import pytest
 
 from media_speech.contract import SpeechError
@@ -128,3 +132,17 @@ def test_concurrent_same_operation_dispatches_only_once(
             release.set()
         assert first.result()["status"] == "succeeded"
     assert provider.calls == 1
+
+
+def test_a_stalled_generation_prints_its_stack_when_asked():
+    scripts = str(Path(media_speech_cli.__file__).parent)
+    probe = (
+        "import os, signal, sys; sys.path.insert(0, sys.argv[1]); "
+        "import media_speech_cli; media_speech_cli.dump_stack_on_request(); "
+        "os.kill(os.getpid(), signal.SIGUSR1)"
+    )
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", probe, scripts], capture_output=True, text=True
+    )
+    assert result.returncode == 0
+    assert "Current thread" in result.stderr
