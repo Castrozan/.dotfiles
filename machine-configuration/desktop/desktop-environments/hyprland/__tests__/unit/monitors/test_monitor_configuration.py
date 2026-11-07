@@ -1,8 +1,13 @@
-import time
 from pathlib import Path
 from unittest.mock import call, patch
 
 import monitor_configuration
+import pytest
+from monitor_configuration import ConnectedMonitors, DisplayMode
+
+
+LAPTOP_WITH_ACER = ConnectedMonitors(internal="eDP-1", externals=("DP-1",))
+LAPTOP_ALONE = ConnectedMonitors(internal="eDP-1", externals=())
 
 
 class TestFindEnabledConfigLineForMonitor:
@@ -51,43 +56,92 @@ class TestFindEnabledConfigLineForMonitor:
             )
 
 
-class TestMonitorOverridePaths:
-    def test_the_override_and_toggle_lock_live_in_the_user_cache(self):
+class TestMonitorStatePaths:
+    def test_the_override_mode_and_lock_live_in_the_user_cache(self):
+        cache = Path.home() / ".cache"
         assert (
-            monitor_configuration.OVERRIDE_FILE
-            == Path.home() / ".cache" / "hypr-monitors-override.conf"
+            monitor_configuration.OVERRIDE_FILE == cache / "hypr-monitors-override.conf"
         )
+        assert monitor_configuration.DISPLAY_MODE_FILE == cache / "hypr-monitors-mode"
+        assert monitor_configuration.RECONCILE_LOCK_FILE == cache / "hypr-monitors.lock"
+
+
+class TestClassifyMonitorNames:
+    def test_separates_internal_from_externals_regardless_of_order(
+        self, monitor_state_files
+    ):
+        assert monitor_configuration.classify_monitor_names(
+            ["DP-1", "eDP-1", "HDMI-A-1"]
+        ) == ConnectedMonitors(internal="eDP-1", externals=("DP-1", "HDMI-A-1"))
+
+    def test_ignores_placeholder_outputs_seen_during_hotplug(self, monitor_state_files):
         assert (
-            monitor_configuration.TOGGLE_LOCK_FILE
-            == Path.home() / ".cache" / "hypr-monitors-toggle.lock"
+            monitor_configuration.classify_monitor_names(["FALLBACK", "", "eDP-1"])
+            == LAPTOP_ALONE
+        )
+
+    def test_takes_the_internal_name_from_config_when_hyprland_omits_it(
+        self, tmp_path, monkeypatch
+    ):
+        config_file = tmp_path / "monitors.conf"
+        config_file.write_text("monitor = eDP-2, disable\n")
+        monkeypatch.setattr(monitor_configuration, "MONITORS_CONF", config_file)
+        assert monitor_configuration.classify_monitor_names(
+            ["DP-1"]
+        ) == ConnectedMonitors(internal="eDP-2", externals=("DP-1",))
+
+
+class TestRenderOverride:
+    def test_external_mode_keeps_the_base_config(self, monitor_state_files):
+        assert (
+            monitor_configuration.render_override(
+                DisplayMode.EXTERNAL, LAPTOP_WITH_ACER
+            )
+            == ""
+        )
+
+    def test_extended_mode_enables_the_internal_panel(self, monitor_state_files):
+        assert (
+            monitor_configuration.render_override(
+                DisplayMode.EXTENDED, LAPTOP_WITH_ACER
+            )
+            == "monitor = eDP-1, preferred, auto, 1"
+        )
+
+    def test_internal_mode_disables_every_external(self, monitor_state_files):
+        assert monitor_configuration.render_override(
+            DisplayMode.INTERNAL,
+            ConnectedMonitors(internal="eDP-1", externals=("DP-1", "HDMI-A-1")),
+        ) == (
+            "monitor = eDP-1, preferred, auto, 1\n"
+            "monitor = DP-1, disable\n"
+            "monitor = HDMI-A-1, disable\n"
+            "monitor = , disable"
+        )
+
+    @pytest.mark.parametrize("mode", list(DisplayMode))
+    def test_any_mode_enables_the_internal_panel_without_an_external(
+        self, monitor_state_files, mode
+    ):
+        assert (
+            monitor_configuration.render_override(mode, LAPTOP_ALONE)
+            == "monitor = eDP-1, preferred, auto, 1"
         )
 
 
-class TestWriteToggleLock:
-    def test_stamps_the_lock_file_with_the_current_time(self, tmp_path):
-        lock_file = tmp_path / "toggle.lock"
+class TestDisplayModePersistence:
+    def test_defaults_to_external_when_nothing_was_chosen(self, monitor_state_files):
+        assert monitor_configuration.read_display_mode() is DisplayMode.EXTERNAL
 
-        with patch.object(monitor_configuration, "TOGGLE_LOCK_FILE", lock_file):
-            monitor_configuration.write_toggle_lock()
+    def test_defaults_to_external_when_the_stored_mode_is_unknown(
+        self, monitor_state_files
+    ):
+        monitor_configuration.DISPLAY_MODE_FILE.write_text("mirrored")
+        assert monitor_configuration.read_display_mode() is DisplayMode.EXTERNAL
 
-        assert abs(float(lock_file.read_text()) - time.time()) < 5
-
-
-class TestWriteOverrideAndReload:
-    def test_takes_the_toggle_lock_then_writes_the_override_and_reloads(self, tmp_path):
-        override_file = tmp_path / "override.conf"
-        lock_file = tmp_path / "toggle.lock"
-
-        with patch.object(monitor_configuration, "OVERRIDE_FILE", override_file):
-            with patch.object(monitor_configuration, "TOGGLE_LOCK_FILE", lock_file):
-                with patch("monitor_configuration.run_hyprctl") as mock_run_hyprctl:
-                    monitor_configuration.write_override_and_reload(
-                        "monitor = eDP-1, disable"
-                    )
-
-        assert override_file.read_text() == "monitor = eDP-1, disable"
-        assert lock_file.exists()
-        assert mock_run_hyprctl.call_args_list == [call("reload")]
+    def test_round_trips_the_chosen_mode(self, monitor_state_files):
+        monitor_configuration.write_display_mode(DisplayMode.EXTENDED)
+        assert monitor_configuration.read_display_mode() is DisplayMode.EXTENDED
 
 
 class TestSendMonitorNotification:

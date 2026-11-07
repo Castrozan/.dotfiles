@@ -1,40 +1,18 @@
-from hyprland_ipc import (
-    get_all_monitors,
-    migrate_workspaces_from_disabled_monitors,
-    run_hyprctl,
-)
+from hyprland_ipc import get_all_monitors, run_hyprctl
 from monitor_configuration import (
-    find_enabled_config_line_for_monitor,
+    DisplayMode,
+    apply_display_mode,
+    hold_reconcile_lock,
+    is_internal_monitor_name,
+    read_connected_monitors,
     send_monitor_notification,
-    write_override_and_reload,
+    write_display_mode,
 )
-
-
-def find_internal_monitor_name(monitor_names: list[str]) -> str | None:
-    for name in monitor_names:
-        if name.startswith("eDP"):
-            return name
-    return None
-
-
-def find_external_monitor_names(monitor_names: list[str]) -> list[str]:
-    return [name for name in monitor_names if not name.startswith("eDP")]
-
-
-def build_override_content_for_builtin_only(
-    internal_monitor: str, external_monitors: list[str]
-) -> str:
-    internal_config_line = find_enabled_config_line_for_monitor(internal_monitor)
-    override_lines = [f"monitor = {internal_config_line}"]
-    for external_monitor in external_monitors:
-        override_lines.append(f"monitor = {external_monitor}, disable")
-    override_lines.append("monitor = , disable")
-    return "\n".join(override_lines) + "\n"
 
 
 def recenter_cursor_on_internal_monitor() -> None:
     for monitor in get_all_monitors(include_disabled=False):
-        if monitor.get("name", "").startswith("eDP"):
+        if is_internal_monitor_name(monitor.get("name", "")):
             width = monitor.get("width", 0)
             height = monitor.get("height", 0)
             x_position = monitor.get("x", 0)
@@ -49,21 +27,20 @@ def recenter_cursor_on_internal_monitor() -> None:
             return
 
 
-def main() -> None:
-    all_monitors = get_all_monitors(include_disabled=True)
-    all_monitor_names = [monitor.get("name", "") for monitor in all_monitors]
+def force_builtin_only() -> bool:
+    with hold_reconcile_lock():
+        monitors = read_connected_monitors()
+        if not monitors.internal:
+            return False
+        write_display_mode(DisplayMode.INTERNAL)
+        apply_display_mode(DisplayMode.INTERNAL, monitors)
+        return True
 
-    internal_monitor = find_internal_monitor_name(all_monitor_names)
-    if not internal_monitor:
+
+def main() -> None:
+    if not force_builtin_only():
         send_monitor_notification("No internal monitor found")
         return
-
-    external_monitors = find_external_monitor_names(all_monitor_names)
-    override_content = build_override_content_for_builtin_only(
-        internal_monitor, external_monitors
-    )
-    write_override_and_reload(override_content)
-    migrate_workspaces_from_disabled_monitors()
     recenter_cursor_on_internal_monitor()
     send_monitor_notification("Built-in only")
 

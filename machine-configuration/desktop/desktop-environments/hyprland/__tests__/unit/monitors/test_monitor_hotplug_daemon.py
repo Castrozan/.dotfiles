@@ -1,178 +1,58 @@
 import socket
-import time
 
 import monitor_hotplug_daemon as daemon
 
 
-class TestHasExternalMonitorConnected:
-    def test_true_when_external_exists(self, hyprctl_response_builder):
-        hyprctl_response_builder("monitors", [{"name": "eDP-1"}, {"name": "HDMI-A-1"}])
-        assert daemon.has_external_monitor_connected()
+def serve_events(event_socket_path, payload: bytes, monkeypatch) -> list[str]:
+    reconcile_calls = []
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+        listener.bind(str(event_socket_path))
+        listener.listen()
 
-    def test_false_when_only_internal(self, hyprctl_response_builder):
-        hyprctl_response_builder("monitors", [{"name": "eDP-1"}])
-        assert not daemon.has_external_monitor_connected()
+        def reconcile_and_publish_on_first_call() -> None:
+            reconcile_calls.append("reconcile")
+            if len(reconcile_calls) == 1:
+                connection, _ = listener.accept()
+                with connection:
+                    connection.sendall(payload)
 
-    def test_false_when_no_monitors(self, hyprctl_response_builder):
-        hyprctl_response_builder("monitors", [])
-        assert not daemon.has_external_monitor_connected()
-
-
-class TestIsManualToggleInProgress:
-    def test_false_when_no_lock_file(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", tmp_path / "nonexistent.lock")
-        assert not daemon.is_manual_toggle_in_progress()
-
-    def test_true_when_lock_file_is_recent(self, tmp_path, monkeypatch):
-        lock_file = tmp_path / "toggle.lock"
-        lock_file.write_text(str(time.time()))
-        monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", lock_file)
-        assert daemon.is_manual_toggle_in_progress()
-
-    def test_false_when_lock_file_is_expired(self, tmp_path, monkeypatch):
-        lock_file = tmp_path / "toggle.lock"
-        lock_file.write_text(str(time.time() - 10))
-        monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", lock_file)
-        assert not daemon.is_manual_toggle_in_progress()
-
-    def test_false_when_lock_file_has_invalid_content(self, tmp_path, monkeypatch):
-        lock_file = tmp_path / "toggle.lock"
-        lock_file.write_text("garbage")
-        monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", lock_file)
-        assert not daemon.is_manual_toggle_in_progress()
-
-
-class TestHandleMonitorRemoved:
-    def test_ignores_internal_monitor_removal(self, mock_subprocess_run):
-        daemon.handle_monitor_removed("eDP-1")
-        batch_calls = [
-            c for c in mock_subprocess_run.call_args_list if "reload" in str(c)
-        ]
-        assert len(batch_calls) == 0
-
-    def test_enables_internal_on_external_removal(
-        self, mock_subprocess_run, tmp_path, monkeypatch
-    ):
-        override = tmp_path / "override.conf"
-        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
-        monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", tmp_path / "nonexistent.lock")
-        daemon.handle_monitor_removed("HDMI-A-1")
-        assert "eDP-1" in override.read_text()
-
-    def test_ignores_external_removal_during_manual_toggle(
-        self, mock_subprocess_run, tmp_path, monkeypatch
-    ):
-        override = tmp_path / "override.conf"
-        override.write_text("original content")
-        lock_file = tmp_path / "toggle.lock"
-        lock_file.write_text(str(time.time()))
-        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
-        monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", lock_file)
-        daemon.handle_monitor_removed("HDMI-A-1")
-        assert override.read_text() == "original content"
-
-
-class TestHandleMonitorAdded:
-    def test_ignores_internal_monitor_addition(self, mock_subprocess_run):
-        daemon.handle_monitor_added("eDP-1")
-        batch_calls = [
-            c for c in mock_subprocess_run.call_args_list if "reload" in str(c)
-        ]
-        assert len(batch_calls) == 0
-
-    def test_clears_override_on_external_addition(
-        self, mock_subprocess_run, tmp_path, monkeypatch
-    ):
-        override = tmp_path / "override.conf"
-        override.write_text("old content")
-        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
-        monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", tmp_path / "nonexistent.lock")
-        daemon.handle_monitor_added("HDMI-A-1")
-        assert override.read_text() == ""
-
-    def test_ignores_external_addition_during_manual_toggle(
-        self, mock_subprocess_run, tmp_path, monkeypatch
-    ):
-        override = tmp_path / "override.conf"
-        override.write_text("original content")
-        lock_file = tmp_path / "toggle.lock"
-        lock_file.write_text(str(time.time()))
-        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
-        monkeypatch.setattr(daemon, "TOGGLE_LOCK_FILE", lock_file)
-        daemon.handle_monitor_added("HDMI-A-1")
-        assert override.read_text() == "original content"
-
-
-class TestReconcileOverrideWithConnectedMonitors:
-    def test_clears_stale_override_when_external_is_connected(
-        self, hyprctl_response_builder, tmp_path, monkeypatch
-    ):
-        override = tmp_path / "override.conf"
-        override.write_text("monitor = eDP-1, preferred, auto, 1")
-        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
-        hyprctl_response_builder("monitors", [{"name": "eDP-1"}, {"name": "DP-1"}])
-        daemon.reconcile_override_with_connected_monitors()
-        assert override.read_text() == ""
-
-    def test_enables_internal_when_no_external_is_connected(
-        self, hyprctl_response_builder, tmp_path, monkeypatch
-    ):
-        override = tmp_path / "override.conf"
-        override.write_text("")
-        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
-        hyprctl_response_builder("monitors", [{"name": "eDP-1"}])
-        daemon.reconcile_override_with_connected_monitors()
-        assert override.read_text() == daemon.INTERNAL_MONITOR_OVERRIDE
-
-    def test_creates_missing_override(
-        self, hyprctl_response_builder, tmp_path, monkeypatch
-    ):
-        override = tmp_path / "override.conf"
-        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
-        hyprctl_response_builder("monitors", [{"name": "eDP-1"}, {"name": "DP-1"}])
-        daemon.reconcile_override_with_connected_monitors()
-        assert override.read_text() == ""
-
-    def test_skips_reload_when_override_is_current(
-        self, hyprctl_response_builder, mock_subprocess_run, tmp_path, monkeypatch
-    ):
-        override = tmp_path / "override.conf"
-        override.write_text("")
-        monkeypatch.setattr(daemon, "OVERRIDE_FILE", override)
-        hyprctl_response_builder("monitors", [{"name": "eDP-1"}, {"name": "DP-1"}])
-        daemon.reconcile_override_with_connected_monitors()
-        reload_calls = [
-            c for c in mock_subprocess_run.call_args_list if "reload" in str(c)
-        ]
-        assert len(reload_calls) == 0
+        monkeypatch.setattr(
+            daemon,
+            "reconcile_with_connected_monitors",
+            reconcile_and_publish_on_first_call,
+        )
+        daemon.reconcile_and_dispatch_events(str(event_socket_path))
+    return reconcile_calls
 
 
 class TestReconcileAndDispatchEvents:
-    def test_event_raised_during_reconcile_is_not_lost(self, tmp_path, monkeypatch):
-        event_socket_path = tmp_path / "events.sock"
-        received_monitor_names = []
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
-            listener.bind(str(event_socket_path))
-            listener.listen()
+    def test_reconciles_on_connect_and_on_every_monitor_change(
+        self, tmp_path, monkeypatch
+    ):
+        reconcile_calls = serve_events(
+            tmp_path / "events.sock",
+            b"monitoradded>>DP-1\nmonitorremoved>>DP-1\nmonitoraddedv2>>1,DP-1,Acer\n",
+            monkeypatch,
+        )
+        assert len(reconcile_calls) == 3
 
-            def publish_event_during_reconcile() -> None:
-                connection, _ = listener.accept()
-                with connection:
-                    connection.sendall(b"monitoradded>>DP-1\n")
+    def test_ignores_unrelated_and_malformed_events(self, tmp_path, monkeypatch):
+        reconcile_calls = serve_events(
+            tmp_path / "events.sock",
+            b"workspace>>2\nmonitoradded\nfocusedmon>>DP-1,1\n",
+            monkeypatch,
+        )
+        assert len(reconcile_calls) == 1
 
-            monkeypatch.setattr(
-                daemon,
-                "reconcile_override_with_connected_monitors",
-                publish_event_during_reconcile,
-            )
-            monkeypatch.setitem(
-                daemon.EVENT_HANDLERS, "monitoradded", received_monitor_names.append
-            )
-            daemon.reconcile_and_dispatch_events(str(event_socket_path))
-        assert received_monitor_names == ["DP-1"]
+    def test_event_raised_during_the_initial_reconcile_is_not_lost(
+        self, tmp_path, monkeypatch
+    ):
+        reconcile_calls = serve_events(
+            tmp_path / "events.sock", b"monitoradded>>DP-1\n", monkeypatch
+        )
+        assert len(reconcile_calls) == 2
 
 
-class TestEventHandlers:
-    def test_all_required_events_have_handlers(self):
-        required_events = {"monitorremoved", "monitoradded"}
-        assert required_events == set(daemon.EVENT_HANDLERS.keys())
+class TestMonitorChangeEvents:
+    def test_reacts_only_to_monitor_connection_changes(self):
+        assert daemon.MONITOR_CHANGE_EVENTS == {"monitoradded", "monitorremoved"}

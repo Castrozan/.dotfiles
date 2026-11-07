@@ -1,29 +1,28 @@
-import re
 from pathlib import Path
 
-from hyprland_ipc import (
-    get_all_monitors,
-    migrate_workspaces_from_disabled_monitors,
-)
 from monitor_configuration import (
-    MONITORS_CONF,
-    find_enabled_config_line_for_monitor,
+    DisplayMode,
+    apply_display_mode,
+    hold_reconcile_lock,
+    read_connected_monitors,
+    read_display_mode,
     send_monitor_notification,
-    write_override_and_reload,
+    write_display_mode,
 )
 
 LID_STATE_FILE = Path("/proc/acpi/button/lid/LID0/state")
 
+DISPLAY_MODE_LABELS = {
+    DisplayMode.EXTERNAL: "External only",
+    DisplayMode.EXTENDED: "Extended",
+    DisplayMode.INTERNAL: "Built-in only",
+}
 
-def extract_monitor_names_from_config() -> list[str]:
-    if not MONITORS_CONF.exists():
-        return []
-    names = set()
-    for line in MONITORS_CONF.read_text().splitlines():
-        match = re.match(r"\s*monitor\s*=\s*([^,]+)", line)
-        if match:
-            names.add(match.group(1).strip())
-    return sorted(names)
+LID_OPEN_TRANSITIONS = {
+    DisplayMode.EXTERNAL: DisplayMode.EXTENDED,
+    DisplayMode.EXTENDED: DisplayMode.INTERNAL,
+    DisplayMode.INTERNAL: DisplayMode.EXTERNAL,
+}
 
 
 def laptop_lid_is_closed() -> bool:
@@ -32,104 +31,32 @@ def laptop_lid_is_closed() -> bool:
     return "closed" in LID_STATE_FILE.read_text().lower()
 
 
-def detect_current_mode(
-    active_names: list[str],
-    internal_monitor: str,
-    external_monitor: str,
-) -> str:
-    has_internal = internal_monitor in active_names
-    has_external = external_monitor in active_names
-    if has_internal and has_external:
-        return "extended"
-    if has_external:
-        return "external"
-    return "internal"
+def determine_next_mode(current_mode: DisplayMode, lid_closed: bool) -> DisplayMode:
+    if lid_closed:
+        if current_mode is DisplayMode.EXTENDED:
+            return DisplayMode.EXTERNAL
+        return DisplayMode.EXTENDED
+    return LID_OPEN_TRANSITIONS[current_mode]
 
 
-def determine_next_mode_with_lid_closed(current_mode: str) -> tuple[str, str]:
-    if current_mode == "extended":
-        return "external", "External only"
-    return "extended", "Extended"
-
-
-def determine_next_mode_with_lid_open(current_mode: str) -> tuple[str, str]:
-    mode_transitions = {
-        "external": ("extended", "Extended"),
-        "extended": ("internal", "Built-in only"),
-        "internal": ("external", "External only"),
-    }
-    return mode_transitions.get(current_mode, ("external", "External only"))
-
-
-def build_override_content_for_mode(
-    mode: str, internal_monitor: str, external_monitor: str
-) -> str:
-    if mode == "external":
-        return ""
-    if mode == "extended":
-        config = find_enabled_config_line_for_monitor(internal_monitor)
-        return f"monitor = {config}"
-    config = find_enabled_config_line_for_monitor(internal_monitor)
-    return f"monitor = {config}\nmonitor = {external_monitor}, disable"
-
-
-def find_internal_monitor(all_monitor_names: list[str]) -> str | None:
-    for name in all_monitor_names:
-        if name.startswith("eDP"):
-            return name
-    config_names = extract_monitor_names_from_config()
-    for name in config_names:
-        if name.startswith("eDP"):
-            return name
-    return None
-
-
-def find_external_monitor(all_monitor_names: list[str]) -> str | None:
-    for name in all_monitor_names:
-        if not name.startswith("eDP"):
-            return name
-    return None
+def toggle_display_mode() -> str:
+    with hold_reconcile_lock():
+        monitors = read_connected_monitors()
+        if not monitors.internal:
+            return "No internal monitor found"
+        current_mode = read_display_mode()
+        if not monitors.externals:
+            if apply_display_mode(current_mode, monitors):
+                return DISPLAY_MODE_LABELS[DisplayMode.INTERNAL]
+            return "No external monitor connected"
+        next_mode = determine_next_mode(current_mode, laptop_lid_is_closed())
+        write_display_mode(next_mode)
+        apply_display_mode(next_mode, monitors)
+        return DISPLAY_MODE_LABELS[next_mode]
 
 
 def main() -> None:
-    active_monitors = get_all_monitors()
-    active_names = [
-        monitor_config.get("name", "") for monitor_config in active_monitors
-    ]
-
-    all_monitors = get_all_monitors(include_disabled=True)
-    all_names = [monitor_config.get("name", "") for monitor_config in all_monitors]
-
-    internal_monitor = find_internal_monitor(all_names)
-    external_monitor = find_external_monitor(all_names)
-
-    if not internal_monitor:
-        send_monitor_notification("No internal monitor found")
-        return
-
-    if not external_monitor:
-        if internal_monitor not in active_names:
-            write_override_and_reload(
-                f"monitor = {internal_monitor}, preferred, auto, 1"
-            )
-            send_monitor_notification("Built-in only")
-        else:
-            send_monitor_notification("No external monitor connected")
-        return
-
-    current_mode = detect_current_mode(active_names, internal_monitor, external_monitor)
-
-    if laptop_lid_is_closed():
-        next_mode, label = determine_next_mode_with_lid_closed(current_mode)
-    else:
-        next_mode, label = determine_next_mode_with_lid_open(current_mode)
-
-    override_content = build_override_content_for_mode(
-        next_mode, internal_monitor, external_monitor
-    )
-    write_override_and_reload(override_content)
-    migrate_workspaces_from_disabled_monitors()
-    send_monitor_notification(label)
+    send_monitor_notification(toggle_display_mode())
 
 
 if __name__ == "__main__":
