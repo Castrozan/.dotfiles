@@ -55,7 +55,7 @@ Make architectural decisions for the long term. Do not accept a stopgap that onl
 replaced later. Keep components modular and concerns clearly separated.
 
 Do not preserve backward compatibility. Remove obsolete paths instead of adding compatibility layers, fallbacks, or
-migrations.
+migrations. Preserve backward compatibility only when the user asks for it.
 
 Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Do not
 reimplement common functionality without a clear reason. Lean on the dependencies already in the project before writing
