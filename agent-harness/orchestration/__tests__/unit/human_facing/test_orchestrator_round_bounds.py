@@ -61,7 +61,7 @@ def test_two_decisions_and_six_sessions_at_every_limit_fit_one_screen(
 
 
 def write_report(reports, name, minutes_ago, **fields):
-    template = json.loads(next(reports.glob("*.json")).read_text())
+    template = json.loads(next(reports.glob("Voyager*.json")).read_text())
     updated = datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)
     record = {
         **template,

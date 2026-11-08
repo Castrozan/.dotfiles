@@ -33,6 +33,11 @@ class BriefSection:
     prose_lines: list[tuple[int, str]] = field(default_factory=list)
     all_text: list[str] = field(default_factory=list)
 
+    def add(self, number: int, line: str, is_code: bool) -> None:
+        self.all_text.append(line)
+        if not is_code:
+            self.prose_lines.append((number, line))
+
 
 def heading_key(title: str) -> str:
     return title.replace("’", "'").casefold()
@@ -48,26 +53,23 @@ def closes_fence(opening: str, line: str) -> bool:
     )
 
 
+def next_fence_state(open_fence: str | None, line: str) -> tuple[str | None, bool]:
+    if open_fence is not None:
+        return (None if closes_fence(open_fence, line) else open_fence), True
+    marker = FENCE_MARKER.match(line)
+    return (marker["fence"] if marker else None), bool(marker)
+
+
 def brief_sections(text: str) -> list[BriefSection]:
     sections = [BriefSection("")]
     open_fence = None
     for number, line in enumerate(text.splitlines(), start=1):
-        marker = FENCE_MARKER.match(line)
-        if open_fence is not None:
-            if closes_fence(open_fence, line):
-                open_fence = None
-            sections[-1].all_text.append(line)
-            continue
-        if marker:
-            open_fence = marker["fence"]
-            sections[-1].all_text.append(line)
-            continue
-        heading = SECTION_HEADING.match(line)
+        open_fence, is_code = next_fence_state(open_fence, line)
+        heading = None if is_code else SECTION_HEADING.match(line)
         if heading:
             sections.append(BriefSection(heading["title"]))
-            continue
-        sections[-1].all_text.append(line)
-        sections[-1].prose_lines.append((number, line))
+        else:
+            sections[-1].add(number, line, is_code)
     return sections
 
 

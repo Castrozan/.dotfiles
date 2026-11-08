@@ -50,7 +50,7 @@ def test_a_peer_on_another_host_gets_every_argument_intact_through_its_shell(
     )
     command = peer_messenger.a2a_command_line(arguments, "kira")
     assert command[:4] == ["ssh", "-o", "BatchMode=yes", "kira"]
-    subprocess.run(["/bin/sh", "-c", command[4]], check=True)
+    subprocess.run(["/bin/sh", "-c", command[4]], check=True, timeout=10)
     assert fake_a2a.read_text(encoding="utf-8").splitlines() == list(arguments)
 
 
