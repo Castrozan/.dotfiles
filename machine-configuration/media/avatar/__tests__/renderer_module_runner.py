@@ -12,6 +12,10 @@ def run_renderer_module(module, body):
     }}).catch(error => {{ console.error(error); process.exitCode = 1; }});
     """
     completed = subprocess.run(
-        ["node", "-e", program], capture_output=True, text=True, check=True
+        ["node", "-e", program],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
     )
     return json.loads(completed.stdout)
