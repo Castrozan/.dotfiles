@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   privateConfigRoot = ../../../private-configuration;
-  rinPrivateConfigExists = builtins.pathExists privateConfigRoot;
+  rinPrivateConfigExists = builtins.pathExists (privateConfigRoot + "/machines/rin/clawde-agents");
 in
 {
   imports = [
