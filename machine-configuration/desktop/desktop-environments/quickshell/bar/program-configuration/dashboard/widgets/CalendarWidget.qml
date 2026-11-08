@@ -14,6 +14,27 @@ MouseArea {
 
     readonly property int currentMonth: currentDate.getMonth()
     readonly property int currentYear: currentDate.getFullYear()
+    readonly property real dayCellHeight: dayNumberMetrics.height + Appearance.padding.small * 2
+
+    function weekColumnWidth(availableWidth: real, columnSpacing: real): real {
+        return Math.max(0, (availableWidth - 6 * columnSpacing) / 7);
+    }
+
+    FontMetrics {
+        id: dayNumberMetrics
+
+        font.family: Appearance.font.family.sans
+        font.pointSize: Appearance.font.size.normal
+        font.weight: 500
+    }
+
+    FontMetrics {
+        id: weekdayNameMetrics
+
+        font.family: Appearance.font.family.sans
+        font.pointSize: Appearance.font.size.smaller
+        font.weight: 500
+    }
 
     anchors.left: parent.left
     anchors.right: parent.right
@@ -36,109 +57,40 @@ MouseArea {
         anchors.margins: Appearance.padding.large
         spacing: Appearance.spacing.small
 
-        RowLayout {
+        CalendarMonthHeader {
             Layout.fillWidth: true
-            spacing: Appearance.spacing.small
-
-            Item {
-                implicitWidth: implicitHeight
-                implicitHeight: previousMonthIcon.implicitHeight + Appearance.padding.small * 2
-
-                StateLayer {
-                    radius: Appearance.rounding.full
-
-                    function onClicked(): void {
-                        calendarWidgetRoot.currentDate = new Date(calendarWidgetRoot.currentYear, calendarWidgetRoot.currentMonth - 1, 1);
-                    }
-                }
-
-                MaterialIcon {
-                    id: previousMonthIcon
-
-                    anchors.centerIn: parent
-                    text: "chevron_left"
-                    color: Colours.palette.m3tertiary
-                    font.pointSize: Appearance.font.size.normal
-                    font.weight: 700
-                }
-            }
-
-            Item {
-                Layout.fillWidth: true
-
-                implicitWidth: monthYearLabel.implicitWidth + Appearance.padding.small * 2
-                implicitHeight: monthYearLabel.implicitHeight + Appearance.padding.small * 2
-
-                StateLayer {
-                    anchors.fill: monthYearLabel
-                    anchors.margins: -Appearance.padding.small
-                    anchors.leftMargin: -Appearance.padding.normal
-                    anchors.rightMargin: -Appearance.padding.normal
-
-                    radius: Appearance.rounding.full
-                    disabled: {
-                        const now = new Date();
-                        return calendarWidgetRoot.currentMonth === now.getMonth() && calendarWidgetRoot.currentYear === now.getFullYear();
-                    }
-
-                    function onClicked(): void {
-                        calendarWidgetRoot.currentDate = new Date();
-                    }
-                }
-
-                StyledText {
-                    id: monthYearLabel
-
-                    anchors.centerIn: parent
-                    text: monthGrid.title
-                    color: Colours.palette.m3primary
-                    font.pointSize: Appearance.font.size.normal
-                    font.weight: 500
-                    font.capitalization: Font.Capitalize
-                }
-            }
-
-            Item {
-                implicitWidth: implicitHeight
-                implicitHeight: nextMonthIcon.implicitHeight + Appearance.padding.small * 2
-
-                StateLayer {
-                    radius: Appearance.rounding.full
-
-                    function onClicked(): void {
-                        calendarWidgetRoot.currentDate = new Date(calendarWidgetRoot.currentYear, calendarWidgetRoot.currentMonth + 1, 1);
-                    }
-                }
-
-                MaterialIcon {
-                    id: nextMonthIcon
-
-                    anchors.centerIn: parent
-                    text: "chevron_right"
-                    color: Colours.palette.m3tertiary
-                    font.pointSize: Appearance.font.size.normal
-                    font.weight: 700
-                }
-            }
+            displayedDate: calendarWidgetRoot.currentDate
+            monthNameLocale: monthGrid.locale
+            onMonthRequested: requestedDate => calendarWidgetRoot.currentDate = requestedDate
         }
 
         DayOfWeekRow {
+            id: weekdayHeader
+
             Layout.fillWidth: true
+            Layout.preferredHeight: weekdayNameMetrics.height + topPadding + bottomPadding
             locale: monthGrid.locale
 
-            delegate: StyledText {
+            delegate: Item {
+                id: weekdayDelegate
+
                 required property var model
 
-                horizontalAlignment: Text.AlignHCenter
-                text: model.shortName
-                font.weight: 500
-                color: (model.day === 0 || model.day === 6) ? Colours.palette.m3secondary : Colours.palette.m3onSurfaceVariant
+                implicitWidth: calendarWidgetRoot.weekColumnWidth(weekdayHeader.availableWidth, weekdayHeader.spacing)
+                implicitHeight: weekdayNameMetrics.height
+
+                StyledText {
+                    anchors.centerIn: parent
+                    text: weekdayDelegate.model.shortName
+                    font.weight: 500
+                    color: (weekdayDelegate.model.day === 0 || weekdayDelegate.model.day === 6) ? Colours.palette.m3secondary : Colours.palette.m3onSurfaceVariant
+                }
             }
         }
 
         Item {
             Layout.fillWidth: true
-            implicitHeight: monthGrid.implicitHeight
+            implicitHeight: calendarWidgetRoot.dayCellHeight * 6 + monthGrid.spacing * 5
 
             MonthGrid {
                 id: monthGrid
@@ -156,8 +108,8 @@ MouseArea {
 
                     required property var model
 
-                    implicitWidth: implicitHeight
-                    implicitHeight: dayLabel.implicitHeight + Appearance.padding.small * 2
+                    implicitWidth: calendarWidgetRoot.weekColumnWidth(monthGrid.availableWidth, monthGrid.spacing)
+                    implicitHeight: calendarWidgetRoot.dayCellHeight
 
                     StyledText {
                         id: dayLabel

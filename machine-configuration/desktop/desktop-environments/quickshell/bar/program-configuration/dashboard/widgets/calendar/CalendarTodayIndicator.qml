@@ -21,7 +21,7 @@ StyledRect {
     x: todayTarget ? todayTarget.x + (todayTarget.width - implicitWidth) / 2 : 0
     y: todayTarget?.y ?? 0
 
-    implicitWidth: todayTarget?.implicitWidth ?? 0
+    implicitWidth: todayTarget?.implicitHeight ?? 0
     implicitHeight: todayTarget?.implicitHeight ?? 0
 
     clip: true
