@@ -27,11 +27,27 @@ _run_lua_unit_tests() {
 
 	echo "--- Lua Unit Tests ---"
 	local failCount=0
+	local testCount=0
+	local junitCases=""
 	for luaTest in $luaTests; do
-		if ! "${luaInterpreter[@]}" "$luaTest"; then
+		testCount=$((testCount + 1))
+		local caseName="${luaTest#"${REPO_DIR}/"}"
+		caseName="${caseName//&/\&amp;}"
+		caseName="${caseName//</\&lt;}"
+		caseName="${caseName//\"/\&quot;}"
+		if "${luaInterpreter[@]}" "$luaTest"; then
+			junitCases+="<testcase classname=\"lua\" name=\"${caseName}\"/>"
+		else
 			failCount=$((failCount + 1))
+			junitCases+="<testcase classname=\"lua\" name=\"${caseName}\"><failure message=\"lua test file exited non-zero\"/></testcase>"
 		fi
 	done
+
+	if [[ -n "${DOTFILES_TEST_REPORT_DIRECTORY:-}" ]]; then
+		mkdir -p "$DOTFILES_TEST_REPORT_DIRECTORY"
+		printf '<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="lua" tests="%d" failures="%d">%s</testsuite>\n' \
+			"$testCount" "$failCount" "$junitCases" >"$DOTFILES_TEST_REPORT_DIRECTORY/lua-junit.xml"
+	fi
 
 	rm -f "$isolatedWorkspaceStateFile"
 	unset HAMMERSPOON_WORKSPACE_STATE_FILE

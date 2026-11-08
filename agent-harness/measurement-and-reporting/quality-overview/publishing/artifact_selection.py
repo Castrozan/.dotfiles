@@ -7,6 +7,8 @@ ARTIFACT_PRODUCERS = {
     "coverage-report": ("quick-tests", "Upload coverage report"),
     "python-junit": ("qml-and-python-tests", "Retain native Python test results"),
     "python-coverage": ("qml-and-python-tests", "Upload Python coverage"),
+    "qml-lua-junit": ("qml-tests / qml", "Retain native QML and Lua test results"),
+    "swift-junit": ("swift-tests", "Retain native Swift test results"),
     "verdr-artifact-evidence": (
         "quality-evidence / artifacts",
         "Retain package identity and independent evidence",

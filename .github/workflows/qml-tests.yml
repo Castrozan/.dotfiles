@@ -6,6 +6,8 @@ on:
 jobs:
   qml:
     runs-on: ubuntu-latest
+    env:
+      DOTFILES_TEST_REPORT_DIRECTORY: ${{ github.workspace }}/.quality-results
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
@@ -39,3 +41,14 @@ jobs:
             source repository/verification/runner/lua.sh
             _run_lua_unit_tests
           LANGUAGE_TESTS
+
+      - name: Retain native QML and Lua test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: qml-lua-junit
+          path: |
+            .quality-results/qml-junit/
+            .quality-results/lua-junit.xml
+          include-hidden-files: true
+          if-no-files-found: error

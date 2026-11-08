@@ -86,6 +86,14 @@ jobs:
             python3 -m coverage combine --rcfile=repository/verification/cover/coverage.ini
             python3 -m coverage xml --rcfile=repository/verification/cover/coverage.ini -o .coverage-reports/swift-runner-coverage.xml
           '
+      - name: Retain native Swift test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-junit
+          path: .quality-results/swift-junit.xml
+          include-hidden-files: true
+          if-no-files-found: error
       - name: Upload Swift coverage
         uses: actions/upload-artifact@v4
         with:

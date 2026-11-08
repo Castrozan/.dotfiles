@@ -66,4 +66,7 @@ suite_de_testes:
     - .quality-results/**/bats-*/report.xml
     - .quality-results/**/pytest-unit.xml
     - .quality-results/**/pytest-integration.xml
-  rotulo: suíte tradicional (bats e pytest)
+    - .quality-results/**/qml-junit/*.xml
+    - .quality-results/**/lua-junit.xml
+    - .quality-results/**/swift-junit.xml
+  rotulo: suíte tradicional (bats, pytest, QML, Lua e Swift)

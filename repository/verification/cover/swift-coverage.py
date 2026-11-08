@@ -3,8 +3,10 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import time
 
 from swift_coverage_report import cobertura_coverage_xml
+from swift_junit_report import SwiftSuiteOutcome, swift_junit_xml
 
 
 REPOSITORY = Path(__file__).resolve().parents[3]
@@ -73,9 +75,42 @@ def _run_coverage_segment(binary, segment_count, directory, environment):
     subprocess.run([str(binary), *arguments], env=environment, check=True, timeout=30)
 
 
-def _run_coverage_suite(binary, segment_counts, directory, environment):
-    for segment_count in segment_counts or (None,):
-        _run_coverage_segment(binary, segment_count, directory, environment)
+def _suite_outcome_name(suite, segment_count):
+    owner, _, test_directory, _ = suite
+    name = f"{owner.name} {test_directory}"
+    if segment_count is None:
+        return name
+    return f"{name} ({segment_count} segment{'' if segment_count == 1 else 's'})"
+
+
+def _run_coverage_suite(suite, binary, directory, environment):
+    outcomes = []
+    for segment_count in suite[3] or (None,):
+        started = time.monotonic()
+        failure_message = None
+        try:
+            _run_coverage_segment(binary, segment_count, directory, environment)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
+            failure_message = str(error)
+        outcomes.append(
+            SwiftSuiteOutcome(
+                _suite_outcome_name(suite, segment_count),
+                time.monotonic() - started,
+                failure_message,
+            )
+        )
+    return outcomes
+
+
+def _write_junit_report(outcomes):
+    report_directory = Path(
+        os.environ.get("DOTFILES_TEST_REPORT_DIRECTORY", REPOSITORY / ".quality-results")
+    )
+    report_directory.mkdir(parents=True, exist_ok=True)
+    (report_directory / "swift-junit.xml").write_text(swift_junit_xml(outcomes) + "\n")
+    failed = [outcome.name for outcome in outcomes if outcome.failure_message]
+    if failed:
+        raise SystemExit(f"Swift suites failed: {', '.join(failed)}")
 
 
 def collect_coverage(output_directory):
@@ -92,14 +127,16 @@ def collect_coverage(output_directory):
             os.environ, LLVM_PROFILE_FILE=str(directory / "%m-%p.profraw")
         )
         binaries = []
+        outcomes = []
         for index, suite in enumerate(suites):
-            binary, segment_counts = _compile_coverage_suite(
+            binary, _ = _compile_coverage_suite(
                 suite,
                 directory,
                 binaries,
                 index,
             )
-            _run_coverage_suite(binary, segment_counts, directory, environment)
+            outcomes.extend(_run_coverage_suite(suite, binary, directory, environment))
+        _write_junit_report(outcomes)
         profile = directory / "coverage.profdata"
         subprocess.run(
             [

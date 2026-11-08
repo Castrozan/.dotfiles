@@ -24,17 +24,28 @@ main() {
 
 	local failedTests=0
 	local passedTests=0
+	local reportDirectory=""
+	if [[ -n "${DOTFILES_TEST_REPORT_DIRECTORY:-}" ]]; then
+		reportDirectory="${DOTFILES_TEST_REPORT_DIRECTORY}/qml-junit"
+		mkdir -p "$reportDirectory"
+	fi
 
 	for testFile in $testFiles; do
 		local testName
 		testName="$(basename "$testFile" .qml)"
 		echo "  QML: $testName"
 
+		local -a reportArguments=()
+		if [[ -n "$reportDirectory" ]]; then
+			reportArguments=(-o "$reportDirectory/$testName.xml,junitxml" -o "-,txt")
+		fi
+
 		if QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
 			"$QMLTESTRUNNER" \
 			-input "$testFile" \
 			-import "$QT_QML_PATH" \
-			-import "$MOCKS_DIR" 2>&1; then
+			-import "$MOCKS_DIR" \
+			"${reportArguments[@]}" 2>&1; then
 			passedTests=$((passedTests + 1))
 		else
 			echo "  FAIL: $testName"
