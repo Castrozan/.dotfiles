@@ -11,6 +11,7 @@ in
   [
     pythonPackages.pytest
     pythonPackages.pytest-cov
+    pythonPackages.hypothesis
     pythonPackages.defusedxml
     pythonPackages.elevenlabs
     pythonPackages.numpy
