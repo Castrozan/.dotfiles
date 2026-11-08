@@ -42,6 +42,7 @@ runs:
         summarize: false
         extra-conf: |
           eval-cores = 0
+          lazy-trees = false
           access-tokens = github.com=${{ inputs.github-token }}
 
     - name: Configure the signed Devenv and dotfiles binary caches
