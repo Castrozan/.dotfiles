@@ -1,3 +1,7 @@
+---
+name: state-machines
+---
+
 ### Core state authority
 
 Core [evidence](../../../../core-rules/core.md#evidence) and [coding](../../../../core-rules/core.md#coding) own
