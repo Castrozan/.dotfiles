@@ -5,12 +5,12 @@ on:
 
 jobs:
   probe:
-    name: warm-compare ${{ matrix.sample }}
+    name: determinate ${{ matrix.sample }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        sample: [a, b]
+        sample: [seed]
     steps:
       - uses: actions/checkout@v4
 
@@ -19,27 +19,13 @@ jobs:
           cache-key: flake-check
           github-token: ${{ secrets.GITHUB_TOKEN }}
           installer: determinate
+          cache-variant: -determinate
 
-      - name: Warm the store with a full check
+      - name: Nix flake checks
+        run: nix flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --print-build-logs --show-trace --max-jobs 8 --cores 2
+
+      - name: Retain native package outputs for the store cache
         run: |
-          rmdir private-configuration
-          nix flake check --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -5
-
-      - name: Upstream client
-        run: |
-          upstreamNix=$(nix build --no-link --print-out-paths --inputs-from . 'nixpkgs#nix^out')/bin/nix
-          "$upstreamNix" --version
-          time "$upstreamNix" flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
-
-      - name: Determinate client
-        run: |
-          nix --version
-          time nix flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
-
-      - name: Upstream client again
-        run: |
-          upstreamNix=$(nix build --no-link --print-out-paths --inputs-from . 'nixpkgs#nix^out')/bin/nix
-          time "$upstreamNix" flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
-
-      - name: Determinate client again
-        run: time nix flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
+          nix build $ARR_STACK_STUB_OVERRIDE --out-link "$RUNNER_TEMP/native-cache-package" \
+            .#nixosConfigurations.chise.config.home-manager.users.zanoni.codex.unwrappedPackage \
+            .#checks.x86_64-linux.domain-local-model-tokenizer-long-input.tokenizerPackage
