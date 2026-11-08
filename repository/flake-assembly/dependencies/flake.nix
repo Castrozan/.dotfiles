@@ -59,6 +59,8 @@
     cmatrix.inputs.nixpkgs.follows = "nixpkgs";
     tuisvn.url = "github:castrozan/tuisvn";
     tuisvn.inputs.nixpkgs.follows = "nixpkgs";
+    delta-nix.url = "github:zed-industries/delta-nix";
+    delta-nix.inputs.nixpkgs.follows = "nixpkgs";
     install-nothing.url = "github:castrozan/install-nothing";
     install-nothing.inputs.nixpkgs.follows = "nixpkgs";
     lazygit.url = "github:Castrozan/lazygit";

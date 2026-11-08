@@ -351,6 +351,27 @@
         "type": "github"
       }
     },
+    "delta-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793817749,
+        "narHash": "sha256-uoHixlZnIo3hA6VGjV1zkVQEoAhI2EB4jP9nWltMy2Y=",
+        "owner": "zed-industries",
+        "repo": "delta-nix",
+        "rev": "5749237bd9c9da0661e5480bcc0301968fcf039d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "zed-industries",
+        "repo": "delta-nix",
+        "type": "github"
+      }
+    },
     "dependencies": {
       "inputs": {
         "agenix": "agenix",
@@ -360,6 +381,7 @@
         "cbonsai": "cbonsai",
         "clawde": "clawde",
         "cmatrix": "cmatrix",
+        "delta-nix": "delta-nix",
         "devenv": "devenv",
         "google-workspace-cli": "google-workspace-cli",
         "herdr": "herdr",
