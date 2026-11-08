@@ -12,7 +12,6 @@ from swift_junit_report import SwiftSuiteOutcome, swift_junit_xml
 REPOSITORY = Path(__file__).resolve().parents[3]
 DESKTOP = Path("machine-configuration/desktop")
 SWITCHER = DESKTOP / "window-management/workspace-window-switcher"
-LAUNCHER = DESKTOP / "applications/launcher"
 AMBIENT = DESKTOP / "appearance/screensaver/ambient-canvas"
 
 
@@ -47,7 +46,7 @@ def _compile_coverage_suite(suite, directory, binaries, index):
         raise ValueError(f"No Swift tests found: {owner / test_directory}")
     binary = directory / f"suite-{index}"
     source_directories = [owner / "swift-sources"]
-    if owner in {SWITCHER, LAUNCHER}:
+    if owner == SWITCHER:
         source_directories.append(DESKTOP / "input/command-sockets/swift-sources")
     compile_test_binary(source_directories, entry_point, test_sources, binary)
     binaries.append(binary)
@@ -104,7 +103,9 @@ def _run_coverage_suite(suite, binary, directory, environment):
 
 def _write_junit_report(outcomes):
     report_directory = Path(
-        os.environ.get("DOTFILES_TEST_REPORT_DIRECTORY", REPOSITORY / ".quality-results")
+        os.environ.get(
+            "DOTFILES_TEST_REPORT_DIRECTORY", REPOSITORY / ".quality-results"
+        )
     )
     report_directory.mkdir(parents=True, exist_ok=True)
     (report_directory / "swift-junit.xml").write_text(swift_junit_xml(outcomes) + "\n")
@@ -117,7 +118,6 @@ def collect_coverage(output_directory):
     output_directory.mkdir(parents=True, exist_ok=True)
     suites = [
         (SWITCHER, "main.swift", "swift-sources/__tests__", ()),
-        (LAUNCHER, "daemon-entry-point.swift", "swift-sources/__tests__", ()),
         (AMBIENT, "ambient-canvas-player-main.swift", "__tests__/unit", ()),
         (AMBIENT, "ambient-canvas-player-main.swift", "__tests__/integration", (1, 2)),
     ]

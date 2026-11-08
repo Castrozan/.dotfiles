@@ -4,7 +4,7 @@ from pathlib import Path
 from command_runner import run_command_capturing_stdout
 
 KARABINER_HEALTH_FILE_PATH = Path("/tmp/karabiner-health.json")
-INPUT_DAEMON_NAMES = ["workspace-window-switcher-daemon", "application-launcher-daemon"]
+INPUT_DAEMON_NAMES = ["workspace-window-switcher-daemon"]
 KARABINER_HEALTH_FIELD_TO_METRIC = {
     "kick_count_total": "karabiner_kick_count_total",
     "karabiner_cli_ipc_probe_failure_count_total": "karabiner_ipc_probe_failure_count_total",

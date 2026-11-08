@@ -34,7 +34,7 @@
     ../desktop/appearance/theming/theming-home-manager.nix
     ../desktop/applications/installation/darwin-application-links-home-manager.nix
     ../desktop/hammerspoon/hammerspoon-home-manager.nix
-    ../desktop/applications/launcher/application-launcher-home-manager.nix
+    ../desktop/applications/launcher/vicinae-home-manager.nix
     ../desktop/appearance/screensaver/screensaver-home-manager.nix
     ../browsers/brave/brave-profile-preferences-home-manager.nix
     ../browsers/chrome/chrome-profile-launchers-home-manager.nix

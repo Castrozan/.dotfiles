@@ -251,7 +251,7 @@ playlist's, because the record pass is incremental: see Refresh.
   is `ambient-canvas-gpu-screensaver` so the Hammerspoon pin to workspace 11 is unchanged; it is a
   titled window with a hidden transparent titlebar so the title stays readable via accessibility.
   `compile-player.sh` builds it with the system `/usr/bin/swiftc` during home-manager activation,
-  stamped so it only recompiles when the sources change, mirroring the application-launcher daemon.
+  stamped so it only recompiles when the sources change.
 
 - `scripts/ambient_canvas_media/` holds the Python: `ambient_canvas_browser` (shared record browser
   and geometry resolution), `recorded_loop_capture_target` (one display read resolved into the

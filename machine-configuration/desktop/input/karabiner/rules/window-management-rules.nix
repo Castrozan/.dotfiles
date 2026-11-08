@@ -1,10 +1,11 @@
 _:
 let
   hammerspoonCommandLineBinaryPath = "/opt/homebrew/bin/hs";
+  vicinaeToggleChord = import ../../../applications/launcher/vicinae-toggle-chord.nix;
 in
 [
   {
-    description = "Cmd+Q sends show to application-launcher daemon (send_user_command, no fork+exec)";
+    description = "Cmd+Q toggles Vicinae through its global shortcut (no fork+exec)";
     manipulators = [
       {
         type = "basic";
@@ -12,14 +13,7 @@ in
           key_code = "q";
           modifiers.mandatory = [ "command" ];
         };
-        to = [
-          {
-            send_user_command = {
-              endpoint = "/tmp/application-launcher.sock";
-              payload = "show";
-            };
-          }
-        ];
+        to = [ vicinaeToggleChord.karabinerOutput ];
       }
     ];
   }

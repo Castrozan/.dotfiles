@@ -143,6 +143,7 @@
       "itsycal"
       "maccy"
       "obsidian"
+      "vicinae"
       "visual-studio-code"
       "wezterm"
     ];
