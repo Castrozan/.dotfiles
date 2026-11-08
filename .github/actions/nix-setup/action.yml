@@ -20,7 +20,7 @@ runs:
 
     - name: Stub the private arr-stack input
       shell: bash
-      run: printf 'ARR_STACK_STUB_OVERRIDE=--override-input dependencies/arr-stack path:%s/repository/verification/arr-stack-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+      run: printf 'ARR_STACK_STUB_OVERRIDE=--override-input dependencies/arr-stack path:%s/repository/verification/nix-checks/arr-stack-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
     - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
       with:
