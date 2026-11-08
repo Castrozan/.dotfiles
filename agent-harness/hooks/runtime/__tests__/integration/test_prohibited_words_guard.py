@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 
 def parse_system_message(stdout: str) -> str:
     return json.loads(stdout).get("systemMessage", "")
@@ -44,6 +46,7 @@ class TestFileContentsAndNames:
             }
         )
         assert result.returncode == 0
+        assert "acme" in parse_system_message(result.stdout).lower()
 
     def test_allows_edit_that_removes_the_word(
         self, invoke_prohibited_words_guard_hook
@@ -72,6 +75,7 @@ class TestFileContentsAndNames:
             }
         )
         assert result.returncode == 0
+        assert result.stdout == ""
 
 
 class TestPrivateConfigExemption:
@@ -88,6 +92,7 @@ class TestPrivateConfigExemption:
             }
         )
         assert result.returncode == 0
+        assert result.stdout == ""
 
 
 class TestPublishingCommands:
@@ -101,30 +106,26 @@ class TestPublishingCommands:
             }
         )
         assert result.returncode == 0
+        assert "acme" in parse_system_message(result.stdout).lower()
 
-    def test_allows_word_in_non_publishing_command(
-        self, invoke_prohibited_words_guard_hook
+    @pytest.mark.parametrize(
+        "command",
+        [
+            pytest.param("grep -rn acme .", id="non_publishing_command"),
+            pytest.param(
+                'git -C private-configuration commit -m "acme rename"',
+                id="commit_scoped_to_private_config",
+            ),
+        ],
+    )
+    def test_allows_word_outside_public_publishing(
+        self, invoke_prohibited_words_guard_hook, command
     ):
         result = invoke_prohibited_words_guard_hook(
-            {
-                "tool_name": "Bash",
-                "tool_input": {"command": "grep -rn acme ."},
-            }
+            {"tool_name": "Bash", "tool_input": {"command": command}}
         )
         assert result.returncode == 0
-
-    def test_allows_commit_scoped_to_private_config(
-        self, invoke_prohibited_words_guard_hook
-    ):
-        result = invoke_prohibited_words_guard_hook(
-            {
-                "tool_name": "Bash",
-                "tool_input": {
-                    "command": 'git -C private-configuration commit -m "acme rename"'
-                },
-            }
-        )
-        assert result.returncode == 0
+        assert result.stdout == ""
 
 
 class TestMachineAllowedWords:
@@ -142,6 +143,7 @@ class TestMachineAllowedWords:
             }
         )
         assert result.returncode == 0
+        assert result.stdout == ""
 
     def test_still_blocks_other_words_when_one_is_allowed(
         self, invoke_prohibited_words_guard_hook, monkeypatch
@@ -174,3 +176,4 @@ class TestWordlistAbsent:
             }
         )
         assert result.returncode == 0
+        assert result.stdout == ""
