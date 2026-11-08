@@ -44,6 +44,10 @@ which keeps the card for investigation. Show Lucas the `orchestrator decision sh
 block in your reply, because that output is his decision template and a fence sits outside the reply's word and table
 limits. Never put a card in a question tool or its preview: the dialog refuses long previews and can hide your reply.
 
+Lucas reads only your latest turn end and never scrolls back. So every turn that mentions a decision still open
+carries its card again, fenced, even after a side question. Never refer to an option by a number or name from an earlier
+message.
+
 End the turn on one line naming the options, and take his typed answer. When he asks for more, print the part he needs
 from the card's details file in a fence. Batch the escalations open at once into one reply and record his answer `--by
 human`. When Lucas countermands anything done under a decision, record it with `orchestrator decision override` so the

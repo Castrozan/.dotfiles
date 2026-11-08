@@ -84,3 +84,17 @@ casos:
       juiz:
         - Sends Voyager a status check now that asks for the card or report it owes and whether its background command is
           still alive, instead of only reading the pane or waiting for the evaluation to finish.
+  - nome: orchestrator_repeats_the_open_card_when_it_mentions_it
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
+    pergunta:
+      You escalated card D-1 to Lucas two turns ago. `orchestrator decision show D-1` printed "Voyager needs a decision
+      on the speech gate. The options are rules, a local file with no new process that scored 32 of 39; hosted, a remote
+      API at 345 ms where text leaves the machine. It recommends rules." Lucas then asked an unrelated build question,
+      which is now answered. Write the closing message of this turn. D-1 is still open.
+    assercoes:
+      juiz:
+        - Prints the D-1 card again inside a fenced code block so both options and what separates them are readable in this
+          message, and asks Lucas to choose; it does not merely say his pick is still needed.

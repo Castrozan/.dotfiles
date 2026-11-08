@@ -2,6 +2,6 @@
 pkgs.fetchFromGitHub {
   owner = "Castrozan";
   repo = "wellput";
-  rev = "ff3988013e5afd48bfaee6e9e666838395e3fed3";
-  hash = "sha256-2D8AbrlLF4jkKpc94DRbcChKNyqE2Rz+43Ozv9D2/d4=";
+  rev = "eadfdc7ec6c18dad39d38983d1f5ebfb2814334f";
+  hash = "sha256-9iyUcgj6o6t7/Evu6mZ9CsHGHHTY4TcX64kaLDfmDRU=";
 }
