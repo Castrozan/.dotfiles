@@ -58,9 +58,8 @@ supersede <id>` when it contradicts an active directive, citing the card id as i
 
 Close each event with `orchestrator learn resolve <card> --outcome added|superseded --directive <id> --reason <the
 inferred preference>`, or with `--outcome no-change --reason <why>`; a flagged commit that is not Lucas's correction
-closes as no-change. Commit `USER.md` in `private-configuration` on top of its freshly fetched `origin/main` and push it
-fast-forward, because that checkout sits detached at its pinned commit. When `orchestrator learn stats` shows one
-escalation reason recurring, name the missing directive in your next round so Lucas can settle it once.
+closes as no-change. When `orchestrator learn stats` shows one escalation reason recurring, name the missing directive
+in your next round so Lucas can settle it once.
 
 ### Round status template
 
