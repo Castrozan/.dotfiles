@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "header": {
     "project": "dotfiles-agent-instructions",
-    "generatedAt": "2026-11-08T01:04:57.898Z",
-    "commit": "cc9ceda15de4af8ebfb8be03213ad3cc53d94860",
+    "generatedAt": "2026-11-08T06:16:34.427Z",
+    "commit": "8fdafc2831a7869163ed039c12c991ef50ac4ac8",
     "profile": {
       "subject": {
         "client": "codex",
@@ -16,66 +16,61 @@
         "effort": "high"
       }
     },
-    "status": "failed",
+    "status": "approved",
     "rate": {
-      "value": 0.9001919385796545,
-      "lower": 0.8714521615635992,
-      "upper": 0.9230734861186337,
-      "passes": 469,
-      "samples": 521
+      "value": 0.9262759924385633,
+      "lower": 0.9008027040434573,
+      "upper": 0.9456029059820296,
+      "passes": 490,
+      "samples": 529
     },
-    "previousRate": 0.9001919385796545,
+    "previousRate": 0.9095840867992767,
     "passAtK": [
       {
         "k": 1,
-        "value": 0.9139676113360324,
-        "cases": 247
+        "value": 0.9236111111111112,
+        "cases": 252
       },
       {
         "k": 3,
-        "value": 0.75,
-        "cases": 17
+        "value": 1,
+        "cases": 16
       }
     ],
     "noise": {
-      "floor": 0.04381079543383235,
-      "headroom": 0.09980806142034548,
+      "floor": 0.043478260869565216,
+      "headroom": 0.07372400756143671,
       "headroomExceedsNoise": true
     },
     "measured": {
       "partial": true,
-      "measuredCases": 55,
-      "inheritedCases": 192,
-      "totalCases": 247,
-      "categories": [],
+      "measuredCases": 27,
+      "inheritedCases": 225,
+      "totalCases": 252,
+      "categories": [
+        "end_to_end_workflows"
+      ],
       "caseFilters": [],
-      "affected": true
+      "affected": false
     },
     "levels": [
       {
-        "level": "unit",
-        "cases": 40,
-        "samples": 80,
-        "costUsd": 0,
-        "durationSeconds": 873.4650000000001
-      },
-      {
         "level": "end-to-end",
-        "cases": 15,
-        "samples": 30,
+        "cases": 27,
+        "samples": 54,
         "costUsd": 0,
-        "durationSeconds": 1275.7050000000002
+        "durationSeconds": 1952.000999999999
       }
     ],
     "coverage": [
       {
         "kind": "cli",
-        "total": 242,
+        "total": 244,
         "covered": 1
       },
       {
         "kind": "instruction",
-        "total": 53,
+        "total": 54,
         "covered": 41
       }
     ],
@@ -98,13 +93,7 @@
       "isolated": true,
       "leakedSkills": []
     },
-    "reasons": [
-      {
-        "code": "piso-critico",
-        "category": "core_rules",
-        "message": "Categoria crítica \"core_rules\" com 83,3%, abaixo do piso de 85,0%."
-      }
-    ],
+    "reasons": [],
     "notices": [],
     "regression": {
       "fell": [],
@@ -460,7 +449,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -472,7 +461,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 23.255
+              "durationSeconds": 0
             }
           ]
         },
@@ -933,8 +922,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -945,7 +934,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 11.209
+              "durationSeconds": 0
             },
             {
               "key": "context_management/context_budget_loads_only_material_information",
@@ -955,8 +944,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -967,7 +956,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 20.085
+              "durationSeconds": 0
             },
             {
               "key": "context_management/context_budget_persists_resume_state",
@@ -977,8 +966,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -989,7 +978,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 17.774
+              "durationSeconds": 0
             },
             {
               "key": "context_management/context_budget_uses_bounded_summaries",
@@ -999,8 +988,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1011,7 +1000,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 29.057
+              "durationSeconds": 0
             }
           ]
         }
@@ -1019,17 +1008,17 @@
     },
     {
       "name": "core_rules",
-      "samples": 24,
-      "passes": 21,
-      "rate": 0.875,
+      "samples": 38,
+      "passes": 37,
+      "rate": 0.9736842105263158,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/core-rules/core.md",
           "name": "core_rules",
           "kind": null,
-          "samples": 12,
-          "passes": 9,
-          "rate": 0.75,
+          "samples": 14,
+          "passes": 13,
+          "rate": 0.9285714285714286,
           "cases": [
             {
               "key": "core_rules/asks_only_for_material_unresolved_fork",
@@ -1039,8 +1028,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1051,7 +1040,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 31.468
+              "durationSeconds": 0
             },
             {
               "key": "core_rules/defend_or_retract_with_evidence",
@@ -1061,8 +1050,118 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "core_rules/keeps_a_small_coupled_edit_with_the_lead",
+              "category": "core_rules",
+              "name": "keeps_a_small_coupled_edit_with_the_lead",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "core_rules/local_information_first",
+              "category": "core_rules",
+              "name": "local_information_first",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "core_rules/no_sycophantic_agreement_under_challenge",
+              "category": "core_rules",
+              "name": "no_sycophantic_agreement_under_challenge",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "core_rules/open_ended_input_space_gets_a_property_test",
+              "category": "core_rules",
+              "name": "open_ended_input_space_gets_a_property_test",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "core_rules/swarms_disjoint_script_checkable_edits",
+              "category": "core_rules",
+              "name": "swarms_disjoint_script_checkable_edits",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 1,
               "rate": 0.5,
@@ -1073,95 +1172,7 @@
               "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 12.492
-            },
-            {
-              "key": "core_rules/keeps_a_small_coupled_edit_with_the_lead",
-              "category": "core_rules",
-              "name": "keeps_a_small_coupled_edit_with_the_lead",
-              "level": "unit",
-              "type": "instruction",
-              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
-              "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
-              "samples": 2,
-              "passes": 1,
-              "rate": 0.5,
-              "outcomes": [
-                true,
-                false
-              ],
-              "flaky": true,
-              "status": "passed",
-              "costUsd": 0,
-              "durationSeconds": 10.649
-            },
-            {
-              "key": "core_rules/local_information_first",
-              "category": "core_rules",
-              "name": "local_information_first",
-              "level": "unit",
-              "type": "instruction",
-              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
-              "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
-              "samples": 2,
-              "passes": 2,
-              "rate": 1,
-              "outcomes": [
-                true,
-                true
-              ],
-              "flaky": false,
-              "status": "passed",
-              "costUsd": 0,
-              "durationSeconds": 10.183
-            },
-            {
-              "key": "core_rules/no_sycophantic_agreement_under_challenge",
-              "category": "core_rules",
-              "name": "no_sycophantic_agreement_under_challenge",
-              "level": "unit",
-              "type": "instruction",
-              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
-              "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
-              "samples": 2,
-              "passes": 2,
-              "rate": 1,
-              "outcomes": [
-                true,
-                true
-              ],
-              "flaky": false,
-              "status": "passed",
-              "costUsd": 0,
-              "durationSeconds": 10.725
-            },
-            {
-              "key": "core_rules/swarms_disjoint_script_checkable_edits",
-              "category": "core_rules",
-              "name": "swarms_disjoint_script_checkable_edits",
-              "level": "unit",
-              "type": "instruction",
-              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
-              "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
-              "samples": 2,
-              "passes": 1,
-              "rate": 0.5,
-              "outcomes": [
-                true,
-                false
-              ],
-              "flaky": true,
-              "status": "passed",
-              "costUsd": 0,
-              "durationSeconds": 32.391
+              "durationSeconds": 0
             }
           ]
         },
@@ -1169,8 +1180,8 @@
           "path": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
           "name": "core_rules",
           "kind": null,
-          "samples": 2,
-          "passes": 2,
+          "samples": 4,
+          "passes": 4,
           "rate": 1,
           "cases": [
             {
@@ -1182,11 +1193,13 @@
               "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-08T00:05:56.145Z",
-              "samples": 2,
-              "passes": 2,
+              "measuredAt": "2026-11-08T02:08:18.497Z",
+              "samples": 4,
+              "passes": 4,
               "rate": 1,
               "outcomes": [
+                true,
+                true,
                 true,
                 true
               ],
@@ -1201,8 +1214,8 @@
           "path": "agent-harness/agent-instructions/skills/development/coding/references/git.md",
           "name": "core_rules",
           "kind": null,
-          "samples": 2,
-          "passes": 2,
+          "samples": 4,
+          "passes": 4,
           "rate": 1,
           "cases": [
             {
@@ -1214,11 +1227,13 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/references/git.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
-              "samples": 2,
-              "passes": 2,
+              "measuredAt": "2026-11-08T02:08:18.497Z",
+              "samples": 4,
+              "passes": 4,
               "rate": 1,
               "outcomes": [
+                true,
+                true,
                 true,
                 true
               ],
@@ -1233,8 +1248,8 @@
           "path": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
           "name": "core_rules",
           "kind": null,
-          "samples": 8,
-          "passes": 8,
+          "samples": 16,
+          "passes": 16,
           "rate": 1,
           "cases": [
             {
@@ -1246,11 +1261,13 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
-              "samples": 2,
-              "passes": 2,
+              "measuredAt": "2026-11-08T02:08:18.497Z",
+              "samples": 4,
+              "passes": 4,
               "rate": 1,
               "outcomes": [
+                true,
+                true,
                 true,
                 true
               ],
@@ -1268,11 +1285,13 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
-              "samples": 2,
-              "passes": 2,
+              "measuredAt": "2026-11-08T02:08:18.497Z",
+              "samples": 4,
+              "passes": 4,
               "rate": 1,
               "outcomes": [
+                true,
+                true,
                 true,
                 true
               ],
@@ -1290,11 +1309,13 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
-              "samples": 2,
-              "passes": 2,
+              "measuredAt": "2026-11-08T02:08:18.497Z",
+              "samples": 4,
+              "passes": 4,
               "rate": 1,
               "outcomes": [
+                true,
+                true,
                 true,
                 true
               ],
@@ -1312,11 +1333,13 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
-              "samples": 2,
-              "passes": 2,
+              "measuredAt": "2026-11-08T02:08:18.497Z",
+              "samples": 4,
+              "passes": 4,
               "rate": 1,
               "outcomes": [
+                true,
+                true,
                 true,
                 true
               ],
@@ -1351,8 +1374,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1363,7 +1386,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 15.202
+              "durationSeconds": 0
             },
             {
               "key": "delegation/delegation_keeps_subtle_design_with_owner",
@@ -1373,8 +1396,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1385,7 +1408,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 22.815
+              "durationSeconds": 0
             },
             {
               "key": "delegation/delegation_owner_synthesizes_results",
@@ -1395,8 +1418,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1407,7 +1430,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 20.544
+              "durationSeconds": 0
             },
             {
               "key": "delegation/delegation_parallelizes_independent_breadth",
@@ -1417,8 +1440,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1429,7 +1452,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 21.541
+              "durationSeconds": 0
             },
             {
               "key": "delegation/delegation_parallelizes_independent_coverage",
@@ -1439,8 +1462,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1451,7 +1474,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 25.792
+              "durationSeconds": 0
             },
             {
               "key": "delegation/delegation_result_is_evidence_not_authority",
@@ -1461,8 +1484,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1473,7 +1496,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 11.879
+              "durationSeconds": 0
             },
             {
               "key": "delegation/delegation_single_lookup_needs_no_fanout",
@@ -1483,8 +1506,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1495,7 +1518,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.145
+              "durationSeconds": 0
             }
           ]
         },
@@ -1535,9 +1558,9 @@
     },
     {
       "name": "end_to_end_workflows",
-      "samples": 78,
-      "passes": 56,
-      "rate": 0.717948717948718,
+      "samples": 54,
+      "passes": 43,
+      "rate": 0.7962962962962963,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
@@ -1556,7 +1579,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1567,7 +1590,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 66.339
+              "durationSeconds": 68.268
             },
             {
               "key": "end_to_end_workflows/skill_discovery_coding_for_commit",
@@ -1578,7 +1601,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1589,7 +1612,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 58.611
+              "durationSeconds": 53.349
             },
             {
               "key": "end_to_end_workflows/skill_discovery_coding_for_worktrees",
@@ -1600,7 +1623,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1611,7 +1634,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 73.358
+              "durationSeconds": 60.901
             },
             {
               "key": "end_to_end_workflows/skill_discovery_multiple_skills_in_workflow",
@@ -1622,7 +1645,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1633,7 +1656,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 84.911
+              "durationSeconds": 86.043
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_calculator_divide_zero",
@@ -1644,7 +1667,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 0,
               "rate": 0,
@@ -1655,7 +1678,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 76.249
+              "durationSeconds": 78.081
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_commit_these_changes",
@@ -1666,7 +1689,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1677,7 +1700,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 42.206
+              "durationSeconds": 37.36
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_parallel_branch",
@@ -1688,7 +1711,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1699,7 +1722,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 64.47
+              "durationSeconds": 59.635
             }
           ]
         },
@@ -1720,7 +1743,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1731,7 +1754,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 44.608
+              "durationSeconds": 46.61
             },
             {
               "key": "end_to_end_workflows/skill_discovery_review_for_tldr",
@@ -1742,7 +1765,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1753,7 +1776,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 57.335
+              "durationSeconds": 52.321
             }
           ]
         },
@@ -1762,8 +1785,8 @@
           "name": "research",
           "kind": "instruction",
           "samples": 2,
-          "passes": 1,
-          "rate": 0.5,
+          "passes": 2,
+          "rate": 1,
           "cases": [
             {
               "key": "end_to_end_workflows/skill_discovery_research_for_external_info",
@@ -1774,18 +1797,18 @@
               "instruction": "agent-harness/agent-instructions/skills/knowledge/research/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
-              "passes": 1,
-              "rate": 0.5,
+              "passes": 2,
+              "rate": 1,
               "outcomes": [
                 true,
-                false
+                true
               ],
-              "flaky": true,
+              "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 255.013
+              "durationSeconds": 275.082
             }
           ]
         },
@@ -1806,7 +1829,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1817,7 +1840,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 83.418
+              "durationSeconds": 124.54
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_nix_postgres_crashing",
@@ -1828,7 +1851,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1839,7 +1862,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 135.604
+              "durationSeconds": 134.3
             },
             {
               "key": "end_to_end_workflows/skill_discovery_nix_for_container",
@@ -1850,7 +1873,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1861,7 +1884,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 85.747
+              "durationSeconds": 67.471
             },
             {
               "key": "end_to_end_workflows/skill_discovery_nix_for_rebuild",
@@ -1872,7 +1895,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1883,7 +1906,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 69.444
+              "durationSeconds": 71.795
             }
           ]
         },
@@ -1904,7 +1927,7 @@
               "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "measuredAt": "2026-11-08T06:16:34.427Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1915,7 +1938,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 78.392
+              "durationSeconds": 96.019
             }
           ]
         },
@@ -1923,9 +1946,9 @@
           "path": null,
           "name": "end_to_end_workflows",
           "kind": null,
-          "samples": 48,
-          "passes": 29,
-          "rate": 0.6041666666666666,
+          "samples": 24,
+          "passes": 15,
+          "rate": 0.625,
           "cases": [
             {
               "key": "end_to_end_workflows/breaking_change_removes_old_function",
@@ -1934,21 +1957,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 2,
               "rate": 1,
               "outcomes": [
-                true,
-                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 54.553
             },
             {
               "key": "end_to_end_workflows/formatting_runs_after_python_edit",
@@ -1957,21 +1978,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 2,
               "rate": 1,
               "outcomes": [
-                true,
-                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 36.141
             },
             {
               "key": "end_to_end_workflows/git_stages_specific_files_not_all",
@@ -1980,21 +1999,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 2,
               "rate": 1,
               "outcomes": [
-                true,
-                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 45.601
             },
             {
               "key": "end_to_end_workflows/global_rules_apply_alongside_project_claude_md",
@@ -2003,21 +2020,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 1,
-              "rate": 0.25,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 0,
+              "rate": 0,
               "outcomes": [
-                true,
-                false,
                 false,
                 false
               ],
-              "flaky": true,
+              "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 111.75
             },
             {
               "key": "end_to_end_workflows/investigation_traces_full_call_chain",
@@ -2026,21 +2041,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 0,
-              "rate": 0,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 1,
+              "rate": 0.5,
               "outcomes": [
                 false,
-                false,
-                false,
-                false
+                true
               ],
-              "flaky": false,
-              "status": "failed",
+              "flaky": true,
+              "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 41.218
             },
             {
               "key": "end_to_end_workflows/local_information_before_external_fetch",
@@ -2049,21 +2062,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 2,
               "rate": 1,
               "outcomes": [
-                true,
-                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 30.119
             },
             {
               "key": "end_to_end_workflows/multi_file_edit_with_specific_git_staging",
@@ -2072,21 +2083,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 2,
               "rate": 1,
               "outcomes": [
-                true,
-                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 45.848
             },
             {
               "key": "end_to_end_workflows/naming_uses_descriptive_names_no_abbreviations",
@@ -2095,21 +2104,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
               "passes": 0,
               "rate": 0,
               "outcomes": [
-                false,
-                false,
                 false,
                 false
               ],
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 38.775
             },
             {
               "key": "end_to_end_workflows/python_over_bash_for_data_processing",
@@ -2118,21 +2125,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 2,
               "rate": 1,
               "outcomes": [
-                true,
-                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 48.939
             },
             {
               "key": "end_to_end_workflows/srp_splits_monolithic_function",
@@ -2141,21 +2146,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
               "passes": 0,
               "rate": 0,
               "outcomes": [
-                false,
-                false,
                 false,
                 false
               ],
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 88.793
             },
             {
               "key": "end_to_end_workflows/test_first_when_bug_reported",
@@ -2164,21 +2167,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
-              "passes": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
+              "passes": 2,
               "rate": 1,
               "outcomes": [
-                true,
-                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 53.12
             },
             {
               "key": "end_to_end_workflows/workflow_full_edit_sequence",
@@ -2187,21 +2188,19 @@
               "level": "end-to-end",
               "type": "instruction",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
-              "samples": 4,
+              "inherited": false,
+              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "samples": 2,
               "passes": 0,
               "rate": 0,
               "outcomes": [
-                false,
-                false,
                 false,
                 false
               ],
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 45.369
             }
           ]
         }
@@ -2287,8 +2286,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2299,7 +2298,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 11.764
+              "durationSeconds": 0
             }
           ]
         },
@@ -2428,7 +2427,7 @@
               "instruction": "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2492,7 +2491,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/references/testing.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2718,8 +2717,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2730,7 +2729,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 17.87
+              "durationSeconds": 0
             },
             {
               "key": "investigation/investigation_depth_matches_stakes",
@@ -2740,8 +2739,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2752,7 +2751,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 42.409
+              "durationSeconds": 0
             },
             {
               "key": "investigation/investigation_keeps_plan_provisional",
@@ -2762,8 +2761,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2774,7 +2773,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 13.528
+              "durationSeconds": 0
             },
             {
               "key": "investigation/investigation_traces_to_instructions",
@@ -2784,8 +2783,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2796,7 +2795,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 61.571
+              "durationSeconds": 0
             },
             {
               "key": "investigation/never_analyze_in_isolation",
@@ -2806,8 +2805,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2818,7 +2817,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 40.764
+              "durationSeconds": 0
             },
             {
               "key": "investigation/why_question_triggers_investigation",
@@ -2828,8 +2827,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2840,7 +2839,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 19.406
+              "durationSeconds": 0
             },
             {
               "key": "investigation/why_two_files_requires_reading_both",
@@ -2850,8 +2849,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:36:36.959Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2862,7 +2861,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 28.27
+              "durationSeconds": 0
             }
           ]
         }
@@ -4719,7 +4718,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -4731,7 +4730,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 20.883
+              "durationSeconds": 0
             }
           ]
         }
@@ -4865,7 +4864,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -4877,7 +4876,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 25.695
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/git/commit_reads_diff_first",
@@ -4887,7 +4886,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -4899,7 +4898,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 13.504
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/git/commit_uses_specific_staging",
@@ -4909,7 +4908,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 0,
@@ -4921,7 +4920,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 21.215
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/git/git_history_cache_invalidation",
@@ -4931,7 +4930,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 0,
@@ -4943,7 +4942,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 36.503
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/git/git_history_file_paths_are_high_signal",
@@ -4953,7 +4952,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -4965,7 +4964,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 14.088
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/git/git_history_knows_when_not_to_use",
@@ -4975,7 +4974,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -4987,7 +4986,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 21.845
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/git/git_history_never_uses_repeated_grep",
@@ -4997,7 +4996,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -5009,7 +5008,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 42.267
+              "durationSeconds": 0
             }
           ]
         }
@@ -5017,17 +5016,17 @@
     },
     {
       "name": "skills/coding/testing",
-      "samples": 6,
-      "passes": 5,
-      "rate": 0.8333333333333334,
+      "samples": 20,
+      "passes": 19,
+      "rate": 0.95,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
           "name": "coding",
           "kind": "instruction",
-          "samples": 6,
-          "passes": 5,
-          "rate": 0.8333333333333334,
+          "samples": 20,
+          "passes": 19,
+          "rate": 0.95,
           "cases": [
             {
               "key": "skills/coding/testing/test_behavioral_evidence_does_not_prove_root_cause",
@@ -5037,19 +5036,21 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
-              "samples": 2,
-              "passes": 2,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:15:49.300Z",
+              "samples": 4,
+              "passes": 4,
               "rate": 1,
               "outcomes": [
+                true,
+                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 15.951
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/testing/test_first_before_fix",
@@ -5059,19 +5060,69 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
-              "samples": 2,
-              "passes": 2,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:15:49.300Z",
+              "samples": 4,
+              "passes": 4,
               "rate": 1,
               "outcomes": [
+                true,
+                true,
                 true,
                 true
               ],
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 15.372
+              "durationSeconds": 0
+            },
+            {
+              "key": "skills/coding/testing/test_sampled_property_does_not_replace_hand_written_cases",
+              "category": "skills/coding/testing",
+              "name": "test_sampled_property_does_not_replace_hand_written_cases",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:15:49.300Z",
+              "samples": 4,
+              "passes": 4,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "skills/coding/testing/test_small_finite_input_space_is_checked_exhaustively",
+              "category": "skills/coding/testing",
+              "name": "test_small_finite_input_space_is_checked_exhaustively",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:15:49.300Z",
+              "samples": 4,
+              "passes": 4,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true,
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/testing/test_verification_scales_to_relevant_evidence",
@@ -5081,19 +5132,21 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
-              "measuredAt": "2026-11-08T01:04:57.898Z",
-              "samples": 2,
-              "passes": 1,
-              "rate": 0.5,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:15:49.300Z",
+              "samples": 4,
+              "passes": 3,
+              "rate": 0.75,
               "outcomes": [
+                false,
                 true,
-                false
+                true,
+                true
               ],
               "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 22.701
+              "durationSeconds": 0
             }
           ]
         }
@@ -5121,7 +5174,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -5133,7 +5186,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 13.001
+              "durationSeconds": 0
             },
             {
               "key": "skills/coding/worktrees/worktrees_pr_from_main_directory",
@@ -5143,7 +5196,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 0,
@@ -5155,7 +5208,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 18.147
+              "durationSeconds": 0
             }
           ]
         }
@@ -5569,6 +5622,68 @@
               "heldOut": false,
               "inherited": true,
               "measuredAt": "2026-11-07T23:42:21.715Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skills/orchestrate/decisions",
+      "samples": 4,
+      "passes": 4,
+      "rate": 1,
+      "groups": [
+        {
+          "path": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+          "name": "orchestrate",
+          "kind": "instruction",
+          "samples": 4,
+          "passes": 4,
+          "rate": 1,
+          "cases": [
+            {
+              "key": "skills/orchestrate/decisions/orchestrator_decides_covered_cards_and_escalates_human_only",
+              "category": "skills/orchestrate/decisions",
+              "name": "orchestrator_decides_covered_cards_and_escalates_human_only",
+              "level": "end-to-end",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:38:28.840Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "skills/orchestrate/decisions/orchestrator_turns_an_override_into_a_cited_directive",
+              "category": "skills/orchestrate/decisions",
+              "name": "orchestrator_turns_an_override_into_a_cited_directive",
+              "level": "end-to-end",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T02:38:28.840Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -6133,7 +6248,7 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
@@ -6145,7 +6260,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 20.505
+              "durationSeconds": 0
             }
           ]
         },
@@ -6230,24 +6345,15 @@
       "name": "global_rules_apply_alongside_project_claude_md",
       "level": "end-to-end",
       "heldOut": false,
-      "inherited": true,
-      "passes": 1,
-      "samples": 4,
-      "expected": [],
-      "failedAssertions": [],
-      "failingSince": "2026-11-08T00:44:26.506Z"
-    },
-    {
-      "key": "end_to_end_workflows/investigation_traces_full_call_chain",
-      "category": "end_to_end_workflows",
-      "name": "investigation_traces_full_call_chain",
-      "level": "end-to-end",
-      "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 0,
-      "samples": 4,
+      "samples": 2,
+      "input": "Add a get_user endpoint to src/endpoints.py that accepts a user_id\nparameter and returns a user dict. Import from src/models.\n",
       "expected": [],
-      "failedAssertions": [],
+      "actualOutput": "Added `get_user(user_id: int)` in `src/endpoints.py`, exposed as `GET /users/{user_id}`. It imports `User` from `src.models` and returns a JSON-compatible dict with `id`, `name`, and `email`.\n\nData is generated from the ID because no user store exists. Validation passed: 2 pytest/httpx tests.\n",
+      "failedAssertions": [
+        "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios src/endpoints.py\" saiu com código 1: FALHA src/endpoints.py has no comments: found: ['docstring on line 15']"
+      ],
       "failingSince": "2026-11-08T00:44:26.506Z"
     },
     {
@@ -6256,11 +6362,15 @@
       "name": "naming_uses_descriptive_names_no_abbreviations",
       "level": "end-to-end",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 0,
-      "samples": 4,
+      "samples": 2,
+      "input": "Add a function to src/app.py that takes a list of user dictionaries\n(each with name, email, age) and returns only users older than 18\nwhose email address contains an at sign.\n",
       "expected": [],
-      "failedAssertions": [],
+      "actualOutput": "Added `filter_users(users)` in [src/app.py](/tmp/agent-evals-promptfoo-Q5luks/scratch/agent-evals-session-1LMsBu/src/app.py:1). It returns users with `age > 18` and `@` in their email.\n\nVerified age boundaries, emails without `@`, and empty input.",
+      "failedAssertions": [
+        "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios src/app.py\" saiu com código 1: FALHA src/app.py has no comments: found: ['docstring on line 2']"
+      ],
       "failingSince": "2026-11-08T00:44:26.506Z"
     },
     {
@@ -6274,7 +6384,7 @@
       "samples": 2,
       "input": "There's a bug in calculator.py where divide crashes on zero. Fix it.\n",
       "expected": [],
-      "actualOutput": "Fixed `calculator.py`: `divide_numbers` now returns `None` when the denominator is zero.\n\nAdded regression coverage for integer and float zero denominators. Both tests pass.",
+      "actualOutput": "Fixed `calculator.py`: division by zero now returns `None`. Added regression coverage for integer and floating-point zero denominators.\n\nValidation: both tests in `test_calculator.py` pass.",
       "failedAssertions": [
         "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios calculator.py\" saiu com código 1: FALHA calculator.py has no comments: found: ['docstring on line 2']"
       ],
@@ -6286,11 +6396,15 @@
       "name": "srp_splits_monolithic_function",
       "level": "end-to-end",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 0,
-      "samples": 4,
+      "samples": 2,
+      "input": "Refactor src/order_processor.py. The process_order function does too\nmuch - validation, calculation, and confirmation building. Split it\ninto focused functions that each do one thing.\n",
       "expected": [],
-      "failedAssertions": [],
+      "actualOutput": "Refactored [src/order_processor.py](src/order_processor.py) into `validate_order`, `calculate_order_totals`, and `build_confirmation`. `process_order` now coordinates those steps.\n\nVerified unchanged results and errors across 10 regression cases. `git diff --check` passed.",
+      "failedAssertions": [
+        "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios src/order_processor.py\" saiu com código 1: FALHA src/order_processor.py has no comments: found: ['docstring on line 2', 'docstring on line 13', 'docstring on line 26', 'docstring on line 38']"
+      ],
       "failingSince": "2026-11-08T00:44:26.506Z"
     },
     {
@@ -6299,11 +6413,15 @@
       "name": "workflow_full_edit_sequence",
       "level": "end-to-end",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 0,
-      "samples": 4,
+      "samples": 2,
+      "input": "Add a farewell_message_for_user function to src/greeter.py that returns\n\"Goodbye, {name}!\". Follow the standard workflow after editing.\n",
       "expected": [],
-      "failedAssertions": [],
+      "actualOutput": "Added `farewell_message_for_user(name)` to `src/greeter.py`, returning `f\"Goodbye, {name}!\"`.\n\nFormatted with Ruff and verified both greeting functions. Committed as `46199c2`. Working tree is clean.",
+      "failedAssertions": [
+        "Comando \"git status --porcelain -- src/greeter.py\": nenhuma linha casou com /./."
+      ],
       "failingSince": "2026-11-08T00:44:26.506Z"
     },
     {
@@ -6338,17 +6456,11 @@
       "name": "commit_uses_specific_staging",
       "level": "unit",
       "heldOut": false,
-      "inherited": false,
+      "inherited": true,
       "passes": 0,
       "samples": 2,
-      "input": "Should I use git add -A to stage all my changes before committing?",
-      "expected": [
-        "The response advises against `git add -A` and `git add .`, instead directing the user to stage specific files by name/path so unrelated parallel work is not staged."
-      ],
-      "actualOutput": "Use `git add -A` only when you’ve reviewed **all changes in the repository** and want them in the same commit. It stages new files, modifications, and deletions.\n\nFor more control, stage specific files or selected changes:\n\n```bash\ngit add path/to/file\ngit add -p\n```\n\nBefore committing, review what’s staged:\n\n```bash\ngit diff --cached\n```",
-      "failedAssertions": [
-        "Juiz: reprovado para \"The response advises against `git add -A` and `git add .`, instead directing the user to stage specific files by name/path so unrelated parallel work is not staged.\"."
-      ],
+      "expected": [],
+      "failedAssertions": [],
       "failingSince": "2026-11-08T01:04:57.898Z"
     },
     {
@@ -6357,17 +6469,11 @@
       "name": "git_history_cache_invalidation",
       "level": "unit",
       "heldOut": false,
-      "inherited": false,
+      "inherited": true,
       "passes": 0,
       "samples": 2,
-      "input": "How do I know if the cached git history file is still up to date?",
-      "expected": [
-        "The response explains how to tell whether the cache is current, by running `git-history info` for cache status and/or noting that it auto-invalidates when HEAD changes or the file is older than one hour (refreshable with `--force`)."
-      ],
-      "actualOutput": "Check the Git commit IDs the cache was built from—not its file timestamp.\n\nFor a cache of the current branch, run:\n\n```bash\ngit rev-parse HEAD\n```\n\nCompare that SHA with the cache’s recorded source SHA. If they differ, refresh the cache.\n\nIf the cache covers multiple branches or tags, compare all included refs; an unchanged `HEAD` alone doesn’t prove freshness. Run `git fetch` first if you need to check against the latest remote history.\n\nIf the cache records no source SHAs, regenerating it is the reliable option. I couldn’t access the local guidance to verify this cache’s exact metadata format.",
-      "failedAssertions": [
-        "Juiz: reprovado para \"The response explains how to tell whether the cache is current, by running `git-history info` for cache status and/or noting that it auto-invalidates when HEAD changes or the file is older than one hour (refreshable with `--force`).\"."
-      ],
+      "expected": [],
+      "failedAssertions": [],
       "failingSince": "2026-11-08T01:04:57.898Z"
     },
     {
@@ -6376,17 +6482,11 @@
       "name": "worktrees_pr_from_main_directory",
       "level": "unit",
       "heldOut": false,
-      "inherited": false,
+      "inherited": true,
       "passes": 0,
       "samples": 2,
-      "input": "I finished my feature in a worktree. Where should I run the PR command?",
-      "expected": [
-        "The response states that the PR command should be run from the main repo directory rather than from inside the worktree."
-      ],
-      "actualOutput": "Run the PR command from your **feature worktree**, explicitly specifying the upstream repository and source branch. For GitHub:\n\n```bash\ncd <repo>/.worktrees/<feature-branch>\ngh pr create --repo OWNER/REPO --head <feature-branch> --base main\n```\n\nUse your intended target branch if it differs from `main`. Once the PR is pending review, return to the main workspace and rebuild; keep the worktree for follow-up changes.",
-      "failedAssertions": [
-        "Juiz: reprovado para \"The response states that the PR command should be run from the main repo directory rather than from inside the worktree.\"."
-      ],
+      "expected": [],
+      "failedAssertions": [],
       "failingSince": "2026-11-08T01:04:57.898Z"
     },
     {
@@ -6439,35 +6539,14 @@
       "samples": 2
     },
     {
-      "key": "core_rules/defend_or_retract_with_evidence",
-      "heldOut": false,
-      "inherited": false,
-      "passes": 1,
-      "samples": 2
-    },
-    {
-      "key": "core_rules/keeps_a_small_coupled_edit_with_the_lead",
-      "heldOut": false,
-      "inherited": false,
-      "passes": 1,
-      "samples": 2
-    },
-    {
       "key": "core_rules/swarms_disjoint_script_checkable_edits",
-      "heldOut": false,
-      "inherited": false,
-      "passes": 1,
-      "samples": 2
-    },
-    {
-      "key": "end_to_end_workflows/global_rules_apply_alongside_project_claude_md",
       "heldOut": false,
       "inherited": true,
       "passes": 1,
-      "samples": 4
+      "samples": 2
     },
     {
-      "key": "end_to_end_workflows/skill_discovery_research_for_external_info",
+      "key": "end_to_end_workflows/investigation_traces_full_call_chain",
       "heldOut": false,
       "inherited": false,
       "passes": 1,
@@ -6490,9 +6569,9 @@
     {
       "key": "skills/coding/testing/test_verification_scales_to_relevant_evidence",
       "heldOut": false,
-      "inherited": false,
-      "passes": 1,
-      "samples": 2
+      "inherited": true,
+      "passes": 3,
+      "samples": 4
     },
     {
       "key": "skills/ril/ril/ril_never_annotates_a_capture",
@@ -7242,6 +7321,12 @@
       "onlyPending": false
     },
     {
+      "kind": "instruction",
+      "path": "AGENTS.md",
+      "name": "AGENTS",
+      "onlyPending": false
+    },
+    {
       "kind": "cli",
       "path": "machine-configuration/audio/scripts/audio_output_switch.py",
       "name": "audio_output_switch",
@@ -7605,6 +7690,18 @@
       "kind": "cli",
       "path": "machine-configuration/media/avatar/scripts/audio_cli.py",
       "name": "audio_cli",
+      "onlyPending": false
+    },
+    {
+      "kind": "cli",
+      "path": "machine-configuration/media/avatar/scripts/audio_effects.py",
+      "name": "audio_effects",
+      "onlyPending": false
+    },
+    {
+      "kind": "cli",
+      "path": "machine-configuration/media/avatar/scripts/audio_ownership.py",
+      "name": "audio_ownership",
       "onlyPending": false
     },
     {

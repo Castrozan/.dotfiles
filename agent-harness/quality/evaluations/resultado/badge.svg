@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="206" height="20" role="img" aria-label="agent-evals: 90,0% reprovado">
-<title>agent-evals: 90,0% reprovado</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="199" height="20" role="img" aria-label="agent-evals: 92,6% aprovado">
+<title>agent-evals: 92,6% aprovado</title>
 <rect width="89" height="20" fill="#555"/>
-<rect x="89" width="117" height="20" fill="#cf222e"/>
+<rect x="89" width="110" height="20" fill="#2da44e"/>
 <g fill="#fff" font-family="Verdana,DejaVu Sans,sans-serif" font-size="11" text-anchor="middle">
 <text x="44.5" y="14">agent-evals</text>
-<text x="147.5" y="14">90,0% reprovado</text>
+<text x="144" y="14">92,6% aprovado</text>
 </g>
 </svg>
