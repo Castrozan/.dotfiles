@@ -23,7 +23,9 @@ def spoken_prompt(message, conversation_open):
     return (
         f"[wake] Voice from the room, speaker not verified: {message} "
         f"{conversation}: speak with avatar-talk say, and hear the reply through "
-        "avatar-talk follow in a background watcher."
+        "avatar-talk follow in a background watcher. When the room dismisses you, "
+        "such as 'you can go now', say a short goodbye and run avatar-talk close, "
+        "which hands the room back to the wake."
     )
 
 

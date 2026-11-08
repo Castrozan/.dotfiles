@@ -113,3 +113,10 @@ def test_the_prompt_never_claims_who_spoke():
     assert "not verified" in text and "Lucas" not in text, (
         "anyone in the room can speak a name, so the agent must not assume its owner"
     )
+
+
+def test_the_prompt_tells_the_agent_to_close_when_dismissed():
+    fakes = boundaries()
+    armed_listener(fakes).hear(b"segment")
+    text = fakes.prompt_now.call_args.args[1]
+    assert "avatar-talk close" in text, "closing hands the room back to the wake"

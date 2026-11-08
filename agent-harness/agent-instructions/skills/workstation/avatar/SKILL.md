@@ -46,7 +46,9 @@ confidential into cloud speech unless the user asked for it.
 Every agent on every host runs the same commands; on a Mac `avatar-talk` forwards to chise over ssh, where the avatar
 and microphone live. A conversation takes three verbs: 1) `avatar-talk open`, which opens the microphone with the avatar
 window hidden; 2) `avatar-talk ask "TEXT" EMOTION` for each turn, which speaks, waits up to 100 seconds and prints what
-the user said after a `[voice]` tag, printing nothing on silence; 3) `avatar-talk close` when the user says goodbye.
+the user said after a `[voice]` tag, printing nothing on silence; 3) `avatar-talk close` when the user says goodbye or
+dismisses you, as in "you can go now", which hands the room back to the wake. When `follow` reports that the room
+turned to another session, the user is talking to that session: stop replying.
 
 Talking over the avatar stops it by itself, so the reply still arrives. `avatar-talk hear` keeps waiting without
 speaking, and `avatar-talk say "TEXT" EMOTION` speaks without waiting. Leave the language unpinned, as the user chose:
