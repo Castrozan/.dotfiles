@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-HEY_BOT_PYTHON_PATH = Path(__file__).parent.parent / "scripts"
+VOICE_SCRIPTS_DIRECTORY = Path(__file__).parent.parent / "scripts"
 
-sys.path.insert(0, str(HEY_BOT_PYTHON_PATH))
-sys.path.insert(0, str(Path(__file__).parent / "unit"))
+sys.path.insert(0, str(VOICE_SCRIPTS_DIRECTORY))
