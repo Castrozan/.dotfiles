@@ -99,3 +99,14 @@ invalid:
   - "os.fchmod(file_descriptor, 0o666)"
   - "os.lchmod(path, 0o777)"
   - "os.fchmod(file_descriptor, 0o662)"
+---
+id: python-subprocess-without-timeout
+valid:
+  - "subprocess.run(command, check=True, timeout=30)"
+  - "subprocess.check_output(command, timeout=timeout_seconds)"
+  - "subprocess.Popen(command)"
+invalid:
+  - "subprocess.run(command, check=True)"
+  - "subprocess.check_output(command, text=True)"
+  - "subprocess.call(command)"
+  - "subprocess.check_call(command)"

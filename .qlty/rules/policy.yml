@@ -128,3 +128,21 @@ constraints:
     regex: ^(fchmod|lchmod)$
   MODE:
     regex: ^0o[0-7]*[2367]$
+---
+id: python-subprocess-without-timeout
+language: Python
+severity: error
+message: Pass a timeout so a hung child process cannot hang its caller.
+rule:
+  pattern: subprocess.$METHOD($$$ARGUMENTS)
+  not:
+    has:
+      kind: argument_list
+      has:
+        kind: keyword_argument
+        has:
+          field: name
+          regex: ^timeout$
+constraints:
+  METHOD:
+    regex: ^(run|call|check_call|check_output)$
