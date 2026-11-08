@@ -29,17 +29,17 @@ jobs:
         run: |
           upstreamNix=$(nix build --no-link --print-out-paths --inputs-from . 'nixpkgs#nix^out')/bin/nix
           "$upstreamNix" --version
-          time "$upstreamNix" flake check --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
+          time "$upstreamNix" flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
 
       - name: Determinate client
         run: |
           nix --version
-          time nix flake check --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
+          time nix flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
 
       - name: Upstream client again
         run: |
           upstreamNix=$(nix build --no-link --print-out-paths --inputs-from . 'nixpkgs#nix^out')/bin/nix
-          time "$upstreamNix" flake check --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
+          time "$upstreamNix" flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
 
       - name: Determinate client again
-        run: time nix flake check --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
+        run: time nix flake check --no-eval-cache --keep-going $ARR_STACK_STUB_OVERRIDE --max-jobs 8 --cores 2 2>&1 | tail -3
