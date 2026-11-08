@@ -21,6 +21,7 @@ AGENT_DIRECTORY = {
 def valid_card_document(**overrides):
     document = {
         "goal": "drop the codex status line patch",
+        "progress": "found the patch and measured the compile cost",
         "question": "Drop the local codex patch or keep compiling from source?",
         "blocked_work": "the rebuild waits on this; nothing else is blocked",
         "options": [
@@ -64,13 +65,21 @@ def notifications(monkeypatch):
 
 
 def run_a2a(
-    monkeypatch, state_directory, *arguments, stdin_text="", command="decision"
+    monkeypatch,
+    state_location,
+    *arguments,
+    stdin_text="",
+    command="decision",
+    location_flag="--dir",
 ):
     monkeypatch.setattr(
-        sys, "argv", ["a2a", command, "--dir", str(state_directory), *arguments]
+        sys, "argv", ["a2a", command, location_flag, str(state_location), *arguments]
     )
     monkeypatch.setattr(sys, "stdin", io.StringIO(stdin_text))
-    return a2a_main.main()
+    try:
+        return a2a_main.main()
+    except SystemExit as exit_request:
+        return exit_request.code
 
 
 def file_card(monkeypatch, decision_directory, capsys, document=None):

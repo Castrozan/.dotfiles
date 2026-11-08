@@ -29,8 +29,8 @@ before replacing itself with the harness; a direct argv launch inherits the Herd
 drops user commands.
 
 Pin `--tab` and pass `--no-focus`: an unpinned start splits the focused tab, which may be one the human switched to,
-while `--workspace` alone does not pin a tab. Do not create a new tab for same-goal delegation; separate unrelated work
-into a new tab through `herdr`.
+while `--workspace` alone does not pin a tab. A single same-goal helper splits your tab; sub-sessions you orchestrate
+get the workspace [decisions](references/decisions.md) describes, and unrelated work goes to a new tab through `herdr`.
 
 Before launching concurrent code-editing peers, load `coding` and give each peer its own worktree; sharing a checkout
 lets one peer commit another's changes.
@@ -112,9 +112,9 @@ commit, or a diff and read that yourself; read the pane through herdr when you n
 
 ### Decisions travel as cards
 
-Peers raise decisions as cards and report status through `a2a report`, and you decide a card only under the human's
-standing orders; read [decisions](references/decisions.md) before briefing a peer, deciding a card, or giving a recap.
-A pane question or a scraped answer arrives without the options, evidence and unverified assumptions a card carries.
+When you orchestrate sub-sessions, read [decisions](references/decisions.md) first: it owns their workspace, the brief
+and round templates, the event loop, deciding as Lucas from his user model, and the loop that learns from his
+corrections. A pane question or a scraped answer arrives without the context a decision card carries.
 
 ### A2a sender identity
 

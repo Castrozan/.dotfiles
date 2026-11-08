@@ -82,9 +82,15 @@ def test_list_filters_by_state_and_show_renders_the_whole_card(
     assert [row.split("\t")[0] for row in rows] == [open_identifier]
     run_a2a(monkeypatch, tmp_path, "show", answered_identifier)
     rendered = capsys.readouterr().out
-    assert "**drop** (recommended)" in rendered
-    assert "**Unverified assumptions**" in rendered
-    assert "**Answer** (human" in rendered
+    paragraph, *labels = rendered.strip().split("\n\n")[1:]
+    assert "It recommends drop because" in paragraph
+    assert "Not verified: upstream has not merged the same fields." in paragraph
+    assert "Decided by human: keep" in paragraph
+    assert labels == [
+        "**What is this session about?:** drop the codex status line patch.",
+        "**Done:** found the patch and measured the compile cost.",
+        "**Next:** the rebuild waits on this; nothing else is blocked.",
+    ]
 
 
 def test_an_answer_is_recorded_even_when_the_daemon_cannot_deliver_it(

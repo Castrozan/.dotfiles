@@ -1,79 +1,92 @@
 from __future__ import annotations
 
-from .cards import ANSWERED_STATE, WITHDRAWN_STATE
 from .delegation import human_only_grounds
 
 
-def option_line(option: dict, recommendation: str) -> str:
-    marker = " (recommended)" if option["label"] == recommendation else ""
-    return f"- **{option['label']}**{marker}: {option['consequence']}"
+def sentence(text: str) -> str:
+    text = text.strip()
+    return text if text.endswith((".", "?", "!")) else f"{text}."
 
 
-def bulleted_section(title: str, items: list[str]) -> list[str]:
-    if not items:
-        return []
-    return ["", f"**{title}**", *(f"- {item}" for item in items)]
+def options_sentence(card: dict) -> str:
+    described = "; ".join(
+        f"{option['label']}, which means {option['consequence'].rstrip('.')}"
+        for option in card["options"]
+    )
+    return f"The options are {described}."
 
 
-def answer_lines(answer: dict) -> list[str]:
-    return [
-        "",
-        f"**Answer** ({answer['decided_by']}, {answer['decided_at']}): "
-        f"{answer['choice']}",
-        f"Rationale: {answer['rationale']}",
-    ]
+def evidence_sentences(card: dict) -> list[str]:
+    sentences = [f"Evidence: {'; '.join(card['evidence'])}."]
+    if card["unverified_assumptions"]:
+        unverified = "; ".join(card["unverified_assumptions"])
+        sentences.append(f"Not verified: {unverified}.")
+    return sentences
 
 
-def outcome_lines(card: dict) -> list[str]:
-    if card["state"] == ANSWERED_STATE:
-        return answer_lines(card["answer"])
-    if card["state"] == WITHDRAWN_STATE:
-        return ["", f"**Withdrawn**: {card['withdrawal']['reason']}"]
-    return []
-
-
-def decider_line(card: dict) -> str:
+def authority_sentence(card: dict) -> str:
     grounds = human_only_grounds(card)
-    if grounds:
-        return f"**Decider**: the human only ({', '.join(grounds)})"
+    reversibility = "It is reversible" if card["reversible"] else "It is irreversible"
+    reserved = f" and reserved to you ({', '.join(grounds)})" if grounds else ""
+    blast_radius = card["blast_radius"].rstrip(".")
+    return f"{reversibility}{reserved}; blast radius: {blast_radius}."
+
+
+def escalation_sentence(escalation: dict) -> str:
     return (
-        "**Decider**: the orchestrator when a standing order covers it, else the human"
+        f"The orchestrator escalated it ({escalation['reason']}): "
+        f"{sentence(escalation['missing'])}"
     )
 
 
-def heading_lines(card: dict) -> list[str]:
-    lines = [
-        f"## {card['id']} · {card['state']} · from {card['requester']} "
-        f"to {card['orchestrator']}",
-        "",
-        f"**Question**: {card['question']}",
+def answer_sentence(answer: dict) -> str:
+    cited = f" under {answer['directive']}" if "directive" in answer else ""
+    return (
+        f"Decided by {answer['decided_by']}{cited}: {answer['choice']}, "
+        f"because {sentence(answer['rationale'])}"
+    )
+
+
+def override_sentence(override: dict) -> str:
+    return f"Overridden by you: {override['choice']}, {sentence(override['rationale'])}"
+
+
+def outcome_sentences(card: dict) -> list[str]:
+    renderers = (
+        ("escalation", escalation_sentence),
+        ("answer", answer_sentence),
+        ("override", override_sentence),
+    )
+    return [render(card[field]) for field, render in renderers if field in card]
+
+
+def decision_paragraph(card: dict) -> str:
+    sentences = [
+        f"{card['requester']} needs a decision: {sentence(card['question'])}",
+        f"It blocks {sentence(card['blocked_work'])}",
+        options_sentence(card),
+        f"It recommends {card['recommendation']} because {sentence(card['reasoning'])}",
+        *evidence_sentences(card),
+        authority_sentence(card),
+        *outcome_sentences(card),
     ]
-    if card.get("goal"):
-        lines.append(f"**Goal**: {card['goal']}")
-    return lines
+    return " ".join(sentences)
 
 
 def rendered_card(card: dict) -> str:
-    reversibility = "reversible" if card["reversible"] else "irreversible"
-    lines = [
-        *heading_lines(card),
-        f"**Blocked work**: {card['blocked_work']}",
-        f"**Blast radius** ({reversibility}): {card['blast_radius']}",
-        decider_line(card),
-        "",
-        "**Options**",
-        *(option_line(option, card["recommendation"]) for option in card["options"]),
-        "",
-        f"**Recommendation**: {card['recommendation']}. {card['reasoning']}",
-        *bulleted_section("Evidence", card["evidence"]),
-        *bulleted_section("Unverified assumptions", card["unverified_assumptions"]),
-        *outcome_lines(card),
-    ]
-    return "\n".join(lines)
+    return "\n\n".join(
+        [
+            f"{card['id']} ({card['state']})",
+            decision_paragraph(card),
+            f"**What is this session about?:** {sentence(card['goal'])}",
+            f"**Done:** {sentence(card['progress'])}",
+            f"**Next:** {sentence(card['blocked_work'])}",
+        ]
+    )
 
 
 def summary_row(card: dict) -> str:
-    decided_by = card["answer"]["decided_by"] if "answer" in card else "-"
+    decided_by = card.get("answer", {}).get("decided_by", "-")
     return "\t".join(
         [
             card["id"],
@@ -88,14 +101,19 @@ def summary_row(card: dict) -> str:
 
 def notification_text(card: dict) -> str:
     show_command = f"a2a decision show {card['id']}"
-    if card["state"] == ANSWERED_STATE:
+    if card["state"] == "overridden":
+        return (
+            f"decision {card['id']} overridden by the human: "
+            f"{card['override']['choice']}. Rework to match it: {show_command}"
+        )
+    if card["state"] == "answered":
         answer = card["answer"]
         return (
             f"decision {card['id']} answered by {answer['decided_by']}: "
             f"{answer['choice']}. Rationale: {answer['rationale']}. "
             f"Full card: {show_command}"
         )
-    if card["state"] == WITHDRAWN_STATE:
+    if card["state"] == "withdrawn":
         return f"decision {card['id']} withdrawn by {card['requester']}: {show_command}"
     return (
         f"decision {card['id']} for you from {card['requester']}: "

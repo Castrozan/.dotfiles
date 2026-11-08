@@ -14,12 +14,22 @@ from ..document_fields import (
 from .delegation import validated_human_only
 
 OPEN_STATE = "open"
+ESCALATED_STATE = "escalated"
 ANSWERED_STATE = "answered"
+OVERRIDDEN_STATE = "overridden"
 WITHDRAWN_STATE = "withdrawn"
 DECIDERS = ("human", "orchestrator")
+ESCALATION_REASONS = (
+    "no-directive",
+    "conflicting-directives",
+    "human-only",
+    "weak-evidence",
+)
 MINIMUM_OPTION_COUNT = 2
 MAXIMUM_OPTION_COUNT = 4
 REQUIRED_TEXT_FIELDS = (
+    "goal",
+    "progress",
     "question",
     "blocked_work",
     "recommendation",
@@ -71,17 +81,13 @@ def validated_card_fields(document: dict) -> dict:
     if not isinstance(document.get("reversible"), bool):
         raise InvalidPeerDocument("reversible must be true or false")
     card["reversible"] = document["reversible"]
-    if "goal" in document:
-        card["goal"] = nonempty_text(document, "goal")
+    card["human_only"] = validated_human_only(document)
     return card
 
 
 def new_decision_card(
     document, requester: str, requester_pane: str | None, orchestrator: str
 ) -> dict:
-    document = require_object(document, "the card")
-    card = validated_card_fields(document)
-    card["human_only"] = validated_human_only(document)
     return {
         "id": new_decision_identifier(),
         "state": OPEN_STATE,
@@ -89,36 +95,79 @@ def new_decision_card(
         "requester": requester,
         "requester_pane": requester_pane,
         "orchestrator": orchestrator,
-        **card,
+        **validated_card_fields(require_object(document, "the card")),
     }
 
 
-def require_open(card: dict) -> None:
-    if card["state"] != OPEN_STATE:
-        raise InvalidPeerDocument(f"decision {card['id']} is already {card['state']}")
+def require_state(card: dict, allowed_states: tuple[str, ...]) -> None:
+    if card["state"] not in allowed_states:
+        raise InvalidPeerDocument(
+            f"decision {card['id']} is {card['state']}; expected {' or '.join(allowed_states)}"
+        )
 
 
-def answered_card(card: dict, choice: str, rationale: str, decided_by: str) -> dict:
-    require_open(card)
-    if decided_by not in DECIDERS:
-        raise InvalidPeerDocument(f"decided_by must be one of {', '.join(DECIDERS)}")
-    if not choice.strip() or not rationale.strip():
-        raise InvalidPeerDocument("an answer needs a choice and a rationale")
+def required_text(value: str, description: str) -> str:
+    if not value.strip():
+        raise InvalidPeerDocument(f"{description} must be nonempty")
+    return value.strip()
+
+
+def escalated_card(card: dict, reason: str, missing: str) -> dict:
+    require_state(card, (OPEN_STATE,))
+    if reason not in ESCALATION_REASONS:
+        raise InvalidPeerDocument(
+            f"reason must be one of {', '.join(ESCALATION_REASONS)}"
+        )
+    escalation = {
+        "reason": reason,
+        "missing": required_text(missing, "what the user model lacked"),
+        "escalated_at": current_timestamp(),
+    }
+    return {**card, "state": ESCALATED_STATE, "escalation": escalation}
+
+
+def answered_card(
+    card: dict, choice: str, rationale: str, decided_by: str, directive: str | None
+) -> dict:
+    require_state(card, (OPEN_STATE, ESCALATED_STATE))
     answer = {
-        "choice": choice.strip(),
-        "rationale": rationale.strip(),
+        "choice": required_text(choice, "the choice"),
+        "rationale": required_text(rationale, "the rationale"),
         "decided_by": decided_by,
         "decided_at": current_timestamp(),
     }
+    if directive:
+        answer["directive"] = directive
     return {**card, "state": ANSWERED_STATE, "answer": answer}
 
 
-def withdrawn_card(card: dict, reason: str) -> dict:
-    require_open(card)
-    if not reason.strip():
-        raise InvalidPeerDocument("a withdrawal needs a reason")
-    return {
-        **card,
-        "state": WITHDRAWN_STATE,
-        "withdrawal": {"reason": reason.strip(), "withdrawn_at": current_timestamp()},
+def overridden_card(card: dict, choice: str, rationale: str) -> dict:
+    require_state(card, (ANSWERED_STATE,))
+    override = {
+        "choice": required_text(choice, "the human's choice"),
+        "rationale": required_text(rationale, "the human's words"),
+        "overridden_at": current_timestamp(),
     }
+    return {**card, "state": OVERRIDDEN_STATE, "override": override}
+
+
+def withdrawn_card(card: dict, reason: str) -> dict:
+    require_state(card, (OPEN_STATE, ESCALATED_STATE))
+    withdrawal = {
+        "reason": required_text(reason, "a withdrawal reason"),
+        "withdrawn_at": current_timestamp(),
+    }
+    return {**card, "state": WITHDRAWN_STATE, "withdrawal": withdrawal}
+
+
+def card_with_work(card: dict, repository: str, commits: list[str]) -> dict:
+    require_state(card, (ANSWERED_STATE, OVERRIDDEN_STATE))
+    work = card.get("work") or {"repository": repository, "commits": []}
+    if work["repository"] != repository:
+        raise InvalidPeerDocument(
+            f"decision {card['id']} work lives in {work['repository']}"
+        )
+    linked = work["commits"] + [
+        commit for commit in commits if commit not in work["commits"]
+    ]
+    return {**card, "work": {"repository": repository, "commits": linked}}

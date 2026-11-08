@@ -43,6 +43,11 @@ changes, how to accomplish it evolves).
 Add a "do not" line only when a concrete foot-gun exists and cannot be avoided with code. Name the failure "X silently
 succeeds with wrong syntax" or "Y leaks credentials when Z is unset".
 
+### Output templates
+
+Give every output an instruction expects from an agent a template that names its fields and their order, and enforce
+it in code wherever a parser can check it; never ask for free-form text.
+
 ### Authoring review
 
 You just used this skill, and now its reviewing it again? Do this: iterate each section and answer: would the model

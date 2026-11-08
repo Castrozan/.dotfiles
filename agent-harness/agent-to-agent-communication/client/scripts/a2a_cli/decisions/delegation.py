@@ -30,9 +30,17 @@ def human_only_grounds(card: dict) -> list[str]:
     return grounds
 
 
-def require_orchestrator_authority(card: dict) -> None:
+def require_orchestrator_authority(
+    card: dict, directive: str | None, active_directives: set[str]
+) -> None:
     grounds = human_only_grounds(card)
     if grounds:
         raise InvalidPeerDocument(
             f"decision {card['id']} is the human's: {', '.join(grounds)}"
+        )
+    if card["state"] != "open":
+        raise InvalidPeerDocument(f"decision {card['id']} was escalated to the human")
+    if directive not in active_directives:
+        raise InvalidPeerDocument(
+            "an orchestrator decision must cite an active USER.md directive with --directive"
         )

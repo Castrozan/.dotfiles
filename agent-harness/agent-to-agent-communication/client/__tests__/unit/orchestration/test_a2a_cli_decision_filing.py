@@ -41,6 +41,7 @@ def test_filing_saves_an_open_card_and_notifies_the_orchestrator_with_how_to_rea
         {"evidence": ["  "]},
         {"reversible": "yes"},
         {"question": ""},
+        {"progress": ""},
         {"unverified_assumptions": "not a list"},
     ],
 )

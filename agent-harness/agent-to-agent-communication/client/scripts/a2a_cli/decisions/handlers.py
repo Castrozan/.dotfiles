@@ -10,7 +10,15 @@ from pathlib import Path
 from ..document_fields import InvalidPeerDocument
 from ..peer_delivery import notify_after_save, sender_and_directory
 from ..record_store import all_records, load_record, save_record
-from .cards import answered_card, new_decision_card, withdrawn_card
+from ..user_model.directives import active_identifiers
+from .cards import (
+    answered_card,
+    card_with_work,
+    escalated_card,
+    new_decision_card,
+    overridden_card,
+    withdrawn_card,
+)
 from .delegation import require_orchestrator_authority
 from .rendering import notification_text, rendered_card, summary_row
 
@@ -31,6 +39,22 @@ def read_card_document(card_source: str):
         raise InvalidPeerDocument(f"the card is not valid JSON: {failure}") from failure
 
 
+def save_and_notify(
+    arguments: argparse.Namespace, decision_directory: Path, card: dict, target: str
+) -> int:
+    saved_path = save_record(decision_directory, card["id"], card)
+    return notify_after_save(
+        lambda: sender_and_directory(arguments),
+        target,
+        notification_text(card),
+        saved_path,
+    )
+
+
+def requester_target(card: dict) -> str:
+    return card["requester_pane"] or card["requester"]
+
+
 def command_file(arguments: argparse.Namespace, decision_directory: Path) -> int:
     document = read_card_document(arguments.card)
     requester, agent_directory = sender_and_directory(arguments)
@@ -48,7 +72,7 @@ def command_file(arguments: argparse.Namespace, decision_directory: Path) -> int
 
 
 def last_change(card: dict) -> str:
-    return card["answer"]["decided_at"] if "answer" in card else card["created_at"]
+    return card.get("answer", {}).get("decided_at", card["created_at"])
 
 
 def card_matches(card: dict, arguments: argparse.Namespace, cutoff: str) -> bool:
@@ -81,28 +105,52 @@ def command_show(arguments: argparse.Namespace, decision_directory: Path) -> int
     return 0
 
 
+def command_escalate(arguments: argparse.Namespace, decision_directory: Path) -> int:
+    card = escalated_card(
+        load_record(decision_directory, arguments.identifier),
+        arguments.reason,
+        arguments.missing,
+    )
+    save_record(decision_directory, card["id"], card)
+    print(rendered_card(card))
+    return 0
+
+
 def command_answer(arguments: argparse.Namespace, decision_directory: Path) -> int:
     card = load_record(decision_directory, arguments.identifier)
     if arguments.by == "orchestrator":
-        require_orchestrator_authority(card)
-    card = answered_card(card, arguments.choice, arguments.rationale, arguments.by)
-    saved_path = save_record(decision_directory, card["id"], card)
-    return notify_after_save(
-        lambda: sender_and_directory(arguments),
-        card["requester_pane"] or card["requester"],
-        notification_text(card),
-        saved_path,
+        directives = active_identifiers(Path(arguments.user_model))
+        require_orchestrator_authority(card, arguments.directive, directives)
+    elif arguments.directive:
+        raise InvalidPeerDocument("--directive applies only to orchestrator decisions")
+    card = answered_card(
+        card, arguments.choice, arguments.rationale, arguments.by, arguments.directive
     )
+    return save_and_notify(arguments, decision_directory, card, requester_target(card))
+
+
+def command_override(arguments: argparse.Namespace, decision_directory: Path) -> int:
+    card = overridden_card(
+        load_record(decision_directory, arguments.identifier),
+        arguments.choice,
+        arguments.rationale,
+    )
+    return save_and_notify(arguments, decision_directory, card, requester_target(card))
 
 
 def command_withdraw(arguments: argparse.Namespace, decision_directory: Path) -> int:
     card = withdrawn_card(
         load_record(decision_directory, arguments.identifier), arguments.reason
     )
-    saved_path = save_record(decision_directory, card["id"], card)
-    return notify_after_save(
-        lambda: sender_and_directory(arguments),
-        card["orchestrator"],
-        notification_text(card),
-        saved_path,
+    return save_and_notify(arguments, decision_directory, card, card["orchestrator"])
+
+
+def command_link(arguments: argparse.Namespace, decision_directory: Path) -> int:
+    repository = str(Path(arguments.repository).expanduser().resolve())
+    card = card_with_work(
+        load_record(decision_directory, arguments.identifier),
+        repository,
+        arguments.commits,
     )
+    save_record(decision_directory, card["id"], card)
+    return 0
