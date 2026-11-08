@@ -56,15 +56,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           private-input-key: ${{ secrets.ARR_STACK_DEPLOY_KEY }}
 
-      - name: Configure the signed binary cache
-        run: |
-          cache_configuration=machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
-          cache_url=$(jq -er .url "$cache_configuration")
-          cache_public_key=$(jq -er .publicKey "$cache_configuration")
-          mkdir -p "$HOME/.config/nix"
-          printf 'extra-substituters = %s\nextra-trusted-public-keys = %s\n' \
-            "$cache_url" "$cache_public_key" >> "$HOME/.config/nix/nix.conf"
-
       - name: Verify the exported derivations match the deployed packages
         if: ${{ matrix.system == 'x86_64-linux' }}
         run: |
