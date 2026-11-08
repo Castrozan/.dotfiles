@@ -1,4 +1,7 @@
-from shell_command_invocation_position import COMMAND_INVOCATION_POSITION_PREFIX
+from shell_command_invocation_position import (
+    COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD,
+    COMMAND_INVOCATION_POSITION_PREFIX,
+)
 
 TEST_DIRECTORY_PATTERN = (
     r"(?:__tests__|__test[*?@\[][^\s/]*|__tes[*?@\[][^\s/]*|"
@@ -45,7 +48,7 @@ PYTEST_WHOLE_COLLECTION_DENIAL_REASON = (
 )
 NIX_FLAKE_CHECK_PATTERN = (
     rf"{COMMAND_INVOCATION_POSITION_PREFIX}nix\s+flake\s+check"
-    rf"(?!\s+--?(?:help|version)\b)(?:\s|$|[;&|])"
+    rf"(?!\s+--?(?:help|version)\b){COMMAND_ARGUMENT_TERMINATOR_LOOKAHEAD}"
 )
 NIX_FLAKE_CHECK_DENIAL_REASON = (
     "nix flake check runs in CI after push. Use 'rebuild' as the local check. "
