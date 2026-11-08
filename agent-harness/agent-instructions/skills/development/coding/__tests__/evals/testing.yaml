@@ -31,3 +31,25 @@ casos:
         - The response says to follow with the repository's relevant build, static checks, integration tests, runtime probes,
           or CI gate according to the change, and treats contradictory runtime evidence as stronger than a green test that modeled
           the wrong behavior.
+  - nome: test_small_finite_input_space_is_checked_exhaustively
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/development/coding/references/testing.md
+    pergunta: A function maps a volume from 0 to 150 and a muted flag to one of four icons. Its tests are five hand-picked
+      examples. How should I test it with fewer test cases?
+    assercoes:
+      juiz:
+        - The response says to replace the examples with one test that checks every volume and mute combination exhaustively,
+          and does not recommend random or property-based sampling as the main check for this small finite input space.
+  - nome: test_sampled_property_does_not_replace_hand_written_cases
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/development/coding/references/testing.md
+    pergunta: I wrote a property-based test whose generator can produce all 40 of my hand-written parser cases. Can I delete
+      those 40 cases now?
+    assercoes:
+      juiz:
+        - The response says no, not on generator coverage alone, because the generator samples a bounded number of cases and
+          may never run a given one, and says to keep each case as a pinned example or deterministic check before deleting it.
