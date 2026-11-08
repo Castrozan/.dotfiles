@@ -92,7 +92,7 @@ jobs:
         env:
           AGENT_EVALS_CONFIG: agent-harness/quality/evaluations/config.yaml
         run: |
-          nix build --impure --out-link agent-evals --expr '(builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.agent-evals.packages).default'
+          nix build --impure --out-link agent-evals --expr '(builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./. + "?shallow=1")).inputs.dependencies.inputs.agent-evals.packages).default'
           mkdir -p .quality-results/source/.quality-results
           cp -R .quality-results/downloads .quality-results/source/.quality-results/downloads
           cd .quality-results/source
