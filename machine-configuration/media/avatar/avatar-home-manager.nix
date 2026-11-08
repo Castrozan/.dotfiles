@@ -1,11 +1,18 @@
 {
   pkgs,
   lib,
+  inputs,
   isNixOS,
   ...
 }:
 let
-  programs = import ./avatar-programs.nix { inherit pkgs lib; };
+  programs = import ./avatar-programs.nix {
+    inherit pkgs lib;
+    herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    a2a = import ../../../agent-harness/agent-to-agent-communication/client/a2a-client-package.nix {
+      inherit pkgs;
+    };
+  };
   characters = import ./characters.nix { inherit pkgs; };
   characterVoices = pkgs.writeText "avatar-character-voices.json" (
     builtins.toJSON (map (character: { inherit (character) name cloudVoice localVoice; }) characters)
@@ -38,6 +45,7 @@ in
       start
       stop
       talk
+      wake
     ];
     systemd.user = {
       targets.avatar.Unit = {

@@ -1,4 +1,9 @@
-{ pkgs, lib }:
+{
+  pkgs,
+  lib,
+  herdr,
+  a2a,
+}:
 let
   control = import ./control-package.nix { inherit pkgs; };
   renderer = import ./renderer-package.nix { inherit pkgs; };
@@ -100,6 +105,19 @@ let
     export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/conversation}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"
   '';
+  wake = pkgs.writeShellScriptBin "avatar-wake" ''
+    export PATH=${
+      lib.makeBinPath [
+        a2a
+        herdr
+        talk
+        pkgs.pulseaudio
+        pkgs.systemd
+      ]
+    }:$PATH
+    export PYTHONPATH=${./scripts/listening}:${./scripts/wake}
+    exec ${pkgs.python312}/bin/python3 ${./scripts/wake/wake_listener.py} "$@"
+  '';
 in
 {
   inherit
@@ -115,5 +133,6 @@ in
     start
     stop
     talk
+    wake
     ;
 }

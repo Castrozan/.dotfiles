@@ -1,0 +1,92 @@
+import struct
+from unittest.mock import Mock
+
+import speech_segmenter
+import wake_listener
+from wake_phrase import LiveSession
+
+VOYAGER = LiveSession("Voyager", "wW:pPZ")
+FRAME_SAMPLES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS)
+
+
+def frames(amplitude, count):
+    return [struct.pack(f"<{FRAME_SAMPLES}h", *([amplitude] * FRAME_SAMPLES))] * count
+
+
+def boundaries(heard="hey Voyager, check the build", sessions=(VOYAGER,), **changes):
+    fakes = dict(
+        sessions=Mock(return_value=list(sessions)),
+        conversation_listening=Mock(return_value=False),
+        transcribe=Mock(return_value=heard),
+        open_conversation=Mock(return_value=True),
+        prompt_now=Mock(return_value=True),
+        notify_at_idle=Mock(),
+        report=Mock(),
+    )
+    fakes.update(changes)
+    return wake_listener.Boundaries(**fakes)
+
+
+def armed_listener(fakes, dry_run=False):
+    listener = wake_listener.WakeListener(fakes, dry_run=dry_run)
+    listener.armed()
+    return listener
+
+
+def test_no_live_session_keeps_the_microphone_closed():
+    assert not wake_listener.WakeListener(boundaries(sessions=()), False).armed()
+
+
+def test_an_open_avatar_conversation_pauses_the_wake():
+    fakes = boundaries(conversation_listening=Mock(return_value=True))
+    assert not wake_listener.WakeListener(fakes, False).armed(), (
+        "the conversation's own listener owns the room while it runs"
+    )
+
+
+def test_a_spoken_wake_opens_the_conversation_then_prompts_the_named_session():
+    fakes = boundaries()
+    armed_listener(fakes).listen_while_armed(iter(frames(4000, 40) + frames(0, 40)))
+    fakes.open_conversation.assert_called_once()
+    pane, text = fakes.prompt_now.call_args.args
+    assert pane == VOYAGER.pane
+    assert "check the build" in text and "avatar-talk ask" in text
+    fakes.notify_at_idle.assert_not_called()
+
+
+def test_a_refused_prompt_falls_back_to_delivery_at_idle():
+    fakes = boundaries(prompt_now=Mock(return_value=False))
+    armed_listener(fakes).hear(b"segment")
+    assert fakes.notify_at_idle.call_args.args[0] == VOYAGER.pane
+
+
+def test_a_conversation_that_fails_to_open_still_delivers_the_words():
+    fakes = boundaries(open_conversation=Mock(return_value=False))
+    armed_listener(fakes).hear(b"segment")
+    text = fakes.prompt_now.call_args.args[1]
+    assert "check the build" in text and "avatar-talk" not in text
+
+
+def test_a_dry_run_reports_the_match_and_reaches_nobody():
+    fakes = boundaries()
+    armed_listener(fakes, dry_run=True).hear(b"segment")
+    fakes.prompt_now.assert_not_called()
+    fakes.open_conversation.assert_not_called()
+    assert "Voyager" in fakes.report.call_args.args[0]
+
+
+def test_unaddressed_speech_reaches_nobody():
+    fakes = boundaries(heard="I think Voyager broke it")
+    armed_listener(fakes).hear(b"segment")
+    fakes.prompt_now.assert_not_called()
+    fakes.open_conversation.assert_not_called()
+
+
+def test_listening_stops_once_the_fleet_is_gone():
+    fakes = boundaries()
+    listener = armed_listener(fakes)
+    fakes.sessions.return_value = []
+    assert not listener.listen_while_armed(
+        iter(frames(0, wake_listener.FRAMES_PER_ARM_CHECK))
+    )
+    fakes.transcribe.assert_not_called()
