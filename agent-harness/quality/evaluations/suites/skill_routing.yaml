@@ -14,7 +14,7 @@ casos:
 
       browser - Control browser pages and Electron apps through Chrome DevTools CLI or eligible OpenCLI workflows. Not for desktop capture, media, or other GUI.
 
-      coding - Implement and evolve code safely. Use for coding, fixes, tests, commits, Git history and archaeology, or parallel branch work.
+      coding - Implement and evolve code safely. Use for coding, fixes, tests, implicit state machine audits, commits, Git history and archaeology, or parallel branch work.
 
       deep-work - Persist task context to disk so big or compaction-prone work survives across sessions. Use for work over ~5 steps, spanning sessions, or when explicitly asked to preserve context; not for quick fixes.
 
