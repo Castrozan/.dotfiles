@@ -5,11 +5,7 @@ let
 
   listHookScriptsRecursively = import ./list-hook-scripts-recursively.nix { inherit lib; };
 
-  allHookScriptsAcrossSubdirectories = builtins.filter (
-    entry:
-    !(lib.hasPrefix "common/human_facing_reply/" entry.relativePathToHooksRoot)
-    && entry.relativePathToHooksRoot != "stop/end_of_turn_format_guard_handler.py"
-  ) (listHookScriptsRecursively hooksRootDirectory);
+  allHookScriptsAcrossSubdirectories = listHookScriptsRecursively hooksRootDirectory;
 
   installModeForHookScript = filename: if lib.hasSuffix ".sh" filename then "0755" else "0644";
 

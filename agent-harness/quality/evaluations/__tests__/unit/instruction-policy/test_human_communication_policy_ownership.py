@@ -1,9 +1,6 @@
 from instructions.instruction_surface_scanner import REPO_ROOT, frontmatter_key_values
 
 
-HOOK_DOMAIN_DIRECTORY = (
-    REPO_ROOT / "agent-harness" / "hooks" / "runtime" / "common" / "human_facing_reply"
-)
 CORE_COMMUNICATION_DIRECTORY = (
     REPO_ROOT / "agent-harness" / "agent-instructions" / "core-rules" / "communication"
 )
@@ -27,8 +24,6 @@ HUMANIZE_CASE_EXAMPLES = (
     "status-update.md",
     "release-notes.md",
 )
-REPLY_RULE_CATALOG_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_catalog.py"
-REPLY_RULE_FEEDBACK_PATH = HOOK_DOMAIN_DIRECTORY / "reply_rule_feedback.py"
 MAXIMUM_HUMANIZE_SKILL_BYTES = 6000
 
 REMOVED_GENERATED_SURFACES = (
@@ -63,8 +58,6 @@ def test_humanize_owns_documents_read_later_and_defers_live_replies():
         f"{humanize_skill_bytes} bytes"
     )
 
-    assert not (HOOK_DOMAIN_DIRECTORY / "interactive-communication.md").exists()
-
 
 def test_humanize_links_a_worked_example_for_every_case():
     humanize_skill = HUMANIZE_SKILL_PATH.read_text(encoding="utf-8")
@@ -79,16 +72,6 @@ def test_humanize_links_a_worked_example_for_every_case():
 
 def test_no_generated_policy_surface_sits_between_owners_and_consumers():
     assert not [path for path in REMOVED_GENERATED_SURFACES if path.exists()]
-
-
-def test_hooks_enforce_the_policy_without_rendering_instruction_surfaces():
-    catalog = REPLY_RULE_CATALOG_PATH.read_text(encoding="utf-8")
-    feedback = REPLY_RULE_FEEDBACK_PATH.read_text(encoding="utf-8")
-
-    assert "instruction_sentence" not in catalog
-    assert "applies_to" not in catalog
-    assert "interactive-communication.md" not in feedback
-    assert "rendered_markdown_surface" not in feedback
 
 
 def test_superseded_split_interactive_surfaces_are_removed():

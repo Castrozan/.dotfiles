@@ -19,7 +19,6 @@ EXPECTED_EXTRA_PATHS = {
     "agent-harness/hooks/runtime/__tests__/integration",
     "agent-harness/hooks/runtime/__tests__/unit",
     "agent-harness/hooks/runtime/common",
-    "agent-harness/hooks/runtime/common/human_facing_reply",
     "agent-harness/hooks/runtime/post-tool-use",
     "agent-harness/hooks/runtime/post-tool-use/instructions-skill-invocation",
     "agent-harness/hooks/runtime/post-tool-use/line-count",

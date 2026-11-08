@@ -1,23 +1,12 @@
-import json
-from pathlib import Path
-
-from instructions.instruction_surface_scanner import REPO_ROOT
-
-
 REPLY_FORMAT_PLACEHOLDER = "{{reply_format}}"
-REPLY_FORMAT_CONFIGURATION_PATH = Path(
-    "agent-harness/hooks/runtime/common/human_facing_reply/reply-formats.json"
-)
 
 
-def expand_reply_format_instructions(
-    text: str, configuration: dict | None = None
-) -> str:
+def expand_reply_format_instructions(text: str, configuration: dict | None) -> str:
     if REPLY_FORMAT_PLACEHOLDER not in text:
         return text
     if configuration is None:
-        configuration = json.loads(
-            (REPO_ROOT / REPLY_FORMAT_CONFIGURATION_PATH).read_text()
+        raise ValueError(
+            f"{REPLY_FORMAT_PLACEHOLDER} needs the Wellput reply format configuration"
         )
     labels = configuration["formats"]["labeled_reply"]["labels"]
     emphasis = configuration["syntax"]["label_emphasis_marker"]

@@ -1,4 +1,4 @@
-import json
+import copy
 from pathlib import PurePosixPath
 
 import pytest
@@ -8,14 +8,12 @@ from instructions.instruction_projection import (
     project_skill_directory,
 )
 from instructions.instruction_surface_scanner import REPO_ROOT
-from instructions.reply_format_instructions import REPLY_FORMAT_CONFIGURATION_PATH
+from interactive_surface_support import pinned_wellput_reply_format_configuration
 
 
 @pytest.fixture
 def configured_reply_formats():
-    configuration = json.loads(
-        (REPO_ROOT / REPLY_FORMAT_CONFIGURATION_PATH).read_text()
-    )
+    configuration = copy.deepcopy(pinned_wellput_reply_format_configuration())
     configuration["formats"]["confirmation"]["maximum_words"] = 37
     configuration["lists"]["maximum_exempt_items"] = 2
     configuration["formats"]["labeled_reply"]["labels"][1]["grace_words"] = 7
@@ -95,6 +93,7 @@ def test_complete_interactive_instructions_fit_projection_limits(additional_sour
                 "/home/agent/.claude/CLAUDE.md"
             ),
         },
+        pinned_wellput_reply_format_configuration(),
     )
 
     assert "### Peer communication" in rendered

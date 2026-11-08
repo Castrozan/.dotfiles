@@ -137,7 +137,7 @@ finding` describes the primary current placement defect, not the final migration
 | S25 | `agent-harness/hooks/runtime/pre-tool-use/subagent-budget-guard/subagent_budget_guard_handler.py` and `agent-harness/hooks/runtime/common/subagent_spawn_budget_state.py`: session delegation ceiling |
 | S26 | `agent-harness/hooks/runtime/session-start/compaction_context_recovery_handler.py`: post-compaction state restoration |
 | S27 | `agent-harness/hooks/runtime/session-start/session_context_handler.py`: repository and environment context injection |
-| S28 | `agent-harness/hooks/runtime/stop/end_of_turn_format_guard_handler.py` and `agent-harness/hooks/runtime/common/human_facing_reply/`: reply shape, MR and PR URL, and sentence-dash enforcement |
+| S28 | `agent-harness/hooks/runtime/wellput/wellput_hook_handler.py` running the pinned Wellput reply hook (`agent-harness/agent-instructions/wellput-plugin/upstream.nix`): reply shape, MR and PR URL, and sentence-dash enforcement |
 | S29 | `agent-harness/harnesses/claude-code/settings/environment-variables.nix`: compaction, memory, output, and startup limits |
 | S30 | `agent-harness/harnesses/claude-code/settings/global-settings.nix` and `agent-harness/hooks/integrations/claude/event-registrations/claude-hook-event-registrations.nix`: Claude language setting and permission posture |
 | S31 | `agent-harness/hooks/runtime/pre-tool-use/prohibited-words-guard/prohibited_words_guard_handler.py` and `agent-harness/hooks/integrations/claude/`, `agent-harness/hooks/integrations/codex/`, `agent-harness/hooks/integrations/opencode/`, `agent-harness/hooks/integrations/hermes/`: public/private boundary |

@@ -2,14 +2,13 @@ from interactive_surface_support import (
     HUMANIZE_SKILL_PATH,
     INTERACTIVE_GENERATOR_PATHS,
     INTERACTIVE_LAUNCH_SOURCES,
-    INTERACTIVE_POLICY_PATH,
     INTERACTIVE_POLICY_SOURCE,
     MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES,
     MAXIMUM_ON_DEMAND_HUMANIZE_PACKAGE_BYTES,
     ON_DEMAND_HUMANIZE_SOURCES,
+    expanded_interactive_policy,
     interactive_policy_section,
 )
-from instructions.reply_format_instructions import expand_reply_format_instructions
 
 
 def test_each_harness_injects_only_the_interactive_contract():
@@ -37,9 +36,7 @@ def test_explicit_wellput_request_loads_before_other_actions():
 
 
 def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
-    always_injected_policy_bytes = len(
-        expand_reply_format_instructions(INTERACTIVE_POLICY_PATH.read_text()).encode()
-    )
+    always_injected_policy_bytes = len(expanded_interactive_policy().encode())
     assert (
         always_injected_policy_bytes <= MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES
     ), (

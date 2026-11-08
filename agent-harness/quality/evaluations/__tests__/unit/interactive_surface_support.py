@@ -1,8 +1,24 @@
+import json
 import re
+import subprocess
+from functools import cache
+from pathlib import Path
 
 from instructions.instruction_surface_scanner import REPO_ROOT
 from instructions.reply_format_instructions import expand_reply_format_instructions
 
+WELLPUT_UPSTREAM_PIN_PATH = (
+    REPO_ROOT
+    / "agent-harness"
+    / "agent-instructions"
+    / "wellput-plugin"
+    / "upstream.nix"
+)
+PINNED_WELLPUT_SOURCE_EXPRESSION = (
+    "import @upstream@ { pkgs.fetchFromGitHub = source: builtins.fetchTarball { "
+    'url = "https://github.com/${source.owner}/${source.repo}/archive/${source.rev}.tar.gz"; '
+    "sha256 = source.hash; }; }"
+)
 
 HUMANIZE_SKILL_PATH = (
     REPO_ROOT
@@ -55,10 +71,35 @@ INTERACTIVE_LAUNCH_SOURCES = (
 )
 
 
-def interactive_policy_section(tag: str) -> str:
-    policy = expand_reply_format_instructions(
-        INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8")
+@cache
+def pinned_wellput_reply_format_configuration() -> dict:
+    pinned_source = subprocess.run(
+        [
+            "nix",
+            "eval",
+            "--raw",
+            "--impure",
+            "--expr",
+            PINNED_WELLPUT_SOURCE_EXPRESSION.replace(
+                "@upstream@", str(WELLPUT_UPSTREAM_PIN_PATH)
+            ),
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    return json.loads((Path(pinned_source) / "wellput.json").read_text())
+
+
+def expanded_interactive_policy() -> str:
+    return expand_reply_format_instructions(
+        INTERACTIVE_POLICY_PATH.read_text(encoding="utf-8"),
+        pinned_wellput_reply_format_configuration(),
     )
+
+
+def interactive_policy_section(tag: str) -> str:
+    policy = expanded_interactive_policy()
     heading = re.compile(
         r"^### " + re.escape(tag.replace("_", " ")) + r"\n",
         re.IGNORECASE | re.MULTILINE,

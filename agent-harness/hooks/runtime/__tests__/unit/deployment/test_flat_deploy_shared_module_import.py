@@ -87,3 +87,30 @@ def test_packaged_stop_hook_reads_the_wellput_configuration(tmp_path):
 
     assert result.returncode == 0
     assert "5-word confirmation" in json.loads(result.stdout)["reason"]
+
+
+def test_invalid_configuration_cannot_silently_disable_the_stop_guard(
+    tmp_path, pinned_wellput_hook
+):
+    flatten_into_single_runtime_directory(tmp_path)
+    path = tmp_path / "wellput.json"
+    document = json.loads((pinned_wellput_hook.parents[1] / "wellput.json").read_text())
+    document["restrictions"][0].pop("required_pattern")
+    path.write_text(json.dumps(document))
+
+    result = run_flattened_hook(
+        tmp_path,
+        "stop-dispatcher.py",
+        {
+            "hook_event_name": "Stop",
+            "reply_text": "PR #17 is ready. " + "evidence " * 150,
+        },
+        {
+            INTERACTIVE_ENV_VAR: "/some/interactive-communication.md",
+            "WELLPUT_CONFIG": str(path),
+        },
+    )
+
+    response = json.loads(result.stdout)
+    assert response.get("decision") == "block"
+    assert "could not run" in response["reason"]
