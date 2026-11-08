@@ -14,7 +14,7 @@ MouseArea {
 
     readonly property int currentMonth: currentDate.getMonth()
     readonly property int currentYear: currentDate.getFullYear()
-    readonly property real dayCellHeight: dayNumberMetrics.height + Appearance.padding.small * 2
+    readonly property real dayCellHeight: Math.ceil(dayNumberMetrics.height) + Appearance.padding.small * 2
 
     function weekColumnWidth(availableWidth: real, columnSpacing: real): real {
         return Math.max(0, (availableWidth - 6 * columnSpacing) / 7);
@@ -68,7 +68,7 @@ MouseArea {
             id: weekdayHeader
 
             Layout.fillWidth: true
-            Layout.preferredHeight: weekdayNameMetrics.height + topPadding + bottomPadding
+            Layout.preferredHeight: Math.ceil(weekdayNameMetrics.height) + topPadding + bottomPadding
             locale: monthGrid.locale
 
             delegate: Item {
@@ -77,7 +77,7 @@ MouseArea {
                 required property var model
 
                 implicitWidth: calendarWidgetRoot.weekColumnWidth(weekdayHeader.availableWidth, weekdayHeader.spacing)
-                implicitHeight: weekdayNameMetrics.height
+                implicitHeight: Math.ceil(weekdayNameMetrics.height)
 
                 StyledText {
                     anchors.centerIn: parent
