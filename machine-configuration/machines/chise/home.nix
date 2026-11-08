@@ -10,7 +10,7 @@ in
     ./home/session-vars.nix
     ./home/chrome-default-browser.nix
     ../../../agent-harness/harnesses/clawde/agents/steward.nix
-    ../../../agent-harness/harnesses/clawde/agents/ril-watcher
+    ../../../agent-harness/read-it-later/watcher/home-manager.nix
 
     ../shared-home-manager-core.nix
 

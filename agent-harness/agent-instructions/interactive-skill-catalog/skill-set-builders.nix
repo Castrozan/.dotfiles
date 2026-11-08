@@ -54,11 +54,16 @@ let
 
   vendoredSkillNames = builtins.attrNames vendoredSkillSourceDirectoryByName;
 
+  componentSkillSourceDirectoryByName = {
+    ril = ../../read-it-later/skill;
+  };
+
   skillSourceDirectoryByName =
-    assert builtins.all (
-      skillName: !(builtins.hasAttr skillName authoredSkillSourceDirectoryByName)
-    ) vendoredSkillNames;
+    assert builtins.all (skillName: !(builtins.hasAttr skillName authoredSkillSourceDirectoryByName)) (
+      vendoredSkillNames ++ builtins.attrNames componentSkillSourceDirectoryByName
+    );
     authoredSkillSourceDirectoryByName
+    // componentSkillSourceDirectoryByName
     // vendoredSkillSourceDirectoryByName
     // {
       wellput = "${wellputSource}/skills/wellput";

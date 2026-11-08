@@ -19,7 +19,7 @@ in
     ./skills/media/twitter/install/twitter-home-manager.nix
     ./skills/services/phone-status/phone-status-cli-home-manager.nix
     ./skills/services/url-shortener/url-shortener-cli-home-manager.nix
-    ./skills/knowledge/ril/install/ril-home-manager.nix
+    ../read-it-later/cli-home-manager.nix
     ./skills/knowledge/todo/install/todo-home-manager.nix
   ];
 

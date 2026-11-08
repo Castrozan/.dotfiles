@@ -21,20 +21,21 @@ agent-forge:
       agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       agent-harness/agent-instructions/skills/development/forge/install/default.nix
       agent-harness/agent-instructions/skills/development/ci-watcher/install/default.nix
-      agent-harness/agent-instructions/skills/knowledge/ril/install/default.nix
+      agent-harness/read-it-later/package.nix
+      agent-harness/read-it-later/cli-home-manager.nix
       agent-harness/harnesses/clawde/agents/steward.nix
       agent-harness/harnesses/clawde/agents/steward/forge-tools.nix
-      agent-harness/harnesses/clawde/agents/ril-watcher/default.nix
+      agent-harness/read-it-later/watcher/home-manager.nix
       || validation_status=1
     - >-
-      nix shell nixpkgs#python312Packages.pytest --command pytest
+      nix shell nixpkgs#python312Packages.pytest nixpkgs#python312Packages.hypothesis --command pytest
       machine-configuration/development/version-control/__tests__/unit/test_write_glab_configuration.py
       agent-harness/agent-instructions/skills/development/forge/__tests__/unit/test_repository.py
       agent-harness/agent-instructions/skills/development/forge/__tests__/unit/test_native.py
       agent-harness/agent-instructions/skills/development/ci-watcher/__tests__/unit/test_ci_watcher.py
       agent-harness/agent-instructions/skills/development/ci-watcher/__tests__/unit/test_gitlab_watcher.py
       agent-harness/harnesses/clawde/agents/steward/__tests__/unit/test_forge_ci_status.py
-      agent-harness/agent-instructions/skills/knowledge/ril/__tests__/unit/test_pull_request_pacing.py
-      agent-harness/agent-instructions/skills/knowledge/ril/__tests__/unit/test_gitlab_proposals.py -q
+      agent-harness/agent-instructions/skills/development/forge/__tests__/unit/test_proposals.py
+      agent-harness/read-it-later/__tests__/unit/test_forge_adapter.py -q
       || validation_status=1
     - exit "$validation_status"

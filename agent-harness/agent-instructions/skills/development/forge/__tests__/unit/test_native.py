@@ -103,8 +103,8 @@ def test_merge_request_discussion_ignores_system_notes_and_other_branches(monkey
                 },
             ]
         return [
-            {"iid": 9, "source_branch": "ril-capture"},
-            {"iid": 10, "source_branch": "other"},
+            {"iid": 9, "source_branch": "ril-capture", "title": "RIL: capture"},
+            {"iid": 10, "source_branch": "other", "title": "other"},
         ]
 
     monkeypatch.setattr(native, "gitlab_pages", pages)
@@ -113,6 +113,7 @@ def test_merge_request_discussion_ignores_system_notes_and_other_branches(monkey
         {
             "number": 9,
             "headRefName": "ril-capture",
+            "title": "RIL: capture",
             "comments": [{"id": 2, "body": "why this approach?", "createdAt": "later"}],
         }
     ]

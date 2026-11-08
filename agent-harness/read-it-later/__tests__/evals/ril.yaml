@@ -1,0 +1,73 @@
+categoria: skills/ril/ril
+casos:
+  - nome: ril_marks_done_only_through_the_cli
+    nivel: unidade
+    instrucao: agent-harness/read-it-later/skill/SKILL.md
+    pergunta: I finished working a capture. Should I hand-edit the done marker, or is there a command that owns this?
+    assercoes:
+      juiz:
+        - Says not to hand-edit the marker and names ril apply or ril record as the commands that own marking a capture done.
+  - nome: ril_claim_collision_stops_the_run
+    nivel: unidade
+    instrucao: agent-harness/read-it-later/skill/SKILL.md
+    pergunta: "ril claim printed 'held: capture.md' and exited non-zero. What now? Respond in one sentence."
+    assercoes:
+      juiz:
+        - Says another run already holds that capture, so leave it rather than forcing a takeover.
+  - nome: ril_completed_capture_is_not_a_claim_collision
+    nivel: unidade
+    instrucao: agent-harness/read-it-later/skill/SKILL.md
+    pergunta:
+      "ril claim printed 'already-done: capture.md' and exited non-zero. Is another run holding it? What should I
+      do?"
+    assercoes:
+      juiz:
+        - Distinguishes an already completed capture from one held by another run, skips it without changing its completion record,
+          and does not force a claim or repeat the work.
+  - nome: ril_never_annotates_a_capture
+    nivel: unidade
+    instrucao: agent-harness/read-it-later/skill/SKILL.md
+    pergunta: Should I summarize each saved item, tag it and rate its relevance in place?
+    assercoes:
+      juiz:
+        - Refuses, saying every capture ends dropped, filed in the Second Brain or dispatched to a session as Lucas decides on a
+          group pull request, never annotated in place.
+  - nome: ril_reads_a_browser_only_origin
+    nivel: unidade
+    instrucao: agent-harness/read-it-later/skill/SKILL.md
+    pergunta:
+      ril gather marked a capture's Instagram reel needs_browser. How does the agent read it, and what if Chrome asks to
+      allow the connection?
+    assercoes:
+      juiz:
+        - Reads it through chrome-devtools in the logged-in browser rather than WebFetch or a topic search, and clicks the
+          connection consent with computer use.
+  - nome: ril_verdict_belongs_to_lucas
+    nivel: unidade
+    instrucao: agent-harness/read-it-later/skill/SKILL.md
+    pergunta:
+      The group pull request has been quiet for a week and I am sure the cards are right. May I run ril apply and merge
+      it?
+    assercoes:
+      juiz:
+        - Refuses, saying ril apply runs only on Lucas's unmistakable approving comment and silence is never an answer.
+  - nome: ril_related_capture_joins_the_open_group
+    nivel: unidade
+    instrucao: agent-harness/read-it-later/skill/SKILL.md
+    pergunta:
+      Gather shows an open group pull request about agent state machines, and a new capture is about the same idea. Do I
+      open a new pull request for it?
+    assercoes:
+      juiz:
+        - Says no, the capture joins the open group by targeting its pull request and extending its bundle goal, instead of
+          opening a second pull request on the same topic.
+  - nome: ril_late_card_needs_a_new_approval
+    nivel: unidade
+    instrucao: agent-harness/read-it-later/skill/SKILL.md
+    pergunta:
+      Lucas approved the group yesterday, and today the watcher added a related capture to it. Does yesterday's approval
+      cover the new card?
+    assercoes:
+      juiz:
+        - Says no, a capture added after an approval is not covered by it, so the new card needs a new approval while the
+          earlier cards stay covered.
