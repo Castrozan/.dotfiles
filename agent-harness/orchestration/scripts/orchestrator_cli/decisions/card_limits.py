@@ -3,16 +3,16 @@ from __future__ import annotations
 from ..document_fields import InvalidPeerDocument, require_bounded_line
 
 CARD_TEXT_LIMITS = {
-    "goal": 200,
+    "goal": 120,
     "progress": 800,
-    "question": 200,
-    "blocked_work": 200,
-    "recommendation": 60,
-    "reasoning": 500,
+    "question": 150,
+    "blocked_work": 120,
+    "recommendation": 30,
+    "reasoning": 150,
     "blast_radius": 250,
     "details": 300,
 }
-OPTION_TEXT_LIMITS = {"label": 60, "consequence": 200}
+OPTION_TEXT_LIMITS = {"label": 30, "consequence": 120}
 CARD_LIST_LIMITS = {"evidence": 8, "unverified_assumptions": 4}
 LIST_ITEM_LIMIT = 160
 ESCALATION_MISSING_LIMIT = 300

@@ -1,0 +1,101 @@
+import json
+from datetime import datetime, timedelta, timezone
+
+import pytest
+from orchestration_test_support import file_card, valid_card_document
+from orchestrator_cli.decisions import card_limits
+from orchestrator_cli.reports.status_reports import REPORT_TEXT_LIMITS
+from orchestrator_cli.round.rendering import ROUND_WIDTH
+from round_test_support import escalate, file_report, report_document, run_round
+
+SCREEN_LINES = 60
+
+
+@pytest.fixture
+def directories(tmp_path):
+    return tmp_path / "cards", tmp_path / "reports"
+
+
+def words_filling(limit):
+    return "word " * (limit // 5)
+
+
+def test_two_decisions_and_six_sessions_at_every_limit_fit_one_screen(
+    monkeypatch, directories, capsys, notifications
+):
+    cards, reports = directories
+    longest = {
+        field: words_filling(limit)
+        for field, limit in card_limits.CARD_TEXT_LIMITS.items()
+    }
+    longest["recommendation"] = "first"
+    options = [
+        {
+            "label": label + words_filling(card_limits.OPTION_TEXT_LIMITS["label"] - 6),
+            "consequence": words_filling(card_limits.OPTION_TEXT_LIMITS["consequence"]),
+        }
+        for label in ("first", "second", "third")
+    ]
+    options[0]["label"] = "first"
+    for _ in range(2):
+        document = valid_card_document(**longest, options=options)
+        _, identifier = file_card(monkeypatch, cards, capsys, document)
+        escalate(monkeypatch, cards, identifier)
+    for index in range(6):
+        longest_report = {
+            field: "word " * (limit // 5) for field, limit in REPORT_TEXT_LIMITS.items()
+        }
+        assert (
+            file_report(
+                monkeypatch,
+                reports,
+                f"Servant {index}",
+                report_document(**longest_report),
+            )
+            == 0
+        )
+    output = run_round(monkeypatch, cards, reports, capsys)
+    lines = output.splitlines()
+    assert max(len(line) for line in lines) <= ROUND_WIDTH
+    assert len(lines) <= SCREEN_LINES
+    assert output.count("Servant-") == 6
+
+
+def write_report(reports, name, minutes_ago, **fields):
+    template = json.loads(next(reports.glob("*.json")).read_text())
+    updated = datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)
+    record = {
+        **template,
+        "name": name,
+        "requester": name,
+        "updated_at": updated.isoformat(timespec="seconds"),
+        **fields,
+    }
+    (reports / f"{name}.json").write_text(json.dumps(record))
+
+
+def test_finished_and_handed_over_sessions_leave_while_legacy_text_is_clipped(
+    monkeypatch, directories, capsys, notifications
+):
+    cards, reports = directories
+    assert file_report(monkeypatch, reports, "Voyager", report_document()) == 0
+    write_report(reports, "Finished-long-ago", 120, state="done")
+    write_report(reports, "Finished-just-now", 5, state="done")
+    write_report(reports, "Handed-over", 1, state="handed-over")
+    write_report(reports, "Oversized", 1, progress="legacy " * 200)
+    output = run_round(monkeypatch, cards, reports, capsys)
+    assert "Finished-long-ago" not in output and "Handed-over" not in output
+    assert "Finished-just-now" in output and "Voyager" in output
+    assert "…" in output
+    assert max(len(line) for line in output.splitlines()) <= ROUND_WIDTH
+    assert output.count("legacy") < 20
+
+
+def test_a_report_field_past_its_limit_is_refused_by_name(
+    monkeypatch, directories, notifications
+):
+    _, reports = directories
+    too_long = "x" * (REPORT_TEXT_LIMITS["progress"] + 1)
+    document = report_document(progress=too_long)
+    assert file_report(monkeypatch, reports, "Voyager", document) == 1
+    assert not reports.exists() or list(reports.iterdir()) == []

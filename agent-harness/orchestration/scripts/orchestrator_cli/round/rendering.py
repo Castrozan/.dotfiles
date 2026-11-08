@@ -1,38 +1,35 @@
 from __future__ import annotations
 
-import textwrap
 from datetime import datetime
 
-from .text_table import text_table
+from .text_table import clipped_lines, text_table
 
 ROUND_WIDTH = 100
-OPTION_WIDTHS = [2, 28, 64]
-SESSION_WIDTHS = [2, 14, 22, 26, 21]
+CELL_LINES = 2
+OPTION_WIDTHS = [2, 30, 62]
+SESSION_WIDTHS = [2, 20, 20, 26, 20]
 SESSION_HEADERS = ["#", "Session", "About", "This round", "Blocks"]
 
 
 def paragraph(text: str) -> str:
-    return textwrap.fill(text, ROUND_WIDTH, break_on_hyphens=False)
+    return "\n".join(clipped_lines(text, ROUND_WIDTH, CELL_LINES))
 
 
 def option_rows(card: dict) -> list[list[str]]:
     return [
-        [
-            str(index),
-            option["label"]
-            + (" (recommended)" if option["label"] == card["recommendation"] else ""),
-            option["consequence"],
-        ]
+        [str(index), option["label"], option["consequence"]]
         for index, option in enumerate(card["options"], start=1)
     ]
 
 
-def card_facts(card: dict) -> str:
-    reversibility = "reversible" if card["reversible"] else "irreversible"
-    facts = [f"Blocks: {card['blocked_work']}", reversibility]
-    if "details" in card:
-        facts.append(f"detail: {card['details']}")
-    return " · ".join(facts)
+def blocking_line(card: dict) -> str:
+    reversibility = "Reversible" if card["reversible"] else "Irreversible"
+    return f"{reversibility}. Blocks {card['blocked_work']}"
+
+
+def reply_line(card: dict) -> str:
+    labels = ", ".join(option["label"] for option in card["options"])
+    return f"Reply with {card['id']} and one option: {labels}"
 
 
 def decision_block(card: dict) -> str:
@@ -41,14 +38,16 @@ def decision_block(card: dict) -> str:
             paragraph(f"{card['id']} · {card['requester']}, working to {card['goal']}"),
             paragraph(f"Asks: {card['question']}"),
             text_table(
-                ["#", "Option", "What happens"], option_rows(card), OPTION_WIDTHS
+                ["#", "Option", "What happens"],
+                option_rows(card),
+                OPTION_WIDTHS,
+                CELL_LINES,
             ),
-            paragraph(f"Recommended because: {card['reasoning']}"),
-            paragraph(card_facts(card)),
             paragraph(
-                f"Reply with {card['id']} and one option: "
-                + ", ".join(option["label"] for option in card["options"])
+                f"Recommends {card['recommendation']} because {card['reasoning']}"
             ),
+            paragraph(blocking_line(card)),
+            paragraph(reply_line(card)),
         ]
     )
 
@@ -57,21 +56,21 @@ def minutes_since(timestamp: str, now: datetime) -> int:
     return int((now - datetime.fromisoformat(timestamp)).total_seconds() // 60)
 
 
-def blocks_cell(report: dict) -> str:
+def blocks_cell(report: dict, now: datetime) -> str:
     decisions = report["open_decisions"]
     waiting = f" Waiting on {', '.join(decisions)}." if decisions else ""
-    return f"{report['next_step']}{waiting}"
+    age = minutes_since(report["updated_at"], now)
+    return f"{report['state']} {age}m: {report['next_step']}{waiting}"
 
 
 def session_rows(reports: list[dict], now: datetime) -> list[list[str]]:
     return [
         [
             str(index),
-            f"{report['requester']} {report['state']}, "
-            f"{minutes_since(report['updated_at'], now)} min ago",
+            report["name"],
             report["goal"],
             report["progress"],
-            blocks_cell(report),
+            blocks_cell(report, now),
         ]
         for index, report in enumerate(reports, start=1)
     ]
@@ -82,8 +81,16 @@ def rendered_round(cards: list[dict], reports: list[dict], now: datetime) -> str
         "No decision is waiting for you."
     ]
     sessions = (
-        text_table(SESSION_HEADERS, session_rows(reports, now), SESSION_WIDTHS)
+        text_table(
+            SESSION_HEADERS, session_rows(reports, now), SESSION_WIDTHS, CELL_LINES
+        )
+        + "\nFull report: orchestrator report show <session>"
         if reports
         else "No session has filed a report."
     )
-    return "\n\n".join(["Decisions waiting for you", *decisions, "Sessions", sessions])
+    return "\n\n".join(
+        [
+            "Decisions waiting for you\n" + "\n\n".join(decisions),
+            "Sessions\n" + sessions,
+        ]
+    )

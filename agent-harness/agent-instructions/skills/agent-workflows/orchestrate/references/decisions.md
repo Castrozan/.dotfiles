@@ -80,5 +80,6 @@ pasted verbatim in a fenced code block, and keep your own words above it under 1
 reply's word and table limits, and the short prose lets it end the turn without closing labels.
 
 That output carries every decision waiting for him, each with its question, every option and what it does, and the
-recommendation, then one row per session with what it is about, what it did and what blocks it. Never paste raw card
-text or an earlier option by number. Mention `orchestrator learn stats` only when a count changed.
+recommendation, then one row per session with what it is about, what it did and what blocks it. A done session leaves
+the table half an hour after its last report and a handed-over one at once, so never add rows of your own. Never paste
+raw card text or an earlier option by number. Mention `orchestrator learn stats` only when a count changed.

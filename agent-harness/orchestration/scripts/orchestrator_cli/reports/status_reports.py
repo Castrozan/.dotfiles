@@ -17,10 +17,10 @@ REPORT_STATES = ("working", "blocked", "done")
 ATTENTION_STATES = frozenset({"blocked", "done"})
 HANDED_OVER_STATE = "handed-over"
 REPORT_TEXT_LIMITS = {
-    "goal": 120,
+    "goal": 80,
     "done_check": 200,
-    "progress": 160,
-    "next_step": 120,
+    "progress": 120,
+    "next_step": 80,
 }
 REPORT_OVERFLOW_ADVICE = "it is one cell of the round table; keep detail in a file"
 
