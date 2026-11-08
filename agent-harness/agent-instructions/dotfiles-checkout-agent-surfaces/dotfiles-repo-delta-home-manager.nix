@@ -35,6 +35,7 @@ in
         if [ -d "${dotfilesCheckout}/.git" ]; then
           if ! (
             cd "${dotfilesCheckout}" &&
+              export PATH="${pkgs.git}/bin:$PATH" &&
               CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin marketplace add zed-industries/delta-claude --scope local &&
               CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin install delta@zed-industries --scope local &&
               CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin update delta@zed-industries --scope local
