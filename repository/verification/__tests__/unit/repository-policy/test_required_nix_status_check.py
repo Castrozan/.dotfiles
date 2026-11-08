@@ -26,8 +26,26 @@ def required_check():
     return gate
 
 
+def flake_checks_command():
+    jobs = yaml.safe_load(WORKFLOW.read_text())["jobs"]
+    entries = [
+        entry
+        for entry in jobs["evaluate"]["strategy"]["matrix"]["include"]
+        if entry["name"] == "Nix flake checks"
+    ]
+    assert len(entries) == 1
+    return entries[0]["command"]
+
+
 def test_required_nix_check_covers_all_parallel_jobs():
     required_check()
+
+
+def test_flake_checks_job_ends_on_the_complete_flake_check_verdict():
+    command_lines = flake_checks_command().strip().splitlines()
+    verdict = command_lines[-1]
+    assert verdict.startswith("nix flake check --keep-going")
+    assert "--no-build" not in verdict
 
 
 @pytest.mark.parametrize(
