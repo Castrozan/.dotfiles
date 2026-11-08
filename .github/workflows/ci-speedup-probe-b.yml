@@ -5,16 +5,13 @@ on:
 
 jobs:
   probe:
-    name: ${{ matrix.variant.name }} ${{ matrix.sample }}
+    name: ${{ matrix.variant }} ${{ matrix.sample }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        sample: [a, b]
-        variant:
-          - { name: baseline, restore: 'true', jobs: 8 }
-          - { name: max-jobs-4, restore: 'true', jobs: 4 }
-          - { name: max-jobs-6, restore: 'true', jobs: 6 }
+        sample: [seed]
+        variant: [input-roots]
     steps:
       - uses: actions/checkout@v4
 
@@ -22,7 +19,22 @@ jobs:
         with:
           cache-key: flake-check
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          restore-store: ${{ matrix.variant.restore }}
+          cache-variant: ${{ matrix.variant == 'input-roots' && '-input-roots' || '' }}
 
       - name: Nix flake checks
-        run: nix flake check --keep-going $ARR_STACK_STUB_OVERRIDE --print-build-logs --show-trace --max-jobs ${{ matrix.variant.jobs }} --cores 2
+        run: nix flake check --keep-going $ARR_STACK_STUB_OVERRIDE --print-build-logs --show-trace --max-jobs 8 --cores 2
+
+      - name: Retain native package outputs and fetched flake inputs for the store cache
+        run: |
+          nix build $ARR_STACK_STUB_OVERRIDE --out-link "$RUNNER_TEMP/native-cache-package" \
+            .#nixosConfigurations.chise.config.home-manager.users.zanoni.codex.unwrappedPackage \
+            .#checks.x86_64-linux.domain-local-model-tokenizer-long-input.tokenizerPackage
+          if [ "${{ matrix.variant }}" = input-roots ]; then
+            mkdir -p "$RUNNER_TEMP/flake-input-roots"
+            nix flake archive --dry-run --json $ARR_STACK_STUB_OVERRIDE | jq -r '.. | .path? // empty' | while read -r inputPath; do
+              if nix-store --check-validity "$inputPath" 2>/dev/null; then
+                nix-store --realise --add-root "$RUNNER_TEMP/flake-input-roots/${inputPath#/nix/store/}" "$inputPath" > /dev/null
+              fi
+            done
+            ls "$RUNNER_TEMP/flake-input-roots" | wc -l
+          fi
