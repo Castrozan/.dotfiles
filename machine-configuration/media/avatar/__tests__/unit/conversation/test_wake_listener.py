@@ -3,9 +3,11 @@ from unittest.mock import Mock
 
 import speech_segmenter
 import wake_listener
+from conversation_addressee import Addressee
 from wake_phrase import LiveSession
 
 VOYAGER = LiveSession("Voyager", "wW:pPZ")
+IBARAKI = LiveSession("Ibaraki-dōji", "wW:pPY")
 FRAME_SAMPLES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS)
 
 
@@ -23,6 +25,9 @@ def boundaries(heard="hey Voyager, check the build", sessions=(VOYAGER,), **chan
         notify_at_idle=Mock(),
         report=Mock(),
         now=Mock(return_value=0.0),
+        transcript_entries=Mock(return_value=[]),
+        addressee=Mock(return_value=None),
+        hand_to=Mock(),
     )
     fakes.update(changes)
     return wake_listener.Boundaries(**fakes)
@@ -134,3 +139,89 @@ def test_the_prompt_never_claims_who_spoke():
     assert "not verified" in text and "Lucas" not in text, (
         "anyone in the room can speak a name, so the agent must not assume its owner"
     )
+
+
+def said(*texts):
+    return [
+        {"sequence": sequence, "text": text}
+        for sequence, text in enumerate(texts, start=1)
+    ]
+
+
+def conversation_with(addressee, sessions=(VOYAGER, IBARAKI)):
+    fakes = boundaries(
+        sessions=sessions,
+        addressee=Mock(return_value=addressee),
+        conversation_listening=Mock(return_value=True),
+    )
+    listener = wake_listener.WakeListener(fakes, dry_run=False)
+    listener.start_reading_conversation()
+    return fakes, listener
+
+
+def test_a_wake_hands_the_conversation_it_opens_to_the_woken_session():
+    order = Mock()
+    fakes = boundaries(open_conversation=order.open, hand_to=order.hand_to)
+    armed_listener(fakes).hear(b"segment")
+    assert [call[0] for call in order.mock_calls] == ["open", "hand_to"]
+    assert order.hand_to.call_args.args[0] == Addressee(
+        VOYAGER.pane, VOYAGER.servant, heard_through=0
+    )
+
+
+def test_naming_another_session_mid_conversation_turns_the_room_to_it():
+    fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
+    fakes.transcript_entries.return_value = said(
+        "roda os testes", "hey Ibaraki, status"
+    )
+    listener.read_conversation()
+    assert fakes.hand_to.call_args.args[0] == Addressee(
+        IBARAKI.pane, IBARAKI.servant, heard_through=2
+    ), "the new session's follow starts after the words that named it"
+    pane, text = fakes.prompt_now.call_args.args
+    assert pane == IBARAKI.pane and "status" in text and "open" in text
+    fakes.open_conversation.assert_not_called()
+
+
+def test_naming_the_session_already_listening_changes_nothing():
+    fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
+    fakes.transcript_entries.return_value = said("hey Voyager, keep going")
+    listener.read_conversation()
+    fakes.hand_to.assert_not_called()
+    fakes.prompt_now.assert_not_called()
+
+
+def test_each_conversation_turn_is_matched_once():
+    fakes, listener = conversation_with(None)
+    fakes.transcript_entries.return_value = said("hey Ibaraki, status")
+    listener.read_conversation()
+    fakes.addressee.return_value = Addressee(VOYAGER.pane, VOYAGER.servant, 0)
+    listener.read_conversation()
+    assert fakes.prompt_now.call_count == 1
+
+
+def test_turns_spoken_before_the_wake_joined_are_not_replayed():
+    fakes = boundaries(
+        transcript_entries=Mock(return_value=said("hey Ibaraki, status"))
+    )
+    listener = wake_listener.WakeListener(fakes, dry_run=False)
+    listener.start_reading_conversation()
+    listener.read_conversation()
+    fakes.prompt_now.assert_not_called()
+
+
+def test_a_restarted_conversation_is_read_from_its_first_turn():
+    fakes, listener = conversation_with(None)
+    fakes.transcript_entries.return_value = said("one", "two", "three")
+    listener.read_conversation()
+    fakes.transcript_entries.return_value = said("hey Ibaraki, status")
+    listener.read_conversation()
+    assert fakes.prompt_now.call_args.args[0] == IBARAKI.pane
+
+
+def test_turns_without_a_leading_greeting_never_read_the_fleet():
+    fakes, listener = conversation_with(None)
+    fakes.sessions.reset_mock()
+    fakes.transcript_entries.return_value = said("Ibaraki broke it", "roda os testes")
+    listener.read_conversation()
+    fakes.sessions.assert_not_called()

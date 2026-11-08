@@ -3,6 +3,7 @@ import fcntl
 import os
 import time
 
+import conversation_addressee
 import listener
 import transcript_log
 
@@ -41,19 +42,27 @@ def exclusive_consumer(directory):
 
 def last_heard(directory):
     path = directory / listener.HEARD_FILE
-    return int(path.read_text()) if path.exists() else 0
+    heard = int(path.read_text()) if path.exists() else 0
+    addressee = conversation_addressee.current(directory)
+    return max(heard, addressee.heard_through) if addressee else heard
 
 
 def remember(directory, sequence):
     (directory / listener.HEARD_FILE).write_text(str(sequence))
 
 
-def wait_for_first_entries(directory, wait_seconds, still_open):
+def always_addressed():
+    return True
+
+
+def wait_for_first_entries(directory, wait_seconds, still_open, still_addressed):
     transcript = directory / "transcript.jsonl"
     deadline = time.monotonic() + wait_seconds
     while True:
         if not still_open():
             raise ConversationClosed(CLOSED_MESSAGE)
+        if not still_addressed():
+            return []
         slice_seconds = min(max(deadline - time.monotonic(), 0), 1)
         entries = transcript_log.wait_since(
             transcript, last_heard(directory), slice_seconds
@@ -113,10 +122,16 @@ def wait_for_finished_speech(directory, entries, still_open):
     return settling.entries
 
 
-def next_utterance(directory, wait_seconds, still_open):
-    entries = wait_for_first_entries(directory, wait_seconds, still_open)
+def next_utterance(
+    directory, wait_seconds, still_open, still_addressed=always_addressed
+):
+    entries = wait_for_first_entries(
+        directory, wait_seconds, still_open, still_addressed
+    )
     if not entries:
         return None
     entries = wait_for_finished_speech(directory, entries, still_open)
+    if not still_addressed():
+        return None
     remember(directory, entries[-1]["sequence"])
     return " ".join(entry["text"] for entry in entries)

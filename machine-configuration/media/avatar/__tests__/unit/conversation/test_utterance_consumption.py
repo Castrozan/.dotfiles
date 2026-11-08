@@ -3,6 +3,8 @@ import threading
 import time
 from unittest.mock import Mock
 
+import conversation_addressee
+import conversation_effects
 import listener
 import pytest
 import transcript_log
@@ -70,3 +72,39 @@ def test_the_settle_wait_asks_whether_the_conversation_is_open_about_once_a_seco
         still_open,
     )
     assert still_open.call_count <= 3
+
+
+def test_a_follower_the_room_turned_from_leaves_the_turn_unconsumed(tmp_path):
+    transcript_log.append(tmp_path / "transcript.jsonl", "human", "hey Ibaraki, status")
+    utterance = utterances.next_utterance(tmp_path, 0, lambda: True, lambda: False)
+    assert utterance is None
+    assert utterances.last_heard(tmp_path) == 0
+
+
+def test_the_new_addressee_hears_only_what_follows_its_wake(tmp_path):
+    transcript = tmp_path / "transcript.jsonl"
+    for text in ("roda os testes", "hey Ibaraki, status", "e o build"):
+        transcript_log.append(transcript, "human", text)
+    conversation_addressee.hand_to(
+        tmp_path, conversation_addressee.Addressee("wW:pPY", "Ibaraki-dōji", 2)
+    )
+    assert utterances.next_utterance(tmp_path, 0, lambda: True) == "e o build"
+
+
+def test_follow_ends_once_the_room_turns_to_another_session(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.setenv(conversation_effects.PANE_ENVIRONMENT_VARIABLE, "wW:pQZ")
+    conversation_addressee.hand_to(
+        tmp_path, conversation_addressee.Addressee("wW:pPY", "Ibaraki-dōji", 0)
+    )
+    conversation_effects.follow(None, tmp_path)
+    assert "turned to Ibaraki-dōji" in capsys.readouterr().out
+
+
+def test_the_addressee_file_stays_private(tmp_path):
+    conversation_addressee.hand_to(
+        tmp_path, conversation_addressee.Addressee("wW:pPY", "Ibaraki-dōji", 0)
+    )
+    path = tmp_path / conversation_addressee.ADDRESSEE_FILE
+    assert path.stat().st_mode & 0o777 == 0o600

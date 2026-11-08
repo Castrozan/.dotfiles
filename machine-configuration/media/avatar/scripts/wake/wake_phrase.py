@@ -56,6 +56,11 @@ def named_session(word, candidates):
     return candidates[scored[0][1]]
 
 
+def opens_with_greeting(text):
+    first = WORD.search(text)
+    return first is not None and folded(first.group()) in GREETINGS
+
+
 def addressed_session(text, sessions):
     words = list(WORD.finditer(text))
     candidates = sessions_by_spoken_name(sessions)

@@ -1,8 +1,10 @@
 import enum
 import json
+import os
 import subprocess
 import sys
 
+import conversation_addressee
 import conversation_state
 import desktop_window
 import listen_cli
@@ -18,6 +20,7 @@ FOLLOW_SLICE_SECONDS = 30
 COMMAND_TIMEOUT_SECONDS = 120
 SPEECH_TIMEOUT_SECONDS = 310
 VOICE_TAG = "[voice]"
+PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
 
 
 class WindowPresence(enum.StrEnum):
@@ -57,6 +60,7 @@ def open_conversation(arguments, directory):
             (start.renderer_ready, room_microphone_ready),
         )
         show_chosen_character(arguments)
+        conversation_addressee.forget(directory)
         listener_session.begin_listening(
             directory,
             ListenerPurpose.CONVERSATION,
@@ -131,11 +135,14 @@ def say(arguments, directory):
     )
 
 
-def print_next_utterance(directory, wait_seconds):
+def print_next_utterance(
+    directory, wait_seconds, still_addressed=utterances.always_addressed
+):
     utterance = utterances.next_utterance(
         directory,
         wait_seconds,
         lambda: conversation_state.observe(directory) is ConversationPhase.OPEN,
+        still_addressed,
     )
     if utterance:
         print(f"{VOICE_TAG} {utterance}", flush=True)
@@ -158,9 +165,17 @@ def ask(arguments, directory):
 
 
 def follow(arguments, directory):
+    pane = os.environ.get(PANE_ENVIRONMENT_VARIABLE)
+
+    def still_addressed():
+        return conversation_addressee.addresses(directory, pane)
+
     with utterances.exclusive_consumer(directory):
-        while True:
-            print_next_utterance(directory, FOLLOW_SLICE_SECONDS)
+        while still_addressed():
+            print_next_utterance(directory, FOLLOW_SLICE_SECONDS, still_addressed)
+    successor = conversation_addressee.current(directory)
+    name = successor.servant if successor else "another session"
+    print(f"{VOICE_TAG} The room turned to {name}; this follow has ended.", flush=True)
 
 
 def set_canvas_presence(presence):
