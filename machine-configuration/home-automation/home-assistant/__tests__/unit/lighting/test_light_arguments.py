@@ -42,22 +42,18 @@ class TestParseBrightnessArgument:
 
 
 class TestParseColorTemperatureArgument:
-    def test_parses_valid_temperature(self):
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            pytest.param("3500", 3500, id="parses_valid_temperature"),
+            pytest.param("2000", 2000, id="parses_minimum"),
+            pytest.param("6500", 6500, id="parses_maximum"),
+        ],
+    )
+    def test_parses_color_temperature_within_the_range(self, value, expected):
         assert (
-            home_assistant_light_control.parse_color_temperature_argument("3500")
-            == 3500
-        )
-
-    def test_parses_minimum(self):
-        assert (
-            home_assistant_light_control.parse_color_temperature_argument("2000")
-            == 2000
-        )
-
-    def test_parses_maximum(self):
-        assert (
-            home_assistant_light_control.parse_color_temperature_argument("6500")
-            == 6500
+            home_assistant_light_control.parse_color_temperature_argument(value)
+            == expected
         )
 
     def test_exits_on_too_low(self):

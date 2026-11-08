@@ -1,40 +1,37 @@
 from unittest.mock import MagicMock, patch
+
+import pytest
 from network_management import network_manager
 
 
 class TestGetActiveConnection:
-    def test_returns_first_non_loopback_connection(self):
+    @pytest.mark.parametrize(
+        ("stdout", "expected_connection"),
+        [
+            pytest.param(
+                "MyWiFi:802-11-wireless:wlan0\nlo:loopback:lo\n",
+                "MyWiFi:802-11-wireless:wlan0",
+                id="returns_first_non_loopback_connection",
+            ),
+            pytest.param(
+                "lo:loopback:lo\n",
+                "",
+                id="returns_empty_when_only_loopback",
+            ),
+            pytest.param("", "", id="returns_empty_when_no_connections"),
+        ],
+    )
+    def test_selects_the_first_non_loopback_connection(
+        self, stdout, expected_connection
+    ):
         mock_result = MagicMock()
-        mock_result.stdout = "MyWiFi:802-11-wireless:wlan0\nlo:loopback:lo\n"
+        mock_result.stdout = stdout
 
         with patch(
             "network_management.network_manager.subprocess.run",
             return_value=mock_result,
         ):
-            assert (
-                network_manager.get_active_connection()
-                == "MyWiFi:802-11-wireless:wlan0"
-            )
-
-    def test_returns_empty_when_only_loopback(self):
-        mock_result = MagicMock()
-        mock_result.stdout = "lo:loopback:lo\n"
-
-        with patch(
-            "network_management.network_manager.subprocess.run",
-            return_value=mock_result,
-        ):
-            assert network_manager.get_active_connection() == ""
-
-    def test_returns_empty_when_no_connections(self):
-        mock_result = MagicMock()
-        mock_result.stdout = ""
-
-        with patch(
-            "network_management.network_manager.subprocess.run",
-            return_value=mock_result,
-        ):
-            assert network_manager.get_active_connection() == ""
+            assert network_manager.get_active_connection() == expected_connection
 
 
 class TestHasSavedConnection:

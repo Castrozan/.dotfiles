@@ -30,30 +30,28 @@ class TestMainEntryPoint:
         home_assistant_air_conditioner_control.main()
         assert mock_ac_api_request[0]["endpoint"].startswith("/api/states/")
 
-    def test_mode_command(self, monkeypatch, access_token, mock_ac_api_request):
-        monkeypatch.setattr("sys.argv", ["ha-ac", "mode", "heat"])
+    @pytest.mark.parametrize(
+        ("arguments", "payload_key", "expected_value"),
+        [
+            pytest.param(["mode", "heat"], "hvac_mode", "heat", id="mode_command"),
+            pytest.param(["temp", "22"], "temperature", 22.0, id="temp_command"),
+            pytest.param(["fan", "high"], "fan_mode", "high", id="fan_command"),
+            pytest.param(["swing", "both"], "swing_mode", "both", id="swing_command"),
+            pytest.param(["preset", "eco"], "preset_mode", "eco", id="preset_command"),
+        ],
+    )
+    def test_attribute_command_sends_its_value_in_the_payload(
+        self,
+        monkeypatch,
+        access_token,
+        mock_ac_api_request,
+        arguments,
+        payload_key,
+        expected_value,
+    ):
+        monkeypatch.setattr("sys.argv", ["ha-ac", *arguments])
         home_assistant_air_conditioner_control.main()
-        assert mock_ac_api_request[0]["payload"]["hvac_mode"] == "heat"
-
-    def test_temp_command(self, monkeypatch, access_token, mock_ac_api_request):
-        monkeypatch.setattr("sys.argv", ["ha-ac", "temp", "22"])
-        home_assistant_air_conditioner_control.main()
-        assert mock_ac_api_request[0]["payload"]["temperature"] == 22.0
-
-    def test_fan_command(self, monkeypatch, access_token, mock_ac_api_request):
-        monkeypatch.setattr("sys.argv", ["ha-ac", "fan", "high"])
-        home_assistant_air_conditioner_control.main()
-        assert mock_ac_api_request[0]["payload"]["fan_mode"] == "high"
-
-    def test_swing_command(self, monkeypatch, access_token, mock_ac_api_request):
-        monkeypatch.setattr("sys.argv", ["ha-ac", "swing", "both"])
-        home_assistant_air_conditioner_control.main()
-        assert mock_ac_api_request[0]["payload"]["swing_mode"] == "both"
-
-    def test_preset_command(self, monkeypatch, access_token, mock_ac_api_request):
-        monkeypatch.setattr("sys.argv", ["ha-ac", "preset", "eco"])
-        home_assistant_air_conditioner_control.main()
-        assert mock_ac_api_request[0]["payload"]["preset_mode"] == "eco"
+        assert mock_ac_api_request[0]["payload"][payload_key] == expected_value
 
     def test_set_command_with_multiple_attributes(
         self, monkeypatch, access_token, mock_ac_api_request

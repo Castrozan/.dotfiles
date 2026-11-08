@@ -71,26 +71,20 @@ def test_reads_notebook_path_for_notebook_edit(tmp_path):
     assert result.decision == "block"
 
 
-def test_silent_under_threshold(tmp_path):
-    file_path = write_python_file_with_line_count(tmp_path, "small.py", 50)
+@pytest.mark.parametrize(
+    ("file_basename", "line_count", "tool_name"),
+    [
+        pytest.param("small.py", 50, "Write", id="silent_under_threshold"),
+        pytest.param("over.py", 250, "Bash", id="ignores_non_applicable_tool"),
+        pytest.param("notes.txt", 500, "Write", id="ignores_non_code_extension"),
+    ],
+)
+def test_handler_stays_silent_when_no_block_applies(
+    tmp_path, file_basename, line_count, tool_name
+):
+    file_path = write_python_file_with_line_count(tmp_path, file_basename, line_count)
     result = line_count_limit_guard_handler.handle(
-        {"tool_name": "Write", "tool_input": {"file_path": str(file_path)}}
-    )
-    assert result is None
-
-
-def test_ignores_non_applicable_tool(tmp_path):
-    file_path = write_python_file_with_line_count(tmp_path, "over.py", 250)
-    result = line_count_limit_guard_handler.handle(
-        {"tool_name": "Bash", "tool_input": {"file_path": str(file_path)}}
-    )
-    assert result is None
-
-
-def test_ignores_non_code_extension(tmp_path):
-    file_path = write_python_file_with_line_count(tmp_path, "notes.txt", 500)
-    result = line_count_limit_guard_handler.handle(
-        {"tool_name": "Write", "tool_input": {"file_path": str(file_path)}}
+        {"tool_name": tool_name, "tool_input": {"file_path": str(file_path)}}
     )
     assert result is None
 

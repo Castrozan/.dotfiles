@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 import git_toggle_user
 
 
@@ -27,26 +29,20 @@ class TestParseArguments:
     def test_short_status_flag_returns_true(self):
         assert git_toggle_user.parse_arguments(["-s"]) is True
 
-    def test_help_flag_exits_zero(self):
-        try:
-            git_toggle_user.parse_arguments(["--help"])
-            assert False, "Should have raised SystemExit"
-        except SystemExit as e:
-            assert e.code == 0
-
-    def test_short_help_flag_exits_zero(self):
-        try:
-            git_toggle_user.parse_arguments(["-h"])
-            assert False, "Should have raised SystemExit"
-        except SystemExit as e:
-            assert e.code == 0
-
-    def test_unknown_option_exits_one(self):
-        try:
-            git_toggle_user.parse_arguments(["--bogus"])
-            assert False, "Should have raised SystemExit"
-        except SystemExit as e:
-            assert e.code == 1
+    @pytest.mark.parametrize(
+        ("arguments", "expected_exit_code"),
+        [
+            pytest.param(["--help"], 0, id="help_flag_exits_zero"),
+            pytest.param(["-h"], 0, id="short_help_flag_exits_zero"),
+            pytest.param(["--bogus"], 1, id="unknown_option_exits_one"),
+        ],
+    )
+    def test_parse_arguments_exits_with_the_expected_status(
+        self, arguments, expected_exit_code
+    ):
+        with pytest.raises(SystemExit) as exit_info:
+            git_toggle_user.parse_arguments(arguments)
+        assert exit_info.value.code == expected_exit_code
 
 
 class TestPrintCurrentStatus:
