@@ -6,8 +6,8 @@ description: Triage the ReadItLater capture inbox into one pull request per topi
 ### Outcome
 
 Every capture ends dropped, filed in the Second Brain, or dispatched to a work session, and only Lucas decides which, on
-a group pull request. Never summarize, rate or tag a capture in place: an annotated capture reads as worked while nothing
-changed. Captures are inputs, so a session may still conclude its capture was already covered.
+a group pull request. Never summarize, rate or tag a capture in place: an annotated capture reads as worked while
+nothing changed. Captures are inputs, so a session may still conclude its capture was already covered.
 
 ### Queue states
 
@@ -26,9 +26,10 @@ merges. `ril propose --example` prints a valid cards document; copy its shape ra
 ### Reading origins
 
 Judge a capture from its gathered origin, never from the stub. An origin marked `needs_browser` is login-walled,
-client-rendered or image-only: read it through `chrome-devtools` in the logged-in browser per the browser skill, and when
-Chrome asks to allow the remote debugging connection, click Allow with computer use per the desktop skill. Never use
-WebFetch, whose summarizer alters the text. A dead origin is a `drop` whose reason says so, never a guess from the title.
+client-rendered or image-only: read it through `chrome-devtools` in the logged-in browser per the browser skill, and
+when Chrome asks to allow the remote debugging connection, click Allow with computer use per the desktop skill. Never
+use WebFetch, whose summarizer alters the text. A dead origin is a `drop` whose reason says so, never a guess from the
+title.
 
 ### Triage judgment
 
@@ -68,15 +69,15 @@ a question in a reply and change nothing else.
 
 When Lucas changes cards ("drop 3", "file 2", "session on kira"), rewrite those cards with the same capture names and
 run `ril propose` with the group's `target_pull_request`. A rewritten card keeps its place under his approval, while a
-newly added capture is not covered by any approval older than it. Sign every comment you write with a trailing
-`<!-- ril-watcher -->` so it never reads as his and never wakes the gate.
+newly added capture is not covered by any approval older than it. Sign every comment you write with a trailing `<!--
+ril-watcher -->` so it never reads as his and never wakes the gate.
 
 ### Applying
 
 Run `ril apply` with the id of the approving comment, after applying any per-card changes from that comment. It skips
-captures already done, records each capture only after its action is confirmed, launches one Claude session per
-bundle, and merges only when every card settled. Exit 2 means not merged: comment what is left, such as captures the
-approval does not cover or a failed card, and ask. Rerunning after a fix is safe.
+captures already done, records each capture only after its action is confirmed, launches one Claude session per bundle,
+and merges only when every card settled. Exit 2 means not merged: comment what is left, such as captures the approval
+does not cover or a failed card, and ask. Rerunning after a fix is safe.
 
 ### Working a group with Lucas
 
@@ -87,9 +88,9 @@ thread records the decision, then run `ril apply` with that comment's id.
 ### Unattended watcher run
 
 The `ril-watcher` wakes when `ril probe` prints work: a `response` line is an unanswered comment on an open group, a
-`capture` line means pending captures no group lists. Exit without acting when the probe prints nothing or fails.
-Answer every response before triaging captures; gather and propose all pending captures in one run. Leave
-`~/.dotfiles` clean and on its branch; `ril propose` works in its own worktree.
+`capture` line means pending captures no group lists. Exit without acting when the probe prints nothing or fails. Answer
+every response before triaging captures; gather and propose all pending captures in one run. Leave `~/.dotfiles` clean
+and on its branch; `ril propose` works in its own worktree.
 
 ### Public repository
 
