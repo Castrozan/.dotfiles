@@ -1,9 +1,9 @@
 import json
 
 import pytest
-from a2a_cli.decisions import cli as decision_cli
+from a2a_cli import peer_delivery
 from a2a_cli.peer_transport import PeerRequestFailure
-from decision_test_support import file_card, run_a2a, valid_card_document
+from orchestration_test_support import file_card, run_a2a, valid_card_document
 
 
 def test_filing_saves_an_open_card_and_notifies_the_orchestrator_with_how_to_read_it(
@@ -61,7 +61,7 @@ def test_a_failed_notification_keeps_the_card_and_reports_where_it_is(
     def refuse(endpoint, sender, content):
         raise PeerRequestFailure("peer refused the notification with status 503")
 
-    monkeypatch.setattr(decision_cli, "notify_peer", refuse)
+    monkeypatch.setattr(peer_delivery, "notify_peer", refuse)
     exit_code, identifier = file_card(monkeypatch, tmp_path, capsys)
     assert exit_code == 1
     assert (tmp_path / f"{identifier}.json").is_file()

@@ -16,6 +16,8 @@ from .commands import (
 from .decisions.cli import add_parser as add_decision_parser
 from .decisions.cli import command_decision
 from .fleet.cli import add_parser as add_fleet_parser
+from .reports.cli import add_parser as add_report_parser
+from .reports.cli import command_report
 from .peer_identity import with_peer_identities
 from .peer_transport import (
     DEFAULT_ANSWER_TIMEOUT_SECONDS,
@@ -101,6 +103,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     acknowledge_parser.set_defaults(handler=command_acknowledge)
     add_fleet_parser(subcommands)
     add_decision_parser(subcommands)
+    add_report_parser(subcommands)
     return parser
 
 
@@ -110,6 +113,8 @@ def main() -> int:
         return arguments.handler(arguments)
     if arguments.command == "decision":
         return command_decision(arguments)
+    if arguments.command == "report":
+        return command_report(arguments)
     try:
         return arguments.handler(
             arguments, with_peer_identities(read_agent_directory(arguments.daemon))

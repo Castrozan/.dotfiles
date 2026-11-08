@@ -4,7 +4,7 @@ import sys
 
 import pytest
 from a2a_cli import __main__ as a2a_main
-from a2a_cli.decisions import cli as decision_cli
+from a2a_cli import peer_delivery
 
 AGENT_DIRECTORY = {
     "orchestrator-session": {
@@ -56,16 +56,18 @@ def notifications(monkeypatch):
         return {"id": "notification"}
 
     monkeypatch.setattr(
-        decision_cli, "read_agent_directory", lambda daemon: AGENT_DIRECTORY
+        peer_delivery, "read_agent_directory", lambda daemon: AGENT_DIRECTORY
     )
-    monkeypatch.setattr(decision_cli, "notify_peer", record)
+    monkeypatch.setattr(peer_delivery, "notify_peer", record)
     monkeypatch.setenv("HERDR_PANE_ID", "worker-pane")
     return sent
 
 
-def run_a2a(monkeypatch, decision_directory, *arguments, stdin_text=""):
+def run_a2a(
+    monkeypatch, state_directory, *arguments, stdin_text="", command="decision"
+):
     monkeypatch.setattr(
-        sys, "argv", ["a2a", "decision", "--dir", str(decision_directory), *arguments]
+        sys, "argv", ["a2a", command, "--dir", str(state_directory), *arguments]
     )
     monkeypatch.setattr(sys, "stdin", io.StringIO(stdin_text))
     return a2a_main.main()

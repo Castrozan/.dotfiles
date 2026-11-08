@@ -112,15 +112,9 @@ commit, or a diff and read that yourself; read the pane through herdr when you n
 
 ### Decisions travel as cards
 
-Tell every peer in its brief to file a decision it cannot make as a card, `a2a decision file --to <your name>`, instead
-of asking in its pane or through a question tool, and to keep working on whatever the decision does not block. The
-card's fields, listed by `a2a decision file --help`, carry the options with consequences, a recommendation, evidence and
-unverified assumptions, because a pane question or a scraped answer arrives without them.
-
-Decide a card yourself only when a decision the human already made covers it, and cite that decision as the rationale.
-Otherwise show the human `a2a decision show <id>` verbatim with your recommendation beneath it, never a paraphrase,
-since a summary drops the evidence and the unverified assumptions the human decides on. Record every answer with `a2a
-decision answer`, naming who decided; it notifies the requester and keeps the record later delegation draws on.
+Peers raise decisions as cards and report status through `a2a report`, and you decide a card only under the human's
+standing orders; read [decisions](references/decisions.md) before briefing a peer, deciding a card, or giving a recap.
+A pane question or a scraped answer arrives without the options, evidence and unverified assumptions a card carries.
 
 ### A2a sender identity
 

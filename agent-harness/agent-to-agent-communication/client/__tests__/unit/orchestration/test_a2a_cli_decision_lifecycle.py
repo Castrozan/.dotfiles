@@ -1,8 +1,8 @@
 import json
 
-from a2a_cli.decisions import cli as decision_cli
+from a2a_cli import peer_delivery
 from a2a_cli.peer_transport import PeerRequestFailure
-from decision_test_support import file_card, run_a2a
+from orchestration_test_support import file_card, run_a2a
 
 
 def test_answering_records_the_decider_and_notifies_the_requesting_pane_once(
@@ -72,7 +72,7 @@ def test_list_filters_by_state_and_show_renders_the_whole_card(
         "--rationale",
         "r",
         "--by",
-        "orchestrator",
+        "human",
         "--sender",
         "Medea",
     )
@@ -84,7 +84,7 @@ def test_list_filters_by_state_and_show_renders_the_whole_card(
     rendered = capsys.readouterr().out
     assert "**drop** (recommended)" in rendered
     assert "**Unverified assumptions**" in rendered
-    assert "**Answer** (orchestrator" in rendered
+    assert "**Answer** (human" in rendered
 
 
 def test_an_answer_is_recorded_even_when_the_daemon_cannot_deliver_it(
@@ -95,7 +95,7 @@ def test_an_answer_is_recorded_even_when_the_daemon_cannot_deliver_it(
     def unreachable(daemon):
         raise PeerRequestFailure("http://127.0.0.1:7000/agents is unreachable")
 
-    monkeypatch.setattr(decision_cli, "read_agent_directory", unreachable)
+    monkeypatch.setattr(peer_delivery, "read_agent_directory", unreachable)
     answer = [
         "answer",
         identifier,
@@ -110,4 +110,4 @@ def test_an_answer_is_recorded_even_when_the_daemon_cannot_deliver_it(
     assert (
         json.loads((tmp_path / f"{identifier}.json").read_text())["state"] == "answered"
     )
-    assert "is saved at" in capsys.readouterr().err
+    assert "is saved but" in capsys.readouterr().err
