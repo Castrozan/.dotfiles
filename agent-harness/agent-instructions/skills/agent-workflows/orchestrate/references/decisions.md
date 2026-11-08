@@ -41,9 +41,10 @@ than restating the edit, then write it with `a2a user add`, or with `a2a user su
 active directive.
 
 Close each event with `a2a learn resolve <card> --outcome added|superseded --directive <id> --reason <the inferred
-preference>`, or with `--outcome no-change --reason <why it is a one-off>`. Commit `USER.md` in its `private-
-configuration` checkout and push it fast-forward. When `a2a learn stats` shows one escalation reason recurring, name
-the missing directive in your next round so Lucas can settle it once.
+preference>`, or with `--outcome no-change --reason <why>`; a flagged commit that is not Lucas's correction closes as
+no-change. Commit `USER.md` in `private-configuration` on top of its freshly fetched `origin/main` and push it
+fast-forward, because that checkout sits detached at its pinned commit. When `a2a learn stats` shows one escalation
+reason recurring, name the missing directive in your next round so Lucas can settle it once.
 
 ### Round status template
 
