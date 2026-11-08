@@ -7,7 +7,7 @@ import conversation_addressee
 import listener_runtime
 import listener_session
 import speech_segmenter
-import transcriber
+from transcription import transcriber
 import transcript_log
 from servant_panes import live_sessions
 

@@ -3,8 +3,8 @@ import json
 import urllib.error
 from unittest.mock import MagicMock, Mock
 
-import cloud_transcriber
-import transcriber
+from transcription import cloud_transcriber
+from transcription import transcriber
 
 
 def stub_scribe(monkeypatch, payload):

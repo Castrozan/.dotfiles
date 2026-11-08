@@ -1,6 +1,6 @@
 import subprocess
 
-from cloud_transcriber import transcribe_with_local_fallback
+from transcription.cloud_transcriber import transcribe_with_local_fallback
 
 DISCORD_SAMPLE_RATE = 48000
 DISCORD_CHANNEL_COUNT = 2

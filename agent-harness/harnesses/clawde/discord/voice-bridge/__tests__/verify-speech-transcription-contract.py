@@ -1,6 +1,6 @@
 import sys
 
-import cloud_transcriber
+from transcription import cloud_transcriber
 from voice_bridge.speech_transcription import (
     DISCORD_CHANNEL_COUNT,
     DISCORD_SAMPLE_RATE,

@@ -11,7 +11,7 @@ import listen_cli
 import listener_session
 import source_capture
 import speech_segmenter
-import transcriber
+from transcription import transcriber
 import transcript_log
 from conversation_state import ConversationPhase
 

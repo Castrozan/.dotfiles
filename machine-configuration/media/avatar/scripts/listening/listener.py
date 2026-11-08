@@ -9,7 +9,7 @@ import threading
 import time
 from pathlib import Path
 
-import cloud_transcriber
+from transcription import cloud_transcriber
 import listener_runtime
 import speaker_identity
 from pending_speech import PendingSpeech

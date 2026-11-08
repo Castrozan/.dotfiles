@@ -5,7 +5,7 @@ import urllib.request
 import uuid
 from pathlib import Path
 
-import transcriber
+from transcription import transcriber
 
 SCRIBE_URL = "https://api.elevenlabs.io/v1/speech-to-text"
 SCRIBE_MODEL = "scribe_v2"

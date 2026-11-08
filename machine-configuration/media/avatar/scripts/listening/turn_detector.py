@@ -11,7 +11,7 @@ class SmartTurnDetector:
     def __init__(self, model_path):
         import numpy
         import onnxruntime
-        import whisper_features
+        from transcription import whisper_features
 
         options = onnxruntime.SessionOptions()
         options.execution_mode = onnxruntime.ExecutionMode.ORT_SEQUENTIAL

@@ -13,7 +13,7 @@ import source_capture
 import transcript_log
 import turn_detector
 import utterances
-import whisper_features
+from transcription import whisper_features
 
 SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
 FRAME = b"\xb8\x0b" * 480
