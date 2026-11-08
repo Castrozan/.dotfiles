@@ -5,7 +5,7 @@ import live_bridge
 import transcript_log
 from agent_route import AgentAnswer
 from conversation_addressee import Addressee
-from live_events import AssistantSaid, TaskRequested, UserSaid
+from live_events import AssistantSaid, Audio, Failed, TaskRequested, Usage, UserSaid
 
 
 class FakeVoice:
@@ -25,8 +25,11 @@ class FakeVoice:
 
 
 class SilentSpeaker:
+    def __init__(self):
+        self.played = []
+
     def play(self, pcm):
-        pass
+        self.played.append(pcm)
 
     def buffered_seconds(self):
         return 0
@@ -90,3 +93,28 @@ def test_finished_turns_reach_the_transcript_the_wake_reads(tmp_path):
         ("avatar", "avatar", "Sure.", True),
     ]
     assert [entry["sequence"] for entry in entries] == [1, 2]
+
+
+def test_every_event_kind_reaches_its_handler(tmp_path, monkeypatch, capsys):
+    asked = asked_agents(monkeypatch)
+    conversation_addressee.write(tmp_path, Addressee("wW:pQZ", "Voyager", 0))
+    voice = FakeVoice(
+        [
+            Audio(b"\x00\x00"),
+            Usage({"tokens": 3}),
+            Failed("boom"),
+            TaskRequested("task-3", "is it clean?"),
+        ]
+    )
+    live = conversation(tmp_path, voice)
+
+    async def drive():
+        await live.handle_events()
+        await asyncio.gather(*live.handoffs)
+
+    asyncio.run(drive())
+    assert live.speaker.played == [b"\x00\x00"]
+    assert live.usage == {"tokens": 3}
+    assert "error: boom" in capsys.readouterr().out
+    assert asked == [("wW:pQZ", "is it clean?")]
+    assert voice.delivered == [("task-3", "Main is clean.", True)]

@@ -4,42 +4,17 @@ import time
 
 import speech_segmenter
 from conversation_addressee import Addressee
-from listener_session import ListenerPurpose
 from wake_boundaries import Boundaries, capture_command
 from wake_phrase import addressed_session, named_in_turn, opens_with_greeting
+from wake_prompts import SETTINGS, spoken_prompt
 
 ARM_CHECK_SECONDS = 5
 FLEET_REFRESH_SECONDS = 60
 TRANSCRIPT_POLL_SECONDS = 0.2
 FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
 FRAMES_PER_ARM_CHECK = int(ARM_CHECK_SECONDS / speech_segmenter.FRAME_SECONDS)
-
-
-DESK_REPLY = (
-    "speak with avatar-talk say, and hear the reply through avatar-talk follow in a "
-    "background watcher. When the room dismisses you, such as 'you can go now', say "
-    "a short goodbye and run avatar-talk close, which hands the room back to the wake."
-)
-SETTINGS = {
-    None: f"An avatar conversation is opening: {DESK_REPLY}",
-    ListenerPurpose.CONVERSATION: (
-        f"The open avatar conversation now listens for you: {DESK_REPLY}"
-    ),
-    ListenerPurpose.MEETING: (
-        "You now hold the floor of the meeting the avatar transcribes: answer aloud "
-        "with avatar-command speak, which the meeting hears, and read it through "
-        "avatar-listen follow in a background watcher."
-    ),
-}
 MEETING_SOURCE = "meeting"
 AVATAR = "avatar"
-
-
-def spoken_prompt(message, purpose):
-    return (
-        f"[wake] Voice from the room, speaker not verified: {message} "
-        f"{SETTINGS[purpose]}"
-    )
 
 
 class WakeListener:
@@ -128,15 +103,19 @@ class WakeListener:
         if entry.get("speaker") == AVATAR:
             return
         match = self.named_in_conversation(entry["text"])
-        if match is None:
-            return
-        addressee = self.boundaries.addressee()
-        if addressee and addressee.pane == match.session.pane:
+        if match is None or self.already_holds_the_floor(match):
             return
         if not self.dry_run:
             self.boundaries.hand_to(
                 Addressee(match.session.pane, match.session.servant, entry["sequence"])
             )
+        self.deliver_to_the_listening_purpose(match, entry)
+
+    def already_holds_the_floor(self, match):
+        addressee = self.boundaries.addressee()
+        return bool(addressee) and addressee.pane == match.session.pane
+
+    def deliver_to_the_listening_purpose(self, match, entry):
         purpose = self.boundaries.listening_purpose()
         if entry.get("source") != MEETING_SOURCE and purpose in SETTINGS:
             self.deliver(match, purpose)

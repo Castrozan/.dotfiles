@@ -34,6 +34,14 @@ class LiveConversation:
         self.waiting_for_first_audio = False
         self.answer_latencies = []
         self.usage = {}
+        self.event_handlers = {
+            Audio: self.play,
+            UserSaid: self.hear_user,
+            AssistantSaid: self.record_assistant_speech,
+            TaskRequested: self.start_hand_off,
+            Usage: self.record_usage,
+            Failed: self.report_failure,
+        }
 
     def write(self, finished_turns):
         for turn in finished_turns:
@@ -56,21 +64,24 @@ class LiveConversation:
 
     async def handle_events(self):
         async for event in self.voice.events():
-            if isinstance(event, Audio):
-                self.play(event)
-            elif isinstance(event, UserSaid):
-                self.heard(event.text)
-            elif isinstance(event, AssistantSaid):
-                self.write(self.turns.add(Party.AVATAR, event.text, time.monotonic()))
-            elif isinstance(event, TaskRequested):
-                self.write(self.turns.finish())
-                handoff = asyncio.create_task(self.hand_off(event))
-                self.handoffs.add(handoff)
-                handoff.add_done_callback(self.handoffs.discard)
-            elif isinstance(event, Usage):
-                self.usage = event.details
-            elif isinstance(event, Failed):
-                print(f"error: {event.message}", flush=True)
+            handler = self.event_handlers.get(type(event))
+            if handler:
+                handler(event)
+
+    def record_assistant_speech(self, event):
+        self.write(self.turns.add(Party.AVATAR, event.text, time.monotonic()))
+
+    def start_hand_off(self, event):
+        self.write(self.turns.finish())
+        handoff = asyncio.create_task(self.hand_off(event))
+        self.handoffs.add(handoff)
+        handoff.add_done_callback(self.handoffs.discard)
+
+    def record_usage(self, event):
+        self.usage = event.details
+
+    def report_failure(self, event):
+        print(f"error: {event.message}", flush=True)
 
     def play(self, audio):
         if self.waiting_for_first_audio and audio.voiced():
@@ -78,8 +89,8 @@ class LiveConversation:
             self.waiting_for_first_audio = False
         self.speaker.play(audio.pcm)
 
-    def heard(self, text):
-        self.write(self.turns.add(Party.HUMAN, text, time.monotonic()))
+    def hear_user(self, event):
+        self.write(self.turns.add(Party.HUMAN, event.text, time.monotonic()))
         self.last_user_text_at = time.monotonic()
         self.waiting_for_first_audio = True
         if self.speaker.buffered_seconds() > BARGE_IN_BUFFER_SECONDS:
@@ -111,6 +122,27 @@ class LiveConversation:
         }
 
 
+def stop_event_set_by_signals():
+    stop = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for number in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        loop.add_signal_handler(number, stop.set)
+    return stop
+
+
+async def shut_down(voice, conversation, events, workers):
+    try:
+        await asyncio.wait_for(voice.close(), CLOSE_TIMEOUT_SECONDS)
+        await asyncio.wait_for(events, DRAIN_TIMEOUT_SECONDS)
+    except (OSError, TimeoutError):
+        pass
+    for task in [*workers, *conversation.handoffs]:
+        task.cancel()
+    conversation.write(conversation.turns.finish())
+    conversation.speaker.close()
+    print(json.dumps(conversation.summary(), ensure_ascii=False), flush=True)
+
+
 async def run():
     voice = GptLive()
     session = await voice.connect()
@@ -118,10 +150,7 @@ async def run():
         voice, listener_runtime.runtime_directory(), Speaker(voice.output_rate)
     )
     print(f"{voice.name} live, session {session}", flush=True)
-    stop = asyncio.Event()
-    loop = asyncio.get_running_loop()
-    for number in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
-        loop.add_signal_handler(number, stop.set)
+    stop = stop_event_set_by_signals()
     events = asyncio.create_task(conversation.handle_events())
     workers = [
         asyncio.create_task(conversation.stream_microphone()),
@@ -133,16 +162,7 @@ async def run():
         [stopped, *workers], return_when=asyncio.FIRST_COMPLETED
     )
     failures = [task.exception() for task in done if task is not stopped]
-    try:
-        await asyncio.wait_for(voice.close(), CLOSE_TIMEOUT_SECONDS)
-        await asyncio.wait_for(events, DRAIN_TIMEOUT_SECONDS)
-    except (OSError, TimeoutError):
-        pass
-    for task in [*workers, *conversation.handoffs]:
-        task.cancel()
-    conversation.write(conversation.turns.finish())
-    conversation.speaker.close()
-    print(json.dumps(conversation.summary(), ensure_ascii=False), flush=True)
+    await shut_down(voice, conversation, events, workers)
     for failure in failures:
         if failure:
             raise failure

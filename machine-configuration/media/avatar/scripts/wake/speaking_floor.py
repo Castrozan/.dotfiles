@@ -17,6 +17,19 @@ def first_claim(pane, sessions, holder):
     return Addressee(pane, claimer.servant, holder.heard_through if holder else 0)
 
 
+def holder_has_a_live_session(holder, sessions):
+    return bool(holder) and any(session.pane == holder.pane for session in sessions)
+
+
+def claim_among_live_sessions(directory, pane, holder, sessions):
+    if holder_has_a_live_session(holder, sessions):
+        return holder
+    claimer = first_claim(pane, sessions, holder)
+    if claimer:
+        conversation_addressee.write(directory, claimer)
+    return claimer
+
+
 def claim(directory, pane, boundaries):
     with conversation_addressee.exclusive(directory):
         holder = conversation_addressee.current(directory)
@@ -24,13 +37,7 @@ def claim(directory, pane, boundaries):
             return holder
         if not boundaries.listening():
             return None
-        sessions = boundaries.sessions()
-        if holder and any(session.pane == holder.pane for session in sessions):
-            return holder
-        claimer = first_claim(pane, sessions, holder)
-        if claimer:
-            conversation_addressee.write(directory, claimer)
-        return claimer
+        return claim_among_live_sessions(directory, pane, holder, boundaries.sessions())
 
 
 def may_speak(holder, pane):

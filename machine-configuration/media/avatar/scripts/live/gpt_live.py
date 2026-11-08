@@ -98,25 +98,42 @@ class GptLive:
     async def events(self):
         async for message in self.socket:
             event = json.loads(message)
-            kind = event["type"]
-            if kind == "session.output_audio.delta":
-                yield Audio(base64.b64decode(event["delta"]))
-            elif kind == "session.input_transcript.delta":
-                self.user_since_last_task += event["delta"]
-                self.recent_user = (self.recent_user + event["delta"])[
-                    -RECENT_USER_CHARACTERS:
-                ]
-                yield UserSaid(event["delta"])
-            elif kind == "session.output_transcript.delta":
-                yield AssistantSaid(event["delta"])
-            elif kind == "session.delegation.created":
-                yield TaskRequested(event["delegation"]["id"], self.task_request())
-            elif kind in ("session.usage.updated", "session.closed"):
-                yield Usage(event.get("usage") or {})
-                if kind == "session.closed":
-                    return
-            elif kind == "error":
-                yield Failed(json.dumps(event.get("error")))
+            translate = self.EVENT_TRANSLATIONS.get(event["type"])
+            if translate:
+                for voice_event in translate(self, event):
+                    yield voice_event
+            if event["type"] == "session.closed":
+                return
+
+    def audio_events(self, event):
+        return [Audio(base64.b64decode(event["delta"]))]
+
+    def user_transcript_events(self, event):
+        self.user_since_last_task += event["delta"]
+        self.recent_user = (self.recent_user + event["delta"])[-RECENT_USER_CHARACTERS:]
+        return [UserSaid(event["delta"])]
+
+    def assistant_transcript_events(self, event):
+        return [AssistantSaid(event["delta"])]
+
+    def delegation_events(self, event):
+        return [TaskRequested(event["delegation"]["id"], self.task_request())]
+
+    def usage_events(self, event):
+        return [Usage(event.get("usage") or {})]
+
+    def error_events(self, event):
+        return [Failed(json.dumps(event.get("error")))]
+
+    EVENT_TRANSLATIONS = {
+        "session.output_audio.delta": audio_events,
+        "session.input_transcript.delta": user_transcript_events,
+        "session.output_transcript.delta": assistant_transcript_events,
+        "session.delegation.created": delegation_events,
+        "session.usage.updated": usage_events,
+        "session.closed": usage_events,
+        "error": error_events,
+    }
 
     async def deliver(self, task_id, result, final):
         kind = "session.commentary.append" if final else "session.thinking.append"
