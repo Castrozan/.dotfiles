@@ -59,6 +59,7 @@ def test_a_new_group_opens_one_pull_request_with_its_decision_file(
     assert "target_pull_request" not in stored
     assert "| 1 |" in recording_forge.pull_request(1)["body"]
     assert not (repository_with_origin / ".worktrees" / result["branch"]).exists()
+    assert git(repository_with_origin, "branch", "--list", result["branch"]) == ""
 
 
 def test_a_related_capture_joins_the_open_group_instead_of_a_new_pull_request(

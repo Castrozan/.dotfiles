@@ -1,10 +1,12 @@
 import json
 import shlex
 
+import pytest
+
 from hypothesis import given
 from hypothesis import strategies as st
 
-from application.session_launch import HerdrSessionLauncher
+from application.session_launch import HerdrSessionLauncher, SessionLaunchFailed
 from second_brain.contract import entry_tag_problems, read_contract
 from second_brain.entries import entry_file_name, moc_with_link
 from second_brain.index import frontmatter_fields, second_brain_index
@@ -70,15 +72,29 @@ def test_frontmatter_lists_and_quoted_scalars_parse():
 
 
 class ScriptedHerdr:
-    def __init__(self, agents: list[dict]) -> None:
+    def __init__(
+        self, agents: list[dict], polls_before_working: int | None = 1
+    ) -> None:
         self.agents = agents
+        self.polls_before_working = polls_before_working
         self.calls: list[tuple[list[str], str | None]] = []
+
+    def agent_listing(self) -> str:
+        started = any(arguments[1:3] == ["pane", "run"] for arguments, _ in self.calls)
+        polls = sum(arguments[1:3] == ["agent", "list"] for arguments, _ in self.calls)
+        working = (
+            started
+            and self.polls_before_working is not None
+            and polls > self.polls_before_working + 1
+        )
+        detected = [{"pane_id": "w9:p1", "agent_status": "working"}] if working else []
+        return json.dumps({"result": {"agents": self.agents + detected}})
 
     def __call__(self, arguments: list[str], standard_input: str | None = None) -> str:
         self.calls.append((arguments, standard_input))
         command = " ".join(arguments)
         if "agent list" in command:
-            return json.dumps({"result": {"agents": self.agents}})
+            return self.agent_listing()
         if "workspace create" in command:
             return json.dumps(
                 {
@@ -93,7 +109,9 @@ class ScriptedHerdr:
 
 def test_a_local_launch_writes_the_brief_starts_claude_and_waits_for_work():
     herdr = ScriptedHerdr(agents=[])
-    launcher = HerdrSessionLauncher(command_runner=herdr, local_machine_name="chise")
+    launcher = HerdrSessionLauncher(
+        command_runner=herdr, local_machine_name="chise", sleep=lambda _: None
+    )
 
     assert launcher.launch("chise", "ril-topic", "# brief") == "launched"
 
@@ -112,7 +130,8 @@ def test_a_local_launch_writes_the_brief_starts_claude_and_waits_for_work():
         "w9:p1",
         "claude 'Read /home/lucas/clawde/ril/briefs/ril-topic.md and carry it out.'",
     ] in commands
-    assert commands[-1][:5] == ["herdr", "agent", "wait", "w9:p1", "--until"]
+    assert commands[-2] == ["herdr", "agent", "list"]
+    assert commands[-1] == ["herdr", "agent", "rename", "w9:p1", "ril-topic"]
     assert "# brief" in [standard_input for _, standard_input in herdr.calls]
 
 
@@ -124,3 +143,16 @@ def test_a_remote_launch_goes_over_ssh_and_a_running_session_is_not_launched_twi
     [(arguments, _)] = herdr.calls
     assert arguments[:2] == ["ssh", "kira"]
     assert shlex.split(arguments[2]) == ["herdr", "agent", "list"]
+
+
+def test_a_session_that_never_starts_working_fails_the_launch_without_a_name():
+    herdr = ScriptedHerdr(agents=[], polls_before_working=None)
+    launcher = HerdrSessionLauncher(
+        command_runner=herdr, local_machine_name="chise", sleep=lambda _: None
+    )
+
+    with pytest.raises(SessionLaunchFailed):
+        launcher.launch("chise", "ril-topic", "# brief")
+    assert not any(
+        arguments[1:3] == ["agent", "rename"] for arguments, _ in herdr.calls
+    )

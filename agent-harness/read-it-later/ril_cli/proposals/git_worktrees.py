@@ -57,6 +57,7 @@ def branch_worktree(repository_directory: Path, branch: str, start_reference: st
         yield worktree_path
     finally:
         remove_worktree(repository_directory, worktree_path)
+        git(repository_directory, "branch", "--quiet", "-D", branch)
 
 
 def fetch_reference(repository_directory: Path, branch: str) -> str:
