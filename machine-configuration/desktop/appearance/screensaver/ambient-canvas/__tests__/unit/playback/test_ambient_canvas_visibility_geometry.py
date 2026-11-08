@@ -1,6 +1,6 @@
 import pytest
 
-from ambient_canvas_mpv_visibility import player_is_visible
+from playback.player_visibility_geometry import player_is_visible
 
 
 @pytest.fixture
@@ -69,14 +69,33 @@ def test_canvas_visible_on_another_active_monitor_keeps_playing(compositor_state
     )
 
 
-def test_inactive_workspace_or_another_player_is_not_visible(compositor_state):
+def test_inactive_workspace_is_not_visible(compositor_state):
     compositor_state["monitors"][0]["activeWorkspace"] = {"id": 5}
     assert not player_is_visible(
         **compositor_state, player_process_id=14534, target_workspace_id=11
     )
-    compositor_state["monitors"][0]["activeWorkspace"] = {"id": 11}
+
+
+@pytest.mark.parametrize(("active_workspace_id", "visible"), [(11, True), (5, False)])
+def test_released_player_returns_only_when_its_workspace_is_shown(
+    compositor_state, active_workspace_id, visible
+):
+    compositor_state["clients"] = []
+    compositor_state["monitors"][0]["activeWorkspace"] = {"id": active_workspace_id}
+    assert (
+        player_is_visible(
+            **compositor_state, player_process_id=14534, target_workspace_id=11
+        )
+        is visible
+    )
+
+
+def test_released_player_stays_released_under_a_fullscreen_window(compositor_state):
+    compositor_state["clients"][0].update(
+        pid=90000, fullscreen=2, at=[0, 0], size=[1920, 1080]
+    )
     assert not player_is_visible(
-        **compositor_state, player_process_id=99999, target_workspace_id=11
+        **compositor_state, player_process_id=14534, target_workspace_id=11
     )
 
 

@@ -10,8 +10,21 @@ from ambient_canvas_mpv_visibility import (
 )
 from mpv_ambient_canvas_ipc import MpvIpcClient
 
+HIDDEN_PLAYER_COMMANDS = [
+    ["set_property", "pause", "yes"],
+    ["set_property", "force-window", "no"],
+    ["set_property", "vid", "no"],
+]
+VISIBLE_PLAYER_COMMANDS = [
+    ["set_property", "vid", "auto"],
+    ["set_property", "force-window", "yes"],
+    ["set_property", "pause", "no"],
+]
 
-def test_visibility_controller_pauses_when_canvas_is_outside_viewport(monkeypatch):
+
+def test_visibility_controller_releases_video_when_canvas_is_outside_viewport(
+    monkeypatch,
+):
     sent_commands = []
 
     class RecordingClient:
@@ -50,11 +63,11 @@ def test_visibility_controller_pauses_when_canvas_is_outside_viewport(monkeypatc
     )
     controller = VisibilityGatedPlaybackController(RecordingClient(), 14534, 11)
     controller._synchronize_with_visibility()
-    assert sent_commands == [["set_property", "pause", "yes"]]
+    assert sent_commands == HIDDEN_PLAYER_COMMANDS
 
 
 @pytest.mark.parametrize("response", ["{}", "null", "broken", "[{}]"])
-def test_malformed_compositor_state_pauses(monkeypatch, response):
+def test_malformed_compositor_state_hides_player(monkeypatch, response):
     monkeypatch.setattr(
         "ambient_canvas_mpv_visibility.subprocess.run",
         lambda *args, **kwargs: type(
@@ -67,7 +80,7 @@ def test_malformed_compositor_state_pauses(monkeypatch, response):
 @pytest.mark.parametrize(
     "error", [FileNotFoundError("hyprctl"), subprocess.TimeoutExpired("hyprctl", 1)]
 )
-def test_compositor_failure_pauses(monkeypatch, error):
+def test_compositor_failure_hides_player(monkeypatch, error):
     def fail(*args, **kwargs):
         raise error
 
@@ -75,7 +88,9 @@ def test_compositor_failure_pauses(monkeypatch, error):
     assert not resolve_player_visibility(14534, 11)
 
 
-def test_visibility_controller_pauses_when_target_workspace_is_not_active(monkeypatch):
+def test_visibility_controller_releases_video_when_target_workspace_is_not_active(
+    monkeypatch,
+):
     sent_commands = []
 
     class RecordingClient:
@@ -87,10 +102,12 @@ def test_visibility_controller_pauses_when_target_workspace_is_not_active(monkey
         "ambient_canvas_mpv_visibility.resolve_player_visibility", lambda *args: False
     )
     controller._synchronize_with_visibility()
-    assert sent_commands == [["set_property", "pause", "yes"]]
+    assert sent_commands == HIDDEN_PLAYER_COMMANDS
 
 
-def test_visibility_controller_resumes_when_target_workspace_is_active(monkeypatch):
+def test_visibility_controller_restores_video_when_target_workspace_is_active(
+    monkeypatch,
+):
     sent_commands = []
 
     class RecordingClient:
@@ -102,7 +119,7 @@ def test_visibility_controller_resumes_when_target_workspace_is_active(monkeypat
         "ambient_canvas_mpv_visibility.resolve_player_visibility", lambda *args: True
     )
     controller._synchronize_with_visibility()
-    assert sent_commands == [["set_property", "pause", "no"]]
+    assert sent_commands == VISIBLE_PLAYER_COMMANDS
 
 
 def test_mpv_client_reads_newline_delimited_json_events(tmp_path):
@@ -124,7 +141,7 @@ def test_mpv_client_reads_newline_delimited_json_events(tmp_path):
     listener.close()
 
 
-def test_visibility_controller_sends_only_transitions_and_pauses_on_unknown(
+def test_visibility_controller_sends_only_transitions_and_releases_on_unknown(
     monkeypatch,
 ):
     sent_commands = []
@@ -141,11 +158,9 @@ def test_visibility_controller_sends_only_transitions_and_pauses_on_unknown(
     controller = VisibilityGatedPlaybackController(RecordingClient(), 14534, 11)
     for _ in range(6):
         controller._synchronize_with_visibility()
-    assert sent_commands == [
-        ["set_property", "pause", "no"],
-        ["set_property", "pause", "yes"],
-        ["set_property", "pause", "no"],
-    ]
+    assert sent_commands == (
+        VISIBLE_PLAYER_COMMANDS + HIDDEN_PLAYER_COMMANDS + VISIBLE_PLAYER_COMMANDS
+    )
 
 
 def test_mpv_client_raises_when_the_socket_closes_mid_read(tmp_path):
