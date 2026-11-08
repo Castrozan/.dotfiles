@@ -2,6 +2,7 @@ import struct
 from unittest.mock import Mock
 
 import speech_segmenter
+import wake_boundaries
 import wake_listener
 from conversation_addressee import Addressee
 from wake_phrase import LiveSession
@@ -30,7 +31,7 @@ def boundaries(heard="hey Voyager, check the build", sessions=(VOYAGER,), **chan
         hand_to=Mock(),
     )
     fakes.update(changes)
-    return wake_listener.Boundaries(**fakes)
+    return wake_boundaries.Boundaries(**fakes)
 
 
 def armed_listener(fakes, dry_run=False):
@@ -225,3 +226,11 @@ def test_turns_without_a_leading_greeting_never_read_the_fleet():
     fakes.transcript_entries.return_value = said("Ibaraki broke it", "roda os testes")
     listener.read_conversation()
     fakes.sessions.assert_not_called()
+
+
+def test_a_failed_handover_is_reported_and_reading_continues():
+    fakes, listener = conversation_with(None)
+    fakes.prompt_now.side_effect = TimeoutError("herdr hung")
+    fakes.transcript_entries.return_value = said("hey Ibaraki, status")
+    listener.read_conversation()
+    assert "herdr hung" in fakes.report.call_args.args[0]

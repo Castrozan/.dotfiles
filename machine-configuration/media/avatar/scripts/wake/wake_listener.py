@@ -1,61 +1,17 @@
 import argparse
-import dataclasses
 import subprocess
-import sys
 import time
 
-import conversation_addressee
-import listener
 import speech_segmenter
-import transcriber
-import transcript_log
-import user_units
-from a2a_cli import peer_identity
 from conversation_addressee import Addressee
-from wake_phrase import LiveSession, addressed_session, opens_with_greeting
+from wake_boundaries import Boundaries, capture_command
+from wake_phrase import addressed_session, opens_with_greeting
 
-MICROPHONE = "@DEFAULT_SOURCE@"
-CONVERSATION_LISTENER = "avatar-listener.service"
 ARM_CHECK_SECONDS = 5
 FLEET_REFRESH_SECONDS = 60
 TRANSCRIPT_POLL_SECONDS = 0.2
 FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
 FRAMES_PER_ARM_CHECK = int(ARM_CHECK_SECONDS / speech_segmenter.FRAME_SECONDS)
-VOICE_SENDER = "voice"
-COMMAND_TIMEOUT_SECONDS = 120
-
-
-def capture_command():
-    return [
-        "parec",
-        f"--device={MICROPHONE}",
-        "--client-name=avatar-wake",
-        "--raw",
-        "--format=s16le",
-        f"--rate={speech_segmenter.SAMPLE_RATE}",
-        "--channels=1",
-        "--latency-msec=100",
-    ]
-
-
-def live_sessions():
-    sessions = []
-    for pane in peer_identity.read_live_panes():
-        servant = peer_identity.identity_of_pane(pane).get("servant")
-        if servant:
-            sessions.append(LiveSession(servant=servant, pane=pane["pane_id"]))
-    return sessions
-
-
-def conversation_opened():
-    return (
-        subprocess.run(
-            ["avatar-talk", "open"],
-            stdout=subprocess.DEVNULL,
-            timeout=COMMAND_TIMEOUT_SECONDS,
-        ).returncode
-        == 0
-    )
 
 
 def spoken_prompt(message, conversation_open):
@@ -69,52 +25,6 @@ def spoken_prompt(message, conversation_open):
         f"{conversation}: speak with avatar-talk say, and hear the reply through "
         "avatar-talk follow in a background watcher."
     )
-
-
-def transcript_entries():
-    return transcript_log.read_since(
-        listener.runtime_directory() / "transcript.jsonl", 0
-    )
-
-
-def prompt_now(pane, text):
-    return (
-        subprocess.run(
-            ["herdr", "agent", "prompt", pane, text],
-            capture_output=True,
-            timeout=COMMAND_TIMEOUT_SECONDS,
-        ).returncode
-        == 0
-    )
-
-
-def notify_at_idle(pane, text):
-    subprocess.run(
-        ["a2a", "notify", "--sender", VOICE_SENDER, pane, text],
-        capture_output=True,
-        timeout=COMMAND_TIMEOUT_SECONDS,
-    )
-
-
-@dataclasses.dataclass
-class Boundaries:
-    sessions: object = live_sessions
-    conversation_listening: object = lambda: user_units.unit_active(
-        CONVERSATION_LISTENER
-    )
-    transcribe: object = transcriber.transcribe
-    open_conversation: object = conversation_opened
-    prompt_now: object = prompt_now
-    notify_at_idle: object = notify_at_idle
-    transcript_entries: object = transcript_entries
-    addressee: object = lambda: conversation_addressee.current(
-        listener.runtime_directory()
-    )
-    hand_to: object = lambda addressee: conversation_addressee.hand_to(
-        listener.runtime_directory(), addressee
-    )
-    report: object = lambda line: print(line, file=sys.stderr, flush=True)
-    now: object = time.monotonic
 
 
 class WakeListener:
@@ -178,6 +88,12 @@ class WakeListener:
         self.conversation_read_through = entries[-1]["sequence"] if entries else 0
 
     def read_conversation(self):
+        try:
+            self.turn_on_new_entries()
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            self.boundaries.report(f"Dropped a conversation turn: {error}")
+
+    def turn_on_new_entries(self):
         entries = self.boundaries.transcript_entries()
         if entries and entries[-1]["sequence"] < self.conversation_read_through:
             self.conversation_read_through = 0
