@@ -1,3 +1,7 @@
+---
+name: model-choice
+---
+
 ### Cheap model example
 
 Run explore on a cheap model, because it reads widely and judges little. On OpenCode that means a free flash tier, for
