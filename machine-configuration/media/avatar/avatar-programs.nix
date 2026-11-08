@@ -112,11 +112,25 @@ let
     export PYTHONPATH=${./scripts/listening}
     exec ${listenerPython}/bin/python3 ${./scripts/listening/listener.py}
   '';
+  live = pkgs.writeShellScript "avatar-live" ''
+    export PATH=${
+      lib.makeBinPath [
+        a2a
+        pkgs.pulseaudio
+        pkgs.systemd
+      ]
+    }:$PATH
+    export PYTHONPATH=${./scripts/live}:${./scripts/listening}
+    exec ${
+      pkgs.python312.withPackages (packages: [ packages.websockets ])
+    }/bin/python3 ${./scripts/live/live_bridge.py}
+  '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
     export PATH=${
       lib.makeBinPath [
         audio
         command
+        floor
         stop
         pkgs.hyprland
         pkgs.pulseaudio
@@ -141,6 +155,7 @@ in
     herdr
     listen
     listener
+    live
     serve
     start
     stop

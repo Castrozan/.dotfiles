@@ -23,7 +23,9 @@ def always_open():
 
 def run_talk(monkeypatch, directory, *arguments):
     monkeypatch.setattr(sys, "argv", ["avatar-talk", *arguments])
-    monkeypatch.setattr(talk_cli.listener_runtime, "runtime_directory", lambda: directory)
+    monkeypatch.setattr(
+        talk_cli.listener_runtime, "runtime_directory", lambda: directory
+    )
     talk_cli.main()
 
 
@@ -79,7 +81,11 @@ def test_opening_again_keeps_the_conversation_and_what_was_not_heard(
     utterances.remember(tmp_path, 7)
     run_talk(monkeypatch, tmp_path, "open")
     bring_up.assert_not_called()
-    assert json.loads(capsys.readouterr().out) == {"open": True, "last_heard": 7}
+    assert json.loads(capsys.readouterr().out) == {
+        "open": True,
+        "live": False,
+        "last_heard": 7,
+    }
 
 
 def test_opening_refuses_to_replace_a_meeting_transcript(tmp_path, monkeypatch, capsys):
@@ -189,3 +195,61 @@ def test_closing_leaves_a_running_meeting_alone(
     hides_canvas = ["avatar-command", "presence", "hidden"] in commands
     assert hides_canvas is not stops_everything
     assert hide.called is not stops_everything
+
+
+def test_opening_live_needs_the_agent_pane_that_will_receive_the_tasks(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.setattr(
+        conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
+    )
+    monkeypatch.delenv(conversation_effects.PANE_ENVIRONMENT_VARIABLE, raising=False)
+    bring_up = Mock()
+    monkeypatch.setattr(start, "bring_up", bring_up)
+    with pytest.raises(SystemExit):
+        run_talk(monkeypatch, tmp_path, "open", "--live")
+    bring_up.assert_not_called()
+    assert conversation_effects.LIVE_NEEDS_A_PANE in capsys.readouterr().err
+
+
+def test_opening_live_listens_for_the_live_voice_then_claims_the_floor(
+    tmp_path, monkeypatch, capsys
+):
+    phases = iter([ConversationPhase.CLOSED, ConversationPhase.LIVE])
+    monkeypatch.setattr(conversation_state, "observe", lambda directory: next(phases))
+    monkeypatch.setenv(conversation_effects.PANE_ENVIRONMENT_VARIABLE, "wW:pPT")
+    steps = []
+    monkeypatch.setattr(start, "bring_up", lambda *arguments: steps.append("bring-up"))
+    monkeypatch.setattr(
+        listener_session,
+        "begin_listening",
+        lambda directory, purpose, sources, **settings: steps.append(purpose),
+    )
+    monkeypatch.setattr(
+        conversation_effects.subprocess,
+        "run",
+        lambda command, **options: steps.append(command[0]),
+    )
+    run_talk(monkeypatch, tmp_path, "open", "--live")
+    assert steps == [
+        "bring-up",
+        listener_session.ListenerPurpose.LIVE,
+        "avatar-claim-floor",
+    ]
+    assert json.loads(capsys.readouterr().out) == {
+        "open": True,
+        "live": True,
+        "last_heard": 0,
+    }
+
+
+@pytest.mark.parametrize("verb", [["ask", "oi"], ["hear"], ["follow"], ["say", "oi"]])
+def test_the_desk_verbs_refuse_while_the_live_voice_owns_the_turns(
+    tmp_path, monkeypatch, capsys, verb
+):
+    monkeypatch.setattr(
+        conversation_state, "observe", lambda directory: ConversationPhase.LIVE
+    )
+    with pytest.raises(SystemExit):
+        run_talk(monkeypatch, tmp_path, *verb)
+    assert conversation_effects.LIVE_OWNS_THE_TURNS in capsys.readouterr().err

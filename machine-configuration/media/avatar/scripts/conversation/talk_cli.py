@@ -18,6 +18,7 @@ def parse_arguments():
     opening = commands.add_parser("open")
     opening.add_argument("--language")
     opening.add_argument("--character")
+    opening.add_argument("--live", action="store_true")
     speaking = commands.add_parser("say")
     asking = commands.add_parser("ask")
     for parser_with_speech in (speaking, asking):
@@ -36,6 +37,7 @@ def main():
     arguments = parse_arguments()
     actions = {
         ConversationAction.BRING_UP: conversation_effects.open_conversation,
+        ConversationAction.BRING_UP_LIVE: conversation_effects.open_live_conversation,
         ConversationAction.KEEP_OPEN: conversation_effects.keep_conversation_open,
         ConversationAction.TEAR_DOWN: conversation_effects.close_conversation,
         ConversationAction.LEAVE_MEETING: conversation_effects.leave_meeting,
@@ -48,10 +50,15 @@ def main():
         ConversationAction.REPORT: conversation_effects.status,
         ConversationAction.REFUSE_CLOSED: conversation_effects.refuse_closed,
         ConversationAction.REFUSE_MEETING: conversation_effects.refuse_meeting,
+        ConversationAction.REFUSE_LIVE: conversation_effects.refuse_live,
     }
     try:
         directory = listener_runtime.runtime_directory()
-        command = ConversationCommand(arguments.action)
+        command = (
+            ConversationCommand.OPEN_LIVE
+            if getattr(arguments, "live", False)
+            else ConversationCommand(arguments.action)
+        )
         decision = conversation_state.decide(
             conversation_state.observe(directory), command
         )

@@ -1,5 +1,6 @@
 import enum
 import json
+import os
 import subprocess
 import sys
 
@@ -14,6 +15,15 @@ from conversation_state import ConversationPhase
 from listener_session import ListenerPurpose
 
 ROOM_MICROPHONE = "AvatarRoomMicrophone"
+PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
+LIVE_NEEDS_A_PANE = (
+    "avatar-talk open --live must run from an agent's herdr pane: the live voice hands "
+    "the room's tasks to that agent"
+)
+LIVE_OWNS_THE_TURNS = (
+    "The live voice speaks and listens in this conversation and sends you each task "
+    "over a2a: end your turn to receive them, or run avatar-talk close"
+)
 COMMAND_TIMEOUT_SECONDS = 120
 
 
@@ -27,10 +37,12 @@ def room_microphone_ready():
 
 
 def status(arguments, directory):
+    phase = conversation_state.observe(directory)
     print(
         json.dumps(
             {
-                "open": conversation_state.observe(directory) is ConversationPhase.OPEN,
+                "open": phase in (ConversationPhase.OPEN, ConversationPhase.LIVE),
+                "live": phase is ConversationPhase.LIVE,
                 "last_heard": utterances.last_heard(directory),
             }
         )
@@ -65,6 +77,31 @@ def open_conversation(arguments, directory):
         close_conversation(arguments, directory)
         raise
     status(arguments, directory)
+
+
+def open_live_conversation(arguments, directory):
+    if not os.environ.get(PANE_ENVIRONMENT_VARIABLE):
+        raise RuntimeError(LIVE_NEEDS_A_PANE)
+    try:
+        start.bring_up(
+            conversation_state.CONVERSATION_TARGET,
+            (start.renderer_ready, room_microphone_ready),
+        )
+        show_chosen_character(arguments)
+        listener_session.begin_listening(
+            directory, ListenerPurpose.LIVE, {"human": ROOM_MICROPHONE}
+        )
+        subprocess.run(
+            ["avatar-claim-floor"], check=True, timeout=COMMAND_TIMEOUT_SECONDS
+        )
+    except BaseException:
+        close_conversation(arguments, directory)
+        raise
+    status(arguments, directory)
+
+
+def refuse_live(arguments, directory):
+    raise RuntimeError(LIVE_OWNS_THE_TURNS)
 
 
 def keep_conversation_open(arguments, directory):

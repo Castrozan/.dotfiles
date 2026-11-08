@@ -162,6 +162,17 @@ in
             Restart = "on-failure";
           };
         };
+        avatar-live = {
+          Unit = {
+            Description = "Avatar live duplex voice";
+            PartOf = [ "avatar-conversation.target" ];
+          };
+          Service = {
+            ExecStart = toString programs.live;
+            Restart = "on-failure";
+            RestartSec = 5;
+          };
+        };
         avatar-renderer = {
           Unit = serviceUnit // {
             Description = "Offline avatar renderer";

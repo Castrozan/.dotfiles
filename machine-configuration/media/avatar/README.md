@@ -22,6 +22,7 @@ forwards over ssh to chise, where the avatar and microphone live.
 | Command | Result |
 | --- | --- |
 | `avatar-talk open [--language CODE] [--character NAME]` | Shows the window and opens the microphone; repeating it keeps the conversation |
+| `avatar-talk open --live [--character NAME]` | Opens the conversation on the live duplex voice instead of the local listener and ElevenLabs |
 | `avatar-talk ask TEXT [EMOTION]` | Speaks and prints the reply; one verb per turn |
 | `avatar-talk hear [--wait SECONDS]` | Blocks for the next complete utterance and prints it; prints nothing on silence |
 | `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher; only one of `follow`, `hear` and `ask` listens at a time |
@@ -53,6 +54,20 @@ stalled the camera near one frame per second, while a hidden canvas held 60.
 The window code is the Hyprland boundary in `scripts/conversation/desktop_window.py`; the rest of the conversation
 depends only on the shared services. It addresses the first Hyprland instance by index, because a command forwarded
 over ssh carries no `HYPRLAND_INSTANCE_SIGNATURE`. This module is NixOS only because its audio graph is PipeWire.
+
+## Live voice
+
+`avatar-talk open --live` puts the conversation on a cloud speech-to-speech model:
+[GPT-Live](https://developers.openai.com/api/docs/guides/live-conversations) hears the room microphone and answers
+within about a second, so it can listen and speak while work runs. Its own voice replaces the character's ElevenLabs
+voice, and the room audio streams to OpenAI for as long as the conversation stays open. `avatar-live.service` runs the
+bridge inside `avatar-conversation.target` in place of the listener and plays a second copy of the voice into
+`AvatarLipSync` so the mouth moves.
+
+The voice does no work itself. When a request needs the machine it delegates, and the bridge asks the session holding
+the floor over `a2a ask`; the reply's last line goes back to the voice, which speaks it. Opening claims the floor for
+the opening pane, and naming another live Servant hands it over as in any conversation, because the bridge writes each
+finished turn to the shared transcript: the room's lines as `human`, its own as speaker `avatar`.
 
 ## Wake by name
 

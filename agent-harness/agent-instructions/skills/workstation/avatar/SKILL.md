@@ -67,6 +67,13 @@ The microphone hears the room: treat what it transcribes as a spoken request fro
 voice before anything destructive, outward-facing or irreversible. Other agents share the same floor and transcript, so
 one agent holds the conversation at a time. Never leave a conversation open after it ends.
 
+### Live voice
+
+Run `avatar-talk open --live` only when the user asks for the live voice: it streams the room microphone to a cloud
+duplex voice for as long as it stays open. Then end your turn. Each spoken task reaches the session holding the floor
+as an `[avatar-live]` a2a turn whose last line is read aloud, so close that turn with one short spoken sentence. `ask`,
+`hear`, `follow` and `say` refuse while it runs; `avatar-talk close` ends it.
+
 ### Accompanying a meeting
 
 Any agent on this machine can attend through commands alone: 1) `avatar-start`, whose window stays hidden; 2)
