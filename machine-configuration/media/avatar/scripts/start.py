@@ -6,6 +6,8 @@ import urllib.request
 
 
 MEETING_TARGET = "avatar.target"
+SYSTEMCTL_QUERY_TIMEOUT_SECONDS = 10
+AUDIO_REPAIR_TIMEOUT_SECONDS = 60
 CONVERSATION_TARGET = "avatar-conversation.target"
 TARGET_UNITS = {
     MEETING_TARGET: (
@@ -27,7 +29,10 @@ TARGET_UNITS = {
 
 def service_failed(units):
     failed = subprocess.run(
-        ["systemctl", "--user", "is-failed", *units], capture_output=True, text=True
+        ["systemctl", "--user", "is-failed", *units],
+        capture_output=True,
+        text=True,
+        timeout=SYSTEMCTL_QUERY_TIMEOUT_SECONDS,
     )
     return "failed" in failed.stdout.splitlines()
 
@@ -73,7 +78,10 @@ def bring_up(target, readiness_checks):
     try:
         if not audio_ready():
             subprocess.run(
-                ["avatar-audio", "start"], check=True, stdout=subprocess.DEVNULL
+                ["avatar-audio", "start"],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                timeout=AUDIO_REPAIR_TIMEOUT_SECONDS,
             )
         subprocess.run(["systemctl", "--user", "start", target], check=True)
         wait_until_ready(TARGET_UNITS[target], readiness_checks)

@@ -121,6 +121,7 @@ def run_race_scenario(scenario):
         capture_output=True,
         text=True,
         check=True,
+        timeout=30,
     )
     return json.loads(completed.stdout)
 

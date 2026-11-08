@@ -72,7 +72,7 @@ def test_a_failed_bring_up_stops_only_the_requested_target(monkeypatch):
 def test_a_failed_camera_does_not_block_the_conversation_target(monkeypatch):
     queried_units = []
 
-    def fake_is_failed(command, capture_output, text):
+    def fake_is_failed(command, **_):
         units = command[3:]
         queried_units.append(units)
         return SimpleNamespace(

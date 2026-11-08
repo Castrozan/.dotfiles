@@ -38,8 +38,7 @@ export class CameraLayer {
     const camera = preferredCamera(
       await navigator.mediaDevices.enumerateDevices(),
     );
-    if (generation !== this.generation)
-      throw new Error(SUPERSEDED_REQUEST_MESSAGE);
+    this.requireCurrentRequest(generation);
     if (!camera) throw new Error("No physical camera is connected");
     await this.enable(camera.deviceId);
   }
@@ -51,12 +50,7 @@ export class CameraLayer {
       video: deviceId ? { deviceId: { exact: deviceId } } : true,
       audio: false,
     });
-    if (generation !== this.generation) {
-      stream.getTracks().forEach((track) => {
-        track.stop();
-      });
-      throw new Error(SUPERSEDED_REQUEST_MESSAGE);
-    }
+    this.requireCurrentRequest(generation, stream);
     this.requireExternalCamera(stream);
     this.stream = stream;
     stream.getVideoTracks().forEach((track) => {
@@ -75,6 +69,14 @@ export class CameraLayer {
     this.material.map = new THREE.VideoTexture(this.video);
     this.material.map.encoding = THREE.sRGBEncoding;
     this.material.needsUpdate = true;
+  }
+
+  requireCurrentRequest(generation, stream) {
+    if (generation === this.generation) return;
+    stream?.getTracks().forEach((track) => {
+      track.stop();
+    });
+    throw new Error(SUPERSEDED_REQUEST_MESSAGE);
   }
 
   requireExternalCamera(stream) {

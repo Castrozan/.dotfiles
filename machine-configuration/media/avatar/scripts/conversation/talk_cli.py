@@ -184,7 +184,7 @@ def main():
         actions[arguments.action](arguments, listener.runtime_directory())
     except (
         utterances.ConversationClosed,
-        subprocess.CalledProcessError,
+        subprocess.SubprocessError,
         RuntimeError,
         TimeoutError,
         ValueError,

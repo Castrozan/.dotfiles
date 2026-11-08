@@ -68,25 +68,49 @@ def settle_seconds_after(entries):
     return UNFINISHED_TURN_SETTLE_SECONDS
 
 
+class ThrottledCheck:
+    def __init__(self, check, interval_seconds):
+        self.check = check
+        self.interval_seconds = interval_seconds
+        self.next_check_at = time.monotonic()
+        self.last_answer = True
+
+    def passes(self):
+        if time.monotonic() >= self.next_check_at:
+            self.last_answer = self.check()
+            self.next_check_at = time.monotonic() + self.interval_seconds
+        return self.last_answer
+
+
+class SpeechSettling:
+    def __init__(self, directory, entries):
+        self.directory = directory
+        self.in_progress = directory / listener.SPEECH_IN_PROGRESS_MARKER
+        self.entries = entries
+        self.settled_at = time.monotonic() + settle_seconds_after(entries)
+
+    def refresh(self):
+        latest = transcript_log.read_since(
+            self.directory / "transcript.jsonl", last_heard(self.directory)
+        )
+        if len(latest) > len(self.entries):
+            self.entries = latest
+            self.settled_at = time.monotonic() + settle_seconds_after(latest)
+
+    def settled(self):
+        return time.monotonic() >= self.settled_at and not self.in_progress.exists()
+
+
 def wait_for_finished_speech(directory, entries, still_open):
-    transcript = directory / "transcript.jsonl"
-    in_progress = directory / listener.SPEECH_IN_PROGRESS_MARKER
-    settled_at = time.monotonic() + settle_seconds_after(entries)
+    settling = SpeechSettling(directory, entries)
+    conversation_still_open = ThrottledCheck(still_open, OPEN_CHECK_SECONDS)
     limit = time.monotonic() + UNFINISHED_SPEECH_LIMIT_SECONDS
-    next_open_check = time.monotonic()
-    while time.monotonic() < limit:
-        if time.monotonic() >= next_open_check:
-            if not still_open():
-                break
-            next_open_check = time.monotonic() + OPEN_CHECK_SECONDS
-        latest = transcript_log.read_since(transcript, last_heard(directory))
-        if len(latest) > len(entries):
-            entries = latest
-            settled_at = time.monotonic() + settle_seconds_after(entries)
-        if time.monotonic() >= settled_at and not in_progress.exists():
+    while time.monotonic() < limit and conversation_still_open.passes():
+        settling.refresh()
+        if settling.settled():
             break
         time.sleep(POLL_SECONDS)
-    return entries
+    return settling.entries
 
 
 def next_utterance(directory, wait_seconds, still_open):

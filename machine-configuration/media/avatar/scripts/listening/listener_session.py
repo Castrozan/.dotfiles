@@ -8,6 +8,7 @@ import user_units
 
 LISTENER_SERVICE = "avatar-listener.service"
 CONFIGURATION_FILE = "listener.json"
+SYSTEMCTL_TIMEOUT_SECONDS = 120
 
 
 class ListenerPurpose(enum.StrEnum):
@@ -16,7 +17,11 @@ class ListenerPurpose(enum.StrEnum):
 
 
 def systemctl(*arguments):
-    subprocess.run(["systemctl", "--user", *arguments], check=True)
+    subprocess.run(
+        ["systemctl", "--user", *arguments],
+        check=True,
+        timeout=SYSTEMCTL_TIMEOUT_SECONDS,
+    )
 
 
 def begin_listening(directory, purpose, sources, **settings):
