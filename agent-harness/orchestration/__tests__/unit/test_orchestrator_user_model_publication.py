@@ -3,7 +3,6 @@ import subprocess
 import pytest
 from orchestration_test_support import run_orchestrator
 from orchestrator_cli.user_model import cli as user_model_cli
-from orchestrator_cli.user_model import publication
 
 MODEL_PATH = "agent-harness/user-model/USER.md"
 FIRST_DIRECTIVE = (
@@ -87,26 +86,23 @@ def add_directive(monkeypatch, model):
     )
 
 
-def superproject_origin_of(superproject):
-    return superproject.parent / "superproject.git"
-
-
-def test_a_learned_directive_reaches_origin_and_its_pin_without_touching_the_checkout(
+def test_a_learned_directive_reaches_origin_this_checkout_and_the_pinned_gitlink(
     monkeypatch, repositories, capsys
 ):
     origin, other_machine, superproject, submodule, model = repositories
     commit_model(other_machine, model.read_text() + SECOND_DIRECTIVE)
     (superproject / "peer.txt").write_text("staged by a peer\n")
     git(superproject, "add", "peer.txt")
-    head_before = git(superproject, "rev-parse", "HEAD")
     assert add_directive(monkeypatch, model) == 0
     assert capsys.readouterr().out.strip() == "U-003"
     published = git(origin, "show", f"main:{MODEL_PATH}")
     assert "U-002" in published and "U-003 · active" in published
     assert git(submodule, "rev-parse", "HEAD") == git(origin, "rev-parse", "main")
-    pinned = git(superproject_origin_of(superproject), "rev-parse", "main:private")
+    pinned = git(superproject, "rev-parse", "HEAD:private")
     assert pinned == git(origin, "rev-parse", "main")
-    assert git(superproject, "rev-parse", "HEAD") == head_before
+    superproject_origin = superproject.parent / "superproject.git"
+    assert git(superproject_origin, "rev-parse", "main:private") == pinned
+    assert "U-003 · active" in model.read_text()
     assert git(superproject, "status", "--short", "peer.txt") == "A  peer.txt"
 
 
@@ -114,73 +110,32 @@ def test_a_refused_push_leaves_nothing_half_written_and_a_retry_succeeds(
     monkeypatch, repositories, capsys
 ):
     origin, _, superproject, submodule, model = repositories
-    superproject_origin = superproject_origin_of(superproject)
-    pin_before = git(superproject_origin, "rev-parse", "main:private")
+    pin_before = git(superproject, "rev-parse", "HEAD:private")
     git(submodule, "remote", "set-url", "--push", "origin", "/nonexistent/origin")
     assert add_directive(monkeypatch, model) == 1
     assert "U-002" not in model.read_text()
-    assert git(superproject_origin, "rev-parse", "main:private") == pin_before
+    assert git(superproject, "rev-parse", "HEAD:private") == pin_before
     assert "orchestrator user:" in capsys.readouterr().err
     git(submodule, "remote", "set-url", "--push", "origin", str(origin))
     assert add_directive(monkeypatch, model) == 0
     assert "U-002 · active" in git(origin, "show", f"main:{MODEL_PATH}")
 
 
-def push_peer_commit(superproject, name):
-    peer = superproject.parent / name
-    git(
-        superproject.parent,
-        "clone",
-        "-q",
-        str(superproject_origin_of(superproject)),
-        str(peer),
-    )
-    (peer / f"{name}.txt").write_text("a peer's pushed work\n")
-    git(peer, "add", f"{name}.txt")
-    git(peer, "commit", "-qm", f"feat: {name}")
-    git(peer, "push", "-q", "origin", "HEAD:main")
-    return git(peer, "rev-parse", "HEAD")
-
-
-def test_a_diverged_checkout_still_gets_a_fast_forward_pin_that_keeps_peer_work(
+def test_the_pin_stays_local_when_the_checkout_holds_other_unpushed_work(
     monkeypatch, repositories, capsys
 ):
     origin, _, superproject, _, model = repositories
-    (superproject / "local.txt").write_text("unpushed local work\n")
-    git(superproject, "add", "local.txt")
-    git(superproject, "commit", "-qm", "feat: unpushed local work")
-    local_head = git(superproject, "rev-parse", "HEAD")
-    peer_head = push_peer_commit(superproject, "peer-before")
-    assert add_directive(monkeypatch, model) == 0
-    superproject_origin = superproject_origin_of(superproject)
-    git(superproject_origin, "merge-base", "--is-ancestor", peer_head, "main")
-    assert git(superproject_origin, "rev-parse", "main:private") == git(
+    (superproject / "peer.txt").write_text("a peer's commit\n")
+    git(superproject, "add", "peer.txt")
+    git(superproject, "commit", "-qm", "feat: a peer's unpushed work")
+    pushed_before = git(superproject.parent / "superproject.git", "rev-parse", "main")
+    assert add_directive(monkeypatch, model) == 1
+    assert "U-002 · active" in git(origin, "show", f"main:{MODEL_PATH}")
+    assert git(superproject, "rev-parse", "HEAD:private") == git(
         origin, "rev-parse", "main"
     )
-    assert git(superproject, "rev-parse", "HEAD") == local_head
-    assert "local.txt" not in git(superproject_origin, "ls-tree", "--name-only", "main")
-
-
-def test_a_peer_push_between_fetch_and_push_is_retried_on_the_new_tip(
-    monkeypatch, repositories, capsys
-):
-    origin, _, superproject, _, model = repositories
-    raced = []
-    real_git = publication.git
-
-    def racing_git(repository, *arguments, **options):
-        if (
-            arguments[0] == "push"
-            and repository == superproject.resolve()
-            and not raced
-        ):
-            raced.append(push_peer_commit(superproject, "peer-racing"))
-        return real_git(repository, *arguments, **options)
-
-    monkeypatch.setattr(publication, "git", racing_git)
-    assert add_directive(monkeypatch, model) == 0
-    superproject_origin = superproject_origin_of(superproject)
-    git(superproject_origin, "merge-base", "--is-ancestor", raced[0], "main")
-    assert git(superproject_origin, "rev-parse", "main:private") == git(
-        origin, "rev-parse", "main"
+    assert (
+        git(superproject.parent / "superproject.git", "rev-parse", "main")
+        == pushed_before
     )
+    assert "do not add U-002 again" in capsys.readouterr().err
