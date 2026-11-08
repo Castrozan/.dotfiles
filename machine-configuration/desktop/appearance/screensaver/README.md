@@ -156,6 +156,10 @@ What actually breaks a new scene, in the order it tends to bite:
 - **Release the context in `dispose()`.** Renderers are torn down at every segment boundary, so
   a scene that leaks a GL context exhausts the browser's context limit part way through a
   record pass and the rest of the loop renders empty.
+- **A generative scene longer than the dwell records as a sequence.** Return
+  `resolveRecordingSource() => { sequence, durationSeconds }` and add `options.startSeconds` to the
+  render clock. The recorder then cuts the scene into dwell-length chunks that the players keep in
+  order, so the playback dwell cannot truncate it. `scenes/token-field/` is the worked example.
 - **Keep each file under 200 lines.** The repo hook enforces it. A scene that outgrows one file
   becomes a domain subfolder of flat siblings, `web/scenes/<name>/<name>_*.js`, with every
   file's `<script>` listed in dependency order; `scenes/bad-apple/` is the worked example.
