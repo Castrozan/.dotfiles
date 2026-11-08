@@ -13,8 +13,8 @@ jobs:
         sample: [a, b]
         variant:
           - { name: baseline, restore: 'true', jobs: 8 }
-          - { name: no-store-cache, restore: 'false', jobs: 8 }
-          - { name: max-jobs-16, restore: 'true', jobs: 16 }
+          - { name: max-jobs-4, restore: 'true', jobs: 4 }
+          - { name: max-jobs-6, restore: 'true', jobs: 6 }
     steps:
       - uses: actions/checkout@v4
 
