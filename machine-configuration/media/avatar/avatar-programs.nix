@@ -105,11 +105,10 @@ let
     export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/conversation}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"
   '';
-  agentHarness = ../../../agent-harness;
   a2aLibrary = lib.concatStringsSep ":" [
-    "${agentHarness}/agent-to-agent-communication/client/scripts"
-    "${agentHarness}/servants"
-    "${agentHarness}/hooks/runtime/common"
+    "${../../../agent-harness/agent-to-agent-communication/client/scripts}"
+    "${../../../agent-harness/servants}"
+    "${../../../agent-harness/hooks/runtime/common}"
   ];
   wake = pkgs.writeShellScriptBin "avatar-wake" ''
     export PATH=${
