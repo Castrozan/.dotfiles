@@ -11,6 +11,12 @@ inputs:
     description: >-
       Token used when fetching flake inputs, so GitHub API rate limits do not fail a run.
     required: true
+  installer:
+    required: false
+    default: upstream
+  prefetch-inputs:
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -23,9 +29,19 @@ runs:
       run: printf 'ARR_STACK_STUB_OVERRIDE=--override-input dependencies/arr-stack path:%s/repository/verification/nix-checks/arr-stack-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
     - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
+      if: ${{ inputs.installer == 'upstream' }}
       with:
         extra_nix_config: |
           experimental-features = nix-command flakes
+          access-tokens = github.com=${{ inputs.github-token }}
+
+    - uses: DeterminateSystems/determinate-nix-action@16f94ba7aae399b9f9077c254b6719ec6de7e3e3
+      if: ${{ inputs.installer == 'determinate' }}
+      with:
+        diagnostic-endpoint: ''
+        summarize: false
+        extra-conf: |
+          eval-cores = 0
           access-tokens = github.com=${{ inputs.github-token }}
 
     - name: Configure the signed Devenv and dotfiles binary caches
@@ -54,3 +70,11 @@ runs:
           ~/.cache/nix
         gc-max-store-size-linux: 4G
         purge: false
+
+    - name: Prefetch flake inputs in the background
+      if: ${{ inputs.prefetch-inputs == 'true' }}
+      shell: bash
+      run: |
+        mapfile -t inputPaths < <(nix flake archive --dry-run --json $ARR_STACK_STUB_OVERRIDE | jq -r '.. | .path? // empty')
+        echo "prefetching ${#inputPaths[@]} input paths"
+        setsid nohup nix-store --realise "${inputPaths[@]}" > "$RUNNER_TEMP/prefetch-inputs.log" 2>&1 &
