@@ -81,6 +81,7 @@ render as tables. The reply hook treats lines copied unchanged from this turn's 
 change is judged as your prose; the short prose lets the turn end without closing labels.
 
 That output carries every decision waiting for him, each with its question, every option and what it does, and the
-recommendation, then one row per session with what it is about, what it did and what blocks it. A done session leaves
-the table half an hour after its last report and a handed-over one at once, so never add rows of your own. Never paste
-raw card text or an earlier option by number. Mention `orchestrator learn stats` only when a count changed.
+recommendation, then one short row per session with its state and next step or the decision it waits on; its goal and
+progress stay in `orchestrator report show`. A done session leaves the table half an hour after its last report and a
+handed-over one at once, so never add rows of your own. Never paste raw card text or an earlier option by number.
+Mention `orchestrator learn stats` only when a count changed.

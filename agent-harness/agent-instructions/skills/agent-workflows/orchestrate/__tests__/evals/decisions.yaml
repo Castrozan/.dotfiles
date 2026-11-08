@@ -108,9 +108,9 @@ casos:
 
       ### Sessions
 
-      | # | Session | State | About | This round | Next |
-      |---|---|---|---|---|---|
-      | 1 | Voyager | blocked 3m | retire hey-bot into the avatar | filed D-1 | wait for D-1; waiting on D-1 |
+      | # | Session | State | Next |
+      |---|---|---|---|
+      | 1 | Voyager | blocked 3m | waiting on D-1 |
 
       Full view: `orchestrator decision show <id>` · `orchestrator report show <session>`
 

@@ -5,7 +5,8 @@ from datetime import datetime
 from .markdown_table import clipped, markdown_table
 
 PARAGRAPH_CHARACTERS = 300
-SESSION_HEADERS = ["#", "Session", "State", "About", "This round", "Next"]
+SESSION_HEADERS = ["#", "Session", "State", "Next"]
+NEXT_CHARACTERS = 60
 FULL_VIEW_LINE = (
     "Full view: `orchestrator decision show <id>` · "
     "`orchestrator report show <session>`"
@@ -60,8 +61,9 @@ def minutes_since(timestamp: str, now: datetime) -> int:
 
 def next_cell(report: dict) -> str:
     decisions = report["open_decisions"]
-    waiting = f"; waiting on {', '.join(decisions)}" if decisions else ""
-    return f"{report['next_step']}{waiting}"
+    if decisions:
+        return f"waiting on {', '.join(decisions)}"
+    return clipped(sentence(report["next_step"]), NEXT_CHARACTERS)
 
 
 def session_rows(reports: list[dict], now: datetime) -> list[list[str]]:
@@ -70,8 +72,6 @@ def session_rows(reports: list[dict], now: datetime) -> list[list[str]]:
             str(index),
             report["name"],
             f"{report['state']} {minutes_since(report['updated_at'], now)}m",
-            report["goal"],
-            report["progress"],
             next_cell(report),
         ]
         for index, report in enumerate(reports, start=1)

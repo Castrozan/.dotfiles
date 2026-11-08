@@ -20,9 +20,9 @@ REPORT_TEXT_LIMITS = {
     "goal": 80,
     "done_check": 200,
     "progress": 120,
-    "next_step": 80,
+    "next_step": 50,
 }
-REPORT_OVERFLOW_ADVICE = "it is one cell of the round table; keep detail in a file"
+REPORT_OVERFLOW_ADVICE = "keep it to a few words and put detail in a file"
 
 
 def report_name(requester: str) -> str:

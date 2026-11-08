@@ -81,7 +81,7 @@ def test_finished_and_handed_over_sessions_leave_while_legacy_text_is_clipped(
     write_report(reports, "Finished-long-ago", 120, state="done")
     write_report(reports, "Finished-just-now", 5, state="done")
     write_report(reports, "Handed-over", 1, state="handed-over")
-    write_report(reports, "Oversized", 1, progress="legacy " * 200)
+    write_report(reports, "Oversized", 1, next_step="legacy " * 200)
     output = run_round(monkeypatch, cards, reports, capsys)
     assert "Finished-long-ago" not in output and "Handed-over" not in output
     assert "Finished-just-now" in output and "Voyager" in output
@@ -93,7 +93,7 @@ def test_a_pipe_in_a_cell_keeps_the_session_table_columns(
     monkeypatch, directories, capsys, notifications
 ):
     cards, reports = directories
-    document = report_document(progress="split a | b and c || d")
+    document = report_document(next_step="split a | b, c || d")
     assert file_report(monkeypatch, reports, "Voyager", document) == 0
     output = run_round(monkeypatch, cards, reports, capsys)
     rows = [line for line in output.splitlines() if line.startswith("| ")]
