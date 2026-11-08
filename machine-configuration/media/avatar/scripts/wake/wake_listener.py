@@ -6,7 +6,7 @@ import speech_segmenter
 from conversation_addressee import Addressee
 from listener_session import ListenerPurpose
 from wake_boundaries import Boundaries, capture_command
-from wake_phrase import addressed_session, opens_with_greeting
+from wake_phrase import addressed_session, named_in_turn, opens_with_greeting
 
 ARM_CHECK_SECONDS = 5
 FLEET_REFRESH_SECONDS = 60
@@ -32,6 +32,7 @@ SETTINGS = {
     ),
 }
 MEETING_SOURCE = "meeting"
+AVATAR = "avatar"
 
 
 def spoken_prompt(message, purpose):
@@ -53,12 +54,14 @@ class WakeListener:
         self.sessions = self.boundaries.sessions()
         self.sessions_read_at = self.boundaries.now()
 
-    def armed(self):
-        stale = (
+    def sessions_stale(self):
+        return (
             self.sessions_read_at is None
             or self.boundaries.now() - self.sessions_read_at >= FLEET_REFRESH_SECONDS
         )
-        if stale:
+
+    def armed(self):
+        if self.sessions_stale():
             self.refresh_sessions()
         return bool(self.sessions) and not self.boundaries.conversation_listening()
 
@@ -116,10 +119,15 @@ class WakeListener:
                 self.conversation_read_through = entry["sequence"]
                 self.turn_to(entry)
 
+    def named_in_conversation(self, text):
+        if opens_with_greeting(text) or self.sessions_stale():
+            self.refresh_sessions()
+        return named_in_turn(text, self.sessions)
+
     def turn_to(self, entry):
-        if entry.get("source") == MEETING_SOURCE:
+        if entry.get("source") == MEETING_SOURCE or entry.get("speaker") == AVATAR:
             return
-        match = self.addressed(entry["text"])
+        match = self.named_in_conversation(entry["text"])
         if match is None:
             return
         addressee = self.boundaries.addressee()

@@ -92,3 +92,11 @@ def addressed_session(text, sessions):
     if session is None:
         return None
     return WakeMatch(session, text[name.end() :].strip(MESSAGE_EDGE))
+
+
+def named_in_turn(text, sessions):
+    match = addressed_session(text, sessions)
+    if match:
+        return match
+    session = vocative_session(text, sessions)
+    return WakeMatch(session, text.strip(MESSAGE_EDGE)) if session else None

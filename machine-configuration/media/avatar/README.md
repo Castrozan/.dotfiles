@@ -64,8 +64,8 @@ even mid-turn, and the avatar conversation then opens, so the reply continues on
 a name, so the prompt marks the speaker as not verified. `systemctl --user stop avatar-wake` turns it off;
 with the service stopped, `avatar-wake --dry-run` reports matches without delivering them.
 
-During a conversation the wake reads that conversation's transcript instead of the microphone. Greeting another live
-Servant hands the room to it: `addressee.json` in the avatar runtime directory names the session now addressed, its
+During a conversation the wake reads that conversation's transcript instead of the microphone. Naming another live
+Servant by the first or last word of a turn, with or without a greeting, hands the room to it: `addressee.json` in the avatar runtime directory names the session now addressed, its
 `avatar-talk follow` starts after the words that named it, and the previous session's `follow` prints that the room
 turned and exits. Only lines from the room's own microphone prompt a session; a voice from a meeting never does.
 

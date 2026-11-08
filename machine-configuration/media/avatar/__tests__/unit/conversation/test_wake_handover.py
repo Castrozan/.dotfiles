@@ -84,12 +84,35 @@ def test_a_restarted_conversation_is_read_from_its_first_turn():
     assert fakes.prompt_now.call_args.args[0] == IBARAKI.pane
 
 
-def test_turns_without_a_leading_greeting_never_read_the_fleet():
+def test_turns_without_a_leading_greeting_reuse_the_fleet_read_this_minute():
     fakes, listener = conversation_with(None)
+    listener.refresh_sessions()
     fakes.sessions.reset_mock()
-    fakes.transcript_entries.return_value = said("Ibaraki broke it", "roda os testes")
+    fakes.transcript_entries.return_value = said(
+        "I think Ibaraki broke it", "roda os testes"
+    )
     listener.read_conversation()
     fakes.sessions.assert_not_called()
+    fakes.prompt_now.assert_not_called()
+
+
+def test_a_name_opening_a_turn_without_a_greeting_turns_the_room():
+    fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
+    fakes.transcript_entries.return_value = said("Ibaraki, status")
+    listener.read_conversation()
+    assert fakes.hand_to.call_args.args[0].pane == IBARAKI.pane, (
+        "the floor moves on the same words, so the session it moves to must hear them"
+    )
+    assert fakes.prompt_now.call_args.args[0] == IBARAKI.pane
+
+
+def test_the_avatar_echoing_a_name_turns_nothing():
+    fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
+    fakes.transcript_entries.return_value = [
+        {"sequence": 1, "text": "hey Ibaraki", "source": "human", "speaker": "avatar"}
+    ]
+    listener.read_conversation()
+    fakes.prompt_now.assert_not_called()
 
 
 def test_a_failed_handover_is_reported_and_reading_continues():

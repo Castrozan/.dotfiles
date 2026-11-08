@@ -45,7 +45,8 @@ def hand_to(directory, addressee):
 
 
 def forget(directory):
-    (directory / ADDRESSEE_FILE).unlink(missing_ok=True)
+    with exclusive(directory):
+        (directory / ADDRESSEE_FILE).unlink(missing_ok=True)
 
 
 def addresses(directory, pane):
