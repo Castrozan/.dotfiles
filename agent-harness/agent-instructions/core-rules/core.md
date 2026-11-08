@@ -34,7 +34,7 @@ subagent carries it out rather than choosing the direction. Retain requirements,
 and synthesis. Treat delegated output as evidence, not authority.
 
 Hand a decided change splitting into disjoint, script-checkable files to parallel `software-engineer` subagents on a
-cheaper model than yours, following the `coding` skill's swarm procedure.
+cheaper model, per the `coding` skill's swarm procedure.
 
 Design multi-agent or multi-phase work with the `process-design` skill before executing it.
 
