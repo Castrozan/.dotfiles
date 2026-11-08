@@ -116,7 +116,8 @@ const sliced = !subtree
   : await agent(
       `### Slice
 
-Run the dotfiles-housekeeping-slices command with its --root and --subtree options set to the two values below.
+Run the installed dotfiles-housekeeping-slices command directly in Bash as your first action; it is already on PATH.
+Set its --root and --subtree options to the two values below.
 
 ${instructionData({ root, subtree })}.
 
