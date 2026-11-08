@@ -36,9 +36,12 @@ class Speaker:
             playback(rate, LIP_SYNC_SINK, "avatar-live-lip-sync"),
         ]
         self.chunk_bytes = int(rate * CHUNK_SECONDS) * SAMPLE_WIDTH_BYTES
+        self.failure = None
         threading.Thread(target=self.feed, daemon=True).start()
 
     def play(self, pcm):
+        if self.failure:
+            raise self.failure
         for start in range(0, len(pcm), self.chunk_bytes):
             self.pending.put(pcm[start : start + self.chunk_bytes])
 
@@ -58,9 +61,13 @@ class Speaker:
                 chunk = self.pending.get(timeout=QUEUE_POLL_SECONDS)
             except queue.Empty:
                 continue
-            for output in self.outputs:
-                output.stdin.write(chunk)
-                output.stdin.flush()
+            try:
+                for output in self.outputs:
+                    output.stdin.write(chunk)
+                    output.stdin.flush()
+            except BrokenPipeError as error:
+                self.failure = error
+                return
 
     def close(self):
         for output in self.outputs:
