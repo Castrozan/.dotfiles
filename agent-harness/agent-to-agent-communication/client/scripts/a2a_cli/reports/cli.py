@@ -12,6 +12,7 @@ from ..peer_transport import PeerRequestFailure
 from ..record_store import all_records, load_record, save_record, state_directory
 from .status_reports import (
     REPORT_STATES,
+    ReportAuthor,
     needs_orchestrator_attention,
     new_status_report,
     notification_text,
@@ -80,14 +81,8 @@ def command_file(arguments: argparse.Namespace, report_directory: Path) -> int:
     requester, agent_directory = sender_and_directory(arguments)
     requester_pane = os.environ.get("HERDR_PANE_ID")
     name = report_name(" ".join(filter(None, [requester, requester_pane])))
-    report = new_status_report(
-        document,
-        name,
-        requester,
-        requester_pane,
-        arguments.to,
-        previous_state(report_directory, name),
-    )
+    author = ReportAuthor(name, requester, requester_pane, arguments.to)
+    report = new_status_report(document, author, previous_state(report_directory, name))
     saved_path = save_record(report_directory, name, report)
     print(name)
     if not needs_orchestrator_attention(report):

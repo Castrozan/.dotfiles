@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from dataclasses import asdict, dataclass
 
 from ..document_fields import (
     InvalidPeerDocument,
@@ -49,19 +50,19 @@ def validated_report_fields(document) -> dict:
     return report
 
 
+@dataclass(frozen=True)
+class ReportAuthor:
+    name: str
+    requester: str
+    requester_pane: str | None
+    orchestrator: str
+
+
 def new_status_report(
-    document,
-    name: str,
-    requester: str,
-    requester_pane: str | None,
-    orchestrator: str,
-    previous_state: str | None,
+    document, author: ReportAuthor, previous_state: str | None
 ) -> dict:
     return {
-        "name": name,
-        "requester": requester,
-        "requester_pane": requester_pane,
-        "orchestrator": orchestrator,
+        **asdict(author),
         "updated_at": current_timestamp(),
         "previous_state": previous_state,
         **validated_report_fields(document),
