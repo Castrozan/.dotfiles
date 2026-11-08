@@ -24,6 +24,8 @@ jobs:
 
       - name: Nix flake checks
         run: |
+          rmdir private-configuration
+          git status --short | head
           nix --version
           nix config show | grep -E '^(eval-cores|lazy-trees|max-jobs|cores) ' || true
           nix flake check --keep-going $ARR_STACK_STUB_OVERRIDE --print-build-logs --show-trace --max-jobs 8 --cores 2
