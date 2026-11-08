@@ -103,3 +103,28 @@ def test_probe_wakes_for_an_unlisted_capture_and_an_unanswered_comment(
         "response 1:comment-1",
         f"capture {FRESH}",
     ]
+
+
+def test_gather_skips_a_capture_another_run_holds_instead_of_failing(
+    repository_with_origin, sandbox_vault, write_capture, recording_forge
+):
+    inbox = seed_inbox_and_group(
+        repository_with_origin, sandbox_vault, write_capture, recording_forge
+    )
+    claimed_at = NOW.astimezone().replace(tzinfo=None).isoformat(timespec="seconds")
+    write_capture(
+        inbox,
+        "Held.md",
+        f"[[ReadItLater]] [[Tweet]]\n\nstatus:: working\nclaimed_by:: kira\nclaimed_at:: {claimed_at}\n",
+    )
+    sources = GatherSources(
+        inbox,
+        sandbox_vault,
+        repository_with_origin,
+        recording_forge,
+        offline_transport(),
+    )
+
+    document = gather_document(sources, NOW)
+
+    assert [capture["name"] for capture in document["captures"]] == [FRESH]

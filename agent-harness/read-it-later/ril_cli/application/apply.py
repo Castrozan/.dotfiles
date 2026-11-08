@@ -21,7 +21,8 @@ from pull_requests import (
     written_by_the_watcher,
 )
 
-SETTLED_STATUSES = ("recorded", "already-done")
+SETTLED_STATUSES = ("recorded", "already-done", "missing")
+APPLICABLE_STATES = ("OPEN", "OPENED", "MERGED")
 APPLY_LOCK_PATH = Path(tempfile.gettempdir()) / "ril-apply.lock"
 
 
@@ -77,6 +78,10 @@ def split_by_approval(
 
 def approved_group(request: ApplyRequest, pull_request: dict) -> dict:
     branch = str(pull_request.get("headRefName", ""))
+    if str(pull_request.get("state", "")).upper() not in APPLICABLE_STATES:
+        raise ApplyRefused(
+            f"pull request {request.pull_request_number} is {pull_request.get('state')}"
+        )
     if not is_group_branch(branch):
         raise ApplyRefused(
             f"pull request {request.pull_request_number} is not a RIL group"

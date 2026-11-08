@@ -92,8 +92,9 @@ def gathered_capture(
 def captures_to_triage(
     sources: GatherSources, listed_captures: set[str], now: datetime
 ) -> list[dict]:
+    local_now = now.astimezone().replace(tzinfo=None)
     pending = claimable_captures(
-        collect_pending_captures(sources.inbox_directory, now=now)
+        collect_pending_captures(sources.inbox_directory, now=local_now)
     )
     return [capture for capture in pending if capture["name"] not in listed_captures]
 

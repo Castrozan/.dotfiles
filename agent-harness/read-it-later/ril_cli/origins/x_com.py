@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from urllib.parse import urlsplit
 
-from origins.transport import OriginTransport, bounded_text
+from origins.transport import OriginTransport, OriginUnavailable, bounded_text
 
 X_HOSTS = (
     "x.com",
@@ -69,12 +69,11 @@ def carries_only_images(summary: dict) -> bool:
 
 def resolve_x_status(url: str, transport: OriginTransport) -> dict:
     user, status = x_status_reference(url)
-    post = (
-        transport.json(FXTWITTER_STATUS_URL.format(user=user, status=status)).get(
-            "tweet"
-        )
-        or {}
+    post = transport.json(FXTWITTER_STATUS_URL.format(user=user, status=status)).get(
+        "tweet"
     )
+    if not post:
+        raise OriginUnavailable(f"post {status} is deleted, private or unreachable")
     summary = post_summary(post)
     quoted_post = post.get("quote")
     return {

@@ -32,6 +32,8 @@ def capture_path(context: CardActionContext, card: dict) -> Path:
 
 def is_done(context: CardActionContext, card: dict) -> bool:
     path = capture_path(context, card)
+    if not path.is_file():
+        return True
     state = capture_state(
         read_capture_body(path), DEFAULT_CLAIM_EXPIRY_MINUTES, context.now
     )
@@ -91,6 +93,8 @@ SINGLE_CARD_ACTIONS = {"drop": apply_drop, "file": apply_file}
 
 
 def apply_single_card(context: CardActionContext, card: dict) -> dict:
+    if not capture_path(context, card).is_file():
+        return {"capture": card["capture"], "status": "missing"}
     if is_done(context, card):
         return {"capture": card["capture"], "status": "already-done"}
     if not claimed(context, card):

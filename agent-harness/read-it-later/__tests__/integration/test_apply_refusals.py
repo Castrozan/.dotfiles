@@ -56,3 +56,56 @@ def test_an_entry_with_a_tag_outside_the_legend_fails_and_frees_its_capture(
     assert len(failed) == 1 and "Tag Legend" in failed[0]["reason"]
     assert report["merge"] == "not-merged"
     assert "status:: working" not in (inbox / failed[0]["capture"]).read_text()
+
+
+def test_a_closed_group_is_refused_before_any_card_runs(
+    repository_with_origin,
+    sandbox_vault,
+    recording_forge,
+    recording_launcher,
+    proposed_group,
+):
+    _, inbox = proposed_group
+    approval = recording_forge.comment(1, "approved", "2026-11-08T13:00:00Z")
+    recording_forge.pull_request(1)["state"] = "CLOSED"
+
+    with pytest.raises(ApplyRefused, match="CLOSED"):
+        apply_pull_request(
+            request_for(
+                repository_with_origin,
+                sandbox_vault,
+                inbox,
+                recording_forge,
+                recording_launcher,
+                approval,
+            )
+        )
+    assert recording_launcher.launches == []
+
+
+def test_a_capture_deleted_from_the_inbox_is_skipped_and_does_not_block_the_merge(
+    repository_with_origin,
+    sandbox_vault,
+    recording_forge,
+    recording_launcher,
+    proposed_group,
+):
+    group, inbox = proposed_group
+    (inbox / group["cards"][1]["capture"]).unlink()
+    approval = recording_forge.comment(1, "approved", "2026-11-08T13:00:00Z")
+
+    report = apply_pull_request(
+        request_for(
+            repository_with_origin,
+            sandbox_vault,
+            inbox,
+            recording_forge,
+            recording_launcher,
+            approval,
+        )
+    )
+
+    assert {"capture": group["cards"][1]["capture"], "status": "missing"} in report[
+        "results"
+    ]
+    assert report["merge"] == "merged"

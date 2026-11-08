@@ -143,3 +143,17 @@ def test_one_subtitle_track_is_chosen_to_stay_under_rate_limits():
         "pt-BR",
     )
     assert subtitle_choice({"automatic_captions": {}}) is None
+
+
+def test_a_deleted_post_asks_for_the_browser_with_its_reason():
+    transport = scripted_transport(
+        {
+            "fxtwitter": json.dumps({"code": 404, "tweet": None})
+            + "\nu\napplication/json"
+        }
+    )
+
+    origin = resolve_origin("https://x.com/a/status/7", transport)
+
+    assert origin["needs_browser"] is True
+    assert "deleted" in origin["browser_reason"]
