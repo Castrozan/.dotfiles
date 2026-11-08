@@ -184,7 +184,7 @@ const confirmedIndexes = new Set(
 const confirmed = candidates
   .filter((candidate) => confirmedIndexes.has(candidate.index))
   .sort((left, right) => severityRank(left) - severityRank(right));
-const summary = `Housekeeping of ${subtree}: ${slicePaths.length} slices read twice, ${candidates.length} candidates, ${confirmed.length} confirmed.`;
+const summary = `Housekeeping of ${subtree}: ${perSlice.filter(Boolean).length} of ${slicePaths.length} slices read twice, ${candidates.length} candidates, ${verdictLists.filter(Boolean).length} of ${batches.length} verifier batches returned, ${confirmed.length} confirmed.`;
 const reportLine = (finding) =>
   `- **${finding.severity}** ${finding.file}:${finding.line} (${finding.dimension}): ${finding.title}. ${finding.detail}`;
 const shown = confirmed.slice(0, MAXIMUM_REPORTED_FINDINGS);
