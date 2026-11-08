@@ -7,6 +7,8 @@ relatorio: agent-harness/quality/evaluations/resultado/relatorio.html
 paginas: agent-harness/quality/evaluations/public
 sujeito:
   cliente: codex
+  ambiente:
+    OBSIDIAN_HOME: "{sessao}/vault"
   ambiente_removido:
     - AGENT_INTERACTIVE_PREFERENCES_PATH
     - CLAWDE_AGENT_NAME

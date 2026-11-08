@@ -692,6 +692,11 @@ casos:
     tempo_limite_segundos: 180
     ambiente:
       git: false
+      arquivos:
+        - caminho: vault/ReadItLater Inbox/Tweet from Fixture Author (2026-11-01 10-00-00).md
+          conteudo: "[[ReadItLater]] [[Tweet]]\n\n# [Fixture Author](https://x.com/fixtureauthor/status/1000000000000000001)\n\n> A terminal file manager written in Rust, now with image previews.\n"
+        - caminho: vault/ReadItLater Inbox/Tweet from Handled Author (2026-10-01 09-00-00).md
+          conteudo: "[[ReadItLater]] [[Tweet]]\n\n# [Handled Author](https://x.com/handledauthor/status/1000000000000000002)\n\n> A faster way to switch NixOS generations.\n\n#agent-work-done\nverdict:: drop\noutcome:: Already covered by the existing rebuild command\n"
     assercoes:
       skills_usadas:
         - all-skills
@@ -864,6 +869,11 @@ casos:
     tempo_limite_segundos: 180
     ambiente:
       git: false
+      arquivos:
+        - caminho: vault/ReadItLater Inbox/Tweet from Fixture Author (2026-11-01 10-00-00).md
+          conteudo: "[[ReadItLater]] [[Tweet]]\n\n# [Fixture Author](https://x.com/fixtureauthor/status/1000000000000000001)\n\n> A terminal file manager written in Rust, now with image previews.\n"
+        - caminho: vault/ReadItLater Inbox/Article 2026-10-20 08-00-00.md
+          conteudo: "[[ReadItLater]] [[Article]]\n\n# [Bounded polling in terminal dashboards](https://example.com/bounded-polling)\n\nSet a refresh bound and redraw only what changed.\n"
     assercoes:
       skills_usadas:
         - all-skills
