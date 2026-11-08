@@ -2,17 +2,22 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .text_table import clipped_lines, text_table
+from .markdown_table import clipped, markdown_table
 
-ROUND_WIDTH = 100
-CELL_LINES = 2
-OPTION_WIDTHS = [2, 30, 62]
-SESSION_WIDTHS = [2, 20, 20, 26, 20]
-SESSION_HEADERS = ["#", "Session", "About", "This round", "Blocks"]
+PARAGRAPH_CHARACTERS = 300
+SESSION_HEADERS = ["#", "Session", "State", "About", "This round", "Next"]
+FULL_VIEW_LINE = (
+    "Full view: `orchestrator decision show <id>` · "
+    "`orchestrator report show <session>`"
+)
+
+
+def sentence(text: str) -> str:
+    return text.strip().rstrip(".")
 
 
 def paragraph(text: str) -> str:
-    return "\n".join(clipped_lines(text, ROUND_WIDTH, CELL_LINES))
+    return clipped(text, PARAGRAPH_CHARACTERS)
 
 
 def option_rows(card: dict) -> list[list[str]]:
@@ -22,31 +27,28 @@ def option_rows(card: dict) -> list[list[str]]:
     ]
 
 
-def blocking_line(card: dict) -> str:
+def recommendation_line(card: dict) -> str:
     reversibility = "Reversible" if card["reversible"] else "Irreversible"
-    return f"{reversibility}. Blocks {card['blocked_work']}"
+    return (
+        f"Recommends **{card['recommendation']}** because {sentence(card['reasoning'])}. "
+        f"{reversibility}; blocks {card['blocked_work']}"
+    )
 
 
 def reply_line(card: dict) -> str:
     labels = ", ".join(option["label"] for option in card["options"])
-    return f"Reply with {card['id']} and one option: {labels}"
+    return f"Reply with `{card['id']}` and one option: {labels}"
 
 
 def decision_block(card: dict) -> str:
-    return "\n".join(
+    return "\n\n".join(
         [
-            paragraph(f"{card['id']} · {card['requester']}, working to {card['goal']}"),
-            paragraph(f"Asks: {card['question']}"),
-            text_table(
-                ["#", "Option", "What happens"],
-                option_rows(card),
-                OPTION_WIDTHS,
-                CELL_LINES,
-            ),
             paragraph(
-                f"Recommends {card['recommendation']} because {card['reasoning']}"
+                f"**{card['id']} · {card['requester']}**, working to {sentence(card['goal'])}. "
+                f"Asks: {card['question']}"
             ),
-            paragraph(blocking_line(card)),
+            markdown_table(["#", "Option", "What happens"], option_rows(card)),
+            paragraph(recommendation_line(card)),
             paragraph(reply_line(card)),
         ]
     )
@@ -56,11 +58,10 @@ def minutes_since(timestamp: str, now: datetime) -> int:
     return int((now - datetime.fromisoformat(timestamp)).total_seconds() // 60)
 
 
-def blocks_cell(report: dict, now: datetime) -> str:
+def next_cell(report: dict) -> str:
     decisions = report["open_decisions"]
-    waiting = f" Waiting on {', '.join(decisions)}." if decisions else ""
-    age = minutes_since(report["updated_at"], now)
-    return f"{report['state']} {age}m: {report['next_step']}{waiting}"
+    waiting = f"; waiting on {', '.join(decisions)}" if decisions else ""
+    return f"{report['next_step']}{waiting}"
 
 
 def session_rows(reports: list[dict], now: datetime) -> list[list[str]]:
@@ -68,29 +69,31 @@ def session_rows(reports: list[dict], now: datetime) -> list[list[str]]:
         [
             str(index),
             report["name"],
+            f"{report['state']} {minutes_since(report['updated_at'], now)}m",
             report["goal"],
             report["progress"],
-            blocks_cell(report, now),
+            next_cell(report),
         ]
         for index, report in enumerate(reports, start=1)
     ]
+
+
+def sessions_block(reports: list[dict], now: datetime) -> str:
+    if not reports:
+        return "No session has filed a report."
+    table = markdown_table(SESSION_HEADERS, session_rows(reports, now))
+    return f"{table}\n\n{FULL_VIEW_LINE}"
 
 
 def rendered_round(cards: list[dict], reports: list[dict], now: datetime) -> str:
     decisions = [decision_block(card) for card in cards] or [
         "No decision is waiting for you."
     ]
-    sessions = (
-        text_table(
-            SESSION_HEADERS, session_rows(reports, now), SESSION_WIDTHS, CELL_LINES
-        )
-        + "\nFull view: orchestrator decision show <id> · orchestrator report show <session>"
-        if reports
-        else "No session has filed a report."
-    )
     return "\n\n".join(
         [
-            "Decisions waiting for you\n" + "\n\n".join(decisions),
-            "Sessions\n" + sessions,
+            "### Decisions waiting for you",
+            *decisions,
+            "### Sessions",
+            sessions_block(reports, now),
         ]
     )

@@ -75,9 +75,10 @@ in your next round so Lucas can settle it once.
 
 ### Round view
 
-Lucas reads only your latest turn end and never scrolls back. End every turn with the output of `orchestrator round`
-pasted verbatim in a fenced code block, and keep your own words above it under 100. The fence keeps it outside the
-reply's word and table limits, and the short prose lets it end the turn without closing labels.
+Lucas reads only your latest turn end and never scrolls back. End every turn by running `orchestrator round` and
+pasting its output verbatim as Markdown, never in a fence, with your own words above it under 100. Its tables then
+render as tables. The reply hook treats lines copied unchanged from this turn's tool output as a visual, so any line you
+change is judged as your prose; the short prose lets the turn end without closing labels.
 
 That output carries every decision waiting for him, each with its question, every option and what it does, and the
 recommendation, then one row per session with what it is about, what it did and what blocks it. A done session leaves

@@ -10,16 +10,6 @@ from round_test_support import (
 )
 
 
-def readable_text(output):
-    columns = {}
-    for line in output.splitlines():
-        if " │ " in line:
-            for index, cell in enumerate(line.split(" │ ")):
-                columns.setdefault(index, []).append(cell)
-    column_text = [" ".join(" ".join(cells).split()) for cells in columns.values()]
-    return " | ".join([" ".join(output.split()), *column_text])
-
-
 @pytest.fixture
 def directories(tmp_path):
     return tmp_path / "cards", tmp_path / "reports"
@@ -35,7 +25,6 @@ def test_the_round_shows_each_waiting_decision_with_every_option_then_every_sess
     assert file_report(monkeypatch, reports, "Voyager", report_document()) == 0
     output = run_round(monkeypatch, cards, reports, capsys)
     card = valid_card_document()
-    flattened = readable_text(output)
     for expected in (
         waiting,
         card["question"],
@@ -47,9 +36,9 @@ def test_the_round_shows_each_waiting_decision_with_every_option_then_every_sess
         "blocked",
         "wait for the scope decision",
     ):
-        assert " ".join(expected.split()) in flattened
+        assert " ".join(expected.split()) in output
     assert still_triaging not in output
-    assert f"Reply with {waiting} and one option: drop, keep" in output
+    assert f"Reply with `{waiting}` and one option: drop, keep" in output
     assert "needs a decision:" not in output
 
 

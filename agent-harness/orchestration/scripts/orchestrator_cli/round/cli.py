@@ -19,7 +19,7 @@ def add_parser(subcommands) -> None:
     round_command = subcommands.add_parser(
         "round",
         help="the turn-end view for the human: each decision waiting for them with "
-        "every option, then one row per session; relay it in a fenced block",
+        "every option, then one row per session; relay it verbatim as Markdown",
     )
     round_command.add_argument(
         "--dir", default=str(state_directory("orchestrator-decisions"))

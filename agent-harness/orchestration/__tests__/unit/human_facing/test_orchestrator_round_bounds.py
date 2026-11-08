@@ -1,14 +1,15 @@
 import json
+import re
 from datetime import datetime, timedelta, timezone
 
 import pytest
 from orchestration_test_support import file_card, valid_card_document
 from orchestrator_cli.decisions import card_limits
 from orchestrator_cli.reports.status_reports import REPORT_TEXT_LIMITS
-from orchestrator_cli.round.rendering import ROUND_WIDTH
 from round_test_support import escalate, file_report, report_document, run_round
 
-SCREEN_LINES = 60
+SOURCE_LINES = 40
+UNESCAPED_PIPE = re.compile(r"(?<!\\)\|")
 
 
 @pytest.fixture
@@ -55,9 +56,7 @@ def test_two_decisions_and_six_sessions_at_every_limit_fit_one_screen(
             == 0
         )
     output = run_round(monkeypatch, cards, reports, capsys)
-    lines = output.splitlines()
-    assert max(len(line) for line in lines) <= ROUND_WIDTH
-    assert len(lines) <= SCREEN_LINES
+    assert len(output.splitlines()) <= SOURCE_LINES
     assert output.count("Servant-") == 6
 
 
@@ -87,8 +86,19 @@ def test_finished_and_handed_over_sessions_leave_while_legacy_text_is_clipped(
     assert "Finished-long-ago" not in output and "Handed-over" not in output
     assert "Finished-just-now" in output and "Voyager" in output
     assert "…" in output
-    assert max(len(line) for line in output.splitlines()) <= ROUND_WIDTH
-    assert output.count("legacy") < 20
+    assert output.count("legacy") < 30
+
+
+def test_a_pipe_in_a_cell_keeps_the_session_table_columns(
+    monkeypatch, directories, capsys, notifications
+):
+    cards, reports = directories
+    document = report_document(progress="split a | b and c || d")
+    assert file_report(monkeypatch, reports, "Voyager", document) == 0
+    output = run_round(monkeypatch, cards, reports, capsys)
+    rows = [line for line in output.splitlines() if line.startswith("| ")]
+    assert len({len(UNESCAPED_PIPE.findall(row)) for row in rows}) == 1
+    assert "a \\| b" in output
 
 
 def test_a_report_field_past_its_limit_is_refused_by_name(
