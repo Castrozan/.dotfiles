@@ -41,7 +41,7 @@ def compile_test_binary(source_directories, entry_point, test_sources, binary):
 
 
 def _compile_coverage_suite(suite, directory, binaries, index):
-    owner, entry_point, test_directory, segment_counts = suite
+    owner, entry_point, test_directory, _ = suite
     test_sources = sorted((REPOSITORY / owner / test_directory).rglob("*.swift"))
     if not test_sources:
         raise ValueError(f"No Swift tests found: {owner / test_directory}")
@@ -51,7 +51,7 @@ def _compile_coverage_suite(suite, directory, binaries, index):
         source_directories.append(DESKTOP / "input/command-sockets/swift-sources")
     compile_test_binary(source_directories, entry_point, test_sources, binary)
     binaries.append(binary)
-    return binary, segment_counts
+    return binary
 
 
 def _run_coverage_segment(binary, segment_count, directory, environment):
@@ -129,7 +129,7 @@ def collect_coverage(output_directory):
         binaries = []
         outcomes = []
         for index, suite in enumerate(suites):
-            binary, _ = _compile_coverage_suite(
+            binary = _compile_coverage_suite(
                 suite,
                 directory,
                 binaries,

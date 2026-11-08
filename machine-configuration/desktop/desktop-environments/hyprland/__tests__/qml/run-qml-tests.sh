@@ -45,7 +45,7 @@ main() {
 			-input "$testFile" \
 			-import "$QT_QML_PATH" \
 			-import "$MOCKS_DIR" \
-			"${reportArguments[@]}" 2>&1; then
+			${reportArguments[@]+"${reportArguments[@]}"} 2>&1; then
 			passedTests=$((passedTests + 1))
 		else
 			echo "  FAIL: $testName"
