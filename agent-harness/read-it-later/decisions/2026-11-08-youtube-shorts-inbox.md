@@ -1,6 +1,6 @@
 # YouTube Shorts saved for the Shorts channel
 
-**Bundle goal:** Close out the saved YouTube Shorts against the Shorts worker: confirm the five explainer references it already consumed, answer Lucas's copyright question, and drop the reposted entertainment.
+**Bundle goal:** Close out the saved YouTube Shorts against the Shorts worker: confirm the five explainer references it already consumed, answer Lucas's copyright question, and drop the reposted entertainment and meme compilations.
 
 | # | Capture | TL;DR | Action | Why | Already covered | Second Brain direction | Systems | Local | Lucas's note |
 |---|---|---|---|---|---|---|---|---|---|
@@ -14,6 +14,7 @@
 | 8 | [Youtube - My new boss told war stories through my whole job interview. I was his drill sergeant](https://youtube.com/shorts/rMvQk37_81o) | 178 s synthetic-voice Reddit story about a drill sergeant interviewing with a former recruit. | drop | fiction narration from a story farm, outside the factual Shorts scope and three times the 60 s output | - | - | media workers | yes | - |
 | 9 | [Youtube - Posts About Famous Individuals](https://youtube.com/shorts/TAlDRtfM_UA) | 61 s compilation of reposted celebrity posts read aloud. | drop | a reposting format the rights rule refuses | machine-configuration/media/video-production/shorts-automation/goal.txt:1 forbids copied assets without rights | - | media workers | yes | - |
 | 10 | [Youtube - 💼 Her Cat Took A New Job](https://youtube.com/shorts/JETSuPe1xuA) | 23 s narrated anecdote of a sick cat eating to cheer its owner; the title does not match the content. | drop | entertainment with nothing to reuse | - | - | - | yes | - |
+| 11 | [Youtube - Memes About Chips](https://youtube.com/shorts/MK5VQXW-zUY) | 57 s compilation of reposted chip memes read aloud by a synthetic voice, with no mechanism or payoff. | drop | a reposted meme compilation from the Zuace channel; it fits neither the factual explainer channel nor the rights rule, and the same kind of repost is already dropped on this pull request | machine-configuration/media/video-production/shorts-automation/goal.txt:1 forbids copied assets without rights | - | media workers | yes | - |
 
 Answer on the pull request in plain language: approve the table as it stands, change any card ("drop 3", "session for 2 on kira"), or ask. Captures added after your approval need a new one.
 
@@ -24,7 +25,7 @@ Answer on the pull request in plain language: approve the table as it stands, ch
 {
   "topic_slug": "youtube-shorts-inbox",
   "title": "YouTube Shorts saved for the Shorts channel",
-  "bundle_goal": "Close out the saved YouTube Shorts against the Shorts worker: confirm the five explainer references it already consumed, answer Lucas's copyright question, and drop the reposted entertainment.",
+  "bundle_goal": "Close out the saved YouTube Shorts against the Shorts worker: confirm the five explainer references it already consumed, answer Lucas's copyright question, and drop the reposted entertainment and meme compilations.",
   "cards": [
     {
       "capture": "Youtube - How an Accident Made Boats Faster animation.md",
@@ -198,6 +199,24 @@ Answer on the pull request in plain language: approve the table as it stands, ch
       "action": "drop",
       "reason": "entertainment with nothing to reuse",
       "added_at": "2026-11-08T22:15:37+00:00"
+    },
+    {
+      "capture": "Youtube - Memes About Chips.md",
+      "tldr": "57 s compilation of reposted chip memes read aloud by a synthetic voice, with no mechanism or payoff.",
+      "origin_url": "https://youtube.com/shorts/MK5VQXW-zUY",
+      "linked_urls": [],
+      "covered_evidence": [
+        "machine-configuration/media/video-production/shorts-automation/goal.txt:1 forbids copied assets without rights"
+      ],
+      "second_brain_direction": [],
+      "systems": [
+        "media workers"
+      ],
+      "runs_locally_on_chise": true,
+      "lucas_note": "",
+      "action": "drop",
+      "reason": "a reposted meme compilation from the Zuace channel; it fits neither the factual explainer channel nor the rights rule, and the same kind of repost is already dropped on this pull request",
+      "added_at": "2026-11-08T22:39:18+00:00"
     }
   ]
 }
