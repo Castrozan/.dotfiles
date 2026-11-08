@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import textwrap
+
 from .delegation import human_only_grounds
+
+CARD_WIDTH = 100
 
 
 def sentence(text: str) -> str:
@@ -22,6 +26,10 @@ def evidence_sentences(card: dict) -> list[str]:
         unverified = "; ".join(card["unverified_assumptions"])
         sentences.append(f"Not verified: {unverified}.")
     return sentences
+
+
+def details_sentences(card: dict) -> list[str]:
+    return [f"Full detail: {card['details']}."] if "details" in card else []
 
 
 def authority_sentence(card: dict) -> str:
@@ -67,22 +75,26 @@ def decision_paragraph(card: dict) -> str:
         options_sentence(card),
         f"It recommends {card['recommendation']} because {sentence(card['reasoning'])}",
         *evidence_sentences(card),
+        *details_sentences(card),
         authority_sentence(card),
         *outcome_sentences(card),
     ]
     return " ".join(sentences)
 
 
+def wrapped_block(text: str) -> str:
+    return textwrap.fill(text, CARD_WIDTH, break_on_hyphens=False)
+
+
 def rendered_card(card: dict) -> str:
-    return "\n\n".join(
-        [
-            f"{card['id']} ({card['state']})",
-            decision_paragraph(card),
-            f"**What is this session about?:** {sentence(card['goal'])}",
-            f"**Done:** {sentence(card['progress'])}",
-            f"**Next:** {sentence(card['blocked_work'])}",
-        ]
-    )
+    blocks = [
+        f"{card['id']} ({card['state']})",
+        decision_paragraph(card),
+        f"**What is this session about?:** {sentence(card['goal'])}",
+        f"**Done:** {sentence(card['progress'])}",
+        f"**Next:** {sentence(card['blocked_work'])}",
+    ]
+    return "\n\n".join(map(wrapped_block, blocks))
 
 
 def summary_row(card: dict) -> str:

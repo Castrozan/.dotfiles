@@ -1,7 +1,7 @@
 import json
 
 from orchestrator_cli.watch.herdr_events import decoded_messages
-from orchestrator_cli.watch.workspace_watch import event_line, stale_report_lines
+from orchestrator_cli.watch.workspace_watch import event_line
 
 
 def status_event(status, workspace="wW", pane="wW:p1"):
@@ -40,24 +40,3 @@ def test_partial_socket_lines_wait_for_their_newline():
     assert (messages, remainder) == ([], first[:10])
     messages, remainder = decoded_messages(remainder + first[10:] + b"\n")
     assert messages == [status_event("done")] and remainder == b""
-
-
-def test_the_safety_net_names_only_working_reports_of_watched_panes_gone_quiet(
-    tmp_path,
-):
-    reports = {
-        "quiet": ("wW:p1", "working", "2000-01-01T00:00:00+00:00"),
-        "blocked": ("wW:p1", "blocked", "2000-01-01T00:00:00+00:00"),
-        "elsewhere": ("wX:p9", "working", "2000-01-01T00:00:00+00:00"),
-        "fresh": ("wW:p2", "working", "2999-01-01T00:00:00+00:00"),
-    }
-    for name, (pane, state, updated_at) in reports.items():
-        record = {
-            "name": name,
-            "requester_pane": pane,
-            "state": state,
-            "updated_at": updated_at,
-        }
-        (tmp_path / f"{name}.json").write_text(json.dumps(record))
-    lines = stale_report_lines(tmp_path, {"wW:p1", "wW:p2"}, safety_minutes=30)
-    assert lines == ["STALE quiet working since 2000-01-01T00:00:00+00:00"]

@@ -11,6 +11,11 @@ from ..document_fields import (
     require_object,
     required_text_items,
 )
+from .card_limits import (
+    ESCALATION_MISSING_LIMIT,
+    require_relayable_card,
+    require_relayable_text,
+)
 from .delegation import validated_human_only
 
 OPEN_STATE = "open"
@@ -82,6 +87,9 @@ def validated_card_fields(document: dict) -> dict:
         raise InvalidPeerDocument("reversible must be true or false")
     card["reversible"] = document["reversible"]
     card["human_only"] = validated_human_only(document)
+    if "details" in document:
+        card["details"] = nonempty_text(document, "details")
+    require_relayable_card(card)
     return card
 
 
@@ -118,9 +126,11 @@ def escalated_card(card: dict, reason: str, missing: str) -> dict:
         raise InvalidPeerDocument(
             f"reason must be one of {', '.join(ESCALATION_REASONS)}"
         )
+    lacking = required_text(missing, "what the user model lacked")
+    require_relayable_text("missing", lacking, ESCALATION_MISSING_LIMIT)
     escalation = {
         "reason": reason,
-        "missing": required_text(missing, "what the user model lacked"),
+        "missing": lacking,
         "escalated_at": current_timestamp(),
     }
     return {**card, "state": ESCALATED_STATE, "escalation": escalation}

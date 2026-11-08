@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import selectors
-import time
-from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import Path
 
 from ..record_store import all_records
@@ -13,8 +13,19 @@ from .herdr_events import (
     workspace_agent_panes,
     workspace_subscription,
 )
+from .session_timeouts import (
+    SessionRecords,
+    WatchedSession,
+    current_time,
+    is_finished,
+    session_deadline,
+    session_records,
+    timeout_line,
+)
 
 REPORTED_STATUSES = frozenset({"blocked", "done", "idle"})
+STATUS_CHANGED_EVENT = "pane.agent_status_changed"
+PANE_GONE_EVENTS = frozenset({"pane.exited", "pane.closed"})
 
 
 def status_line(data: dict) -> tuple[str | None, str | None]:
@@ -33,7 +44,7 @@ def exited_line(data: dict) -> tuple[str | None, str | None]:
 
 
 EVENT_RENDERERS = {
-    "pane.agent_status_changed": status_line,
+    STATUS_CHANGED_EVENT: status_line,
     "pane.agent_detected": started_line,
     "pane.exited": exited_line,
     "pane.closed": exited_line,
@@ -48,43 +59,66 @@ def event_line(message: dict, workspace: str) -> tuple[str | None, str | None]:
     return render(data)
 
 
-def stale_report_lines(
-    report_directory: Path, pane_ids: set[str], safety_minutes: float
-) -> list[str]:
-    cutoff = datetime.now(timezone.utc) - timedelta(minutes=safety_minutes)
-    return [
-        f"STALE {report['name']} {report['state']} since {report['updated_at']}"
-        for report in all_records(report_directory)
-        if report.get("requester_pane") in pane_ids
-        and report["state"] == "working"
-        and datetime.fromisoformat(report["updated_at"]) < cutoff
-    ]
+@dataclass(frozen=True)
+class WatchConfiguration:
+    workspace: str
+    report_directory: Path
+    decision_directory: Path
+    timeout_minutes: float
+    followed_panes: frozenset[str]
+    own_pane: str | None
 
 
 class WorkspaceWatch:
-    def __init__(self, workspace: str, report_directory: Path, safety_minutes: float):
-        self.workspace = workspace
-        self.report_directory = report_directory
-        self.safety_minutes = safety_minutes
+    def __init__(self, configuration: WatchConfiguration):
+        self.configuration = configuration
+        self.timeout = timedelta(minutes=configuration.timeout_minutes)
         self.selector = selectors.DefaultSelector()
         self.buffers: dict[int, bytes] = {}
-        self.pane_ids: set[str] = set()
-        self.last_safety_check = time.monotonic()
+        self.sessions: dict[str, WatchedSession] = {}
+        self.next_check_at = current_time()
+
+    def follows(self, pane_id: str | None) -> bool:
+        followed = self.configuration.followed_panes
+        return pane_id != self.configuration.own_pane and (
+            not followed or pane_id in followed
+        )
 
     def register(self, subscriptions: list[dict]) -> None:
         connection = subscribed_socket(subscriptions)
         self.buffers[connection.fileno()] = b""
         self.selector.register(connection, selectors.EVENT_READ)
 
-    def watch_pane(self, pane_id: str) -> None:
-        if pane_id not in self.pane_ids:
-            self.pane_ids.add(pane_id)
-            self.register(status_subscription(pane_id))
+    def watch_pane(self, pane_id: str, status: str = "unknown") -> None:
+        if pane_id in self.sessions or not self.follows(pane_id):
+            return
+        self.sessions[pane_id] = WatchedSession(pane_id, status, current_time())
+        self.register(status_subscription(pane_id))
 
     def start(self) -> None:
         self.register(workspace_subscription())
-        for pane in workspace_agent_panes(self.workspace):
-            self.watch_pane(pane["pane_id"])
+        for pane in workspace_agent_panes(self.configuration.workspace):
+            self.watch_pane(pane["pane_id"], pane.get("agent_status", "unknown"))
+
+    def observe(self, event: str | None, data: dict) -> None:
+        session = self.sessions.get(data.get("pane_id"))
+        if session is None:
+            return
+        if event == STATUS_CHANGED_EVENT:
+            session.status = data.get("agent_status", session.status)
+            session.heard_at = current_time()
+        elif event in PANE_GONE_EVENTS:
+            del self.sessions[session.pane_id]
+
+    def line_from_message(self, message: dict) -> str | None:
+        data = message.get("data") or {}
+        if not self.follows(data.get("pane_id")):
+            return None
+        line, new_pane = event_line(message, self.configuration.workspace)
+        if new_pane:
+            self.watch_pane(new_pane)
+        self.observe(message.get("event"), data)
+        return line
 
     def lines_from(self, connection) -> list[str]:
         chunk = connection.recv(65536)
@@ -95,25 +129,39 @@ class WorkspaceWatch:
         messages, self.buffers[connection.fileno()] = decoded_messages(
             self.buffers[connection.fileno()] + chunk
         )
-        lines = []
-        for message in messages:
-            line, new_pane = event_line(message, self.workspace)
-            if new_pane:
-                self.watch_pane(new_pane)
-            if line:
-                lines.append(line)
-        return lines
+        return list(filter(None, map(self.line_from_message, messages)))
 
-    def safety_lines(self) -> list[str]:
-        self.last_safety_check = time.monotonic()
-        return stale_report_lines(
-            self.report_directory, self.pane_ids, self.safety_minutes
+    def current_records(self) -> SessionRecords:
+        return session_records(
+            all_records(self.configuration.report_directory),
+            all_records(self.configuration.decision_directory),
         )
 
+    def check_timeouts(self) -> list[str]:
+        now = current_time()
+        records = self.current_records()
+        pending = [
+            session
+            for session in self.sessions.values()
+            if not is_finished(session, records)
+        ]
+        overdue = [
+            session
+            for session in pending
+            if session_deadline(session, records, self.timeout) <= now
+        ]
+        for session in overdue:
+            session.reminded_at = now
+        self.next_check_at = min(
+            (session_deadline(session, records, self.timeout) for session in pending),
+            default=now + self.timeout,
+        )
+        return [timeout_line(session, records, now) for session in overdue]
+
     def next_lines(self) -> list[str]:
-        safety_seconds = self.safety_minutes * 60
-        remaining = safety_seconds - (time.monotonic() - self.last_safety_check)
+        remaining = (self.next_check_at - current_time()).total_seconds()
         if remaining <= 0:
-            return self.safety_lines()
-        ready = self.selector.select(timeout=remaining)
+            return self.check_timeouts()
+        wait_seconds = min(remaining, self.timeout.total_seconds())
+        ready = self.selector.select(timeout=wait_seconds)
         return [line for key, _ in ready for line in self.lines_from(key.fileobj)]

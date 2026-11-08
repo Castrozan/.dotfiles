@@ -82,6 +82,7 @@ def test_list_filters_by_state_and_show_renders_the_whole_card(
     run_orchestrator(monkeypatch, tmp_path, "show", answered_identifier)
     rendered = capsys.readouterr().out
     paragraph, *labels = rendered.strip().split("\n\n")[1:]
+    paragraph = " ".join(paragraph.split())
     assert "It recommends drop because" in paragraph
     assert "Not verified: upstream has not merged the same fields." in paragraph
     assert "Decided by human: keep" in paragraph

@@ -19,10 +19,19 @@ with `--help`.
 
 ### Event loop
 
-Start `orchestrator watch --workspace <id>` as a background streaming monitor and act on each line it prints. `BLOCKED`
-and `DONE` name a pane whose agent stopped, `STARTED` and `EXITED` follow the workspace, and `STALE` is the safety net
-naming a working report gone quiet. Cards and reports also reach you as a2a notifications while you are idle. React to
-these events; never poll panes or reports on a timer.
+Start `orchestrator watch --workspace <id>` as a background streaming monitor and act on each line it prints, adding
+`--pane <id>` per session when the workspace also holds others. `BLOCKED` and `DONE` name a pane whose agent stopped,
+and `STARTED` and `EXITED` follow the workspace. Cards and reports also reach you as a2a notifications while you are
+idle. React to these events; never poll panes or reports on a timer.
+
+`TIMEOUT` names a session quiet past its own `--timeout-minutes` clock, which any report, card, answer or pane status
+change restarts. It repeats until the session answers or reports done, even while the session waits on a background
+command. On each `TIMEOUT`, send that session a status check with `a2a notify`, even when the pane looks like a false
+alarm; reading the pane is not a check.
+
+Ask for the card or report it owes and whether its background commands are still alive, because a broken one may never
+notify it. Name a session that times out twice running in your round. Restart the watch the moment its monitor expires,
+because a dead watch cannot fire.
 
 ### Deciding as Lucas
 
@@ -31,9 +40,13 @@ directive covers the card, answer it `--by orchestrator --directive <id>`; the c
 irreversible cards.
 
 Otherwise escalate with `orchestrator decision escalate <id> --reason <reason> --missing <what USER.md would need>`,
-which keeps the card for investigation, and ask Lucas with the `orchestrator decision show` output verbatim, since that
-output is his decision template. Batch the escalations open at once into one ask and record his answer `--by human`.
-When Lucas countermands anything done under a decision, record it with `orchestrator decision override` so the
+which keeps the card for investigation. Show Lucas the `orchestrator decision show` output verbatim inside a fenced code
+block in your reply, because that output is his decision template and a fence sits outside the reply's word and table
+limits. Never put a card in a question tool or its preview: the dialog refuses long previews and can hide your reply.
+
+End the turn on one line naming the options, and take his typed answer. When he asks for more, print the part he needs
+from the card's details file in a fence. Batch the escalations open at once into one reply and record his answer `--by
+human`. When Lucas countermands anything done under a decision, record it with `orchestrator decision override` so the
 sub-session reworks it.
 
 ### Learning loop
@@ -52,5 +65,5 @@ escalation reason recurring, name the missing directive in your next round so Lu
 ### Round status template
 
 Report each round as a table with the columns session, what it is about, what it did this round, and what blocks it,
-built from `orchestrator report list`. Follow it with each escalated card in its decision template, and end with
+built from `orchestrator report list`. Follow it with each escalated card in its fenced decision template, and end with
 `orchestrator learn stats` when a count changed.

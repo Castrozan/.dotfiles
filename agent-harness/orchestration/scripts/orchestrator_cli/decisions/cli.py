@@ -27,8 +27,10 @@ CARD_FIELDS_DESCRIPTION = (
     "established so far), question, blocked_work, options (2 to 4 objects with label "
     "and consequence), recommendation (one option label), reasoning, evidence (list of "
     "path:line, links, commits or command results), reversible (true or false), "
-    "blast_radius; optional unverified_assumptions (list) and human_only (list of "
-    f"{', '.join(HUMAN_ONLY_REASONS)})"
+    "blast_radius; optional unverified_assumptions (list), details (absolute path of "
+    "a file holding tables and long material) and human_only (list of "
+    f"{', '.join(HUMAN_ONLY_REASONS)}). Every text field is one line and bounded so "
+    "the card fits one reply; the refusal names the field and its limit"
 )
 
 

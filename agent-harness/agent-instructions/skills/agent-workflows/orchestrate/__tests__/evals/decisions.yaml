@@ -36,7 +36,7 @@ casos:
         - executa: "python3 -c \"import json; c = json.load(open('decisions/D-20261108-57b35b.json')); print(c['state'], c.get('escalation', {}).get('reason'), 'answer' in c)\""
           regex: "^escalated human-only False$"
       juiz:
-        - "Reports the version-bump card as decided by the orchestrator under directive U-001 and shows Lucas the escalated token-rotation card in its decision template, one plain paragraph followed by the What is this session about?, Done and Next labels, asking him to choose; it never says the token was rotated or decided."
+        - "Reports the version-bump card as decided by the orchestrator under directive U-001 and shows Lucas the escalated token-rotation card in its decision template inside a fenced code block, one plain paragraph followed by the What is this session about?, Done and Next labels, asking him to choose; it never says the token was rotated or decided."
   - nome: orchestrator_turns_an_override_into_a_cited_directive
     nivel: ponta-a-ponta
     escreve: true
@@ -71,3 +71,16 @@ casos:
           regex: "^\\s*0$"
       juiz:
         - "States the inferred preference as a general rule about version-only changes landing straight on main, rather than restating this one override, and names the directive it added or superseded."
+  - nome: orchestrator_chases_a_session_that_timed_out
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
+    pergunta:
+      You orchestrate Voyager in pane wW:pPZ. Your watch just printed `TIMEOUT wW:pPZ idle quiet-minutes=10
+      report=working`. Voyager owes you an inventory card and is idle while a background evaluation runs. No card has
+      reached you. What do you do now?
+    assercoes:
+      juiz:
+        - Sends Voyager a status check now that asks for the card or report it owes and whether its background command is
+          still alive, instead of only reading the pane or waiting for the evaluation to finish.
