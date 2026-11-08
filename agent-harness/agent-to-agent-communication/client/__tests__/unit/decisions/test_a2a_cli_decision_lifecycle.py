@@ -1,5 +1,7 @@
 import json
 
+from a2a_cli.decisions import cli as decision_cli
+from a2a_cli.peer_transport import PeerRequestFailure
 from decision_test_support import file_card, run_a2a
 
 
@@ -83,3 +85,29 @@ def test_list_filters_by_state_and_show_renders_the_whole_card(
     assert "**drop** (recommended)" in rendered
     assert "**Unverified assumptions**" in rendered
     assert "**Answer** (orchestrator" in rendered
+
+
+def test_an_answer_is_recorded_even_when_the_daemon_cannot_deliver_it(
+    monkeypatch, tmp_path, capsys, notifications
+):
+    _, identifier = file_card(monkeypatch, tmp_path, capsys)
+
+    def unreachable(daemon):
+        raise PeerRequestFailure("http://127.0.0.1:7000/agents is unreachable")
+
+    monkeypatch.setattr(decision_cli, "read_agent_directory", unreachable)
+    answer = [
+        "answer",
+        identifier,
+        "--choice",
+        "drop",
+        "--rationale",
+        "r",
+        "--by",
+        "human",
+    ]
+    assert run_a2a(monkeypatch, tmp_path, *answer) == 1
+    assert (
+        json.loads((tmp_path / f"{identifier}.json").read_text())["state"] == "answered"
+    )
+    assert "is saved at" in capsys.readouterr().err

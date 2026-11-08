@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 from ..peer_identity import with_peer_identities
@@ -98,9 +99,13 @@ def sender_and_directory(arguments: argparse.Namespace) -> tuple[str, dict]:
 
 
 def notify_target(
-    agent_directory: dict, target: str, sender: str, card: dict, saved_path: Path
+    resolve_sender: Callable[[], tuple[str, dict]],
+    target: str,
+    card: dict,
+    saved_path: Path,
 ) -> int:
     try:
+        sender, agent_directory = resolve_sender()
         notify_peer(
             resolve_peer_endpoint(agent_directory, target),
             sender,
@@ -136,7 +141,9 @@ def command_file(arguments: argparse.Namespace, decision_directory: Path) -> int
     )
     saved_path = save_card(decision_directory, card)
     print(card["id"])
-    return notify_target(agent_directory, arguments.to, requester, card, saved_path)
+    return notify_target(
+        lambda: (requester, agent_directory), arguments.to, card, saved_path
+    )
 
 
 def card_matches(card: dict, state: str, orchestrator: str | None) -> bool:
@@ -168,18 +175,18 @@ def command_answer(arguments: argparse.Namespace, decision_directory: Path) -> i
         arguments.rationale,
         arguments.by,
     )
-    decider, agent_directory = sender_and_directory(arguments)
     saved_path = save_card(decision_directory, card)
     requester_target = card["requester_pane"] or card["requester"]
-    return notify_target(agent_directory, requester_target, decider, card, saved_path)
+    return notify_target(
+        lambda: sender_and_directory(arguments), requester_target, card, saved_path
+    )
 
 
 def command_withdraw(arguments: argparse.Namespace, decision_directory: Path) -> int:
     card = withdrawn_card(
         load_card(decision_directory, arguments.identifier), arguments.reason
     )
-    requester, agent_directory = sender_and_directory(arguments)
     saved_path = save_card(decision_directory, card)
     return notify_target(
-        agent_directory, card["orchestrator"], requester, card, saved_path
+        lambda: sender_and_directory(arguments), card["orchestrator"], card, saved_path
     )
