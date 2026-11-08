@@ -67,10 +67,12 @@ def repositories(monkeypatch, tmp_path):
     git(tmp_path, "init", "-q", "--bare", str(origin))
     git(tmp_path, "clone", "-q", str(origin), str(other_machine))
     commit_model(other_machine, "# USER\n\n" + FIRST_DIRECTIVE)
-    superproject.mkdir()
-    git(superproject, "init", "-q")
+    superproject_origin = tmp_path / "superproject.git"
+    git(tmp_path, "init", "-q", "--bare", str(superproject_origin))
+    git(tmp_path, "clone", "-q", str(superproject_origin), str(superproject))
     git(superproject, "submodule", "add", "-q", str(origin), "private")
     git(superproject, "commit", "-qm", "pin")
+    git(superproject, "push", "-q", "origin", "HEAD:main")
     submodule = superproject / "private"
     git(submodule, "checkout", "-q", "--detach")
     model = submodule / MODEL_PATH
@@ -98,6 +100,8 @@ def test_a_learned_directive_reaches_origin_this_checkout_and_the_pinned_gitlink
     assert git(submodule, "rev-parse", "HEAD") == git(origin, "rev-parse", "main")
     pinned = git(superproject, "rev-parse", "HEAD:private")
     assert pinned == git(origin, "rev-parse", "main")
+    superproject_origin = superproject.parent / "superproject.git"
+    assert git(superproject_origin, "rev-parse", "main:private") == pinned
     assert "U-003 · active" in model.read_text()
     assert git(superproject, "status", "--short", "peer.txt") == "A  peer.txt"
 
@@ -115,3 +119,23 @@ def test_a_refused_push_leaves_nothing_half_written_and_a_retry_succeeds(
     git(submodule, "remote", "set-url", "--push", "origin", str(origin))
     assert add_directive(monkeypatch, model) == 0
     assert "U-002 · active" in git(origin, "show", f"main:{MODEL_PATH}")
+
+
+def test_the_pin_stays_local_when_the_checkout_holds_other_unpushed_work(
+    monkeypatch, repositories, capsys
+):
+    origin, _, superproject, _, model = repositories
+    (superproject / "peer.txt").write_text("a peer's commit\n")
+    git(superproject, "add", "peer.txt")
+    git(superproject, "commit", "-qm", "feat: a peer's unpushed work")
+    pushed_before = git(superproject.parent / "superproject.git", "rev-parse", "main")
+    assert add_directive(monkeypatch, model) == 1
+    assert "U-002 · active" in git(origin, "show", f"main:{MODEL_PATH}")
+    assert git(superproject, "rev-parse", "HEAD:private") == git(
+        origin, "rev-parse", "main"
+    )
+    assert (
+        git(superproject.parent / "superproject.git", "rev-parse", "main")
+        == pushed_before
+    )
+    assert "do not add U-002 again" in capsys.readouterr().err
