@@ -34,7 +34,8 @@ forwards over ssh to chise, where the avatar and microphone live.
 virtual camera is attached, and `avatar-room-microphone` is a private PipeWire process running
 [echo cancellation](https://docs.pipewire.org/page_module_echo_cancel.html) in monitor mode. Its reference is everything
 the default output plays, so neither the avatar's voice nor a video playing on the speakers reaches the transcript.
-Nothing opens the physical microphone until a conversation opens, and `close` or closing the window ends that stream.
+Only the wake listener below opens the physical microphone before a conversation; `close` or closing the window ends
+the conversation's stream.
 The window stays on the hidden `special:avatar` workspace until the agent shows it, because the user wants the avatar
 on screen only when an agent chooses to show it.
 Speaking for 0.6 seconds over the avatar stops it, so interrupting needs no agent turn.
@@ -52,6 +53,16 @@ stalled the camera near one frame per second, while a hidden canvas held 60.
 The window code is the Hyprland boundary in `scripts/conversation/desktop_window.py`; the rest of the conversation
 depends only on the shared services. It addresses the first Hyprland instance by index, because a command forwarded
 over ssh carries no `HYPRLAND_INSTANCE_SIGNATURE`. This module is NixOS only because its audio graph is PipeWire.
+
+## Wake by name
+
+`avatar-wake.service` keeps the default microphone open while any agent session with a Servant name is live, and closes
+it while an avatar conversation runs, because that conversation's own listener then owns the room. Each utterance is
+transcribed locally by Hex's Parakeet, and nothing is stored. One that starts with a greeting and a live Servant's first
+name, such as "hey Voyager, check the build", is delivered to that session's pane with `herdr agent prompt`, which lands
+even mid-turn, and the avatar conversation then opens, so the reply continues on ElevenLabs. Anyone in the room can say
+a name, so the prompt marks the speaker as not verified. `systemctl --user stop avatar-wake` turns it off;
+with the service stopped, `avatar-wake --dry-run` reports matches without delivering them.
 
 ## Meetings
 

@@ -168,6 +168,23 @@ in
             Restart = "on-failure";
           };
         };
+        avatar-wake = {
+          Unit = {
+            Description = "Wake a live agent session by its Servant name";
+            After = [
+              "graphical-session.target"
+              "hex.service"
+            ];
+            PartOf = [ "graphical-session.target" ];
+            Wants = [ "hex.service" ];
+          };
+          Service = {
+            ExecStart = "${programs.wake}/bin/avatar-wake";
+            Restart = "on-failure";
+            RestartSec = 5;
+          };
+          Install.WantedBy = [ "graphical-session.target" ];
+        };
         avatar-renderer = {
           Unit = serviceUnit // {
             Description = "Offline avatar renderer";
