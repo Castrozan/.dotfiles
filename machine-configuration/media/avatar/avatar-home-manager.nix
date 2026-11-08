@@ -1,18 +1,11 @@
 {
   pkgs,
   lib,
-  inputs,
   isNixOS,
   ...
 }:
 let
-  programs = import ./avatar-programs.nix {
-    inherit pkgs lib;
-    herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
-    a2a = import ../../../agent-harness/agent-to-agent-communication/client/a2a-client-package.nix {
-      inherit pkgs;
-    };
-  };
+  programs = import ./avatar-programs.nix { inherit pkgs lib; };
   characters = import ./characters.nix { inherit pkgs; };
   characterVoices = pkgs.writeText "avatar-character-voices.json" (
     builtins.toJSON (map (character: { inherit (character) name cloudVoice localVoice; }) characters)
@@ -36,6 +29,7 @@ let
   };
 in
 {
+  imports = [ ./avatar-wake-home-manager.nix ];
   config = lib.mkIf isNixOS {
     home.packages = with programs; [
       audio
@@ -45,7 +39,6 @@ in
       start
       stop
       talk
-      wake
     ];
     systemd.user = {
       targets.avatar.Unit = {
@@ -167,23 +160,6 @@ in
             ExecStart = toString programs.listener;
             Restart = "on-failure";
           };
-        };
-        avatar-wake = {
-          Unit = {
-            Description = "Wake a live agent session by its Servant name";
-            After = [
-              "graphical-session.target"
-              "hex.service"
-            ];
-            PartOf = [ "graphical-session.target" ];
-            Wants = [ "hex.service" ];
-          };
-          Service = {
-            ExecStart = "${programs.wake}/bin/avatar-wake";
-            Restart = "on-failure";
-            RestartSec = 5;
-          };
-          Install.WantedBy = [ "graphical-session.target" ];
         };
         avatar-renderer = {
           Unit = serviceUnit // {

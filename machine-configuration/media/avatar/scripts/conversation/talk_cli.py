@@ -6,6 +6,7 @@ import conversation_effects
 import conversation_state
 import listener
 import utterances
+import voice_turns
 from conversation_state import ConversationAction, ConversationCommand
 
 HEAR_WAIT_SECONDS = 100
@@ -38,10 +39,10 @@ def main():
         ConversationAction.KEEP_OPEN: conversation_effects.keep_conversation_open,
         ConversationAction.TEAR_DOWN: conversation_effects.close_conversation,
         ConversationAction.LEAVE_MEETING: conversation_effects.leave_meeting,
-        ConversationAction.ASK: conversation_effects.ask,
-        ConversationAction.HEAR: conversation_effects.hear,
-        ConversationAction.FOLLOW: conversation_effects.follow,
-        ConversationAction.SAY: conversation_effects.say,
+        ConversationAction.ASK: voice_turns.ask,
+        ConversationAction.HEAR: voice_turns.hear,
+        ConversationAction.FOLLOW: voice_turns.follow,
+        ConversationAction.SAY: voice_turns.say,
         ConversationAction.SHOW: conversation_effects.show_window,
         ConversationAction.HIDE: conversation_effects.hide_window,
         ConversationAction.REPORT: conversation_effects.status,

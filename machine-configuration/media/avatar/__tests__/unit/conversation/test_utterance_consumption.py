@@ -4,11 +4,11 @@ import time
 from unittest.mock import Mock
 
 import conversation_addressee
-import conversation_effects
 import listener
 import pytest
 import transcript_log
 import utterances
+import voice_turns
 
 
 def listening_with_open_queue(tmp_path):
@@ -94,11 +94,11 @@ def test_the_new_addressee_hears_only_what_follows_its_wake(tmp_path):
 def test_follow_ends_once_the_room_turns_to_another_session(
     tmp_path, monkeypatch, capsys
 ):
-    monkeypatch.setenv(conversation_effects.PANE_ENVIRONMENT_VARIABLE, "wW:pQZ")
+    monkeypatch.setenv(voice_turns.PANE_ENVIRONMENT_VARIABLE, "wW:pQZ")
     conversation_addressee.hand_to(
         tmp_path, conversation_addressee.Addressee("wW:pPY", "Ibaraki-dōji", 0)
     )
-    conversation_effects.follow(None, tmp_path)
+    voice_turns.follow(None, tmp_path)
     assert "turned to Ibaraki-dōji" in capsys.readouterr().out
 
 
