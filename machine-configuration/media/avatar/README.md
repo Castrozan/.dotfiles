@@ -24,7 +24,7 @@ forwards over ssh to chise, where the avatar and microphone live.
 | `avatar-talk open [--language CODE] [--character NAME]` | Shows the window and opens the microphone; repeating it keeps the conversation |
 | `avatar-talk ask TEXT [EMOTION]` | Speaks and prints the reply; one verb per turn |
 | `avatar-talk hear [--wait SECONDS]` | Blocks for the next complete utterance and prints it; prints nothing on silence |
-| `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher |
+| `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher; only one of `follow`, `hear` and `ask` listens at a time |
 | `avatar-talk say TEXT [EMOTION] [--voice VOICE]` | Speaks aloud and reports `finished` or `interrupted` |
 | `avatar-talk status` | Reports whether a conversation is open |
 | `avatar-talk show` / `hide` | Brings the avatar window to the current workspace, or hides it again |
@@ -122,8 +122,9 @@ beat Hex's Parakeet and Whisper and invented nothing in silence; Parakeet ignore
 to the transcription cost and turned "X" and "Eleven Labs" into "Hex" and "ElevenLabs".
 
 `avatar-listen start` transcribes what this computer plays as the `meeting` source and the default microphone as the
-`human` source into a private transcript under the user runtime directory. `--microphone SOURCE` names another
-microphone. Pass `--language CODE` for a meeting in one language: detection on short clips invents other languages.
+`human` source into a private transcript under the user runtime directory, and refuses while a desktop conversation is
+open. `--microphone SOURCE` names another microphone. Pass `--language CODE` for a meeting in one language: detection
+on short clips invents other languages.
 The microphone is not echo-cancelled, so wear a headset: a phrase both sources hear within 15 seconds is kept once.
 Entries carry a `speaker` name when a voice enrolled with `avatar-listen enroll NAME --first N --last M` (at least 3
 segments) matches, else null; `avatar-listen voices` lists and `avatar-listen forget NAME` deletes profiles, stored as

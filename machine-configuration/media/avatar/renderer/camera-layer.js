@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+const SUPERSEDED_REQUEST_MESSAGE = "A newer camera request replaced this one";
+
 export function preferredCamera(devices) {
   const physical = devices.filter(
     (device) =>
@@ -24,6 +26,7 @@ export class CameraLayer {
     this.scene.add(this.plane);
     this.stream = null;
     this.syntheticCanvas = null;
+    this.generation = 0;
   }
 
   get active() {
@@ -31,19 +34,29 @@ export class CameraLayer {
   }
 
   async enablePreferred() {
+    const generation = this.generation;
     const camera = preferredCamera(
       await navigator.mediaDevices.enumerateDevices(),
     );
+    if (generation !== this.generation)
+      throw new Error(SUPERSEDED_REQUEST_MESSAGE);
     if (!camera) throw new Error("No physical camera is connected");
     await this.enable(camera.deviceId);
   }
 
   async enable(deviceId) {
     this.disable();
+    const generation = this.generation;
     const stream = await navigator.mediaDevices.getUserMedia({
       video: deviceId ? { deviceId: { exact: deviceId } } : true,
       audio: false,
     });
+    if (generation !== this.generation) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
+      throw new Error(SUPERSEDED_REQUEST_MESSAGE);
+    }
     this.requireExternalCamera(stream);
     this.stream = stream;
     stream.getVideoTracks().forEach((track) => {
@@ -58,6 +71,7 @@ export class CameraLayer {
     });
     this.video.srcObject = stream;
     await this.video.play();
+    if (generation !== this.generation) return;
     this.material.map = new THREE.VideoTexture(this.video);
     this.material.map.encoding = THREE.sRGBEncoding;
     this.material.needsUpdate = true;
@@ -108,6 +122,7 @@ export class CameraLayer {
   }
 
   disable() {
+    this.generation += 1;
     this.stream?.getTracks().forEach((track) => {
       track.stop();
     });

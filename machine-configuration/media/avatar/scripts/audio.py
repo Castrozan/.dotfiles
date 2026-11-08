@@ -1,3 +1,4 @@
+import audio_ownership
 import pulse_audio
 import audio_state
 
@@ -8,11 +9,13 @@ LIP_SYNC_SINK = "AvatarLipSync"
 MEETING_SOURCE = "AvatarMicrophone"
 
 
-def load_module(path, state, name, *arguments):
+def load_pulse_module(name, *arguments):
     identifier = int(pulse_audio.run("load-module", name, *arguments))
-    state["modules"].append(
-        {"index": identifier, "name": name, "argument": " ".join(arguments)}
-    )
+    return {"index": identifier, "name": name, "argument": " ".join(arguments)}
+
+
+def load_module(path, state, name, *arguments):
+    state["modules"].append(load_pulse_module(name, *arguments))
     audio_state.write_state(path, state)
 
 
@@ -55,8 +58,12 @@ def stop(path, state):
         raise ValueError(
             "Stop or reroute agent playback before removing AvatarMic; inputs remain muted"
         )
+    if audio_ownership.microphone_is_live(state, modules):
+        pulse_audio.run("unload-module", str(state["microphone"]["index"]))
     unload_owned_modules(state, modules)
     path.unlink(missing_ok=True)
+    state.clear()
+    state["modules"] = []
 
 
 def ensure_names_available():
@@ -95,11 +102,8 @@ def load_sink(path, state, name, description):
     )
 
 
-def load_loopback(path, state, source, sink, latency_msec=20):
-    load_module(
-        path,
-        state,
-        "module-loopback",
+def loopback_arguments(source, sink, latency_msec=20):
+    return (
         f"source={source}",
         f"sink={sink}",
         f"latency_msec={latency_msec}",
@@ -108,12 +112,20 @@ def load_loopback(path, state, source, sink, latency_msec=20):
     )
 
 
+def load_loopback(path, state, source, sink, latency_msec=20):
+    load_module(
+        path, state, "module-loopback", *loopback_arguments(source, sink, latency_msec)
+    )
+
+
 def connect_microphone(path, state, source_name):
     validate_microphone(source_name)
     if state.get("microphone"):
         raise ValueError("A human input is already attached; stop before changing it")
-    load_loopback(path, state, source_name, CHANNELS["human"])
-    state["microphone"] = source_name
+    loopback = load_pulse_module(
+        "module-loopback", *loopback_arguments(source_name, CHANNELS["human"])
+    )
+    state["microphone"] = {"source": source_name, **loopback}
     audio_state.write_state(path, state)
 
 
@@ -123,12 +135,6 @@ def open_meeting_inputs(path, state):
         connect_microphone(path, state, pulse_audio.run("get-default-source"))
     for channel in CHANNELS:
         set_channel(state, channel, "mute", "0")
-
-
-def graph_is_owned(state, modules):
-    return state.get("ready") and all(
-        audio_state.matches_module(entry, modules) for entry in state["modules"]
-    )
 
 
 def create_mix(path, state):
@@ -157,9 +163,10 @@ def create_mix(path, state):
 
 
 def start(path, state):
-    if graph_is_owned(state, pulse_audio.items("modules")):
+    phase = audio_ownership.graph_phase(state, pulse_audio.items("modules"))
+    if phase is audio_ownership.GraphPhase.RUNNING:
         return
-    if state["modules"]:
+    if phase is not audio_ownership.GraphPhase.ABSENT:
         stop(path, state)
     ensure_names_available()
     state.clear()
@@ -174,8 +181,8 @@ def start(path, state):
 
 
 def require_owned_graph(state):
-    modules = pulse_audio.items("modules")
-    if not graph_is_owned(state, modules):
+    phase = audio_ownership.graph_phase(state, pulse_audio.items("modules"))
+    if phase is not audio_ownership.GraphPhase.RUNNING:
         raise ValueError("Avatar audio is not running with its owned graph")
 
 

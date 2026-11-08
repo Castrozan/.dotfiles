@@ -1,18 +1,17 @@
 import argparse
 import json
-import os
 import re
 import subprocess
 import sys
 
 import listener
+import listener_session
 import speaker_identity
 import transcript_log
-import user_units
+from listener_session import ListenerPurpose
 
 MEETING_AUDIO = "@DEFAULT_MONITOR@"
 AVATAR_OUTPUTS = re.compile(r"^(AvatarMicrophone$|Avatar\w*\.monitor$)")
-LISTENER_SERVICE = "avatar-listener.service"
 FOLLOW_WAIT_SECONDS = 30
 
 
@@ -34,56 +33,34 @@ def selected_sources(microphone):
     return {"meeting": MEETING_AUDIO, "human": microphone}
 
 
-def systemctl(*arguments):
-    subprocess.run(["systemctl", "--user", *arguments], check=True)
-
-
-def begin_listening(directory, sources, **settings):
-    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-    systemctl("stop", LISTENER_SERVICE)
-    (directory / "transcript.jsonl").unlink(missing_ok=True)
-    (directory / listener.EMBEDDINGS_FILE).unlink(missing_ok=True)
-    configuration = directory / "listener.json"
-    descriptor = os.open(configuration, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(descriptor, "w") as output:
-        json.dump({"sources": sources, **settings}, output)
-    systemctl("start", LISTENER_SERVICE)
-
-
 def start(arguments, directory):
+    if listener_session.listening_for(directory, ListenerPurpose.CONVERSATION):
+        raise ValueError(
+            "A conversation is open; run avatar-talk close before transcribing a meeting"
+        )
     sources = selected_sources(arguments.microphone)
-    begin_listening(
-        directory, sources, language=arguments.language, identify_speakers=True
+    listener_session.begin_listening(
+        directory,
+        ListenerPurpose.MEETING,
+        sources,
+        language=arguments.language,
+        identify_speakers=True,
     )
     print(json.dumps({"listening": True, "sources": sources}))
 
 
 def stop(arguments, directory):
-    systemctl("stop", LISTENER_SERVICE)
+    listener_session.stop_listening()
     print(json.dumps({"listening": False}))
-
-
-def listening():
-    return user_units.unit_active(LISTENER_SERVICE)
-
-
-def configured_sources(directory):
-    configuration = directory / "listener.json"
-    if not configuration.exists():
-        return {}
-    return json.loads(configuration.read_text())["sources"]
-
-
-def transcribing_meeting(directory):
-    return listening() and "meeting" in configured_sources(directory)
 
 
 def status(arguments, directory):
     print(
         json.dumps(
             {
-                "listening": listening(),
-                "sources": configured_sources(directory),
+                "listening": listener_session.listening(),
+                "purpose": listener_session.configured_purpose(directory),
+                "sources": listener_session.configured_sources(directory),
                 "last_sequence": transcript_log.last_sequence(
                     directory / "transcript.jsonl"
                 ),

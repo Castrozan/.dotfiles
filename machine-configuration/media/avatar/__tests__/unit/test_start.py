@@ -4,6 +4,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import pytest
+
 
 spec = importlib.util.spec_from_file_location(
     "avatar_start", Path(__file__).resolve().parents[2] / "scripts/start.py"
@@ -19,7 +21,7 @@ def test_start_recovers_a_missing_graph_before_claiming_readiness(monkeypatch):
     monkeypatch.setattr(start, "wait_until_ready", Mock())
     start.main()
     assert [call.args[0] for call in runner.call_args_list] == [
-        ["systemctl", "--user", "stop", "avatar.target"],
+        ["avatar-audio", "start"],
         ["systemctl", "--user", "start", "avatar.target"],
         ["avatar-audio", "open"],
     ]
@@ -42,10 +44,12 @@ def test_healthy_start_preserves_the_running_runtime(monkeypatch):
 
 
 def test_a_target_is_ready_only_when_all_of_its_own_checks_pass(monkeypatch):
-    monkeypatch.setattr(start, "service_failed", lambda: False)
+    monkeypatch.setattr(start, "service_failed", lambda units: False)
     monkeypatch.setattr(start.time, "sleep", Mock())
     answers = iter([False, True])
-    start.wait_until_ready((lambda: next(answers), lambda: True))
+    start.wait_until_ready(
+        start.TARGET_UNITS[start.MEETING_TARGET], (lambda: next(answers), lambda: True)
+    )
 
 
 def test_a_failed_bring_up_stops_only_the_requested_target(monkeypatch):
@@ -62,6 +66,46 @@ def test_a_failed_bring_up_stops_only_the_requested_target(monkeypatch):
         "--user",
         "stop",
         "avatar-conversation.target",
+    ]
+
+
+def test_a_failed_camera_does_not_block_the_conversation_target(monkeypatch):
+    queried_units = []
+
+    def fake_is_failed(command, capture_output, text):
+        units = command[3:]
+        queried_units.append(units)
+        return SimpleNamespace(
+            stdout="\n".join(
+                "failed" if unit == "avatar-camera" else "active" for unit in units
+            )
+        )
+
+    monkeypatch.setattr(start.subprocess, "run", fake_is_failed)
+    monkeypatch.setattr(start.time, "sleep", Mock())
+    start.wait_until_ready(
+        start.TARGET_UNITS[start.CONVERSATION_TARGET], (lambda: True,)
+    )
+    assert queried_units == [list(start.TARGET_UNITS[start.CONVERSATION_TARGET])]
+    assert "avatar-camera" not in queried_units[0]
+    with pytest.raises(RuntimeError):
+        start.wait_until_ready(
+            start.TARGET_UNITS[start.MEETING_TARGET], (lambda: True,)
+        )
+
+
+def test_a_conversation_bring_up_never_stops_the_meeting_target(monkeypatch):
+    runner = Mock()
+    monkeypatch.setattr(start.subprocess, "run", runner)
+    monkeypatch.setattr(start, "audio_ready", Mock(side_effect=[False, True]))
+    monkeypatch.setattr(start, "wait_until_ready", Mock())
+    start.bring_up(start.CONVERSATION_TARGET, ())
+    assert [call.args[0] for call in runner.call_args_list] == [
+        ["avatar-audio", "start"],
+        ["systemctl", "--user", "start", "avatar-conversation.target"],
+    ]
+    assert ["systemctl", "--user", "stop", "avatar.target"] not in [
+        call.args[0] for call in runner.call_args_list
     ]
 
 

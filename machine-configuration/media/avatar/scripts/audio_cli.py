@@ -2,18 +2,19 @@ import argparse
 import json
 
 import audio
+import audio_ownership
 import audio_state
 import pulse_audio
 
 
 def describe(state):
     modules = pulse_audio.items("modules")
+    phase = audio_ownership.graph_phase(state, modules)
+    microphone = state.get("microphone")
     return {
-        "running": bool(state.get("ready"))
-        and all(
-            audio_state.matches_module(entry, modules) for entry in state["modules"]
-        ),
-        "microphone": state.get("microphone"),
+        "running": phase is audio_ownership.GraphPhase.RUNNING,
+        "phase": phase.value,
+        "microphone": microphone["source"] if microphone else None,
         "meeting_source": audio.MEETING_SOURCE,
         "channels": {
             channel: {key: sink.get(key) for key in ("name", "mute", "volume")}
@@ -72,7 +73,11 @@ def run(arguments, path, state):
 def main():
     arguments = parse_arguments()
     with audio_state.exclusive_state() as path:
-        run(arguments, path, audio_state.read_state(path))
+        state = audio_state.read_state(path)
+        audio_ownership.release_vanished_microphone(
+            path, state, pulse_audio.items("modules")
+        )
+        run(arguments, path, state)
 
 
 if __name__ == "__main__":

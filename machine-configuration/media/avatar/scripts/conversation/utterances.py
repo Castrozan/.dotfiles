@@ -1,3 +1,6 @@
+import contextlib
+import fcntl
+import os
 import time
 
 import listener
@@ -8,23 +11,40 @@ SETTLE_SECONDS = 0.5
 UNFINISHED_TURN_SETTLE_SECONDS = 2.5
 UNFINISHED_SPEECH_LIMIT_SECONDS = 120
 CLOSED_MESSAGE = "No conversation is open; run avatar-talk open"
+CONSUMER_BUSY_MESSAGE = "Another avatar-talk hear, ask or follow is already listening"
+CONSUMER_LOCK_FILE = "heard.lock"
 
 
 class ConversationClosed(Exception):
     pass
 
 
-def forget(directory):
-    (directory / "heard").unlink(missing_ok=True)
+class ConversationBusy(RuntimeError):
+    pass
+
+
+@contextlib.contextmanager
+def exclusive_consumer(directory):
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    descriptor = os.open(directory / CONSUMER_LOCK_FILE, os.O_RDWR | os.O_CREAT, 0o600)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as error:
+        os.close(descriptor)
+        raise ConversationBusy(CONSUMER_BUSY_MESSAGE) from error
+    try:
+        yield
+    finally:
+        os.close(descriptor)
 
 
 def last_heard(directory):
-    path = directory / "heard"
+    path = directory / listener.HEARD_FILE
     return int(path.read_text()) if path.exists() else 0
 
 
 def remember(directory, sequence):
-    (directory / "heard").write_text(str(sequence))
+    (directory / listener.HEARD_FILE).write_text(str(sequence))
 
 
 def wait_for_first_entries(directory, wait_seconds, still_open):
@@ -47,12 +67,12 @@ def settle_seconds_after(entries):
     return UNFINISHED_TURN_SETTLE_SECONDS
 
 
-def wait_for_finished_speech(directory, entries):
+def wait_for_finished_speech(directory, entries, still_open):
     transcript = directory / "transcript.jsonl"
     in_progress = directory / listener.SPEECH_IN_PROGRESS_MARKER
     settled_at = time.monotonic() + settle_seconds_after(entries)
     limit = time.monotonic() + UNFINISHED_SPEECH_LIMIT_SECONDS
-    while time.monotonic() < limit:
+    while time.monotonic() < limit and still_open():
         latest = transcript_log.read_since(transcript, last_heard(directory))
         if len(latest) > len(entries):
             entries = latest
@@ -67,6 +87,6 @@ def next_utterance(directory, wait_seconds, still_open):
     entries = wait_for_first_entries(directory, wait_seconds, still_open)
     if not entries:
         return None
-    entries = wait_for_finished_speech(directory, entries)
+    entries = wait_for_finished_speech(directory, entries, still_open)
     remember(directory, entries[-1]["sequence"])
     return " ".join(entry["text"] for entry in entries)

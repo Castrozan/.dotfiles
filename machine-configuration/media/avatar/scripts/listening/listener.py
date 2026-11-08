@@ -4,6 +4,7 @@ import os
 import queue
 import signal
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
@@ -21,6 +22,7 @@ TRANSCRIBER_ATTEMPTS = 30
 PENDING_SEGMENT_LIMIT = 16
 SPEECH_IN_PROGRESS_MARKER = "speech-in-progress"
 EMBEDDINGS_FILE = "embeddings.jsonl"
+HEARD_FILE = "heard"
 
 
 def runtime_directory():
@@ -80,15 +82,20 @@ def write_transcript(path, listening):
         transcript_echo.EchoFilter(),
         speaker_identity.configured_identifier(listening.identify_speakers),
     )
-    while not listening.stopping.is_set():
-        try:
-            source, segment, turn_finished = listening.segments.get(timeout=0.5)
-        except queue.Empty:
-            continue
-        try:
-            recorder.record(source, segment, turn_finished)
-        finally:
-            listening.pending.finish()
+    try:
+        while not listening.stopping.is_set():
+            try:
+                source, segment, turn_finished = listening.segments.get(timeout=0.5)
+            except queue.Empty:
+                continue
+            try:
+                recorder.record(source, segment, turn_finished)
+            except Exception as error:
+                print(f"Dropped a {source} segment: {error}", file=sys.stderr)
+            finally:
+                listening.pending.finish()
+    finally:
+        listening.pending.clear()
 
 
 def interrupt_speaker():

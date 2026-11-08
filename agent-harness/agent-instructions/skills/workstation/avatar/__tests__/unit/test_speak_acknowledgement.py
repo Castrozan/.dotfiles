@@ -13,7 +13,7 @@ def test_the_acknowledgement_names_the_voice_source_that_spoke():
           textToSpeechGenerator: { generate: async () => ({ audioPath: "/a.wav", source: "kokoro" }) },
           speechFloor: {
             enqueue: async (_, perform) => {
-              await (await perform()).finished;
+              await (await perform(() => true)).finished;
               return { status: "finished" };
             },
           },
@@ -56,7 +56,7 @@ def test_every_output_drives_the_lip_sync_sink_so_the_mouth_moves():
           speakerSinkName: "default",
           speechFloor: {
             enqueue: async (_, perform) => {
-              await (await perform()).finished;
+              await (await perform(() => true)).finished;
               return { status: "finished" };
             },
           },

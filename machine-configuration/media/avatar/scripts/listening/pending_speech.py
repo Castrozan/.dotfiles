@@ -18,3 +18,8 @@ class PendingSpeech:
             self.count -= 1
             if not self.count:
                 self.marker.unlink(missing_ok=True)
+
+    def clear(self):
+        with self.lock:
+            self.count = 0
+            self.marker.unlink(missing_ok=True)

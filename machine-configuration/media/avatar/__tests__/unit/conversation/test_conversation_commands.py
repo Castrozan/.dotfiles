@@ -3,7 +3,7 @@ import json
 import threading
 from unittest.mock import Mock
 
-import listen_cli
+import listener_session
 import listener
 import pytest
 import start
@@ -60,7 +60,7 @@ def test_a_closed_conversation_ends_the_wait_instead_of_hanging(tmp_path):
 def test_opening_again_keeps_the_conversation_and_what_was_not_heard(
     tmp_path, monkeypatch, capsys
 ):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda: True)
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: True)
     bring_up = Mock()
     monkeypatch.setattr(start, "bring_up", bring_up)
     utterances.remember(tmp_path, 7)
@@ -72,13 +72,18 @@ def test_opening_again_keeps_the_conversation_and_what_was_not_heard(
 
 
 def test_opening_refuses_to_replace_a_meeting_transcript(tmp_path, monkeypatch):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
-    monkeypatch.setattr(listen_cli, "listening", lambda: True)
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: False)
+    monkeypatch.setattr(listener_session, "listening", lambda: True)
     (tmp_path / "listener.json").write_text(
-        json.dumps({"sources": {"meeting": "@DEFAULT_MONITOR@", "human": "mic"}})
+        json.dumps(
+            {
+                "purpose": "meeting",
+                "sources": {"meeting": "@DEFAULT_MONITOR@", "human": "mic"},
+            }
+        )
     )
     begin = Mock()
-    monkeypatch.setattr(listen_cli, "begin_listening", begin)
+    monkeypatch.setattr(listener_session, "begin_listening", begin)
     with pytest.raises(RuntimeError):
         talk_cli.open_conversation(
             argparse.Namespace(language=None, character=None), tmp_path
@@ -87,14 +92,16 @@ def test_opening_refuses_to_replace_a_meeting_transcript(tmp_path, monkeypatch):
 
 
 def test_opening_replaces_a_conversation_listener_left_running(tmp_path, monkeypatch):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
-    monkeypatch.setattr(listen_cli, "listening", lambda: True)
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: False)
+    monkeypatch.setattr(listener_session, "listening", lambda: True)
     (tmp_path / "listener.json").write_text(
-        json.dumps({"sources": {"human": "AvatarRoomMicrophone"}})
+        json.dumps(
+            {"purpose": "conversation", "sources": {"human": "AvatarRoomMicrophone"}}
+        )
     )
     monkeypatch.setattr(start, "bring_up", Mock())
     begin = Mock()
-    monkeypatch.setattr(listen_cli, "begin_listening", begin)
+    monkeypatch.setattr(listener_session, "begin_listening", begin)
     monkeypatch.setattr(talk_cli.subprocess, "run", Mock())
     talk_cli.open_conversation(
         argparse.Namespace(language="pt", character=None), tmp_path
@@ -103,28 +110,30 @@ def test_opening_replaces_a_conversation_listener_left_running(tmp_path, monkeyp
 
 
 def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
-    monkeypatch.setattr(listen_cli, "listening", lambda: False)
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: False)
+    monkeypatch.setattr(listener_session, "listening", lambda: False)
     monkeypatch.setattr(start, "bring_up", Mock())
     begin = Mock()
-    monkeypatch.setattr(listen_cli, "begin_listening", begin)
+    monkeypatch.setattr(listener_session, "begin_listening", begin)
     runner = Mock()
     monkeypatch.setattr(talk_cli.subprocess, "run", runner)
-    utterances.remember(tmp_path, 7)
     talk_cli.open_conversation(
         argparse.Namespace(language="pt", character=None), tmp_path
     )
     commands = [call.args[0] for call in runner.call_args_list]
     assert ["avatar-command", "presence", "shown"] not in commands
     begin.assert_called_once_with(
-        tmp_path, {"human": "AvatarRoomMicrophone"}, language="pt", barge_in=True
+        tmp_path,
+        listener_session.ListenerPurpose.CONVERSATION,
+        {"human": "AvatarRoomMicrophone"},
+        language="pt",
+        barge_in=True,
     )
-    assert utterances.last_heard(tmp_path) == 0
 
 
 def test_a_failed_open_closes_what_it_started(tmp_path, monkeypatch):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
-    monkeypatch.setattr(listen_cli, "listening", lambda: False)
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: False)
+    monkeypatch.setattr(listener_session, "listening", lambda: False)
     monkeypatch.setattr(start, "bring_up", Mock(side_effect=TimeoutError("late")))
     close = Mock()
     monkeypatch.setattr(talk_cli, "close_conversation", close)

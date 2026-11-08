@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 from unittest.mock import Mock
 
-import listen_cli
+import listener_session
 import pytest
 import start
 import talk_cli
@@ -73,9 +73,9 @@ def test_renderer_announces_its_character_on_every_connection():
 
 
 def fake_cold_open(tmp_path, monkeypatch):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda: False)
-    monkeypatch.setattr(listen_cli, "listening", lambda: False)
-    monkeypatch.setattr(listen_cli, "begin_listening", Mock())
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: False)
+    monkeypatch.setattr(listener_session, "listening", lambda: False)
+    monkeypatch.setattr(listener_session, "begin_listening", Mock())
     monkeypatch.setattr(start, "bring_up", Mock())
     utterances.remember(tmp_path, 0)
 
@@ -109,7 +109,7 @@ def test_opening_without_a_choice_keeps_the_current_character(tmp_path, monkeypa
 def test_opening_an_open_conversation_still_switches_the_character(
     tmp_path, monkeypatch
 ):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda: True)
+    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: True)
     runner = Mock()
     monkeypatch.setattr(talk_cli.subprocess, "run", runner)
     talk_cli.open_conversation(

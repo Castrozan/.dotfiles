@@ -6,18 +6,28 @@ import urllib.request
 
 
 MEETING_TARGET = "avatar.target"
-SERVICES = (
-    "avatar-audio",
-    "avatar-control-server",
-    "avatar-renderer",
-    "avatar-browser",
-    "avatar-camera",
-)
+CONVERSATION_TARGET = "avatar-conversation.target"
+TARGET_UNITS = {
+    MEETING_TARGET: (
+        "avatar-audio",
+        "avatar-control-server",
+        "avatar-renderer",
+        "avatar-browser",
+        "avatar-camera",
+    ),
+    CONVERSATION_TARGET: (
+        "avatar-audio",
+        "avatar-control-server",
+        "avatar-renderer",
+        "avatar-browser",
+        "avatar-room-microphone",
+    ),
+}
 
 
-def service_failed():
+def service_failed(units):
     failed = subprocess.run(
-        ["systemctl", "--user", "is-failed", *SERVICES], capture_output=True, text=True
+        ["systemctl", "--user", "is-failed", *units], capture_output=True, text=True
     )
     return "failed" in failed.stdout.splitlines()
 
@@ -39,10 +49,10 @@ def camera_ready():
     return capture.returncode == 0 and "Video Capture" in capture.stdout
 
 
-def wait_until_ready(readiness_checks, timeout=45):
+def wait_until_ready(units, readiness_checks, timeout=45):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        if service_failed():
+        if service_failed(units):
             raise RuntimeError(
                 "An avatar service failed; inspect systemctl --user status avatar-*"
             )
@@ -62,9 +72,11 @@ def audio_ready():
 def bring_up(target, readiness_checks):
     try:
         if not audio_ready():
-            subprocess.run(["systemctl", "--user", "stop", MEETING_TARGET], check=True)
+            subprocess.run(
+                ["avatar-audio", "start"], check=True, stdout=subprocess.DEVNULL
+            )
         subprocess.run(["systemctl", "--user", "start", target], check=True)
-        wait_until_ready(readiness_checks)
+        wait_until_ready(TARGET_UNITS[target], readiness_checks)
         if not audio_ready():
             raise RuntimeError("The avatar audio graph did not become ready")
     except BaseException:

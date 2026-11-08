@@ -18,29 +18,28 @@ const makeFakeConnection = () => {
 
 
 @requires_node
-def test_avatar_state_store_only_returns_to_idle_while_still_speaking():
+def test_avatar_state_store_returns_to_idle_when_speech_finishes():
     result = evaluate_node_json(
         """
         const { AvatarStateStore } = require("./avatar-session/avatar-state-store");
         const store = new AvatarStateStore();
         store.beginSpeaking("happy");
-        const startedSpeaking = store.speaking;
-        const firstReturn = store.finishSpeakingIfStillSpeaking();
-        const secondReturn = store.finishSpeakingIfStillSpeaking();
-        const result = {
-          startedSpeaking,
+        const duringSpeech = {
           expression: store.currentExpression,
-          firstReturn,
-          secondReturn,
+          speaking: store.speaking,
+          state: store.current,
+        };
+        store.finishSpeaking();
+        const result = {
+          duringSpeech,
+          finalSpeaking: store.speaking,
           finalState: store.current,
         };
         """
     )
     assert result == {
-        "startedSpeaking": True,
-        "expression": "happy",
-        "firstReturn": True,
-        "secondReturn": False,
+        "duringSpeech": {"expression": "happy", "speaking": True, "state": "speaking"},
+        "finalSpeaking": False,
         "finalState": "idle",
     }
 

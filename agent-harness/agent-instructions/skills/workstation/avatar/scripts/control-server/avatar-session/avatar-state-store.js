@@ -1,7 +1,6 @@
 const AVATAR_STATES = {
   IDLE: "idle",
   SPEAKING: "speaking",
-  TRANSITIONING: "transitioning",
 };
 
 class AvatarStateStore {
@@ -23,14 +22,6 @@ class AvatarStateStore {
   finishSpeaking() {
     this.current = AVATAR_STATES.IDLE;
     this.speaking = false;
-  }
-
-  finishSpeakingIfStillSpeaking() {
-    if (this.current !== AVATAR_STATES.SPEAKING) {
-      return false;
-    }
-    this.finishSpeaking();
-    return true;
   }
 
   applyExpression(expressionName, intensity) {

@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import pytest
 
 import listen_cli
+import listener_session
 import source_capture
 import speech_segmenter
 import transcriber
@@ -110,12 +111,17 @@ def test_listening_hears_the_meeting_and_the_default_microphone(monkeypatch):
 
 
 def test_a_pinned_language_reaches_the_listener(tmp_path, monkeypatch):
+    monkeypatch.setattr(listener_session, "listening", lambda: False)
     begin = Mock()
-    monkeypatch.setattr(listen_cli, "begin_listening", begin)
+    monkeypatch.setattr(listener_session, "begin_listening", begin)
     monkeypatch.setattr(listen_cli, "selected_sources", lambda _: {"meeting": "any"})
     listen_cli.start(SimpleNamespace(microphone=None, language="pt"), tmp_path)
     begin.assert_called_once_with(
-        tmp_path, {"meeting": "any"}, language="pt", identify_speakers=True
+        tmp_path,
+        listener_session.ListenerPurpose.MEETING,
+        {"meeting": "any"},
+        language="pt",
+        identify_speakers=True,
     )
 
 

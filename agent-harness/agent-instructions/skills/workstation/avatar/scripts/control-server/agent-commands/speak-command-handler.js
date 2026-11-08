@@ -44,7 +44,7 @@ function controlPlaybacks(playbacks) {
 function performSpeech(command, context, delivery) {
   const { text, emotion, output, voice, id } = command;
   const { avatarState, clientRegistry, textToSpeechGenerator } = context;
-  return async () => {
+  return async (holdsFloor) => {
     avatarState.beginSpeaking(emotion);
     const speech = await textToSpeechGenerator.generate(
       text,
@@ -53,6 +53,9 @@ function performSpeech(command, context, delivery) {
       emotion,
     );
     delivery.source = speech.source;
+    if (!holdsFloor()) {
+      return { finished: Promise.resolve(), stop: () => {} };
+    }
     announceSpeechToRenderer(clientRegistry, command, speech);
     const playbacks = resolveRequestedSinks(
       output,

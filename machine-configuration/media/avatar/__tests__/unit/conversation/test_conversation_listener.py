@@ -4,9 +4,8 @@ import threading
 from pathlib import Path
 from unittest.mock import Mock
 
-import listen_cli
+import listener_session
 import listener
-import pytest
 import source_capture
 import talk_cli
 
@@ -86,15 +85,31 @@ def test_capture_lost_mid_speech_leaves_nothing_pending(tmp_path):
     assert not (tmp_path / "marker").exists()
 
 
-def test_transcription_failure_still_releases_the_pending_marker(tmp_path, monkeypatch):
+def test_a_failed_segment_is_dropped_and_the_next_one_is_still_recorded(
+    tmp_path, monkeypatch, capsys
+):
     listening = listening_with(tmp_path)
+    listening.segments = queue.Queue()
     listening.pending.begin()
-    listening.segments.put_nowait(("human", b"pcm", True))
-    monkeypatch.setattr(
-        listener, "transcribe_when_ready", Mock(side_effect=TimeoutError)
+    listening.pending.begin()
+    listening.segments.put_nowait(("human", b"lost", True))
+    listening.segments.put_nowait(("human", b"kept", True))
+    transcribed = []
+
+    def transcribe(segment, language):
+        transcribed.append(segment)
+        if segment == b"lost":
+            raise TimeoutError("No transcriber answered")
+        listening.stopping.set()
+        return "oi"
+
+    monkeypatch.setattr(listener, "transcribe_when_ready", transcribe)
+    listener.write_transcript(tmp_path / "transcript.jsonl", listening)
+    assert transcribed == [b"lost", b"kept"]
+    assert capsys.readouterr().err == (
+        "Dropped a human segment: No transcriber answered\n"
     )
-    with pytest.raises(TimeoutError):
-        listener.write_transcript(tmp_path / "transcript.jsonl", listening)
+    assert "oi" in (tmp_path / "transcript.jsonl").read_text()
     assert not (tmp_path / "marker").exists()
 
 
@@ -108,11 +123,16 @@ def test_the_requested_language_reaches_the_recognizer(tmp_path, monkeypatch):
 
 
 def test_settings_reach_the_listener_configuration(tmp_path, monkeypatch):
-    monkeypatch.setattr(listen_cli, "systemctl", Mock())
-    listen_cli.begin_listening(
-        tmp_path, {"human": "AvatarRoomMicrophone"}, language="pt", barge_in=True
+    monkeypatch.setattr(listener_session, "systemctl", Mock())
+    listener_session.begin_listening(
+        tmp_path,
+        "conversation",
+        {"human": "AvatarRoomMicrophone"},
+        language="pt",
+        barge_in=True,
     )
     assert json.loads((tmp_path / "listener.json").read_text()) == {
+        "purpose": "conversation",
         "sources": {"human": "AvatarRoomMicrophone"},
         "language": "pt",
         "barge_in": True,

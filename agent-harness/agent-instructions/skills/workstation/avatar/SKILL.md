@@ -51,7 +51,8 @@ the user said after a `[voice]` tag, printing nothing on silence; 3) `avatar-tal
 Talking over the avatar stops it by itself, so the reply still arrives. `avatar-talk hear` keeps waiting without
 speaking, and `avatar-talk say "TEXT" EMOTION` speaks without waiting. Leave the language unpinned, as the user chose:
 each line is detected on its own, so Portuguese, English and Japanese all work. A harness with a background output
-watcher runs `avatar-talk follow` instead of repeated `hear`; it prints one line per utterance.
+watcher runs `avatar-talk follow` instead of repeated `hear`; it prints one line per utterance. While `follow` runs,
+speak with `say`: `ask` and `hear` refuse, because only one command listens at a time.
 
 The user wants the window off screen by default. Run `avatar-talk show` only when seeing the avatar helps, and
 `avatar-talk hide` once it no longer does. Closing the window ends the conversation: `ask` and `hear` then fail with `No

@@ -20,7 +20,9 @@ class SpeechFloor {
   async takeTurn(usesAgentChannel, performSpeech, interruptionsAtArrival) {
     const release = usesAgentChannel ? await this.agentChannel.open() : null;
     try {
-      this.playback = await performSpeech();
+      this.playback = await performSpeech(
+        () => interruptionsAtArrival === this.interruptions,
+      );
       if (interruptionsAtArrival !== this.interruptions) this.playback.stop();
       await this.playback.finished;
       return {

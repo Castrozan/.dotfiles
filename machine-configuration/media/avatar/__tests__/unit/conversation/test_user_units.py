@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -36,6 +37,11 @@ def test_systemd_unreachable_past_the_retry_window_counts_as_stopped(monkeypatch
     assert user_units.unit_active("avatar-listener.service") is False
 
 
-def test_an_open_conversation_needs_both_the_target_and_the_listener(monkeypatch):
+def test_an_open_conversation_needs_both_the_target_and_the_listener(
+    tmp_path, monkeypatch
+):
+    (tmp_path / "listener.json").write_text(
+        json.dumps({"purpose": "conversation", "sources": {}})
+    )
     systemctl_answering(monkeypatch, UNREACHABLE, ACTIVE, UNREACHABLE, ACTIVE)
-    assert talk_cli.conversation_open() is True
+    assert talk_cli.conversation_open(tmp_path) is True
