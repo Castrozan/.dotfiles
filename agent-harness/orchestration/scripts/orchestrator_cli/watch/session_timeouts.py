@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 FINISHED_REPORT_STATE = "done"
+HANDED_OVER_REPORT_STATE = "handed-over"
 WORKING_STATUS = "working"
 
 
@@ -68,10 +69,10 @@ def session_deadline(
 
 
 def is_finished(session: WatchedSession, records: SessionRecords) -> bool:
-    return (
-        records.report_states.get(session.pane_id) == FINISHED_REPORT_STATE
-        and session.status != WORKING_STATUS
-    )
+    report_state = records.report_states.get(session.pane_id)
+    if report_state == HANDED_OVER_REPORT_STATE:
+        return True
+    return report_state == FINISHED_REPORT_STATE and session.status != WORKING_STATUS
 
 
 def timeout_line(

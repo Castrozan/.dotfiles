@@ -55,6 +55,12 @@ Take Lucas's typed answer and record it `--by human`. When he asks for more on a
 `orchestrator decision show` or its details file in a fence. When Lucas countermands anything done under a decision,
 record it with `orchestrator decision override` so the sub-session reworks it.
 
+### Handing a session to Lucas
+
+When Lucas says he will drive a session himself, run `orchestrator handover <pane>`. It closes that session's open
+cards, drops it from the round and from timeouts, moves its pane to a tab of its own, and tells the peer that Lucas
+drives it now. Then restart the watch without that `--pane`.
+
 ### Learning loop
 
 After every escalation Lucas answers, every override, and every `DONE` event, run `orchestrator learn scan` and then

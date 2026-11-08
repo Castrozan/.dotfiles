@@ -15,6 +15,7 @@ from ..document_fields import (
 
 REPORT_STATES = ("working", "blocked", "done")
 ATTENTION_STATES = frozenset({"blocked", "done"})
+HANDED_OVER_STATE = "handed-over"
 REPORT_TEXT_LIMITS = {
     "goal": 120,
     "done_check": 200,
@@ -75,6 +76,15 @@ def new_status_report(
         "updated_at": current_timestamp(),
         "previous_state": previous_state,
         **validated_report_fields(document),
+    }
+
+
+def handed_over_report(report: dict) -> dict:
+    return {
+        **report,
+        "state": HANDED_OVER_STATE,
+        "previous_state": report["state"],
+        "updated_at": current_timestamp(),
     }
 
 

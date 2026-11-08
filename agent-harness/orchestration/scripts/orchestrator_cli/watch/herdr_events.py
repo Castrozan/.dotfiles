@@ -31,6 +31,35 @@ def workspace_panes(workspace: str) -> list[dict]:
     return panes
 
 
+def move_pane_to_new_tab(pane_id: str, label: str) -> str:
+    command = [
+        "herdr",
+        "pane",
+        "move",
+        pane_id,
+        "--new-tab",
+        "--label",
+        label,
+        "--focus",
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=HERDR_COMMAND_TIMEOUT_SECONDS,
+        )
+        moved = json.loads(completed.stdout)["result"]["move_result"]
+    except (OSError, subprocess.TimeoutExpired, ValueError, KeyError) as failure:
+        raise HerdrUnavailable(f"herdr did not move {pane_id}: {failure}") from failure
+    if not moved.get("changed"):
+        raise HerdrUnavailable(
+            f"herdr did not move {pane_id}: {completed.stdout.strip()}"
+        )
+    return moved["pane"]["tab_id"]
+
+
 def herdr_socket_path() -> Path:
     explicit_path = os.environ.get("HERDR_SOCKET_PATH")
     if explicit_path:

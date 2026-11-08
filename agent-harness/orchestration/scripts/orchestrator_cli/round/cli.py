@@ -7,6 +7,7 @@ from pathlib import Path
 
 from ..peer_messenger import PeerMessageFailure, sender_name
 from ..record_store import all_records, state_directory
+from ..reports.status_reports import HANDED_OVER_STATE
 from .rendering import rendered_round
 
 WAITING_STATE = "escalated"
@@ -44,7 +45,13 @@ def command_round(arguments: argparse.Namespace) -> int:
         for card in addressed_to(all_records(Path(arguments.dir)), orchestrator)
         if card["state"] == WAITING_STATE
     ]
-    reports = addressed_to(all_records(Path(arguments.reports_dir)), orchestrator)
+    reports = [
+        report
+        for report in addressed_to(
+            all_records(Path(arguments.reports_dir)), orchestrator
+        )
+        if report["state"] != HANDED_OVER_STATE
+    ]
     print(
         rendered_round(
             sorted(cards, key=lambda card: card["created_at"]),

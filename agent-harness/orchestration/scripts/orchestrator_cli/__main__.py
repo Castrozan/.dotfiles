@@ -4,6 +4,7 @@ import argparse
 import sys
 
 from .decisions import cli as decision_cli
+from .handover import cli as handover_cli
 from .learning import cli as learning_cli
 from .reports import cli as report_cli
 from .round import cli as round_cli
@@ -17,6 +18,7 @@ COMMANDS = {
     "learn": (learning_cli.add_parser, learning_cli.command_learn),
     "watch": (watch_cli.add_parser, watch_cli.command_watch),
     "round": (round_cli.add_parser, round_cli.command_round),
+    "handover": (handover_cli.add_parser, handover_cli.command_handover),
 }
 
 
