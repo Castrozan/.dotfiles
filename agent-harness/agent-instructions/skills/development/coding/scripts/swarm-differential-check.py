@@ -1,123 +1,172 @@
 import argparse
-import contextlib
-import copy
-import importlib.util
-import io
-import json
+import difflib
+import shlex
 import subprocess
 import sys
+import tarfile
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+
+FILES_PLACEHOLDER = "{files}"
+ROOT_PLACEHOLDER = "<root>"
+DIFF_LINE_LIMIT = 40
+STDERR_TAIL_LINE_COUNT = 10
 
 
 @dataclass(frozen=True)
-class CallObservation:
-    outcome: str
-    value: str
-    printed: str
+class CommandObservation:
+    exit_status: str
+    stdout: str
+    stderr_tail: str = field(default="", compare=False)
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
         prog="swarm-differential-check",
-        description="Call the same functions on a Python module at a git revision and in the working tree, and report any difference in return value, raised exception or printed output.",
+        description="Run the same commands in a snapshot of a git revision and in the working tree, and report any command whose exit status or stdout differs.",
     )
     parser.add_argument(
-        "--path",
+        "--check",
+        action="append",
         required=True,
-        type=Path,
-        help="Module file, relative to --repository.",
-    )
-    parser.add_argument(
-        "--cases",
-        required=True,
-        type=Path,
-        help='JSON list of calls, e.g. [{"function": "parse", "args": ["x"], "kwargs": {}}].',
+        help="Shell command run from each root; {files} expands to the quoted files modified since --revision. Repeatable.",
     )
     parser.add_argument("--revision", default="HEAD")
     parser.add_argument("--repository", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--path",
+        action="append",
+        default=[],
+        help="Pathspec limiting which modified files {files} expands to. Repeatable.",
+    )
+    parser.add_argument("--timeout-seconds", type=int, default=600)
     return parser.parse_args()
 
 
-def module_source_at_revision(repository, revision, relative_path):
+def git_output(repository, *arguments):
     return subprocess.run(
-        [
-            "git",
-            "-C",
-            str(repository),
-            "show",
-            f"{revision}:{relative_path.as_posix()}",
-        ],
+        ["git", "-C", str(repository), *arguments],
         capture_output=True,
-        text=True,
         check=True,
-        timeout=60,
+        timeout=300,
     ).stdout
 
 
-def load_module(module_name, module_path):
-    specification = importlib.util.spec_from_file_location(module_name, module_path)
-    module = importlib.util.module_from_spec(specification)
-    sys.modules[module_name] = module
-    specification.loader.exec_module(module)
-    return module
+def files_modified_since_revision(repository, revision, pathspecs):
+    listing = git_output(
+        repository,
+        "diff",
+        "--name-only",
+        "--diff-filter=M",
+        revision,
+        "--",
+        *pathspecs,
+    )
+    return listing.decode().splitlines()
 
 
-def observe_call(module, case):
-    printed_output = io.StringIO()
-    function = getattr(module, case["function"], None)
-    if function is None:
-        return CallObservation("missing", case["function"], "")
+def extract_revision_snapshot(repository, revision, snapshot_root):
+    with subprocess.Popen(
+        ["git", "-C", str(repository), "archive", "--format=tar", revision],
+        stdout=subprocess.PIPE,
+    ) as archive_process:
+        with tarfile.open(fileobj=archive_process.stdout, mode="r|") as snapshot:
+            snapshot.extractall(snapshot_root, filter="tar")
+        if archive_process.wait(timeout=300) != 0:
+            raise SystemExit(f"git archive {revision} failed")
+
+
+def repository_top_level(directory):
+    return Path(git_output(directory, "rev-parse", "--show-toplevel").decode().strip())
+
+
+def command_with_files(check_command, files):
+    return check_command.replace(
+        FILES_PLACEHOLDER, " ".join(shlex.quote(file) for file in files)
+    )
+
+
+def observe_command(command, root, timeout_seconds):
     try:
-        with contextlib.redirect_stdout(printed_output):
-            value = function(
-                *copy.deepcopy(case.get("args", [])),
-                **copy.deepcopy(case.get("kwargs", {})),
-            )
-    except Exception as raised:
-        return CallObservation(
-            "raised", f"{type(raised).__name__}: {raised}", printed_output.getvalue()
+        completed = subprocess.run(
+            ["bash", "-c", command],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
         )
-    return CallObservation("returned", repr(value), printed_output.getvalue())
+    except subprocess.TimeoutExpired:
+        return CommandObservation(f"timed out after {timeout_seconds}s", "")
+    return CommandObservation(
+        f"exit {completed.returncode}",
+        completed.stdout.replace(str(root), ROOT_PLACEHOLDER),
+        "\n".join(completed.stderr.strip().splitlines()[-STDERR_TAIL_LINE_COUNT:]),
+    )
+
+
+def stderr_tail_lines(revision, original, edited):
+    return [
+        line
+        for label, observation in ((revision, original), ("working tree", edited))
+        if observation.stderr_tail
+        for line in [
+            f"  stderr at {label}:",
+            *(f"    {tail}" for tail in observation.stderr_tail.splitlines()),
+        ]
+    ]
+
+
+def stdout_diff_lines(revision, original, edited):
+    stdout_diff = difflib.unified_diff(
+        original.stdout.splitlines(),
+        edited.stdout.splitlines(),
+        fromfile=f"stdout at {revision}",
+        tofile="stdout in working tree",
+        lineterm="",
+    )
+    return [f"  {line}" for line in stdout_diff][:DIFF_LINE_LIMIT]
+
+
+def describe_difference(revision, original, edited):
+    return "\n".join(
+        [
+            f"  {revision}: {original.exit_status}, working tree: {edited.exit_status}",
+            *stderr_tail_lines(revision, original, edited),
+            *stdout_diff_lines(revision, original, edited),
+        ]
+    )
+
+
+def compare_check(check_command, files, roots, arguments):
+    command = command_with_files(check_command, files)
+    original, edited = (
+        observe_command(command, root, arguments.timeout_seconds) for root in roots
+    )
+    if original == edited:
+        print(f"SAME     {check_command}")
+        return True
+    print(f"DIFFERS  {check_command}")
+    print(describe_difference(arguments.revision, original, edited))
+    return False
 
 
 def main():
     arguments = parse_arguments()
-    repository = arguments.repository.resolve()
-    refactored_path = repository / arguments.path
-    cases = json.loads(arguments.cases.read_text())
-    sys.path.insert(0, str(refactored_path.parent))
-    with tempfile.TemporaryDirectory(
-        prefix="swarm-differential-"
-    ) as temporary_directory:
-        original_path = Path(temporary_directory) / refactored_path.name
-        original_path.write_text(
-            module_source_at_revision(repository, arguments.revision, arguments.path)
-        )
-        original_module = load_module(
-            f"swarm_original_{refactored_path.stem}", original_path
-        )
-        refactored_module = load_module(
-            f"swarm_refactored_{refactored_path.stem}", refactored_path
-        )
-        mismatches = [
-            (case, original, refactored)
-            for case in cases
-            for original, refactored in [
-                (
-                    observe_call(original_module, case),
-                    observe_call(refactored_module, case),
-                )
-            ]
-            if original != refactored
+    repository = repository_top_level(arguments.repository.resolve())
+    files = files_modified_since_revision(
+        repository, arguments.revision, arguments.path
+    )
+    print(f"{len(files)} files modified since {arguments.revision}")
+    with tempfile.TemporaryDirectory(prefix="swarm-differential-") as snapshot_root:
+        extract_revision_snapshot(repository, arguments.revision, snapshot_root)
+        roots = (Path(snapshot_root), repository)
+        results = [
+            compare_check(check_command, files, roots, arguments)
+            for check_command in arguments.check
         ]
-    for case, original, refactored in mismatches:
-        print(
-            f"MISMATCH {json.dumps(case)}\n  {arguments.revision}: {original}\n  working tree: {refactored}"
-        )
-    print(f"{len(cases) - len(mismatches)} of {len(cases)} cases behave identically")
-    return 1 if mismatches else 0
+    print(f"{sum(results)} of {len(results)} checks behave identically")
+    return 0 if all(results) else 1
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -8,35 +7,12 @@ import pytest
 SCRIPTS_DIRECTORY = Path(__file__).resolve().parent.parent.parent / "scripts"
 DIFFERENTIAL_CHECK_SCRIPT = SCRIPTS_DIRECTORY / "swarm-differential-check.py"
 
-
-ORIGINAL_MODULE_SOURCE = """def add(left, right):
-    if left == 0:
-        return right
-    return left + right
-
-
-def divide(left, right):
-    return left / right
-
-
-def greet(name):
-    print(f"hello {name}")
-
-
-def append_marker(items):
-    items.append("marker")
-    return len(items)
+ORIGINAL_GREETING_SCRIPT = """name="$1"
+if [ -z "$name" ]; then
+  name=stranger
+fi
+echo "hello $name"
 """
-
-
-def run_script(script, *arguments, working_directory):
-    return subprocess.run(
-        [sys.executable, str(script), *arguments],
-        capture_output=True,
-        text=True,
-        cwd=working_directory,
-        timeout=120,
-    )
 
 
 def git(repository, *arguments):
@@ -48,11 +24,23 @@ def git(repository, *arguments):
     )
 
 
+def run_differential_check(repository, *arguments):
+    return subprocess.run(
+        [sys.executable, str(DIFFERENTIAL_CHECK_SCRIPT), *arguments],
+        capture_output=True,
+        text=True,
+        cwd=repository,
+        timeout=120,
+    )
+
+
 @pytest.fixture
-def repository_with_committed_module(tmp_path):
+def repository_with_committed_scripts(tmp_path):
     git(tmp_path, "init", "-q")
-    (tmp_path / "arithmetic.py").write_text(ORIGINAL_MODULE_SOURCE)
-    git(tmp_path, "add", "arithmetic.py")
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tools" / "greet.sh").write_text(ORIGINAL_GREETING_SCRIPT)
+    (tmp_path / "notes.txt").write_text("unchanged\n")
+    git(tmp_path, "add", ".")
     git(
         tmp_path,
         "-c",
@@ -63,89 +51,68 @@ def repository_with_committed_module(tmp_path):
         "core.hooksPath=/dev/null",
         "commit",
         "-qm",
-        "test: original module",
+        "test: original scripts",
     )
     return tmp_path
 
 
-def write_cases(directory, cases):
-    cases_path = directory / "cases.json"
-    cases_path.write_text(json.dumps(cases))
-    return cases_path
-
-
 def test_differential_check_accepts_a_behavior_preserving_refactor(
-    repository_with_committed_module,
+    repository_with_committed_scripts,
 ):
-    (repository_with_committed_module / "arithmetic.py").write_text(
-        ORIGINAL_MODULE_SOURCE.replace(
-            "    if left == 0:\n        return right\n    return left + right",
-            "    return right if left == 0 else left + right",
-        )
+    (repository_with_committed_scripts / "tools" / "greet.sh").write_text(
+        'echo "hello ${1:-stranger}"\n'
     )
-    cases_path = write_cases(
-        repository_with_committed_module,
-        [
-            {"function": "add", "args": [0, 5]},
-            {"function": "add", "args": [2, 3]},
-            {"function": "divide", "args": [1, 0]},
-            {"function": "greet", "kwargs": {"name": "partner"}},
-        ],
-    )
-    result = run_script(
-        DIFFERENTIAL_CHECK_SCRIPT,
-        "--path",
-        "arithmetic.py",
-        "--cases",
-        str(cases_path),
-        working_directory=repository_with_committed_module,
+    result = run_differential_check(
+        repository_with_committed_scripts,
+        "--check",
+        "bash tools/greet.sh",
+        "--check",
+        "bash tools/greet.sh partner",
+        "--check",
+        "pwd",
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "4 of 4 cases behave identically" in result.stdout
+    assert "1 files modified since HEAD" in result.stdout
+    assert "3 of 3 checks behave identically" in result.stdout
 
 
-def test_differential_check_reports_changed_results_and_missing_functions(
-    repository_with_committed_module,
+def test_differential_check_reports_changed_stdout_and_exit_status(
+    repository_with_committed_scripts,
 ):
-    (repository_with_committed_module / "arithmetic.py").write_text(
-        ORIGINAL_MODULE_SOURCE.replace("left + right", "left - right").replace(
-            "def greet(name)", "def welcome(name)"
-        )
+    (repository_with_committed_scripts / "tools" / "greet.sh").write_text(
+        'echo "hi ${1:-stranger}"\necho broken >&2\nexit 3\n'
     )
-    cases_path = write_cases(
-        repository_with_committed_module,
-        [
-            {"function": "add", "args": [2, 3]},
-            {"function": "greet", "args": ["partner"]},
-            {"function": "divide", "args": [6, 3]},
-        ],
-    )
-    result = run_script(
-        DIFFERENTIAL_CHECK_SCRIPT,
-        "--path",
-        "arithmetic.py",
-        "--cases",
-        str(cases_path),
-        working_directory=repository_with_committed_module,
+    result = run_differential_check(
+        repository_with_committed_scripts,
+        "--check",
+        "bash tools/greet.sh partner",
+        "--check",
+        "cat notes.txt",
     )
     assert result.returncode == 1
-    assert result.stdout.count("MISMATCH") == 2
-    assert "1 of 3 cases behave identically" in result.stdout
+    assert "DIFFERS  bash tools/greet.sh partner" in result.stdout
+    assert "HEAD: exit 0, working tree: exit 3" in result.stdout
+    assert "+hi partner" in result.stdout
+    assert "stderr at working tree:\n    broken" in result.stdout
+    assert "1 of 2 checks behave identically" in result.stdout
 
 
-def test_differential_check_gives_each_call_its_own_copy_of_mutable_arguments(
-    repository_with_committed_module,
+def test_differential_check_expands_files_to_the_modified_files_in_scope(
+    repository_with_committed_scripts,
 ):
-    cases_path = write_cases(
-        repository_with_committed_module,
-        [{"function": "append_marker", "args": [["first"]]}],
+    (repository_with_committed_scripts / "tools" / "greet.sh").write_text(
+        ORIGINAL_GREETING_SCRIPT + "\n"
     )
-    result = run_script(
-        DIFFERENTIAL_CHECK_SCRIPT,
+    (repository_with_committed_scripts / "notes.txt").write_text("edited\n")
+    result = run_differential_check(
+        repository_with_committed_scripts,
         "--path",
-        "arithmetic.py",
-        "--cases",
-        str(cases_path),
-        working_directory=repository_with_committed_module,
+        "tools",
+        "--check",
+        "echo {files}",
+        "--check",
+        "for file in {files}; do bash $file partner; done",
     )
     assert result.returncode == 0, result.stdout + result.stderr
+    assert "1 files modified since HEAD" in result.stdout
+    assert "2 of 2 checks behave identically" in result.stdout

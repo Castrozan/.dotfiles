@@ -37,10 +37,11 @@ no gate can judge the change, write a temporary checker in the session scratchpa
 command to the workers too. `swarm-batch-gate` runs check commands against every batch's files from a JSON map of batch
 name to files. In a `--check` command, `{files}` expands to that batch's quoted files.
 
-Compare old and new on the same inputs when a change must preserve behavior. `swarm-differential-check` loads a Python
-module at a git revision and in the working tree, then calls the functions listed in a JSON cases file. It reports any
-difference in return value, exception or printed output. For other languages, write the same throwaway driver around
-the `git show` version and the edited file.
+Compare old and new on the same inputs when a change must preserve behavior. `swarm-differential-check` runs each
+`--check` command in a snapshot of a git revision and in the working tree, then reports any differing exit status or
+stdout. Its `{files}` expands to the files modified since that revision. Make each check a throwaway driver calling the
+edited code with fixed inputs, in any language. The snapshot holds only tracked files, so reach untracked dependencies
+by absolute path.
 
 ### Integrate as the lead
 
