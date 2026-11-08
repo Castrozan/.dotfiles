@@ -34,7 +34,7 @@ def _verify_opencode_hook(content):
 def _verify_json_hooks(hooks, target):
     required = {"SessionStart", "PreToolUse", "PostToolUse", "Stop"}
     required |= {
-        "claudecode": {"SubagentStop", "PermissionRequest"},
+        "claudecode": {"SubagentStop", "PermissionRequest", "UserPromptSubmit"},
         "codexcli": {"UserPromptSubmit"},
     }.get(target, set())
     if set(hooks) != required or any(not hooks[event] for event in required):

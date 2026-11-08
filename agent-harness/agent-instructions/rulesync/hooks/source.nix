@@ -38,6 +38,7 @@ in
   };
   claudecode.hooks = {
     sessionStart = [ ((registration "SessionStart" 5) // { matcher = ".*"; }) ];
+    beforeSubmitPrompt = [ (registration "UserPromptSubmit" 5) ];
     preToolUse = [ ((registration "PreToolUse" 10) // { matcher = ".*"; }) ];
     postToolUse = [ ((registration "PostToolUse" 15) // { matcher = "Skill|Edit|Write"; }) ];
     stop = [ (registration "Stop" 5) ];

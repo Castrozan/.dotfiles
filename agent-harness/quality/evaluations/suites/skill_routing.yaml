@@ -36,7 +36,7 @@ casos:
 
       instructions - Authoring AI instruction surfaces - SKILL.md, agent definitions, CLAUDE.md policies, and subagent briefs. Use when writing or editing any file that instructs an AI.
 
-      orchestrate - Delegate same-goal work to another interactive agent, harness, or machine over a2a, herdr, or ssh. Use to spawn parallel peers, dispatch, observe, correct, and repeat.
+      orchestrate - Delegate same-goal work to another interactive agent, harness, or machine over a2a, herdr, or ssh. Use when a prompt names a Servant, or to spawn parallel peers, dispatch, observe, correct, and repeat.
 
       process-design - Co-design multi-step, multi-agent processes by composing capability blocks from a toolbox (agents, deterministic tools, monitors, gates, memory), redrawing with the human each round, then suggesting a dry run. Use before orchestrating complex agent work.
 
@@ -157,6 +157,14 @@ casos:
     nivel: unidade
     system_prompt: *catalogo
     pergunta: Spawn a parallel agent to refactor the utils module while I work on tests
+    reservado: true
+    assercoes:
+      igual:
+        - orchestrate
+  - nome: routing_to_orchestrate_named_servant
+    nivel: unidade
+    system_prompt: *catalogo
+    pergunta: give to Ibaraki-dōji to launch a session to work on the automations article in kira
     reservado: true
     assercoes:
       igual:

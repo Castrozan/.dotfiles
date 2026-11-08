@@ -18,15 +18,14 @@ def verify(path, surface):
         "PostToolUse": "post-tool-use-dispatcher.py",
         "Stop": "stop-dispatcher.py",
     }
+    timeouts["UserPromptSubmit"] = 5
+    dispatchers["UserPromptSubmit"] = "user-prompt-submit-dispatcher.py"
     expected = set(timeouts)
     if surface == "claude":
         timeouts |= {"PreToolUse": 10, "Stop": 5, "SubagentStop": 5}
         dispatchers["SubagentStop"] = "stop-dispatcher.py"
         expected |= {"SubagentStop", "PermissionRequest"}
     else:
-        timeouts["UserPromptSubmit"] = 5
-        dispatchers["UserPromptSubmit"] = "user-prompt-submit-dispatcher.py"
-        expected.add("UserPromptSubmit")
         assert configuration["features"]["hooks"] is True
     assert set(hooks) == expected, hooks
     for event, dispatcher in dispatchers.items():

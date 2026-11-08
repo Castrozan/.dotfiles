@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Delegate same-goal work to another interactive agent, harness, or machine over a2a, herdr, or ssh. Use to spawn parallel peers, dispatch, observe, correct, and repeat.
+description: Delegate same-goal work to another interactive agent, harness, or machine over a2a, herdr, or ssh. Use when a prompt names a Servant, or to spawn parallel peers, dispatch, observe, correct, and repeat.
 ---
 
 ### Core delegation authority
@@ -43,9 +43,9 @@ blocks until the peer answers. `a2a send` returns a task id to follow with `a2a 
 turn without killing the session.
 
 herdr drives the same pane directly and shows what the task view flattens: reported status, full scrollback, a
-permission prompt, or the keyboard itself. Dispatch with a2a, observe and rescue with herdr. A harness-native session
-channel reaches only peers your own harness manages, so prefer a2a whenever the peer is a different harness or a
-different session tree.
+permission prompt, or the keyboard itself. Dispatch with a2a, observe and rescue with herdr. Dispatch to every
+interactive peer through a2a, also when it runs your own harness; a harness-native session channel stays for subagents
+you spawned, because it neither lists Servants nor crosses harnesses.
 
 ### Reaching a peer on another machine
 

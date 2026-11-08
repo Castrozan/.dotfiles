@@ -28,6 +28,7 @@ USER_PROMPT_SUBMIT_HANDLERS = [
     HookHandler(
         handler_module_name="codex_servant_status_handler", surfaces=(CODEX_SURFACE,)
     ),
+    HookHandler(handler_module_name="named_servant_peer_handler"),
 ]
 
 
