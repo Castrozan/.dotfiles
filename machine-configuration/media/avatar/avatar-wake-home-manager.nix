@@ -17,7 +17,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts/listening}:${./scripts/conversation}:${./scripts/wake}:${programs.a2aLibrary}
+    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}:${programs.a2aLibrary}
     exec ${pkgs.python312}/bin/python3 ${./scripts/wake/wake_listener.py} "$@"
   '';
 in

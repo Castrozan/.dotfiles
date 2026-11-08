@@ -20,7 +20,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts/listening}:${./scripts/wake}:${a2aLibrary}
+    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/wake}:${a2aLibrary}
     exec ${pkgs.python312}/bin/python3 ${./scripts/wake}/floor_cli.py
   '';
   control = import ./control-package.nix { inherit pkgs; };
@@ -97,7 +97,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts/listening}
+    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}
     exec ${pkgs.python312}/bin/python3 ${./scripts/listening/listen_cli.py} "$@"
   '';
   listener = pkgs.writeShellScript "avatar-listener" ''
@@ -109,7 +109,7 @@ let
     }:$PATH
     export AVATAR_SPEAKER_MODEL=${speakerModel}
     export AVATAR_TURN_MODEL=${turnModel}
-    export PYTHONPATH=${./scripts/listening}
+    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}
     exec ${listenerPython}/bin/python3 ${./scripts/listening/listener.py}
   '';
   live = pkgs.writeShellScript "avatar-live" ''
@@ -120,7 +120,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts/live}:${./scripts/listening}
+    export PYTHONPATH=${./scripts/live}:${./scripts/listening}:${./scripts/echo}
     exec ${
       pkgs.python312.withPackages (packages: [ packages.websockets ])
     }/bin/python3 ${./scripts/live/live_bridge.py}
@@ -137,7 +137,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/conversation}
+    export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"
   '';
 in

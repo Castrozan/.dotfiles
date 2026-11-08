@@ -4,6 +4,7 @@ from pathlib import Path
 scripts = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(scripts))
 sys.path.insert(0, str(scripts / "listening"))
+sys.path.insert(0, str(scripts / "echo"))
 sys.path.insert(0, str(scripts / "conversation"))
 sys.path.insert(0, str(scripts / "wake"))
 sys.path.insert(0, str(scripts / "live"))
