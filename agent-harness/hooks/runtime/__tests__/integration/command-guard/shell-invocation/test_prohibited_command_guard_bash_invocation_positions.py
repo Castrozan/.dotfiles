@@ -9,6 +9,7 @@ class TestBashGitAddInvocationPositions:
             "echo 'git add -A is prohibited here'",
             "grep -r 'git add -A' docs/",
             "digit add -A",
+            "./release.sh git add .",
         ],
     )
     def test_allows_commands_that_only_mention_the_pattern(
