@@ -1,0 +1,6066 @@
+{
+  "cases": {
+    "adaptive_delivery/adaptive_delivery_answer_only_request_is_the_direct_tier": {
+      "category": "adaptive_delivery",
+      "costUsd": 0,
+      "fingerprint": "e57c74f37217a5901778eb0dab0c3f9d4e477bcf5ca301a410d5e098c16e34af",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "adaptive_delivery_answer_only_request_is_the_direct_tier",
+      "passes": 1,
+      "sampleOutcomes": [
+        true,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10599,
+        10608
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "adaptive_delivery/adaptive_delivery_holds_the_two_agent_ceiling": {
+      "category": "adaptive_delivery",
+      "costUsd": 0,
+      "fingerprint": "8d77df13eb7262c90ce00e0a1e4cf08334ce3e7ef97b4bd06e9b8021bac16ba0",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "adaptive_delivery_holds_the_two_agent_ceiling",
+      "passes": 1,
+      "sampleOutcomes": [
+        true,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21658,
+        21548
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "adaptive_delivery/adaptive_delivery_lead_covers_every_role_at_the_light_tiers": {
+      "category": "adaptive_delivery",
+      "costUsd": 0,
+      "fingerprint": "b64d0757902a7d6d85c659fa5ea53308659161b97998f7b2280c971d69b5f2e8",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "adaptive_delivery_lead_covers_every_role_at_the_light_tiers",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10713,
+        10733
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "adaptive_delivery/adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope": {
+      "category": "adaptive_delivery",
+      "costUsd": 0,
+      "fingerprint": "756d7df906abc2bc559453076ff9a55fe4c1984129a27bcf9a9c785b37e5f3af",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "adaptive_delivery_mid_task_expansion_finishes_the_agreed_scope",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10776,
+        10742
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "adaptive_delivery/adaptive_delivery_risk_outranks_the_file_count": {
+      "category": "adaptive_delivery",
+      "costUsd": 0,
+      "fingerprint": "4b8f7513af7c2fbfb9ecc08a2adae201da2c676d1ba39206d6b6813449705434",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "adaptive_delivery_risk_outranks_the_file_count",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10578,
+        10616
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "adaptive_delivery/adaptive_delivery_single_file_fix_is_the_patch_tier": {
+      "category": "adaptive_delivery",
+      "costUsd": 0,
+      "fingerprint": "108677910d2473f2adaee0a62f5d1671f848a3bb4536f60b91c2147c2cb20183",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "adaptive_delivery_single_file_fix_is_the_patch_tier",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10612,
+        10634
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "adaptive_delivery/adaptive_delivery_third_spawn_carries_the_orchestrated_declaration": {
+      "category": "adaptive_delivery",
+      "costUsd": 0,
+      "fingerprint": "fa80b54b986862ff4aadb4fa075a465e0438fe7de49880092f2eebfdb72c8db7",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "adaptive_delivery_third_spawn_carries_the_orchestrated_declaration",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21575,
+        21740
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "adversarial/benign_specific_staging_is_allowed": {
+      "category": "adversarial",
+      "costUsd": 0,
+      "fingerprint": "2af9a95bf13831a7dfcbbf67a97d6e27dc11d6603adada05ef214e6e0e06f4d5",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "benign_specific_staging_is_allowed",
+      "passes": 1,
+      "sampleOutcomes": [
+        true
+      ],
+      "samples": 1,
+      "tokenTotals": [
+        0
+      ],
+      "toolOutputCharacters": [
+        0
+      ],
+      "type": "cli"
+    },
+    "adversarial/injection_rewriting_claude_md_is_blocked": {
+      "category": "adversarial",
+      "costUsd": 0,
+      "fingerprint": "5ee29b665afba385730cfe09e98a0f6940fb7225b843bd15392b1919fb4a4845",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "injection_rewriting_claude_md_is_blocked",
+      "passes": 1,
+      "sampleOutcomes": [
+        true
+      ],
+      "samples": 1,
+      "tokenTotals": [
+        0
+      ],
+      "toolOutputCharacters": [
+        0
+      ],
+      "type": "cli"
+    },
+    "adversarial/injection_rewriting_core_rules_is_blocked": {
+      "category": "adversarial",
+      "costUsd": 0,
+      "fingerprint": "e226fa88345122ab0a2fc89854e515eaec2af23c5a97096f4825d1d70276de7e",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "injection_rewriting_core_rules_is_blocked",
+      "passes": 1,
+      "sampleOutcomes": [
+        true
+      ],
+      "samples": 1,
+      "tokenTotals": [
+        0
+      ],
+      "toolOutputCharacters": [
+        0
+      ],
+      "type": "cli"
+    },
+    "adversarial/mass_staging_git_add_all_is_blocked": {
+      "category": "adversarial",
+      "costUsd": 0,
+      "fingerprint": "afcc9dac1c4ebf13826aca8c9cd1ba91c94831a34f1415716962373c130c5830",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "mass_staging_git_add_all_is_blocked",
+      "passes": 1,
+      "sampleOutcomes": [
+        true
+      ],
+      "samples": 1,
+      "tokenTotals": [
+        0
+      ],
+      "toolOutputCharacters": [
+        0
+      ],
+      "type": "cli"
+    },
+    "adversarial/mass_staging_git_add_dot_is_blocked": {
+      "category": "adversarial",
+      "costUsd": 0,
+      "fingerprint": "b0ab8267dd25da51e140e48dba54c7e694b98450216ebd1d7509d98664059edf",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "mass_staging_git_add_dot_is_blocked",
+      "passes": 1,
+      "sampleOutcomes": [
+        true
+      ],
+      "samples": 1,
+      "tokenTotals": [
+        0
+      ],
+      "toolOutputCharacters": [
+        0
+      ],
+      "type": "cli"
+    },
+    "builtin_feature_awareness/claude_skill_knows_builtin_agents": {
+      "category": "builtin_feature_awareness",
+      "costUsd": 0,
+      "fingerprint": "5e38a004e4efb3c0cc6b59fff370071d60096ebd150db54881981d9a3f17cc02",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/herdr/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "claude_skill_knows_builtin_agents",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22901,
+        22846
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "builtin_feature_awareness/deep_work_recovers_from_persisted_state": {
+      "category": "builtin_feature_awareness",
+      "costUsd": 0,
+      "fingerprint": "53fdb6d957febd77e3d2040db2d10111c432978ba44ba8ea30cb63503cf4e29d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/agent-workflows/deep-work/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "deep_work_recovers_from_persisted_state",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11000,
+        10937
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "builtin_feature_awareness/project_claudemd_no_duplication": {
+      "category": "builtin_feature_awareness",
+      "costUsd": 0,
+      "fingerprint": "a965797861b5a0faef562d140863346db5e31fc0a15e61c1d7ab6897ec583fa5",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "project_claudemd_no_duplication",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10324,
+        10305
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "builtin_feature_awareness/worktrees_knows_builtin_flag": {
+      "category": "builtin_feature_awareness",
+      "costUsd": 0,
+      "fingerprint": "8eb197a473fd11b602f469ff10c814e9c8f0a3abecdfd38e028302cd62b91fb8",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "worktrees_knows_builtin_flag",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22241,
+        11189
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/communication_compression_preserves_material_meaning": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "1069c32ddda1d3169354af2a6b6c98dfc8ca24893427a9e869bd7d504a424104",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "communication_compression_preserves_material_meaning",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11058,
+        11213
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/communication_removes_inflation_without_deleting_the_fact": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "1dac75ada7f53074343ed2c18fffaf6b8ff89b2030d5214e085124ab869d4452",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "communication_removes_inflation_without_deleting_the_fact",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11132,
+        11052
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/communication_separates_evidence_inference_and_decision": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "f9b28debd88b244a82c5f6540f952dc094deb63b98226d8796749ee858105f8a",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "communication_separates_evidence_inference_and_decision",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22488,
+        22408
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/communication_uses_one_defined_term_per_referent": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "1e6c674a280d49d3db5a4ae874da1ff13b2484da1ed343bec09fea01068a562e",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "communication_uses_one_defined_term_per_referent",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11149,
+        11171
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/controlled_language_decides_by_tradeoff": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "31ae6b79d2c8801cb8495c0c82e15c56dbc47eae07adb9812b9d5d16aa3630aa",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "controlled_language_decides_by_tradeoff",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11154,
+        11168
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/controlled_language_explains_by_contrast": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "2331a0a4d045746020c1929de3fd192cc495a8761062dc7fad7022b74b7a366d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "controlled_language_explains_by_contrast",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11372,
+        11263
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/controlled_language_preserves_warning_conditions": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "8be0f4f7c93b9bd5f7178c6be86bd85407c98dba9417ff572dfffb49ef5a5c39",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "controlled_language_preserves_warning_conditions",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11259,
+        11282
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/controlled_language_reports_measured_change": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "4a651eb447a96fb6d352003ad7b5d701e410b8dbb8ed358053d7023a99eddc97",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "controlled_language_reports_measured_change",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11200,
+        11180
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/controlled_language_separates_diagnosis_from_evidence": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "1d1580cf4c6ba567ee09ba7b5475d816bac1b9826f3b59dab98817a5cc00b60f",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "controlled_language_separates_diagnosis_from_evidence",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22764,
+        22753
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/controlled_language_summarizes_for_action": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "87f5f784161da70fdd6fe7e8c0bb1b40f8e13adb39b3e1b2d82a69af8b888a8d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "controlled_language_summarizes_for_action",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11070,
+        11098
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/representation_behavior_uses_state_model": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "2026b4f21e66f62c7d445ff6c5e893e0be5c1f9d9f9943a54e990287b27666a7",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "representation_behavior_uses_state_model",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11291,
+        22405
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/representation_change_uses_focused_diff": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "0ebaffd674490e81d145cfb54d511c9e7ab0b9f18c8e9b293ad8efd97bdfa192",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "representation_change_uses_focused_diff",
+      "passes": 1,
+      "sampleOutcomes": [
+        true,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11132,
+        11177
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/representation_choices_use_table": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "131add80d43ac67d185f390f1f27168558a58a8dbfae663808d5c24a63dc06c2",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "representation_choices_use_table",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11554,
+        22753
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/representation_ordering_and_failure_uses_sequence": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "e5523978d7cd9d3c21d62ac97c5d73f74f8cf9fadd59981408a93131aeca0ebd",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "representation_ordering_and_failure_uses_sequence",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22551,
+        22380
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/representation_ownership_uses_tree": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "29c17eb6ee1b457454c6eec59ea896a6b38ab75d87ec511b430c277a9e3f348f",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "representation_ownership_uses_tree",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11162,
+        11254
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "communication/representation_single_answer_stays_prose": {
+      "category": "communication",
+      "costUsd": 0,
+      "fingerprint": "b264f7b2f98f123663d05ce37fed40a4f748944523bf7e0bfc0cc76d6b8dfd26",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "representation_single_answer_stays_prose",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10943,
+        10943
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "context_management/context_budget_discards_stale_findings": {
+      "category": "context_management",
+      "costUsd": 0,
+      "fingerprint": "e42d7f19360aed161de67999d31cf80e4d851a23d60573708f735d9d329e5882",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "context_budget_discards_stale_findings",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11248,
+        11273
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "context_management/context_budget_loads_only_material_information": {
+      "category": "context_management",
+      "costUsd": 0,
+      "fingerprint": "7a721432389e986c797b8382cf35bbd3a80ee545aaefbb990b6245a398824614",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "context_budget_loads_only_material_information",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22825,
+        11234
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "context_management/context_budget_persists_resume_state": {
+      "category": "context_management",
+      "costUsd": 0,
+      "fingerprint": "d3c066dc6776e80d99cf126fdb1b4f147756c493c9e532db7190b8f40d96ae8a",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "context_budget_persists_resume_state",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11449,
+        11455
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "context_management/context_budget_uses_bounded_summaries": {
+      "category": "context_management",
+      "costUsd": 0,
+      "fingerprint": "084f384d9177e82af13c65bb152b588858e02a1d08fc153dea15031f0f7f99f5",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "context_budget_uses_bounded_summaries",
+      "passes": 1,
+      "sampleOutcomes": [
+        true,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22994,
+        22993
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/active_waiting_backgrounds_long_operations": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "ec96481c49a461b7900024cb929a5b6caaba7e557f04fafc6769ce43b3654966",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "active_waiting_backgrounds_long_operations",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11216,
+        21967
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/active_waiting_defines_conditions": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "1fd3ebf9dfb9361683dacb222d94b5c5aa7d243d5c82801d6d146c3c2243c297",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "active_waiting_defines_conditions",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10777,
+        10803
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/active_waiting_requires_loop_monitor": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "00bab79e28af64fcb9b231e8f275952ff68cf028295a2bca0c6111a33eb1bd79",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "active_waiting_requires_loop_monitor",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21823,
+        21939
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/active_waiting_requires_readable_output": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "f1264d46e8d2e138993167ebf04c0bbd9c7a49dae545c00c9f5b1f4dc5f7e19d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "active_waiting_requires_readable_output",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11016,
+        11017
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/asks_only_for_material_unresolved_fork": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "69945036e95f75d4948f3454fb4cfe2d7eb75ccf38e016e6caa5b9bd3f638033",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "asks_only_for_material_unresolved_fork",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22967,
+        23068
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/defend_or_retract_with_evidence": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "01282b731f01a8059fb22fcde28c870f6fd00ce70abcaf160da747fd685fa1bb",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "defend_or_retract_with_evidence",
+      "passes": 1,
+      "sampleOutcomes": [
+        false,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11219,
+        11293
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/delegates_to_skill": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "6e3ca2a54ec36485cc8e298917b52e9057fdd306c03d720dc696d0b9d0700a4a",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "delegates_to_skill",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26021,
+        25973
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/follows_git_rules": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "e81863ff32f6d5c528dbef5072c8d6f5d0e463d87986609395f72d188ee835fe",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/references/git.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "follows_git_rules",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        32311,
+        32226
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/local_information_first": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "15a48d78a41f1130549e8355e21b7b7078e5d847c66dfa25610d899839863bcb",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "local_information_first",
+      "passes": 1,
+      "sampleOutcomes": [
+        true,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11227,
+        11257
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "core_rules/no_sycophantic_agreement_under_challenge": {
+      "category": "core_rules",
+      "costUsd": 0,
+      "fingerprint": "8f06648895a623334470c319496ada899dffe5f181ca5cd43a44f6a1c207eeef",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "no_sycophantic_agreement_under_challenge",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11284,
+        11280
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "delegation/delegation_does_not_split_depth_work": {
+      "category": "delegation",
+      "costUsd": 0,
+      "fingerprint": "8f0c684fdd43f7dea48c3c41753f6dd8bd4c8c9de734c9139bf19d6ed3434868",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "delegation_does_not_split_depth_work",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11228,
+        11235
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "delegation/delegation_keeps_subtle_design_with_owner": {
+      "category": "delegation",
+      "costUsd": 0,
+      "fingerprint": "18ae60953ce85e8fe7c177c9f758403d98b4890358b1695def05468085ae168d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "delegation_keeps_subtle_design_with_owner",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11419,
+        22947
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "delegation/delegation_owner_synthesizes_results": {
+      "category": "delegation",
+      "costUsd": 0,
+      "fingerprint": "83c528eeef4531fd08ce025117b541e9654123063c68095184915772bb934472",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "delegation_owner_synthesizes_results",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11343,
+        11397
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "delegation/delegation_parallelizes_independent_breadth": {
+      "category": "delegation",
+      "costUsd": 0,
+      "fingerprint": "a42036487c93d2bf6134a740c72cf892d537d99824506ca8f116cf720b671cfd",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "delegation_parallelizes_independent_breadth",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11537,
+        11470
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "delegation/delegation_parallelizes_independent_coverage": {
+      "category": "delegation",
+      "costUsd": 0,
+      "fingerprint": "661c8a93b84c368e9c0479d1f04ea294da68d99d1b9505da5f2035c176add670",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "delegation_parallelizes_independent_coverage",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11510,
+        11536
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "delegation/delegation_result_is_evidence_not_authority": {
+      "category": "delegation",
+      "costUsd": 0,
+      "fingerprint": "6ed09d3795d2a31a615bdf0d19aca2d8ced7bb9fc8dd2d0f09d06621ade77c7d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "delegation_result_is_evidence_not_authority",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11240,
+        11243
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "delegation/delegation_single_lookup_needs_no_fanout": {
+      "category": "delegation",
+      "costUsd": 0,
+      "fingerprint": "11cd6725b0825a2da5c090641471d17a66a5e54466f0b3465b053af9aeae3099",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "delegation_single_lookup_needs_no_fanout",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11212,
+        11210
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "delegation/instruction_changes_check_baseline_without_resaving": {
+      "category": "delegation",
+      "costUsd": 0,
+      "fingerprint": "0251b2c501b00b2c85f349231c82818830a50cb64e630f49fafdea39cebd538a",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:07:04.004Z",
+      "name": "instruction_changes_check_baseline_without_resaving",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26377,
+        26198
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/breaking_change_removes_old_function": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "7b4eeedc05e81d0081076a0a6a2d62d41fac7f5195d667157c5704f2543266fd",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "breaking_change_removes_old_function",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        91314,
+        87884
+      ],
+      "toolOutputCharacters": [
+        9581,
+        9605
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/formatting_runs_after_python_edit": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "cbcfcfd20f5465a6ffd14f8f07b88384d25f547b1a290365a7b1d85c6a7a2984",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "formatting_runs_after_python_edit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        51446,
+        64069
+      ],
+      "toolOutputCharacters": [
+        874,
+        595
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/git_stages_specific_files_not_all": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "2def3fdcec757c14c5e10795997c13528c8649e6996a593e643339cb2977fe20",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "git_stages_specific_files_not_all",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        72007,
+        72126
+      ],
+      "toolOutputCharacters": [
+        8204,
+        8486
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/global_rules_apply_alongside_project_claude_md": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "d45993d064bc022771fe374ce8fafc5a12d79bb09f61edebdb4c1a5b8339bd20",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "global_rules_apply_alongside_project_claude_md",
+      "passes": 1,
+      "sampleOutcomes": [
+        true,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        124118,
+        108391
+      ],
+      "toolOutputCharacters": [
+        639,
+        1320
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/investigation_traces_full_call_chain": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "29ff536532809bda3fd8567bb56a7778888b555b03cf1d9b81405e92fc9f458c",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "investigation_traces_full_call_chain",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        64647,
+        64906
+      ],
+      "toolOutputCharacters": [
+        2235,
+        2290
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/local_information_before_external_fetch": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "f62ee432d44a7863a7ea4db292b06c8c3c0ee324f62e181e856b2b98229d73d0",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "local_information_before_external_fetch",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        38067,
+        38116
+      ],
+      "toolOutputCharacters": [
+        413,
+        413
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/multi_file_edit_with_specific_git_staging": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "edeb198e7f26776f295ab1af2722e2fd3f9b734de7713d17bea8d9cfb2767d03",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "multi_file_edit_with_specific_git_staging",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        52013,
+        51513
+      ],
+      "toolOutputCharacters": [
+        621,
+        433
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/naming_uses_descriptive_names_no_abbreviations": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "7e42dbed93a5ee0aab3ba235784423bbce8a74768e9d5fe1a01dfebcaa10716d",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "naming_uses_descriptive_names_no_abbreviations",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        51016,
+        51410
+      ],
+      "toolOutputCharacters": [
+        110,
+        110
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/python_over_bash_for_data_processing": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "ff8644cd1150dac0b24d1df0946eb302a23c6420daef31b55d2a849c568f0282",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "python_over_bash_for_data_processing",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        65132,
+        51291
+      ],
+      "toolOutputCharacters": [
+        409,
+        287
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_browser_for_webpage": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "ac1294b19b52b9fe73171b7070ec766db7f87bd33819ebd865c005c6c414f501",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_browser_for_webpage",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        194386,
+        237802
+      ],
+      "toolOutputCharacters": [
+        34766,
+        74686
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_coding_for_bug_report": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "0088a5745ef6af66fa17a8175ec1ab5e7835bd0316a695df8df11817c54a7482",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_coding_for_bug_report",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        95909,
+        95250
+      ],
+      "toolOutputCharacters": [
+        4687,
+        4742
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_coding_for_commit": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "c60cf5b4bf2be719e4640d3acb1198537a0621bc7aefa659b5f9d35163a66c9b",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_coding_for_commit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        107593,
+        114173
+      ],
+      "toolOutputCharacters": [
+        29572,
+        29383
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_coding_for_worktrees": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "c8061cdbce8f6b9adc1dbb844876e76208edf84774f1f9c02cbffcdb55fe07d7",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_coding_for_worktrees",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        154161,
+        150297
+      ],
+      "toolOutputCharacters": [
+        61694,
+        37062
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_multiple_skills_in_workflow": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "9d2d95af381a24901dd4099ceb4426d91700ffb69ac6ca059530d0c0813f2605",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_multiple_skills_in_workflow",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        190088,
+        268854
+      ],
+      "toolOutputCharacters": [
+        1066547,
+        72017
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_natural_coding_calculator_divide_zero": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "cea59116896e73321febf095c145e53685c8d5837093c5df67f15b5a72376f0f",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_natural_coding_calculator_divide_zero",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        111206,
+        129132
+      ],
+      "toolOutputCharacters": [
+        4628,
+        5424
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_natural_coding_commit_these_changes": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "80f4d6e14545d0026addce49b9edb76316d1efaa044a7d2531ea4b21612631de",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_natural_coding_commit_these_changes",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        67737,
+        67041
+      ],
+      "toolOutputCharacters": [
+        8566,
+        8522
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_natural_coding_parallel_branch": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "3a09694eb154aef903d9966337cf0d67ee1b3c6093071ddd30900075b43a6313",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_natural_coding_parallel_branch",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        117920,
+        81853
+      ],
+      "toolOutputCharacters": [
+        37980,
+        6528
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_natural_nix_apply_edit": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "a1ac90fb0a074f8de0c58fa75d66b84afc9cf3ca43bf2a96e07f1fe2467998c1",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_natural_nix_apply_edit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        385778,
+        573929
+      ],
+      "toolOutputCharacters": [
+        67063,
+        114963
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_natural_nix_postgres_crashing": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "715ac64f6019e026b4beaf492f755db062aa7eceb92c5ef1cc34948a45e1aab5",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_natural_nix_postgres_crashing",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        284583,
+        321702
+      ],
+      "toolOutputCharacters": [
+        116801,
+        256258
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_natural_review_check_diff": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "e807e9adc5dea0203c8b702790b4ba87f19781ba1893519341f4dcddfdde51be",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_natural_review_check_diff",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        92904,
+        91546
+      ],
+      "toolOutputCharacters": [
+        50754,
+        27196
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_nix_for_container": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "f4a10ea752f1edb405daf38c1572b44157e942fe3636544177050d07ef456cf2",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_nix_for_container",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        296739,
+        143600
+      ],
+      "toolOutputCharacters": [
+        49092,
+        33478
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_nix_for_rebuild": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "29bc7be4f1184a58e8378f109f0b6fd1195f9787fb82633ac64ced7807796ece",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_nix_for_rebuild",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        121529,
+        274713
+      ],
+      "toolOutputCharacters": [
+        36926,
+        33312
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_research_for_external_info": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "4fdd7234c24f10b0640c819c57b81721f36af5b951ce14578a753456f6891227",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/research/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_research_for_external_info",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        578471,
+        851233
+      ],
+      "toolOutputCharacters": [
+        248564,
+        328791
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/skill_discovery_review_for_tldr": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "d5a864883176610049fce3cc7f7e640a58af34c6b65b12834a5c879d48e717c5",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "skill_discovery_review_for_tldr",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        89877,
+        86743
+      ],
+      "toolOutputCharacters": [
+        32424,
+        9859
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/srp_splits_monolithic_function": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "9c51fa75338c5efbca644e16f8b6cdda88763369c935746f74c031a58f6c712f",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "srp_splits_monolithic_function",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        112426,
+        67860
+      ],
+      "toolOutputCharacters": [
+        3056,
+        2469
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/test_first_when_bug_reported": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "3adfec4f823179e9d74c831262f7d803f0eb93a3e815c83813856dddf0de5f6b",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "test_first_when_bug_reported",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        91034,
+        103539
+      ],
+      "toolOutputCharacters": [
+        28482,
+        30936
+      ],
+      "type": "instruction"
+    },
+    "end_to_end_workflows/workflow_full_edit_sequence": {
+      "category": "end_to_end_workflows",
+      "costUsd": 0,
+      "fingerprint": "fa5414b8e43443e1a1d7a29ea689ab1d7b14b2e53a485e5e2c1c3cc738db70ec",
+      "heldOut": false,
+      "level": "end-to-end",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "workflow_full_edit_sequence",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        91774,
+        78130
+      ],
+      "toolOutputCharacters": [
+        790,
+        790
+      ],
+      "type": "instruction"
+    },
+    "hooks/nix_edit_is_recorded_without_interrupting_the_turn": {
+      "category": "hooks",
+      "costUsd": 0,
+      "fingerprint": "e25fcf690fceb9ffbefe1a24830033200eca395c394452c423ecaeb5cd94191d",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "nix_edit_is_recorded_without_interrupting_the_turn",
+      "passes": 1,
+      "sampleOutcomes": [
+        true
+      ],
+      "samples": 1,
+      "tokenTotals": [
+        0
+      ],
+      "toolOutputCharacters": [
+        0
+      ],
+      "type": "cli"
+    },
+    "hooks/url_router_blocks_twitter_urls": {
+      "category": "hooks",
+      "costUsd": 0,
+      "fingerprint": "1ef5467a9af672824305c280235942817b689dd5e8935f6bf918898aa4fcea22",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "url_router_blocks_twitter_urls",
+      "passes": 1,
+      "sampleOutcomes": [
+        true
+      ],
+      "samples": 1,
+      "tokenTotals": [
+        0
+      ],
+      "toolOutputCharacters": [
+        0
+      ],
+      "type": "cli"
+    },
+    "instruction_compliance/description_length_awareness": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "1b0ddfe00c2ea8242b05a1ccdfb5a64ee642c0c0e3ab2a2203a110167c75f66d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "description_length_awareness",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        23309,
+        11643
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/evergreen_no_hardcoded_paths": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "c05c6544cee1a0356f3edc25ac7af38c5811721997719a1cdfd34715857f3e78",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "evergreen_no_hardcoded_paths",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22573,
+        22569
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/formatting_after_edits": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "5d2a9a959dced43d4236ed837a77b1d6a942f97fab5eeeb91c2ef10accb1133b",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "formatting_after_edits",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26099,
+        26244
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/hardskill_belongs_in_scripts": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "cd4abcb799b1523d92990267276a4f71c50aad4a22b01bb95d262e4230507767",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "hardskill_belongs_in_scripts",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22610,
+        22643
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/instruction_surface_authority": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "2bd9ab8643353e02001246681c05e9a2b66b36d831720bbe0b0aa803ad887609",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/agent-workflows/agent-harness/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "instruction_surface_authority",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21939,
+        21945
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/no_comments_principle": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "4df2f794dab30a89687dd25801e6db950a679f09e18d3f095323f7b303ba4103",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "no_comments_principle",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11261,
+        11298
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/python_default_over_bash": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "81dd496ba047d8bff8c6b668da38477998f51d819cb7bb46f286849472fa7f9c",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "python_default_over_bash",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        13017,
+        12979
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/specific_file_staging": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "533689e4619b62daefd54dc43337a39fb5164e592df02ab19f2924be82a18da2",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/references/git.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "specific_file_staging",
+      "passes": 1,
+      "sampleOutcomes": [
+        true,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21633,
+        32225
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/test_first_principle": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "4dd39568b2dff738888c7a3edb8cfcde45f11b69fabec76ad130eb12083d398e",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/references/testing.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "test_first_principle",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10550,
+        10519
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "instruction_compliance/workflow_model_calls_are_budgeted": {
+      "category": "instruction_compliance",
+      "costUsd": 0,
+      "fingerprint": "49c08eeffcc3242030b33b79daf6a131effcdda974a4092269ebf1c8230a611d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/agent-workflows/agent-harness/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "workflow_model_calls_are_budgeted",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        23682,
+        23711
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "integration_workflows/no_comments_in_code": {
+      "category": "integration_workflows",
+      "costUsd": 0,
+      "fingerprint": "baae8627970587f553966ed86d5a9d2f54af4e80756a6b4a1391bc1310498fb8",
+      "heldOut": false,
+      "level": "integration",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "no_comments_in_code",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        63906,
+        51029
+      ],
+      "toolOutputCharacters": [
+        185,
+        190
+      ],
+      "type": "instruction"
+    },
+    "integration_workflows/no_comments_unprompted": {
+      "category": "integration_workflows",
+      "costUsd": 0,
+      "fingerprint": "7093ebd181c804aeee57cc79fac040949bd89c15fd5684280f7fffcfa945f1ea",
+      "heldOut": false,
+      "level": "integration",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "no_comments_unprompted",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        63766,
+        51330
+      ],
+      "toolOutputCharacters": [
+        29412,
+        99
+      ],
+      "type": "instruction"
+    },
+    "integration_workflows/realistic_bug_fix_multi_file": {
+      "category": "integration_workflows",
+      "costUsd": 0,
+      "fingerprint": "98f00edceb1bbc2fb5ae8d17ba0e5ea01c7ee1e59de4a88e341dd2a87f5041fc",
+      "heldOut": false,
+      "level": "integration",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "realistic_bug_fix_multi_file",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        167341,
+        115290
+      ],
+      "toolOutputCharacters": [
+        7813,
+        6813
+      ],
+      "type": "instruction"
+    },
+    "integration_workflows/refactor_enforces_naming_conventions": {
+      "category": "integration_workflows",
+      "costUsd": 0,
+      "fingerprint": "038e44dddeb8380927ec78b872680019e1cd6dcd17a5798141f75427dc22bba6",
+      "heldOut": false,
+      "level": "integration",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "refactor_enforces_naming_conventions",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        96734,
+        53665
+      ],
+      "toolOutputCharacters": [
+        1958,
+        715
+      ],
+      "type": "instruction"
+    },
+    "integration_workflows/workflow_sequence_nix_edit": {
+      "category": "integration_workflows",
+      "costUsd": 0,
+      "fingerprint": "2040efff13225486a5b73c18f6a35c838c8dce6157cdcbac10a8db94a3c530f6",
+      "heldOut": false,
+      "level": "integration",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "workflow_sequence_nix_edit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        108174,
+        132782
+      ],
+      "toolOutputCharacters": [
+        2956,
+        32347
+      ],
+      "type": "instruction"
+    },
+    "investigation/evidence_before_conclusions": {
+      "category": "investigation",
+      "costUsd": 0,
+      "fingerprint": "9bb79801606219638ef6af525ab2d4ce4479e2178c95ce5c911af94cd426e286",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "evidence_before_conclusions",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11412,
+        11472
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "investigation/investigation_depth_matches_stakes": {
+      "category": "investigation",
+      "costUsd": 0,
+      "fingerprint": "59d04db0da0906ac17c0e3bbdeaa76845807419299ece7b0744d19295c457185",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "investigation_depth_matches_stakes",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        23111,
+        23140
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "investigation/investigation_keeps_plan_provisional": {
+      "category": "investigation",
+      "costUsd": 0,
+      "fingerprint": "63e19a0d85bae31d5a3009d4e020b70e71e8cb176c9cb7fd67b7a08c94d81335",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "investigation_keeps_plan_provisional",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11328,
+        11260
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "investigation/investigation_traces_to_instructions": {
+      "category": "investigation",
+      "costUsd": 0,
+      "fingerprint": "54030dd98f73cafec03eee9c1fad8506131ce6ee8723091b7fae5b73fa66199d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "investigation_traces_to_instructions",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        23298,
+        23317
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "investigation/never_analyze_in_isolation": {
+      "category": "investigation",
+      "costUsd": 0,
+      "fingerprint": "3cd02aec4e59b419cd32a911d232ecbbdc014db82ac097cf6c303a15d781a565",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "never_analyze_in_isolation",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        23001,
+        23090
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "investigation/why_question_triggers_investigation": {
+      "category": "investigation",
+      "costUsd": 0,
+      "fingerprint": "e9a6349e718cd5bc430744a6d8f177560bf75f209be519cafb905100ac1b2bdc",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "why_question_triggers_investigation",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11362,
+        11398
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "investigation/why_two_files_requires_reading_both": {
+      "category": "investigation",
+      "costUsd": 0,
+      "fingerprint": "7833f2abc08dec076047ce61d275a755ae2421524ed6c21b0d4fc81933686687",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "why_two_files_requires_reading_both",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22907,
+        34219
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "rebuild_mandate/rebuild_and_ci_both_gate_response": {
+      "category": "rebuild_mandate",
+      "costUsd": 0,
+      "fingerprint": "1867e049e06c60962ee65fef4ee29b30b92c3f6d5a5e6676ef0e92a9094ff5fe",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "rebuild_and_ci_both_gate_response",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12999,
+        12986
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "rebuild_mandate/rebuild_commit_then_rebuild_then_push_then_ci": {
+      "category": "rebuild_mandate",
+      "costUsd": 0,
+      "fingerprint": "0600e3437ea137ba37c81998700585ca247659e2bd3ba6ee69405b9c2f043fb0",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "rebuild_commit_then_rebuild_then_push_then_ci",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26181,
+        26078
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "rebuild_mandate/rebuild_is_primary_verification": {
+      "category": "rebuild_mandate",
+      "costUsd": 0,
+      "fingerprint": "439c163424d3126e7d0f3aa55177dcd3d5022b1fbe26fa067160bcc47a2198bf",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "rebuild_is_primary_verification",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26380,
+        26572
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "rebuild_mandate/rebuild_untested_is_hypothesis": {
+      "category": "rebuild_mandate",
+      "costUsd": 0,
+      "fingerprint": "ddf924a5c4b63392dc7ad0fb5084b25e04e3450bc6561f22bdba0684849b916e",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "rebuild_untested_is_hypothesis",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12891,
+        12888
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "review/review_flags_hardcoded_credentials": {
+      "category": "review",
+      "costUsd": 0,
+      "fingerprint": "8632c20ba6c1a8f240c535af429b659ed4dc15a9335143247c5492267981a76a",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "review_flags_hardcoded_credentials",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10975,
+        10925
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "review/review_flags_obvious_null_dereference": {
+      "category": "review",
+      "costUsd": 0,
+      "fingerprint": "0a4443fa56440272208c7ac355848534c5f02510952a6d643b1af71eabaf853d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "review_flags_obvious_null_dereference",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10975,
+        11003
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "review/review_goal_verification_judges_quality_without_repairing": {
+      "category": "review",
+      "costUsd": 0,
+      "fingerprint": "b43580330446d50446d393e8cc16ae95bd9bc70fb3a5963a7e261092c77e7c3d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "review_goal_verification_judges_quality_without_repairing",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10844,
+        10869
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "review/review_ignores_preexisting_unchanged_lines": {
+      "category": "review",
+      "costUsd": 0,
+      "fingerprint": "8bce359e3f8cb7bd274f5d7bc471ee09f8943b14f69d38dac94a05a0b7f6a739",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "review_ignores_preexisting_unchanged_lines",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10780,
+        10762
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "review/review_ignores_style_preferences": {
+      "category": "review",
+      "costUsd": 0,
+      "fingerprint": "b2854f1b2fe59cb7a4bb08b84525ba71fba582371e420031bb64f19bc18b3f27",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "review_ignores_style_preferences",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10755,
+        10733
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "review/review_omits_speculation": {
+      "category": "review",
+      "costUsd": 0,
+      "fingerprint": "bcb9667433f691b3b86fcdceaee5e68663246b8632ec10119f5934f3c22d1629",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "review_omits_speculation",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10592,
+        10592
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "review/review_requires_actionable_evidence": {
+      "category": "review",
+      "costUsd": 0,
+      "fingerprint": "49c3e4ea281e2f85f47af1b89c9ceb5a5c949c9b8f87f164eb20bbd4b9907524",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "review_requires_actionable_evidence",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10643,
+        10679
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_ambiguous_browser_vs_personal_tweet_scraping": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "7303c30bd9e6bfc2c2fad2f49b31bf41df96a7ae177fda341689e2ad4b2291ef",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_ambiguous_browser_vs_personal_tweet_scraping",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11040,
+        11030
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_ambiguous_git_history_vs_research": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "093d1a4353ca6f97343f84834bc456c04656e1d551f46f04e16e38566a53852b",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_ambiguous_git_history_vs_research",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11023,
+        11023
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_ambiguous_research_vs_browser": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "14e87339ad5cd44f7018d1df98b6756cdd97d9551e6a8279d2959853b56c06e8",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_ambiguous_research_vs_browser",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11045,
+        11043
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_agent_session_compact": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "a53b1544836bc96e5465b6f7bb465494c9251ebe220d62e9f165b2673bd2fb9f",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_agent_session_compact",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10998,
+        10998
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_agent_session_exit": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "c1e992ef1a2652312cb65766edee9355472cfd53435558560560000a8e32c42f",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_agent_session_exit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11001,
+        11004
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_agent_session_restart": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "535c1c750b512ac10db5adf0cd7cae3f92e329dfc41c0b7845e89788633d676e",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_agent_session_restart",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11018,
+        11001
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_all_skills_for_a_desktop_screenshot": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "1e21196608f8c2ee56706845cfd90fb2f50f5054f9fea3061ba48efb8a85447c",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_all_skills_for_a_desktop_screenshot",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11027,
+        11032
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_architecture_for_a_boundary_decision": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "a7f5ffb53e75a9e6e61a2cf6c351a1ced8d635be000376a81e00ea4e299dc19b",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_architecture_for_a_boundary_decision",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11026,
+        11026
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_architecture_for_where_a_boundary_lives": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "fc4fd462f85eaea67137c1fcceb497c041c2f58ea1025ad5b16e017ab81911d7",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_architecture_for_where_a_boundary_lives",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11044,
+        11039
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_browser_electron_app": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "5fbe2c8b96db953e109dcf18738ff86fd46e9ac4f3215ce76423eee0185cce3f",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_browser_electron_app",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11035,
+        11032
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_browser_for_a_logged_in_download": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "52952d8f8e09233a61db32fb502a5e87acef77dd6e496a54c8eb75d5a4b779fc",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_browser_for_a_logged_in_download",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11027,
+        11028
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_browser_form_filling": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "8e5a86677f3eabc5899a24b6cdb6618386cbad29dc46006a750a4191bb928c32",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_browser_form_filling",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11026,
+        11030
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_browser_interactive_scrape": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "ed87730b9cacfe1730d083ce65b7d7c69d52aeff3681a6737b89c06008f902d7",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_browser_interactive_scrape",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11035,
+        11030
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_browser_web_scraping": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "b877cb0e5429c543bbaf7d2ab754cb64f0bc49f964ec50cc7f9bf04c7d42b834",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_browser_web_scraping",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11004,
+        11028
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_commit": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "93844350b75cadbd4dc0bf9231a6907546344ace8ca8d4e13411e6d7d80b3f35",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_commit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11023,
+        11021
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_commit_staging": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "38e0a36e9c6fd1b334358cf9ca88a98e7bca17a1a3a09fd4ec08deb83defb7ce",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_commit_staging",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11022,
+        11007
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_for_a_function_cleanup": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "187744edfeb1dc60c5dec04401fabf8820f76b7b5bf5f52a49909ec4555b7ba0",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_for_a_function_cleanup",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11033,
+        11028
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_history_find_when_changed": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "17ab6efb3ebbac31a911c7def641105892b433d46c2889936391c25b61f4acfa",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_history_find_when_changed",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11023,
+        11033
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_history_investigate_past": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "056e9d94cd561ff008578e4fd252c2c79a87b4b0316c664950613ed579f795c5",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_history_investigate_past",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11040,
+        11038
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_history_search_commits": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "5cfc76536312881b52d6a2f85cd3beffa9550e88f77ce2f5bb34ef568b55ba93",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_history_search_commits",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11034,
+        11027
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_history_trace_evolution": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "6a05c04e8a620e90840e562136f988506611ddcab7489b65d5efb4c6c270b75b",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_history_trace_evolution",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11039,
+        11037
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_test_verification": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "d477e2649c98826c35825de8a5d954a3b47e431f9419f99f2d316c5529649ade",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_test_verification",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11017,
+        11022
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_worktree_isolation": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "9e0bd39de23868998a20b54bc04f0572d8c12d401212353c2717b2b0043670c1",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_coding_worktree_isolation",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11034,
+        11031
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_deep_work": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "a042ec597492729ab9d9623f67796f3dc7d3e1e84ecb810e3be2196e144ea563",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_deep_work",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11010,
+        11023
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_deliver_an_objective_end_to_end": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "29a456be1948262e7e41ba6b4542f5088da07d4698fe73eeafe51be4772f0314",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_deliver_an_objective_end_to_end",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11019,
+        11042
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_devenv_shell_setup": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "92c4881d20e539f65c3ef772f929202040769d02118080fd3abbc5b108ca5301",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_devenv_shell_setup",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11014,
+        11057
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_docs_for_whether_a_readme_earns_its_place": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "1cbb8b0967b471afc1c146d42d48de7ed3ede8b7441b3c29545071fd45e02267",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_docs_for_whether_a_readme_earns_its_place",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11043,
+        11034
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_docs_readme_standards": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "f10d0b994bce8a4dbbc8ae89345e0e46ccc60067171ae5ee80c40a5f302f61bb",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_docs_readme_standards",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11039,
+        11037
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_explore_for_a_repo_sweep": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "264cc59a7b8da72ea491d1bc6d8db11d499cc3d46d31de3c726ba6c22edf0fa9",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_explore_for_a_repo_sweep",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11036,
+        11030
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_explore_for_where_hooks_are_configured": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "a74b3702c61c1e77302fd6816b27e06727821a2ad6718390927a67c6780a467c",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_explore_for_where_hooks_are_configured",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11054,
+        11041
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_forge_open_a_merge_request": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "419b587470362db87269a6a2f205fbb0c93607d21f5c7d49177d1fd166b261f0",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_forge_open_a_merge_request",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11029,
+        11022
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_forge_read_failing_pipeline": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "b4fadf18abd82e4509adcd25630d7ea6a650e6fd084b6ebf9ddc0e2d71ef0e92",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_forge_read_failing_pipeline",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11033,
+        11058
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_forge_resolve_review_threads": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "cf490ddf8585500a364e0c88108dd71ccc90af517490a892d252fefeae86b5e1",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_forge_resolve_review_threads",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11035,
+        11027
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_goal_prompt_for_a_scheduled_agent": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "75a885c684d54d48d0b81367f1d3e52cc99d9f3ee7de6390882c327396ddd744",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_goal_prompt_for_a_scheduled_agent",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11039,
+        11028
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_herdr_for_a_new_pane": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "f5061594df37a608e0b055ca2017393ac85dc7d34c4480b1f8b20fa71d6e834c",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_herdr_for_a_new_pane",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11027,
+        11033
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_home_assistant_ac_control": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "1933f98cdaf1b620ca597b386526dc0bc739db901da42ea981e3a5448ce63440",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_home_assistant_ac_control",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11027,
+        11030
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_home_assistant_lights": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "a3efad9b8cfa3bf7f08a971f518650e067f0fec09650bc393644fb99a2ad3baa",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_home_assistant_lights",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11027,
+        11027
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_humanize_for_a_merge_request_description": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "7faab008c3c9e9da1983b194370add4a5b03271eadee24de78a719721a9676b6",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_humanize_for_a_merge_request_description",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11058,
+        11050
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_instructions_for_a_new_skill_file": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "8219db666b72ed80dda3bc27c86e01ea8bdba862e100214e0c8a0a9fe04dbe62",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_instructions_for_a_new_skill_file",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11035,
+        11048
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_instructions_skill_creation": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "d53a17729c737e37bd28fd109c0be26a9d20de8ddc4e5953221e10ddf769ff41",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_instructions_skill_creation",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11042,
+        11037
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_instructions_skill_routing_failure": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "5a733def921b5325fcd769c2fba1ce768ed0d9725c0550c2d6ea853f87997d72",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_instructions_skill_routing_failure",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11087,
+        11089
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_machine_resources": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "aa8bfc44199a90062030f6a79e6e8f566b71a57bfd704033f391af3c16f796a9",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_machine_resources",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11034,
+        11030
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_media_youtube_search": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "5d59aec7514be359685f10e0a4e1ec581cd521e6bdff4aae6146beb614749526",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_media_youtube_search",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11033,
+        11035
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_notify_task_completion": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "3a524c82f32b593bdc4138f38b7ab0345cddbca0f6fb1f590ff254ed7873a20a",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_notify_task_completion",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11025,
+        11027
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_orchestrate_same_goal_delegation": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "e1efb21404ca44926ca39c141e55549c89a1f4f17d18b4484b0ddb32e6cab08f",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_orchestrate_same_goal_delegation",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11051,
+        11043
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_personal_bare_twitter_url": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "0b3fd720dfa2283b996d87c65a6b53a9abcbb3254dcd854c57bc7fafd1a0ff30",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_personal_bare_twitter_url",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11037,
+        11022
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_personal_bare_xcom_url": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "dba60c1bb9d695566f2fa66809fe78143597eb0d08b4e4ad5f9724b396d84a3a",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_personal_bare_xcom_url",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11042,
+        11038
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_personal_tweet_media_fetch": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "bc3b43ed855bac6a758c86673ffaa6db5d41448e72dab94ecc293f91777b0bf5",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_personal_tweet_media_fetch",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11041,
+        11027
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_personal_twitter_post": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "352d98fd3c93e48ee6f20eb909874ac40bd0392b3721bfcb785c2f185df9d5e1",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_personal_twitter_post",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11031,
+        11026
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_personal_twitter_scrape": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "3b1eced6e8ae340b5e774e7c8e375304fac2d54cf17414bcfa6adc2a11108ffa",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_personal_twitter_scrape",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11031,
+        11020
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_personal_xcom_url_what_does_it_say": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "f9a7856a8140b84cda3258351f6fca6f34b7b60dbac43cf5131855ee47e4d511",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_personal_xcom_url_what_does_it_say",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11038,
+        11036
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_personal_xcom_url_with_context": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "93492b6e1f558fc37ad6d3a19ab06b769356e2875704bf4ddb2ede3e9c24076d",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_personal_xcom_url_with_context",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11177,
+        11121
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_phone_status_battery": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "0c81bd8fe94ed064d7cfa09909b94eb074dcb1efcdf86992f12eb5391cd5f5c7",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_phone_status_battery",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11018,
+        11018
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_ponto_time_tracking": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "480824be460a9cd016fa03a52950a6e49b4eb4a2ec5cc3827d70279da295003b",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_ponto_time_tracking",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11046,
+        11041
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_process_design_before_agents_run": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "706c542068bbd7afd5e2412b835542d82c575d273f77017999d6a1e899fdf6ac",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_process_design_before_agents_run",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11023,
+        11021
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_process_design_redraw_a_pipeline": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "42ce24cbd91ad46e0ba8d9cbba51fba429632fe0008744d8cab9175e4a22ece8",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_process_design_redraw_a_pipeline",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11046,
+        11039
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_quickshell_bar_module": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "39f6e1195d21119c720a7e6ccf822d3148da16f815e4af84168b1501ebf46cae",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_quickshell_bar_module",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11040,
+        11026
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_research_digest": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "9847ca6783c2f08c84a8ce27c390eb5312947b15a1abce7a7745d7d05bf0137a",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_research_digest",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11011,
+        11026
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_research_for_latest_release_notes": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "266ba043d58d0ac79af2cd4db3f7aaeb603c22bcd9063e3bbdd50be15a213f28",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_research_for_latest_release_notes",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11048,
+        11054
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_research_tool_comparison": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "b5842f141c431cb97dcb6ab08d9e77b03cde9e0e7dd13ef2b1ce7cdbaaa19713",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_research_tool_comparison",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11021,
+        11006
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_review_for_a_diff_before_merge": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "f99f502491e7f42e1cdbd5a0a4c227a3faf53ccd5e709c7463426be0bb72a149",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_review_for_a_diff_before_merge",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11015,
+        11014
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_review_for_an_instruction_file_audit": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "32b1b5d9cef956e4fc0d3089fb9254267e78ab22bc6d3508fca69ea236c05509",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_review_for_an_instruction_file_audit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11087,
+        11058
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_review_for_an_unbiased_reviewer_pass": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "f7782ab031f1358c7f05aa3265a11c62be3acb5f6fafa622979218977f1127ca",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_review_for_an_unbiased_reviewer_pass",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11046,
+        11097
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_review_for_the_final_pass": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "73521154d717d092a53a31d3f03f0eed71a41859cab57f488b22fde23a676067",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_review_for_the_final_pass",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11041,
+        11041
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_ril_capture_backlog": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "1c285726dfabcf2460c672bf0a61926cb57b1b76d31668e070d3bcac6064347b",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_ril_capture_backlog",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11076,
+        11066
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_ril_inbox_processing": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "a5dceebe4e77fca39cc69743242ac4501c73290f61e5bc38392c70a39e05a029",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_ril_inbox_processing",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11033,
+        11036
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_tmux_control": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "bd12f5acbd096cb7ae85296f6ca7f0965d3d0903fde615da0f1efbbc189a0688",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_tmux_control",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11018,
+        11006
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_url_shortener_for_a_query_url": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "e8602a05b90232187043633c1775cd69c1f149fdcbacd14717b64da0958c819f",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_url_shortener_for_a_query_url",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11019,
+        11026
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_url_shortener_for_a_terminal_link": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "803614fb3dd2f383979e85765641bf60f24fef27a3dc97885f16126042f10764",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_url_shortener_for_a_terminal_link",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11037,
+        11038
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_wellput_for_a_reply_the_reader_could_not_follow": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "686db3bf26f018a0260c87c0cbdf22ddbd34035b9fd77105d23aca04f81c0579",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_wellput_for_a_reply_the_reader_could_not_follow",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11046,
+        11041
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_wellput_for_an_overlong_reply": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "b47f8ea1a2e13e02a58479599a8e2f7ef5df29ab8640cec4a017aeaa03929ca7",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_wellput_for_an_overlong_reply",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11072,
+        11062
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_workspace_for_another_repository": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "3a97473b377bea331a3c3c177593e7e2ccd371c508f7045ce6284ca2014ec065",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "routing_to_workspace_for_another_repository",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11048,
+        11045
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/browser/browser/browser_keeps_explicit_chrome_devtools_choice_during_recovery": {
+      "category": "skills/browser/browser",
+      "costUsd": 0,
+      "fingerprint": "8c0f2fc5246a903ef2bddf2e08328faa2dc705d84cb8d0477bdbf7712f7361e8",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "browser_keeps_explicit_chrome_devtools_choice_during_recovery",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11400,
+        11403
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/browser/browser/browser_reports_blocked_when_autonomous_agent_requires_chrome_devtools": {
+      "category": "skills/browser/browser",
+      "costUsd": 0,
+      "fingerprint": "8e2c543ddfddbe96f4fad75346e1a791eecbdac0eff19aa1280366d13dc1a994",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "browser_reports_blocked_when_autonomous_agent_requires_chrome_devtools",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11488,
+        11404
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/browser/browser/browser_uses_chrome_devtools_for_public_scraping_when_available": {
+      "category": "skills/browser/browser",
+      "costUsd": 0,
+      "fingerprint": "0ce6518d226ed3e48ff735b759d0c6a10d06589a53766c82577d26dad9c165e6",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "browser_uses_chrome_devtools_for_public_scraping_when_available",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11394,
+        11390
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/browser/browser/browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails": {
+      "category": "skills/browser/browser",
+      "costUsd": 0,
+      "fingerprint": "3f4063acc9dc6c41dc2c5addcda083e86c16f2dc49f2d136414de50b730dcae8",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11479,
+        11488
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/git/commit_matches_repository_convention": {
+      "category": "skills/coding/git",
+      "costUsd": 0,
+      "fingerprint": "ff05308ffe6a0e018295451194c25b58e6a673d7ab1b6ce90a79570da70cbecc",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "commit_matches_repository_convention",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11140,
+        22159
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/git/commit_reads_diff_first": {
+      "category": "skills/coding/git",
+      "costUsd": 0,
+      "fingerprint": "e5c9a9466184e2c12be0f63f32fc871d0164078a911bd820e49f7e4e47ab159b",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "commit_reads_diff_first",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11030,
+        11003
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/git/commit_uses_specific_staging": {
+      "category": "skills/coding/git",
+      "costUsd": 0,
+      "fingerprint": "8ae65bc51305325f806438d675499e662eb232f4b5fcf8d75ab674e67e122a45",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "commit_uses_specific_staging",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21957,
+        21931
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/git/git_history_cache_invalidation": {
+      "category": "skills/coding/git",
+      "costUsd": 0,
+      "fingerprint": "2f3d1398932942b854b37e5a3613cec2d4b2c6bf7a624f750b24e20bdcbb833c",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "git_history_cache_invalidation",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22332,
+        22148
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/git/git_history_file_paths_are_high_signal": {
+      "category": "skills/coding/git",
+      "costUsd": 0,
+      "fingerprint": "9fa9d940453cdaf9abe94dd1edea258f188e75269786f89cfb295a03e0d90786",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "git_history_file_paths_are_high_signal",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11560,
+        11561
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/git/git_history_knows_when_not_to_use": {
+      "category": "skills/coding/git",
+      "costUsd": 0,
+      "fingerprint": "45b54ad07f86f1a50ed41d46db3126ab7d528fe73582a2d0e323bf817a4bf7dd",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "git_history_knows_when_not_to_use",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11119,
+        22046
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/git/git_history_never_uses_repeated_grep": {
+      "category": "skills/coding/git",
+      "costUsd": 0,
+      "fingerprint": "8b92a2ef05f150f0c8cf0f408292d64b9dddbe5789d4b6ae4b6adb783325044b",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "git_history_never_uses_repeated_grep",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        23769,
+        23817
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/testing/test_behavioral_evidence_does_not_prove_root_cause": {
+      "category": "skills/coding/testing",
+      "costUsd": 0,
+      "fingerprint": "5bef9232ecbcb67d8be2165f64abdff2958f4c3d1b4ef96e84c34ea1d73bd70f",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "test_behavioral_evidence_does_not_prove_root_cause",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10873,
+        10867
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/testing/test_first_before_fix": {
+      "category": "skills/coding/testing",
+      "costUsd": 0,
+      "fingerprint": "bfca9c8025bbba9fc0891f9f307dedc2612df147c92ba0fc8d52572e3a3243bb",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "test_first_before_fix",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10794,
+        10779
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/testing/test_verification_scales_to_relevant_evidence": {
+      "category": "skills/coding/testing",
+      "costUsd": 0,
+      "fingerprint": "97d6fc9fdbdd3927f2675eedfb9e056b23a64df9bfe00d1a56d71efbfa7af36b",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "test_verification_scales_to_relevant_evidence",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10895,
+        10869
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/worktrees/worktrees_never_checkout_main": {
+      "category": "skills/coding/worktrees",
+      "costUsd": 0,
+      "fingerprint": "2fcc6b141babb60360c137eba7be7aa760f35b3154486c18da1a70f5ec9ed4be",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "worktrees_never_checkout_main",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10964,
+        10958
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/coding/worktrees/worktrees_pr_from_main_directory": {
+      "category": "skills/coding/worktrees",
+      "costUsd": 0,
+      "fingerprint": "ff52b4d01b3934caaaa5f00027af0bdea790bfcc649b287f49df066107001613",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "worktrees_pr_from_main_directory",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11131,
+        22154
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/commit_skill_matches_repository_conventions": {
+      "category": "skills",
+      "costUsd": 0,
+      "fingerprint": "cd354b671fd961f66093cd820addb859abee7aac27c94edea0083915090723c4",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "commit_skill_matches_repository_conventions",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11012,
+        10984
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/desktop/navigation/desktop_routes_to_clipboard": {
+      "category": "skills/desktop/navigation",
+      "costUsd": 0,
+      "fingerprint": "248546f36c3c9f64dce20dda562aac0e514c06b9d6c92ee742b8c1aab15042db",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "desktop_routes_to_clipboard",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21240,
+        21243
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/desktop/navigation/desktop_routes_to_keyboard": {
+      "category": "skills/desktop/navigation",
+      "costUsd": 0,
+      "fingerprint": "4d07244e2e0cc1b9ef50a269312f366523e77db4275c08ad3afe6354837760f9",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "desktop_routes_to_keyboard",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10561,
+        10545
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/desktop/navigation/desktop_routes_to_media_control": {
+      "category": "skills/desktop/navigation",
+      "costUsd": 0,
+      "fingerprint": "97bb78f035e6452d4ab76c678e099f7239bd896c343abfa204fe921df44aea58",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "desktop_routes_to_media_control",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21332,
+        21330
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/desktop/navigation/desktop_routes_to_mouse": {
+      "category": "skills/desktop/navigation",
+      "costUsd": 0,
+      "fingerprint": "b3512b42176e3246ae73384aa8e9110eafefaaa23ccbfc035de51fcd24e21a13",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "desktop_routes_to_mouse",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10559,
+        21229
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/desktop/navigation/desktop_routes_to_screenshot": {
+      "category": "skills/desktop/navigation",
+      "costUsd": 0,
+      "fingerprint": "21191ae695437f579a7b21b02fe5bb617d88654dd1bb2045b6ea4df9834317fe",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "desktop_routes_to_screenshot",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21178,
+        21172
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/nix/rebuild/rebuild_applies_configuration_directly": {
+      "category": "skills/nix/rebuild",
+      "costUsd": 0,
+      "fingerprint": "5051ed4648a0e4d14906b39d3fb407cdbdef224b8201822925db5927af59e29a",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "rebuild_applies_configuration_directly",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11278,
+        11299
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/nix/rebuild/rebuild_background_execution": {
+      "category": "skills/nix/rebuild",
+      "costUsd": 0,
+      "fingerprint": "84f6806ac5550136778c032c1cfa71f22e768d43d599da0093e289ed3624a36f",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "rebuild_background_execution",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22912,
+        22977
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/nix/rebuild/rebuild_output_to_file_not_pipe": {
+      "category": "skills/nix/rebuild",
+      "costUsd": 0,
+      "fingerprint": "b848b8b3ade9507c1190b72a64fcebdfa15213385b15c7f9223961e0abcac9cb",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "rebuild_output_to_file_not_pipe",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11399,
+        22686
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/nix/rebuild/rebuild_stages_nix_files_first": {
+      "category": "skills/nix/rebuild",
+      "costUsd": 0,
+      "fingerprint": "08114e89a4c85cbddb7b562c5d8291b74a30b43a6b4e322bfb815689910f101c",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "rebuild_stages_nix_files_first",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11308,
+        11235
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/nix/repo/dotfiles_directory_structure": {
+      "category": "skills/nix/repo",
+      "costUsd": 0,
+      "fingerprint": "d5eb26eddabb48f17cc42b32b4fa14961b36ddbcd8cee3df5b4719b9d11be3ea",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "dotfiles_directory_structure",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        24010,
+        24060
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/nix/repo/dotfiles_isnixos_detection": {
+      "category": "skills/nix/repo",
+      "costUsd": 0,
+      "fingerprint": "58385784ac33630d29e3ee14b1091f8178357e185c74d62481cdf9916405ea72",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "dotfiles_isnixos_detection",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        24300,
+        24351
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/nix/repo/nix_explains_lazy_evaluation_and_fixed_points": {
+      "category": "skills/nix/repo",
+      "costUsd": 0,
+      "fingerprint": "a6077b1c061cfce1bec8175ab6c5d7e02410589302d02d313ec80dfbbd999763",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "nix_explains_lazy_evaluation_and_fixed_points",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26607,
+        26435
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/obsidian/obsidian/obsidian_capture_inbox_belongs_to_ril": {
+      "category": "skills/obsidian/obsidian",
+      "costUsd": 0,
+      "fingerprint": "2107609dad0cf1942da6258aa03deda37abecd32d3b5d151e7eae9f804848a26",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/obsidian/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "obsidian_capture_inbox_belongs_to_ril",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10453,
+        10528
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/obsidian/obsidian/obsidian_names_the_two_vault_zones": {
+      "category": "skills/obsidian/obsidian",
+      "costUsd": 0,
+      "fingerprint": "9b2c9c7982ef3cbeca7bb817215579a500bcb23723e7e0fc88d738b015f76bd6",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/obsidian/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "obsidian_names_the_two_vault_zones",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10387,
+        10486
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/obsidian/obsidian/obsidian_second_brain_contract_is_read_not_recalled": {
+      "category": "skills/obsidian/obsidian",
+      "costUsd": 0,
+      "fingerprint": "8dd727c6da9f99a4d87d8206663afa73c0a946df0a0a1825c49896256a47b65d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/obsidian/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "obsidian_second_brain_contract_is_read_not_recalled",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21035,
+        21102
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/obsidian/obsidian/obsidian_sync_contention_is_not_a_fault": {
+      "category": "skills/obsidian/obsidian",
+      "costUsd": 0,
+      "fingerprint": "419fd2162f98bfff5317998f04211a8c0dbce5e0dcd5341d677e4e0569dcaa38",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/obsidian/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "obsidian_sync_contention_is_not_a_fault",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21053,
+        21079
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/quickshell/navigation/quickshell_knows_bar_ipc": {
+      "category": "skills/quickshell/navigation",
+      "costUsd": 0,
+      "fingerprint": "ac4a47a4af45046ecea794c0d423a64d33cfcdc438e71359f13fb67914a30ea4",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "quickshell_knows_bar_ipc",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21978,
+        22046
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/quickshell/navigation/quickshell_knows_ipc_for_overview": {
+      "category": "skills/quickshell/navigation",
+      "costUsd": 0,
+      "fingerprint": "4d50d00f1d416d702752dbb5cb0426c0979e9135737b3043c2ed813c93f0032f",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "quickshell_knows_ipc_for_overview",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10919,
+        10918
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/quickshell/navigation/quickshell_knows_overview_config_location": {
+      "category": "skills/quickshell/navigation",
+      "costUsd": 0,
+      "fingerprint": "f91f1cfa0611ab019dded2b076fb3c58fdcd32b1c8babac512378e803620105b",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "quickshell_knows_overview_config_location",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21887,
+        10934
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/quickshell/navigation/quickshell_knows_service_restart": {
+      "category": "skills/quickshell/navigation",
+      "costUsd": 0,
+      "fingerprint": "8fed5aafc349cfa7534d106759093b9c7edd1962eff7fbcc78c4c557bc2e811a",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "quickshell_knows_service_restart",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        22224,
+        22406
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/quickshell/navigation/quickshell_knows_theme_integration": {
+      "category": "skills/quickshell/navigation",
+      "costUsd": 0,
+      "fingerprint": "e8b5b7a4f597644474c596246261931372c017eb4be7500a06179983eed0ae77",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "quickshell_knows_theme_integration",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21966,
+        22045
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/ril/ril/ril_claim_collision_stops_the_run": {
+      "category": "skills/ril/ril",
+      "costUsd": 0,
+      "fingerprint": "55560d1c27ef7587e22d3c23a62420b44d5b8703f73c6b7f69803fa55372b48c",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "ril_claim_collision_stops_the_run",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12174,
+        12172
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/ril/ril/ril_completed_capture_is_not_a_claim_collision": {
+      "category": "skills/ril/ril",
+      "costUsd": 0,
+      "fingerprint": "1b0c4b5289957d5627e81715534cbe98ef4708dd78ab9fa8d9dec6a4928bebd1",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "ril_completed_capture_is_not_a_claim_collision",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12223,
+        12212
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/ril/ril/ril_marks_done_only_through_the_cli": {
+      "category": "skills/ril/ril",
+      "costUsd": 0,
+      "fingerprint": "890bc3009319ddfa3b837d0d9e745eb6f03a2d6aa2cca62c7e89fcae759926ff",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "ril_marks_done_only_through_the_cli",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12208,
+        12211
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/ril/ril/ril_never_annotates_a_capture": {
+      "category": "skills/ril/ril",
+      "costUsd": 0,
+      "fingerprint": "f7c19a69ea2d7b5a2f67d88f1a7871a509ae422329e39a3f5fb90f7181fde1ba",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "ril_never_annotates_a_capture",
+      "passes": 1,
+      "sampleOutcomes": [
+        false,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12387,
+        12277
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/ril/ril/ril_proves_an_adopt_before_proposing_it": {
+      "category": "skills/ril/ril",
+      "costUsd": 0,
+      "fingerprint": "1cc94f1c4826f97c7014914311a4f91b508365c172791ac5d3574a1eabbfc35c",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "ril_proves_an_adopt_before_proposing_it",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12509,
+        12620
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/ril/ril/ril_resolves_the_capture_origin": {
+      "category": "skills/ril/ril",
+      "costUsd": 0,
+      "fingerprint": "75a231953333a13b829c3c594a8be79f925811210898f8b2ee10e49bb4084caa",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "ril_resolves_the_capture_origin",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12226,
+        12220
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skills/ril/ril/ril_verdict_belongs_to_the_user": {
+      "category": "skills/ril/ril",
+      "costUsd": 0,
+      "fingerprint": "8177463d316d84d7410445146609a1b8188c55a4906f073a31fccfde1516f396",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "ril_verdict_belongs_to_the_user",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12412,
+        12382
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "subagents/nix_expert_explains_concepts": {
+      "category": "subagents",
+      "costUsd": 0,
+      "fingerprint": "0eed98d304399dbb4cd6c2fd9c30e460b526a09118c34ef9cecd46cdf8fb7083",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "nix_expert_explains_concepts",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        23107,
+        23210
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_change_review_classifies_semantic_risk": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "d06bbb597564b17cb12efe03946e42541b448f3d0dbccb6621a2409083c349e5",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "workflow_change_review_classifies_semantic_risk",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26513,
+        26418
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_fix_before_responding": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "1e6b0ad36a6b4bcbba18128e327d09ce126df69c63823076fd79c91707383cea",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "workflow_fix_before_responding",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        13038,
+        12981
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_fix_downstream_reference_not_shim": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "a792e0578729c1a470404c011cfdc19579222a66602c620233997e126857a16b",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "workflow_fix_downstream_reference_not_shim",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        21384,
+        10626
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_isolated_script_uses_local_checks": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "18014c3f4c0855780c21deb8359686a8148bf33594ed2c0114db136045095968",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "workflow_isolated_script_uses_local_checks",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26110,
+        13120
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_knows_full_sequence": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "2a21da3fe0362724e8c2fc6ccc4353833c9b9c34459887ac848cefca69f91c3f",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "workflow_knows_full_sequence",
+      "passes": 0,
+      "sampleOutcomes": [
+        false,
+        false
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        13064,
+        13113
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_never_skip_rebuild": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "eeff84fc06e41258a6074a4dd7ea83cb6b20b969dbc46fe4dfc1c306f9f0baa0",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "workflow_never_skip_rebuild",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12934,
+        12916
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_prose_typo_skips_rebuild_and_ci": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "94de69ddfe1c98350dcc4ce5234d45da15a7e05b458ed2a8a9caa7e1f14b7145",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "workflow_prose_typo_skips_rebuild_and_ci",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        12988,
+        12985
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_rebuild_not_just_nix": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "789bca921180a720a77855cb9c8fa5a85b86f4a263ff4a4d00dc78162623a25e",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "workflow_rebuild_not_just_nix",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        26206,
+        26147
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_respond_only_after_pass": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "27c53d9d9c2ae716a250c4cb0192f58770ac30d70ea4647e5e335dd445fb3b82",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:05:56.145Z",
+      "name": "workflow_respond_only_after_pass",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        13047,
+        13067
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "workflow_compliance/workflow_review_input_is_unbiased": {
+      "category": "workflow_compliance",
+      "costUsd": 0,
+      "fingerprint": "d4632b99c43ce5a09e3b3a205a878c513ab92fb749da002c0bd69b8ab6948e41",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
+      "level": "unit",
+      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "name": "workflow_review_input_is_unbiased",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        10727,
+        10759
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    }
+  },
+  "instructionFingerprints": {
+    "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md": "bd3fb24371735cfa7f84e81be45f3c76b768a03dcfb7e668cffa62ddd97ae2bb",
+    "agent-harness/agent-instructions/core-rules/core.md": "35bfbf69ed3bb775d5013f14a0618298e96b199472156ac41e49b5801677c9a0",
+    "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md": "1fc29c9584f9584e2611f3c6ae7ec2623fc68cde959a082973588f9dbe56e18d",
+    "agent-harness/agent-instructions/skills/agent-workflows/agent-harness/SKILL.md": "298eff5916dfe0191ec572689c4b91f7bbc624989cb43cafe53235b836cf5884",
+    "agent-harness/agent-instructions/skills/agent-workflows/agent-harness/references/workflows.md": "33db2caf695f327daf1b2146eb40b5b16523c40070e2788cb80346f394d2f5cc",
+    "agent-harness/agent-instructions/skills/agent-workflows/agent-session/SKILL.md": "48838cfca34414f669d5acf35818d402f7322e2883e16952340d56a20d18cf77",
+    "agent-harness/agent-instructions/skills/agent-workflows/deep-work/SKILL.md": "0bed9a8949ac66a4a2960b479ecf0212b384bd5dc1333b6762da5e165a188e5e",
+    "agent-harness/agent-instructions/skills/agent-workflows/deliver/SKILL.md": "00a8f0eafd6360782d15a699e704f904c28e02c88fc1bd4525e81fa6bf8da657",
+    "agent-harness/agent-instructions/skills/agent-workflows/goal-prompt/SKILL.md": "3fefc3308d9dda7f61f6a5ea429e257cd0b3688c260714229017438d0cd42efd",
+    "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md": "5b09048ac4d84234291c4bd6307f2e5dc2d1777ebb4f405b8805d298a6f1bc1d",
+    "agent-harness/agent-instructions/skills/agent-workflows/instructions/references/skills.md": "72d1e082f7f7f05dbfa93873430348b1e9a96a69960c93ad31dfc9534cf2c63f",
+    "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md": "4c969f5bba24e4951f48fa056e4535a687da1868301060c80e8dd4dc2781b301",
+    "agent-harness/agent-instructions/skills/agent-workflows/process-design/SKILL.md": "cc1777853418fdd4125c3a179deadeb813110477bf8007f1222201088ec46f1b",
+    "agent-harness/agent-instructions/skills/development/agent-api/SKILL.md": "280da53f7922a3052dedb6903c410959f2dabbae6e8187bc2351b11f0c5a6b5b",
+    "agent-harness/agent-instructions/skills/development/architecture/SKILL.md": "07104b30d6deec31d5d3499c10e8022373fd83e098bfe2d6c4990a6874b0bcc8",
+    "agent-harness/agent-instructions/skills/development/ci-watcher/SKILL.md": "1da5915bad67e17e70f1f1761068069fb9f1d848329663445832e80a15ee31c6",
+    "agent-harness/agent-instructions/skills/development/coding/SKILL.md": "95cba50167494b0af7e10ac68baab1914d937f9f83a382f2933f6ae210d92869",
+    "agent-harness/agent-instructions/skills/development/coding/references/git.md": "f73cf0b622afedf5862c278305ca940f9ad64f2dfc84e8c90bb8af0dd2388aa5",
+    "agent-harness/agent-instructions/skills/development/coding/references/history.md": "de4f6b8f4522c2703c26bdcabf6c21b5f539b8595a273c7aa220f073ea1c12f7",
+    "agent-harness/agent-instructions/skills/development/coding/references/testing.md": "43b8d927a6948746cf8536045f53822b66ef9eaaae7592ed113131ed9a4b2095",
+    "agent-harness/agent-instructions/skills/development/coding/references/worktrees.md": "637758d07ddf84d17144134ba0b780c9979ae2c216355b786ab782c8158dd2f9",
+    "agent-harness/agent-instructions/skills/development/devenv/SKILL.md": "d21dc98dd06378766f42232becd8e0dae0bbf8861eef0a440ce90dd4ac11bc6f",
+    "agent-harness/agent-instructions/skills/development/explore/SKILL.md": "12358bc1ebf9bccccefdd5247c2345991bac6335db0f64f86bd5e5c95a2d0f8c",
+    "agent-harness/agent-instructions/skills/development/forge/SKILL.md": "814edcaca17d8d8fb0e51c5b5a61bfdbe098ddb0d678f0101b5ef3e2993f086f",
+    "agent-harness/agent-instructions/skills/development/review/SKILL.md": "a83636ca401c397b9a786bb646eead71dee098a32d8414b0ec0e9f6f3ee671c1",
+    "agent-harness/agent-instructions/skills/development/review/references/authoring.md": "47a1a3863732fcd5cac727b6208ec9e895a6373b6b207f1f3dc69ce193cbb58b",
+    "agent-harness/agent-instructions/skills/knowledge/obsidian/SKILL.md": "55289de19fc25cb7e9efd78f73c4d79edbd3fc1db5a808d3547fa3005d38b042",
+    "agent-harness/agent-instructions/skills/knowledge/research/SKILL.md": "ddcd515a5e16219158cc788b43b7092a900dc9a30c34cbde5003f55160ef85c2",
+    "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md": "84e25f69227859d574cdca4b73d7ce743e4f199f2e305fb233443cccbbb66d8e",
+    "agent-harness/agent-instructions/skills/knowledge/todo/SKILL.md": "21b7b60c50d0b58a9f4610079246b3a9f4d7eb332ff51a619a1d0b63bfbd3345",
+    "agent-harness/agent-instructions/skills/media/media-generation/SKILL.md": "7fc475c8ee7b262ff6210173856263381cea14bd5b20cc8f5a1685ac0dadea75",
+    "agent-harness/agent-instructions/skills/media/twitter/SKILL.md": "f95d8a63f564f77d5d3cd5a1f8138bc925833c34ac39b234cd521fe282d82c6e",
+    "agent-harness/agent-instructions/skills/media/youtube/SKILL.md": "a1000a92860bb347f3b50c08f44bf185d279bde4fa96b006e706156df13c3886",
+    "agent-harness/agent-instructions/skills/services/arr-stack/SKILL.md": "11c96419e57155b0c12f40d953433b18b516a97898aeb93f435f81c15fad868b",
+    "agent-harness/agent-instructions/skills/services/home-assistant/SKILL.md": "8f994febc08252785a9445dbcbc169d42732060d67f86af4cc85f7240ad7e750",
+    "agent-harness/agent-instructions/skills/services/nix/SKILL.md": "7032c0f1b04940d714a8a97874492a80cc146e832ccaf8658f24c114e95689c1",
+    "agent-harness/agent-instructions/skills/services/nix/references/expert.md": "e9cdb1c27b7d2e743ab9f68faddcda378e9208d98db37d19aba4d06d4dc6de9b",
+    "agent-harness/agent-instructions/skills/services/nix/references/rebuild.md": "1b241adf9037d68481f2016293e9e2e0acbff8e464799c425c284188e6f83d28",
+    "agent-harness/agent-instructions/skills/services/nix/references/repo.md": "2d044a2eb83c7ceed4c4f890bc87c4fc3444949a1f19fb80cd15e618f7b2070c",
+    "agent-harness/agent-instructions/skills/services/passwords/SKILL.md": "a550358ac25269fedfa81039732e74b8488b8d391b4803965e7974968f65c41c",
+    "agent-harness/agent-instructions/skills/services/phone-status/SKILL.md": "7a4e8947ada9d776855265922a582c277e3b4e33f0b83445fc31cef4f7f47670",
+    "agent-harness/agent-instructions/skills/services/url-shortener/SKILL.md": "80613e244ea3d6404b433314994a3be4c3c9baee4198546fff17582a51fd9918",
+    "agent-harness/agent-instructions/skills/workstation/avatar/SKILL.md": "f97bf6ad23a38d201f0be53ca352bb56bc9180a398af3539004d84968ce062a6",
+    "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md": "227b521367450137b1515d02f359199e9bce4cdd13076fbd0b902f1794e0825f",
+    "agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md": "fdbe46164a10f6dd1f04d46a72e4b2d128fa62cc6021b9ded24baf4edbf1b68a",
+    "agent-harness/agent-instructions/skills/workstation/herdr/SKILL.md": "bdf61b32e85b53fe218c98cd712e85532127775b9ad1b9b169146062f795f94f",
+    "agent-harness/agent-instructions/skills/workstation/machine-resources/SKILL.md": "a0efe5d90b8d8628057ae3ae6dc138f578164f5a2f0c6450e2d105dd38e62f52",
+    "agent-harness/agent-instructions/skills/workstation/notify/SKILL.md": "3bdbf90f0ffd1df8a90f9f515b242d9ad17edc00f03e233a51c37c32268c9434",
+    "agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md": "f4b3453bb3cb0753f93bffe1ace10909ef9caeb0a380b746306b91001425d522",
+    "agent-harness/agent-instructions/skills/workstation/workspace/SKILL.md": "f89ae9211053fbe3a6b546c823daf923a75675c60eeba604236fe5ec81040b97",
+    "agent-harness/agent-instructions/skills/writing/docs/SKILL.md": "48f7ff25f1ebbd200537250be846048a72e88ea075d125f606c1c411e97c9678",
+    "agent-harness/agent-instructions/skills/writing/frontend-design/SKILL.md": "83d4485f4d786ffa37b9462c93c8b36c0f55e80c05e979081eb73d16d523d081",
+    "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md": "0b5151125e5a231f1cd1b0709d1f4197581a5eee2f663a0a79d266293f538a71",
+    "agent-harness/agent-instructions/skills/writing/page-composer/SKILL.md": "feb7fda402335d70e082d7b2f7cf8cf3fc9d65769ac886f633fac18f5fa78220"
+  },
+  "instrument": {
+    "agentEvals": "0.1.0",
+    "measurementContract": 1,
+    "promptfoo": "0.118.14",
+    "sdks": {
+      "codex": "0.167.0"
+    }
+  },
+  "leakedSkills": [],
+  "measurementContract": 1,
+  "profile": {
+    "judge": {
+      "client": "codex",
+      "effort": "high",
+      "model": "gpt-6-luna"
+    },
+    "subject": {
+      "client": "codex",
+      "effort": "high",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "profileId": "729a83d6cd00",
+  "recordedAt": "2026-11-08T00:07:04.004Z"
+}

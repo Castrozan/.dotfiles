@@ -1,0 +1,100 @@
+{
+  "project": "dotfiles-agent-instructions",
+  "startedAt": "2026-11-08T00:06:36.260Z",
+  "finishedAt": "2026-11-08T00:07:04.004Z",
+  "profile": {
+    "subject": {
+      "client": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    },
+    "judge": {
+      "client": "codex",
+      "model": "gpt-6-luna",
+      "effort": "high"
+    }
+  },
+  "profileId": "729a83d6cd00",
+  "commit": "7442645bc77b8d4045afb9eb762847e288a22e8f",
+  "instrument": {
+    "agentEvals": "0.1.0",
+    "measurementContract": 1,
+    "promptfoo": "0.118.14",
+    "sdks": {
+      "codex": "0.167.0"
+    }
+  },
+  "selection": {
+    "categories": [],
+    "cases": [],
+    "affected": true,
+    "partial": true
+  },
+  "overlaidPaths": 9,
+  "leakedSkills": [],
+  "instructionFingerprints": {
+    "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md": "1fc29c9584f9584e2611f3c6ae7ec2623fc68cde959a082973588f9dbe56e18d"
+  },
+  "cases": [
+    {
+      "caseKey": "delegation/instruction_changes_check_baseline_without_resaving",
+      "category": "delegation",
+      "name": "instruction_changes_check_baseline_without_resaving",
+      "level": "unit",
+      "type": "instruction",
+      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
+      "prompt": "I edited agent instructions. What should I do with the committed eval baseline before delivery, and should I save a fresh baseline proactively?",
+      "expected": [
+        "Names `check --gravado` as the required credential-free CI check, distinguishes `dotfiles-evals check` as the separate strict verdict that also fails on changed instructions and expired evidence, and does not claim recorded results measure current model behavior. Avoids proactive `dotfiles-evals baseline --rodar`; a genuine measurement uses an existing authorized model route for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement."
+      ],
+      "fingerprint": "0251b2c501b00b2c85f349231c82818830a50cb64e630f49fafdea39cebd538a",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "delegation/instruction_changes_check_baseline_without_resaving",
+          "repetition": 1,
+          "passed": false,
+          "assertions": [
+            {
+              "kind": "judge",
+              "passed": false,
+              "message": "Juiz: reprovado para \"Names `check --gravado` as the required credential-free CI check, distinguishes `dotfiles-evals check` as the separate strict verdict that also fails on changed instructions and expired evidence, and does not claim recorded results measure current model behavior. Avoids proactive `dotfiles-evals baseline --rodar`; a genuine measurement uses an existing authorized model route for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement.\"."
+            }
+          ],
+          "output": "Keep the committed baseline intact and run `dotfiles-evals check` before delivery. Report stale or missing evidence as **unmeasured**; passing CI’s `check --gravado` does not prove current model behavior.\n\nDon’t proactively save a fresh baseline with `dotfiles-evals baseline --rodar`. Measure through an existing authorized model route only for an explicitly requested measurement, a diagnosed quality regression, or a deliberate instruction improvement. Ordinary instruction edits and CI do not require re-recording.",
+          "tokenUsage": {
+            "input": 4613,
+            "output": 170,
+            "cacheRead": 21248,
+            "cacheWrite": 0,
+            "reasoning": 346
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 18585
+        },
+        {
+          "caseKey": "delegation/instruction_changes_check_baseline_without_resaving",
+          "repetition": 2,
+          "passed": false,
+          "assertions": [
+            {
+              "kind": "judge",
+              "passed": false,
+              "message": "Juiz: reprovado para \"Names `check --gravado` as the required credential-free CI check, distinguishes `dotfiles-evals check` as the separate strict verdict that also fails on changed instructions and expired evidence, and does not claim recorded results measure current model behavior. Avoids proactive `dotfiles-evals baseline --rodar`; a genuine measurement uses an existing authorized model route for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement.\"."
+            }
+          ],
+          "output": "Keep the committed baseline at `agent-harness/quality/evaluations/baseline.json`. Run `dotfiles-evals check` before delivery and report any stale, missing, or expired evidence as unmeasured. CI’s `check --gravado` passing does **not** prove the edited instructions’ current model behavior.\n\nDo **not** proactively run `dotfiles-evals baseline --rodar` or save a fresh baseline merely to make checks green. Re-measure through an authorized model route only for an explicitly requested measurement, a diagnosed quality regression, or a deliberate instruction improvement. Ordinary CI does not require re-recording.",
+          "tokenUsage": {
+            "input": 4553,
+            "output": 192,
+            "cacheRead": 21248,
+            "cacheWrite": 0,
+            "reasoning": 205
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 14904
+        }
+      ]
+    }
+  ]
+}

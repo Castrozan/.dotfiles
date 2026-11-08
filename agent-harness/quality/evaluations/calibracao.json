@@ -1,0 +1,14 @@
+{
+  "accuracy": 0.9722222222222222,
+  "balancedAccuracy": 0.96875,
+  "corpusFingerprint": "ba4fc96a7ba9dbc5621a567d605de8e71b8b1de00fa92cedb2fa6ec19b3e276c",
+  "items": 36,
+  "judge": {
+    "client": "codex",
+    "model": "gpt-6-luna"
+  },
+  "kappa": 0.9433962264150944,
+  "passes": 3,
+  "recall": 0.9375,
+  "recordedAt": "2026-11-07T23:55:15.587Z"
+}
