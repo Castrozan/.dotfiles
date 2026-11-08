@@ -4,12 +4,11 @@ description: Reserve hosted Linux runner disk for Nix builds.
 runs:
   using: composite
   steps:
-    - name: Remove unused hosted SDKs
+    - name: Remove unused hosted SDKs in the background
       if: ${{ runner.os == 'Linux' && runner.environment == 'github-hosted' }}
       shell: bash
       run: |
         df -h /
         df -i /
-        sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /usr/local/.ghcup /opt/ghc
-        df -h /
-        df -i /
+        nohup sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /usr/local/.ghcup /opt/ghc \
+          > "$RUNNER_TEMP/remove-unused-hosted-sdks.log" 2>&1 &
