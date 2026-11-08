@@ -90,6 +90,7 @@ class RecordingForge:
         self.pull_requests: dict[int, dict] = {}
         self.closed: list[dict] = []
         self.next_comment_id = 1
+        self.merge_failure: Exception | None = None
 
     def open_pull_requests(self, branch_prefix: str) -> list[dict]:
         return [
@@ -131,6 +132,8 @@ class RecordingForge:
         self.pull_requests[number]["body"] = body
 
     def merge(self, number: int) -> None:
+        if self.merge_failure:
+            raise self.merge_failure
         self.pull_requests[number]["state"] = "MERGED"
 
 

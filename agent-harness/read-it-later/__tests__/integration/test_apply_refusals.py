@@ -109,3 +109,31 @@ def test_a_capture_deleted_from_the_inbox_is_skipped_and_does_not_block_the_merg
         "results"
     ]
     assert report["merge"] == "merged"
+
+
+def test_a_failed_merge_still_reports_every_card(
+    repository_with_origin,
+    sandbox_vault,
+    recording_forge,
+    recording_launcher,
+    proposed_group,
+):
+    from forge_adapter import ForgeUnavailable
+
+    _, inbox = proposed_group
+    recording_forge.merge_failure = ForgeUnavailable("Pull request is still a draft")
+    approval = recording_forge.comment(1, "approved", "2026-11-08T13:00:00Z")
+
+    report = apply_pull_request(
+        request_for(
+            repository_with_origin,
+            sandbox_vault,
+            inbox,
+            recording_forge,
+            recording_launcher,
+            approval,
+        )
+    )
+
+    assert report["merge"] == "merge-failed: Pull request is still a draft"
+    assert {result["status"] for result in report["results"]} == {"recorded"}

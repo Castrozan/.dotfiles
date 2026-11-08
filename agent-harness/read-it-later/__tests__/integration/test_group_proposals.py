@@ -142,3 +142,21 @@ def test_cards_for_missing_or_finished_captures_are_refused(
 
     assert len(invalid.value.problems) == 2
     assert recording_forge.pull_requests == {}
+
+
+def test_a_capture_already_in_an_open_group_cannot_open_another(
+    repository_with_origin, sandbox_vault, write_capture, recording_forge
+):
+    group = example_group()
+    inbox = inbox_with_captures(sandbox_vault, write_capture, group)
+    propose_groups(
+        context(repository_with_origin, inbox, recording_forge, FIRST_MOMENT), [group]
+    )
+    rival = {**example_group(), "topic_slug": "rival-topic"}
+
+    with pytest.raises(CardsInvalid, match="already in open group #1"):
+        propose_groups(
+            context(repository_with_origin, inbox, recording_forge, LATER_MOMENT),
+            [rival],
+        )
+    assert len(recording_forge.pull_requests) == 1

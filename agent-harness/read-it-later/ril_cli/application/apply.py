@@ -12,7 +12,7 @@ from application.card_actions import (
     apply_session_bundle,
     apply_single_card,
 )
-from forge_adapter import ForgeAdapter
+from forge_adapter import ForgeAdapter, ForgeUnavailable
 from proposals.decision_files import parse_decision_file
 from proposals.git_worktrees import fetch_reference, file_at_reference
 from pull_requests import (
@@ -120,7 +120,10 @@ def merge_when_settled(
         return "already-merged"
     if uncovered or any(result["status"] not in SETTLED_STATUSES for result in results):
         return "not-merged"
-    request.forge.merge(request.pull_request_number)
+    try:
+        request.forge.merge(request.pull_request_number)
+    except ForgeUnavailable as error:
+        return f"merge-failed: {error}"
     return "merged"
 
 
