@@ -82,6 +82,21 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
           path: .quality-results/source
           submodules: false
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache-key: publish-agent-evals
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Put the traditional test suite on the agent-evals page
+        id: traditional-suite
+        continue-on-error: true
+        env:
+          AGENT_EVALS_CONFIG: agent-harness/quality/evaluations/config.yaml
+        run: |
+          nix build --impure --out-link agent-evals --expr '(builtins.getAttr builtins.currentSystem (builtins.getFlake ("git+file://" + toString ./.)).inputs.dependencies.inputs.agent-evals.packages).default'
+          mkdir -p .quality-results/source/.quality-results
+          cp -R .quality-results/downloads .quality-results/source/.quality-results/downloads
+          cd .quality-results/source
+          "$GITHUB_WORKSPACE/agent-evals/bin/agent-evals" testes
       - name: Assemble reports from the verified producing revision and coverage artifact
         id: reports
         env:
