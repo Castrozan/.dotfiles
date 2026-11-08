@@ -21,7 +21,7 @@ let
       ]
     }:$PATH
     export PYTHONPATH=${./scripts/listening}:${./scripts/wake}:${a2aLibrary}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/wake/floor_cli.py}
+    exec ${pkgs.python312}/bin/python3 ${./scripts/wake}/floor_cli.py
   '';
   control = import ./control-package.nix { inherit pkgs; };
   renderer = import ./renderer-package.nix { inherit pkgs; };
