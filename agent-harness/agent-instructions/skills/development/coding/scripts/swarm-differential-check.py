@@ -160,7 +160,7 @@ def main():
     print(f"{len(files)} files modified since {arguments.revision}")
     with tempfile.TemporaryDirectory(prefix="swarm-differential-") as snapshot_root:
         extract_revision_snapshot(repository, arguments.revision, snapshot_root)
-        roots = (Path(snapshot_root), repository)
+        roots = (Path(snapshot_root).resolve(), repository)
         results = [
             compare_check(check_command, files, roots, arguments)
             for check_command in arguments.check
