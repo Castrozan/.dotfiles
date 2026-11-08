@@ -96,8 +96,8 @@ prefer incremental updates over whole-state recomputation.
 
 ### Testing
 
-Use the smallest checks that verify the change. Evaluate and build Nix only through `rebuild`; CI covers the Nix checks
-it does not build. Require CI only for affected integrations or platforms that local checks cannot verify.
+Use the smallest checks that verify the change; a formatting-only edit needs none. Build or evaluate Nix only via
+`rebuild`; CI covers what it skips. Require CI only for affected integrations or platforms local checks cannot verify.
 
 Reach for `repository/verification/run.sh` only to reproduce a job CI turned red, or to iterate on a test you are
 writing. The same goes for a whole pytest tier directory (`*/__tests__/unit`, `*/__tests__/integration`), bare `pytest`,

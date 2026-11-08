@@ -7,9 +7,9 @@ casos:
     assercoes:
       juiz:
         - Describes formatting edited files, staging specific files, committing, reviewing substantive commits, completing the
-          smallest checks that verify the change, and pushing. Requires rebuild only for applying or verifying live machine configuration,
-          and CI only for affected integrations or platforms that cannot be verified locally; completion waits only for required
-          checks.
+          smallest checks that verify the change, and pushing. Routes any Nix evaluation or build through rebuild rather than a
+          separate nix build or eval, requires CI only for affected integrations or platforms that cannot be verified locally, and
+          waits only for required checks before completing.
   - nome: workflow_rebuild_not_just_nix
     nivel: unidade
     instrucao: agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md

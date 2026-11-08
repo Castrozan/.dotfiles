@@ -75,7 +75,8 @@ casos:
       a fresh baseline proactively?
     assercoes:
       juiz:
-        - Uses `agent-eval --check-recorded-baseline` for required credential-free CI, distinguishes `agent-eval --check-baseline`
-          as a separate strict current-fingerprint and age check, and does not claim recorded results measure current model behavior.
-          Avoids proactive `agent-eval --save-baseline`; a genuine refresh uses an existing authorized model route for an explicitly
-          requested measurement, a diagnosed quality regression or a deliberate instruction improvement.
+        - Names `check --gravado` as the required credential-free CI check, distinguishes `dotfiles-evals check` as the separate
+          strict verdict that also fails on changed instructions and expired evidence, and does not claim recorded results measure
+          current model behavior. Avoids proactive `dotfiles-evals baseline --rodar`; a genuine measurement uses an existing
+          authorized model route for an explicitly requested measurement, a diagnosed quality regression or a deliberate
+          instruction improvement.
