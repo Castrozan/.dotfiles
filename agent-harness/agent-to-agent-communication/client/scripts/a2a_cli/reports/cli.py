@@ -78,11 +78,13 @@ def previous_state(report_directory: Path, name: str) -> str | None:
 def command_file(arguments: argparse.Namespace, report_directory: Path) -> int:
     document = read_report_document(arguments.report)
     requester, agent_directory = sender_and_directory(arguments)
-    name = report_name(requester)
+    requester_pane = os.environ.get("HERDR_PANE_ID")
+    name = report_name(" ".join(filter(None, [requester, requester_pane])))
     report = new_status_report(
         document,
+        name,
         requester,
-        os.environ.get("HERDR_PANE_ID"),
+        requester_pane,
         arguments.to,
         previous_state(report_directory, name),
     )

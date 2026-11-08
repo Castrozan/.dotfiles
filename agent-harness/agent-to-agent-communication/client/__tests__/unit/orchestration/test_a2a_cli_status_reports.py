@@ -39,14 +39,17 @@ def file_report(monkeypatch, directory, capsys, sender="Edmond Dantès", **overr
 def test_working_updates_are_silent_and_turning_blocked_or_done_notifies_once(
     monkeypatch, tmp_path, capsys, notifications
 ):
-    assert file_report(monkeypatch, tmp_path, capsys) == (0, "Edmond-Dantes")
+    assert file_report(monkeypatch, tmp_path, capsys) == (
+        0,
+        "Edmond-Dantes-worker-pane",
+    )
     assert notifications == []
     file_report(monkeypatch, tmp_path, capsys, state="blocked", next_step="decide D-1")
     file_report(monkeypatch, tmp_path, capsys, state="blocked", next_step="decide D-1")
     file_report(monkeypatch, tmp_path, capsys, state="done", next_step="nothing")
     assert [content for _, _, content in notifications] == [
-        "Edmond Dantès is blocked: decide D-1 Read it: a2a report show Edmond-Dantes",
-        "Edmond Dantès is done: nothing Read it: a2a report show Edmond-Dantes",
+        "Edmond Dantès is blocked: decide D-1 Read it: a2a report show Edmond-Dantes-worker-pane",
+        "Edmond Dantès is done: nothing Read it: a2a report show Edmond-Dantes-worker-pane",
     ]
 
 
@@ -58,8 +61,10 @@ def test_list_keeps_one_current_row_per_peer_and_show_separates_verified_claims(
     file_report(monkeypatch, tmp_path, capsys, sender="Angra")
     run_a2a(monkeypatch, tmp_path, "list", command="report")
     rows = capsys.readouterr().out.strip().splitlines()
-    assert sorted(row.split("\t")[0] for row in rows) == ["Angra", "Edmond Dantès"]
-    run_a2a(monkeypatch, tmp_path, "show", "Edmond Dantès", command="report")
+    assert sorted(row.split("\t")[1] for row in rows) == ["Angra", "Edmond Dantès"]
+    run_a2a(
+        monkeypatch, tmp_path, "show", "Edmond-Dantes-worker-pane", command="report"
+    )
     rendered = capsys.readouterr().out
     assert "**Progress**: rebuilt" in rendered
     assert "- overlay no longer patches codex (a1b2c3d)" in rendered
@@ -80,3 +85,15 @@ def test_incomplete_reports_are_refused_and_nothing_is_saved(
 ):
     assert file_report(monkeypatch, tmp_path, capsys, **overrides)[0] == 1
     assert list(tmp_path.glob("*.json")) == []
+
+
+def test_two_sessions_sharing_a_servant_name_keep_separate_reports(
+    monkeypatch, tmp_path, capsys, notifications
+):
+    file_report(monkeypatch, tmp_path, capsys, sender="Medea")
+    monkeypatch.setenv("HERDR_PANE_ID", "other-pane")
+    file_report(monkeypatch, tmp_path, capsys, sender="Medea")
+    assert sorted(path.stem for path in tmp_path.glob("*.json")) == [
+        "Medea-other-pane",
+        "Medea-worker-pane",
+    ]

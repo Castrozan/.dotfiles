@@ -51,12 +51,14 @@ def validated_report_fields(document) -> dict:
 
 def new_status_report(
     document,
+    name: str,
     requester: str,
     requester_pane: str | None,
     orchestrator: str,
     previous_state: str | None,
 ) -> dict:
     return {
+        "name": name,
         "requester": requester,
         "requester_pane": requester_pane,
         "orchestrator": orchestrator,
@@ -101,6 +103,7 @@ def rendered_report(report: dict) -> str:
 def summary_row(report: dict) -> str:
     return "\t".join(
         [
+            report["name"],
             report["requester"],
             report["state"],
             report["updated_at"],
@@ -113,5 +116,5 @@ def summary_row(report: dict) -> str:
 def notification_text(report: dict) -> str:
     return (
         f"{report['requester']} is {report['state']}: {report['next_step']} "
-        f"Read it: a2a report show {report_name(report['requester'])}"
+        f"Read it: a2a report show {report['name']}"
     )
