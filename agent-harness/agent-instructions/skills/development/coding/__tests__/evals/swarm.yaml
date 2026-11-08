@@ -1,0 +1,10 @@
+tests:
+  - name: swarm_brief_checks_and_integration
+    skill_path: agent-harness/agent-instructions/skills/development/coding/SKILL.md
+    extra_skill_paths:
+      - agent-harness/agent-instructions/skills/development/coding/references/swarm.md
+    prompt: "I am about to hand 30 file-disjoint refactors to Haiku engineer agents, but the repository has no test or script that can tell whether a refactor kept behavior. What should I set up, and what do I do when their reports come back?"
+    model: haiku
+    assertions:
+      llm_judge:
+        - "Says to write a temporary checker outside the repository (for example comparing the git revision and the edited code on the same inputs, such as with swarm-differential-check or swarm-batch-gate) and give it to the workers, and to treat worker reports as evidence: the lead rereads the diff, reruns the checks itself, fixes cross-batch gaps, and commits once."

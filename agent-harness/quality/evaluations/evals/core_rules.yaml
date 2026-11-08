@@ -110,3 +110,25 @@ tests:
         - "Answers no and advises reading the saved file because it already contains the required evidence and opening Chrome would add context that cannot materially change the answer."
       output_matches_regex:
         - "^[^A-Za-z]*NO\\b"
+
+  - name: swarms_disjoint_script_checkable_edits
+    description: "Agent should fan a decided, file-disjoint, script-checkable change out to parallel cheap engineer agents"
+    skill_path: agent-harness/agent-instructions/core-rules/core.md
+    prompt: "The fix is decided: bring 48 functions spread over 40 unrelated files under a complexity limit, and a lint script scores each function. How should you carry out the edits?"
+    model: haiku
+    max_turns: 1
+    assertions:
+      llm_judge:
+        - "Recommends splitting the files into disjoint batches handed in parallel to cheap-model software-engineer subagents, with the lead keeping the brief, the per-batch check with the lint script, review and integration, rather than editing all 48 functions alone one by one."
+
+  - name: keeps_a_small_coupled_edit_with_the_lead
+    description: "Agent should not swarm a small edit confined to one or two files"
+    skill_path: agent-harness/agent-instructions/core-rules/core.md
+    prompt: "The fix is decided: rename one helper and update its two callers in the same file. Should I fan this out to parallel engineer subagents? Begin your answer with YES or NO."
+    model: haiku
+    max_turns: 1
+    assertions:
+      llm_judge:
+        - "Answers no and says to make the edit directly because it is confined to one file and does not split into independent pieces."
+      output_matches_regex:
+        - "^[^A-Za-z]*NO\\b"

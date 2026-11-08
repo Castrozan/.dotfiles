@@ -23,6 +23,11 @@ path before and after, and inspect render or polling paths for unbounded work an
 Read [testing](references/testing.md) before changing code. It owns the bounded reproducer, coverage, execution-order,
 and delivery procedure; repository-local instructions may add stronger gates.
 
+### Swarm routing
+
+Read [swarm](references/swarm.md) before fanning a decided change out to parallel engineer agents. It owns the brief,
+the batches, the per-batch check with the `swarm-batch-gate` and `swarm-differential-check` helpers, and integration.
+
 ### Version control routing
 
 Read [git](references/git.md) before staging, committing, or investigating history. Read

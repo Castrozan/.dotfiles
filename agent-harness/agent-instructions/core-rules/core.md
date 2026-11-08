@@ -33,6 +33,9 @@ Delegate only mechanical work, which is a task already decided or read-only rese
 subagent carries it out rather than choosing the direction. Retain requirements, architecture, judgment, verification,
 and synthesis. Treat delegated output as evidence, not authority.
 
+Fan a decided change that splits into disjoint, script-checkable files out to parallel cheap-model `software-engineer`
+agents, using the `coding` skill's swarm procedure.
+
 Design multi-agent or multi-phase work with the `process-design` skill before executing it.
 
 ### Context
