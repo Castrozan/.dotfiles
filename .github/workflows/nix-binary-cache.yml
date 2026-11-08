@@ -54,7 +54,6 @@ jobs:
         with:
           cache-key: binary-cache
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          private-input-key: ${{ secrets.ARR_STACK_DEPLOY_KEY }}
 
       - name: Verify the exported derivations match the deployed packages
         if: ${{ matrix.system == 'x86_64-linux' }}
@@ -62,7 +61,7 @@ jobs:
           nix eval --json .#packages.x86_64-linux \
             --apply 'packages: builtins.mapAttrs (_: package: package.drvPath) packages' \
             > exported-derivations.json
-          deployed_generation=$(nix eval --raw .#nixosConfigurations.chise.config.home-manager.users.zanoni.home.activationPackage.drvPath)
+          deployed_generation=$(nix eval --raw $ARR_STACK_STUB_OVERRIDE .#nixosConfigurations.chise.config.home-manager.users.zanoni.home.activationPackage.drvPath)
           nix-store --query --requisites "$deployed_generation" | jq -R . | jq -s . > deployed-derivations.json
           jq -e --slurp '([.[0][]] - .[1]) == []' \
             exported-derivations.json deployed-derivations.json
