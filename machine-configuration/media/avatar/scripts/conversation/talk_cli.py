@@ -4,7 +4,7 @@ import sys
 
 import conversation_effects
 import conversation_state
-import listener
+import listener_runtime
 import utterances
 import voice_turns
 from conversation_state import ConversationAction, ConversationCommand
@@ -50,7 +50,7 @@ def main():
         ConversationAction.REFUSE_MEETING: conversation_effects.refuse_meeting,
     }
     try:
-        directory = listener.runtime_directory()
+        directory = listener_runtime.runtime_directory()
         command = ConversationCommand(arguments.action)
         decision = conversation_state.decide(
             conversation_state.observe(directory), command

@@ -6,6 +6,7 @@ import sys
 
 import conversation_state
 import listener
+import listener_runtime
 import listener_session
 import speaker_identity
 import transcript_log
@@ -63,7 +64,7 @@ def status(arguments, directory):
     print(
         json.dumps(
             {
-                "listening": listener_session.listening(),
+                "listening": listener_runtime.listening(),
                 "purpose": listener_session.configured_purpose(directory),
                 "sources": listener_session.configured_sources(directory),
                 "last_sequence": transcript_log.last_sequence(
@@ -160,7 +161,7 @@ def main():
         "forget": forget,
     }
     try:
-        actions[arguments.action](arguments, listener.runtime_directory())
+        actions[arguments.action](arguments, listener_runtime.runtime_directory())
     except ValueError as error:
         print(error, file=sys.stderr)
         sys.exit(1)

@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import conversation_state
+import listener_runtime
 import listener_session
 import pytest
 import start
@@ -78,7 +79,7 @@ def test_renderer_announces_its_character_on_every_connection():
 
 def run_talk(monkeypatch, directory, *arguments):
     monkeypatch.setattr(sys, "argv", ["avatar-talk", *arguments])
-    monkeypatch.setattr(talk_cli.listener, "runtime_directory", lambda: directory)
+    monkeypatch.setattr(talk_cli.listener_runtime, "runtime_directory", lambda: directory)
     talk_cli.main()
 
 
@@ -86,7 +87,7 @@ def fake_cold_open(tmp_path, monkeypatch):
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.setattr(listener_session, "listening", lambda: False)
+    monkeypatch.setattr(listener_runtime, "listening", lambda: False)
     monkeypatch.setattr(listener_session, "begin_listening", Mock())
     monkeypatch.setattr(start, "bring_up", Mock())
     utterances.remember(tmp_path, 0)

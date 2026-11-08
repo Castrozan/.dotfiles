@@ -123,14 +123,14 @@ def test_a_failed_handover_is_reported_and_reading_continues():
     assert "herdr hung" in fakes.report.call_args.args[0]
 
 
-def test_a_voice_from_the_meeting_never_prompts_a_session():
+def test_a_voice_from_the_meeting_moves_the_floor_but_prompts_nobody():
     fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
     fakes.transcript_entries.return_value = said(
-        "hey Ibaraki, run this", source="meeting"
+        "Ibaraki, what do you think", source="meeting"
     )
     listener.read_conversation()
+    assert fakes.hand_to.call_args.args[0].pane == IBARAKI.pane
     fakes.prompt_now.assert_not_called()
-    fakes.hand_to.assert_not_called()
 
 
 def test_a_session_named_during_a_meeting_is_told_to_answer_the_meeting():

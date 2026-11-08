@@ -5,6 +5,7 @@ import threading
 from unittest.mock import Mock
 
 import conversation_state
+import listener_runtime
 import listener_session
 import listener
 import pytest
@@ -22,7 +23,7 @@ def always_open():
 
 def run_talk(monkeypatch, directory, *arguments):
     monkeypatch.setattr(sys, "argv", ["avatar-talk", *arguments])
-    monkeypatch.setattr(talk_cli.listener, "runtime_directory", lambda: directory)
+    monkeypatch.setattr(talk_cli.listener_runtime, "runtime_directory", lambda: directory)
     talk_cli.main()
 
 
@@ -113,7 +114,7 @@ def test_opening_replaces_a_conversation_listener_left_running(tmp_path, monkeyp
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.setattr(listener_session, "listening", lambda: True)
+    monkeypatch.setattr(listener_runtime, "listening", lambda: True)
     (tmp_path / "listener.json").write_text(
         json.dumps(
             {"purpose": "conversation", "sources": {"human": "AvatarRoomMicrophone"}}
@@ -133,7 +134,7 @@ def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch)
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.setattr(listener_session, "listening", lambda: False)
+    monkeypatch.setattr(listener_runtime, "listening", lambda: False)
     monkeypatch.setattr(start, "bring_up", Mock())
     begin = Mock()
     monkeypatch.setattr(listener_session, "begin_listening", begin)
@@ -157,7 +158,7 @@ def test_a_failed_open_closes_what_it_started(tmp_path, monkeypatch):
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.setattr(listener_session, "listening", lambda: False)
+    monkeypatch.setattr(listener_runtime, "listening", lambda: False)
     monkeypatch.setattr(start, "bring_up", Mock(side_effect=TimeoutError("late")))
     close = Mock()
     monkeypatch.setattr(conversation_effects, "close_conversation", close)

@@ -5,9 +5,9 @@ import subprocess
 
 import conversation_addressee
 import listener
-import user_units
+import listener_runtime
+from listener_runtime import LISTENER_SERVICE
 
-LISTENER_SERVICE = "avatar-listener.service"
 CONFIGURATION_FILE = "listener.json"
 SYSTEMCTL_TIMEOUT_SECONDS = 120
 
@@ -43,10 +43,6 @@ def stop_listening():
     systemctl("stop", LISTENER_SERVICE)
 
 
-def listening():
-    return user_units.unit_active(LISTENER_SERVICE)
-
-
 def read_configuration(directory):
     configuration = directory / CONFIGURATION_FILE
     if not configuration.exists():
@@ -63,7 +59,7 @@ def configured_purpose(directory):
 
 
 def live_purpose(directory):
-    if not listening():
+    if not listener_runtime.listening():
         return None
     configured = configured_purpose(directory)
     return ListenerPurpose(configured) if configured in ListenerPurpose else None

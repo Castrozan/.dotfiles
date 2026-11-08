@@ -125,7 +125,7 @@ class WakeListener:
         return named_in_turn(text, self.sessions)
 
     def turn_to(self, entry):
-        if entry.get("source") == MEETING_SOURCE or entry.get("speaker") == AVATAR:
+        if entry.get("speaker") == AVATAR:
             return
         match = self.named_in_conversation(entry["text"])
         if match is None:
@@ -133,12 +133,12 @@ class WakeListener:
         addressee = self.boundaries.addressee()
         if addressee and addressee.pane == match.session.pane:
             return
-        purpose = self.boundaries.listening_purpose()
         if not self.dry_run:
             self.boundaries.hand_to(
                 Addressee(match.session.pane, match.session.servant, entry["sequence"])
             )
-        self.deliver(match, purpose)
+        if entry.get("source") != MEETING_SOURCE:
+            self.deliver(match, self.boundaries.listening_purpose())
 
     def listen_while_armed(self, frames):
         segmenter = speech_segmenter.SpeechSegmenter()

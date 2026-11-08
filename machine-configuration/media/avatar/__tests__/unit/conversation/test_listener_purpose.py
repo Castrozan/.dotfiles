@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import conversation_addressee
 import conversation_state
 import listen_cli
+import listener_runtime
 import listener_session
 import listener
 import pytest
@@ -36,7 +37,7 @@ def test_listening_refuses_while_the_conversation_listener_runs(tmp_path, monkey
 def test_a_meeting_listener_is_not_an_open_conversation(tmp_path, monkeypatch):
     write_listener_configuration(tmp_path, listener_session.ListenerPurpose.MEETING)
     monkeypatch.setattr(user_units, "unit_active", lambda unit: True)
-    monkeypatch.setattr(listener_session, "listening", lambda: True)
+    monkeypatch.setattr(listener_runtime, "listening", lambda: True)
     assert conversation_state.observe(tmp_path) is ConversationPhase.MEETING
 
 

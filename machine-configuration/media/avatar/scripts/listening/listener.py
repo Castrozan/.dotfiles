@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 import cloud_transcriber
+import listener_runtime
 import speaker_identity
 from pending_speech import PendingSpeech
 import source_capture
@@ -23,11 +24,6 @@ PENDING_SEGMENT_LIMIT = 16
 SPEECH_IN_PROGRESS_MARKER = "speech-in-progress"
 EMBEDDINGS_FILE = "embeddings.jsonl"
 HEARD_FILE = "heard"
-
-
-def runtime_directory():
-    base = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
-    return Path(base) / "avatar"
 
 
 def every_pause_ends_the_turn(audio):
@@ -107,7 +103,7 @@ def interrupt_speaker():
 
 
 def main():
-    directory = runtime_directory()
+    directory = listener_runtime.runtime_directory()
     configuration = json.loads((directory / "listener.json").read_text())
     detector = turn_detector.SmartTurnDetector(
         os.environ[turn_detector.MODEL_ENVIRONMENT_VARIABLE]

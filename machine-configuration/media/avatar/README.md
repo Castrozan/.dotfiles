@@ -65,14 +65,15 @@ a name, so the prompt marks the speaker as not verified. `systemctl --user stop 
 with the service stopped, `avatar-wake --dry-run` reports matches without delivering them.
 
 During a conversation the wake reads that conversation's transcript instead of the microphone. Naming another live
-Servant by the first or last word of a turn, with or without a greeting, hands the room to it: `addressee.json` in the avatar runtime directory names the session now addressed, its
-`avatar-talk follow` starts after the words that named it, and the previous session's `follow` prints that the room
-turned and exits. Only lines from the room's own microphone prompt a session; a voice from a meeting never does.
+Servant by the first or last word of a turn, with or without a greeting, hands the room to it: `addressee.json` in the
+avatar runtime directory names the session now addressed, its `avatar-talk follow` starts after the words that named it,
+and the previous session's `follow` prints that the room turned and exits. Only lines from the room's own microphone
+prompt a session; a voice from a meeting moves the room without prompting anyone.
 
 `addressee.json` is also the floor every speaking agent shares, in conversations and meetings alike. `avatar-command
-speak` from a herdr pane first runs `avatar-claim-floor`, which settles the holder under a lock: the live Servant the
-transcript named last, by a first or last word, then the current holder, then the first to claim. A refused claim stops
-the speech and names the holder. Starting a listener frees the floor, and without one anyone may speak.
+speak` from a herdr pane first runs `avatar-claim-floor` under a lock: the holder speaks at once, a live holder silences
+everyone else, and otherwise the first live Servant to claim takes it. A refused claim stops the speech and names the
+holder. Starting a listener frees the floor, and without one anyone may speak.
 
 ## Meetings
 

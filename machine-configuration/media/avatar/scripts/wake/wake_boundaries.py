@@ -4,16 +4,14 @@ import sys
 import time
 
 import conversation_addressee
-import listener
+import listener_runtime
 import listener_session
 import speech_segmenter
 import transcriber
 import transcript_log
-import user_units
 from servant_panes import live_sessions
 
 MICROPHONE = "@DEFAULT_SOURCE@"
-CONVERSATION_LISTENER = "avatar-listener.service"
 VOICE_SENDER = "voice"
 COMMAND_TIMEOUT_SECONDS = 120
 
@@ -44,7 +42,7 @@ def conversation_opened():
 
 def transcript_entries():
     return transcript_log.read_since(
-        listener.runtime_directory() / "transcript.jsonl", 0
+        listener_runtime.runtime_directory() / "transcript.jsonl", 0
     )
 
 
@@ -70,22 +68,20 @@ def notify_at_idle(pane, text):
 @dataclasses.dataclass
 class Boundaries:
     sessions: object = live_sessions
-    conversation_listening: object = lambda: user_units.unit_active(
-        CONVERSATION_LISTENER
-    )
+    conversation_listening: object = listener_runtime.listening
     transcribe: object = transcriber.transcribe
     open_conversation: object = conversation_opened
     prompt_now: object = prompt_now
     notify_at_idle: object = notify_at_idle
     transcript_entries: object = transcript_entries
     listening_purpose: object = lambda: listener_session.live_purpose(
-        listener.runtime_directory()
+        listener_runtime.runtime_directory()
     )
     addressee: object = lambda: conversation_addressee.current(
-        listener.runtime_directory()
+        listener_runtime.runtime_directory()
     )
     hand_to: object = lambda addressee: conversation_addressee.hand_to(
-        listener.runtime_directory(), addressee
+        listener_runtime.runtime_directory(), addressee
     )
     report: object = lambda line: print(line, file=sys.stderr, flush=True)
     now: object = time.monotonic
