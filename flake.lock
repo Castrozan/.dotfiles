@@ -32,17 +32,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794098074,
-        "narHash": "sha256-NHFNqWo7cCidH2yH8W169KqI+ZjYIbbyyybXqiisVeI=",
+        "lastModified": 1794102618,
+        "narHash": "sha256-n1ltIlGVwCnvG0csuMIT2s4t0IEjExsNQXobjIinvRI=",
         "owner": "Castrozan",
         "repo": "agent-evals",
-        "rev": "ddf2e449ac7ea5907bcadd0bb83dbaf7aea9122b",
+        "rev": "e63df56cef07fbdeefafaae6065157c877d62059",
         "type": "github"
       },
       "original": {
         "owner": "Castrozan",
         "repo": "agent-evals",
-        "rev": "ddf2e449ac7ea5907bcadd0bb83dbaf7aea9122b",
+        "rev": "e63df56cef07fbdeefafaae6065157c877d62059",
         "type": "github"
       }
     },
