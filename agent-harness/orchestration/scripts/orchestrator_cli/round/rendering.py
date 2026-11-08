@@ -84,7 +84,7 @@ def rendered_round(cards: list[dict], reports: list[dict], now: datetime) -> str
         text_table(
             SESSION_HEADERS, session_rows(reports, now), SESSION_WIDTHS, CELL_LINES
         )
-        + "\nFull report: orchestrator report show <session>"
+        + "\nFull view: orchestrator decision show <id> · orchestrator report show <session>"
         if reports
         else "No session has filed a report."
     )

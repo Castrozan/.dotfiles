@@ -109,7 +109,7 @@ casos:
       ───┼──────────────────────┼──────────────────────┼────────────────────────────┼─────────────────────
       1  │ Voyager              │ retire hey-bot into  │ filed D-1                  │ blocked 3m: wait for
          │                      │ the avatar           │                            │ D-1 Waiting on D-1.
-      Full report: orchestrator report show <session>
+      Full view: orchestrator decision show <id> · orchestrator report show <session>
 
       Write the closing message of this turn.
     assercoes:
