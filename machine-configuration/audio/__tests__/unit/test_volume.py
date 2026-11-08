@@ -1,6 +1,28 @@
+from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
 import volume
+
+VOLUME_ICON_BANDS = (
+    (0, "volume-mute.png"),
+    (30, "volume-low.png"),
+    (60, "volume-mid.png"),
+    (150, "volume-high.png"),
+)
+
+
+def icon_name_at(volume_percent: int, muted: bool = False) -> str:
+    with patch("volume.get_volume_for_active_sink", return_value=volume_percent):
+        with patch("volume.is_sink_muted", return_value=muted):
+            return Path(volume.get_volume_icon_path()).name
+
+
+def expected_icon_name(volume_percent: int, muted: bool) -> str:
+    if muted:
+        return "volume-mute.png"
+    return next(
+        icon for ceiling, icon in VOLUME_ICON_BANDS if volume_percent <= ceiling
+    )
 
 
 class TestFindActiveSinkNameOrDefault:
@@ -87,30 +109,15 @@ class TestIsSinkMuted:
 
 
 class TestGetVolumeIconPath:
-    def test_returns_mute_icon_when_muted(self):
-        with patch("volume.get_volume_for_active_sink", return_value=50):
-            with patch("volume.is_sink_muted", return_value=True):
-                assert "volume-mute.png" in volume.get_volume_icon_path()
-
-    def test_returns_mute_icon_when_volume_zero(self):
-        with patch("volume.get_volume_for_active_sink", return_value=0):
-            with patch("volume.is_sink_muted", return_value=False):
-                assert "volume-mute.png" in volume.get_volume_icon_path()
-
-    def test_returns_low_icon(self):
-        with patch("volume.get_volume_for_active_sink", return_value=20):
-            with patch("volume.is_sink_muted", return_value=False):
-                assert "volume-low.png" in volume.get_volume_icon_path()
-
-    def test_returns_mid_icon(self):
-        with patch("volume.get_volume_for_active_sink", return_value=50):
-            with patch("volume.is_sink_muted", return_value=False):
-                assert "volume-mid.png" in volume.get_volume_icon_path()
-
-    def test_returns_high_icon(self):
-        with patch("volume.get_volume_for_active_sink", return_value=80):
-            with patch("volume.is_sink_muted", return_value=False):
-                assert "volume-high.png" in volume.get_volume_icon_path()
+    def test_returns_the_expected_icon_for_every_volume_and_mute_state(self):
+        mismatches = [
+            (volume_percent, muted)
+            for volume_percent in range(151)
+            for muted in (False, True)
+            if icon_name_at(volume_percent, muted)
+            != expected_icon_name(volume_percent, muted)
+        ]
+        assert mismatches == []
 
 
 class TestIncreaseVolume:

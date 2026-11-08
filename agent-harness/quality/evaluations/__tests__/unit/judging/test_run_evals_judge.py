@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 import yaml
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from runner.judging.run_evals_judge import (
     JudgeInvocationError,
@@ -20,6 +22,20 @@ REBUILD_MANDATE_SUITE = (
     Path(__file__).resolve().parents[3] / "evals/rebuild_mandate.yaml"
 )
 
+REASONING_WORDS = ["PASS", "FAIL", "pass", "fail", "might", "breaks", "rule"]
+REASONING_LINES = st.lists(
+    st.lists(st.sampled_from(REASONING_WORDS), min_size=1, max_size=6).map(" ".join),
+    max_size=4,
+)
+
+
+@st.composite
+def judge_output_with_expected_verdict(draw):
+    reasoning_lines = draw(REASONING_LINES)
+    final_verdict = draw(st.sampled_from(["PASS", "FAIL"]))
+    raw_verdict = "\n".join([*reasoning_lines, f"VERDICT: {final_verdict}"])
+    return raw_verdict, final_verdict == "PASS"
+
 
 def test_parse_verdict_reads_the_final_verdict_line():
     passed, reason = parse_judge_verdict("It stages by path.\nVERDICT: PASS")
@@ -27,28 +43,21 @@ def test_parse_verdict_reads_the_final_verdict_line():
     assert reason == "It stages by path.\nVERDICT: PASS"
 
 
-def test_parse_verdict_is_fail_even_when_reasoning_mentions_pass():
-    passed, _ = parse_judge_verdict(
-        "It might pass a shallow read but breaks the rule.\nVERDICT: FAIL"
-    )
-    assert passed is False
-
-
-def test_parse_verdict_uses_the_token_after_the_marker_only():
-    passed, _ = parse_judge_verdict("VERDICT: PASS because no FAIL condition applies")
-    assert passed is True
+@given(judge_output_with_expected_verdict())
+@example(("It might pass a shallow read but breaks the rule.\nVERDICT: FAIL", False))
+@example(("VERDICT: PASS because no FAIL condition applies", True))
+@example(("VERDICT: PASS\nbut on reflection it breaks the rule\nVERDICT: FAIL", False))
+def test_parse_verdict_follows_the_final_verdict_whatever_the_reasoning_says(
+    judge_output,
+):
+    raw_verdict, expected_passed = judge_output
+    passed, _ = parse_judge_verdict(raw_verdict)
+    assert passed is expected_passed
 
 
 def test_parse_verdict_falls_back_to_the_first_word():
     passed, _ = parse_judge_verdict("PASS because it stages by path")
     assert passed is True
-
-
-def test_parse_verdict_uses_the_final_verdict_when_several_are_present():
-    passed, _ = parse_judge_verdict(
-        "VERDICT: PASS\nbut on reflection it breaks the rule\nVERDICT: FAIL"
-    )
-    assert passed is False
 
 
 def test_parse_verdict_treats_empty_as_fail():
