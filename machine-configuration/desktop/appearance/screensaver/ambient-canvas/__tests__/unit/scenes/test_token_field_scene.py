@@ -123,13 +123,15 @@ def test_the_last_generation_hands_back_to_the_first():
     assert moments["phase"] > 0.99
 
 
-def test_the_cycle_end_draws_exactly_the_cycle_start():
+def test_the_last_recorded_frame_draws_exactly_the_first_frame():
     assert evaluate_in_node(
-        """
+        f"""
         const timeline = window.AmbientCanvasTokenFieldTimeline;
-        const { frameAt } = createRenderer(1920, 1080, 0);
+        const {{ frameAt }} = createRenderer(1920, 1080, 0);
+        const lastFrameSeconds =
+          timeline.cycleDurationSeconds - 1 / {CAPTURE_FRAMES_PER_SECOND};
         process.stdout.write(JSON.stringify(
-          frameAt(0) === frameAt(timeline.cycleDurationSeconds),
+          frameAt(0) === frameAt(lastFrameSeconds),
         ));
         """
     )
