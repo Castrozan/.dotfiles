@@ -7,7 +7,12 @@ import sys
 from pathlib import Path
 
 from ..document_fields import InvalidPeerDocument
-from ..peer_messenger import PeerMessageFailure, notify_after_save, sender_name
+from ..peer_messenger import (
+    PeerAddress,
+    PeerMessageFailure,
+    notify_after_save,
+    sender_name,
+)
 from ..record_store import all_records, load_record, save_record, state_directory
 from .status_reports import (
     REPORT_STATES,
@@ -42,6 +47,10 @@ def add_parser(subcommands) -> None:
     file_command.add_argument("--to", required=True, help="orchestrator peer target")
     file_command.add_argument("--report", default="-", help="JSON file, or - for stdin")
     file_command.add_argument("--sender", help="peer name when calling over ssh")
+    file_command.add_argument(
+        "--reply-host",
+        help="when calling over ssh: the ssh alias this machine uses to reach yours",
+    )
     file_command.set_defaults(handler=command_file)
 
     list_command = commands.add_parser("list", help="one row per peer report")
@@ -80,7 +89,9 @@ def command_file(arguments: argparse.Namespace, report_directory: Path) -> int:
     requester = sender_name(arguments.sender)
     requester_pane = os.environ.get("HERDR_PANE_ID")
     name = report_name(" ".join(filter(None, [requester, requester_pane])))
-    author = ReportAuthor(name, requester, requester_pane, arguments.to)
+    author = ReportAuthor(
+        name, requester, requester_pane, arguments.reply_host, arguments.to
+    )
     report = new_status_report(document, author, previous_state(report_directory, name))
     saved_path = save_record(report_directory, name, report)
     print(name)
@@ -88,7 +99,7 @@ def command_file(arguments: argparse.Namespace, report_directory: Path) -> int:
         return 0
     return notify_after_save(
         lambda: requester,
-        arguments.to,
+        PeerAddress(arguments.to),
         notification_text(report),
         saved_path,
     )

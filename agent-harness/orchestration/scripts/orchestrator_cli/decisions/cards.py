@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import secrets
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 
 from ..document_fields import (
@@ -93,16 +94,20 @@ def validated_card_fields(document: dict) -> dict:
     return card
 
 
-def new_decision_card(
-    document, requester: str, requester_pane: str | None, orchestrator: str
-) -> dict:
+@dataclass(frozen=True)
+class CardAuthor:
+    requester: str
+    requester_pane: str | None
+    requester_host: str | None
+    orchestrator: str
+
+
+def new_decision_card(document, author: CardAuthor) -> dict:
     return {
         "id": new_decision_identifier(),
         "state": OPEN_STATE,
         "created_at": current_timestamp(),
-        "requester": requester,
-        "requester_pane": requester_pane,
-        "orchestrator": orchestrator,
+        **asdict(author),
         **validated_card_fields(require_object(document, "the card")),
     }
 

@@ -7,8 +7,13 @@ work.
 ### Brief template
 
 Write every brief as a file with these headings in this order: Goal, Done when, Constraints, Workspace and worktree,
-Lucas's words, Contract. Lucas's words carries what he said verbatim, never a summary of it. The peer shares none of
-your context, so the Contract section always states the rules below.
+Lucas's words, Contract. Goal and Done when state outcomes, and the session plans the work. Lucas's words carries what
+he said verbatim, never a summary of it. The peer shares none of your context, so the Contract section always states
+the rules below.
+
+Send it with `orchestrator dispatch <target> --brief <file>`, adding `--host <ssh alias>` for another machine. It copies
+the brief there and refuses one missing a heading, ordering steps outside Lucas's words, or lacking the contract
+commands.
 
 The peer files each decision it cannot make with `orchestrator decision file --to <your name>` instead of asking in its
 pane or through a question tool, and keeps working on whatever the decision does not block. It keeps `orchestrator
@@ -18,7 +23,18 @@ decision it records the commits with `orchestrator decision link`. It marks a ca
 with `--help`.
 
 It starts every long job detached from its own process, because a session restart kills the jobs it started. A peer on
-another machine runs these commands on yours over ssh with `--sender <its name>`.
+another machine runs these commands on yours over ssh with `--sender <its name> --reply-host <your alias for it>`, so
+answers reach it there.
+
+### What reaches a sub-session
+
+After the brief, send a sub-session only what it cannot learn itself. The directives in `USER.md` on messages to
+sub-sessions set how much that is. `orchestrator decision answer` and `override` deliver a decision to its requester on
+any machine; add nothing to that notice.
+
+Relay Lucas's other words verbatim with `orchestrator relay <session> --words`, and a fact the session cannot see with
+`--fact`. Leave the plan, order, tools and verification to the session even when you would choose otherwise. When its
+work misses the goal, relay the fact that shows the gap, not the fix.
 
 ### Event loop
 
@@ -33,13 +49,12 @@ surfaces.
 
 `TIMEOUT` names a session quiet past its own `--timeout-minutes` clock, which any report, card, answer or pane status
 change restarts. It repeats until the session answers or reports done, even while the session waits on a background
-command. On each `TIMEOUT`, send that session a status check with `a2a notify`, even when the pane looks like a false
-alarm; reading the pane is not a check. Message a peer only with `a2a notify`, which queues until it is idle; never
-loop on `a2a send`, which refuses a busy peer.
+command. On each `TIMEOUT`, run `orchestrator relay <session> --status-check`, even when the pane looks like a false
+alarm; reading the pane is not a check. It asks for the owed report or card and whether background commands still run.
 
-Ask for the card or report it owes and whether its background commands are still alive, because a broken one may never
-notify it. Name a session that times out twice running in your round. Restart the watch the moment its monitor expires,
-because a dead watch cannot fire.
+Message a sub-session only through `orchestrator`, whose notices queue until it is idle; never loop on `a2a send`,
+which refuses a busy peer. Name a session that times out twice running in your round. Restart the watch the moment its
+monitor expires, because a dead watch cannot fire.
 
 ### Deciding as Lucas
 

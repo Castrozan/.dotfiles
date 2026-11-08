@@ -112,9 +112,11 @@ commit, or a diff and read that yourself; read the pane through herdr when you n
 
 ### Decisions travel as cards
 
-When you orchestrate sub-sessions, read [decisions](references/decisions.md) first: it owns their workspace, the brief
-and round templates, the event loop, deciding as Lucas from his user model, and the loop that learns from his
-corrections. A pane question or a scraped answer arrives without the context a decision card carries.
+When you orchestrate sub-sessions, read [decisions](references/decisions.md) first. It owns their workspace, briefs,
+what you send them, the event loop, the round view, deciding as Lucas, and learning from his corrections. A pane question or a scraped answer arrives without the context a decision card carries.
+
+A sub-session owns its whole goal and plans its own steps. The drive loop's increments and corrections serve a helper
+on your own goal, never a sub-session.
 
 ### A2a sender identity
 

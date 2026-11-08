@@ -47,6 +47,10 @@ def add_file_parser(commands) -> None:
     file_command.add_argument("--to", required=True, help="orchestrator peer target")
     file_command.add_argument("--card", default="-", help="JSON file, or - for stdin")
     add_sender_argument(file_command)
+    file_command.add_argument(
+        "--reply-host",
+        help="when calling over ssh: the ssh alias this machine uses to reach yours",
+    )
     file_command.set_defaults(handler=command_file)
 
 

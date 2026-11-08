@@ -1,7 +1,11 @@
 import json
 
 from orchestrator_cli import peer_messenger
-from orchestration_test_support import file_card, run_orchestrator
+from orchestration_test_support import (
+    file_card,
+    run_orchestrator,
+    valid_card_document,
+)
 
 
 def test_answering_records_the_decider_and_notifies_the_requesting_pane_once(
@@ -30,6 +34,20 @@ def test_answering_records_the_decider_and_notifies_the_requesting_pane_once(
     )
     assert run_orchestrator(monkeypatch, tmp_path, *answer) == 1
     assert len(notifications) == 2
+
+
+def test_an_answer_reaches_a_requester_that_filed_over_ssh_on_its_own_host(
+    monkeypatch, tmp_path, capsys, notifications
+):
+    monkeypatch.delenv("HERDR_PANE_ID")
+    filing = ["file", "--to", "Ibaraki", "--sender", "Mozart", "--reply-host", "kira"]
+    document = json.dumps(valid_card_document())
+    assert run_orchestrator(monkeypatch, tmp_path, *filing, stdin_text=document) == 0
+    identifier = capsys.readouterr().out.strip()
+    assert notifications[-1][0] == "Ibaraki"
+    answer = ["answer", identifier, "--choice", "drop", "--rationale", "cosmetic"]
+    assert run_orchestrator(monkeypatch, tmp_path, *answer, "--by", "human") == 0
+    assert notifications[-1][0] == "kira:Mozart"
 
 
 def test_withdrawal_closes_the_card_and_tells_the_orchestrator(

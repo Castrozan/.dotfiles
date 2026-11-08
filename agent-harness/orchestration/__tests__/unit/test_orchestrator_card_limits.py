@@ -3,7 +3,11 @@ from hypothesis import given
 from hypothesis import strategies as st
 from orchestration_test_support import valid_card_document
 from orchestrator_cli.decisions import card_limits
-from orchestrator_cli.decisions.cards import escalated_card, new_decision_card
+from orchestrator_cli.decisions.cards import (
+    CardAuthor,
+    escalated_card,
+    new_decision_card,
+)
 from orchestrator_cli.decisions.rendering import CARD_WIDTH, rendered_card
 from orchestrator_cli.document_fields import InvalidPeerDocument
 
@@ -23,7 +27,7 @@ def text_fields(limits):
 
 
 def filed(document):
-    return new_decision_card(document, "Voyager", "wW:p1", "Medea")
+    return new_decision_card(document, CardAuthor("Voyager", "wW:p1", None, "Medea"))
 
 
 def card_documents():

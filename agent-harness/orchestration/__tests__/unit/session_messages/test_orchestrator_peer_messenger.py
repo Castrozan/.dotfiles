@@ -1,3 +1,4 @@
+import shlex
 import stat
 
 import pytest
@@ -29,11 +30,37 @@ def test_the_sender_comes_from_a2a_so_identity_rules_live_in_one_place(fake_a2a)
 
 
 def test_a_notification_passes_target_text_and_sender_to_a2a_notify(fake_a2a):
-    peer_messenger.notify_peer("worker-pane", "Medea", "decision D-1\nanswered")
+    address = peer_messenger.PeerAddress("worker-pane")
+    peer_messenger.notify_peer(address, "Medea", "decision D-1\nanswered")
     assert (
         fake_a2a.read_text()
         == "notify\nworker-pane\ndecision D-1\nanswered\n--sender\nMedea\n"
     )
+
+
+def test_a_peer_on_another_host_is_notified_by_its_own_a2a_over_ssh():
+    command = peer_messenger.a2a_command_line(
+        ("notify", "Mozart", "it's answered: 'gate'", "--sender", "Ibaraki-dōji"),
+        "kira",
+    )
+    assert command[:4] == ["ssh", "-o", "BatchMode=yes", "kira"]
+    assert shlex.split(command[4]) == [
+        "a2a",
+        "notify",
+        "Mozart",
+        "it's answered: 'gate'",
+        "--sender",
+        "Ibaraki-dōji",
+    ]
+
+
+def test_a_record_filed_over_ssh_is_answered_on_the_host_it_named():
+    record = {"requester": "Mozart", "requester_pane": None, "requester_host": "kira"}
+    assert peer_messenger.requester_address(record) == peer_messenger.PeerAddress(
+        "Mozart", "kira"
+    )
+    legacy = {"requester": "Voyager", "requester_pane": "wW:pPZ"}
+    assert peer_messenger.requester_address(legacy).host is None
 
 
 def test_a_refused_notification_keeps_the_saved_record_and_names_a2a_reason(
@@ -41,7 +68,10 @@ def test_a_refused_notification_keeps_the_saved_record_and_names_a2a_reason(
 ):
     saved_path = tmp_path / "D-1.json"
     exit_code = peer_messenger.notify_after_save(
-        lambda: "Medea", "offline-peer", "decision D-1", saved_path
+        lambda: "Medea",
+        peer_messenger.PeerAddress("offline-peer"),
+        "decision D-1",
+        saved_path,
     )
     assert exit_code == 1
     error = capsys.readouterr().err

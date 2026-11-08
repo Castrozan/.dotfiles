@@ -6,7 +6,12 @@ from pathlib import Path
 
 from ..decisions.cards import ESCALATED_STATE, OPEN_STATE, withdrawn_card
 from ..document_fields import InvalidPeerDocument
-from ..peer_messenger import PeerMessageFailure, notify_peer, sender_name
+from ..peer_messenger import (
+    PeerAddress,
+    PeerMessageFailure,
+    notify_peer,
+    sender_name,
+)
 from ..record_store import all_records, save_record, state_directory
 from ..reports.status_reports import handed_over_report
 from ..watch.herdr_events import HerdrUnavailable, move_pane_to_new_tab
@@ -72,7 +77,9 @@ def hand_over(arguments: argparse.Namespace, orchestrator: str) -> list[str]:
     label = reports[0]["requester"] if reports else pane
     lines.append(f"moved {pane} to tab {move_pane_to_new_tab(pane, label)}")
     print("\n".join(lines), flush=True)
-    notify_peer(pane, orchestrator, PEER_NOTICE.format(orchestrator=orchestrator))
+    notify_peer(
+        PeerAddress(pane), orchestrator, PEER_NOTICE.format(orchestrator=orchestrator)
+    )
     return [f"told {pane} that Lucas drives it now"]
 
 

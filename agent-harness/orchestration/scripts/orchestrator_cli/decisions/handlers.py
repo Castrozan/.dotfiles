@@ -8,10 +8,16 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from ..document_fields import InvalidPeerDocument
-from ..peer_messenger import notify_after_save, sender_name
+from ..peer_messenger import (
+    PeerAddress,
+    notify_after_save,
+    requester_address,
+    sender_name,
+)
 from ..record_store import all_records, load_record, save_record
 from ..user_model.directives import active_identifiers
 from .cards import (
+    CardAuthor,
     answered_card,
     card_with_work,
     escalated_card,
@@ -40,32 +46,32 @@ def read_card_document(card_source: str):
 
 
 def save_and_notify(
-    arguments: argparse.Namespace, decision_directory: Path, card: dict, target: str
+    arguments: argparse.Namespace,
+    decision_directory: Path,
+    card: dict,
+    address: PeerAddress,
 ) -> int:
     saved_path = save_record(decision_directory, card["id"], card)
     return notify_after_save(
         lambda: sender_name(arguments.sender),
-        target,
+        address,
         notification_text(card),
         saved_path,
     )
 
 
-def requester_target(card: dict) -> str:
-    return card["requester_pane"] or card["requester"]
-
-
 def command_file(arguments: argparse.Namespace, decision_directory: Path) -> int:
     document = read_card_document(arguments.card)
     requester = sender_name(arguments.sender)
-    card = new_decision_card(
-        document, requester, os.environ.get("HERDR_PANE_ID"), arguments.to
+    author = CardAuthor(
+        requester, os.environ.get("HERDR_PANE_ID"), arguments.reply_host, arguments.to
     )
+    card = new_decision_card(document, author)
     saved_path = save_record(decision_directory, card["id"], card)
     print(card["id"])
     return notify_after_save(
         lambda: requester,
-        arguments.to,
+        PeerAddress(arguments.to),
         notification_text(card),
         saved_path,
     )
@@ -126,7 +132,7 @@ def command_answer(arguments: argparse.Namespace, decision_directory: Path) -> i
     card = answered_card(
         card, arguments.choice, arguments.rationale, arguments.by, arguments.directive
     )
-    return save_and_notify(arguments, decision_directory, card, requester_target(card))
+    return save_and_notify(arguments, decision_directory, card, requester_address(card))
 
 
 def command_override(arguments: argparse.Namespace, decision_directory: Path) -> int:
@@ -135,13 +141,13 @@ def command_override(arguments: argparse.Namespace, decision_directory: Path) ->
         arguments.choice,
         arguments.rationale,
     )
-    return save_and_notify(arguments, decision_directory, card, requester_target(card))
+    return save_and_notify(arguments, decision_directory, card, requester_address(card))
 
 
-def other_party(card: dict, actor: str) -> str:
-    return (
-        card["orchestrator"] if actor == card["requester"] else requester_target(card)
-    )
+def other_party(card: dict, actor: str) -> PeerAddress:
+    if actor == card["requester"]:
+        return PeerAddress(card["orchestrator"])
+    return requester_address(card)
 
 
 def command_withdraw(arguments: argparse.Namespace, decision_directory: Path) -> int:

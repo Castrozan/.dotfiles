@@ -65,6 +65,7 @@ class ReportAuthor:
     name: str
     requester: str
     requester_pane: str | None
+    requester_host: str | None
     orchestrator: str
 
 

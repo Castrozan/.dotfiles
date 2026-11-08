@@ -43,11 +43,11 @@ def valid_card_document(**overrides):
 def notifications(monkeypatch):
     sent = []
 
-    def fake_a2a(command, *arguments):
+    def fake_a2a(command, *arguments, host=None):
         if command == "whoami":
             return arguments[1] if arguments else PANE_SENDER_NAME
         target, text, _, sender = arguments
-        sent.append((target, sender, text))
+        sent.append((f"{host}:{target}" if host else target, sender, text))
         return ""
 
     monkeypatch.setattr(peer_messenger, "run_a2a", fake_a2a)

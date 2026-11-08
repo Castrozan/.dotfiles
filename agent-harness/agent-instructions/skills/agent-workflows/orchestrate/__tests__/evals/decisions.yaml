@@ -82,8 +82,38 @@ casos:
       reached you. What do you do now?
     assercoes:
       juiz:
-        - Sends Voyager a status check now that asks for the card or report it owes and whether its background command is
-          still alive, instead of only reading the pane or waiting for the evaluation to finish.
+        - Sends Voyager a status check now with `orchestrator relay` and `--status-check`, which asks for the card or
+          report it owes and whether its background command is still alive, instead of only reading the pane or waiting
+          for the evaluation to finish.
+  - nome: orchestrator_relays_lucas_words_without_adding_steps
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
+    pergunta:
+      You orchestrate Mozart, a session on kira that filed its reports with `--reply-host kira`. Its goal is a rehearsal
+      that reads GitLab over the VPN, and its report says it waits for kira's rebuild, then connects the VPN, rehearses
+      once and disconnects. kira's rebuild just finished. Lucas now says "vpn is already connected". What do you send
+      Mozart, and with which command?
+    assercoes:
+      juiz:
+        - Sends Mozart Lucas's words verbatim with `orchestrator relay Mozart --words`, optionally plus the rebuild as a
+          new fact, and adds no instruction about what Mozart should run, skip, or do with the VPN afterwards, leaving
+          that plan to Mozart.
+  - nome: orchestrator_lets_the_answer_notice_carry_a_decision
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
+    pergunta:
+      Mozart on kira filed card D-7 asking whether its rehearsal should collect GitLab evidence in a gate script
+      outside its sandbox or open the macOS trust service to glab. Lucas answered "a script outside the sandbox fetches
+      GitLab (safe)". Record his answer and tell me every command you run and every message you send Mozart.
+    assercoes:
+      juiz:
+        - Records the answer with `orchestrator decision answer D-7` choosing the gate option `--by human` with Lucas's
+          words as the rationale, and sends Mozart no further message of its own; in particular it does not tell Mozart
+          how to build, test or prove the change.
   - nome: orchestrator_ends_every_turn_with_the_round_view
     nivel: unidade
     instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
