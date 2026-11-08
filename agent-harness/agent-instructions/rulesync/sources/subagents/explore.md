@@ -10,7 +10,6 @@ codexcli:
   model_reasoning_effort: low
 opencode:
   mode: subagent
-  model: opencode/deepseek-v4.1-flash-free
   permission:
     "*": allow
     edit: deny
