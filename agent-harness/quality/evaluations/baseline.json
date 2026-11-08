@@ -1335,21 +1335,27 @@
       "fingerprint": "7b4eeedc05e81d0081076a0a6a2d62d41fac7f5195d667157c5704f2543266fd",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "breaking_change_removes_old_function",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         91314,
-        87884
+        87884,
+        66851,
+        94345
       ],
       "toolOutputCharacters": [
         9581,
-        9605
+        9605,
+        3370,
+        2377
       ],
       "type": "instruction"
     },
@@ -1359,21 +1365,27 @@
       "fingerprint": "cbcfcfd20f5465a6ffd14f8f07b88384d25f547b1a290365a7b1d85c6a7a2984",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "formatting_runs_after_python_edit",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         51446,
-        64069
+        64069,
+        64145,
+        51100
       ],
       "toolOutputCharacters": [
         874,
-        595
+        595,
+        595,
+        874
       ],
       "type": "instruction"
     },
@@ -1383,21 +1395,27 @@
       "fingerprint": "2def3fdcec757c14c5e10795997c13528c8649e6996a593e643339cb2977fe20",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "git_stages_specific_files_not_all",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         72007,
-        72126
+        72126,
+        76926,
+        77713
       ],
       "toolOutputCharacters": [
         8204,
-        8486
+        8486,
+        213,
+        449
       ],
       "type": "instruction"
     },
@@ -1407,21 +1425,27 @@
       "fingerprint": "d45993d064bc022771fe374ce8fafc5a12d79bb09f61edebdb4c1a5b8339bd20",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "global_rules_apply_alongside_project_claude_md",
       "passes": 1,
       "sampleOutcomes": [
         true,
+        false,
+        false,
         false
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         124118,
-        108391
+        108391,
+        81955,
+        81763
       ],
       "toolOutputCharacters": [
         639,
-        1320
+        1320,
+        1112,
+        509
       ],
       "type": "instruction"
     },
@@ -1431,21 +1455,27 @@
       "fingerprint": "29ff536532809bda3fd8567bb56a7778888b555b03cf1d9b81405e92fc9f458c",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "investigation_traces_full_call_chain",
       "passes": 0,
       "sampleOutcomes": [
         false,
+        false,
+        false,
         false
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         64647,
-        64906
+        64906,
+        66459,
+        65384
       ],
       "toolOutputCharacters": [
         2235,
-        2290
+        2290,
+        2569,
+        2363
       ],
       "type": "instruction"
     },
@@ -1455,19 +1485,25 @@
       "fingerprint": "f62ee432d44a7863a7ea4db292b06c8c3c0ee324f62e181e856b2b98229d73d0",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "local_information_before_external_fetch",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         38067,
-        38116
+        38116,
+        38017,
+        38047
       ],
       "toolOutputCharacters": [
+        413,
+        413,
         413,
         413
       ],
@@ -1479,21 +1515,27 @@
       "fingerprint": "edeb198e7f26776f295ab1af2722e2fd3f9b734de7713d17bea8d9cfb2767d03",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "multi_file_edit_with_specific_git_staging",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         52013,
-        51513
+        51513,
+        65424,
+        51471
       ],
       "toolOutputCharacters": [
         621,
-        433
+        433,
+        1107,
+        556
       ],
       "type": "instruction"
     },
@@ -1503,21 +1545,27 @@
       "fingerprint": "7e42dbed93a5ee0aab3ba235784423bbce8a74768e9d5fe1a01dfebcaa10716d",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "naming_uses_descriptive_names_no_abbreviations",
       "passes": 0,
       "sampleOutcomes": [
         false,
+        false,
+        false,
         false
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         51016,
-        51410
+        51410,
+        51159,
+        50978
       ],
       "toolOutputCharacters": [
         110,
-        110
+        110,
+        111,
+        111
       ],
       "type": "instruction"
     },
@@ -1527,32 +1575,38 @@
       "fingerprint": "ff8644cd1150dac0b24d1df0946eb302a23c6420daef31b55d2a849c568f0282",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "python_over_bash_for_data_processing",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         65132,
-        51291
+        51291,
+        51527,
+        64896
       ],
       "toolOutputCharacters": [
         409,
-        287
+        287,
+        287,
+        367
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_browser_for_webpage": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "ac1294b19b52b9fe73171b7070ec766db7f87bd33819ebd865c005c6c414f501",
+      "fingerprint": "02c1c92e234740f635a5c42c58e16cb77feefb3c21081b420c4b4514d14e5502",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "skill_discovery_browser_for_webpage",
       "passes": 2,
       "sampleOutcomes": [
@@ -1561,23 +1615,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        194386,
-        237802
+        220909,
+        312366
       ],
       "toolOutputCharacters": [
-        34766,
-        74686
+        34754,
+        71107
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_coding_for_bug_report": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "0088a5745ef6af66fa17a8175ec1ab5e7835bd0316a695df8df11817c54a7482",
+      "fingerprint": "570e4be9e4f402a2938bbd5e2cc444c157df6aa5acdd92e4cf224e65abee12bf",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_coding_for_bug_report",
       "passes": 2,
       "sampleOutcomes": [
@@ -1586,23 +1640,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        95909,
-        95250
+        96055,
+        112232
       ],
       "toolOutputCharacters": [
         4687,
-        4742
+        4738
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_coding_for_commit": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "c60cf5b4bf2be719e4640d3acb1198537a0621bc7aefa659b5f9d35163a66c9b",
+      "fingerprint": "bfd065f9edef95a2d5b9a5c746d45b94c49633c63d271fc9dd58bfe4c9119129",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_coding_for_commit",
       "passes": 2,
       "sampleOutcomes": [
@@ -1611,23 +1665,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        107593,
-        114173
+        114377,
+        91217
       ],
       "toolOutputCharacters": [
-        29572,
-        29383
+        29625,
+        29580
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_coding_for_worktrees": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "c8061cdbce8f6b9adc1dbb844876e76208edf84774f1f9c02cbffcdb55fe07d7",
+      "fingerprint": "b7cc1f666740f08b4e9ce6ade80545bc66affeaf6ca52511884f0ac90bd83117",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_coding_for_worktrees",
       "passes": 2,
       "sampleOutcomes": [
@@ -1636,23 +1690,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        154161,
-        150297
+        116266,
+        140128
       ],
       "toolOutputCharacters": [
-        61694,
-        37062
+        6665,
+        32793
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_multiple_skills_in_workflow": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "9d2d95af381a24901dd4099ceb4426d91700ffb69ac6ca059530d0c0813f2605",
+      "fingerprint": "80e0695076c9ea81fdd9b83fba02879db84ea07de3030a7defafb0a70d169090",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_multiple_skills_in_workflow",
       "passes": 2,
       "sampleOutcomes": [
@@ -1661,23 +1715,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        190088,
-        268854
+        136298,
+        217765
       ],
       "toolOutputCharacters": [
-        1066547,
-        72017
+        55002,
+        56566
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_natural_coding_calculator_divide_zero": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "cea59116896e73321febf095c145e53685c8d5837093c5df67f15b5a72376f0f",
+      "fingerprint": "338d70641475a600469d16f2014cddbb7fb84abf6e065ad597dd88af9f86cdb4",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_natural_coding_calculator_divide_zero",
       "passes": 0,
       "sampleOutcomes": [
@@ -1686,23 +1740,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        111206,
-        129132
+        111319,
+        127695
       ],
       "toolOutputCharacters": [
-        4628,
-        5424
+        4661,
+        4890
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_natural_coding_commit_these_changes": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "80f4d6e14545d0026addce49b9edb76316d1efaa044a7d2531ea4b21612631de",
+      "fingerprint": "cfcd412d668021eb4498c6e947eefee251359b402624f95f10c17975c0934deb",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_natural_coding_commit_these_changes",
       "passes": 2,
       "sampleOutcomes": [
@@ -1711,23 +1765,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        67737,
-        67041
+        63355,
+        66372
       ],
       "toolOutputCharacters": [
-        8566,
-        8522
+        5536,
+        28547
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_natural_coding_parallel_branch": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "3a09694eb154aef903d9966337cf0d67ee1b3c6093071ddd30900075b43a6313",
+      "fingerprint": "0f28015a8ea422be7f0c1b972bd57694243a9754b07286b9bfabe0c67176744f",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_natural_coding_parallel_branch",
       "passes": 2,
       "sampleOutcomes": [
@@ -1736,23 +1790,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        117920,
-        81853
+        99764,
+        115735
       ],
       "toolOutputCharacters": [
-        37980,
-        6528
+        9052,
+        6702
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_natural_nix_apply_edit": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "a1ac90fb0a074f8de0c58fa75d66b84afc9cf3ca43bf2a96e07f1fe2467998c1",
+      "fingerprint": "51e7d511d84e279c2471c60b65f349043fa87c8ed1cc0fc31e54c31a535a420d",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_natural_nix_apply_edit",
       "passes": 2,
       "sampleOutcomes": [
@@ -1761,23 +1815,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        385778,
-        573929
+        225801,
+        278325
       ],
       "toolOutputCharacters": [
-        67063,
-        114963
+        49235,
+        71168
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_natural_nix_postgres_crashing": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "715ac64f6019e026b4beaf492f755db062aa7eceb92c5ef1cc34948a45e1aab5",
+      "fingerprint": "96cb4ae4a80245645d1fe6cdfa9539cb48d3e6685343491e2dd12c58dd37cfe7",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "skill_discovery_natural_nix_postgres_crashing",
       "passes": 2,
       "sampleOutcomes": [
@@ -1786,23 +1840,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        284583,
-        321702
+        324177,
+        298725
       ],
       "toolOutputCharacters": [
-        116801,
-        256258
+        121956,
+        106144
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_natural_review_check_diff": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "e807e9adc5dea0203c8b702790b4ba87f19781ba1893519341f4dcddfdde51be",
+      "fingerprint": "f0d7ecc35058c85e898c3d9cde8290f8cd7717743c7522cc24507d028b80e191",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_natural_review_check_diff",
       "passes": 2,
       "sampleOutcomes": [
@@ -1811,23 +1865,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        92904,
-        91546
+        72213,
+        76863
       ],
       "toolOutputCharacters": [
-        50754,
-        27196
+        50765,
+        27287
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_nix_for_container": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "f4a10ea752f1edb405daf38c1572b44157e942fe3636544177050d07ef456cf2",
+      "fingerprint": "972de35ed9cf149fb122dc66594ca98139a627001e450294ea39aec137dbe7fc",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "skill_discovery_nix_for_container",
       "passes": 2,
       "sampleOutcomes": [
@@ -1836,23 +1890,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        296739,
-        143600
+        160378,
+        154172
       ],
       "toolOutputCharacters": [
-        49092,
-        33478
+        17671,
+        8909
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_nix_for_rebuild": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "29bc7be4f1184a58e8378f109f0b6fd1195f9787fb82633ac64ced7807796ece",
+      "fingerprint": "cfcec66e040d202b4ac3bf726e7fdc64c7026989d7a0365e2bc2d3d0694c2c6c",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_nix_for_rebuild",
       "passes": 2,
       "sampleOutcomes": [
@@ -1861,23 +1915,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        121529,
-        274713
+        96399,
+        92810
       ],
       "toolOutputCharacters": [
-        36926,
-        33312
+        30463,
+        26358
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_research_for_external_info": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "4fdd7234c24f10b0640c819c57b81721f36af5b951ce14578a753456f6891227",
+      "fingerprint": "21a9d6aec50d131c35a0bebecdebcb863e4c8109ec9150f7a1215ab913ac76f8",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/knowledge/research/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "skill_discovery_research_for_external_info",
       "passes": 2,
       "sampleOutcomes": [
@@ -1886,23 +1940,23 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        578471,
-        851233
+        720610,
+        632494
       ],
       "toolOutputCharacters": [
-        248564,
-        328791
+        318726,
+        283977
       ],
       "type": "instruction"
     },
     "end_to_end_workflows/skill_discovery_review_for_tldr": {
       "category": "end_to_end_workflows",
       "costUsd": 0,
-      "fingerprint": "d5a864883176610049fce3cc7f7e640a58af34c6b65b12834a5c879d48e717c5",
+      "fingerprint": "a711afcd5067bd7b1a8871f61a296454010c9d24274e28a0ff97ea391229198e",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "skill_discovery_review_for_tldr",
       "passes": 2,
       "sampleOutcomes": [
@@ -1911,12 +1965,12 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        89877,
-        86743
+        89804,
+        70903
       ],
       "toolOutputCharacters": [
-        32424,
-        9859
+        26592,
+        19442
       ],
       "type": "instruction"
     },
@@ -1926,21 +1980,27 @@
       "fingerprint": "9c51fa75338c5efbca644e16f8b6cdda88763369c935746f74c031a58f6c712f",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "srp_splits_monolithic_function",
       "passes": 0,
       "sampleOutcomes": [
         false,
+        false,
+        false,
         false
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         112426,
-        67860
+        67860,
+        53618,
+        82157
       ],
       "toolOutputCharacters": [
         3056,
-        2469
+        2469,
+        875,
+        2628
       ],
       "type": "instruction"
     },
@@ -1950,21 +2010,27 @@
       "fingerprint": "3adfec4f823179e9d74c831262f7d803f0eb93a3e815c83813856dddf0de5f6b",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "test_first_when_bug_reported",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         91034,
-        103539
+        103539,
+        64801,
+        78665
       ],
       "toolOutputCharacters": [
         28482,
-        30936
+        30936,
+        721,
+        1813
       ],
       "type": "instruction"
     },
@@ -1974,20 +2040,26 @@
       "fingerprint": "fa5414b8e43443e1a1d7a29ea689ab1d7b14b2e53a485e5e2c1c3cc738db70ec",
       "heldOut": false,
       "level": "end-to-end",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "workflow_full_edit_sequence",
       "passes": 0,
       "sampleOutcomes": [
         false,
+        false,
+        false,
         false
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         91774,
-        78130
+        78130,
+        78345,
+        78313
       ],
       "toolOutputCharacters": [
         790,
+        790,
+        823,
         790
       ],
       "type": "instruction"
@@ -2290,21 +2362,27 @@
       "fingerprint": "baae8627970587f553966ed86d5a9d2f54af4e80756a6b4a1391bc1310498fb8",
       "heldOut": false,
       "level": "integration",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "no_comments_in_code",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         63906,
-        51029
+        51029,
+        51101,
+        51040
       ],
       "toolOutputCharacters": [
         185,
-        190
+        190,
+        197,
+        195
       ],
       "type": "instruction"
     },
@@ -2314,21 +2392,27 @@
       "fingerprint": "7093ebd181c804aeee57cc79fac040949bd89c15fd5684280f7fffcfa945f1ea",
       "heldOut": false,
       "level": "integration",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "no_comments_unprompted",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         63766,
-        51330
+        51330,
+        51229,
+        51410
       ],
       "toolOutputCharacters": [
         29412,
-        99
+        99,
+        103,
+        103
       ],
       "type": "instruction"
     },
@@ -2338,21 +2422,27 @@
       "fingerprint": "98f00edceb1bbc2fb5ae8d17ba0e5ea01c7ee1e59de4a88e341dd2a87f5041fc",
       "heldOut": false,
       "level": "integration",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "realistic_bug_fix_multi_file",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         167341,
-        115290
+        115290,
+        97989,
+        98202
       ],
       "toolOutputCharacters": [
         7813,
-        6813
+        6813,
+        6116,
+        7157
       ],
       "type": "instruction"
     },
@@ -2362,21 +2452,27 @@
       "fingerprint": "038e44dddeb8380927ec78b872680019e1cd6dcd17a5798141f75427dc22bba6",
       "heldOut": false,
       "level": "integration",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "refactor_enforces_naming_conventions",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         96734,
-        53665
+        53665,
+        53803,
+        67631
       ],
       "toolOutputCharacters": [
         1958,
-        715
+        715,
+        1793,
+        2543
       ],
       "type": "instruction"
     },
@@ -2386,21 +2482,27 @@
       "fingerprint": "2040efff13225486a5b73c18f6a35c838c8dce6157cdcbac10a8db94a3c530f6",
       "heldOut": false,
       "level": "integration",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:44:26.506Z",
       "name": "workflow_sequence_nix_edit",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
         108174,
-        132782
+        132782,
+        152668,
+        138272
       ],
       "toolOutputCharacters": [
         2956,
-        32347
+        32347,
+        1966,
+        2156
       ],
       "type": "instruction"
     },
@@ -2857,10 +2959,10 @@
     "skill_routing/routing_ambiguous_browser_vs_personal_tweet_scraping": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "7303c30bd9e6bfc2c2fad2f49b31bf41df96a7ae177fda341689e2ad4b2291ef",
+      "fingerprint": "092f77885169f9dae40a8634daca6d54d129c8386d78b70f17dd6d6f43165ff8",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_ambiguous_browser_vs_personal_tweet_scraping",
       "passes": 2,
       "sampleOutcomes": [
@@ -2869,8 +2971,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11040,
-        11030
+        11031,
+        11035
       ],
       "toolOutputCharacters": [
         0,
@@ -2881,10 +2983,10 @@
     "skill_routing/routing_ambiguous_git_history_vs_research": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "093d1a4353ca6f97343f84834bc456c04656e1d551f46f04e16e38566a53852b",
+      "fingerprint": "a31e0b74ee92473c3b4e8b39d9a26c70cebe6a738ceb2765fd08afe7651fcfcc",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_ambiguous_git_history_vs_research",
       "passes": 2,
       "sampleOutcomes": [
@@ -2893,8 +2995,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11023,
-        11023
+        11021,
+        11019
       ],
       "toolOutputCharacters": [
         0,
@@ -2905,10 +3007,10 @@
     "skill_routing/routing_ambiguous_research_vs_browser": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "14e87339ad5cd44f7018d1df98b6756cdd97d9551e6a8279d2959853b56c06e8",
+      "fingerprint": "219bae9fe2b8db643fb04cec0b09bf16e44ce8fdf8980cd90e2112509157ea49",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_ambiguous_research_vs_browser",
       "passes": 2,
       "sampleOutcomes": [
@@ -2917,8 +3019,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11045,
-        11043
+        11039,
+        11046
       ],
       "toolOutputCharacters": [
         0,
@@ -2929,10 +3031,10 @@
     "skill_routing/routing_to_agent_session_compact": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "a53b1544836bc96e5465b6f7bb465494c9251ebe220d62e9f165b2673bd2fb9f",
+      "fingerprint": "91c6e3cca0883d38ac9621fa77eb410e414dbe2f0b6722735289ec05168f7c8a",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_agent_session_compact",
       "passes": 2,
       "sampleOutcomes": [
@@ -2941,8 +3043,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        10998,
-        10998
+        11005,
+        11003
       ],
       "toolOutputCharacters": [
         0,
@@ -2953,10 +3055,10 @@
     "skill_routing/routing_to_agent_session_exit": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "c1e992ef1a2652312cb65766edee9355472cfd53435558560560000a8e32c42f",
+      "fingerprint": "5a9c9dbb6f2f0897632a3a14440e9fbed45e6ff62efad2ecc02afc70381db9ce",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_agent_session_exit",
       "passes": 2,
       "sampleOutcomes": [
@@ -2965,8 +3067,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11001,
-        11004
+        11009,
+        11008
       ],
       "toolOutputCharacters": [
         0,
@@ -2977,10 +3079,10 @@
     "skill_routing/routing_to_agent_session_restart": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "535c1c750b512ac10db5adf0cd7cae3f92e329dfc41c0b7845e89788633d676e",
+      "fingerprint": "c64016ed97b896346c26c7b8c424bbc359f321d97ee38af58839adef2a421a75",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_agent_session_restart",
       "passes": 2,
       "sampleOutcomes": [
@@ -2989,8 +3091,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11018,
-        11001
+        11028,
+        11020
       ],
       "toolOutputCharacters": [
         0,
@@ -3001,10 +3103,10 @@
     "skill_routing/routing_to_all_skills_for_a_desktop_screenshot": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "1e21196608f8c2ee56706845cfd90fb2f50f5054f9fea3061ba48efb8a85447c",
+      "fingerprint": "e03d0ff06a64eb8eaabf7275588f30f4246bf0399358c85dd0b6fec44102c6ea",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_all_skills_for_a_desktop_screenshot",
       "passes": 2,
       "sampleOutcomes": [
@@ -3013,8 +3115,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11027,
-        11032
+        11039,
+        11036
       ],
       "toolOutputCharacters": [
         0,
@@ -3025,10 +3127,10 @@
     "skill_routing/routing_to_architecture_for_a_boundary_decision": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "a7f5ffb53e75a9e6e61a2cf6c351a1ced8d635be000376a81e00ea4e299dc19b",
+      "fingerprint": "013af59a9dffa69c7cb8b5e3e522972293b04869b9dae1291e225b0450a82a35",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_architecture_for_a_boundary_decision",
       "passes": 2,
       "sampleOutcomes": [
@@ -3037,8 +3139,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11026,
-        11026
+        11027,
+        11033
       ],
       "toolOutputCharacters": [
         0,
@@ -3049,10 +3151,10 @@
     "skill_routing/routing_to_architecture_for_where_a_boundary_lives": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "fc4fd462f85eaea67137c1fcceb497c041c2f58ea1025ad5b16e017ab81911d7",
+      "fingerprint": "4b676ed071eea6026e16dadb95cde7be13d5a91d86056830c86d2613bd353c96",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_architecture_for_where_a_boundary_lives",
       "passes": 2,
       "sampleOutcomes": [
@@ -3061,8 +3163,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11044,
-        11039
+        11034,
+        11034
       ],
       "toolOutputCharacters": [
         0,
@@ -3073,419 +3175,11 @@
     "skill_routing/routing_to_browser_electron_app": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "5fbe2c8b96db953e109dcf18738ff86fd46e9ac4f3215ce76423eee0185cce3f",
+      "fingerprint": "36e64d2c204a23790d93948b2f1cb896c090d0688c55023a4e3c87a1d467c624",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_browser_electron_app",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11035,
-        11032
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_browser_for_a_logged_in_download": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "52952d8f8e09233a61db32fb502a5e87acef77dd6e496a54c8eb75d5a4b779fc",
-      "heldOut": true,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_browser_for_a_logged_in_download",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11027,
-        11028
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_browser_form_filling": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "8e5a86677f3eabc5899a24b6cdb6618386cbad29dc46006a750a4191bb928c32",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_browser_form_filling",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11026,
-        11030
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_browser_interactive_scrape": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "ed87730b9cacfe1730d083ce65b7d7c69d52aeff3681a6737b89c06008f902d7",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_browser_interactive_scrape",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11035,
-        11030
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_browser_web_scraping": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "b877cb0e5429c543bbaf7d2ab754cb64f0bc49f964ec50cc7f9bf04c7d42b834",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_browser_web_scraping",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11004,
-        11028
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_commit": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "93844350b75cadbd4dc0bf9231a6907546344ace8ca8d4e13411e6d7d80b3f35",
-      "heldOut": true,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_commit",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11023,
-        11021
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_commit_staging": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "38e0a36e9c6fd1b334358cf9ca88a98e7bca17a1a3a09fd4ec08deb83defb7ce",
-      "heldOut": true,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_commit_staging",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11022,
-        11007
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_for_a_function_cleanup": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "187744edfeb1dc60c5dec04401fabf8820f76b7b5bf5f52a49909ec4555b7ba0",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_for_a_function_cleanup",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11033,
-        11028
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_history_find_when_changed": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "17ab6efb3ebbac31a911c7def641105892b433d46c2889936391c25b61f4acfa",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_history_find_when_changed",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11023,
-        11033
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_history_investigate_past": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "056e9d94cd561ff008578e4fd252c2c79a87b4b0316c664950613ed579f795c5",
-      "heldOut": true,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_history_investigate_past",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11040,
-        11038
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_history_search_commits": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "5cfc76536312881b52d6a2f85cd3beffa9550e88f77ce2f5bb34ef568b55ba93",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_history_search_commits",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11034,
-        11027
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_history_trace_evolution": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "6a05c04e8a620e90840e562136f988506611ddcab7489b65d5efb4c6c270b75b",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_history_trace_evolution",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11039,
-        11037
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_test_verification": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "d477e2649c98826c35825de8a5d954a3b47e431f9419f99f2d316c5529649ade",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_test_verification",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11017,
-        11022
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_coding_worktree_isolation": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "9e0bd39de23868998a20b54bc04f0572d8c12d401212353c2717b2b0043670c1",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_coding_worktree_isolation",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11034,
-        11031
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_deep_work": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "a042ec597492729ab9d9623f67796f3dc7d3e1e84ecb810e3be2196e144ea563",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_deep_work",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11010,
-        11023
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_deliver_an_objective_end_to_end": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "29a456be1948262e7e41ba6b4542f5088da07d4698fe73eeafe51be4772f0314",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_deliver_an_objective_end_to_end",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11019,
-        11042
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_devenv_shell_setup": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "92c4881d20e539f65c3ef772f929202040769d02118080fd3abbc5b108ca5301",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_devenv_shell_setup",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11014,
-        11057
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_docs_for_whether_a_readme_earns_its_place": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "1cbb8b0967b471afc1c146d42d48de7ed3ede8b7441b3c29545071fd45e02267",
-      "heldOut": true,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_docs_for_whether_a_readme_earns_its_place",
       "passes": 2,
       "sampleOutcomes": [
         true,
@@ -3502,13 +3196,421 @@
       ],
       "type": "instruction"
     },
+    "skill_routing/routing_to_browser_for_a_logged_in_download": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "a651086f3cc712d8f5686daa212dca41cc4213805bfaddb8d05bbe17531325d9",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_browser_for_a_logged_in_download",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11031,
+        11031
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_browser_form_filling": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "39fbccf79edf958c5ad46a01fe815aba2f6cb9c6fad2df13eb19c22fa32b7b55",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_browser_form_filling",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11031,
+        11027
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_browser_interactive_scrape": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "50458a5ca7328bf8143caf24ecf1ab192f60dd86208551671e23f4b0cc1e34f5",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_browser_interactive_scrape",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11036,
+        11038
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_browser_web_scraping": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "09165976cca2fdab6ac64d0b4fc3c3a2aeea30b227f50c102e3f42159b7e7bc9",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_browser_web_scraping",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11024,
+        11028
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_commit": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "9e285947becab099a4fd0a349fd889a794b90710ac2609503466da984b95e86a",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_commit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11031,
+        11028
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_commit_staging": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "10d1cb33f84ec106336700cbe8b9e09e4e5e7cd82fa23fc9e8d81c01b1c17531",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_commit_staging",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11029,
+        11026
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_for_a_function_cleanup": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "f82f2aef16368b9b9feed5ba5ff40d4c008e752078c66b807786545f069d2706",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_for_a_function_cleanup",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11035,
+        11033
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_history_find_when_changed": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "9fe113633004c9a312d24161b321739cadd2870fc7d339f492bf722276d52e3a",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_history_find_when_changed",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11035,
+        11025
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_history_investigate_past": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "4df4e7c27f3a560a843cebd8c7dcf8c94088e4cd8559694b2181ccd449625ca1",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_history_investigate_past",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11038,
+        11046
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_history_search_commits": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "cff2cf4bca026d38ad6d0cbd18ae6dd809e18af11f9e9944ee9a6fe66b93baaa",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_history_search_commits",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11028,
+        11033
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_history_trace_evolution": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "d8163c34ab7bbfb3423e11c72d8458011a71f83a86ca9ac258f21ef9cab626dc",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_history_trace_evolution",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11041,
+        11051
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_test_verification": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "2ef5bec0f616cfa0409e15630fa1594333aeb6731b5ad06cf2decd50cae49c46",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_test_verification",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11022,
+        11034
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_coding_worktree_isolation": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "3a4e88cf369d47db79f6630bcdbd24ae634838f47c6144343e42d4bc9fe82ac6",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_coding_worktree_isolation",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11038,
+        11037
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_deep_work": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "ebf1789017f8e4757211016c6535e2cd8f01a0624b4ba37e92499714cca3cca2",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_deep_work",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11027,
+        11039
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_deliver_an_objective_end_to_end": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "921979dda7b24f5ccdd729cb0c173ea7460b503292f1b52ad7963cb745347b6d",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_deliver_an_objective_end_to_end",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11023,
+        11042
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_devenv_shell_setup": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "5c9d40ebc3f26b3c47ae7ffc5b680aa49a67d7fb6a12c97a5182643efd21ba73",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_devenv_shell_setup",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11041,
+        11036
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_docs_for_whether_a_readme_earns_its_place": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "d024f75307a8e6bcf99e7033516e3eba0ef1d2777488cf0f37270fcaa904f7a4",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_docs_for_whether_a_readme_earns_its_place",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11041,
+        11037
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
     "skill_routing/routing_to_docs_readme_standards": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "f10d0b994bce8a4dbbc8ae89345e0e46ccc60067171ae5ee80c40a5f302f61bb",
+      "fingerprint": "14192c4ce90f79d2b5d5187672510b828d41b0ab5e6629c9f3fc821e3ee9f183",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_docs_readme_standards",
       "passes": 2,
       "sampleOutcomes": [
@@ -3517,8 +3619,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11039,
-        11037
+        11038,
+        11031
       ],
       "toolOutputCharacters": [
         0,
@@ -3529,10 +3631,10 @@
     "skill_routing/routing_to_explore_for_a_repo_sweep": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "264cc59a7b8da72ea491d1bc6d8db11d499cc3d46d31de3c726ba6c22edf0fa9",
+      "fingerprint": "024800eb5874cce3b831fe0b93e19a71eb577e09fe07d33f46f5d123d36e89e3",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_explore_for_a_repo_sweep",
       "passes": 2,
       "sampleOutcomes": [
@@ -3541,8 +3643,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11036,
-        11030
+        11039,
+        11048
       ],
       "toolOutputCharacters": [
         0,
@@ -3553,10 +3655,10 @@
     "skill_routing/routing_to_explore_for_where_hooks_are_configured": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "a74b3702c61c1e77302fd6816b27e06727821a2ad6718390927a67c6780a467c",
+      "fingerprint": "5001075f39f9d1be615e51e7f5392fe5062a0adf6e91b12f937231a4c1839d54",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_explore_for_where_hooks_are_configured",
       "passes": 2,
       "sampleOutcomes": [
@@ -3565,8 +3667,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11054,
-        11041
+        11058,
+        11055
       ],
       "toolOutputCharacters": [
         0,
@@ -3577,10 +3679,10 @@
     "skill_routing/routing_to_forge_open_a_merge_request": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "419b587470362db87269a6a2f205fbb0c93607d21f5c7d49177d1fd166b261f0",
+      "fingerprint": "2da79d5b70eb691a1802fc8fc7aa5c1ee93c243a203fd70f538487a450fca976",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_forge_open_a_merge_request",
       "passes": 2,
       "sampleOutcomes": [
@@ -3589,8 +3691,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11029,
-        11022
+        11031,
+        11027
       ],
       "toolOutputCharacters": [
         0,
@@ -3601,10 +3703,10 @@
     "skill_routing/routing_to_forge_read_failing_pipeline": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "b4fadf18abd82e4509adcd25630d7ea6a650e6fd084b6ebf9ddc0e2d71ef0e92",
+      "fingerprint": "7895012eb146dd69db7c6731cb7e074c4a96884f41ba10eefc194b7d9ff45dc8",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_forge_read_failing_pipeline",
       "passes": 2,
       "sampleOutcomes": [
@@ -3613,8 +3715,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11033,
-        11058
+        11040,
+        11036
       ],
       "toolOutputCharacters": [
         0,
@@ -3625,10 +3727,10 @@
     "skill_routing/routing_to_forge_resolve_review_threads": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "cf490ddf8585500a364e0c88108dd71ccc90af517490a892d252fefeae86b5e1",
+      "fingerprint": "afea702e9bd71552fef7a7bb6488cdf2562b9fb23e9ba6a79368250d07e90724",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_forge_resolve_review_threads",
       "passes": 2,
       "sampleOutcomes": [
@@ -3637,8 +3739,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11035,
-        11027
+        11032,
+        11044
       ],
       "toolOutputCharacters": [
         0,
@@ -3649,10 +3751,10 @@
     "skill_routing/routing_to_goal_prompt_for_a_scheduled_agent": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "75a885c684d54d48d0b81367f1d3e52cc99d9f3ee7de6390882c327396ddd744",
+      "fingerprint": "ed9b2b41f46fabeb09be01c4ca79ea6f8220cac7afbce9148235a5ab1e056373",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_goal_prompt_for_a_scheduled_agent",
       "passes": 2,
       "sampleOutcomes": [
@@ -3661,8 +3763,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11039,
-        11028
+        11030,
+        11031
       ],
       "toolOutputCharacters": [
         0,
@@ -3673,10 +3775,10 @@
     "skill_routing/routing_to_herdr_for_a_new_pane": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "f5061594df37a608e0b055ca2017393ac85dc7d34c4480b1f8b20fa71d6e834c",
+      "fingerprint": "92075c87498dc7c3c547784644f68133e00d2e5065812c64654488d17a0d0188",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_herdr_for_a_new_pane",
       "passes": 2,
       "sampleOutcomes": [
@@ -3685,7 +3787,7 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11027,
+        11031,
         11033
       ],
       "toolOutputCharacters": [
@@ -3697,10 +3799,10 @@
     "skill_routing/routing_to_home_assistant_ac_control": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "1933f98cdaf1b620ca597b386526dc0bc739db901da42ea981e3a5448ce63440",
+      "fingerprint": "45e7a6007634bc06117a951e1b9234b0b08f74b6b74c3ee8132da0f5d6577057",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_home_assistant_ac_control",
       "passes": 2,
       "sampleOutcomes": [
@@ -3709,8 +3811,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11027,
-        11030
+        11037,
+        11031
       ],
       "toolOutputCharacters": [
         0,
@@ -3721,10 +3823,10 @@
     "skill_routing/routing_to_home_assistant_lights": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "a3efad9b8cfa3bf7f08a971f518650e067f0fec09650bc393644fb99a2ad3baa",
+      "fingerprint": "b546093cce82a6f1b1edc8202cb396fe4952fe757d0113413761d13842171fc1",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_home_assistant_lights",
       "passes": 2,
       "sampleOutcomes": [
@@ -3733,8 +3835,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11027,
-        11027
+        11031,
+        11010
       ],
       "toolOutputCharacters": [
         0,
@@ -3745,10 +3847,10 @@
     "skill_routing/routing_to_humanize_for_a_merge_request_description": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "7faab008c3c9e9da1983b194370add4a5b03271eadee24de78a719721a9676b6",
+      "fingerprint": "7ac9c2cf0694e0085d506f2e72d2c7c510fa525078d76ee57ca2717fccba2860",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_humanize_for_a_merge_request_description",
       "passes": 2,
       "sampleOutcomes": [
@@ -3757,8 +3859,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11058,
-        11050
+        11053,
+        11059
       ],
       "toolOutputCharacters": [
         0,
@@ -3769,10 +3871,10 @@
     "skill_routing/routing_to_instructions_for_a_new_skill_file": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "8219db666b72ed80dda3bc27c86e01ea8bdba862e100214e0c8a0a9fe04dbe62",
+      "fingerprint": "3b525bec80db320c9e165e874e48d84800a6b91bfeb5d17e9f21ab54533a44dc",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_instructions_for_a_new_skill_file",
       "passes": 2,
       "sampleOutcomes": [
@@ -3781,8 +3883,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11035,
-        11048
+        11040,
+        11056
       ],
       "toolOutputCharacters": [
         0,
@@ -3793,10 +3895,10 @@
     "skill_routing/routing_to_instructions_skill_creation": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "d53a17729c737e37bd28fd109c0be26a9d20de8ddc4e5953221e10ddf769ff41",
+      "fingerprint": "9c16d2ced84ac975e2ba6c447a90709f5f01833092e65b842938eeb85ee92885",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_instructions_skill_creation",
       "passes": 2,
       "sampleOutcomes": [
@@ -3805,8 +3907,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11042,
-        11037
+        11049,
+        11053
       ],
       "toolOutputCharacters": [
         0,
@@ -3817,10 +3919,10 @@
     "skill_routing/routing_to_instructions_skill_routing_failure": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "5a733def921b5325fcd769c2fba1ce768ed0d9725c0550c2d6ea853f87997d72",
+      "fingerprint": "a70a4394fdc0b48193d55846fa45d55bfc039328213780234c8895e647f6d2b4",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_instructions_skill_routing_failure",
       "passes": 2,
       "sampleOutcomes": [
@@ -3829,8 +3931,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11087,
-        11089
+        11105,
+        11075
       ],
       "toolOutputCharacters": [
         0,
@@ -3841,10 +3943,10 @@
     "skill_routing/routing_to_machine_resources": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "aa8bfc44199a90062030f6a79e6e8f566b71a57bfd704033f391af3c16f796a9",
+      "fingerprint": "5fba041aeb42ec678b9951c877f20354c204724399ae996c0154436baea797a5",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_machine_resources",
       "passes": 2,
       "sampleOutcomes": [
@@ -3853,8 +3955,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11034,
-        11030
+        11037,
+        11042
       ],
       "toolOutputCharacters": [
         0,
@@ -3865,10 +3967,10 @@
     "skill_routing/routing_to_media_youtube_search": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "5d59aec7514be359685f10e0a4e1ec581cd521e6bdff4aae6146beb614749526",
+      "fingerprint": "095f0a50e9fe371319d83d27c980cfc4e30ffb2b9f667d541579497b82843c24",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_media_youtube_search",
       "passes": 2,
       "sampleOutcomes": [
@@ -3877,8 +3979,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11033,
-        11035
+        11034,
+        11033
       ],
       "toolOutputCharacters": [
         0,
@@ -3889,10 +3991,10 @@
     "skill_routing/routing_to_notify_task_completion": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "3a524c82f32b593bdc4138f38b7ab0345cddbca0f6fb1f590ff254ed7873a20a",
+      "fingerprint": "ae441346f2dc98508aff5793eeb517c96c4317b29532f1adba27b1ad0cf9a78e",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_notify_task_completion",
       "passes": 2,
       "sampleOutcomes": [
@@ -3901,8 +4003,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11025,
-        11027
+        11035,
+        11043
       ],
       "toolOutputCharacters": [
         0,
@@ -3913,10 +4015,10 @@
     "skill_routing/routing_to_orchestrate_same_goal_delegation": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "e1efb21404ca44926ca39c141e55549c89a1f4f17d18b4484b0ddb32e6cab08f",
+      "fingerprint": "ad680531e8957fb9bfe2286e85e5f0d119e4672f2197a4c6f44ab9a4a486f86c",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_orchestrate_same_goal_delegation",
       "passes": 2,
       "sampleOutcomes": [
@@ -3925,8 +4027,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11051,
-        11043
+        11052,
+        11047
       ],
       "toolOutputCharacters": [
         0,
@@ -3937,10 +4039,10 @@
     "skill_routing/routing_to_personal_bare_twitter_url": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "0b3fd720dfa2283b996d87c65a6b53a9abcbb3254dcd854c57bc7fafd1a0ff30",
+      "fingerprint": "61bacf939d982862acf9a85d80229175ad2fd0b3fe920ab5650f7e7412c51dc7",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_personal_bare_twitter_url",
       "passes": 2,
       "sampleOutcomes": [
@@ -3949,8 +4051,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11037,
-        11022
+        11049,
+        11034
       ],
       "toolOutputCharacters": [
         0,
@@ -3961,10 +4063,10 @@
     "skill_routing/routing_to_personal_bare_xcom_url": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "dba60c1bb9d695566f2fa66809fe78143597eb0d08b4e4ad5f9724b396d84a3a",
+      "fingerprint": "46847c95e87986d56fcea81d11f17e7ab47e355921ac899faaee405f7ed08255",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_personal_bare_xcom_url",
       "passes": 2,
       "sampleOutcomes": [
@@ -3973,8 +4075,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11042,
-        11038
+        11051,
+        11034
       ],
       "toolOutputCharacters": [
         0,
@@ -3985,10 +4087,10 @@
     "skill_routing/routing_to_personal_tweet_media_fetch": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "bc3b43ed855bac6a758c86673ffaa6db5d41448e72dab94ecc293f91777b0bf5",
+      "fingerprint": "1b80757bf669ea56e04e5a675ac9bc0d08565ff0b35b6a911c10e3f2d43fd5b6",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_personal_tweet_media_fetch",
       "passes": 2,
       "sampleOutcomes": [
@@ -3997,8 +4099,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11041,
-        11027
+        11031,
+        11028
       ],
       "toolOutputCharacters": [
         0,
@@ -4009,10 +4111,10 @@
     "skill_routing/routing_to_personal_twitter_post": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "352d98fd3c93e48ee6f20eb909874ac40bd0392b3721bfcb785c2f185df9d5e1",
+      "fingerprint": "35242ef134e9e558f206f9b2e7ac2c7742066b87b4b1e8ea5e6534ec8c51af50",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_personal_twitter_post",
       "passes": 2,
       "sampleOutcomes": [
@@ -4021,8 +4123,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11031,
-        11026
+        11033,
+        11032
       ],
       "toolOutputCharacters": [
         0,
@@ -4033,10 +4135,10 @@
     "skill_routing/routing_to_personal_twitter_scrape": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "3b1eced6e8ae340b5e774e7c8e375304fac2d54cf17414bcfa6adc2a11108ffa",
+      "fingerprint": "4a30a0de72b4ae22c7200e1995386f60ec3f19b4546b0ddecf07846695395cd4",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_personal_twitter_scrape",
       "passes": 2,
       "sampleOutcomes": [
@@ -4045,8 +4147,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11031,
-        11020
+        11030,
+        11033
       ],
       "toolOutputCharacters": [
         0,
@@ -4057,10 +4159,10 @@
     "skill_routing/routing_to_personal_xcom_url_what_does_it_say": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "f9a7856a8140b84cda3258351f6fca6f34b7b60dbac43cf5131855ee47e4d511",
+      "fingerprint": "0caee60a9efc970a7c3929ba933e7fa234d431aac5ce41178133199dcf27352d",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_personal_xcom_url_what_does_it_say",
       "passes": 2,
       "sampleOutcomes": [
@@ -4069,8 +4171,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11038,
-        11036
+        11048,
+        11041
       ],
       "toolOutputCharacters": [
         0,
@@ -4081,10 +4183,10 @@
     "skill_routing/routing_to_personal_xcom_url_with_context": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "93492b6e1f558fc37ad6d3a19ab06b769356e2875704bf4ddb2ede3e9c24076d",
+      "fingerprint": "34696f8d47ede49cf90d02b319616dc52cb1e6f88adf967c03fa73acf1587b22",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_personal_xcom_url_with_context",
       "passes": 2,
       "sampleOutcomes": [
@@ -4093,8 +4195,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11177,
-        11121
+        11149,
+        11153
       ],
       "toolOutputCharacters": [
         0,
@@ -4105,10 +4207,10 @@
     "skill_routing/routing_to_phone_status_battery": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "0c81bd8fe94ed064d7cfa09909b94eb074dcb1efcdf86992f12eb5391cd5f5c7",
+      "fingerprint": "fea8471bc646d0667ed41a0af921f78802e56d3de6b5282676216588cabec2ed",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_phone_status_battery",
       "passes": 2,
       "sampleOutcomes": [
@@ -4117,8 +4219,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11018,
-        11018
+        11028,
+        11029
       ],
       "toolOutputCharacters": [
         0,
@@ -4129,10 +4231,10 @@
     "skill_routing/routing_to_ponto_time_tracking": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "480824be460a9cd016fa03a52950a6e49b4eb4a2ec5cc3827d70279da295003b",
+      "fingerprint": "4987bdca5b525ecc674cadcdb5c0e827946efb064bfc37765cbd0332dba5d3f8",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_ponto_time_tracking",
       "passes": 2,
       "sampleOutcomes": [
@@ -4141,8 +4243,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11046,
-        11041
+        11052,
+        11054
       ],
       "toolOutputCharacters": [
         0,
@@ -4153,11 +4255,131 @@
     "skill_routing/routing_to_process_design_before_agents_run": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "706c542068bbd7afd5e2412b835542d82c575d273f77017999d6a1e899fdf6ac",
+      "fingerprint": "3cb381bde912a6763b98b7b046e6596036d9cce0be0c3a4be02502eff0956e23",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_process_design_before_agents_run",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11028,
+        11026
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_process_design_redraw_a_pipeline": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "0b6b63f45f8df4f1818d26f5ecf3e0d84faa996df07d31463f2b9b0f85c73efb",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_process_design_redraw_a_pipeline",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11024,
+        11040
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_quickshell_bar_module": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "a6f7ec033b2672526ea7aa21846fda07f25863bdc0dde5a9650668891c5c52fa",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_quickshell_bar_module",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11039,
+        11034
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_research_digest": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "972bc226f90201677c2b6def72c25a62a32d567b2da1575adb8fd2d318a637b7",
+      "heldOut": true,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_research_digest",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11023,
+        11013
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_research_for_latest_release_notes": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "931d0e1861f458eb23235bca33b0ab27b193af7fda57dffbc0d7821c2416a2b3",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_research_for_latest_release_notes",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11056,
+        11058
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_research_tool_comparison": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "e96e484e7323211cdc40dba8dbe4b38e6801e87b901d3c5bed79408c2b32f132",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_research_tool_comparison",
       "passes": 2,
       "sampleOutcomes": [
         true,
@@ -4174,133 +4396,13 @@
       ],
       "type": "instruction"
     },
-    "skill_routing/routing_to_process_design_redraw_a_pipeline": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "42ce24cbd91ad46e0ba8d9cbba51fba429632fe0008744d8cab9175e4a22ece8",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_process_design_redraw_a_pipeline",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11046,
-        11039
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_quickshell_bar_module": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "39f6e1195d21119c720a7e6ccf822d3148da16f815e4af84168b1501ebf46cae",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_quickshell_bar_module",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11040,
-        11026
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_research_digest": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "9847ca6783c2f08c84a8ce27c390eb5312947b15a1abce7a7745d7d05bf0137a",
-      "heldOut": true,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_research_digest",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11011,
-        11026
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_research_for_latest_release_notes": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "266ba043d58d0ac79af2cd4db3f7aaeb603c22bcd9063e3bbdd50be15a213f28",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_research_for_latest_release_notes",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11048,
-        11054
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
-    "skill_routing/routing_to_research_tool_comparison": {
-      "category": "skill_routing",
-      "costUsd": 0,
-      "fingerprint": "b5842f141c431cb97dcb6ab08d9e77b03cde9e0e7dd13ef2b1ce7cdbaaa19713",
-      "heldOut": false,
-      "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
-      "name": "routing_to_research_tool_comparison",
-      "passes": 2,
-      "sampleOutcomes": [
-        true,
-        true
-      ],
-      "samples": 2,
-      "tokenTotals": [
-        11021,
-        11006
-      ],
-      "toolOutputCharacters": [
-        0,
-        0
-      ],
-      "type": "instruction"
-    },
     "skill_routing/routing_to_review_for_a_diff_before_merge": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "f99f502491e7f42e1cdbd5a0a4c227a3faf53ccd5e709c7463426be0bb72a149",
+      "fingerprint": "9d53ad7534d26155f17b8845bc68b48ccdece87e862685efee3c88495e363ae0",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_review_for_a_diff_before_merge",
       "passes": 2,
       "sampleOutcomes": [
@@ -4309,8 +4411,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11015,
-        11014
+        11035,
+        11034
       ],
       "toolOutputCharacters": [
         0,
@@ -4321,10 +4423,10 @@
     "skill_routing/routing_to_review_for_an_instruction_file_audit": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "32b1b5d9cef956e4fc0d3089fb9254267e78ab22bc6d3508fca69ea236c05509",
+      "fingerprint": "896e74fdccb8fe82a0ddf3849299edd7c60e900b6b609af0c4ef2d88254c41e1",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_review_for_an_instruction_file_audit",
       "passes": 2,
       "sampleOutcomes": [
@@ -4333,8 +4435,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11087,
-        11058
+        11071,
+        11063
       ],
       "toolOutputCharacters": [
         0,
@@ -4345,10 +4447,10 @@
     "skill_routing/routing_to_review_for_an_unbiased_reviewer_pass": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "f7782ab031f1358c7f05aa3265a11c62be3acb5f6fafa622979218977f1127ca",
+      "fingerprint": "02ce23427ba04e95df91fe76dcb43c993884da192a44e0b21e1baed83c151677",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_review_for_an_unbiased_reviewer_pass",
       "passes": 2,
       "sampleOutcomes": [
@@ -4357,8 +4459,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11046,
-        11097
+        11076,
+        11071
       ],
       "toolOutputCharacters": [
         0,
@@ -4369,10 +4471,10 @@
     "skill_routing/routing_to_review_for_the_final_pass": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "73521154d717d092a53a31d3f03f0eed71a41859cab57f488b22fde23a676067",
+      "fingerprint": "499edb4c0101578245f656545e9eaeb0c67e0b46ea7158babf04a4d2bb2093ac",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_review_for_the_final_pass",
       "passes": 2,
       "sampleOutcomes": [
@@ -4381,8 +4483,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11041,
-        11041
+        11043,
+        11051
       ],
       "toolOutputCharacters": [
         0,
@@ -4393,20 +4495,20 @@
     "skill_routing/routing_to_ril_capture_backlog": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "1c285726dfabcf2460c672bf0a61926cb57b1b76d31668e070d3bcac6064347b",
+      "fingerprint": "54ab60fa401f302ee57d7103ea62657a97a348827d3e1b2d70075fc7af2bb7e5",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_ril_capture_backlog",
-      "passes": 2,
+      "passes": 1,
       "sampleOutcomes": [
         true,
-        true
+        false
       ],
       "samples": 2,
       "tokenTotals": [
-        11076,
-        11066
+        11111,
+        11097
       ],
       "toolOutputCharacters": [
         0,
@@ -4417,10 +4519,10 @@
     "skill_routing/routing_to_ril_inbox_processing": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "a5dceebe4e77fca39cc69743242ac4501c73290f61e5bc38392c70a39e05a029",
+      "fingerprint": "0e2b440d81d18025a181215e346a702a94486e0cccc0638ab57ae7a21dffc403",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_ril_inbox_processing",
       "passes": 2,
       "sampleOutcomes": [
@@ -4429,8 +4531,32 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11033,
-        11036
+        11040,
+        11034
+      ],
+      "toolOutputCharacters": [
+        0,
+        0
+      ],
+      "type": "instruction"
+    },
+    "skill_routing/routing_to_security_audit": {
+      "category": "skill_routing",
+      "costUsd": 0,
+      "fingerprint": "e956a9f09c0ac5d4cc22b814522a918c315d69a888bea6fe677da6dd893b57f3",
+      "heldOut": false,
+      "level": "unit",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
+      "name": "routing_to_security_audit",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        11050,
+        11061
       ],
       "toolOutputCharacters": [
         0,
@@ -4441,10 +4567,10 @@
     "skill_routing/routing_to_tmux_control": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "bd12f5acbd096cb7ae85296f6ca7f0965d3d0903fde615da0f1efbbc189a0688",
+      "fingerprint": "b6352c93a4aa1ce034d1fd64b04326ed6251f40cc2e012d420bee461bb880824",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_tmux_control",
       "passes": 2,
       "sampleOutcomes": [
@@ -4453,8 +4579,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11018,
-        11006
+        11023,
+        11012
       ],
       "toolOutputCharacters": [
         0,
@@ -4465,10 +4591,10 @@
     "skill_routing/routing_to_url_shortener_for_a_query_url": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "e8602a05b90232187043633c1775cd69c1f149fdcbacd14717b64da0958c819f",
+      "fingerprint": "802a7e011c3d94766f0fbd9fa232f2b9520333a0638570c0910680d50c71ab8c",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_url_shortener_for_a_query_url",
       "passes": 2,
       "sampleOutcomes": [
@@ -4477,8 +4603,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11019,
-        11026
+        11026,
+        11029
       ],
       "toolOutputCharacters": [
         0,
@@ -4489,10 +4615,10 @@
     "skill_routing/routing_to_url_shortener_for_a_terminal_link": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "803614fb3dd2f383979e85765641bf60f24fef27a3dc97885f16126042f10764",
+      "fingerprint": "8a6aa469409451f0ebd71c7d19fbfc487712fbd3be970798e5b13b4611d84594",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_url_shortener_for_a_terminal_link",
       "passes": 2,
       "sampleOutcomes": [
@@ -4501,8 +4627,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11037,
-        11038
+        11030,
+        11041
       ],
       "toolOutputCharacters": [
         0,
@@ -4513,10 +4639,10 @@
     "skill_routing/routing_to_wellput_for_a_reply_the_reader_could_not_follow": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "686db3bf26f018a0260c87c0cbdf22ddbd34035b9fd77105d23aca04f81c0579",
+      "fingerprint": "9bd2debdeca8b90b34e315cd274a018c001f804fdedd900ffb78c490211cbf0d",
       "heldOut": true,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_wellput_for_a_reply_the_reader_could_not_follow",
       "passes": 2,
       "sampleOutcomes": [
@@ -4525,8 +4651,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11046,
-        11041
+        11048,
+        11043
       ],
       "toolOutputCharacters": [
         0,
@@ -4537,10 +4663,10 @@
     "skill_routing/routing_to_wellput_for_an_overlong_reply": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "b47f8ea1a2e13e02a58479599a8e2f7ef5df29ab8640cec4a017aeaa03929ca7",
+      "fingerprint": "4acec0237ce97a5820e70f11419e4b1c4bcd0eac9e220397ce44d29ea8be1369",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_wellput_for_an_overlong_reply",
       "passes": 2,
       "sampleOutcomes": [
@@ -4549,8 +4675,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11072,
-        11062
+        11073,
+        11067
       ],
       "toolOutputCharacters": [
         0,
@@ -4561,10 +4687,10 @@
     "skill_routing/routing_to_workspace_for_another_repository": {
       "category": "skill_routing",
       "costUsd": 0,
-      "fingerprint": "3a97473b377bea331a3c3c177593e7e2ccd371c508f7045ce6284ca2014ec065",
+      "fingerprint": "8101c89344a86683c5f5e4fd9c68745e482fa90fe782870f8c2c687643ab4747",
       "heldOut": false,
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T00:51:31.890Z",
       "name": "routing_to_workspace_for_another_repository",
       "passes": 2,
       "sampleOutcomes": [
@@ -4573,8 +4699,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11048,
-        11045
+        11050,
+        11056
       ],
       "toolOutputCharacters": [
         0,
@@ -5995,7 +6121,7 @@
     "agent-harness/agent-instructions/skills/agent-workflows/goal-prompt/SKILL.md": "3fefc3308d9dda7f61f6a5ea429e257cd0b3688c260714229017438d0cd42efd",
     "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md": "5b09048ac4d84234291c4bd6307f2e5dc2d1777ebb4f405b8805d298a6f1bc1d",
     "agent-harness/agent-instructions/skills/agent-workflows/instructions/references/skills.md": "72d1e082f7f7f05dbfa93873430348b1e9a96a69960c93ad31dfc9534cf2c63f",
-    "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md": "4c969f5bba24e4951f48fa056e4535a687da1868301060c80e8dd4dc2781b301",
+    "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md": "23e27629491c84ad2e1690bfef21a98f6979d8bac9d5c9567cbed8e4ce848f9d",
     "agent-harness/agent-instructions/skills/agent-workflows/process-design/SKILL.md": "cc1777853418fdd4125c3a179deadeb813110477bf8007f1222201088ec46f1b",
     "agent-harness/agent-instructions/skills/development/agent-api/SKILL.md": "280da53f7922a3052dedb6903c410959f2dabbae6e8187bc2351b11f0c5a6b5b",
     "agent-harness/agent-instructions/skills/development/architecture/SKILL.md": "07104b30d6deec31d5d3499c10e8022373fd83e098bfe2d6c4990a6874b0bcc8",
@@ -6062,5 +6188,5 @@
     }
   },
   "profileId": "729a83d6cd00",
-  "recordedAt": "2026-11-08T00:07:04.004Z"
+  "recordedAt": "2026-11-08T00:51:31.890Z"
 }

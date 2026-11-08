@@ -1,7 +1,7 @@
 {
   "project": "dotfiles-agent-instructions",
-  "startedAt": "2026-11-08T00:06:36.260Z",
-  "finishedAt": "2026-11-08T00:07:04.004Z",
+  "startedAt": "2026-11-08T00:45:01.206Z",
+  "finishedAt": "2026-11-08T00:51:31.890Z",
   "profile": {
     "subject": {
       "client": "codex",
@@ -15,7 +15,7 @@
     }
   },
   "profileId": "729a83d6cd00",
-  "commit": "7442645bc77b8d4045afb9eb762847e288a22e8f",
+  "commit": "eb6912c6a89366a50ef5ea9c5a5d4b867fdecc3d",
   "instrument": {
     "agentEvals": "0.1.0",
     "measurementContract": 1,
@@ -30,69 +30,4472 @@
     "affected": true,
     "partial": true
   },
-  "overlaidPaths": 9,
+  "overlaidPaths": 5,
   "leakedSkills": [],
   "instructionFingerprints": {
-    "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md": "1fc29c9584f9584e2611f3c6ae7ec2623fc68cde959a082973588f9dbe56e18d"
+    "agent-harness/agent-instructions/skills/agent-workflows/agent-harness/SKILL.md": "298eff5916dfe0191ec572689c4b91f7bbc624989cb43cafe53235b836cf5884",
+    "agent-harness/agent-instructions/skills/agent-workflows/agent-session/SKILL.md": "48838cfca34414f669d5acf35818d402f7322e2883e16952340d56a20d18cf77",
+    "agent-harness/agent-instructions/skills/agent-workflows/deep-work/SKILL.md": "0bed9a8949ac66a4a2960b479ecf0212b384bd5dc1333b6762da5e165a188e5e",
+    "agent-harness/agent-instructions/skills/agent-workflows/deliver/SKILL.md": "00a8f0eafd6360782d15a699e704f904c28e02c88fc1bd4525e81fa6bf8da657",
+    "agent-harness/agent-instructions/skills/agent-workflows/goal-prompt/SKILL.md": "3fefc3308d9dda7f61f6a5ea429e257cd0b3688c260714229017438d0cd42efd",
+    "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md": "5b09048ac4d84234291c4bd6307f2e5dc2d1777ebb4f405b8805d298a6f1bc1d",
+    "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md": "23e27629491c84ad2e1690bfef21a98f6979d8bac9d5c9567cbed8e4ce848f9d",
+    "agent-harness/agent-instructions/skills/agent-workflows/process-design/SKILL.md": "cc1777853418fdd4125c3a179deadeb813110477bf8007f1222201088ec46f1b",
+    "agent-harness/agent-instructions/skills/development/agent-api/SKILL.md": "280da53f7922a3052dedb6903c410959f2dabbae6e8187bc2351b11f0c5a6b5b",
+    "agent-harness/agent-instructions/skills/development/architecture/SKILL.md": "07104b30d6deec31d5d3499c10e8022373fd83e098bfe2d6c4990a6874b0bcc8",
+    "agent-harness/agent-instructions/skills/development/ci-watcher/SKILL.md": "1da5915bad67e17e70f1f1761068069fb9f1d848329663445832e80a15ee31c6",
+    "agent-harness/agent-instructions/skills/development/coding/SKILL.md": "95cba50167494b0af7e10ac68baab1914d937f9f83a382f2933f6ae210d92869",
+    "agent-harness/agent-instructions/skills/development/devenv/SKILL.md": "d21dc98dd06378766f42232becd8e0dae0bbf8861eef0a440ce90dd4ac11bc6f",
+    "agent-harness/agent-instructions/skills/development/explore/SKILL.md": "12358bc1ebf9bccccefdd5247c2345991bac6335db0f64f86bd5e5c95a2d0f8c",
+    "agent-harness/agent-instructions/skills/development/forge/SKILL.md": "814edcaca17d8d8fb0e51c5b5a61bfdbe098ddb0d678f0101b5ef3e2993f086f",
+    "agent-harness/agent-instructions/skills/development/review/SKILL.md": "a83636ca401c397b9a786bb646eead71dee098a32d8414b0ec0e9f6f3ee671c1",
+    "agent-harness/agent-instructions/skills/knowledge/obsidian/SKILL.md": "55289de19fc25cb7e9efd78f73c4d79edbd3fc1db5a808d3547fa3005d38b042",
+    "agent-harness/agent-instructions/skills/knowledge/research/SKILL.md": "ddcd515a5e16219158cc788b43b7092a900dc9a30c34cbde5003f55160ef85c2",
+    "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md": "84e25f69227859d574cdca4b73d7ce743e4f199f2e305fb233443cccbbb66d8e",
+    "agent-harness/agent-instructions/skills/knowledge/todo/SKILL.md": "21b7b60c50d0b58a9f4610079246b3a9f4d7eb332ff51a619a1d0b63bfbd3345",
+    "agent-harness/agent-instructions/skills/media/media-generation/SKILL.md": "7fc475c8ee7b262ff6210173856263381cea14bd5b20cc8f5a1685ac0dadea75",
+    "agent-harness/agent-instructions/skills/media/twitter/SKILL.md": "f95d8a63f564f77d5d3cd5a1f8138bc925833c34ac39b234cd521fe282d82c6e",
+    "agent-harness/agent-instructions/skills/media/youtube/SKILL.md": "a1000a92860bb347f3b50c08f44bf185d279bde4fa96b006e706156df13c3886",
+    "agent-harness/agent-instructions/skills/services/arr-stack/SKILL.md": "11c96419e57155b0c12f40d953433b18b516a97898aeb93f435f81c15fad868b",
+    "agent-harness/agent-instructions/skills/services/home-assistant/SKILL.md": "8f994febc08252785a9445dbcbc169d42732060d67f86af4cc85f7240ad7e750",
+    "agent-harness/agent-instructions/skills/services/nix/SKILL.md": "7032c0f1b04940d714a8a97874492a80cc146e832ccaf8658f24c114e95689c1",
+    "agent-harness/agent-instructions/skills/services/passwords/SKILL.md": "a550358ac25269fedfa81039732e74b8488b8d391b4803965e7974968f65c41c",
+    "agent-harness/agent-instructions/skills/services/phone-status/SKILL.md": "7a4e8947ada9d776855265922a582c277e3b4e33f0b83445fc31cef4f7f47670",
+    "agent-harness/agent-instructions/skills/services/url-shortener/SKILL.md": "80613e244ea3d6404b433314994a3be4c3c9baee4198546fff17582a51fd9918",
+    "agent-harness/agent-instructions/skills/workstation/avatar/SKILL.md": "f97bf6ad23a38d201f0be53ca352bb56bc9180a398af3539004d84968ce062a6",
+    "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md": "227b521367450137b1515d02f359199e9bce4cdd13076fbd0b902f1794e0825f",
+    "agent-harness/agent-instructions/skills/workstation/desktop/SKILL.md": "fdbe46164a10f6dd1f04d46a72e4b2d128fa62cc6021b9ded24baf4edbf1b68a",
+    "agent-harness/agent-instructions/skills/workstation/herdr/SKILL.md": "bdf61b32e85b53fe218c98cd712e85532127775b9ad1b9b169146062f795f94f",
+    "agent-harness/agent-instructions/skills/workstation/machine-resources/SKILL.md": "a0efe5d90b8d8628057ae3ae6dc138f578164f5a2f0c6450e2d105dd38e62f52",
+    "agent-harness/agent-instructions/skills/workstation/notify/SKILL.md": "3bdbf90f0ffd1df8a90f9f515b242d9ad17edc00f03e233a51c37c32268c9434",
+    "agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md": "f4b3453bb3cb0753f93bffe1ace10909ef9caeb0a380b746306b91001425d522",
+    "agent-harness/agent-instructions/skills/workstation/workspace/SKILL.md": "f89ae9211053fbe3a6b546c823daf923a75675c60eeba604236fe5ec81040b97",
+    "agent-harness/agent-instructions/skills/writing/docs/SKILL.md": "48f7ff25f1ebbd200537250be846048a72e88ea075d125f606c1c411e97c9678",
+    "agent-harness/agent-instructions/skills/writing/frontend-design/SKILL.md": "83d4485f4d786ffa37b9462c93c8b36c0f55e80c05e979081eb73d16d523d081",
+    "agent-harness/agent-instructions/skills/writing/humanize/SKILL.md": "0b5151125e5a231f1cd1b0709d1f4197581a5eee2f663a0a79d266293f538a71",
+    "agent-harness/agent-instructions/skills/writing/page-composer/SKILL.md": "feb7fda402335d70e082d7b2f7cf8cf3fc9d65769ac886f633fac18f5fa78220"
   },
   "cases": [
     {
-      "caseKey": "delegation/instruction_changes_check_baseline_without_resaving",
-      "category": "delegation",
-      "name": "instruction_changes_check_baseline_without_resaving",
-      "level": "unit",
+      "caseKey": "end_to_end_workflows/skill_discovery_browser_for_webpage",
+      "category": "end_to_end_workflows",
+      "name": "skill_discovery_browser_for_webpage",
+      "level": "end-to-end",
       "type": "instruction",
-      "instruction": "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md",
-      "prompt": "I edited agent instructions. What should I do with the committed eval baseline before delivery, and should I save a fresh baseline proactively?",
-      "expected": [
-        "Names `check --gravado` as the required credential-free CI check, distinguishes `dotfiles-evals check` as the separate strict verdict that also fails on changed instructions and expired evidence, and does not claim recorded results measure current model behavior. Avoids proactive `dotfiles-evals baseline --rodar`; a genuine measurement uses an existing authorized model route for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement."
-      ],
-      "fingerprint": "0251b2c501b00b2c85f349231c82818830a50cb64e630f49fafdea39cebd538a",
+      "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
+      "prompt": "Open the login page at https://app.example.internal/login, fill in the username\nfield with \"demo\", and click the Sign In button. This is a live authenticated\nweb app I need to interact with, not a page to fetch text from.\n",
+      "expected": [],
+      "fingerprint": "02c1c92e234740f635a5c42c58e16cb77feefb3c21081b420c4b4514d14e5502",
       "heldOut": false,
       "samples": [
         {
-          "caseKey": "delegation/instruction_changes_check_baseline_without_resaving",
+          "caseKey": "end_to_end_workflows/skill_discovery_browser_for_webpage",
           "repetition": 1,
-          "passed": false,
+          "passed": true,
           "assertions": [
             {
-              "kind": "judge",
-              "passed": false,
-              "message": "Juiz: reprovado para \"Names `check --gravado` as the required credential-free CI check, distinguishes `dotfiles-evals check` as the separate strict verdict that also fails on changed instructions and expired evidence, and does not claim recorded results measure current model behavior. Avoids proactive `dotfiles-evals baseline --rodar`; a genuine measurement uses an existing authorized model route for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement.\"."
+              "kind": "skillsUsed",
+              "passed": true,
+              "message": "Skill \"browser\" usada."
+            },
+            {
+              "kind": "skillsForbidden",
+              "passed": true,
+              "message": "Skill \"research\" não foi usada."
             }
           ],
-          "output": "Keep the committed baseline intact and run `dotfiles-evals check` before delivery. Report stale or missing evidence as **unmeasured**; passing CI’s `check --gravado` does not prove current model behavior.\n\nDon’t proactively save a fresh baseline with `dotfiles-evals baseline --rodar`. Measure through an existing authorized model route only for an explicitly requested measurement, a diagnosed quality regression, or a deliberate instruction improvement. Ordinary instruction edits and CI do not require re-recording.",
+          "output": "I couldn’t attach to the live browser because its connection state directory is read-only and desktop control is unavailable. I haven’t entered “demo” or clicked Sign In. The authenticated browser connection needs to be restored before I can proceed.",
           "tokenUsage": {
-            "input": 4613,
-            "output": 170,
-            "cacheRead": 21248,
+            "input": 26370,
+            "output": 724,
+            "cacheRead": 193536,
             "cacheWrite": 0,
-            "reasoning": 346
+            "reasoning": 279
           },
-          "toolOutputCharacters": 0,
-          "durationMs": 18585
+          "toolOutputCharacters": 34754,
+          "durationMs": 43900
         },
         {
-          "caseKey": "delegation/instruction_changes_check_baseline_without_resaving",
+          "caseKey": "end_to_end_workflows/skill_discovery_browser_for_webpage",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "skillsUsed",
+              "passed": true,
+              "message": "Skill \"browser\" usada."
+            },
+            {
+              "kind": "skillsForbidden",
+              "passed": true,
+              "message": "Skill \"research\" não foi usada."
+            }
+          ],
+          "output": "I couldn’t access the live browser: Chrome DevTools failed because its connection lock is on a read-only filesystem. Desktop access also failed.\n\nI haven’t opened the page, entered “demo,” or clicked Sign In. This session needs working browser access to continue.",
+          "tokenUsage": {
+            "input": 36573,
+            "output": 803,
+            "cacheRead": 274816,
+            "cacheWrite": 0,
+            "reasoning": 174
+          },
+          "toolOutputCharacters": 71107,
+          "durationMs": 56092
+        }
+      ]
+    },
+    {
+      "caseKey": "end_to_end_workflows/skill_discovery_nix_for_container",
+      "category": "end_to_end_workflows",
+      "name": "skill_discovery_nix_for_container",
+      "level": "end-to-end",
+      "type": "instruction",
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "prompt": "The postgres container on this host keeps restarting. Use this project's\ncontainer management wrapper (not raw docker/podman commands) to inspect\nstate, check logs, and say what is going wrong. The wrapper enforces\nordering to prevent data loss.\n",
+      "expected": [],
+      "fingerprint": "972de35ed9cf149fb122dc66594ca98139a627001e450294ea39aec137dbe7fc",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "end_to_end_workflows/skill_discovery_nix_for_container",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "skillsUsed",
+              "passed": true,
+              "message": "Skill \"nix\" usada."
+            }
+          ],
+          "output": "The diagnosis is blocked by Docker socket permissions. The project’s `docker-manager` wrapper failed on `list`, `validate`, `inspect postgres`, and `logs postgres` with:\n\n> permission denied while trying to connect to the docker API at unix:///var/run/docker.sock\n\nI couldn’t retrieve PostgreSQL’s state or logs, so the restart cause remains unknown. The null state printed by `inspect` isn’t valid evidence—it followed the access failure.\n\nNo containers or data were changed. The wrapper needs working daemon access before diagnosis can continue.",
+          "tokenUsage": {
+            "input": 11821,
+            "output": 970,
+            "cacheRead": 147456,
+            "cacheWrite": 0,
+            "reasoning": 131
+          },
+          "toolOutputCharacters": 17671,
+          "durationMs": 39876
+        },
+        {
+          "caseKey": "end_to_end_workflows/skill_discovery_nix_for_container",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "skillsUsed",
+              "passed": true,
+              "message": "Skill \"nix\" usada."
+            }
+          ],
+          "output": "I used the project’s `docker-manager` wrapper, but state inspection, logs, and validation all failed with:\n\n`permission denied ... unix:///var/run/docker.sock`\n\n`sudo` is also blocked by this environment’s “no new privileges” setting. I therefore can’t determine why PostgreSQL keeps restarting.\n\nNo containers or volumes were changed. Diagnosis requires running the wrapper from a session with Docker socket access.",
+          "tokenUsage": {
+            "input": 17090,
+            "output": 909,
+            "cacheRead": 135936,
+            "cacheWrite": 0,
+            "reasoning": 237
+          },
+          "toolOutputCharacters": 8909,
+          "durationMs": 40841
+        }
+      ]
+    },
+    {
+      "caseKey": "end_to_end_workflows/skill_discovery_research_for_external_info",
+      "category": "end_to_end_workflows",
+      "name": "skill_discovery_research_for_external_info",
+      "level": "end-to-end",
+      "type": "instruction",
+      "instruction": "agent-harness/agent-instructions/skills/knowledge/research/SKILL.md",
+      "prompt": "Research the latest Wayland compositors, compare their features, and recommend\none for a tiling-first power-user setup on NixOS. I need current information,\nnot stale documentation.\n",
+      "expected": [],
+      "fingerprint": "21a9d6aec50d131c35a0bebecdebcb863e4c8109ec9150f7a1215ab913ac76f8",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "end_to_end_workflows/skill_discovery_research_for_external_info",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "skillsUsed",
+              "passed": true,
+              "message": "Skill \"research\" usada."
+            },
+            {
+              "kind": "skillsForbidden",
+              "passed": true,
+              "message": "Skill \"nix\" não foi usada."
+            },
+            {
+              "kind": "skillsForbidden",
+              "passed": true,
+              "message": "Skill \"browser\" não foi usada."
+            }
+          ],
+          "output": "**I recommend Niri for a new tiling-first NixOS setup**, assuming you like scrolling columns and HDR is optional. Choose Sway if you want an i3-style split tree, or Hyprland if you want several layouts, Lua scripting, and extensive visual customization.\n\n**Checked November 7, 2026:** I compared live upstream releases with current Nixpkgs sources. Release versions below are upstream unless explicitly marked as packaged.\n\n| Compositor | Current version verified | Features that matter | My assessment |\n|---|---|---|---|\n| **Niri** | **26.04 — April 25, 2026** | Scrolling columns, independent workspaces per monitor, mixed DPI, fractional scaling, floating windows, overview, gestures, IPC, window/screen sharing. Mainline blur arrived in 26.04. | Best fit for a focused keyboard workflow if scrolling suits you. [Features](https://github.com/niri-wm/niri), [release](https://github.com/niri-wm/niri/releases/tag/v26.04) |\n| **Hyprland** | **0.57.1 — November 3, 2026** | Dwindle, master, monocle **and built-in scrolling**; Lua configuration, plugins, animations, HDR/color-management work. | Best for customization and layout flexibility; budget time for migrations. The latest patch fixes keybindings and NVIDIA black screens. [Layouts](https://wiki.hypr.land/configuring/layouts/scrolling-layout/), [releases](https://github.com/hyprwm/Hyprland/releases) |\n| **Sway** | **1.12 — May 25, 2026** | i3-compatible tiling; 1.12 adds individual-window capture, HDR10 with the Vulkan renderer, and newer color/workspace protocols. | My conservative choice for an established i3 workflow. Proprietary NVIDIA remains officially unsupported despite relaxed startup behavior. [Release notes](https://github.com/swaywm/sway/releases/tag/1.12) |\n| **River** | **0.5.0 packaged in NixOS unstable** | Compositor and window manager are separate processes; window-management policy comes from your chosen compatible WM, which can be swapped without restarting applications. | Most interesting for building your own window-management environment; more integration decisions. [Architecture](https://github.com/riverwm/river), [package](https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/by-name/ri/river/package.nix) |\n| **Mango** | **0.18.5 — November 4, 2026** | Tags, scrolling/master/monocle/dwindle layouts, scratchpads, swallowing, overview, effects, IPC, and reloadable configuration. | Strong option for a dwm-style power user. Recent configuration migrations make me more cautious about choosing it as the default. [Features](https://github.com/mangowm/mango), [releases](https://github.com/mangowm/mango/releases) |\n\nRiver’s upstream release endpoint was inaccessible, so **0.5.0 is a verified Nixpkgs version, not a claim that I independently confirmed its latest upstream release date**.\n\nNiri’s advantage is its layout behavior: opening another terminal does not shrink every existing window. Each monitor has a separate strip, and workspaces return to their original monitor after reconnection. Its IPC includes an event stream for scripting window and workspace behavior. Those are useful foundations for a terminal/editor/browser-heavy setup. [Layout behavior](https://github.com/niri-wm/niri), [IPC](https://niri-wm.github.io/niri/IPC.html)\n\nIts two material limitations are:\n\n- **HDR:** stable Niri is not the choice I would make for an HDR requirement. Current upstream discussion still points to development branches and forks. [HDR tracking](https://github.com/niri-wm/niri/discussions/1128)\n- **Layout preference:** scrolling columns are a workflow commitment. If arbitrary nested splits are central to how you work, choose Sway.\n\nOn NixOS, I would start with **the packaged Niri release and the built-in `programs.niri.enable` module**. Both the 26.05 and unstable branches currently package 26.04; a separate compositor flake is unnecessary for that release. The module provides session and portal integration. Manage `config.kdl` through Home Manager, install `xwayland-satellite` for X11 applications, and add your preferred launcher, bar, notifications, locker, and idle manager. [Stable package](https://github.com/NixOS/nixpkgs/blob/nixos-26.05/pkgs/by-name/ni/niri/package.nix), [module](https://github.com/NixOS/nixpkgs/blob/nixos-26.05/nixos/modules/programs/wayland/niri.nix), [Xwayland integration](https://niri-wm.github.io/niri/Xwayland.html)\n\nIf you choose Hyprland, use current Lua examples and keep compositor, portal, and plugin revisions aligned. Its NixOS documentation specifically warns about Mesa mismatches when mixing the upstream flake with a stable system. [Configuration change](https://hypr.land/news/update55/), [NixOS guidance](https://wiki.hypr.land/nix/installing-hyprland-on-nixos/)\n\nBefore committing, test your actual monitor hotplug, suspend/resume, screen sharing, and X11 applications—especially on a hybrid NVIDIA laptop, where Niri documents possible external-display stuttering. This recommendation is based on current sources, not hardware benchmarks. [Hardware caveat](https://niri-wm.github.io/niri/FAQ.html)",
+          "tokenUsage": {
+            "input": 100332,
+            "output": 3207,
+            "cacheRead": 616448,
+            "cacheWrite": 0,
+            "reasoning": 623
+          },
+          "toolOutputCharacters": 318726,
+          "durationMs": 108133
+        },
+        {
+          "caseKey": "end_to_end_workflows/skill_discovery_research_for_external_info",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "skillsUsed",
+              "passed": true,
+              "message": "Skill \"research\" usada."
+            },
+            {
+              "kind": "skillsForbidden",
+              "passed": true,
+              "message": "Skill \"nix\" não foi usada."
+            },
+            {
+              "kind": "skillsForbidden",
+              "passed": true,
+              "message": "Skill \"browser\" não foi usada."
+            }
+          ],
+          "output": "**I recommend niri for a tiling-first NixOS workstation**, provided you like scrolling columns and don’t require HDR or ICC color profiles. Choose **Hyprland** for broader layout customization and display features, or **Sway** for a familiar i3 workflow with conservative configuration.\n\nI checked upstream releases, recent announcements, and NixOS module sources **as of November 7, 2026**. Versions below are upstream releases; your pinned Nixpkgs revision may provide an older one.\n\n| Compositor | Latest verified release | Strengths for power users | Main tradeoff |\n|---|---|---|---|\n| **niri** | **26.04 — April 25, 2026** | Scrolling columns; independent workspaces per monitor; tabs, floating windows, overview, gestures, IPC, and window screencasting. Opening windows preserves existing window sizes. | Opinionated layout model. HDR/ICC work remains in experimental branches rather than the stable release. [Release](https://github.com/niri-wm/niri/releases/tag/v26.04), [HDR status](https://github.com/niri-wm/niri/discussions/1128) |\n| **Hyprland** | **0.57.1 — November 3, 2026** | Dwindle, master, scrolling, and monocle layouts; Lua-defined custom layouts; plugins; extensive effects; HDR/color management and per-output ICC profiles. | More upgrade maintenance. Version 0.57 removed support for old `.conf` configurations. [Latest release](https://github.com/hyprwm/Hyprland/releases/tag/v0.57.1), [layout/color additions](https://hypr.land/news/update55/), [configuration change](https://hypr.land/news/update57/) |\n| **Sway** | **1.12 — May 25, 2026** | i3-compatible tiling and scripting. Recent additions include individual-window capture, color-management protocols, and HDR10 with the Vulkan renderer. | Best suited to users who want i3’s established model. Proprietary NVIDIA remains outside its supported GPU policy, although startup is no longer refused. [Project](https://github.com/swaywm/sway), [1.12 release](https://github.com/swaywm/sway/releases/tag/1.12) |\n| **Mango / MangoWC** | **0.18.5 — November 4, 2026** | Tags, scrolling/master/grid/dwindle layouts, named scratchpads, swallowing, overview, effects, IPC, and reloadable configuration. | Promising, but younger and heavily concentrated around its lead developer; I would give it a longer trial before committing a work machine. [Features and contributors](https://github.com/mangowm/mango), [releases](https://github.com/mangowm/mango/releases) |\n| **river** | **0.5.0 — October 10, 2026** | Separates compositing from window management; supports interchangeable window managers through a stable protocol, including hot-swapping without restarting applications. | You must select and configure a separate window manager. Older river tiling guides describe **river-classic**, a different setup. [Current architecture](https://codeberg.org/river/river), [release notes](https://codeberg.org/river/river/releases) |\n\n**Why niri gets my vote:** its layout directly benefits terminal/editor/browser work. Columns retain useful widths as more windows open, while each monitor keeps its own strip and vertical workspaces. Mixed DPI, fractional scaling, floating windows, tabs, and a workspace overview are already available. My judgment is that this offers a strong balance of keyboard productivity and manageable configuration. [Features at the released version](https://github.com/niri-wm/niri/blob/v26.04/README.md)\n\nTwo common objections are now outdated. **Niri supports X11 applications through automatically managed xwayland-satellite**, integrated since 25.08; install satellite ≥0.7 and make it available on `PATH`. Applications that depend on absolute screen coordinates remain an exception. **Blur is also upstream now**, added in 26.04 alongside screencasting improvements and optional configuration includes useful for immutable NixOS configurations. [Xwayland details](https://niri-wm.github.io/niri/Xwayland.html), [26.04 changes](https://github.com/niri-wm/niri/releases/tag/v26.04)\n\n**For NixOS**, start with `programs.niri.enable = true;` and the packaged release. I verified that current `nixos-unstable` packages **26.04**. You do **not** need an external niri flake simply to run it. Home Manager can deploy `niri/config.kdl`, and the NixOS module handles session registration and portal configuration. Run it through its display-manager session or `niri-session`, which matters for working screen sharing. [NixOS setup](https://wiki.nixos.org/wiki/Niri), [package source](https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/by-name/ni/niri/package.nix), [session requirements](https://niri-wm.github.io/niri/Important-Software.html)\n\n**I would change the recommendation in these cases:**\n\n- **HDR, ICC profiles, or programmable layouts are essential:** choose **Hyprland**. Start with Lua configuration, and keep its compositor and portal packages aligned when using the upstream flake. [NixOS guidance](https://wiki.hypr.land/nix/installing-hyprland-on-nixos/)\n- **You already like i3 or want arbitrary nested splits:** choose **Sway**.\n- **You specifically want dwm-style tags plus many built-in layouts:** trial **Mango**, which supplies NixOS and Home Manager modules. [Installation](https://mangowm.github.io/docs/installation/)\n- **Writing or swapping window-management policy is itself the goal:** choose **river**.\n\nBefore committing, test monitor reconnects, suspend/resume, your X11 applications, and meeting screen sharing on your actual GPU. This recommendation is based on current upstream evidence, rather than comparative hardware benchmarks.",
+          "tokenUsage": {
+            "input": 93709,
+            "output": 3031,
+            "cacheRead": 535040,
+            "cacheWrite": 0,
+            "reasoning": 714
+          },
+          "toolOutputCharacters": 283977,
+          "durationMs": 108321
+        }
+      ]
+    },
+    {
+      "caseKey": "end_to_end_workflows/skill_discovery_natural_nix_postgres_crashing",
+      "category": "end_to_end_workflows",
+      "name": "skill_discovery_natural_nix_postgres_crashing",
+      "level": "end-to-end",
+      "type": "instruction",
+      "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
+      "prompt": "My postgres container keeps crashing, figure out why.\n",
+      "expected": [],
+      "fingerprint": "96cb4ae4a80245645d1fe6cdfa9539cb48d3e6685343491e2dd12c58dd37cfe7",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "end_to_end_workflows/skill_discovery_natural_nix_postgres_crashing",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "skillsUsed",
+              "passed": true,
+              "message": "Skill \"nix\" usada."
+            }
+          ],
+          "output": "I couldn’t confirm the cause because this session cannot access `/var/run/docker.sock`, so container logs and exit status are unavailable.\n\nWhat I checked:\n\n- About **100 GB disk space** and **5.7 GiB memory** available.\n- No kernel OOM kills recorded in the past week.\n- No Postgres crash messages in the system journal.\n\nWhat’s the container name or project? From a Docker-enabled terminal, share its recent logs:\n\n```bash\n.agents/skills/nix/scripts/docker-manager logs <container> --tail 100\n```\n\nNo configuration or data was changed.",
+          "tokenUsage": {
+            "input": 41531,
+            "output": 1580,
+            "cacheRead": 280704,
+            "cacheWrite": 0,
+            "reasoning": 362
+          },
+          "toolOutputCharacters": 121956,
+          "durationMs": 67550
+        },
+        {
+          "caseKey": "end_to_end_workflows/skill_discovery_natural_nix_postgres_crashing",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "skillsUsed",
+              "passed": true,
+              "message": "Skill \"nix\" usada."
+            }
+          ],
+          "output": "I couldn’t confirm the crash cause because this session is denied access to `/var/run/docker.sock`.\n\nThe host checks show:\n\n- About **100 GB disk space free**, with plenty of free inodes.\n- About **5.3 GiB available RAM** currently.\n- No PostgreSQL errors or PostgreSQL OOM kills found in the last 24 hours of readable host logs.\n\nTo get the missing evidence, run these from the workspace in a terminal with Docker access and share the output:\n\n```bash\n.agents/skills/nix/scripts/docker-manager list\n.agents/skills/nix/scripts/docker-manager logs <container-name> --tail 150\n.agents/skills/nix/scripts/docker-manager inspect <container-name>\n```\n\nRedact credentials from the inspection output. I haven’t changed or restarted anything.",
+          "tokenUsage": {
+            "input": 44789,
+            "output": 1095,
+            "cacheRead": 252672,
+            "cacheWrite": 0,
+            "reasoning": 169
+          },
+          "toolOutputCharacters": 106144,
+          "durationMs": 68359
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_machine_resources",
+      "category": "skill_routing",
+      "name": "routing_to_machine_resources",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "My laptop is swapping and the fans are loud, what is eating my memory?",
+      "expected": [],
+      "fingerprint": "5fba041aeb42ec678b9951c877f20354c204724399ae996c0154436baea797a5",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_machine_resources",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2559,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 21
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4762
+        },
+        {
+          "caseKey": "skill_routing/routing_to_machine_resources",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 24
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4606
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_security_audit",
+      "category": "skill_routing",
+      "name": "routing_to_security_audit",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Run a full security audit of this API service and write up the vulnerabilities you find as a report",
+      "expected": [],
+      "fingerprint": "e956a9f09c0ac5d4cc22b814522a918c315d69a888bea6fe677da6dd893b57f3",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_security_audit",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2563,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 30
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4544
+        },
+        {
+          "caseKey": "skill_routing/routing_to_security_audit",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2563,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 41
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4777
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_media_youtube_search",
+      "category": "skill_routing",
+      "name": "routing_to_media_youtube_search",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Search YouTube for NixOS tutorials and add the best one to my playlist",
+      "expected": [],
+      "fingerprint": "095f0a50e9fe371319d83d27c980cfc4e30ffb2b9f667d541579497b82843c24",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_media_youtube_search",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 16
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4465
+        },
+        {
+          "caseKey": "skill_routing/routing_to_media_youtube_search",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2559,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 17
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4643
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_personal_twitter_post",
+      "category": "skill_routing",
+      "name": "routing_to_personal_twitter_post",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Post a tweet about the new release on my X account",
+      "expected": [],
+      "fingerprint": "35242ef134e9e558f206f9b2e7ac2c7742066b87b4b1e8ea5e6534ec8c51af50",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_personal_twitter_post",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2557,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4272
+        },
+        {
+          "caseKey": "skill_routing/routing_to_personal_twitter_post",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 20
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4462
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_personal_twitter_scrape",
+      "category": "skill_routing",
+      "name": "routing_to_personal_twitter_scrape",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Scrape the latest tweets from @nixos_org",
+      "expected": [],
+      "fingerprint": "4a30a0de72b4ae22c7200e1995386f60ec3f19b4546b0ddecf07846695395cd4",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_personal_twitter_scrape",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 17
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4840
+        },
+        {
+          "caseKey": "skill_routing/routing_to_personal_twitter_scrape",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2553,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 23
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5294
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_deep_work",
+      "category": "skill_routing",
+      "name": "routing_to_deep_work",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "This is a big task, set up a deep work workspace to track progress",
+      "expected": [],
+      "fingerprint": "ebf1789017f8e4757211016c6535e2cd8f01a0624b4ba37e92499714cca3cca2",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_deep_work",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "deep-work",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 10
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3937
+        },
+        {
+          "caseKey": "skill_routing/routing_to_deep_work",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "deep-work",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 23
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5456
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_worktree_isolation",
+      "category": "skill_routing",
+      "name": "routing_to_coding_worktree_isolation",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Create a git worktree so I can work on a parallel branch",
+      "expected": [],
+      "fingerprint": "3a4e88cf369d47db79f6630bcdbd24ae634838f47c6144343e42d4bc9fe82ac6",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_worktree_isolation",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2559,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 24
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4834
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_worktree_isolation",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 20
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4549
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_tmux_control",
+      "category": "skill_routing",
+      "name": "routing_to_tmux_control",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Start a background process in a new herdr pane",
+      "expected": [],
+      "fingerprint": "b6352c93a4aa1ce034d1fd64b04326ed6251f40cc2e012d420bee461bb880824",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_tmux_control",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "herdr",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4769
+        },
+        {
+          "caseKey": "skill_routing/routing_to_tmux_control",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "herdr",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 6,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4462
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_agent_session_restart",
+      "category": "skill_routing",
+      "name": "routing_to_agent_session_restart",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Restart the current session and preserve context",
+      "expected": [],
+      "fingerprint": "c64016ed97b896346c26c7b8c424bbc359f321d97ee38af58839adef2a421a75",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_agent_session_restart",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "agent-session",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3940
+        },
+        {
+          "caseKey": "skill_routing/routing_to_agent_session_restart",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "agent-session",
+          "tokenUsage": {
+            "input": 2551,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 13
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4115
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_agent_session_compact",
+      "category": "skill_routing",
+      "name": "routing_to_agent_session_compact",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Compact your own session now",
+      "expected": [],
+      "fingerprint": "91c6e3cca0883d38ac9621fa77eb410e414dbe2f0b6722735289ec05168f7c8a",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_agent_session_compact",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "agent-session",
+          "tokenUsage": {
+            "input": 2551,
+            "output": 6,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4491
+        },
+        {
+          "caseKey": "skill_routing/routing_to_agent_session_compact",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "agent-session",
+          "tokenUsage": {
+            "input": 2549,
+            "output": 6,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3620
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_agent_session_exit",
+      "category": "skill_routing",
+      "name": "routing_to_agent_session_exit",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Everything is committed, end this session now",
+      "expected": [],
+      "fingerprint": "5a9c9dbb6f2f0897632a3a14440e9fbed45e6ff62efad2ecc02afc70381db9ce",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_agent_session_exit",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "agent-session",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 6,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3907
+        },
+        {
+          "caseKey": "skill_routing/routing_to_agent_session_exit",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "agent-session",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 6,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4646
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_browser_web_scraping",
+      "category": "skill_routing",
+      "name": "routing_to_browser_web_scraping",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Open the AWS console and check the EC2 instances page",
+      "expected": [],
+      "fingerprint": "09165976cca2fdab6ac64d0b4fc3c3a2aeea30b227f50c102e3f42159b7e7bc9",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_browser_web_scraping",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2553,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 16
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4420
+        },
+        {
+          "caseKey": "skill_routing/routing_to_browser_web_scraping",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4631
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_browser_form_filling",
+      "category": "skill_routing",
+      "name": "routing_to_browser_form_filling",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Fill out the login form on https://example.com with my credentials",
+      "expected": [],
+      "fingerprint": "39fbccf79edf958c5ad46a01fe815aba2f6cb9c6fad2df13eb19c22fa32b7b55",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_browser_form_filling",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4478
+        },
+        {
+          "caseKey": "skill_routing/routing_to_browser_form_filling",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4065
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_browser_electron_app",
+      "category": "skill_routing",
+      "name": "routing_to_browser_electron_app",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Automate the VS Code Electron app to open a file and run a command",
+      "expected": [],
+      "fingerprint": "36e64d2c204a23790d93948b2f1cb896c090d0688c55023a4e3c87a1d467c624",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_browser_electron_app",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 26
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4458
+        },
+        {
+          "caseKey": "skill_routing/routing_to_browser_electron_app",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4324
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_browser_interactive_scrape",
+      "category": "skill_routing",
+      "name": "routing_to_browser_interactive_scrape",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Open https://example.com/pricing in a browser, click the 'Load More' button, then extract the pricing table",
+      "expected": [],
+      "fingerprint": "50458a5ca7328bf8143caf24ecf1ab192f60dd86208551671e23f4b0cc1e34f5",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_browser_interactive_scrape",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2569,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4296
+        },
+        {
+          "caseKey": "skill_routing/routing_to_browser_interactive_scrape",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2567,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 16
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4493
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_orchestrate_same_goal_delegation",
+      "category": "skill_routing",
+      "name": "routing_to_orchestrate_same_goal_delegation",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Spawn a parallel agent to refactor the utils module while I work on tests",
+      "expected": [],
+      "fingerprint": "ad680531e8957fb9bfe2286e85e5f0d119e4672f2197a4c6f44ab9a4a486f86c",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_orchestrate_same_goal_delegation",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "orchestrate",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 33
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4673
+        },
+        {
+          "caseKey": "skill_routing/routing_to_orchestrate_same_goal_delegation",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "orchestrate",
+          "tokenUsage": {
+            "input": 2559,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 31
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4891
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_commit_staging",
+      "category": "skill_routing",
+      "name": "routing_to_coding_commit_staging",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Stage the changed files and create a commit with a good message",
+      "expected": [],
+      "fingerprint": "10d1cb33f84ec106336700cbe8b9e09e4e5e7cd82fa23fc9e8d81c01b1c17531",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_commit_staging",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 16
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4724
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_commit_staging",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 15
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4293
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_home_assistant_lights",
+      "category": "skill_routing",
+      "name": "routing_to_home_assistant_lights",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Turn on the living room lights and set brightness to 50%",
+      "expected": [],
+      "fingerprint": "b546093cce82a6f1b1edc8202cb396fe4952fe757d0113413761d13842171fc1",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_home_assistant_lights",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2557,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 17
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4533
+        },
+        {
+          "caseKey": "skill_routing/routing_to_home_assistant_lights",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3971
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_home_assistant_ac_control",
+      "category": "skill_routing",
+      "name": "routing_to_home_assistant_ac_control",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Set the air conditioner to 22 degrees and fan speed to high",
+      "expected": [],
+      "fingerprint": "45e7a6007634bc06117a951e1b9234b0b08f74b6b74c3ee8132da0f5d6577057",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_home_assistant_ac_control",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4655
+        },
+        {
+          "caseKey": "skill_routing/routing_to_home_assistant_ac_control",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4212
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_ril_capture_backlog",
+      "category": "skill_routing",
+      "name": "routing_to_ril_capture_backlog",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Go through the links I saved this week, one by one, and tell me what to do with each",
+      "expected": [],
+      "fingerprint": "54ab60fa401f302ee57d7103ea62657a97a348827d3e1b2d70075fc7af2bb7e5",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_ril_capture_backlog",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2568,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 86
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5882
+        },
+        {
+          "caseKey": "skill_routing/routing_to_ril_capture_backlog",
           "repetition": 2,
           "passed": false,
           "assertions": [
             {
-              "kind": "judge",
+              "kind": "equals",
               "passed": false,
-              "message": "Juiz: reprovado para \"Names `check --gravado` as the required credential-free CI check, distinguishes `dotfiles-evals check` as the separate strict verdict that also fails on changed instructions and expired evidence, and does not claim recorded results measure current model behavior. Avoids proactive `dotfiles-evals baseline --rodar`; a genuine measurement uses an existing authorized model route for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement.\"."
+              "message": "A saída não é igual a nenhuma das opções: all-skills"
             }
           ],
-          "output": "Keep the committed baseline at `agent-harness/quality/evaluations/baseline.json`. Run `dotfiles-evals check` before delivery and report any stale, missing, or expired evidence as unmeasured. CI’s `check --gravado` passing does **not** prove the edited instructions’ current model behavior.\n\nDo **not** proactively run `dotfiles-evals baseline --rodar` or save a fresh baseline merely to make checks green. Re-measure through an authorized model route only for an explicitly requested measurement, a diagnosed quality regression, or a deliberate instruction improvement. Ordinary CI does not require re-recording.",
+          "output": "research",
           "tokenUsage": {
-            "input": 4553,
-            "output": 192,
-            "cacheRead": 21248,
+            "input": 2566,
+            "output": 7,
+            "cacheRead": 8448,
             "cacheWrite": 0,
-            "reasoning": 205
+            "reasoning": 76
           },
           "toolOutputCharacters": 0,
-          "durationMs": 14904
+          "durationMs": 6092
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_test_verification",
+      "category": "skill_routing",
+      "name": "routing_to_coding_test_verification",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Run the test suite to verify the changes pass",
+      "expected": [],
+      "fingerprint": "2ef5bec0f616cfa0409e15630fa1594333aeb6731b5ad06cf2decd50cae49c46",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_test_verification",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2553,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 14
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4289
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_test_verification",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 23
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4166
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_instructions_skill_creation",
+      "category": "skill_routing",
+      "name": "routing_to_instructions_skill_creation",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Create a new skill for managing Docker containers with good prompts",
+      "expected": [],
+      "fingerprint": "9c16d2ced84ac975e2ba6c447a90709f5f01833092e65b842938eeb85ee92885",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_instructions_skill_creation",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "instructions",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 36
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5938
+        },
+        {
+          "caseKey": "skill_routing/routing_to_instructions_skill_creation",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "instructions",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 40
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5554
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_docs_readme_standards",
+      "category": "skill_routing",
+      "name": "routing_to_docs_readme_standards",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "I want to add a README to this module. What belongs in it and what should I leave out?",
+      "expected": [],
+      "fingerprint": "14192c4ce90f79d2b5d5187672510b828d41b0ab5e6629c9f3fc821e3ee9f183",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_docs_readme_standards",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "docs",
+          "tokenUsage": {
+            "input": 2564,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5236
+        },
+        {
+          "caseKey": "skill_routing/routing_to_docs_readme_standards",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "docs",
+          "tokenUsage": {
+            "input": 2566,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 10
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 6182
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_instructions_skill_routing_failure",
+      "category": "skill_routing",
+      "name": "routing_to_instructions_skill_routing_failure",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "The model keeps using WebFetch instead of the twitter skill when I paste Twitter URLs. How do I fix the skill routing?",
+      "expected": [],
+      "fingerprint": "a70a4394fdc0b48193d55846fa45d55bfc039328213780234c8895e647f6d2b4",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_instructions_skill_routing_failure",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "instructions",
+          "tokenUsage": {
+            "input": 6796,
+            "output": 7,
+            "cacheRead": 4224,
+            "cacheWrite": 0,
+            "reasoning": 78
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5923
+        },
+        {
+          "caseKey": "skill_routing/routing_to_instructions_skill_routing_failure",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "instructions",
+          "tokenUsage": {
+            "input": 2571,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 49
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4827
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_notify_task_completion",
+      "category": "skill_routing",
+      "name": "routing_to_notify_task_completion",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Notify me when the long refactoring task is complete",
+      "expected": [],
+      "fingerprint": "ae441346f2dc98508aff5793eeb517c96c4317b29532f1adba27b1ad0cf9a78e",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_notify_task_completion",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 23
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4727
+        },
+        {
+          "caseKey": "skill_routing/routing_to_notify_task_completion",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2553,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 33
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4273
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_quickshell_bar_module",
+      "category": "skill_routing",
+      "name": "routing_to_quickshell_bar_module",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Add a new battery widget to the Quickshell bar",
+      "expected": [],
+      "fingerprint": "a6f7ec033b2672526ea7aa21846fda07f25863bdc0dde5a9650668891c5c52fa",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_quickshell_bar_module",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 26
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4636
+        },
+        {
+          "caseKey": "skill_routing/routing_to_quickshell_bar_module",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2557,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 20
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4350
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_research_tool_comparison",
+      "category": "skill_routing",
+      "name": "routing_to_research_tool_comparison",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Research the latest Wayland compositors and compare their features",
+      "expected": [],
+      "fingerprint": "e96e484e7323211cdc40dba8dbe4b38e6801e87b901d3c5bed79408c2b32f132",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_research_tool_comparison",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 13
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3857
+        },
+        {
+          "caseKey": "skill_routing/routing_to_research_tool_comparison",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3969
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_research_digest",
+      "category": "skill_routing",
+      "name": "routing_to_research_digest",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Catch me up on the latest local LLM tooling and developer agent news.",
+      "expected": [],
+      "fingerprint": "972bc226f90201677c2b6def72c25a62a32d567b2da1575adb8fd2d318a637b7",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_research_digest",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2557,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 11
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4053
+        },
+        {
+          "caseKey": "skill_routing/routing_to_research_digest",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 5,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3698
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_wellput_for_a_reply_the_reader_could_not_follow",
+      "category": "skill_routing",
+      "name": "routing_to_wellput_for_a_reply_the_reader_could_not_follow",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "I read your last answer twice and still can't tell which option you recommend. Explain it again so I can decide.",
+      "expected": [],
+      "fingerprint": "9bd2debdeca8b90b34e315cd274a018c001f804fdedd900ffb78c490211cbf0d",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_wellput_for_a_reply_the_reader_could_not_follow",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "wellput",
+          "tokenUsage": {
+            "input": 2569,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 23
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4415
+        },
+        {
+          "caseKey": "skill_routing/routing_to_wellput_for_a_reply_the_reader_could_not_follow",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "wellput",
+          "tokenUsage": {
+            "input": 2567,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 20
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4379
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_devenv_shell_setup",
+      "category": "skill_routing",
+      "name": "routing_to_devenv_shell_setup",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Set up a devenv shell with PostgreSQL and Python 3.12 for this project",
+      "expected": [],
+      "fingerprint": "5c9d40ebc3f26b3c47ae7ffc5b680aa49a67d7fb6a12c97a5182643efd21ba73",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_devenv_shell_setup",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "devenv",
+          "tokenUsage": {
+            "input": 2566,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4146
+        },
+        {
+          "caseKey": "skill_routing/routing_to_devenv_shell_setup",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "devenv",
+          "tokenUsage": {
+            "input": 6785,
+            "output": 9,
+            "cacheRead": 4224,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4813
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_phone_status_battery",
+      "category": "skill_routing",
+      "name": "routing_to_phone_status_battery",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Check my phone battery level and charging status",
+      "expected": [],
+      "fingerprint": "fea8471bc646d0667ed41a0af921f78802e56d3de6b5282676216588cabec2ed",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_phone_status_battery",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 17
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 6354
+        },
+        {
+          "caseKey": "skill_routing/routing_to_phone_status_battery",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4643
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_ponto_time_tracking",
+      "category": "skill_routing",
+      "name": "routing_to_ponto_time_tracking",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Fill my ponto entries for this week on Senior",
+      "expected": [],
+      "fingerprint": "4987bdca5b525ecc674cadcdb5c0e827946efb064bfc37765cbd0332dba5d3f8",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_ponto_time_tracking",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 42
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4758
+        },
+        {
+          "caseKey": "skill_routing/routing_to_ponto_time_tracking",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 43
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5418
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_ambiguous_research_vs_browser",
+      "category": "skill_routing",
+      "name": "routing_ambiguous_research_vs_browser",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "What are the best practices for Nix flake design in 2026?",
+      "expected": [],
+      "fingerprint": "219bae9fe2b8db643fb04cec0b09bf16e44ce8fdf8980cd90e2112509157ea49",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_ambiguous_research_vs_browser",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 22
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4259
+        },
+        {
+          "caseKey": "skill_routing/routing_ambiguous_research_vs_browser",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 30
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5239
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_commit",
+      "category": "skill_routing",
+      "name": "routing_to_coding_commit",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "I want to commit all my staged changes with a conventional commit message",
+      "expected": [],
+      "fingerprint": "9e285947becab099a4fd0a349fd889a794b90710ac2609503466da984b95e86a",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_commit",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 16
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4063
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_commit",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 15
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4478
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_review_for_an_unbiased_reviewer_pass",
+      "category": "skill_routing",
+      "name": "routing_to_review_for_an_unbiased_reviewer_pass",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations",
+      "expected": [],
+      "fingerprint": "02ce23427ba04e95df91fe76dcb43c993884da192a44e0b21e1baed83c151677",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_review_for_an_unbiased_reviewer_pass",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "review",
+          "tokenUsage": {
+            "input": 2557,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 64
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 6234
+        },
+        {
+          "caseKey": "skill_routing/routing_to_review_for_an_unbiased_reviewer_pass",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "review",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 58
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5515
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_history_search_commits",
+      "category": "skill_routing",
+      "name": "routing_to_coding_history_search_commits",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Search git history for all commits related to browser automation",
+      "expected": [],
+      "fingerprint": "cff2cf4bca026d38ad6d0cbd18ae6dd809e18af11f9e9944ee9a6fe66b93baaa",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_history_search_commits",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4673
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_history_search_commits",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 23
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4708
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_history_find_when_changed",
+      "category": "skill_routing",
+      "name": "routing_to_coding_history_find_when_changed",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "When was the authentication module first added to this repo?",
+      "expected": [],
+      "fingerprint": "9fe113633004c9a312d24161b321739cadd2870fc7d339f492bf722276d52e3a",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_history_find_when_changed",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 25
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5381
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_history_find_when_changed",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 14
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4999
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_history_trace_evolution",
+      "category": "skill_routing",
+      "name": "routing_to_coding_history_trace_evolution",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Show me how the browser skill evolved over time in this project",
+      "expected": [],
+      "fingerprint": "d8163c34ab7bbfb3423e11c72d8458011a71f83a86ca9ac258f21ef9cab626dc",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_history_trace_evolution",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 31
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4543
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_history_trace_evolution",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2557,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 39
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4885
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_history_investigate_past",
+      "category": "skill_routing",
+      "name": "routing_to_coding_history_investigate_past",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "I need to understand why we switched from playwright to chrome devtools, check the git history",
+      "expected": [],
+      "fingerprint": "4df4e7c27f3a560a843cebd8c7dcf8c94088e4cd8559694b2181ccd449625ca1",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_history_investigate_past",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 21
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4622
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_history_investigate_past",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2563,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 28
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4632
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_ambiguous_git_history_vs_research",
+      "category": "skill_routing",
+      "name": "routing_ambiguous_git_history_vs_research",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Research the latest trends in version control systems",
+      "expected": [],
+      "fingerprint": "a31e0b74ee92473c3b4e8b39d9a26c70cebe6a738ceb2765fd08afe7651fcfcc",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_ambiguous_git_history_vs_research",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2555,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 11
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3949
+        },
+        {
+          "caseKey": "skill_routing/routing_ambiguous_git_history_vs_research",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 10
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4749
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_ril_inbox_processing",
+      "category": "skill_routing",
+      "name": "routing_to_ril_inbox_processing",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Process my saved articles from the ReadItLater inbox",
+      "expected": [],
+      "fingerprint": "0e2b440d81d18025a181215e346a702a94486e0cccc0638ab57ae7a21dffc403",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_ril_inbox_processing",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2553,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 30
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4488
+        },
+        {
+          "caseKey": "skill_routing/routing_to_ril_inbox_processing",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 21
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4659
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_personal_tweet_media_fetch",
+      "category": "skill_routing",
+      "name": "routing_to_personal_tweet_media_fetch",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Fetch the image attached to this tweet by @user",
+      "expected": [],
+      "fingerprint": "1b80757bf669ea56e04e5a675ac9bc0d08565ff0b35b6a911c10e3f2d43fd5b6",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_personal_tweet_media_fetch",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2554,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 20
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4158
+        },
+        {
+          "caseKey": "skill_routing/routing_to_personal_tweet_media_fetch",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2553,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3958
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_ambiguous_browser_vs_personal_tweet_scraping",
+      "category": "skill_routing",
+      "name": "routing_ambiguous_browser_vs_personal_tweet_scraping",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "I need to read what a tweet says and see its attached image",
+      "expected": [],
+      "fingerprint": "092f77885169f9dae40a8634daca6d54d129c8386d78b70f17dd6d6f43165ff8",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_ambiguous_browser_vs_personal_tweet_scraping",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 16
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4474
+        },
+        {
+          "caseKey": "skill_routing/routing_ambiguous_browser_vs_personal_tweet_scraping",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 20
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4731
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_personal_bare_xcom_url",
+      "category": "skill_routing",
+      "name": "routing_to_personal_bare_xcom_url",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "https://x.com/neogoose_btw/status/2040598081763471417",
+      "expected": [],
+      "fingerprint": "46847c95e87986d56fcea81d11f17e7ab47e355921ac899faaee405f7ed08255",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_personal_bare_xcom_url",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2564,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 30
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4483
+        },
+        {
+          "caseKey": "skill_routing/routing_to_personal_bare_xcom_url",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 16
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5227
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_personal_bare_twitter_url",
+      "category": "skill_routing",
+      "name": "routing_to_personal_bare_twitter_url",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "https://twitter.com/elikiaponde/status/1234567890",
+      "expected": [],
+      "fingerprint": "61bacf939d982862acf9a85d80229175ad2fd0b3fe920ab5650f7e7412c51dc7",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_personal_bare_twitter_url",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 34
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4602
+        },
+        {
+          "caseKey": "skill_routing/routing_to_personal_bare_twitter_url",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 17
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4064
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_personal_xcom_url_with_context",
+      "category": "skill_routing",
+      "name": "routing_to_personal_xcom_url_with_context",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "https://x.com/schizoidcock/status/2040595546411266214 this looks interesting, is it any good?",
+      "expected": [],
+      "fingerprint": "34696f8d47ede49cf90d02b319616dc52cb1e6f88adf967c03fa73acf1587b22",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_personal_xcom_url_with_context",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2570,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 122
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 7028
+        },
+        {
+          "caseKey": "skill_routing/routing_to_personal_xcom_url_with_context",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2571,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 125
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 6990
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_personal_xcom_url_what_does_it_say",
+      "category": "skill_routing",
+      "name": "routing_to_personal_xcom_url_what_does_it_say",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "what does this tweet say? https://x.com/user/status/1234567890123",
+      "expected": [],
+      "fingerprint": "0caee60a9efc970a7c3929ba933e7fa234d431aac5ce41178133199dcf27352d",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_personal_xcom_url_what_does_it_say",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2563,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 28
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4771
+        },
+        {
+          "caseKey": "skill_routing/routing_to_personal_xcom_url_what_does_it_say",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 23
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4457
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_review_for_a_diff_before_merge",
+      "category": "skill_routing",
+      "name": "routing_to_review_for_a_diff_before_merge",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Here is the diff on the auth module. Check it for bugs and bad naming before I merge it.",
+      "expected": [],
+      "fingerprint": "9d53ad7534d26155f17b8845bc68b48ccdece87e862685efee3c88495e363ae0",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_review_for_a_diff_before_merge",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "review",
+          "tokenUsage": {
+            "input": 2565,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 15
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4379
+        },
+        {
+          "caseKey": "skill_routing/routing_to_review_for_a_diff_before_merge",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "review",
+          "tokenUsage": {
+            "input": 2568,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 11
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4405
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_review_for_an_instruction_file_audit",
+      "category": "skill_routing",
+      "name": "routing_to_review_for_an_instruction_file_audit",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "I rewrote a SKILL.md and a CLAUDE.md section. Audit them against our instruction authoring standards.",
+      "expected": [],
+      "fingerprint": "896e74fdccb8fe82a0ddf3849299edd7c60e900b6b609af0c4ef2d88254c41e1",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_review_for_an_instruction_file_audit",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "review",
+          "tokenUsage": {
+            "input": 2565,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 51
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5445
+        },
+        {
+          "caseKey": "skill_routing/routing_to_review_for_an_instruction_file_audit",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "review",
+          "tokenUsage": {
+            "input": 2569,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 39
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 6794
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_architecture_for_a_boundary_decision",
+      "category": "skill_routing",
+      "name": "routing_to_architecture_for_a_boundary_decision",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Should the payment retry logic live in its own service or stay inside the order module?",
+      "expected": [],
+      "fingerprint": "013af59a9dffa69c7cb8b5e3e522972293b04869b9dae1291e225b0450a82a35",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_architecture_for_a_boundary_decision",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "architecture",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3995
+        },
+        {
+          "caseKey": "skill_routing/routing_to_architecture_for_a_boundary_decision",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "architecture",
+          "tokenUsage": {
+            "input": 2565,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 13
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 6291
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_coding_for_a_function_cleanup",
+      "category": "skill_routing",
+      "name": "routing_to_coding_for_a_function_cleanup",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "This function does three things and takes a boolean flag argument. Clean it up.",
+      "expected": [],
+      "fingerprint": "f82f2aef16368b9b9feed5ba5ff40d4c008e752078c66b807786545f069d2706",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_coding_for_a_function_cleanup",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2559,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 21
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4722
+        },
+        {
+          "caseKey": "skill_routing/routing_to_coding_for_a_function_cleanup",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "coding",
+          "tokenUsage": {
+            "input": 2559,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5165
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_review_for_the_final_pass",
+      "category": "skill_routing",
+      "name": "routing_to_review_for_the_final_pass",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "The feature is implemented and its unit tests pass. Do a final pass to confirm what I actually asked for works and nothing else broke.",
+      "expected": [],
+      "fingerprint": "499edb4c0101578245f656545e9eaeb0c67e0b46ea7158babf04a4d2bb2093ac",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_review_for_the_final_pass",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "review",
+          "tokenUsage": {
+            "input": 2570,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4066
+        },
+        {
+          "caseKey": "skill_routing/routing_to_review_for_the_final_pass",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "review",
+          "tokenUsage": {
+            "input": 2574,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 22
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4275
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_explore_for_a_repo_sweep",
+      "category": "skill_routing",
+      "name": "routing_to_explore_for_a_repo_sweep",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Where in this repo is the retry timeout configured? Sweep the whole tree and just tell me the answer.",
+      "expected": [],
+      "fingerprint": "024800eb5874cce3b831fe0b93e19a71eb577e09fe07d33f46f5d123d36e89e3",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_explore_for_a_repo_sweep",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "explore",
+          "tokenUsage": {
+            "input": 2565,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4170
+        },
+        {
+          "caseKey": "skill_routing/routing_to_explore_for_a_repo_sweep",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "explore",
+          "tokenUsage": {
+            "input": 2568,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 24
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4735
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_goal_prompt_for_a_scheduled_agent",
+      "category": "skill_routing",
+      "name": "routing_to_goal_prompt_for_a_scheduled_agent",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Write the single-line brief that a nightly cron agent receives as its only instruction",
+      "expected": [],
+      "fingerprint": "ed9b2b41f46fabeb09be01c4ca79ea6f8220cac7afbce9148235a5ab1e056373",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_goal_prompt_for_a_scheduled_agent",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "goal-prompt",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 13
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5085
+        },
+        {
+          "caseKey": "skill_routing/routing_to_goal_prompt_for_a_scheduled_agent",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "goal-prompt",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4531
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_forge_open_a_merge_request",
+      "category": "skill_routing",
+      "name": "routing_to_forge_open_a_merge_request",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Open a merge request for this branch and request a review from the team.",
+      "expected": [],
+      "fingerprint": "2da79d5b70eb691a1802fc8fc7aa5c1ee93c243a203fd70f538487a450fca976",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_forge_open_a_merge_request",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "forge",
+          "tokenUsage": {
+            "input": 2559,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 17
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4090
+        },
+        {
+          "caseKey": "skill_routing/routing_to_forge_open_a_merge_request",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "forge",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4028
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_forge_read_failing_pipeline",
+      "category": "skill_routing",
+      "name": "routing_to_forge_read_failing_pipeline",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "The pipeline on my pull request is red. Pull the failing job logs from the hosted CI.",
+      "expected": [],
+      "fingerprint": "7895012eb146dd69db7c6731cb7e074c4a96884f41ba10eefc194b7d9ff45dc8",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_forge_read_failing_pipeline",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "forge",
+          "tokenUsage": {
+            "input": 2565,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 20
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4805
+        },
+        {
+          "caseKey": "skill_routing/routing_to_forge_read_failing_pipeline",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "forge",
+          "tokenUsage": {
+            "input": 2565,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 16
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4162
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_forge_resolve_review_threads",
+      "category": "skill_routing",
+      "name": "routing_to_forge_resolve_review_threads",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Reply to the review comments on pull request 412 and resolve the threads I already addressed.",
+      "expected": [],
+      "fingerprint": "afea702e9bd71552fef7a7bb6488cdf2562b9fb23e9ba6a79368250d07e90724",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_forge_resolve_review_threads",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "forge",
+          "tokenUsage": {
+            "input": 2564,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 13
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4665
+        },
+        {
+          "caseKey": "skill_routing/routing_to_forge_resolve_review_threads",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "forge",
+          "tokenUsage": {
+            "input": 2567,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 22
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4795
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_process_design_before_agents_run",
+      "category": "skill_routing",
+      "name": "routing_to_process_design_before_agents_run",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Before we spin up agents for this migration, let's design the multi-agent process together: which agents, gates and monitors we need.",
+      "expected": [],
+      "fingerprint": "3cb381bde912a6763b98b7b046e6596036d9cce0be0c3a4be02502eff0956e23",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_process_design_before_agents_run",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "process-design",
+          "tokenUsage": {
+            "input": 2574,
+            "output": 6,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4046
+        },
+        {
+          "caseKey": "skill_routing/routing_to_process_design_before_agents_run",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "process-design",
+          "tokenUsage": {
+            "input": 2572,
+            "output": 6,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3989
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_process_design_redraw_a_pipeline",
+      "category": "skill_routing",
+      "name": "routing_to_process_design_redraw_a_pipeline",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Sketch a pipeline of agents and deterministic checks for nightly triage, and let me redraw it with you before anything runs.",
+      "expected": [],
+      "fingerprint": "0b6b63f45f8df4f1818d26f5ecf3e0d84faa996df07d31463f2b9b0f85c73efb",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_process_design_redraw_a_pipeline",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "process-design",
+          "tokenUsage": {
+            "input": 2570,
+            "output": 6,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5168
+        },
+        {
+          "caseKey": "skill_routing/routing_to_process_design_redraw_a_pipeline",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "process-design",
+          "tokenUsage": {
+            "input": 2572,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3956
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_url_shortener_for_a_terminal_link",
+      "category": "skill_routing",
+      "name": "routing_to_url_shortener_for_a_terminal_link",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Shorten this long Google Drive link so I can paste it in the terminal.",
+      "expected": [],
+      "fingerprint": "8a6aa469409451f0ebd71c7d19fbfc487712fbd3be970798e5b13b4611d84594",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_url_shortener_for_a_terminal_link",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "url-shortener",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 13
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4282
+        },
+        {
+          "caseKey": "skill_routing/routing_to_url_shortener_for_a_terminal_link",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "url-shortener",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 22
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4556
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_url_shortener_for_a_query_url",
+      "category": "skill_routing",
+      "name": "routing_to_url_shortener_for_a_query_url",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Turn https://example.com/a/very/long/path?with=query&and=more&parts=here into a short link.",
+      "expected": [],
+      "fingerprint": "802a7e011c3d94766f0fbd9fa232f2b9520333a0638570c0910680d50c71ab8c",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_url_shortener_for_a_query_url",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "url-shortener",
+          "tokenUsage": {
+            "input": 2571,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3704
+        },
+        {
+          "caseKey": "skill_routing/routing_to_url_shortener_for_a_query_url",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "url-shortener",
+          "tokenUsage": {
+            "input": 2574,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4188
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_deliver_an_objective_end_to_end",
+      "category": "skill_routing",
+      "name": "routing_to_deliver_an_objective_end_to_end",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Take this objective end to end: investigate the context, design how we build it, and keep executing until it works live.",
+      "expected": [],
+      "fingerprint": "921979dda7b24f5ccdd729cb0c173ea7460b503292f1b52ad7963cb745347b6d",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_deliver_an_objective_end_to_end",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "deliver",
+          "tokenUsage": {
+            "input": 2570,
+            "output": 5,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 0
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 3671
+        },
+        {
+          "caseKey": "skill_routing/routing_to_deliver_an_objective_end_to_end",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "deliver",
+          "tokenUsage": {
+            "input": 2569,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 18
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4444
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_instructions_for_a_new_skill_file",
+      "category": "skill_routing",
+      "name": "routing_to_instructions_for_a_new_skill_file",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Write a new SKILL.md that teaches the agent how to manage my backups.",
+      "expected": [],
+      "fingerprint": "3b525bec80db320c9e165e874e48d84800a6b91bfeb5d17e9f21ab54533a44dc",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_instructions_for_a_new_skill_file",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "instructions",
+          "tokenUsage": {
+            "input": 2559,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 26
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4308
+        },
+        {
+          "caseKey": "skill_routing/routing_to_instructions_for_a_new_skill_file",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "instructions",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 39
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4933
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_docs_for_whether_a_readme_earns_its_place",
+      "category": "skill_routing",
+      "name": "routing_to_docs_for_whether_a_readme_earns_its_place",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Does the new evaluation runner module need a README at all, or does the code already say enough? Decide.",
+      "expected": [],
+      "fingerprint": "d024f75307a8e6bcf99e7033516e3eba0ef1d2777488cf0f37270fcaa904f7a4",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_docs_for_whether_a_readme_earns_its_place",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "docs",
+          "tokenUsage": {
+            "input": 2565,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 21
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4420
+        },
+        {
+          "caseKey": "skill_routing/routing_to_docs_for_whether_a_readme_earns_its_place",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "docs",
+          "tokenUsage": {
+            "input": 2567,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 15
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4074
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_wellput_for_an_overlong_reply",
+      "category": "skill_routing",
+      "name": "routing_to_wellput_for_an_overlong_reply",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Your last reply was too long. Give me only the two things I need to act on.",
+      "expected": [],
+      "fingerprint": "4acec0237ce97a5820e70f11419e4b1c4bcd0eac9e220397ce44d29ea8be1369",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_wellput_for_an_overlong_reply",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "wellput",
+          "tokenUsage": {
+            "input": 2566,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 51
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5581
+        },
+        {
+          "caseKey": "skill_routing/routing_to_wellput_for_an_overlong_reply",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "wellput",
+          "tokenUsage": {
+            "input": 2563,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 48
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4806
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_architecture_for_where_a_boundary_lives",
+      "category": "skill_routing",
+      "name": "routing_to_architecture_for_where_a_boundary_lives",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Should judge isolation live in the Python port or in the node adapter? Decide where that boundary belongs.",
+      "expected": [],
+      "fingerprint": "4b676ed071eea6026e16dadb95cde7be13d5a91d86056830c86d2613bd353c96",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_architecture_for_where_a_boundary_lives",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "architecture",
+          "tokenUsage": {
+            "input": 2564,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 15
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 6105
+        },
+        {
+          "caseKey": "skill_routing/routing_to_architecture_for_where_a_boundary_lives",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "architecture",
+          "tokenUsage": {
+            "input": 2567,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 12
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4176
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_explore_for_where_hooks_are_configured",
+      "category": "skill_routing",
+      "name": "routing_to_explore_for_where_hooks_are_configured",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Where in this repository do we configure the Codex hooks? Sweep the tree and tell me.",
+      "expected": [],
+      "fingerprint": "5001075f39f9d1be615e51e7f5392fe5062a0adf6e91b12f937231a4c1839d54",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_explore_for_where_hooks_are_configured",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "explore",
+          "tokenUsage": {
+            "input": 2563,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 39
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5242
+        },
+        {
+          "caseKey": "skill_routing/routing_to_explore_for_where_hooks_are_configured",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "explore",
+          "tokenUsage": {
+            "input": 2562,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 37
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4418
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_research_for_latest_release_notes",
+      "category": "skill_routing",
+      "name": "routing_to_research_for_latest_release_notes",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "What changed in the latest Codex release notes?",
+      "expected": [],
+      "fingerprint": "931d0e1861f458eb23235bca33b0ab27b193af7fda57dffbc0d7821c2416a2b3",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_research_for_latest_release_notes",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 45
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4710
+        },
+        {
+          "caseKey": "skill_routing/routing_to_research_for_latest_release_notes",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "research",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 47
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4885
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_workspace_for_another_repository",
+      "category": "skill_routing",
+      "name": "routing_to_workspace_for_another_repository",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Switch over to my ~/repo/api project and run its tests there.",
+      "expected": [],
+      "fingerprint": "8101c89344a86683c5f5e4fd9c68745e482fa90fe782870f8c2c687643ab4747",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_workspace_for_another_repository",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "workspace",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 35
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5356
+        },
+        {
+          "caseKey": "skill_routing/routing_to_workspace_for_another_repository",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "workspace",
+          "tokenUsage": {
+            "input": 2557,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 44
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5888
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_herdr_for_a_new_pane",
+      "category": "skill_routing",
+      "name": "routing_to_herdr_for_a_new_pane",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Open a new pane to the right and run the test watcher in it.",
+      "expected": [],
+      "fingerprint": "92075c87498dc7c3c547784644f68133e00d2e5065812c64654488d17a0d0188",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_herdr_for_a_new_pane",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "herdr",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 17
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4704
+        },
+        {
+          "caseKey": "skill_routing/routing_to_herdr_for_a_new_pane",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "herdr",
+          "tokenUsage": {
+            "input": 2558,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 5178
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_all_skills_for_a_desktop_screenshot",
+      "category": "skill_routing",
+      "name": "routing_to_all_skills_for_a_desktop_screenshot",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Take a screenshot of my whole desktop and tell me what is on the second monitor.",
+      "expected": [],
+      "fingerprint": "e03d0ff06a64eb8eaabf7275588f30f4246bf0399358c85dd0b6fec44102c6ea",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_all_skills_for_a_desktop_screenshot",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2561,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 21
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4598
+        },
+        {
+          "caseKey": "skill_routing/routing_to_all_skills_for_a_desktop_screenshot",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "all-skills",
+          "tokenUsage": {
+            "input": 2560,
+            "output": 9,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4730
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_browser_for_a_logged_in_download",
+      "category": "skill_routing",
+      "name": "routing_to_browser_for_a_logged_in_download",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Log into the vendor portal in Chrome and download last month's invoice.",
+      "expected": [],
+      "fingerprint": "a651086f3cc712d8f5686daa212dca41cc4213805bfaddb8d05bbe17531325d9",
+      "heldOut": true,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_browser_for_a_logged_in_download",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2556,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 20
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4446
+        },
+        {
+          "caseKey": "skill_routing/routing_to_browser_for_a_logged_in_download",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "browser",
+          "tokenUsage": {
+            "input": 2557,
+            "output": 7,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 19
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4324
+        }
+      ]
+    },
+    {
+      "caseKey": "skill_routing/routing_to_humanize_for_a_merge_request_description",
+      "category": "skill_routing",
+      "name": "routing_to_humanize_for_a_merge_request_description",
+      "level": "unit",
+      "type": "instruction",
+      "prompt": "Draft the description text for this merge request so a reviewer can scan it; I will open the request myself.",
+      "expected": [],
+      "fingerprint": "7ac9c2cf0694e0085d506f2e72d2c7c510fa525078d76ee57ca2717fccba2860",
+      "heldOut": false,
+      "samples": [
+        {
+          "caseKey": "skill_routing/routing_to_humanize_for_a_merge_request_description",
+          "repetition": 1,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "humanize",
+          "tokenUsage": {
+            "input": 2565,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 32
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4484
+        },
+        {
+          "caseKey": "skill_routing/routing_to_humanize_for_a_merge_request_description",
+          "repetition": 2,
+          "passed": true,
+          "assertions": [
+            {
+              "kind": "equals",
+              "passed": true,
+              "message": "A saída é igual a uma das opções."
+            }
+          ],
+          "output": "humanize",
+          "tokenUsage": {
+            "input": 2568,
+            "output": 8,
+            "cacheRead": 8448,
+            "cacheWrite": 0,
+            "reasoning": 35
+          },
+          "toolOutputCharacters": 0,
+          "durationMs": 4806
         }
       ]
     }
