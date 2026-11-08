@@ -1,0 +1,20 @@
+name: ci-speedup-tests-probe
+
+on:
+  pull_request:
+
+jobs:
+  unit:
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [a, b]
+        shard:
+          - { index: 0, count: 1 }
+          - { index: 0, count: 2 }
+          - { index: 1, count: 2 }
+    uses: ./.github/workflows/python-test-shard.yml
+    with:
+      tier: unit
+      shard: ${{ matrix.shard.index }}
+      count: ${{ matrix.shard.count }}
