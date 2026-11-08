@@ -1,0 +1,28 @@
+name: ci-speedup-probe-b
+
+on:
+  pull_request:
+
+jobs:
+  probe:
+    name: ${{ matrix.variant.name }} ${{ matrix.sample }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [a, b]
+        variant:
+          - { name: baseline, restore: 'true', jobs: 8 }
+          - { name: no-store-cache, restore: 'false', jobs: 8 }
+          - { name: max-jobs-16, restore: 'true', jobs: 16 }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache-key: flake-check
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          restore-store: ${{ matrix.variant.restore }}
+
+      - name: Nix flake checks
+        run: nix flake check --keep-going $ARR_STACK_STUB_OVERRIDE --print-build-logs --show-trace --max-jobs ${{ matrix.variant.jobs }} --cores 2
