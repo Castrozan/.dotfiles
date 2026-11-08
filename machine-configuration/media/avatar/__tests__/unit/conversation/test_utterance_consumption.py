@@ -24,7 +24,7 @@ def test_a_conversation_closing_during_the_settle_wait_returns_promptly(
     monkeypatch.setattr(utterances, "UNFINISHED_SPEECH_LIMIT_SECONDS", 1.5)
     transcript_log.append(tmp_path / "transcript.jsonl", "human", "oi")
     (tmp_path / listener.SPEECH_IN_PROGRESS_MARKER).touch()
-    answers = iter([True, True, False])
+    answers = iter([True, False])
     started = time.monotonic()
     utterance = utterances.next_utterance(tmp_path, 0, lambda: next(answers, False))
     assert time.monotonic() - started < 1
@@ -54,3 +54,19 @@ def test_the_marker_is_cleared_when_the_writer_exits_with_segments_queued(tmp_pa
     listener.write_transcript(tmp_path / "transcript.jsonl", listening)
     assert listening.segments.qsize() == 1
     assert not (tmp_path / listener.SPEECH_IN_PROGRESS_MARKER).exists()
+
+
+def test_the_settle_wait_asks_whether_the_conversation_is_open_about_once_a_second(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(utterances, "UNFINISHED_SPEECH_LIMIT_SECONDS", 1.5)
+    monkeypatch.setattr(utterances, "POLL_SECONDS", 0.01)
+    transcript_log.append(tmp_path / "transcript.jsonl", "human", "oi")
+    (tmp_path / listener.SPEECH_IN_PROGRESS_MARKER).touch()
+    still_open = Mock(return_value=True)
+    utterances.wait_for_finished_speech(
+        tmp_path,
+        transcript_log.read_since(tmp_path / "transcript.jsonl", 0),
+        still_open,
+    )
+    assert still_open.call_count <= 3

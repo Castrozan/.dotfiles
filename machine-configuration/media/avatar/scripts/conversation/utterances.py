@@ -10,6 +10,7 @@ POLL_SECONDS = 0.1
 SETTLE_SECONDS = 0.5
 UNFINISHED_TURN_SETTLE_SECONDS = 2.5
 UNFINISHED_SPEECH_LIMIT_SECONDS = 120
+OPEN_CHECK_SECONDS = 1
 CLOSED_MESSAGE = "No conversation is open; run avatar-talk open"
 CONSUMER_BUSY_MESSAGE = "Another avatar-talk hear, ask or follow is already listening"
 CONSUMER_LOCK_FILE = "heard.lock"
@@ -72,7 +73,12 @@ def wait_for_finished_speech(directory, entries, still_open):
     in_progress = directory / listener.SPEECH_IN_PROGRESS_MARKER
     settled_at = time.monotonic() + settle_seconds_after(entries)
     limit = time.monotonic() + UNFINISHED_SPEECH_LIMIT_SECONDS
-    while time.monotonic() < limit and still_open():
+    next_open_check = time.monotonic()
+    while time.monotonic() < limit:
+        if time.monotonic() >= next_open_check:
+            if not still_open():
+                break
+            next_open_check = time.monotonic() + OPEN_CHECK_SECONDS
         latest = transcript_log.read_since(transcript, last_heard(directory))
         if len(latest) > len(entries):
             entries = latest
