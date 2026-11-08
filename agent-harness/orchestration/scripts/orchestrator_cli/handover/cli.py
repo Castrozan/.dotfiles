@@ -49,7 +49,8 @@ def close_cards(directory: Path, orchestrator: str, pane: str) -> list[str]:
             OPEN_STATE,
             ESCALATED_STATE,
         ):
-            save_record(directory, card["id"], withdrawn_card(card, HANDOVER_REASON))
+            closed_card = withdrawn_card(card, HANDOVER_REASON, orchestrator)
+            save_record(directory, card["id"], closed_card)
             closed.append(f"closed {card['id']}")
     return closed
 

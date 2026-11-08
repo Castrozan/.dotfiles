@@ -126,7 +126,11 @@ def notification_text(card: dict) -> str:
             f"Full card: {show_command}"
         )
     if card["state"] == "withdrawn":
-        return f"decision {card['id']} withdrawn by {card['requester']}: {show_command}"
+        withdrawal = card["withdrawal"]
+        return (
+            f"decision {card['id']} withdrawn by {withdrawal['withdrawn_by']}, "
+            f"because {withdrawal['reason']}: {show_command}"
+        )
     return (
         f"decision {card['id']} for you from {card['requester']}: "
         f"{card['question']} Read it: {show_command}"

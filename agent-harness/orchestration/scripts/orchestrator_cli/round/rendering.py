@@ -45,6 +45,10 @@ def decision_block(card: dict) -> str:
             ),
             paragraph(f"Recommended because: {card['reasoning']}"),
             paragraph(card_facts(card)),
+            paragraph(
+                f"Reply with {card['id']} and one option: "
+                + ", ".join(option["label"] for option in card["options"])
+            ),
         ]
     )
 

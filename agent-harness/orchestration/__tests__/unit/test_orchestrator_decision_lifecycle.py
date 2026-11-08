@@ -54,6 +54,22 @@ def test_withdrawal_closes_the_card_and_tells_the_orchestrator(
         == "withdrawn"
     )
     assert notifications[-1][0] == "orchestrator-session"
+    assert "withdrawn by Angra, because resolved by CI" in notifications[-1][2]
+
+
+def test_an_orchestrator_withdrawal_names_the_orchestrator_and_tells_the_requester(
+    monkeypatch, tmp_path, capsys, notifications
+):
+    _, identifier = file_card(monkeypatch, tmp_path, capsys)
+    withdraw = ["withdraw", identifier, "--reason", "Lucas drives this session now"]
+    assert (
+        run_orchestrator(monkeypatch, tmp_path, *withdraw, "--sender", "Ibaraki") == 0
+    )
+    target, sender, text = notifications[-1]
+    assert (target, sender) == ("worker-pane", "Ibaraki")
+    assert f"decision {identifier} withdrawn by Ibaraki," in text
+    card = json.loads((tmp_path / f"{identifier}.json").read_text())
+    assert card["withdrawal"]["withdrawn_by"] == "Ibaraki"
 
 
 def test_list_filters_by_state_and_show_renders_the_whole_card(

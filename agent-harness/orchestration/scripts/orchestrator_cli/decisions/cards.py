@@ -161,10 +161,11 @@ def overridden_card(card: dict, choice: str, rationale: str) -> dict:
     return {**card, "state": OVERRIDDEN_STATE, "override": override}
 
 
-def withdrawn_card(card: dict, reason: str) -> dict:
+def withdrawn_card(card: dict, reason: str, withdrawn_by: str) -> dict:
     require_state(card, (OPEN_STATE, ESCALATED_STATE))
     withdrawal = {
         "reason": required_text(reason, "a withdrawal reason"),
+        "withdrawn_by": withdrawn_by,
         "withdrawn_at": current_timestamp(),
     }
     return {**card, "state": WITHDRAWN_STATE, "withdrawal": withdrawal}

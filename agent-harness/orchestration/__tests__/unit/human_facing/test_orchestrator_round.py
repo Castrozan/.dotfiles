@@ -94,6 +94,7 @@ def test_the_round_shows_each_waiting_decision_with_every_option_then_every_sess
     ):
         assert " ".join(expected.split()) in flattened
     assert still_triaging not in output
+    assert f"Reply with {waiting} and one option: drop, keep" in output
     assert "needs a decision:" not in output
 
 

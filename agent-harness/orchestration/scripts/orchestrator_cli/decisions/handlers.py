@@ -138,11 +138,21 @@ def command_override(arguments: argparse.Namespace, decision_directory: Path) ->
     return save_and_notify(arguments, decision_directory, card, requester_target(card))
 
 
-def command_withdraw(arguments: argparse.Namespace, decision_directory: Path) -> int:
-    card = withdrawn_card(
-        load_record(decision_directory, arguments.identifier), arguments.reason
+def other_party(card: dict, actor: str) -> str:
+    return (
+        card["orchestrator"] if actor == card["requester"] else requester_target(card)
     )
-    return save_and_notify(arguments, decision_directory, card, card["orchestrator"])
+
+
+def command_withdraw(arguments: argparse.Namespace, decision_directory: Path) -> int:
+    actor = sender_name(arguments.sender)
+    card = withdrawn_card(
+        load_record(decision_directory, arguments.identifier), arguments.reason, actor
+    )
+    saved_path = save_record(decision_directory, card["id"], card)
+    return notify_after_save(
+        lambda: actor, other_party(card, actor), notification_text(card), saved_path
+    )
 
 
 def command_link(arguments: argparse.Namespace, decision_directory: Path) -> int:
