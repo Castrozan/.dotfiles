@@ -782,11 +782,11 @@
     "context_management/context_budget_discards_stale_findings": {
       "category": "context_management",
       "costUsd": 0,
-      "fingerprint": "79b13b5d267e5d20cd01989e8ce109c1105a9731e9c79db6be1bdf048fca699c",
+      "fingerprint": "7ba4a43c6323faf1af2ed4354d9b0cecc7c6a8ff1baee760354e819e9d9e15ae",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "context_budget_discards_stale_findings",
       "passes": 2,
       "sampleOutcomes": [
@@ -795,8 +795,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11380,
-        11259
+        11284,
+        11283
       ],
       "toolOutputCharacters": [
         0,
@@ -807,11 +807,11 @@
     "context_management/context_budget_loads_only_material_information": {
       "category": "context_management",
       "costUsd": 0,
-      "fingerprint": "cc575b9a054e364c8bf9333797ed1b9d3080cfc0257e1b1ba66a2720cc10add2",
+      "fingerprint": "56b89c6406e611f9e7717dd6681046ff5e54089eff477fe2f9f86afe5e6e0e79",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "context_budget_loads_only_material_information",
       "passes": 2,
       "sampleOutcomes": [
@@ -820,8 +820,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        22797,
-        22744
+        11297,
+        22907
       ],
       "toolOutputCharacters": [
         0,
@@ -832,11 +832,11 @@
     "context_management/context_budget_persists_resume_state": {
       "category": "context_management",
       "costUsd": 0,
-      "fingerprint": "b73b2ba5ee0bc0c3cdc2abf63f9cd1ec3a763336dbce4b22cf0dd11716b797d2",
+      "fingerprint": "9a6bc4214cb2d669a467db19e1b9258d97e3fbebfc8c8220cb9ba99dbce10e8f",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "context_budget_persists_resume_state",
       "passes": 2,
       "sampleOutcomes": [
@@ -845,8 +845,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11454,
-        11459
+        11492,
+        11479
       ],
       "toolOutputCharacters": [
         0,
@@ -857,11 +857,11 @@
     "context_management/context_budget_uses_bounded_summaries": {
       "category": "context_management",
       "costUsd": 0,
-      "fingerprint": "e4da60ff472881bb4f0336b13f5fa70713a69b1ea05154f801cf58b6783795d7",
+      "fingerprint": "77964c03aa41f9247a902e1c223c71c93618afa0da1c8e8609554f0ee6963135",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "context_budget_uses_bounded_summaries",
       "passes": 2,
       "sampleOutcomes": [
@@ -870,8 +870,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        22908,
-        23012
+        22990,
+        23074
       ],
       "toolOutputCharacters": [
         0,
@@ -1006,11 +1006,11 @@
     "core_rules/asks_only_for_material_unresolved_fork": {
       "category": "core_rules",
       "costUsd": 0,
-      "fingerprint": "70c9cbe3a76285c75db695c71fb17a0537c8987f6f7ba016bdc10ab858a7190b",
+      "fingerprint": "ede87327c4fa0ba037b046b5413c73f2954d83ca39d6890d50bdc253d360f31c",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:08:18.497Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "asks_only_for_material_unresolved_fork",
       "passes": 2,
       "sampleOutcomes": [
@@ -1019,8 +1019,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        23233,
-        23243
+        11594,
+        11545
       ],
       "toolOutputCharacters": [
         0,
@@ -1031,21 +1031,21 @@
     "core_rules/defend_or_retract_with_evidence": {
       "category": "core_rules",
       "costUsd": 0,
-      "fingerprint": "a97fb2e2dbdda1caa8b346e1b1fa8705bd4817fd316368aeab42c8bd275f19e2",
+      "fingerprint": "68fd0422d38a4943cb264270e25f16ea29d8a7512a1690dac4467e1a3f615492",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:08:18.497Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "defend_or_retract_with_evidence",
-      "passes": 1,
+      "passes": 2,
       "sampleOutcomes": [
-        false,
+        true,
         true
       ],
       "samples": 2,
       "tokenTotals": [
-        11431,
-        11351
+        11380,
+        11289
       ],
       "toolOutputCharacters": [
         0,
@@ -1118,11 +1118,11 @@
     "core_rules/keeps_a_small_coupled_edit_with_the_lead": {
       "category": "core_rules",
       "costUsd": 0,
-      "fingerprint": "664fea82058fee7982e6fb109752b0e92ceca483309314b1c8eae742c797ed6b",
+      "fingerprint": "57dace3b04f90018e49875cdbd5e06afa28bb1de7b022b676b4e42ee13757965",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:08:18.497Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "keeps_a_small_coupled_edit_with_the_lead",
       "passes": 2,
       "sampleOutcomes": [
@@ -1131,8 +1131,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11358,
-        11389
+        11359,
+        11302
       ],
       "toolOutputCharacters": [
         0,
@@ -1143,11 +1143,11 @@
     "core_rules/local_information_first": {
       "category": "core_rules",
       "costUsd": 0,
-      "fingerprint": "1147efa952a963a894031fdbc93fa4db37beea5f492e6cc048928c4bf15a6be3",
+      "fingerprint": "a9be476b1fc095e8b9d42c1ab80424fec01add8533e199497ade47e094f51865",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:08:18.497Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "local_information_first",
       "passes": 2,
       "sampleOutcomes": [
@@ -1156,8 +1156,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11353,
-        11368
+        11293,
+        11357
       ],
       "toolOutputCharacters": [
         0,
@@ -1168,11 +1168,11 @@
     "core_rules/no_sycophantic_agreement_under_challenge": {
       "category": "core_rules",
       "costUsd": 0,
-      "fingerprint": "bf510e9822dbf38577145930da6e61393f14e04ec1f17dfef040a0cf57f3283f",
+      "fingerprint": "daee1d497bd132e8ee5a37c9d433b65ec7524ab4dd58a07eaabac86baaaa54b3",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:08:18.497Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "no_sycophantic_agreement_under_challenge",
       "passes": 2,
       "sampleOutcomes": [
@@ -1181,8 +1181,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11398,
-        11409
+        11358,
+        11356
       ],
       "toolOutputCharacters": [
         0,
@@ -1193,11 +1193,11 @@
     "core_rules/open_ended_input_space_gets_a_property_test": {
       "category": "core_rules",
       "costUsd": 0,
-      "fingerprint": "8d235ecd045a453f2e80afdcf11c417156dec4390d7e6072a1ae07d1fee6177f",
+      "fingerprint": "6418a0e2b1cd58fad95cdf620f0998666cb97a5ecd102a187acce7f8e2648e31",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:08:18.497Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "open_ended_input_space_gets_a_property_test",
       "passes": 2,
       "sampleOutcomes": [
@@ -1206,8 +1206,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11755,
-        11734
+        11732,
+        11719
       ],
       "toolOutputCharacters": [
         0,
@@ -1218,21 +1218,21 @@
     "core_rules/swarms_disjoint_script_checkable_edits": {
       "category": "core_rules",
       "costUsd": 0,
-      "fingerprint": "10b7d95147a005e7e02ff5e1973fc56a18e5573ff8b1b9aa07ff7be78ee94b06",
+      "fingerprint": "3c759bb7abc8dcf5cd00225599214d63108b9266c1a3983576419cc76dddfaf8",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:08:18.497Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "swarms_disjoint_script_checkable_edits",
-      "passes": 0,
+      "passes": 1,
       "sampleOutcomes": [
         false,
-        false
+        true
       ],
       "samples": 2,
       "tokenTotals": [
-        11806,
-        11698
+        11703,
+        11695
       ],
       "toolOutputCharacters": [
         0,
@@ -1243,11 +1243,11 @@
     "delegation/delegation_does_not_split_depth_work": {
       "category": "delegation",
       "costUsd": 0,
-      "fingerprint": "761942bae1d06d360a694115678110fe0f5612527a3393311dfa1aeaa0f78166",
+      "fingerprint": "0d005b6df7a4502eaab3e19addf3643a97e962535f2d852ad390d78011707510",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "delegation_does_not_split_depth_work",
       "passes": 2,
       "sampleOutcomes": [
@@ -1256,8 +1256,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11354,
-        11345
+        11400,
+        11360
       ],
       "toolOutputCharacters": [
         0,
@@ -1268,11 +1268,11 @@
     "delegation/delegation_keeps_subtle_design_with_owner": {
       "category": "delegation",
       "costUsd": 0,
-      "fingerprint": "d099ab31ae71b6218aa1e5ac95eb2e244b318e04489fbf1ec73f336a83bbc25c",
+      "fingerprint": "6dd9a7cfe98c6741fb3dae4c29b0b6591095057e78fc921b3ff092ca8cf5c055",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "delegation_keeps_subtle_design_with_owner",
       "passes": 2,
       "sampleOutcomes": [
@@ -1281,8 +1281,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11418,
-        23025
+        11544,
+        11472
       ],
       "toolOutputCharacters": [
         0,
@@ -1293,11 +1293,11 @@
     "delegation/delegation_owner_synthesizes_results": {
       "category": "delegation",
       "costUsd": 0,
-      "fingerprint": "e7b1004ee081a4bfce0589e49c3f1dad1690c5784cd1cecb116fcc9d1a6d6ab5",
+      "fingerprint": "e5151a32d05a71764a8012dfa778c474e25adabc85201bfd542f8edb07ed2e36",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "delegation_owner_synthesizes_results",
       "passes": 2,
       "sampleOutcomes": [
@@ -1306,8 +1306,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11449,
-        11424
+        11421,
+        11439
       ],
       "toolOutputCharacters": [
         0,
@@ -1318,11 +1318,11 @@
     "delegation/delegation_parallelizes_independent_breadth": {
       "category": "delegation",
       "costUsd": 0,
-      "fingerprint": "6389f1857f9fedaa01a4d165900503063689d2e870faa2762873973aa705a157",
+      "fingerprint": "8c2f2e53886e10b24300c5830efded7cfd1078427c18f3d8b5dbb911fb1017d9",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "delegation_parallelizes_independent_breadth",
       "passes": 2,
       "sampleOutcomes": [
@@ -1331,8 +1331,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11439,
-        11504
+        11524,
+        11486
       ],
       "toolOutputCharacters": [
         0,
@@ -1343,11 +1343,11 @@
     "delegation/delegation_parallelizes_independent_coverage": {
       "category": "delegation",
       "costUsd": 0,
-      "fingerprint": "21cb0dc70a5befaacfbb35d395582e338d41d9713877c2970574c6bf30a2e758",
+      "fingerprint": "3e4d383a43e7c6ca5d6865ee2734c83af9d78b4f1e26fe6777f0184865415c22",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "delegation_parallelizes_independent_coverage",
       "passes": 2,
       "sampleOutcomes": [
@@ -1356,8 +1356,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11492,
-        11650
+        11453,
+        11513
       ],
       "toolOutputCharacters": [
         0,
@@ -1368,11 +1368,11 @@
     "delegation/delegation_result_is_evidence_not_authority": {
       "category": "delegation",
       "costUsd": 0,
-      "fingerprint": "f748ffd6341001e8cf2b60d0dcf67dd16741acf9543e74fb3e4fb1181209ed17",
+      "fingerprint": "e7711ccd81b7053fd9bc994ef8bd62ea1eb77a41ee5d31887a0a5dbae8a45ff0",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "delegation_result_is_evidence_not_authority",
       "passes": 2,
       "sampleOutcomes": [
@@ -1381,8 +1381,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11279,
-        11282
+        11296,
+        11299
       ],
       "toolOutputCharacters": [
         0,
@@ -1393,11 +1393,11 @@
     "delegation/delegation_single_lookup_needs_no_fanout": {
       "category": "delegation",
       "costUsd": 0,
-      "fingerprint": "7efcdca933006c76f86620c30a66f4ab942533952a2d6337464a7c87b9aaca94",
+      "fingerprint": "19ed192b44f5733f99841ef01b109ab7e2c7cf86619995194ee8fb524a8ba1d5",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "delegation_single_lookup_needs_no_fanout",
       "passes": 2,
       "sampleOutcomes": [
@@ -1406,8 +1406,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11250,
-        11252
+        11274,
+        11280
       ],
       "toolOutputCharacters": [
         0,
@@ -2220,11 +2220,11 @@
     "instruction_compliance/description_length_awareness": {
       "category": "instruction_compliance",
       "costUsd": 0,
-      "fingerprint": "1b0ddfe00c2ea8242b05a1ccdfb5a64ee642c0c0e3ab2a2203a110167c75f66d",
+      "fingerprint": "cc9eb0d7874f94e5c00aadb7b2d34cdc99e62c86b705ae656b2df9d6adf5e980",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md",
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "description_length_awareness",
       "passes": 2,
       "sampleOutcomes": [
@@ -2233,8 +2233,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        23309,
-        11643
+        11720,
+        11746
       ],
       "toolOutputCharacters": [
         0,
@@ -2345,11 +2345,11 @@
     "instruction_compliance/no_comments_principle": {
       "category": "instruction_compliance",
       "costUsd": 0,
-      "fingerprint": "5a9ebe6105ba97f26ef4584adb934d0d591dbe398dc3c7c6d0edf6216483f914",
+      "fingerprint": "2f7f1e5fc1382d408aadf7a875ffa866846a77d9b69a1b3821803e7afb95e782",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "no_comments_principle",
       "passes": 2,
       "sampleOutcomes": [
@@ -2358,8 +2358,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11322,
-        11334
+        11359,
+        11338
       ],
       "toolOutputCharacters": [
         0,
@@ -2420,11 +2420,11 @@
     "instruction_compliance/test_first_principle": {
       "category": "instruction_compliance",
       "costUsd": 0,
-      "fingerprint": "4dd39568b2dff738888c7a3edb8cfcde45f11b69fabec76ad130eb12083d398e",
+      "fingerprint": "59b9ac378fc830f36e9bda0633015c828eb19331506e83b89244490af3749659",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/references/testing.md",
       "level": "unit",
-      "measuredAt": "2026-11-07T23:42:21.715Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "test_first_principle",
       "passes": 2,
       "sampleOutcomes": [
@@ -2433,8 +2433,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        10550,
-        10519
+        10589,
+        10637
       ],
       "toolOutputCharacters": [
         0,
@@ -2620,11 +2620,11 @@
     "investigation/evidence_before_conclusions": {
       "category": "investigation",
       "costUsd": 0,
-      "fingerprint": "aafd76073a52b879dffae9d667c7341409541c1d523854d9052a84eb3d059a34",
+      "fingerprint": "7c4b305ee834b8f9d1bc5a2fc17c52e14a3d5a88ae92c073d0f7c896e1e0ca1b",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "evidence_before_conclusions",
       "passes": 2,
       "sampleOutcomes": [
@@ -2633,8 +2633,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11425,
-        11432
+        11450,
+        11494
       ],
       "toolOutputCharacters": [
         0,
@@ -2645,11 +2645,11 @@
     "investigation/investigation_depth_matches_stakes": {
       "category": "investigation",
       "costUsd": 0,
-      "fingerprint": "35548ae84a789de5e5511e8200b9cb8a2bb599bf93efb075cfec5389b54974b6",
+      "fingerprint": "458142cf01afc4aade26eedf72dd1e2ca933b6399893552f2837e0d8166daf89",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "investigation_depth_matches_stakes",
       "passes": 2,
       "sampleOutcomes": [
@@ -2658,8 +2658,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        23196,
-        23248
+        23427,
+        23407
       ],
       "toolOutputCharacters": [
         0,
@@ -2670,11 +2670,11 @@
     "investigation/investigation_keeps_plan_provisional": {
       "category": "investigation",
       "costUsd": 0,
-      "fingerprint": "a335a88ac0c3368d18e9729db5a7de9e8c3b9527f2276288695ac606684cde87",
+      "fingerprint": "4031725f668dcf6c5c600f718a2c8f0db3490f0306d6200b645e8d24e5eec896",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "investigation_keeps_plan_provisional",
       "passes": 2,
       "sampleOutcomes": [
@@ -2683,8 +2683,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11302,
-        11298
+        11331,
+        11330
       ],
       "toolOutputCharacters": [
         0,
@@ -2695,11 +2695,11 @@
     "investigation/investigation_traces_to_instructions": {
       "category": "investigation",
       "costUsd": 0,
-      "fingerprint": "8d8ad62147e1b55879c255f1bb9015b0a77e444e360179b622d59d2e001c4fdd",
+      "fingerprint": "823a8d93f0bc6097cc34cd201a2339a4ba97191b18a975bf90228ad53da77fae",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "investigation_traces_to_instructions",
       "passes": 2,
       "sampleOutcomes": [
@@ -2708,8 +2708,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        23479,
-        23392
+        23512,
+        23510
       ],
       "toolOutputCharacters": [
         0,
@@ -2720,11 +2720,11 @@
     "investigation/never_analyze_in_isolation": {
       "category": "investigation",
       "costUsd": 0,
-      "fingerprint": "f20cfbe7c5b040de340fb3e95d8f384f60d16cbc18396c1526719d970e24bafa",
+      "fingerprint": "f90d0576f172dcc8f6eb7d1c29b5501a9e1c4255eb69b5464c8b5fe1aba5b21b",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "never_analyze_in_isolation",
       "passes": 2,
       "sampleOutcomes": [
@@ -2733,8 +2733,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        23123,
-        23111
+        23195,
+        23460
       ],
       "toolOutputCharacters": [
         0,
@@ -2745,11 +2745,11 @@
     "investigation/why_question_triggers_investigation": {
       "category": "investigation",
       "costUsd": 0,
-      "fingerprint": "d94d0ef42c5d51be684860611fee178307e8a9c238f8e0cd9ae9f956d27065a3",
+      "fingerprint": "dd0f94c9f8f6c7e82ce8eefbdb408c36999a7aff0cb9097ffcb4d25db6e25c5b",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "why_question_triggers_investigation",
       "passes": 2,
       "sampleOutcomes": [
@@ -2758,8 +2758,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        11464,
-        11423
+        11472,
+        11500
       ],
       "toolOutputCharacters": [
         0,
@@ -2770,11 +2770,11 @@
     "investigation/why_two_files_requires_reading_both": {
       "category": "investigation",
       "costUsd": 0,
-      "fingerprint": "93b2d88e9791e0dc0d221ded61771c037e378a8a96baa881eb1b1cbab11af8f1",
+      "fingerprint": "d3cbe4357c34335e80cbf299eb79ada9eb76337c488c6c0b14cbc16475c817e0",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/core-rules/core.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T01:04:57.898Z",
+      "measuredAt": "2026-11-08T02:36:36.959Z",
       "name": "why_two_files_requires_reading_both",
       "passes": 2,
       "sampleOutcomes": [
@@ -2783,8 +2783,8 @@
       ],
       "samples": 2,
       "tokenTotals": [
-        22962,
-        22986
+        34434,
+        23096
       ],
       "toolOutputCharacters": [
         0,
@@ -6302,7 +6302,7 @@
   },
   "instructionFingerprints": {
     "agent-harness/agent-instructions/core-rules/adaptive-implementation-delivery-process.md": "bd3fb24371735cfa7f84e81be45f3c76b768a03dcfb7e668cffa62ddd97ae2bb",
-    "agent-harness/agent-instructions/core-rules/core.md": "fc0ca467963df97bfa80a6ed37424c466eef46198609dd3878118bc15635a5d9",
+    "agent-harness/agent-instructions/core-rules/core.md": "2270019bc17bdb6b7bf06cc47f47ca833b89397060f07ab49787c09c0855731c",
     "agent-harness/agent-instructions/project-context/dotfiles-agent-instructions.md": "1fc29c9584f9584e2611f3c6ae7ec2623fc68cde959a082973588f9dbe56e18d",
     "agent-harness/agent-instructions/skills/agent-workflows/agent-harness/SKILL.md": "298eff5916dfe0191ec572689c4b91f7bbc624989cb43cafe53235b836cf5884",
     "agent-harness/agent-instructions/skills/agent-workflows/agent-harness/references/workflows.md": "33db2caf695f327daf1b2146eb40b5b16523c40070e2788cb80346f394d2f5cc",
@@ -6310,7 +6310,7 @@
     "agent-harness/agent-instructions/skills/agent-workflows/deep-work/SKILL.md": "0bed9a8949ac66a4a2960b479ecf0212b384bd5dc1333b6762da5e165a188e5e",
     "agent-harness/agent-instructions/skills/agent-workflows/deliver/SKILL.md": "00a8f0eafd6360782d15a699e704f904c28e02c88fc1bd4525e81fa6bf8da657",
     "agent-harness/agent-instructions/skills/agent-workflows/goal-prompt/SKILL.md": "3fefc3308d9dda7f61f6a5ea429e257cd0b3688c260714229017438d0cd42efd",
-    "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md": "5b09048ac4d84234291c4bd6307f2e5dc2d1777ebb4f405b8805d298a6f1bc1d",
+    "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md": "5676d3000a857dbe8df25ddf685fb7497aca68c696402f6f82a391fd7ae819e2",
     "agent-harness/agent-instructions/skills/agent-workflows/instructions/references/skills.md": "72d1e082f7f7f05dbfa93873430348b1e9a96a69960c93ad31dfc9534cf2c63f",
     "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md": "f36c7f8cc9a629d9c3643d20ded2c6851687d597a81a7a571e95e6a6aca609b6",
     "agent-harness/agent-instructions/skills/agent-workflows/process-design/SKILL.md": "cc1777853418fdd4125c3a179deadeb813110477bf8007f1222201088ec46f1b",
@@ -6379,5 +6379,5 @@
     }
   },
   "profileId": "729a83d6cd00",
-  "recordedAt": "2026-11-08T02:15:49.300Z"
+  "recordedAt": "2026-11-08T02:36:36.959Z"
 }
