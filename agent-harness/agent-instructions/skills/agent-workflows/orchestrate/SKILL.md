@@ -74,10 +74,10 @@ name or pane id. Clawde agents carry no Servant, so address them by peer name.
 
 ### The drive loop
 
-Run this loop per goal, one turn at a time: 1) fix the goal and the evidence that would settle it before dispatching; 2)
-resolve the peer from the live directory, spawning one through herdr when none fits, and confirm it is idle; 3) dispatch
-one self-contained task naming the goal, the constraints, where to work, and what to report; 4) watch the turn to its
-end instead of assuming the first answer is final;
+Drive a helper on your own goal with this loop, one turn at a time: 1) fix the goal and the evidence that would settle
+it before dispatching; 2) resolve the peer from the live directory, spawning one through herdr when none fits, and
+confirm it is idle; 3) dispatch one self-contained task naming the goal, the constraints, where to work, and what to
+report; 4) watch the turn to its end instead of assuming the first answer is final;
 
 5\) inspect the artifact the turn produced, never the peer's account of it; 6) answer whatever the peer asks, and
 correct with one instruction naming the specific gap; 7) repeat from step 3 with the next increment, and re-route the
@@ -86,6 +86,9 @@ work when two corrections have not moved it;
 8\) close out by telling the peer the goal is met, closing every local peer pane you launched under `herdr`'s owned-pane
 cleanup rule, and removing only what is yours, such as a worktree or a scratch file. Give the peer the smallest
 increment that produces inspectable evidence, because a turn you cannot check is a turn you cannot correct.
+
+A sub-session you orchestrate owns its whole goal and plans its own steps, so it gets no increments or corrections from
+this loop; [decisions](references/decisions.md) owns what it hears from you.
 
 ### Dispatch discipline
 
@@ -113,10 +116,8 @@ commit, or a diff and read that yourself; read the pane through herdr when you n
 ### Decisions travel as cards
 
 When you orchestrate sub-sessions, read [decisions](references/decisions.md) first. It owns their workspace, briefs,
-what you send them, the event loop, the round view, deciding as Lucas, and learning from his corrections. A pane question or a scraped answer arrives without the context a decision card carries.
-
-A sub-session owns its whole goal and plans its own steps. The drive loop's increments and corrections serve a helper
-on your own goal, never a sub-session.
+what you send them, the event loop, the round view, deciding as Lucas, and learning from his corrections. A pane
+question or a scraped answer arrives without the context a decision card carries.
 
 ### A2a sender identity
 

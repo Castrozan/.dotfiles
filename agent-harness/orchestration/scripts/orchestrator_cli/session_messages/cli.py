@@ -86,9 +86,15 @@ def command_dispatch(arguments: argparse.Namespace) -> int:
 def session_address(reports_directory: Path, session: str) -> PeerAddress:
     reports = all_records(reports_directory)
     for key in SESSION_LOOKUP_KEYS:
-        for report in reports:
-            if report.get(key) == session:
-                return requester_address(report)
+        matches = [report for report in reports if report.get(key) == session]
+        addresses = {requester_address(report) for report in matches}
+        if len(addresses) > 1:
+            names = ", ".join(sorted(report["name"] for report in matches))
+            raise InvalidPeerDocument(
+                f"{session} matches several sessions ({names}); name one of them"
+            )
+        if addresses:
+            return addresses.pop()
     return PeerAddress(session)
 
 

@@ -78,7 +78,8 @@ def copy_file_to_host(path: Path, host: str) -> None:
         raise PeerMessageFailure(f"copying {path} to {host}: {failure}") from failure
     if completed.returncode != 0:
         raise PeerMessageFailure(
-            f"copying {path} to {host}: {completed.stderr.decode().strip()}"
+            f"copying {path} to {host}: "
+            f"{completed.stderr.decode(errors='replace').strip()}"
         )
 
 

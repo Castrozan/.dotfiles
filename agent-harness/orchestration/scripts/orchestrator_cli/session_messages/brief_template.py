@@ -15,10 +15,15 @@ QUOTED_HEADING = "Lucas's words"
 CONTRACT_HEADING = "Contract"
 CONTRACT_COMMANDS = ("orchestrator decision file --to", "orchestrator report file --to")
 SECTION_HEADING = re.compile(r"^##\s+(?P<title>.+?)\s*$")
-FENCE_MARKER = re.compile(r"^\s*(```|~~~)")
-ORDERED_STEPS = re.compile(r"^\s*\d+[.)]\s|(?:^|\s)1\)\s.*\s2\)\s")
+FENCE_MARKER = re.compile(r"^\s*(?P<fence>`{3,}|~{3,})")
+ORDERED_STEPS = re.compile(
+    r"^\s*(?:[-*+]\s+)?(?:\(?\d+[.)]|step\s+\d+[.:)]?)\s+\S"
+    r"|(?:^|\s)\(?1\)\s.*\s\(?2\)\s",
+    re.IGNORECASE,
+)
 AUTONOMY_ADVICE = (
-    "state outcomes in Goal and Done when and leave the order of work to the session"
+    "number nothing outside Lucas's words: list outcomes as bullets and leave the "
+    "order of work to the session"
 )
 
 
@@ -33,19 +38,36 @@ def heading_key(title: str) -> str:
     return title.replace("’", "'").casefold()
 
 
+def closes_fence(opening: str, line: str) -> bool:
+    marker = FENCE_MARKER.match(line)
+    return bool(
+        marker
+        and marker["fence"][0] == opening[0]
+        and len(marker["fence"]) >= len(opening)
+        and not line.strip()[len(marker["fence"]) :].strip()
+    )
+
+
 def brief_sections(text: str) -> list[BriefSection]:
     sections = [BriefSection("")]
-    inside_fence = False
+    open_fence = None
     for number, line in enumerate(text.splitlines(), start=1):
-        if FENCE_MARKER.match(line):
-            inside_fence = not inside_fence
-        heading = None if inside_fence else SECTION_HEADING.match(line)
+        marker = FENCE_MARKER.match(line)
+        if open_fence is not None:
+            if closes_fence(open_fence, line):
+                open_fence = None
+            sections[-1].all_text.append(line)
+            continue
+        if marker:
+            open_fence = marker["fence"]
+            sections[-1].all_text.append(line)
+            continue
+        heading = SECTION_HEADING.match(line)
         if heading:
             sections.append(BriefSection(heading["title"]))
             continue
         sections[-1].all_text.append(line)
-        if not inside_fence and not FENCE_MARKER.match(line):
-            sections[-1].prose_lines.append((number, line))
+        sections[-1].prose_lines.append((number, line))
     return sections
 
 
@@ -88,7 +110,7 @@ def contract_problems(
     return [
         f"the Contract section must show the session `{command}`"
         for command in required
-        if command not in contract
+        if not re.search(re.escape(command) + r"(?!\S)", contract)
     ]
 
 

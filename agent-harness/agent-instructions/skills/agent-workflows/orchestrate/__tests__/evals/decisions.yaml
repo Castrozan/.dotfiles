@@ -108,7 +108,8 @@ casos:
     pergunta:
       Mozart on kira filed card D-7 asking whether its rehearsal should collect GitLab evidence in a gate script
       outside its sandbox or open the macOS trust service to glab. Lucas answered "a script outside the sandbox fetches
-      GitLab (safe)". Record his answer and tell me every command you run and every message you send Mozart.
+      GitLab (safe)". Which command records his answer, and what, if anything, do you send Mozart yourself? Answer
+      without running anything.
     assercoes:
       juiz:
         - Records the answer with `orchestrator decision answer D-7` choosing the gate option `--by human` with Lucas's

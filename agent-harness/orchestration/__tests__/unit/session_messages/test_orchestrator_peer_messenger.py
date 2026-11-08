@@ -1,5 +1,5 @@
-import shlex
 import stat
+import subprocess
 
 import pytest
 from orchestrator_cli import peer_messenger
@@ -38,20 +38,20 @@ def test_a_notification_passes_target_text_and_sender_to_a2a_notify(fake_a2a):
     )
 
 
-def test_a_peer_on_another_host_is_notified_by_its_own_a2a_over_ssh():
-    command = peer_messenger.a2a_command_line(
-        ("notify", "Mozart", "it's answered: 'gate'", "--sender", "Ibaraki-dōji"),
-        "kira",
-    )
-    assert command[:4] == ["ssh", "-o", "BatchMode=yes", "kira"]
-    assert shlex.split(command[4]) == [
-        "a2a",
+def test_a_peer_on_another_host_gets_every_argument_intact_through_its_shell(
+    fake_a2a,
+):
+    arguments = (
         "notify",
         "Mozart",
-        "it's answered: 'gate'",
+        'it\'s answered: "gate" $HOME `x`',
         "--sender",
         "Ibaraki-dōji",
-    ]
+    )
+    command = peer_messenger.a2a_command_line(arguments, "kira")
+    assert command[:4] == ["ssh", "-o", "BatchMode=yes", "kira"]
+    subprocess.run(["/bin/sh", "-c", command[4]], check=True)
+    assert fake_a2a.read_text(encoding="utf-8").splitlines() == list(arguments)
 
 
 def test_a_record_filed_over_ssh_is_answered_on_the_host_it_named():

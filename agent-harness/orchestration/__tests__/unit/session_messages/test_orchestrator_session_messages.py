@@ -3,66 +3,7 @@ import json
 import pytest
 from orchestration_test_support import run_orchestrator
 from orchestrator_cli.session_messages import cli as session_message_cli
-from orchestrator_cli.session_messages.brief_template import brief_problems
-
-CONTRACT = """## Contract
-
-```
-ssh chise orchestrator decision file --to Ibaraki --sender Mozart --reply-host kira
-ssh chise orchestrator report file --to Ibaraki --sender Mozart --reply-host kira
-```
-"""
-
-
-def brief(done_when="- Rehearsal evidence comes from GitLab on the VPN", words=""):
-    return f"""# Brief: GitLab evidence for the rehearsal
-
-## Goal
-
-The rehearsal reads the work GitLab without glab inside its sandbox.
-
-## Done when
-
-{done_when}
-
-## Constraints
-
-- Leave the VPN as Lucas set it.
-
-## Workspace and worktree
-
-kira, `~/clawde`.
-
-## Lucas's words
-
-> a script outside the sandbox fetches GitLab (safe)
-{words}
-
-{CONTRACT}"""
-
-
-def test_a_brief_stating_outcomes_passes_and_one_dictating_steps_is_refused():
-    assert brief_problems(brief(), "kira") == []
-    numbered = "1. Build the gate script\n2. Deny glab\n3. Rehearse, then disconnect"
-    problems = brief_problems(brief(done_when=numbered), "kira")
-    assert len(problems) == 3
-    assert all("orders steps" in problem for problem in problems)
-    inline = "- Build it: 1) the gate script; 2) deny glab"
-    assert len(brief_problems(brief(done_when=inline), "kira")) == 1
-
-
-def test_lucas_numbered_words_and_fenced_lines_are_not_dictated_steps():
-    words = "> 1. No need to clone, it's on the disk already.\n> 2. I need info."
-    assert brief_problems(brief(words=words), "kira") == []
-
-
-def test_a_brief_missing_a_template_heading_or_the_remote_contract_is_refused():
-    without_goal = brief().replace("## Goal", "## Background")
-    problems = brief_problems(without_goal, None)
-    assert any("missing or out of order: Goal" in problem for problem in problems)
-    assert brief_problems(brief(), "fuji") == [
-        "the Contract section must show the session `--reply-host fuji`"
-    ]
+from session_message_test_support import brief
 
 
 @pytest.fixture
@@ -109,7 +50,7 @@ def test_dispatch_sends_nothing_when_the_brief_dictates_steps(
 
 
 def file_remote_report(monkeypatch, reports):
-    monkeypatch.delenv("HERDR_PANE_ID")
+    monkeypatch.delenv("HERDR_PANE_ID", raising=False)
     report = {
         "goal": "rehearsal reads GitLab",
         "state": "working",
@@ -121,6 +62,11 @@ def file_remote_report(monkeypatch, reports):
     run_orchestrator(
         monkeypatch, reports, *filing, stdin_text=json.dumps(report), command="report"
     )
+
+
+def copy_report(reports, source, **fields):
+    record = {**json.loads((reports / f"{source}.json").read_text()), **fields}
+    (reports / f"{record['name']}.json").write_text(json.dumps(record))
 
 
 def relay(monkeypatch, reports, session, *content):
@@ -145,6 +91,23 @@ def test_relay_quotes_lucas_to_the_session_on_the_host_its_report_named(
         'Lucas\'s words: "vpn is already connected". '
         "You decide what they change in your plan."
     )
+
+
+def test_relay_prefers_an_exact_session_and_refuses_an_ambiguous_one(
+    monkeypatch, tmp_path, capsys, notifications
+):
+    file_remote_report(monkeypatch, tmp_path)
+    local = {"requester_pane": "wW:pQN", "requester_host": None}
+    copy_report(tmp_path, "Mozart", name="Mozart-wW-pQN", **local)
+    assert relay(monkeypatch, tmp_path, "Mozart", "--status-check") == 0
+    assert notifications[-1][0] == "kira:Mozart"
+    assert relay(monkeypatch, tmp_path, "wW:pQN", "--status-check") == 0
+    assert notifications[-1][0] == "wW:pQN"
+    copy_report(tmp_path, "Mozart", name="Mozart-kira")
+    (tmp_path / "Mozart.json").unlink()
+    assert relay(monkeypatch, tmp_path, "Mozart", "--status-check") == 1
+    assert "Mozart matches several sessions" in capsys.readouterr().err
+    assert len(notifications) == 2
 
 
 def test_relay_refuses_a_fact_that_carries_a_plan(
