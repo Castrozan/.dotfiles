@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "header": {
     "project": "dotfiles-agent-instructions",
-    "generatedAt": "2026-11-08T00:51:31.890Z",
-    "commit": "eb6912c6a89366a50ef5ea9c5a5d4b867fdecc3d",
+    "generatedAt": "2026-11-08T01:04:57.898Z",
+    "commit": "cc9ceda15de4af8ebfb8be03213ad3cc53d94860",
     "profile": {
       "subject": {
         "client": "codex",
@@ -16,20 +16,20 @@
         "effort": "high"
       }
     },
-    "status": "approved",
+    "status": "failed",
     "rate": {
-      "value": 0.9032882011605415,
-      "lower": 0.8747567664635741,
-      "upper": 0.9258707429981049,
-      "passes": 467,
-      "samples": 517
+      "value": 0.9001919385796545,
+      "lower": 0.8714521615635992,
+      "upper": 0.9230734861186337,
+      "passes": 469,
+      "samples": 521
     },
-    "previousRate": 0.9032882011605415,
+    "previousRate": 0.9001919385796545,
     "passAtK": [
       {
         "k": 1,
-        "value": 0.9173469387755102,
-        "cases": 245
+        "value": 0.9139676113360324,
+        "cases": 247
       },
       {
         "k": 3,
@@ -38,15 +38,15 @@
       }
     ],
     "noise": {
-      "floor": 0.04397994971335425,
-      "headroom": 0.09671179883945846,
+      "floor": 0.04381079543383235,
+      "headroom": 0.09980806142034548,
       "headroomExceedsNoise": true
     },
     "measured": {
       "partial": true,
-      "measuredCases": 77,
-      "inheritedCases": 168,
-      "totalCases": 245,
+      "measuredCases": 55,
+      "inheritedCases": 192,
+      "totalCases": 247,
       "categories": [],
       "caseFilters": [],
       "affected": true
@@ -54,23 +54,23 @@
     "levels": [
       {
         "level": "unit",
-        "cases": 73,
-        "samples": 146,
+        "cases": 40,
+        "samples": 80,
         "costUsd": 0,
-        "durationSeconds": 684.8839999999999
+        "durationSeconds": 873.4650000000001
       },
       {
         "level": "end-to-end",
-        "cases": 4,
-        "samples": 8,
+        "cases": 15,
+        "samples": 30,
         "costUsd": 0,
-        "durationSeconds": 533.072
+        "durationSeconds": 1275.7050000000002
       }
     ],
     "coverage": [
       {
         "kind": "cli",
-        "total": 240,
+        "total": 242,
         "covered": 1
       },
       {
@@ -98,7 +98,13 @@
       "isolated": true,
       "leakedSkills": []
     },
-    "reasons": [],
+    "reasons": [
+      {
+        "code": "piso-critico",
+        "category": "core_rules",
+        "message": "Categoria crítica \"core_rules\" com 83,3%, abaixo do piso de 85,0%."
+      }
+    ],
     "notices": [],
     "regression": {
       "fell": [],
@@ -454,8 +460,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -466,7 +472,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 23.255
             }
           ]
         },
@@ -908,16 +914,16 @@
     {
       "name": "context_management",
       "samples": 8,
-      "passes": 7,
-      "rate": 0.875,
+      "passes": 8,
+      "rate": 1,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/core-rules/core.md",
           "name": "context_management",
           "kind": null,
           "samples": 8,
-          "passes": 7,
-          "rate": 0.875,
+          "passes": 8,
+          "rate": 1,
           "cases": [
             {
               "key": "context_management/context_budget_discards_stale_findings",
@@ -927,8 +933,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -939,7 +945,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 11.209
             },
             {
               "key": "context_management/context_budget_loads_only_material_information",
@@ -949,8 +955,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -961,7 +967,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 20.085
             },
             {
               "key": "context_management/context_budget_persists_resume_state",
@@ -971,8 +977,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -983,7 +989,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 17.774
             },
             {
               "key": "context_management/context_budget_uses_bounded_summaries",
@@ -993,19 +999,19 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
-              "passes": 1,
-              "rate": 0.5,
+              "passes": 2,
+              "rate": 1,
               "outcomes": [
                 true,
-                false
+                true
               ],
-              "flaky": true,
+              "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 29.057
             }
           ]
         }
@@ -1013,16 +1019,16 @@
     },
     {
       "name": "core_rules",
-      "samples": 20,
-      "passes": 18,
-      "rate": 0.9,
+      "samples": 24,
+      "passes": 21,
+      "rate": 0.875,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/core-rules/core.md",
           "name": "core_rules",
           "kind": null,
-          "samples": 8,
-          "passes": 6,
+          "samples": 12,
+          "passes": 9,
           "rate": 0.75,
           "cases": [
             {
@@ -1033,8 +1039,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1045,7 +1051,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 31.468
             },
             {
               "key": "core_rules/defend_or_retract_with_evidence",
@@ -1055,8 +1061,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 1,
               "rate": 0.5,
@@ -1067,18 +1073,18 @@
               "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 12.492
             },
             {
-              "key": "core_rules/local_information_first",
+              "key": "core_rules/keeps_a_small_coupled_edit_with_the_lead",
               "category": "core_rules",
-              "name": "local_information_first",
+              "name": "keeps_a_small_coupled_edit_with_the_lead",
               "level": "unit",
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 1,
               "rate": 0.5,
@@ -1089,18 +1095,18 @@
               "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 10.649
             },
             {
-              "key": "core_rules/no_sycophantic_agreement_under_challenge",
+              "key": "core_rules/local_information_first",
               "category": "core_rules",
-              "name": "no_sycophantic_agreement_under_challenge",
+              "name": "local_information_first",
               "level": "unit",
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1111,7 +1117,51 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 10.183
+            },
+            {
+              "key": "core_rules/no_sycophantic_agreement_under_challenge",
+              "category": "core_rules",
+              "name": "no_sycophantic_agreement_under_challenge",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+              "heldOut": false,
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 10.725
+            },
+            {
+              "key": "core_rules/swarms_disjoint_script_checkable_edits",
+              "category": "core_rules",
+              "name": "swarms_disjoint_script_checkable_edits",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/core-rules/core.md",
+              "heldOut": false,
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
+              "samples": 2,
+              "passes": 1,
+              "rate": 0.5,
+              "outcomes": [
+                true,
+                false
+              ],
+              "flaky": true,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 32.391
             }
           ]
         },
@@ -1301,8 +1351,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1313,7 +1363,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 15.202
             },
             {
               "key": "delegation/delegation_keeps_subtle_design_with_owner",
@@ -1323,8 +1373,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1335,7 +1385,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 22.815
             },
             {
               "key": "delegation/delegation_owner_synthesizes_results",
@@ -1345,8 +1395,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1357,7 +1407,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 20.544
             },
             {
               "key": "delegation/delegation_parallelizes_independent_breadth",
@@ -1367,8 +1417,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1379,7 +1429,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 21.541
             },
             {
               "key": "delegation/delegation_parallelizes_independent_coverage",
@@ -1389,8 +1439,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1401,7 +1451,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 25.792
             },
             {
               "key": "delegation/delegation_result_is_evidence_not_authority",
@@ -1411,8 +1461,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1423,7 +1473,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 11.879
             },
             {
               "key": "delegation/delegation_single_lookup_needs_no_fanout",
@@ -1433,8 +1483,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1445,7 +1495,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 9.145
             }
           ]
         },
@@ -1486,8 +1536,8 @@
     {
       "name": "end_to_end_workflows",
       "samples": 78,
-      "passes": 57,
-      "rate": 0.7307692307692307,
+      "passes": 56,
+      "rate": 0.717948717948718,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
@@ -1505,8 +1555,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1517,7 +1567,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 66.339
             },
             {
               "key": "end_to_end_workflows/skill_discovery_coding_for_commit",
@@ -1527,8 +1577,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1539,7 +1589,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 58.611
             },
             {
               "key": "end_to_end_workflows/skill_discovery_coding_for_worktrees",
@@ -1549,8 +1599,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1561,7 +1611,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 73.358
             },
             {
               "key": "end_to_end_workflows/skill_discovery_multiple_skills_in_workflow",
@@ -1571,8 +1621,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1583,7 +1633,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 84.911
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_calculator_divide_zero",
@@ -1593,8 +1643,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 0,
               "rate": 0,
@@ -1605,7 +1655,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 76.249
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_commit_these_changes",
@@ -1615,8 +1665,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1627,7 +1677,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 42.206
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_parallel_branch",
@@ -1637,8 +1687,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1649,7 +1699,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 64.47
             }
           ]
         },
@@ -1669,8 +1719,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1681,7 +1731,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 44.608
             },
             {
               "key": "end_to_end_workflows/skill_discovery_review_for_tldr",
@@ -1691,8 +1741,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1703,7 +1753,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 57.335
             }
           ]
         },
@@ -1712,8 +1762,8 @@
           "name": "research",
           "kind": "instruction",
           "samples": 2,
-          "passes": 2,
-          "rate": 1,
+          "passes": 1,
+          "rate": 0.5,
           "cases": [
             {
               "key": "end_to_end_workflows/skill_discovery_research_for_external_info",
@@ -1724,18 +1774,18 @@
               "instruction": "agent-harness/agent-instructions/skills/knowledge/research/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T00:51:31.890Z",
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
-              "passes": 2,
-              "rate": 1,
+              "passes": 1,
+              "rate": 0.5,
               "outcomes": [
                 true,
-                true
+                false
               ],
-              "flaky": false,
+              "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 216.454
+              "durationSeconds": 255.013
             }
           ]
         },
@@ -1755,8 +1805,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1767,7 +1817,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 83.418
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_nix_postgres_crashing",
@@ -1778,7 +1828,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T00:51:31.890Z",
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1789,7 +1839,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 135.909
+              "durationSeconds": 135.604
             },
             {
               "key": "end_to_end_workflows/skill_discovery_nix_for_container",
@@ -1800,7 +1850,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T00:51:31.890Z",
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1811,7 +1861,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 80.717
+              "durationSeconds": 85.747
             },
             {
               "key": "end_to_end_workflows/skill_discovery_nix_for_rebuild",
@@ -1821,8 +1871,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-08T00:44:26.506Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1833,7 +1883,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 69.444
             }
           ]
         },
@@ -1854,7 +1904,7 @@
               "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T00:51:31.890Z",
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1865,7 +1915,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 99.992
+              "durationSeconds": 78.392
             }
           ]
         },
@@ -2237,8 +2287,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2249,7 +2299,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 11.764
             }
           ]
         },
@@ -2668,8 +2718,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2680,7 +2730,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 17.87
             },
             {
               "key": "investigation/investigation_depth_matches_stakes",
@@ -2690,8 +2740,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2702,7 +2752,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 42.409
             },
             {
               "key": "investigation/investigation_keeps_plan_provisional",
@@ -2712,8 +2762,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2724,7 +2774,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 13.528
             },
             {
               "key": "investigation/investigation_traces_to_instructions",
@@ -2734,8 +2784,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2746,7 +2796,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 61.571
             },
             {
               "key": "investigation/never_analyze_in_isolation",
@@ -2756,8 +2806,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2768,7 +2818,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 40.764
             },
             {
               "key": "investigation/why_question_triggers_investigation",
@@ -2778,8 +2828,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2790,7 +2840,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 19.406
             },
             {
               "key": "investigation/why_two_files_requires_reading_both",
@@ -2800,8 +2850,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/core-rules/core.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2812,7 +2862,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 28.27
             }
           ]
         }
@@ -3117,7 +3167,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3129,7 +3179,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.205
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_ambiguous_git_history_vs_research",
@@ -3138,7 +3188,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3150,7 +3200,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.698
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_ambiguous_research_vs_browser",
@@ -3159,7 +3209,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3171,7 +3221,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.498
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_agent_session_compact",
@@ -3180,7 +3230,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3192,7 +3242,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.111
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_agent_session_exit",
@@ -3201,7 +3251,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3213,7 +3263,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.553
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_agent_session_restart",
@@ -3222,7 +3272,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3234,7 +3284,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.055
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_all_skills_for_a_desktop_screenshot",
@@ -3243,7 +3293,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3255,7 +3305,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.328
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_architecture_for_a_boundary_decision",
@@ -3264,7 +3314,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3276,7 +3326,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 10.286
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_architecture_for_where_a_boundary_lives",
@@ -3285,7 +3335,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3297,7 +3347,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 10.281
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_browser_electron_app",
@@ -3306,7 +3356,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3318,7 +3368,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.782
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_browser_for_a_logged_in_download",
@@ -3327,7 +3377,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3339,7 +3389,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.77
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_browser_form_filling",
@@ -3348,7 +3398,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3360,7 +3410,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.543
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_browser_interactive_scrape",
@@ -3369,7 +3419,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3381,7 +3431,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.789
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_browser_web_scraping",
@@ -3390,7 +3440,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3402,7 +3452,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.051
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_commit",
@@ -3411,7 +3461,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3423,7 +3473,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.541
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_commit_staging",
@@ -3432,7 +3482,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3444,7 +3494,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.017
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_for_a_function_cleanup",
@@ -3453,7 +3503,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3465,7 +3515,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.887
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_history_find_when_changed",
@@ -3474,7 +3524,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3486,7 +3536,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 10.38
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_history_investigate_past",
@@ -3495,7 +3545,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3507,7 +3557,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.254
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_history_search_commits",
@@ -3516,7 +3566,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3528,7 +3578,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.381
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_history_trace_evolution",
@@ -3537,7 +3587,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3549,7 +3599,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.428
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_test_verification",
@@ -3558,7 +3608,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3570,7 +3620,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.455
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_coding_worktree_isolation",
@@ -3579,7 +3629,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3591,7 +3641,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.383
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_deep_work",
@@ -3600,7 +3650,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3612,7 +3662,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.393
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_deliver_an_objective_end_to_end",
@@ -3621,7 +3671,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3633,7 +3683,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.115
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_devenv_shell_setup",
@@ -3642,7 +3692,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3654,7 +3704,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.959
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_docs_for_whether_a_readme_earns_its_place",
@@ -3663,7 +3713,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3675,7 +3725,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.494
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_docs_readme_standards",
@@ -3684,7 +3734,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3696,7 +3746,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 11.418
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_explore_for_a_repo_sweep",
@@ -3705,7 +3755,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3717,7 +3767,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.905
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_explore_for_where_hooks_are_configured",
@@ -3726,7 +3776,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3738,7 +3788,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.66
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_forge_open_a_merge_request",
@@ -3747,7 +3797,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3759,7 +3809,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.118
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_forge_read_failing_pipeline",
@@ -3768,7 +3818,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3780,7 +3830,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.967
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_forge_resolve_review_threads",
@@ -3789,7 +3839,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3801,7 +3851,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.46
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_goal_prompt_for_a_scheduled_agent",
@@ -3810,7 +3860,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3822,7 +3872,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.616
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_herdr_for_a_new_pane",
@@ -3831,7 +3881,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3843,7 +3893,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.882
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_home_assistant_ac_control",
@@ -3852,7 +3902,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3864,7 +3914,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.867
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_home_assistant_lights",
@@ -3873,7 +3923,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3885,7 +3935,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.504
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_humanize_for_a_merge_request_description",
@@ -3894,7 +3944,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3906,7 +3956,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.29
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_instructions_for_a_new_skill_file",
@@ -3915,7 +3965,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3927,7 +3977,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.241
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_instructions_skill_creation",
@@ -3936,7 +3986,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3948,7 +3998,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 11.492
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_instructions_skill_routing_failure",
@@ -3957,7 +4007,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3969,7 +4019,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 10.75
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_machine_resources",
@@ -3978,7 +4028,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -3990,7 +4040,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.368
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_media_youtube_search",
@@ -3999,7 +4049,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4011,7 +4061,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.108
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_notify_task_completion",
@@ -4020,7 +4070,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4032,7 +4082,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_orchestrate_same_goal_delegation",
@@ -4041,7 +4091,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4053,7 +4103,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.564
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_personal_bare_twitter_url",
@@ -4062,7 +4112,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4074,7 +4124,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.666
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_personal_bare_xcom_url",
@@ -4083,7 +4133,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4095,7 +4145,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.71
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_personal_tweet_media_fetch",
@@ -4104,7 +4154,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4116,7 +4166,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.116
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_personal_twitter_post",
@@ -4125,7 +4175,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4137,7 +4187,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.734
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_personal_twitter_scrape",
@@ -4146,7 +4196,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4158,7 +4208,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 10.134
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_personal_xcom_url_what_does_it_say",
@@ -4167,7 +4217,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4179,7 +4229,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.228
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_personal_xcom_url_with_context",
@@ -4188,7 +4238,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4200,7 +4250,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 14.018
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_phone_status_battery",
@@ -4209,7 +4259,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4221,7 +4271,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 10.997
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_ponto_time_tracking",
@@ -4230,7 +4280,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4242,7 +4292,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 10.176
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_process_design_before_agents_run",
@@ -4251,7 +4301,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4263,7 +4313,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.035
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_process_design_redraw_a_pipeline",
@@ -4272,7 +4322,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4284,7 +4334,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.124
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_quickshell_bar_module",
@@ -4293,7 +4343,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4305,7 +4355,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.986
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_research_digest",
@@ -4314,7 +4364,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4326,7 +4376,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 7.751
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_research_for_latest_release_notes",
@@ -4335,7 +4385,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4347,7 +4397,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.595
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_research_tool_comparison",
@@ -4356,7 +4406,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4368,7 +4418,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 7.826
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_review_for_a_diff_before_merge",
@@ -4377,7 +4427,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4389,7 +4439,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.784
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_review_for_an_instruction_file_audit",
@@ -4398,7 +4448,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4410,7 +4460,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 12.239
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_review_for_an_unbiased_reviewer_pass",
@@ -4419,7 +4469,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4431,7 +4481,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 11.749
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_review_for_the_final_pass",
@@ -4440,7 +4490,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4452,7 +4502,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.341
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_ril_capture_backlog",
@@ -4461,7 +4511,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 1,
@@ -4473,7 +4523,7 @@
               "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 11.974
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_ril_inbox_processing",
@@ -4482,7 +4532,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4494,7 +4544,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.147
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_security_audit",
@@ -4503,7 +4553,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4515,7 +4565,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.321
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_tmux_control",
@@ -4524,7 +4574,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4536,7 +4586,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 9.231
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_url_shortener_for_a_query_url",
@@ -4545,7 +4595,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4557,7 +4607,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 7.892
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_url_shortener_for_a_terminal_link",
@@ -4566,7 +4616,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4578,7 +4628,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.838
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_wellput_for_a_reply_the_reader_could_not_follow",
@@ -4587,7 +4637,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": true,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4599,7 +4649,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 8.794
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_wellput_for_an_overlong_reply",
@@ -4608,7 +4658,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4620,7 +4670,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 10.387
+              "durationSeconds": 0
             },
             {
               "key": "skill_routing/routing_to_workspace_for_another_repository",
@@ -4629,7 +4679,7 @@
               "level": "unit",
               "type": "instruction",
               "heldOut": false,
-              "inherited": false,
+              "inherited": true,
               "measuredAt": "2026-11-08T00:51:31.890Z",
               "samples": 2,
               "passes": 2,
@@ -4641,7 +4691,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 11.244
+              "durationSeconds": 0
             }
           ]
         }
@@ -4669,8 +4719,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -4681,7 +4731,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 20.883
             }
           ]
         }
@@ -4815,8 +4865,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -4827,7 +4877,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 25.695
             },
             {
               "key": "skills/coding/git/commit_reads_diff_first",
@@ -4837,8 +4887,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -4849,7 +4899,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 13.504
             },
             {
               "key": "skills/coding/git/commit_uses_specific_staging",
@@ -4859,8 +4909,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 0,
               "rate": 0,
@@ -4871,7 +4921,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 21.215
             },
             {
               "key": "skills/coding/git/git_history_cache_invalidation",
@@ -4881,8 +4931,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 0,
               "rate": 0,
@@ -4893,7 +4943,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 36.503
             },
             {
               "key": "skills/coding/git/git_history_file_paths_are_high_signal",
@@ -4903,8 +4953,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -4915,7 +4965,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 14.088
             },
             {
               "key": "skills/coding/git/git_history_knows_when_not_to_use",
@@ -4925,8 +4975,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -4937,7 +4987,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 21.845
             },
             {
               "key": "skills/coding/git/git_history_never_uses_repeated_grep",
@@ -4947,8 +4997,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -4959,7 +5009,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 42.267
             }
           ]
         }
@@ -4968,16 +5018,16 @@
     {
       "name": "skills/coding/testing",
       "samples": 6,
-      "passes": 6,
-      "rate": 1,
+      "passes": 5,
+      "rate": 0.8333333333333334,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
           "name": "coding",
           "kind": "instruction",
           "samples": 6,
-          "passes": 6,
-          "rate": 1,
+          "passes": 5,
+          "rate": 0.8333333333333334,
           "cases": [
             {
               "key": "skills/coding/testing/test_behavioral_evidence_does_not_prove_root_cause",
@@ -4987,8 +5037,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -4999,7 +5049,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 15.951
             },
             {
               "key": "skills/coding/testing/test_first_before_fix",
@@ -5009,8 +5059,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -5021,7 +5071,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 15.372
             },
             {
               "key": "skills/coding/testing/test_verification_scales_to_relevant_evidence",
@@ -5031,19 +5081,19 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
-              "passes": 2,
-              "rate": 1,
+              "passes": 1,
+              "rate": 0.5,
               "outcomes": [
                 true,
-                true
+                false
               ],
-              "flaky": false,
+              "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 22.701
             }
           ]
         }
@@ -5071,8 +5121,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -5083,7 +5133,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 13.001
             },
             {
               "key": "skills/coding/worktrees/worktrees_pr_from_main_directory",
@@ -5093,8 +5143,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 0,
               "rate": 0,
@@ -5105,7 +5155,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 18.147
             }
           ]
         }
@@ -6083,8 +6133,8 @@
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
-              "inherited": true,
-              "measuredAt": "2026-11-07T23:42:21.715Z",
+              "inherited": false,
+              "measuredAt": "2026-11-08T01:04:57.898Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -6095,7 +6145,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 0
+              "durationSeconds": 20.505
             }
           ]
         },
@@ -6219,12 +6269,16 @@
       "name": "skill_discovery_natural_coding_calculator_divide_zero",
       "level": "end-to-end",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 0,
       "samples": 2,
+      "input": "There's a bug in calculator.py where divide crashes on zero. Fix it.\n",
       "expected": [],
-      "failedAssertions": [],
-      "failingSince": "2026-11-08T00:44:26.506Z"
+      "actualOutput": "Fixed `calculator.py`: `divide_numbers` now returns `None` when the denominator is zero.\n\nAdded regression coverage for integer and float zero denominators. Both tests pass.",
+      "failedAssertions": [
+        "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios calculator.py\" saiu com código 1: FALHA calculator.py has no comments: found: ['docstring on line 2']"
+      ],
+      "failingSince": "2026-11-08T01:04:57.898Z"
     },
     {
       "key": "end_to_end_workflows/srp_splits_monolithic_function",
@@ -6284,12 +6338,18 @@
       "name": "commit_uses_specific_staging",
       "level": "unit",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 0,
       "samples": 2,
-      "expected": [],
-      "failedAssertions": [],
-      "failingSince": "2026-11-07T23:42:21.715Z"
+      "input": "Should I use git add -A to stage all my changes before committing?",
+      "expected": [
+        "The response advises against `git add -A` and `git add .`, instead directing the user to stage specific files by name/path so unrelated parallel work is not staged."
+      ],
+      "actualOutput": "Use `git add -A` only when you’ve reviewed **all changes in the repository** and want them in the same commit. It stages new files, modifications, and deletions.\n\nFor more control, stage specific files or selected changes:\n\n```bash\ngit add path/to/file\ngit add -p\n```\n\nBefore committing, review what’s staged:\n\n```bash\ngit diff --cached\n```",
+      "failedAssertions": [
+        "Juiz: reprovado para \"The response advises against `git add -A` and `git add .`, instead directing the user to stage specific files by name/path so unrelated parallel work is not staged.\"."
+      ],
+      "failingSince": "2026-11-08T01:04:57.898Z"
     },
     {
       "key": "skills/coding/git/git_history_cache_invalidation",
@@ -6297,12 +6357,18 @@
       "name": "git_history_cache_invalidation",
       "level": "unit",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 0,
       "samples": 2,
-      "expected": [],
-      "failedAssertions": [],
-      "failingSince": "2026-11-07T23:42:21.715Z"
+      "input": "How do I know if the cached git history file is still up to date?",
+      "expected": [
+        "The response explains how to tell whether the cache is current, by running `git-history info` for cache status and/or noting that it auto-invalidates when HEAD changes or the file is older than one hour (refreshable with `--force`)."
+      ],
+      "actualOutput": "Check the Git commit IDs the cache was built from—not its file timestamp.\n\nFor a cache of the current branch, run:\n\n```bash\ngit rev-parse HEAD\n```\n\nCompare that SHA with the cache’s recorded source SHA. If they differ, refresh the cache.\n\nIf the cache covers multiple branches or tags, compare all included refs; an unchanged `HEAD` alone doesn’t prove freshness. Run `git fetch` first if you need to check against the latest remote history.\n\nIf the cache records no source SHAs, regenerating it is the reliable option. I couldn’t access the local guidance to verify this cache’s exact metadata format.",
+      "failedAssertions": [
+        "Juiz: reprovado para \"The response explains how to tell whether the cache is current, by running `git-history info` for cache status and/or noting that it auto-invalidates when HEAD changes or the file is older than one hour (refreshable with `--force`).\"."
+      ],
+      "failingSince": "2026-11-08T01:04:57.898Z"
     },
     {
       "key": "skills/coding/worktrees/worktrees_pr_from_main_directory",
@@ -6310,12 +6376,18 @@
       "name": "worktrees_pr_from_main_directory",
       "level": "unit",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 0,
       "samples": 2,
-      "expected": [],
-      "failedAssertions": [],
-      "failingSince": "2026-11-07T23:42:21.715Z"
+      "input": "I finished my feature in a worktree. Where should I run the PR command?",
+      "expected": [
+        "The response states that the PR command should be run from the main repo directory rather than from inside the worktree."
+      ],
+      "actualOutput": "Run the PR command from your **feature worktree**, explicitly specifying the upstream repository and source branch. For GitHub:\n\n```bash\ncd <repo>/.worktrees/<feature-branch>\ngh pr create --repo OWNER/REPO --head <feature-branch> --base main\n```\n\nUse your intended target branch if it differs from `main`. Once the PR is pending review, return to the main workspace and rebuild; keep the worktree for follow-up changes.",
+      "failedAssertions": [
+        "Juiz: reprovado para \"The response states that the PR command should be run from the main repo directory rather than from inside the worktree.\"."
+      ],
+      "failingSince": "2026-11-08T01:04:57.898Z"
     },
     {
       "key": "skills/nix/rebuild/rebuild_stages_nix_files_first",
@@ -6367,23 +6439,23 @@
       "samples": 2
     },
     {
-      "key": "context_management/context_budget_uses_bounded_summaries",
-      "heldOut": false,
-      "inherited": true,
-      "passes": 1,
-      "samples": 2
-    },
-    {
       "key": "core_rules/defend_or_retract_with_evidence",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
       "passes": 1,
       "samples": 2
     },
     {
-      "key": "core_rules/local_information_first",
+      "key": "core_rules/keeps_a_small_coupled_edit_with_the_lead",
       "heldOut": false,
-      "inherited": true,
+      "inherited": false,
+      "passes": 1,
+      "samples": 2
+    },
+    {
+      "key": "core_rules/swarms_disjoint_script_checkable_edits",
+      "heldOut": false,
+      "inherited": false,
       "passes": 1,
       "samples": 2
     },
@@ -6395,6 +6467,13 @@
       "samples": 4
     },
     {
+      "key": "end_to_end_workflows/skill_discovery_research_for_external_info",
+      "heldOut": false,
+      "inherited": false,
+      "passes": 1,
+      "samples": 2
+    },
+    {
       "key": "instruction_compliance/specific_file_staging",
       "heldOut": false,
       "inherited": true,
@@ -6403,6 +6482,13 @@
     },
     {
       "key": "skill_routing/routing_to_ril_capture_backlog",
+      "heldOut": false,
+      "inherited": true,
+      "passes": 1,
+      "samples": 2
+    },
+    {
+      "key": "skills/coding/testing/test_verification_scales_to_relevant_evidence",
       "heldOut": false,
       "inherited": false,
       "passes": 1,
@@ -6523,6 +6609,18 @@
       "kind": "cli",
       "path": "agent-harness/agent-instructions/skills/development/coding/scripts/git-history.py",
       "name": "git-history",
+      "onlyPending": false
+    },
+    {
+      "kind": "cli",
+      "path": "agent-harness/agent-instructions/skills/development/coding/scripts/swarm-batch-gate.py",
+      "name": "swarm-batch-gate",
+      "onlyPending": false
+    },
+    {
+      "kind": "cli",
+      "path": "agent-harness/agent-instructions/skills/development/coding/scripts/swarm-differential-check.py",
+      "name": "swarm-differential-check",
       "onlyPending": false
     },
     {
