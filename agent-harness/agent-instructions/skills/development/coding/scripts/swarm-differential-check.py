@@ -1,5 +1,6 @@
 import argparse
 import contextlib
+import copy
 import importlib.util
 import io
 import json
@@ -70,7 +71,10 @@ def observe_call(module, case):
         return CallObservation("missing", case["function"], "")
     try:
         with contextlib.redirect_stdout(printed_output):
-            value = function(*case.get("args", []), **case.get("kwargs", {}))
+            value = function(
+                *copy.deepcopy(case.get("args", [])),
+                **copy.deepcopy(case.get("kwargs", {})),
+            )
     except Exception as raised:
         return CallObservation(
             "raised", f"{type(raised).__name__}: {raised}", printed_output.getvalue()

@@ -42,7 +42,11 @@ def parse_arguments():
 
 def read_batches(batches_path):
     batches = json.loads(batches_path.read_text())
-    if not isinstance(batches, dict) or not batches:
+    if (
+        not isinstance(batches, dict)
+        or not batches
+        or not all(isinstance(files, list) for files in batches.values())
+    ):
         raise SystemExit(
             f"{batches_path} must hold a non-empty JSON object of batch name to file list"
         )
