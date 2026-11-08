@@ -19,6 +19,7 @@ PINNED_WELLPUT_SOURCE_EXPRESSION = (
     'url = "https://github.com/${source.owner}/${source.repo}/archive/${source.rev}.tar.gz"; '
     "sha256 = source.hash; }; }"
 )
+PINNED_WELLPUT_SOURCE_EVALUATION_TIMEOUT_SECONDS = 300
 
 HUMANIZE_SKILL_PATH = (
     REPO_ROOT
@@ -87,6 +88,7 @@ def pinned_wellput_reply_format_configuration() -> dict:
         capture_output=True,
         text=True,
         check=True,
+        timeout=PINNED_WELLPUT_SOURCE_EVALUATION_TIMEOUT_SECONDS,
     ).stdout
     return json.loads((Path(pinned_source) / "wellput.json").read_text())
 
