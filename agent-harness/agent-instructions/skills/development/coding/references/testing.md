@@ -17,9 +17,8 @@ Cover only meaningful boundaries exposed by the change: empty, malformed, duplic
 inputs; every caller of a changed public signature; and failure paths skipped by the happy path. Repository tests own
 recurring regression coverage so future work does not have to rediscover it from prose.
 
-Check a small finite input space exhaustively in one test, not by examples or sampling. Give an open-ended space a
-property-based test and pin each counterexample as an explicit example. Delete a hand-written case only while a
-deterministic check or pinned example still runs it; a generator may never draw it.
+Check a small finite input space exhaustively in one test, not by examples or sampling. Delete a hand-written case only
+while a deterministic check or pinned example still runs it; a generator may never draw it.
 
 ### Execution
 

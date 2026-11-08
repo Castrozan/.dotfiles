@@ -5097,23 +5097,29 @@
     "skills/coding/testing/test_behavioral_evidence_does_not_prove_root_cause": {
       "category": "skills/coding/testing",
       "costUsd": 0,
-      "fingerprint": "8753ef2058f8de28aabb4c0e200469b13354788a1135b6938b0c3145955b7f18",
+      "fingerprint": "f8cccaee362844bc7fa11fe7c26e10b788359a41e4219bb67d9710ce7747cd01",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:00:18.529Z",
+      "measuredAt": "2026-11-08T02:15:49.300Z",
       "name": "test_behavioral_evidence_does_not_prove_root_cause",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
-        11026,
-        11063
+        10991,
+        10961,
+        11014,
+        11012
       ],
       "toolOutputCharacters": [
+        0,
+        0,
         0,
         0
       ],
@@ -5122,23 +5128,29 @@
     "skills/coding/testing/test_first_before_fix": {
       "category": "skills/coding/testing",
       "costUsd": 0,
-      "fingerprint": "321a1642921a39d84803e9440669fe9151f7ccab2b0c205bee7680eed428a0cf",
+      "fingerprint": "2e5b97491d9c3d3af2eed95fe682d8c054657328fa89d539b34b84d10ebe5b8b",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:00:18.529Z",
+      "measuredAt": "2026-11-08T02:15:49.300Z",
       "name": "test_first_before_fix",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
-        11012,
-        11017
+        10922,
+        10964,
+        10939,
+        10920
       ],
       "toolOutputCharacters": [
+        0,
+        0,
         0,
         0
       ],
@@ -5147,23 +5159,29 @@
     "skills/coding/testing/test_sampled_property_does_not_replace_hand_written_cases": {
       "category": "skills/coding/testing",
       "costUsd": 0,
-      "fingerprint": "1df517642eaa952679b8eb881dbe7c0eb7c7f3adc8ae5b34eb70f93c51da1bb5",
+      "fingerprint": "535cdb43b56e26e4c7574101b1e9c825eede9df2a2e9492e3b084e49e0acd986",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:00:18.529Z",
+      "measuredAt": "2026-11-08T02:15:49.300Z",
       "name": "test_sampled_property_does_not_replace_hand_written_cases",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
-        11005,
-        11000
+        10973,
+        10980,
+        10979,
+        10982
       ],
       "toolOutputCharacters": [
+        0,
+        0,
         0,
         0
       ],
@@ -5172,23 +5190,29 @@
     "skills/coding/testing/test_small_finite_input_space_is_checked_exhaustively": {
       "category": "skills/coding/testing",
       "costUsd": 0,
-      "fingerprint": "917c5fcddbbc3214a7ab7cb8fb9dbaea715987cbbf4edff4a6c99d59e8a23651",
+      "fingerprint": "b0563d860119a8164350831c00d4ea71caf77372389dfce2833a248bb4a70839",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:00:18.529Z",
+      "measuredAt": "2026-11-08T02:15:49.300Z",
       "name": "test_small_finite_input_space_is_checked_exhaustively",
-      "passes": 2,
+      "passes": 4,
       "sampleOutcomes": [
+        true,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
-        11244,
-        11287
+        11194,
+        11183,
+        11159,
+        11175
       ],
       "toolOutputCharacters": [
+        0,
+        0,
         0,
         0
       ],
@@ -5197,23 +5221,29 @@
     "skills/coding/testing/test_verification_scales_to_relevant_evidence": {
       "category": "skills/coding/testing",
       "costUsd": 0,
-      "fingerprint": "763fc28e6cb1a4e67d26d77d65ebeeda799ed418744faf4cb5d16000a1021ade",
+      "fingerprint": "cc4b19724ddb63a1a2e34e7f6a610d238f4af26463aca07d52e098f83c50da90",
       "heldOut": false,
       "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
       "level": "unit",
-      "measuredAt": "2026-11-08T02:00:18.529Z",
+      "measuredAt": "2026-11-08T02:15:49.300Z",
       "name": "test_verification_scales_to_relevant_evidence",
-      "passes": 2,
+      "passes": 3,
       "sampleOutcomes": [
+        false,
+        true,
         true,
         true
       ],
-      "samples": 2,
+      "samples": 4,
       "tokenTotals": [
-        11061,
-        11189
+        11026,
+        11059,
+        11024,
+        11052
       ],
       "toolOutputCharacters": [
+        0,
+        0,
         0,
         0
       ],
@@ -6290,7 +6320,7 @@
     "agent-harness/agent-instructions/skills/development/coding/SKILL.md": "0408bcc18debcbb83c1a837d39ea3ea87e0b4a346013bd4f0c1ffed25327d054",
     "agent-harness/agent-instructions/skills/development/coding/references/git.md": "f73cf0b622afedf5862c278305ca940f9ad64f2dfc84e8c90bb8af0dd2388aa5",
     "agent-harness/agent-instructions/skills/development/coding/references/history.md": "de4f6b8f4522c2703c26bdcabf6c21b5f539b8595a273c7aa220f073ea1c12f7",
-    "agent-harness/agent-instructions/skills/development/coding/references/testing.md": "e5c8980bb2d45535e7208e95f9090743d9c118c9daa8a3993ebb69570382225b",
+    "agent-harness/agent-instructions/skills/development/coding/references/testing.md": "c50e0b943448de870ec912554718c8596f5bd6d5129ae851ed71b8cae404e3fc",
     "agent-harness/agent-instructions/skills/development/coding/references/worktrees.md": "637758d07ddf84d17144134ba0b780c9979ae2c216355b786ab782c8158dd2f9",
     "agent-harness/agent-instructions/skills/development/devenv/SKILL.md": "d21dc98dd06378766f42232becd8e0dae0bbf8861eef0a440ce90dd4ac11bc6f",
     "agent-harness/agent-instructions/skills/development/explore/SKILL.md": "12358bc1ebf9bccccefdd5247c2345991bac6335db0f64f86bd5e5c95a2d0f8c",
@@ -6349,5 +6379,5 @@
     }
   },
   "profileId": "729a83d6cd00",
-  "recordedAt": "2026-11-08T02:08:18.497Z"
+  "recordedAt": "2026-11-08T02:15:49.300Z"
 }
