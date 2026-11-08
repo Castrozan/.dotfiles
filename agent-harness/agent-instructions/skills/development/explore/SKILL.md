@@ -44,3 +44,7 @@ history guidance instead of treating them as current-tree exploration.
 Answer the question asked, with `file_path:line_number` citations. Never paste file bodies, search dumps or the log of
 what you tried. State plainly what you could not find and which searches you ran to conclude it is absent, because an
 unfound thing and an unsearched thing are not the same answer.
+
+### Model choice
+
+For the cheap-model example, read [model choice](references/model-choice.md).
