@@ -13,6 +13,8 @@ from .commands import (
     command_send,
     command_status,
 )
+from .decisions.cli import add_parser as add_decision_parser
+from .decisions.cli import command_decision
 from .fleet.cli import add_parser as add_fleet_parser
 from .peer_identity import with_peer_identities
 from .peer_transport import (
@@ -98,6 +100,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     acknowledge_parser.add_argument("notification_id")
     acknowledge_parser.set_defaults(handler=command_acknowledge)
     add_fleet_parser(subcommands)
+    add_decision_parser(subcommands)
     return parser
 
 
@@ -105,6 +108,8 @@ def main() -> int:
     arguments = build_argument_parser().parse_args()
     if arguments.command == "fleet":
         return arguments.handler(arguments)
+    if arguments.command == "decision":
+        return command_decision(arguments)
     try:
         return arguments.handler(
             arguments, with_peer_identities(read_agent_directory(arguments.daemon))

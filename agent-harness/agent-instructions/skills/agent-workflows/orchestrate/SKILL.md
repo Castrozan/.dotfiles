@@ -110,6 +110,18 @@ The answer is pane text filtered to that harness's own marker lines, so continua
 dropped and a multi-line reply arrives as its first line only. Ask for anything longer than a sentence as a file, a
 commit, or a diff and read that yourself; read the pane through herdr when you need what the task view discarded.
 
+### Decisions travel as cards
+
+Tell every peer in its brief to file a decision it cannot make as a card, `a2a decision file --to <your name>`, instead
+of asking in its pane or through a question tool, and to keep working on whatever the decision does not block. The
+card's fields, listed by `a2a decision file --help`, carry the options with consequences, a recommendation, evidence and
+unverified assumptions, because a pane question or a scraped answer arrives without them.
+
+Decide a card yourself only when a decision the human already made covers it, and cite that decision as the rationale.
+Otherwise show the human `a2a decision show <id>` verbatim with your recommendation beneath it, never a paraphrase,
+since a summary drops the evidence and the unverified assumptions the human decides on. Record every answer with `a2a
+decision answer`, naming who decided; it notifies the requester and keeps the record later delegation draws on.
+
 ### A2a sender identity
 
 The client labels every message dispatched through a2a with the sender's current Servant name, or its harness session
