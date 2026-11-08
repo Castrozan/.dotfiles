@@ -1,6 +1,6 @@
 ---
 name: coding
-description: Implement and evolve code safely. Use for coding, fixes, tests, commits, Git history and archaeology, or parallel branch work.
+description: Implement and evolve code safely. Use for coding, fixes, tests, implicit state machine audits, commits, Git history and archaeology, or parallel branch work.
 ---
 
 ### Core coding authority
