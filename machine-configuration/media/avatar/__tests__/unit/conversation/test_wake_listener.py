@@ -45,27 +45,33 @@ def test_an_open_avatar_conversation_pauses_the_wake():
     )
 
 
-def test_a_spoken_wake_opens_the_conversation_then_prompts_the_named_session():
-    fakes = boundaries()
+def test_a_spoken_wake_prompts_the_named_session_before_opening_the_avatar():
+    order = Mock()
+    fakes = boundaries(
+        prompt_now=order.prompt_now, open_conversation=order.open_conversation
+    )
+    order.prompt_now.return_value = True
     armed_listener(fakes).listen_while_armed(iter(frames(4000, 40) + frames(0, 40)))
-    fakes.open_conversation.assert_called_once()
-    pane, text = fakes.prompt_now.call_args.args
-    assert pane == VOYAGER.pane
-    assert "check the build" in text and "avatar-talk ask" in text
-    fakes.notify_at_idle.assert_not_called()
+    assert [call[0] for call in order.mock_calls] == [
+        "prompt_now",
+        "open_conversation",
+    ], "the words reach the session at once; the avatar takes about 4 s to open"
+    pane, text = order.prompt_now.call_args.args
+    assert pane == VOYAGER.pane and "check the build" in text
+
+
+def test_the_prompt_asks_for_a_non_blocking_voice_reply():
+    fakes = boundaries()
+    armed_listener(fakes).hear(b"segment")
+    text = fakes.prompt_now.call_args.args[1]
+    assert "avatar-talk say" in text and "avatar-talk follow" in text
+    assert "avatar-talk ask" not in text, "ask blocks the session waiting for a reply"
 
 
 def test_a_refused_prompt_falls_back_to_delivery_at_idle():
     fakes = boundaries(prompt_now=Mock(return_value=False))
     armed_listener(fakes).hear(b"segment")
     assert fakes.notify_at_idle.call_args.args[0] == VOYAGER.pane
-
-
-def test_a_conversation_that_fails_to_open_still_delivers_the_words():
-    fakes = boundaries(open_conversation=Mock(return_value=False))
-    armed_listener(fakes).hear(b"segment")
-    text = fakes.prompt_now.call_args.args[1]
-    assert "check the build" in text and "avatar-talk" not in text
 
 
 def test_a_dry_run_reports_the_match_and_reaches_nobody():

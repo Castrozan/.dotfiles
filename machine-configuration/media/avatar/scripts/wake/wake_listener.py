@@ -53,11 +53,12 @@ def conversation_opened():
     )
 
 
-def spoken_prompt(message, conversation_open):
-    prompt = f"[wake] Voice from the room, speaker not verified: {message}"
-    if conversation_open:
-        return f"{prompt} An avatar conversation is open; answer with avatar-talk ask."
-    return prompt
+def spoken_prompt(message):
+    return (
+        f"[wake] Voice from the room, speaker not verified: {message} "
+        "An avatar conversation is opening: speak with avatar-talk say, and hear "
+        "the reply through avatar-talk follow in a background watcher."
+    )
 
 
 def prompt_now(pane, text):
@@ -132,9 +133,10 @@ class WakeListener:
             self.boundaries.report(f"would wake {target}: {match.message}")
             return
         self.boundaries.report(f"wake {target}")
-        text = spoken_prompt(match.message, self.boundaries.open_conversation())
+        text = spoken_prompt(match.message)
         if not self.boundaries.prompt_now(match.session.pane, text):
             self.boundaries.notify_at_idle(match.session.pane, text)
+        self.boundaries.open_conversation()
 
     def listen_while_armed(self, frames):
         segmenter = speech_segmenter.SpeechSegmenter()
