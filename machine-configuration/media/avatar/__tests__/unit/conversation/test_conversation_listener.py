@@ -4,6 +4,7 @@ import threading
 from pathlib import Path
 from unittest.mock import Mock
 
+import listener_runtime
 import listener_session
 import conversation_effects
 import listener
@@ -124,6 +125,7 @@ def test_the_requested_language_reaches_the_recognizer(tmp_path, monkeypatch):
 
 def test_settings_reach_the_listener_configuration(tmp_path, monkeypatch):
     monkeypatch.setattr(listener_session, "systemctl", Mock())
+    monkeypatch.setattr(listener_runtime, "capturing_services", lambda: [])
     listener_session.begin_listening(
         tmp_path,
         "conversation",

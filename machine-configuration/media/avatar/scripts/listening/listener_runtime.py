@@ -4,6 +4,8 @@ from pathlib import Path
 import user_units
 
 LISTENER_SERVICE = "avatar-listener.service"
+LIVE_SERVICE = "avatar-live.service"
+CAPTURE_SERVICES = (LISTENER_SERVICE, LIVE_SERVICE)
 
 
 def runtime_directory():
@@ -11,5 +13,9 @@ def runtime_directory():
     return Path(base) / "avatar"
 
 
+def capturing_services():
+    return [service for service in CAPTURE_SERVICES if user_units.unit_active(service)]
+
+
 def listening():
-    return user_units.unit_active(LISTENER_SERVICE)
+    return any(user_units.unit_active(service) for service in CAPTURE_SERVICES)

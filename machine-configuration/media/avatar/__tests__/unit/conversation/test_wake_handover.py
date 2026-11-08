@@ -142,3 +142,12 @@ def test_a_session_named_during_a_meeting_is_told_to_answer_the_meeting():
     assert "avatar-command speak" in text and "avatar-talk" not in text, (
         "avatar-talk refuses while a meeting is transcribed"
     )
+
+
+def test_naming_a_session_in_a_live_conversation_moves_the_floor_without_a_prompt():
+    fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
+    fakes.listening_purpose.return_value = ListenerPurpose.LIVE
+    fakes.transcript_entries.return_value = said("hey Ibaraki, status")
+    listener.read_conversation()
+    assert fakes.hand_to.call_args.args[0].pane == IBARAKI.pane
+    assert not fakes.prompt_now.called, "the live bridge routes the task itself"

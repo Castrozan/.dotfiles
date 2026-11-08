@@ -6,6 +6,7 @@ from unittest.mock import Mock
 import pytest
 
 import listen_cli
+import listener_runtime
 import listener_session
 import speaker_identity
 import transcript_echo
@@ -150,6 +151,7 @@ def test_speakers_are_recorded_without_embeddings_in_the_transcript(tmp_path):
 
 def test_starting_again_removes_the_previous_embeddings(tmp_path, monkeypatch):
     monkeypatch.setattr(listener_session, "systemctl", Mock())
+    monkeypatch.setattr(listener_runtime, "capturing_services", lambda: [])
     (tmp_path / "embeddings.jsonl").write_text("{}")
     listener_session.begin_listening(
         tmp_path, listener_session.ListenerPurpose.MEETING, {"meeting": "any"}

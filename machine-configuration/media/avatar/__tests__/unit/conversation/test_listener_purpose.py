@@ -45,6 +45,7 @@ def test_beginning_a_listener_resets_the_transcript_and_the_heard_cursor(
     tmp_path, monkeypatch
 ):
     monkeypatch.setattr(listener_session, "systemctl", Mock())
+    monkeypatch.setattr(listener_runtime, "capturing_services", lambda: [])
     transcript = tmp_path / "transcript.jsonl"
     transcript.write_text("{}")
     utterances.remember(tmp_path, 7)
@@ -67,6 +68,7 @@ def test_beginning_a_listener_resets_the_transcript_and_the_heard_cursor(
 
 def test_beginning_a_listener_frees_the_floor(tmp_path, monkeypatch):
     monkeypatch.setattr(listener_session, "systemctl", Mock())
+    monkeypatch.setattr(listener_runtime, "capturing_services", lambda: [])
     conversation_addressee.hand_to(
         tmp_path, conversation_addressee.Addressee("wW:pPZ", "Voyager", 4)
     )
@@ -101,3 +103,40 @@ def test_a_failed_canvas_hide_leaves_the_window_where_it_is(tmp_path, monkeypatc
     with pytest.raises(subprocess.CalledProcessError):
         conversation_effects.hide_window(argparse.Namespace(), tmp_path)
     hide.assert_not_called()
+
+
+def test_a_live_conversation_starts_the_live_unit_after_stopping_whatever_captures(
+    tmp_path, monkeypatch
+):
+    systemctl = Mock()
+    monkeypatch.setattr(listener_session, "systemctl", systemctl)
+    monkeypatch.setattr(
+        listener_runtime,
+        "capturing_services",
+        lambda: [listener_runtime.LISTENER_SERVICE],
+    )
+    listener_session.begin_listening(
+        tmp_path, listener_session.ListenerPurpose.LIVE, {"human": "mic"}
+    )
+    assert [call.args for call in systemctl.call_args_list] == [
+        ("stop", listener_runtime.LISTENER_SERVICE),
+        ("start", listener_runtime.LIVE_SERVICE),
+    ]
+
+
+def test_the_live_unit_counts_as_listening(monkeypatch):
+    monkeypatch.setattr(
+        user_units, "unit_active", lambda unit: unit == listener_runtime.LIVE_SERVICE
+    )
+    assert listener_runtime.listening(), (
+        "otherwise the wake re-arms its own microphone over the live bridge"
+    )
+    assert listener_runtime.capturing_services() == [listener_runtime.LIVE_SERVICE]
+
+
+def test_stopping_touches_only_running_units(monkeypatch):
+    systemctl = Mock()
+    monkeypatch.setattr(listener_session, "systemctl", systemctl)
+    monkeypatch.setattr(listener_runtime, "capturing_services", lambda: [])
+    listener_session.stop_listening()
+    assert not systemctl.called, "stopping a unit that is not loaded exits 5"

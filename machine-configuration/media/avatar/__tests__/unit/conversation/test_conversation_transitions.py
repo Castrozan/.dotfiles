@@ -14,6 +14,7 @@ from conversation_effects import WindowPresence
 EXPECTED_TRANSITIONS = {
     ConversationPhase.CLOSED: {
         ConversationCommand.OPEN: ConversationAction.BRING_UP,
+        ConversationCommand.OPEN_LIVE: ConversationAction.BRING_UP_LIVE,
         ConversationCommand.CLOSE: ConversationAction.TEAR_DOWN,
         ConversationCommand.ASK: ConversationAction.REFUSE_CLOSED,
         ConversationCommand.HEAR: ConversationAction.REFUSE_CLOSED,
@@ -26,6 +27,7 @@ EXPECTED_TRANSITIONS = {
     },
     ConversationPhase.INTERRUPTED: {
         ConversationCommand.OPEN: ConversationAction.BRING_UP,
+        ConversationCommand.OPEN_LIVE: ConversationAction.BRING_UP_LIVE,
         ConversationCommand.CLOSE: ConversationAction.TEAR_DOWN,
         ConversationCommand.ASK: ConversationAction.REFUSE_CLOSED,
         ConversationCommand.HEAR: ConversationAction.REFUSE_CLOSED,
@@ -38,6 +40,7 @@ EXPECTED_TRANSITIONS = {
     },
     ConversationPhase.OPEN: {
         ConversationCommand.OPEN: ConversationAction.KEEP_OPEN,
+        ConversationCommand.OPEN_LIVE: ConversationAction.REFUSE_CONVERSATION,
         ConversationCommand.CLOSE: ConversationAction.TEAR_DOWN,
         ConversationCommand.ASK: ConversationAction.ASK,
         ConversationCommand.HEAR: ConversationAction.HEAR,
@@ -50,6 +53,7 @@ EXPECTED_TRANSITIONS = {
     },
     ConversationPhase.MEETING: {
         ConversationCommand.OPEN: ConversationAction.REFUSE_MEETING,
+        ConversationCommand.OPEN_LIVE: ConversationAction.REFUSE_MEETING,
         ConversationCommand.CLOSE: ConversationAction.LEAVE_MEETING,
         ConversationCommand.ASK: ConversationAction.REFUSE_CLOSED,
         ConversationCommand.HEAR: ConversationAction.REFUSE_CLOSED,
@@ -60,6 +64,19 @@ EXPECTED_TRANSITIONS = {
         ConversationCommand.STATUS: ConversationAction.REPORT,
         ConversationCommand.TRANSCRIBE_MEETING: ConversationAction.TRANSCRIBE_MEETING,
     },
+    ConversationPhase.LIVE: {
+        ConversationCommand.OPEN: ConversationAction.KEEP_OPEN,
+        ConversationCommand.OPEN_LIVE: ConversationAction.KEEP_OPEN,
+        ConversationCommand.CLOSE: ConversationAction.TEAR_DOWN,
+        ConversationCommand.ASK: ConversationAction.REFUSE_LIVE,
+        ConversationCommand.HEAR: ConversationAction.REFUSE_LIVE,
+        ConversationCommand.FOLLOW: ConversationAction.REFUSE_LIVE,
+        ConversationCommand.SAY: ConversationAction.REFUSE_LIVE,
+        ConversationCommand.SHOW: ConversationAction.SHOW,
+        ConversationCommand.HIDE: ConversationAction.HIDE,
+        ConversationCommand.STATUS: ConversationAction.REPORT,
+        ConversationCommand.TRANSCRIBE_MEETING: ConversationAction.REFUSE_CONVERSATION,
+    },
 }
 
 EXPECTED_PHASE_BY_TARGET_AND_PURPOSE = {
@@ -69,6 +86,8 @@ EXPECTED_PHASE_BY_TARGET_AND_PURPOSE = {
     (True, None): ConversationPhase.INTERRUPTED,
     (True, ListenerPurpose.CONVERSATION): ConversationPhase.OPEN,
     (True, ListenerPurpose.MEETING): ConversationPhase.MEETING,
+    (False, ListenerPurpose.LIVE): ConversationPhase.CLOSED,
+    (True, ListenerPurpose.LIVE): ConversationPhase.LIVE,
 }
 
 

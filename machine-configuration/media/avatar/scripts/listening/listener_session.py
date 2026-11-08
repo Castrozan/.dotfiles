@@ -6,7 +6,7 @@ import subprocess
 import conversation_addressee
 import listener
 import listener_runtime
-from listener_runtime import LISTENER_SERVICE
+from listener_runtime import LISTENER_SERVICE, LIVE_SERVICE
 
 CONFIGURATION_FILE = "listener.json"
 SYSTEMCTL_TIMEOUT_SECONDS = 120
@@ -15,6 +15,14 @@ SYSTEMCTL_TIMEOUT_SECONDS = 120
 class ListenerPurpose(enum.StrEnum):
     CONVERSATION = "conversation"
     MEETING = "meeting"
+    LIVE = "live"
+
+
+SERVICE_BY_PURPOSE = {
+    ListenerPurpose.CONVERSATION: LISTENER_SERVICE,
+    ListenerPurpose.MEETING: LISTENER_SERVICE,
+    ListenerPurpose.LIVE: LIVE_SERVICE,
+}
 
 
 def systemctl(*arguments):
@@ -27,7 +35,7 @@ def systemctl(*arguments):
 
 def begin_listening(directory, purpose, sources, **settings):
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-    systemctl("stop", LISTENER_SERVICE)
+    stop_listening()
     (directory / "transcript.jsonl").unlink(missing_ok=True)
     (directory / listener.EMBEDDINGS_FILE).unlink(missing_ok=True)
     (directory / listener.HEARD_FILE).unlink(missing_ok=True)
@@ -36,11 +44,12 @@ def begin_listening(directory, purpose, sources, **settings):
     descriptor = os.open(configuration, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(descriptor, "w") as output:
         json.dump({"purpose": purpose, "sources": sources, **settings}, output)
-    systemctl("start", LISTENER_SERVICE)
+    systemctl("start", SERVICE_BY_PURPOSE[purpose])
 
 
 def stop_listening():
-    systemctl("stop", LISTENER_SERVICE)
+    for service in listener_runtime.capturing_services():
+        systemctl("stop", service)
 
 
 def read_configuration(directory):

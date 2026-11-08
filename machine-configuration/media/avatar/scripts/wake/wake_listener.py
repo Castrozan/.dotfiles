@@ -137,8 +137,9 @@ class WakeListener:
             self.boundaries.hand_to(
                 Addressee(match.session.pane, match.session.servant, entry["sequence"])
             )
-        if entry.get("source") != MEETING_SOURCE:
-            self.deliver(match, self.boundaries.listening_purpose())
+        purpose = self.boundaries.listening_purpose()
+        if entry.get("source") != MEETING_SOURCE and purpose in SETTINGS:
+            self.deliver(match, purpose)
 
     def listen_while_armed(self, frames):
         segmenter = speech_segmenter.SpeechSegmenter()
