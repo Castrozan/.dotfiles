@@ -55,7 +55,8 @@ const CONFIG = {
   ],
 };
 
-function startAudioFileHttpServer(avatarState, clientRegistry) {
+function startAudioFileHttpServer(context) {
+  const { avatarState, clientRegistry, speechFloor } = context;
   const httpServer = new ExpressAudioFileHttpServer();
 
   httpServer.allowCrossOriginReadsFrom(CONFIG.RENDERER_ORIGINS);
@@ -63,7 +64,7 @@ function startAudioFileHttpServer(avatarState, clientRegistry) {
   httpServer.serveJsonAtRoute("/health", () => ({
     status: "ok",
     uptime: avatarState.uptimeSeconds(),
-    state: avatarState.current,
+    state: speechFloor.currentPhase(),
     ...clientRegistry.connectionSummary(),
   }));
 
@@ -149,7 +150,7 @@ async function main() {
     speakerSinkName: CONFIG.SPEAKER_SINK,
   };
 
-  const httpServer = startAudioFileHttpServer(avatarState, clientRegistry);
+  const httpServer = startAudioFileHttpServer(context);
   const socketServer = startAvatarSocketServer(context);
 
   const stopMeter = process.env.AVATAR_AUDIO_MONITOR

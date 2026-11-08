@@ -1,27 +1,9 @@
-const AVATAR_STATES = {
-  IDLE: "idle",
-  SPEAKING: "speaking",
-};
-
 class AvatarStateStore {
   constructor() {
-    this.current = AVATAR_STATES.IDLE;
     this.currentExpression = "neutral";
     this.currentIdleMode = "breathing";
     this.intensity = 1.0;
-    this.speaking = false;
     this.startedAt = Date.now();
-  }
-
-  beginSpeaking(expression) {
-    this.current = AVATAR_STATES.SPEAKING;
-    this.speaking = true;
-    this.currentExpression = expression;
-  }
-
-  finishSpeaking() {
-    this.current = AVATAR_STATES.IDLE;
-    this.speaking = false;
   }
 
   applyExpression(expressionName, intensity) {
@@ -38,4 +20,4 @@ class AvatarStateStore {
   }
 }
 
-module.exports = { AvatarStateStore, AVATAR_STATES };
+module.exports = { AvatarStateStore };

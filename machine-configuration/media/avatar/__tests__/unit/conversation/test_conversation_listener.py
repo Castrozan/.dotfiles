@@ -5,9 +5,9 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import listener_session
+import conversation_effects
 import listener
 import source_capture
-import talk_cli
 
 FRAME = b"\xb8\x0b" * 480
 SILENT_FRAME = bytes(960)
@@ -144,4 +144,4 @@ def test_the_room_microphone_cancels_everything_the_desktop_plays():
         Path(__file__).resolve().parents[3] / "room-microphone.conf"
     ).read_text()
     assert "monitor.mode = true" in configuration
-    assert f'"{talk_cli.ROOM_MICROPHONE}"' in configuration
+    assert f'"{conversation_effects.ROOM_MICROPHONE}"' in configuration

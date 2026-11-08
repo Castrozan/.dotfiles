@@ -7,12 +7,18 @@ import audio_state
 import pulse_audio
 
 
+RUNNING_PHASES = (
+    audio_ownership.AudioPhase.RUNNING_DETACHED,
+    audio_ownership.AudioPhase.RUNNING_ATTACHED,
+)
+
+
 def describe(state):
     modules = pulse_audio.items("modules")
-    phase = audio_ownership.graph_phase(state, modules)
+    phase = audio_ownership.observe(state, modules)
     microphone = state.get("microphone")
     return {
-        "running": phase is audio_ownership.GraphPhase.RUNNING,
+        "running": phase in RUNNING_PHASES,
         "phase": phase.value,
         "microphone": microphone["source"] if microphone else None,
         "meeting_source": audio.MEETING_SOURCE,
@@ -39,34 +45,35 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def attach(arguments, path, state):
-    audio.require_owned_graph(state)
-    audio.connect_microphone(path, state, arguments.source)
-
-
-def mute(arguments, path, state):
-    if arguments.value not in (0, 1):
+def validate_mute(value):
+    if value not in (0, 1):
         raise ValueError("Mute must be 0 or 1")
-    audio.set_channel(state, arguments.channel, "mute", str(arguments.value))
+    return str(value)
 
 
-def volume(arguments, path, state):
-    if not 0 <= arguments.value <= 100:
+def validate_volume(value):
+    if not 0 <= value <= 100:
         raise ValueError("Volume must be between 0 and 100")
-    audio.set_channel(state, arguments.channel, "volume", f"{arguments.value}%")
+    return f"{value}%"
+
+
+def command_arguments(arguments):
+    if arguments.action == audio_ownership.AudioCommand.ATTACH:
+        return {"source": arguments.source}
+    if arguments.action == audio_ownership.AudioCommand.MUTE:
+        return {"channel": arguments.channel, "value": validate_mute(arguments.value)}
+    if arguments.action == audio_ownership.AudioCommand.VOLUME:
+        return {"channel": arguments.channel, "value": validate_volume(arguments.value)}
+    return {}
 
 
 def run(arguments, path, state):
-    operations = {
-        "start": lambda: audio.start(path, state),
-        "stop": lambda: audio.stop(path, state),
-        "open": lambda: audio.open_meeting_inputs(path, state),
-        "attach": lambda: attach(arguments, path, state),
-        "mute": lambda: mute(arguments, path, state),
-        "volume": lambda: volume(arguments, path, state),
-        "status": lambda: None,
-    }
-    operations[arguments.action]()
+    audio.perform(
+        path,
+        state,
+        audio_ownership.AudioCommand(arguments.action),
+        **command_arguments(arguments),
+    )
     print(json.dumps(describe(state)))
 
 

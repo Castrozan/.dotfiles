@@ -43,9 +43,8 @@ function controlPlaybacks(playbacks) {
 
 function performSpeech(command, context, delivery) {
   const { text, emotion, output, voice, id } = command;
-  const { avatarState, clientRegistry, textToSpeechGenerator } = context;
+  const { clientRegistry, textToSpeechGenerator } = context;
   return async (holdsFloor) => {
-    avatarState.beginSpeaking(emotion);
     const speech = await textToSpeechGenerator.generate(
       text,
       id,
@@ -102,7 +101,6 @@ async function handleSpeakCommand(command, connection, context) {
   } catch (error) {
     sendError(connection, `Speech failed: ${error.message}`);
   } finally {
-    context.avatarState.finishSpeaking();
     context.clientRegistry.sendToRenderer({ type: "speechEnded", id });
   }
 }

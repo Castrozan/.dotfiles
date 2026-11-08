@@ -2,10 +2,10 @@ import json
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import conversation_state
 import pytest
-
-import talk_cli
 import user_units
+from conversation_state import ConversationPhase
 
 ACTIVE, UNREACHABLE, INACTIVE, MISSING = 0, 1, 3, 4
 
@@ -44,4 +44,4 @@ def test_an_open_conversation_needs_both_the_target_and_the_listener(
         json.dumps({"purpose": "conversation", "sources": {}})
     )
     systemctl_answering(monkeypatch, UNREACHABLE, ACTIVE, UNREACHABLE, ACTIVE)
-    assert talk_cli.conversation_open(tmp_path) is True
+    assert conversation_state.observe(tmp_path) is ConversationPhase.OPEN

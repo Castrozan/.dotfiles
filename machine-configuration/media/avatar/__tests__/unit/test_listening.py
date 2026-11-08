@@ -6,12 +6,14 @@ from unittest.mock import Mock
 
 import pytest
 
+import conversation_state
 import listen_cli
 import listener_session
 import source_capture
 import speech_segmenter
 import transcriber
 import transcript_log
+from conversation_state import ConversationPhase
 
 FRAME_SAMPLES = 480
 
@@ -111,7 +113,9 @@ def test_listening_hears_the_meeting_and_the_default_microphone(monkeypatch):
 
 
 def test_a_pinned_language_reaches_the_listener(tmp_path, monkeypatch):
-    monkeypatch.setattr(listener_session, "listening", lambda: False)
+    monkeypatch.setattr(
+        conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
+    )
     begin = Mock()
     monkeypatch.setattr(listener_session, "begin_listening", begin)
     monkeypatch.setattr(listen_cli, "selected_sources", lambda _: {"meeting": "any"})

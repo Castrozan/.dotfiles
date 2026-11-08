@@ -2,14 +2,18 @@ import argparse
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from unittest.mock import Mock
 
+import conversation_state
 import listener_session
 import pytest
 import start
+import conversation_effects
 import talk_cli
 import utterances
+from conversation_state import ConversationPhase
 
 AVATAR_DIRECTORY = Path(__file__).resolve().parents[2]
 requires_node = pytest.mark.skipif(
@@ -72,8 +76,16 @@ def test_renderer_announces_its_character_on_every_connection():
     ]
 
 
+def run_talk(monkeypatch, directory, *arguments):
+    monkeypatch.setattr(sys, "argv", ["avatar-talk", *arguments])
+    monkeypatch.setattr(talk_cli.listener, "runtime_directory", lambda: directory)
+    talk_cli.main()
+
+
 def fake_cold_open(tmp_path, monkeypatch):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: False)
+    monkeypatch.setattr(
+        conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
+    )
     monkeypatch.setattr(listener_session, "listening", lambda: False)
     monkeypatch.setattr(listener_session, "begin_listening", Mock())
     monkeypatch.setattr(start, "bring_up", Mock())
@@ -85,8 +97,8 @@ def test_opening_chooses_the_character_without_presenting_the_window(
 ):
     fake_cold_open(tmp_path, monkeypatch)
     runner = Mock()
-    monkeypatch.setattr(talk_cli.subprocess, "run", runner)
-    talk_cli.open_conversation(
+    monkeypatch.setattr(conversation_effects.subprocess, "run", runner)
+    conversation_effects.open_conversation(
         argparse.Namespace(language="pt", character="vita"), tmp_path
     )
     commands = [call.args[0] for call in runner.call_args_list]
@@ -97,8 +109,8 @@ def test_opening_chooses_the_character_without_presenting_the_window(
 def test_opening_without_a_choice_keeps_the_current_character(tmp_path, monkeypatch):
     fake_cold_open(tmp_path, monkeypatch)
     runner = Mock()
-    monkeypatch.setattr(talk_cli.subprocess, "run", runner)
-    talk_cli.open_conversation(
+    monkeypatch.setattr(conversation_effects.subprocess, "run", runner)
+    conversation_effects.open_conversation(
         argparse.Namespace(language="pt", character=None), tmp_path
     )
     assert "character" not in [
@@ -109,26 +121,26 @@ def test_opening_without_a_choice_keeps_the_current_character(tmp_path, monkeypa
 def test_opening_an_open_conversation_still_switches_the_character(
     tmp_path, monkeypatch
 ):
-    monkeypatch.setattr(talk_cli, "conversation_open", lambda directory: True)
-    runner = Mock()
-    monkeypatch.setattr(talk_cli.subprocess, "run", runner)
-    talk_cli.open_conversation(
-        argparse.Namespace(language=None, character="vivi"), tmp_path
+    monkeypatch.setattr(
+        conversation_state, "observe", lambda directory: ConversationPhase.OPEN
     )
+    runner = Mock()
+    monkeypatch.setattr(conversation_effects.subprocess, "run", runner)
+    run_talk(monkeypatch, tmp_path, "open", "--character", "vivi")
     assert runner.call_args_list[0].args[0] == ["avatar-command", "character", "vivi"]
 
 
 def test_a_refused_character_closes_a_cold_open(tmp_path, monkeypatch):
     fake_cold_open(tmp_path, monkeypatch)
     monkeypatch.setattr(
-        talk_cli.subprocess,
+        conversation_effects.subprocess,
         "run",
         Mock(side_effect=subprocess.CalledProcessError(1, "avatar-command")),
     )
     close = Mock()
-    monkeypatch.setattr(talk_cli, "close_conversation", close)
+    monkeypatch.setattr(conversation_effects, "close_conversation", close)
     with pytest.raises(subprocess.CalledProcessError):
-        talk_cli.open_conversation(
+        conversation_effects.open_conversation(
             argparse.Namespace(language=None, character="nobody"), tmp_path
         )
     close.assert_called_once()

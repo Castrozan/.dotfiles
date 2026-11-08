@@ -57,7 +57,7 @@ def test_vanished_microphone_leaves_the_graph_running_and_detached(
     pulse.modules.remove(microphone_loopback(pulse))
     status = run_cli("status")
     assert status["running"] is True
-    assert status["phase"] == "running"
+    assert status["phase"] == "running-detached"
     assert status["microphone"] is None
 
 

@@ -15,10 +15,11 @@ function acknowledgeIdentification(connection, role) {
   });
 }
 
-function sendInitialStateToRenderer(connection, avatarState) {
+function sendInitialStateToRenderer(connection, context) {
+  const { avatarState, speechFloor } = context;
   sendResponse(connection, {
     type: "initialState",
-    state: avatarState.current,
+    state: speechFloor.currentPhase(),
     expression: avatarState.currentExpression,
     idleMode: avatarState.currentIdleMode,
     intensity: avatarState.intensity,
@@ -26,7 +27,7 @@ function sendInitialStateToRenderer(connection, avatarState) {
 }
 
 function handleIdentification(role, connection, context) {
-  const { avatarState, clientRegistry } = context;
+  const { clientRegistry } = context;
 
   if (role === "agent") {
     clientRegistry.registerAgent(connection);
@@ -37,7 +38,7 @@ function handleIdentification(role, connection, context) {
   if (role === "renderer") {
     clientRegistry.registerRenderer(connection);
     acknowledgeIdentification(connection, "renderer");
-    sendInitialStateToRenderer(connection, avatarState);
+    sendInitialStateToRenderer(connection, context);
     return;
   }
 
@@ -63,8 +64,7 @@ function handleRendererEvent(event, context) {
     context.textToSpeechGenerator.selectCharacter(event.name);
   }
   if (event.type === "speechEnd") {
-    context.avatarState.finishSpeaking();
-    console.log("🔄 Speech ended, transitioned to IDLE");
+    console.log("🔄 Speech ended");
   }
 }
 

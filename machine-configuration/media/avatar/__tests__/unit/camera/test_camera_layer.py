@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 
-SOURCE = Path(__file__).resolve().parents[2] / "renderer/camera-layer.js"
+SOURCE = Path(__file__).resolve().parents[3] / "renderer/camera-layer.js"
 
 STUBS = r"""
 const fs = require("node:fs");
@@ -19,7 +19,7 @@ class Texture { dispose() {} }
 globalThis.avatarTestThree = { Scene, OrthographicCamera: Camera, MeshBasicMaterial: Material, PlaneGeometry: Geometry, Mesh, VideoTexture: Texture, CanvasTexture: Texture, sRGBEncoding: 3001 };
 const drawing = { fillRect() {}, fillText() {} };
 globalThis.document = { createElement: () => ({ videoWidth: 640, videoHeight: 480, play: async () => {}, getContext: () => drawing }) };
-const source = fs.readFileSync(process.argv[1], "utf8").replace('import * as THREE from "three";', "const THREE = globalThis.avatarTestThree;");
+const source = fs.readFileSync(process.argv[1], "utf8").replace('import * as THREE from "three";', "const THREE = globalThis.avatarTestThree;").replace('"./camera-phase.js"', JSON.stringify(require("node:url").pathToFileURL(require("node:path").join(require("node:path").dirname(process.argv[1]), "camera-phase.js")).href));
 """
 
 HARNESS = (
@@ -80,7 +80,7 @@ const outcomeOf = request => request.then(() => "resolved", failure => failure.m
     pendingRequests[0](makeStream(firstTrack));
     pendingRequests[1](secondStream);
     const outcomes = [await first, await second];
-    console.log(JSON.stringify({ outcomes, active: layer.active, activeIsSecond: layer.stream === secondStream, firstStopped: firstTrack.stopped, secondStopped: secondTrack.stopped }));
+    console.log(JSON.stringify({ outcomes, active: layer.active, activeIsSecond: layer.phase.stream === secondStream, firstStopped: firstTrack.stopped, secondStopped: secondTrack.stopped }));
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });
 """
@@ -95,6 +95,7 @@ def test_camera_render_release_and_feedback_boundary(scenario):
         capture_output=True,
         text=True,
         check=True,
+        timeout=30,
     )
     result = json.loads(completed.stdout)
     assert result["active"] is False
@@ -158,7 +159,7 @@ def test_disable_while_choosing_a_camera_never_opens_one():
 def preferred_camera(labels):
     program = f"""
     const fs = require("node:fs");
-    const source = fs.readFileSync(process.argv[1], "utf8").replace('import * as THREE from "three";', "");
+    const source = fs.readFileSync(process.argv[1], "utf8").replace('import * as THREE from "three";', "").replace('"./camera-phase.js"', JSON.stringify(require("node:url").pathToFileURL(require("node:path").join(require("node:path").dirname(process.argv[1]), "camera-phase.js")).href));
     (async () => {{
       const {{ preferredCamera }} = await import("data:text/javascript," + encodeURIComponent(source));
       const devices = {json.dumps(labels)}.map((label) => ({{ kind: "videoinput", label }}));
@@ -167,7 +168,11 @@ def preferred_camera(labels):
     }})();
     """
     completed = subprocess.run(
-        ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
+        ["node", "-e", program, str(SOURCE)],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
     )
     return json.loads(completed.stdout)
 

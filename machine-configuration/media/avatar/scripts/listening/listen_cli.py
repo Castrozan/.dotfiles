@@ -4,10 +4,12 @@ import re
 import subprocess
 import sys
 
+import conversation_state
 import listener
 import listener_session
 import speaker_identity
 import transcript_log
+from conversation_state import ConversationAction, ConversationCommand
 from listener_session import ListenerPurpose
 
 MEETING_AUDIO = "@DEFAULT_MONITOR@"
@@ -34,7 +36,10 @@ def selected_sources(microphone):
 
 
 def start(arguments, directory):
-    if listener_session.listening_for(directory, ListenerPurpose.CONVERSATION):
+    decision = conversation_state.decide(
+        conversation_state.observe(directory), ConversationCommand.TRANSCRIBE_MEETING
+    )
+    if decision is ConversationAction.REFUSE_CONVERSATION:
         raise ValueError(
             "A conversation is open; run avatar-talk close before transcribing a meeting"
         )

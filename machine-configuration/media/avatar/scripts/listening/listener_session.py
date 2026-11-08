@@ -60,5 +60,8 @@ def configured_purpose(directory):
     return read_configuration(directory).get("purpose")
 
 
-def listening_for(directory, purpose):
-    return listening() and configured_purpose(directory) == purpose
+def live_purpose(directory):
+    if not listening():
+        return None
+    configured = configured_purpose(directory)
+    return ListenerPurpose(configured) if configured in ListenerPurpose else None

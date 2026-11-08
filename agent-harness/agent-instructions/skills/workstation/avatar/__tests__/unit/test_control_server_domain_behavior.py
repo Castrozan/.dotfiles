@@ -18,30 +18,44 @@ const makeFakeConnection = () => {
 
 
 @requires_node
-def test_avatar_state_store_returns_to_idle_when_speech_finishes():
+def test_speech_leaves_the_avatar_expression_alone():
     result = evaluate_node_json(
         """
+        const childProcess = require("child_process");
+        childProcess.spawn = () => ({
+          stderr: { on: () => {} },
+          on: (event, resolve) => event === "close" && resolve(),
+          kill: () => {},
+        });
         const { AvatarStateStore } = require("./avatar-session/avatar-state-store");
-        const store = new AvatarStateStore();
-        store.beginSpeaking("happy");
-        const duringSpeech = {
-          expression: store.currentExpression,
-          speaking: store.speaking,
-          state: store.current,
+        const { handleSpeakCommand } = require("./agent-commands/speak-command-handler");
+        const avatarState = new AvatarStateStore();
+        avatarState.applyExpression("surprised", 0.8);
+        const context = {
+          avatarState,
+          clientRegistry: { hasRenderer: () => false, sendToRenderer: () => {} },
+          speakerSinkName: "default",
+          textToSpeechGenerator: {
+            generate: async () => ({ audioPath: "/a.wav", source: "local" }),
+          },
+          speechFloor: {
+            enqueue: async (_, perform) => {
+              await (await perform(() => true)).finished;
+              return { status: "finished" };
+            },
+          },
         };
-        store.finishSpeaking();
-        const result = {
-          duringSpeech,
-          finalSpeaking: store.speaking,
-          finalState: store.current,
-        };
+        const result = handleSpeakCommand(
+          { text: "oi", emotion: "happy", output: "speakers", id: "turn" },
+          { sendJson: () => {} },
+          context,
+        ).then(() => ({
+          expression: avatarState.currentExpression,
+          intensity: avatarState.intensity,
+        }));
         """
     )
-    assert result == {
-        "duringSpeech": {"expression": "happy", "speaking": True, "state": "speaking"},
-        "finalSpeaking": False,
-        "finalState": "idle",
-    }
+    assert result == {"expression": "surprised", "intensity": 0.8}
 
 
 @requires_node
@@ -125,14 +139,17 @@ def test_get_status_reports_live_connection_summary():
         clientRegistry.registerAgent(connection);
         const avatarState = new AvatarStateStore();
         avatarState.applyIdleMode("floating");
+        const speechFloor = { currentPhase: () => "playing" };
         const result = handleGetStatusCommand({}, connection, {
           avatarState,
           clientRegistry,
+          speechFloor,
         }).then(() => connection.sent[0]);
         """
     )
     assert result["type"] == "status"
-    assert result["state"] == "idle"
+    assert result["state"] == "playing"
+    assert result["speaking"] is True
     assert result["currentIdleMode"] == "floating"
     assert result["agentConnected"] is True
     assert result["rendererConnected"] is False

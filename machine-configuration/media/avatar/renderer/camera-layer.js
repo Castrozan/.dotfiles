@@ -1,4 +1,9 @@
 import * as THREE from "three";
+import {
+  ACTIVE_PHASES,
+  CAMERA_PHASES,
+  nextCameraPhase,
+} from "./camera-phase.js";
 
 const SUPERSEDED_REQUEST_MESSAGE = "A newer camera request replaced this one";
 
@@ -24,83 +29,106 @@ export class CameraLayer {
     this.material = new THREE.MeshBasicMaterial();
     this.plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.material);
     this.scene.add(this.plane);
-    this.stream = null;
-    this.syntheticCanvas = null;
-    this.generation = 0;
+    this.phase = { name: CAMERA_PHASES.OFF };
+    this.requests = 0;
   }
 
   get active() {
-    return Boolean(this.stream || this.syntheticCanvas);
+    return ACTIVE_PHASES.includes(this.phase.name);
   }
 
   async enablePreferred() {
-    const generation = this.generation;
+    const generation = this.openRequest();
     const camera = preferredCamera(
       await navigator.mediaDevices.enumerateDevices(),
     );
     this.requireCurrentRequest(generation);
-    if (!camera) throw new Error("No physical camera is connected");
+    if (!camera)
+      this.abandonRequest(
+        generation,
+        new Error("No physical camera is connected"),
+      );
     await this.enable(camera.deviceId);
   }
 
   async enable(deviceId) {
-    this.disable();
-    const generation = this.generation;
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: deviceId ? { deviceId: { exact: deviceId } } : true,
-      audio: false,
-    });
+    const generation = this.openRequest();
+    const stream = await navigator.mediaDevices
+      .getUserMedia({
+        video: deviceId ? { deviceId: { exact: deviceId } } : true,
+        audio: false,
+      })
+      .catch((error) => this.abandonRequest(generation, error));
     this.requireCurrentRequest(generation, stream);
     this.requireExternalCamera(stream);
-    this.stream = stream;
+    this.moveTo({ type: "ready", generation, stream });
     stream.getVideoTracks().forEach((track) => {
-      track.addEventListener(
-        "ended",
-        () => {
-          this.disable();
-          this.onEnded();
-        },
-        { once: true },
-      );
+      track.addEventListener("ended", () => this.endLiveStream(stream), {
+        once: true,
+      });
     });
     this.video.srcObject = stream;
     await this.video.play();
-    if (generation !== this.generation) return;
+    this.requireCurrentRequest(generation);
     this.material.map = new THREE.VideoTexture(this.video);
     this.material.map.encoding = THREE.sRGBEncoding;
     this.material.needsUpdate = true;
   }
 
+  openRequest() {
+    this.requests += 1;
+    this.moveTo({ type: "open", generation: this.requests });
+    return this.requests;
+  }
+
+  isCurrentRequest(generation) {
+    return (
+      [CAMERA_PHASES.OPENING, CAMERA_PHASES.LIVE].includes(this.phase.name) &&
+      this.phase.generation === generation
+    );
+  }
+
   requireCurrentRequest(generation, stream) {
-    if (generation === this.generation) return;
-    stream?.getTracks().forEach((track) => {
-      track.stop();
-    });
+    if (this.isCurrentRequest(generation)) return;
+    if (stream) for (const track of stream.getTracks()) track.stop();
     throw new Error(SUPERSEDED_REQUEST_MESSAGE);
+  }
+
+  abandonRequest(generation, error) {
+    if (this.isCurrentRequest(generation)) this.disable();
+    throw error;
   }
 
   requireExternalCamera(stream) {
     if (
       stream.getVideoTracks().some((track) => /Avatar Cam/i.test(track.label))
     ) {
-      stream.getTracks().forEach((track) => {
-        track.stop();
-      });
+      for (const track of stream.getTracks()) track.stop();
+      this.moveTo({ type: "release" });
       throw new Error("Choose a physical camera rather than Avatar Cam");
     }
   }
 
-  enableSynthetic() {
+  endLiveStream(stream) {
+    if (this.phase.name !== CAMERA_PHASES.LIVE || this.phase.stream !== stream)
+      return;
     this.disable();
-    this.syntheticCanvas = document.createElement("canvas");
-    this.syntheticCanvas.width = 640;
-    this.syntheticCanvas.height = 360;
-    this.material.map = new THREE.CanvasTexture(this.syntheticCanvas);
+    this.onEnded();
+  }
+
+  enableSynthetic() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 640;
+    canvas.height = 360;
+    this.moveTo({ type: "synthetic", canvas });
+    this.material.map = new THREE.CanvasTexture(canvas);
     this.material.needsUpdate = true;
   }
 
   render(renderer, timestamp, mouth) {
-    const aspect = this.syntheticCanvas
+    const syntheticCanvas =
+      this.phase.name === CAMERA_PHASES.SYNTHETIC ? this.phase.canvas : null;
+    const aspect = syntheticCanvas
       ? 16 / 9
       : this.video.videoWidth / this.video.videoHeight;
     this.plane.scale.set(
@@ -108,8 +136,8 @@ export class CameraLayer {
       Math.max(1, 16 / 9 / aspect),
       1,
     );
-    if (this.syntheticCanvas) {
-      const context = this.syntheticCanvas.getContext("2d");
+    if (syntheticCanvas) {
+      const context = syntheticCanvas.getContext("2d");
       context.fillStyle = "#2362a8";
       context.fillRect(0, 0, 640, 360);
       context.fillStyle = "white";
@@ -123,15 +151,23 @@ export class CameraLayer {
     renderer.render(this.scene, this.camera);
   }
 
-  disable() {
-    this.generation += 1;
-    this.stream?.getTracks().forEach((track) => {
-      track.stop();
-    });
-    this.stream = null;
-    this.syntheticCanvas = null;
-    this.video.srcObject = null;
+  moveTo(event) {
+    const nextPhase = nextCameraPhase(this.phase, event);
+    if (nextPhase === this.phase) return;
+    this.releasePhase(this.phase);
+    this.phase = nextPhase;
+  }
+
+  releasePhase(phase) {
+    if (phase.name === CAMERA_PHASES.LIVE) {
+      for (const track of phase.stream.getTracks()) track.stop();
+      this.video.srcObject = null;
+    }
     this.material.map?.dispose();
     this.material.map = null;
+  }
+
+  disable() {
+    this.moveTo({ type: "release" });
   }
 }
