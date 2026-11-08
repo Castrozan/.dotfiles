@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 
+import conversation_addressee
 import conversation_state
 import desktop_window
 import listen_cli
@@ -19,6 +20,10 @@ PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
 LIVE_NEEDS_A_PANE = (
     "avatar-talk open --live must run from an agent's herdr pane: the live voice hands "
     "the room's tasks to that agent"
+)
+LIVE_NEEDS_A_SERVANT = (
+    "The live voice could not give the floor to this pane: only a session with a Servant "
+    "name can hold it and receive the room's tasks"
 )
 LIVE_OWNS_THE_TURNS = (
     "The live voice speaks and listens in this conversation and sends you each task "
@@ -94,6 +99,9 @@ def open_live_conversation(arguments, directory):
         subprocess.run(
             ["avatar-claim-floor"], check=True, timeout=COMMAND_TIMEOUT_SECONDS
         )
+        holder = conversation_addressee.current(directory)
+        if holder is None or holder.pane != os.environ[PANE_ENVIRONMENT_VARIABLE]:
+            raise RuntimeError(LIVE_NEEDS_A_SERVANT)
     except BaseException:
         close_conversation(arguments, directory)
         raise

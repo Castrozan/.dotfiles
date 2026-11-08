@@ -166,6 +166,8 @@ in
           Unit = {
             Description = "Avatar live duplex voice";
             PartOf = [ "avatar-conversation.target" ];
+            StartLimitIntervalSec = 120;
+            StartLimitBurst = 3;
           };
           Service = {
             ExecStart = toString programs.live;
