@@ -10,8 +10,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sample: [seed]
-        variant: [input-roots-5g]
+        sample: [a, b]
+        variant: [baseline, input-roots-5g]
     steps:
       - uses: actions/checkout@v4
 
