@@ -7,7 +7,7 @@ casos:
     instrucoes_extras:
       - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
     pergunta: |
-      You orchestrate this round as Medea. Decision cards from simulated sub-sessions are in ./decisions and Lucas's user model is ./USER.md: pass `--dir decisions` to `orchestrator decision` and `orchestrator learn`, and `--user-model USER.md` or `--file USER.md` wherever a command takes the user model. The sub-sessions are simulated, so a notification that fails after the record is saved is expected. This sandbox has no private-configuration checkout, so do not commit or push USER.md. Two cards are open. Handle the round and report it to Lucas.
+      You orchestrate this round as Medea. Decision cards from simulated sub-sessions are in ./decisions and Lucas's user model is ./USER.md: pass `--dir decisions` to `orchestrator decision`, `orchestrator learn` and `orchestrator round`, `--reports-dir reports` and `--for Medea` to `orchestrator round`, and `--user-model USER.md` or `--file USER.md` wherever a command takes the user model. The sub-sessions are simulated, so a notification that fails after the record is saved is expected. This sandbox has no private-configuration checkout, so do not commit or push USER.md. Two cards are open. Handle the round and report it to Lucas.
     tempo_limite_segundos: 420
     ambiente:
       git: true
@@ -36,7 +36,7 @@ casos:
         - executa: "python3 -c \"import json; c = json.load(open('decisions/D-20261108-57b35b.json')); print(c['state'], c.get('escalation', {}).get('reason'), 'answer' in c)\""
           regex: "^escalated human-only False$"
       juiz:
-        - "Reports the version-bump card as decided by the orchestrator under directive U-001 and shows Lucas the escalated token-rotation card in its decision template inside a fenced code block, one plain paragraph followed by the What is this session about?, Done and Next labels, asking him to choose; it never says the token was rotated or decided."
+        - "Reports the version-bump card as decided by the orchestrator under directive U-001 and ends with the orchestrator round output in a fenced code block that shows the token-rotation question with both options and what each does, asking Lucas to choose; it never says the token was rotated or decided."
   - nome: orchestrator_turns_an_override_into_a_cited_directive
     nivel: ponta-a-ponta
     escreve: true
@@ -44,7 +44,7 @@ casos:
     instrucoes_extras:
       - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
     pergunta: |
-      You orchestrate this round as Medea. Decision cards from simulated sub-sessions are in ./decisions and Lucas's user model is ./USER.md: pass `--dir decisions` to `orchestrator decision` and `orchestrator learn`, and `--user-model USER.md` or `--file USER.md` wherever a command takes the user model. The sub-sessions are simulated, so a notification that fails after the record is saved is expected. This sandbox has no private-configuration checkout, so do not commit or push USER.md. Lucas just overrode D-20261108-f16a29 and said: "no, when only the version string changes, merge it straight to main". Run the learning loop.
+      You orchestrate this round as Medea. Decision cards from simulated sub-sessions are in ./decisions and Lucas's user model is ./USER.md: pass `--dir decisions` to `orchestrator decision`, `orchestrator learn` and `orchestrator round`, `--reports-dir reports` and `--for Medea` to `orchestrator round`, and `--user-model USER.md` or `--file USER.md` wherever a command takes the user model. The sub-sessions are simulated, so a notification that fails after the record is saved is expected. This sandbox has no private-configuration checkout, so do not commit or push USER.md. Lucas just overrode D-20261108-f16a29 and said: "no, when only the version string changes, merge it straight to main". Run the learning loop.
     tempo_limite_segundos: 420
     ambiente:
       git: true
@@ -84,17 +84,37 @@ casos:
       juiz:
         - Sends Voyager a status check now that asks for the card or report it owes and whether its background command is
           still alive, instead of only reading the pane or waiting for the evaluation to finish.
-  - nome: orchestrator_repeats_the_open_card_when_it_mentions_it
+  - nome: orchestrator_ends_every_turn_with_the_round_view
     nivel: unidade
     instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
     instrucoes_extras:
       - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
-    pergunta:
-      You escalated card D-1 to Lucas two turns ago. `orchestrator decision show D-1` printed "Voyager needs a decision
-      on the speech gate. The options are rules, a local file with no new process that scored 32 of 39; hosted, a remote
-      API at 345 ms where text leaves the machine. It recommends rules." Lucas then asked an unrelated build question,
-      which is now answered. Write the closing message of this turn. D-1 is still open.
+    pergunta: |
+      You escalated card D-1 to Lucas two turns ago. Lucas then asked an unrelated build question, which is now answered:
+      the rebuild passed. D-1 is still open. `orchestrator round` just printed exactly this:
+
+      Decisions waiting for you
+
+      D-1 · Voyager, working to retire hey-bot into the avatar
+      Asks: Where should the speak-or-silent gate run?
+      # │ Option             │ What happens
+      ──┼────────────────────┼──────────────────────────────────────────────
+      1 │ rules (recommended)│ Local file, no new process, 32 of 39 correct
+      ──┼────────────────────┼──────────────────────────────────────────────
+      2 │ hosted             │ Remote API, 345 ms, text leaves the machine
+      Recommended because: it adds no process and scores best on the test set
+      Blocks: stage 4 · reversible
+
+      Sessions
+
+      # │ Session        │ About              │ This round      │ Blocks
+      ──┼────────────────┼────────────────────┼─────────────────┼────────────
+      1 │ Voyager        │ retire hey-bot     │ filed D-1       │ Waiting on
+        │ blocked, 3 min │                    │                 │ D-1.
+
+      Write the closing message of this turn.
     assercoes:
       juiz:
-        - Prints the D-1 card again inside a fenced code block so both options and what separates them are readable in this
-          message, and asks Lucas to choose; it does not merely say his pick is still needed.
+        - Answers the build question briefly, then ends with that round output reproduced inside a fenced code block, with
+          under 100 words of its own prose and no closing labels after the block; it does not paste a long card paragraph or
+          refer to an option only by its number.

@@ -14,7 +14,7 @@ class WatchHarness:
         self.sockets = []
         self.watch_ends = []
         monkeypatch.setattr(workspace_watch, "current_time", lambda: self.now)
-        monkeypatch.setattr(workspace_watch, "workspace_agent_panes", lambda _: panes)
+        monkeypatch.setattr(workspace_watch, "workspace_panes", lambda _: panes)
         monkeypatch.setattr(workspace_watch, "subscribed_socket", self.subscribed)
         self.reports = tmp_path / "reports"
         self.decisions = tmp_path / "decisions"
@@ -25,7 +25,7 @@ class WatchHarness:
                 "wW", self.reports, self.decisions, 15, followed, own
             )
         )
-        self.watch.start()
+        self.start_lines = self.watch.start()
         assert self.watch.next_lines() == []
 
     def subscribed(self, subscriptions):
@@ -152,4 +152,12 @@ def test_the_watch_skips_its_own_pane_and_panes_it_was_not_asked_to_follow(harne
     assert set(watch.watch.sessions) == {"wW:p1"}
     assert watch.emit("pane.agent_detected", "wW:p3") == []
     assert watch.emit("pane.exited", "wW:p2") == []
+    assert set(watch.watch.sessions) == {"wW:p1"}
+
+
+def test_a_followed_session_whose_agent_already_died_is_reported_at_start(harness):
+    panes = [idle_pane("wW:p1"), {"pane_id": "wW:p2", "agent_status": "unknown"}]
+    followed = frozenset({"wW:p1", "wW:p2", "wW:p9"})
+    watch = harness(panes, followed=followed, own="wW:p9")
+    assert watch.start_lines == ["EXITED wW:p2 no agent running when the watch started"]
     assert set(watch.watch.sessions) == {"wW:p1"}

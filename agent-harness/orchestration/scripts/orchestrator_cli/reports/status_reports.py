@@ -9,12 +9,19 @@ from ..document_fields import (
     current_timestamp,
     nonempty_text,
     optional_text_items,
+    require_bounded_line,
     require_object,
 )
 
 REPORT_STATES = ("working", "blocked", "done")
 ATTENTION_STATES = frozenset({"blocked", "done"})
-REQUIRED_TEXT_FIELDS = ("goal", "done_check", "progress", "next_step")
+REPORT_TEXT_LIMITS = {
+    "goal": 120,
+    "done_check": 200,
+    "progress": 160,
+    "next_step": 120,
+}
+REPORT_OVERFLOW_ADVICE = "it is one cell of the round table; keep detail in a file"
 
 
 def report_name(requester: str) -> str:
@@ -37,7 +44,9 @@ def validated_claim(claim) -> dict:
 
 def validated_report_fields(document) -> dict:
     document = require_object(document, "the report")
-    report = {field: nonempty_text(document, field) for field in REQUIRED_TEXT_FIELDS}
+    report = {field: nonempty_text(document, field) for field in REPORT_TEXT_LIMITS}
+    for field, limit in REPORT_TEXT_LIMITS.items():
+        require_bounded_line(field, report[field], limit, REPORT_OVERFLOW_ADVICE)
     if document.get("state") not in REPORT_STATES:
         raise InvalidPeerDocument(f"state must be one of {', '.join(REPORT_STATES)}")
     report["state"] = document["state"]

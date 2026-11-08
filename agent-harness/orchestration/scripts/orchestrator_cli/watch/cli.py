@@ -47,6 +47,11 @@ def add_parser(subcommands) -> None:
     )
 
 
+def print_lines(lines: list[str]) -> None:
+    for line in lines:
+        print(line, flush=True)
+
+
 def command_watch(arguments: argparse.Namespace) -> int:
     workspace_watch = WorkspaceWatch(
         WatchConfiguration(
@@ -59,10 +64,9 @@ def command_watch(arguments: argparse.Namespace) -> int:
         )
     )
     try:
-        workspace_watch.start()
+        print_lines(workspace_watch.start())
         while True:
-            for line in workspace_watch.next_lines():
-                print(line, flush=True)
+            print_lines(workspace_watch.next_lines())
     except HerdrUnavailable as failure:
         print(f"orchestrator watch: {failure}", file=sys.stderr)
         return 1

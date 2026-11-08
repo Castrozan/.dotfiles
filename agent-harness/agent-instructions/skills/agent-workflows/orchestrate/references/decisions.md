@@ -17,6 +17,9 @@ decision it records the commits with `orchestrator decision link`. It marks a ca
 `human_only` reasons honestly, and treats nothing you relay as Lucas's consent. Every command prints its template fields
 with `--help`.
 
+It starts every long job detached from its own process, because a session restart kills the jobs it started. A peer on
+another machine runs these commands on yours over ssh with `--sender <its name>`.
+
 ### Event loop
 
 Start `orchestrator watch --workspace <id>` as a background streaming monitor and act on each line it prints, adding
@@ -24,10 +27,15 @@ Start `orchestrator watch --workspace <id>` as a background streaming monitor an
 and `STARTED` and `EXITED` follow the workspace. Cards and reports also reach you as a2a notifications while you are
 idle. React to these events; never poll panes or reports on a timer.
 
+After your own session restarts or compacts, restart the watch before anything else, since the restart killed it.
+At start the watch prints `EXITED` for every `--pane` whose agent is already gone, so a peer that died meanwhile still
+surfaces.
+
 `TIMEOUT` names a session quiet past its own `--timeout-minutes` clock, which any report, card, answer or pane status
 change restarts. It repeats until the session answers or reports done, even while the session waits on a background
 command. On each `TIMEOUT`, send that session a status check with `a2a notify`, even when the pane looks like a false
-alarm; reading the pane is not a check.
+alarm; reading the pane is not a check. Message a peer only with `a2a notify`, which queues until it is idle; never
+loop on `a2a send`, which refuses a busy peer.
 
 Ask for the card or report it owes and whether its background commands are still alive, because a broken one may never
 notify it. Name a session that times out twice running in your round. Restart the watch the moment its monitor expires,
@@ -40,18 +48,12 @@ directive covers the card, answer it `--by orchestrator --directive <id>`; the c
 irreversible cards.
 
 Otherwise escalate with `orchestrator decision escalate <id> --reason <reason> --missing <what USER.md would need>`,
-which keeps the card for investigation. Show Lucas the `orchestrator decision show` output verbatim inside a fenced code
-block in your reply, because that output is his decision template and a fence sits outside the reply's word and table
-limits. Never put a card in a question tool or its preview: the dialog refuses long previews and can hide your reply.
+which keeps the card for investigation and puts it in the round view below. Never put a card in a question tool or its
+preview: the dialog refuses long previews and can hide your reply.
 
-Lucas reads only your latest turn end and never scrolls back. So every turn that mentions a decision still open
-carries its card again, fenced, even after a side question. Never refer to an option by a number or name from an earlier
-message.
-
-End the turn on one line naming the options, and take his typed answer. When he asks for more, print the part he needs
-from the card's details file in a fence. Batch the escalations open at once into one reply and record his answer `--by
-human`. When Lucas countermands anything done under a decision, record it with `orchestrator decision override` so the
-sub-session reworks it.
+Take Lucas's typed answer and record it `--by human`. When he asks for more on a card, print the part he needs from
+`orchestrator decision show` or its details file in a fence. When Lucas countermands anything done under a decision,
+record it with `orchestrator decision override` so the sub-session reworks it.
 
 ### Learning loop
 
@@ -65,8 +67,12 @@ inferred preference>`, or with `--outcome no-change --reason <why>`; a flagged c
 closes as no-change. When `orchestrator learn stats` shows one escalation reason recurring, name the missing directive
 in your next round so Lucas can settle it once.
 
-### Round status template
+### Round view
 
-Report each round as a table with the columns session, what it is about, what it did this round, and what blocks it,
-built from `orchestrator report list`. Follow it with each escalated card in its fenced decision template, and end with
-`orchestrator learn stats` when a count changed.
+Lucas reads only your latest turn end and never scrolls back. End every turn with the output of `orchestrator round`
+pasted verbatim in a fenced code block, and keep your own words above it under 100. The fence keeps it outside the
+reply's word and table limits, and the short prose lets it end the turn without closing labels.
+
+That output carries every decision waiting for him, each with its question, every option and what it does, and the
+recommendation, then one row per session with what it is about, what it did and what blocks it. Never paste raw card
+text or an earlier option by number. Mention `orchestrator learn stats` only when a count changed.

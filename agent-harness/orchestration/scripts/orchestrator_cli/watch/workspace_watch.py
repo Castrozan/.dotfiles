@@ -10,7 +10,7 @@ from .herdr_events import (
     decoded_messages,
     status_subscription,
     subscribed_socket,
-    workspace_agent_panes,
+    workspace_panes,
     workspace_subscription,
 )
 from .session_timeouts import (
@@ -95,10 +95,17 @@ class WorkspaceWatch:
         self.sessions[pane_id] = WatchedSession(pane_id, status, current_time())
         self.register(status_subscription(pane_id))
 
-    def start(self) -> None:
+    def start(self) -> list[str]:
         self.register(workspace_subscription())
-        for pane in workspace_agent_panes(self.configuration.workspace):
-            self.watch_pane(pane["pane_id"], pane.get("agent_status", "unknown"))
+        for pane in workspace_panes(self.configuration.workspace):
+            if pane.get("agent"):
+                self.watch_pane(pane["pane_id"], pane.get("agent_status", "unknown"))
+        missing = sorted(self.configuration.followed_panes - set(self.sessions))
+        return [
+            f"EXITED {pane_id} no agent running when the watch started"
+            for pane_id in missing
+            if pane_id != self.configuration.own_pane
+        ]
 
     def observe(self, event: str | None, data: dict) -> None:
         session = self.sessions.get(data.get("pane_id"))

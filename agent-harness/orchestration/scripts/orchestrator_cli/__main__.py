@@ -6,6 +6,7 @@ import sys
 from .decisions import cli as decision_cli
 from .learning import cli as learning_cli
 from .reports import cli as report_cli
+from .round import cli as round_cli
 from .user_model import cli as user_model_cli
 from .watch import cli as watch_cli
 
@@ -15,6 +16,7 @@ COMMANDS = {
     "user": (user_model_cli.add_parser, user_model_cli.command_user),
     "learn": (learning_cli.add_parser, learning_cli.command_learn),
     "watch": (watch_cli.add_parser, watch_cli.command_watch),
+    "round": (round_cli.add_parser, round_cli.command_round),
 }
 
 

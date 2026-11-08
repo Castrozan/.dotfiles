@@ -43,3 +43,12 @@ def require_object(document, description: str) -> dict:
     if not isinstance(document, dict):
         raise InvalidPeerDocument(f"{description} must be a JSON object")
     return document
+
+
+def require_bounded_line(field: str, value: str, limit: int, advice: str) -> None:
+    if "\n" in value:
+        raise InvalidPeerDocument(f"{field} must be one line; {advice}")
+    if len(value) > limit:
+        raise InvalidPeerDocument(
+            f"{field} is {len(value)} characters, over its limit of {limit}; {advice}"
+        )

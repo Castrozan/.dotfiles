@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..document_fields import InvalidPeerDocument
+from ..document_fields import InvalidPeerDocument, require_bounded_line
 
 CARD_TEXT_LIMITS = {
     "goal": 200,
@@ -20,13 +20,7 @@ OVERFLOW_ADVICE = "put tables and long material in a file and name it in details
 
 
 def require_relayable_text(field: str, value: str, limit: int) -> None:
-    if "\n" in value:
-        raise InvalidPeerDocument(f"{field} must be one line; {OVERFLOW_ADVICE}")
-    if len(value) > limit:
-        raise InvalidPeerDocument(
-            f"{field} is {len(value)} characters, over its limit of {limit}; "
-            f"{OVERFLOW_ADVICE}"
-        )
+    require_bounded_line(field, value, limit, OVERFLOW_ADVICE)
 
 
 def require_relayable_list(card: dict, field: str, maximum_items: int) -> None:
