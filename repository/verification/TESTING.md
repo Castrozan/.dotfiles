@@ -193,7 +193,7 @@ These are not interchangeable, and no one of them stands in for another.
 | Lua / QML suites         | `*/__tests__/*_test.lua`, `*/__tests__/qml/run-qml-tests.sh`                                                                  | lua / quickshell                  |
 | Domain nix tests         | `*/__tests__/checks.nix`                                                                                                      | nix                               |
 | Instruction surface lint | `agent-harness/quality/evaluations/__tests__/unit/instruction-formatting/test_instruction_surfaces_are_structurally_sound.py` | pytest                            |
-| Agent evals              | `agent-harness/quality/evaluations/suites/*.yaml`                                                                             | agent-evals cli, model access     |
+| Agent evals              | `agent-harness/quality/evaluations/suites/**/*.yaml`                                                                          | agent-evals cli, model access     |
 
 ## Pytest Configuration
 

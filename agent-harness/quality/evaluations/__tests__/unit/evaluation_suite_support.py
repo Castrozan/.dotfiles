@@ -8,7 +8,7 @@ SUITE_DIRECTORY = REPO_ROOT / "agent-harness" / "quality" / "evaluations" / "sui
 
 
 def suite_paths():
-    return sorted(SUITE_DIRECTORY.glob("*.yaml"))
+    return sorted(SUITE_DIRECTORY.rglob("*.yaml"))
 
 
 def load_suite(suite_path: Path):
@@ -16,7 +16,7 @@ def load_suite(suite_path: Path):
 
 
 def load_suite_cases(suite_name: str):
-    return load_suite(SUITE_DIRECTORY / f"{suite_name}.yaml")["casos"]
+    return load_suite(next(SUITE_DIRECTORY.rglob(f"{suite_name}.yaml")))["casos"]
 
 
 def every_authored_case():

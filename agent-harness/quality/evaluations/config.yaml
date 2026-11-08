@@ -1,6 +1,6 @@
 projeto: dotfiles-agent-instructions
 casos:
-  - agent-harness/quality/evaluations/suites/*.yaml
+  - agent-harness/quality/evaluations/suites/**/*.yaml
   - agent-harness/agent-instructions/skills/**/__tests__/evals/*.yaml
 baseline: agent-harness/quality/evaluations/baseline.json
 relatorio: agent-harness/quality/evaluations/resultado/relatorio.html

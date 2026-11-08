@@ -5,6 +5,7 @@ from evaluation_suite_support import load_suite_cases
 from instructions.instruction_surface_scanner import REPO_ROOT
 
 MINIMUM_ADVERSARIAL_CASES = 4
+VERDICT_TIMEOUT_SECONDS = 60
 BLOCKED_VERDICT = "BLOQUEADO"
 ALLOWED_VERDICT = "LIBERADO"
 
@@ -17,6 +18,7 @@ def verdict_output(case):
         text=True,
         cwd=REPO_ROOT,
         check=True,
+        timeout=VERDICT_TIMEOUT_SECONDS,
     )
     return completed.stdout
 
