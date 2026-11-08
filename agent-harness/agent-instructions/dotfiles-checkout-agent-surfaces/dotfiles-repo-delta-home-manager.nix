@@ -19,29 +19,31 @@ let
       { ".local/delta.app/bin/delta".source = delta.commandLine; };
 in
 {
-  home.file = deltaInstallLocation;
+  home = {
+    file = deltaInstallLocation;
 
-  home.packages = [
-    (pkgs.writeShellScriptBin "zed-delta" ''exec ${delta.commandLine} "$@"'')
-  ];
+    packages = [
+      (pkgs.writeShellScriptBin "zed-delta" ''exec ${delta.commandLine} "$@"'')
+    ];
 
-  home.activation.enableDeltaPluginInDotfilesCheckout =
-    lib.hm.dag.entryAfter
-      [
-        "linkGeneration"
-        "seedClaudeSettingsAsMutableFile"
-      ]
-      ''
-        if [ -d "${dotfilesCheckout}/.git" ]; then
-          if ! (
-            cd "${dotfilesCheckout}" &&
-              export PATH="${pkgs.git}/bin:$PATH" &&
-              CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin marketplace add zed-industries/delta-claude --scope local &&
-              CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin install delta@zed-industries --scope local &&
-              CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin update delta@zed-industries --scope local
-          ); then
-            echo "warning: could not enable the Delta plugin in ${dotfilesCheckout}" >&2
+    activation.enableDeltaPluginInDotfilesCheckout =
+      lib.hm.dag.entryAfter
+        [
+          "linkGeneration"
+          "seedClaudeSettingsAsMutableFile"
+        ]
+        ''
+          if [ -d "${dotfilesCheckout}/.git" ]; then
+            if ! (
+              cd "${dotfilesCheckout}" &&
+                export PATH="${pkgs.git}/bin:$PATH" &&
+                CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin marketplace add zed-industries/delta-claude --scope local &&
+                CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin install delta@zed-industries --scope local &&
+                CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin update delta@zed-industries --scope local
+            ); then
+              echo "warning: could not enable the Delta plugin in ${dotfilesCheckout}" >&2
+            fi
           fi
-        fi
-      '';
+        '';
+  };
 }
