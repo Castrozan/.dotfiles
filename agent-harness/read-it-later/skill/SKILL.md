@@ -67,7 +67,7 @@ a question in a reply and change nothing else.
 ### Per card changes
 
 When Lucas changes cards ("drop 3", "file 2", "session on kira"), rewrite those cards with the same capture names and
-run `ril propose` with the group's `target_pull_request`; a rewritten card keeps its place under his approval, while a
+run `ril propose` with the group's `target_pull_request`. A rewritten card keeps its place under his approval, while a
 newly added capture is not covered by any approval older than it. Sign every comment you write with a trailing
 `<!-- ril-watcher -->` so it never reads as his and never wakes the gate.
 

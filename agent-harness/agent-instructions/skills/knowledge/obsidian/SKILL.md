@@ -11,9 +11,8 @@ every shell path.
 
 ### Capture inbox
 
-The capture inbox belongs to the ril skill and its `ril` CLI, which groups captures into pull requests where Lucas
-decides each one, then drops it, files it in the Second Brain or dispatches it to a work session, and only then marks it
-done. Never summarize, rate or tag a capture from
+The capture inbox belongs to the ril skill and its `ril` CLI. It groups captures into pull requests where Lucas decides
+each one, then drops it, files it in the Second Brain or dispatches it to a work session, and only then marks it done. Never summarize, rate or tag a capture from
 here: an annotated capture reads as worked while nothing was learned or adopted, which is exactly the failure the ril
 routine replaced.
 
