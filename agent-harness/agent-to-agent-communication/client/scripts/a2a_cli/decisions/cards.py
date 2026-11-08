@@ -32,42 +32,54 @@ def new_decision_identifier() -> str:
 
 def nonempty_text(document: dict, field: str) -> str:
     value = document.get(field)
-    if not isinstance(value, str) or not value.strip():
+    if not is_nonempty_text(value):
         raise InvalidDecisionCard(f"{field} must be nonempty text")
     return value.strip()
 
 
-def validated_options(document: dict) -> list[dict]:
+def option_list(document: dict) -> list:
     options = document.get("options")
-    if not isinstance(options, list) or not (
-        MINIMUM_OPTION_COUNT <= len(options) <= MAXIMUM_OPTION_COUNT
-    ):
+    if not isinstance(options, list):
+        raise InvalidDecisionCard("options must be a list")
+    if not MINIMUM_OPTION_COUNT <= len(options) <= MAXIMUM_OPTION_COUNT:
         raise InvalidDecisionCard(
             f"options must list {MINIMUM_OPTION_COUNT} to {MAXIMUM_OPTION_COUNT} choices"
         )
-    validated = []
-    for option in options:
-        if not isinstance(option, dict):
-            raise InvalidDecisionCard("each option needs a label and a consequence")
-        validated.append(
-            {
-                "label": nonempty_text(option, "label"),
-                "consequence": nonempty_text(option, "consequence"),
-            }
-        )
+    return options
+
+
+def validated_option(option) -> dict:
+    if not isinstance(option, dict):
+        raise InvalidDecisionCard("each option needs a label and a consequence")
+    return {
+        "label": nonempty_text(option, "label"),
+        "consequence": nonempty_text(option, "consequence"),
+    }
+
+
+def validated_options(document: dict) -> list[dict]:
+    validated = [validated_option(option) for option in option_list(document)]
     labels = [option["label"] for option in validated]
     if len(set(labels)) != len(labels):
         raise InvalidDecisionCard("option labels must be distinct")
     return validated
 
 
-def validated_text_list(document: dict, field: str, required: bool) -> list[str]:
-    items = document.get(field, None if required else [])
-    if not isinstance(items, list) or (required and not items):
+def is_nonempty_text(value) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def text_items(value, field: str) -> list[str]:
+    if not isinstance(value, list) or not all(map(is_nonempty_text, value)):
+        raise InvalidDecisionCard(f"{field} must be a list of nonempty text")
+    return [item.strip() for item in value]
+
+
+def required_text_items(document: dict, field: str) -> list[str]:
+    items = text_items(document.get(field), field)
+    if not items:
         raise InvalidDecisionCard(f"{field} must list at least one item")
-    if not all(isinstance(item, str) and item.strip() for item in items):
-        raise InvalidDecisionCard(f"every {field} item must be nonempty text")
-    return [item.strip() for item in items]
+    return items
 
 
 def new_decision_card(
@@ -79,9 +91,9 @@ def new_decision_card(
     card["options"] = validated_options(document)
     if card["recommendation"] not in {option["label"] for option in card["options"]}:
         raise InvalidDecisionCard("recommendation must name one of the option labels")
-    card["evidence"] = validated_text_list(document, "evidence", required=True)
-    card["unverified_assumptions"] = validated_text_list(
-        document, "unverified_assumptions", required=False
+    card["evidence"] = required_text_items(document, "evidence")
+    card["unverified_assumptions"] = text_items(
+        document.get("unverified_assumptions", []), "unverified_assumptions"
     )
     if not isinstance(document.get("reversible"), bool):
         raise InvalidDecisionCard("reversible must be true or false")

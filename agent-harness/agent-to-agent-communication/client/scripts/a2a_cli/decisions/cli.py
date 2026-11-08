@@ -139,13 +139,15 @@ def command_file(arguments: argparse.Namespace, decision_directory: Path) -> int
     return notify_target(agent_directory, arguments.to, requester, card, saved_path)
 
 
+def card_matches(card: dict, state: str, orchestrator: str | None) -> bool:
+    state_matches = state == "all" or card["state"] == state
+    return state_matches and orchestrator in (None, card["orchestrator"])
+
+
 def command_list(arguments: argparse.Namespace, decision_directory: Path) -> int:
     for card in all_cards(decision_directory):
-        if arguments.state != "all" and card["state"] != arguments.state:
-            continue
-        if arguments.orchestrator and card["orchestrator"] != arguments.orchestrator:
-            continue
-        print(summary_row(card))
+        if card_matches(card, arguments.state, arguments.orchestrator):
+            print(summary_row(card))
     return 0
 
 
