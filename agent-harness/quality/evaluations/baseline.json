@@ -5724,6 +5724,56 @@
       ],
       "type": "instruction"
     },
+    "skills/orchestrate/decisions/orchestrator_decides_covered_cards_and_escalates_human_only": {
+      "category": "skills/orchestrate/decisions",
+      "costUsd": 0,
+      "fingerprint": "3039df08501096165646200600a079e2da8327ee7f87c6112f49aab9ad1ab24d",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-08T02:38:28.840Z",
+      "name": "orchestrator_decides_covered_cards_and_escalates_human_only",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        131581,
+        131158
+      ],
+      "toolOutputCharacters": [
+        32718,
+        32939
+      ],
+      "type": "instruction"
+    },
+    "skills/orchestrate/decisions/orchestrator_turns_an_override_into_a_cited_directive": {
+      "category": "skills/orchestrate/decisions",
+      "costUsd": 0,
+      "fingerprint": "b01652583dea8272add18477442f78bbe2b5ccea2eaa9563384249a898db4b58",
+      "heldOut": false,
+      "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+      "level": "end-to-end",
+      "measuredAt": "2026-11-08T02:38:28.840Z",
+      "name": "orchestrator_turns_an_override_into_a_cited_directive",
+      "passes": 2,
+      "sampleOutcomes": [
+        true,
+        true
+      ],
+      "samples": 2,
+      "tokenTotals": [
+        128116,
+        127475
+      ],
+      "toolOutputCharacters": [
+        26007,
+        25884
+      ],
+      "type": "instruction"
+    },
     "skills/quickshell/navigation/quickshell_knows_bar_ipc": {
       "category": "skills/quickshell/navigation",
       "costUsd": 0,
@@ -6312,7 +6362,8 @@
     "agent-harness/agent-instructions/skills/agent-workflows/goal-prompt/SKILL.md": "3fefc3308d9dda7f61f6a5ea429e257cd0b3688c260714229017438d0cd42efd",
     "agent-harness/agent-instructions/skills/agent-workflows/instructions/SKILL.md": "5676d3000a857dbe8df25ddf685fb7497aca68c696402f6f82a391fd7ae819e2",
     "agent-harness/agent-instructions/skills/agent-workflows/instructions/references/skills.md": "72d1e082f7f7f05dbfa93873430348b1e9a96a69960c93ad31dfc9534cf2c63f",
-    "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md": "f36c7f8cc9a629d9c3643d20ded2c6851687d597a81a7a571e95e6a6aca609b6",
+    "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md": "2de541c28ecee267e4d70ada1dbb16c10c8e93955c0a3afd50ca0a618a226cf2",
+    "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md": "7fd47799e9ff7ed549bcde2e2f03060b0e80ba47a4c910f23e040d81e9ebcd5a",
     "agent-harness/agent-instructions/skills/agent-workflows/process-design/SKILL.md": "cc1777853418fdd4125c3a179deadeb813110477bf8007f1222201088ec46f1b",
     "agent-harness/agent-instructions/skills/development/agent-api/SKILL.md": "280da53f7922a3052dedb6903c410959f2dabbae6e8187bc2351b11f0c5a6b5b",
     "agent-harness/agent-instructions/skills/development/architecture/SKILL.md": "07104b30d6deec31d5d3499c10e8022373fd83e098bfe2d6c4990a6874b0bcc8",
@@ -6379,5 +6430,5 @@
     }
   },
   "profileId": "729a83d6cd00",
-  "recordedAt": "2026-11-08T02:36:36.959Z"
+  "recordedAt": "2026-11-08T02:38:28.840Z"
 }
