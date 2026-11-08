@@ -28,6 +28,11 @@ and delivery procedure; repository-local instructions may add stronger gates.
 Read [swarm](references/swarm.md) before fanning a decided change out to parallel engineer agents. It owns the brief,
 the batches, the per-batch check with the `swarm-batch-gate` and `swarm-differential-check` helpers, and integration.
 
+### State machine routing
+
+Read [state machines](references/state-machines.md) before auditing code for implicit state, or before turning flags,
+markers and async phases into an explicit machine. It owns the audit, its report template, and the four-part design.
+
 ### Version control routing
 
 Read [git](references/git.md) before staging, committing, or investigating history. Read
