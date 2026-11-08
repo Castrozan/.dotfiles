@@ -4,6 +4,7 @@ import time
 
 import speech_segmenter
 from conversation_addressee import Addressee
+from listener_session import ListenerPurpose
 from wake_boundaries import Boundaries, capture_command
 from wake_phrase import addressed_session, opens_with_greeting
 
@@ -14,18 +15,29 @@ FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS)
 FRAMES_PER_ARM_CHECK = int(ARM_CHECK_SECONDS / speech_segmenter.FRAME_SECONDS)
 
 
-def spoken_prompt(message, conversation_open):
-    conversation = (
-        "The open avatar conversation now listens for you"
-        if conversation_open
-        else "An avatar conversation is opening"
-    )
+DESK_REPLY = (
+    "speak with avatar-talk say, and hear the reply through avatar-talk follow in a "
+    "background watcher. When the room dismisses you, such as 'you can go now', say "
+    "a short goodbye and run avatar-talk close, which hands the room back to the wake."
+)
+SETTINGS = {
+    None: f"An avatar conversation is opening: {DESK_REPLY}",
+    ListenerPurpose.CONVERSATION: (
+        f"The open avatar conversation now listens for you: {DESK_REPLY}"
+    ),
+    ListenerPurpose.MEETING: (
+        "You now hold the floor of the meeting the avatar transcribes: answer aloud "
+        "with avatar-command speak, which the meeting hears, and read it through "
+        "avatar-listen follow in a background watcher."
+    ),
+}
+MEETING_SOURCE = "meeting"
+
+
+def spoken_prompt(message, purpose):
     return (
         f"[wake] Voice from the room, speaker not verified: {message} "
-        f"{conversation}: speak with avatar-talk say, and hear the reply through "
-        "avatar-talk follow in a background watcher. When the room dismisses you, "
-        "such as 'you can go now', say a short goodbye and run avatar-talk close, "
-        "which hands the room back to the wake."
+        f"{SETTINGS[purpose]}"
     )
 
 
@@ -62,13 +74,13 @@ class WakeListener:
         self.refresh_sessions()
         return addressed_session(heard, self.sessions)
 
-    def deliver(self, match, conversation_open):
+    def deliver(self, match, purpose):
         target = f"{match.session.servant} at {match.session.pane}"
         if self.dry_run:
             self.boundaries.report(f"would wake {target}: {match.message}")
             return False
         self.boundaries.report(f"wake {target}")
-        text = spoken_prompt(match.message, conversation_open)
+        text = spoken_prompt(match.message, purpose)
         if not self.boundaries.prompt_now(match.session.pane, text):
             self.boundaries.notify_at_idle(match.session.pane, text)
         return True
@@ -78,7 +90,7 @@ class WakeListener:
         if not heard:
             return
         match = self.addressed(heard)
-        if match is None or not self.deliver(match, conversation_open=False):
+        if match is None or not self.deliver(match, purpose=None):
             return
         self.boundaries.open_conversation()
         self.boundaries.hand_to(
@@ -105,19 +117,20 @@ class WakeListener:
                 self.turn_to(entry)
 
     def turn_to(self, entry):
+        if entry.get("source") == MEETING_SOURCE:
+            return
         match = self.addressed(entry["text"])
         if match is None:
             return
         addressee = self.boundaries.addressee()
         if addressee and addressee.pane == match.session.pane:
             return
-        if self.dry_run:
-            self.deliver(match, conversation_open=True)
-            return
-        self.boundaries.hand_to(
-            Addressee(match.session.pane, match.session.servant, entry["sequence"])
-        )
-        self.deliver(match, conversation_open=True)
+        purpose = self.boundaries.listening_purpose()
+        if not self.dry_run:
+            self.boundaries.hand_to(
+                Addressee(match.session.pane, match.session.servant, entry["sequence"])
+            )
+        self.deliver(match, purpose)
 
     def listen_while_armed(self, frames):
         segmenter = speech_segmenter.SpeechSegmenter()

@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 
+import conversation_addressee
 import listener
 import user_units
 
@@ -30,6 +31,7 @@ def begin_listening(directory, purpose, sources, **settings):
     (directory / "transcript.jsonl").unlink(missing_ok=True)
     (directory / listener.EMBEDDINGS_FILE).unlink(missing_ok=True)
     (directory / listener.HEARD_FILE).unlink(missing_ok=True)
+    conversation_addressee.forget(directory)
     configuration = directory / CONFIGURATION_FILE
     descriptor = os.open(configuration, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(descriptor, "w") as output:

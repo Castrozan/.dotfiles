@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import wake_boundaries
 import wake_listener
+from listener_session import ListenerPurpose
 from wake_phrase import LiveSession
 
 VOYAGER = LiveSession("Voyager", "wW:pPZ")
@@ -19,6 +20,7 @@ def boundaries(heard="hey Voyager, check the build", sessions=(VOYAGER,), **chan
         report=Mock(),
         now=Mock(return_value=0.0),
         transcript_entries=Mock(return_value=[]),
+        listening_purpose=Mock(return_value=ListenerPurpose.CONVERSATION),
         addressee=Mock(return_value=None),
         hand_to=Mock(),
     )

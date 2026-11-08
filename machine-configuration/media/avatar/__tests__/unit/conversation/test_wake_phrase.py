@@ -1,7 +1,7 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
-from wake_phrase import LiveSession, addressed_session
+from wake_phrase import LiveSession, addressed_session, vocative_session
 
 IBARAKI = LiveSession("Ibaraki-dōji", "wW:pPY")
 VOYAGER = LiveSession("Voyager", "wW:pPZ")
@@ -63,3 +63,22 @@ def test_an_unknown_name_or_a_bare_greeting_wakes_nobody():
     assert addressed_session("hey Kevin, status", LIVE) is None
     assert addressed_session("hey", LIVE) is None
     assert addressed_session("", LIVE) is None
+
+
+@given(session=st.sampled_from(LIVE), message=message_words)
+def test_a_name_opening_or_closing_a_line_addresses_its_session(session, message):
+    name = first_name(session)
+    assert vocative_session(f"{name}, {message}", LIVE) == session
+    assert vocative_session(f"oi {name} {message}", LIVE) == session
+    assert vocative_session(f"{message}, {name}?", LIVE) == session
+
+
+@given(session=st.sampled_from(LIVE), message=message_words)
+def test_a_name_inside_a_line_addresses_nobody(session, message):
+    line = f"yesterday {first_name(session)} said {message} again"
+    assert vocative_session(line, LIVE) is None
+
+
+def test_a_bare_greeting_addresses_nobody():
+    assert vocative_session("hey", LIVE) is None
+    assert vocative_session("", LIVE) is None

@@ -1,11 +1,12 @@
 {
   pkgs,
   lib,
+  inputs,
   isNixOS,
   ...
 }:
 let
-  programs = import ./avatar-programs.nix { inherit pkgs lib; };
+  programs = import ./avatar-programs.nix { inherit pkgs lib inputs; };
   characters = import ./characters.nix { inherit pkgs; };
   characterVoices = pkgs.writeText "avatar-character-voices.json" (
     builtins.toJSON (map (character: { inherit (character) name cloudVoice localVoice; }) characters)

@@ -4,6 +4,7 @@ import subprocess
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import conversation_addressee
 import conversation_state
 import listen_cli
 import listener_session
@@ -61,6 +62,17 @@ def test_beginning_a_listener_resets_the_transcript_and_the_heard_cursor(
         "sources": {"meeting": "any"},
         "language": "pt",
     }
+
+
+def test_beginning_a_listener_frees_the_floor(tmp_path, monkeypatch):
+    monkeypatch.setattr(listener_session, "systemctl", Mock())
+    conversation_addressee.hand_to(
+        tmp_path, conversation_addressee.Addressee("wW:pPZ", "Voyager", 4)
+    )
+    listener_session.begin_listening(
+        tmp_path, listener_session.ListenerPurpose.MEETING, {"meeting": "any"}
+    )
+    assert conversation_addressee.current(tmp_path) is None
 
 
 def test_hiding_the_window_hides_the_canvas_first(tmp_path, monkeypatch):

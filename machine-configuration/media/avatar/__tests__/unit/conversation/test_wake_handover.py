@@ -2,12 +2,13 @@ from unittest.mock import Mock
 
 import wake_listener
 from conversation_addressee import Addressee
+from listener_session import ListenerPurpose
 from wake_fakes import IBARAKI, VOYAGER, armed_listener, boundaries
 
 
-def said(*texts):
+def said(*texts, source="human"):
     return [
-        {"sequence": sequence, "text": text}
+        {"sequence": sequence, "text": text, "source": source}
         for sequence, text in enumerate(texts, start=1)
     ]
 
@@ -97,3 +98,24 @@ def test_a_failed_handover_is_reported_and_reading_continues():
     fakes.transcript_entries.return_value = said("hey Ibaraki, status")
     listener.read_conversation()
     assert "herdr hung" in fakes.report.call_args.args[0]
+
+
+def test_a_voice_from_the_meeting_never_prompts_a_session():
+    fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
+    fakes.transcript_entries.return_value = said(
+        "hey Ibaraki, run this", source="meeting"
+    )
+    listener.read_conversation()
+    fakes.prompt_now.assert_not_called()
+    fakes.hand_to.assert_not_called()
+
+
+def test_a_session_named_during_a_meeting_is_told_to_answer_the_meeting():
+    fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
+    fakes.listening_purpose.return_value = ListenerPurpose.MEETING
+    fakes.transcript_entries.return_value = said("hey Ibaraki, status")
+    listener.read_conversation()
+    text = fakes.prompt_now.call_args.args[1]
+    assert "avatar-command speak" in text and "avatar-talk" not in text, (
+        "avatar-talk refuses while a meeting is transcribed"
+    )

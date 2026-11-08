@@ -3,7 +3,6 @@ import json
 import subprocess
 import sys
 
-import conversation_addressee
 import conversation_state
 import desktop_window
 import listen_cli
@@ -55,7 +54,6 @@ def open_conversation(arguments, directory):
             (start.renderer_ready, room_microphone_ready),
         )
         show_chosen_character(arguments)
-        conversation_addressee.forget(directory)
         listener_session.begin_listening(
             directory,
             ListenerPurpose.CONVERSATION,

@@ -68,6 +68,19 @@ def opens_with_greeting(text):
     return first is not None and folded(first.group()) in GREETINGS
 
 
+def vocative_session(text, sessions):
+    words = list(WORD.finditer(text))
+    greetings = leading_greetings(words)
+    if greetings == len(words):
+        return None
+    candidates = sessions_by_spoken_name(sessions)
+    for word in (words[greetings], words[-1]):
+        session = named_session(folded(word.group()), candidates)
+        if session:
+            return session
+    return None
+
+
 def addressed_session(text, sessions):
     words = list(WORD.finditer(text))
     candidates = sessions_by_spoken_name(sessions)

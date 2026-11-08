@@ -1,5 +1,28 @@
-{ pkgs, lib }:
+{
+  pkgs,
+  lib,
+  inputs,
+}:
 let
+  herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  a2a = import ../../../agent-harness/agent-to-agent-communication/client/a2a-client-package.nix {
+    inherit pkgs;
+  };
+  a2aLibrary = lib.concatStringsSep ":" [
+    "${../../../agent-harness/agent-to-agent-communication/client/scripts}"
+    "${../../../agent-harness/servants}"
+    "${../../../agent-harness/hooks/runtime/common}"
+  ];
+  floor = pkgs.writeShellScriptBin "avatar-claim-floor" ''
+    export PATH=${
+      lib.makeBinPath [
+        herdr
+        pkgs.systemd
+      ]
+    }:$PATH
+    export PYTHONPATH=${./scripts/listening}:${./scripts/wake}:${a2aLibrary}
+    exec ${pkgs.python312}/bin/python3 ${./scripts/wake/floor_cli.py}
+  '';
   control = import ./control-package.nix { inherit pkgs; };
   renderer = import ./renderer-package.nix { inherit pkgs; };
   speakerModel = pkgs.fetchurl {
@@ -42,6 +65,9 @@ let
     exec ${pkgs.python312}/bin/python3 ${browserRuntime} controls
   '';
   command = pkgs.writeShellScriptBin "avatar-command" ''
+    if [ "''${1:-}" = speak ]; then
+      ${floor}/bin/avatar-claim-floor || exit 1
+    fi
     export NODE_PATH=${control}/node_modules
     exec ${pkgs.nodejs_22}/bin/node ${./scripts/command.js} "$@"
   '';
@@ -103,12 +129,16 @@ let
 in
 {
   inherit
+    a2a
+    a2aLibrary
     audio
     browserRuntime
     camera
     command
     control
     controls
+    floor
+    herdr
     listen
     listener
     serve
