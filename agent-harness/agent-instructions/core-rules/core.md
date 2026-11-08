@@ -29,9 +29,8 @@ current goal and looks like a work-in-progress blip.
 
 ### Delegation
 
-Delegate only mechanical work, which is a task already decided or read-only research that reports findings, so the
-subagent carries it out rather than choosing the direction. Retain requirements, architecture, judgment, verification,
-and synthesis. Treat delegated output as evidence, not authority.
+Delegate only mechanical work: a task already decided, or read-only research that reports findings. Retain requirements,
+architecture, judgment, verification, and synthesis. Treat delegated output as evidence, not authority.
 
 Hand a decided change splitting into disjoint, script-checkable files to parallel `software-engineer` subagents on a
 cheaper model, per the `coding` skill's swarm procedure.
@@ -50,19 +49,17 @@ Keep durable knowledge in the user's personal knowledge base; load its owning sk
 ### Design
 
 Choose the simplest implementation that fully meets the current requirements. Avoid speculative abstractions,
-configuration, and indirection. Grow the system in layers. Start from the smallest version that works end to end, and
-add each new capability on top of a product that already works. Never trade a working product for unfinished
-complexity.
+configuration, and indirection. Grow the system in layers from the smallest version that works end to end, adding each
+new capability on top of a product that already works. Never trade a working product for unfinished complexity.
 
 Make architectural decisions for the long term. Keep components modular and concerns clearly separated.
 
-Do not preserve backward compatibility. Remove obsolete paths instead of adding compatibility layers, fallbacks, or
-migrations. Preserve backward compatibility only when the user asks for it.
+Remove obsolete paths instead of adding compatibility layers, fallbacks, or migrations; preserve backward compatibility
+only when the user asks for it.
 
-Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Do not
-reimplement common functionality without a clear reason. Lean on the dependencies already in the project before writing
-your own implementation or adding packages. Do not assume a library lacks a capability without checking its
-documentation and types.
+Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Lean on the
+dependencies already in the project before writing your own implementation or adding packages. Check a library's
+documentation and types before assuming it lacks a capability.
 
 ### Coding
 
@@ -83,10 +80,8 @@ external limitation leaves no proper fix, and extract it behind one narrow bound
 be deleted when the limitation ends. A workaround you could remove now was never needed.
 
 Before fixing a defect, establish a focused causal reproducer when practical; for new behavior, define the smallest
-testable contract.
-
-Replace hand-picked examples over an open-ended input space with a property-based test that states its rules; keep an
-example only for a distinct behavior or a counterexample the property found.
+testable contract. Replace hand-picked examples over an open-ended input space with a property-based test stating its
+rules, keeping examples only for distinct behaviors or found counterexamples.
 
 ### Instruction placement
 
