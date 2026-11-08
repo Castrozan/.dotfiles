@@ -123,3 +123,14 @@ casos:
           pieces.
       regex:
         - ^[^A-Za-z]*NO\b
+  - nome: open_ended_input_space_gets_a_property_test
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/core-rules/core.md
+    pergunta:
+      I am testing a TypeScript function that turns any user-entered title into a URL slug. I plan to write about fifteen
+      hand-picked input and output examples. Is that the right set of tests?
+    assercoes:
+      juiz:
+        - Recommends replacing most of the hand-picked examples with a property-based test over generated titles, such as with
+          fast-check, stating rules like idempotence or an allowed output alphabet, and keeps only a few examples for distinct
+          behaviors or found counterexamples.

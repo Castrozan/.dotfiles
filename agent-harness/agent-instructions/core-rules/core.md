@@ -85,6 +85,9 @@ be deleted when the limitation ends. A workaround you could remove now was never
 Before fixing a defect, establish a focused causal reproducer when practical; for new behavior, define the smallest
 testable contract.
 
+Replace hand-picked examples over an open-ended input space with a property-based test that states its rules; keep an
+example only for a distinct behavior or a counterexample the property found.
+
 ### Instruction placement
 
 Enforce a rule with deterministic code whenever its predicate and material exceptions can be stated precisely; write an
