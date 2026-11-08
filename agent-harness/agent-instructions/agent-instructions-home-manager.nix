@@ -9,6 +9,7 @@ in
     ../plugin-distribution/home-manager.nix
     ./production-plugin/home-manager.nix
     ../agent-to-agent-communication/client/a2a-client-home-manager.nix
+    ../orchestration/orchestrator-home-manager.nix
     ../servants/servants-home-manager.nix
     ../session-control/agent-session-control-home-manager.nix
     ../workflow-commands/dotfiles-workflow-commands-home-manager.nix

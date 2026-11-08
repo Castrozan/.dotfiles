@@ -117,5 +117,5 @@ def summary_row(report: dict) -> str:
 def notification_text(report: dict) -> str:
     return (
         f"{report['requester']} is {report['state']}: {report['next_step']} "
-        f"Read it: a2a report show {report['name']}"
+        f"Read it: orchestrator report show {report['name']}"
     )

@@ -100,7 +100,7 @@ def summary_row(card: dict) -> str:
 
 
 def notification_text(card: dict) -> str:
-    show_command = f"a2a decision show {card['id']}"
+    show_command = f"orchestrator decision show {card['id']}"
     if card["state"] == "overridden":
         return (
             f"decision {card['id']} overridden by the human: "

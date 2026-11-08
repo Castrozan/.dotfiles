@@ -7,8 +7,7 @@ import sys
 from pathlib import Path
 
 from ..document_fields import InvalidPeerDocument
-from ..peer_delivery import notify_after_save, sender_and_directory
-from ..peer_transport import PeerRequestFailure
+from ..peer_messenger import PeerMessageFailure, notify_after_save, sender_name
 from ..record_store import all_records, load_record, save_record, state_directory
 from .status_reports import (
     REPORT_STATES,
@@ -32,7 +31,7 @@ def add_parser(subcommands) -> None:
     report = subcommands.add_parser(
         "report", help="a peer's current status for its orchestrator, one per peer"
     )
-    report.add_argument("--dir", default=str(state_directory("a2a-reports")))
+    report.add_argument("--dir", default=str(state_directory("orchestrator-reports")))
     commands = report.add_subparsers(dest="report_command", required=True)
 
     file_command = commands.add_parser(
@@ -78,7 +77,7 @@ def previous_state(report_directory: Path, name: str) -> str | None:
 
 def command_file(arguments: argparse.Namespace, report_directory: Path) -> int:
     document = read_report_document(arguments.report)
-    requester, agent_directory = sender_and_directory(arguments)
+    requester = sender_name(arguments.sender)
     requester_pane = os.environ.get("HERDR_PANE_ID")
     name = report_name(" ".join(filter(None, [requester, requester_pane])))
     author = ReportAuthor(name, requester, requester_pane, arguments.to)
@@ -88,7 +87,7 @@ def command_file(arguments: argparse.Namespace, report_directory: Path) -> int:
     if not needs_orchestrator_attention(report):
         return 0
     return notify_after_save(
-        lambda: (requester, agent_directory),
+        lambda: requester,
         arguments.to,
         notification_text(report),
         saved_path,
@@ -115,6 +114,6 @@ def command_show(arguments: argparse.Namespace, report_directory: Path) -> int:
 def command_report(arguments: argparse.Namespace) -> int:
     try:
         return arguments.handler(arguments, Path(arguments.dir))
-    except (InvalidPeerDocument, PeerRequestFailure) as failure:
-        print(f"a2a report: {failure}", file=sys.stderr)
+    except (InvalidPeerDocument, PeerMessageFailure) as failure:
+        print(f"orchestrator report: {failure}", file=sys.stderr)
         return 1

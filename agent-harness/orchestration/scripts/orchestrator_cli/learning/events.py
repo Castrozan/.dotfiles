@@ -59,6 +59,22 @@ def learned_card(card: dict, outcome: str, directive: str | None, reason: str) -
     return {**card, "learning": learning}
 
 
+def require_directive_cites_card(
+    card_identifier: str, directive_identifier: str, directives: list
+) -> None:
+    directive = next(
+        (each for each in directives if each.identifier == directive_identifier), None
+    )
+    if directive is None or not directive.active:
+        raise InvalidPeerDocument(
+            f"{directive_identifier} is not an active directive in the user model"
+        )
+    if card_identifier not in directive.source:
+        raise InvalidPeerDocument(
+            f"{directive_identifier} must cite {card_identifier} as its source"
+        )
+
+
 def deviation_candidates(
     card: dict, linked_commits: set[str], changed_since
 ) -> list[str]:

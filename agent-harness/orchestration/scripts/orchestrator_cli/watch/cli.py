@@ -19,7 +19,9 @@ def add_parser(subcommands) -> None:
     )
     watch.add_argument("--workspace", required=True, help="herdr workspace id")
     watch.add_argument("--safety-minutes", type=float, default=DEFAULT_SAFETY_MINUTES)
-    watch.add_argument("--reports-dir", default=str(state_directory("a2a-reports")))
+    watch.add_argument(
+        "--reports-dir", default=str(state_directory("orchestrator-reports"))
+    )
 
 
 def command_watch(arguments: argparse.Namespace) -> int:
@@ -32,7 +34,7 @@ def command_watch(arguments: argparse.Namespace) -> int:
             for line in workspace_watch.next_lines():
                 print(line, flush=True)
     except HerdrUnavailable as failure:
-        print(f"a2a watch: {failure}", file=sys.stderr)
+        print(f"orchestrator watch: {failure}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         return 0

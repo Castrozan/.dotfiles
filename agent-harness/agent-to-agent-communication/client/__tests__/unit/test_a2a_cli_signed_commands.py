@@ -59,3 +59,16 @@ def test_the_same_signature_is_not_appended_twice(monkeypatch):
     commands.command_send(arguments, PEER_DIRECTORY)
 
     assert requests == [{"input": arguments.text}]
+
+
+def test_whoami_prints_the_name_messages_are_signed_with(monkeypatch, capsys):
+    monkeypatch.setenv("CLAWDE_AGENT_NAME", "golden")
+    resolved = build_argument_parser().parse_args(["whoami"])
+    assert commands.command_whoami(resolved, {}) == 0
+    explicit = build_argument_parser().parse_args(["whoami", "--sender", " Medea "])
+    assert commands.command_whoami(explicit, {}) == 0
+    assert capsys.readouterr().out.split("\n")[:2] == ["golden", "Medea"]
+    with pytest.raises(peer_transport.PeerRequestFailure):
+        commands.command_whoami(
+            build_argument_parser().parse_args(["whoami", "--sender", "a\nb"]), {}
+        )

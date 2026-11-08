@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from orchestration_test_support import file_card, run_a2a, valid_card_document
+from orchestration_test_support import file_card, run_orchestrator, valid_card_document
 
 USER_MODEL_TEXT = """# USER
 
@@ -18,7 +18,7 @@ def user_model(tmp_path):
 
 
 def answer(monkeypatch, directory, identifier, by, *extra):
-    return run_a2a(
+    return run_orchestrator(
         monkeypatch,
         directory,
         "answer",
@@ -98,7 +98,10 @@ def test_an_escalated_card_is_kept_with_its_reason_and_only_the_human_closes_it(
 ):
     _, identifier = file_card(monkeypatch, tmp_path, capsys)
     escalate = ["escalate", identifier, "--reason", "no-directive"]
-    assert run_a2a(monkeypatch, tmp_path, *escalate, "--missing", "no patch rule") == 0
+    assert (
+        run_orchestrator(monkeypatch, tmp_path, *escalate, "--missing", "no patch rule")
+        == 0
+    )
     assert "escalated it (no-directive): no patch rule." in capsys.readouterr().out
     cited = ["--user-model", str(user_model), "--directive", "U-001"]
     assert answer(monkeypatch, tmp_path, identifier, "orchestrator", *cited) == 1
@@ -114,9 +117,9 @@ def test_an_override_reopens_the_work_by_notifying_the_requester(
     cited = ["--user-model", str(user_model), "--directive", "U-001"]
     answer(monkeypatch, tmp_path, identifier, "orchestrator", *cited)
     override = ["override", identifier, "--choice", "keep", "--rationale", "keep it"]
-    assert run_a2a(monkeypatch, tmp_path, *override, "--sender", "Medea") == 0
+    assert run_orchestrator(monkeypatch, tmp_path, *override, "--sender", "Medea") == 0
     assert stored_card(tmp_path, identifier)["state"] == "overridden"
-    assert notifications[-1][0] == "http://daemon/agents/worker-session"
+    assert notifications[-1][0] == "worker-pane"
     assert "overridden by the human: keep" in notifications[-1][2]
 
 
@@ -136,6 +139,6 @@ def test_the_audit_query_lists_only_recent_orchestrator_decisions(
     (cards / f"{old}.json").write_text(json.dumps(old_card))
     capsys.readouterr()
     audit = ["list", "--state", "answered", "--decided-by", "orchestrator"]
-    run_a2a(monkeypatch, cards, *audit, "--since-hours", "12")
+    run_orchestrator(monkeypatch, cards, *audit, "--since-hours", "12")
     rows = capsys.readouterr().out.splitlines()
     assert [row.split("\t")[0] for row in rows] == [recent]

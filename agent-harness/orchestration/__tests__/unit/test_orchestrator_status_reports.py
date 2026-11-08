@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from orchestration_test_support import run_a2a
+from orchestration_test_support import run_orchestrator
 
 
 def report_document(**overrides):
@@ -22,7 +22,7 @@ def report_document(**overrides):
 
 
 def file_report(monkeypatch, directory, capsys, sender="Edmond Dantès", **overrides):
-    exit_code = run_a2a(
+    exit_code = run_orchestrator(
         monkeypatch,
         directory,
         "file",
@@ -48,8 +48,8 @@ def test_working_updates_are_silent_and_turning_blocked_or_done_notifies_once(
     file_report(monkeypatch, tmp_path, capsys, state="blocked", next_step="decide D-1")
     file_report(monkeypatch, tmp_path, capsys, state="done", next_step="nothing")
     assert [content for _, _, content in notifications] == [
-        "Edmond Dantès is blocked: decide D-1 Read it: a2a report show Edmond-Dantes-worker-pane",
-        "Edmond Dantès is done: nothing Read it: a2a report show Edmond-Dantes-worker-pane",
+        "Edmond Dantès is blocked: decide D-1 Read it: orchestrator report show Edmond-Dantes-worker-pane",
+        "Edmond Dantès is done: nothing Read it: orchestrator report show Edmond-Dantes-worker-pane",
     ]
 
 
@@ -59,10 +59,10 @@ def test_list_keeps_one_current_row_per_peer_and_show_separates_verified_claims(
     file_report(monkeypatch, tmp_path, capsys)
     file_report(monkeypatch, tmp_path, capsys, progress="rebuilt")
     file_report(monkeypatch, tmp_path, capsys, sender="Angra")
-    run_a2a(monkeypatch, tmp_path, "list", command="report")
+    run_orchestrator(monkeypatch, tmp_path, "list", command="report")
     rows = capsys.readouterr().out.strip().splitlines()
     assert sorted(row.split("\t")[1] for row in rows) == ["Angra", "Edmond Dantès"]
-    run_a2a(
+    run_orchestrator(
         monkeypatch, tmp_path, "show", "Edmond-Dantes-worker-pane", command="report"
     )
     rendered = capsys.readouterr().out

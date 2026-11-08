@@ -1,7 +1,7 @@
 import json
 
-from a2a_cli.watch.herdr_events import decoded_messages
-from a2a_cli.watch.workspace_watch import event_line, stale_report_lines
+from orchestrator_cli.watch.herdr_events import decoded_messages
+from orchestrator_cli.watch.workspace_watch import event_line, stale_report_lines
 
 
 def status_event(status, workspace="wW", pane="wW:p1"):

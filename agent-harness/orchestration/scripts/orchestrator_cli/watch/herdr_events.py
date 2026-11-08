@@ -37,7 +37,7 @@ def subscribed_socket(subscriptions: list[dict]) -> socket.socket:
     connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     connection.connect(socket_path)
     request = {
-        "id": "a2a-watch",
+        "id": "orchestrator-watch",
         "method": "events.subscribe",
         "params": {"subscriptions": subscriptions},
     }

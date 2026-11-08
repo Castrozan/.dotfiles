@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from ..document_fields import InvalidPeerDocument
-from ..peer_transport import PeerRequestFailure
+from ..peer_messenger import PeerMessageFailure
 from ..record_store import state_directory
 from ..user_model.directives import default_user_model_path
 from .cards import DECIDERS, ESCALATION_REASONS
@@ -115,7 +115,9 @@ def add_parser(subcommands) -> None:
         "decision",
         help="decision cards a peer files for its orchestrator instead of asking the human",
     )
-    decision.add_argument("--dir", default=str(state_directory("a2a-decisions")))
+    decision.add_argument(
+        "--dir", default=str(state_directory("orchestrator-decisions"))
+    )
     commands = decision.add_subparsers(dest="decision_command", required=True)
     add_file_parser(commands)
     add_list_parser(commands)
@@ -130,6 +132,6 @@ def add_parser(subcommands) -> None:
 def command_decision(arguments: argparse.Namespace) -> int:
     try:
         return arguments.handler(arguments, Path(arguments.dir))
-    except (InvalidPeerDocument, PeerRequestFailure) as failure:
-        print(f"a2a decision: {failure}", file=sys.stderr)
+    except (InvalidPeerDocument, PeerMessageFailure) as failure:
+        print(f"orchestrator decision: {failure}", file=sys.stderr)
         return 1

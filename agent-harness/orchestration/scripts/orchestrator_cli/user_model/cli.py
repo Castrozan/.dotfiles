@@ -80,5 +80,5 @@ def command_user(arguments: argparse.Namespace) -> int:
     try:
         return arguments.handler(arguments, Path(arguments.file))
     except InvalidPeerDocument as failure:
-        print(f"a2a user: {failure}", file=sys.stderr)
+        print(f"orchestrator user: {failure}", file=sys.stderr)
         return 1

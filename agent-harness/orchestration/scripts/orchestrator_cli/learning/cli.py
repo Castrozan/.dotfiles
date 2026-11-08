@@ -7,12 +7,14 @@ from pathlib import Path
 
 from ..document_fields import InvalidPeerDocument, current_timestamp
 from ..record_store import all_records, load_record, save_record, state_directory
+from ..user_model.directives import default_user_model_path, read_directives
 from .events import (
     LEARNING_OUTCOMES,
     deviation_candidates,
     learned_card,
     learning_statistics,
     pending_learning_events,
+    require_directive_cites_card,
 )
 from .repository_history import commits_touching_since
 
@@ -22,7 +24,7 @@ def add_parser(subcommands) -> None:
         "learn",
         help="the loop that turns escalations, overrides and deviations into USER.md",
     )
-    learn.add_argument("--dir", default=str(state_directory("a2a-decisions")))
+    learn.add_argument("--dir", default=str(state_directory("orchestrator-decisions")))
     commands = learn.add_subparsers(dest="learn_command", required=True)
 
     pending_command = commands.add_parser(
@@ -46,6 +48,9 @@ def add_parser(subcommands) -> None:
     )
     resolve_command.add_argument(
         "--reason", required=True, help="the preference inferred, or why there is none"
+    )
+    resolve_command.add_argument(
+        "--user-model", default=str(default_user_model_path()), help="USER.md path"
     )
     resolve_command.set_defaults(handler=command_resolve)
 
@@ -92,6 +97,10 @@ def command_resolve(arguments: argparse.Namespace, decision_directory: Path) -> 
         arguments.directive,
         arguments.reason,
     )
+    if arguments.directive:
+        require_directive_cites_card(
+            card["id"], arguments.directive, read_directives(Path(arguments.user_model))
+        )
     save_record(decision_directory, card["id"], card)
     return 0
 
@@ -106,5 +115,5 @@ def command_learn(arguments: argparse.Namespace) -> int:
     try:
         return arguments.handler(arguments, Path(arguments.dir))
     except InvalidPeerDocument as failure:
-        print(f"a2a learn: {failure}", file=sys.stderr)
+        print(f"orchestrator learn: {failure}", file=sys.stderr)
         return 1

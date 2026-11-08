@@ -12,18 +12,9 @@ from .commands import (
     command_notify,
     command_send,
     command_status,
+    command_whoami,
 )
-from .decisions.cli import add_parser as add_decision_parser
-from .decisions.cli import command_decision
 from .fleet.cli import add_parser as add_fleet_parser
-from .learning.cli import add_parser as add_learning_parser
-from .learning.cli import command_learn
-from .reports.cli import add_parser as add_report_parser
-from .reports.cli import command_report
-from .user_model.cli import add_parser as add_user_model_parser
-from .user_model.cli import command_user
-from .watch.cli import add_parser as add_watch_parser
-from .watch.cli import command_watch
 from .peer_identity import with_peer_identities
 from .peer_transport import (
     DEFAULT_ANSWER_TIMEOUT_SECONDS,
@@ -107,12 +98,15 @@ def build_argument_parser() -> argparse.ArgumentParser:
     acknowledge_parser.add_argument("agent", help=PEER_TARGET_HELP)
     acknowledge_parser.add_argument("notification_id")
     acknowledge_parser.set_defaults(handler=command_acknowledge)
+
+    whoami_parser = subcommands.add_parser(
+        "whoami", help="print the sender name a2a signs this session's messages with"
+    )
+    whoami_parser.add_argument(
+        "--sender", help="explicit Servant or session name to validate and print"
+    )
+    whoami_parser.set_defaults(handler=command_whoami)
     add_fleet_parser(subcommands)
-    add_decision_parser(subcommands)
-    add_report_parser(subcommands)
-    add_user_model_parser(subcommands)
-    add_learning_parser(subcommands)
-    add_watch_parser(subcommands)
     return parser
 
 
@@ -120,15 +114,6 @@ def main() -> int:
     arguments = build_argument_parser().parse_args()
     if arguments.command == "fleet":
         return arguments.handler(arguments)
-    orchestration_commands = {
-        "decision": command_decision,
-        "report": command_report,
-        "user": command_user,
-        "learn": command_learn,
-        "watch": command_watch,
-    }
-    if arguments.command in orchestration_commands:
-        return orchestration_commands[arguments.command](arguments)
     try:
         return arguments.handler(
             arguments, with_peer_identities(read_agent_directory(arguments.daemon))

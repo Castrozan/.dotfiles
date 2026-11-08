@@ -14,7 +14,11 @@ from .peer_transport import (
     resolve_peer_endpoint,
     submit_task_to_peer,
 )
-from .sender_identity import signed_input_text
+from .sender_identity import (
+    resolve_sender_name,
+    signed_input_text,
+    validated_sender_name,
+)
 
 
 def peer_directory_row(name: str, agent: dict) -> str:
@@ -55,6 +59,15 @@ def command_send(arguments: argparse.Namespace, agent_directory: dict) -> int:
 def command_notify(arguments: argparse.Namespace, agent_directory: dict) -> int:
     endpoint = resolve_peer_endpoint(agent_directory, arguments.agent)
     print(json.dumps(notify_peer(endpoint, arguments.sender, arguments.text), indent=2))
+    return 0
+
+
+def command_whoami(arguments: argparse.Namespace, agent_directory: dict) -> int:
+    print(
+        validated_sender_name(arguments.sender)
+        if arguments.sender
+        else resolve_sender_name(agent_directory)
+    )
     return 0
 
 

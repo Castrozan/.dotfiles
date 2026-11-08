@@ -2,7 +2,7 @@ import json
 import subprocess
 
 import pytest
-from orchestration_test_support import file_card, run_a2a
+from orchestration_test_support import file_card, run_orchestrator
 
 USER_MODEL_TEXT = (
     "- U-001 · active · 2026-11-08 · scope: patches · "
@@ -48,12 +48,12 @@ def commit_file(repository, name, content):
 
 
 def learn(monkeypatch, cards, *arguments):
-    return run_a2a(monkeypatch, cards, *arguments, command="learn")
+    return run_orchestrator(monkeypatch, cards, *arguments, command="learn")
 
 
 def decided_by_orchestrator(monkeypatch, cards, capsys, user_model):
     _, identifier = file_card(monkeypatch, cards, capsys)
-    run_a2a(
+    run_orchestrator(
         monkeypatch,
         cards,
         "answer",
@@ -89,7 +89,7 @@ def test_a_later_unlinked_change_to_decided_work_becomes_a_deviation_to_learn(
     decided_commit = commit_file(repository, "overlay.nix", "patch removed\n")
     identifier = decided_by_orchestrator(monkeypatch, cards, capsys, user_model)
     link = ["link", identifier, "--repository", str(repository), decided_commit]
-    assert run_a2a(monkeypatch, cards, *link) == 0
+    assert run_orchestrator(monkeypatch, cards, *link) == 0
     commit_file(repository, "unrelated.nix", "untouched\n")
     learn(monkeypatch, cards, "scan")
     assert pending(monkeypatch, cards, capsys) == []
@@ -105,7 +105,7 @@ def test_overrides_and_human_answers_to_escalations_stay_pending_until_resolved(
     monkeypatch, tmp_path, capsys, notifications, user_model
 ):
     overridden = decided_by_orchestrator(monkeypatch, tmp_path, capsys, user_model)
-    run_a2a(
+    run_orchestrator(
         monkeypatch,
         tmp_path,
         "override",
@@ -118,7 +118,7 @@ def test_overrides_and_human_answers_to_escalations_stay_pending_until_resolved(
         "Medea",
     )
     _, escalated = file_card(monkeypatch, tmp_path, capsys)
-    run_a2a(
+    run_orchestrator(
         monkeypatch,
         tmp_path,
         "escalate",
@@ -128,7 +128,7 @@ def test_overrides_and_human_answers_to_escalations_stay_pending_until_resolved(
         "--missing",
         "nothing on patches that matter",
     )
-    run_a2a(
+    run_orchestrator(
         monkeypatch,
         tmp_path,
         "answer",
@@ -160,21 +160,25 @@ def test_overrides_and_human_answers_to_escalations_stay_pending_until_resolved(
         )
         == 1
     )
-    assert (
-        learn(
-            monkeypatch,
-            tmp_path,
-            "resolve",
-            overridden,
-            "--outcome",
-            "superseded",
-            "--directive",
-            "U-002",
-            "--reason",
-            "Lucas keeps patches that change behavior",
-        )
-        == 0
+    resolve_superseded = [
+        "resolve",
+        overridden,
+        "--outcome",
+        "superseded",
+        "--directive",
+        "U-002",
+        "--reason",
+        "Lucas keeps patches that change behavior",
+        "--user-model",
+        str(user_model),
+    ]
+    assert learn(monkeypatch, tmp_path, *resolve_superseded) == 1
+    user_model.write_text(
+        USER_MODEL_TEXT
+        + "- U-002 · active · 2026-11-08 · scope: patches · "
+        + f"Never drop a patch that changes behavior · source: {overridden}\n"
     )
+    assert learn(monkeypatch, tmp_path, *resolve_superseded) == 0
     assert pending(monkeypatch, tmp_path, capsys) == [[escalated, "escalation"]]
     capsys.readouterr()
     learn(monkeypatch, tmp_path, "stats")

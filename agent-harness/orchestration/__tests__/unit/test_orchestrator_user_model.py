@@ -1,5 +1,5 @@
 import pytest
-from orchestration_test_support import run_a2a
+from orchestration_test_support import run_orchestrator
 
 HEADER = "# USER\n\nFree prose the parser ignores.\n\n"
 EXISTING = (
@@ -16,7 +16,7 @@ def user_model(tmp_path):
 
 
 def run_user(monkeypatch, user_model, *arguments):
-    return run_a2a(
+    return run_orchestrator(
         monkeypatch, user_model, *arguments, command="user", location_flag="--file"
     )
 

@@ -3,19 +3,10 @@ import json
 import sys
 
 import pytest
-from a2a_cli import __main__ as a2a_main
-from a2a_cli import peer_delivery
+from orchestrator_cli import __main__ as orchestrator_main
+from orchestrator_cli import peer_messenger
 
-AGENT_DIRECTORY = {
-    "orchestrator-session": {
-        "paneId": "orchestrator-pane",
-        "endpoint": "http://daemon/agents/orchestrator-session",
-    },
-    "worker-session": {
-        "paneId": "worker-pane",
-        "endpoint": "http://daemon/agents/worker-session",
-    },
-}
+PANE_SENDER_NAME = "worker-session"
 
 
 def valid_card_document(**overrides):
@@ -52,19 +43,19 @@ def valid_card_document(**overrides):
 def notifications(monkeypatch):
     sent = []
 
-    def record(endpoint, sender, content):
-        sent.append((endpoint, sender, content))
-        return {"id": "notification"}
+    def fake_a2a(command, *arguments):
+        if command == "whoami":
+            return arguments[1] if arguments else PANE_SENDER_NAME
+        target, text, _, sender = arguments
+        sent.append((target, sender, text))
+        return ""
 
-    monkeypatch.setattr(
-        peer_delivery, "read_agent_directory", lambda daemon: AGENT_DIRECTORY
-    )
-    monkeypatch.setattr(peer_delivery, "notify_peer", record)
+    monkeypatch.setattr(peer_messenger, "run_a2a", fake_a2a)
     monkeypatch.setenv("HERDR_PANE_ID", "worker-pane")
     return sent
 
 
-def run_a2a(
+def run_orchestrator(
     monkeypatch,
     state_location,
     *arguments,
@@ -73,17 +64,19 @@ def run_a2a(
     location_flag="--dir",
 ):
     monkeypatch.setattr(
-        sys, "argv", ["a2a", command, location_flag, str(state_location), *arguments]
+        sys,
+        "argv",
+        ["orchestrator", command, location_flag, str(state_location), *arguments],
     )
     monkeypatch.setattr(sys, "stdin", io.StringIO(stdin_text))
     try:
-        return a2a_main.main()
+        return orchestrator_main.main()
     except SystemExit as exit_request:
         return exit_request.code
 
 
 def file_card(monkeypatch, decision_directory, capsys, document=None):
-    exit_code = run_a2a(
+    exit_code = run_orchestrator(
         monkeypatch,
         decision_directory,
         "file",

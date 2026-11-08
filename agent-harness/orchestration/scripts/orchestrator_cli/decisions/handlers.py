@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from ..document_fields import InvalidPeerDocument
-from ..peer_delivery import notify_after_save, sender_and_directory
+from ..peer_messenger import notify_after_save, sender_name
 from ..record_store import all_records, load_record, save_record
 from ..user_model.directives import active_identifiers
 from .cards import (
@@ -44,7 +44,7 @@ def save_and_notify(
 ) -> int:
     saved_path = save_record(decision_directory, card["id"], card)
     return notify_after_save(
-        lambda: sender_and_directory(arguments),
+        lambda: sender_name(arguments.sender),
         target,
         notification_text(card),
         saved_path,
@@ -57,14 +57,14 @@ def requester_target(card: dict) -> str:
 
 def command_file(arguments: argparse.Namespace, decision_directory: Path) -> int:
     document = read_card_document(arguments.card)
-    requester, agent_directory = sender_and_directory(arguments)
+    requester = sender_name(arguments.sender)
     card = new_decision_card(
         document, requester, os.environ.get("HERDR_PANE_ID"), arguments.to
     )
     saved_path = save_record(decision_directory, card["id"], card)
     print(card["id"])
     return notify_after_save(
-        lambda: (requester, agent_directory),
+        lambda: requester,
         arguments.to,
         notification_text(card),
         saved_path,

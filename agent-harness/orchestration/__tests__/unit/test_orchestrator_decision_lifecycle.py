@@ -1,8 +1,7 @@
 import json
 
-from a2a_cli import peer_delivery
-from a2a_cli.peer_transport import PeerRequestFailure
-from orchestration_test_support import file_card, run_a2a
+from orchestrator_cli import peer_messenger
+from orchestration_test_support import file_card, run_orchestrator
 
 
 def test_answering_records_the_decider_and_notifies_the_requesting_pane_once(
@@ -21,15 +20,15 @@ def test_answering_records_the_decider_and_notifies_the_requesting_pane_once(
         "--sender",
         "Medea",
     ]
-    assert run_a2a(monkeypatch, tmp_path, *answer) == 0
+    assert run_orchestrator(monkeypatch, tmp_path, *answer) == 0
     card = json.loads((tmp_path / f"{identifier}.json").read_text())
     assert card["state"] == "answered"
     assert card["answer"]["decided_by"] == "human"
-    assert notifications[-1][0] == "http://daemon/agents/worker-session"
+    assert notifications[-1][0] == "worker-pane"
     assert notifications[-1][2].startswith(
         f"decision {identifier} answered by human: drop."
     )
-    assert run_a2a(monkeypatch, tmp_path, *answer) == 1
+    assert run_orchestrator(monkeypatch, tmp_path, *answer) == 1
     assert len(notifications) == 2
 
 
@@ -38,7 +37,7 @@ def test_withdrawal_closes_the_card_and_tells_the_orchestrator(
 ):
     _, identifier = file_card(monkeypatch, tmp_path, capsys)
     assert (
-        run_a2a(
+        run_orchestrator(
             monkeypatch,
             tmp_path,
             "withdraw",
@@ -54,7 +53,7 @@ def test_withdrawal_closes_the_card_and_tells_the_orchestrator(
         json.loads((tmp_path / f"{identifier}.json").read_text())["state"]
         == "withdrawn"
     )
-    assert notifications[-1][0] == "http://daemon/agents/orchestrator-session"
+    assert notifications[-1][0] == "orchestrator-session"
 
 
 def test_list_filters_by_state_and_show_renders_the_whole_card(
@@ -62,7 +61,7 @@ def test_list_filters_by_state_and_show_renders_the_whole_card(
 ):
     _, open_identifier = file_card(monkeypatch, tmp_path, capsys)
     _, answered_identifier = file_card(monkeypatch, tmp_path, capsys)
-    run_a2a(
+    run_orchestrator(
         monkeypatch,
         tmp_path,
         "answer",
@@ -77,10 +76,10 @@ def test_list_filters_by_state_and_show_renders_the_whole_card(
         "Medea",
     )
     capsys.readouterr()
-    run_a2a(monkeypatch, tmp_path, "list")
+    run_orchestrator(monkeypatch, tmp_path, "list")
     rows = capsys.readouterr().out.strip().splitlines()
     assert [row.split("\t")[0] for row in rows] == [open_identifier]
-    run_a2a(monkeypatch, tmp_path, "show", answered_identifier)
+    run_orchestrator(monkeypatch, tmp_path, "show", answered_identifier)
     rendered = capsys.readouterr().out
     paragraph, *labels = rendered.strip().split("\n\n")[1:]
     assert "It recommends drop because" in paragraph
@@ -98,10 +97,10 @@ def test_an_answer_is_recorded_even_when_the_daemon_cannot_deliver_it(
 ):
     _, identifier = file_card(monkeypatch, tmp_path, capsys)
 
-    def unreachable(daemon):
-        raise PeerRequestFailure("http://127.0.0.1:7000/agents is unreachable")
+    def unreachable(command, *arguments):
+        raise peer_messenger.PeerMessageFailure("the a2a daemon is unreachable")
 
-    monkeypatch.setattr(peer_delivery, "read_agent_directory", unreachable)
+    monkeypatch.setattr(peer_messenger, "run_a2a", unreachable)
     answer = [
         "answer",
         identifier,
@@ -112,7 +111,7 @@ def test_an_answer_is_recorded_even_when_the_daemon_cannot_deliver_it(
         "--by",
         "human",
     ]
-    assert run_a2a(monkeypatch, tmp_path, *answer) == 1
+    assert run_orchestrator(monkeypatch, tmp_path, *answer) == 1
     assert (
         json.loads((tmp_path / f"{identifier}.json").read_text())["state"] == "answered"
     )
