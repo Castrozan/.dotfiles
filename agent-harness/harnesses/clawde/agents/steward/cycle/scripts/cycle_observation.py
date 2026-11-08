@@ -17,7 +17,7 @@ from cycle_records import (
 )
 from cycle_repository import Repository
 
-TERMINAL_CONTINUOUS_INTEGRATION_STATES = ("passing", "failing")
+TERMINAL_CONTINUOUS_INTEGRATION_STATES = ("passing",)
 LIVE_SYSTEM = Path("/run/current-system")
 
 
