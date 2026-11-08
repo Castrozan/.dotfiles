@@ -110,6 +110,20 @@ def card_results(
     )
 
 
+def every_card_settled(results: list[dict], uncovered: list[dict]) -> bool:
+    return not uncovered and all(
+        result["status"] in SETTLED_STATUSES for result in results
+    )
+
+
+def merged_or_failure(request: ApplyRequest) -> str:
+    try:
+        request.forge.merge(request.pull_request_number)
+    except ForgeUnavailable as error:
+        return f"merge-failed: {error}"
+    return "merged"
+
+
 def merge_when_settled(
     request: ApplyRequest,
     pull_request: dict,
@@ -118,13 +132,9 @@ def merge_when_settled(
 ) -> str:
     if str(pull_request.get("state", "")).upper() == "MERGED":
         return "already-merged"
-    if uncovered or any(result["status"] not in SETTLED_STATUSES for result in results):
+    if not every_card_settled(results, uncovered):
         return "not-merged"
-    try:
-        request.forge.merge(request.pull_request_number)
-    except ForgeUnavailable as error:
-        return f"merge-failed: {error}"
-    return "merged"
+    return merged_or_failure(request)
 
 
 def apply_pull_request(request: ApplyRequest) -> dict:
