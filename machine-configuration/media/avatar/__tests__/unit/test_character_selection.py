@@ -2,7 +2,6 @@ import argparse
 import json
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -12,9 +11,9 @@ import listener_session
 import pytest
 import start
 import conversation_effects
-import talk_cli
 import utterances
 from conversation_state import ConversationPhase
+from talk_runner import run_talk
 
 AVATAR_DIRECTORY = Path(__file__).resolve().parents[2]
 requires_node = pytest.mark.skipif(
@@ -75,12 +74,6 @@ def test_renderer_announces_its_character_on_every_connection():
         {"type": "identify", "role": "renderer"},
         {"type": "characterChanged", "name": "vita"},
     ]
-
-
-def run_talk(monkeypatch, directory, *arguments):
-    monkeypatch.setattr(sys, "argv", ["avatar-talk", *arguments])
-    monkeypatch.setattr(talk_cli.listener_runtime, "runtime_directory", lambda: directory)
-    talk_cli.main()
 
 
 def fake_cold_open(tmp_path, monkeypatch):

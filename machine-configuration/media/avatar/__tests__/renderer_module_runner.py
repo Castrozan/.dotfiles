@@ -2,7 +2,7 @@ import json
 import subprocess
 from pathlib import Path
 
-RENDERER_DIRECTORY = Path(__file__).resolve().parents[2] / "renderer"
+RENDERER_DIRECTORY = Path(__file__).resolve().parents[1] / "renderer"
 
 
 def run_renderer_module(module, body):

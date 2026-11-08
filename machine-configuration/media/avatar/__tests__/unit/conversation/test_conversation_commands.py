@@ -1,6 +1,5 @@
 import argparse
 import json
-import sys
 import threading
 from unittest.mock import Mock
 
@@ -11,22 +10,14 @@ import listener
 import pytest
 import start
 import conversation_effects
-import talk_cli
 import transcript_log
 import utterances
 from conversation_state import ConversationPhase
+from talk_runner import run_talk
 
 
 def always_open():
     return True
-
-
-def run_talk(monkeypatch, directory, *arguments):
-    monkeypatch.setattr(sys, "argv", ["avatar-talk", *arguments])
-    monkeypatch.setattr(
-        talk_cli.listener_runtime, "runtime_directory", lambda: directory
-    )
-    talk_cli.main()
 
 
 def test_silence_returns_nothing_and_keeps_the_place(tmp_path):

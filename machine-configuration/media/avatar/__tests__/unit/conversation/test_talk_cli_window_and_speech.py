@@ -1,21 +1,14 @@
 import argparse
-import sys
 from types import SimpleNamespace
 from unittest.mock import Mock
 
 import conversation_state
 import pytest
 import conversation_effects
-import talk_cli
 import utterances
 import voice_turns
 from conversation_state import ConversationPhase
-
-
-def run_talk(monkeypatch, directory, *arguments):
-    monkeypatch.setattr(sys, "argv", ["avatar-talk", *arguments])
-    monkeypatch.setattr(talk_cli.listener_runtime, "runtime_directory", lambda: directory)
-    talk_cli.main()
+from talk_runner import run_talk
 
 
 def test_the_window_appears_only_when_the_agent_shows_it(tmp_path, monkeypatch):
