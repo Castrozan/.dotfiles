@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         sample: [a, b]
-        variant: [determinate, determinate-prefetch]
+        variant: [baseline, determinate]
     steps:
       - uses: actions/checkout@v4
 
