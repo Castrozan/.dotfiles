@@ -22,6 +22,7 @@ def boundaries(heard="hey Voyager, check the build", sessions=(VOYAGER,), **chan
         prompt_now=Mock(return_value=True),
         notify_at_idle=Mock(),
         report=Mock(),
+        now=Mock(return_value=0.0),
     )
     fakes.update(changes)
     return wake_listener.Boundaries(**fakes)
@@ -86,7 +87,44 @@ def test_listening_stops_once_the_fleet_is_gone():
     fakes = boundaries()
     listener = armed_listener(fakes)
     fakes.sessions.return_value = []
+    fakes.now.return_value = wake_listener.FLEET_REFRESH_SECONDS
     assert not listener.listen_while_armed(
         iter(frames(0, wake_listener.FRAMES_PER_ARM_CHECK))
     )
     fakes.transcribe.assert_not_called()
+
+
+def test_the_fleet_is_read_once_a_minute_while_quiet():
+    fakes = boundaries()
+    listener = armed_listener(fakes)
+    for second in range(0, wake_listener.FLEET_REFRESH_SECONDS, 5):
+        fakes.now.return_value = float(second)
+        listener.armed()
+    assert fakes.sessions.call_count == 1, "herdr pane list is too costly to poll often"
+
+
+def test_names_are_reread_before_each_heard_utterance_is_matched():
+    fakes = boundaries()
+    listener = armed_listener(fakes)
+    fakes.sessions.return_value = [LiveSession("Medea", "wW:pQQ")]
+    fakes.transcribe.return_value = "hey Medea, status"
+    listener.hear(b"segment")
+    assert fakes.prompt_now.call_args.args[0] == "wW:pQQ", (
+        "a session launched since the last poll is reachable at once"
+    )
+
+
+def test_a_failed_transcription_is_dropped_and_listening_continues():
+    fakes = boundaries(transcribe=Mock(side_effect=ConnectionError("Hex refused")))
+    armed_listener(fakes).hear(b"segment")
+    assert "Hex refused" in fakes.report.call_args.args[0]
+    fakes.prompt_now.assert_not_called()
+
+
+def test_the_prompt_never_claims_who_spoke():
+    fakes = boundaries()
+    armed_listener(fakes).hear(b"segment")
+    text = fakes.prompt_now.call_args.args[1]
+    assert "not verified" in text and "Lucas" not in text, (
+        "anyone in the room can speak a name, so the agent must not assume its owner"
+    )

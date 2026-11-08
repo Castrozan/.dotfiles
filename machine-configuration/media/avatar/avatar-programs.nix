@@ -105,6 +105,12 @@ let
     export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/conversation}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"
   '';
+  agentHarness = ../../../agent-harness;
+  a2aLibrary = lib.concatStringsSep ":" [
+    "${agentHarness}/agent-to-agent-communication/client/scripts"
+    "${agentHarness}/servants"
+    "${agentHarness}/hooks/runtime/common"
+  ];
   wake = pkgs.writeShellScriptBin "avatar-wake" ''
     export PATH=${
       lib.makeBinPath [
@@ -115,7 +121,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts/listening}:${./scripts/wake}
+    export PYTHONPATH=${./scripts/listening}:${./scripts/wake}:${a2aLibrary}
     exec ${pkgs.python312}/bin/python3 ${./scripts/wake/wake_listener.py} "$@"
   '';
 in

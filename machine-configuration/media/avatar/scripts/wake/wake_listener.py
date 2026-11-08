@@ -7,14 +7,15 @@ import time
 import speech_segmenter
 import transcriber
 import user_units
+from a2a_cli import peer_identity
 from wake_phrase import LiveSession, addressed_session
 
 MICROPHONE = "@DEFAULT_SOURCE@"
 CONVERSATION_LISTENER = "avatar-listener.service"
 ARM_CHECK_SECONDS = 5
+FLEET_REFRESH_SECONDS = 60
 FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
 FRAMES_PER_ARM_CHECK = int(ARM_CHECK_SECONDS / speech_segmenter.FRAME_SECONDS)
-NO_SERVANT = "-"
 VOICE_SENDER = "voice"
 COMMAND_TIMEOUT_SECONDS = 120
 
@@ -33,14 +34,11 @@ def capture_command():
 
 
 def live_sessions():
-    listing = subprocess.run(
-        ["a2a", "list"], capture_output=True, text=True, timeout=COMMAND_TIMEOUT_SECONDS
-    )
     sessions = []
-    for line in listing.stdout.splitlines():
-        columns = line.split("\t")
-        if len(columns) >= 4 and columns[1] != NO_SERVANT:
-            sessions.append(LiveSession(servant=columns[1], pane=columns[3]))
+    for pane in peer_identity.read_live_panes():
+        servant = peer_identity.identity_of_pane(pane).get("servant")
+        if servant:
+            sessions.append(LiveSession(servant=servant, pane=pane["pane_id"]))
     return sessions
 
 
@@ -56,11 +54,9 @@ def conversation_opened():
 
 
 def spoken_prompt(message, conversation_open):
-    prompt = f"[wake] Lucas said by voice: {message}"
+    prompt = f"[wake] Voice from the room, speaker not verified: {message}"
     if conversation_open:
-        return (
-            f"{prompt} An avatar conversation is open; answer him with avatar-talk ask."
-        )
+        return f"{prompt} An avatar conversation is open; answer with avatar-talk ask."
     return prompt
 
 
@@ -94,6 +90,7 @@ class Boundaries:
     prompt_now: object = prompt_now
     notify_at_idle: object = notify_at_idle
     report: object = lambda line: print(line, file=sys.stderr, flush=True)
+    now: object = time.monotonic
 
 
 class WakeListener:
@@ -101,21 +98,40 @@ class WakeListener:
         self.boundaries = boundaries
         self.dry_run = dry_run
         self.sessions = []
+        self.sessions_read_at = None
+
+    def refresh_sessions(self):
+        self.sessions = self.boundaries.sessions()
+        self.sessions_read_at = self.boundaries.now()
 
     def armed(self):
-        self.sessions = self.boundaries.sessions()
+        stale = (
+            self.sessions_read_at is None
+            or self.boundaries.now() - self.sessions_read_at >= FLEET_REFRESH_SECONDS
+        )
+        if stale:
+            self.refresh_sessions()
         return bool(self.sessions) and not self.boundaries.conversation_listening()
 
     def hear(self, segment):
-        match = addressed_session(self.boundaries.transcribe(segment), self.sessions)
+        try:
+            self.answer(segment)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            self.boundaries.report(f"Dropped an utterance: {error}")
+
+    def answer(self, segment):
+        heard = self.boundaries.transcribe(segment)
+        if not heard:
+            return
+        self.refresh_sessions()
+        match = addressed_session(heard, self.sessions)
         if match is None:
             return
+        target = f"{match.session.servant} at {match.session.pane}"
         if self.dry_run:
-            self.boundaries.report(
-                f"would wake {match.session.servant} at {match.session.pane}: {match.message}"
-            )
+            self.boundaries.report(f"would wake {target}: {match.message}")
             return
-        self.boundaries.report(f"wake {match.session.servant} at {match.session.pane}")
+        self.boundaries.report(f"wake {target}")
         text = spoken_prompt(match.message, self.boundaries.open_conversation())
         if not self.boundaries.prompt_now(match.session.pane, text):
             self.boundaries.notify_at_idle(match.session.pane, text)
