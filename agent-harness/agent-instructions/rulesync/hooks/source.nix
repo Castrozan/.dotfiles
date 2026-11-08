@@ -56,5 +56,8 @@ in
     sessionStart = [ ((registration "SessionStart" 5) // { matcher = ".*"; }) ];
     beforeSubmitPrompt = [ (registration "UserPromptSubmit" 5) ];
   };
-  opencode.apiVersion = 2;
+  opencode = {
+    apiVersion = 2;
+    hooks.beforeSubmitPrompt = [ (registration "UserPromptSubmit" 5) ];
+  };
 }
