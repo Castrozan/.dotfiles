@@ -23,6 +23,7 @@ in
     "${vicinaeConfigurationDirectory}/${generatedSettingsFileName}".text = builtins.toJSON {
       telemetry.system_info = false;
       global_shortcuts.toggle = vicinaeToggleChord.vicinaeShortcut;
+      providers.applications.entrypoints."com.google.Chrome".alias = "gc";
     };
     ".local/state/vicinae/login-item-registered".text = "";
   };

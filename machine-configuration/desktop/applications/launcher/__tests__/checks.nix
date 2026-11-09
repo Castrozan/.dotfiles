@@ -30,6 +30,10 @@ in
       (vicinaeGeneratedSettings.telemetry.system_info == false)
       "Vicinae system telemetry defaults to on and must be disabled by the generated settings";
 
+  domain-desktop-vicinae-chrome-alias = mkEvalCheck "domain-desktop-vicinae-chrome-alias" (
+    vicinaeGeneratedSettings.providers.applications.entrypoints."com.google.Chrome".alias == "gc"
+  ) "gc falls below Vicinae's match floor for Google Chrome, so the alias must recover it";
+
   domain-desktop-vicinae-karabiner-sends-registered-chord =
     mkEvalCheck "domain-desktop-vicinae-karabiner-sends-registered-chord"
       (
