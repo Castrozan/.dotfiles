@@ -6,11 +6,23 @@ constraints; it does not broaden fallback eligibility.
 
 ### Stealth cdp target chrome global
 
-The attached target is the managed `chrome-devtools` CLI pointed at the dedicated Chrome Global profile
-(`~/.config/chrome-global`) on every host, carrying that browser's own cookies, logins, and extensions. Prefer it when
-the task needs the user's actual everyday accounts or hits a bot-detecting site (Google, banking, anything behind
-Cloudflare or PerimeterX). It is the user's real logged-in session, so treat it as the user's own and never clobber the
-open tab.
+The attached target is the managed `chrome-devtools` CLI pointed at the Chrome Global user-data directory
+(`~/.config/chrome-global`), which can contain multiple account profiles with separate cookies, logins, and extensions.
+Prefer it when the task needs the user's actual everyday accounts or hits a bot-detecting site (Google, banking,
+anything behind Cloudflare or PerimeterX). It is the user's real logged-in session, so treat it as the user's own and
+never clobber the open tab.
+
+### Profile selection
+
+Match the required account to the profile names in `~/.config/chrome-global/Local State`. Use the desktop skill's native
+browser interaction to select that profile's existing window and open a fresh task tab there. On macOS, Chrome's
+AppleScript interface can create the tab in a specific window. If the profile has no window, use its declared launcher,
+`summon-chrome-work-profile` or `summon-chrome-personal-profile`.
+
+Return to DevTools: enumerate pages, identify the tab just created, take its snapshot, and verify the signed-in account
+before editing. `new_page` can create a tab in a different profile even when the desired profile is visible. The consent
+prompt's window does not identify the profile of every accessible tab; verify the account on the task tab itself. Keep
+site interactions on DevTools when the user requires it; native profile selection does not change that choice.
 
 ### Chrome devtools is stealth by consent
 
@@ -33,10 +45,10 @@ timeout cancels this attempt and cleans its worker rather than retrying consent.
 
 The CDP target attaches to a real browser whose selected page on connect is the user's live foreground tab.
 `navigate_page` replaces that tab's content in place instead of opening a new one. Navigating the selected tab therefore
-silently destroys whatever the user had open there. Always open work with `new_page` and `background: true`, which loads
-a fresh tab without stealing the user's focus, or `select_page` onto a tab you already own; reserve `navigate_page` for
-a tab you opened yourself. This is intended chrome-devtools-mcp behavior through the latest release, not a bug a version
-bump fixes, so do not chase a newer pin for it.
+silently destroys whatever the user had open there. Open a fresh task tab with `new_page` and `background: true` or
+through [profile selection](#profile-selection), or `select_page` onto a tab you already own; reserve `navigate_page`
+for a tab you opened yourself. This is intended chrome-devtools-mcp behavior through the latest release, not a bug a
+version bump fixes, so do not chase a newer pin for it.
 
 ### Worker lifetime and performance
 
