@@ -9,8 +9,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts/chrome-dev
 import chrome_consent_dialog as dialog
 
 
-def native_warning_words():
-    path = Path(__file__).resolve().parents[1] / "fixtures/native-consent-warning.tsv"
+def native_warning_words(fixture_name="native-consent-warning.tsv"):
+    path = Path(__file__).resolve().parents[1] / "fixtures" / fixture_name
     with path.open() as stream:
         return list(csv.DictReader(stream, delimiter="\t"))
 
@@ -68,6 +68,47 @@ def test_allow_elsewhere_in_page_is_never_selected():
 
 def test_absent_dialog_is_not_an_allow_target():
     assert dialog.find_allow_button([], (1916, 1076)) is None
+
+
+def test_current_native_warning_identifies_only_allow():
+    words = native_warning_words("native-consent-current-warning.tsv")
+    assert dialog.find_allow_button(words, (1916, 1076)).position == (1118, 278)
+
+
+@pytest.mark.parametrize("word_index", range(-6, 0))
+@pytest.mark.parametrize("coordinate", ["left", "top"])
+def test_current_control_labels_outside_native_footer_are_rejected(
+    word_index, coordinate
+):
+    words = native_warning_words("native-consent-current-warning.tsv")
+    words[word_index][coordinate] = "0"
+    with pytest.raises(RuntimeError):
+        dialog.find_allow_button(words, (1916, 1076))
+
+
+def test_recognition_preserves_grayscale_antialiasing(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+
+    grayscale_image = Mock()
+    image_operations = SimpleNamespace(
+        grayscale=Mock(return_value=grayscale_image),
+        invert=Mock(return_value=grayscale_image),
+    )
+    monkeypatch.setitem(sys.modules, "PIL", SimpleNamespace(ImageOps=image_operations))
+    monkeypatch.setattr(
+        dialog.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(stdout=""),
+    )
+    dialog.recognize_words(
+        {"tesseract": "test-tesseract"},
+        SimpleNamespace(width=4, height=2),
+        tmp_path / "image.png",
+    )
+    grayscale_image.point.assert_not_called()
+    image_operations.invert.assert_called_once_with(grayscale_image)
+    grayscale_image.resize.assert_called_once_with((8, 4))
 
 
 def test_scaled_capture_is_rejected_before_recognition(tmp_path, monkeypatch):

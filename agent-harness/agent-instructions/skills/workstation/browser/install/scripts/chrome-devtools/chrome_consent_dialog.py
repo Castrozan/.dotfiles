@@ -120,7 +120,7 @@ def normalized_word(row, offset):
 def recognize_words(configuration, image, path, offset=(0, 0), segmentation="6"):
     from PIL import ImageOps
 
-    ImageOps.grayscale(image).point(lambda value: 0 if value >= 100 else 255).resize(
+    ImageOps.invert(ImageOps.grayscale(image)).resize(
         (image.width * 2, image.height * 2)
     ).save(path)
     result = subprocess.run(
