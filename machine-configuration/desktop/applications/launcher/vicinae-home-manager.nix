@@ -9,7 +9,6 @@ let
   vicinaeToggleChord = import ./vicinae-toggle-chord.nix;
   vicinaeLaunchdLabel = "com.dotfiles.vicinae";
   vicinaeBinaryPath = "/Applications/Vicinae.app/Contents/MacOS/Vicinae";
-  vicinaeCommandPath = "/Applications/Vicinae.app/Contents/MacOS/vicinae-cli";
   vicinaeConfigurationDirectory = ".config/vicinae";
   applicationScriptDirectory = "${config.home.homeDirectory}/.local/share/vicinae/scripts";
   applicationScriptsLaunchdLabel = "com.dotfiles.vicinae-application-scripts";
@@ -57,8 +56,6 @@ in
         "${./scripts}/generate_vicinae_application_scripts.py"
         "--script-directory"
         applicationScriptDirectory
-        "--vicinae-command"
-        vicinaeCommandPath
       ];
       RunAtLoad = true;
       WatchPaths = [
@@ -75,6 +72,7 @@ in
     config = {
       Label = vicinaeLaunchdLabel;
       ProgramArguments = [ vicinaeBinaryPath ];
+      EnvironmentVariables.VICINAE_DISABLE_HUD = "1";
       KeepAlive = true;
       RunAtLoad = true;
       StandardOutPath = "/tmp/vicinae.log";

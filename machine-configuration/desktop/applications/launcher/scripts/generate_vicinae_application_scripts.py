@@ -21,8 +21,6 @@ GENERATED_SCRIPT_SUFFIX = ".sh"
 GENERATED_ICON_DIRECTORY_NAME = ".generated-application-icons"
 FOCUS_ONLY_BUNDLE_ROOT = "/System/Library/CoreServices/"
 ICON_EDGE_PIXELS = "128"
-WINDOW_CLOSE_DELAY_SECONDS = "0.05"
-CLOSE_LAUNCHER_DEEPLINK = "vicinae://close?clearRootSearch=true&popToRootType=immediate"
 
 
 def opens_new_instance(bundle_path: Path) -> bool:
@@ -34,17 +32,16 @@ def generated_script_name(identifier: str) -> str:
 
 
 def render_application_script(
-    application: InstalledApplication, icon_path: Path | None, vicinae_command_path: str
+    application: InstalledApplication, icon_path: Path | None
 ) -> str:
     open_command = ["/usr/bin/open"]
     if opens_new_instance(application.bundle_path):
         open_command.append("-n")
     open_command.append(str(application.bundle_path))
-    close_command = [vicinae_command_path, "deeplink", CLOSE_LAUNCHER_DEEPLINK]
     metadata_lines = [
         "# @vicinae.schemaVersion 1",
         f"# @vicinae.title {application.display_name}",
-        "# @vicinae.mode inline",
+        "# @vicinae.mode silent",
         "# @vicinae.packageName Application",
     ]
     if icon_path is not None:
@@ -58,7 +55,6 @@ def render_application_script(
             "#!/bin/bash",
             *metadata_lines,
             f"{shlex.join(open_command)} >/dev/null 2>&1 &",
-            f"(sleep {WINDOW_CLOSE_DELAY_SECONDS}; {shlex.join(close_command)}) >/dev/null 2>&1 &",
             "",
         ]
     )
@@ -132,15 +128,12 @@ def remove_stale_generated_files(
 def synchronize_application_scripts(
     script_directory: Path,
     applications: dict[str, InstalledApplication],
-    vicinae_command_path: str,
 ) -> None:
     icon_directory = script_directory / GENERATED_ICON_DIRECTORY_NAME
     icon_directory.mkdir(parents=True, exist_ok=True)
     for application in applications.values():
         icon_path = exported_icon_path(application, icon_directory)
-        script_content = render_application_script(
-            application, icon_path, vicinae_command_path
-        )
+        script_content = render_application_script(application, icon_path)
         script_path = script_directory / generated_script_name(application.identifier)
         write_executable_script_if_changed(script_path, script_content)
     remove_stale_generated_files(script_directory, icon_directory, applications)
@@ -149,7 +142,6 @@ def synchronize_application_scripts(
 def main() -> None:
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument("--script-directory", type=Path, required=True)
-    argument_parser.add_argument("--vicinae-command", required=True)
     arguments = argument_parser.parse_args()
     bundle_paths = discover_application_bundle_paths(
         application_search_roots(Path.home())
@@ -157,7 +149,6 @@ def main() -> None:
     synchronize_application_scripts(
         arguments.script_directory,
         installed_applications_by_identifier(bundle_paths),
-        arguments.vicinae_command,
     )
 
 

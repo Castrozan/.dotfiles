@@ -15,8 +15,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 import generate_vicinae_application_scripts as generator
 import vicinae_installed_applications as discovery
 
-VICINAE_COMMAND = "/Applications/Vicinae.app/Contents/MacOS/vicinae-cli"
-
 
 def create_application_bundle(bundle_path: Path, information: dict) -> Path:
     contents = bundle_path / "Contents"
@@ -55,7 +53,7 @@ def test_every_bundle_path_reaches_open_as_one_argument(bundle_name):
     bundle_path = Path("/Applications") / f"{bundle_name}.app"
 
     script = generator.render_application_script(
-        installed_application(bundle_path), None, VICINAE_COMMAND
+        installed_application(bundle_path), None
     )
 
     assert open_command_tokens(script) == ["/usr/bin/open", "-n", str(bundle_path)]
@@ -70,23 +68,24 @@ def test_every_bundle_path_reaches_open_as_one_argument(bundle_name):
 )
 def test_core_services_applications_are_only_focused(bundle_path):
     script = generator.render_application_script(
-        installed_application(Path(bundle_path)), None, VICINAE_COMMAND
+        installed_application(Path(bundle_path)), None
     )
 
     assert open_command_tokens(script) == ["/usr/bin/open", bundle_path]
 
 
-def test_script_exits_before_the_launcher_closes_so_vicinae_does_not_reopen_it():
+def test_script_exits_at_once_so_the_launcher_closes_without_waiting_for_the_application():
     script = generator.render_application_script(
-        installed_application(Path("/Applications/Example.app")), None, VICINAE_COMMAND
+        installed_application(Path("/Applications/Example.app")), None
     )
 
     command_lines = [
-        line for line in script.splitlines() if line and not line.startswith("#")
+        line for line in script.split("\n") if line and not line.startswith("#")
     ]
 
-    assert all(line.endswith("&") for line in command_lines)
-    assert any("sleep 0.05" in line and "deeplink" in line for line in command_lines)
+    assert len(command_lines) == 1
+    assert command_lines[0].endswith(">/dev/null 2>&1 &")
+    assert "# @vicinae.mode silent" in script
 
 
 def test_earlier_search_root_wins_for_a_duplicate_bundle_identifier(tmp_path):
@@ -167,7 +166,7 @@ def test_synchronization_replaces_stale_output_and_keeps_user_scripts(tmp_path):
     )
 
     generator.synchronize_application_scripts(
-        script_directory, {application.identifier: application}, VICINAE_COMMAND
+        script_directory, {application.identifier: application}
     )
 
     generated_script = script_directory / generator.generated_script_name(

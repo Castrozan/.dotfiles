@@ -40,6 +40,11 @@ in
       (vicinaeGeneratedSettings.providers.applications.enabled == false)
       "Native application rows only focus running apps and would duplicate the generated new-instance rows";
 
+  domain-desktop-vicinae-application-launch-shows-no-badge =
+    mkEvalCheck "domain-desktop-vicinae-application-launch-shows-no-badge"
+      (vicinaeLaunchConfiguration.EnvironmentVariables.VICINAE_DISABLE_HUD == "1")
+      "Silent scripts flash a Script executed badge on every application launch unless the badge is disabled";
+
   domain-desktop-vicinae-application-scripts-follow-installed-applications =
     mkEvalCheck "domain-desktop-vicinae-application-scripts-follow-installed-applications"
       (
