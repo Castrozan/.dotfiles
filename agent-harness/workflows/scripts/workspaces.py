@@ -1,6 +1,8 @@
 import subprocess
 from pathlib import Path
 
+GIT_TIMEOUT_SECONDS = 30
+
 
 def resolve_repository_root(requested_root: str) -> Path:
     if requested_root:
@@ -13,6 +15,7 @@ def resolve_repository_root(requested_root: str) -> Path:
         capture_output=True,
         text=True,
         check=False,
+        timeout=GIT_TIMEOUT_SECONDS,
     )
     if checkout_toplevel.returncode != 0:
         raise SystemExit(
@@ -29,6 +32,7 @@ def is_inside_git_checkout(directory: Path) -> bool:
             capture_output=True,
             text=True,
             check=False,
+            timeout=GIT_TIMEOUT_SECONDS,
         ).returncode
         == 0
     )

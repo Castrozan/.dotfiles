@@ -5,14 +5,11 @@ from pathlib import Path
 
 import pytest
 
-SCRIPTS_DIRECTORY = (
-    Path(__file__).resolve().parents[2] / "workflow/research-pulse/scripts"
-)
-sys.path.insert(0, str(SCRIPTS_DIRECTORY))
-
 import research_pulse_finalize
 import research_pulse_pool
 import research_pulse_sources
+
+SCRIPTS_DIRECTORY = Path(research_pulse_sources.__file__).resolve().parent
 
 
 def run_script(name, *arguments, stdin=""):
@@ -22,6 +19,7 @@ def run_script(name, *arguments, stdin=""):
         capture_output=True,
         text=True,
         check=True,
+        timeout=60,
     )
     return json.loads(completed.stdout)
 
@@ -32,7 +30,7 @@ def test_sources_emit_one_prompt_per_source_with_topic_and_key():
     )
     keys = ["github", "arxiv", "hackernews", "huggingface", "reddit", "lobsters", "x"]
     assert len(emitted["sources"]) == len(keys)
-    for key, prompt in zip(keys, emitted["sources"]):
+    for key, prompt in zip(keys, emitted["sources"], strict=True):
         assert '`"tiny models"`' in prompt
         assert prompt.endswith(f'exactly "{key}".')
     assert '`"a, b"`' in emitted["sources"][-1]

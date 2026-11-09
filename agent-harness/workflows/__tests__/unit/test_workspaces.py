@@ -11,7 +11,7 @@ from workspaces import (
 
 @pytest.fixture
 def checkout(tmp_path):
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True, timeout=30)
     (tmp_path / "nested").mkdir()
     return tmp_path
 

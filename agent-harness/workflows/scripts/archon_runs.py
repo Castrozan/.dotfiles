@@ -4,19 +4,12 @@ from pathlib import Path
 
 WAIT_COMMAND_NAME = "dotfiles-workflow-wait"
 MAXIMUM_WAIT_SECONDS = 540
+ARCHON_REQUEST_TIMEOUT_SECONDS = 120
+WAIT_GRACE_SECONDS = 60
 TERMINAL_STATUSES = frozenset({"completed", "failed", "cancelled"})
 
 
-def run_archon_json(
-    archon_arguments: list[str], working_directory: Path | None = None
-) -> dict:
-    completed = subprocess.run(
-        archon_arguments,
-        cwd=working_directory,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+def parsed_reply(completed: subprocess.CompletedProcess) -> dict:
     try:
         reply = json.loads(completed.stdout)
     except json.JSONDecodeError:
@@ -24,27 +17,50 @@ def run_archon_json(
             completed.stderr.strip()
             or completed.stdout.strip()
             or "archon returned no output"
-        )
+        ) from None
     if not reply.get("ok", True):
         raise SystemExit(reply.get("error", "archon refused the request"))
     return reply
 
 
+def run_archon_json(
+    archon_arguments: list[str], working_directory: Path | None = None
+) -> dict:
+    try:
+        completed = subprocess.run(
+            archon_arguments,
+            cwd=working_directory,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=ARCHON_REQUEST_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        raise SystemExit(
+            f"archon gave no answer within {ARCHON_REQUEST_TIMEOUT_SECONDS} seconds"
+        ) from None
+    return parsed_reply(completed)
+
+
 def wait_for_run(run_identifier: str) -> None:
-    subprocess.run(
-        [
-            "archon",
-            "workflow",
-            "wait",
-            run_identifier,
-            "--json",
-            "--timeout",
-            str(MAXIMUM_WAIT_SECONDS),
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    try:
+        subprocess.run(
+            [
+                "archon",
+                "workflow",
+                "wait",
+                run_identifier,
+                "--json",
+                "--timeout",
+                str(MAXIMUM_WAIT_SECONDS),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=MAXIMUM_WAIT_SECONDS + WAIT_GRACE_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return
 
 
 def rendered_returns(terminal_record: dict) -> str:

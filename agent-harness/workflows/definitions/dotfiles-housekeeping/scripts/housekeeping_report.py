@@ -31,30 +31,33 @@ def report_line(finding: dict) -> str:
     )
 
 
+def confirmed_findings(candidates: list[dict], verifier_results: list) -> list[dict]:
+    indexes = confirmed_indexes(verifier_results)
+    return sorted(
+        (candidate for candidate in candidates if candidate["index"] in indexes),
+        key=lambda candidate: SEVERITY_ORDER.index(candidate["severity"]),
+    )
+
+
+def returned_batch_count(verifier_results: list) -> int:
+    return sum(
+        isinstance(result, dict) and "verdicts" in result for result in verifier_results
+    )
+
+
 def compose_report(subtree: str, results: dict) -> str:
     sliced = results["slice"]
     if not sliced.get("slices"):
         reason = sliced.get("error") or "the slicer returned no slices"
         return f"Housekeeping did not run: {reason}."
     selection = results["candidates"]
-    candidates = selection["candidates"]
-    verifier_results = results["verdicts"]
-    returned_batches = sum(
-        isinstance(result, dict) and "verdicts" in result for result in verifier_results
-    )
-    confirmed = sorted(
-        (
-            candidate
-            for candidate in candidates
-            if candidate["index"] in confirmed_indexes(verifier_results)
-        ),
-        key=lambda candidate: SEVERITY_ORDER.index(candidate["severity"]),
-    )
+    confirmed = confirmed_findings(selection["candidates"], results["verdicts"])
     summary = (
         f"Housekeeping of {subtree}: {selection['slices_read']} of "
-        f"{len(sliced['slices'])} slices read twice, {len(candidates)} candidates, "
-        f"{returned_batches} of {len(selection['batches'])} verifier batches "
-        f"returned, {len(confirmed)} confirmed."
+        f"{len(sliced['slices'])} slices read twice, "
+        f"{len(selection['candidates'])} candidates, "
+        f"{returned_batch_count(results['verdicts'])} of {len(selection['batches'])} "
+        f"verifier batches returned, {len(confirmed)} confirmed."
     )
     shown = confirmed[:MAXIMUM_REPORTED_FINDINGS]
     hidden = len(confirmed) - len(shown)

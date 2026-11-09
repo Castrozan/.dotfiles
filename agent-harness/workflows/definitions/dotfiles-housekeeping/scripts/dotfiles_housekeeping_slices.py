@@ -8,6 +8,7 @@ from pathlib import Path
 
 TARGET_LINES_PER_SLICE = 3000
 MAXIMUM_SLICES = 12
+GIT_TIMEOUT_SECONDS = 60
 MAXIMUM_LINES_PER_FILE = 3000
 
 
@@ -28,6 +29,7 @@ def tracked_files(root, subtree):
         ["git", "-C", str(root), "ls-files", "-z", "--", subtree],
         capture_output=True,
         check=True,
+        timeout=GIT_TIMEOUT_SECONDS,
     )
     return [name.decode() for name in listed.stdout.split(b"\0") if name]
 
