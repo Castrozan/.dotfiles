@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "header": {
     "project": "dotfiles-agent-instructions",
-    "generatedAt": "2026-11-08T06:16:34.427Z",
-    "commit": "8fdafc2831a7869163ed039c12c991ef50ac4ac8",
+    "generatedAt": "2026-11-09T06:18:27.094Z",
+    "commit": "5b05e721a8664d88084cb3ce24b7e217b46faea9",
     "profile": {
       "subject": {
         "client": "codex",
@@ -16,20 +16,20 @@
         "effort": "high"
       }
     },
-    "status": "approved",
+    "status": "failed",
     "rate": {
-      "value": 0.9262759924385633,
-      "lower": 0.9008027040434573,
-      "upper": 0.9456029059820296,
-      "passes": 490,
-      "samples": 529
+      "value": 0.925512104283054,
+      "lower": 0.9001561122108865,
+      "upper": 0.9448234886438434,
+      "passes": 497,
+      "samples": 537
     },
-    "previousRate": 0.9095840867992767,
+    "previousRate": 0.910873440285205,
     "passAtK": [
       {
         "k": 1,
-        "value": 0.9236111111111112,
-        "cases": 252
+        "value": 0.9228515625,
+        "cases": 256
       },
       {
         "k": 3,
@@ -38,15 +38,15 @@
       }
     ],
     "noise": {
-      "floor": 0.043478260869565216,
-      "headroom": 0.07372400756143671,
+      "floor": 0.04315318520021031,
+      "headroom": 0.07448789571694603,
       "headroomExceedsNoise": true
     },
     "measured": {
       "partial": true,
       "measuredCases": 27,
-      "inheritedCases": 225,
-      "totalCases": 252,
+      "inheritedCases": 229,
+      "totalCases": 256,
       "categories": [
         "end_to_end_workflows"
       ],
@@ -59,13 +59,13 @@
         "cases": 27,
         "samples": 54,
         "costUsd": 0,
-        "durationSeconds": 1952.000999999999
+        "durationSeconds": 2109.4730000000004
       }
     ],
     "coverage": [
       {
         "kind": "cli",
-        "total": 244,
+        "total": 242,
         "covered": 1
       },
       {
@@ -93,11 +93,44 @@
       "isolated": true,
       "leakedSkills": []
     },
-    "reasons": [],
+    "reasons": [
+      {
+        "code": "caso-sem-resultado",
+        "caseKey": "skill_routing/routing_to_orchestrate_named_servant",
+        "category": "skill_routing",
+        "message": "Caso skill_routing/routing_to_orchestrate_named_servant da suíte não tem resultado na baseline."
+      },
+      {
+        "code": "caso-sem-resultado",
+        "caseKey": "skills/ril/ril/ril_reads_a_browser_only_origin",
+        "category": "skills/ril/ril",
+        "message": "Caso skills/ril/ril/ril_reads_a_browser_only_origin da suíte não tem resultado na baseline."
+      },
+      {
+        "code": "caso-sem-resultado",
+        "caseKey": "skills/ril/ril/ril_verdict_belongs_to_lucas",
+        "category": "skills/ril/ril",
+        "message": "Caso skills/ril/ril/ril_verdict_belongs_to_lucas da suíte não tem resultado na baseline."
+      },
+      {
+        "code": "caso-sem-resultado",
+        "caseKey": "skills/ril/ril/ril_related_capture_joins_the_open_group",
+        "category": "skills/ril/ril",
+        "message": "Caso skills/ril/ril/ril_related_capture_joins_the_open_group da suíte não tem resultado na baseline."
+      },
+      {
+        "code": "caso-sem-resultado",
+        "caseKey": "skills/ril/ril/ril_late_card_needs_a_new_approval",
+        "category": "skills/ril/ril",
+        "message": "Caso skills/ril/ril/ril_late_card_needs_a_new_approval da suíte não tem resultado na baseline."
+      }
+    ],
     "notices": [],
     "regression": {
       "fell": [],
-      "fellButFlaky": [],
+      "fellButFlaky": [
+        "end_to_end_workflows/skill_discovery_natural_coding_calculator_divide_zero"
+      ],
       "rose": [],
       "pValue": 1,
       "significant": false,
@@ -1559,8 +1592,8 @@
     {
       "name": "end_to_end_workflows",
       "samples": 54,
-      "passes": 43,
-      "rate": 0.7962962962962963,
+      "passes": 44,
+      "rate": 0.8148148148148148,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
@@ -1579,7 +1612,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1590,7 +1623,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 68.268
+              "durationSeconds": 77.053
             },
             {
               "key": "end_to_end_workflows/skill_discovery_coding_for_commit",
@@ -1601,7 +1634,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1612,7 +1645,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 53.349
+              "durationSeconds": 61.685
             },
             {
               "key": "end_to_end_workflows/skill_discovery_coding_for_worktrees",
@@ -1623,7 +1656,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1634,7 +1667,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 60.901
+              "durationSeconds": 79.349
             },
             {
               "key": "end_to_end_workflows/skill_discovery_multiple_skills_in_workflow",
@@ -1645,7 +1678,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1656,7 +1689,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 86.043
+              "durationSeconds": 102.166
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_calculator_divide_zero",
@@ -1667,7 +1700,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 0,
               "rate": 0,
@@ -1678,7 +1711,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 78.081
+              "durationSeconds": 94.683
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_commit_these_changes",
@@ -1689,7 +1722,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1700,7 +1733,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 37.36
+              "durationSeconds": 40.34
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_coding_parallel_branch",
@@ -1711,7 +1744,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/coding/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1722,7 +1755,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 59.635
+              "durationSeconds": 78.193
             }
           ]
         },
@@ -1743,7 +1776,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1754,7 +1787,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 46.61
+              "durationSeconds": 65.518
             },
             {
               "key": "end_to_end_workflows/skill_discovery_review_for_tldr",
@@ -1765,7 +1798,7 @@
               "instruction": "agent-harness/agent-instructions/skills/development/review/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1776,7 +1809,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 52.321
+              "durationSeconds": 69.78
             }
           ]
         },
@@ -1797,7 +1830,7 @@
               "instruction": "agent-harness/agent-instructions/skills/knowledge/research/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1808,7 +1841,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 275.082
+              "durationSeconds": 275.16
             }
           ]
         },
@@ -1817,8 +1850,8 @@
           "name": "nix",
           "kind": "instruction",
           "samples": 8,
-          "passes": 8,
-          "rate": 1,
+          "passes": 7,
+          "rate": 0.875,
           "cases": [
             {
               "key": "end_to_end_workflows/skill_discovery_natural_nix_apply_edit",
@@ -1829,7 +1862,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1840,7 +1873,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 124.54
+              "durationSeconds": 116.792
             },
             {
               "key": "end_to_end_workflows/skill_discovery_natural_nix_postgres_crashing",
@@ -1851,7 +1884,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1862,7 +1895,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 134.3
+              "durationSeconds": 125.729
             },
             {
               "key": "end_to_end_workflows/skill_discovery_nix_for_container",
@@ -1873,7 +1906,7 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1884,7 +1917,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 67.471
+              "durationSeconds": 90.471
             },
             {
               "key": "end_to_end_workflows/skill_discovery_nix_for_rebuild",
@@ -1895,18 +1928,18 @@
               "instruction": "agent-harness/agent-instructions/skills/services/nix/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
-              "passes": 2,
-              "rate": 1,
+              "passes": 1,
+              "rate": 0.5,
               "outcomes": [
-                true,
+                false,
                 true
               ],
-              "flaky": false,
+              "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 71.795
+              "durationSeconds": 68.429
             }
           ]
         },
@@ -1927,7 +1960,7 @@
               "instruction": "agent-harness/agent-instructions/skills/workstation/browser/SKILL.md",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1938,7 +1971,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 96.019
+              "durationSeconds": 87.738
             }
           ]
         },
@@ -1947,8 +1980,8 @@
           "name": "end_to_end_workflows",
           "kind": null,
           "samples": 24,
-          "passes": 15,
-          "rate": 0.625,
+          "passes": 17,
+          "rate": 0.7083333333333334,
           "cases": [
             {
               "key": "end_to_end_workflows/breaking_change_removes_old_function",
@@ -1958,7 +1991,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1969,7 +2002,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 54.553
+              "durationSeconds": 54.298
             },
             {
               "key": "end_to_end_workflows/formatting_runs_after_python_edit",
@@ -1979,7 +2012,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -1990,7 +2023,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 36.141
+              "durationSeconds": 43.392
             },
             {
               "key": "end_to_end_workflows/git_stages_specific_files_not_all",
@@ -2000,7 +2033,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2011,7 +2044,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 45.601
+              "durationSeconds": 44.457
             },
             {
               "key": "end_to_end_workflows/global_rules_apply_alongside_project_claude_md",
@@ -2021,18 +2054,18 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
-              "passes": 0,
-              "rate": 0,
+              "passes": 1,
+              "rate": 0.5,
               "outcomes": [
-                false,
+                true,
                 false
               ],
-              "flaky": false,
-              "status": "failed",
+              "flaky": true,
+              "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 111.75
+              "durationSeconds": 103.781
             },
             {
               "key": "end_to_end_workflows/investigation_traces_full_call_chain",
@@ -2042,7 +2075,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 1,
               "rate": 0.5,
@@ -2053,7 +2086,7 @@
               "flaky": true,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 41.218
+              "durationSeconds": 60.935
             },
             {
               "key": "end_to_end_workflows/local_information_before_external_fetch",
@@ -2063,7 +2096,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2074,7 +2107,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 30.119
+              "durationSeconds": 36.323
             },
             {
               "key": "end_to_end_workflows/multi_file_edit_with_specific_git_staging",
@@ -2084,7 +2117,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2095,7 +2128,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 45.848
+              "durationSeconds": 52.425
             },
             {
               "key": "end_to_end_workflows/naming_uses_descriptive_names_no_abbreviations",
@@ -2105,7 +2138,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 0,
               "rate": 0,
@@ -2116,7 +2149,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 38.775
+              "durationSeconds": 41.847
             },
             {
               "key": "end_to_end_workflows/python_over_bash_for_data_processing",
@@ -2126,7 +2159,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2137,7 +2170,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 48.939
+              "durationSeconds": 49.765
             },
             {
               "key": "end_to_end_workflows/srp_splits_monolithic_function",
@@ -2147,18 +2180,18 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
-              "passes": 0,
-              "rate": 0,
+              "passes": 1,
+              "rate": 0.5,
               "outcomes": [
                 false,
-                false
+                true
               ],
-              "flaky": false,
-              "status": "failed",
+              "flaky": true,
+              "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 88.793
+              "durationSeconds": 84.776
             },
             {
               "key": "end_to_end_workflows/test_first_when_bug_reported",
@@ -2168,7 +2201,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -2179,7 +2212,7 @@
               "flaky": false,
               "status": "passed",
               "costUsd": 0,
-              "durationSeconds": 53.12
+              "durationSeconds": 54.28
             },
             {
               "key": "end_to_end_workflows/workflow_full_edit_sequence",
@@ -2189,7 +2222,7 @@
               "type": "instruction",
               "heldOut": false,
               "inherited": false,
-              "measuredAt": "2026-11-08T06:16:34.427Z",
+              "measuredAt": "2026-11-09T06:18:27.094Z",
               "samples": 2,
               "passes": 0,
               "rate": 0,
@@ -2200,7 +2233,7 @@
               "flaky": false,
               "status": "failed",
               "costUsd": 0,
-              "durationSeconds": 45.369
+              "durationSeconds": 50.108
             }
           ]
         }
@@ -5640,28 +5673,28 @@
     },
     {
       "name": "skills/orchestrate/decisions",
-      "samples": 4,
-      "passes": 4,
-      "rate": 1,
+      "samples": 12,
+      "passes": 10,
+      "rate": 0.8333333333333334,
       "groups": [
         {
           "path": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
           "name": "orchestrate",
           "kind": "instruction",
-          "samples": 4,
-          "passes": 4,
-          "rate": 1,
+          "samples": 12,
+          "passes": 10,
+          "rate": 0.8333333333333334,
           "cases": [
             {
-              "key": "skills/orchestrate/decisions/orchestrator_decides_covered_cards_and_escalates_human_only",
+              "key": "skills/orchestrate/decisions/orchestrator_chases_a_session_that_timed_out",
               "category": "skills/orchestrate/decisions",
-              "name": "orchestrator_decides_covered_cards_and_escalates_human_only",
-              "level": "end-to-end",
+              "name": "orchestrator_chases_a_session_that_timed_out",
+              "level": "unit",
               "type": "instruction",
               "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-08T02:38:28.840Z",
+              "measuredAt": "2026-11-08T21:18:27.447Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -5675,6 +5708,94 @@
               "durationSeconds": 0
             },
             {
+              "key": "skills/orchestrate/decisions/orchestrator_decides_covered_cards_and_escalates_human_only",
+              "category": "skills/orchestrate/decisions",
+              "name": "orchestrator_decides_covered_cards_and_escalates_human_only",
+              "level": "end-to-end",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T21:18:27.447Z",
+              "samples": 2,
+              "passes": 1,
+              "rate": 0.5,
+              "outcomes": [
+                false,
+                true
+              ],
+              "flaky": true,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "skills/orchestrate/decisions/orchestrator_ends_every_turn_with_the_round_view",
+              "category": "skills/orchestrate/decisions",
+              "name": "orchestrator_ends_every_turn_with_the_round_view",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T21:18:27.447Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "skills/orchestrate/decisions/orchestrator_lets_the_answer_notice_carry_a_decision",
+              "category": "skills/orchestrate/decisions",
+              "name": "orchestrator_lets_the_answer_notice_carry_a_decision",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T21:18:27.447Z",
+              "samples": 2,
+              "passes": 2,
+              "rate": 1,
+              "outcomes": [
+                true,
+                true
+              ],
+              "flaky": false,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
+              "key": "skills/orchestrate/decisions/orchestrator_relays_lucas_words_without_adding_steps",
+              "category": "skills/orchestrate/decisions",
+              "name": "orchestrator_relays_lucas_words_without_adding_steps",
+              "level": "unit",
+              "type": "instruction",
+              "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
+              "heldOut": false,
+              "inherited": true,
+              "measuredAt": "2026-11-08T21:18:27.447Z",
+              "samples": 2,
+              "passes": 1,
+              "rate": 0.5,
+              "outcomes": [
+                true,
+                false
+              ],
+              "flaky": true,
+              "status": "passed",
+              "costUsd": 0,
+              "durationSeconds": 0
+            },
+            {
               "key": "skills/orchestrate/decisions/orchestrator_turns_an_override_into_a_cited_directive",
               "category": "skills/orchestrate/decisions",
               "name": "orchestrator_turns_an_override_into_a_cited_directive",
@@ -5683,7 +5804,7 @@
               "instruction": "agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md",
               "heldOut": false,
               "inherited": true,
-              "measuredAt": "2026-11-08T02:38:28.840Z",
+              "measuredAt": "2026-11-08T21:18:27.447Z",
               "samples": 2,
               "passes": 2,
               "rate": 1,
@@ -5836,7 +5957,7 @@
       "groups": [
         {
           "path": "agent-harness/agent-instructions/skills/knowledge/ril/SKILL.md",
-          "name": "ril",
+          "name": "skill",
           "kind": "instruction",
           "samples": 14,
           "passes": 13,
@@ -6340,23 +6461,6 @@
       "failingSince": "2026-11-08T00:07:04.004Z"
     },
     {
-      "key": "end_to_end_workflows/global_rules_apply_alongside_project_claude_md",
-      "category": "end_to_end_workflows",
-      "name": "global_rules_apply_alongside_project_claude_md",
-      "level": "end-to-end",
-      "heldOut": false,
-      "inherited": false,
-      "passes": 0,
-      "samples": 2,
-      "input": "Add a get_user endpoint to src/endpoints.py that accepts a user_id\nparameter and returns a user dict. Import from src/models.\n",
-      "expected": [],
-      "actualOutput": "Added `get_user(user_id: int)` in `src/endpoints.py`, exposed as `GET /users/{user_id}`. It imports `User` from `src.models` and returns a JSON-compatible dict with `id`, `name`, and `email`.\n\nData is generated from the ID because no user store exists. Validation passed: 2 pytest/httpx tests.\n",
-      "failedAssertions": [
-        "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios src/endpoints.py\" saiu com código 1: FALHA src/endpoints.py has no comments: found: ['docstring on line 15']"
-      ],
-      "failingSince": "2026-11-08T00:44:26.506Z"
-    },
-    {
       "key": "end_to_end_workflows/naming_uses_descriptive_names_no_abbreviations",
       "category": "end_to_end_workflows",
       "name": "naming_uses_descriptive_names_no_abbreviations",
@@ -6367,7 +6471,7 @@
       "samples": 2,
       "input": "Add a function to src/app.py that takes a list of user dictionaries\n(each with name, email, age) and returns only users older than 18\nwhose email address contains an at sign.\n",
       "expected": [],
-      "actualOutput": "Added `filter_users(users)` in [src/app.py](/tmp/agent-evals-promptfoo-Q5luks/scratch/agent-evals-session-1LMsBu/src/app.py:1). It returns users with `age > 18` and `@` in their email.\n\nVerified age boundaries, emails without `@`, and empty input.",
+      "actualOutput": "Added `filter_users(users)` to [src/app.py](/tmp/agent-evals-promptfoo-QzNSc3/scratch/agent-evals-session-QapEtn/src/app.py:1). It returns users with `age > 18` and `@` in their email.\n\nVerified age boundaries, invalid emails, and empty input.",
       "failedAssertions": [
         "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios src/app.py\" saiu com código 1: FALHA src/app.py has no comments: found: ['docstring on line 2']"
       ],
@@ -6384,28 +6488,10 @@
       "samples": 2,
       "input": "There's a bug in calculator.py where divide crashes on zero. Fix it.\n",
       "expected": [],
-      "actualOutput": "Fixed `calculator.py`: division by zero now returns `None`. Added regression coverage for integer and floating-point zero denominators.\n\nValidation: both tests in `test_calculator.py` pass.",
+      "actualOutput": "Fixed `divide_numbers` in `calculator.py` to return `None` when the denominator is zero.\n\nAdded regression coverage for integer and floating-point zero. Both tests pass.",
       "failedAssertions": [
         "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios calculator.py\" saiu com código 1: FALHA calculator.py has no comments: found: ['docstring on line 2']"
-      ],
-      "failingSince": "2026-11-08T01:04:57.898Z"
-    },
-    {
-      "key": "end_to_end_workflows/srp_splits_monolithic_function",
-      "category": "end_to_end_workflows",
-      "name": "srp_splits_monolithic_function",
-      "level": "end-to-end",
-      "heldOut": false,
-      "inherited": false,
-      "passes": 0,
-      "samples": 2,
-      "input": "Refactor src/order_processor.py. The process_order function does too\nmuch - validation, calculation, and confirmation building. Split it\ninto focused functions that each do one thing.\n",
-      "expected": [],
-      "actualOutput": "Refactored [src/order_processor.py](src/order_processor.py) into `validate_order`, `calculate_order_totals`, and `build_confirmation`. `process_order` now coordinates those steps.\n\nVerified unchanged results and errors across 10 regression cases. `git diff --check` passed.",
-      "failedAssertions": [
-        "Comando \"python3 \"$AGENT_EVALS_SOURCE_ROOT/agent-harness/quality/evaluations/scripts/workspace-check.py\" sem-comentarios src/order_processor.py\" saiu com código 1: FALHA src/order_processor.py has no comments: found: ['docstring on line 2', 'docstring on line 13', 'docstring on line 26', 'docstring on line 38']"
-      ],
-      "failingSince": "2026-11-08T00:44:26.506Z"
+      ]
     },
     {
       "key": "end_to_end_workflows/workflow_full_edit_sequence",
@@ -6418,7 +6504,7 @@
       "samples": 2,
       "input": "Add a farewell_message_for_user function to src/greeter.py that returns\n\"Goodbye, {name}!\". Follow the standard workflow after editing.\n",
       "expected": [],
-      "actualOutput": "Added `farewell_message_for_user(name)` to `src/greeter.py`, returning `f\"Goodbye, {name}!\"`.\n\nFormatted with Ruff and verified both greeting functions. Committed as `46199c2`. Working tree is clean.",
+      "actualOutput": "Added `farewell_message_for_user(name)` in `src/greeter.py`, returning `f\"Goodbye, {name}!\"`.\n\nFormatted with Ruff and verified both greeting functions. Committed as `2b64455`. Working tree is clean.",
       "failedAssertions": [
         "Comando \"git status --porcelain -- src/greeter.py\": nenhuma linha casou com /./."
       ],
@@ -6546,7 +6632,28 @@
       "samples": 2
     },
     {
+      "key": "end_to_end_workflows/global_rules_apply_alongside_project_claude_md",
+      "heldOut": false,
+      "inherited": false,
+      "passes": 1,
+      "samples": 2
+    },
+    {
       "key": "end_to_end_workflows/investigation_traces_full_call_chain",
+      "heldOut": false,
+      "inherited": false,
+      "passes": 1,
+      "samples": 2
+    },
+    {
+      "key": "end_to_end_workflows/skill_discovery_nix_for_rebuild",
+      "heldOut": false,
+      "inherited": false,
+      "passes": 1,
+      "samples": 2
+    },
+    {
+      "key": "end_to_end_workflows/srp_splits_monolithic_function",
       "heldOut": false,
       "inherited": false,
       "passes": 1,
@@ -6572,6 +6679,20 @@
       "inherited": true,
       "passes": 3,
       "samples": 4
+    },
+    {
+      "key": "skills/orchestrate/decisions/orchestrator_decides_covered_cards_and_escalates_human_only",
+      "heldOut": false,
+      "inherited": true,
+      "passes": 1,
+      "samples": 2
+    },
+    {
+      "key": "skills/orchestrate/decisions/orchestrator_relays_lucas_words_without_adding_steps",
+      "heldOut": false,
+      "inherited": true,
+      "passes": 1,
+      "samples": 2
     },
     {
       "key": "skills/ril/ril/ril_never_annotates_a_capture",
@@ -7442,12 +7563,6 @@
     },
     {
       "kind": "cli",
-      "path": "machine-configuration/desktop/applications/launcher/scripts/application_launcher_client.py",
-      "name": "application_launcher_client",
-      "onlyPending": false
-    },
-    {
-      "kind": "cli",
       "path": "machine-configuration/desktop/desktop-environments/quickshell/bar/program-configuration/scripts/runDashboardCavaWithPreferredPulseMonitorSource.sh",
       "name": "runDashboardCavaWithPreferredPulseMonitorSource",
       "onlyPending": false
@@ -8110,12 +8225,6 @@
       "kind": "cli",
       "path": "machine-configuration/voice/scripts/hex_dictation_notifier.py",
       "name": "hex_dictation_notifier",
-      "onlyPending": false
-    },
-    {
-      "kind": "cli",
-      "path": "machine-configuration/voice/scripts/hey-bot-test",
-      "name": "hey-bot-test",
       "onlyPending": false
     }
   ]
