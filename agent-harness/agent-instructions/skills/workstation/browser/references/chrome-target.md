@@ -14,9 +14,9 @@ never clobber the open tab.
 
 ### Profile selection
 
-Match the required account to the profile names in `~/.config/chrome-global/Local State`. Use the desktop skill's native
-browser interaction to select that profile's existing window and open a fresh task tab there. On macOS, Chrome's
-AppleScript interface can create the tab in a specific window. If the profile has no window, use its declared launcher,
+Match the required account to the profile names in `~/.config/chrome-global/Local State`. Select that profile's existing
+window and open a fresh task tab there without computer use. On macOS, Chrome's AppleScript interface through
+`osascript` creates the tab in a specific window. If the profile has no window, use its declared launcher,
 `summon-chrome-work-profile` or `summon-chrome-personal-profile`.
 
 Return to DevTools: enumerate pages, identify the tab just created, take its snapshot, and verify the signed-in account

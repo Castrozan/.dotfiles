@@ -9,7 +9,8 @@ Use the managed `chrome-devtools` CLI for interactive browser tasks. It attaches
 existing logins. When the user names Chrome DevTools, CDP, or the browser harness, that choice is binding: stay on
 Chrome DevTools and never invoke, inspect, restart, or configure OpenCLI. A stale connection, zero attached pages, a
 blocking consent prompt, "Could not connect to Chrome," or another recoverable tool error starts the recovery workflow
-below; none permits a tool switch.
+below; none permits a tool switch. Computer use never drives a browser except for the consent click below; `click`
+already dispatches real input, so reproducing a user's click needs no native pointer.
 
 OpenCLI is eligible only as the last resort when every recovery step has failed, Chrome DevTools remains unavailable,
 the user did not require Chrome DevTools, and an isolated browser profile can satisfy the task. Otherwise report the
@@ -70,7 +71,7 @@ Once connected, work in this order: 1) `connect` verifies the connection; 2) ope
 `--background true`, or use profile selection below when the account matters. Never `navigate_page` the selected tab
 because it replaces what the user has open.
 
-For profile-bound work, use native Chrome interaction to select the account's profile window and open a new tab there,
+For profile-bound work, use Chrome's scripting interface to select the account's profile window and open a new tab there,
 then discover that tab through DevTools. This is profile selection, including when DevTools is explicitly required.
 Follow [profile selection](references/chrome-target.md#profile-selection); `new_page` alone can use the wrong profile.
 

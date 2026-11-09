@@ -58,6 +58,10 @@ PRE_TOOL_USE_HANDLERS = [
         surfaces=(CLAUDE_SURFACE,),
     ),
     HookHandler(
+        handler_module_name="browser_computer_use_guard_handler",
+        tool_matcher=r".*desktop[-_]computer[-_]use.*",
+    ),
+    HookHandler(
         handler_module_name="blocked_skill_invocation_guard_handler",
         tool_matcher="Skill",
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
