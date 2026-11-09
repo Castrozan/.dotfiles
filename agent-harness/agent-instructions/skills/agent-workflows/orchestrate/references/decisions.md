@@ -53,7 +53,7 @@ command. On each `TIMEOUT`, run `orchestrator relay <session> --status-check`, e
 alarm; reading the pane is not a check. It asks for the owed report or card and whether background commands still run.
 
 A session whose report is blocked only on cards you escalated to Lucas waits on him, not on itself, so the watch stays
-silent for it until a card is answered or the report changes. Send it no status check by hand either; relay the answer.
+silent for it until a card is answered or the report changes. Send it no status check by hand either; the answer's notice wakes it.
 
 Message a sub-session only through `orchestrator`, whose notices queue until it is idle; never loop on `a2a send`,
 which refuses a busy peer. Name a session that times out twice running in your round. Restart the watch the moment its

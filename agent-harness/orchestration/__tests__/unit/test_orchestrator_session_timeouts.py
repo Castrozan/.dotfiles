@@ -70,11 +70,18 @@ def test_records_give_each_pane_its_latest_answer_and_latest_report_state():
     ]
     cards = [
         {
+            "id": "D-1",
+            "state": "answered",
             "requester_pane": "wW:p1",
             "created_at": "2026-11-08T09:00:00+00:00",
             "answer": {"decided_at": "2026-11-08T09:20:00+00:00"},
         },
-        {"requester_pane": None, "created_at": "2026-11-08T09:30:00+00:00"},
+        {
+            "id": "D-2",
+            "state": "open",
+            "requester_pane": None,
+            "created_at": "2026-11-08T09:30:00+00:00",
+        },
     ]
     records = session_records(reports, cards)
     assert records.answered_at == {"wW:p1": BEGINNING + timedelta(minutes=20)}

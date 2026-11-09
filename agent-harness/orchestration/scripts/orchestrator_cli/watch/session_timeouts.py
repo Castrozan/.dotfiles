@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
@@ -46,23 +47,34 @@ def latest_answer_times(stamps: list[tuple[str | None, str]]) -> dict[str, datet
     return answered_at
 
 
-def awaited_decisions(pane_id: str, report: dict, cards: list[dict]) -> set[str]:
-    unresolved = {
-        card["id"]
-        for card in cards
-        if card.get("requester_pane") == pane_id
-        and card["state"] in (OPEN_STATE, ESCALATED_STATE)
-    }
-    return unresolved | set(report.get("open_decisions", []))
+def waits_only_on_human(
+    report: dict, awaited: set[str], card_states: dict[str, str]
+) -> bool:
+    return (
+        report["state"] == BLOCKED_REPORT_STATE
+        and bool(awaited)
+        and all(
+            card_states.get(identifier) == ESCALATED_STATE for identifier in awaited
+        )
+    )
 
 
-def waits_only_on_human(pane_id: str, report: dict, cards: list[dict]) -> bool:
-    if report["state"] != BLOCKED_REPORT_STATE:
-        return False
+def panes_waiting_on_human(
+    latest_reports: dict[str, dict], cards: list[dict]
+) -> frozenset[str]:
     card_states = {card["id"]: card["state"] for card in cards}
-    awaited = awaited_decisions(pane_id, report, cards)
-    return bool(awaited) and all(
-        card_states.get(identifier) == ESCALATED_STATE for identifier in awaited
+    unresolved: dict[str, set[str]] = defaultdict(set)
+    for card in cards:
+        if card["state"] in (OPEN_STATE, ESCALATED_STATE):
+            unresolved[card.get("requester_pane")].add(card["id"])
+    return frozenset(
+        pane_id
+        for pane_id, report in latest_reports.items()
+        if waits_only_on_human(
+            report,
+            unresolved[pane_id] | set(report.get("open_decisions", [])),
+            card_states,
+        )
     )
 
 
@@ -80,11 +92,7 @@ def session_records(reports: list[dict], cards: list[dict]) -> SessionRecords:
     return SessionRecords(
         latest_answer_times(stamps),
         {pane_id: report["state"] for pane_id, report in latest_reports.items()},
-        frozenset(
-            pane_id
-            for pane_id, report in latest_reports.items()
-            if waits_only_on_human(pane_id, report, cards)
-        ),
+        panes_waiting_on_human(latest_reports, cards),
     )
 
 
