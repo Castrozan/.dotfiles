@@ -134,17 +134,19 @@ def is_chrome_consent_click(action, tool_input, desktop_windows) -> bool:
     )
 
 
+def drives_browser(action, tool_input) -> bool:
+    window_identifier = requested_window_identifier(tool_input)
+    if window_identifier is None and not names_browser_application(tool_input):
+        return False
+    desktop_windows = open_desktop_windows()
+    return targets_browser(
+        tool_input, window_identifier, desktop_windows
+    ) and not is_chrome_consent_click(action, tool_input, desktop_windows)
+
+
 def handle(hook_input):
     action = COMPUTER_USE_TOOL_NAME_PREFIX.sub("", hook_input.get("tool_name", ""))
     tool_input = hook_input.get("tool_input", {}) or {}
-    if action == WINDOW_DISCOVERY_ACTION:
-        return None
-    window_identifier = requested_window_identifier(tool_input)
-    if window_identifier is None and not names_browser_application(tool_input):
-        return None
-    desktop_windows = open_desktop_windows()
-    if not targets_browser(tool_input, window_identifier, desktop_windows):
-        return None
-    if is_chrome_consent_click(action, tool_input, desktop_windows):
+    if action == WINDOW_DISCOVERY_ACTION or not drives_browser(action, tool_input):
         return None
     return HandlerResult(decision="deny", reason=DENIAL_REASON)
