@@ -78,7 +78,7 @@ def test_the_launch_runs_detached_in_place_with_the_provider_configuration():
     launch = build_launch_command(
         HOUSEKEEPING,
         "codex",
-        Path("/checkout"),
+        ["--cwd", "/checkout"],
         {"root": "/checkout", "subtree": "agent-harness"},
     )
     assert launch[:4] == ["archon", "workflow", "run", "dotfiles-housekeeping"]

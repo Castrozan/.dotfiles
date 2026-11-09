@@ -1,12 +1,16 @@
 import argparse
 import json
 import os
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from archon_runs import report_run, run_archon_json
+from workspaces import (
+    is_inside_git_checkout,
+    resolve_repository_root,
+    workspace_arguments,
+)
 
 COMMAND_NAME_VARIABLE = "DOTFILES_WORKFLOW_COMMAND"
 WORKFLOW_NAME_VARIABLE = "DOTFILES_WORKFLOW_NAME"
@@ -100,26 +104,6 @@ def resolve_provider(
     return provider
 
 
-def resolve_repository_root(requested_root: str) -> Path:
-    if requested_root:
-        requested_directory = Path(requested_root).expanduser().resolve()
-        if not requested_directory.is_dir():
-            raise SystemExit(f"--root {requested_root} is not a directory")
-        return requested_directory
-    checkout_toplevel = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if checkout_toplevel.returncode != 0:
-        raise SystemExit(
-            "the current directory belongs to no git checkout: "
-            "pass --root <absolute checkout path>"
-        )
-    return Path(checkout_toplevel.stdout.strip())
-
-
 def workflow_inputs(
     command: WorkflowCommand, repository_root: Path, arguments: argparse.Namespace
 ) -> dict[str, str]:
@@ -137,7 +121,7 @@ def workflow_inputs(
 def build_launch_command(
     command: WorkflowCommand,
     provider: str,
-    working_directory: Path,
+    workspace: list[str],
     inputs: dict[str, str],
 ) -> list[str]:
     launch_command = [
@@ -145,8 +129,7 @@ def build_launch_command(
         "workflow",
         "run",
         command.workflow_name,
-        "--cwd",
-        str(working_directory),
+        *workspace,
         "--config",
         command.provider_configurations[provider],
         "--detach",
@@ -172,9 +155,12 @@ def run_workflow_command(command_line_arguments: list[str]) -> str:
         build_launch_command(
             command,
             provider,
-            working_directory,
+            workspace_arguments(
+                working_directory, is_inside_git_checkout(working_directory)
+            ),
             workflow_inputs(command, working_directory, arguments),
-        )
+        ),
+        working_directory,
     )
     return report_run(launch["runId"])
 

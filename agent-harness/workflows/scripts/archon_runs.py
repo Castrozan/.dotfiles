@@ -1,14 +1,21 @@
 import json
 import subprocess
+from pathlib import Path
 
 WAIT_COMMAND_NAME = "dotfiles-workflow-wait"
 MAXIMUM_WAIT_SECONDS = 540
 TERMINAL_STATUSES = frozenset({"completed", "failed", "cancelled"})
 
 
-def run_archon_json(archon_arguments: list[str]) -> dict:
+def run_archon_json(
+    archon_arguments: list[str], working_directory: Path | None = None
+) -> dict:
     completed = subprocess.run(
-        archon_arguments, capture_output=True, text=True, check=False
+        archon_arguments,
+        cwd=working_directory,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     try:
         reply = json.loads(completed.stdout)
