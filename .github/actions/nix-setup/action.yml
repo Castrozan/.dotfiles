@@ -49,17 +49,14 @@ runs:
           lazy-trees = false
           access-tokens = github.com=${{ inputs.github-token }}
 
-    - name: Configure the signed Devenv and dotfiles binary caches
+    - name: Configure the signed Devenv binary cache
       shell: bash
       run: |
         devenv_cache_configuration=machine-configuration/development/development-environments/devenv-cache.json
-        dotfiles_cache_configuration=machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
         mkdir -p "$HOME/.config/nix"
-        printf 'extra-substituters = %s %s\nextra-trusted-public-keys = %s %s\n' \
+        printf 'extra-substituters = %s\nextra-trusted-public-keys = %s\n' \
           "$(jq -er .cacheUrl "$devenv_cache_configuration")" \
-          "$(jq -er .url "$dotfiles_cache_configuration")" \
-          "$(jq -er .publicKey "$devenv_cache_configuration")" \
-          "$(jq -er .publicKey "$dotfiles_cache_configuration")" >> "$HOME/.config/nix/nix.conf"
+          "$(jq -er .publicKey "$devenv_cache_configuration")" >> "$HOME/.config/nix/nix.conf"
 
     # Keeping the cache configuration in one place matters more than the indirection costs: a key
     # that drifts between jobs turns every restore into a silent miss, which reads as a slow run

@@ -41,14 +41,6 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
 
-      - name: Configure the signed Python environment cache
-        run: |
-          cache_configuration=machine-configuration/development/system-rebuild/dotfiles-binary-cache.json
-          mkdir -p "$HOME/.config/nix"
-          printf 'extra-substituters = %s\nextra-trusted-public-keys = %s\n' \
-            "$(jq -er .url "$cache_configuration")" \
-            "$(jq -er .publicKey "$cache_configuration")" >> "$HOME/.config/nix/nix.conf"
-
       - name: Build the Python test environment, retrying a source build that stalls
         run: |
           for attempt in 1 2 3; do
