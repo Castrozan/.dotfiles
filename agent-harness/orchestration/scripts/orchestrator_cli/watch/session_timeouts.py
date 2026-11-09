@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
+from ..decisions.cards import ESCALATED_STATE, OPEN_STATE
+
 FINISHED_REPORT_STATE = "done"
+BLOCKED_REPORT_STATE = "blocked"
 HANDED_OVER_REPORT_STATE = "handed-over"
 WORKING_STATUS = "working"
 
@@ -21,6 +24,7 @@ class WatchedSession:
 class SessionRecords:
     answered_at: dict[str, datetime]
     report_states: dict[str, str]
+    waiting_on_human: frozenset[str] = frozenset()
 
 
 def current_time() -> datetime:
@@ -42,18 +46,46 @@ def latest_answer_times(stamps: list[tuple[str | None, str]]) -> dict[str, datet
     return answered_at
 
 
+def awaited_decisions(pane_id: str, report: dict, cards: list[dict]) -> set[str]:
+    unresolved = {
+        card["id"]
+        for card in cards
+        if card.get("requester_pane") == pane_id
+        and card["state"] in (OPEN_STATE, ESCALATED_STATE)
+    }
+    return unresolved | set(report.get("open_decisions", []))
+
+
+def waits_only_on_human(pane_id: str, report: dict, cards: list[dict]) -> bool:
+    if report["state"] != BLOCKED_REPORT_STATE:
+        return False
+    card_states = {card["id"]: card["state"] for card in cards}
+    awaited = awaited_decisions(pane_id, report, cards)
+    return bool(awaited) and all(
+        card_states.get(identifier) == ESCALATED_STATE for identifier in awaited
+    )
+
+
 def session_records(reports: list[dict], cards: list[dict]) -> SessionRecords:
     stamps = [
         (report.get("requester_pane"), report["updated_at"]) for report in reports
     ]
     stamps += [(card.get("requester_pane"), card_activity_time(card)) for card in cards]
     oldest_first = sorted(reports, key=lambda report: report["updated_at"])
-    report_states = {
-        report["requester_pane"]: report["state"]
+    latest_reports = {
+        report["requester_pane"]: report
         for report in oldest_first
         if report.get("requester_pane")
     }
-    return SessionRecords(latest_answer_times(stamps), report_states)
+    return SessionRecords(
+        latest_answer_times(stamps),
+        {pane_id: report["state"] for pane_id, report in latest_reports.items()},
+        frozenset(
+            pane_id
+            for pane_id, report in latest_reports.items()
+            if waits_only_on_human(pane_id, report, cards)
+        ),
+    )
 
 
 def last_heard_at(session: WatchedSession, records: SessionRecords) -> datetime:
@@ -73,6 +105,10 @@ def is_finished(session: WatchedSession, records: SessionRecords) -> bool:
     if report_state == HANDED_OVER_REPORT_STATE:
         return True
     return report_state == FINISHED_REPORT_STATE and session.status != WORKING_STATUS
+
+
+def waits_on_human(session: WatchedSession, records: SessionRecords) -> bool:
+    return session.pane_id in records.waiting_on_human
 
 
 def timeout_line(

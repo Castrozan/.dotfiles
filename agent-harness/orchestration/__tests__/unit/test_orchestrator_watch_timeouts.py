@@ -45,14 +45,25 @@ class WatchHarness:
         self.sockets[0].sendall((json.dumps(message) + "\n").encode())
         return self.watch.next_lines()
 
-    def write_report(self, pane, state):
+    def write_report(self, pane, state, **fields):
         report = {
             "name": "voyager",
             "requester_pane": pane,
             "state": state,
             "updated_at": self.now.isoformat(),
+            **fields,
         }
         (self.reports / "voyager.json").write_text(json.dumps(report))
+
+    def write_card(self, pane, state, **fields):
+        card = {
+            "id": "D-1",
+            "requester_pane": pane,
+            "state": state,
+            "created_at": self.now.isoformat(),
+            **fields,
+        }
+        (self.decisions / "D-1.json").write_text(json.dumps(card))
 
     def close(self):
         for connection in self.sockets + self.watch_ends:
@@ -161,3 +172,24 @@ def test_a_followed_session_whose_agent_already_died_is_reported_at_start(harnes
     watch = harness(panes, followed=followed, own="wW:p9")
     assert watch.start_lines == ["EXITED wW:p2 no agent running when the watch started"]
     assert set(watch.watch.sessions) == {"wW:p1"}
+
+
+@pytest.mark.parametrize("resumes_by", ["answer", "report"])
+def test_a_session_waiting_on_an_escalated_card_is_not_nudged_until_it_moves(
+    harness, resumes_by
+):
+    watch = harness([idle_pane("wW:p1")])
+    watch.write_card("wW:p1", "escalated")
+    watch.write_report("wW:p1", "blocked", open_decisions=["D-1"])
+    watch.advance(60)
+    assert watch.watch.check_timeouts() == []
+    if resumes_by == "answer":
+        watch.write_card(
+            "wW:p1", "answered", answer={"decided_at": watch.now.isoformat()}
+        )
+    else:
+        watch.write_report("wW:p1", "working")
+    watch.advance(15)
+    assert watch.watch.check_timeouts()[0].startswith(
+        "TIMEOUT wW:p1 idle quiet-minutes=15"
+    )

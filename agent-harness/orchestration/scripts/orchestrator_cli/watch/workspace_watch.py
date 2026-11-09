@@ -21,6 +21,7 @@ from .session_timeouts import (
     session_deadline,
     session_records,
     timeout_line,
+    waits_on_human,
 )
 
 REPORTED_STATUSES = frozenset({"blocked", "done", "idle"})
@@ -151,6 +152,7 @@ class WorkspaceWatch:
             session
             for session in self.sessions.values()
             if not is_finished(session, records)
+            and not waits_on_human(session, records)
         ]
         overdue = [
             session

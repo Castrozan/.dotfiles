@@ -8,6 +8,7 @@ from orchestrator_cli.watch.session_timeouts import (
     is_finished,
     session_deadline,
     session_records,
+    waits_on_human,
 )
 
 BEGINNING = datetime(2026, 11, 8, 9, 0, tzinfo=timezone.utc)
@@ -78,3 +79,46 @@ def test_records_give_each_pane_its_latest_answer_and_latest_report_state():
     records = session_records(reports, cards)
     assert records.answered_at == {"wW:p1": BEGINNING + timedelta(minutes=20)}
     assert records.report_states == {"wW:p1": "done"}
+
+
+card_states = st.sampled_from(
+    ["open", "escalated", "answered", "overridden", "withdrawn"]
+)
+
+
+@given(
+    report_state=st.sampled_from(["working", "blocked", "done"]),
+    filed=st.lists(card_states, max_size=4),
+    listed=st.lists(card_states, max_size=2),
+)
+def test_a_session_waits_on_the_human_only_when_blocked_on_escalated_cards_alone(
+    report_state, filed, listed
+):
+    cards = [
+        {
+            "id": f"D-{index}",
+            "state": state,
+            "requester_pane": "wW:p1",
+            "created_at": "2026-11-08T09:00:00+00:00",
+        }
+        for index, state in enumerate(filed)
+    ]
+    cards += [
+        {"id": f"L-{index}", "state": state, "created_at": "2026-11-08T09:00:00+00:00"}
+        for index, state in enumerate(listed)
+    ]
+    report = {
+        "requester_pane": "wW:p1",
+        "state": report_state,
+        "updated_at": "2026-11-08T09:05:00+00:00",
+        "open_decisions": [f"L-{index}" for index in range(len(listed))],
+    }
+    awaited = [state for state in filed if state in ("open", "escalated")] + listed
+    expected = (
+        report_state == "blocked"
+        and bool(awaited)
+        and all(state == "escalated" for state in awaited)
+    )
+    records = session_records([report], cards)
+    session = WatchedSession("wW:p1", "idle", BEGINNING)
+    assert waits_on_human(session, records) == expected

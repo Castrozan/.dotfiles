@@ -23,7 +23,8 @@ def add_parser(subcommands) -> None:
     watch = subcommands.add_parser(
         "watch",
         help="stream one line per sub-session event in a herdr workspace; "
-        "a session quiet past its timeout prints TIMEOUT until it answers",
+        "a session quiet past its timeout prints TIMEOUT until it answers, "
+        "except while it waits only on cards escalated to the human",
     )
     watch.add_argument("--workspace", required=True, help="herdr workspace id")
     watch.add_argument(
