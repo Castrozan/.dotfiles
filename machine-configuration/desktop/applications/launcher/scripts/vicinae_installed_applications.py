@@ -3,12 +3,14 @@ from __future__ import annotations
 import hashlib
 import os
 import plistlib
+import re
 import xml.parsers.expat
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
 FINDER_BUNDLE_PATH = Path("/System/Library/CoreServices/Finder.app")
+FILE_NAME_SAFE_IDENTIFIER = re.compile(r"[A-Za-z0-9._-]+")
 SOFT_HYPHEN = "­"
 
 
@@ -126,9 +128,11 @@ def read_installed_application(bundle_path: Path) -> InstalledApplication | None
     if information is None:
         return None
     identifier = application_identifier(bundle_path, information)
-    if identifier is None:
+    if identifier is None or not FILE_NAME_SAFE_IDENTIFIER.fullmatch(identifier):
         return None
     display_name = application_display_name(bundle_path)
+    if not display_name.isprintable():
+        return None
     return InstalledApplication(
         bundle_path=bundle_path,
         identifier=identifier,

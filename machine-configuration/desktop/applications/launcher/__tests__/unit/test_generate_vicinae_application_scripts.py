@@ -133,6 +133,23 @@ def test_bundle_without_identifier_or_runnable_executable_is_ignored(tmp_path):
     assert discovery.read_installed_application(bundle_path) is None
 
 
+@pytest.mark.parametrize(
+    ("bundle_name", "bundle_identifier"),
+    [
+        ("Traversal.app", "../../outside"),
+        ("Line\nBreak.app", "com.example.line-break"),
+    ],
+)
+def test_bundle_that_could_escape_its_generated_script_is_ignored(
+    tmp_path, bundle_name, bundle_identifier
+):
+    bundle_path = create_application_bundle(
+        tmp_path / bundle_name, {"CFBundleIdentifier": bundle_identifier}
+    )
+
+    assert discovery.read_installed_application(bundle_path) is None
+
+
 def test_synchronization_replaces_stale_output_and_keeps_user_scripts(tmp_path):
     script_directory = tmp_path / "scripts"
     script_directory.mkdir()
