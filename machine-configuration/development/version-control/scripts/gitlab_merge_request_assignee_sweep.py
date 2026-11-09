@@ -114,11 +114,12 @@ def _merge_request_path(merge_request: MergeRequest) -> str:
 
 
 def read_or_record_first_sweep_time(marker: Path, now: datetime) -> datetime:
-    if marker.exists():
+    try:
         return datetime.fromisoformat(marker.read_text(encoding="utf-8").strip())
-    marker.parent.mkdir(parents=True, exist_ok=True)
-    marker.write_text(now.isoformat(), encoding="utf-8")
-    return now
+    except (FileNotFoundError, ValueError):
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text(now.isoformat(), encoding="utf-8")
+        return now
 
 
 def sweep_lower_bound(first_sweep: datetime, now: datetime) -> datetime:

@@ -92,6 +92,14 @@ def test_first_sweep_records_the_floor_and_later_sweeps_keep_it(tmp_path):
     assert sweep.read_or_record_first_sweep_time(marker, later) == MOMENT
 
 
+def test_unreadable_marker_restarts_the_floor_at_now(tmp_path):
+    marker = tmp_path / "gitlab.example.first-sweep-at"
+    marker.write_text("")
+
+    assert sweep.read_or_record_first_sweep_time(marker, MOMENT) == MOMENT
+    assert marker.read_text() == MOMENT.isoformat()
+
+
 def test_merge_request_created_before_the_first_sweep_is_outside_the_query(tmp_path):
     gateway = FakeGateway({})
 
