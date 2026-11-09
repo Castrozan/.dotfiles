@@ -21,11 +21,6 @@ def serve_events(event_socket_path, payload: bytes, monkeypatch) -> list[str]:
             "reconcile_with_connected_monitors",
             reconcile_and_publish_on_first_call,
         )
-        monkeypatch.setattr(
-            daemon,
-            "restore_monitors_running_below_preferred_resolution",
-            lambda: True,
-        )
         daemon.reconcile_and_dispatch_events(str(event_socket_path))
     return reconcile_calls
 
@@ -56,23 +51,6 @@ class TestReconcileAndDispatchEvents:
             tmp_path / "events.sock", b"monitoradded>>DP-1\n", monkeypatch
         )
         assert len(reconcile_calls) == 2
-
-
-class TestSettleConnectedMonitors:
-    def test_restores_degraded_modes_after_reconciling_the_override(self, monkeypatch):
-        calls = []
-        monkeypatch.setattr(
-            daemon,
-            "reconcile_with_connected_monitors",
-            lambda: calls.append("reconcile"),
-        )
-        monkeypatch.setattr(
-            daemon,
-            "restore_monitors_running_below_preferred_resolution",
-            lambda: calls.append("restore"),
-        )
-        daemon.settle_connected_monitors()
-        assert calls == ["reconcile", "restore"]
 
 
 class TestMonitorChangeEvents:

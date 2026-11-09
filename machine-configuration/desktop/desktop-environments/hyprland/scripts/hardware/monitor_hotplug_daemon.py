@@ -4,28 +4,22 @@ from pathlib import Path
 
 from hyprland_runtime import build_event_socket_path
 from monitor_configuration import reconcile_with_connected_monitors
-from monitor_mode_recovery import restore_monitors_running_below_preferred_resolution
 
 RECONNECT_INITIAL_DELAY_SECONDS = 1
 RECONNECT_MAX_DELAY_SECONDS = 30
 MONITOR_CHANGE_EVENTS = frozenset({"monitoradded", "monitorremoved"})
 
 
-def settle_connected_monitors() -> None:
-    reconcile_with_connected_monitors()
-    restore_monitors_running_below_preferred_resolution()
-
-
 def reconcile_and_dispatch_events(event_socket_path: str) -> None:
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
         sock.connect(event_socket_path)
-        settle_connected_monitors()
+        reconcile_with_connected_monitors()
         with sock.makefile("r") as stream:
             for line in stream:
                 event, separator, _ = line.strip().partition(">>")
                 if separator and event in MONITOR_CHANGE_EVENTS:
-                    settle_connected_monitors()
+                    reconcile_with_connected_monitors()
     finally:
         sock.close()
 
