@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sample: [seed]
+        sample: [a, b]
     steps:
       - uses: actions/checkout@v4
 
