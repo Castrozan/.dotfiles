@@ -37,8 +37,8 @@ CLAUDE_WORKFLOW_PATH = (
 PACKAGED_COMMANDS_PATH = (
     REPO_ROOT
     / "agent-harness"
-    / "workflow-commands"
-    / "dotfiles-workflow-commands-home-manager.nix"
+    / "workflows"
+    / "workflows-home-manager.nix"
 )
 
 

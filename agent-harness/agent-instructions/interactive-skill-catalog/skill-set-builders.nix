@@ -109,8 +109,6 @@ let
     in
     if builtins.elem skillName vendoredSkillNames then
       skillSourceDirectoryByName.${skillName}
-    else if skillName == "research" then
-      import ../skills/knowledge/research/pulse/install.nix { inherit pkgs skillDirectory; }
     else
       skillDirectory;
 

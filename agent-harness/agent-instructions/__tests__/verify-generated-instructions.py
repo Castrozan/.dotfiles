@@ -1,7 +1,6 @@
 import argparse
 import json
 import shutil
-import subprocess
 from pathlib import Path
 
 from instructions.ai_instruction_format import inspect_markdown_instruction
@@ -48,27 +47,6 @@ def verify_projections(manifest, filesystem_root: Path) -> None:
             directories.append(target)
         else:
             copy_projection(source, target)
-    workflow = (
-        home
-        / ".local/share/agent-plugins/dotfiles/plugin/skills/research/research-pulse.workflow.js"
-    )
-    subprocess.run(
-        [
-            "node",
-            "--input-type=module",
-            "-e",
-            "import {readFileSync} from 'node:fs'; "
-            "const source = readFileSync(process.argv[1], 'utf8')"
-            ".replace('export const meta =', 'const meta ='); "
-            "const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor; "
-            "new AsyncFunction('args', 'agent', 'phase', 'parallel', 'log', source);",
-            str(workflow),
-        ],
-        check=True,
-    )
-    assert workflow.read_text().startswith("export const meta = {")
-    assert "const ITEMS_SCHEMA =" in workflow.read_text()
-    assert "const researchSourcePrompts =" in workflow.read_text()
     instructions = list(
         {
             path

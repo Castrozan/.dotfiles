@@ -1,0 +1,42 @@
+name: dotfiles-housekeeping-verify
+description: Independently refute or confirm one batch of dotfiles housekeeping candidates.
+inputs:
+  batch: { required: true }
+  root: { required: true }
+returns: verify
+mutates_checkout: false
+worktree:
+  enabled: false
+nodes:
+  - id: batch_data
+    bash: '@instructionData@ --text INPUTS_ROOT --json INPUTS_BATCH'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        root: { type: string }
+        batch: { type: string }
+      required: [root, batch]
+  - id: verify
+    command: verify-candidates
+    depends_on: [batch_data]
+    with:
+      batch: $batch_data.output.batch
+      root: $batch_data.output.root
+    model: medium
+    effort: medium
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        verdicts:
+          type: array
+          maxItems: 40
+          items:
+            type: object
+            properties:
+              index: { type: integer }
+              confirmed: { type: boolean }
+              reason: { type: string }
+            required: [index, confirmed, reason]
+      required: [verdicts]

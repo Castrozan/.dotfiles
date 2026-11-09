@@ -1,0 +1,32 @@
+name: research-pulse-fetch
+description: Fetch the items one research source holds for a topic and return them with the source key.
+inputs:
+  source_prompt: { required: true }
+returns: fetch
+mutates_checkout: false
+worktree:
+  enabled: false
+nodes:
+  - id: fetch
+    command: fetch-source
+    with:
+      source_prompt: $INPUTS.source_prompt
+    model: small
+    effort: low
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        source: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              title: { type: string }
+              url: { type: string }
+              summary: { type: string, description: one-to-two sentence factual summary }
+              published: { type: string, description: 'ISO date or relative; "unknown" if absent' }
+              signal: { type: string, description: why this is notable for the topic }
+            required: [title, url, summary, published, signal]
+      required: [source, items]

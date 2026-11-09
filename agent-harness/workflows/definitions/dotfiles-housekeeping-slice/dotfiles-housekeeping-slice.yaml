@@ -1,0 +1,80 @@
+name: dotfiles-housekeeping-slice
+description: Read one dotfiles housekeeping slice twice and return every finding both readers reported.
+inputs:
+  slice_path: { required: true }
+returns: combine
+mutates_checkout: false
+worktree:
+  enabled: false
+nodes:
+  - id: slice_data
+    bash: '@instructionData@ --text INPUTS_SLICE_PATH'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        slice_path: { type: string }
+      required: [slice_path]
+  - id: first_look
+    command: sweep-slice
+    depends_on: [slice_data]
+    with:
+      slice_path: $slice_data.output.slice_path
+      task: Sweep this slice of the dotfiles repository for standing rot and real defects.
+      earlier_findings: "`[]`"
+    model: small
+    effort: low
+    mutates_checkout: false
+    output_format: &findings
+      type: object
+      properties:
+        findings:
+          type: array
+          maxItems: 15
+          items:
+            type: object
+            properties:
+              dimension: { type: string }
+              file: { type: string }
+              line: { type: integer }
+              severity: { type: string, enum: [critical, high, medium, low] }
+              title: { type: string }
+              detail: { type: string }
+              confidence: { type: integer, minimum: 1, maximum: 5 }
+            required: [dimension, file, line, severity, title, detail, confidence]
+      required: [findings]
+  - id: first_look_data
+    depends_on: [first_look]
+    bash: |
+      FIRST_LOOK_FINDINGS=$first_look.output.findings
+      export FIRST_LOOK_FINDINGS
+      @instructionData@ --json FIRST_LOOK_FINDINGS
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        first_look_findings: { type: string }
+      required: [first_look_findings]
+  - id: second_look
+    command: sweep-slice
+    depends_on: [slice_data, first_look_data]
+    with:
+      slice_path: $slice_data.output.slice_path
+      task: Take a second look at this slice of the dotfiles repository and report only what the earlier reader missed.
+      earlier_findings: $first_look_data.output.first_look_findings
+    model: small
+    effort: low
+    mutates_checkout: false
+    output_format: *findings
+  - id: combine
+    depends_on: [first_look, second_look]
+    bash: |
+      first=$first_look.output
+      second=$second_look.output
+      printf '%s\n%s\n' "$first" "$second" | @jq@ -c -s '{findings: [.[].findings[]]}'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        findings: { type: array, items: { type: object } }
+      required: [findings]

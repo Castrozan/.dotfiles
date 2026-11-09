@@ -1,0 +1,146 @@
+name: research-pulse
+description: >-
+  On-demand AI/dev community research digest: fan out across GitHub, arXiv, Hacker News, Hugging Face, Reddit,
+  Lobste.rs and X for a topic, dedup and relevance-rank the pooled items, and return a themed digest. Uses one
+  small-tier fetch child per source and two medium-tier calls.
+inputs:
+  topic:
+    default: the latest in AI agents, LLM inference, local models, and developer tooling
+  accounts:
+    default: steipete,karpathy,simonw
+  max_items:
+    default: "12"
+returns: result
+mutates_checkout: false
+worktree:
+  enabled: false
+nodes:
+  - id: sources
+    bash: '@python@ @workflowDirectory@/scripts/research_pulse_sources.py --topic "$INPUTS_TOPIC" --accounts "$INPUTS_ACCOUNTS"'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        topic: { type: string }
+        sources: { type: array, items: { type: string } }
+      required: [topic, sources]
+  - id: fetch
+    workflow: research-pulse-fetch
+    depends_on: [sources]
+    fan_out: { items: "$sources.output.sources", as: source_prompt, max_parallel: 7, join: all_done }
+  - id: pool
+    depends_on: [fetch]
+    bash: |
+      fetched=$fetch.output
+      printf '%s' "$fetched" | @python@ @workflowDirectory@/scripts/research_pulse_pool.py
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        items: { type: array, items: { type: object } }
+        itemCount: { type: integer }
+        sourcesHit: { type: integer }
+      required: [items, itemCount, sourcesHit]
+  - id: rank_data
+    depends_on: [pool, sources]
+    when: "$pool.output.itemCount > '0'"
+    bash: |
+      TOPIC=$sources.output.topic
+      POOLED_ITEMS=$pool.output.items
+      export TOPIC POOLED_ITEMS
+      @instructionData@ --text TOPIC INPUTS_MAX_ITEMS --json POOLED_ITEMS
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        topic: { type: string }
+        max_items: { type: string }
+        pooled_items: { type: string }
+      required: [topic, max_items, pooled_items]
+  - id: rank
+    command: rank-items
+    depends_on: [rank_data]
+    with:
+      topic: $rank_data.output.topic
+      max_items: $rank_data.output.max_items
+      items: $rank_data.output.pooled_items
+    model: medium
+    effort: medium
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              title: { type: string }
+              url: { type: string }
+              source: { type: string }
+              score: { type: number, description: "relevance to topic, 1-10" }
+              theme: { type: string, description: Papers | Releases | Discussion | X chatter | Other }
+              why: { type: string, description: one line on why it matters for the topic }
+            required: [title, url, source, score, theme, why]
+      required: [items]
+  - id: select
+    depends_on: [pool, rank]
+    trigger_rule: none_failed_min_one_success
+    bash: |
+      ranked=$rank.output
+      printf '%s' "$ranked" | @python@ @workflowDirectory@/scripts/research_pulse_finalize.py select --max-items "$INPUTS_MAX_ITEMS"
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        items: { type: array, items: { type: object } }
+        itemCount: { type: integer }
+      required: [items, itemCount]
+  - id: digest_data
+    depends_on: [select, sources, pool]
+    when: "$pool.output.itemCount > '0'"
+    bash: |
+      TOPIC=$sources.output.topic
+      SELECTED_ITEMS=$select.output.items
+      export TOPIC SELECTED_ITEMS
+      @instructionData@ --text TOPIC --json SELECTED_ITEMS
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        topic: { type: string }
+        selected_items: { type: string }
+      required: [topic, selected_items]
+  - id: digest
+    command: write-digest
+    depends_on: [digest_data]
+    with:
+      topic: $digest_data.output.topic
+      items: $digest_data.output.selected_items
+    model: medium
+    effort: medium
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        digest: { type: string }
+      required: [digest]
+  - id: result
+    depends_on: [pool, select, digest, sources]
+    trigger_rule: none_failed_min_one_success
+    bash: |
+      topic=$sources.output.topic
+      pooled=$pool.output
+      selected=$select.output
+      written=$digest.output
+      printf '{"pool":%s,"select":%s,"digest":%s}' "$pooled" "$selected" "${written:-null}" \
+        | @python@ @workflowDirectory@/scripts/research_pulse_finalize.py result --topic "$topic"
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        topic: { type: string }
+        digest: { type: string }
+        itemCount: { type: integer }
+        sourcesHit: { type: integer }
+      required: [topic, digest, itemCount, sourcesHit]

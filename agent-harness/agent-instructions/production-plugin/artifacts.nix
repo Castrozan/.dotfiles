@@ -48,8 +48,6 @@ let
       path =
         if builtins.elem name skillCatalog.vendoredSkillNames then
           skillCatalog.skillSourceDirectoryByName.${name}
-        else if name == "research" then
-          import ../skills/knowledge/research/pulse/install.nix { inherit pkgs skillDirectory; }
         else
           skillDirectory;
     }
@@ -145,28 +143,7 @@ let
         pkgs
         lib
         ;
-    })
-    ++
-      lib.mapAttrsToList
-        (name: path: {
-          name = "workflows/${name}";
-          inherit path;
-        })
-        (
-          (import ../skills/writing/page-composer/install { }).workflowSources
-          // builtins.listToAttrs (
-            map
-              (name: {
-                inherit name;
-                value = ../../harnesses/claude-code/workflows + "/${name}";
-              })
-              (
-                builtins.filter (lib.hasSuffix ".js") (
-                  builtins.attrNames (builtins.readDir ../../harnesses/claude-code/workflows)
-                )
-              )
-          )
-        );
+    });
 in
 {
   entries = artifactEntries;

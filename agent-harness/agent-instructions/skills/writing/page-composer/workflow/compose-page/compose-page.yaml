@@ -1,0 +1,128 @@
+name: compose-page
+description: >-
+  Two-pass page composition: build an intent-led section spine with final content, then independently meaning-gate every
+  section and assemble the corrected page. Uses two medium-tier model calls.
+inputs:
+  brief: { required: true }
+  output: { default: "self-contained semantic HTML5 with an inline <style>" }
+  constraints: { default: "" }
+returns: result
+mutates_checkout: false
+worktree:
+  enabled: false
+nodes:
+  - id: brief_data
+    bash: '@instructionData@ --text INPUTS_BRIEF INPUTS_OUTPUT INPUTS_CONSTRAINTS'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        brief: { type: string }
+        output: { type: string }
+        constraints: { type: string }
+      required: [brief, output, constraints]
+  - id: draft
+    command: draft-page
+    depends_on: [brief_data]
+    with:
+      brief: $brief_data.output.brief
+      output: $brief_data.output.output
+      constraints: $brief_data.output.constraints
+    model: medium
+    effort: medium
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        thesis: { type: string }
+        audience: { type: string }
+        primaryAction: { type: string }
+        sections:
+          type: array
+          minItems: 6
+          maxItems: 8
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              role: { type: string, enum: [header, hero, middle, bottom, footer] }
+              oneIdea: { type: string }
+              relatesToPrevious: { type: string }
+              setsUpNext: { type: string }
+              whyItEarnsItsPlace: { type: string }
+              contentRationale: { type: string }
+              markup: { type: string }
+            required:
+              - id
+              - role
+              - oneIdea
+              - relatesToPrevious
+              - setsUpNext
+              - whyItEarnsItsPlace
+              - contentRationale
+              - markup
+      required: [thesis, audience, primaryAction, sections]
+  - id: draft_data
+    depends_on: [draft]
+    bash: |
+      DRAFT=$draft.output
+      export DRAFT
+      @instructionData@ --json DRAFT
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        draft: { type: string }
+      required: [draft]
+  - id: gate
+    command: gate-page
+    depends_on: [brief_data, draft_data]
+    with:
+      brief: $brief_data.output.brief
+      output: $brief_data.output.output
+      constraints: $brief_data.output.constraints
+      draft: $draft_data.output.draft
+    model: medium
+    effort: medium
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        sectionGateOutcomes:
+          type: array
+          minItems: 6
+          maxItems: 8
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              acceptedWithoutRevision: { type: boolean }
+              gateReason: { type: string }
+              defectsFixed: { type: array, items: { type: string } }
+            required: [id, acceptedWithoutRevision, gateReason, defectsFixed]
+        page: { type: string }
+      required: [sectionGateOutcomes, page]
+  - id: result
+    depends_on: [draft, gate]
+    bash: |
+      drafted=$draft.output
+      gated=$gate.output
+      printf '%s\n%s\n' "$drafted" "$gated" | @jq@ -c -s '{
+        thesis: .[0].thesis,
+        audience: .[0].audience,
+        primaryAction: .[0].primaryAction,
+        spine: [.[0].sections[] | del(.contentRationale, .markup)],
+        sectionGateOutcomes: .[1].sectionGateOutcomes,
+        page: .[1].page
+      }'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        thesis: { type: string }
+        audience: { type: string }
+        primaryAction: { type: string }
+        spine: { type: array, items: { type: object } }
+        sectionGateOutcomes: { type: array, items: { type: object } }
+        page: { type: string }
+      required: [thesis, audience, primaryAction, spine, sectionGateOutcomes, page]

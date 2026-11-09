@@ -5,10 +5,9 @@ description: Build a web page section by section through the compose-page workfl
 
 ### Workflow boundary
 
-Build the page the user describes by invoking the `compose-page` workflow (Workflow tool, name `compose-page`; where
-`Workflow` is unavailable, `dotfiles-compose-page --brief <brief> --output <path> --constraints <constraints>`). Never
-hand-scaffold the markup yourself, which reproduces the random-skeleton-of-placeholders failure this skill exists to
-prevent.
+Build the page the user describes by running `dotfiles-compose-page --brief <brief> --output <format> --constraints
+<constraints>`, which runs the `compose-page` Archon workflow on your own harness. Never hand-scaffold the markup
+yourself, which reproduces the random-skeleton-of-placeholders failure this skill exists to prevent.
 
 ### Visual direction
 
@@ -17,11 +16,12 @@ in `constraints`, preserving the user's design tokens, voice and factual limits.
 
 ### Invocation
 
-Pass the workflow an args object. `brief` is the subject, the audience, and the single action the page drives, drawn
+Pass the command three values. `brief` is the subject, the audience, and the single action the page drives, drawn
 from the user's request. `output` is the target format, defaulting to a self-contained semantic HTML5 file with one
 inline style block when the brief is silent. `constraints` carry design tokens, voice, length, and anything the content
-must not invent. The workflow throws without a `brief`, so resolve one from the request or ask for it before invoking
-rather than passing an empty brief.
+must not invent. The workflow refuses to start without a `brief`, so resolve one from the request or ask for it before
+invoking rather than passing an empty brief. When the command prints `still running`, run the `dotfiles-workflow-wait`
+command it names until the result arrives.
 
 ### After it returns
 
@@ -33,5 +33,5 @@ belongs back in `constraints` on a re-invocation, not in a hand-patch that detac
 
 ### Workflow authority
 
-The phases, schemas, and gate criteria live in the deployed `compose-page` workflow, the single source of truth; this
-skill only drives it.
+The phases, schemas, and gate criteria live in the `compose-page` workflow under this skill's `workflow/` directory,
+the single source of truth; this skill only drives it.

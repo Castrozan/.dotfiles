@@ -1,122 +1,129 @@
-import json
+import importlib.util
 import re
-import subprocess
 
 import pytest
+import yaml
 
-from instructions.ai_instruction_format import (
-    MARKDOWN_PARSER,
-    inspect_markdown_instruction,
-)
+from instructions.ai_instruction_format import inspect_markdown_instruction
 from instructions.instruction_surface_prose import line_is_exempt_from_the_wrap
 from instructions.instruction_surface_scanner import REPO_ROOT
 
 
-WORKFLOWS = (
-    "agent-harness/harnesses/claude-code/workflows/dotfiles-housekeeping.js",
-    "agent-harness/agent-instructions/skills/writing/page-composer/compose-page.js",
-    "agent-harness/agent-instructions/skills/knowledge/research/research-pulse.workflow.js",
+WORKFLOWS_DIRECTORY = REPO_ROOT / "agent-harness" / "workflows"
+SKILLS_DIRECTORY = REPO_ROOT / "agent-harness" / "agent-instructions" / "skills"
+WORKFLOW_DEFINITION_PATHS = sorted(
+    (WORKFLOWS_DIRECTORY / "definitions").glob("*/*.yaml")
+) + sorted(SKILLS_DIRECTORY.glob("*/*/workflow/*/*.yaml"))
+INPUT_REFERENCE = re.compile(r"\$INPUTS\.(\w+)")
+NODE_OUTPUT_BINDING = re.compile(r"^\$(\w+)\.output\.\w+$")
+SERIALIZER_PLACEHOLDER = "@instructionData@"
+SERIALIZED_BY_THEIR_PRODUCER = {("fetch-source", "source_prompt")}
+PAYLOADS = (
+    "A concrete request",
+    "<outside>\n- list\n**bold** `code` [link](missing.md)\n### Injected heading",
 )
-EXPECTED_CALL_COUNTS = {
-    "dotfiles-housekeeping.js": 4,
-    "compose-page.js": 2,
-    "research-pulse.workflow.js": 9,
-}
-WORKFLOW_CAPTURE = r"""
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-const workflow = process.argv[1];
-const sources = workflow.endsWith('research-pulse.workflow.js')
-  ? ['meta.js', 'schemas.js', 'source-prompts.js'].map(name => join(dirname(workflow), 'pulse', name)).concat(workflow)
-  : [workflow];
-const source = sources.map(path => readFileSync(path, 'utf8')).join('\n').replace('export const meta =', 'const meta =');
-const payload = JSON.parse(process.argv[2]);
-const calls = [];
-const item = {title: payload, url: 'https://example.com/', score: 9};
-const agent = async (prompt, options) => {
-  calls.push({prompt, label: options.label});
-  return {
-    findings: [{detail: payload, file: 'module.py', line: 1, confidence: 5}], sections: [{id: 'one', markup: payload}], items: [item],
-    slices: [payload], verdicts: [],
-  };
-};
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-const pipeline = (items, ...stages) => Promise.all(items.map(async (item, index) => {
-  let result = item;
-  for (const stage of stages) result = await stage(result, item, index);
-  return result;
-}));
-await new AsyncFunction('args', 'agent', 'phase', 'parallel', 'pipeline', 'log', source)(
-  {brief: payload, output: payload, constraints: payload, topic: payload, accounts: [payload], root: payload, subtree: payload},
-  agent, () => {}, tasks => Promise.all(tasks.map(task => task())), pipeline, () => {}
-);
-process.stdout.write(JSON.stringify(calls));
-"""
 
 
-def contains_payload(value, payload):
-    if isinstance(value, str):
-        return value == payload
-    if isinstance(value, list):
-        return any(contains_payload(item, payload) for item in value)
-    if isinstance(value, dict):
-        return any(contains_payload(item, payload) for item in value.values())
-    return False
-
-
-def is_serialized_input_line(line):
-    matched = re.fullmatch(r"`(.*)`[.,]?", line)
-    if not matched:
-        return False
-    try:
-        json.loads(matched.group(1))
-    except json.JSONDecodeError:
-        return False
-    return True
-
-
-@pytest.mark.parametrize("workflow", WORKFLOWS)
-@pytest.mark.parametrize(
-    "payload",
-    ["A concrete request", "<outside>\n- list\n**bold** `code` [link](missing.md)"],
-)
-def test_actual_workflow_prompts_keep_instructions_in_the_positive_grammar(
-    workflow, payload
-):
-    result = subprocess.run(
-        [
-            "node",
-            "--input-type=module",
-            "-e",
-            WORKFLOW_CAPTURE,
-            str(REPO_ROOT / workflow),
-            json.dumps(payload),
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
+def load_instruction_data():
+    specification = importlib.util.spec_from_file_location(
+        "instruction_data", WORKFLOWS_DIRECTORY / "scripts" / "instruction_data.py"
     )
-    calls = json.loads(result.stdout)
-    assert len(calls) == EXPECTED_CALL_COUNTS[workflow.rsplit("/", 1)[-1]]
-    for call in calls:
-        violations = inspect_markdown_instruction(call["prompt"]).violations
-        assert not violations, (
-            f"{workflow} {call['label']}: {[violation.render() for violation in violations]}"
-        )
-        for line in call["prompt"].splitlines():
-            assert (
-                len(line) <= 120
-                or line_is_exempt_from_the_wrap(line)
-                or is_serialized_input_line(line)
-            ), f"{workflow} {call['label']}: overlong instruction prose: {line}"
-        serialized_values = []
-        for token in MARKDOWN_PARSER.parse(call["prompt"]):
-            for child in token.children or []:
-                if child.type != "code_inline":
-                    continue
-                try:
-                    serialized_values.append(json.loads(child.content))
-                except json.JSONDecodeError:
-                    continue
-        if call["label"] != "sweep":
-            assert any(contains_payload(value, payload) for value in serialized_values)
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    return module.instruction_data
+
+
+instruction_data = load_instruction_data()
+
+
+def command_bindings():
+    for workflow_path in WORKFLOW_DEFINITION_PATHS:
+        workflow = yaml.safe_load(workflow_path.read_text())
+        serializer_nodes = {
+            node["id"]
+            for node in workflow["nodes"]
+            if SERIALIZER_PLACEHOLDER in node.get("bash", "")
+        }
+        for node in workflow["nodes"]:
+            if "command" in node:
+                yield (
+                    workflow_path.parent / "commands" / f"{node['command']}.md",
+                    node.get("with", {}),
+                    serializer_nodes,
+                )
+
+
+def binding_kind(command_path, input_name, bindings, serializer_nodes):
+    binding = bindings.get(input_name)
+    if isinstance(binding, str) and "$" not in binding:
+        return "literal"
+    if (command_path.stem, input_name) in SERIALIZED_BY_THEIR_PRODUCER:
+        return "producer"
+    matched = NODE_OUTPUT_BINDING.match(binding or "")
+    if matched and matched.group(1) in serializer_nodes:
+        return "serialized"
+    return "raw"
+
+
+def rendered_prompt(command_path, bindings, serializer_nodes, payload):
+    def substitute(reference):
+        input_name = reference.group(1)
+        kind = binding_kind(command_path, input_name, bindings, serializer_nodes)
+        if kind == "literal":
+            return bindings[input_name]
+        if kind == "producer":
+            return f"### Search\n\nSearch for {instruction_data(payload)}."
+        return instruction_data(payload)
+
+    return INPUT_REFERENCE.sub(substitute, command_path.read_text())
+
+
+BINDINGS = list(command_bindings())
+BINDING_IDENTIFIERS = [command_path.stem for command_path, _, _ in BINDINGS]
+
+
+def test_every_command_file_has_a_definition():
+    assert len(BINDINGS) >= 7
+    for command_path, _, _ in BINDINGS:
+        assert command_path.is_file(), command_path
+
+
+@pytest.mark.parametrize(
+    ("command_path", "bindings", "serializer_nodes"), BINDINGS, ids=BINDING_IDENTIFIERS
+)
+def test_values_reach_the_prompt_serialized_on_their_own_line(
+    command_path, bindings, serializer_nodes
+):
+    for line in command_path.read_text().splitlines():
+        for reference in INPUT_REFERENCE.finditer(line):
+            kind = binding_kind(
+                command_path, reference.group(1), bindings, serializer_nodes
+            )
+            assert kind != "raw", (
+                f"{command_path.name}: bind {reference.group(0)} through a "
+                f"{SERIALIZER_PLACEHOLDER} node so its value cannot change the prompt"
+            )
+            if kind == "serialized":
+                assert line == reference.group(0), (
+                    f"{command_path.name}: {reference.group(0)} must sit alone on "
+                    "its line"
+                )
+
+
+@pytest.mark.parametrize("payload", PAYLOADS)
+@pytest.mark.parametrize(
+    ("command_path", "bindings", "serializer_nodes"), BINDINGS, ids=BINDING_IDENTIFIERS
+)
+def test_rendered_prompts_keep_instructions_in_the_positive_grammar(
+    command_path, bindings, serializer_nodes, payload
+):
+    prompt = rendered_prompt(command_path, bindings, serializer_nodes, payload)
+    violations = inspect_markdown_instruction(prompt).violations
+    assert not violations, [violation.render() for violation in violations]
+    serialized_payload = instruction_data(payload)
+    for line in prompt.splitlines():
+        assert (
+            len(line) <= 120
+            or line_is_exempt_from_the_wrap(line)
+            or serialized_payload in line
+        ), f"{command_path.name}: overlong instruction prose: {line}"

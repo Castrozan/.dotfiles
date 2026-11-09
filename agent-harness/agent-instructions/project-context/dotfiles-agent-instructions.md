@@ -127,10 +127,10 @@ and skipping review does not waive verification required by [testing](#testing).
 
 Treat a workflow's model calls as delegation that consumes the task's agent budget, and keep every dotfiles workflow at
 a fixed call ceiling with no per-item model calls outside the breadth exception of the `agent-harness` workflows
-reference. Author further dotfiles workflows as `dotfiles-*` under `agent-harness/harnesses/claude-code/workflows/`,
-deployed to `~/.claude/workflows/`, rather than ad-hoc subagent fan-out. Give each one a matching `dotfiles-*` command
-in `agent-harness/workflow-commands/`, because that command is how every harness other than Claude Code reaches the
-workflow at all.
+reference. Author further dotfiles workflows as Archon YAML definitions under `agent-harness/workflows/definitions/`,
+or under the owning skill's `workflow/` directory, rather than ad-hoc subagent fan-out. Register each one and its
+matching `dotfiles-*` command in `agent-harness/workflows/workflows-home-manager.nix`; that command runs the workflow
+through Archon on the calling harness.
 
 ### Workflow
 

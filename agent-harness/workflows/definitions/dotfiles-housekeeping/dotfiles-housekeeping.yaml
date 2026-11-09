@@ -1,0 +1,55 @@
+name: dotfiles-housekeeping
+description: >-
+  Slice one dotfiles subtree, read every slice twice for standing rot and real defects, then independently refute and
+  rank the candidates. Reports only and writes nothing. Uses up to 12 slices read twice by small-tier readers and five
+  medium-tier verifiers.
+inputs:
+  root: { required: true }
+  subtree: { required: true }
+returns: report
+mutates_checkout: false
+worktree:
+  enabled: false
+nodes:
+  - id: slice
+    bash: '@python@ @workflowDirectory@/scripts/dotfiles_housekeeping_slices.py --root "$INPUTS_ROOT" --subtree "$INPUTS_SUBTREE"'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        slices: { type: array, items: { type: string } }
+        error: { type: string }
+      required: [slices, error]
+  - id: read
+    workflow: dotfiles-housekeeping-slice
+    depends_on: [slice]
+    fan_out: { items: "$slice.output.slices", as: slice_path, max_parallel: 12, join: all_done }
+  - id: candidates
+    depends_on: [read]
+    bash: |
+      slice_results=$read.output
+      printf '%s' "$slice_results" | @python@ @workflowDirectory@/scripts/housekeeping_candidates.py
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        slices_read: { type: integer }
+        distinct_count: { type: integer }
+        candidates: { type: array, items: { type: object } }
+        batches: { type: array, items: { type: array } }
+      required: [slices_read, distinct_count, candidates, batches]
+  - id: verify
+    workflow: dotfiles-housekeeping-verify
+    depends_on: [candidates]
+    with:
+      root: $INPUTS.root
+    fan_out: { items: "$candidates.output.batches", as: batch, max_parallel: 5, join: all_done }
+  - id: report
+    depends_on: [slice, candidates, verify]
+    bash: |
+      sliced=$slice.output
+      selection=$candidates.output
+      verdicts=$verify.output
+      printf '{"slice":%s,"candidates":%s,"verdicts":%s}' "$sliced" "$selection" "$verdicts" \
+        | @python@ @workflowDirectory@/scripts/housekeeping_report.py --subtree "$INPUTS_SUBTREE"
+    mutates_checkout: false

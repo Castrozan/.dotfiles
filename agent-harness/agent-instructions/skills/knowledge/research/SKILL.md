@@ -64,10 +64,10 @@ answer contains dates, links, decisive tradeoffs, and a clear recommendation.
 
 For a research digest, community pulse, or "catch me up" request, collect recent topic-specific evidence across GitHub,
 papers, practitioner discussion, and X. Extract the topic verbatim, read `research-pulse-seed-accounts.json`, and run
-`research-pulse.workflow.js` through `Workflow` when its runner is available with `topic`, `accounts`, and `maxItems`.
-Where `Workflow` is unavailable, run `dotfiles-research-pulse --topic <topic>`, which runs the same workflow through
-Claude Code. Relay its digest and disclose low `sourcesHit` or empty `itemCount`; when neither can run, perform the same
-source sweep directly.
+`dotfiles-research-pulse --topic <topic> --accounts <comma-separated accounts> --max_items <count>`, which runs the
+`research-pulse` Archon workflow on your own harness; when it prints `still running`, run the `dotfiles-workflow-wait`
+command it names. Relay its digest and disclose low `sourcesHit` or empty `itemCount`; when it cannot run, perform the
+same source sweep directly.
 
 Treat the seed accounts as a relevance hint, never a source allowlist, deduplicate by underlying item, and rank by topic
 fit instead of padding the result.

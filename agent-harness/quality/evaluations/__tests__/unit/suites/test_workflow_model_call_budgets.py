@@ -1,29 +1,15 @@
+import importlib.util
 import re
+
+import yaml
 
 from instructions.instruction_surface_scanner import REPO_ROOT
 
 
-DOTFILES_WORKFLOW_DIRECTORY = (
-    REPO_ROOT / "agent-harness" / "harnesses" / "claude-code" / "workflows"
-)
-PAGE_COMPOSER_WORKFLOW_PATH = (
-    REPO_ROOT
-    / "agent-harness"
-    / "agent-instructions"
-    / "skills"
-    / "writing"
-    / "page-composer"
-    / "compose-page.js"
-)
-RESEARCH_PULSE_WORKFLOW_PATH = (
-    REPO_ROOT
-    / "agent-harness"
-    / "agent-instructions"
-    / "skills"
-    / "knowledge"
-    / "research"
-    / "research-pulse.workflow.js"
-)
+SKILLS_DIRECTORY = REPO_ROOT / "agent-harness" / "agent-instructions" / "skills"
+WORKFLOW_DEFINITION_PATHS = sorted(
+    (REPO_ROOT / "agent-harness" / "workflows" / "definitions").glob("*/*.yaml")
+) + sorted(SKILLS_DIRECTORY.glob("*/*/workflow/*/*.yaml"))
 WORKFLOW_BUDGET_GUARD_HANDLER_PATH = (
     REPO_ROOT
     / "agent-harness"
@@ -33,133 +19,144 @@ WORKFLOW_BUDGET_GUARD_HANDLER_PATH = (
     / "subagent-budget-guard"
     / "workflow_budget_guard_handler.py"
 )
-BREADTH_WORKFLOW_PATHS = [DOTFILES_WORKFLOW_DIRECTORY / "dotfiles-housekeeping.js"]
+HOUSEKEEPING_SLICER_PATH = (
+    REPO_ROOT
+    / "agent-harness"
+    / "workflows"
+    / "definitions"
+    / "dotfiles-housekeeping"
+    / "scripts"
+    / "dotfiles_housekeeping_slices.py"
+)
+HOUSEKEEPING_CANDIDATES_PATH = (
+    HOUSEKEEPING_SLICER_PATH.parent / "housekeeping_candidates.py"
+)
+RESEARCH_SOURCES_PATH = (
+    SKILLS_DIRECTORY
+    / "knowledge"
+    / "research"
+    / "workflow"
+    / "research-pulse"
+    / "scripts"
+    / "research_pulse_sources.py"
+)
 MAXIMUM_MODEL_CALLS_PER_ROUTINE_WORKFLOW = 2
 MAXIMUM_RESEARCH_SOURCE_CALLS = 7
-SUPPORTED_EFFORT_LEVELS = "low|medium|high|xhigh|max"
+MODEL_TIERS = {"small", "medium", "large"}
+SUPPORTED_EFFORT_LEVELS = {"low", "medium", "high", "xhigh", "max"}
+MODEL_NODE_KEYS = {"prompt", "command", "loop", "loop_group"}
 
 
-def routine_workflow_paths():
-    dotfiles_workflow_paths = sorted(DOTFILES_WORKFLOW_DIRECTORY.glob("dotfiles-*.js"))
-    return [
-        workflow_path
-        for workflow_path in dotfiles_workflow_paths
-        if workflow_path not in BREADTH_WORKFLOW_PATHS
-    ] + [PAGE_COMPOSER_WORKFLOW_PATH]
+def load_workflows():
+    return {
+        path.stem: yaml.safe_load(path.read_text())
+        for path in WORKFLOW_DEFINITION_PATHS
+    }
 
 
-def every_workflow_path():
-    return (
-        routine_workflow_paths()
-        + BREADTH_WORKFLOW_PATHS
-        + [RESEARCH_PULSE_WORKFLOW_PATH]
+def model_nodes(workflow):
+    return [node for node in workflow["nodes"] if MODEL_NODE_KEYS & node.keys()]
+
+
+def fan_out_nodes(workflow):
+    return [node for node in workflow["nodes"] if "fan_out" in node]
+
+
+def total_model_calls(workflows, workflow_name):
+    workflow = workflows[workflow_name]
+    return len(model_nodes(workflow)) + sum(
+        total_model_calls(workflows, node["workflow"])
+        for node in workflow["nodes"]
+        if "workflow" in node and "fan_out" not in node
     )
 
 
-def model_call_count(source):
-    return len(re.findall(r"\bagent\s*\(", source))
+def declared_integer(path, constant_name):
+    return int(re.search(rf"\b{constant_name} = ([0-9_]+)", path.read_text()).group(1))
 
 
-def test_routine_workflows_stay_within_their_model_call_budget():
-    for workflow_path in routine_workflow_paths():
-        source = workflow_path.read_text()
-        assert model_call_count(source) <= MAXIMUM_MODEL_CALLS_PER_ROUTINE_WORKFLOW, (
-            f"{workflow_path.name} declares {model_call_count(source)} agent call "
-            f"sites; routine workflows may declare at most "
-            f"{MAXIMUM_MODEL_CALLS_PER_ROUTINE_WORKFLOW}"
-        )
-        assert "parallel(" not in source, (
-            f"{workflow_path.name} uses parallel fan-out instead of its fixed call budget"
-        )
-        assert "pipeline(" not in source, (
-            f"{workflow_path.name} uses pipeline fan-out instead of its fixed call budget"
-        )
-        for dynamic_call_pattern in (
-            "for (",
-            "for await (",
-            "while (",
-            ".forEach(",
-            "Promise.all(",
-        ):
-            assert dynamic_call_pattern not in source, (
-                f"{workflow_path.name} uses {dynamic_call_pattern} around a routine "
-                "workflow; keep model-call control flow visibly fixed"
+def test_every_workflow_definition_is_discovered():
+    assert {
+        "dotfiles-housekeeping",
+        "dotfiles-housekeeping-slice",
+        "dotfiles-housekeeping-verify",
+        "compose-page",
+        "research-pulse",
+        "research-pulse-fetch",
+    } <= load_workflows().keys()
+
+
+def test_every_model_call_pins_a_portable_tier_and_an_effort():
+    for name, workflow in load_workflows().items():
+        for node in model_nodes(workflow):
+            assert node.get("model") in MODEL_TIERS, (
+                f"{name}/{node['id']} must pin a small, medium, or large tier so every "
+                "harness resolves it to its own model instead of the caller's"
             )
-        first_map_position = source.find(".map(")
-        last_model_call_position = source.rfind("agent(")
-        assert (
-            first_map_position == -1 or first_map_position > last_model_call_position
-        ), f"{workflow_path.name} maps data before its final agent call"
+            assert node.get("effort") in SUPPORTED_EFFORT_LEVELS, (
+                f"{name}/{node['id']} must pin its effort; an unpinned call costs "
+                "whatever its invoker happened to be set to"
+            )
+            assert "output_format" in node, (
+                f"{name}/{node['id']} must declare the shape it hands downstream"
+            )
 
 
-def test_fixed_workflows_pin_the_model_and_the_effort_of_every_call():
-    for workflow_path in routine_workflow_paths() + BREADTH_WORKFLOW_PATHS:
-        source = workflow_path.read_text()
-        calls = model_call_count(source)
-        pinned_models = len(re.findall(r'model: "(?:haiku|sonnet|opus)"', source))
-        pinned_efforts = len(
-            re.findall(rf'effort: "(?:{SUPPORTED_EFFORT_LEVELS})"', source)
-        )
-        assert pinned_models == calls, (
-            f"{workflow_path.name} pins {pinned_models} models for {calls} calls; an "
-            "unpinned call inherits the caller's model"
-        )
-        assert pinned_efforts == calls, (
-            f"{workflow_path.name} pins {pinned_efforts} efforts for {calls} calls; an "
-            "unpinned call inherits the caller's reasoning effort, so its cost and "
-            "latency depend on whoever invoked the workflow"
-        )
+def test_every_workflow_is_read_only_and_runs_in_place():
+    for name, workflow in load_workflows().items():
+        assert workflow.get("mutates_checkout") is False, name
+        assert workflow.get("worktree") == {"enabled": False}, name
+        for node in workflow["nodes"]:
+            if "workflow" not in node:
+                assert node.get("mutates_checkout") is False, f"{name}/{node['id']}"
 
 
-def test_no_workflow_claims_a_turn_ceiling_the_harness_does_not_enforce():
-    for workflow_path in every_workflow_path():
-        source = workflow_path.read_text()
-        assert "maxTurns" not in source, (
-            f"{workflow_path.name} declares maxTurns, which the workflow runner does "
-            "not accept: it silently ignores the option and the call runs unbounded. "
-            "Bound a call through its prompt and its pinned effort instead"
-        )
+def test_fan_out_runs_only_over_deterministic_lists():
+    for name, workflow in load_workflows().items():
+        producers = {node["id"]: node for node in workflow["nodes"]}
+        for node in fan_out_nodes(workflow):
+            source_node = re.match(r"\$(\w+)\.output", node["fan_out"]["items"])
+            assert source_node, f"{name}/{node['id']} fans out over a non-node value"
+            assert "bash" in producers[source_node.group(1)], (
+                f"{name}/{node['id']} fans out over model-produced data"
+            )
 
 
-def test_the_explicit_research_fanout_pins_every_call_to_a_bounded_model():
-    source = (
-        RESEARCH_PULSE_WORKFLOW_PATH.read_text()
-        + (RESEARCH_PULSE_WORKFLOW_PATH.parent / "pulse/source-prompts.js").read_text()
+def test_the_routine_workflow_stays_within_its_model_call_budget():
+    workflows = load_workflows()
+    compose_page = workflows["compose-page"]
+    assert not fan_out_nodes(compose_page)
+    assert (
+        total_model_calls(workflows, "compose-page")
+        <= MAXIMUM_MODEL_CALLS_PER_ROUTINE_WORKFLOW
     )
-    pinned_call_count = len(
-        re.findall(
-            rf'"(?:haiku|sonnet)",\s*"(?:{SUPPORTED_EFFORT_LEVELS})"',
-            source,
-        )
-    )
-    assert pinned_call_count == model_call_count(source)
-    assert "  model," in source
-    assert "  effort," in source
-    sources = source.split("return [", 1)[1].split("];", 1)[0]
-    source_call_count = len(re.findall(r'^\s+key: "', sources, re.MULTILINE))
-    assert source_call_count <= MAXIMUM_RESEARCH_SOURCE_CALLS
 
 
-def declared_integer(source, constant_name):
-    return int(re.search(rf"\b{constant_name} = ([0-9_]+)", source).group(1))
-
-
-def test_breadth_workflows_fit_their_fan_out_under_the_workflow_budget_guard():
+def test_housekeeping_fits_its_fan_out_under_the_orchestrated_ceiling():
+    workflows = load_workflows()
     orchestrated_agent_ceiling = declared_integer(
-        WORKFLOW_BUDGET_GUARD_HANDLER_PATH.read_text(),
-        "ORCHESTRATED_WORKFLOW_AGENT_CEILING",
+        WORKFLOW_BUDGET_GUARD_HANDLER_PATH, "ORCHESTRATED_WORKFLOW_AGENT_CEILING"
     )
-    for workflow_path in BREADTH_WORKFLOW_PATHS:
-        source = workflow_path.read_text()
-        assert model_call_count(source) == 4
-        maximum_agents = (
-            1
-            + 2 * declared_integer(source, "MAXIMUM_SLICES")
-            + declared_integer(source, "VERIFIER_COUNT")
-        )
-        assert maximum_agents <= orchestrated_agent_ceiling, (
-            f"{workflow_path.name} can spawn {maximum_agents} agents, more than the "
-            f"guard's orchestrated ceiling of {orchestrated_agent_ceiling}"
-        )
-        for unbounded_call_pattern in ("while (", "for await ("):
-            assert unbounded_call_pattern not in source
+    readers_per_slice = total_model_calls(workflows, "dotfiles-housekeeping-slice")
+    calls_per_batch = total_model_calls(workflows, "dotfiles-housekeeping-verify")
+    maximum_calls = (
+        total_model_calls(workflows, "dotfiles-housekeeping")
+        + readers_per_slice
+        * declared_integer(HOUSEKEEPING_SLICER_PATH, "MAXIMUM_SLICES")
+        + calls_per_batch
+        * declared_integer(HOUSEKEEPING_CANDIDATES_PATH, "VERIFIER_COUNT")
+    )
+    assert maximum_calls <= orchestrated_agent_ceiling
+
+
+def test_the_research_fanout_is_bounded_by_its_source_list():
+    workflows = load_workflows()
+    specification = importlib.util.spec_from_file_location(
+        "research_pulse_sources", RESEARCH_SOURCES_PATH
+    )
+    research_sources = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(research_sources)
+    source_count = len(list(research_sources.source_definitions("topic", ["account"])))
+    assert 0 < source_count <= MAXIMUM_RESEARCH_SOURCE_CALLS
+    assert total_model_calls(workflows, "research-pulse-fetch") == 1
+    assert total_model_calls(workflows, "research-pulse") == 2

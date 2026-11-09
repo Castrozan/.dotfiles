@@ -54,7 +54,6 @@ let
     "anthropic-skills:pptx"
     "anthropic-skills:skill-creator"
     "anthropic-skills:xlsx"
-    "compose-page"
   ];
 
   claudeGlobalSettings = lib.recursiveUpdate {
