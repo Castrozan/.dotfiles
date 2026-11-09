@@ -24,7 +24,7 @@ ACTIVE_CONFIGURATION_SUFFIXES = (
 
 def tracked_active_configuration_files():
     tracked = subprocess.check_output(
-        ["git", "ls-files"], cwd=REPOSITORY, text=True
+        ["git", "ls-files"], cwd=REPOSITORY, text=True, timeout=30
     ).splitlines()
     own_file = Path(__file__).resolve()
     candidates = (REPOSITORY / relative for relative in tracked)
