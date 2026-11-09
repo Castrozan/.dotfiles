@@ -12,25 +12,14 @@ let
   privateGlabHostExists = builtins.pathExists privateGlabHostPath;
 in
 {
-  imports = [
-    ./gitlab-merge-request-assignee-sweep-home-manager.nix
-  ]
-  ++ lib.optionals privateGlabHostExists [
+  imports = lib.optionals privateGlabHostExists [
     privateGlabHostPath
   ];
 
-  options.glab = {
-    gitlabHost = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "Optional hosts.<host> entry for glab-cli. Set in private-configuration when the host is non-public.";
-    };
-
-    authenticatedHosts = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      readOnly = true;
-      description = "GitLab hosts this machine holds a glab credential for.";
-    };
+  options.glab.gitlabHost = lib.mkOption {
+    type = lib.types.nullOr lib.types.str;
+    default = null;
+    description = "Optional hosts.<host> entry for glab-cli. Set in private-configuration when the host is non-public.";
   };
 
   config =
@@ -73,10 +62,6 @@ in
       '';
     in
     {
-      glab.authenticatedHosts =
-        lib.optional (config.glab.gitlabHost != null) config.glab.gitlabHost
-        ++ lib.optional personalCredentialEnabled "gitlab.com";
-
       home.packages = [ pkgs.glab ];
 
       home.activation.setupGlabConfig = {
@@ -101,12 +86,18 @@ in
         ];
       };
 
-      healthCheck.probes = map (
-        gitlabHost:
-        healthCheckLib.mkBinaryProbe {
-          name = "glab config holds a token for ${gitlabHost}";
-          command = "glab config get token --host ${gitlabHost} | grep -q .";
-        }
-      ) config.glab.authenticatedHosts;
+      healthCheck.probes =
+        map
+          (
+            gitlabHost:
+            healthCheckLib.mkBinaryProbe {
+              name = "glab config holds a token for ${gitlabHost}";
+              command = "glab config get token --host ${gitlabHost} | grep -q .";
+            }
+          )
+          (
+            lib.optional (config.glab.gitlabHost != null) config.glab.gitlabHost
+            ++ lib.optional personalCredentialEnabled "gitlab.com"
+          );
     };
 }
