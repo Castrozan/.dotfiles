@@ -6,7 +6,8 @@ description: Control native desktop apps, keyboard, mouse, screenshots, clipboar
 ### Native app computer use
 
 Never browse through computer use, even to reproduce a real click: pages belong to the `browser` skill. A PreToolUse
-guard denies browser-targeted calls except that skill's consent click, and cannot see calls without a target.
+guard denies browser-targeted calls except that skill's consent click; the rule also binds untargeted calls it cannot
+see.
 
 On macOS, use the shared `desktop-computer-use` MCP: start with `doctor`, inspect controls through `get_ui_tree`, and
 follow its tool descriptions for targeting and screenshot coordinates. The terminal or agent host needs macOS

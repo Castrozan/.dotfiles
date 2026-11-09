@@ -71,7 +71,7 @@ Once connected, work in this order: 1) `connect` verifies the connection; 2) ope
 `--background true`, or use profile selection below when the account matters. Never `navigate_page` the selected tab
 because it replaces what the user has open.
 
-For profile-bound work, use Chrome's scripting interface to select the account's profile window and open a new tab there,
+For profile-bound work, natively select the account's profile window and open a new tab there,
 then discover that tab through DevTools. This is profile selection, including when DevTools is explicitly required.
 Follow [profile selection](references/chrome-target.md#profile-selection); `new_page` alone can use the wrong profile.
 
