@@ -9,6 +9,15 @@ let
   gitCoreSettings =
     (helpers.homeManagerTestConfiguration [ ../git-home-manager.nix ]).programs.git.settings.core;
   personalRepositoryRouting = import ../personal-repository-routing.nix;
+  assigneeSweepConfiguration =
+    buildConfiguration: authenticatedHosts:
+    buildConfiguration [
+      ../gitlab-merge-request-assignee-sweep-home-manager.nix
+      {
+        options.glab.authenticatedHosts = lib.mkOption { type = lib.types.listOf lib.types.str; };
+        config.glab.authenticatedHosts = authenticatedHosts;
+      }
+    ];
   routesEveryRepository =
     forge: expectedTargets:
     let
@@ -78,4 +87,32 @@ in
         "git@gitlab.com:Castrozan/zanoni-system.git"
       ])
       "GitLab selection routes every personal repository's other SSH and HTTPS aliases to GitLab";
+
+  domain-dev-assignee-sweep-runs-every-minute-on-linux =
+    mkEvalCheck "domain-dev-assignee-sweep-runs-every-minute-on-linux"
+      (
+        (assigneeSweepConfiguration helpers.homeManagerTestConfiguration [
+          "gitlab.example"
+        ]).systemd.user.timers.gitlab-merge-request-assignee-sweep.Timer.OnCalendar == "minutely"
+      )
+      "the assignee sweep should tick every minute on Linux hosts holding a GitLab credential";
+
+  domain-dev-assignee-sweep-runs-every-minute-on-darwin =
+    mkEvalCheck "domain-dev-assignee-sweep-runs-every-minute-on-darwin"
+      (
+        (assigneeSweepConfiguration helpers.homeManagerTestConfigurationForDarwin [
+          "gitlab.example"
+        ]).launchd.agents.gitlab-merge-request-assignee-sweep.config.StartInterval == 60
+      )
+      "the assignee sweep should tick every minute on macOS hosts holding a GitLab credential";
+
+  domain-dev-assignee-sweep-absent-without-a-credential =
+    mkEvalCheck "domain-dev-assignee-sweep-absent-without-a-credential"
+      (
+        !(
+          (assigneeSweepConfiguration helpers.homeManagerTestConfiguration [ ]).systemd.user.timers
+            ? gitlab-merge-request-assignee-sweep
+        )
+      )
+      "the assignee sweep should not be installed on a host with no GitLab credential";
 }
