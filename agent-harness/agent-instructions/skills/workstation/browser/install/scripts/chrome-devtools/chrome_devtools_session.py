@@ -110,11 +110,12 @@ class ChromeDevtoolsSession:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 raise RuntimeError("This Chrome DevTools worker is busy") from None
+            os.set_inheritable(lock.fileno(), True)
             yield
 
     @contextmanager
-    def attached_locked(self, required=True):
-        if not required or self.mode() == "headless":
+    def connection_locked(self):
+        if self.mode() == "headless":
             yield
             return
         self.directory.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -123,7 +124,6 @@ class ChromeDevtoolsSession:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 raise RuntimeError(
-                    "Attached Chrome is busy; reuse its owning task instead of starting another connection"
+                    "Another Chrome connection is awaiting consent; retry after it finishes"
                 ) from None
-            os.set_inheritable(lock.fileno(), True)
             yield

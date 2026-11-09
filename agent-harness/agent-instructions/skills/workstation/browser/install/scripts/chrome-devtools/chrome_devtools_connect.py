@@ -138,7 +138,7 @@ def connect(configuration, session, arguments, start_worker, stop_worker):
         return prepare_connection(configuration, session)
     deadline = time.monotonic() + options.timeout
     validate_approval_mode(session, options)
-    with session.attached_locked(), session.locked(), cancellable():
+    with session.connection_locked(), session.locked(), cancellable():
         require_connection_authorization(configuration, session, options)
         restart_approved_worker(configuration, session, options, deadline, stop_worker)
         request_started = False
