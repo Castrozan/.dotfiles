@@ -164,25 +164,26 @@ def parse_arguments(arguments: list[str]) -> argparse.Namespace:
     return parser.parse_args(arguments)
 
 
+def sweep_and_report_host(host: str, state_directory: Path, now: datetime) -> bool:
+    try:
+        result = sweep_host(host, GlabMergeRequestGateway(host), state_directory, now)
+    except GitLabRequestFailed as failure:
+        print(f"{host}: {failure}", file=sys.stderr)
+        return False
+    for merge_request in result.assigned:
+        print(f"assigned {merge_request.web_url}")
+    for failure in result.failures:
+        print(failure, file=sys.stderr)
+    return not result.failures
+
+
 def main(arguments: list[str]) -> int:
     parsed = parse_arguments(arguments)
     now = datetime.now(UTC)
-    failed = False
-    for host in parsed.host:
-        try:
-            result = sweep_host(
-                host, GlabMergeRequestGateway(host), parsed.state_directory, now
-            )
-        except GitLabRequestFailed as failure:
-            print(f"{host}: {failure}", file=sys.stderr)
-            failed = True
-            continue
-        for merge_request in result.assigned:
-            print(f"assigned {merge_request.web_url}")
-        for failure in result.failures:
-            print(failure, file=sys.stderr)
-        failed = failed or bool(result.failures)
-    return 1 if failed else 0
+    outcomes = [
+        sweep_and_report_host(host, parsed.state_directory, now) for host in parsed.host
+    ]
+    return 0 if all(outcomes) else 1
 
 
 if __name__ == "__main__":
