@@ -1,7 +1,9 @@
 { lib, ... }:
 let
   privateConfigRoot = ../../../private-configuration;
-  chisePrivateConfigExists = builtins.pathExists privateConfigRoot;
+  chisePrivateConfigExists = builtins.pathExists (
+    privateConfigRoot + "/machines/chise/clawde-agents"
+  );
 in
 {
   imports = [

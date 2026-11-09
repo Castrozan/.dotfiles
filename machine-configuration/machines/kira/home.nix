@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   privateConfigRoot = ../../../private-configuration;
-  kiraPrivateConfigExists = builtins.pathExists privateConfigRoot;
+  kiraPrivateConfigExists = builtins.pathExists (privateConfigRoot + "/machines/kira/clawde-agents");
 in
 {
   imports = [

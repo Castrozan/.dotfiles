@@ -48,6 +48,10 @@ def test_flake_checks_job_ends_on_the_complete_flake_check_verdict():
     assert "--no-build" not in verdict
 
 
+def test_flake_checks_verdict_never_answers_from_the_evaluation_cache():
+    assert "--no-eval-cache" in flake_checks_command().strip().splitlines()[-1]
+
+
 @pytest.mark.parametrize(
     "lint_result,evaluation_result", list(itertools.product(RESULTS, repeat=2))
 )
