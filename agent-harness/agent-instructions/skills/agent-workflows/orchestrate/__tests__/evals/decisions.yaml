@@ -124,8 +124,8 @@ casos:
       You orchestrate Archer for a team project whose code is private and lives only on the team's GitLab, and which
       must run on Claude Code, Codex and OpenCode; Lucas has said cost is not a constraint. Archer's brief did not say
       any of this. Its report now recommends three calls for Lucas, to publish a provider on GitHub, choose the engine
-      that fits the budget, and drop OpenCode support. What do you do before your next round? Answer without running
-      anything.
+      that fits the budget, and drop OpenCode support. What do you do before your next round, and with which
+      commands? Answer without running anything.
     assercoes:
       juiz:
         - Sends Archer the missing context as facts (private team code on GitLab only, all three harnesses required,
