@@ -56,9 +56,9 @@ prompt out of accessibility and screen capture. Find its window with `list_windo
 Allow with `focus_strategy` none at 64 points left of the window's right edge and 32 above its bottom edge. Read
 [connection consent](references/connection-consent.md) for the Hyprland native helper alternative.
 
-Never block the agent on `connect` or `list_pages`, retry in a loop, or start parallel attached clients. The wrapper
-rejects overlapping attached operations. On failure it cancels the request and cleans only its own worker; inspect any
-cleanup error before retrying.
+Never block the agent on `connect` or `list_pages`, or retry in a loop. Connection consent is serialized; established
+workers can operate concurrently on separate owned tabs. The wrapper rejects overlapping commands within one worker.
+On failure it cancels the request and cleans only its own worker; inspect any cleanup error before retrying.
 
 If Chrome is absent, summon Chrome Global through the platform's existing launcher. If debugging is disabled, ask the
 user to enable it. After a stale connection or empty page list, inspect the failure and use one scoped reconnect. Keep
@@ -77,7 +77,7 @@ save `take_screenshot` to a file and inspect it with the image viewer.
 ### Tips
 
 Always take a fresh snapshot after navigation because uids change between snapshots. Prefer snapshots over screenshots.
-The Chrome DevTools target is single and sequential and needs its own Allow.
+Each attached worker needs its own Allow. Keep commands sequential within that worker and use only tabs you own.
 
 Start attached recording only after bringing the owned target tab forward; background tabs can wait indefinitely for
 their first frame. Headless recording needs no desktop focus. Stop recording before stopping its worker.

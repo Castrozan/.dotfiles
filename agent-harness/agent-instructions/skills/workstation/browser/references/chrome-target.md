@@ -24,9 +24,10 @@ Reuse the current task's worker for its lifetime; reconnecting creates another g
 `--autoConnect` flow requests permission for each new session. Do not expose a debugging port, change settings, or
 retain workers across unrelated tasks to avoid that boundary. See [connection consent](connection-consent.md).
 
-Keep one attached operation active at a time. Connection verification has a deadline and runs detached from the agent's
-tool call. The bounded helper must be ready before the DevTools call that can wait on Allow; starting it afterwards can
-leave the agent unable to act. A timeout cancels this attempt and cleans its worker rather than retrying consent.
+Serialize connection consent and commands within each worker. Separate workers can operate concurrently on their own
+tabs. Connection verification has a deadline and runs detached from the agent's tool call. The bounded helper must be
+ready before the DevTools call that can wait on Allow; starting it afterwards can leave the agent unable to act. A
+timeout cancels this attempt and cleans its worker rather than retrying consent.
 
 ### Real browser never clobber the users open tab
 

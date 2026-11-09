@@ -99,7 +99,7 @@ def test_blocked_connection_leaves_tools_available_and_rejects_parallel_grants(
             timeout=1,
         )
         assert second.returncode == 1
-        assert "Attached Chrome is busy" in second.stderr
+        assert "Another Chrome connection is awaiting consent" in second.stderr
         _, error = process.communicate(timeout=5)
         assert process.returncode == 1
         assert "deadline expired" in error

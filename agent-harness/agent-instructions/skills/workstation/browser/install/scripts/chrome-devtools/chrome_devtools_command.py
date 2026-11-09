@@ -137,8 +137,8 @@ def invoke_browser(configuration, session, arguments, operation):
                 return result
         session.require_current_worker(configuration.upstream_executable)
         session.touch()
-    command = upstream_command(configuration, session, arguments)
-    return os.execv(configuration.upstream_executable, command)
+        command = upstream_command(configuration, session, arguments)
+        return os.execv(configuration.upstream_executable, command)
 
 
 def stop_or_clean_up_worker(configuration, session, arguments, operation):
@@ -153,9 +153,7 @@ def run_worker_operation(configuration, session, arguments, operation):
         return stop_or_clean_up_worker(configuration, session, arguments, operation)
     if inspection_requested(arguments, operation):
         return inspect_worker(configuration, session, arguments, operation)
-    attached = not (operation == "start" and headless_requested(arguments[1:]))
-    with session.attached_locked(required=attached):
-        return invoke_browser(configuration, session, arguments, operation)
+    return invoke_browser(configuration, session, arguments, operation)
 
 
 def main(configuration, arguments):
