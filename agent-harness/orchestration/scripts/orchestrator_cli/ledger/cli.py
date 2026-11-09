@@ -59,10 +59,12 @@ def add_parser(subcommands) -> None:
 def command_record(arguments: argparse.Namespace) -> int:
     orchestrator = sender_name(None)
     entry = new_entry(arguments.kind, arguments.words, arguments.to, orchestrator)
+    address = arguments.to and session_address(
+        Path(arguments.reports_dir), arguments.to
+    )
     save_record(Path(arguments.dir), entry["id"], entry)
     print(f"recorded {entry['id']}")
-    if arguments.to:
-        address = session_address(Path(arguments.reports_dir), arguments.to)
+    if address:
         notify_peer(address, orchestrator, words_relay_text(entry["words"]))
         print(f"relayed to {address}")
     return 0

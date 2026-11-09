@@ -93,3 +93,22 @@ def test_an_ask_without_words_is_refused(monkeypatch, tmp_path, capsys, notifica
     assert ledger(monkeypatch, tmp_path / "ledger", "ask", "--words", "  ") == 1
     assert "verbatim" in capsys.readouterr().err
     assert not (tmp_path / "ledger").exists()
+
+
+def test_an_ask_for_an_ambiguous_session_is_not_recorded(
+    monkeypatch, tmp_path, capsys, notifications
+):
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    for name, pane in (("Archer-a", "w1:p1"), ("Archer-b", "w1:p2")):
+        record = {"name": name, "requester": "Archer", "requester_pane": pane}
+        (reports / f"{name}.json").write_text(json.dumps(record))
+    arguments = ("ask", "--words", "ship it", "--to", "Archer")
+    assert (
+        ledger(
+            monkeypatch, tmp_path / "ledger", *arguments, "--reports-dir", str(reports)
+        )
+        == 1
+    )
+    assert "matches several sessions" in capsys.readouterr().err
+    assert not (tmp_path / "ledger").exists() and notifications == []
