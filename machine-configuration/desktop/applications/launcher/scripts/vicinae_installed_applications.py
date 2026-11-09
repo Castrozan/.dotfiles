@@ -51,16 +51,18 @@ def bundle_and_embedded_applications(bundle_path: Path) -> Iterator[Path]:
     )
 
 
+def application_bundles_within_search_root(search_root: Path) -> Iterator[Path]:
+    for child in sorted_directory_children(search_root):
+        if is_application_bundle(child):
+            yield child
+            continue
+        yield from filter(is_application_bundle, sorted_directory_children(child))
+
+
 def discover_application_bundle_paths(search_roots: Iterable[Path]) -> Iterator[Path]:
     for search_root in search_roots:
-        for child in sorted_directory_children(search_root):
-            if is_application_bundle(child):
-                yield from bundle_and_embedded_applications(child)
-                continue
-            for grandchild in filter(
-                is_application_bundle, sorted_directory_children(child)
-            ):
-                yield from bundle_and_embedded_applications(grandchild)
+        for bundle_path in application_bundles_within_search_root(search_root):
+            yield from bundle_and_embedded_applications(bundle_path)
     yield from bundle_and_embedded_applications(FINDER_BUNDLE_PATH)
 
 
@@ -73,11 +75,9 @@ def read_bundle_information(bundle_path: Path) -> dict | None:
     return information if isinstance(information, dict) else None
 
 
-def application_identifier(bundle_path: Path, information: dict) -> str | None:
-    bundle_identifier = information.get("CFBundleIdentifier")
-    if isinstance(bundle_identifier, str) and bundle_identifier:
-        return bundle_identifier
-    executable_name = information.get("CFBundleExecutable")
+def identifier_from_executable_path(
+    bundle_path: Path, executable_name: object
+) -> str | None:
     if not isinstance(executable_name, str) or not executable_name:
         return None
     if not os.access(bundle_path / "Contents" / "MacOS" / executable_name, os.X_OK):
@@ -86,6 +86,15 @@ def application_identifier(bundle_path: Path, information: dict) -> str | None:
         str(bundle_path.resolve()).encode()
     ).hexdigest()
     return f"path-{resolved_path_digest[:16]}"
+
+
+def application_identifier(bundle_path: Path, information: dict) -> str | None:
+    bundle_identifier = information.get("CFBundleIdentifier")
+    if isinstance(bundle_identifier, str) and bundle_identifier:
+        return bundle_identifier
+    return identifier_from_executable_path(
+        bundle_path, information.get("CFBundleExecutable")
+    )
 
 
 def application_display_name(bundle_path: Path) -> str:

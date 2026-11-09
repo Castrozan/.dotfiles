@@ -21,31 +21,33 @@ let
   );
 in
 {
-  home.file = {
-    "${vicinaeConfigurationDirectory}/${generatedSettingsFileName}".text = builtins.toJSON {
-      telemetry.system_info = false;
-      global_shortcuts.toggle = vicinaeToggleChord.vicinaeShortcut;
-      providers = {
-        applications.enabled = false;
-        scripts.entrypoints."generated-application.com.google.Chrome.sh".alias = "gc";
+  home = {
+    file = {
+      "${vicinaeConfigurationDirectory}/${generatedSettingsFileName}".text = builtins.toJSON {
+        telemetry.system_info = false;
+        global_shortcuts.toggle = vicinaeToggleChord.vicinaeShortcut;
+        providers = {
+          applications.enabled = false;
+          scripts.entrypoints."generated-application.com.google.Chrome.sh".alias = "gc";
+        };
       };
+      ".local/state/vicinae/login-item-registered".text = "";
     };
-    ".local/state/vicinae/login-item-registered".text = "";
-  };
 
-  home.activation.seedVicinaeUserSettings =
-    lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "linkGeneration" ]
-      ''
+    activation = {
+      seedVicinaeUserSettings = lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "linkGeneration" ] ''
         if [ ! -e ${lib.escapeShellArg userSettingsPath} ]; then
           run install -m 0644 ${userSettingsSeed} ${lib.escapeShellArg userSettingsPath}
         fi
       '';
 
-  home.activation.createVicinaeApplicationScriptDirectory =
-    lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "linkGeneration" ]
-      ''
-        run mkdir -p ${lib.escapeShellArg applicationScriptDirectory}
-      '';
+      createVicinaeApplicationScriptDirectory =
+        lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "linkGeneration" ]
+          ''
+            run mkdir -p ${lib.escapeShellArg applicationScriptDirectory}
+          '';
+    };
+  };
 
   launchd.agents.vicinae-application-scripts = {
     enable = true;
