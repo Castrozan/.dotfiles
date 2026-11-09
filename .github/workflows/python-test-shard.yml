@@ -65,7 +65,7 @@ jobs:
             export REPO_DIR="$PWD"
             mkdir -p .coverage-reports
             export COVERAGE_PROCESS_START="$PWD/repository/verification/cover/coverage.ini"
-            export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/cover/coverage.ini --cov-report= -o faulthandler_timeout=300"
+            export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/cover/coverage.ini --cov-report= -o faulthandler_timeout=300 -n 4"
             source repository/verification/runner/discovery.sh
             source repository/verification/runner/pytest.sh
             case "$PYTEST_TIER" in

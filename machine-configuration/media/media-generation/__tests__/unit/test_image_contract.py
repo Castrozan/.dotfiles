@@ -89,7 +89,7 @@ def test_tampered_image_is_not_replayed(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "operation_id", ["../escape", "bad", str(uuid.uuid4()).upper()]
+    "operation_id", ["../escape", "bad", "A3023E6A-7686-44D0-9827-8B2FFB1DBAF4"]
 )
 def test_invalid_operation_id_does_not_dispatch(tmp_path, operation_id):
     provider = ImageFixtureProvider()
