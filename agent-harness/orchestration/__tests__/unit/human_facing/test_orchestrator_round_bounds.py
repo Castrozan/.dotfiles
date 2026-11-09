@@ -6,9 +6,15 @@ import pytest
 from orchestration_test_support import file_card, valid_card_document
 from orchestrator_cli.decisions import card_limits
 from orchestrator_cli.reports.status_reports import REPORT_TEXT_LIMITS
-from round_test_support import escalate, file_report, report_document, run_round
+from round_test_support import (
+    ORCHESTRATOR,
+    escalate,
+    file_report,
+    report_document,
+    run_round,
+)
 
-SOURCE_LINES = 40
+SOURCE_LINES = 52
 UNESCAPED_PIPE = re.compile(r"(?<!\\)\|")
 
 
@@ -21,8 +27,24 @@ def words_filling(limit):
     return "word " * (limit // 5)
 
 
-def test_two_decisions_and_six_sessions_at_every_limit_fit_one_screen(
-    monkeypatch, directories, capsys, notifications
+def write_open_asks(state_home, count):
+    ledger = state_home / "orchestrator-ledger"
+    ledger.mkdir(parents=True)
+    for index in range(count):
+        ask = {
+            "id": f"L-20261109-00000{index}",
+            "kind": "ask",
+            "words": words_filling(400),
+            "owner": "Servant-with-a-long-name",
+            "orchestrator": ORCHESTRATOR,
+            "state": "open",
+            "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        (ledger / f"{ask['id']}.json").write_text(json.dumps(ask))
+
+
+def test_two_decisions_six_sessions_and_open_asks_at_every_limit_fit_one_screen(
+    monkeypatch, directories, tmp_path, capsys, notifications
 ):
     cards, reports = directories
     longest = {
@@ -55,9 +77,11 @@ def test_two_decisions_and_six_sessions_at_every_limit_fit_one_screen(
             )
             == 0
         )
+    write_open_asks(tmp_path / "state", 7)
     output = run_round(monkeypatch, cards, reports, capsys)
     assert len(output.splitlines()) <= SOURCE_LINES
-    assert output.count("Servant-") == 6
+    assert output.count("Servant-") == 6 + 5
+    assert "2 more: `orchestrator ledger list`" in output
 
 
 def write_report(reports, name, minutes_ago, **fields):

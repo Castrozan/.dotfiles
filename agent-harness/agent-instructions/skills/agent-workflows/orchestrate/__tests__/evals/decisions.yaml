@@ -97,9 +97,41 @@ casos:
       Mozart, and with which command?
     assercoes:
       juiz:
-        - Sends Mozart Lucas's words verbatim with `orchestrator relay Mozart --words`, optionally plus the rebuild as a
-          new fact, and adds no instruction about what Mozart should run, skip, or do with the VPN afterwards, leaving
-          that plan to Mozart.
+        - Sends Mozart Lucas's words verbatim, with `orchestrator ledger fact --words ... --to Mozart` or
+          `orchestrator relay Mozart --words`, optionally plus the rebuild as a new fact, and adds no instruction about
+          what Mozart should run, skip, or do with the VPN afterwards, leaving that plan to Mozart.
+  - nome: orchestrator_keeps_a_fact_lucas_gives
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
+    pergunta:
+      You orchestrate Carmilla, whose report says it is blocked until Lucas asks the reviewer to look at its infra merge
+      request. Lucas now types "i asked the reviewer to look at it". Your context will be compacted soon. Which commands
+      do you run, and what do you tell Lucas about the review request in your next round? Answer without running
+      anything.
+    assercoes:
+      juiz:
+        - Records Lucas's words with `orchestrator ledger fact --words "i asked the reviewer to look at it" --to
+          Carmilla` or the same fact command plus a relay to Carmilla, so the fact survives compaction and reaches the
+          session, and does not tell Lucas the review request is still his to make.
+  - nome: orchestrator_supplies_context_before_passing_recommendations
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
+    pergunta:
+      You orchestrate Archer for a team project whose code is private and lives only on the team's GitLab, and which
+      must run on Claude Code, Codex and OpenCode; Lucas has said cost is not a constraint. Archer's brief did not say
+      any of this. Its report now recommends three calls for Lucas, to publish a provider on GitHub, choose the engine
+      that fits the budget, and drop OpenCode support. What do you do before your next round? Answer without running
+      anything.
+    assercoes:
+      juiz:
+        - Sends Archer the missing context as facts (private team code on GitLab only, all three harnesses required,
+          cost open) with `orchestrator relay Archer --fact` or `orchestrator ledger fact --to Archer`, waits for its
+          revised report, and does not present the three recommendations to Lucas as decisions; it does not dictate
+          how Archer should redo the work.
   - nome: orchestrator_lets_the_answer_notice_carry_a_decision
     nivel: unidade
     instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md

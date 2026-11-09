@@ -98,12 +98,16 @@ def session_address(reports_directory: Path, session: str) -> PeerAddress:
     return PeerAddress(session)
 
 
+def words_relay_text(words: str) -> str:
+    flat = " ".join(words.split())
+    return f'Lucas\'s words: "{flat}". You decide what they change in your plan.'
+
+
 def relay_text(arguments: argparse.Namespace) -> str:
     if arguments.status_check:
         return STATUS_CHECK_TEXT
     if arguments.words is not None:
-        words = " ".join(arguments.words.split())
-        return f'Lucas\'s words: "{words}". You decide what they change in your plan.'
+        return words_relay_text(arguments.words)
     fact = arguments.fact.strip()
     require_bounded_line("the fact", fact, FACT_CHARACTERS, FACT_ADVICE)
     return f"New fact: {fact.rstrip('.')}. You decide what it changes in your plan."

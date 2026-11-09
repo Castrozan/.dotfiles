@@ -7,12 +7,20 @@ ssh chise orchestrator report file --to Ibaraki --sender Mozart --reply-host kir
 """
 
 
-def brief(done_when="- Rehearsal evidence comes from GitLab on the VPN", words=""):
+def brief(
+    done_when="- Rehearsal evidence comes from GitLab on the VPN",
+    words="",
+    context="Lucas's rehearsal on kira; results stay on the work GitLab.",
+):
     return f"""# Brief: GitLab evidence for the rehearsal
 
 ## Goal
 
 The rehearsal reads the work GitLab without glab inside its sandbox.
+
+## Context
+
+{context}
 
 ## Done when
 

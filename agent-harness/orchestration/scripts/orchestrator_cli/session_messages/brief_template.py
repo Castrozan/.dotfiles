@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 
 TEMPLATE_HEADINGS = (
     "Goal",
+    "Context",
     "Done when",
     "Constraints",
     "Workspace and worktree",
@@ -12,6 +13,11 @@ TEMPLATE_HEADINGS = (
     "Contract",
 )
 QUOTED_HEADING = "Lucas's words"
+CONTEXT_HEADING = "Context"
+CONTEXT_ADVICE = (
+    "the Context section must say whose work this is, where its results may be "
+    "published, and which requirements are hard and which are open"
+)
 CONTRACT_HEADING = "Contract"
 CONTRACT_COMMANDS = ("orchestrator decision file --to", "orchestrator report file --to")
 SECTION_HEADING = re.compile(r"^##\s+(?P<title>.+?)\s*$")
@@ -96,6 +102,17 @@ def ordered_step_problems(sections: list[BriefSection]) -> list[str]:
     ]
 
 
+def context_problems(sections: list[BriefSection]) -> list[str]:
+    context = [
+        line
+        for section in sections
+        if heading_key(section.title) == heading_key(CONTEXT_HEADING)
+        for _, line in section.prose_lines
+        if line.strip()
+    ]
+    return [] if context else [CONTEXT_ADVICE]
+
+
 def contract_problems(
     sections: list[BriefSection], reply_host: str | None
 ) -> list[str]:
@@ -120,6 +137,7 @@ def brief_problems(text: str, reply_host: str | None) -> list[str]:
     sections = brief_sections(text)
     return [
         *heading_problems(sections),
+        *context_problems(sections),
         *ordered_step_problems(sections),
         *contract_problems(sections, reply_host),
     ]

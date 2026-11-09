@@ -6,6 +6,7 @@ import sys
 from .decisions import cli as decision_cli
 from .handover import cli as handover_cli
 from .learning import cli as learning_cli
+from .ledger import cli as ledger_cli
 from .reports import cli as report_cli
 from .round import cli as round_cli
 from .session_messages import cli as session_message_cli
@@ -20,6 +21,7 @@ COMMANDS = {
     "watch": (watch_cli.add_parser, watch_cli.command_watch),
     "round": (round_cli.add_parser, round_cli.command_round),
     "handover": (handover_cli.add_parser, handover_cli.command_handover),
+    "ledger": (ledger_cli.add_parser, ledger_cli.command_ledger),
     "dispatch": (
         session_message_cli.add_dispatch_parser,
         session_message_cli.command_session_message,
@@ -35,7 +37,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="orchestrator",
         description="Run sub-sessions as their orchestrator: decision cards, status "
-        "reports, briefs and relays, the user model, the learning loop and the workspace "
+        "reports, briefs and relays, the ledger of what the human gave, the user model, the learning loop and the workspace "
         "watch.",
     )
     subcommands = parser.add_subparsers(dest="command", required=True)

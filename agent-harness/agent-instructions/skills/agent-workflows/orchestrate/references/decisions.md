@@ -6,14 +6,15 @@ work.
 
 ### Brief template
 
-Write every brief as a file with these headings in this order: Goal, Done when, Constraints, Workspace and worktree,
-Lucas's words, Contract. Goal and Done when state outcomes, and the session plans the work. Lucas's words carries what
-he said verbatim, never a summary of it. The peer shares none of your context, so the Contract section always states
-the rules below.
+Write every brief as a file with these headings in this order: Goal, Context, Done when, Constraints, Workspace and
+worktree, Lucas's words, Contract. Goal and Done when state outcomes, and the session plans the work. Context says whose
+work it is, where its results may be published, and which requirements are hard and which are open, since a session
+missing them builds a sound answer to the wrong problem. Lucas's words carries what he said verbatim, never a summary.
+The peer shares none of your context, so the Contract section always states the rules below.
 
 Send it with `orchestrator dispatch <target> --brief <file>`, adding `--host <ssh alias>` for another machine. It copies
-the brief there and refuses one missing a heading, ordering steps outside Lucas's words, or lacking the contract
-commands.
+the brief there and refuses one missing a heading or its Context, ordering steps outside Lucas's words, or lacking the
+contract commands.
 
 The peer files each decision it cannot make with `orchestrator decision file --to <your name>` instead of asking in its
 pane or through a question tool, and keeps working on whatever the decision does not block. It keeps `orchestrator
@@ -35,6 +36,20 @@ any machine; add nothing to that notice.
 Relay Lucas's other words verbatim with `orchestrator relay <session> --words`, and a fact the session cannot see with
 `--fact`. Leave the plan, order, tools and verification to the session even when you would choose otherwise. When its
 work misses the goal, relay the fact that shows the gap, not the fix.
+
+A report or card can show the session lacks context you or Lucas hold, such as whose work it is, where it may publish,
+or which requirement is hard. Send it that fact and wait for its revised report before carrying its recommendation to
+Lucas, because a recommendation built without that context is not a decision for him.
+
+### What Lucas gives you
+
+Record every ask and every fact Lucas gives you as he gives it, such as an approval given or a request sent, with
+`orchestrator ledger ask` or `orchestrator ledger fact --words "<his words>"`. Add `--to <session>` when it concerns a
+session; that hands his words over in place of `relay --words`.
+
+The round shows each open ask until you close it with `orchestrator ledger close <id> --evidence`, once live state, not
+a report, proves it done; chase the ones that stall. After a restart or compaction, and before telling Lucas anything is
+still owed by him, read `orchestrator ledger list`.
 
 ### Event loop
 
@@ -100,7 +115,7 @@ render as tables. The reply hook treats lines copied unchanged from this turn's 
 change is judged as your prose; the short prose lets the turn end without closing labels.
 
 That output carries every decision waiting for him, each with its question, every option and what it does, and the
-recommendation. One short row per session follows, with its state and next step or the decision it waits on; its goal
-and progress stay in `orchestrator report show`. A done session leaves the table half an hour after its last report and
-a handed-over one at once, so never add rows of your own. Never paste raw card text or an earlier option by number.
-Mention `orchestrator learn stats` only when a count changed.
+recommendation. His open asks follow, then one short row per session, with its state and next step or the decision it
+waits on; its goal and progress stay in `orchestrator report show`. A done session leaves the table half an hour after
+its last report and a handed-over one at once, so never add rows of your own. Never paste raw card text or an earlier
+option by number. Mention `orchestrator learn stats` only when a count changed.

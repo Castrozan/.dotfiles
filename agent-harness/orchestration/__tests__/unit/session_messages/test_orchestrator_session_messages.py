@@ -45,7 +45,7 @@ def test_dispatch_sends_nothing_when_the_brief_dictates_steps(
 ):
     steps = brief(done_when="1. Build the gate script\n2. Rehearse")
     assert dispatch(monkeypatch, tmp_path, steps, "--host", "kira") == 1
-    assert "line 9 orders steps" in capsys.readouterr().err
+    assert "line 13 orders steps" in capsys.readouterr().err
     assert notifications == [] and copied_briefs == []
 
 

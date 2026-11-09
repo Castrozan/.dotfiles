@@ -43,3 +43,13 @@ def test_a_brief_missing_a_template_heading_or_the_remote_contract_is_refused():
         assert brief_problems(brief(), host) == [
             f"the Contract section must show the session `--reply-host {host}`"
         ]
+
+
+@pytest.mark.parametrize("context", ["", "```\nprivate\n```"])
+def test_a_brief_without_context_for_the_session_is_refused(context):
+    assert brief_problems(brief(context=context), "kira") == [
+        "the Context section must say whose work this is, where its results may be "
+        "published, and which requirements are hard and which are open"
+    ]
+    no_heading = brief().replace("## Context", "## Background")
+    assert any("Context" in problem for problem in brief_problems(no_heading, "kira"))

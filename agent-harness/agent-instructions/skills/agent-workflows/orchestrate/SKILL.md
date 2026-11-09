@@ -116,7 +116,8 @@ commit, or a diff and read that yourself; read the pane through herdr when you n
 ### Decisions travel as cards
 
 When you orchestrate sub-sessions, read [decisions](references/decisions.md) first. It owns their workspace, briefs,
-what you send them, the event loop, the round view, deciding as Lucas, and learning from his corrections. A pane
+what you send them, what Lucas gives you, the event loop, the round view, deciding as Lucas, and learning from his
+corrections. A pane
 question or a scraped answer arrives without the context a decision card carries.
 
 ### A2a sender identity

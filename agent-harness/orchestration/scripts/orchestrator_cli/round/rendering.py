@@ -6,7 +6,10 @@ from .markdown_table import clipped, markdown_table
 
 PARAGRAPH_CHARACTERS = 300
 SESSION_HEADERS = ["#", "Session", "State", "Next"]
+ASK_HEADERS = ["#", "Your ask", "Owner", "Open for"]
 NEXT_CHARACTERS = 60
+ASK_CHARACTERS = 70
+ASK_ROWS = 5
 FULL_VIEW_LINE = (
     "Full view: `orchestrator decision show <id>` · "
     "`orchestrator report show <session>`"
@@ -85,7 +88,38 @@ def sessions_block(reports: list[dict], now: datetime) -> str:
     return f"{table}\n\n{FULL_VIEW_LINE}"
 
 
-def rendered_round(cards: list[dict], reports: list[dict], now: datetime) -> str:
+def age(timestamp: str, now: datetime) -> str:
+    minutes = minutes_since(timestamp, now)
+    if minutes < 120:
+        return f"{minutes}m"
+    hours = minutes // 60
+    return f"{hours}h" if hours < 48 else f"{hours // 24}d"
+
+
+def ask_rows(asks: list[dict], now: datetime) -> list[list[str]]:
+    return [
+        [
+            str(index),
+            clipped(ask["words"], ASK_CHARACTERS),
+            ask["owner"],
+            age(ask["recorded_at"], now),
+        ]
+        for index, ask in enumerate(asks[:ASK_ROWS], start=1)
+    ]
+
+
+def asks_block(asks: list[dict], now: datetime) -> list[str]:
+    if not asks:
+        return []
+    table = markdown_table(ASK_HEADERS, ask_rows(asks, now))
+    hidden = len(asks) - ASK_ROWS
+    more = [f"{hidden} more: `orchestrator ledger list`"] if hidden > 0 else []
+    return ["### Your asks still open", table, *more]
+
+
+def rendered_round(
+    cards: list[dict], reports: list[dict], asks: list[dict], now: datetime
+) -> str:
     decisions = [decision_block(card) for card in cards] or [
         "No decision is waiting for you."
     ]
@@ -93,6 +127,7 @@ def rendered_round(cards: list[dict], reports: list[dict], now: datetime) -> str
         [
             "### Decisions waiting for you",
             *decisions,
+            *asks_block(asks, now),
             "### Sessions",
             sessions_block(reports, now),
         ]
