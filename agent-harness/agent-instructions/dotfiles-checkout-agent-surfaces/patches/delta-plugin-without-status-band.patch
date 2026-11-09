@@ -1,0 +1,31 @@
+--- a/.claude-plugin/plugin.json
++++ b/.claude-plugin/plugin.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "delta",
+   "displayName": "Delta for Claude Code",
+-  "version": "0.1.42",
++  "version": "0.1.42+no-status-band",
+   "description": "Make Claude Code multiplayer. Collaborate on shared conversations and code, powered by DeltaDB.",
+   "author": {
+     "name": "Zed Industries"
+--- a/hooks/band/band.tsx
++++ b/hooks/band/band.tsx
+@@ -378,6 +378,7 @@
+   next: HookNext<'ui.render', { component: 'AbovePrompt' }>,
+ ) {
+   await drainMessages(host)
++  return next(e)
+   if (e.props.hasSurvey) return next(e)
+   const maxRows = Math.max(0, e.props.maxRows)
+   if (maxRows === 0) return next(e)
+--- a/hooks/register.tsx
++++ b/hooks/register.tsx
+@@ -250,7 +250,6 @@
+     if (warning) await $.ui.log(warning, { to: 'transcript' })
+     await registerCommands(host)
+     const result = await next(e)
+-    $.clock.after(0, () => { void installationUpdates.check(installUpdateHost(host)) })
+     const session = await $.session.id()
+     startPluginUpdates(host, session)
+     try { await activate(host, session) }

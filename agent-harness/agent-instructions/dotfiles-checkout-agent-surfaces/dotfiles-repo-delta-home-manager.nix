@@ -8,6 +8,7 @@
 }:
 let
   delta = import ./delta-package.nix { inherit pkgs inputs; };
+  deltaPluginMarketplaceDirectory = ".local/share/agent-plugins/delta";
   dotfilesCheckout = "${config.home.homeDirectory}/.dotfiles";
   claudeCommand = "${config.claude.unwrappedPackage}/bin/claude";
   claudeConfigDirectory = "${config.home.homeDirectory}/.claude";
@@ -20,7 +21,11 @@ let
 in
 {
   home = {
-    file = deltaInstallLocation;
+    file = deltaInstallLocation // {
+      ${deltaPluginMarketplaceDirectory}.source = import ./delta-plugin-without-status-band.nix {
+        inherit pkgs;
+      };
+    };
 
     packages = [
       (pkgs.writeShellScriptBin "zed-delta" ''exec ${delta.commandLine} "$@"'')
@@ -36,8 +41,7 @@ in
           if [ -d "${dotfilesCheckout}/.git" ]; then
             if ! (
               cd "${dotfilesCheckout}" &&
-                export PATH="${pkgs.git}/bin:$PATH" &&
-                CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin marketplace add zed-industries/delta-claude --scope local &&
+                CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin marketplace add "${config.home.homeDirectory}/${deltaPluginMarketplaceDirectory}" --scope local &&
                 CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin install delta@zed-industries --scope local &&
                 CLAUDE_CONFIG_DIR="${claudeConfigDirectory}" ${claudeCommand} plugin update delta@zed-industries --scope local
             ); then
