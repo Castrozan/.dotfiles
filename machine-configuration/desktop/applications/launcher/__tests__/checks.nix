@@ -31,8 +31,22 @@ in
       "Vicinae system telemetry defaults to on and must be disabled by the generated settings";
 
   domain-desktop-vicinae-chrome-alias = mkEvalCheck "domain-desktop-vicinae-chrome-alias" (
-    vicinaeGeneratedSettings.providers.applications.entrypoints."com.google.Chrome".alias == "gc"
+    vicinaeGeneratedSettings.providers.scripts.entrypoints."generated-application.com.google.Chrome.sh".alias
+    == "gc"
   ) "gc falls below Vicinae's match floor for Google Chrome, so the alias must recover it";
+
+  domain-desktop-vicinae-native-application-list-disabled =
+    mkEvalCheck "domain-desktop-vicinae-native-application-list-disabled"
+      (vicinaeGeneratedSettings.providers.applications.enabled == false)
+      "Native application rows only focus running apps and would duplicate the generated new-instance rows";
+
+  domain-desktop-vicinae-application-scripts-follow-installed-applications =
+    mkEvalCheck "domain-desktop-vicinae-application-scripts-follow-installed-applications"
+      (
+        vicinaeConfiguration.launchd.agents.vicinae-application-scripts.config.RunAtLoad == true
+        && builtins.elem "/Applications" vicinaeConfiguration.launchd.agents.vicinae-application-scripts.config.WatchPaths
+      )
+      "Application scripts must regenerate at login and whenever installed applications change";
 
   domain-desktop-vicinae-karabiner-sends-registered-chord =
     mkEvalCheck "domain-desktop-vicinae-karabiner-sends-registered-chord"
