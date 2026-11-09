@@ -74,8 +74,8 @@ For profile-bound work, use native Chrome interaction to select the account's pr
 then discover that tab through DevTools. This is profile selection, including when DevTools is explicitly required.
 Follow [profile selection](references/chrome-target.md#profile-selection); `new_page` alone can use the wrong profile.
 
-3. `take_snapshot` returns uid refs; 4) `click` and `fill` interact through a uid; 5) save `take_screenshot` to a file and
-   inspect it with the image viewer.
+Continue with 3) `take_snapshot` for uid refs; 4) `click` and `fill` through a uid; 5) save `take_screenshot` to a file
+and inspect it with the image viewer.
 
 ### Tips
 
