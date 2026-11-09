@@ -66,13 +66,16 @@ an explicit Chrome DevTools requirement throughout recovery; none of these failu
 
 ### Chrome devtools operation
 
-Once connected, work in this order: 1) `connect` verifies the connection; 2) `new_page` with `--background true` opens
-work in a fresh tab; never `navigate_page` the selected tab because it replaces what the user has open.
+Once connected, work in this order: 1) `connect` verifies the connection; 2) open a fresh task tab with `new_page` and
+`--background true`, or use profile selection below when the account matters. Never `navigate_page` the selected tab
+because it replaces what the user has open.
 
-For profile-bound work, pick the account from the profile names in `~/.config/chrome-global/Local State` and use that
-profile's open window; only when it has none, cold-start it with `summon-chrome-work-profile` or
-`summon-chrome-personal-profile`; 3) `take_snapshot` returns uid refs; 4) `click` and `fill` interact through a uid; 5)
-save `take_screenshot` to a file and inspect it with the image viewer.
+For profile-bound work, use native Chrome interaction to select the account's profile window and open a new tab there,
+then discover that tab through DevTools. This is profile selection, including when DevTools is explicitly required.
+Follow [profile selection](references/chrome-target.md#profile-selection); `new_page` alone can use the wrong profile.
+
+3. `take_snapshot` returns uid refs; 4) `click` and `fill` interact through a uid; 5) save `take_screenshot` to a file and
+   inspect it with the image viewer.
 
 ### Tips
 
