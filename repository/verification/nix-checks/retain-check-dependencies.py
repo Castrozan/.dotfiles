@@ -101,11 +101,13 @@ def select_retained_paths(closure, check_outputs, derivers, signature_lines):
 def retain_check_dependencies(store, system, root_directory):
     check_derivations = store.check_derivations(system)
     check_outputs = store.outputs(check_derivations)
-    closure = [
-        path
-        for path in store.closure_with_outputs(check_derivations)
-        if not path.endswith(".drv")
-    ]
+    closure = list(
+        dict.fromkeys(
+            path
+            for path in store.closure_with_outputs(check_derivations)
+            if not path.endswith(".drv")
+        )
+    )
     retained = select_retained_paths(
         closure, check_outputs, store.derivers(closure), store.signatures(closure)
     )

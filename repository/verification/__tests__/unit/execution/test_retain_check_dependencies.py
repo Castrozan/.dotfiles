@@ -37,6 +37,7 @@ class FakeStore:
             BUILT_DEPENDENCY,
             SUBSTITUTED_DEPENDENCY,
             FLAKE_SOURCE,
+            BUILT_DEPENDENCY,
         ]
 
     def derivers(self, paths):
