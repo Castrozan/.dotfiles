@@ -42,7 +42,7 @@ runs:
     - uses: DeterminateSystems/determinate-nix-action@16f94ba7aae399b9f9077c254b6719ec6de7e3e3
       if: ${{ inputs.nix-distribution == 'determinate' }}
       with:
-        diagnostic-endpoint: ''
+        diagnostic-endpoint: ""
         summarize: false
         extra-conf: |
           eval-cores = 0
@@ -58,18 +58,25 @@ runs:
           "$(jq -er .cacheUrl "$devenv_cache_configuration")" \
           "$(jq -er .publicKey "$devenv_cache_configuration")" >> "$HOME/.config/nix/nix.conf"
 
+    - name: Identify the store cache week
+      id: store-cache-week
+      if: ${{ inputs.cache-key == 'flake-check' }}
+      shell: bash
+      run: echo "week=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+
     # Keeping the cache configuration in one place matters more than the indirection costs: a key
     # that drifts between jobs turns every restore into a silent miss, which reads as a slow run
     # rather than as a broken cache.
     - uses: nix-community/cache-nix-action@v7
       if: ${{ inputs.cache-key == 'flake-check' }}
       with:
-        primary-key: nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ inputs.nix-distribution }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/package/unwrapped.nix', 'repository/nix-library/fetch-prebuilt-binary.nix', 'machine-configuration/development/local-language-models/**') }}
+        primary-key: nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ inputs.nix-distribution }}-${{ steps.store-cache-week.outputs.week }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/package/unwrapped.nix', 'repository/nix-library/fetch-prebuilt-binary.nix', 'machine-configuration/development/local-language-models/**') }}
         restore-prefixes-first-match: |
           nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ inputs.nix-distribution }}-
           nix-native-${{ runner.os }}-${{ inputs.cache-key }}-
           nix-${{ runner.os }}-${{ inputs.cache-key }}-
         paths: |
           ~/.cache/nix
-        gc-max-store-size-linux: 4G
+        save: ${{ github.ref == 'refs/heads/main' }}
+        gc-max-store-size-linux: 7G
         purge: false
