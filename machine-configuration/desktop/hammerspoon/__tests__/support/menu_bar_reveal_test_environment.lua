@@ -75,11 +75,14 @@ local function makeCommandTask(launchPath, onExit, arguments)
 			onExit(exitCode, standardOutput, standardError)
 		end
 	end
+	function task:setCallback(replacementOnExit)
+		onExit = replacementOnExit
+		return self
+	end
 	function task:waitUntilExit()
 		self.waitedSynchronously = true
 		if not self.exited then
-			self.exited = true
-			self:applyToWindowServer()
+			self:exit(0, "0\n", "")
 		end
 		return self
 	end

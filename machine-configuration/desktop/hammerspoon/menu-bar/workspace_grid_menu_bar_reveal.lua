@@ -41,7 +41,7 @@ end
 local function finishVisibilityCommand(command, succeeded, failureDetail)
 	runningVisibilityCommand = nil
 	if not succeeded then
-		hs.printf("Menu bar visibility failed: %s", tostring(failureDetail))
+		hs.printf("Menu bar visibility failed: %s", failureDetail)
 	end
 	if not command.visible then
 		possiblyVisibleDisplayId = nil
@@ -54,7 +54,7 @@ end
 local function startVisibilityCommand(command)
 	local task = newVisibilityCommandTask(command, function(exitCode, standardOutput, standardError)
 		local succeeded = exitCode == 0 and tonumber(standardOutput) == 0
-		finishVisibilityCommand(command, succeeded, standardError .. standardOutput)
+		finishVisibilityCommand(command, succeeded, tostring(standardError) .. tostring(standardOutput))
 	end)
 	if not task or not task:start() then
 		finishVisibilityCommand(command, false, "the script runner could not start")
@@ -116,7 +116,9 @@ function workspaceGridMenuBarReveal.releaseBeforeShutdown()
 	stopPendingTimers()
 	requestedDisplayId = nil
 	if runningVisibilityCommand then
+		runningVisibilityCommand:setCallback(nil)
 		runningVisibilityCommand:waitUntilExit()
+		runningVisibilityCommand = nil
 	end
 	if not possiblyVisibleDisplayId then
 		return
