@@ -22,7 +22,7 @@ in
 {
   home = {
     file = deltaInstallLocation // {
-      ${deltaPluginMarketplaceDirectory}.source = import ./delta-plugin-without-status-band.nix {
+      ${deltaPluginMarketplaceDirectory}.source = import ./patched-delta-plugin.nix {
         inherit pkgs;
       };
     };

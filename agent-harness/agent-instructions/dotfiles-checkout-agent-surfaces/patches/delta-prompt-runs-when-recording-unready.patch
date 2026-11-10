@@ -1,0 +1,84 @@
+--- a/.claude-plugin/plugin.json
++++ b/.claude-plugin/plugin.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "delta",
+   "displayName": "Delta for Claude Code",
+-  "version": "0.1.42+no-status-band",
++  "version": "0.1.42+no-status-band+prompts-unblocked",
+   "description": "Make Claude Code multiplayer. Collaborate on shared conversations and code, powered by DeltaDB.",
+   "author": {
+     "name": "Zed Industries"
+--- a/hooks/recording/prompt.ts
++++ b/hooks/recording/prompt.ts
+@@ -14,7 +14,7 @@
+ } from '../core/session-state'
+ import type { Host } from '../core/host'
+ import { errorText } from '../core/text'
+-import { classifyCommandFailure, JoinNotReadyError } from '../cli/thread-commands'
++import { classifyCommandFailure, DeltaCommandError, JoinNotReadyError } from '../cli/thread-commands'
+ import { liveFor, startConversation } from '../watch/watch'
+ import { settleRemote, settling } from '../watch/rows'
+ 
+@@ -97,7 +97,11 @@
+   // A session that does not record offline still recovers the watcher here and refuses if it cannot.
+   if (!offline && !incomplete && (!runtime.binding.thread || isPaused(runtime) || !liveFor(session))) {
+     try { await startConversation(host, session) }
+-    catch (error) { return { drop: `The Delta watcher is not ready: ${errorText(error)}. ${recoveryAdvice(runtime.binding)}.` } }
++    catch (error) {
++      const reason = `The Delta watcher is not ready: ${errorText(error)}. ${recoveryAdvice(runtime.binding)}.`
++      if (error instanceof DeltaCommandError) return admitUnrecorded(host, e, next, reason)
++      return { drop: reason }
++    }
+   }
+   if (e.turnId) {
+     const execution = runtime.binding.execution
+@@ -122,6 +126,7 @@
+       const text = `Delta is not ready for this prompt: ${errorText(error)}. The prompt was not submitted.`
+       // The band names a worktree or directory that is not ready, until a prompt finds it ready.
+       if (error instanceof JoinNotReadyError) pauseCheckout(runtime, 'verification', error.message)
++      if (error instanceof DeltaCommandError) return admitUnrecorded(host, e, next, `Delta is not ready for this prompt: ${errorText(error)}.`)
+       return { drop: text }
+     }
+   }
+@@ -143,4 +148,9 @@
+     void settleRemote(host, session)
+   }
+   return result
++}
++
++async function admitUnrecorded(host: Host, e: HookEvent<'prompt.submit'>, next: HookNext<'prompt.submit'>, reason: string) {
++  await host.ui.log(`${reason} Claude runs the prompt anyway; Delta may not record it.`, { to: 'transcript' })
++  return next(e)
+ }
+--- a/hooks/register.test.ts
++++ b/hooks/register.test.ts
+@@ -995,7 +995,8 @@
+       fake.commandFault = { operation: 'status', code: 'not_visible', reason: 'access_denied', message: 'Cannot verify authenticated access' }
+       await $.session.start(sessionStart)
+       await fake.settle()
+-      expect((await $.prompt.submit(prompt('participate'))).drop).toBeDefined()
++      expect((await $.prompt.submit(prompt('participate'))).drop).toBeUndefined()
++    expect(fake.logs.some((log) => log.includes('Claude runs the prompt anyway'))).toBe(true)
+       await $.tool.call(bash('access-checked', 'echo local'))
+       await fake.settle()
+       expect(fake.records()).toHaveLength(1)
+@@ -2288,14 +2289,16 @@
+     })
+     const files = new Map<string, string>(saved.pending[0].files.map((path: string) => [path, fake.files.get(path)]))
+     expect([...files.values()].join('')).toContain('inspection-pending')
+-    expect((await $.prompt.submit(prompt('unsafe inspection'))).drop).toBeDefined()
++    expect((await $.prompt.submit(prompt('unsafe inspection'))).drop).toBeUndefined()
++    expect(fake.logs.some((log) => log.includes('Claude runs the prompt anyway'))).toBe(true)
+     expect(fake.logs.some((log) => log.includes(worktrees.error.code))).toBe(true)
+     expect(fake.records()).toHaveLength(1)
+     expect(fake.store.get(`session:${fake.session}`)).toEqual(saved)
+     await $.session.end(sessionEnd(fake.session))
+     await $.session.start(sessionStart)
+     await fake.settle()
+-    expect((await $.prompt.submit(prompt('still unavailable'))).drop).toBeDefined()
++    expect((await $.prompt.submit(prompt('still unavailable'))).drop).toBeUndefined()
++    expect(fake.logs.some((log) => log.includes('Claude runs the prompt anyway'))).toBe(true)
+     expect(fake.store.get(`session:${fake.session}`)).toEqual(saved)
+     for (const [path, contents] of files) expect(fake.files.get(path)).toBe(contents)
+     expectNoSetupCommands(fake, commands)
