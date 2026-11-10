@@ -8,7 +8,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-from chrome_consent_dialog import capture_dialog
+from chrome_consent_dialog import ConsentWarningRecognitionError, capture_dialog
 from chrome_consent_input import click_once
 from chrome_consent_geometry import clamp_cursor, settle_focused_target
 from chrome_consent_target import (
@@ -75,10 +75,13 @@ def verify_unchanged_attempt(configuration, target, parked_cursor):
 def await_consent(configuration, target, temporary, parked_cursor, deadline):
     while time.monotonic() < deadline:
         verify_unchanged_attempt(configuration, target, parked_cursor)
-        button = capture_dialog(configuration, target, temporary)
-        if button is not None:
-            click_once(configuration, target, button, temporary, parked_cursor)
-            return
+        try:
+            button = capture_dialog(configuration, target, temporary)
+            if button is not None:
+                click_once(configuration, target, button, temporary, parked_cursor)
+                return
+        except ConsentWarningRecognitionError:
+            pass
         time.sleep(0.1)
     raise RuntimeError("No exact consent dialog appeared before the deadline")
 

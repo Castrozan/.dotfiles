@@ -13,6 +13,10 @@ from chrome_consent_controls import (
 )
 
 
+class ConsentWarningRecognitionError(RuntimeError):
+    pass
+
+
 @dataclass(frozen=True)
 class DialogButton:
     position: tuple[int, int]
@@ -71,7 +75,7 @@ def verify_warning(region):
         "and only use it with trusted apps. Turn off in settings Cancel Allow"
     )
     if text != expected or any(not confident_word(word) for word in region):
-        raise RuntimeError(
+        raise ConsentWarningRecognitionError(
             "Consent dialog text did not match the exact native Chrome warning"
         )
 
