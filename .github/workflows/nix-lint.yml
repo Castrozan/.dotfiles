@@ -64,6 +64,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: ./.github/actions/nix-setup
+        id: nix-setup
         with:
           cache-key: ${{ matrix.cache-key }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -78,6 +79,12 @@ jobs:
           nix build $ARR_STACK_STUB_OVERRIDE $PRIVATE_CONFIG_STUB_OVERRIDE --out-link "$RUNNER_TEMP/native-cache-package" \
             .#nixosConfigurations.chise.config.home-manager.users.zanoni.codex.unwrappedPackage \
             .#checks.x86_64-linux.domain-local-model-tokenizer-long-input.tokenizerPackage
+
+      - name: Retain locally built check dependencies for the new store archive
+        if: ${{ matrix.cache-key == 'flake-check' && github.ref == 'refs/heads/main' && steps.nix-setup.outputs.store-cache-primary-key-hit != 'true' }}
+        run: |
+          python3 repository/verification/nix-checks/retain-check-dependencies.py x86_64-linux "$RUNNER_TEMP/check-dependency-roots" \
+            $ARR_STACK_STUB_OVERRIDE $PRIVATE_CONFIG_STUB_OVERRIDE
 
   gate:
     name: Nix Lint

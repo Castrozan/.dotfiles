@@ -18,6 +18,13 @@ inputs:
     required: false
     default: upstream
 
+outputs:
+  store-cache-primary-key-hit:
+    description: >-
+      true when the flake-check store archive for the current key was restored, so the job
+      saves no new archive.
+    value: ${{ steps.store-cache.outputs.hit-primary-key }}
+
 runs:
   using: composite
   steps:
@@ -68,9 +75,10 @@ runs:
     # that drifts between jobs turns every restore into a silent miss, which reads as a slow run
     # rather than as a broken cache.
     - uses: nix-community/cache-nix-action@v7
+      id: store-cache
       if: ${{ inputs.cache-key == 'flake-check' }}
       with:
-        primary-key: nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ inputs.nix-distribution }}-${{ steps.store-cache-week.outputs.week }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/package/unwrapped.nix', 'repository/nix-library/fetch-prebuilt-binary.nix', 'machine-configuration/development/local-language-models/**') }}
+        primary-key: nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ inputs.nix-distribution }}-${{ steps.store-cache-week.outputs.week }}-${{ hashFiles('flake.lock', 'agent-harness/harnesses/codex/package/unwrapped.nix', 'repository/nix-library/fetch-prebuilt-binary.nix', 'machine-configuration/development/local-language-models/**', 'repository/verification/nix-checks/retain-check-dependencies.py') }}
         restore-prefixes-first-match: |
           nix-native-${{ runner.os }}-${{ inputs.cache-key }}-${{ inputs.nix-distribution }}-
           nix-native-${{ runner.os }}-${{ inputs.cache-key }}-
