@@ -87,4 +87,9 @@ runs:
           ~/.cache/nix
         save: ${{ github.ref == 'refs/heads/main' }}
         gc-max-store-size-linux: 7G
-        purge: false
+        purge: ${{ github.ref == 'refs/heads/main' }}
+        purge-prefixes: |
+          nix-native-${{ runner.os }}-${{ inputs.cache-key }}-
+          nix-${{ runner.os }}-${{ inputs.cache-key }}-
+        purge-created: 0
+        purge-primary-key: never
