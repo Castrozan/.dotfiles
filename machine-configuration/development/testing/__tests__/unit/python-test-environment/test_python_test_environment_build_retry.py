@@ -62,6 +62,25 @@ def test_the_shard_builds_the_environment_before_running_tests_from_one_expressi
     assert "test-suite-environment.nix" in environment["TEST_ENVIRONMENT_EXPRESSION"]
 
 
+def test_the_store_is_restored_before_the_build_and_saved_by_one_shard_on_main():
+    steps, _ = shard_workflow_steps()
+    names = [step.get("name", "") for step in steps]
+    restore_index = names.index("Restore the Python test environment store")
+    build_index = next(
+        index
+        for index, name in enumerate(names)
+        if name.startswith("Build the Python test environment")
+    )
+    assert restore_index < build_index
+    save_condition = steps[restore_index]["with"]["save"]
+    for required in (
+        "github.ref == 'refs/heads/main'",
+        "inputs.tier == 'integration'",
+        "inputs.shard == 0",
+    ):
+        assert required in save_condition
+
+
 @pytest.mark.parametrize(
     ("successful_attempt", "expected_status", "expected_attempts"),
     [(1, 0, 1), (3, 0, 3), (4, 1, 3)],

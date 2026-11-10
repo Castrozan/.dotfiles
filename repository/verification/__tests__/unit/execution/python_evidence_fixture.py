@@ -25,6 +25,7 @@ def read_xml(path):
 
 
 def create_evidence(tmp_path, monkeypatch):
+    monkeypatch.delenv("COVERAGE_CORE", raising=False)
     repository = tmp_path / "checkout"
     for directory in (
         "agent-harness",

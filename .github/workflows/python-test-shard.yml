@@ -41,6 +41,19 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
 
+      - name: Identify the pinned nixpkgs of the Python test environment
+        id: environment-inputs
+        run: echo "nixpkgs-revision=$(jq -er '.nodes[.nodes.dependencies.inputs.nixpkgs].locked.rev' flake.lock)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the Python test environment store
+        uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-python-test-environment-${{ runner.os }}-${{ steps.environment-inputs.outputs.nixpkgs-revision }}-${{ hashFiles('machine-configuration/development/testing/python-test-environment.nix', 'machine-configuration/development/testing/test-suite-environment.nix', 'machine-configuration/media/media-generation/video-ffmpeg-package.nix', 'machine-configuration/media/media-generation/image-python-packages.nix', 'machine-configuration/development/cloud-services/agent-api/python-packages.nix', 'agent-harness/quality/evaluations/instructions/python-packages.nix') }}
+          restore-prefixes-first-match: nix-python-test-environment-${{ runner.os }}-
+          save: ${{ github.ref == 'refs/heads/main' && inputs.tier == 'integration' && inputs.shard == 0 }}
+          gc-max-store-size-linux: 8G
+          purge: false
+
       - name: Build the Python test environment, retrying a source build that stalls
         run: |
           for attempt in 1 2 3; do
@@ -57,6 +70,7 @@ jobs:
             export REPO_DIR="$PWD"
             mkdir -p .coverage-reports
             export COVERAGE_PROCESS_START="$PWD/repository/verification/cover/coverage.ini"
+            export COVERAGE_CORE=sysmon
             export PYTEST_ADDOPTS="--cov --cov-append --cov-config=repository/verification/cover/coverage.ini --cov-report= -o faulthandler_timeout=300 -n 4"
             source repository/verification/runner/discovery.sh
             source repository/verification/runner/pytest.sh
