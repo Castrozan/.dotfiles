@@ -27,7 +27,7 @@ windowMenuBarItem.installMenuItemBuilder(windowMenu.buildMenuItemBuilder({
 }))
 
 hs.shutdownCallback = function()
-	menuBarReveal.cancel()
+	menuBarReveal.releaseBeforeShutdown()
 	menuBarIndicator.deleteIndicator()
 	windowMenuBarItem.deleteMenuBarItem()
 end

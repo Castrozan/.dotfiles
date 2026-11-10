@@ -1,150 +1,120 @@
 local moduleDirectory = arg[0]:gsub("__tests__/.*$", "")
 dofile(moduleDirectory .. "__tests__/hammerspoon_module_paths.lua")(moduleDirectory)
 
-local timers = {}
-local visibilityChanges = {}
-local focusedDisplayId = 2
-local mainDisplayId = 1
-local scriptSucceeds = true
-local nativeResult = 0
-local reportedFailures = {}
+local environment = require("menu_bar_reveal_test_environment")
+local expectEqual = environment.expectEqual
+local describeCommand = environment.describeCommand
 
-local function makeTimer(delaySeconds, callback)
-	local timer = { delaySeconds = delaySeconds, stopped = false }
-	function timer:stop()
-		self.stopped = true
-	end
-	function timer:fire()
-		if not self.stopped then
-			self.stopped = true
-			callback()
-		end
-	end
-	table.insert(timers, timer)
-	return timer
-end
-
-local function makeScreen(displayId)
-	if displayId then
-		return {
-			id = function()
-				return displayId
-			end,
-		}
-	end
-end
-
-hs = {
-	window = {
-		focusedWindow = function()
-			if focusedDisplayId then
-				return {
-					screen = function()
-						return makeScreen(focusedDisplayId)
-					end,
-				}
-			end
-		end,
-	},
-	screen = {
-		mainScreen = function()
-			return makeScreen(mainDisplayId)
-		end,
-	},
-	application = {
-		frontmostApplication = function()
-			error("revealing the bar must not select an application menu")
-		end,
-	},
-	timer = { doAfter = makeTimer },
-	osascript = {
-		javascript = function(source)
-			local displayId, visible = source:match(
-				"%$%.SLSSetMenuBarVisibilityOverrideOnDisplay%(%$%.SLSMainConnectionID%(%), (%d+), (%a+)%)"
-			)
-			assert(displayId and visible, "visibility must use the native display override")
-			table.insert(visibilityChanges, { displayId = tonumber(displayId), visible = visible == "true" })
-			return scriptSucceeds, nativeResult
-		end,
-	},
-	printf = function(...)
-		table.insert(reportedFailures, string.format(...))
-	end,
+local menuBarReveal = environment.loadFreshMenuBarReveal()
+local expectedCommandByRevealAndPossiblyVisibleDisplay = {
+	["nil,nil"] = "none",
+	["nil,1"] = "hide 1",
+	["nil,2"] = "hide 2",
+	["1,nil"] = "show 1",
+	["1,1"] = "none",
+	["1,2"] = "hide 2",
+	["2,nil"] = "show 2",
+	["2,1"] = "hide 1",
+	["2,2"] = "none",
 }
-
-local failureCount = 0
-local function expectEqual(description, expectedValue, actualValue)
-	if expectedValue ~= actualValue then
-		failureCount = failureCount + 1
-		print(
-			string.format("FAIL: %s (expected %s, got %s)", description, tostring(expectedValue), tostring(actualValue))
+local decidedCellCount = 0
+for _, displayIdToReveal in ipairs({ false, 1, 2 }) do
+	for _, displayIdPossiblyVisible in ipairs({ false, 1, 2 }) do
+		local cell = tostring(displayIdToReveal or nil) .. "," .. tostring(displayIdPossiblyVisible or nil)
+		decidedCellCount = decidedCellCount + 1
+		expectEqual(
+			"reveal " .. cell .. " possibly visible decides the next command",
+			expectedCommandByRevealAndPossiblyVisibleDisplay[cell],
+			describeCommand(
+				menuBarReveal.nextVisibilityCommand(displayIdToReveal or nil, displayIdPossiblyVisible or nil)
+			)
 		)
-	else
-		print("PASS: " .. description)
 	end
 end
-
-local menuBarReveal = require("workspace_grid_menu_bar_reveal")
-menuBarReveal.brieflyReveal()
-expectEqual("reveal waits for workspace focus to settle", 0, timers[1].delaySeconds)
-expectEqual("the old workspace is not revealed", 0, #visibilityChanges)
-timers[1]:fire()
-expectEqual("the focused window determines the display", 2, visibilityChanges[1].displayId)
-expectEqual("reveal changes visibility without selecting a menu", true, visibilityChanges[1].visible)
-expectEqual("the menu bar remains visible for one second", 1, timers[2].delaySeconds)
-timers[2]:fire()
-expectEqual("the timer releases the native visibility override", false, visibilityChanges[2].visible)
+expectEqual("every reveal and possibly visible display pair is decided", 9, decidedCellCount)
 
 menuBarReveal.brieflyReveal()
-timers[3]:fire()
-focusedDisplayId = 3
-menuBarReveal.brieflyReveal()
-expectEqual("another reveal cancels the old hide timer", true, timers[4].stopped)
-expectEqual("another reveal releases the old display", 2, visibilityChanges[4].displayId)
-expectEqual("the old display is no longer forced visible", false, visibilityChanges[4].visible)
-timers[5]:fire()
-expectEqual("the replacement reveal uses the new display", 3, visibilityChanges[5].displayId)
-timers[4]:fire()
-expectEqual("the stale timer cannot hide the new reveal", 5, #visibilityChanges)
-menuBarReveal.cancel()
-expectEqual("cancelling stops the active hide timer", true, timers[6].stopped)
-expectEqual("cancelling releases the active display", 3, visibilityChanges[6].displayId)
-expectEqual("cancelling removes the visibility override", false, visibilityChanges[6].visible)
+expectEqual("reveal waits for workspace focus to settle", 0, environment.timers[1].delaySeconds)
+expectEqual("the old workspace is not revealed", 0, #environment.launchedCommands)
+environment.settleFocus()
+local revealCommand = environment.launchedCommands[1]
+expectEqual("the override runs in the system script runner", "/usr/bin/osascript", revealCommand.launchPath)
+expectEqual(
+	"the script runner evaluates JavaScript",
+	"-l JavaScript -e",
+	table.concat(revealCommand.arguments, " ", 1, 3)
+)
+expectEqual(
+	"visibility uses the native display override",
+	true,
+	revealCommand.arguments[4]:find("SLSSetMenuBarVisibilityOverrideOnDisplay", 1, true) ~= nil
+)
+expectEqual("the focused window determines the display", 2, revealCommand.displayId)
+expectEqual("reveal changes visibility without selecting a menu", true, revealCommand.visible)
+expectEqual("the visible duration starts once the reveal applied", 0, #environment.pendingTimers())
+environment.exitRunningCommand()
+expectEqual("the menu bar remains visible for one second", 1, environment.pendingTimers()[1].delaySeconds)
+local firstVisibleDurationTimer = environment.pendingTimers()[1]
 
 menuBarReveal.brieflyReveal()
-menuBarReveal.cancel()
-timers[7]:fire()
-expectEqual("cancellation before focus settles changes nothing", 6, #visibilityChanges)
+expectEqual("another reveal cancels the old hide timer", true, firstVisibleDurationTimer.stopped)
+environment.settleFocus()
+expectEqual("revealing the visible display again runs no command", 1, #environment.launchedCommands)
+expectEqual("revealing the visible display again restarts its duration", 1, #environment.pendingTimers())
+firstVisibleDurationTimer:fire()
+expectEqual("the stale timer cannot hide the renewed reveal", 1, #environment.launchedCommands)
 
-focusedDisplayId = nil
+environment.focusedDisplayId = 3
 menuBarReveal.brieflyReveal()
-timers[8]:fire()
-expectEqual("an empty workspace uses the main display", 1, visibilityChanges[7].displayId)
-timers[9]:fire()
+environment.settleFocus()
+expectEqual(
+	"another display first releases the old display",
+	"hide 2",
+	describeCommand(environment.launchedCommands[2])
+)
+environment.exitRunningCommand()
+expectEqual("the replacement reveal uses the new display", "show 3", describeCommand(environment.launchedCommands[3]))
+environment.exitRunningCommand()
+environment.finishVisibleDuration()
+expectEqual(
+	"the timer releases the native visibility override",
+	"hide 3",
+	describeCommand(environment.launchedCommands[4])
+)
+environment.exitRunningCommand()
+expectEqual("no display stays forced visible", 0, environment.forcedVisibleDisplayCount())
+expectEqual(
+	"a released menu bar leaves nothing scheduled",
+	0,
+	#environment.pendingTimers() + #environment.runningCommands()
+)
+expectEqual("commands never overlap", 1, environment.highestConcurrentCommandCount)
 
-mainDisplayId = nil
-menuBarReveal.brieflyReveal()
-timers[10]:fire()
-expectEqual("a missing display does not change visibility", 8, #visibilityChanges)
-mainDisplayId = 1
+menuBarReveal = environment.loadFreshMenuBarReveal()
+for _ = 1, 50 do
+	menuBarReveal.brieflyReveal()
+	environment.settleFocus()
+end
+expectEqual("fifty reveals during one slow command start one process", 1, #environment.launchedCommands)
+environment.exitRunningCommand()
+for _ = 1, 50 do
+	menuBarReveal.brieflyReveal()
+	environment.settleFocus()
+end
+environment.finishVisibleDuration()
+environment.exitRunningCommand()
+expectEqual("a hundred reveals of one display cost one show and one hide", 2, #environment.launchedCommands)
 
-scriptSucceeds = false
+menuBarReveal = environment.loadFreshMenuBarReveal()
+environment.focusedDisplayId = nil
 menuBarReveal.brieflyReveal()
-timers[11]:fire()
-expectEqual("an unavailable API does not schedule a hide", 11, #timers)
-expectEqual("an unavailable API is reported without selecting a menu", 1, #reportedFailures)
-scriptSucceeds = true
-nativeResult = 1001
-menuBarReveal.brieflyReveal()
-timers[12]:fire()
-expectEqual("a rejected visibility override does not schedule a hide", 12, #timers)
-expectEqual("a native failure is reported", 2, #reportedFailures)
-nativeResult = 0
-menuBarReveal.brieflyReveal()
-timers[13]:fire()
-expectEqual("a failed reveal does not block later reveals", 14, #timers)
-nativeResult = 1002
-timers[14]:fire()
-expectEqual("a release failure is reported", 3, #reportedFailures)
+environment.settleFocus()
+expectEqual("an empty workspace uses the main display", "show 1", describeCommand(environment.launchedCommands[1]))
 
-os.exit(failureCount == 0 and 0 or 1)
+menuBarReveal = environment.loadFreshMenuBarReveal()
+environment.focusedDisplayId, environment.mainDisplayId = nil, nil
+menuBarReveal.brieflyReveal()
+environment.settleFocus()
+expectEqual("a missing display does not change visibility", 0, #environment.launchedCommands)
+
+environment.exitWithAccumulatedResult()

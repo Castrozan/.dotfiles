@@ -1,47 +1,94 @@
 local workspaceGridMenuBarReveal = {}
 
 local menuBarVisibleDurationSeconds = 1
-local pendingRevealTimer = nil
-local pendingHideTimer = nil
-local revealedDisplayId = nil
+local scriptRunnerPath = "/usr/bin/osascript"
 local menuBarVisibilityScript = [=[
-ObjC.bindFunction("SLSMainConnectionID", ["int", []]);
-ObjC.bindFunction("SLSSetMenuBarVisibilityOverrideOnDisplay", ["int", ["int", "unsigned int", "bool"]]);
-$.SLSSetMenuBarVisibilityOverrideOnDisplay($.SLSMainConnectionID(), %d, %s);
+function run(argv) {
+	ObjC.bindFunction("SLSMainConnectionID", ["int", []]);
+	ObjC.bindFunction("SLSSetMenuBarVisibilityOverrideOnDisplay", ["int", ["int", "unsigned int", "bool"]]);
+	return $.SLSSetMenuBarVisibilityOverrideOnDisplay($.SLSMainConnectionID(), parseInt(argv[0]), argv[1] === "true");
+}
 ]=]
 
-local function setMenuBarVisibility(displayId, visible)
-	local succeeded, result, detail =
-		hs.osascript.javascript(string.format(menuBarVisibilityScript, displayId, tostring(visible)))
-	if not succeeded or result ~= 0 then
-		hs.printf("Menu bar visibility failed: %s", tostring(detail or result))
-		return false
+local pendingRevealTimer = nil
+local pendingHideTimer = nil
+local requestedDisplayId = nil
+local possiblyVisibleDisplayId = nil
+local runningVisibilityCommand = nil
+local reconcileMenuBarVisibility
+
+function workspaceGridMenuBarReveal.nextVisibilityCommand(displayIdToReveal, displayIdPossiblyVisible)
+	if displayIdToReveal == displayIdPossiblyVisible then
+		return nil
 	end
-	return true
+	if displayIdPossiblyVisible then
+		return { displayId = displayIdPossiblyVisible, visible = false }
+	end
+	return { displayId = displayIdToReveal, visible = true }
 end
 
-local function releaseMenuBarVisibility()
-	if revealedDisplayId then
-		setMenuBarVisibility(revealedDisplayId, false)
-		revealedDisplayId = nil
-	end
+local function newVisibilityCommandTask(command, onExit)
+	return hs.task.new(scriptRunnerPath, onExit, {
+		"-l",
+		"JavaScript",
+		"-e",
+		menuBarVisibilityScript,
+		tostring(command.displayId),
+		tostring(command.visible),
+	})
 end
 
-local function revealFocusedDisplayMenuBar()
-	pendingRevealTimer = nil
-	local focusedWindow = hs.window.focusedWindow()
-	local screen = (focusedWindow and focusedWindow:screen()) or hs.screen.mainScreen()
-	if not screen or not setMenuBarVisibility(screen:id(), true) then
+local function finishVisibilityCommand(command, succeeded, failureDetail)
+	runningVisibilityCommand = nil
+	if not succeeded then
+		hs.printf("Menu bar visibility failed: %s", tostring(failureDetail))
+	end
+	if not command.visible then
+		possiblyVisibleDisplayId = nil
+	elseif not succeeded and requestedDisplayId == command.displayId then
+		requestedDisplayId = nil
+	end
+	reconcileMenuBarVisibility()
+end
+
+local function startVisibilityCommand(command)
+	local task = newVisibilityCommandTask(command, function(exitCode, standardOutput, standardError)
+		local succeeded = exitCode == 0 and tonumber(standardOutput) == 0
+		finishVisibilityCommand(command, succeeded, standardError .. standardOutput)
+	end)
+	if not task or not task:start() then
+		finishVisibilityCommand(command, false, "the script runner could not start")
 		return
 	end
-	revealedDisplayId = screen:id()
+	runningVisibilityCommand = task
+	if command.visible then
+		possiblyVisibleDisplayId = command.displayId
+	end
+end
+
+local function hideAfterVisibleDuration()
 	pendingHideTimer = hs.timer.doAfter(menuBarVisibleDurationSeconds, function()
 		pendingHideTimer = nil
-		releaseMenuBarVisibility()
+		requestedDisplayId = nil
+		reconcileMenuBarVisibility()
 	end)
 end
 
-function workspaceGridMenuBarReveal.cancel()
+reconcileMenuBarVisibility = function()
+	if runningVisibilityCommand then
+		return
+	end
+	local command = workspaceGridMenuBarReveal.nextVisibilityCommand(requestedDisplayId, possiblyVisibleDisplayId)
+	if command then
+		startVisibilityCommand(command)
+		return
+	end
+	if requestedDisplayId and not pendingHideTimer then
+		hideAfterVisibleDuration()
+	end
+end
+
+local function stopPendingTimers()
 	if pendingRevealTimer then
 		pendingRevealTimer:stop()
 		pendingRevealTimer = nil
@@ -50,12 +97,35 @@ function workspaceGridMenuBarReveal.cancel()
 		pendingHideTimer:stop()
 		pendingHideTimer = nil
 	end
-	releaseMenuBarVisibility()
+end
+
+local function requestFocusedDisplayReveal()
+	pendingRevealTimer = nil
+	local focusedWindow = hs.window.focusedWindow()
+	local screen = (focusedWindow and focusedWindow:screen()) or hs.screen.mainScreen()
+	requestedDisplayId = screen and screen:id() or nil
+	reconcileMenuBarVisibility()
 end
 
 function workspaceGridMenuBarReveal.brieflyReveal()
-	workspaceGridMenuBarReveal.cancel()
-	pendingRevealTimer = hs.timer.doAfter(0, revealFocusedDisplayMenuBar)
+	stopPendingTimers()
+	pendingRevealTimer = hs.timer.doAfter(0, requestFocusedDisplayReveal)
+end
+
+function workspaceGridMenuBarReveal.releaseBeforeShutdown()
+	stopPendingTimers()
+	requestedDisplayId = nil
+	if runningVisibilityCommand then
+		runningVisibilityCommand:waitUntilExit()
+	end
+	if not possiblyVisibleDisplayId then
+		return
+	end
+	local release = newVisibilityCommandTask({ displayId = possiblyVisibleDisplayId, visible = false }, nil)
+	if release and release:start() then
+		release:waitUntilExit()
+	end
+	possiblyVisibleDisplayId = nil
 end
 
 return workspaceGridMenuBarReveal
