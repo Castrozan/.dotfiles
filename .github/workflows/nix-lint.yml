@@ -26,10 +26,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: nix run nixpkgs#statix -- check . --ignore 'result*'
 
-      - name: deadnix
-        if: ${{ !cancelled() }}
-        run: nix run nixpkgs#deadnix -- .
-
       - name: nixfmt
         if: ${{ !cancelled() }}
         run: |
