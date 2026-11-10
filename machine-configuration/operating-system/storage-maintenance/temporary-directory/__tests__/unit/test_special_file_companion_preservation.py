@@ -32,7 +32,7 @@ def create_symlink_to_existing_file(path: Path) -> None:
 
 
 def create_dangling_symlink(path: Path) -> None:
-    path.symlink_to("4141210184314747129")
+    path.symlink_to("target-that-never-exists")
 
 
 SPECIAL_FILE_CREATORS = [create_named_pipe, create_unix_socket]

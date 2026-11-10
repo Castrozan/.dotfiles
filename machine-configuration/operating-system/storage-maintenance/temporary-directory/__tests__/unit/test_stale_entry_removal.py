@@ -142,6 +142,32 @@ def test_records_an_unreadable_entry_and_keeps_cleaning_its_siblings(
     assert result.first_failure.startswith(str(too_deep_entry))
 
 
+def test_treats_an_entry_that_vanished_mid_run_as_already_removed(
+    tmp_path, monkeypatch
+):
+    abandoned_run = tmp_path / "abandoned-run"
+    abandoned_run.mkdir()
+    vanishing_file = abandoned_run / "claimed-by-its-owner.txt"
+    vanishing_file.write_text("leftover")
+    original_lstat = os.lstat
+
+    def lstat_after_the_owner_removed_the_file(path, *arguments, **keyword_arguments):
+        if str(path) == str(vanishing_file):
+            vanishing_file.unlink(missing_ok=True)
+        return original_lstat(path, *arguments, **keyword_arguments)
+
+    policy = policy_treating_existing_entries_as_stale(tmp_path)
+    monkeypatch.setattr(
+        stale_entry_removal.os, "lstat", lstat_after_the_owner_removed_the_file
+    )
+
+    result = StaleEntryRemover(policy).remove_stale_top_level_entries()
+
+    assert not abandoned_run.exists()
+    assert result.removed_entry_count == 1
+    assert result.failed_entry_count == 0
+
+
 def test_does_not_descend_into_another_device(tmp_path):
     (tmp_path / "mounted-image").mkdir()
     remover = StaleEntryRemover(policy_treating_existing_entries_as_stale(tmp_path))
