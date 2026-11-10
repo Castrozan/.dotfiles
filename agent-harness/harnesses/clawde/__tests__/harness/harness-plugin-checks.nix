@@ -21,6 +21,8 @@ let
             directoryPrefixes = [ ];
             gitRemotePatterns = [ "gitlab.example.invalid" ];
             instructionFiles = [ ];
+            sessionEnvironment.TOOLING_URL = "https://tooling.example.invalid";
+            sessionEnvironmentFromFiles.TOOLING_TOKEN = "~/.secrets/tooling-token";
             claudeCode.settingsOverlay.enabledPlugins."test-profile-plugin@test-marketplace" = true;
             codex = { };
             opencode = { };
@@ -121,6 +123,20 @@ in
         && everyClaudeCommandCarriesTheAgentSettingsFile "agent-with-interactive-settings-and-workspace-profile"
       )
       "an agent asking for the interactive settings must launch with the same plugins and plugin options the plain claude command gives a keyboard session, with the workspace profile overlay winning where they overlap exactly as the interactive wrapper layers them";
+
+  clawde-workspace-profile-agent-launches-claude-with-the-profile-environment =
+    mkEvalCheck "clawde-workspace-profile-agent-launches-claude-with-the-profile-environment"
+      (
+        builtins.all (
+          harnessCommand:
+          pkgs.lib.hasInfix "TOOLING_URL=https://tooling.example.invalid " harnessCommand
+          && pkgs.lib.hasInfix ''TOOLING_TOKEN="$(cat "$HOME"/.secrets/tooling-token 2>/dev/null)" '' harnessCommand
+        ) (claudeCommandsOf "agent-with-workspace-profile")
+        && builtins.all (harnessCommand: !(pkgs.lib.hasInfix "TOOLING_" harnessCommand)) (
+          claudeCommandsOf "agent-without-workspace-profile"
+        )
+      )
+      "a profile that turns a resident MCP server off hands its CLI replacement credentials through the session environment, and the unwrapped binary clawde runs never resolves a profile, so every claude command of a profile agent must carry that environment and read each secret file at launch rather than copying its value into the store";
 
   clawde-agent-without-workspace-profile-launches-claude-without-settings =
     mkEvalCheck "clawde-agent-without-workspace-profile-launches-claude-without-settings"

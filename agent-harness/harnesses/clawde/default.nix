@@ -6,7 +6,7 @@
     ./peer-transport/herdr-service-consumer.nix
     ./wiring.nix
     ./agent-enable.nix
-    ./harnesses.nix
+    ./harnesses
     ./discord/channel-access.nix
     ./discord/agents-allowed-to-stay-silent.nix
     ./discord/voice-bridge
