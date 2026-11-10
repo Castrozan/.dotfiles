@@ -6,28 +6,14 @@
   ...
 }:
 let
-  workspaceProfilesCarryingClaudeSettings = lib.filter (
-    workspaceProfile: workspaceProfile.claudeCode ? settingsOverlay
-  ) (config.agentWorkspaceProfiles.profiles or [ ]);
-
-  claudeSettingsOverlayOfWorkspaceProfile =
-    profileName:
-    (lib.findFirst (
-      workspaceProfile: workspaceProfile.name == profileName
-    ) (throw "no workspace profile named ${profileName}") workspaceProfilesCarryingClaudeSettings)
-    .claudeCode.settingsOverlay;
+  agentWorkspaceProfile = import ./agent-workspace-profile.nix { inherit config lib; };
+  inherit (agentWorkspaceProfile) workspaceProfilesCarryingClaudeSettings;
 
   claudeLaunchSettingsOf =
     agent:
-    lib.recursiveUpdate
-      (lib.optionalAttrs agent.claudeInteractiveSessionSettings (
-        config.claude.interactiveSessionSettings or { }
-      ))
-      (
-        lib.optionalAttrs (agent.claudeSettingsWorkspaceProfile != null) (
-          claudeSettingsOverlayOfWorkspaceProfile agent.claudeSettingsWorkspaceProfile
-        )
-      );
+    lib.recursiveUpdate (lib.optionalAttrs agent.claudeInteractiveSessionSettings (
+      config.claude.interactiveSessionSettings or { }
+    )) (agentWorkspaceProfile.claudeSettingsOverlayOf agent);
 
   withClaudeLaunchSettings =
     agentName: agent: harnessCommand:
@@ -145,7 +131,7 @@ in
                         );
                       in
                       if name == "claude" then
-                        "CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${
+                        "${agentWorkspaceProfile.sessionEnvironmentAssignmentsOf arguments.agent}CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${
                           withClaudeLaunchSettings arguments.name arguments.agent markedCommand
                         }"
                       else if
@@ -154,7 +140,7 @@ in
                         && arguments.name == "steward"
                         && commandBuilderName == "buildLaunchCommandFor"
                       then
-                        "${pkgs.python312}/bin/python3 ${./scripts/steward_terminal_space.py} && ${markedCommand}"
+                        "${pkgs.python312}/bin/python3 ${../scripts/steward_terminal_space.py} && ${markedCommand}"
                       else
                         markedCommand;
                 }

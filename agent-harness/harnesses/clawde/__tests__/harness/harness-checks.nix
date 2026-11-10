@@ -66,11 +66,11 @@ in
 
   clawde-claude-harness-package-is-injected =
     mkEvalCheck "clawde-claude-harness-package-is-injected" (harnesses.claude.package != null)
-      "clawde pins no harness itself, so agent-harness/harnesses/clawde/harnesses.nix must inject the claude package; a null package fails a clawde assertion the moment any agent runs on claude";
+      "clawde pins no harness itself, so agent-harness/harnesses/clawde/harnesses must inject the claude package; a null package fails a clawde assertion the moment any agent runs on claude";
 
   clawde-codex-harness-package-is-injected =
     mkEvalCheck "clawde-codex-harness-package-is-injected" (harnesses.codex.package != null)
-      "codex agents need clawde.harnesses.codex.package set from agent-harness/harnesses/clawde/harnesses.nix, otherwise every codex agent fails a build-time assertion";
+      "codex agents need clawde.harnesses.codex.package set from agent-harness/harnesses/clawde/harnesses, otherwise every codex agent fails a build-time assertion";
 
   clawde-codex-harness-launches-the-unwrapped-binary =
     mkEvalCheck "clawde-codex-harness-launches-the-unwrapped-binary"

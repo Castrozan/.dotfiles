@@ -21,6 +21,18 @@ let
     );
 in
 {
+  sessionEnvironmentAssignmentsForProfile =
+    workspaceProfile:
+    lib.concatStrings (
+      lib.mapAttrsToList (variableName: value: "${variableName}=${lib.escapeShellArg value} ") (
+        workspaceProfile.sessionEnvironment or { }
+      )
+      ++ lib.mapAttrsToList (
+        variableName: secretFile:
+        ''${variableName}="$(cat ${shellPathExpression secretFile} 2>/dev/null)" ''
+      ) (workspaceProfile.sessionEnvironmentFromFiles or { })
+    );
+
   mkWorkspaceProfileLaunchDispatch =
     {
       agentWorkspaceProfiles,
