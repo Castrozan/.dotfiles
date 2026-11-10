@@ -17,13 +17,14 @@ _seconds_since_last_upstream_fetch_attempt() {
 }
 
 _terminate_upstream_fetch_after_timeout() {
-	local fetch_process_id="$1"
+	local fetch_process_group_id="$1"
 	sleep "$GIT_UPSTREAM_FETCH_TIMEOUT_SECONDS"
-	kill "$fetch_process_id" 2>/dev/null || true
+	kill -- "-$fetch_process_group_id" 2>/dev/null || true
 }
 
-_fetch_upstream_tracking_ref_under_watchdog() {
+_fetch_upstream_tracking_ref_under_watchdog() (
 	local repository_directory="$1" remote_name="$2" remote_branch_ref="$3"
+	set -m
 
 	GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=5" \
 		git -C "$repository_directory" fetch --quiet "$remote_name" "$remote_branch_ref" &
@@ -33,8 +34,8 @@ _fetch_upstream_tracking_ref_under_watchdog() {
 	local watchdog_process_id=$!
 
 	wait "$fetch_process_id" 2>/dev/null || true
-	kill "$watchdog_process_id" 2>/dev/null || true
-}
+	kill -- "-$watchdog_process_id" 2>/dev/null || true
+)
 
 _refresh_upstream_tracking_ref_in_background() {
 	local repository_directory="$1" branch_name="$2"

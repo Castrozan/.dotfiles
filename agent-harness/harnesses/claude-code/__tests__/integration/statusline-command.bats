@@ -388,6 +388,37 @@ _full_json_input() {
 	rm -rf "$sandbox_root"
 }
 
+@test "upstream fetch watchdog stops every process of a fetch that outlives its timeout" {
+	local stub_bin_directory
+	stub_bin_directory=$(mktemp -d)
+	cat >"$stub_bin_directory/git" <<STUB
+#!/usr/bin/env bash
+sleep 30 &
+echo \$! >"$stub_bin_directory/helper-process-id"
+wait
+STUB
+	chmod +x "$stub_bin_directory/git"
+
+	local started_at_epoch
+	started_at_epoch=$(date +%s)
+	run bash -c "GIT_UPSTREAM_FETCH_TIMEOUT_SECONDS=1 PATH='$stub_bin_directory:$PATH'
+		source '$(dirname "$SCRIPT_UNDER_TEST")/statusline-command-git-segment.sh'
+		_fetch_upstream_tracking_ref_under_watchdog . origin refs/heads/main"
+	local elapsed_seconds=$(($(date +%s) - started_at_epoch))
+	[ "$status" -eq 0 ]
+	[ "$elapsed_seconds" -lt 10 ]
+
+	local helper_process_id attempt
+	helper_process_id=$(cat "$stub_bin_directory/helper-process-id")
+	for attempt in $(seq 1 20); do
+		kill -0 "$helper_process_id" 2>/dev/null || break
+		sleep 0.1
+	done
+	run kill -0 "$helper_process_id"
+	[ "$status" -ne 0 ]
+	rm -rf "$stub_bin_directory"
+}
+
 @test "git segment writes no cached copy of itself for a large repository" {
 	local sandbox_root
 	sandbox_root=$(_create_sandbox_repository_with_upstream)
