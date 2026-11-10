@@ -32,6 +32,7 @@ in
     "${privateConfigRoot}/machines/kira/scheduled-tasks"
     "${privateConfigRoot}/machines/kira/betha-preferencias"
     "${privateConfigRoot}/machines/kira/skills/bai-cli/install/bai-cli-home-manager.nix"
+    "${privateConfigRoot}/machines/kira/halo/halo-home-manager.nix"
   ]
   ++ lib.optional (builtins.pathExists ../../../private-configuration/machines/kira/cloudflare-tunnel-connector.nix) ../../../private-configuration/machines/kira/cloudflare-tunnel-connector.nix;
 
