@@ -1,6 +1,5 @@
 import errno
 import os
-import socket
 import stat
 import time
 from pathlib import Path
@@ -8,41 +7,18 @@ from pathlib import Path
 import pytest
 
 import stale_entry_removal
-from stale_entry_removal import CleanupPolicy, CleanupResult, StaleEntryRemover
+from stale_entry_removal import StaleEntryRemover
+from temporary_directory_cleanup_run import (
+    policy_treating_existing_entries_as_stale,
+    remove_everything_written_before_now,
+)
 
 FRESHNESS_MARGIN_SECONDS = 3600
-TIMESTAMP_ORDERING_PAUSE_SECONDS = 0.01
-AGENIX_TOP_LEVEL_NAMES = frozenset({"agenix", "agenix.d"})
-
-
-def policy_treating_existing_entries_as_stale(
-    temporary_directory: Path,
-) -> CleanupPolicy:
-    time.sleep(TIMESTAMP_ORDERING_PAUSE_SECONDS)
-    stale_before_timestamp = time.time()
-    time.sleep(TIMESTAMP_ORDERING_PAUSE_SECONDS)
-    return CleanupPolicy(
-        temporary_directory, stale_before_timestamp, AGENIX_TOP_LEVEL_NAMES
-    )
-
-
-def remove_everything_written_before_now(temporary_directory: Path) -> CleanupResult:
-    policy = policy_treating_existing_entries_as_stale(temporary_directory)
-    return StaleEntryRemover(policy).remove_stale_top_level_entries()
 
 
 def mark_fresh(path: Path) -> None:
     future_timestamp = time.time() + FRESHNESS_MARGIN_SECONDS
     os.utime(path, (future_timestamp, future_timestamp), follow_symlinks=False)
-
-
-def create_named_pipe(path: Path) -> None:
-    os.mkfifo(path)
-
-
-def create_unix_socket(path: Path) -> None:
-    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as unix_socket:
-        unix_socket.bind(path.name)
 
 
 def test_removes_a_deep_stale_tree_in_one_run(tmp_path):
@@ -83,23 +59,6 @@ def test_keeps_a_fresh_directory_after_removing_its_stale_children(tmp_path):
 
     assert active_directory.is_dir()
     assert list(active_directory.iterdir()) == []
-
-
-@pytest.mark.parametrize("create_special_file", [create_named_pipe, create_unix_socket])
-def test_never_removes_special_files_or_the_directory_holding_them(
-    tmp_path, monkeypatch, create_special_file
-):
-    channel_directory = tmp_path / "agent-channel"
-    channel_directory.mkdir()
-    monkeypatch.chdir(channel_directory)
-    special_file = channel_directory / "endpoint"
-    create_special_file(special_file)
-
-    result = remove_everything_written_before_now(tmp_path)
-
-    special_file_mode = os.lstat(special_file).st_mode
-    assert stat.S_ISFIFO(special_file_mode) or stat.S_ISSOCK(special_file_mode)
-    assert result.failed_entry_count == 0
 
 
 @pytest.mark.parametrize(

@@ -1,8 +1,10 @@
 import os
 import stat
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
+
+from examined_entry import ExaminedEntry
 
 APPLE_MANAGED_TOP_LEVEL_PREFIX = "com.apple."
 APPLE_MANAGED_TOP_LEVEL_NAMES = frozenset(
@@ -80,29 +82,33 @@ class StaleEntryRemover:
         return self.result
 
     def remove_when_stale(self, entry_path: str) -> bool:
+        return self.remove_examined_entry(self.examine(entry_path))
+
+    def examine(self, entry_path: str) -> ExaminedEntry:
         try:
             entry_status = retry_after_granting_directory_access(
                 os.lstat, entry_path, os.path.dirname(entry_path)
             )
         except FileNotFoundError:
-            return True
+            return ExaminedEntry(entry_path, status=None, already_absent=True)
         except OSError as error:
             self.record_failure(entry_path, error)
-            return False
-        return self.remove_examined_entry(entry_path, entry_status)
+            return ExaminedEntry(entry_path, status=None)
+        return ExaminedEntry(entry_path, entry_status)
 
-    def remove_examined_entry(
-        self, entry_path: str, entry_status: os.stat_result
-    ) -> bool:
+    def remove_examined_entry(self, examined_entry: ExaminedEntry) -> bool:
+        entry_status = examined_entry.status
+        if entry_status is None:
+            return examined_entry.already_absent
         if not self.is_eligible_for_removal(entry_status):
             return False
         if stat.S_ISDIR(entry_status.st_mode):
             return self.remove_directory_when_stale_and_emptied(
-                entry_path, entry_status
+                examined_entry.path, entry_status
             )
         if not is_stale(entry_status, self.policy.stale_before_timestamp):
             return False
-        return self.remove(os.unlink, entry_path)
+        return self.remove(os.unlink, examined_entry.path)
 
     def is_eligible_for_removal(self, entry_status: os.stat_result) -> bool:
         entry_flags = getattr(entry_status, "st_flags", 0)
@@ -135,11 +141,25 @@ class StaleEntryRemover:
     def remove_stale_children(
         self, directory_path: str, child_names: list[str]
     ) -> bool:
-        child_outcomes = [
-            self.remove_when_stale(os.path.join(directory_path, child_name))
+        examined_children = [
+            self.examine(os.path.join(directory_path, child_name))
             for child_name in child_names
         ]
-        return all(child_outcomes)
+        if any(child.is_interprocess_endpoint for child in examined_children):
+            self.remove_examined_entries(
+                child for child in examined_children if child.is_directory
+            )
+            return False
+        return self.remove_examined_entries(examined_children)
+
+    def remove_examined_entries(
+        self, examined_entries: Iterable[ExaminedEntry]
+    ) -> bool:
+        removal_outcomes = [
+            self.remove_examined_entry(examined_entry)
+            for examined_entry in examined_entries
+        ]
+        return all(removal_outcomes)
 
     def remove(self, remove_operation: Callable[[str], None], entry_path: str) -> bool:
         try:
