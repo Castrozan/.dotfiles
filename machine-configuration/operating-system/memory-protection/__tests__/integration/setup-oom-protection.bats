@@ -3,7 +3,6 @@
 load '../../../../../repository/verification/helpers/docker-container-assertions'
 
 readonly DOCKER_IMAGE_TAG="dotfiles-oom-test"
-readonly CONFIGURED_CONTAINER_NAME="dotfiles-oom-test-configured"
 readonly SCRIPT_PATH_INSIDE_CONTAINER="/dotfiles/machine-configuration/operating-system/memory-protection/scripts/setup-oom-protection"
 readonly EARLYOOM_CONFIG_PATH="/etc/default/earlyoom"
 readonly ZRAMSWAP_CONFIG_PATH="/etc/default/zramswap"
@@ -16,23 +15,26 @@ readonly ACTIVATION_CHECK_CONDITION='command -v earlyoom >/dev/null 2>&1 \
 setup_file() {
     skip_unless_docker_daemon_is_reachable
     build_privileged_test_image_or_fail "$DOCKER_IMAGE_TAG"
-    docker rm -f "$CONFIGURED_CONTAINER_NAME" &>/dev/null || true
-    docker run -d --privileged --name "$CONFIGURED_CONTAINER_NAME" "$DOCKER_IMAGE_TAG" sleep infinity >/dev/null
+    docker run -d --rm --privileged "$DOCKER_IMAGE_TAG" sleep 1800 >"$BATS_FILE_TMPDIR/configured-container-id"
     local freshInstallStatus=0
-    docker exec "$CONFIGURED_CONTAINER_NAME" "$SCRIPT_PATH_INSIDE_CONTAINER" \
+    docker exec "$(_configured_container_id)" "$SCRIPT_PATH_INSIDE_CONTAINER" \
         >"$BATS_FILE_TMPDIR/fresh-install-output" 2>&1 || freshInstallStatus=$?
     echo "$freshInstallStatus" >"$BATS_FILE_TMPDIR/fresh-install-status"
 }
 
 teardown_file() {
-    if docker_daemon_is_reachable; then
-        docker rm -f "$CONFIGURED_CONTAINER_NAME" &>/dev/null || true
+    if docker_daemon_is_reachable && [[ -s "$BATS_FILE_TMPDIR/configured-container-id" ]]; then
+        docker rm -f "$(_configured_container_id)" &>/dev/null || true
     fi
     remove_test_image_if_present "$DOCKER_IMAGE_TAG"
 }
 
+_configured_container_id() {
+    cat "$BATS_FILE_TMPDIR/configured-container-id"
+}
+
 _run_in_configured_container() {
-    docker exec "$CONFIGURED_CONTAINER_NAME" bash -c "$1"
+    docker exec "$(_configured_container_id)" bash -c "$1"
 }
 
 _run_in_fresh_privileged_container() {
