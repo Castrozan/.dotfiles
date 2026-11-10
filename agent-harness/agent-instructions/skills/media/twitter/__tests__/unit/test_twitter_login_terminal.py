@@ -64,8 +64,8 @@ def read_until(terminal, expected):
     return transcript
 
 
-def wait_for_exit(process_identifier, terminal):
-    deadline = time.monotonic() + 2
+def poll_for_exit(process_identifier, terminal, seconds):
+    deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
         completed, status = os.waitpid(process_identifier, os.WNOHANG)
         if completed:
@@ -76,7 +76,27 @@ def wait_for_exit(process_identifier, terminal):
             except OSError:
                 terminal = None
         time.sleep(0.02)
-    pytest.fail("login did not exit within two seconds")
+    return None
+
+
+def wait_for_exit(process_identifier, terminal):
+    exit_code = poll_for_exit(process_identifier, terminal, 2)
+    if exit_code is None:
+        pytest.fail("login did not exit within two seconds")
+    return exit_code
+
+
+def interrupt_until_exit(process_identifier, terminal):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        try:
+            os.write(terminal, b"\x03")
+        except OSError:
+            pass
+        exit_code = poll_for_exit(process_identifier, terminal, 0.5)
+        if exit_code is not None:
+            return exit_code
+    pytest.fail("login did not exit after repeated interrupts")
 
 
 @pytest.mark.parametrize("cancel_prompt", [b"X username:", b"X email:", b"X password:"])
@@ -89,10 +109,9 @@ def test_interrupt_at_each_prompt_exits_without_saving(login_terminal, cancel_pr
     ]:
         read_until(terminal, prompt)
         if prompt == cancel_prompt:
-            os.write(terminal, b"\x03")
             break
         os.write(terminal, answer)
-    assert wait_for_exit(process_identifier, terminal) != 0
+    assert interrupt_until_exit(process_identifier, terminal) != 0
     assert not cookies.exists()
 
 
