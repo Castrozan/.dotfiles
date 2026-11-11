@@ -19,9 +19,9 @@ in
 
   claudeSettingsOverlayOf =
     agent:
-    lib.optionalAttrs (agent.claudeSettingsWorkspaceProfile != null) (
-      (workspaceProfileNamed agent.claudeSettingsWorkspaceProfile).claudeCode.settingsOverlay
-    );
+    lib.optionalAttrs (
+      agent.claudeSettingsWorkspaceProfile != null
+    ) (workspaceProfileNamed agent.claudeSettingsWorkspaceProfile).claudeCode.settingsOverlay;
 
   sessionEnvironmentAssignmentsOf =
     agent:
