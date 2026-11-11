@@ -15,6 +15,7 @@ MODERN_BASH_CANDIDATE_PATHS = (
 )
 
 SKIPPED_STATUS = 77
+SUBPROCESS_TIMEOUT_SECONDS = 30
 
 TIER_FUNCTIONS = ("_run_evals_tier", "_run_integration_tier", "_run_e2e_tier")
 
@@ -27,6 +28,7 @@ def _resolve_modern_bash_absolute_path() -> str:
             [candidate, "-c", "echo ${BASH_VERSINFO[0]}"],
             capture_output=True,
             text=True,
+            timeout=SUBPROCESS_TIMEOUT_SECONDS,
         )
         if probe.stdout.strip().isdigit() and int(probe.stdout.strip()) >= 4:
             return candidate
@@ -43,6 +45,7 @@ def _run_tier_without_its_tools(tier_function: str) -> subprocess.CompletedProce
         env={"PATH": "", "REPO_DIR": str(HARNESS_TESTS_ROOT.parents[1])},
         capture_output=True,
         text=True,
+        timeout=SUBPROCESS_TIMEOUT_SECONDS,
     )
 
 
@@ -97,6 +100,7 @@ def _run_tier_with_recording_command(
         },
         capture_output=True,
         text=True,
+        timeout=SUBPROCESS_TIMEOUT_SECONDS,
     )
     return completed, recorded_arguments.read_text().splitlines()
 
