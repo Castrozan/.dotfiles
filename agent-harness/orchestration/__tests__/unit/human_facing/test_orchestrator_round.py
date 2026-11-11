@@ -167,7 +167,7 @@ PLAIN_WORDS = st.text("abcdefghij,.!?", min_size=1, max_size=12)
 def test_every_link_keeps_at_most_its_tail_while_other_words_stay_untouched(tokens):
     shown = with_short_links(" ".join(tokens)).split(" ")
     assert len(shown) == len(tokens)
-    for original, displayed in zip(tokens, shown):
+    for original, displayed in zip(tokens, shown, strict=True):
         if not original.startswith("https://") or len(original) <= LINK_CHARACTERS:
             assert displayed == original
             continue
