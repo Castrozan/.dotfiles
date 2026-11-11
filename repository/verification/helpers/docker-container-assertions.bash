@@ -3,6 +3,7 @@
 DOCKER_TEST_REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 readonly DOCKER_TEST_REPOSITORY_ROOT
 readonly DOCKER_TEST_IMAGE_DOCKERFILE="$DOCKER_TEST_REPOSITORY_ROOT/repository/verification/Dockerfile"
+readonly DOCKER_TEST_IMAGE_BUILD_NETWORK_AVOIDING_BRIDGE_DNS="host"
 
 docker_daemon_is_reachable() {
 	command -v docker &>/dev/null && docker info &>/dev/null
@@ -17,7 +18,7 @@ skip_unless_docker_daemon_is_reachable() {
 build_privileged_test_image_or_fail() {
 	local imageTag="$1"
 	local buildOutput
-	if ! buildOutput=$(docker build -t "$imageTag" -f "$DOCKER_TEST_IMAGE_DOCKERFILE" "$DOCKER_TEST_REPOSITORY_ROOT" 2>&1); then
+	if ! buildOutput=$(docker build --network "$DOCKER_TEST_IMAGE_BUILD_NETWORK_AVOIDING_BRIDGE_DNS" -t "$imageTag" -f "$DOCKER_TEST_IMAGE_DOCKERFILE" "$DOCKER_TEST_REPOSITORY_ROOT" 2>&1); then
 		echo "docker build failed for $imageTag using $DOCKER_TEST_IMAGE_DOCKERFILE" >&2
 		echo "$buildOutput" >&2
 		return 1
