@@ -106,7 +106,9 @@ files were collected: the runner refuses to skip silently and hand back a green 
 that inspected nothing. Absent qmllint or quickshell skip too, unless
 `QMLLINT_REQUIRED` is set. Docker is not detected by the runner at all — the
 docker-backed tests skip themselves through
-`repository/verification/helpers/docker-container-assertions.bash`.
+`repository/verification/helpers/docker-container-assertions.bash`. The `--integration` and
+`--e2e` tiers run real agent sessions inside a `bwrap` sandbox that exists only on Linux, so
+they report a skip (status 77) wherever `bwrap` is absent, which includes every darwin host.
 
 ### Performance testing
 

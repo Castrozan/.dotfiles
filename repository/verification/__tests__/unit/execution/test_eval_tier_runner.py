@@ -18,6 +18,7 @@ SKIPPED_STATUS = 77
 SUBPROCESS_TIMEOUT_SECONDS = 30
 
 TIER_FUNCTIONS = ("_run_evals_tier", "_run_integration_tier", "_run_e2e_tier")
+SESSION_SANDBOX_TIER_FUNCTIONS = ("_run_integration_tier", "_run_e2e_tier")
 
 
 def _resolve_modern_bash_absolute_path() -> str:
@@ -79,6 +80,32 @@ def _install_recording_evaluation_command(
     return recorded_arguments
 
 
+def _install_session_sandbox_command(tool_directory: pathlib.Path) -> None:
+    sandbox = tool_directory / "bwrap"
+    sandbox.write_text("#!/bin/sh\nexit 0\n")
+    sandbox.chmod(0o755)
+
+
+def _run_tier_in_tool_directory(
+    tier_function: str, tool_directory: pathlib.Path, search_path: str, state_home: str
+) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [
+            _resolve_modern_bash_absolute_path(),
+            "-c",
+            f'source "{EVALS_TIER_LIBRARY}"; {tier_function}',
+        ],
+        env={
+            "PATH": search_path,
+            "REPO_DIR": str(HARNESS_TESTS_ROOT.parents[1]),
+            "XDG_STATE_HOME": state_home,
+        },
+        capture_output=True,
+        text=True,
+        timeout=SUBPROCESS_TIMEOUT_SECONDS,
+    )
+
+
 def _run_tier_with_recording_command(
     tier_function: str, tmp_path: pathlib.Path, exit_status: int
 ) -> tuple[subprocess.CompletedProcess, list[str]]:
@@ -87,22 +114,49 @@ def _run_tier_with_recording_command(
     recorded_arguments = _install_recording_evaluation_command(
         tool_directory, exit_status
     )
-    completed = subprocess.run(
-        [
-            _resolve_modern_bash_absolute_path(),
-            "-c",
-            f'source "{EVALS_TIER_LIBRARY}"; {tier_function}',
-        ],
-        env={
-            "PATH": f"{tool_directory}:{os.environ['PATH']}",
-            "REPO_DIR": str(HARNESS_TESTS_ROOT.parents[1]),
-            "XDG_STATE_HOME": str(tmp_path / "state"),
-        },
-        capture_output=True,
-        text=True,
-        timeout=SUBPROCESS_TIMEOUT_SECONDS,
+    _install_session_sandbox_command(tool_directory)
+    completed = _run_tier_in_tool_directory(
+        tier_function,
+        tool_directory,
+        f"{tool_directory}:{os.environ['PATH']}",
+        str(tmp_path / "state"),
     )
     return completed, recorded_arguments.read_text().splitlines()
+
+
+def _run_tier_without_session_sandbox(
+    tier_function: str, tmp_path: pathlib.Path
+) -> tuple[subprocess.CompletedProcess, pathlib.Path]:
+    tool_directory = tmp_path / "bin"
+    tool_directory.mkdir()
+    recorded_arguments = _install_recording_evaluation_command(tool_directory, 0)
+    completed = _run_tier_in_tool_directory(
+        tier_function, tool_directory, str(tool_directory), str(tmp_path / "state")
+    )
+    return completed, recorded_arguments
+
+
+@pytest.mark.parametrize("tier_function", SESSION_SANDBOX_TIER_FUNCTIONS)
+def test_a_tier_of_real_agent_sessions_skips_where_the_session_sandbox_is_absent(
+    tier_function, tmp_path
+):
+    completed, recorded_arguments = _run_tier_without_session_sandbox(
+        tier_function, tmp_path
+    )
+
+    assert completed.returncode == SKIPPED_STATUS
+    assert "SKIP:" in completed.stderr
+    assert "bwrap" in completed.stderr
+    assert not recorded_arguments.exists()
+
+
+def test_the_evals_tier_does_not_need_the_session_sandbox(tmp_path):
+    completed, recorded_arguments = _run_tier_without_session_sandbox(
+        "_run_evals_tier", tmp_path
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert recorded_arguments.exists()
 
 
 @pytest.mark.parametrize("tier_function", TIER_FUNCTIONS)

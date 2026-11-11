@@ -22,14 +22,25 @@ _run_agent_evals() {
 	return "$evaluation_status"
 }
 
+_run_agent_evals_in_session_sandbox() {
+	local tier_title=$1
+
+	if ! command -v bwrap &>/dev/null; then
+		echo "SKIP: bwrap not installed (the agent-evals session sandbox is Linux-only), skipping $tier_title" >&2
+		return $TIER_SKIPPED_STATUS
+	fi
+
+	_run_agent_evals "$@"
+}
+
 _run_evals_tier() {
 	_run_agent_evals "Agent Evals (LLM)" evals
 }
 
 _run_integration_tier() {
-	_run_agent_evals "Integration Workflow Evals (real agent sessions)" integration --categoria integration_workflows
+	_run_agent_evals_in_session_sandbox "Integration Workflow Evals (real agent sessions)" integration --categoria integration_workflows
 }
 
 _run_e2e_tier() {
-	_run_agent_evals "End-to-end Workflow Evals (real agent sessions)" e2e --categoria end_to_end_workflows
+	_run_agent_evals_in_session_sandbox "End-to-end Workflow Evals (real agent sessions)" e2e --categoria end_to_end_workflows
 }
