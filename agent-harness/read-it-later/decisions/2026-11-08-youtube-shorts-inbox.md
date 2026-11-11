@@ -1,6 +1,6 @@
 # YouTube Shorts saved for the Shorts channel
 
-**Bundle goal:** Close out the saved YouTube Shorts against the Shorts worker: confirm the five explainer references it already consumed, answer Lucas's copyright question, and drop the reposted entertainment and meme compilations.
+**Bundle goal:** Close out the saved YouTube Shorts against the Shorts worker: confirm the five explainer references it already consumed, answer Lucas's copyright question, and drop the reposted entertainment and meme compilations, the reposted Deadpool interview clip and the homesteading nest-box short.
 
 | # | Capture | TL;DR | Action | Why | Already covered | Second Brain direction | Systems | Local | Lucas's note |
 |---|---|---|---|---|---|---|---|---|---|
@@ -15,6 +15,8 @@
 | 9 | [Youtube - Posts About Famous Individuals](https://youtube.com/shorts/TAlDRtfM_UA) | 61 s compilation of reposted celebrity posts read aloud. | drop | a reposting format the rights rule refuses | machine-configuration/media/video-production/shorts-automation/goal.txt:1 forbids copied assets without rights | - | media workers | yes | - |
 | 10 | [Youtube - 💼 Her Cat Took A New Job](https://youtube.com/shorts/JETSuPe1xuA) | 23 s narrated anecdote of a sick cat eating to cheer its owner; the title does not match the content. | drop | entertainment with nothing to reuse | - | - | - | yes | - |
 | 11 | [Youtube - Memes About Chips](https://youtube.com/shorts/MK5VQXW-zUY) | 57 s compilation of reposted chip memes read aloud by a synthetic voice, with no mechanism or payoff. | drop | a reposted meme compilation from the Zuace channel; it fits neither the factual explainer channel nor the rights rule, and the same kind of repost is already dropped on this pull request | machine-configuration/media/video-production/shorts-automation/goal.txt:1 forbids copied assets without rights | - | media workers | yes | - |
+| 12 | [Youtube - Reason Why Madonna Hates Ryan Reynolds](https://youtube.com/shorts/i1i7xpnBtWY) | 55 s clip from a Ryan Reynolds interview about clearing Like a Prayer for Deadpool & Wolverine, reposted by a clip channel. | drop | someone else's interview footage reposted by HeroSnips, an entertainment anecdote with no mechanism the Shorts worker could reuse, and the rights rule refuses reposts | machine-configuration/media/video-production/shorts-automation/goal.txt:1 forbids copied assets without rights | - | media workers | yes | - |
+| 13 | [Youtube - This Is Our Bird Strike Zone](https://youtube.com/shorts/bSaSibvNtls) | 62 s homesteading explainer: four bluebird nest boxes 100+ yards apart with a 1 1/2 inch hole, mounted 5 ft up with no perch, to cut garden pests. | drop | a sourced explainer from the Alt Ordo homesteading channel, but about gardening, which nothing Lucas runs uses, and the Shorts worker picks its own topics from demand research; the format is the same as the explainer references it already holds | - | - | - | no | - |
 
 Answer on the pull request in plain language: approve the table as it stands, change any card ("drop 3", "session for 2 on kira"), or ask. Captures added after your approval need a new one.
 
@@ -25,7 +27,7 @@ Answer on the pull request in plain language: approve the table as it stands, ch
 {
   "topic_slug": "youtube-shorts-inbox",
   "title": "YouTube Shorts saved for the Shorts channel",
-  "bundle_goal": "Close out the saved YouTube Shorts against the Shorts worker: confirm the five explainer references it already consumed, answer Lucas's copyright question, and drop the reposted entertainment and meme compilations.",
+  "bundle_goal": "Close out the saved YouTube Shorts against the Shorts worker: confirm the five explainer references it already consumed, answer Lucas's copyright question, and drop the reposted entertainment and meme compilations, the reposted Deadpool interview clip and the homesteading nest-box short.",
   "cards": [
     {
       "capture": "Youtube - How an Accident Made Boats Faster animation.md",
@@ -217,6 +219,38 @@ Answer on the pull request in plain language: approve the table as it stands, ch
       "action": "drop",
       "reason": "a reposted meme compilation from the Zuace channel; it fits neither the factual explainer channel nor the rights rule, and the same kind of repost is already dropped on this pull request",
       "added_at": "2026-11-08T22:39:18+00:00"
+    },
+    {
+      "capture": "Youtube - Reason Why Madonna Hates Ryan Reynolds.md",
+      "tldr": "55 s clip from a Ryan Reynolds interview about clearing Like a Prayer for Deadpool & Wolverine, reposted by a clip channel.",
+      "origin_url": "https://youtube.com/shorts/i1i7xpnBtWY",
+      "linked_urls": [],
+      "covered_evidence": [
+        "machine-configuration/media/video-production/shorts-automation/goal.txt:1 forbids copied assets without rights"
+      ],
+      "second_brain_direction": [],
+      "systems": [
+        "media workers"
+      ],
+      "runs_locally_on_chise": true,
+      "lucas_note": "",
+      "action": "drop",
+      "reason": "someone else's interview footage reposted by HeroSnips, an entertainment anecdote with no mechanism the Shorts worker could reuse, and the rights rule refuses reposts",
+      "added_at": "2026-11-11T02:24:17+00:00"
+    },
+    {
+      "capture": "Youtube - This Is Our Bird Strike Zone.md",
+      "tldr": "62 s homesteading explainer: four bluebird nest boxes 100+ yards apart with a 1 1/2 inch hole, mounted 5 ft up with no perch, to cut garden pests.",
+      "origin_url": "https://youtube.com/shorts/bSaSibvNtls",
+      "linked_urls": [],
+      "covered_evidence": [],
+      "second_brain_direction": [],
+      "systems": [],
+      "runs_locally_on_chise": false,
+      "lucas_note": "",
+      "action": "drop",
+      "reason": "a sourced explainer from the Alt Ordo homesteading channel, but about gardening, which nothing Lucas runs uses, and the Shorts worker picks its own topics from demand research; the format is the same as the explainer references it already holds",
+      "added_at": "2026-11-11T02:24:17+00:00"
     }
   ]
 }
