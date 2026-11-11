@@ -7,9 +7,9 @@ from orchestration_test_support import file_card, valid_card_document
 from orchestrator_cli.decisions import card_limits
 from orchestrator_cli.reports.status_reports import REPORT_TEXT_LIMITS
 from round_test_support import (
-    ORCHESTRATOR,
     escalate,
     file_report,
+    record_open_ask,
     report_document,
     run_round,
 )
@@ -28,19 +28,13 @@ def words_filling(limit):
 
 
 def write_open_asks(state_home, count):
-    ledger = state_home / "orchestrator-ledger"
-    ledger.mkdir(parents=True)
     for index in range(count):
-        ask = {
-            "id": f"L-20261109-00000{index}",
-            "kind": "ask",
-            "words": words_filling(400),
-            "owner": "Servant-with-a-long-name",
-            "orchestrator": ORCHESTRATOR,
-            "state": "open",
-            "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        }
-        (ledger / f"{ask['id']}.json").write_text(json.dumps(ask))
+        record_open_ask(
+            state_home,
+            f"L-20261109-00000{index}",
+            words_filling(400),
+            owner="Servant-with-a-long-name",
+        )
 
 
 def test_two_decisions_six_sessions_and_open_asks_at_every_limit_fit_one_screen(
@@ -81,7 +75,7 @@ def test_two_decisions_six_sessions_and_open_asks_at_every_limit_fit_one_screen(
     output = run_round(monkeypatch, cards, reports, capsys)
     assert len(output.splitlines()) <= SOURCE_LINES
     assert output.count("Servant-") == 6 + 5
-    assert "2 more: `orchestrator ledger list`" in output
+    assert "Newer requests not shown: 2." in output
 
 
 def write_report(reports, name, minutes_ago, **fields):

@@ -1,19 +1,19 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime
 
-from .markdown_table import clipped, markdown_table
+from ..ledger.entries import ORCHESTRATOR_OWNER
+from .markdown_table import ELLIPSIS, clipped, markdown_table
 
 PARAGRAPH_CHARACTERS = 300
 SESSION_HEADERS = ["#", "Session", "State", "Next"]
-ASK_HEADERS = ["#", "Your ask", "Owner", "Open for"]
+ASK_HEADERS = ["#", "You asked", "Handled by", "Asked"]
 NEXT_CHARACTERS = 60
 ASK_CHARACTERS = 70
 ASK_ROWS = 5
-FULL_VIEW_LINE = (
-    "Full view: `orchestrator decision show <id>` · "
-    "`orchestrator report show <session>`"
-)
+LINK = re.compile(r"https?://\S+")
+LINK_CHARACTERS = 40
 
 
 def sentence(text: str) -> str:
@@ -84,8 +84,7 @@ def session_rows(reports: list[dict], now: datetime) -> list[list[str]]:
 def sessions_block(reports: list[dict], now: datetime) -> str:
     if not reports:
         return "No session has filed a report."
-    table = markdown_table(SESSION_HEADERS, session_rows(reports, now))
-    return f"{table}\n\n{FULL_VIEW_LINE}"
+    return markdown_table(SESSION_HEADERS, session_rows(reports, now))
 
 
 def age(timestamp: str, now: datetime) -> str:
@@ -96,39 +95,76 @@ def age(timestamp: str, now: datetime) -> str:
     return f"{hours}h" if hours < 48 else f"{hours // 24}d"
 
 
-def ask_rows(asks: list[dict], now: datetime) -> list[list[str]]:
+def link_tail(link: str) -> str:
+    if len(link) <= LINK_CHARACTERS:
+        return link
+    ending = link[-LINK_CHARACTERS:]
+    _, slash, tail = ending.partition("/")
+    return ELLIPSIS + (slash + tail if tail else ending)
+
+
+def with_short_links(words: str) -> str:
+    return LINK.sub(lambda link: link_tail(link.group()), words)
+
+
+def handled_by(ask: dict, orchestrator: str) -> str:
+    return orchestrator if ask["owner"] == ORCHESTRATOR_OWNER else ask["owner"]
+
+
+def ask_rows(asks: list[dict], now: datetime, orchestrator: str) -> list[list[str]]:
     return [
         [
             str(index),
-            clipped(ask["words"], ASK_CHARACTERS),
-            ask["owner"],
-            age(ask["recorded_at"], now),
+            clipped(with_short_links(ask["words"]), ASK_CHARACTERS),
+            handled_by(ask, orchestrator),
+            f"{age(ask['recorded_at'], now)} ago",
         ]
         for index, ask in enumerate(asks[:ASK_ROWS], start=1)
     ]
 
 
-def asks_block(asks: list[dict], now: datetime) -> list[str]:
+def asks_caption(orchestrator: str) -> str:
+    return (
+        f"Each row is something you asked {orchestrator} for, in your words. "
+        f"It leaves once {orchestrator} has checked the real result, "
+        "not only a session's report."
+    )
+
+
+def hidden_asks_line(hidden: int, orchestrator: str) -> str:
+    return f"Newer requests not shown: {hidden}. Ask {orchestrator} for the full list."
+
+
+def asks_block(asks: list[dict], now: datetime, orchestrator: str) -> list[str]:
     if not asks:
         return []
-    table = markdown_table(ASK_HEADERS, ask_rows(asks, now))
+    table = markdown_table(ASK_HEADERS, ask_rows(asks, now, orchestrator))
     hidden = len(asks) - ASK_ROWS
-    more = [f"{hidden} more: `orchestrator ledger list`"] if hidden > 0 else []
-    return ["### Your asks still open", table, *more]
+    more = [hidden_asks_line(hidden, orchestrator)] if hidden > 0 else []
+    return [
+        "### Your requests not yet verified done",
+        asks_caption(orchestrator),
+        table,
+        *more,
+    ]
 
 
 def rendered_round(
-    cards: list[dict], reports: list[dict], asks: list[dict], now: datetime
+    cards: list[dict],
+    reports: list[dict],
+    asks: list[dict],
+    now: datetime,
+    orchestrator: str,
 ) -> str:
     decisions = [decision_block(card) for card in cards] or [
         "No decision is waiting for you."
     ]
     return "\n\n".join(
         [
-            "### Decisions waiting for you",
-            *decisions,
-            *asks_block(asks, now),
             "### Sessions",
             sessions_block(reports, now),
+            *asks_block(asks, now, orchestrator),
+            "### Decisions waiting for you",
+            *decisions,
         ]
     )

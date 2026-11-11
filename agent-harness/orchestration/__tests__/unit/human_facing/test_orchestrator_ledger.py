@@ -2,6 +2,8 @@ import json
 
 from orchestration_test_support import PANE_SENDER_NAME, run_orchestrator
 
+REQUESTS_HEADING = "### Your requests not yet verified done"
+
 
 def ledger(monkeypatch, directory, *arguments):
     return run_orchestrator(monkeypatch, directory, *arguments, command="ledger")
@@ -40,12 +42,12 @@ def test_an_ask_reaches_its_session_and_stays_in_the_round_until_closed(
     assert notifications[-1][0] == "w3E:p1"
     assert f'Lucas\'s words: "{words}"' in notifications[-1][2]
     output = round_output(monkeypatch, tmp_path, capsys)
-    assert "### Your asks still open" in output
-    assert f"| 1 | {words} | w3E:p1 |" in output
+    assert REQUESTS_HEADING in output
+    assert f"| 1 | {words} | w3E:p1 | 0m ago |" in output
     assert (
         ledger(monkeypatch, directory, "close", identifier, "--evidence", "one MR") == 0
     )
-    assert "Your asks still open" not in round_output(monkeypatch, tmp_path, capsys)
+    assert REQUESTS_HEADING not in round_output(monkeypatch, tmp_path, capsys)
     assert (
         ledger(monkeypatch, directory, "close", identifier, "--evidence", "again") == 1
     )
@@ -70,7 +72,7 @@ def test_a_fact_stays_on_record_without_entering_the_round(
     assert notifications == []
     record = json.loads((directory / f"{identifier}.json").read_text())
     assert record["state"] == "standing" and record["owner"] == "orchestrator"
-    assert "Your asks still open" not in round_output(monkeypatch, tmp_path, capsys)
+    assert REQUESTS_HEADING not in round_output(monkeypatch, tmp_path, capsys)
     assert ledger(monkeypatch, directory, "list") == 0
     assert "fact standing · orchestrator" in capsys.readouterr().out
     assert ledger(monkeypatch, directory, "close", identifier, "--evidence", "x") == 1
@@ -86,7 +88,10 @@ def test_the_round_shows_five_asks_and_points_to_the_rest(
         )
     output = round_output(monkeypatch, tmp_path, capsys)
     assert output.count("| ask number") == 5
-    assert "2 more: `orchestrator ledger list`" in output
+    assert (
+        f"Newer requests not shown: 2. Ask {PANE_SENDER_NAME} for the full list."
+        in output
+    )
 
 
 def test_an_ask_without_words_is_refused(monkeypatch, tmp_path, capsys, notifications):

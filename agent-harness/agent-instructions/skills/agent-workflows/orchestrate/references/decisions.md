@@ -114,8 +114,9 @@ pasting its output verbatim as Markdown, never in a fence, with your own words a
 render as tables. The reply hook treats lines copied unchanged from this turn's tool output as a visual, so any line you
 change is judged as your prose; the short prose lets the turn end without closing labels.
 
-That output carries every decision waiting for him, each with its question, every option and what it does, and the
-recommendation. His open asks follow, then one short row per session, with its state and next step or the decision it
-waits on; its goal and progress stay in `orchestrator report show`. A done session leaves the table half an hour after
-its last report and a handed-over one at once, so never add rows of your own. Never paste raw card text or an earlier
-option by number. Mention `orchestrator learn stats` only when a count changed.
+That output opens with one short row per session, with its state and next step or the decision it waits on; its goal
+and progress stay in `orchestrator report show`. A done session leaves the table half an hour after its last report and
+a handed-over one at once, so never add rows of your own. His requests you have not yet verified done follow, under a
+caption telling him what the table lists and what makes a row leave. Every decision waiting for him closes the view,
+each with its question, every option and what it does, the recommendation and the reply to give. Never paste raw card
+text or an earlier option by number. Mention `orchestrator learn stats` only when a count changed.

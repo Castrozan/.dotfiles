@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 
 from orchestration_test_support import run_orchestrator
 
@@ -48,3 +49,18 @@ def run_round(monkeypatch, cards, reports, capsys):
     )
     assert exit_code == 0
     return capsys.readouterr().out
+
+
+def record_open_ask(state_home, identifier, words, owner="orchestrator"):
+    ledger = state_home / "orchestrator-ledger"
+    ledger.mkdir(parents=True, exist_ok=True)
+    ask = {
+        "id": identifier,
+        "kind": "ask",
+        "words": words,
+        "owner": owner,
+        "orchestrator": ORCHESTRATOR,
+        "state": "open",
+        "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+    (ledger / f"{identifier}.json").write_text(json.dumps(ask))

@@ -156,6 +156,12 @@ casos:
       You escalated card D-1 to Lucas two turns ago. Lucas then asked an unrelated build question, which is now answered:
       the rebuild passed. D-1 is still open. `orchestrator round` just printed exactly this:
 
+      ### Sessions
+
+      | # | Session | State | Next |
+      |---|---|---|---|
+      | 1 | Voyager | blocked 3m | waiting on D-1 |
+
       ### Decisions waiting for you
 
       **D-1 · Voyager**, working to retire hey-bot into the avatar. Asks: Where should the speak-or-silent gate run?
@@ -168,14 +174,6 @@ casos:
       Recommends **rules** because it adds no process and scores best on the test set. Reversible; blocks stage 4 of the hey-bot retirement
 
       Reply with `D-1` and one option: rules, hosted
-
-      ### Sessions
-
-      | # | Session | State | Next |
-      |---|---|---|---|
-      | 1 | Voyager | blocked 3m | waiting on D-1 |
-
-      Full view: `orchestrator decision show <id>` · `orchestrator report show <session>`
 
       Write the closing message of this turn.
     assercoes:
