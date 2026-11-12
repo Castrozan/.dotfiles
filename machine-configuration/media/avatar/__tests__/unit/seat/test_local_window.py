@@ -81,6 +81,16 @@ def test_showing_replaces_an_older_window_with_a_viewer_of_the_avatar(monkeypatc
     assert local_seat.WINDOW_PROFILE_FLAG != local_seat.BROWSER_PROFILE_FLAG
 
 
+def test_the_seat_page_runs_without_any_window(monkeypatch):
+    opened = Mock()
+    monkeypatch.setattr(local_seat.subprocess, "run", opened)
+    local_seat.open_browser()
+    command = opened.call_args.args[0]
+    assert "--headless=new" in command
+    assert "--app=http://localhost:8769/" in command
+    assert local_seat.BROWSER_PROFILE_FLAG in command
+
+
 def test_a_tunnel_that_ends_closes_the_seat_page_and_the_window(monkeypatch):
     ended = Mock()
     monkeypatch.setattr(local_seat, "end_processes_matching", ended)

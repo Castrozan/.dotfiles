@@ -122,11 +122,11 @@ def open_browser():
         [
             "/usr/bin/open",
             "-g",
-            "-j",
             "-n",
             "-a",
             BROWSER,
             "--args",
+            "--headless=new",
             BROWSER_PROFILE_FLAG,
             f"--app=http://localhost:{SEAT_PORT}/",
             "--use-fake-ui-for-media-stream",

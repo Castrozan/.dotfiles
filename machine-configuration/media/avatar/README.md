@@ -69,7 +69,7 @@ where the user is. `--seat room` forces the room. `avatar-talk status` reports t
 | `AvatarRemoteMicrophone` | chise | Null sink the Mac's microphone plays into; the listener hears its monitor |
 | `AvatarLipSync.monitor` | chise | The avatar's voice, which the relay sends to the Mac; speech uses the `remote` output, so chise's speakers stay silent |
 | ssh tunnel | Mac | Forwards local port 8769 for as long as the service runs, then closes the browser |
-| Hidden Chrome window | Mac | Captures the default microphone with echo cancellation and plays the voice |
+| Headless Chrome | Mac | Captures the default microphone with echo cancellation and plays the voice; headless because a window manager shows a merely hidden window |
 
 The page runs in Chrome because macOS grants the microphone to Chrome itself, asking once per machine, and because
 Chrome cancels its own playback from the microphone and needs no audio tooling installed on the Mac. Only a page served from `localhost:8769` may open the audio
