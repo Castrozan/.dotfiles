@@ -11,6 +11,11 @@ pkgs.writeText "hermes-config.yaml" ''
     model: gpt-6.1-sol
   agent:
     reasoning_effort: xhigh
+  display:
+    busy_input_mode: queue
+  onboarding:
+    seen:
+      busy_input_prompt: true
   auth:
     adopt_external_logins: false
   approvals:
