@@ -76,15 +76,10 @@ in
 
   clawde.agents.steward = {
     type = "steward";
-    harness = "claude";
-    harnessFallbackChain = [
-      "codex"
-      "opencode"
-    ];
+    harness = "codex";
+    harnessFallbackChain = [ ];
     modelByHarness = {
-      claude = "sonnet";
       codex = "gpt-6.1-terra";
-      opencode = "opencode/ling-3.0-flash-fin-free";
     };
     reasoningEffort = "high";
     personality = effectivePersonality;

@@ -130,7 +130,9 @@ in
                           buildCommand arguments
                         );
                       in
-                      if name == "claude" then
+                      if arguments.name == "steward" && name != "codex" then
+                        "${pkgs.coreutils}/bin/false"
+                      else if name == "claude" then
                         "${agentWorkspaceProfile.sessionEnvironmentAssignmentsOf arguments.agent}CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${
                           withClaudeLaunchSettings arguments.name arguments.agent markedCommand
                         }"

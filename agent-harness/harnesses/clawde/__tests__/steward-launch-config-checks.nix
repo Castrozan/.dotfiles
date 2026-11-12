@@ -29,10 +29,13 @@ let
     "buildOneShotTurnCommandFor"
   ];
 
+  stewardHomeConfiguration = helpers.homeManagerTestConfiguration (
+    bothHarnessModules ++ [ ../agents/steward.nix ]
+  );
+
   stewardLaunchConfig =
     parseDeployedJson
-      (helpers.homeManagerTestConfiguration (bothHarnessModules ++ [ ../agents/steward.nix ]))
-      .home.file."clawde/launch-config/steward.json".text;
+      stewardHomeConfiguration.home.file."clawde/launch-config/steward.json".text;
 
   heartbeatDrivenLaunchConfig =
     parseDeployedJson
@@ -132,14 +135,39 @@ in
       ) heartbeatDrivenLaunchConfig.heartbeat_driver_argv)
       "a rebuild regenerates this argv with the new generation's driver script while the supervisor that spawns it keeps the PYTHONPATH it launched with, so a driver relying on the inherited one dies on ModuleNotFoundError the moment a running agent restarts its session, and the watchdog then restart-loops the agent on a widening backoff until the whole supervisor is respawned";
 
-  clawde-the-steward-can-fall-off-a-harness-that-stops-producing-turns =
-    mkEvalCheck "clawde-the-steward-can-fall-off-a-harness-that-stops-producing-turns"
+  clawde-the-steward-runs-only-on-codex =
+    mkEvalCheck "clawde-the-steward-runs-only-on-codex"
       (
-        builtins.filter (
-          harnessName: harnessName != stewardLaunchConfig.declared_harness
-        ) stewardLaunchConfig.harness_fallback_chain != [ ]
+        stewardLaunchConfig.declared_harness == "codex"
+        && stewardLaunchConfig.harness_fallback_chain == [ ]
+        && builtins.attrNames stewardHomeConfiguration.clawde.agents.steward.modelByHarness == [ "codex" ]
+        && pkgs.lib.hasInfix "command codex " stewardLaunchConfig.harness_launch_commands.codex
       )
-      "the steward is the one agent nothing else watches, so a fallback chain holding nothing but its own declared harness leaves it parked and silent the next time its provider refuses work: it holds a live process, an idle pane and a firing heartbeat throughout, which is how it once sat out three days of a weekly usage limit while every liveness probe reported it healthy";
+      "the personal steward must use only Codex and must never fall back to a harness that can charge the work account";
+
+  clawde-the-steward-cannot-launch-another-harness =
+    mkEvalCheck "clawde-the-steward-cannot-launch-another-harness"
+      (builtins.all
+        (
+          harnessName:
+          builtins.all (
+            builderName:
+            let
+              builder = cfgWithBothHarnesses.clawde.harnesses.${harnessName}.${builderName};
+            in
+            builder == null
+            ||
+              builder ((launchArgumentsForEffort "high") // { name = "steward"; })
+              == "${pkgs.coreutils}/bin/false"
+          ) commandBuilders
+        )
+        (
+          builtins.filter (harnessName: harnessName != "codex") (
+            builtins.attrNames cfgWithBothHarnesses.clawde.harnesses
+          )
+        )
+      )
+      "manual switches and stale runtime overrides must fail before starting a non-Codex steward in every launch mode";
 
   clawde-every-steward-fallback-is-a-harness-it-can-actually-reach =
     mkEvalCheck "clawde-every-steward-fallback-is-a-harness-it-can-actually-reach"
