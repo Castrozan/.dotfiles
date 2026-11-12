@@ -60,6 +60,14 @@ import ./service-checks.nix {
     self
     ;
 }
+// import ./harness/steward-harness-policy-checks.nix {
+  inherit
+    pkgs
+    mkEvalCheck
+    helpers
+    self
+    ;
+}
 // import ./steward-validation-bound-checks.nix {
   inherit
     pkgs

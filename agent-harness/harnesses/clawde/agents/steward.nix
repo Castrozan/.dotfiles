@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   hostname,
   inputs,
@@ -6,6 +7,7 @@
   ...
 }:
 let
+  configuredSteward = config.clawde.agents.steward or null;
   stewardPayloadRoot = inputs.clawde.stewardPayloadPath;
   forgeTools = import ./steward/forge-tools.nix { inherit inputs pkgs lib; };
 
@@ -54,6 +56,19 @@ in
   imports = [
     ./steward/validation-resource-bound.nix
     ./steward/cycle
+  ];
+
+  assertions = [
+    {
+      assertion =
+        configuredSteward == null
+        || (
+          configuredSteward.harness == "codex"
+          && configuredSteward.harnessFallbackChain == [ ]
+          && builtins.attrNames configuredSteward.modelByHarness == [ "codex" ]
+        );
+      message = "The steward must run only on Codex, without fallback harnesses or non-Codex model overrides.";
+    }
   ];
 
   home.packages = forgeTools.profilePackages;
