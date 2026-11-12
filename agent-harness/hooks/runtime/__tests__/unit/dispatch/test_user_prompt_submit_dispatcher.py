@@ -14,6 +14,14 @@ from flat_deploy_test_support import flatten_into_single_runtime_directory
 from hook_dispatch import HandlerResult
 
 
+def prompt_title_handler(dispatcher):
+    return next(
+        handler
+        for handler in dispatcher.USER_PROMPT_SUBMIT_HANDLERS
+        if handler.handler_module_name == "codex_servant_status_handler"
+    )
+
+
 @pytest.mark.parametrize("surface", ["codex", "claude", "opencode", "pi", "hermes"])
 def test_prompt_title_handler_runs_only_on_codex(monkeypatch, surface):
     dispatcher = import_hyphenated_hook_module("user-prompt-submit-dispatcher")
@@ -23,7 +31,7 @@ def test_prompt_title_handler_runs_only_on_codex(monkeypatch, surface):
         "prompt": "Fix terminal title",
     }
     handler = Mock(return_value=None)
-    monkeypatch.setattr(dispatcher.USER_PROMPT_SUBMIT_HANDLERS[0], "handle", handler)
+    monkeypatch.setattr(prompt_title_handler(dispatcher), "handle", handler)
     monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
     monkeypatch.setattr(sys, "argv", ["dispatcher", f"--surface={surface}"])
     with pytest.raises(SystemExit) as stopped:
@@ -44,7 +52,8 @@ def test_prompt_dispatcher_imports_after_flat_deployment(tmp_path):
             "-c",
             "import runpy; "
             "dispatcher = runpy.run_path('user-prompt-submit-dispatcher.py'); "
-            "handler = dispatcher['USER_PROMPT_SUBMIT_HANDLERS'][0].imported_handle(); "
+            "handler = next(handler for handler in dispatcher['USER_PROMPT_SUBMIT_HANDLERS'] "
+            "if handler.handler_module_name == 'codex_servant_status_handler').imported_handle(); "
             "assert handler.__module__ == 'codex_servant_status_handler'",
         ],
         cwd=tmp_path,
@@ -59,7 +68,7 @@ def test_title_request_reaches_native_prompt_context(monkeypatch, capsys):
     dispatcher = import_hyphenated_hook_module("user-prompt-submit-dispatcher")
     context = "Codex session title command: a-guarded-command"
     handler = Mock(return_value=HandlerResult(additional_context=context))
-    monkeypatch.setattr(dispatcher.USER_PROMPT_SUBMIT_HANDLERS[0], "handle", handler)
+    monkeypatch.setattr(prompt_title_handler(dispatcher), "handle", handler)
     monkeypatch.setattr(
         sys, "stdin", io.StringIO(json.dumps({"hook_event_name": "UserPromptSubmit"}))
     )

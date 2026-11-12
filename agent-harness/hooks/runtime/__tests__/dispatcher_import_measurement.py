@@ -41,6 +41,7 @@ STDLIB_MODULES_TOO_EXPENSIVE_FOR_EVERY_TOOL_CALL = {
 }
 
 HANDLERS_THAT_RUN_ON_EVERY_PRE_TOOL_USE_CALL = {
+    "claude_personal_tooling_guard_handler",
     "prohibited_command_guard_handler",
     "prohibited_words_guard_handler",
 }
@@ -75,7 +76,7 @@ INVOCATIONS_UNDER_BUDGET = {
             "tool_name": "Bash",
             "tool_input": {"command": "ls -la"},
         },
-        73,
+        75,
     ),
     "pre-tool-use/Edit": (
         "pre-tool-use-dispatcher",
@@ -88,7 +89,7 @@ INVOCATIONS_UNDER_BUDGET = {
                 "new_string": "b",
             },
         },
-        65,
+        67,
     ),
     "post-tool-use/Skill": (
         "post-tool-use-dispatcher",

@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -6,13 +5,9 @@ import pytest
 import yaml
 from hypothesis import given, strategies
 
-EVALUATIONS_ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(EVALUATIONS_ROOT / "scripts"))
-sys.path.insert(
-    0, str(EVALUATIONS_ROOT.parents[1] / "hooks/runtime/common/personal-tooling")
-)
-
 import codex_only_evaluations
+
+EVALUATIONS_ROOT = Path(__file__).resolve().parents[3]
 
 
 @pytest.fixture

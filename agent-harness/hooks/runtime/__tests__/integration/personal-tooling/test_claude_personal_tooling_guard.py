@@ -1,15 +1,9 @@
 import json
-import sys
 from itertools import product
-from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
 from hypothesis import given, strategies
-
-HOOK_ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(HOOK_ROOT / "common"))
-sys.path.insert(0, str(HOOK_ROOT / "common/personal-tooling"))
 
 import dotfiles_repository_scope
 from claude_personal_tooling_guard_handler import handle
@@ -46,6 +40,9 @@ def personal_home(tmp_path, monkeypatch):
                 "git@github.com:Castrozan/{}.git",
                 "https://github.com/castrozan/{}",
                 "ssh://git@github.com/Castrozan/{}.git",
+                "ssh://git@github.com:22/Castrozan/{}.git",
+                "https://lucas@github.com/CASTROZAN/{}.GIT",
+                "git://github.com/Castrozan/{}.git",
             ),
         )
     ),
@@ -120,6 +117,22 @@ def test_git_resolves_related_worktrees_and_non_origin_remotes(
     monkeypatch.setattr(subprocess, "run", git)
     assert dotfiles_repository_scope.repository_is_personal_tooling(str(root))
     assert git.call_args.kwargs["timeout"] <= 1
+
+
+def test_a_worktree_linked_to_dotfiles_is_blocked_without_any_remote(
+    personal_home, monkeypatch
+):
+    import subprocess
+
+    worktree = personal_home / "eval-worktree-local"
+    worktree.mkdir()
+    (worktree / ".git").write_text("gitdir: ../.dotfiles/.git/worktrees/local\n")
+    git = Mock(
+        side_effect=AssertionError("canonical worktree detection needs no subprocess")
+    )
+    monkeypatch.setattr(subprocess, "run", git)
+    assert dotfiles_repository_scope.repository_is_personal_tooling(str(worktree))
+    git.assert_not_called()
 
 
 @pytest.mark.parametrize(

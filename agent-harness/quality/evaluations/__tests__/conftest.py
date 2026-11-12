@@ -5,3 +5,7 @@ EVALUATIONS_ROOT = Path(__file__).resolve().parents[1]
 
 sys.path.insert(0, str(EVALUATIONS_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent / "unit"))
+sys.path.insert(0, str(EVALUATIONS_ROOT / "scripts"))
+sys.path.insert(
+    0, str(EVALUATIONS_ROOT.parents[1] / "hooks/runtime/common/personal-tooling")
+)
