@@ -3,6 +3,7 @@ import os
 import stat
 
 import agent_route
+from conversation_addressee import Addressee
 from agent_route import AgentAnswer, ask_agent, spoken_answer
 
 
@@ -36,7 +37,9 @@ def test_the_task_reaches_the_named_pane_and_its_answer_comes_back(
         monkeypatch,
         'printf "%s\\n" "$@" > "$(dirname "$0")/arguments"; echo "⏺ Done, main is clean."',
     )
-    answer = asyncio.run(ask_agent("wW:pQZ", "is my repo clean?"))
+    answer = asyncio.run(
+        ask_agent(Addressee("wW:pQZ", "Suzuka", 0), "is my repo clean?")
+    )
     arguments = (tmp_path / "arguments").read_text().splitlines()
     assert arguments[:6] == [
         "ask",
@@ -53,7 +56,7 @@ def test_the_task_reaches_the_named_pane_and_its_answer_comes_back(
 
 def test_a_refused_task_is_spoken_as_a_failure(tmp_path, monkeypatch):
     fake_a2a(tmp_path, monkeypatch, "echo 'peer is busy with task 42'; exit 1")
-    answer = asyncio.run(ask_agent("wW:pQZ", "anything"))
+    answer = asyncio.run(ask_agent(Addressee("wW:pQZ", "Suzuka", 0), "anything"))
     assert answer == AgentAnswer(
         "The agent could not finish that: peer is busy with task 42",
         answer.seconds,

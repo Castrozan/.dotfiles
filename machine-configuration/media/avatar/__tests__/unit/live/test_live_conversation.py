@@ -39,14 +39,14 @@ class SilentSpeaker:
 
 
 def conversation(tmp_path, voice):
-    return live_bridge.LiveConversation(voice, tmp_path, SilentSpeaker())
+    return live_bridge.LiveConversation(voice, tmp_path, SilentSpeaker(), "microphone")
 
 
 def asked_agents(monkeypatch):
     asked = []
 
-    async def ask_agent(pane, request):
-        asked.append((pane, request))
+    async def ask_agent(holder, request):
+        asked.append((holder.pane, request))
         return AgentAnswer("Main is clean.", 1.0, True)
 
     monkeypatch.setattr(live_bridge, "ask_agent", ask_agent)

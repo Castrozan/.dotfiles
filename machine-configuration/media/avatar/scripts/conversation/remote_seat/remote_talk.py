@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import shlex
 import subprocess
@@ -12,6 +13,12 @@ IDLE_TIME = re.compile(r'"HIDIdleTime" = (\d+)')
 NANOSECONDS = 1_000_000_000
 REMOTE_SEAT = "remote"
 OPEN_TIMEOUT_SECONDS = 120
+PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
+HOST_ENVIRONMENT_VARIABLE = "AVATAR_AGENT_HOST"
+LIVE_NEEDS_A_PANE = (
+    "avatar-talk open --live must run from an agent's herdr pane: the live voice hands "
+    "the room's tasks to that agent"
+)
 WINDOW_STEPS = {"show": local_window.show, "hide": local_window.hide}
 
 
@@ -85,11 +92,17 @@ def moves_the_window_of_a_seat_held_here(arguments):
 
 
 def opens_a_seated_conversation(arguments):
-    return (
-        arguments[:1] == ["open"]
-        and "--live" not in arguments
-        and "--seat" not in arguments
-    )
+    return arguments[:1] == ["open"] and "--seat" not in arguments
+
+
+def with_the_agent_that_receives_live_tasks(arguments):
+    if arguments[:1] != ["open"] or "--live" not in arguments:
+        return arguments
+    host = os.environ.get(HOST_ENVIRONMENT_VARIABLE)
+    pane = os.environ.get(PANE_ENVIRONMENT_VARIABLE)
+    if not host or not pane:
+        raise RuntimeError(LIVE_NEEDS_A_PANE)
+    return [*arguments, "--agent", f"{host}:{pane}"]
 
 
 def carry_out(arguments):
@@ -104,7 +117,7 @@ def carry_out(arguments):
 
 def main():
     try:
-        sys.exit(carry_out(sys.argv[1:]))
+        sys.exit(carry_out(with_the_agent_that_receives_live_tasks(sys.argv[1:])))
     except (RuntimeError, TimeoutError, subprocess.SubprocessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

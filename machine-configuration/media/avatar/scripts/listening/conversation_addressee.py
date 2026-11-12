@@ -13,6 +13,7 @@ class Addressee:
     pane: str
     servant: str
     heard_through: int
+    host: str | None = None
 
 
 @contextlib.contextmanager

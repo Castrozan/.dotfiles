@@ -6,6 +6,8 @@ import conversation_effects
 import conversation_state
 from conversation_seat import Seat
 import listener_runtime
+import live_opening
+import remote_agent
 import utterances
 import voice_turns
 from conversation_state import ConversationAction, ConversationCommand
@@ -21,6 +23,7 @@ def parse_arguments():
     opening.add_argument("--character")
     opening.add_argument("--live", action="store_true")
     opening.add_argument("--seat", choices=list(Seat), type=Seat, default=Seat.ROOM)
+    opening.add_argument("--agent", type=remote_agent.parse, metavar="HOST:PANE")
     speaking = commands.add_parser("say")
     asking = commands.add_parser("ask")
     for parser_with_speech in (speaking, asking):
@@ -39,7 +42,7 @@ def main():
     arguments = parse_arguments()
     actions = {
         ConversationAction.BRING_UP: conversation_effects.open_conversation,
-        ConversationAction.BRING_UP_LIVE: conversation_effects.open_live_conversation,
+        ConversationAction.BRING_UP_LIVE: live_opening.open_live_conversation,
         ConversationAction.KEEP_OPEN: conversation_effects.keep_conversation_open,
         ConversationAction.TEAR_DOWN: conversation_effects.close_conversation,
         ConversationAction.LEAVE_MEETING: conversation_effects.leave_meeting,

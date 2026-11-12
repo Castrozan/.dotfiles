@@ -5,6 +5,7 @@ import conversation_addressee
 import conversation_effects
 import conversation_state
 import listener_session
+import live_opening
 import pytest
 import start
 from conversation_addressee import Addressee
@@ -18,13 +19,13 @@ def test_opening_live_needs_the_agent_pane_that_will_receive_the_tasks(
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.delenv(conversation_effects.PANE_ENVIRONMENT_VARIABLE, raising=False)
+    monkeypatch.delenv(live_opening.PANE_ENVIRONMENT_VARIABLE, raising=False)
     bring_up = Mock()
     monkeypatch.setattr(start, "bring_up", bring_up)
     with pytest.raises(SystemExit):
         run_talk(monkeypatch, tmp_path, "open", "--live")
     bring_up.assert_not_called()
-    assert conversation_effects.LIVE_NEEDS_A_PANE in capsys.readouterr().err
+    assert live_opening.LIVE_NEEDS_A_PANE in capsys.readouterr().err
 
 
 def test_opening_live_listens_for_the_live_voice_then_claims_the_floor(
@@ -32,7 +33,7 @@ def test_opening_live_listens_for_the_live_voice_then_claims_the_floor(
 ):
     phases = iter([ConversationPhase.CLOSED, ConversationPhase.LIVE])
     monkeypatch.setattr(conversation_state, "observe", lambda directory: next(phases))
-    monkeypatch.setenv(conversation_effects.PANE_ENVIRONMENT_VARIABLE, "wW:pPT")
+    monkeypatch.setenv(live_opening.PANE_ENVIRONMENT_VARIABLE, "wW:pPT")
     steps = []
     monkeypatch.setattr(start, "bring_up", lambda *arguments: steps.append("bring-up"))
     monkeypatch.setattr(
@@ -78,7 +79,7 @@ def test_opening_live_fails_and_closes_when_the_floor_cannot_name_the_opener(
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.setenv(conversation_effects.PANE_ENVIRONMENT_VARIABLE, "wW:p00")
+    monkeypatch.setenv(live_opening.PANE_ENVIRONMENT_VARIABLE, "wW:p00")
     monkeypatch.setattr(start, "bring_up", Mock())
     monkeypatch.setattr(listener_session, "begin_listening", Mock())
     monkeypatch.setattr(conversation_effects.subprocess, "run", Mock())
@@ -87,4 +88,4 @@ def test_opening_live_fails_and_closes_when_the_floor_cannot_name_the_opener(
     with pytest.raises(SystemExit):
         run_talk(monkeypatch, tmp_path, "open", "--live")
     close.assert_called_once()
-    assert conversation_effects.LIVE_NEEDS_A_SERVANT in capsys.readouterr().err
+    assert live_opening.LIVE_NEEDS_A_SERVANT in capsys.readouterr().err

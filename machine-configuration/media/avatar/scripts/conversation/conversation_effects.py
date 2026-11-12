@@ -1,10 +1,8 @@
 import enum
 import json
-import os
 import subprocess
 import sys
 
-import conversation_addressee
 import conversation_seat
 import conversation_state
 import desktop_window
@@ -17,16 +15,6 @@ from conversation_seat import Seat
 from conversation_state import ConversationPhase
 from listener_session import ListenerPurpose
 
-ROOM_MICROPHONE = conversation_seat.MICROPHONE_BY_SEAT[Seat.ROOM]
-PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
-LIVE_NEEDS_A_PANE = (
-    "avatar-talk open --live must run from an agent's herdr pane: the live voice hands "
-    "the room's tasks to that agent"
-)
-LIVE_NEEDS_A_SERVANT = (
-    "The live voice could not give the floor to this pane: only a session with a Servant "
-    "name can hold it and receive the room's tasks"
-)
 LIVE_OWNS_THE_TURNS = (
     "The live voice speaks and listens in this conversation and sends you each task "
     "over a2a: end your turn to receive them, or run avatar-talk close"
@@ -37,10 +25,6 @@ COMMAND_TIMEOUT_SECONDS = 120
 class WindowPresence(enum.StrEnum):
     HIDDEN = "hidden"
     SHOWN = "shown"
-
-
-def room_microphone_ready():
-    return ROOM_MICROPHONE in listen_cli.existing_sources()
 
 
 def seat_microphone_ready(seat):
@@ -89,30 +73,6 @@ def open_conversation(arguments, directory):
             barge_in=True,
             seat=seat,
         )
-    except BaseException:
-        close_conversation(arguments, directory)
-        raise
-    status(arguments, directory)
-
-
-def open_live_conversation(arguments, directory):
-    if not os.environ.get(PANE_ENVIRONMENT_VARIABLE):
-        raise RuntimeError(LIVE_NEEDS_A_PANE)
-    try:
-        start.bring_up(
-            conversation_state.CONVERSATION_TARGET,
-            (start.renderer_ready, room_microphone_ready),
-        )
-        show_chosen_character(arguments)
-        listener_session.begin_listening(
-            directory, ListenerPurpose.LIVE, {"human": ROOM_MICROPHONE}
-        )
-        subprocess.run(
-            ["avatar-claim-floor"], check=True, timeout=COMMAND_TIMEOUT_SECONDS
-        )
-        holder = conversation_addressee.current(directory)
-        if holder is None or holder.pane != os.environ[PANE_ENVIRONMENT_VARIABLE]:
-            raise RuntimeError(LIVE_NEEDS_A_SERVANT)
     except BaseException:
         close_conversation(arguments, directory)
         raise

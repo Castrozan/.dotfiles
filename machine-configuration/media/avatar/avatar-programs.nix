@@ -117,11 +117,12 @@ let
     export PATH=${
       lib.makeBinPath [
         a2a
+        pkgs.openssh
         pkgs.pulseaudio
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts/live}:${./scripts/listening}:${./scripts/echo}
+    export PYTHONPATH=${./scripts/live}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}
     exec ${websocketPython}/bin/python3 ${./scripts/live/live_bridge.py}
   '';
   remoteSeat = pkgs.writeShellScript "avatar-remote-seat" ''
@@ -137,6 +138,7 @@ let
         floor
         stop
         pkgs.hyprland
+        pkgs.openssh
         pkgs.pulseaudio
         pkgs.systemd
       ]

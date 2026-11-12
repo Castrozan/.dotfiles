@@ -83,9 +83,13 @@ hours.
 `show` from a Mac holding the seat opens the window on that Mac and leaves chise's desktop alone. The same tunnel
 forwards local port 8770 to the renderer page and 8765 to the control server, and the page loaded with `?viewer` joins
 as a display copy: it receives everything the renderer receives and its own events are ignored, so the page on chise
-stays the one renderer that feeds the camera and names the character. The live voice stays in the room: `open --live`
-from a Mac is forwarded unchanged. Microphone audio queued during a network stall plays out late instead of being
-dropped.
+stays the one renderer that feeds the camera and names the character. Microphone audio queued during a network stall
+plays out late instead of being dropped.
+
+`open --live` from a Mac names the agent that will receive the tasks as `--agent HOST:PANE`, built from the Mac's
+hostname and the caller's herdr pane. Chise reads that pane's Servant from `a2a list` on the Mac, gives it the floor,
+and sends each task there with `a2a ask` over ssh. With a remote seat the live voice hears `AvatarRemoteMicrophone`
+and plays only into `AvatarLipSync`.
 
 ## Live voice
 

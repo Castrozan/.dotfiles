@@ -7,8 +7,9 @@ SAMPLE_WIDTH_BYTES = 2
 CHUNK_SECONDS = 0.1
 PLAYBACK_LATENCY_MILLISECONDS = 80
 QUEUE_POLL_SECONDS = 0.25
-ROOM_MICROPHONE = "AvatarRoomMicrophone"
 LIP_SYNC_SINK = "AvatarLipSync"
+DEFAULT_SINK = None
+CLIENT_BY_SINK = {DEFAULT_SINK: "avatar-live", LIP_SYNC_SINK: "avatar-live-lip-sync"}
 
 
 def playback(rate, device, client):
@@ -29,12 +30,9 @@ def playback(rate, device, client):
 
 
 class Speaker:
-    def __init__(self, rate):
+    def __init__(self, rate, sinks):
         self.pending = queue.Queue()
-        self.outputs = [
-            playback(rate, None, "avatar-live"),
-            playback(rate, LIP_SYNC_SINK, "avatar-live-lip-sync"),
-        ]
+        self.outputs = [playback(rate, sink, CLIENT_BY_SINK[sink]) for sink in sinks]
         self.chunk_bytes = int(rate * CHUNK_SECONDS) * SAMPLE_WIDTH_BYTES
         self.failure = None
         threading.Thread(target=self.feed, daemon=True).start()
@@ -74,10 +72,10 @@ class Speaker:
             output.terminate()
 
 
-async def microphone_chunks(rate):
+async def microphone_chunks(rate, device):
     recorder = await asyncio.create_subprocess_exec(
         "parec",
-        f"--device={ROOM_MICROPHONE}",
+        f"--device={device}",
         "--raw",
         f"--rate={rate}",
         "--channels=1",

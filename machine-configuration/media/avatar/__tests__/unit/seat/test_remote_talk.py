@@ -36,14 +36,14 @@ def forwarding(monkeypatch, returncode=0):
         [False, True],
     ),
 )
-def test_only_a_plain_open_asks_for_a_seat_here(verb, live, seat):
+def test_only_an_open_without_a_seat_asks_for_one_here(verb, live, seat):
     arguments = [
         verb,
         *(["--live"] if live else []),
         *(["--seat", "room"] if seat else []),
     ]
     assert remote_talk.opens_a_seated_conversation(arguments) is (
-        verb == "open" and not live and not seat
+        verb == "open" and not seat
     )
 
 

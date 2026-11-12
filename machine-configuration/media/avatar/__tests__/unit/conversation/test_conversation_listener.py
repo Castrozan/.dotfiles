@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import listener_runtime
 import listener_session
-import conversation_effects
+import conversation_seat
 import listener
 import source_capture
 
@@ -146,4 +146,7 @@ def test_the_room_microphone_cancels_everything_the_desktop_plays():
         Path(__file__).resolve().parents[3] / "room-microphone.conf"
     ).read_text()
     assert "monitor.mode = true" in configuration
-    assert f'"{conversation_effects.ROOM_MICROPHONE}"' in configuration
+    assert (
+        f'"{conversation_seat.MICROPHONE_BY_SEAT[conversation_seat.Seat.ROOM]}"'
+        in configuration
+    )

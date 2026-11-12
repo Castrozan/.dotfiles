@@ -5,12 +5,14 @@ import statistics
 import time
 
 import conversation_addressee
+import conversation_seat
 import listener_runtime
 import transcript_log
 from agent_route import ask_agent
 from gpt_live import GptLive
 from live_events import AssistantSaid, Audio, Failed, TaskRequested, Usage, UserSaid
-from room_audio import Speaker, microphone_chunks
+from conversation_seat import Seat
+from room_audio import DEFAULT_SINK, LIP_SYNC_SINK, Speaker, microphone_chunks
 from spoken_turns import Party, TurnAssembler
 
 BARGE_IN_BUFFER_SECONDS = 0.4
@@ -20,12 +22,17 @@ WAKE_HANDOVER_SECONDS = 0.6
 CLOSE_TIMEOUT_SECONDS = 5
 DRAIN_TIMEOUT_SECONDS = 10
 NOBODY_HOLDS_THE_ROOM = "No agent holds the room right now, so nobody can do that."
+VOICE_SINKS_BY_SEAT = {
+    Seat.ROOM: (DEFAULT_SINK, LIP_SYNC_SINK),
+    Seat.REMOTE: (LIP_SYNC_SINK,),
+}
 
 
 class LiveConversation:
-    def __init__(self, voice, directory, speaker):
+    def __init__(self, voice, directory, speaker, microphone):
         self.voice = voice
         self.directory = directory
+        self.microphone = microphone
         self.transcript = directory / "transcript.jsonl"
         self.speaker = speaker
         self.turns = TurnAssembler(TURN_SETTLE_SECONDS)
@@ -54,7 +61,7 @@ class LiveConversation:
             print(f"{turn.party}: {turn.text}", flush=True)
 
     async def stream_microphone(self):
-        async for chunk in microphone_chunks(self.voice.input_rate):
+        async for chunk in microphone_chunks(self.voice.input_rate, self.microphone):
             await self.voice.send_audio(chunk)
 
     async def settle_turns(self):
@@ -103,7 +110,7 @@ class LiveConversation:
             await self.voice.deliver(task.task_id, NOBODY_HOLDS_THE_ROOM, True)
             return
         print(f"task for {holder.servant} at {holder.pane}: {task.request}", flush=True)
-        answer = await ask_agent(holder.pane, task.request)
+        answer = await ask_agent(holder, task.request)
         await self.voice.deliver(task.task_id, answer.text, True)
         print(
             f"{holder.servant} answered in {answer.seconds} s: {answer.text}",
@@ -146,8 +153,13 @@ async def shut_down(voice, conversation, events, workers):
 async def run():
     voice = GptLive()
     session = await voice.connect()
+    directory = listener_runtime.runtime_directory()
+    seat = conversation_seat.configured(directory)
     conversation = LiveConversation(
-        voice, listener_runtime.runtime_directory(), Speaker(voice.output_rate)
+        voice,
+        directory,
+        Speaker(voice.output_rate, VOICE_SINKS_BY_SEAT[seat]),
+        conversation_seat.MICROPHONE_BY_SEAT[seat],
     )
     print(f"{voice.name} live, session {session}", flush=True)
     stop = stop_event_set_by_signals()

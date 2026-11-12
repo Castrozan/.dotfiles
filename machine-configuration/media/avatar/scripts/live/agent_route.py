@@ -2,6 +2,8 @@ import asyncio
 import time
 from dataclasses import dataclass
 
+import remote_agent
+
 ANSWER_MARKER = "⏺"
 SENDER = "avatar live voice"
 TIMEOUT_SECONDS = 300
@@ -31,17 +33,26 @@ def spoken_answer(output):
     return answers[-1] if answers else None, lines[-1] if lines else ""
 
 
-async def ask_agent(pane, request):
+def ask_command(holder, request):
+    return remote_agent.on_host(
+        holder.host,
+        [
+            "a2a",
+            "ask",
+            "--sender",
+            SENDER,
+            "--timeout-seconds",
+            str(TIMEOUT_SECONDS),
+            holder.pane,
+            BRIEF.format(request=request),
+        ],
+    )
+
+
+async def ask_agent(holder, request):
     started = time.monotonic()
     process = await asyncio.create_subprocess_exec(
-        "a2a",
-        "ask",
-        "--sender",
-        SENDER,
-        "--timeout-seconds",
-        str(TIMEOUT_SECONDS),
-        pane,
-        BRIEF.format(request=request),
+        *ask_command(holder, request),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
     )

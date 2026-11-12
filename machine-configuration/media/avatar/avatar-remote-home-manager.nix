@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, hostname, ... }:
 let
   forwardToChise =
     command:
@@ -6,6 +6,7 @@ let
       exec ssh chise ${command} "$(printf '%q ' "$@")"
     '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
+    export AVATAR_AGENT_HOST=${hostname}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_talk.py "$@"
   '';
 in
