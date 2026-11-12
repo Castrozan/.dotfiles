@@ -9,6 +9,7 @@ hook_script_directory = os.path.dirname(os.path.realpath(__file__))
 for importable_directory in (
     hook_script_directory,
     os.path.join(os.path.dirname(hook_script_directory), "common"),
+    os.path.join(os.path.dirname(hook_script_directory), "common", "personal-tooling"),
     os.path.join(os.path.dirname(hook_script_directory), "wellput"),
 ):
     if os.path.isdir(importable_directory) and importable_directory not in sys.path:
@@ -26,6 +27,10 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_context_injection  # noqa: E402
 
 SESSION_START_HANDLERS = [
+    HookHandler(
+        handler_module_name="claude_personal_tooling_guard_handler",
+        surfaces=(CLAUDE_SURFACE,),
+    ),
     HookHandler(handler_module_name="wellput_hook_handler"),
     HookHandler(
         handler_module_name="session_context_handler", surfaces=(CLAUDE_SURFACE,)

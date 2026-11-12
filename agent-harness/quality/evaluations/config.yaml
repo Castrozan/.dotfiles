@@ -27,10 +27,8 @@ sujeito:
     - CODEX_SESSION_SOCKET_PATH
 modelo_padrao:
   codex: gpt-6.1-sol
-  claude: haiku
 esforco_padrao:
   codex: high
-  claude: high
 juiz:
   cliente: codex
   modelo: gpt-6-luna

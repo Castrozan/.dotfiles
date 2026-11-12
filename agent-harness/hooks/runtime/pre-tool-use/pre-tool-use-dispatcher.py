@@ -9,6 +9,7 @@ hook_script_directory = os.path.dirname(os.path.realpath(__file__))
 importable_directories = [
     hook_script_directory,
     os.path.join(os.path.dirname(hook_script_directory), "common"),
+    os.path.join(os.path.dirname(hook_script_directory), "common", "personal-tooling"),
 ]
 importable_directories.extend(
     child_entry.path
@@ -30,6 +31,10 @@ from hook_dispatch import (  # noqa: E402
 from hook_event_output import emit_pretooluse_decision  # noqa: E402
 
 PRE_TOOL_USE_HANDLERS = [
+    HookHandler(
+        handler_module_name="claude_personal_tooling_guard_handler",
+        surfaces=(CLAUDE_SURFACE,),
+    ),
     HookHandler(
         handler_module_name="prohibited_command_guard_handler", tool_matcher=None
     ),
