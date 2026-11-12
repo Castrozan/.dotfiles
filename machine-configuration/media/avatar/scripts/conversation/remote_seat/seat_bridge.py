@@ -1,29 +1,18 @@
 import asyncio
-import http
-import json
 import logging
 import os
 import pathlib
 import signal
 import sys
-import urllib.parse
 
+from seat_page import SeatPage
 from websockets.asyncio.server import serve
-from websockets.datastructures import Headers
 from websockets.exceptions import InvalidMessage
-from websockets.http11 import Response
 
 HOST = "127.0.0.1"
 PORT = 8769
 ALLOWED_ORIGINS = [f"http://localhost:{PORT}", f"http://{HOST}:{PORT}"]
 AUDIO_PATH = "/audio"
-HEALTH_PATH = "/health"
-FAILURE_PATH = "/failure"
-PAGE_FILES = {
-    "/": ("index.html", "text/html; charset=utf-8"),
-    "/seat.js": ("seat.js", "text/javascript"),
-    "/seat-audio-worklets.js": ("seat-audio-worklets.js", "text/javascript"),
-}
 CLIENT_NAME = "avatar-remote-seat"
 MICROPHONE_SINK = "AvatarRemoteMicrophone"
 MICROPHONE_RATE = 16000
@@ -62,18 +51,6 @@ def voice_capture_command():
     ]
 
 
-def body_response(body, content_type):
-    headers = Headers(
-        [
-            ("Content-Type", content_type),
-            ("Content-Length", str(len(body))),
-            ("Cache-Control", "no-store"),
-            ("Connection", "close"),
-        ]
-    )
-    return Response(http.HTTPStatus.OK, "OK", headers, body)
-
-
 async def relay_microphone(websocket, playback_input):
     async for frame in websocket:
         if isinstance(frame, bytes):
@@ -106,36 +83,20 @@ async def end_process(process):
 
 class RemoteSeat:
     def __init__(self, page_directory):
-        self.page_directory = page_directory
         self.attached = asyncio.Event()
         self.detached = asyncio.Event()
-        self.failure = None
+        self.page = SeatPage(page_directory, self.attached.is_set)
 
     def answer_request(self, connection, request):
-        path, _, query = request.path.partition("?")
-        if path == AUDIO_PATH:
+        if request.path == AUDIO_PATH:
             return None
-        if path == HEALTH_PATH:
-            health = {"attached": self.attached.is_set(), "failure": self.failure}
-            return body_response(json.dumps(health).encode(), "application/json")
-        if path == FAILURE_PATH:
-            if request.headers.get("Sec-Fetch-Site") != "same-origin":
-                return connection.respond(http.HTTPStatus.FORBIDDEN, "")
-            self.failure = urllib.parse.unquote(query)
-            print(f"The seat page failed: {self.failure}", file=sys.stderr)
-            return body_response(b"", "text/plain")
-        if path in PAGE_FILES:
-            name, content_type = PAGE_FILES[path]
-            return body_response(
-                (self.page_directory / name).read_bytes(), content_type
-            )
-        return connection.respond(http.HTTPStatus.NOT_FOUND, "")
+        return self.page.answer(connection, request)
 
     async def carry_audio(self, websocket):
         if self.attached.is_set():
             await websocket.close(SEAT_TAKEN_CODE, "Another machine holds the seat")
             return
-        self.failure = None
+        self.page.failure = None
         self.detached.clear()
         self.attached.set()
         processes = []

@@ -51,7 +51,7 @@ def test_no_verb_at_all_is_forwarded_untouched(monkeypatch):
     monkeypatch.setattr(remote_talk, "user_is_here", lambda: True)
     forwarded = forwarding(monkeypatch, returncode=2)
     assert run_main(monkeypatch) == 2
-    forwarded.assert_called_once_with(["ssh", "chise", "avatar-talk", ""])
+    assert forwarded.call_args.args == (["ssh", "chise", "avatar-talk", ""],)
 
 
 def test_an_open_while_the_user_is_away_stays_in_the_room(monkeypatch):
@@ -60,9 +60,10 @@ def test_an_open_while_the_user_is_away_stays_in_the_room(monkeypatch):
     monkeypatch.setattr(local_seat, "take", take)
     forwarded = forwarding(monkeypatch)
     assert run_main(monkeypatch, "open", "--character", "vita") == 0
-    forwarded.assert_called_once_with(
-        ["ssh", "chise", "avatar-talk", "open --character vita"]
+    assert forwarded.call_args.args == (
+        ["ssh", "chise", "avatar-talk", "open --character vita"],
     )
+    assert forwarded.call_args.kwargs["timeout"] > 0
     take.assert_not_called()
 
 

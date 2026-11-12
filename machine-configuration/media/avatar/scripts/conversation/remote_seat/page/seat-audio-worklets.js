@@ -1,7 +1,11 @@
 const FRAME_SECONDS = 0.02;
-const START_SECONDS = 0.12;
+const CUSHION_SECONDS = 0.12;
 const MAXIMUM_SECONDS = 0.6;
 const FULL_SCALE = 32767;
+
+function isSilent(chunk) {
+  return chunk.every((sample) => sample === 0);
+}
 
 class MicrophoneFrames extends AudioWorkletProcessor {
   constructor() {
@@ -28,45 +32,40 @@ class MicrophoneFrames extends AudioWorkletProcessor {
 class VoicePlayback extends AudioWorkletProcessor {
   constructor() {
     super();
-    this.chunks = [];
-    this.position = 0;
+    this.cushionSamples = Math.round(sampleRate * CUSHION_SECONDS);
+    this.ring = new Float32Array(Math.round(sampleRate * MAXIMUM_SECONDS));
+    this.readIndex = 0;
     this.queued = 0;
     this.buffering = true;
-    this.startSamples = sampleRate * START_SECONDS;
-    this.maximumSamples = sampleRate * MAXIMUM_SECONDS;
     this.port.onmessage = (event) => this.enqueue(new Int16Array(event.data));
   }
 
   enqueue(chunk) {
-    const ahead = this.queued > this.startSamples;
-    if (ahead && chunk.every((sample) => sample === 0)) return;
-    this.chunks.push(chunk);
-    this.queued += chunk.length;
-    while (this.queued > this.maximumSamples) this.dropOldestChunk();
+    if (this.queued > this.cushionSamples && isSilent(chunk)) return;
+    for (const sample of chunk) this.write(sample / FULL_SCALE);
   }
 
-  dropOldestChunk() {
-    this.queued -= this.chunks.shift().length - this.position;
-    this.position = 0;
+  write(sample) {
+    const capacity = this.ring.length;
+    this.ring[(this.readIndex + this.queued) % capacity] = sample;
+    if (this.queued < capacity) this.queued += 1;
+    else this.readIndex = (this.readIndex + 1) % capacity;
   }
 
-  process(inputs, outputs) {
+  read() {
+    const sample = this.ring[this.readIndex];
+    this.readIndex = (this.readIndex + 1) % this.ring.length;
+    this.queued -= 1;
+    return sample;
+  }
+
+  process(_inputs, outputs) {
     const output = outputs[0][0];
-    if (this.buffering && this.queued < this.startSamples) return true;
-    this.buffering = false;
-    for (let index = 0; index < output.length; index += 1) {
-      if (!this.chunks.length) {
-        this.buffering = true;
-        break;
-      }
-      output[index] = this.chunks[0][this.position] / FULL_SCALE;
-      this.position += 1;
-      this.queued -= 1;
-      if (this.position === this.chunks[0].length) {
-        this.chunks.shift();
-        this.position = 0;
-      }
-    }
+    if (this.buffering && this.queued < this.cushionSamples) return true;
+    const playable = Math.min(output.length, this.queued);
+    for (let index = 0; index < playable; index += 1)
+      output[index] = this.read();
+    this.buffering = playable < output.length;
     return true;
   }
 }

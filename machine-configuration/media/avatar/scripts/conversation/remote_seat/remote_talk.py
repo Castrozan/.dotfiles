@@ -10,6 +10,7 @@ PRESENT_WITHIN_SECONDS = 300
 IDLE_TIME = re.compile(r'"HIDIdleTime" = (\d+)')
 NANOSECONDS = 1_000_000_000
 REMOTE_SEAT = "remote"
+OPEN_TIMEOUT_SECONDS = 120
 
 
 def seconds_since_input():
@@ -33,7 +34,9 @@ def forward_command(arguments):
 
 
 def forward(arguments):
-    return subprocess.run(forward_command(arguments)).returncode
+    return subprocess.run(
+        forward_command(arguments), timeout=local_seat.LONGEST_SEAT_SECONDS
+    ).returncode
 
 
 def reported_seat(status_output):
@@ -49,6 +52,7 @@ def open_here(arguments):
         forward_command([*arguments, "--seat", REMOTE_SEAT]),
         stdout=subprocess.PIPE,
         text=True,
+        timeout=OPEN_TIMEOUT_SECONDS,
     )
     sys.stdout.write(opened.stdout)
     sys.stdout.flush()

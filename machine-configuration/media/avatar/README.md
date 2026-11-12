@@ -77,7 +77,8 @@ socket, and one machine holds the seat at a time.
 
 The seat ends the conversation rather than leaving it deaf: the service stops when no machine attaches within 30
 seconds or its machine stays gone for 10, and stopping it stops `avatar-conversation.target`. Closing from either side
-closes the Mac's microphone, because the page ends capture when its socket drops.
+closes the Mac's microphone, because the page ends capture when its socket drops. A Mac holds the seat for at most 12
+hours.
 
 The window and the live voice stay in the room: `show` from a remote seat shows the window on chise, and `open --live`
 from a Mac is forwarded unchanged. Microphone audio queued during a network stall plays out late instead of being

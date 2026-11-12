@@ -1,3 +1,4 @@
+import contextlib
 import http.client
 import json
 import pathlib
@@ -32,6 +33,8 @@ BROWSER_PROFILE = pathlib.Path.home() / ".local/share/avatar/seat-browser"
 BROWSER_PROFILE_FLAG = f"--user-data-dir={BROWSER_PROFILE}"
 HOLDER_SCRIPT = "remote_seat/local_seat.py"
 TUNNEL_WAIT_SECONDS = 15
+LONGEST_SEAT_SECONDS = 12 * 60 * 60
+COMMAND_TIMEOUT_SECONDS = 30
 ATTACH_WAIT_SECONDS = 20
 POLL_SECONDS = 0.25
 
@@ -52,7 +55,11 @@ def attached():
 
 
 def end_processes_matching(command_line):
-    subprocess.run(["/usr/bin/pkill", "-f", "--", command_line], check=False)
+    subprocess.run(
+        ["/usr/bin/pkill", "-f", "--", command_line],
+        check=False,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+    )
 
 
 def close_browser():
@@ -65,8 +72,11 @@ def leave():
 
 
 def hold_tunnel_then_close_browser():
-    subprocess.run(TUNNEL_COMMAND, check=False)
-    close_browser()
+    try:
+        with contextlib.suppress(subprocess.TimeoutExpired):
+            subprocess.run(TUNNEL_COMMAND, check=False, timeout=LONGEST_SEAT_SECONDS)
+    finally:
+        close_browser()
 
 
 def wait_for_tunnel():
@@ -111,6 +121,7 @@ def open_browser():
             "--no-default-browser-check",
         ],
         check=True,
+        timeout=COMMAND_TIMEOUT_SECONDS,
     )
 
 
