@@ -67,3 +67,19 @@ def test_a_viewer_mirrors_the_renderer_without_speaking_for_it():
     ]
     assert result["rendererLevels"] == 2
     assert result["stillRenderer"] is True
+
+
+@requires_node
+def test_the_control_socket_admits_the_renderer_and_the_remote_window_only():
+    result = evaluate_node_json(
+        """
+        const { controlOrigins } = require("./avatar-session/page-origins");
+        const result = Promise.resolve(controlOrigins("3000"));
+        """
+    )
+    assert sorted(result) == [
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8770",
+        "http://localhost:3000",
+        "http://localhost:8770",
+    ]

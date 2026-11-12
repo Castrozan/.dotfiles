@@ -13,6 +13,10 @@ const {
   attachClientConnection,
 } = require("./avatar-session/client-connection-router");
 const {
+  controlOrigins,
+  pageOrigins,
+} = require("./avatar-session/page-origins");
+const {
   CharacterVoicedSpeechGenerator,
 } = require("./speech/character-voiced-speech-generator");
 const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
@@ -49,10 +53,8 @@ const CONFIG = {
   ),
   SPEAKER_SINK: "default",
   KEEP_ALIVE_INTERVAL_MS: 30000,
-  RENDERER_ORIGINS: [
-    `http://localhost:${RENDERER_PORT}`,
-    `http://127.0.0.1:${RENDERER_PORT}`,
-  ],
+  RENDERER_ORIGINS: pageOrigins(RENDERER_PORT),
+  CONTROL_ORIGINS: controlOrigins(RENDERER_PORT),
 };
 
 function startAudioFileHttpServer(context) {
@@ -78,7 +80,10 @@ function startAudioFileHttpServer(context) {
 }
 
 function startAvatarSocketServer(context) {
-  const socketServer = new WebSocketMessageSocketServer(CONFIG.WS_PORT);
+  const socketServer = new WebSocketMessageSocketServer(
+    CONFIG.WS_PORT,
+    CONFIG.CONTROL_ORIGINS,
+  );
 
   socketServer.onConnection((connection) =>
     attachClientConnection(connection, context),
